@@ -214,7 +214,7 @@ export interface InputBoxProps {
     setCurrentRoomOffsets: (val: OffsetData[]) => void;
     handleUpdateRoom: () => void;
     handleAddRoom: () => void;
-    calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[]) => number;
+    calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[], outer?: string | boolean) => number;
     maxRooms: number | null;
     availableRooms: number | null;
     setSelectedShape: (shape: string) => void;

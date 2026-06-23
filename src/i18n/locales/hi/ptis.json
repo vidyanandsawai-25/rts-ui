@@ -20,6 +20,8 @@
     "changeDetection": "परिवर्तन का पता लगाना",
     "changeDetectionComingSoon": "परिवर्तन का पता लगाने की जानकारी जल्द ही आ रही है।",
     "photoPlan": "फोटो प्लान",
+    "showPhotoPlan": "फोटो प्लान दिखाएं",
+    "hidePhotoPlan": "फोटो प्लान छुपाएं",
     "propertyPhoto": "संपत्ति फोटो",
     "buildingPhoto": "इमारत फोटो",
     "rearElevation": "पिछला मुखभाग",
@@ -600,6 +602,12 @@
         "remove_remission": "छूट हटाएँ",
         "remove_all_appeals": "सभी अपीलें हटाएँ"
       }
+    },
+    "billDistribution": {
+      "title": "बिल वितरण की पुष्टि करें",
+      "description": "क्या आप निश्चित रूप से बिल वितरित करना चाहते हैं?",
+      "confirmText": "हाँ",
+      "cancelText": "नहीं"
     }
   },
   "footerActions": {

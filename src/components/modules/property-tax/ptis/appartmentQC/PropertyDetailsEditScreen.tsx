@@ -107,7 +107,30 @@ const ResidentialEditScreen = ({
   // State for client-side fetched room data
   const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
-  const [selectedFloorRow, setSelectedFloorRow] = useState<DrawerFloorDataRow | null>(null);
+  const SELECTED_FLOOR_ROW_KEY = 'selectedFloorRow';
+
+  const [selectedFloorRow, setSelectedFloorRow] = useState<DrawerFloorDataRow | null>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem(SELECTED_FLOOR_ROW_KEY);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
+
+  // Persist selectedFloorRow to sessionStorage
+  useEffect(() => {
+    if (selectedFloorRow) {
+      sessionStorage.setItem(SELECTED_FLOOR_ROW_KEY, JSON.stringify(selectedFloorRow));
+    } else {
+      sessionStorage.removeItem(SELECTED_FLOOR_ROW_KEY);
+    }
+  }, [selectedFloorRow]);
 
   // State for tax details
   const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
@@ -490,8 +513,8 @@ const ResidentialEditScreen = ({
     updateRow: hook.updateFloorRow,
     onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading,
   });
-  const rateableColumns = useDrawerRateableColumns();
-  const capitalColumns = useDrawerCapitalColumns();
+  const rateableColumns = useDrawerRateableColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
+  const capitalColumns = useDrawerCapitalColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
 
   const floorColumns = useMemo(() => {
     if (hook.subTab === 'capital') return [...commonColumns, ...capitalColumns];
@@ -755,6 +778,7 @@ const ResidentialEditScreen = ({
                           tableClassName="text-[10px] w-max min-w-full"
                           theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20"
                           height="sm"
+                          onRowClick={(row) => handleOpenRoomSubmissionWithLoading(row as DrawerFloorDataRow)}
                         />
                       </Tabs.TabPanel>
                       <Tabs.TabPanel value="capital">
@@ -765,6 +789,7 @@ const ResidentialEditScreen = ({
                           tableClassName="text-[10px] w-max min-w-full"
                           theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20"
                           height="sm"
+                          onRowClick={(row) => handleOpenRoomSubmissionWithLoading(row as DrawerFloorDataRow)}
                         />
                       </Tabs.TabPanel>
                     </Tabs>
@@ -776,6 +801,7 @@ const ResidentialEditScreen = ({
                       tableClassName="text-[10px] w-max min-w-full"
                       theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20"
                       height="sm"
+                      onRowClick={(row) => handleOpenRoomSubmissionWithLoading(row as DrawerFloorDataRow)}
                     />
                   )}
                 </div>
@@ -870,6 +896,7 @@ const ResidentialEditScreen = ({
               constructionLookup={hook.loadedConTypeOptions}
               useLookup={hook.loadedUseTypeOptions}
               subTypeLookup={hook.loadedSubTypeOptions}
+              t={t}
             />
           )}
         </Drawer>

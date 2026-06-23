@@ -81,8 +81,6 @@ interface ChangeDetectionSideBySideViewProps {
   beforePan: { x: number; y: number };
   afterPan: { x: number; y: number };
   zoom: number;
-  hasCustomBefore: boolean;
-  hasCustomAfter: boolean;
   isDraggingImage: boolean;
   handleImageLoad: (type: 'before' | 'after', width: number, height: number) => void;
   beforeRatio: number;
@@ -98,8 +96,6 @@ export function ChangeDetectionSideBySideView({
   beforePan,
   afterPan,
   zoom,
-  hasCustomBefore,
-  hasCustomAfter,
   isDraggingImage,
   handleImageLoad,
   beforeRatio,
@@ -107,13 +103,8 @@ export function ChangeDetectionSideBySideView({
 }: ChangeDetectionSideBySideViewProps): React.ReactElement {
   const t = useTranslations('ptis');
 
-  const beforeLabel = hasCustomBefore
-    ? (t('media.beforeCustomLabel') || 'Before (Old)')
-    : (t('media.beforeSatelliteLabel') || '2018 Satellite');
-
-  const afterLabel = hasCustomAfter
-    ? (t('media.afterCustomLabel') || 'After (New)')
-    : (t('media.afterSatelliteLabel') || '2026 Satellite');
+  const beforeLabel = t('media.beforeCustomLabel') || 'Before (Old)';
+  const afterLabel = t('media.afterCustomLabel') || 'After (New)';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full max-h-[70vh] select-none">

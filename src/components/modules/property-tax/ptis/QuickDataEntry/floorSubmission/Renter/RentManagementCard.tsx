@@ -11,6 +11,7 @@ import { DurationWiseRentDetails } from "./DurationWiseRentDetails";
 import { CustomDateRangeManager } from "./CustomDateRangeManager";
 import { RenterFormData, RenterFormDataDetails } from "@/types/renter.types";
 import { validateRenterForm } from "@/lib/utils/renter-validation";
+import { DateUtils } from "@/lib/utils/date-helpers";
 
 const fieldLabelClassName =
     'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
@@ -182,7 +183,7 @@ export const RentManagementCard = React.memo(({
                             className={`h-10 bg-white rounded-md font-medium text-slate-950 focus:ring-4 focus:ring-blue-50/50 transition-all pr-8 text-xs w-full ${fieldErrors.incrementValue ? errorBorderClassName : 'border-gray-200'}`}
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
-                            {renterDetails?.incrementType?.toLowerCase()?.includes("percent") ? "%" : "₹"}
+                            {"%"}
                         </span>
                     </div>
                     {fieldErrors.incrementValue && <p className={errorClassName}>{fieldErrors.incrementValue}</p>}
@@ -205,7 +206,7 @@ export const RentManagementCard = React.memo(({
                     <SummaryItem label={t('floor.renterSection.baseRent')} value={`₹ ${parseFloat(String(renterDetails?.rentAmount || "0")).toLocaleString("en-IN")}`} />
                 </div>
                 <div className="lg:col-span-2">
-                    <SummaryItem label={t('floor.renterSection.increment')} value={`${renterDetails?.incrementValue || "0"}${renterDetails?.incrementType?.toLowerCase()?.includes("percent") ? "%" : "₹"}`} highlight />
+                    <SummaryItem label={t('floor.renterSection.increment')} value={`${renterDetails?.incrementValue || "0"}%`} highlight />
                 </div>
                 <div className="lg:col-span-2">
                     <SummaryItem label={t('floor.renterSection.type')} value={renterDetails?.incrementType?.toLowerCase()?.includes("percent") ? t('floor.renterSection.percentage') : t('floor.renterSection.fixedAmount')} />
@@ -216,15 +217,10 @@ export const RentManagementCard = React.memo(({
                 <div className="lg:col-span-2">
                     <SummaryItem 
                         label={t('floor.renterSection.duration')} 
-                        value={(() => {
-                            const start = new Date(renterDetails?.agreementDateFrom || "");
-                            const end = new Date(renterDetails?.agreementDateTo || "");
-                            if (isNaN(start.getTime()) || isNaN(end.getTime())) return "N/A";
-                            const diff = end.getTime() - start.getTime();
-                            const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-                            const months = Math.floor((diff % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.44));
-                            return `${years}Y ${months}M`;
-                        })()} 
+                        value={DateUtils.calculateDurationYearsMonths(
+                            renterDetails?.agreementDateFrom,
+                            renterDetails?.agreementDateTo
+                        )} 
                     />
                 </div>
                 <div className="lg:col-span-2 text-right lg:text-left">

@@ -26,8 +26,8 @@ describe('validateRenterForm', () => {
     });
 
     describe('Agreement ID Validation', () => {
-        it('should allow valid numeric agreement IDs up to 8 digits', () => {
-            const allowed = ['1', '123', '131425', '12345678'];
+        it('should allow valid alphanumeric agreement IDs with hyphens and underscores up to 8 characters', () => {
+            const allowed = ['1', '123', 'ABC_123', 'ABC-123', 'ABC123', '12345678'];
             allowed.forEach(id => {
                 const errors = validateRenterForm({ ...validBaseForm, agreementId: id });
                 expect(errors.filter(e => e.field === 'agreementId')).toHaveLength(0);
@@ -41,21 +41,21 @@ describe('validateRenterForm', () => {
             expect(matched[0].message).toBe('Agreement ID is required.');
         });
 
-        it('should reject non-numeric agreement IDs', () => {
-            const rejected = ['SS4235', 'AGR123', 'AG-2025', 'ABC 123', '12/05/2026'];
+        it('should reject agreement IDs with invalid special characters', () => {
+            const rejected = ['ABC 123', '12/05/20', 'AG@123'];
             rejected.forEach(id => {
                 const errors = validateRenterForm({ ...validBaseForm, agreementId: id });
                 const matched = errors.filter(e => e.field === 'agreementId');
                 expect(matched).not.toHaveLength(0);
-                expect(matched[0].message).toBe('Agreement ID must contain numbers only.');
+                expect(matched[0].message).toBe('Agreement ID must be alphanumeric and can contain hyphens and underscores.');
             });
         });
 
-        it('should reject agreement IDs longer than 8 digits', () => {
+        it('should reject agreement IDs longer than 8 characters', () => {
             const errors = validateRenterForm({ ...validBaseForm, agreementId: '123456789' });
             const matched = errors.filter(e => e.field === 'agreementId');
             expect(matched).not.toHaveLength(0);
-            expect(matched[0].message).toBe('Agreement ID must be at most 8 digits.');
+            expect(matched[0].message).toBe('Agreement ID must be at most 8 characters.');
         });
     });
 

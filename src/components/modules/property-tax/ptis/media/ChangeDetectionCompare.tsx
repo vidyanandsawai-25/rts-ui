@@ -38,10 +38,10 @@ export function ChangeDetectionCompare({
     isUploading, handleUploadOrReplaceImage, handleDeleteImage,
   } = useChangeDetectionUpload({ activeCategory, propertyId, onImagesChange });
 
-  const beforeImage = activeCategory.images[0]?.src || '/images/thane-earth-2018.jpg';
-  const afterImage = activeCategory.images[1]?.src || '/images/thane-earth-2026.jpg';
-  const hasCustomBefore = activeCategory.images[0]?.propertyPhotoId !== 9998;
-  const hasCustomAfter = activeCategory.images[1]?.propertyPhotoId !== 9999;
+  const beforeImage = activeCategory.images[0]?.src || '';
+  const afterImage = activeCategory.images[1]?.src || '';
+  const hasCustomBefore = !!activeCategory.images[0]?.hasPhoto;
+  const hasCustomAfter = !!activeCategory.images[1]?.hasPhoto;
 
   const onFileChange = (type: 'before' | 'after') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,8 +98,6 @@ export function ChangeDetectionCompare({
             afterImage={afterImage}
             beforeTransformStyle={beforeTransformStyle}
             afterTransformStyle={afterTransformStyle}
-            hasCustomBefore={hasCustomBefore}
-            hasCustomAfter={hasCustomAfter}
             sliderPosition={sliderPosition}
             setIsDraggingHandle={setIsDraggingHandle}
           />
@@ -113,8 +111,6 @@ export function ChangeDetectionCompare({
             beforePan={beforePan}
             afterPan={afterPan}
             zoom={zoom}
-            hasCustomBefore={hasCustomBefore}
-            hasCustomAfter={hasCustomAfter}
             isDraggingImage={isDraggingImage}
             handleImageLoad={handleImageLoad}
             beforeRatio={beforeRatio}

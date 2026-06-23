@@ -94,7 +94,7 @@ export function usePhotoPlanMutations({
       const res = await replacePropertyPhotoAction(propertyPhotoId, formData, locale);
       if (res.success && res.data) {
         clearDocumentCacheEntry(targetImg.src);
-        const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
+        const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
         const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
@@ -163,7 +163,7 @@ export function usePhotoPlanMutations({
     try {
       const res = await uploadPropertyPhotoAction(formData, locale);
       if (res.success && res.data) {
-        const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
+        const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
         const newImg: AdditionalImage = {
           src: url, fullSrc: url, alt: name, title: name,
           photoTypeId, propertyPhotoId: res.data.propertyPhotoId,
