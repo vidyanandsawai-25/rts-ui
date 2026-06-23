@@ -20,8 +20,7 @@ import { validatePropertyForm } from '@/lib/utils/propertybasic-validation/valid
 export const usePropertyForm = (props: PropertyFormViewProps) => {
     const {
         MoujaMaster: moujaList,
-        propertyData,
-        propertySocietyDetails,
+        propertyData,        
         locale
     } = props;
 
@@ -41,7 +40,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         moujaId, setMoujaId,
         moujaName, setMoujaName,
         hasChanges, setHasChanges,
-    } = usePropertyFormState(propertyData, propertySocietyDetails);
+    } = usePropertyFormState(propertyData);
 
     const { checkFormChanges } = usePropertyChanges({
         formRef,
