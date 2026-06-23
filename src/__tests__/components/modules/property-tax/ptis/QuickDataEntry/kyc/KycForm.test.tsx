@@ -21,9 +21,17 @@ vi.mock('next-intl', () => ({
       'kyc.ownerType': 'Owner Category',
       'kyc.titleLabel': 'Title',
       'kyc.propertyHolderName': 'Property Holder Name',
+      'kyc.propertyHolderNameMarathi': 'Property Holder Name (Regional)',
+      'kyc.propertyHolderNameEnglish': 'Property Holder Name (English)',
       'kyc.occupierName': 'Occupier Name',
+      'kyc.occupierNameMarathi': 'Occupier Name (Regional)',
+      'kyc.occupierNameEnglish': 'Occupier Name (English)',
       'kyc.shopName': 'Shop Name',
+      'kyc.shopNameMarathi': 'Shop Name (Regional)',
+      'kyc.shopNameEnglish': 'Shop Name (English)',
       'kyc.address': 'Address',
+      'kyc.addressMarathi': 'Address (Regional)',
+      'kyc.addressEnglish': 'Address (English)',
       'kyc.emailId': 'Email ID',
       'kyc.pinCode': 'Pin Code',
       'kyc.enterPinCode': 'Enter 6 digit pin code',
@@ -32,6 +40,14 @@ vi.mock('next-intl', () => ({
       'kyc.mobileNo': 'Mobile No',
       'kyc.select': 'Select',
       'kyc.enterFullName': 'Enter full name',
+      'kyc.enterFullNameMarathi': 'Enter full name (Regional)',
+      'kyc.enterFullNameEnglish': 'Enter full name (English)',
+      'kyc.enterOccupierNameMarathi': 'Enter occupier name (Regional)',
+      'kyc.enterOccupierNameEnglish': 'Enter occupier name (English)',
+      'kyc.enterShopNameMarathi': 'Enter shop name (Regional)',
+      'kyc.enterShopNameEnglish': 'Enter shop name (English)',
+      'kyc.enterAddressMarathi': 'Enter complete address (Regional)',
+      'kyc.enterAddressEnglish': 'Enter complete address (English)',
       'commonbuttonmessages.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
@@ -108,10 +124,10 @@ describe('KycFormView', () => {
       />
     );
 
-    expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Jane Doe')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('My Shop')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('123 Street')).toBeInTheDocument();
+    expect(screen.getAllByDisplayValue('John Doe')).toHaveLength(2);
+    expect(screen.getAllByDisplayValue('Jane Doe')).toHaveLength(2);
+    expect(screen.getAllByDisplayValue('My Shop')).toHaveLength(2);
+    expect(screen.getAllByDisplayValue('123 Street')).toHaveLength(2);
     expect(screen.getByDisplayValue('john@example.com')).toBeInTheDocument();
     expect(screen.getByDisplayValue('123456')).toBeInTheDocument();
 
@@ -154,7 +170,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name/i);
+    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();
@@ -172,7 +188,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name/i);
+    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();
@@ -204,7 +220,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name/i);
+    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();

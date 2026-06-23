@@ -1,9 +1,9 @@
+import { useState, useMemo } from 'react';
 import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { sanitizeFlatShopNo, sanitizePlotNo } from '@/lib/utils/input-sanitization';
 import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
-import { useState } from 'react';
 
 interface BasicPropertyFieldsProps {
     t: (key: string) => string;
@@ -38,6 +38,17 @@ export const BasicPropertyFields = ({
     const [showFlatShopError, setShowFlatShopError] = useState(false);
     const [showPlotNoError, setShowPlotNoError] = useState(false);
 
+    const isApartment = useMemo(() => {
+        if (!propertyData) return false;
+        const savedCategoryName = propertyData.categoryName?.toLowerCase();
+        if (savedCategoryName === 'apartment' || savedCategoryName === 'multi commercial apartment') {
+            return true;
+        }
+        const originalOption = categoryOptions.find(opt => opt.value === propertyData.categoryId?.toString());
+        const originalOptionLabel = originalOption?.label?.toLowerCase();
+        return originalOptionLabel === 'apartment' || originalOptionLabel === 'multi commercial apartment';
+    }, [propertyData, categoryOptions]);
+
     return (
         <>
             {/* Division */}
@@ -67,6 +78,7 @@ export const BasicPropertyFields = ({
                     value={categoryId?.toString() ?? ''}
                     placeholder={t('property.select')}
                     onChange={handleCategoryChange}
+                    disabled={isApartment}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
             </div>

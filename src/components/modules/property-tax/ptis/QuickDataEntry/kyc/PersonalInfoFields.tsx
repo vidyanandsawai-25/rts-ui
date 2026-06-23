@@ -1,10 +1,9 @@
 import React from 'react';
-import { FormFieldGroup, Label, SearchSelect, Input } from '@/components/common';
+import { FormFieldGroup, Label, SearchSelect } from '@/components/common';
 import {
   KYC_VALIDATION_RULES,
   KYC_TITLE_OPTIONS,
   kycValidators,
-  enhancedKycValidators,
 } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { sanitizeName, capitalizeEachWord } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
@@ -33,9 +32,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
     'ownerName',
     kycValidators.isValidName(formData.ownerName ?? '')
   );
+  const ownerNameEnglishError = showError(
+    'ownerNameEnglish',
+    kycValidators.isValidName(formData.ownerNameEnglish ?? '')
+  );
 
   return (
     <>
+      {/* Owner Category */}
       <div className="col-span-2 space-y-1.5 relative focus-within:z-50">
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
@@ -56,6 +60,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         />
       </div>
 
+      {/* Title */}
       <div className="col-span-2 space-y-1.5 relative focus-within:z-40">
         <Label htmlFor="kyc-title" className="text-xs font-semibold text-gray-700">
           {t('kyc.titleLabel')}
@@ -73,13 +78,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         />
       </div>
 
+      {/* Property Holder Name Regional */}
       <div className="col-span-4">
         <FormFieldGroup
           type="text"
           id="kyc-ownername"
-          label={t('kyc.propertyHolderName')}
+          label={t('kyc.propertyHolderNameMarathi')}
           required
-          placeholder={t('kyc.enterFullName')}
+          placeholder={t('kyc.enterFullNameMarathi')}
           value={formData.ownerName ?? ''}
           maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
           hasError={ownerNameError}
@@ -106,34 +112,36 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         )}
       </div>
 
-      <div className="col-span-4 space-y-1.5">
-        <Label htmlFor="kyc-occupier" className="text-xs font-semibold text-gray-700">
-          {t('kyc.occupierName')}
-        </Label>
-        <Input
+      {/* Property Holder Name English */}
+      <div className="col-span-4">
+        <FormFieldGroup
           type="text"
-          id="kyc-occupier"
-          placeholder={t('kyc.enterOccupierName')}
-          value={formData.occupierName ?? ''}
+          id="kyc-ownername-english"
+          label={t('kyc.propertyHolderNameEnglish')}
+          required
+          placeholder={t('kyc.enterFullNameEnglish')}
+          value={formData.ownerNameEnglish ?? ''}
           maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
-            ? 'border-red-300 focus:border-red-500'
-            : ''
-            }`}
-          onFocus={() => onFocusField('occupierName')}
+          hasError={ownerNameEnglishError}
+          onFocus={() => onFocusField('ownerNameEnglish')}
           onBlur={onBlurField}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            // Sanitize to remove invalid characters and numbers immediately
+            // Sanitize input to remove invalid characters immediately
             const sanitized = sanitizeName(e.target.value);
             const capitalized = capitalizeEachWord(sanitized);
             if (capitalized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
-              setFormData((prev) => ({ ...prev, occupierName: capitalized }));
+              setFormData((prev) => ({ ...prev, ownerNameEnglish: capitalized }));
             }
           }}
         />
-        {showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? '')) && (
+        {ownerNameEnglishError && (
           <span className="text-xs text-red-500">
-            {t('kyc.validation.invalidName')}
+            {!(formData.ownerNameEnglish ?? '').trim()
+              ? t('kyc.errors.ownerNameRequired')
+              : (formData.ownerNameEnglish ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
+                (formData.ownerNameEnglish ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+                ? t('society.validation.invalidNameLength')
+                : t('kyc.validation.invalidName')}
           </span>
         )}
       </div>

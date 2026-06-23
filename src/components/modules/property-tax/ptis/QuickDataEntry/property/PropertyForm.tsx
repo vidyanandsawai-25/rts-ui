@@ -25,8 +25,8 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
         propertyDescriptionOptions,
     } = usePropertyForm(props);
 
-    const t = useTranslations('quickDataEntry');
-
+    const t = useTranslations('quickDataEntry');    
+    
     return (
         <form ref={formRef} onSubmit={handleSubmit} onChange={checkFormChanges}>
             <Tabs defaultValue="property">
