@@ -251,7 +251,7 @@ export function FloorFormFields({
                     placeholder="0.00"
                 />
             </div>
-            <div className="col-span-1 md:col-span-3 space-y-1.5 mt-6 w-full flex justify-end gap-5 items-end">
+            <div className="w-full flex justify-end gap-5 items-end mt-6 md:mt-0 md:h-full">
                 <FloorFormActions
                     t={t}
                     isEditMode={!!formData.id}
