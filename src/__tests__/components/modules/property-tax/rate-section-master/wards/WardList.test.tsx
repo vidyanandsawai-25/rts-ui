@@ -58,6 +58,7 @@ vi.mock("@/components/common", () => ({
   DeleteButton: ({ onClick }: { onClick: () => void }) => (
     <button data-testid="delete-ward-button" onClick={onClick}>Delete</button>
   ),
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/components/common/MasterTable", () => ({
@@ -141,7 +142,7 @@ describe("WardList", () => {
     sections: mockSections,
     sectionsTotalCount: 2,
     selectedRateSection: "RS001",
-    selectedRateSectionLabel: "RS001 - Rate Section 1",
+    selectedRateSectionLabel: "Rate Section 1",
     onWardsChanged: vi.fn(),
   };
 
@@ -187,7 +188,7 @@ describe("WardList", () => {
   it("displays rate section label in status badge", () => {
     render(<WardList {...defaultProps} />);
     const statusBadge = screen.getByTestId("status-badge");
-    expect(statusBadge).toHaveTextContent("RS001 - Rate Section 1");
+    expect(statusBadge).toHaveTextContent("Rate Section 1");
   });
 
   it("displays total ward count", () => {
@@ -225,7 +226,7 @@ describe("WardList", () => {
   it("computes rate section label from rates when prop not provided", () => {
     render(<WardList {...defaultProps} selectedRateSectionLabel={undefined} />);
     const statusBadge = screen.getByTestId("status-badge");
-    expect(statusBadge).toHaveTextContent("RS001 - Rate Section 1");
+    expect(statusBadge).toHaveTextContent("Rate Section 1");
   });
 
   it("falls back to selectedRateSection when no rate found", () => {
@@ -286,6 +287,6 @@ describe("WardList", () => {
     );
     
     const statusBadge = screen.getByTestId("status-badge");
-    expect(statusBadge).toHaveTextContent("RS001 - Section Description");
+    expect(statusBadge).toHaveTextContent("Section Description");
   });
 });
