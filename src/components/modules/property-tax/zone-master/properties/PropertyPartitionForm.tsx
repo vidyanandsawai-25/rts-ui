@@ -187,6 +187,9 @@ export default function PropertyPartitionForm({
     setLoadingPreview,
     setShowPreview,
     setPreviewData,
+    setErrors,
+    validate,
+    t,
   });
 
   // Use hooks for submit

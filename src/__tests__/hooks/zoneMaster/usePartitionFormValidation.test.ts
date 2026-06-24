@@ -85,7 +85,7 @@ describe("usePartitionFormValidation", () => {
     toFloor: "3",   // Second Floor ID
     noOfFlatOnOneFloor: "4",
     flatStart: "101",
-    incrementedBy: "1",
+    incrementedBy: "5",
     prefix: "",
     generationType: "V",
     fromPartition: "",
