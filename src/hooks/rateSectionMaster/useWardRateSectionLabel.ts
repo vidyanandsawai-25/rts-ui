@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+
 import { RateItem, SectionItem } from "@/types/rateSectionMaster.types";
 
 interface UseWardRateSectionLabelProps {
@@ -14,26 +15,29 @@ export function useWardRateSectionLabel({
   rates,
   sections
 }: UseWardRateSectionLabelProps) {
+
+
   const rateSectionLabel = useMemo(() => {
     if (!selectedRateSection) {
       return null;
     }
 
+    const rateIndex = rates.findIndex(r => r.rateSectionNo === selectedRateSection || r.id?.toString() === selectedRateSection);
+    const rate = rateIndex !== -1 ? rates[rateIndex] : undefined;
+
     if (propSelectedRateSectionLabel) {
+      const parts = propSelectedRateSectionLabel.split(" - ");
+      if (parts.length > 1) {
+        return parts.slice(1).join(" - ");
+      }
       return propSelectedRateSectionLabel;
     }
 
-    const rate = rates.find(r => r.rateSectionNo === selectedRateSection);
-
     if (rate) {
-      return rate.description
-        ? `${rate.rateSectionNo} - ${rate.description}`
-        : (rate.rateSectionNo ?? selectedRateSection);
+      return rate.description ? rate.description : selectedRateSection;
     } else if (sections.length > 0 && sections[0]?.rateSectionNo) {
       const firstSection = sections[0];
-      return firstSection.description
-        ? `${firstSection.rateSectionNo} - ${firstSection.description}`
-        : (firstSection.rateSectionNo || selectedRateSection);
+      return firstSection.description ? firstSection.description : selectedRateSection;
     } else {
       return selectedRateSection;
     }

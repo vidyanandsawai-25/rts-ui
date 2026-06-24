@@ -1,6 +1,6 @@
 "use server";
 
-import {createTaxZoning, getAllTaxZoningServer, getTaxZonePagedServer, getTaxZoningByWardServer, getTaxZoningPagedServer, getTaxZoningPropertyNoServer, getWardPagedServer, updateTaxZoning } from "@/lib/api/taxZoning/taxzoning.service";
+import { createTaxZoning, getAllTaxZoningServer, getTaxZonePagedServer, getTaxZoningByWardServer, getTaxZoningPagedServer, getTaxZoningPropertyNoServer, getWardPagedServer, updateTaxZoning } from "@/lib/api/taxZoning/taxzoning.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
 import { PagedResponse } from "@/types/common.types";
@@ -56,10 +56,12 @@ export async function getTaxZoningPagedAction(
   pageSize: number,
   taxZoneId?: number,
   wardId?: number,
-  groupBy?: string
+  groupBy?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<ActionResult<PagedResponse<TaxZoning>>> {
   try {
-    const data = await getTaxZoningPagedServer(pageNumber, pageSize, taxZoneId, wardId, groupBy);
+    const data = await getTaxZoningPagedServer(pageNumber, pageSize, taxZoneId, wardId, groupBy, sortBy, sortOrder);
 
     return {
       success: true,

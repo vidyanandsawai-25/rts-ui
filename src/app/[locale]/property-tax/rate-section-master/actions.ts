@@ -58,18 +58,51 @@ export async function getRateSectionsAction(
   searchTerm?: string
 ) {
   try {
-    const data = await queryRateSections({
-      pageNumber: pageNumber,
-      pageSize: pageSize,
-      searchTerm: searchTerm || undefined
-    });
-    return {
-      items: data.rateSectionMaster || [],
-      totalCount: data.totalCount || 0,
-      pageNumber: data.pageNumber || pageNumber,
-      pageSize: data.pageSize || pageSize,
-      totalPages: data.totalPages || 0
-    };
+    if (searchTerm && searchTerm.trim() !== '') {
+      // Fetch all records to perform manual search on ID and description
+      const data = await queryRateSections({
+        pageNumber: 1,
+        pageSize: -1,
+        searchTerm: undefined
+      });
+
+      const term = searchTerm.toLowerCase().trim();
+      const allItems = data.rateSectionMaster || [];
+
+      const filteredItems = allItems.filter(item => {
+        const idMatch = item.id ? String(item.id).toLowerCase().includes(term) : false;
+        const descMatch = item.description ? item.description.toLowerCase().includes(term) : false;
+        return idMatch || descMatch;
+      });
+
+      const totalCount = filteredItems.length;
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      const startIndex = (pageNumber - 1) * pageSize;
+      const paginatedItems = filteredItems.slice(startIndex, startIndex + pageSize);
+
+      return {
+        items: paginatedItems,
+        totalCount: totalCount,
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        totalPages: totalPages
+      };
+    } else {
+      // Use standard backend pagination when no search term
+      const data = await queryRateSections({
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        searchTerm: undefined
+      });
+      return {
+        items: data.rateSectionMaster || [],
+        totalCount: data.totalCount || 0,
+        pageNumber: data.pageNumber || pageNumber,
+        pageSize: data.pageSize || pageSize,
+        totalPages: data.totalPages || 0
+      };
+    }
   } catch (error) {
     throw error;
   }
@@ -317,12 +350,12 @@ export async function createRateSectionAction(payload: {
     const duplicate = existingRates.rateSectionMaster.find(
       (r) => (r.description || '').trim().toLowerCase() === normalizedDescription
     );
-    
+
     if (duplicate) {
-      return { 
-        success: false, 
-        error: `Rate section "${duplicate.description}" already exists`, 
-        statusCode: 409 
+      return {
+        success: false,
+        error: `Rate section "${duplicate.description}" already exists`,
+        statusCode: 409
       };
     }
 
@@ -445,9 +478,9 @@ export async function getAllRateSectionDetailsForRateSectionAction(rateSectionId
       PageSize: "-1"
     });
 
-    const response = await apiClient.get<{ 
-      items?: Array<{ wardNo?: string }>; 
-      totalCount?: number 
+    const response = await apiClient.get<{
+      items?: Array<{ wardNo?: string }>;
+      totalCount?: number
     }>(`/RateSectionDetails?${params.toString()}`);
 
     if (!response.success || !response.data) {
