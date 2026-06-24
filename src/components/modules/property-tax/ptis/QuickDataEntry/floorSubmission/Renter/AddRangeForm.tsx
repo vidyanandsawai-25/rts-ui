@@ -6,7 +6,7 @@ import { Label } from "@/components/common/label";
 import { Input, Select, Button } from "@/components/common";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { addDays } from "@/lib/utils/renterUtils";
+import { addDays } from "@/lib/utils/renter/renterUtils";
 
 const fieldLabelClassName = "text-xs leading-snug tracking-normal !font-semibold text-slate-700";
 

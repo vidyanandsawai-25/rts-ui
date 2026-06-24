@@ -4,7 +4,7 @@ import { Button } from "@/components/common";
 import { Modal } from "@/components/common/Modal";
 import { TrendingUp, ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { RentPeriod } from "@/lib/utils/renter-calculations";
+import { RentPeriod } from "@/lib/utils/renter/renter-calculations";
 
 interface RentBreakdownDialogProps {
     isOpen: boolean;

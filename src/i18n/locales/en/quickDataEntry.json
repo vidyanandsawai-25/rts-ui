@@ -756,7 +756,7 @@
             "fixedAmount": "Fixed Amount",
             "document": "Document",
             "ocrError": "Failed to process document. Please try again.",
-            "agreementId": "Agreement ID",
+            "agreementId": "Agreement No",
             "agreementDate": "Agreement Date",
             "renterName": "Renter Name",
             "rentAmountLabel": "Rent Amount (Monthly)",
