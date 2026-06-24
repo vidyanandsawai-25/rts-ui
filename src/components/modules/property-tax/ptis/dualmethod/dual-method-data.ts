@@ -34,11 +34,14 @@ export async function assembleDualMethodSectionData(
   propertyId: number | undefined,
   initialOldDetails: OldDetailsData,
   rateableRes?: ActionResult<RateableValueResponse> | null,
-  capitalRes?: ActionResult<CapitalValueResponse> | null
+  capitalRes?: ActionResult<CapitalValueResponse> | null,
+  prefetchedDualResult?: ActionResult<DualMethodResponse> | null
 ): Promise<DualMethodSectionData> {
   const shouldFetch = propertyId != null;
 
-  const dualResult = shouldFetch ? await getDualMethod(propertyId as number) : null;
+  const dualResult = prefetchedDualResult !== undefined && prefetchedDualResult !== null
+    ? prefetchedDualResult
+    : (shouldFetch ? await getDualMethod(propertyId as number) : null);
   const initialDualMethodData = dualResult?.success === true ? (dualResult.data ?? null) : null;
 
   // SSR empty-state should not turn "no lookup attempted" into user-facing errors/toasts.

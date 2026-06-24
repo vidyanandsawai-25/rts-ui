@@ -11,6 +11,8 @@ interface UtilityActionsProps {
   actions: FooterAction[];
   onActionClick: (command: string) => void;
   isLoading?: boolean;
+  isActionPending?: boolean;
+  clickedCommand?: string | null;
 }
 
 export function UtilityActions({

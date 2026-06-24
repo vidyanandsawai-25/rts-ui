@@ -14,6 +14,7 @@ import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartme
 import { PtisSearchParams } from '@/lib/utils/params';
 import type { DualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
+import { useOptionalPtisNavigation } from './shared/PtisNavigationContext';
 
 interface PtisMainScreenProps {
   locale: string;
@@ -47,6 +48,9 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
 
+  const ptisNav = useOptionalPtisNavigation();
+  const isNavigating = ptisNav?.isPending ?? false;
+
 
   const handleTabChange = (value: string | number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -74,7 +78,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   ];
 
   return (
-    <div className="bg-[#f1f5f9]">
+    <div className={cn('bg-[#f1f5f9] transition-opacity duration-300', isNavigating && 'opacity-60 pointer-events-none')}>
       <div className="w-full px-0 py-0">
         <main className="w-full mx-auto">
           {/* Premium Style Tabs */}
