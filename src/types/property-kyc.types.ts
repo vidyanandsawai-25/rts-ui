@@ -35,17 +35,20 @@ export interface KycDetails {
 }
 
 
-// Form state type for better type safety
 export type KycFormData = Partial<
   Pick<
     KycDetails,
     | 'ownerTypeId'
     | 'ownerTitle'
     | 'ownerName'
+    | 'ownerNameEnglish'
     | 'occupierName'
+    | 'occupierNameEnglish'
     | 'flatOrShopName'
+    | 'flatOrShopNameEnglish'
     | 'emailId'
     | 'address'
+    | 'addressEnglish'
     | 'location'
     | 'pinCode'
   >

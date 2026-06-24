@@ -20,6 +20,7 @@ export interface FooterSelectProps {
   className?: string;
   disabled?: boolean;
   label?: string;
+  selectedLabelOverride?: string;
 }
 
 export function FooterSelect({
@@ -30,6 +31,7 @@ export function FooterSelect({
   className = '',
   disabled = false,
   label,
+  selectedLabelOverride,
 }: FooterSelectProps) {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
@@ -124,7 +126,7 @@ export function FooterSelect({
     }
   };
 
-  const selectedLabel = options.find((opt) => opt.value === value)?.label;
+  const selectedLabel = selectedLabelOverride || options.find((opt) => opt.value === value)?.label;
 
   return (
     <div className={cn("relative group", className)}>

@@ -5,7 +5,8 @@ import { useLoading } from "@/hooks/useLoading";
 import { 
     updateDiscountDetailsAction,
     uploadDiscountDocumentAction,
-    replaceDiscountDocumentAction
+    replaceDiscountDocumentAction,
+    deleteDiscountDocumentAction
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
 import {
     DiscountState,
@@ -145,6 +146,45 @@ export const useDiscountForm = (
         }
     }, [discountData, propertyId, t, clearError]);
 
+    const handleFileDelete = useCallback(async (id: number) => {
+        const item = discountData[id];
+        if (!item || !item.propertySocialDetailId) return;
+
+        setDiscountData(prev => ({
+            ...prev,
+            [id]: { ...prev[id], isUploading: true }
+        }));
+
+        try {
+            const result = await deleteDiscountDocumentAction(item.propertySocialDetailId);
+
+            if (result.success) {
+                setDiscountData(prev => ({
+                    ...prev,
+                    [id]: {
+                        ...prev[id],
+                        documentBindingId: null,
+                        documentGuid: null,
+                        documentUrl: null,
+                        isUploading: false
+                    }
+                }));
+                clearError(id);
+                setHasChanges(true);
+                toast.success(t("discount.deleteSuccess") || "File deleted successfully!");
+            } else {
+                throw new Error(result.error || t("discount.deleteError"));
+            }
+        } catch (error: unknown) {
+            setDiscountData(prev => ({
+                ...prev,
+                [id]: { ...prev[id], isUploading: false }
+            }));
+            const message = error instanceof Error ? error.message : String(error);
+            toast.error(message || t("discount.deleteError") || "Failed to delete file");
+        }
+    }, [discountData, t, clearError]);
+
     const handleSave = async () => {
         if (isSaving) return { success: false, isValid: true };
 
@@ -190,6 +230,7 @@ export const useDiscountForm = (
         handleToggleEnabled,
         handleInputChange,
         handleFileUpload,
+        handleFileDelete,
         handleSave,
         t
     };

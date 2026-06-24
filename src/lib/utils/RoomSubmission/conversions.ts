@@ -4,7 +4,7 @@
 
 export const CONVERSION_FACTORS = {
   SQFT_TO_SQM: 0.092903,
-  SQM_TO_SQFT: 10.7639104,
+  SQM_TO_SQFT: 10.764,
   BUILTUP_MULTIPLIER: 1.2, // 20% increase for built-up area
 };
 

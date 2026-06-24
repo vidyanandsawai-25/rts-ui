@@ -75,7 +75,7 @@ describe('TaxDetails Component', () => {
     propertyId: 0,
     policies: [
       {
-        policyCode: '',
+        policyCode: 'NETTAX',
         taxAmounts: [],
         taxTotal: 0,
       },
@@ -122,20 +122,20 @@ describe('TaxDetails Component', () => {
       expect(screen.getByText('Total Tax')).toBeInTheDocument();
     });
 
-    it('should render all four tax rows', () => {
+    it('should render only the tax rows present in policies', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
       const rows = screen.getAllByTestId(/tax-row-/);
-      expect(rows).toHaveLength(4);
+      expect(rows).toHaveLength(1);
     });
 
     it('should render tax row labels correctly', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      expect(screen.getByText('Net Taxes')).toBeInTheDocument();
-      expect(screen.getByText('Retain')).toBeInTheDocument();
-      expect(screen.getByText('Hearing')).toBeInTheDocument();
-      expect(screen.getByText('All Taxes')).toBeInTheDocument();
+      expect(screen.getByText('NETTAX')).toBeInTheDocument();
+      expect(screen.queryByText('RETAIN')).not.toBeInTheDocument();
+      expect(screen.queryByText('HEARING')).not.toBeInTheDocument();
+      expect(screen.queryByText('ALLTAXES')).not.toBeInTheDocument();
     });
   });
 
@@ -156,12 +156,10 @@ describe('TaxDetails Component', () => {
       expect(screen.getByText('7,000.00')).toBeInTheDocument();
     });
 
-    it('should display zeros for non-netTaxes rows', () => {
-      render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
+    it('should display zeros for empty amounts', () => {
+      render(<TaxDetails initialTaxDetails={emptyTaxDetailsData} />);
 
-      // Retain, Hearing, and AllTaxes rows should show 0.00
       const zeroValues = screen.getAllByText('0.00');
-      // 3 tax columns × 3 rows (Retain, Hearing, AllTaxes) + 3 totals = 12 zeros
       expect(zeroValues.length).toBeGreaterThan(0);
     });
   });
@@ -172,7 +170,7 @@ describe('TaxDetails Component', () => {
 
       expect(screen.getByTestId('master-table')).toBeInTheDocument();
       const rows = screen.getAllByTestId(/tax-row-/);
-      expect(rows).toHaveLength(4); // Should still render 4 rows
+      expect(rows).toHaveLength(1); // Should render 1 row for NETTAX
     });
 
     it('should handle missing policies array', () => {
@@ -265,38 +263,63 @@ describe('TaxDetails Component', () => {
   describe('Tax Label Styling', () => {
     it('should apply correct styles to Net Taxes label', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-      const netTaxesLabel = screen.getByText('Net Taxes');
+      const netTaxesLabel = screen.getByText('NETTAX');
 
       expect(netTaxesLabel).toHaveClass('bg-slate-100');
       expect(netTaxesLabel).toHaveClass('text-slate-700');
       expect(netTaxesLabel).toHaveClass('border-slate-300');
     });
 
-    it('should apply correct styles to Retain label', () => {
-      render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-      const retainLabel = screen.getByText('Retain');
+    it('should apply correct styles to Retain label when present', () => {
+      const data: TaxDetailsData = {
+        propertyId: 123,
+        policies: [{ policyCode: 'RETAIN', taxAmounts: [], taxTotal: 0 }],
+      };
+      render(<TaxDetails initialTaxDetails={data} />);
+      const retainLabel = screen.getByText('RETAIN');
 
       expect(retainLabel).toHaveClass('bg-blue-50');
       expect(retainLabel).toHaveClass('text-blue-700');
       expect(retainLabel).toHaveClass('border-blue-200');
     });
 
-    it('should apply correct styles to Hearing label', () => {
-      render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-      const hearingLabel = screen.getByText('Hearing');
+    it('should apply correct styles to Hearing label when present', () => {
+      const data: TaxDetailsData = {
+        propertyId: 123,
+        policies: [{ policyCode: 'HEARING', taxAmounts: [], taxTotal: 0 }],
+      };
+      render(<TaxDetails initialTaxDetails={data} />);
+      const hearingLabel = screen.getByText('HEARING');
 
       expect(hearingLabel).toHaveClass('bg-purple-50');
       expect(hearingLabel).toHaveClass('text-purple-700');
       expect(hearingLabel).toHaveClass('border-purple-200');
     });
 
-    it('should apply correct styles to All Taxes label', () => {
-      render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-      const allTaxesLabel = screen.getByText('All Taxes');
+    it('should apply correct styles to All Taxes label when present', () => {
+      const data: TaxDetailsData = {
+        propertyId: 123,
+        policies: [{ policyCode: 'ALLTAXES', taxAmounts: [], taxTotal: 0 }],
+      };
+      render(<TaxDetails initialTaxDetails={data} />);
+      const allTaxesLabel = screen.getByText('ALLTAXES');
 
       expect(allTaxesLabel).toHaveClass('bg-rose-50');
       expect(allTaxesLabel).toHaveClass('text-rose-700');
       expect(allTaxesLabel).toHaveClass('border-rose-200');
+    });
+
+    it('should apply deterministic fallback styles to unknown policy codes like PRADIP using defined theme colors', () => {
+      const data: TaxDetailsData = {
+        propertyId: 123,
+        policies: [{ policyCode: 'PRADIP', taxAmounts: [], taxTotal: 0 }],
+      };
+      render(<TaxDetails initialTaxDetails={data} />);
+      const dynamicLabel = screen.getByText('PRADIP');
+
+      // Assert that it resolves to one of the 4 defined theme colors and not the old gray-50 default fallback
+      expect(dynamicLabel).not.toHaveClass('bg-gray-50');
+      expect(dynamicLabel.className).toMatch(/bg-(purple-50|blue-50|slate-100|rose-50)/);
     });
   });
 
@@ -312,19 +335,16 @@ describe('TaxDetails Component', () => {
     it('should render correct row keys', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      // Verify all 4 rows are rendered with correct keys
-      expect(screen.getByTestId('tax-row-1')).toBeInTheDocument();
-      expect(screen.getByTestId('tax-row-2')).toBeInTheDocument();
-      expect(screen.getByTestId('tax-row-3')).toBeInTheDocument();
-      expect(screen.getByTestId('tax-row-4')).toBeInTheDocument();
+      // Verify row is rendered with correct key
+      expect(screen.getByTestId('tax-row-100')).toBeInTheDocument();
+      expect(screen.queryByTestId('tax-row-101')).not.toBeInTheDocument();
     });
 
-    it('should pass data array with 4 rows to MasterTable', () => {
+    it('should pass data array with correct number of rows to MasterTable', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      // Verify 4 rows are rendered (Net Taxes, Retain, Hearing, All Taxes)
       const rows = screen.getAllByTestId(/tax-row-/);
-      expect(rows).toHaveLength(4);
+      expect(rows).toHaveLength(1);
     });
   });
 
@@ -436,8 +456,8 @@ describe('TaxDetails Component', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
       const rows = screen.getAllByRole('row');
-      // Should have header row + 4 data rows
-      expect(rows.length).toBeGreaterThanOrEqual(5);
+      // Should have header row + 1 data row
+      expect(rows.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -464,14 +484,6 @@ describe('TaxDetails Component', () => {
 
       // Should render the table structure even with undefined data
       expect(screen.getByTestId('master-table')).toBeInTheDocument();
-    });
-
-    it('should render table with zero values when initialTaxDetails is undefined', () => {
-      render(<TaxDetails initialTaxDetails={undefined} />);
-
-      // Should show 0.00 for all tax rows
-      const zeroValues = screen.getAllByText('0.00');
-      expect(zeroValues.length).toBeGreaterThan(0);
     });
 
     it('should not throw error when initialTaxDetails is undefined', () => {

@@ -5,9 +5,7 @@ import { useLockUnlockColumns } from "@/hooks/lockunlock/useLockUnlockColumns";
 
 const mockT = vi.fn((key: string, _values?: Record<string, unknown>) => {
   const translations: Record<string, string> = {
-    "resultsTable.columns.wardNo": "Ward No",
-    "resultsTable.columns.propertyNo": "Property No",
-    "resultsTable.columns.partitionNo": "Partition No",
+    "resultsTable.columns.propertyDetail": "Property Details",
     "resultsTable.columns.screenNames": "Screen Names",
     "resultsTable.columns.status": "Status",
     "resultsTable.columns.lockUnlock": "Lock/Unlock",
@@ -54,6 +52,8 @@ describe("useLockUnlockColumns", () => {
   const defaultParams = {
     screens: mockScreens,
     selectedPropertyIds: [101],
+    excludedPropertyIds: [],
+    isAllPropertiesSelected: false,
     properties: mockProperties,
     isPending: false,
     onSelectProperty: vi.fn(),
@@ -77,9 +77,7 @@ describe("useLockUnlockColumns", () => {
     const keys = result.current.map((col) => col.key);
     expect(keys).toEqual([
       "checkbox",
-      "wardNo",
-      "propertyNo",
-      "partitionNo",
+      "propertyDetail",
       "lockedScreens",
       "isLocked",
       "lockUnlockAction",
@@ -98,25 +96,28 @@ describe("useLockUnlockColumns", () => {
     expect(checkboxCol).toBeDefined();
   });
 
-  it("should render wardNo column with correct label", () => {
+  it("should render propertyDetail column with combined data (wardNo - propertyNo - partitionNo)", () => {
     const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
-    const wardCol = result.current.find((col) => col.key === "wardNo");
-    expect(wardCol).toBeDefined();
-    expect(wardCol!.width).toBe("12%");
+    const detailCol = result.current.find((col) => col.key === "propertyDetail");
+    expect(detailCol).toBeDefined();
+    expect(detailCol).toBeTruthy();
+    expect(detailCol!.width).toBe("40%");
+
+    // Test render output for the first property
+    const detailColDef = detailCol as NonNullable<typeof detailCol>;
+    const rendered = detailColDef.render!(null, mockProperties[0], 0);
+    expect(rendered).toBeDefined();
   });
 
-  it("should render propertyNo column with correct label", () => {
+  it("should render propertyDetail column with fallback for empty partitionNo", () => {
     const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
-    const propCol = result.current.find((col) => col.key === "propertyNo");
-    expect(propCol).toBeDefined();
-    expect(propCol!.width).toBe("15%");
-  });
+    const detailCol = result.current.find((col) => col.key === "propertyDetail");
+    expect(detailCol).toBeDefined();
 
-  it("should render partitionNo column with correct label", () => {
-    const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
-    const partCol = result.current.find((col) => col.key === "partitionNo");
-    expect(partCol).toBeDefined();
-    expect(partCol!.width).toBe("13%");
+    // Second mock property has empty partitionNo
+    const detailColDef = detailCol as NonNullable<typeof detailCol>;
+    const rendered = detailColDef.render!(null, mockProperties[1], 1);
+    expect(rendered).toBeDefined();
   });
 
   it("should render lockedScreens column with correct label", () => {

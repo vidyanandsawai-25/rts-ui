@@ -490,7 +490,7 @@
         "noFloorsAvailable": "No floors available",
         "noOfFlatOnOneFloor": "e.g., 4",
         "flatStart": "e.g., 101",
-        "incrementedBy": "e.g., 1",
+        "incrementedBy": "e.g., 100",
         "prefix": "e.g., Flat-",
         "generationType": "Select generation type"
       },

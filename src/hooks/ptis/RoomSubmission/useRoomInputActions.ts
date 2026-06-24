@@ -8,7 +8,7 @@ export const useRoomInputActions = (state: RoomSubmissionState, availableRooms: 
   const {
     setFormData, formData, setValidationErrors, setShapeParameters,
     setFilledParameters, setSelectedRoomForPlan, currentRoomOffsets,
-    setCurrentRoomOffsets, focusRefs
+    focusRefs
   } = state;
 
   const handleInputChange = (field: string, value: string) => {
@@ -23,11 +23,6 @@ export const useRoomInputActions = (state: RoomSubmissionState, availableRooms: 
       });
       return nextFormData;
     });
-
-    if (field === "outer" && value === "Yes") {
-      setFormData((prev: RoomFormData) => ({ ...prev, offsetMinus: "No" }));
-      setCurrentRoomOffsets([]);
-    }
 
     if (field === "shape") {
       setShapeParameters(INITIAL_SHAPE_PARAMETERS);

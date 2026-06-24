@@ -3,8 +3,8 @@
 import { MasterTable, Button } from "@/components/common";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { CustomDateRange } from "@/types/renter.types";
-import { normalizeCalculationMethod } from "@/lib/utils/renterUtils";
+import { CustomDateRange } from "@/types/renter/renter.types";
+import { normalizeCalculationMethod } from "@/lib/utils/renter/renterUtils";
 
 interface CustomRangeTableRow {
     id: string;

@@ -99,7 +99,7 @@ const renderMultiRecord = (value: unknown): React.ReactNode => {
       }
       placement="top"
     >
-      <span className="cursor-help font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+      <span className="font-semibold text-blue-600 hover:text-blue-800 transition-colors">
         {displayText}
       </span>
     </Tooltip>
@@ -131,7 +131,7 @@ const renderMultiRecordMax2 = (value: unknown): React.ReactNode => {
       }
       placement="top"
     >
-      <span className="cursor-help font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+      <span className="font-semibold text-blue-600 hover:text-blue-800 transition-colors">
         {displayText}
       </span>
     </Tooltip>
