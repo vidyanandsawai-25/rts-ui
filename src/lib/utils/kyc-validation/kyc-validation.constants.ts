@@ -145,6 +145,22 @@ export const kycValidators = {
     // Check for repeated sequences
     return !kycValidators.hasRepeatedSequence(digits, 5);
   },
+
+  /**
+   * Validate Pin Code (6 digits)
+   * Allows empty values or exactly 6 digits
+   * Rejects repeated sequences like 000000, 111111, etc.
+   * @param pinCode - Pin code string
+   * @returns True if valid (empty or exactly 6 digits without repeated sequences)
+   */
+  isValidPinCode: (pinCode: string): boolean => {
+    const digits = (pinCode ?? '').replace(/\D/g, '');
+    if (digits.length === 0) return true;
+    if (digits.length !== 6) return false;
+
+    // Check for repeated sequences
+    return !kycValidators.hasRepeatedSequence(digits, 5);
+  },
 } as const;
 
 
@@ -517,3 +533,136 @@ export const enhancedKycValidators = {
 } as const;
 
 export const MAX_PROPERTY_ID = 2147483647; // Maximum value for a signed 32-bit integer
+
+/**
+ * Schema-based validator for the KYC form.
+ * Checks each field individually and returns the first error message, or null if all fields are valid.
+ */
+export const validateKycForm = (
+  formData: any,
+  mobileValue: string,
+  alternateMobileValue: string,
+  aadharValue: string,
+  t: (key: string) => string
+): string | null => {
+  const ownerName = formData.ownerName ?? '';
+  const ownerNameEnglish = formData.ownerNameEnglish ?? '';
+  const email = formData.emailId ?? '';
+  const address = formData.address ?? '';
+  const addressEnglish = formData.addressEnglish ?? '';
+  const shopName = formData.flatOrShopName ?? '';
+  const shopNameEnglish = formData.flatOrShopNameEnglish ?? '';
+  const occupierName = formData.occupierName ?? '';
+  const occupierNameEnglish = formData.occupierNameEnglish ?? '';
+  const pinCode = formData.pinCode ?? '';
+
+  // Owner Name Regional
+  if (ownerName.trim().length === 0) {
+    return t('kyc.errors.ownerNameRequired');
+  }
+  if (!kycValidators.isValidName(ownerName)) {
+    return t('kyc.validation.invalidName');
+  }
+  if (ownerName.trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH || ownerName.trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+    return t('society.validation.invalidNameLength') || 'Invalid name length';
+  }
+
+  // Owner Name English
+  if (ownerNameEnglish.trim().length === 0) {
+    return t('kyc.errors.ownerNameRequired');
+  }
+  if (!kycValidators.isValidName(ownerNameEnglish)) {
+    return t('kyc.validation.invalidName');
+  }
+  if (ownerNameEnglish.trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH || ownerNameEnglish.trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+    return t('society.validation.invalidNameLength') || 'Invalid name length';
+  }
+
+  // Email
+  if (email.trim().length > 0 && !enhancedKycValidators.isValidEmail(email, true)) {
+    return t('kyc.validation.invalidEmail');
+  }
+
+  // Address Regional
+  if (address.trim().length > 0 && !enhancedKycValidators.isValidAddress(address)) {
+    return t('kyc.validation.invalidAddress');
+  }
+
+  // Address English
+  if (addressEnglish.trim().length > 0 && !enhancedKycValidators.isValidAddress(addressEnglish)) {
+    return t('kyc.validation.invalidAddress');
+  }
+
+  // Shop Name Regional
+  if (shopName.trim().length > 0 && !enhancedKycValidators.isValidShopName(shopName)) {
+    return t('kyc.validation.invalidName');
+  }
+
+  // Shop Name English
+  if (shopNameEnglish.trim().length > 0 && !enhancedKycValidators.isValidShopName(shopNameEnglish)) {
+    return t('kyc.validation.invalidName');
+  }
+
+  // Occupier Name Regional
+  if (occupierName.trim().length > 0 && !enhancedKycValidators.isValidOccupierName(occupierName)) {
+    return t('kyc.validation.invalidName');
+  }
+
+  // Occupier Name English
+  if (occupierNameEnglish.trim().length > 0 && !enhancedKycValidators.isValidOccupierName(occupierNameEnglish)) {
+    return t('kyc.validation.invalidName');
+  }
+
+  // Pin Code
+  if (pinCode.trim().length > 0) {
+    const pinDigits = pinCode.replace(/\D/g, '');
+    if (pinCode.length !== pinDigits.length || pinDigits.length !== 6) {
+      return t('kyc.validation.invalidPinCode');
+    }
+    if (kycValidators.hasRepeatedSequence(pinDigits, 5)) {
+      return t('kyc.validation.invalidRepeatedSequence');
+    }
+  }
+
+  // Mobile Number
+  const mobileDigits = mobileValue.replace(/\D/g, '');
+  if (mobileDigits.length !== 10) {
+    return t('kyc.validation.invalidMobile');
+  }
+  if (!/^[6-9]/.test(mobileDigits)) {
+    return t('kyc.validation.invalidMobileStart');
+  }
+  if (kycValidators.hasRepeatedSequence(mobileDigits, 5)) {
+    return t('kyc.validation.invalidRepeatedSequence');
+  }
+
+  // Alternate Mobile Number
+  if (alternateMobileValue.trim().length > 0) {
+    const altDigits = alternateMobileValue.replace(/\D/g, '');
+    if (altDigits.length !== 10) {
+      return t('kyc.validation.invalidMobile');
+    }
+    if (!/^[6-9]/.test(altDigits)) {
+      return t('kyc.validation.invalidMobileStart');
+    }
+    if (kycValidators.hasRepeatedSequence(altDigits, 5)) {
+      return t('kyc.validation.invalidRepeatedSequence');
+    }
+  }
+
+  // Aadhar Number
+  if (aadharValue.trim().length > 0) {
+    const aadharDigits = aadharValue.replace(/\D/g, '');
+    if (aadharDigits.length !== 12) {
+      return t('kyc.validation.invalidAadhar');
+    }
+    if (aadharDigits.startsWith('0') || aadharDigits.startsWith('1')) {
+      return t('kyc.validation.invalidAadharStart');
+    }
+    if (kycValidators.hasRepeatedSequence(aadharDigits, 5)) {
+      return t('kyc.validation.invalidRepeatedSequence');
+    }
+  }
+
+  return null;
+};

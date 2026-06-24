@@ -37,7 +37,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
   );
 
   const showError = (field: keyof KycFormData | 'mobile' | 'alternateMobile' | 'aadhar', isValid: boolean): boolean => {
-    if (focusedField === field) return false;
+    if (focusedField === field && !isSubmitted) return false;
     return baseShowError(field, isValid);
   };
 

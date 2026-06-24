@@ -8,7 +8,7 @@ import {
 import {
     sanitizeEmailStrict,
     sanitizeName,
-    capitalizeEachWord
+    capitalizeEachWordKycSociety
 } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -79,11 +79,14 @@ export const SocietyContactFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('managerName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setManagerName(capitalizeEachWordKycSociety(managerName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
+                        const capitalized = capitalizeEachWordKycSociety(sanitized, false);
                         if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setManagerName(capitalized);
                         }
@@ -178,11 +181,14 @@ export const SocietyContactFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('secretaryName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setSecretaryName(capitalizeEachWordKycSociety(secretaryName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
+                        const capitalized = capitalizeEachWordKycSociety(sanitized, false);
                         if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setSecretaryName(capitalized);
                         }

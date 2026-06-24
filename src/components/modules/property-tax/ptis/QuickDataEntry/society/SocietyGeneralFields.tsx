@@ -8,7 +8,7 @@ import {
     sanitizeEmailStrict,
     sanitizeName,
     sanitizeAddress,
-    capitalizeEachWord
+    capitalizeEachWordKycSociety
 } from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
 
@@ -74,13 +74,18 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('landOwnerName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setLandOwnerName(capitalizeEachWordKycSociety(landOwnerName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setLandOwnerName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setLandOwnerName(finalVal);
                         }
                     }}
                 />
@@ -107,13 +112,18 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('builderName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setBuilderName(capitalizeEachWordKycSociety(builderName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setBuilderName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setBuilderName(finalVal);
                         }
                     }}
                 />
@@ -140,13 +150,18 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('societyName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setSocietyName(capitalizeEachWordKycSociety(societyName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH) {
-                            setSocietyName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH) {
+                            setSocietyName(finalVal);
                         }
                     }}
                 />

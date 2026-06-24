@@ -79,7 +79,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ): boolean => {
-        if (focusedField === field) return false;
+        if (focusedField === field && !isSubmitted) return false;
 
         // If form is submitted, show all validation errors
         if (isSubmitted) return !isValid;

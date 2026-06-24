@@ -278,6 +278,21 @@ describe('useKycForm', () => {
 
       expect(result.current.canSubmit()).toBe(false);
     });
+
+    it('should prevent submission with repeated pincode digits', () => {
+      const { result } = renderHook(() =>
+        useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
+      );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          pinCode: '111111',
+        }));
+      });
+
+      expect(result.current.canSubmit()).toBe(false);
+    });
   });
 
   describe('handleSubmit', () => {
