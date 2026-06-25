@@ -1,21 +1,23 @@
 'use client';
 
 import React from 'react';
-import { Column } from '@/components/common';
-import { RuleItem } from '@/types/rule-engine.types';
+import { Column, ToggleSwitch, StatusBadge } from '@/components/common';
+import { RuleItem } from '@/types/rule-engine';
 import { getRuleWiseDescriptions } from './useRuleBuilderHelpers';
 
 export type RuleItemRecord = RuleItem & Record<string, unknown>;
 
 interface UseRuleLibraryColumnsArgs {
   t: (key: string) => string;
+  onToggleActive?: (row: RuleItemRecord, newChecked: boolean) => void;
+  togglingRuleId?: number | null;
 }
 
-/**
- * Returns the column definitions for the RuleLibrary table.
- * Extracted to keep RuleLibrary.tsx under the 200-line component limit.
- */
-export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<RuleItemRecord>[] {
+export function useRuleLibraryColumns({
+  t,
+  onToggleActive,
+  togglingRuleId,
+}: UseRuleLibraryColumnsArgs): Column<RuleItemRecord>[] {
   return React.useMemo<Column<RuleItemRecord>[]>(
     () => [
       { key: 'ruleCode', label: t('library.ruleCode'), width: '150px' },
@@ -28,7 +30,7 @@ export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<
           return typeof val === 'number' ? (
             <span className="font-semibold text-gray-800">{val}</span>
           ) : (
-            <span className="text-gray-300 text-xs">—</span>
+            <span className="text-gray-350 text-xs">—</span>
           );
         },
       },
@@ -77,8 +79,32 @@ export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<
           );
         }
       },
-      { key: 'isActive', label: t('library.status'), width: '120px', isStatus: true, align: 'center' },
+      {
+        key: 'isActive',
+        label: t('library.status'),
+        width: '210px',
+        align: 'center',
+        render: (val: unknown, row: RuleItemRecord) => {
+          const checked = !!val;
+          const isToggling = togglingRuleId === row.id;
+          return (
+            <div className="flex items-center gap-3 justify-center">
+              <ToggleSwitch
+                checked={checked}
+                disabled={isToggling || row.id === undefined}
+                onChange={(newChecked) => onToggleActive?.(row, newChecked)}
+                showPopup={false}
+              />
+              <StatusBadge
+                value={checked}
+                activeLabel={t('library.statusActive')}
+                inactiveLabel={t('library.statusInactive')}
+              />
+            </div>
+          );
+        },
+      },
     ],
-    [t]
+    [t, onToggleActive, togglingRuleId]
   );
 }

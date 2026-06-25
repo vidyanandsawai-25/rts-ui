@@ -1,5 +1,5 @@
 import React from 'react';
-import { RuleItem, FieldConfig, DryRunResult } from '@/types/rule-engine.types';
+import { RuleItem, FieldConfig, DryRunResult } from '@/types/rule-engine';
 import { ApiResponse } from '@/types/common.types';
 import { extractRuleParameters } from './useRuleBuilderHelpers';
 import { dryRunRuleAction, fetchFieldsForScopeAction } from '@/app/[locale]/property-tax/rule-engine/actions';
@@ -8,7 +8,7 @@ import {
   inferFieldTypes,
   coerceInputValue,
   KNOWN_CS_METHODS,
-} from './simulatorExpressionParser';
+} from '@/components/modules/property-tax/rule-engine/simulatorExpressionParser';
 
 export interface InputRow {
   key: string;
@@ -35,11 +35,6 @@ export function useSimulatorPayload(rule: RuleItem) {
     return rows.length === 0 ? [{ key: '', value: '', isExtracted: false }] : rows;
   });
 
-  /**
-   * Fields that require array payload values.
-   * Only 'contains any' / 'contains all' generate C# .Contains() calls.
-   * 'In' / 'Not In' generate scalar == comparisons — not arrays.
-   */
   const arrayFieldIds = React.useMemo<Set<string>>(() => {
     const ARRAY_OPS = new Set(['contains any', 'contains all', 'contains_any', 'contains_all']);
     const result = new Set<string>();
@@ -105,8 +100,6 @@ export function useSimulatorPayload(rule: RuleItem) {
     ),
   [fields]);
 
-  // inputs state was moved above useEffect to prevent Cannot access variable before it is declared
-
   const handleAddRow    = () => setInputs(prev => [...prev, { key: '', value: '', isExtracted: false }]);
   const handleRemoveRow = (index: number) => setInputs(prev => prev.filter((_, i) => i !== index));
   const handleRowChange = (index: number, field: 'key' | 'value', val: string) =>
@@ -120,7 +113,6 @@ export function useSimulatorPayload(rule: RuleItem) {
     const expressions = collectExpressionsFromRuleJson(rule.ruleJson);
     const types       = inferFieldTypes(expressions);
 
-    // Build typed payload from user inputs
     const payload: Record<string, unknown> = {};
     inputs.forEach(row => {
       const key = row.key.trim();
@@ -128,7 +120,6 @@ export function useSimulatorPayload(rule: RuleItem) {
       payload[key] = coerceInputValue(key, row.value, types, arrayFieldIds, getFieldConfig(key));
     });
 
-    // Auto-fill fields present in expressions but not entered by user
     expressions.forEach(expr => {
       const varRx = /\b[iI]nput\.(\w+)\b/g;
       let m: RegExpExecArray | null;
@@ -139,8 +130,6 @@ export function useSimulatorPayload(rule: RuleItem) {
           ? [] : types.numericFields.has(name) ? 0 : '';
       }
     });
-
-
 
     try {
       if (rule.id === -1 && rule.ruleCategory === 'ALL') {

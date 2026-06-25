@@ -4,8 +4,8 @@ import React from 'react';
 import { Eye, ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
-import { FieldConfig, RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
-import { initializeRulesList, getFieldLabel, getFriendlyOperatorLabel } from './useRuleBuilderHelpers';
+import { FieldConfig, RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine';
+import { initializeRulesList, getFieldLabel, getFriendlyOperatorLabel } from '@/hooks/rule-engine/useRuleBuilderHelpers';
 import { fetchFieldsForScopeAction, fetchEffectTypeConfigsAction, fetchDynamicFieldOptionsAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 
 interface RuleViewDrawerProps {
