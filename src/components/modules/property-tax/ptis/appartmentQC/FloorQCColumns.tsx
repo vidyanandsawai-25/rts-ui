@@ -43,15 +43,17 @@ export const CompactSelect = ({
   }, [value, options]);
 
   return (
-    <Select
-      value={value}
-      onChange={(_e, val) => onChange(val)}
-      options={displayOptions}
-      placeholder={placeholder}
-      disabled={disabled}
-      selectSize="sm"
-      className="min-w-[80px] text-[10px]"
-    />
+    <div onClick={(e) => e.stopPropagation()} className="w-full">
+      <Select
+        value={value}
+        onChange={(_e, val) => onChange(val)}
+        options={displayOptions}
+        placeholder={placeholder}
+        disabled={disabled}
+        selectSize="sm"
+        className="min-w-[80px] text-[10px]"
+      />
+    </div>
   );
 };
 CompactSelect.displayName = "CompactSelect";
