@@ -4,6 +4,7 @@ import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigat
 import { useTranslations } from 'next-intl';
 import { Building2, Home, UserCheck, Percent } from 'lucide-react';
 import { Tab } from '@/types/property-basic-details.types';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 const TABS: Tab[] = [
   { label: 'Property', href: 'Property', icon: Home },
@@ -68,6 +69,39 @@ export function TabNavigation() {
   dualExpands.forEach(v => params.append('dualExpand', v));
 
   const queryString = params.toString();
+
+  const { confirm } = useConfirm();
+
+  const handleTabClick = (tabHref: string) => {
+    if (typeof window !== 'undefined' && (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges) {
+      confirm({
+        variant: 'warning',
+        title: t('building.unsavedChangesTitle') || 'Unsaved Changes',
+        description: t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?',
+        confirmText: t('building.continueButton') || 'Continue Editing',
+        cancelText: t('building.discardConfirmButton') || 'Discard Changes',
+        onConfirm: () => {
+          // Do nothing, stays on screen
+        },
+        onCancel: () => {
+          const e = typeof window !== 'undefined' ? (window.event as Event | undefined) : null;
+          const target = e?.target as HTMLElement | null;
+          const isSafeDismiss = e && (
+            e.type === 'keydown' ||
+            (e.type === 'click' && !target?.closest?.('button')) ||
+            target?.closest?.('button')?.getAttribute?.('aria-label') === 'Close'
+          );
+
+          if (isSafeDismiss) return;
+
+          (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = false;
+          router.push(tabHref);
+        }
+      });
+    } else {
+      router.push(tabHref);
+    }
+  };
 
   return (
     <div className="bg-white border-b-2 border-slate-300 px-3 py-2 shadow-sm overflow-x-auto no-scrollbar">
@@ -137,7 +171,7 @@ export function TabNavigation() {
           return (
             <button
               key={tab.href}
-              onClick={() => router.push(tabHref)}
+              onClick={() => handleTabClick(tabHref)}
               data-href={tabHref}
               className={[
                 'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap',
