@@ -9,6 +9,7 @@ export type CertificateData = {
     fileName?: string;
     certificateTypeName?: string;
     displayOrder?: number;
+    pendingFile?: File;
 };
 
 export type BuildingPermissionState = Record<number, CertificateData>;
