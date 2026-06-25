@@ -3,7 +3,7 @@
 
 import { ArrowUp, ArrowDown, Trash2, Pencil, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
+import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine';
 import { Input } from '@/components/common';
 import ConditionGroup from './ConditionGroup';
 import EffectPanel from './EffectPanel';

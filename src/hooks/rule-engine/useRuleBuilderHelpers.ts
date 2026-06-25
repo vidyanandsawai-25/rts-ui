@@ -1,4 +1,4 @@
-import { RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
+import { RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine';
 
 /** Converts legacy verbose operator codes to the short symbols used in state. */
 function normalizeOperator(op: string): string {
@@ -66,26 +66,27 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
 export function validateRuleBuilder(
   ruleName: string,
   ruleCategory: string,
-  rulesList: RuleBlock[]
+  rulesList: RuleBlock[],
+  t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
-  if (!ruleName.trim()) return 'Rule Name is required!';
-  if (!ruleCategory) return 'Category is required!';
+  if (!ruleName.trim()) return t('validation.ruleNameRequired');
+  if (!ruleCategory) return t('validation.categoryRequired');
 
   for (let i = 0; i < rulesList.length; i++) {
     const block = rulesList[i];
     if (!block.effect.effectType) {
-      return `Rule ${i + 1}: Effect Type is required!`;
+      return t('validation.effectTypeRequired', { index: i + 1 });
     }
     if (
       block.effect.value === undefined ||
       block.effect.value === null ||
       block.effect.value.toString().trim() === ''
     ) {
-      return `Rule ${i + 1}: Effect Value is required!`;
+      return t('validation.effectValueRequired', { index: i + 1 });
     }
     const valNum = Number(block.effect.value);
     if (isNaN(valNum) || valNum < 0 || valNum > 100) {
-      return `Rule ${i + 1}: Effect Value must be between 0% and 100%!`;
+      return t('validation.effectValueRange', { index: i + 1 });
     }
   }
   return null;
@@ -151,5 +152,6 @@ export function getRuleWiseDescriptions(conditionsJson?: string): string[] {
   } catch {}
   return [];
 }
+
 // Re-export label helpers from their dedicated file so existing imports remain valid
-export { formatFieldName, getFieldLabel, getFriendlyOperatorLabel } from './field-label.helpers';
+export { formatFieldName, getFieldLabel, getFriendlyOperatorLabel } from '@/components/modules/property-tax/rule-engine/field-label.helpers';

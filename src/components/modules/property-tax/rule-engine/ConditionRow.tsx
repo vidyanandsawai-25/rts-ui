@@ -1,7 +1,7 @@
 'use client';
-import { FieldConfig, ConditionState } from '@/types/rule-engine.types';
+import { FieldConfig, ConditionState } from '@/types/rule-engine';
 import { SearchSelect, EditLabelButton, DeleteButton, ApplyButton } from '@/components/common';
-import { useConditionRow } from './useConditionRow';
+import { useConditionRow } from '@/hooks/rule-engine/useConditionRow';
 import ValueInput from './ValueInput';
 import { useTranslations } from 'next-intl';
 

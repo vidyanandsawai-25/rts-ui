@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import { OperatorItem, DataType } from '@/types/rule-engine.types';
+import { OperatorItem, DataType } from '@/types/rule-engine';
 
 interface ApiRuleOperator {
   operator: string;

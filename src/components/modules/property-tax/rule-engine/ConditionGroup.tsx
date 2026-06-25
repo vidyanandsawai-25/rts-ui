@@ -2,9 +2,9 @@
 
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FieldConfig, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
+import { FieldConfig, ConditionGroupState, ConditionState } from '@/types/rule-engine';
 import ConditionRow from './ConditionRow';
-import { safeUUID } from './useRuleBuilderHelpers';
+import { safeUUID } from '@/hooks/rule-engine/useRuleBuilderHelpers';
 import { useToast } from '@/components/common';
 
 interface ConditionGroupProps {

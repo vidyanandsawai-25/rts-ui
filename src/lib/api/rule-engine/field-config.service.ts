@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import { getRuleOperators, getOperatorsForDataType } from './operators.service';
 import { mapFieldTypeToDataType, mapInputType, mapSourceType } from './mappers';
 
