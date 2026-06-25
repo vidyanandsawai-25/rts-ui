@@ -229,6 +229,7 @@ export interface EditSidebarFormProps {
 
 export interface EditSidebarProps {
     wardNo: string;
+    wardId?: number;
     propertyNo: string;
     partitionNo: string;
     locale: string;

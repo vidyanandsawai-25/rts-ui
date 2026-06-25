@@ -26,6 +26,8 @@ interface FloorTableProps {
   isAddingNewFloor: boolean;
   setIsAddingNewFloor: (val: boolean) => void;
   handleAddFloor: () => void;
+  handleOpenDataEntrySameAs: () => void;
+  viewOnly?: boolean;
   updateUrlParams: (params: Record<string, string | null>) => void;
   handleDeleteFloor: (floor: FloorData) => void;
   startTransition: (fn: () => void) => void;
@@ -50,6 +52,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
   isAddingNewFloor,
   setIsAddingNewFloor,
   handleAddFloor,
+  handleOpenDataEntrySameAs,
+  viewOnly = false,
   updateUrlParams,
   handleDeleteFloor,
   startTransition,
@@ -98,7 +102,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
     }));
 
     // Append standard Action column at the end
-    baseCols.push({
+    if (!viewOnly) {
+      baseCols.push({
       key: 'actions',
       label: t('floor.actions'),
       sortable: false,
@@ -110,10 +115,11 @@ const FloorTable: React.FC<FloorTableProps> = ({
           </div>
         );
       },
-    });
+      });
+    }
 
     return baseCols;
-  }, [columns, t, handleDeleteFloor]);
+  }, [columns, t, handleDeleteFloor, viewOnly]);
 
   /**
    * Handle row click to edit a floor
@@ -121,6 +127,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
    */
   const handleFloorRowClick = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      if (viewOnly) return;
+
       const target = e.target as HTMLElement;
       const tr = target.closest('tbody tr');
       if (!tr) return;
@@ -184,6 +192,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
       setSelectedFloor,
       setIsAddingNewFloor,
       toggleRowExpansion,
+      viewOnly,
     ]
   );
 
@@ -265,20 +274,33 @@ const FloorTable: React.FC<FloorTableProps> = ({
             {filteredFloors.length}
           </span>
         </h3>
-        <div className="flex items-center gap-2">
-          <SearchInput
-            value={floorSearch}
-            onChange={setFloorSearch}
-            placeholder={t('floor.searchFloors')}
-            className="w-32 md:w-36 mb-0 h-7 scale-90"
-          />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {!viewOnly && (
+            <SearchInput
+              value={floorSearch}
+              onChange={setFloorSearch}
+              placeholder={t('floor.searchFloors')}
+              className="w-32 md:w-36 mb-0 h-7 scale-90"
+            />
+          )}
 
-          <AddButton
-            label={t('floor.addFloor')}
-            size="sm"
-            className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
-            onClick={handleAddFloor}
-          />
+          {!viewOnly && (
+            <AddButton
+              label={t('floor.dataEntry')}
+              size="sm"
+              className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
+              onClick={handleOpenDataEntrySameAs}
+            />
+          )}
+
+          {!viewOnly && (
+            <AddButton
+              label={t('floor.addFloor')}
+              size="sm"
+              className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
+              onClick={handleAddFloor}
+            />
+          )}
         </div>
       </div>
 
@@ -294,10 +316,12 @@ const FloorTable: React.FC<FloorTableProps> = ({
           emptyMessage={t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}
-          containerClassName="border border-blue-200 shadow-md rounded-xl max-h-[235px] overflow-auto"
+          containerClassName={viewOnly ? "border border-blue-200 shadow-md rounded-xl max-h-[calc(100vh-230px)] overflow-auto" : "border border-blue-200 shadow-md rounded-xl max-h-[235px] overflow-auto"}
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) =>
-            `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
+            viewOnly
+              ? 'cursor-default border-l-4 border-l-transparent'
+              : `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
           }
         />
       </div>

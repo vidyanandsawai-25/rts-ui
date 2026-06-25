@@ -5,6 +5,10 @@
         "clear": "साफ़ करें",
         "actions": "कार्रवाई"
     },
+    "search": {
+        "loading": "लोड हो रहा है...",
+        "noOptionsAvailable": "कोई विकल्प उपलब्ध नहीं है"
+    },
     "roomSubmission": {
         "quickDataEntry": "संपत्ति त्वरित डेटा प्रविष्टि",
         "title": "वर्ग मीटर में कक्ष अनुसार विवरण",
@@ -683,6 +687,32 @@
     "floor": {
         "select": "चुनें",
         "allFloors": "सभी मंज़िलें",
+        "dataEntry": "डेटा प्रविष्टि",
+        "dataEntryTabs": {
+            "typeWise": "Type-wise",
+            "propertyWise": "Property-wise",
+            "parking": "Parking",
+            "close": "Close"
+        },
+        "selectProperties": {
+            "title": "संपत्तियाँ चुनें",
+            "wardNo": "वार्ड नं.",
+            "propertyNo": "संपत्ति नं.",
+            "partitionNo": "विभाजन नं.",
+            "type": "प्रकार",
+            "wing": "विंग",
+            "flatNo": "फ्लैट नं.",
+            "selected": "{count} चुने गए",
+            "clearSelection": "चयन साफ़ करें",
+            "noProperties": "इस वार्ड में कोई संपत्ति नहीं मिली।",
+            "loading": "संपत्तियाँ लोड हो रही हैं...",
+            "selectAll": "Select all properties",
+            "selectProperty": "Select property {propertyNo}",
+            "search": "खोजें",
+            "applyButton": "विवरण लागू करें",
+            "applying": "लागू किया जा रहा है...",
+            "applySuccess": "विवरण सफलतापूर्वक लागू किया गया।"
+        },
         "addFloor": "मंज़िल जोड़ें",
         "selectedFloorDetails": "चयनित मंजिल विवरण",
         "searchFloors": "मंज़िलें खोजें...",

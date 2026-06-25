@@ -5,6 +5,10 @@
         "clear": "Clear",
         "actions": "Actions"
     },
+    "search": {
+        "loading": "Loading...",
+        "noOptionsAvailable": "No options available"
+    },
     "roomSubmission": {
         "quickDataEntry": "Property Quick Data Entry",
         "title": "ROOM WISE SUBMISSION IN SQUARE METER",
@@ -684,6 +688,32 @@
     "floor": {
         "select": "Select",
         "allFloors": "All Floors",
+        "dataEntry": "Data Entry Same As",
+        "dataEntryTabs": {
+            "typeWise": "Type-wise",
+            "propertyWise": "Property-wise",
+            "parking": "Parking",
+            "close": "Close"
+        },
+        "selectProperties": {
+            "title": "SELECT PROPERTIES",
+            "wardNo": "Ward No.",
+            "propertyNo": "Property No.",
+            "partitionNo": "Partition No.",
+            "type": "Type",
+            "wing": "Wing",
+            "flatNo": "Flat No.",
+            "selected": "{count} selected",
+            "clearSelection": "Clear Selection",
+            "noProperties": "No properties found for this ward.",
+            "loading": "Loading properties...",
+            "selectAll": "Select all properties",
+            "selectProperty": "Select property {propertyNo}",
+            "search": "Search",
+            "applyButton": "Apply Details",
+            "applying": "Applying...",
+            "applySuccess": "Details applied successfully."
+        },
         "addFloor": "Add Floor",
         "selectedFloorDetails": "Selected Floor Details",
         "selectConTypFirst": "Select construction first",

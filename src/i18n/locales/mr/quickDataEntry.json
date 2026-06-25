@@ -5,6 +5,10 @@
         "clear": "साफ करा",
         "actions": "कृती"
     },
+    "search": {
+        "loading": "लोड होत आहे...",
+        "noOptionsAvailable": "कोणतेही पर्याय उपलब्ध नाहीत"
+    },
     "roomSubmission": {
         "quickDataEntry": "मालमत्ता जलद डेटा नोंद",
         "title": "चौरस मीटरमध्ये कक्षनिहाय माहिती",
@@ -683,6 +687,32 @@
     "floor": {
         "select": "निवडा",
         "allFloors": "सर्व मजले",
+        "dataEntry": "डेटा एंट्री ",
+        "dataEntryTabs": {
+            "typeWise": "Type-wise",
+            "propertyWise": "Property-wise",
+            "parking": "Parking",
+            "close": "Close"
+        },
+        "selectProperties": {
+            "title": "मालमत्ता निवडा",
+            "wardNo": "वार्ड क्र.",
+            "propertyNo": "मालमत्ता क्र.",
+            "partitionNo": "विभाजन क्र.",
+            "type": "प्रकार",
+            "wing": "विंग",
+            "flatNo": "फ्लॅट क्र.",
+            "selected": "{count} निवडले",
+            "clearSelection": "निवड साफ करा",
+            "noProperties": "या वार्डमध्ये कोणतीही मालमत्ता आढळली नाही.",
+            "loading": "मालमत्ता लोड होत आहे...",
+            "selectAll": "Select all properties",
+            "selectProperty": "Select property {propertyNo}",
+            "search": "शोधा",
+            "applyButton": "तपशील लागू करा",
+            "applying": "लागू केले जात आहे...",
+            "applySuccess": "तपशील यशस्वीरित्या लागू केले."
+        },
         "addFloor": "मजला जोडा",
         "selectedFloorDetails": "निवडलेला मजला तपशील",
         "searchFloors": "मजले शोधा...",

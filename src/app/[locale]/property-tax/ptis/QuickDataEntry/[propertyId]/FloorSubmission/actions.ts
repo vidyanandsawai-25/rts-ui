@@ -19,13 +19,85 @@ import {
     saveRenterDetails,
     updateRenterDetails,
     deleteRenterDetails,
+    applyDataEntrySameAs,
+    type ApplyDataEntrySameAsPayload,
+    type ApplyDataEntrySameAsResponse,
 } from '@/lib/api/ptis/floorSubmission';
 
 import { validateFloorSubmissionPayload, validateRenterFormData } from '@/lib/validations/validateFloorSubmission';
 import { type ActionResult } from '@/types/common.types';
 import { FloorSubmissionPayload } from '@/types/floor-details.types';
+import { apiClient } from '@/services/api.service';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
+
+export interface SelectableProperty {
+    id: string | number;
+    propertyFloorId?: string | number | null;
+    propertyDetailsId?: string | number | null;
+    wardNo: string;
+    propertyNo: string;
+    partitionNo: string;
+    type: string | number;
+    wing: string;
+    flatNo: string;
+}
+
+interface DataEntrySameAsItem {
+    propertyId: number;
+    propertyFloorId?: number | null;
+    PropertyFloorId?: number | null;
+    propertyFloorID?: number | null;
+    PropertyFloorID?: number | null;
+    propertyDetailsId?: number | null;
+    PropertyDetailsId?: number | null;
+    propertyDetailsID?: number | null;
+    PropertyDetailsID?: number | null;
+    wardId: number;
+    propertyNo: string;
+    partitionNo: string;
+    type: string | number;
+    wingName: string;
+    flatOrShopNo: string;
+}
+
+interface DataEntrySameAsResponse {
+    success: boolean;
+    message: string;
+    items: DataEntrySameAsItem[];
+    errors: unknown;
+    correlationId: string | null;
+}
+
+export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string): Promise<SelectableProperty[]> {
+    try {
+        const params = new URLSearchParams();
+        params.set('WardId', String(wardId));
+        params.set('PropertyNo', propertyNo);
+        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs?${params.toString()}`);
+        if (!response.success || !response.data?.items) {
+            return [];
+        }
+        return response.data.items.map(item => {
+            const sourceId = item.propertyFloorId ?? item.PropertyFloorId ?? item.propertyFloorID ?? item.PropertyFloorID ?? null;
+            const detailsId = item.propertyDetailsId ?? item.PropertyDetailsId ?? item.propertyDetailsID ?? item.PropertyDetailsID ?? null;
+
+            return {
+                id: item.propertyId,
+                propertyFloorId: sourceId,
+                propertyDetailsId: detailsId,
+                wardNo: String(item.wardId),
+                propertyNo: item.propertyNo || '-',
+                partitionNo: item.partitionNo || '-',
+                type: item.type ?? '-',
+                wing: item.wingName || '-',
+                flatNo: item.flatOrShopNo || '-',
+            };
+        });
+    } catch {
+        return [];
+    }
+}
 
 /**
  * Individual fetchers for SSR lookups
@@ -235,3 +307,12 @@ export const deleteFloorRenterDetailsAction = async (renterId: string | number, 
         return { success: false, error: error instanceof Error ? error.message : "Failed to delete renter details" };
     }
 };
+
+export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
+    try {
+        const data = await applyDataEntrySameAs(payload);
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+}
