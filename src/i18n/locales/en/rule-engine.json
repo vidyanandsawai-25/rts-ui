@@ -185,5 +185,16 @@
     "description": "You have unsaved changes. Are you sure you want to leave? Your changes will be permanently lost.",
     "confirm": "Leave Anyway",
     "cancel": "Stay & Edit"
+  },
+  "validation": {
+    "ruleNameRequired": "Rule Name is required!",
+    "categoryRequired": "Category is required!",
+    "effectTypeRequired": "Rule {index}: Effect Type is required!",
+    "effectValueRequired": "Rule {index}: Effect Value is required!",
+    "effectValueRange": "Rule {index}: Effect Value must be between 0% and 100%!",
+    "atLeastOneRuleRequired": "At least one rule is required.",
+    "changeReasonRequired": "Please enter a reason for this change.",
+    "saveSuccess": "Rule saved successfully",
+    "saveFailure": "Failed to save rule."
   }
 }

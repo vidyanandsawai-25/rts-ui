@@ -75,6 +75,7 @@
     "enabledSuccess": "नियम यशस्वीरित्या सक्रिय केला",
     "disabledSuccess": "नियम यशस्वीरित्या निष्क्रिय केला",
     "updatingStatus": "नियम स्थिती अद्यतनित करत आहे...",
+    "priority": "प्राधान्य",
     "scope": "नियम व्याप्ती"
   },
   "conditionGroup": {
@@ -167,5 +168,22 @@
     "typeOfUseId": "वापराचा प्रकार",
     "constructionTypeId": "बांधकाम प्रकार",
     "usageTypeId": "वापराचा प्रकार"
+  },
+  "unsavedChanges": {
+    "title": "जतन न केलेले बदल",
+    "description": "तुमचे काही बदल जतन केलेले नाहीत. तुम्हाला नक्की बाहेर पडायचे आहे का? तुमचे बदल कायमचे नष्ट होतील.",
+    "confirm": "तरीही बाहेर पडा",
+    "cancel": "थांबा आणि संपादित करा"
+  },
+  "validation": {
+    "ruleNameRequired": "नियम संच नाव आवश्यक आहे!",
+    "categoryRequired": "श्रेणी आवश्यक आहे!",
+    "effectTypeRequired": "नियम {index}: परिणाम प्रकार आवश्यक आहे!",
+    "effectValueRequired": "नियम {index}: परिणाम मूल्य आवश्यक आहे!",
+    "effectValueRange": "नियम {index}: परिणाम मूल्य ०% आणि १००% दरम्यान असणे आवश्यक आहे!",
+    "atLeastOneRuleRequired": "किमान एक नियम आवश्यक आहे.",
+    "changeReasonRequired": "कृपया या बदलाचे कारण प्रविष्ट करा.",
+    "saveSuccess": "नियम यशस्वीरित्या जतन केला",
+    "saveFailure": "नियम जतन करण्यात अयशस्वी."
   }
 }
