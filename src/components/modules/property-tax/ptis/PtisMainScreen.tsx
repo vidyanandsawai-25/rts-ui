@@ -52,7 +52,9 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
           setHasAppliedRules(false);
         });
     } else {
-      setHasAppliedRules(false);
+      Promise.resolve().then(() => {
+        setHasAppliedRules(false);
+      });
     }
   }, [propertyId]);
 
