@@ -13,10 +13,10 @@ import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualme
 import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartmentQC/AppartmentQCSection';
 import { Button } from '@/components/common';
 import { AppliedRulesDrawer } from './AppliedRulesDrawer';
-import { fetchPropertyRuleLogsAction } from '@/app/[locale]/property-tax/ptis/actions';
 import { PtisSearchParams } from '@/lib/utils/params';
 import type { DualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
+import type { PropertyRuleLogItem } from '@/types/rule-engine';
 import { useOptionalPtisNavigation } from './shared/PtisNavigationContext';
 
 interface PtisMainScreenProps {
@@ -37,38 +37,20 @@ interface PtisMainScreenProps {
   capitalSection?: React.ReactNode;
   dualRateableSection?: React.ReactNode;
   dualCapitalSection?: React.ReactNode;
+  hasAppliedRules?: boolean;
+  appliedRules?: PropertyRuleLogItem[];
 }
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   locale, initialDualSectionData, initialApartmentData, wardId, propertyNo, ptisParams,
-  propertyId, resolvedSearchParams, rateableSection, capitalSection, dualRateableSection, dualCapitalSection
+  propertyId, resolvedSearchParams, rateableSection, capitalSection, dualRateableSection, dualCapitalSection,
+  hasAppliedRules = false, appliedRules = []
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('ptis');
 
   const [isAppliedRulesDrawerOpen, setIsAppliedRulesDrawerOpen] = useState(false);
-  const [hasAppliedRules, setHasAppliedRules] = useState(false);
-
-  React.useEffect(() => {
-    if (propertyId) {
-      fetchPropertyRuleLogsAction(propertyId)
-        .then((result) => {
-          if (result.success && result.data && result.data.items && result.data.items.length > 0) {
-            setHasAppliedRules(true);
-          } else {
-            setHasAppliedRules(false);
-          }
-        })
-        .catch(() => {
-          setHasAppliedRules(false);
-        });
-    } else {
-      Promise.resolve().then(() => {
-        setHasAppliedRules(false);
-      });
-    }
-  }, [propertyId]);
 
   const activeTab = ptisParams.tab || 'rateable';
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
@@ -206,6 +188,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
         propertyId={propertyId}
         propertyNo={propertyNo}
         locale={locale}
+        appliedRules={appliedRules}
       />
     </div>
   );

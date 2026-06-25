@@ -8,6 +8,7 @@ import {
   fetchOldTaxesDetailsAction,
   fetchDiscountDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
+  fetchPropertyRuleLogsAction,
 } from './actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
@@ -72,6 +73,7 @@ export async function fetchPropertyDetailsConcurrently(
     initialMediaPanelVisible ? photoPlanService.getPhotoTypesWithStatus(propertyId) : Promise.resolve(null),
     initialMediaPanelVisible ? photoPlanService.getPhotosByProperty(propertyId) : Promise.resolve(null),
     valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
-    fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam)
+    fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
+    propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
   ]);
 }
