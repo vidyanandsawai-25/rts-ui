@@ -19,6 +19,7 @@ import { useOptionalPtisNavigation } from './shared/PtisNavigationContext';
 interface PtisMainScreenProps {
   locale: string;
   propertyId?: number;
+  categoryId?: number;
   ptisParams: PtisSearchParams;
   resolvedSearchParams: Record<string, string | string[] | undefined>;
   error?: string;
@@ -37,15 +38,29 @@ interface PtisMainScreenProps {
 }
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
-  locale, initialDualSectionData, initialApartmentData, wardId, propertyNo, ptisParams,
+  locale,categoryId, initialDualSectionData, initialApartmentData, wardId, propertyNo, ptisParams,
   propertyId, resolvedSearchParams, rateableSection, capitalSection, dualRateableSection, dualCapitalSection
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('ptis');
 
-  const activeTab = ptisParams.tab || 'rateable';
-  const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
+  const APARTMENT_CATEGORY_IDS = [1, 6];
+
+const showApartmentTab =
+categoryId == null ||
+APARTMENT_CATEGORY_IDS.includes(
+  Number(categoryId)
+);
+
+const requestedTab = ptisParams.tab || 'rateable';
+
+const activeTab =
+  requestedTab === 'apartment' && !showApartmentTab
+    ? 'rateable'
+    : requestedTab;
+
+  const activeMainTab = searchParams.get('appartmentTab') || 'residential';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
 
   const ptisNav = useOptionalPtisNavigation();
@@ -74,7 +89,15 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     { value: 'rateable', label: t('tabs.rateable'), activeGradient: 'from-indigo-600 to-purple-600' },
     { value: 'capital', label: t('tabs.capital'), activeGradient: 'from-purple-600 to-pink-600' },
     { value: 'dual', label: t('tabs.dual'), activeGradient: 'from-orange-600 to-red-600' },
-    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-blue-600 to-blue-800' }
+    ...(showApartmentTab
+    ? [
+        {
+          value: 'apartment',
+          label: t('tabs.apartment'),
+          activeGradient: 'from-blue-600 to-blue-800'
+        }
+      ]
+    : [])
   ];
 
   return (
