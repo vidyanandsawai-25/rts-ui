@@ -56,7 +56,7 @@ const mockMessages = {
     },
     filters: {
       rateSection: "Rate Section",
-      useGroup: "Use Group",
+      typeOfUseGroup: "Type of Use Group",
       assessmentYear: "Assessment Year",
     },
     buttons: {
@@ -154,7 +154,7 @@ describe("RateMasterView", () => {
     );
 
     expect(screen.getByText("Rate Section")).toBeInTheDocument();
-    expect(screen.getByText("Use Group")).toBeInTheDocument();
+    expect(screen.getByText("Type of Use Group")).toBeInTheDocument();
     expect(screen.getByText("Assessment Year")).toBeInTheDocument();
   });
 

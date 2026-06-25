@@ -35,7 +35,7 @@ export function RateCopyUseGroupTab({
       </div>
 
       <div className="flex items-end gap-2">
-        <div className="flex-1">
+        <div className="flex-auto">
           <Label htmlFor="source-use-group-select" className="text-xs font-medium text-gray-700 mb-1 block">
             {t('sections.selectSourceUseGroup')}
           </Label>
