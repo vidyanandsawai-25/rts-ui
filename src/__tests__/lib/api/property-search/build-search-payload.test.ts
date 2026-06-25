@@ -181,4 +181,36 @@ describe("buildPropertySearchPayload", () => {
     expect(payload.propertyNoFrom).toBe("100");
     expect(payload.propertyNoTo).toBe("100");
   });
+
+  it("keeps base propertyNo in payload for numeric-only property with partition (e.g. 10-C)", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        propertyNoFrom: "10-C",
+        propertyNoTo: "10-C",
+      },
+      true,
+      "quick-search"
+    );
+
+    expect(payload.propertyNoFrom).toBe("10");
+    expect(payload.propertyNoTo).toBe("10");
+  });
+
+  it("keeps full propertyNo in payload for alphanumeric prefix (e.g. NK-10)", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        propertyNoFrom: "NK-10",
+        propertyNoTo: "NK-10",
+      },
+      true,
+      "quick-search"
+    );
+
+    expect(payload.propertyNoFrom).toBe("NK-10");
+    expect(payload.propertyNoTo).toBe("NK-10");
+  });
 });
