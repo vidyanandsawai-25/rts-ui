@@ -409,7 +409,8 @@
             "carpetAreaMax4Decimals": "Carpet Area cannot exceed 4 decimal places",
             "oldConstructionTypeIdInvalid": "Construction Type is invalid",
             "oldTypeOfUseIdInvalid": "Type of Use is invalid",
-            "invalidIds": "Invalid IDs provided"
+            "invalidIds": "Invalid IDs provided",
+            "invalidCarpetArea": "Carpet area must be a valid number greater than 0"
         },
         "errors": {
             "failedToConnect": {
@@ -515,6 +516,7 @@
             "serverError": "Server Error: An internal server error occurred. Please try again later.",
             "defaultApiError": "An API error occurred: {message}"
         },
+        "propertyId": "Property ID",
         "propertyIdMissing": "Property ID is missing. Cannot update KYC.",
         "recordLabel": "KYC Record",
         "unexpectedError": "An unexpected error occurred. Please try again.",

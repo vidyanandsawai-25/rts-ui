@@ -11,5 +11,6 @@
   "hearing": "Hearing",
   "allTaxes": "All Taxes",
   "taxes": "Taxes",
-  "totalTaxes": "Total Taxes"
+  "totalTaxes": "Total Taxes",
+  "noTaxDetailsAvailable": "No tax details available"
 }

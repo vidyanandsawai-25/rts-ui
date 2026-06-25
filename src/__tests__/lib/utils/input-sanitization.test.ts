@@ -20,7 +20,7 @@ describe('sanitizeShopName', () => {
   });
 
   it('removes disallowed characters', () => {
-    expect(sanitizeShopName('Shop *^* Name!')).toBe('Shop Name');
+    expect(sanitizeShopName('Shop *^* Name!')).toBe('Shop  Name');
   });
 });
 

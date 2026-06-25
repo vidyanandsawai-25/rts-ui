@@ -150,7 +150,7 @@ export function FloorTableSection({
   }, [t, currentSortBy, currentSortOrder, handleSortClick]);
 
   return (
-    <div className="mb-6 [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30 [&_th]:border-r [&_th]:border-white/30 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-blue-100 [&_td:last-child]:border-r-0 [&_th:last-child]:w-25 [&_th:last-child]:min-w-25 [&_td:last-child]:w-25 [&_td:last-child]:min-w-25 [&_td]:overflow-hidden">
+    <div className="mb-6 overflow-x-auto w-full [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30 [&_th]:border-r [&_th]:border-white/30 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-blue-100 [&_td:last-child]:border-r-0 [&_th:last-child]:w-25 [&_th:last-child]:min-w-25 [&_td:last-child]:w-25 [&_td:last-child]:min-w-25 [&_td]:overflow-hidden">
       <MasterTable
         data={transformedData}
         columns={adaptedColumns}
