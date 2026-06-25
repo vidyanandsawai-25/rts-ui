@@ -101,6 +101,10 @@ export interface SearchSelectProps {
    * Optional validation error message.
    */
   error?: string;
+  /**
+   * Optional autoFocus prop to focus the input on mount.
+   */
+  autoFocus?: boolean;
 }
 
 /** Helper to normalize string for forgiving/flexible option matching. */
@@ -129,6 +133,7 @@ export function SearchSelect({
   noOptionsPlaceholder,
   menuPlacement,
   error,
+  autoFocus = false,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -325,6 +330,7 @@ export function SearchSelect({
           type="text"
           name={fallbackName}
           value={displayValue}
+          autoFocus={autoFocus}          
           placeholder={
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'

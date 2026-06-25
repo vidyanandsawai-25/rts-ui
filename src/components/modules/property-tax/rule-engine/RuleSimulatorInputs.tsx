@@ -1,9 +1,9 @@
 import { Trash2, HelpCircle, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/common/Input';
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import ValueInput from './ValueInput';
-import { InputRow } from './useSimulatorPayload';
+import { InputRow } from '@/hooks/rule-engine/useSimulatorPayload';
 
 interface RuleSimulatorInputsProps {
   inputs: InputRow[];

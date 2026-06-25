@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getRules, getRuleById, createRule, updateRule, deleteRule } from '@/lib/api/rule-engine/rule.service';
 import { apiClient } from '@/services/api.service';
-import { RuleItem } from '@/types/rule-engine.types';
+import { RuleItem } from '@/types/rule-engine';
 
 // Mock the apiClient
 vi.mock('@/services/api.service', () => ({

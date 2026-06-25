@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import { RadioGroup, RadioGroupItem } from '@/components/common';
 
 interface RadioValueInputProps {

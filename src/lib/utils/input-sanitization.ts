@@ -115,9 +115,7 @@ export const sanitizeName = (name: string): string => {
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     // Block all invalid special characters - only allow letters, spaces, and . , ' - /
     // Supports international characters (Unicode letters)
-    .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-]/g, '')
-    // Remove multiple consecutive spaces (replace with single space)
-    .replace(/\s+/g, ' ');
+    .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-]/g, '');
   // Note: Removed .trim() to allow trailing spaces during typing
   // Validation should handle trimming when checking if the field is valid
 };
@@ -138,15 +136,37 @@ export const sanitizeShopName = (name: string): string => {
     // Remove script content
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     // Block all invalid special characters - allow letters, numbers, spaces, and basic shop punctuation (.,'-/()&)
-    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-()&]/g, '')
-    // Remove multiple consecutive spaces
-    .replace(/\s+/g, ' ');
+    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-()&]/g, '');
 };
 
 /**
  * Capitalize the first letter of each word in a string
  * Supports Unicode/international word boundaries
  * 
+ * @param str - Input string
+ * @returns String with first letter of each word capitalized
+ */
+export const capitalizeEachWordKycSociety = (str: string, forceAll = false): string => {
+  if (!str) return '';
+  const words = str.split(' ');
+  return words
+    .map((word, index) => {
+      if (!word) return '';
+      // Skip capitalization for words containing Devanagari (Marathi/Hindi) characters
+      if (/[\u0900-\u097F\u0D00-\u0D7F]/.test(word)) {
+        return word;
+      }
+      // If forceAll is false, only capitalize completed words (not the one actively being typed at the end)
+      if (!forceAll && index === words.length - 1) {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+};
+
+
+/*
  * @param str - Input string
  * @returns String with first letter of each word capitalized
  */
@@ -160,7 +180,6 @@ export const capitalizeEachWord = (str: string): string => {
     })
     .join(' ');
 };
-
 
 /**
  * Sanitize address input
