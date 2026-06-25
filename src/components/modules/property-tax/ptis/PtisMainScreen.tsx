@@ -92,8 +92,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
         .catch(() => {
           setHasAppliedRules(false);
         });
-    } else {
-      setHasAppliedRules(false);
     }
   }, [propertyId]);
 
