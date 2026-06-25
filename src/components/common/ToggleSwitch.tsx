@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useId } from "react";
+import React, { useEffect, useState, useId } from "react";
 import type { KeyboardEvent } from "react";
 
 export interface ToggleSwitchProps {
@@ -17,17 +17,18 @@ export interface ToggleSwitchProps {
   popupDuration?: number; // ms, default 2000
   id?: string;
 }
-export function ToggleSwitch({
-  checked,
-  onChange,
-  label,
-  showPopup = true,
-  disabled = false,
-  activeLabel = "Active",
-  inactiveLabel = "Inactive",
-  popupDuration = 2000,
-  id,
-}: ToggleSwitchProps) {
+export const ToggleSwitch = React.forwardRef<HTMLButtonElement, ToggleSwitchProps>(
+  ({
+    checked,
+    onChange,
+    label,
+    showPopup = true,
+    disabled = false,
+    activeLabel = "Active",
+    inactiveLabel = "Inactive",
+    popupDuration = 2000,
+    id,
+  }, ref) => {
   const [showStatusPopup, setShowStatusPopup] = useState(false);
   const [popupText, setPopupText] = useState("");
 
@@ -76,15 +77,14 @@ export function ToggleSwitch({
           onClick={handleToggle}
           onKeyDown={handleKeyDown}
           id={id}
+          ref={ref}
           className={`
             peer
             inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full
             border border-transparent
             transition-all outline-none
             data-[state=checked]:bg-blue-600
-            focus-visible:border-ring
-            focus-visible:ring-ring/50
-            focus-visible:ring-[3px]
+            focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
             text-gray-900
             bg-gray-200
             hover:bg-gray-300
@@ -126,3 +126,6 @@ export function ToggleSwitch({
     </div>
   );
 }
+);
+
+ToggleSwitch.displayName = "ToggleSwitch";
