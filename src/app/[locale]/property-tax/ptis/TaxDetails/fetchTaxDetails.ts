@@ -1,7 +1,7 @@
 'use server';
 
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
-import type { ValuationTabId } from '@/types/ptis';
+import type { ValuationTabId } from '@/types/ptis.types';
 import { getCapitalTaxDetails, getRateableTaxDetails } from './action';
 
 /**

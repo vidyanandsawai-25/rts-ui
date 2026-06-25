@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { ValueDisplay } from './components/ValueDisplay';
-import type { OldTaxesData } from '@/types/ptis';
+import type { OldTaxesData } from '@/types/ptis.types';
 
 interface OldTaxDetailsTableProps {
   oldTaxesData: OldTaxesData | null | undefined;

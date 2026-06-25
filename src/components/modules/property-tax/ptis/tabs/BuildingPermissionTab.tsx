@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import type {
   BuildingPermissionData,
   BuildingPermissionItem,
-} from '@/types/ptis';
+} from '@/types/ptis.types';
 
 export interface BuildingPermissionTabProps {
   data?: BuildingPermissionData;

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { getWardListAction } from '@/app/[locale]/property-tax/ptis/actions';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
-import type { Ward } from '@/types/ptis';
+import type { Ward } from '@/types/ptis.types';
 
 export function useWardOptions(initialWardOptions: SearchSelectOption[]) {
   const t = useTranslations('ptis');

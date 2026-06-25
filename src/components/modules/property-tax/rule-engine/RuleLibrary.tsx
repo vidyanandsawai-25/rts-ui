@@ -13,7 +13,7 @@ import RuleViewDrawer from './RuleViewDrawer';
 import { useRuleLibraryColumns, RuleItemRecord } from '@/hooks/rule-engine/useRuleLibraryColumns';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useToast } from '@/components/common/ToastProvider';
-import { fetchRuleByIdAction, fetchFullRulesAction } from '@/app/[locale]/property-tax/rule-engine/actions';
+import { fetchRuleByIdAction, fetchFullRulesAction, saveRuleAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 import RuleLibraryFilter from './RuleLibraryFilter';
 import RuleLibraryActions from './RuleLibraryActions';
 
@@ -54,6 +54,47 @@ export default function RuleLibrary({
   const [activeRuleForView, setActiveRuleForView] = React.useState<RuleItem | null>(null);
   const [isViewDrawerOpen, setIsViewDrawerOpen] = React.useState(false);
   const [loadingRuleId, setLoadingRuleId] = React.useState<number | null>(null);
+  const [togglingRuleId, setTogglingRuleId] = React.useState<number | null>(null);
+
+  const handleToggleActive = async (row: RuleItemRecord, newChecked: boolean) => {
+    if (!row.id) return;
+    setTogglingRuleId(row.id);
+    try {
+      // 1. Fetch full rule details to avoid overwriting JSON fields with empty/summary data
+      const fullRule = await fetchRuleByIdAction(row.id);
+      if (!fullRule) {
+        toast.error('Failed to load rule details');
+        return;
+      }
+
+      // 2. Prepare payload with updated isActive/isEnabled state
+      const updatedPayload: RuleItem = {
+        ...fullRule,
+        isActive: newChecked,
+      };
+
+      // 3. Save the rule via server action
+      const res = await saveRuleAction(updatedPayload);
+      if (res.success) {
+        // 4. Update the local state
+        setRules((prev) =>
+          prev.map((r) => (r.id === row.id ? { ...r, isActive: newChecked } : r))
+        );
+        toast.success(
+          newChecked
+            ? t('library.enabledSuccess')
+            : t('library.disabledSuccess')
+        );
+      } else {
+        toast.error(res.message || 'Failed to update rule status');
+      }
+    } catch {
+      toast.error('An error occurred while updating status');
+    } finally {
+      setTogglingRuleId(null);
+    }
+  };
+
 
   const handleOpenTestDrawer = async (rule: RuleItem) => {
     if (!rule.id) return;
@@ -197,7 +238,11 @@ export default function RuleLibrary({
     return [{ label: t('library.allCategories'), value: 'ALL' }, ...cats.map((cat) => ({ label: cat as string, value: cat as string }))];
   }, [rules, t]);
 
-  const columns = useRuleLibraryColumns({ t });
+  const columns = useRuleLibraryColumns({
+    t,
+    onToggleActive: handleToggleActive,
+    togglingRuleId,
+  });
 
   return (
     <div className="flex flex-col gap-4.5 w-full select-none">

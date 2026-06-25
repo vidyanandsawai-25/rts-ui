@@ -24,6 +24,17 @@ export function useAppliedRulesColumns(locale: string) {
       ),
     },
     {
+      key: 'ruleScopeName',
+      label: t('appliedRules.columns.ruleScopeName'),
+      align: 'center',
+      width: '120px',
+      render: (val: unknown) => (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded bg-blue-50 text-blue-700 border border-blue-100">
+          {val ? (val as string) : '-'}
+        </span>
+      ),
+    },
+    {
       key: 'ruleName',
       label: t('appliedRules.columns.ruleName'),
       align: 'left',
@@ -37,7 +48,7 @@ export function useAppliedRulesColumns(locale: string) {
       render: (val: unknown) => (
         <span className={cn(
           "px-2.5 py-0.5 text-xs font-semibold rounded border",
-          String(val).toLowerCase().includes('decrease') 
+          String(val).toLowerCase().includes('decrease')
             ? "bg-red-50 text-red-700 border-red-100"
             : "bg-green-50 text-green-700 border-green-100"
         )}>
@@ -48,8 +59,8 @@ export function useAppliedRulesColumns(locale: string) {
     {
       key: 'effectValue',
       label: t('appliedRules.columns.effectValue'),
-      align: 'right',
-      width: '90px',
+      align: 'center',
+      width: '110px',
       render: (val: unknown) => (
         <span className="font-semibold text-slate-800">
           {typeof val === 'number' ? val : '-'}
@@ -57,10 +68,21 @@ export function useAppliedRulesColumns(locale: string) {
       ),
     },
     {
+      key: 'applyRate',
+      label: t('appliedRules.columns.applyRate'),
+      align: 'center',
+      width: '130px',
+      render: (val: unknown) => (
+        <span className="font-semibold text-slate-800">
+          {typeof val === 'number' ? `${val}%` : '-'}
+        </span>
+      ),
+    },
+    {
       key: 'baseValue',
       label: t('appliedRules.columns.baseValue'),
-      align: 'right',
-      width: '100px',
+      align: 'center',
+      width: '110px',
       render: (val: unknown) => (
         <span className="font-semibold text-slate-700">
           {typeof val === 'number' ? val.toFixed(2) : '-'}
@@ -70,21 +92,10 @@ export function useAppliedRulesColumns(locale: string) {
     {
       key: 'computedValue',
       label: t('appliedRules.columns.computedValue'),
-      align: 'right',
-      width: '110px',
+      align: 'center',
+      width: '140px',
       render: (val: unknown) => (
         <span className="font-bold text-indigo-600">
-          {typeof val === 'number' ? val.toFixed(2) : '-'}
-        </span>
-      ),
-    },
-    {
-      key: 'cumulativeValue',
-      label: t('appliedRules.columns.cumulativeValue'),
-      align: 'right',
-      width: '110px',
-      render: (val: unknown) => (
-        <span className="font-bold text-emerald-600">
           {typeof val === 'number' ? val.toFixed(2) : '-'}
         </span>
       ),
@@ -95,8 +106,8 @@ export function useAppliedRulesColumns(locale: string) {
       align: 'left',
       width: '150px',
       render: (val: unknown) => (
-        <span className="text-xs text-slate-500 font-mono">
-          {val ? new Date(val as string).toLocaleString(locale === 'en' ? 'en-US' : locale === 'mr' ? 'mr-IN' : 'hi-IN') : '-'}
+        <span className="font-semibold text-slate-700">
+          {val ? new Date(val as string).toLocaleDateString(locale === 'en' ? 'en-US' : locale === 'mr' ? 'mr-IN' : 'hi-IN') : '-'}
         </span>
       ),
     },

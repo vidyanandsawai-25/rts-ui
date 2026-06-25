@@ -11,7 +11,7 @@ import type {
   OldTaxesApiResponse,
   DiscountData,
   BuildingPermissionData,
-} from '@/types/ptis';
+} from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage, extractData } from './base-api';
 import { ptisMapper } from './ptis.mapper';
 

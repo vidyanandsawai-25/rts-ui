@@ -13,6 +13,7 @@ import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartme
 import { Button } from '@/components/common';
 import { AppliedRulesDrawer } from './AppliedRulesDrawer';
 import type { PtisMainScreenProps } from '@/types/ptis-screen/ptis-screen.types';
+import { fetchPropertyRuleLogsAction } from '@/app/[locale]/property-tax/ptis/actions';
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const {
@@ -35,6 +36,25 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const t = useTranslations('ptis');
 
   const [isAppliedRulesDrawerOpen, setIsAppliedRulesDrawerOpen] = useState(false);
+  const [hasAppliedRules, setHasAppliedRules] = useState(false);
+
+  React.useEffect(() => {
+    if (propertyId) {
+      fetchPropertyRuleLogsAction(propertyId)
+        .then((result) => {
+          if (result.success && result.data && result.data.items && result.data.items.length > 0) {
+            setHasAppliedRules(true);
+          } else {
+            setHasAppliedRules(false);
+          }
+        })
+        .catch(() => {
+          setHasAppliedRules(false);
+        });
+    } else {
+      setHasAppliedRules(false);
+    }
+  }, [propertyId]);
 
   const activeTab = ptisParams.tab || 'rateable';
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
@@ -92,7 +112,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                   </TabList>
                 </Tabs>
 
-                {activeTab !== 'apartment' && propertyId && (
+                {activeTab !== 'apartment' && propertyId && hasAppliedRules && (
                   <Button
                     id="applied-rules-tab-btn"
                     variant="secondary"
@@ -121,7 +141,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                         <Tab value="dual-method" icon={GitMerge}>{t('apartmentTabs.dual')}</Tab>
                       </TabList>
                     </Tabs>
-                    {propertyId && (
+                    {propertyId && hasAppliedRules && (
                       <Button
                         id="applied-rules-apartment-btn"
                         variant="secondary"

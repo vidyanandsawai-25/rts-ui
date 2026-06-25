@@ -5,7 +5,7 @@ import type {
   OldDetailsData,
   DiscountData,
   BuildingPermissionData,
-} from '@/types/ptis';
+} from '@/types/ptis.types';
 
 /**
  * Default Values for PTIS Property Details

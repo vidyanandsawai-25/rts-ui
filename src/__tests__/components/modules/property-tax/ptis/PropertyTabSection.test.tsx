@@ -2,7 +2,7 @@ import { vi, describe, test, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import PropertyTabSection from '@/components/modules/property-tax/ptis/PropertyTabSection';
-import type { PropertyDetailsData } from '@/types/ptis';
+import type { PropertyDetailsData } from '@/types/ptis.types';
 
 vi.spyOn(console, 'log').mockImplementation(() => {});
 vi.spyOn(console, 'warn').mockImplementation(() => {});

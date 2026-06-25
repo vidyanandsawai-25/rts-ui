@@ -38,6 +38,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     ruleCategory, setRuleCategory,
     ruleDescription, setRuleDescription,
     priority, setPriority,
+    isActive, setIsActive,
     rulesList, fields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
@@ -46,7 +47,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
   } = useRuleBuilder(props);
 
   // Serialise current form state — passed to SaveRulesButton which holds the initial snapshot
-  const currentData = JSON.stringify({ ruleName, ruleCategory, description: ruleDescription, priority, ruleScopeId, rulesList });
+  const currentData = JSON.stringify({ ruleName, ruleCategory, description: ruleDescription, priority, ruleScopeId, rulesList, isActive });
 
   const currentDataRef = React.useRef(currentData);
   React.useEffect(() => {
@@ -109,6 +110,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
             priority={priority} setPriority={setPriority}
             scopes={props.scopes}
             ruleCategoryOptions={props.ruleCategoryOptions}
+            isActive={isActive} setIsActive={setIsActive}
           />
         </div>
 

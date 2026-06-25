@@ -694,12 +694,13 @@
     "columns": {
       "applyOrder": "क्रम",
       "ruleCategory": "श्रेणी",
+      "ruleScopeName": "दायरा",
       "ruleName": "नियम का नाम",
       "effectType": "प्रभाव प्रकार",
-      "effectValue": "प्रभाव मूल्य",
-      "baseValue": "आधार मूल्य",
-      "computedValue": "परिकलित मूल्य",
-      "cumulativeValue": "संचयी मूल्य",
+      "effectValue": "प्रभाव दर",
+      "applyRate": "लागू दर %",
+      "baseValue": "आधार दर",
+      "computedValue": "परिकलित दर",
       "appliedAt": "लागू होने का समय"
     },
     "noAppliedRules": "इस संपत्ति पर कोई नियम लागू नहीं किया गया है।",

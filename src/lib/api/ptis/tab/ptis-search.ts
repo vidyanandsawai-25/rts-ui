@@ -4,7 +4,7 @@ import type {
   PropertyListItem,
   PagedResult,
   Ward,
-} from '@/types/ptis';
+} from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage } from './base-api';
 
 export const ptisSearchService = {

@@ -685,12 +685,13 @@
     "columns": {
       "applyOrder": "Order",
       "ruleCategory": "Category",
+      "ruleScopeName": "Scope",
       "ruleName": "Rule Name",
       "effectType": "Effect Type",
-      "effectValue": "Effect Value",
-      "baseValue": "Base Value",
-      "computedValue": "Computed Value",
-      "cumulativeValue": "Cumulative Value",
+      "effectValue": "Effect Rate",
+      "applyRate": "Applied Rate %",
+      "baseValue": "Base Rate",
+      "computedValue": "Calculated Rate",
       "appliedAt": "Applied At"
     },
     "noAppliedRules": "No rules have been applied to this property.",

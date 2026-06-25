@@ -1,7 +1,7 @@
 import { ValueDisplay } from './components/ValueDisplay';
 import { Building2, FileText } from 'lucide-react';
 import FieldShell from '@/components/common/FieldShell';
-import type { PropertyDetailsData } from '@/types/ptis';
+import type { PropertyDetailsData } from '@/types/ptis.types';
 import { useTranslations } from 'next-intl';
 
 export interface PropertyDetailsTabProps {

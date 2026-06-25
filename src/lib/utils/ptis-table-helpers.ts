@@ -1,4 +1,4 @@
-import { DualMethodResponse, DualMethodTaxes } from '@/types/ptis';
+import { DualMethodResponse, DualMethodTaxes } from '@/types/ptis.types';
 
 export interface ComparisonRow {
   id: string | number;

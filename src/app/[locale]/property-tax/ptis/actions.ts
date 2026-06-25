@@ -211,14 +211,18 @@ export async function fetchBuildingPermissionOnlyAction(propertyId: number) {
   return createAction(() => ptisService.getBuildingPermissionDetails(propertyId));
 }
 
-export async function fetchPropertyRuleLogsAction(propertyId: number) {
+export async function fetchPropertyRuleLogsAction(
+  propertyId: number,
+  propertyDetailsId?: number,
+  financeYear?: number
+) {
   const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
 
   return createAction(async () => {
-    const data = await getPropertyRuleLogs(propertyId);
+    const data = await getPropertyRuleLogs(propertyId, propertyDetailsId, financeYear);
     return { success: true, data };
   });
 }

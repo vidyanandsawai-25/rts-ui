@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { ToastNotifier } from '@/components/common';
-import type { OldDetailsData } from '@/types/ptis';
+import type { OldDetailsData } from '@/types/ptis.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
 import { CapitalTaxTable } from './components/CapitalTaxTable';
 import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/shared/ValuationSummaryFooter';

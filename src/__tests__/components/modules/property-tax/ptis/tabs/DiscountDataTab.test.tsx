@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import DiscountDataTab from '@/components/modules/property-tax/ptis/tabs/DiscountDataTab';
-import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis';
+import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis.types';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({

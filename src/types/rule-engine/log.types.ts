@@ -20,6 +20,9 @@ export interface PropertyRuleLogItem {
   updatedDate: string;
   createdBy?: number | null;
   updatedBy?: number | null;
+  applyRate?: number;
+  ruleScopeId?: number;
+  ruleScopeName?: string;
 }
 
 export interface PropertyRuleLogResponse {

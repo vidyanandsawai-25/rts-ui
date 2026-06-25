@@ -1,4 +1,4 @@
-import type { PropertyBasicDetailsApiResponse, PropertyDetailsData } from '@/types/ptis';
+import type { PropertyBasicDetailsApiResponse, PropertyDetailsData } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage, extractData } from './base-api';
 import { normalizePartition } from '@/lib/utils/format';
 import { ptisMapper } from './ptis.mapper';

@@ -17,8 +17,8 @@ import { usePropertySearch } from '@/hooks/ptis/tab/usePropertySearch';
 import { useSyncedTabData } from '@/hooks/ptis/tab/useSyncedTabData';
 import { usePropertySearchState } from '@/hooks/ptis/tab/usePropertySearchState';
 import { Tabs, TabValue } from '@/components/common/Tabs';
-import type { PtisTabId, PtisInitialData } from '@/types/ptis';
-import { PTIS_TABS } from '@/types/ptis';
+import type { PtisTabId, PtisInitialData } from '@/types/ptis.types';
+import { PTIS_TABS } from '@/types/ptis.types';
 
 import { toast } from 'sonner';
 

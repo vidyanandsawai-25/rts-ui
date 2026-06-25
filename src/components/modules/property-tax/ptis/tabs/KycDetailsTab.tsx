@@ -1,7 +1,7 @@
 import { ValueDisplay } from './components/ValueDisplay';
 import { User, UserCheck, FileText, Phone, Mail, Building2 } from 'lucide-react';
 import FieldShell from '@/components/common/FieldShell';
-import type { KYCDetailsData } from '@/types/ptis';
+import type { KYCDetailsData } from '@/types/ptis.types';
 import { useTranslations } from 'next-intl';
 
 export interface KycDetailsTabProps {

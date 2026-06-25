@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { ToastNotifier } from '@/components/common';
-import type { OldDetailsData } from '@/types/ptis';
+import type { OldDetailsData } from '@/types/ptis.types';
 
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import { RateableTaxTable } from './components/RateableTaxTable';

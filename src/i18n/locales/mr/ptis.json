@@ -694,12 +694,13 @@
     "columns": {
       "applyOrder": "क्रम",
       "ruleCategory": "वर्ग",
+      "ruleScopeName": "व्याप्ती",
       "ruleName": "नियमाचे नाव",
       "effectType": "प्रभावाचा प्रकार",
-      "effectValue": "प्रभावाचे मूल्य",
-      "baseValue": "मूळ मूल्य",
-      "computedValue": "गणना केलेले मूल्य",
-      "cumulativeValue": "संचयी मूल्य",
+      "effectValue": "प्रभावाचा दर",
+      "applyRate": "लागू दर %",
+      "baseValue": "मूळ दर",
+      "computedValue": "गणना केलेला दर",
       "appliedAt": "लागू झाल्याची वेळ"
     },
     "noAppliedRules": "या मालमत्तेवर कोणतेही नियम लागू केलेले नाहीत.",
