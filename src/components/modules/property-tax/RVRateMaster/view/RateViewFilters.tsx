@@ -73,7 +73,7 @@ export function RateViewFilters({
       <div className="flex flex-col gap-1">
         <label htmlFor="useGroup-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
           <Users className="w-3.5 h-3.5 text-blue-500" />
-          {t('filters.useGroup')}
+          {t('filters.typeOfUseGroup')}
         </label>
         <SearchSelect
           id="useGroup-select"
