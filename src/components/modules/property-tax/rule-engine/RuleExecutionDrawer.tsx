@@ -3,7 +3,7 @@
 import { Terminal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
-import { RuleItem } from '@/types/rule-engine.types';
+import { RuleItem } from '@/types/rule-engine';
 import RuleSimulatorConsole from './RuleSimulatorConsole';
 
 interface RuleExecutionDrawerProps {

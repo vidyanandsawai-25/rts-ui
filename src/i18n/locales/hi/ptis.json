@@ -715,5 +715,26 @@
     "residential": "अनिवासी",
     "nonResidential": "गैर-करयोग्य",
     "industrial": "औद्योगिक"
+  },
+  "appliedRules": {
+    "buttonLabel": "लागू नियम",
+    "drawerTitle": "लागू नियम",
+    "propertyId": "संपत्ति आईडी",
+    "propertyNo": "संपत्ति संख्या",
+    "columns": {
+      "applyOrder": "क्रम",
+      "ruleCategory": "श्रेणी",
+      "ruleScopeName": "दायरा",
+      "ruleName": "नियम का नाम",
+      "effectType": "प्रभाव प्रकार",
+      "effectValue": "प्रभाव दर",
+      "applyRate": "लागू दर %",
+      "baseValue": "आधार दर",
+      "computedValue": "परिकलित दर",
+      "appliedAt": "लागू होने का समय"
+    },
+    "noAppliedRules": "इस संपत्ति पर कोई नियम लागू नहीं किया गया है।",
+    "loading": "लागू नियमों को लोड किया जा रहा है...",
+    "errorFetching": "लागू नियमों को प्राप्त करने में विफल।"
   }
 }
