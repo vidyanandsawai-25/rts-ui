@@ -13,7 +13,6 @@ import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualme
 import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartmentQC/AppartmentQCSection';
 import { Button } from '@/components/common';
 import { AppliedRulesDrawer } from './AppliedRulesDrawer';
-import type { PtisMainScreenProps } from '@/types/ptis-screen/ptis-screen.types';
 import { fetchPropertyRuleLogsAction } from '@/app/[locale]/property-tax/ptis/actions';
 import { PtisSearchParams } from '@/lib/utils/params';
 import type { DualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
@@ -75,12 +74,10 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
 
-  const updateParams = (updates: Record<string, string>, replace = false) => {
   const ptisNav = useOptionalPtisNavigation();
   const isNavigating = ptisNav?.isPending ?? false;
 
-
-  const handleTabChange = (value: string | number) => {
+  const updateParams = (updates: Record<string, string>, replace = false) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, val]) => params.set(key, val));
     const url = `?${params.toString()}`;
@@ -90,11 +87,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
 
   const handleTabChange = (value: string | number) => updateParams({ valuationTab: value.toString() });
 
-  const handleApartmentMainTabChange = (v: string | number) =>
-    updateParams({ valuationTab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: '1' }, true);
-
-  const handleApartmentSubTabChange = (v: string | number) =>
-    updateParams({ valuationTab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: '1' }, true);
   const updateApartmentParams = (appTab: string, sTab: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('valuationTab', 'apartment');
