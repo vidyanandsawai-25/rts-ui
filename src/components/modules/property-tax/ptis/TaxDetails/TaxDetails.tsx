@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { MasterTable } from '@/components/common/MasterTable';
 import { useTaxDetailsTable } from './useTaxDetailsTable';
 import type { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
@@ -12,6 +13,7 @@ import type { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
  * If no tax details are provided, renders an empty table with default structure.
  */
 const TaxDetails = ({ initialTaxDetails }: { initialTaxDetails?: TaxDetailsData }) => {
+  const t = useTranslations('ptisMainTaxDetails');
   const { taxRows, taxColumns } = useTaxDetailsTable(initialTaxDetails);
 
   return (
@@ -24,6 +26,7 @@ const TaxDetails = ({ initialTaxDetails }: { initialTaxDetails?: TaxDetailsData 
           getRowKey={(row) => row.id}
           tableClassName="table-auto"
           theadClassName="bg-linear-to-r from-[#1e3a8a] via-[#1e40af] to-[#1e3a8a] border-b border-blue-700 py-1.5 hover:from-[#1e40af] hover:via-[#2563eb] hover:to-[#1e40af] transition-colors duration-200 shadow-sm"
+          emptyText={t('noTaxDetailsAvailable')}
         />
       </div>
     </div>

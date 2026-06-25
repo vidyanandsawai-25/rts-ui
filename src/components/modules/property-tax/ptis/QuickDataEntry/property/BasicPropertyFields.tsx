@@ -51,6 +51,7 @@ export const BasicPropertyFields = ({
                     readOnly
                     id="pd-division"
                     name="division"
+                    autoFocus
                     placeholder={t('property.divisionPlaceholder')}
                     defaultValue={propertyData?.division?.toString() ?? ''}
                     onKeyDown={preventEnterSubmit}

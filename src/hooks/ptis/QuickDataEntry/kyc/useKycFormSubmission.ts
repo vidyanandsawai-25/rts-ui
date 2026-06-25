@@ -96,7 +96,6 @@ export const useKycFormSubmission = (
       variant: 'update',
       meta: {
         name: formData.ownerName || t('kyc.recordLabel'),
-        id: KycDetailsData?.propertyId,
       },
       onConfirm: async () => {
         startTransition(async () => {

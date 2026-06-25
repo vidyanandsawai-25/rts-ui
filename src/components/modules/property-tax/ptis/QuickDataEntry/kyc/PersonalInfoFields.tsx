@@ -53,6 +53,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         <SearchSelect
           id="kyc-ownertype"
           name="ownerType"
+          autoFocus
           options={ownerTypeOptions}
           value={formData.ownerTypeId?.toString() ?? ''}
           placeholder={t('kyc.select')}

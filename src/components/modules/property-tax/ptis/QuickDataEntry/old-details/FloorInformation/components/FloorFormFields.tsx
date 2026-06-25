@@ -1,5 +1,4 @@
 "use client"
-
 import { Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { FloorFormFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
@@ -30,6 +29,7 @@ export function FloorFormFields({
     onSave,
     onReset
 }: FloorFormFieldsProps) {
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
             {/* Floor */}
@@ -41,8 +41,9 @@ export function FloorFormFields({
                     options={floorOptions}
                     name="floor"
                     onChange={(_, val) => onFieldChange('oldFloorId', val)}
-                    value={String(formData.oldFloorId)}
+                    value={String(formData.oldFloorId)}                    
                     placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                    autoFocus
                     className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
                 {showError("oldFloorId") && (

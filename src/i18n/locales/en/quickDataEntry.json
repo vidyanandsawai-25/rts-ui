@@ -516,6 +516,7 @@
             "serverError": "Server Error: An internal server error occurred. Please try again later.",
             "defaultApiError": "An API error occurred: {message}"
         },
+        "propertyId": "Property ID",
         "propertyIdMissing": "Property ID is missing. Cannot update KYC.",
         "recordLabel": "KYC Record",
         "unexpectedError": "An unexpected error occurred. Please try again.",

@@ -49,20 +49,7 @@ export const SocietyContactFields = ({
     onFocusField,
     onBlurField,
 }: SocietyContactFieldsProps) => {
-    const getMobileErrorMessage = (value: string): string => {
-        const digits = value.replace(/\D/g, '');
-        if (digits.length === 0) return '';
-        if (kycValidators.hasRepeatedSequence(digits, 5)) {
-            return t('society.validation.invalidRepeatedSequence') || 'Repeated number sequences are not allowed.';
-        }
-        if (!/^[6-9]/.test(digits)) {
-            return t('society.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
-        }
-        if (digits.length !== 10) {
-            return t('society.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
-        }
-        return '';
-    };
+
 
     return (
         <>
@@ -150,11 +137,17 @@ export const SocietyContactFields = ({
                                 pattern="[0-9]"
                                 value={managerMobileInput.digits[i]}
                                 onChange={(e) => managerMobileInput.handleChange(i, e.target.value)}
-                                onKeyDown={(e) => managerMobileInput.handleKeyDown(i, e)}
+                                onKeyDown={(e) => {
+                                    managerMobileInput.handleKeyDown(i, e);
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                    }
+                                }}
                                 onFocus={managerMobileInput.handleFocus}
                                 onBlur={managerMobileInput.handleBlur}
                                 ref={managerMobileInput.setRef(i)}
                                 naked
+                                error={showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) ? 'error' : undefined}
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
@@ -164,7 +157,13 @@ export const SocietyContactFields = ({
                     </div>
                 </div>
                 {showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) && (
-                    <span className="text-xs text-red-500">{getMobileErrorMessage(managerMobileInput.value)}</span>
+                    <span className="text-xs text-red-500">
+                        {managerMobileInput.value && kycValidators.hasRepeatedSequence(managerMobileInput.value.replace(/\D/g, ''), 5)
+                            ? t('society.validation.invalidRepeatedSequence')
+                            : (managerMobileInput.value && !/^[6-9]/.test(managerMobileInput.value.replace(/\D/g, '')))
+                                ? t('society.validation.invalidMobileStart')
+                                : t('society.validation.invalidMobile')}
+                    </span>
                 )}
             </div>
 
@@ -252,11 +251,17 @@ export const SocietyContactFields = ({
                                 pattern="[0-9]"
                                 value={secretaryMobileInput.digits[i]}
                                 onChange={(e) => secretaryMobileInput.handleChange(i, e.target.value)}
-                                onKeyDown={(e) => secretaryMobileInput.handleKeyDown(i, e)}
+                                onKeyDown={(e) => {
+                                    secretaryMobileInput.handleKeyDown(i, e);
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                    }
+                                }}
                                 onFocus={secretaryMobileInput.handleFocus}
                                 onBlur={secretaryMobileInput.handleBlur}
                                 ref={secretaryMobileInput.setRef(i)}
                                 naked
+                                error={showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) ? 'error' : undefined}
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
@@ -266,7 +271,13 @@ export const SocietyContactFields = ({
                     </div>
                 </div>
                 {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
-                    <span className="text-xs text-red-500">{getMobileErrorMessage(secretaryMobileInput.value)}</span>
+                    <span className="text-xs text-red-500">
+                        {secretaryMobileInput.value && kycValidators.hasRepeatedSequence(secretaryMobileInput.value.replace(/\D/g, ''), 5)
+                            ? t('society.validation.invalidRepeatedSequence')
+                            : (secretaryMobileInput.value && !/^[6-9]/.test(secretaryMobileInput.value.replace(/\D/g, '')))
+                                ? t('society.validation.invalidMobileStart')
+                                : t('society.validation.invalidMobile')}
+                    </span>
                 )}
             </div>
         </>

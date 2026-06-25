@@ -9,6 +9,7 @@
 
 import { translateDevanagariDigits } from '../input-sanitization';
 import { EMAIL_REGEX, VALID_TLD_REGEX } from '../validation-rules';
+import type { KycFormData } from '@/types/property-kyc.types';
 
 /**
  * KYC validation rules and constraints
@@ -539,7 +540,7 @@ export const MAX_PROPERTY_ID = 2147483647; // Maximum value for a signed 32-bit 
  * Checks each field individually and returns the first error message, or null if all fields are valid.
  */
 export const validateKycForm = (
-  formData: any,
+  formData: KycFormData,
   mobileValue: string,
   alternateMobileValue: string,
   aadharValue: string,

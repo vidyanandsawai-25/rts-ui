@@ -67,6 +67,7 @@ export const SocietyGeneralFields = ({
                 <Input
                     id="land-owner-name"
                     value={landOwnerName}
+                    autoFocus
                     placeholder={t('society.landOwnerPlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName))
@@ -87,7 +88,7 @@ export const SocietyGeneralFields = ({
                         if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setLandOwnerName(finalVal);
                         }
-                    }}
+                    }}                     
                 />
                 {showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName)) && (
                     <span className="text-xs text-red-500">
