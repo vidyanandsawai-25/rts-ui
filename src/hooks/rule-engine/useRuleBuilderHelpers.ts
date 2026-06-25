@@ -67,7 +67,7 @@ export function validateRuleBuilder(
   ruleName: string,
   ruleCategory: string,
   rulesList: RuleBlock[],
-  t: (key: string, values?: Record<string, string | number | boolean>) => string
+  t: (key: string, values?: Record<string, string | number>) => string
 ): string | null {
   if (!ruleName.trim()) return t('validation.ruleNameRequired');
   if (!ruleCategory) return t('validation.categoryRequired');
