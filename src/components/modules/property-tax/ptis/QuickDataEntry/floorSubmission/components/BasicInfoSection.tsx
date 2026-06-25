@@ -9,6 +9,7 @@ import { normalizeToStringArray } from '@/lib/utils/dropdown-helpers';
 import { FieldWrapper } from './SectionField';
 import { validateField } from '@/lib/validations/validateFloorSubmission';
 import { toast } from 'sonner';
+import { focusFieldOrFallback } from '@/lib/utils/floorSubmission/focus-helpers';
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   t,
@@ -23,8 +24,16 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   getFloorDescription,
   getSubFloorDescription,
   handleOpenDropdown,
+  isAddingNewFloor,
 }) => {
   const [lastTypedIndex, setLastTypedIndex] = React.useState<{ conYr: number; asstYr: number }>({ conYr: -1, asstYr: -1 });
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      focusFieldOrFallback('floor-is-taxable', '.bg-white.rounded-xl');
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [editingFloorForm.id, editingFloorForm.floorId, isAddingNewFloor]);
 
   const handleYearChange = (
     field: 'conYr' | 'asstYr',
@@ -127,7 +136,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               return updated;
             });
           }}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-text z-10 text-sm px-3 focus:outline-none"
+          className="absolute inset-0 w-full h-full text-transparent caret-blue-600 bg-transparent cursor-text z-10 text-sm font-semibold tracking-[2px] px-3 focus:outline-none"
         />
         
         {/* Visual representation of characters */}
