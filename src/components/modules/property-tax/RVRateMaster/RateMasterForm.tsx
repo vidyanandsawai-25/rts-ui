@@ -79,6 +79,12 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
 
   // Show toast when filters match existing rates
   const hasShownToastRef = useRef(false);
+
+  // Reset toast shown flag when filters change
+  useEffect(() => {
+    hasShownToastRef.current = false;
+  }, [selectedZone, selectedUseGroup, assessmentYear]);
+
   useEffect(() => {
     if (!isEditMode && existingRateFound && !hasShownToastRef.current) {
       toast.error(t('messages.validationRatesAlreadyExist'));
@@ -87,7 +93,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
     if (!existingRateFound) {
       hasShownToastRef.current = false;
     }
-  }, [existingRateFound, isEditMode, t]);
+  }, [existingRateFound, isEditMode, t, selectedZone, selectedUseGroup, assessmentYear]);
 
   return (
     <div className={isDrawerMode ? "space-y-3" : "max-w-7xl mx-auto p-2 md:p-3"}>
