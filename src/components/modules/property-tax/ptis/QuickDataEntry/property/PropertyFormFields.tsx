@@ -1,6 +1,7 @@
 import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
 import { BasicPropertyFields } from './BasicPropertyFields';
 import { AdditionalPropertyFields } from './AdditionalPropertyFields';
+import { PlotDetailsFields } from './PlotDetailsFields';
 import { AreaDetailsFields } from './AreaDetailsFields';
 
 interface PropertyFormFieldsProps {
@@ -35,7 +36,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         taxZones,
         checkFormChanges
     } = props;
-    
+
     return (
         <div className="grid grid-cols-12 gap-x-4 gap-y-3">
             <BasicPropertyFields
@@ -44,18 +45,22 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
                 categoryOptions={categoryOptions}
                 categoryId={categoryId}
                 handleCategoryChange={handleCategoryChange}
-                moujaOptions={moujaOptions}
-                moujaId={moujaId}
-                handleMoujaChange={handleMoujaChange}
-                propertyDescriptionOptions={propertyDescriptionOptions}
-                propertyTypeId={propertyTypeId}
-                handlePropertyDescriptionChange={handlePropertyDescriptionChange}
             />
             <AdditionalPropertyFields
                 t={t}
                 propertyData={propertyData}
                 taxZones={taxZones}
                 checkFormChanges={checkFormChanges}
+                propertyDescriptionOptions={propertyDescriptionOptions}
+                propertyTypeId={propertyTypeId}
+                handlePropertyDescriptionChange={handlePropertyDescriptionChange}
+            />
+            <PlotDetailsFields
+                t={t}
+                propertyData={propertyData}
+                moujaOptions={moujaOptions}
+                moujaId={moujaId}
+                handleMoujaChange={handleMoujaChange}
             />
             <AreaDetailsFields
                 t={t}

@@ -64,7 +64,12 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                       pattern="[0-9]"
                       value={aadharInput.digits[index]}
                       onChange={(e) => aadharInput.handleChange(index, e.target.value)}
-                      onKeyDown={(e) => aadharInput.handleKeyDown(index, e)}
+                      onKeyDown={(e) => {
+                        aadharInput.handleKeyDown(index, e);
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                        }
+                      }}
                       onFocus={aadharInput.handleFocus}
                       onBlur={aadharInput.handleBlur}
                       ref={aadharInput.setRef(index)}
@@ -120,7 +125,12 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                 pattern="[0-9]"
                 value={mobileInput.digits[i]}
                 onChange={(e) => mobileInput.handleChange(i, e.target.value)}
-                onKeyDown={(e) => mobileInput.handleKeyDown(i, e)}
+                onKeyDown={(e) => {
+                  mobileInput.handleKeyDown(i, e);
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
                 onFocus={mobileInput.handleFocus}
                 onBlur={mobileInput.handleBlur}
                 ref={mobileInput.setRef(i)}
@@ -170,7 +180,12 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                   pattern="[0-9]"
                   value={alternateMobileInput.digits[i]}
                   onChange={(e) => alternateMobileInput.handleChange(i, e.target.value)}
-                  onKeyDown={(e) => alternateMobileInput.handleKeyDown(i, e)}
+                  onKeyDown={(e) => {
+                    alternateMobileInput.handleKeyDown(i, e);
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                    }
+                  }}
                   onFocus={alternateMobileInput.handleFocus}
                   onBlur={alternateMobileInput.handleBlur}
                   ref={alternateMobileInput.setRef(i)}

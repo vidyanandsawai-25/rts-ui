@@ -18,7 +18,7 @@ export function FloorFormActions({
     onReset
 }: FloorFormActionsProps) {
     return (
-        <div className="flex justify-end md:gap-5">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 w-full">
             {!isEditMode ? (
                 <AddButton
                     label={t('oldDetails.button.add')}
@@ -26,7 +26,7 @@ export function FloorFormActions({
                     type="submit"
                     isLoading={isSubmitting}
                     disabled={isSubmitting}
-                    className="h-11 w-40 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
+                    className="h-10 w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
                 />
 
             ) : (
@@ -36,15 +36,15 @@ export function FloorFormActions({
                         onClick={onSave}
                         type="submit"
                         isLoading={isSubmitting}
-                        disabled={isSubmitting || !isChanged}                        
+                        disabled={isSubmitting || !isChanged}
+                        className="h-10 w-full sm:flex-1 shadow-lg shadow-blue-200 transition-all duration-200"
                     />
 
                     <ClearButton
                         label={t('commonbuttonmessages.clear')}
                         onClick={onReset}
-                        className="h-11 w-40 border border-blue-100 text-blue-600 hover:bg-blue-50 text-sm font-bold transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
-                    >
-                    </ClearButton>
+                        className="h-10 w-full sm:flex-1 border border-blue-100 text-blue-600 hover:bg-blue-50 text-sm font-bold transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
+                    />
                 </>
             )}
         </div>

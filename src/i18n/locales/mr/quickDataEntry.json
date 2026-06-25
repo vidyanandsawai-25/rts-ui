@@ -409,7 +409,8 @@
             "carpetAreaMax4Decimals": "कार्पेट क्षेत्र दशांश चिन्हानंतर ४ अंकांपेक्षा जास्त नसावे",
             "oldConstructionTypeIdInvalid": "बांधकामाचा प्रकार अवैध आहे",
             "oldTypeOfUseIdInvalid": "वापराचा प्रकार अवैध आहे",
-            "invalidIds": "अवैध आयडी प्रदान केले"
+            "invalidIds": "अवैध आयडी प्रदान केले",
+            "invalidCarpetArea": "कार्पेट क्षेत्रफळ 0 पेक्षा जास्त वैध संख्या असणे आवश्यक आहे"
         },
         "errors": {
             "failedToConnect": {
@@ -515,6 +516,7 @@
             "serverError": "सर्व्हर त्रुटी: अंतर्गत सर्व्हर त्रुटी आली. कृपया नंतर पुन्हा प्रयत्न करा.",
             "defaultApiError": "एक API त्रुटी आली: {message}"
         },
+        "propertyId": "मालमत्ता आयडी",
         "propertyIdMissing": "मालमत्ता आयडी गहाळ आहे. केवायसी अपडेट करता येत नाही.",
         "recordLabel": "केवायसी रेकॉर्ड",
         "unexpectedError": "एक अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
