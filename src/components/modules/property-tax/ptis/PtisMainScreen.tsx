@@ -134,50 +134,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                     ))}
                   </TabList>
                 </Tabs>
-
-                {activeTab !== 'apartment' && propertyId && hasAppliedRules && (
-                  <Button
-                    id="applied-rules-tab-btn"
-                    variant="secondary"
-                    size="sm"
-                    icon={GitMerge}
-                    onClick={() => setIsAppliedRulesDrawerOpen(true)}
-                    className="bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 transition-all duration-300 font-bold shadow-sm rounded-lg"
-                  >
-                    {t('appliedRules.buttonLabel')}
-                  </Button>
-                )}
-
-                {activeTab === 'apartment' && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <Tabs value={activeMainTab} onChange={handleApartmentMainTabChange} variant="pills" size="sm" activeTabClassName="bg-blue-700 text-white shadow-sm rounded-lg border-none">
-                      <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
-                        <Tab value="amenities" icon={Building2}>{t('apartmentTabs.amenities')}</Tab>
-                        <Tab value="commercial" icon={Building}>{t('apartmentTabs.commercial')}</Tab>
-                        <Tab value="residential" icon={Home}>{t('apartmentTabs.residential')}</Tab>
-                      </TabList>
-                    </Tabs>
-                    <Tabs value={activeSubTab} onChange={handleApartmentSubTabChange} variant="pills" size="sm" activeTabClassName="bg-green-700 text-white shadow-sm rounded-lg border-none">
-                      <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
-                        <Tab value="rateable" icon={Calculator}>{t('apartmentTabs.rateable')}</Tab>
-                        <Tab value="capital" icon={IndianRupee}>{t('apartmentTabs.capital')}</Tab>
-                        <Tab value="dual-method" icon={GitMerge}>{t('apartmentTabs.dual')}</Tab>
-                      </TabList>
-                    </Tabs>
-                    {propertyId && hasAppliedRules && (
-                      <Button
-                        id="applied-rules-apartment-btn"
-                        variant="secondary"
-                        size="sm"
-                        icon={GitMerge}
-                        onClick={() => setIsAppliedRulesDrawerOpen(true)}
-                        className="bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 transition-all duration-300 font-bold shadow-sm rounded-lg"
-                      >
-                        {t('appliedRules.buttonLabel')}
-                      </Button>
-                    )}
-                  </div>
-                )}
                 <div className="flex items-center gap-3 shrink-0 ml-auto pl-4">
                   {activeTab === 'apartment' && (
                     <>
@@ -196,6 +152,18 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                         </TabList>
                       </Tabs>
                     </>
+                  )}
+                  {propertyId && hasAppliedRules && (
+                    <Button
+                      id="applied-rules-tab-btn"
+                      variant="secondary"
+                      size="sm"
+                      icon={GitMerge}
+                      onClick={() => setIsAppliedRulesDrawerOpen(true)}
+                      className="bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 transition-all duration-300 font-bold shadow-sm rounded-lg"
+                    >
+                      {t('appliedRules.buttonLabel')}
+                    </Button>
                   )}
                 </div>
               </div>
