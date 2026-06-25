@@ -376,6 +376,9 @@ export interface BasicInfoSectionProps extends BaseFormSectionProps {
 
     /** Triggers lazy loading for specific dropdown data */
     handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
+
+    /** Indicates if we are in Add Floor mode */
+    isAddingNewFloor?: boolean;
 }
 
 /**

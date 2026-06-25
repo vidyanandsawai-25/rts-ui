@@ -59,7 +59,7 @@ export const useKycFormValidation = (
       (formData.address ?? '') !== (KycDetailsData?.address ?? '') ||
       (formData.addressEnglish ?? '') !== initialAddressEnglish ||
       (formData.location ?? '') !== (KycDetailsData?.location ?? '') ||
-      (formData.pinCode ?? '') !== (KycDetailsData?.pinCode ?? '') ||
+      String(formData.pinCode ?? '') !== String(KycDetailsData?.pinCode ?? '') ||
       mobileInput.value !== (KycDetailsData?.mobileNo ?? '').replace(/\D/g, '') ||
       alternateMobileInput.value !== (KycDetailsData?.alternateMobileNo ?? '').replace(/\D/g, '') ||
       aadharInput.value !== ((KycDetailsData?.adharCardNo ?? KycDetailsData?.aadharCardNo) ?? '').replace(/\D/g, '')
@@ -102,8 +102,8 @@ export const useKycFormValidation = (
     const isOccupierNameValid = enhancedKycValidators.isValidOccupierName(occupierName);
     const isOccupierNameEnglishValid = enhancedKycValidators.isValidOccupierName(occupierNameEnglish);
 
-    // Check if pinCode is valid (optional, but if provided must be exactly 6 digits)
-    const isPinCodeValid = !pinCode || /^[0-9]{6}$/.test(pinCode);
+    // Check if pinCode is valid (optional, but if provided must be exactly 6 digits without repeated digits)
+    const isPinCodeValid = kycValidators.isValidPinCode(pinCode);
 
     // Check mobile and aadhar validity
     const isMobileValid = kycValidators.isValidMobile(mobileInput.value);
