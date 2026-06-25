@@ -278,6 +278,21 @@ describe('useKycForm', () => {
 
       expect(result.current.canSubmit()).toBe(false);
     });
+
+    it('should prevent submission with repeated pincode digits', () => {
+      const { result } = renderHook(() =>
+        useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
+      );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          pinCode: '111111',
+        }));
+      });
+
+      expect(result.current.canSubmit()).toBe(false);
+    });
   });
 
   describe('handleSubmit', () => {
@@ -319,7 +334,7 @@ describe('useKycForm', () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(toast.error).toHaveBeenCalledWith('kyc.validation.pleaseFixErrors');
+      expect(toast.error).toHaveBeenCalledWith('kyc.validation.invalidName');
       expect(mockConfirm).not.toHaveBeenCalled();
     });
 
@@ -327,6 +342,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -339,7 +361,6 @@ describe('useKycForm', () => {
           variant: 'update',
           meta: {
             name: 'John Doe',
-            id: 123,
           },
         })
       );
@@ -355,6 +376,13 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
@@ -367,7 +395,7 @@ describe('useKycForm', () => {
           propertyId: 123,
           ownerTypeId: 1,
           ownerName: 'John Doe',
-          emailId: 'john@example.com',
+          emailId: 'changed@example.com',
           mobileNo: '9876543210',
           adharCardNo: '223456789012',
           pinCode: '123456',
@@ -385,6 +413,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -405,6 +440,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -432,6 +474,13 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
@@ -452,6 +501,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -478,6 +534,13 @@ describe('useKycForm', () => {
           mockRouter
         )
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -528,6 +591,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
