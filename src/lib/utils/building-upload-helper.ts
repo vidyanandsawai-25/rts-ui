@@ -27,6 +27,25 @@ export async function uploadPendingFiles(
                 let result;
                 if (cert.propertyCertificateId) {
                     result = await actions.replaceCertificateDocumentAction(cert.propertyCertificateId, formData);
+                    if (!result.success && result.error) {
+                        const errLower = result.error.toLowerCase();
+                        const notFoundTranslation = t("building.errors.notFound");
+                        const notFoundTranslationClean = notFoundTranslation ? notFoundTranslation.replace(/\.$/, "") : "";
+                        const isNotFound = (
+                            errLower.includes("not found") ||
+                            errLower.includes("notfound") ||
+                            (notFoundTranslation && result.error.includes(notFoundTranslation)) ||
+                            (notFoundTranslationClean && result.error.includes(notFoundTranslationClean))
+                        );
+
+                        if (isNotFound) {
+                            formData.append("PropertyId", propId.toString());
+                            formData.append("CertificateTypeId", certTypeId.toString());
+                            if (cert.number) formData.append("CertificateNo", cert.number);
+                            if (cert.date) formData.append("IssueDate", cert.date);
+                            result = await actions.uploadCertificateDocumentAction(formData);
+                        }
+                    }
                 } else {
                     formData.append("PropertyId", propId.toString());
                     formData.append("CertificateTypeId", certTypeId.toString());
