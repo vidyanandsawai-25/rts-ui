@@ -47,6 +47,7 @@ export function RateViewActions({
         onClick={onDeleteRate}
         size="sm"
         label={t('buttons.deleteRate')}
+        disabled={isActionDisabled}
       />
     </div>
   );
