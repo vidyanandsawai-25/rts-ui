@@ -12,10 +12,12 @@ export default async function Page({ searchParams }: TaxZoningServerPageProps) {
   const pageNumber = Math.max(1, Number(params.page) || 1);
   const pageSize = Math.min(100, Math.max(1, Number(params.pageSize) || 5));
   const wardId = params.wardId ? Number(params.wardId) : undefined;
+  const sortBy = params.sortBy;
+  const sortOrder = params.sortOrder;
 
   // Run all independent server actions concurrently to avoid unnecessary TTFB.
   const [result, taxZonesResult, wardsDataResult, propertyOptionsResult] = await Promise.all([
-    getTaxZoningPagedAction(pageNumber, pageSize, undefined, undefined, "ward"),
+    getTaxZoningPagedAction(pageNumber, pageSize, undefined, undefined, "ward", sortBy, sortOrder),
     fetchTaxZonePagedAction(1, -1),
     fetchWardPagedAction(1, -1),
     wardId
@@ -48,6 +50,8 @@ export default async function Page({ searchParams }: TaxZoningServerPageProps) {
       taxZones={taxZonesResult}
       wardsData={wardsDataResult}
       allProperties={propertyOptionsResult}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
     />
   );
 }

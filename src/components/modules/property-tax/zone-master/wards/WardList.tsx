@@ -8,6 +8,7 @@ import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { AddButton, SearchInput, StatusBadge, EditButton, DeleteButton } from "@/components/common";
 import { useWardListHandlers } from "@/hooks/zoneMaster/useWardListHandlers";
+import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface Props {
   wards: WardItem[];
@@ -91,7 +92,10 @@ export default function WardList({
                 className="w-64 mb-0"
                 placeholder={t("wardList.searchPlaceholder")}
                 value={localSearch}
-                onChange={handleSearchChange}
+                onChange={(value) => {
+                  const sanitized = value.replace(TEXT_SANITIZE, '');
+                  handleSearchChange(sanitized);
+                }}
               />
             )}
 

@@ -5,7 +5,6 @@ import { HandleRateSectionDeleteParams } from "@/types/rateSectionMaster.types";
 export async function handleRateSectionDelete({
   rateId,
   rateName,
-  rateNo,
   wardCounts,
   searchParams,
   pathname,
@@ -16,7 +15,7 @@ export async function handleRateSectionDelete({
   setDeletingId
 }: HandleRateSectionDeleteParams) {
   setDeletingId(rateId);
-  const formattedName = rateNo ? `${rateNo} - ${rateName}` : rateName;
+  const formattedName = rateName;
   const hasWards = rateId ? (wardCounts[rateId] || 0) > 0 : false;
 
   try {
@@ -44,40 +43,30 @@ export async function handleRateSectionDelete({
       if (onDeleteSuccess) onDeleteSuccess();
     } else {
       const errorMsg = result.error?.toLowerCase() || result.message?.toLowerCase() || "";
+      const rawError = result.error || result.message || t('messages.deleteError');
       
-      // Check for "referenced by other entities" error message
-      if (
-        errorMsg.includes("referenced by other entities") ||
-        errorMsg.includes("cannot delete") ||
-        errorMsg.includes("still referenced") ||
-        errorMsg.includes("foreign key") ||
-        errorMsg.includes("in use")
-      ) {
+      // Check for specifically referenced by RateSectionDetails (Wards)
+      if (errorMsg.includes("ratesectiondetails")) {
         // Show custom localized error message
         toast.error(t('messages.inUseError', { name: formattedName }));
       } else if (hasWards) {
         toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
       } else {
-        toast.error(result.error || result.message || t('messages.deleteError'));
+        // Fall back to showing the actual API error message for other reference errors
+        toast.error(rawError);
       }
     }
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "";
     const errorLower = msg.toLowerCase();
     
-    if (
-      errorLower.includes("referenced by other entities") ||
-      errorLower.includes("cannot delete") ||
-      errorLower.includes("still referenced") ||
-      errorLower.includes("foreign key") ||
-      errorLower.includes("in use")
-    ) {
+    if (errorLower.includes("ratesectiondetails")) {
       // Show custom localized error message
       toast.error(t('messages.inUseError', { name: formattedName }));
     } else if (hasWards) {
       toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
     } else {
-      toast.error(t('messages.deleteError'));
+      toast.error(msg || t('messages.deleteError'));
     }
   } finally {
     setDeletingId(null);

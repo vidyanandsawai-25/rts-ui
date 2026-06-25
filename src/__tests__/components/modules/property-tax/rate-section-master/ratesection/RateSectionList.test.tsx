@@ -67,6 +67,7 @@ vi.mock("@/components/common", () => ({
       placeholder={placeholder}
     />
   ),
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/components/common/CardList", () => ({
