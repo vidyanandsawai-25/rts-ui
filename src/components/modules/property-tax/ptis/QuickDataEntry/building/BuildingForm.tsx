@@ -21,6 +21,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         fieldErrors,
         incompleteCertificates,
         handleFileUpload,
+        handleFileDelete,
         handleToggleEnabled,
         handleInputChange,
         handleSave,
@@ -99,7 +100,10 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                 });
             }
         }
+        return result;
     }, [handleSave, buildingPermission]);
+
+
 
     return (
         <>
@@ -146,6 +150,9 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                         if (activeSelectedTypeId !== null) {
                                             handleFileUpload(activeSelectedTypeId, file);
                                         }
+                                    }}
+                                    onFileDelete={(id) => {
+                                        handleFileDelete(id);
                                     }}
                                     validationError={activeSelectedTypeId !== null ? validationErrors[activeSelectedTypeId] : undefined}
                                     fieldErrors={activeSelectedTypeId !== null ? fieldErrors[activeSelectedTypeId] : undefined}
