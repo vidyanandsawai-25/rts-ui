@@ -60,16 +60,21 @@
     "addRule": "Add Rule",
     "searchByCodeOrName": "Search by Code or Name...",
     "allCategories": "All Categories",
-    "ruleCode": "Rule Code",
+    "ruleCode": "Rule Set Code",
     "ruleName": "Rule Set Name",
     "description": "Rule Set Description",
     "category": "Category",
     "status": "Status",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
     "deleteTitle": "Delete Calculation Rule?",
     "deleteDescription": "Are you sure you want to permanently delete this policy rule? This action cannot be undone and will impact property tax demand runs.",
     "deleteConfirm": "Permanently Delete",
     "deleteCancel": "Cancel",
     "deleteSuccess": "Rule deleted successfully",
+    "enabledSuccess": "Rule enabled successfully",
+    "disabledSuccess": "Rule disabled successfully",
+    "updatingStatus": "Updating rule status...",
     "priority": "Priority",
     "scope": "Rule Scope"
   },
@@ -180,5 +185,16 @@
     "description": "You have unsaved changes. Are you sure you want to leave? Your changes will be permanently lost.",
     "confirm": "Leave Anyway",
     "cancel": "Stay & Edit"
+  },
+  "validation": {
+    "ruleNameRequired": "Rule Name is required!",
+    "categoryRequired": "Category is required!",
+    "effectTypeRequired": "Rule {index}: Effect Type is required!",
+    "effectValueRequired": "Rule {index}: Effect Value is required!",
+    "effectValueRange": "Rule {index}: Effect Value must be between 0% and 100%!",
+    "atLeastOneRuleRequired": "At least one rule is required.",
+    "changeReasonRequired": "Please enter a reason for this change.",
+    "saveSuccess": "Rule saved successfully",
+    "saveFailure": "Failed to save rule."
   }
 }
