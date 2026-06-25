@@ -58,12 +58,14 @@ interface DialogButtonProps {
   onClick: () => void;
   icon?: React.ElementType;
   variant: "confirm" | "cancel";
+  autoFocus?: boolean;
 }
 function DialogButton({
   label,
   onClick,
   icon: BtnIcon,
   variant,
+  autoFocus,
 }: DialogButtonProps): JSX.Element {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold " +
@@ -77,9 +79,16 @@ function DialogButton({
       : "bg-red-600 text-white hover:bg-red-700 focus:ring-red-300";
 
   const cls = variant === "cancel" ? cancelBtn : confirmBtn;
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    if (autoFocus && buttonRef.current) {
+      buttonRef.current.focus();
+    }
+  }, [autoFocus]);
 
   return (
-    <button type="button" onClick={onClick} className={`${base} ${cls}`}>
+    <button type="button" ref={buttonRef} onClick={onClick} className={`${base} ${cls}`}>
       {BtnIcon ? <BtnIcon className="h-4 w-4" /> : null}
       <span>{label}</span>
     </button>
@@ -234,6 +243,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
                       label={computed.cancelText}
                       onClick={handleCancel}
                       icon={X}
+                      autoFocus
                     />
 
                     <DialogButton

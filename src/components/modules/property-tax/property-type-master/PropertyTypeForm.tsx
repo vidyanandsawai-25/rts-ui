@@ -1,10 +1,12 @@
 "use client";
 
+import React from "react";
 import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common";
 import { StatusToggleSection } from "./components/StatusToggleSection";
 import { FormFieldsSection } from "./components/FormFieldsSection";
+import type { FormFieldsSectionRef } from "./components/FormFieldsSection";
 import { ValidationSection } from "./components/ValidationSection";
 import { TypeOfUseSection } from "./components/TypeOfUseSection";
 
@@ -55,6 +57,23 @@ export default function PropertyTypeForm({
     onSuccess: () => { },
     onCancel: () => { },
   });
+
+  // --- Refs for auto-focus ---
+  const statusToggleRef = React.useRef<HTMLButtonElement>(null);
+  const formFieldsRef = React.useRef<FormFieldsSectionRef>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      // Small delay to wait for the drawer to render
+      setTimeout(() => {
+        if (isEdit && statusToggleRef.current) {
+          statusToggleRef.current.focus();
+        } else if (!isEdit && formFieldsRef.current?.propertyDescriptionRef?.current) {
+          formFieldsRef.current.propertyDescriptionRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [open, isEdit]);
 
   // --- TypeOfUse selection state ---
   const {
@@ -128,6 +147,7 @@ export default function PropertyTypeForm({
           {/* ================= LEFT COLUMN ================= */}
           <div className="flex flex-col gap-4 h-full">
             <StatusToggleSection
+              ref={statusToggleRef}
               isEdit={isEdit}
               isActive={isActive}
               handleToggleStatus={handleToggleStatus}
@@ -136,6 +156,7 @@ export default function PropertyTypeForm({
               tCommon={tCommon}
             />
             <FormFieldsSection
+              ref={formFieldsRef}
               formData={formData}
               searchSequenceValue={searchSequenceValue}
               handleChange={handleChange}

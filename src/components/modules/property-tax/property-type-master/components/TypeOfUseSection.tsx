@@ -159,8 +159,17 @@ export const TypeOfUseSection = ({
                   <label
                     key={item.typeOfUseId}
                     onClick={() => onToggle(item.typeOfUseId)}
+                    tabIndex={0} // Add this to make the label focusable
+                    onKeyDown={(e) => {
+                      // Add keyboard support for Enter and Space keys
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault(); // Prevent page scroll on Space
+                        onToggle(item.typeOfUseId);
+                      }
+                    }}
                     className={cn(
                       "flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all border shadow-sm",
+                      "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", // Add focus styles
                       isChecked
                         ? "bg-blue-50/50 border-blue-200"
                         : "bg-white hover:border-blue-200 border-gray-200"
@@ -172,6 +181,7 @@ export const TypeOfUseSection = ({
                         onCheckedChange={() => onToggle(item.typeOfUseId)}
                         aria-label={item.typeOfUseCode}
                         className={isChecked ? 'data-[state=checked]:text-blue-600' : ''}
+                        tabIndex={-1}
                       />
                     </div>
 
