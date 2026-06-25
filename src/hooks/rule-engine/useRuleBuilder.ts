@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useToast } from '@/components/common';
 import { useRuleFieldsConfig } from './useRuleFieldsConfig';
 import {
@@ -32,6 +33,7 @@ export function useRuleBuilder({
 }: UseRuleBuilderProps) {
   const router = useRouter();
   const toast = useToast();
+  const t = useTranslations('ruleEngine');
 
   const [ruleName, setRuleName] = React.useState(initialRule?.ruleName ?? '');
   const [ruleCode, setRuleCode] = React.useState(initialRule?.ruleCode ?? '');
@@ -77,7 +79,7 @@ export function useRuleBuilder({
   };
 
   const removeRuleBlock = (index: number) => {
-    if (rulesList.length <= 1) { toast.error('At least one rule is required.'); return; }
+    if (rulesList.length <= 1) { toast.error(t('validation.atLeastOneRuleRequired')); return; }
     setRulesList((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -105,7 +107,7 @@ export function useRuleBuilder({
   };
 
   const handleSaveClick = () => {
-    const errorMsg = validateRuleBuilder(ruleName, ruleCategory, rulesList);
+    const errorMsg = validateRuleBuilder(ruleName, ruleCategory, rulesList, t);
     if (errorMsg) { toast.error(errorMsg); return; }
     setChangeReason(initialRule ? '' : 'Initial rule creation');
     setIsReasonOpen(true);
@@ -113,7 +115,7 @@ export function useRuleBuilder({
 
   const handleConfirmSave = async () => {
     if (!changeReason.trim()) {
-      toast.error('Please enter a reason for this change.');
+      toast.error(t('validation.changeReasonRequired'));
       return;
     }
     if (isSaving) return;
@@ -144,10 +146,10 @@ export function useRuleBuilder({
       };
       const res = await onSaveRule(payload);
       if (res.success) {
-        toast.success('Rule saved successfully');
+        toast.success(t('validation.saveSuccess'));
         router.push(`/${locale}/property-tax/rule-engine`);
       } else {
-        toast.error(res.message || 'Failed to save rule.');
+        toast.error(res.message || t('validation.saveFailure'));
       }
     } finally {
       setIsSaving(false);
