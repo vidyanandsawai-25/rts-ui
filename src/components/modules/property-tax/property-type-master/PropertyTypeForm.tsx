@@ -59,6 +59,7 @@ export default function PropertyTypeForm({
   // --- TypeOfUse selection state ---
   const {
     selectedTypeOfUseIds,
+    initialTypeOfUseIds: initialIds,
     persistedPropertyTypeId,
     setPersistedPropertyTypeId,
     toggleTypeOfUse,
@@ -153,6 +154,7 @@ export default function PropertyTypeForm({
           <TypeOfUseSection
             typeOfUseList={typeOfUseList}
             selectedTypeOfUseIds={selectedTypeOfUseIds}
+            initialTypeOfUseIds={initialIds}
             onToggle={toggleTypeOfUse}
             onSelectAll={handleSelectAll}
             onClearAll={handleClearAll}

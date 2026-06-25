@@ -12,6 +12,7 @@ import type { UseType } from "@/types/typeOfUse.types";
 interface TypeOfUseSectionProps {
   typeOfUseList: UseType[];
   selectedTypeOfUseIds: Set<number>;
+  initialTypeOfUseIds: Set<number>;
   onToggle: (touId: number) => void;
   onSelectAll: () => void;
   onClearAll: () => void;
@@ -22,6 +23,7 @@ interface TypeOfUseSectionProps {
 export const TypeOfUseSection = ({
   typeOfUseList,
   selectedTypeOfUseIds,
+  initialTypeOfUseIds,
   onToggle,
   onSelectAll,
   onClearAll,
@@ -42,9 +44,9 @@ export const TypeOfUseSection = ({
     return ["ALL", ...Array.from(types)];
   }, [typeOfUseList]);
 
-  // Filtered list based on search and type filter
+  // Filtered list based on search and type filter, sorted with initial items first
   const filteredTypeOfUseList = useMemo(() => {
-    return typeOfUseList.filter((item) => {
+    const filtered = typeOfUseList.filter((item) => {
       const matchesSearch =
         !touSearchTerm ||
         item.description.toLowerCase().includes(touSearchTerm.toLowerCase()) ||
@@ -55,7 +57,17 @@ export const TypeOfUseSection = ({
 
       return matchesSearch && matchesType;
     });
-  }, [typeOfUseList, touSearchTerm, selectedTouType]);
+
+    // Sort: initial items first, then the rest in their original order
+    return filtered.sort((a, b) => {
+      const aIsInitial = initialTypeOfUseIds.has(a.typeOfUseId);
+      const bIsInitial = initialTypeOfUseIds.has(b.typeOfUseId);
+
+      if (aIsInitial && !bIsInitial) return -1;
+      if (!aIsInitial && bIsInitial) return 1;
+      return 0; // Preserve original order for items in same category
+    });
+  }, [typeOfUseList, touSearchTerm, selectedTouType, initialTypeOfUseIds]);
 
   return (
     <div className="flex flex-col h-full min-h-[300px] max-h-[750px] md:min-h-[400px] lg:min-h-[500px] overflow-y-auto">
