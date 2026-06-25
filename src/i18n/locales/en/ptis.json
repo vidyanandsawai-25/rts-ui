@@ -707,5 +707,26 @@
     "residential": "Residential",
     "nonResidential": "Non-Taxable",
     "industrial": "Industrial"
+  },
+  "appliedRules": {
+    "buttonLabel": "Applied Rules",
+    "drawerTitle": "Applied Rules",
+    "propertyId": "Property ID",
+    "propertyNo": "Property No",
+    "columns": {
+      "applyOrder": "Order",
+      "ruleCategory": "Category",
+      "ruleScopeName": "Scope",
+      "ruleName": "Rule Name",
+      "effectType": "Effect Type",
+      "effectValue": "Effect Rate",
+      "applyRate": "Applied Rate %",
+      "baseValue": "Base Rate",
+      "computedValue": "Calculated Rate",
+      "appliedAt": "Applied At"
+    },
+    "noAppliedRules": "No rules have been applied to this property.",
+    "loading": "Loading applied rules...",
+    "errorFetching": "Failed to fetch applied rules."
   }
 }

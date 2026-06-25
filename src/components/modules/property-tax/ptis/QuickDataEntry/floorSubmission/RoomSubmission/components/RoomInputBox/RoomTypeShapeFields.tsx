@@ -75,7 +75,25 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
         />
       </div>
 
-      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.shape }}>
+      <div 
+        className="flex flex-col justify-center flex-shrink-0 px-1" 
+        style={{ width: COLUMN_WIDTHS.shape }}
+        onKeyDownCapture={(e) => {
+          if (e.key === 'Tab' && !e.shiftKey) {
+            const selectBtn = e.currentTarget.querySelector('button[role="combobox"]');
+            if (document.activeElement === selectBtn) {
+              e.preventDefault();
+              setTimeout(() => {
+                const roomCountInput = focusRefs?.current?.['roomCount'] as HTMLInputElement | null;
+                if (roomCountInput) {
+                  roomCountInput.focus();
+                  roomCountInput.select();
+                }
+              }, 100);
+            }
+          }
+        }}
+      >
         <Select
           options={[
             { label: t('roomSubmission.input.shapes.select'), value: '-Select-' },
@@ -91,9 +109,11 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           onChange={(_, value) => {
             handleInputChange('shape', value);
             setTimeout(() => {
-              const firstParam = document.querySelector('input[data-param]');
-              if (firstParam instanceof HTMLElement) firstParam.focus();
-              else focusRefs?.current['roomCount']?.focus();
+              const roomCountInput = focusRefs?.current?.['roomCount'] as HTMLInputElement | null;
+              if (roomCountInput) {
+                roomCountInput.focus();
+                roomCountInput.select();
+              }
             }, 100);
           }}
           disabled={!isEditMode}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle, XCircle, CornerDownRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine.types';
+import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine';
 
 interface RuleSimulatorWorkflowProps {
   workflow: DryRunWorkflow;
@@ -16,11 +16,7 @@ export default function RuleSimulatorWorkflow({
   formatDryRunEffect,
   t,
 }: RuleSimulatorWorkflowProps) {
-  const [expandedJson, setExpandedJson] = React.useState<Record<string, boolean>>({});
 
-  const toggleJson = (ruleCode: string) => {
-    setExpandedJson((prev) => ({ ...prev, [ruleCode]: !prev[ruleCode] }));
-  };
 
   const displayedSubRules = React.useMemo(() => {
     return showMatchedOnly
@@ -156,30 +152,7 @@ export default function RuleSimulatorWorkflow({
                     </div>
                   )}
 
-                  {/* Toggle JSON trace */}
-                  <div className="mt-2 pt-2 border-t border-emerald-200/40 flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleJson(sr.ruleCode)}
-                      className="text-[10.5px] font-black text-emerald-950 hover:text-emerald-900 transition duration-150 flex items-center gap-1.5 w-fit bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3 py-1.5 rounded-xl shadow-sm"
-                    >
-                      {expandedJson[sr.ruleCode] ? t('simulation.hideJsonTrace') : t('simulation.showJsonTrace')}
-                    </button>
-                    {expandedJson[sr.ruleCode] && (
-                      <pre className="text-[10px] bg-slate-900 text-slate-100 p-3.5 rounded-xl overflow-auto max-h-[220px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner w-full">
-                        {JSON.stringify({
-                          ruleCode: sr.ruleCode,
-                          ruleName: sr.ruleName,
-                          expression: sr.expression,
-                          isMatch: sr.isMatch,
-                          matchStatus: sr.matchStatus,
-                          baseRate: sr.baseRate,
-                          computedValue: sr.computedValue,
-                          effect: sr.effect
-                        }, null, 2)}
-                      </pre>
-                    )}
-                  </div>
+
                 </div>
               )}
             </div>

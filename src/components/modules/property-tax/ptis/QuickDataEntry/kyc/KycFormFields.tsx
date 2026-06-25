@@ -37,7 +37,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
   );
 
   const showError = (field: keyof KycFormData | 'mobile' | 'alternateMobile' | 'aadhar', isValid: boolean): boolean => {
-    if (focusedField === field) return false;
+    if (focusedField === field && !isSubmitted) return false;
     return baseShowError(field, isValid);
   };
 
@@ -69,7 +69,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
       </div>
 
       {/* Row 3: Contact Info - Aadhar Card No, Mobile No, Alternate Mobile No */}
-      <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
         <ContactInfoFields
           t={t}
           formData={formData}

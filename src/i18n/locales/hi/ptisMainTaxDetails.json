@@ -11,5 +11,6 @@
   "hearing": "सुनवाई",
   "allTaxes": "सभी कर",
   "taxes": "कर",
-  "totalTaxes": "कुल कर"
+  "totalTaxes": "कुल कर",
+  "noTaxDetailsAvailable": "कोई कर विवरण उपलब्ध नहीं है"
 }

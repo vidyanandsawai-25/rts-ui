@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldConfig, ConditionState, StaticValue } from '@/types/rule-engine.types';
+import { FieldConfig, ConditionState, StaticValue } from '@/types/rule-engine';
 import { fetchDynamicFieldOptionsAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 
 interface UseConditionRowParams {
@@ -49,8 +49,6 @@ export function useConditionRow({
     });
   };
 
-
-
   React.useEffect(() => {
     if (!currentField || currentField.sourceType !== 'API' || !currentField.apiEndpoint) {
       Promise.resolve().then(() => {
@@ -92,7 +90,6 @@ export function useConditionRow({
     }
     return val;
   }, [currentField, apiOptions]);
-
 
   const formattedValueLabel = React.useMemo(() => {
     if (!condition.value) return 'Empty';

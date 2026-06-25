@@ -2,8 +2,8 @@ import React from 'react';
 import { Play, Plus, Terminal, Activity, XCircle, ListFilter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/common/ActionButton';
-import { RuleItem, DryRunEffect, DryRunWorkflow } from '@/types/rule-engine.types';
-import { useSimulatorPayload } from './useSimulatorPayload';
+import { RuleItem, DryRunEffect, DryRunWorkflow } from '@/types/rule-engine';
+import { useSimulatorPayload } from '@/hooks/rule-engine/useSimulatorPayload';
 import RuleSimulatorStats from './RuleSimulatorStats';
 import RuleSimulatorWorkflow from './RuleSimulatorWorkflow';
 import RuleSimulatorInputs from './RuleSimulatorInputs';
@@ -15,7 +15,6 @@ interface RuleSimulatorConsoleProps {
 export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps) {
   const t = useTranslations('ruleEngine');
   const [showMatchedOnly, setShowMatchedOnly] = React.useState(false);
-  const [showRawJson, setShowRawJson] = React.useState(false);
 
   const {
     loading,
@@ -155,20 +154,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
                 ))}
               </div>
 
-              <div className="pt-4 border-t border-slate-200 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowRawJson(!showRawJson)}
-                  className="text-xs font-black text-slate-700 hover:text-slate-900 transition duration-150 border border-slate-300 hover:border-slate-450 px-3 py-1.5 rounded-lg w-fit flex items-center gap-1.5"
-                >
-                  {showRawJson ? t('simulation.hideRawResponse') : t('simulation.showRawResponse')}
-                </button>
-                {showRawJson && (
-                  <pre className="mt-3 text-[11px] bg-slate-900 text-slate-100 p-4 rounded-xl overflow-auto max-h-[300px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner text-left w-full">
-                    {JSON.stringify(dryRunResult, null, 2)}
-                  </pre>
-                )}
-              </div>
+
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -177,19 +163,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
                 <span>{t('simulation.failureMessage')}</span>
               </div>
               
-              <button
-                type="button"
-                onClick={() => setShowRawJson(!showRawJson)}
-                className="text-xs font-black text-slate-700 hover:text-slate-900 transition duration-150 border border-slate-350 hover:border-slate-450 px-3 py-1.5 rounded-lg w-fit flex items-center gap-1.5"
-              >
-                {showRawJson ? 'Hide Raw Response' : 'Show Raw Response'}
-              </button>
 
-              {showRawJson && (
-                <pre className="text-[11px] bg-slate-900 text-slate-100 p-4 rounded-xl overflow-auto max-h-[250px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner text-left w-full">
-                  {JSON.stringify(executionResult, null, 2)}
-                </pre>
-              )}
             </div>
           )}
         </div>
