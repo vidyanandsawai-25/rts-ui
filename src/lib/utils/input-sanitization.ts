@@ -351,22 +351,16 @@ export const sanitizePlotArea = (input: string): string => {
  * @param input - Raw property/partition number input
  * @returns Sanitized property/partition number
  */
-// export const sanitizePropertyPartitionNo = (input: string): string => {
-//   if (!input || typeof input !== 'string') return '';
-
-//   return input
-//     // Allow only alphanumeric, spaces, hyphens, and forward slashes
-//     .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
-//     // Remove multiple consecutive spaces
-//     .replace(/\s+/g, ' ')
-//     // Remove consecutive special characters like --- or ///
-//     .replace(/([\-\/])\1+/g, '$1');
-// };
-
 export const sanitizePropertyPartitionNo = (input: string): string => {
   if (!input || typeof input !== "string") return "";
 
-  return input.replace(/[^0-9०-९]/g, "");
+  return input
+    // Allow only alphanumeric, spaces, hyphens, and forward slashes (including Devanagari range)
+    .replace(/[^a-zA-Z0-9\u0900-\u097F\s\-\/]/g, "")
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, " ")
+    // Remove consecutive special characters like --- or ///
+    .replace(/([\-\/])\1+/g, "$1");
 };
 
 /**

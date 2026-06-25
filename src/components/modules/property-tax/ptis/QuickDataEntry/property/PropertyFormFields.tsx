@@ -37,7 +37,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
     } = props;
     
     return (
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+        <div className="grid grid-cols-12 gap-x-4 gap-y-3">
             <BasicPropertyFields
                 t={t}
                 propertyData={propertyData}

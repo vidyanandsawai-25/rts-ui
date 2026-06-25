@@ -110,6 +110,7 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/d
   updateDiscountDetailsAction: vi.fn(),
   uploadDiscountDocumentAction: vi.fn(),
   replaceDiscountDocumentAction: vi.fn(),
+  deleteDiscountDocumentAction: vi.fn(),
 }));
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions', () => ({
@@ -117,6 +118,7 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/s
   upsertPropertySocialInfoAction: vi.fn(),
   uploadSocialPhotoAction: vi.fn(),
   replaceSocialPhotoAction: vi.fn(),
+  deleteSocialDocumentAction: vi.fn(),
 }));
 
 import { updateDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';

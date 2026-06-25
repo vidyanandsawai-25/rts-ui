@@ -11,22 +11,23 @@ export const AreaDetailsFields = ({
     t,
     propertyData,
 }: AreaDetailsFieldsProps) => {
- 
+
     const formatAreaValue = (sqFeet: number | null | undefined, sqMeter: number | null | undefined) => {
         if (sqFeet == null && sqMeter == null) return '';
         const feetStr = sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00';
         const meterStr = sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00';
         return `${feetStr} / ${meterStr}`;
     };
-    
+
 
     const carpetAreaVal = formatAreaValue(propertyData?.totalCarpetAreaSqFeet, propertyData?.totalCarpetAreaSqMeter);
     const buildupAreaVal = formatAreaValue(propertyData?.totalBuiltupAreaSqFeet, propertyData?.totalBuiltupAreaSqMeter);
 
     return (
         <>
+        
             {/* Total Carpet Area */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 md:col-span-4 order-[13]">
                 <Label htmlFor="pd-carpetarea" className="text-xs font-semibold text-gray-700">
                     {t('property.totalCarpetAreaWithUnit')}
                 </Label>
@@ -43,7 +44,7 @@ export const AreaDetailsFields = ({
             </div>
 
             {/* Buildup Area */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 md:col-span-4 order-[14]">
                 <Label htmlFor="pd-builduparea" className="text-xs font-semibold text-gray-700">
                     {t('property.buildupAreaWithUnit')}
                 </Label>

@@ -3,7 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
-import { getPropertySocialInfo, upsertPropertySocialInfo, uploadSocialPhoto, replaceSocialPhoto } from "@/lib/api/property-social-details.service";
+import { getPropertySocialInfo, upsertPropertySocialInfo, uploadSocialPhoto, replaceSocialPhoto, deleteSocialDocument } from "@/lib/api/property-social-details.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
 import { DiscountDocumentUploadResponseDto } from "@/types/discount.types";
@@ -143,3 +143,14 @@ export async function replaceSocialPhotoAction(propertySocialDetailId: number, f
         return handleActionError(error, "discount.uploadError");
     }
 }
+
+export async function deleteSocialDocumentAction(propertySocialDetailId: number): Promise<ApiResponse<void>> {
+    try {
+        const result = await deleteSocialDocument(propertySocialDetailId);
+        return result;
+    } catch (error: unknown) {
+        logger.error("deleteSocialDocumentAction failed", { propertySocialDetailId, error: error as Error });
+        return handleActionError(error, "discount.deleteError");
+    }
+}
+

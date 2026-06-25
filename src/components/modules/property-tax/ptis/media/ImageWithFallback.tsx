@@ -16,6 +16,8 @@ interface ImageWithFallbackProps {
   fill?: boolean;
   sizes?: string;
   priority?: boolean;
+  onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
+  style?: React.CSSProperties;
 }
 
 /** blob: and data: URLs are browser-generated — Next.js optimizer cannot handle them. */
@@ -49,6 +51,8 @@ export function ImageWithFallback({
   fill,
   sizes,
   priority = false,
+  onLoad,
+  style,
 }: ImageWithFallbackProps): React.ReactElement {
   const [prevSrc, setPrevSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
@@ -156,21 +160,30 @@ export function ImageWithFallback({
 
   const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : resolvedSrc;
   const isSmall = width !== undefined && width < 100;
-
   if ((hasError || !src) && !fallbackSrc) {
     return <ImagePlaceholder alt={alt} isSmall={isSmall} label={t('media.imageUnavailable')} />;
   }
 
+  const objectFit = className.includes('object-cover')
+    ? 'cover'
+    : className.includes('object-contain')
+    ? 'contain'
+    : undefined;
+
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" style={style}>
       {isLoading && <ImageSkeleton className={className} />}
       {!isLoading && effectiveSrc && (
         <NextImage
           src={effectiveSrc}
           alt={alt}
           className={className}
+          style={{ objectFit }}
           onError={handleError}
-          onLoad={handleLoad}
+          onLoad={(e) => {
+            handleLoad();
+            onLoad?.(e);
+          }}
           width={fill ? undefined : width}
           height={fill ? undefined : height}
           fill={fill}

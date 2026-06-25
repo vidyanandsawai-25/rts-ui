@@ -168,6 +168,30 @@ export function FloorFormFields({
                 )}
             </div>
 
+            {/* Carpet Area (Sq Ft) - Editable */}
+            <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700">
+                    {t('oldDetails.carpetAreaSqFt')}<span className="text-red-500 ml-1">*</span>
+                </Label>
+                <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.oldCarpetAreaSqFeet ?? ''}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    placeholder="0.00"
+                    onChange={(e) => {
+                        const value = sanitizeTaxDecimal(e.target.value);
+                        if (value !== '' || e.target.value === '') {
+                            onFieldChange('oldCarpetAreaSqFeet', value);
+                        }
+                    }}
+                    onKeyDown={preventInvalidNumericKeys}
+                />
+                {showError("oldCarpetAreaSqFeet") && (
+                    <span className="text-xs text-red-500">{errors.oldCarpetAreaSqFeet}</span>
+                )}
+            </div>
+
             {/* Area (Sq M) - Editable */}
             <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-gray-700">
@@ -190,24 +214,6 @@ export function FloorFormFields({
                 {showError("oldAreaSqMeter") && (
                     <span className="text-xs text-red-500">{errors.oldAreaSqMeter}</span>
                 )}
-            </div>
-
-            {/* Carpet Area (Sq Ft) - Read Only */}
-            <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-gray-700">
-                    {t('oldDetails.carpetAreaSqFt')}
-                </Label>
-                <Input
-                    type="number"
-                    value={
-                        formData.oldCarpetAreaSqFeet
-                            ? Number(formData.oldCarpetAreaSqFeet).toFixed(2)
-                            : ''
-                    }
-                    readOnly
-                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
-                />
             </div>
 
             {/* Builtup Area (Sq Ft) - Read Only */}

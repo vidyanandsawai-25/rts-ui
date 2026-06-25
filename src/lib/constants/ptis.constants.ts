@@ -34,6 +34,7 @@ export const defaultPropertyDetails: PropertyDetailsData = {
   noOfResidentialToilets: '',
   noOfCommercialToilets: '',
   ownerName: '',
+  rateSectionDescription: '',
 };
 
 /**
@@ -55,6 +56,8 @@ export const defaultKycDetails: KYCDetailsData = {
   flatNo: '',
   shopNo: '',
   buildingName: '',
+  alternateMobileNo: '',
+  pinCode: '',
 };
 
 /**

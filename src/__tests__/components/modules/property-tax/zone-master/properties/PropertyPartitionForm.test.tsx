@@ -90,6 +90,20 @@ vi.mock("@/components/common", async (importOriginal) => {
         </select>
       </div>
     ),
+    SearchSelect: ({ label, value, onChange, options, placeholder, disabled }: { label?: string; value: string; onChange: (name: string, value: string) => void; options: { value: string; label: string }[]; placeholder: string; disabled?: boolean }) => (
+      <div>
+        {label && <label>{label}</label>}
+        <select 
+          data-testid="search-select"
+          value={value || ""} 
+          onChange={(e) => onChange("mainPropertyId", e.target.value)}
+          disabled={disabled}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+    ),
     MasterTable: ({ data, columns }: { data: Record<string, unknown>[]; columns: { key: string; render?: (val: unknown, row: Record<string, unknown>) => React.ReactNode }[] }) => (
       <div data-testid="master-table">
         {data.map((row, i) => (

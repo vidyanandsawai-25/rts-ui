@@ -1,8 +1,8 @@
 import { FloorData, RoomData } from "@/types/room-details.types";
-import { RenterDetailItem, RenterMastItem } from "@/types/renter-details.types";
+import { RenterDetailItem, RenterMastItem } from "@/types/renter/renter-details.types";
 import { LookupData } from "@/types/common-details.types";
 import { OffsetData } from "@/types/offset-details.types";
-import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renter/renterUtils";
 import {
   getFloorDescription,
   getSubFloorDescription,

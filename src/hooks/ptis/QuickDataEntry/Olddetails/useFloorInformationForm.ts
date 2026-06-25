@@ -71,7 +71,8 @@ export function useFloorInformationForm({
     formData.oldConstructionTypeId !== initialEditValues.oldConstructionTypeId ||
     formData.oldTypeOfUseId !== initialEditValues.oldTypeOfUseId ||
     formData.oldSubTypeOfUseId !== initialEditValues.oldSubTypeOfUseId ||
-    translateDevanagariDigits(formData.oldAreaSqMeter || "") !== translateDevanagariDigits(initialEditValues.oldAreaSqMeter || "")
+    translateDevanagariDigits(formData.oldAreaSqMeter || "") !== translateDevanagariDigits(initialEditValues.oldAreaSqMeter || "") ||
+    translateDevanagariDigits(formData.oldCarpetAreaSqFeet || "") !== translateDevanagariDigits(initialEditValues.oldCarpetAreaSqFeet || "")
   ) : false;
 
   /**

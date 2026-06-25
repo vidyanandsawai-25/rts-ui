@@ -256,7 +256,7 @@ export function buildPropertySearchColumns(
         key: "rv",
         label: t("columns.rv"),
         tooltip: t("columns.rv"),
-        align: "left",
+        align: "center",
         cellClassName: NUMERIC_CELL,
         render: (_, row) => <RvCvCell rv={row.rv} cv={row.cv} />,
       },
@@ -267,6 +267,7 @@ export function buildPropertySearchColumns(
         key: "totalTax",
         label: t("columns.totalTax"),
         tooltip: t("columns.totalTax"),
+        align: "center",
         render: (value) => (
           <span className="font-medium text-gray-800 whitespace-nowrap tabular-nums">
             {formatInr(Number(value ?? 0))}
@@ -280,6 +281,7 @@ export function buildPropertySearchColumns(
         key: "address",
         label: t("columns.address"),
         tooltip: t("columns.address"),
+        align: "center",
       },
       COLUMN_WIDTHS.address
     ),

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common/Tabs';
 import { Building, Home, Building2, Calculator, GitMerge, IndianRupee } from 'lucide-react';
+
 const { TabList, Tab } = Tabs;
 
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
@@ -14,23 +15,35 @@ import { Button } from '@/components/common';
 import { AppliedRulesDrawer } from './AppliedRulesDrawer';
 import type { PtisMainScreenProps } from '@/types/ptis-screen/ptis-screen.types';
 import { fetchPropertyRuleLogsAction } from '@/app/[locale]/property-tax/ptis/actions';
+import { PtisSearchParams } from '@/lib/utils/params';
+import type { DualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
+import type { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
+import { useOptionalPtisNavigation } from './shared/PtisNavigationContext';
 
-const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
-  const {
-    locale,
-    initialDualSectionData,
-    initialApartmentData,
-    wardId,
-    propertyNo,
-    ptisParams,
-    propertyId,
-    resolvedSearchParams,
-    rateableSection,
-    capitalSection,
-    dualRateableSection,
-    dualCapitalSection
-  } = props;
+interface PtisMainScreenProps {
+  locale: string;
+  propertyId?: number;
+  ptisParams: PtisSearchParams;
+  resolvedSearchParams: Record<string, string | string[] | undefined>;
+  error?: string;
+  initialApartmentData?: {
+    amenities: PagedResponse<ApartmentQCDetail>;
+    commercial: PagedResponse<ApartmentQCDetail>;
+    residential: PagedResponse<ApartmentQCDetail>;
+  };
+  initialDualSectionData?: DualMethodSectionData;
+  wardId?: number | string;
+  propertyNo?: string;
+  rateableSection?: React.ReactNode;
+  capitalSection?: React.ReactNode;
+  dualRateableSection?: React.ReactNode;
+  dualCapitalSection?: React.ReactNode;
+}
 
+const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
+  locale, initialDualSectionData, initialApartmentData, wardId, propertyNo, ptisParams,
+  propertyId, resolvedSearchParams, rateableSection, capitalSection, dualRateableSection, dualCapitalSection
+}) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('ptis');
@@ -63,6 +76,11 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const activeSubTab = searchParams.get('subTab') || 'rateable';
 
   const updateParams = (updates: Record<string, string>, replace = false) => {
+  const ptisNav = useOptionalPtisNavigation();
+  const isNavigating = ptisNav?.isPending ?? false;
+
+
+  const handleTabChange = (value: string | number) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, val]) => params.set(key, val));
     const url = `?${params.toString()}`;
@@ -77,6 +95,17 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
 
   const handleApartmentSubTabChange = (v: string | number) =>
     updateParams({ valuationTab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: '1' }, true);
+  const updateApartmentParams = (appTab: string, sTab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', appTab);
+    params.set('subTab', sTab);
+    params.set('pageNumber', '1');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleApartmentMainTabChange = (v: string | number) => updateApartmentParams(v.toString(), 'rateable');
+  const handleApartmentSubTabChange = (v: string | number) => updateApartmentParams(activeMainTab, v.toString());
 
   const tabs = [
     { value: 'rateable', label: t('tabs.rateable'), activeGradient: 'from-indigo-600 to-purple-600' },
@@ -86,8 +115,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   ];
 
   return (
-    <div className="bg-[#f1f5f9]">
-      <div className="w-full px-1 py-0 sm:px-2">
+    <div className={cn('bg-[#f1f5f9] transition-opacity duration-300', isNavigating && 'opacity-60 pointer-events-none')}>
+      <div className="w-full px-0 py-0">
         <main className="w-full mx-auto">
           <div className="bg-white rounded-xl shadow-lg border border-indigo-50 overflow-hidden">
             <div className="bg-white border-b border-gray-200 px-4 py-2">
@@ -157,6 +186,26 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                     )}
                   </div>
                 )}
+                <div className="flex items-center gap-3 shrink-0 ml-auto pl-4">
+                  {activeTab === 'apartment' && (
+                    <>
+                      <Tabs value={activeMainTab} onChange={handleApartmentMainTabChange} variant="pills" size="sm" activeTabClassName="bg-blue-700 text-white shadow-sm rounded-lg border-none">
+                        <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
+                          <Tab value="amenities" icon={Building2}>{t('apartmentTabs.amenities')}</Tab>
+                          <Tab value="commercial" icon={Building}>{t('apartmentTabs.commercial')}</Tab>
+                          <Tab value="residential" icon={Home}>{t('apartmentTabs.residential')}</Tab>
+                        </TabList>
+                      </Tabs>
+                      <Tabs value={activeSubTab} onChange={handleApartmentSubTabChange} variant="pills" size="sm" activeTabClassName="bg-green-700 text-white shadow-sm rounded-lg border-none">
+                        <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
+                          <Tab value="rateable" icon={Calculator}>{t('apartmentTabs.rateable')}</Tab>
+                          <Tab value="capital" icon={IndianRupee}>{t('apartmentTabs.capital')}</Tab>
+                          <Tab value="dual-method" icon={GitMerge}>{t('apartmentTabs.dual')}</Tab>
+                        </TabList>
+                      </Tabs>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

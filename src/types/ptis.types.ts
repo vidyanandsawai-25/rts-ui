@@ -41,6 +41,8 @@ export interface PropertyDetailsData {
   noOfResidentialToilets?: string;
   noOfCommercialToilets?: string;
   ownerName?: string;
+  categoryId?: number;
+  rateSectionDescription?: string;
 }
 
 export interface KYCDetailsData {
@@ -59,6 +61,8 @@ export interface KYCDetailsData {
   flatNo: string;
   shopNo: string;
   buildingName?: string;
+  alternateMobileNo?: string;
+  pinCode?: string;
 }
 
 export interface SocietyDetailsData {
@@ -80,6 +84,7 @@ export interface SocietyDetailsData {
   managerName: string;
   managerEmail: string;
   managerMobileNo: string;
+  societyDetailId?: number;
 }
 
 export interface OldDetailsData {
@@ -268,6 +273,8 @@ export interface KycDetailsApiResponse {
   mobileNo: string | null;
   emailId: string | null;
   wingNo?: string | null;
+  alternateMobileNo?: string | null;
+  pinCode?: string | null;
 }
 
 export interface PropertyBasicDetailsApiResponse {
@@ -309,6 +316,7 @@ export interface PropertyBasicDetailsApiResponse {
   wingName: string;
   ownerName?: string;
   ownerNameEnglish?: string;
+  rateSectionDescription?: string;
 }
 
 export interface SocietyDetailsApiResponse {

@@ -105,6 +105,25 @@ export default function FloorInformationForm({
         oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
         oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
       }));
+    } else if (field === 'oldCarpetAreaSqFeet') {
+      const carpetAreaSqFt = parseFloat(translateDevanagariDigits(value)) || 0;
+
+      // Calculate Carpet Area (Sq M) from Carpet Area (Sq Ft)
+      const carpetAreaSqM = carpetAreaSqFt > 0 ? convertSqFtToSqM(carpetAreaSqFt) : 0;
+
+      // Calculate Built-up Area (Sq Ft) from Carpet Area (Sq Ft) - adds 20%
+      const builtupAreaSqFt = carpetAreaSqFt > 0 ? calculateBuiltUpArea(carpetAreaSqFt) : 0;
+
+      // Calculate Built-up Area (Sq M) from Built-up Area (Sq Ft)
+      const builtupAreaSqMeter = builtupAreaSqFt > 0 ? convertSqFtToSqM(builtupAreaSqFt) : 0;
+
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        oldAreaSqMeter: carpetAreaSqM > 0 ? carpetAreaSqM.toFixed(2) : '',
+        oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
+        oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
+      }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }

@@ -176,4 +176,47 @@ describe('SearchSelect', () => {
       expect(onChange).toHaveBeenCalledWith('test-select', 'banana');
     });
   });
+
+  it('filters options ignoring space and hyphen differences', async () => {
+    const hyphenOptions = [
+      { label: '85 - 1', value: '85-1' },
+      { label: '1001 - AM1', value: '1001-am1' },
+      { label: 'Other', value: 'other' },
+    ];
+    render(<SearchSelect id="test-select" name="test-select" options={hyphenOptions} value="" onChange={() => {}} />);
+
+    const input = screen.getByRole('combobox');
+    
+    // Type '85-1' (no spaces) to match '85 - 1'
+    fireEvent.change(input, { target: { value: '85-1' } });
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    let optionsList = screen.getAllByRole('option');
+    expect(optionsList).toHaveLength(1);
+    expect(optionsList[0]).toHaveTextContent('85 - 1');
+
+    // Type '1001am1' (no space or hyphen) to match '1001 - AM1'
+    fireEvent.change(input, { target: { value: '1001am1' } });
+    optionsList = screen.getAllByRole('option');
+    expect(optionsList).toHaveLength(1);
+    expect(optionsList[0]).toHaveTextContent('1001 - AM1');
+  });
+
+  it('commits selection on blur when option matches ignoring space and hyphen differences', async () => {
+    const hyphenOptions = [
+      { label: '85 - 1', value: '85-1' },
+      { label: '1001 - AM1', value: '1001-am1' },
+    ];
+    const onChange = vi.fn();
+    render(<SearchSelect id="test-select" name="test-select" options={hyphenOptions} value="" onChange={onChange} />);
+
+    const input = screen.getByRole('combobox');
+    
+    // Type '1001am1' and blur
+    fireEvent.change(input, { target: { value: '1001am1' } });
+    fireEvent.blur(input);
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith('test-select', '1001-am1');
+    });
+  });
 });
