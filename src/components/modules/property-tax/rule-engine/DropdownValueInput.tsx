@@ -1,6 +1,6 @@
 'use client';
 
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import { SearchSelect } from '@/components/common';
 
 interface DropdownValueInputProps {

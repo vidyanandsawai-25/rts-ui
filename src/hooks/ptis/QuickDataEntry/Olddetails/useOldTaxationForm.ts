@@ -90,13 +90,20 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
         setIsSubmitting(true);
         try {
           const payload = {
-            ...(propertyOldDetails ?? {}),
-            ...formData,
+            propertyId,
+            oldZoneNo: formData.oldZoneNo,
+            oldWardNo: formData.oldWardNo,
+            oldPropertyNo: formData.oldPropertyNo,
+            oldPartitionNo: formData.oldPartitionNo,
+            oldEgovNo: formData.oldEgovNo,
             oldPlotArea: Number(translateDevanagariDigits(formData.oldPlotArea)) || 0,
+            oldPlotNo: formData.oldPlotNo,
             oldConstructionArea: Number(translateDevanagariDigits(formData.oldConstructionArea)) || 0,
             oldRV: Number(translateDevanagariDigits(formData.oldRV)) || 0,
             oldALV: Number(translateDevanagariDigits(formData.oldALV)) || 0,
             oldGeneralTax: Number(translateDevanagariDigits(formData.oldGeneralTax)) || 0,
+            oldTotalTax: formData.oldTotalTax,
+            oldCSN: propertyOldDetails?.oldCSN ?? null,
           };
           const result = await updatePropertyOldDetailsAction(propertyId, payload, locale);
           if (result.success) {

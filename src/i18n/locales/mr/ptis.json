@@ -716,5 +716,26 @@
     "residential": "अनिवासी",
     "nonResidential": "करमुक्त",
     "industrial": "औद्योगिक"
+  },
+  "appliedRules": {
+    "buttonLabel": "लागू केलेले नियम",
+    "drawerTitle": "लागू केलेले नियम",
+    "propertyId": "मालमत्ता आयडी",
+    "propertyNo": "मालमत्ता क्रमांक",
+    "columns": {
+      "applyOrder": "क्रम",
+      "ruleCategory": "वर्ग",
+      "ruleScopeName": "व्याप्ती",
+      "ruleName": "नियमाचे नाव",
+      "effectType": "प्रभावाचा प्रकार",
+      "effectValue": "प्रभावाचा दर",
+      "applyRate": "लागू दर %",
+      "baseValue": "मूळ दर",
+      "computedValue": "गणना केलेला दर",
+      "appliedAt": "लागू झाल्याची वेळ"
+    },
+    "noAppliedRules": "या मालमत्तेवर कोणतेही नियम लागू केलेले नाहीत.",
+    "loading": "लागू केलेले नियम लोड होत आहेत...",
+    "errorFetching": "लागू केलेले नियम लोड करण्यात अयशस्वी."
   }
 }

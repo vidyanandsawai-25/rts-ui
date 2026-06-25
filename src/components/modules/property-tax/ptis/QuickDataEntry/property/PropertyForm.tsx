@@ -25,8 +25,8 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
         propertyDescriptionOptions,
     } = usePropertyForm(props);
 
-    const t = useTranslations('quickDataEntry');    
-    
+    const t = useTranslations('quickDataEntry');
+
     return (
         <form ref={formRef} onSubmit={handleSubmit} onChange={checkFormChanges}>
             <Tabs defaultValue="property">
@@ -35,8 +35,8 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
                         <h3 className="text-sm font-bold text-blue-800 mb-3 pb-2 border-b-2 border-blue-200">
                             {t('property.title')}
                         </h3>
-                        
-                        <PropertyFormFields 
+
+                        <PropertyFormFields
                             t={t}
                             propertyData={props.propertyData}
                             categoryOptions={categoryOptions}
