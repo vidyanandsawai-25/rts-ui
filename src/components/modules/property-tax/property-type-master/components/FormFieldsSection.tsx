@@ -1,10 +1,10 @@
 "use client";
 
+import React from "react";
 import { Input, ValidationMessage, Select } from "@/components/common";
 import { PropertyTypeFormModel } from "@/types/property-type.types";
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
 import { POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
-import type React from "react";
 
 interface FormFieldsSectionProps {
   formData: PropertyTypeFormModel;
@@ -19,18 +19,28 @@ interface FormFieldsSectionProps {
   t: (key: string) => string;
 }
 
-export const FormFieldsSection = ({
-  formData,
-  searchSequenceValue,
-  handleChange,
-  handleBlur,
-  handleCategoryChange,
-  handleTypeChange,
-  errors,
-  showError,
-  categories,
-  t,
-}: FormFieldsSectionProps) => {
+export interface FormFieldsSectionRef {
+  propertyDescriptionRef: React.RefObject<HTMLInputElement | null>;
+}
+
+export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFieldsSectionProps>(
+  ({
+    formData,
+    searchSequenceValue,
+    handleChange,
+    handleBlur,
+    handleCategoryChange,
+    handleTypeChange,
+    errors,
+    showError,
+    categories,
+    t,
+  }, ref) => {
+    const propertyDescriptionRef = React.useRef<HTMLInputElement>(null);
+
+    React.useImperativeHandle(ref, () => ({
+      propertyDescriptionRef,
+    }));
   const sanitizeNumber = (value: string) => {
     return value.replace(/[^0-9]/g, '');
   };
@@ -38,6 +48,7 @@ export const FormFieldsSection = ({
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
+        ref={propertyDescriptionRef}
         name="propertyDescription"
         label={t("form.fields.propertyDescription.label")}
         required
@@ -130,4 +141,7 @@ export const FormFieldsSection = ({
       />
     </div>
   );
-};
+}
+);
+
+FormFieldsSection.displayName = "FormFieldsSection";
