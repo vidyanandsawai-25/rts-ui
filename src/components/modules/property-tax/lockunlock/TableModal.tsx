@@ -99,7 +99,7 @@ export const TableModal = React.forwardRef<TableModalRef, TableModalProps>(
                   key={screen.id}
                   ref={index === 0 ? firstDivRef : undefined}
                   tabIndex={0}
-                  role="button"
+                  role="checkbox"
                   aria-checked={isChecked}
                   onClick={() => handleToggleScreen(screen.id)}
                   onKeyDown={(e) => {
