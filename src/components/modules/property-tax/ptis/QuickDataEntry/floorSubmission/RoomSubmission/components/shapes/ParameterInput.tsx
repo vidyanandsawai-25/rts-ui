@@ -40,6 +40,7 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
         }
     };
 
+
     return (
         <foreignObject x={x - 45} y={y - 15} width="90" height="60">
             <div className={`flex flex-col items-center p-1 rounded-md transition-all duration-300 ${isFilled ? "bg-green-50/80 border border-green-200" : ""}`}>
@@ -61,9 +62,11 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
                             if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
                                 e.preventDefault();
                             }
-                            if (e.key === "Enter" && onEnter) {
+                            if ((e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) && onEnter) {
+                                e.preventDefault();
                                 onEnter();
                             }
+                            
                         }}
                         className={cn(
                             "w-full h-7 bg-white border-2 text-center text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all",

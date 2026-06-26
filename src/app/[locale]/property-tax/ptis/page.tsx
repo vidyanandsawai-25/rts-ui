@@ -81,7 +81,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     capitalTaxDetails,
     rateableTaxError,
     capitalTaxError,
-    activeTab
+    activeTab,
+    hasAppliedRules,
+    appliedRulesList
   } = pageData;
 
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
@@ -161,6 +163,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             <PtisMainScreen
               locale={locale}
               propertyId={resolvedPropertyId}
+            categoryId={propertyDetailsResult.propertyDetails.categoryId}
               ptisParams={ptisParams}
               resolvedSearchParams={resolvedSearchParams}
               error={sanitizedInitialError}
@@ -168,6 +171,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               initialDualSectionData={dualSectionData}
               wardId={resolvedWardId}
               propertyNo={propertyNo}
+              hasAppliedRules={hasAppliedRules || false}
+              appliedRules={appliedRulesList || []}
               rateableSection={
                 <RateableTaxDetailsSection
                   rateableData={rateableResult?.success ? rateableResult.data : null}

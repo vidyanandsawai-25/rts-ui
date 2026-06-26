@@ -23,6 +23,8 @@ import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto } from '@/types/p
 import type { PagedResponse, ApartmentQCDetail } from '@/types/apartmentQC.types';
 import type { TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
 
+import type { PropertyRuleLogItem } from '@/types/rule-engine';
+
 export async function mapPtisFetchResults({
   propertyDetailsResult,
   propertyListResult,
@@ -61,8 +63,8 @@ export async function mapPtisFetchResults({
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
-    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes
-  ] = (detailResults.length > 0 ? detailResults : Array(14).fill(null)) as [
+    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes
+  ] = (detailResults.length > 0 ? detailResults : Array(15).fill(null)) as [
     { amenities: PagedResponse<ApartmentQCDetail>; commercial: PagedResponse<ApartmentQCDetail>; residential: PagedResponse<ApartmentQCDetail>; } | null,
     ActionResult<RateableValueResponse> | null,
     ActionResult<CapitalValueResponse> | null,
@@ -76,7 +78,8 @@ export async function mapPtisFetchResults({
     ActionResult<PropertyPhotoTypeWithStatusDto[]> | null,
     ActionResult<PropertyPhotoDto[]> | null,
     ActionResult<DualMethodResponse> | null,
-    TaxDetailsResult | null
+    TaxDetailsResult | null,
+    ActionResult<{ items: PropertyRuleLogItem[] }> | null
   ];
 
   const emptyPaged: PagedResponse<ApartmentQCDetail> = {
@@ -170,6 +173,8 @@ export async function mapPtisFetchResults({
     capitalTaxError: taxDetails.capitalTaxError,
     shouldRedirect,
     redirectUrl,
-    activeTab
+    activeTab,
+    hasAppliedRules: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items && ruleLogsRes.data.items.length > 0 ? true : false,
+    appliedRulesList: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items ? ruleLogsRes.data.items : [],
   };
 }

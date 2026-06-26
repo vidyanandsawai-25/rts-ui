@@ -40,8 +40,8 @@ export const CompactSelect = ({
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled || isLoading}
       onClick={(e) => {
+        e.stopPropagation();
         if (onDropdownClick && !isLoading) {
-          e.stopPropagation();
           onDropdownClick();
         }
       }}

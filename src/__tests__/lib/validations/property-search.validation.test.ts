@@ -14,15 +14,13 @@ describe("property-search-field-rules", () => {
   it("accepts valid property numbers", () => {
     expect(validateSearchFieldValue("propertyNoFrom", "10", t)).toBeNull();
     expect(validateSearchFieldValue("propertyNoFrom", "123456", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "P-2023-001", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "10/A", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "NK10", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "NK-10", t)).toBeNull();
   });
 
   it("rejects invalid property numbers", () => {
-    expect(validateSearchFieldValue("propertyNoFrom", "P-2023-001", t)).toBe(
-      "propertyNoInvalid"
-    );
-    expect(validateSearchFieldValue("propertyNoFrom", "10/A", t)).toBe(
-      "propertyNoInvalid"
-    );
     expect(validateSearchFieldValue("propertyNoFrom", "@123", t)).toBe(
       "propertyNoInvalid"
     );
@@ -121,8 +119,8 @@ describe("property-search-field-rules", () => {
 
 describe("property-search-input-sanitizers", () => {
   it("strips invalid special characters from property no", () => {
-    expect(sanitizePropertySearchField("propertyNoFrom", "P#001")).toBe("001");
-    expect(sanitizePropertySearchField("propertyNoFrom", "12/34")).toBe("1234");
+    expect(sanitizePropertySearchField("propertyNoFrom", "P#001")).toBe("P001");
+    expect(sanitizePropertySearchField("propertyNoFrom", "12/34")).toBe("12/34");
   });
 
   it("limits mobile to digits only", () => {
