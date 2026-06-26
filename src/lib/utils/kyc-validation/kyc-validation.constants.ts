@@ -626,15 +626,17 @@ export const validateKycForm = (
   }
 
   // Mobile Number
-  const mobileDigits = mobileValue.replace(/\D/g, '');
-  if (mobileDigits.length !== 10) {
-    return t('kyc.validation.invalidMobile');
-  }
-  if (!/^[6-9]/.test(mobileDigits)) {
-    return t('kyc.validation.invalidMobileStart');
-  }
-  if (kycValidators.hasRepeatedSequence(mobileDigits, 5)) {
-    return t('kyc.validation.invalidRepeatedSequence');
+  if (mobileValue.trim().length > 0) {
+    const mobileDigits = mobileValue.replace(/\D/g, '');
+    if (mobileDigits.length !== 10) {
+      return t('kyc.validation.invalidMobile');
+    }
+    if (!/^[6-9]/.test(mobileDigits)) {
+      return t('kyc.validation.invalidMobileStart');
+    }
+    if (kycValidators.hasRepeatedSequence(mobileDigits, 5)) {
+      return t('kyc.validation.invalidRepeatedSequence');
+    }
   }
 
   // Alternate Mobile Number
