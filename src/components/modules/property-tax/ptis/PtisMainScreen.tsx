@@ -50,15 +50,8 @@ interface PtisMainScreenProps {
 }
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
-<<<<<<< Updated upstream
-  locale, initialDualSectionData, initialApartmentData, wardId, propertyNo, ptisParams,
-  propertyId, resolvedSearchParams, rateableSection, capitalSection, dualRateableSection, dualCapitalSection,
-  hasAppliedRules = false, appliedRules = []
   locale,
   categoryId,
-=======
-  locale,
->>>>>>> Stashed changes
   initialDualSectionData,
   initialApartmentData,
   wardId,
@@ -69,13 +62,9 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   rateableSection,
   capitalSection,
   dualRateableSection,
-<<<<<<< Updated upstream
-  dualCapitalSection
-=======
   dualCapitalSection,
   hasAppliedRules = false,
   appliedRules = [],
->>>>>>> Stashed changes
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -125,16 +114,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     }
   };
 
-<<<<<<< Updated upstream
-  const handleTabChange = (value: string | number) => {
-    updateParams({
-      valuationTab: value.toString()
-    });
-  };
-=======
   const handleTabChange = (value: string | number) =>
     updateParams({ valuationTab: value.toString() });
->>>>>>> Stashed changes
 
   const updateApartmentParams = (
     appTab: string,
@@ -152,61 +133,36 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     });
   };
 
-<<<<<<< Updated upstream
-  const handleApartmentMainTabChange = (
-    value: string | number
-  ) => {
-    updateApartmentParams(value.toString(), 'rateable');
-  };
-
-  const handleApartmentSubTabChange = (
-    value: string | number
-  ) => {
-    updateApartmentParams(
-      activeMainTab,
-      value.toString()
-    );
-  };
-=======
   const handleApartmentMainTabChange = (v: string | number) =>
     updateApartmentParams(v.toString(), 'rateable');
   const handleApartmentSubTabChange = (v: string | number) =>
     updateApartmentParams(activeMainTab, v.toString());
->>>>>>> Stashed changes
 
   const tabs = [
     {
       value: 'rateable',
       label: t('tabs.rateable'),
-<<<<<<< Updated upstream
-      activeGradient: 'from-indigo-600 to-purple-600'
+      activeGradient: 'from-indigo-600 to-purple-600',
     },
     {
       value: 'capital',
       label: t('tabs.capital'),
-      activeGradient: 'from-purple-600 to-pink-600'
+      activeGradient: 'from-purple-600 to-pink-600',
     },
     {
       value: 'dual',
       label: t('tabs.dual'),
-      activeGradient: 'from-orange-600 to-red-600'
+      activeGradient: 'from-orange-600 to-red-600',
     },
     ...(showApartmentTab
       ? [
           {
             value: 'apartment',
             label: t('tabs.apartment'),
-            activeGradient: 'from-blue-600 to-blue-800'
-          }
+            activeGradient: 'from-blue-600 to-blue-800',
+          },
         ]
-      : [])
-=======
-      activeGradient: 'from-indigo-600 to-purple-600',
-    },
-    { value: 'capital', label: t('tabs.capital'), activeGradient: 'from-purple-600 to-pink-600' },
-    { value: 'dual', label: t('tabs.dual'), activeGradient: 'from-orange-600 to-red-600' },
-    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-blue-600 to-blue-800' },
->>>>>>> Stashed changes
+      : []),
   ];
 
   return (
@@ -259,26 +215,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                         activeTabClassName="bg-blue-700 text-white shadow-sm rounded-lg border-none"
                       >
                         <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
-<<<<<<< Updated upstream
-                          <Tab
-                            value="amenities"
-                            icon={Building2}
-                          >
-                            {t('apartmentTabs.amenities')}
-                          </Tab>
-
-                          <Tab
-                            value="commercial"
-                            icon={Building}
-                          >
-                            {t('apartmentTabs.commercial')}
-                          </Tab>
-
-                          <Tab
-                            value="residential"
-                            icon={Home}
-                          >
-=======
                           <Tab value="amenities" icon={Building2}>
                             {t('apartmentTabs.amenities')}
                           </Tab>
@@ -286,15 +222,10 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                             {t('apartmentTabs.commercial')}
                           </Tab>
                           <Tab value="residential" icon={Home}>
->>>>>>> Stashed changes
                             {t('apartmentTabs.residential')}
                           </Tab>
                         </TabList>
                       </Tabs>
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
                       <Tabs
                         value={activeSubTab}
                         onChange={handleApartmentSubTabChange}
@@ -303,26 +234,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                         activeTabClassName="bg-green-700 text-white shadow-sm rounded-lg border-none"
                       >
                         <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
-<<<<<<< Updated upstream
-                          <Tab
-                            value="rateable"
-                            icon={Calculator}
-                          >
-                            {t('apartmentTabs.rateable')}
-                          </Tab>
-
-                          <Tab
-                            value="capital"
-                            icon={IndianRupee}
-                          >
-                            {t('apartmentTabs.capital')}
-                          </Tab>
-
-                          <Tab
-                            value="dual-method"
-                            icon={GitMerge}
-                          >
-=======
                           <Tab value="rateable" icon={Calculator}>
                             {t('apartmentTabs.rateable')}
                           </Tab>
@@ -330,7 +241,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                             {t('apartmentTabs.capital')}
                           </Tab>
                           <Tab value="dual-method" icon={GitMerge}>
->>>>>>> Stashed changes
                             {t('apartmentTabs.dual')}
                           </Tab>
                         </TabList>
@@ -373,14 +283,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                 <DualMethodSection
                   propertyId={propertyId}
                   searchParams={
-<<<<<<< Updated upstream
-                    resolvedSearchParams as Record<
-                      string,
-                      string | string[] | undefined
-                    >
-=======
                     resolvedSearchParams as Record<string, string | string[] | undefined>
->>>>>>> Stashed changes
                   }
                   locale={locale}
                   initialData={initialDualSectionData}
@@ -399,14 +302,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   <div className="p-1 rounded-full bg-slate-50 border border-slate-100 mb-4 text-4xl opacity-20">
                     📊
                   </div>
-<<<<<<< Updated upstream
-
-                  <p className="font-medium text-lg">
-                    {t('noDataAvailable')}
-                  </p>
-=======
                   <p className="font-medium text-lg">{t('noDataAvailable')}</p>
->>>>>>> Stashed changes
                 </div>
               )}
             </div>
