@@ -185,7 +185,7 @@ export default function EffectPanel({
             <ToggleSwitch checked={stopProcessing || false} onChange={onStopProcessingChange} showPopup={false} />
           </div>
           <span className={`text-xs font-bold px-2.5 py-1 rounded border transition-colors ${
-            stopProcessing ? 'text-amber-950 bg-amber-50 border-amber-200/90 shadow-sm' : 'text-emerald-950 bg-emerald-50 border-emerald-250/90 shadow-sm'
+            stopProcessing ? 'text-amber-800 bg-amber-50 border-amber-200 shadow-sm' : 'text-emerald-800 bg-emerald-50 border-emerald-200 shadow-sm'
           }`}>
             {stopProcessing ? t('stopProcessing.activeNotice') : t('stopProcessing.inactiveNotice')}
           </span>

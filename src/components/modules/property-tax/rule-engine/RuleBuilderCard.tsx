@@ -23,9 +23,12 @@ interface RuleBuilderCardProps {
   onMoveRuleBlock: (index: number, direction: 'up' | 'down') => void;
   onUpdateRuleBlock: (
     index: number,
-    key: 'conditions' | 'effect' | 'description' | 'stopProcessing',
-    value: ConditionGroupState | EffectState | string | boolean
+    key: 'conditions' | 'effect' | 'effects' | 'description' | 'stopProcessing',
+    value: ConditionGroupState | EffectState | RuleBlock['effects'] | string | boolean
   ) => void;
+  onUpdateBlockEffect: (blockIndex: number, effectIndex: number, updatedEffect: EffectState) => void;
+  onAddEffectToBlock: (blockIndex: number) => void;
+  onRemoveEffectFromBlock: (blockIndex: number, effectIndex: number) => void;
 }
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
@@ -34,6 +37,7 @@ export default function RuleBuilderCard({
   rulesList, fields,
   effectTypes, categoryOptions, effectTypeConfigs,
   onAddRuleBlock, onRemoveRuleBlock, onMoveRuleBlock, onUpdateRuleBlock,
+  onUpdateBlockEffect, onAddEffectToBlock, onRemoveEffectFromBlock,
 }: RuleBuilderCardProps) {
   const t = useTranslations('ruleEngine');
   const [collapsedBlocks, setCollapsedBlocks] = React.useState<Record<string, boolean>>(() => {
@@ -97,7 +101,7 @@ export default function RuleBuilderCard({
 
             return (
               <RuleBlockItem
-                key={ruleBlock.id}
+                key={`${ruleBlock.id}-${index}`}
                 ruleBlock={ruleBlock}
                 index={index}
                 isCollapsed={isCollapsed}
@@ -109,6 +113,9 @@ export default function RuleBuilderCard({
                 onRemoveRuleBlock={onRemoveRuleBlock}
                 onMoveRuleBlock={onMoveRuleBlock}
                 onUpdateRuleBlock={onUpdateRuleBlock}
+                onUpdateBlockEffect={onUpdateBlockEffect}
+                onAddEffectToBlock={onAddEffectToBlock}
+                onRemoveEffectFromBlock={onRemoveEffectFromBlock}
                 onToggleCollapse={() => toggleCollapse(ruleBlock.id)}
               />
             );

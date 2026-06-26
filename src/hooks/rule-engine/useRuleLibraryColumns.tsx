@@ -55,7 +55,7 @@ export function useRuleLibraryColumns({
           return (
             <div className="flex flex-col gap-0.5 text-gray-900 max-w-[320px]">
               {descs.map((desc, i) => (
-                <span key={i} title={desc} className="line-clamp-1 block font-medium">
+                <span key={`desc-${i}`} title={desc} className="line-clamp-1 block font-medium">
                   {descs.length > 1 ? `${i + 1}. ${desc}` : desc}
                 </span>
               ))}

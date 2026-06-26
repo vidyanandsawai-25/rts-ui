@@ -73,7 +73,7 @@ export function useRuleBuilder({
         id: safeUUID(),
         description: '',
         conditions: { id: safeUUID(), logicalOperator: 'AND', conditions: [], groups: [] },
-        effect: { effectType: '', value: '', isPercentage: true },
+        effects: [{ effectType: '', value: '', isPercentage: true }],
       },
     ]);
   };
@@ -96,12 +96,61 @@ export function useRuleBuilder({
 
   const updateRuleBlock = (
     index: number,
-    key: 'conditions' | 'effect' | 'description' | 'stopProcessing',
-    value: RuleBlock['conditions'] | RuleBlock['effect'] | string | boolean
+    key: 'conditions' | 'effect' | 'effects' | 'description' | 'stopProcessing',
+    value: RuleBlock['conditions'] | RuleBlock['effect'] | RuleBlock['effects'] | string | boolean
   ) => {
     setRulesList((prev) => {
       const copy = [...prev];
       copy[index] = { ...copy[index], [key]: value } as RuleBlock;
+      return copy;
+    });
+  };
+
+  const updateBlockEffect = (blockIndex: number, effectIndex: number, updatedEffect: RuleBlock['effects'][number]) => {
+    setRulesList((prev) => {
+      const copy = [...prev];
+      const block = copy[blockIndex];
+      if (block) {
+        const effectsCopy = [...(block.effects || [])];
+        effectsCopy[effectIndex] = updatedEffect;
+        copy[blockIndex] = {
+          ...block,
+          effects: effectsCopy,
+          effect: effectsCopy[0],
+        };
+      }
+      return copy;
+    });
+  };
+
+  const addEffectToBlock = (blockIndex: number) => {
+    setRulesList((prev) => {
+      const copy = [...prev];
+      const block = copy[blockIndex];
+      if (block) {
+        const effectsCopy = [...(block.effects || []), { effectType: '', value: '', isPercentage: true }];
+        copy[blockIndex] = {
+          ...block,
+          effects: effectsCopy,
+          effect: effectsCopy[0],
+        };
+      }
+      return copy;
+    });
+  };
+
+  const removeEffectFromBlock = (blockIndex: number, effectIndex: number) => {
+    setRulesList((prev) => {
+      const copy = [...prev];
+      const block = copy[blockIndex];
+      if (block) {
+        const effectsCopy = (block.effects || []).filter((_, i) => i !== effectIndex);
+        copy[blockIndex] = {
+          ...block,
+          effects: effectsCopy.length > 0 ? effectsCopy : [{ effectType: '', value: '', isPercentage: true }],
+          effect: effectsCopy[0],
+        };
+      }
       return copy;
     });
   };
@@ -133,10 +182,11 @@ export function useRuleBuilder({
         conditionsJson: JSON.stringify(
           rulesList.map((block) => ({
             ...block,
+            effect: block.effects,
             ruleScopeName: activeScopeName,
           }))
         ),
-        effectJson: JSON.stringify(rulesList[0]?.effect || {}),
+        effectJson: JSON.stringify(rulesList[0]?.effects || []),
         targetFiltersJson: JSON.stringify(targetFilters),
         description: ruleDescription.trim(),
         ruleCategory,
@@ -171,5 +221,6 @@ export function useRuleBuilder({
     activeScopeName, handleSaveClick, handleConfirmSave,
     isSaving, 
     addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
+    updateBlockEffect, addEffectToBlock, removeEffectFromBlock,
   };
 }

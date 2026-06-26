@@ -36,4 +36,5 @@ export interface DryRunEffect {
   effectType?: string;
   effectValue?: string | number;
   parameterCode?: string;
+  computedValue?: string | number;
 }

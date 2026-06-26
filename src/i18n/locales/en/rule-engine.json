@@ -44,7 +44,10 @@
     "performAction": "Perform the following action",
     "invalidPercentage": "Value must be between 0% and 100%",
     "selectCategory": "Select category",
-    "selectEffectType": "Select Effect Type"
+    "selectEffectType": "Select Effect Type",
+    "outcomeActions": "Outcome Actions",
+    "addEffect": "Add Effect",
+    "actionIndex": "Action #{index}"
   },
   "saveReasonModal": {
     "title": "Confirm Rule Configuration Save",
@@ -168,6 +171,7 @@
     "stopOnMatch": "Stop on Match",
     "baseRate": "Base Rate",
     "computedValue": "Computed Value",
+    "stepRate": "Step Rate",
     "multiValueHint": "Multi-value field — enter comma-separated values (e.g. <codeTag>10, 28</codeTag>)",
     "hideRawResponse": "Hide Raw Response",
     "showRawResponse": "Show Raw Response",

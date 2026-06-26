@@ -21,7 +21,12 @@ function normalizeOperator(op: string): string {
 function normalizeGroup(g: ConditionGroupState): ConditionGroupState {
   return {
     ...g,
-    conditions: (g.conditions || []).map((c: ConditionState) => ({ ...c, operator: normalizeOperator(c.operator) })),
+    id: safeUUID(),
+    conditions: (g.conditions || []).map((c: ConditionState) => ({
+      ...c,
+      id: safeUUID(),
+      operator: normalizeOperator(c.operator)
+    })),
     groups: (g.groups || []).map(normalizeGroup),
   };
 }
@@ -35,18 +40,27 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
     if (!initialRule?.conditionsJson) throw new Error();
     const parsed = JSON.parse(initialRule.conditionsJson);
     if (Array.isArray(parsed)) {
-      return (parsed as Partial<RuleBlock>[]).map((item) => ({
-        id: item.id || safeUUID(),
-        description: item.description || '',
-        conditions: normalizeGroup(item.conditions || {
-          id: safeUUID(),
-          logicalOperator: 'AND',
-          conditions: [],
-          groups: [],
-        }),
-        effect: item.effect || { effectType: '', value: '', isPercentage: true },
-        stopProcessing: item.stopProcessing || false,
-      }));
+      return (parsed as Partial<RuleBlock>[]).map((item) => {
+        const rawEffect = item.effects || item.effect;
+        const effects = Array.isArray(rawEffect)
+          ? rawEffect
+          : rawEffect
+          ? [rawEffect]
+          : [{ effectType: '', value: '', isPercentage: true }];
+        return {
+          id: item.id || safeUUID(),
+          description: item.description || '',
+          conditions: normalizeGroup(item.conditions || {
+            id: safeUUID(),
+            logicalOperator: 'AND',
+            conditions: [],
+            groups: [],
+          }),
+          effect: effects[0],
+          effects: effects,
+          stopProcessing: item.stopProcessing || false,
+        };
+      });
     }
   } catch {}
 
@@ -55,6 +69,7 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
     description: '',
     conditions: { id: safeUUID(), logicalOperator: 'AND', conditions: [], groups: [] },
     effect: { effectType: '', value: '', isPercentage: true },
+    effects: [{ effectType: '', value: '', isPercentage: true }],
     stopProcessing: false,
   }];
 }
@@ -67,26 +82,34 @@ export function validateRuleBuilder(
   ruleName: string,
   ruleCategory: string,
   rulesList: RuleBlock[],
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: string, values?: Record<string, string | number | string>) => string
 ): string | null {
   if (!ruleName.trim()) return t('validation.ruleNameRequired');
   if (!ruleCategory) return t('validation.categoryRequired');
 
   for (let i = 0; i < rulesList.length; i++) {
     const block = rulesList[i];
-    if (!block.effect.effectType) {
-      return t('validation.effectTypeRequired', { index: i + 1 });
+    const effects = block.effects || (block.effect ? [block.effect] : []);
+    if (effects.length === 0) {
+      return `At least one effect is required for Rule Block #${i + 1}`;
     }
-    if (
-      block.effect.value === undefined ||
-      block.effect.value === null ||
-      block.effect.value.toString().trim() === ''
-    ) {
-      return t('validation.effectValueRequired', { index: i + 1 });
-    }
-    const valNum = Number(block.effect.value);
-    if (isNaN(valNum) || valNum < 0 || valNum > 100) {
-      return t('validation.effectValueRange', { index: i + 1 });
+    for (let j = 0; j < effects.length; j++) {
+      const eff = effects[j];
+      const displayIndex = effects.length > 1 ? `${i + 1} (Effect #${j + 1})` : `${i + 1}`;
+      if (!eff.effectType) {
+        return t('validation.effectTypeRequired', { index: displayIndex });
+      }
+      if (
+        eff.value === undefined ||
+        eff.value === null ||
+        eff.value.toString().trim() === ''
+      ) {
+        return t('validation.effectValueRequired', { index: displayIndex });
+      }
+      const valNum = Number(eff.value);
+      if (isNaN(valNum) || valNum < 0 || valNum > 100) {
+        return t('validation.effectValueRange', { index: displayIndex });
+      }
     }
   }
   return null;
