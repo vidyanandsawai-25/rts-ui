@@ -11,6 +11,7 @@ import type {
   OldFloorDetailApiResponse,
   DiscountData,
   BuildingPermissionData,
+  PropertySocialDetailItem,
 } from '@/types/ptis.types';
 import {
   defaultPropertyDetails,
@@ -117,7 +118,10 @@ export const ptisMapper = {
       oldPlotNo: (data.oldPlotNo as string) || '',
       oldRV: data.oldRV?.toString() || '',
       oldALV: data.oldALV?.toString() || '',
-      oldPropertyTax: data.oldGeneralTax?.toString() || (data.oldPropertyTax as number | string)?.toString() || '',
+      oldPropertyTax:
+        data.oldGeneralTax?.toString() ||
+        (data.oldPropertyTax as number | string)?.toString() ||
+        '',
       oldTotalTax: data.oldTotalTax?.toString() || '',
       oldConstructionYear: data.oldConstructionYear?.toString() || '',
       oldCarpetAreaSqMeter: data.oldCarpetAreaSqMeter?.toString() || '',
@@ -145,15 +149,36 @@ export const ptisMapper = {
 
   mapDiscountDetails: (data: unknown): DiscountData => {
     const rawData = data as Record<string, unknown> | null;
-    const rawItems = Array.isArray(rawData?.items) ? rawData.items : [];
+    let rawItems: unknown[] = [];
+    if (rawData) {
+      if (rawData.items && typeof rawData.items === 'object' && !Array.isArray(rawData.items)) {
+        const nestedItems = rawData.items as Record<string, unknown>;
+        if (Array.isArray(nestedItems.discountAttributes)) {
+          rawItems = nestedItems.discountAttributes;
+        } else if (Array.isArray(nestedItems.items)) {
+          rawItems = nestedItems.items;
+        }
+      }
+
+      if (rawItems.length === 0) {
+        if (Array.isArray(rawData.discountAttributes)) {
+          rawItems = rawData.discountAttributes;
+        } else if (Array.isArray(rawData.items)) {
+          rawItems = rawData.items;
+        } else if (Array.isArray(rawData)) {
+          rawItems = rawData;
+        }
+      }
+    }
+
     const activeItems = rawItems.filter(
-      (item): item is Record<string, unknown> =>
-        !!item && typeof item === 'object' && 'isActive' in item && Boolean(item.isActive)
+      (item): item is Record<string, unknown> => !!item && typeof item === 'object'
     );
+
     return {
       items: activeItems.map((item) => ({
-        propertyId: Number(item.propertyId),
-        socialAttributeId: Number(item.socialAttributeId),
+        propertyId: Number(item.propertyId || rawData?.propertyId || 0),
+        socialAttributeId: Number(item.socialAttributeId ?? item.id),
         bitValue: typeof item.bitValue === 'boolean' ? item.bitValue : null,
         intValue: item.intValue != null ? Number(item.intValue) : null,
         decimalValue: item.decimalValue != null ? Number(item.decimalValue) : null,
@@ -163,11 +188,98 @@ export const ptisMapper = {
         remark: item.remark != null ? String(item.remark) : null,
         socialAttributeCode: String(item.socialAttributeCode || ''),
         socialAttributeName: String(item.socialAttributeName || ''),
-        id: Number(item.id),
-        isActive: Boolean(item.isActive),
+        id:
+          item.propertySocialDetailId != null
+            ? Number(item.propertySocialDetailId)
+            : Number(item.id),
+        isActive: item.isActive !== false,
         createdDate: String(item.createdDate || ''),
         updatedDate: item.updatedDate ? String(item.updatedDate) : null,
+        isDiscountApplicable:
+          typeof item.isDiscountApplicable === 'boolean'
+            ? item.isDiscountApplicable
+            : typeof item.isDiscount === 'boolean'
+              ? item.isDiscount
+              : false,
+        documentGuid: item.documentGuid ? String(item.documentGuid) : null,
+        percentage: item.percentage != null ? Number(item.percentage) : null,
+        amount: item.amount != null ? Number(item.amount) : null,
       })),
+    };
+  },
+
+  mapSocialDetails: (data: unknown): DiscountData => {
+    interface RawSocialAttribute {
+      id?: number | string;
+      bitValue?: boolean | null;
+      intValue?: number | string | null;
+      decimalValue?: number | string | null;
+      textValue?: string | null;
+      dateValue?: string | null;
+      documentBindingId?: number | string | null;
+      remark?: string | null;
+      socialAttributeCode?: string;
+      socialAttributeName?: string;
+      propertySocialDetailId?: number | string | null;
+      isActive?: boolean;
+      isDiscountApplicable?: boolean;
+      documentGuid?: string | null;
+      children?: RawSocialAttribute[];
+    }
+
+    const rawData = data as Record<string, unknown> | null;
+    const rawAttributes =
+      rawData && Array.isArray(rawData.socialAttributes)
+        ? (rawData.socialAttributes as RawSocialAttribute[])
+        : rawData &&
+            rawData.items &&
+            typeof rawData.items === 'object' &&
+            !Array.isArray(rawData.items) &&
+            Array.isArray((rawData.items as Record<string, unknown>).socialAttributes)
+          ? ((rawData.items as Record<string, unknown>).socialAttributes as RawSocialAttribute[])
+          : [];
+
+    const propertyId = Number(
+      rawData?.propertyId ||
+        (rawData?.items &&
+          typeof rawData.items === 'object' &&
+          !Array.isArray(rawData.items) &&
+          (rawData.items as Record<string, unknown>).propertyId) ||
+        0
+    );
+    const flatItems: PropertySocialDetailItem[] = [];
+
+    const traverse = (attrs: RawSocialAttribute[]) => {
+      for (const attr of attrs) {
+        flatItems.push({
+          propertyId,
+          socialAttributeId: Number(attr.id),
+          bitValue: typeof attr.bitValue === 'boolean' ? attr.bitValue : null,
+          intValue: attr.intValue != null ? Number(attr.intValue) : null,
+          decimalValue: attr.decimalValue != null ? Number(attr.decimalValue) : null,
+          textValue: attr.textValue != null ? String(attr.textValue) : null,
+          dateValue: attr.dateValue != null ? String(attr.dateValue) : null,
+          documentBindingId: attr.documentBindingId != null ? Number(attr.documentBindingId) : null,
+          remark: attr.remark != null ? String(attr.remark) : null,
+          socialAttributeCode: String(attr.socialAttributeCode || ''),
+          socialAttributeName: String(attr.socialAttributeName || ''),
+          id: attr.propertySocialDetailId != null ? Number(attr.propertySocialDetailId) : 0,
+          isActive: attr.isActive !== false,
+          createdDate: '',
+          updatedDate: null,
+          isDiscountApplicable: attr.isDiscountApplicable === true,
+          documentGuid: attr.documentGuid ? String(attr.documentGuid) : null,
+        });
+        if (Array.isArray(attr.children) && attr.children.length > 0) {
+          traverse(attr.children);
+        }
+      }
+    };
+
+    traverse(rawAttributes);
+
+    return {
+      items: flatItems,
     };
   },
 
