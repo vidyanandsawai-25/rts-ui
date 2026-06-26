@@ -90,6 +90,24 @@ function filterByPropertyNumberRange(
     return results;
   }
 
+  const hasAlpha = (str: string) => /[a-zA-Z]/.test(str);
+
+  if (hasAlpha(fromRaw) || hasAlpha(toRaw)) {
+    return results.filter((item) => {
+      const itemPropNo = (item.propertyNo || "").trim();
+      const itemPart = (item.partitionNo || "").trim();
+      const itemCombined = itemPart ? `${itemPropNo}-${itemPart}` : itemPropNo;
+
+      const compareFrom = comparePropertyNo(itemCombined, fromRaw);
+      if (compareFrom < 0) return false;
+
+      const compareTo = comparePropertyNo(itemCombined, toRaw);
+      if (compareTo > 0) return false;
+
+      return true;
+    });
+  }
+
   const [fromPropNoStr, ...fromPartArr] = fromRaw.split("-");
   const fromPart = fromPartArr.join("-").trim();
   const fromPropNo = parsePositiveInteger(fromPropNoStr);

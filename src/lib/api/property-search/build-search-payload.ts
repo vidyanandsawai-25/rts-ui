@@ -125,8 +125,17 @@ export function buildPropertySearchPayload(
     const propertyNoFromRaw = criteria.propertyNoFrom || undefined;
     const propertyNoToRaw = criteria.propertyNoTo || propertyNoFromRaw || undefined;
 
-    let propertyNoFrom = propertyNoFromRaw ? propertyNoFromRaw.split("-")[0] : undefined;
-    let propertyNoTo = propertyNoToRaw ? propertyNoToRaw.split("-")[0] : undefined;
+    const getBasePropertyNo = (raw: string): string => {
+      const parts = raw.split("-");
+      const base = parts[0];
+      if (/^\d+$/.test(base)) {
+        return base;
+      }
+      return raw;
+    };
+
+    let propertyNoFrom = propertyNoFromRaw ? getBasePropertyNo(propertyNoFromRaw) : undefined;
+    let propertyNoTo = propertyNoToRaw ? getBasePropertyNo(propertyNoToRaw) : undefined;
 
     // If both from and to are specified and they are different, we do not pass them to the API payload
     // to avoid the broken backend string range comparison (e.g. "50" to "100").

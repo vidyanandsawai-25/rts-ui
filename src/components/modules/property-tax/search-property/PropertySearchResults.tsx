@@ -65,7 +65,10 @@ export function PropertySearchResults({
         [t("columns.description")]: row.description || "-",
         [t("columns.ownerOccupier")]: finalOwnerOccupier,
         [t("columns.mobileAlternate")]: `${row.mobile || "-"}${row.alternateMobile ? `\n[Alt]: ${row.alternateMobile}` : ""}`,
-        [t("columns.rv")]: row.rv != null ? row.rv : "-",
+        [t("columns.rvCv")]: [
+          row.rv > 0 ? `RV: ${row.rv}` : "",
+          row.cv != null && row.cv > 0 ? `CV: ${row.cv}` : "",
+        ].filter(Boolean).join("\n") || "-",
         [t("columns.totalTax")]: row.totalTax != null ? row.totalTax : "-",
         [t("columns.address")]: row.address || "-",
       };

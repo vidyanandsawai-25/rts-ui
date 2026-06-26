@@ -163,6 +163,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             <PtisMainScreen
               locale={locale}
               propertyId={resolvedPropertyId}
+            categoryId={propertyDetailsResult.propertyDetails.categoryId}
               ptisParams={ptisParams}
               resolvedSearchParams={resolvedSearchParams}
               error={sanitizedInitialError}
