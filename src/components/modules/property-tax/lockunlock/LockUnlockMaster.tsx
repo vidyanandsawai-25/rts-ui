@@ -32,6 +32,7 @@ export default function LockUnlockMaster({
 }: LockUnlockMasterProps): React.ReactElement {
   const searchParams = useSearchParams();
   const t = useTranslations("lockUnlock");
+  const tableModalRef = React.useRef<import("./TableModal").TableModalRef>(null);
 
   const {
     formData,
@@ -67,6 +68,16 @@ export default function LockUnlockMaster({
     initialPagination,
     wards,
   });
+
+  React.useEffect(() => {
+    if (editModal.isOpen && tableModalRef.current) {
+      // Add a small delay to ensure the drawer is fully rendered
+      const timer = setTimeout(() => {
+        tableModalRef.current?.focusFirstCheckbox();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [editModal.isOpen]);
   // Map Wards to options format for SearchSelect
   const wardOptions = (wards || []).map((w) => ({
     label: w.wardNo,
@@ -180,6 +191,7 @@ export default function LockUnlockMaster({
         </div>
       </div>
       <TableModal
+        ref={tableModalRef}
         editModal={editModal}
         setEditModal={setEditModal}
         screens={screens}
