@@ -64,8 +64,16 @@ export default function ValueInput({
       config.sourceType === 'API'
          ? apiOptions
          : staticOptions.map((o) => ({ label: o.label, value: o.value }));
-    if (config.supportsNA) return [{ label: 'Not Applicable (N/A)', value: 'NA' }, ...base];
-    return base;
+    const merged = config.supportsNA ? [{ label: 'Not Applicable (N/A)', value: 'NA' }, ...base] : base;
+    
+    // Deduplicate options by value to prevent React key warning issues
+    const seen = new Set<string>();
+    return merged.filter((opt) => {
+      const valStr = String(opt.value);
+      if (seen.has(valStr)) return false;
+      seen.add(valStr);
+      return true;
+    });
   }, [config.sourceType, config.supportsNA, apiOptions, staticOptions]);
 
   // Auto-select all options when operator is 'contains all'

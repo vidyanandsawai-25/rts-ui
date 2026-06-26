@@ -9,6 +9,7 @@ export interface DryRunSubRule {
   skipReason?: string | null;
   matchStatus?: string | null;
   effect?: DryRunEffect | null;
+  effects?: DryRunEffect[] | null;
   stopProcessing?: boolean;
   baseRate?: number;
   computedValue?: number;

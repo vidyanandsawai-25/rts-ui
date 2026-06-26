@@ -44,6 +44,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     activeScopeName, handleSaveClick, handleConfirmSave,
     isSaving, 
     addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
+    updateBlockEffect, addEffectToBlock, removeEffectFromBlock,
   } = useRuleBuilder(props);
 
   // Serialise current form state — passed to SaveRulesButton which holds the initial snapshot
@@ -131,6 +132,9 @@ export default function RuleBuilder(props: RuleBuilderProps) {
             onRemoveRuleBlock={removeRuleBlock}
             onMoveRuleBlock={moveRuleBlock}
             onUpdateRuleBlock={updateRuleBlock}
+            onUpdateBlockEffect={updateBlockEffect}
+            onAddEffectToBlock={addEffectToBlock}
+            onRemoveEffectFromBlock={removeEffectFromBlock}
           />
         </div>
       </div>
