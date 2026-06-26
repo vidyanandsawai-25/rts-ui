@@ -1,7 +1,7 @@
 "use client";
 
-import { Building2, Trash2 } from "lucide-react";
-import { Button, ConfirmProvider, MasterTable } from "@/components/common";
+import { Building2 } from "lucide-react";
+import { ConfirmProvider, DeleteButton, MasterTable } from "@/components/common";
 import type { Column } from "@/components/common";
 import type { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
 import { useDirectPropertyDelete } from "./hooks/useDirectPropertyDelete";
@@ -88,16 +88,14 @@ function DirectPropertyDeleteSectionInner({
 
       {selectedRows.size > 0 && (
         <div className="flex justify-end pt-2">
-          <Button
-            variant="danger"
-            size="sm"
-            icon={Trash2}
+          <DeleteButton
+            aria-label={t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
             onClick={handleBulkDelete}
             isLoading={isDeleting}
             disabled={isDeleting}
           >
             {t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
-          </Button>
+          </DeleteButton>
         </div>
       )}
     </div>
