@@ -32,6 +32,7 @@ export interface LockUnlockPropertiesQueryParams {
   ToPropertyNo?: string;
   PartitionNo?: string;
   Search?: string;
+  SearchPartitionNo?: string;
   PageNumber?: number;
   PageSize?: number;
   SearchTerm?: string;

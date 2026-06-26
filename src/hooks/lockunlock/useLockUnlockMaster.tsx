@@ -1,13 +1,15 @@
-import { useState, useTransition, useCallback, useEffect, useMemo } from "react";
+import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } from "@/types/lockunlock.types";
+import { WardItem } from "@/types/wardMaster.types";
 import { fetchLockUnlockPropertiesPagedAction, bulkLockUnlockPropertiesAction } from "@/app/[locale]/property-tax/lockunlock/action";
 import { getScreenIds } from "@/lib/api/lockunlock/lockunlock.utils";
 import { useLockUnlockColumns } from "./useLockUnlockColumns";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export interface UseLockUnlockMasterProps {
   wardIdFromUrl: string;
@@ -15,6 +17,7 @@ export interface UseLockUnlockMasterProps {
   dropdownProperties: { label: string; value: string }[];
   initialProperties?: LockUnlockPropertyItem[];
   initialPagination?: PaginationState;
+  wards?: WardItem[];
 }
 
 export interface PaginationState {
@@ -30,6 +33,7 @@ export function useLockUnlockMaster({
   dropdownProperties = [],
   initialProperties = [],
   initialPagination,
+  wards = [],
 }: UseLockUnlockMasterProps) {
   const { confirm } = useConfirm();
   const t = useTranslations("lockUnlock");
@@ -91,7 +95,7 @@ export function useLockUnlockMaster({
   const initialSanitizedSearch = searchFromUrl.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
   const [propertySearchTerm, setPropertySearchTerm] = useState(initialSanitizedSearch);
   const [isSearching, setIsSearching] = useState(false);
-  const [appliedPropertySearchTerm, setAppliedPropertySearchTerm] = useState(initialSanitizedSearch);
+  const lastAppliedSearchRef = useRef(initialSanitizedSearch);
 
   // Reset selection state
   const resetSelectionState = useCallback(() => {
@@ -181,7 +185,6 @@ export function useLockUnlockMaster({
       setSelectedScreenIds([]);
       setPagination({ pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 1 });
       setPropertySearchTerm("");
-      setAppliedPropertySearchTerm("");
       setPropertyOptions([]);
 
       params.delete("fromProperty");
@@ -238,7 +241,7 @@ export function useLockUnlockMaster({
     toast.info(t("messages.clearedFilters"));
   };
 
-  // Keeps the input responsive without firing a request until the button is clicked.
+  // Keeps the input responsive and triggers debounced search.
   const handlePropertySearch = useCallback((searchTerm: string) => {
     const sanitizedSearchTerm = searchTerm.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
 
@@ -250,25 +253,16 @@ export function useLockUnlockMaster({
     } else {
       setPropertySearchTerm(sanitizedSearchTerm);
     }
+  }, []);
 
-    // If clearing the search, also clear URL and applied term immediately
-    if (!sanitizedSearchTerm) {
-      setAppliedPropertySearchTerm("");
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("search");
-      router.push(`${pathname}?${params.toString()}`);
-    }
-  }, [searchParams, pathname, router]);
+
 
   // Clear search
   const handleClearSearch = useCallback(() => {
     setPropertySearchTerm("");
-    setAppliedPropertySearchTerm("");
-    // Clear search param from URL
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("search");
-    router.push(`${pathname}?${params.toString()}`);
-  }, [searchParams, pathname, router]);
+  }, []);
+
+  const debouncedSearchTerm = useDebounce(propertySearchTerm, 500);
 
   // Helper to extract property numbers and partition numbers range
   const getPropertyQueryRange = useCallback(() => {
@@ -309,7 +303,7 @@ export function useLockUnlockMaster({
   }, [formData.fromProperty, formData.toProperty, propertyOptions]);
 
   const fetchProperties = useCallback(
-    (pageNum: number, pageSz: number, searchTerm: string = appliedPropertySearchTerm, resetSelection: boolean = false) => {
+    (pageNum: number, pageSz: number, searchTerm: string = debouncedSearchTerm, resetSelection: boolean = false) => {
       if (!formData.wardId) {
         toast.error("Please select a Ward");
         return;
@@ -326,6 +320,11 @@ export function useLockUnlockMaster({
         try {
           const { fromProperty, toProperty, partitionNo } = getPropertyQueryRange();
 
+          // Normalize the search: collapse spaces around hyphens
+          const normalizedSearch = searchTerm
+            ? searchTerm.replace(/\s*-\s*/g, "-").trim()
+            : "";
+
           const params: Record<string, unknown> = {
             WardId: Number(formData.wardId),
             FromPropertyNo: fromProperty,
@@ -338,26 +337,116 @@ export function useLockUnlockMaster({
             params.PartitionNo = partitionNo;
           }
 
-          if (searchTerm) {
-            params.Search = searchTerm;
+          let searchedPropertyNo = "";
+
+          if (normalizedSearch) {
+            // Find selected ward label to identify and strip it if present
+            const selectedWard = (wards || []).find((w) => String(w.id) === formData.wardId);
+            const selectedWardNo = selectedWard?.wardNo ? selectedWard.wardNo.trim() : "";
+
+            const parts = normalizedSearch.split("-").map((p) => p.trim());
+            const cleanParts = [...parts];
+            // If the first part matches the selected ward number (case-insensitive), strip it.
+            if (
+              selectedWardNo &&
+              cleanParts[0] &&
+              cleanParts[0].toLowerCase() === selectedWardNo.toLowerCase()
+            ) {
+              cleanParts.shift();
+            }
+
+            if (cleanParts.length >= 2) {
+              // Combined search (e.g. "2-A10"): send "2" as Search and "A10" as PartitionNo
+              const propPart = cleanParts[0];
+              const partPart = cleanParts[1];
+              if (propPart) params.Search = propPart;
+              if (partPart) {
+                params.PartitionNo = partPart;
+                params.SearchPartitionNo = partPart;
+              }
+              searchedPropertyNo = propPart;
+            } else if (cleanParts.length === 1 && cleanParts[0]) {
+              const term = cleanParts[0];
+              // If it contains letters, it's a partition query (e.g. "A10")
+              if (/[a-zA-Z]/.test(term)) {
+                params.PartitionNo = term;
+                params.SearchPartitionNo = term;
+              } else {
+                params.Search = term;
+                searchedPropertyNo = term;
+              }
+            }
           }
 
           const response: LockUnlockPropertiesResponse = await fetchLockUnlockPropertiesPagedAction(
             params as Parameters<typeof fetchLockUnlockPropertiesPagedAction>[0]
           );
 
-          if (response && response.items && response.items.length > 0) {
-            setProperties(response.items);
-            if (resetSelection) {
-              resetSelectionState();
+          if (response?.items?.length > 0) {
+            let filteredItems = [...response.items];
+
+            if (normalizedSearch) {
+              const searchLower = normalizedSearch.toLowerCase();
+              const searchLowerNoHyphen = searchLower.replace(/-/g, "");
+
+              filteredItems = filteredItems.filter((item) => {
+                const ward = (item.wardNo || "").toLowerCase();
+                const prop = (item.propertyNo || "").toLowerCase();
+                const part = (item.partitionNo || "").toLowerCase();
+
+                const comb1 = `${ward}-${prop}-${part}`;
+                const comb2 = `${prop}-${part}`;
+                const comb3 = `${ward}-${prop}`;
+
+                return (
+                  ward.includes(searchLower) ||
+                  prop.includes(searchLower) ||
+                  part.includes(searchLower) ||
+                  comb1.includes(searchLower) ||
+                  comb2.includes(searchLower) ||
+                  comb3.includes(searchLower) ||
+                  comb1.replace(/-/g, "").includes(searchLowerNoHyphen) ||
+                  comb2.replace(/-/g, "").includes(searchLowerNoHyphen)
+                );
+              });
             }
-            setPagination({
-              pageNumber: response.pageNumber || pageNum,
-              pageSize: response.pageSize || pageSz,
-              totalCount: response.totalCount,
-              totalPages: response.totalPages,
-            });
-            setShowResults(true);
+
+            if (searchedPropertyNo) {
+              const searchLower = searchedPropertyNo.toLowerCase();
+              filteredItems.sort((a, b) => {
+                const aProp = (a.propertyNo || "").toLowerCase();
+                const bProp = (b.propertyNo || "").toLowerCase();
+
+                const aExact = aProp === searchLower;
+                const bExact = bProp === searchLower;
+
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+                return 0;
+              });
+            }
+
+            if (filteredItems.length > 0) {
+              setProperties(filteredItems);
+              if (resetSelection) {
+                resetSelectionState();
+              }
+              setPagination({
+                pageNumber: response.pageNumber || pageNum,
+                pageSize: response.pageSize || pageSz,
+                totalCount: response.totalCount,
+                totalPages: response.totalPages,
+              });
+              setShowResults(true);
+            } else {
+              setProperties([]);
+              if (resetSelection) {
+                resetSelectionState();
+              }
+              setPagination({ pageNumber: 1, pageSize: pageSz, totalCount: 0, totalPages: 1 });
+              setShowResults(true);
+              toast.info(t("messages.fetchNoResults"));
+            }
           } else {
             setProperties([]);
             if (resetSelection) {
@@ -374,7 +463,7 @@ export function useLockUnlockMaster({
         }
       });
     },
-    [appliedPropertySearchTerm, formData.wardId, formData.fromProperty, formData.toProperty, getPropertyQueryRange, t, resetSelectionState]
+    [debouncedSearchTerm, formData.wardId, formData.fromProperty, formData.toProperty, getPropertyQueryRange, t, resetSelectionState, wards]
   );
 
   // Show (initial load) and search should reset selection
@@ -382,18 +471,25 @@ export function useLockUnlockMaster({
     fetchProperties(1, pagination.pageSize, undefined, true);
   }, [fetchProperties, pagination.pageSize]);
 
-  const handleSearchButtonClick = useCallback(() => {
-    setAppliedPropertySearchTerm(propertySearchTerm);
-    // Update URL with search term
-    const params = new URLSearchParams(searchParams.toString());
-    if (propertySearchTerm) {
-      params.set("search", propertySearchTerm);
-    } else {
-      params.delete("search");
+
+
+  // Sync debounced search term to URL and fetch properties
+  useEffect(() => {
+    if (debouncedSearchTerm !== lastAppliedSearchRef.current) {
+      lastAppliedSearchRef.current = debouncedSearchTerm;
+      const params = new URLSearchParams(searchParams.toString());
+      if (debouncedSearchTerm) {
+        params.set("search", debouncedSearchTerm);
+      } else {
+        params.delete("search");
+      }
+      router.push(`${pathname}?${params.toString()}`);
+      
+      if (showResults) {
+        fetchProperties(1, pagination.pageSize, debouncedSearchTerm, true);
+      }
     }
-    router.push(`${pathname}?${params.toString()}`);
-    fetchProperties(1, pagination.pageSize, propertySearchTerm, true);
-  }, [fetchProperties, pagination.pageSize, propertySearchTerm, searchParams, pathname, router]);
+  }, [debouncedSearchTerm, fetchProperties, pagination.pageSize, searchParams, pathname, router, showResults]);
 
   // Page navigation preserves selection state (no reset)
   const handlePageChange = useCallback(
@@ -601,7 +697,7 @@ export function useLockUnlockMaster({
                 fromProperty,
                 toProperty,
                 partitionNo,
-                search: appliedPropertySearchTerm || undefined,
+                search: lastAppliedSearchRef.current || undefined,
               };
             } else {
               payload.propertyIds = selectedPropertyIds.map(Number);
@@ -667,7 +763,6 @@ export function useLockUnlockMaster({
     setPropertySearchTerm,
     isSearching,
     handlePropertySearch,
-    handleSearchButtonClick,
     handleClearSearch,
     pagination,
     handleSelectChange,
