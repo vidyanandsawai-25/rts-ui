@@ -7,6 +7,7 @@ import { FileText, MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
     property: 'propertydetails',
@@ -16,6 +17,14 @@ const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
     discount: 'discountdetails',
     olddetails: 'olddetails',
 };
+
+export function QuickDataEntryClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
+    return (
+        <QuickDataEntryContent categoryName={categoryName}>
+            {children}
+        </QuickDataEntryContent>
+    );
+}
 
 function QuickDataEntryContent({
     children,
@@ -48,23 +57,58 @@ function QuickDataEntryContent({
     const derivedReturnTab = RETURN_TAB_BY_QDE_SEGMENT[qdeTabSegment] || '';
     const resolvedReturnTab = returnTab || derivedReturnTab;
 
-    const handleClose = () => {
-        const params = new URLSearchParams();
-        if (propertyId) params.set('propertyId', propertyId);
-        if (wardNo) params.set('wardNo', wardNo);
-        if (wardId) params.set('wardId', wardId);
-        if (propertyNo) params.set('propertyNo', propertyNo);
-        if (partitionNo) params.set('partitionNo', partitionNo);
-        if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
-        if (valuationTab) params.set('valuationTab', valuationTab);
-        if (appartmentTab) params.set('appartmentTab', appartmentTab);
-        if (subTab) params.set('subTab', subTab);
-        if (showDetails) params.set('showDetails', showDetails);
-        rateableExpands.forEach(v => params.append('rateableExpand', v));
-        capitalExpands.forEach(v => params.append('capitalExpand', v));
-        dualExpands.forEach(v => params.append('dualExpand', v));
+    const { confirm } = useConfirm();
 
-        router.push(`/${locale}/property-tax/ptis?${params}`);
+    const handleClose = () => {
+        const doClose = () => {
+            const params = new URLSearchParams();
+            if (propertyId) params.set('propertyId', propertyId);
+            if (wardNo) params.set('wardNo', wardNo);
+            if (wardId) params.set('wardId', wardId);
+            if (propertyNo) params.set('propertyNo', propertyNo);
+            if (partitionNo) params.set('partitionNo', partitionNo);
+            if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+            if (valuationTab) params.set('valuationTab', valuationTab);
+            if (appartmentTab) params.set('appartmentTab', appartmentTab);
+            if (subTab) params.set('subTab', subTab);
+            if (showDetails) params.set('showDetails', showDetails);
+            rateableExpands.forEach(v => params.append('rateableExpand', v));
+            capitalExpands.forEach(v => params.append('capitalExpand', v));
+            dualExpands.forEach(v => params.append('dualExpand', v));
+
+            router.push(`/${locale}/property-tax/ptis?${params}`);
+        };
+
+        if (typeof window !== 'undefined' && (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges) {
+            confirm({
+                variant: 'warning',
+                title: t('building.unsavedChangesTitle') || 'Unsaved Changes',
+                description: t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?',
+                confirmText: t('building.continueButton') || 'Continue Editing',
+                cancelText: t('building.discardConfirmButton') || 'Discard Changes',
+                onConfirm: () => {
+                    // Do nothing, stays on screen
+                },
+                onCancel: () => {
+                    const e = typeof window !== 'undefined' ? (window.event as Event | undefined) : null;
+                    const target = e?.target as HTMLElement | null;
+                    const isSafeDismiss = e && (
+                        e.type === 'keydown' ||
+                        (e.type === 'click' && !target?.closest?.('button')) ||
+                        target?.closest?.('button')?.getAttribute?.('aria-label') === 'Close'
+                    );
+
+                    if (isSafeDismiss) {
+                        return;
+                    }
+
+                    (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = false;
+                    doClose();
+                }
+            });
+        } else {
+            doClose();
+        }
     };
 
     const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
@@ -122,13 +166,5 @@ function QuickDataEntryContent({
                 </div>
             </Drawer>
         </div>
-    );
-}
-
-export function QuickDataEntryClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
-    return (
-        <QuickDataEntryContent categoryName={categoryName}>
-            {children}
-        </QuickDataEntryContent>
     );
 }

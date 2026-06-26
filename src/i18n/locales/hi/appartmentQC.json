@@ -251,10 +251,10 @@
         "label": "टिप्पणी"
       },
       "oldRV": {
-        "label": "पुराना RV"
+        "label": "पुराना करयोग्य मूल्य"
       },
       "newRV": {
-        "label": "नया RV"
+        "label": "नया करयोग्य मूल्य"
       },
       "oldTax": {
         "label": "पुराना कर"
@@ -263,10 +263,10 @@
         "label": "नया कर"
       },
       "oldArea": {
-        "label": "पुराना क्षेत्र (sq.mtr)"
+        "label": "पुराना क्षेत्र (वर्ग मी.)"
       },
       "newArea": {
-        "label": "नया क्षेत्र (sq.mtr)"
+        "label": "नया क्षेत्र (वर्ग मी.)"
       },
       "oldUseType": {
         "label": "पुराना उपयोग प्रकार"
@@ -307,9 +307,9 @@
       "rateMY": "दर म/व",
       "rentalValue": "किराया मूल्य",
       "depreciation": "मूल्यह्रास",
-      "alv": "ALV",
-      "mr": "M.R.",
-      "rv": "RV",
+      "alv": "वार्षिक किराया मूल्य",
+      "mr": "रखरखाव",
+      "rv": "करयोग्य मूल्य",
       "sdrr": "SDRR",
       "baseValue": "आधार मूल्य",
       "floorFactor": "फ्लोर फैक्टर",
@@ -317,6 +317,32 @@
       "ntbFactor": "NTB फैक्टर",
       "useFactor": "उपयोग फैक्टर",
       "capitalValue": "पूंजी मूल्य"
+    },
+     "toolTipFloorQC": {
+      "tooltips": {
+        "floor": "मंजिल",
+        "conYear": "निर्माण वर्ष",
+        "asstYear": "मूल्यांकन वर्ष",
+        "conType": "निर्माण प्रकार",
+        "use": "उपयोग का प्रकार",
+        "subTypeOfUse": "उप-उपयोग प्रकार",
+        "noOfRooms": "कमरों की संख्या",
+        "area": "क्षेत्रफल",
+        "rentMY": "किराया मासिक / वार्षिक ",
+        "rateMY": "दर मासिक / वार्षिक",
+        "rentalValue": "किराया मूल्य",
+        "depreciation": "मूल्यह्रास",
+        "alv": "वार्षिक किराया मूल्य",
+        "mr": "रखरखाव",
+        "rv": "करयोग्य मूल्य",
+        "sdrr": "SDRR",
+        "baseValue": "आधार मूल्य",
+        "floorFactor": "मंजिल गुणांक",
+        "ageFactor": "आयु गुणांक",
+        "ntbFactor": "NTB गुणांक",
+        "useFactor": "उपयोग गुणांक",
+        "capitalValue": "पूंजी मूल्य"
+      }
     },
     "tabs": {
       "rateable": "दर योग्य",

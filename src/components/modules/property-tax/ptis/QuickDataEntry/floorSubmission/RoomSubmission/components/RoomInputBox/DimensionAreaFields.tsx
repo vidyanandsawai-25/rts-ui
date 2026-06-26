@@ -71,11 +71,13 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
         </Tooltip>
       </div>
 
+
       {/* Room Count */}
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomCount }}>
         <Input
           ref={setRoomCountRef}
           id="room-count-input"
+          data-field="roomCount"
           type="text"
           value={formData.roomCount}
           maxLength={2}

@@ -34,7 +34,8 @@ export async function getApartmentQCDataAction(
   searchTerm: string = '',
   propertyId?: number,
   filters?: FilterParams,
-  sort?: SortParams
+  sort?: SortParams,
+  partitionNo?: string
 ) {
   try {
     // We only fetch the active tab data to keep it efficient, 
@@ -48,6 +49,7 @@ export async function getApartmentQCDataAction(
     const params = {
       wardId,
       propertyNo,
+      partitionNo,
       pageNumber,
       pageSize,
       searchTerm,

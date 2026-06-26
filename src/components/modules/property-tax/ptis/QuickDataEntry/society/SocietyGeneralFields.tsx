@@ -8,7 +8,7 @@ import {
     sanitizeEmailStrict,
     sanitizeName,
     sanitizeAddress,
-    capitalizeEachWord
+    capitalizeEachWordKycSociety
 } from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
 
@@ -67,6 +67,7 @@ export const SocietyGeneralFields = ({
                 <Input
                     id="land-owner-name"
                     value={landOwnerName}
+                    autoFocus
                     placeholder={t('society.landOwnerPlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName))
@@ -74,15 +75,20 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('landOwnerName')}
-                    onBlur={onBlurField}
-                    onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setLandOwnerName(capitalized);
-                        }
+                    onBlur={() => {
+                        onBlurField();
+                        setLandOwnerName(capitalizeEachWordKycSociety(landOwnerName.trim().replace(/\s+/g, ' '), true));
                     }}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setLandOwnerName(finalVal);
+                        }
+                    }}                     
                 />
                 {showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName)) && (
                     <span className="text-xs text-red-500">
@@ -107,13 +113,18 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('builderName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setBuilderName(capitalizeEachWordKycSociety(builderName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setBuilderName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setBuilderName(finalVal);
                         }
                     }}
                 />
@@ -140,13 +151,18 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('societyName')}
-                    onBlur={onBlurField}
+                    onBlur={() => {
+                        onBlurField();
+                        setSocietyName(capitalizeEachWordKycSociety(societyName.trim().replace(/\s+/g, ' '), true));
+                    }}
                     onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWord(sanitized);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH) {
-                            setSocietyName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH) {
+                            setSocietyName(finalVal);
                         }
                     }}
                 />
@@ -160,9 +176,9 @@ export const SocietyGeneralFields = ({
             </div>
 
             {/* Row 2: Wing, Society Email & Society Address */}
-            <div className="col-span-3 grid grid-cols-3 gap-4">
+            <div className="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5 relative focus-within:z-100">
-                    <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-700">
+                    <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-900">
                         {t('society.wing')}
                     </Label>
                     <SearchSelect

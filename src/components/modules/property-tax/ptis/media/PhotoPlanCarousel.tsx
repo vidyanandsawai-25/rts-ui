@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Plus, Trash2, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useConfirm } from '@/components/common';
+import { useConfirm, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from './ImageWithFallback';
 import type { AdditionalImage } from './MediaImageCards';
@@ -78,14 +78,16 @@ export function PhotoPlanCarousel({
   return (
     <div className={`h-full bg-slate-50 flex items-center justify-between px-2 sm:px-4 gap-2 select-none border-t border-slate-200 w-full ${className}`}>
       {images.length > 3 && (
-        <button
+        <Button
+          size="xs"
+          variant="secondary"
           onClick={handleCarouselPrev}
           disabled={!canPrev}
-          className="p-1.5 rounded-lg bg-white border border-slate-200 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 text-slate-600 shrink-0 transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+          className="!h-8 !w-8 !p-0 rounded-lg shrink-0 hover:scale-105 active:scale-95 cursor-pointer"
           aria-label="Previous thumbnails"
         >
           <ChevronLeft className="w-4 h-4" />
-        </button>
+        </Button>
       )}
 
       <div className="flex-1 flex gap-2 h-full py-1.5 items-center justify-center overflow-hidden">
@@ -112,23 +114,27 @@ export function PhotoPlanCarousel({
                   sizes="120px"
                 />
                 <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  <button
+                  <Button
+                    size="xs"
+                    variant="secondary"
                     onClick={(e) => {
                       e.stopPropagation();
                       onReplacePhoto(actualIndex);
                     }}
-                    className="p-1 bg-white hover:bg-slate-50 rounded shadow border border-slate-200 text-slate-600 hover:text-green-600 cursor-pointer transition-colors"
+                    className="!p-1 hover:!bg-slate-50 rounded shadow !border-slate-200 !text-slate-600 hover:!text-green-600 cursor-pointer transition-colors !h-5 !w-5"
                     title={t('media.replaceImage') || 'Replace Image'}
                   >
                     <Upload className="w-2.5 h-2.5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="secondary"
                     onClick={(e) => handleDeleteClick(e, actualIndex, img.title)}
-                    className="p-1 bg-white hover:bg-slate-50 rounded shadow border border-slate-200 text-slate-600 hover:text-red-600 cursor-pointer transition-colors"
+                    className="!p-1 hover:!bg-slate-50 rounded shadow !border-slate-200 !text-slate-600 hover:!text-red-600 cursor-pointer transition-colors !h-5 !w-5"
                     title={t('media.deleteSlotTitle') || 'Delete Photo'}
                   >
                     <Trash2 className="w-2.5 h-2.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="p-1 border-t border-slate-100 bg-white flex flex-col justify-center min-h-[22px] leading-none shrink-0">
@@ -161,14 +167,16 @@ export function PhotoPlanCarousel({
       </div>
 
       {images.length > 3 && (
-        <button
+        <Button
+          size="xs"
+          variant="secondary"
           onClick={handleCarouselNext}
           disabled={!canNext}
-          className="p-1.5 rounded-lg bg-white border border-slate-200 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 text-slate-600 shrink-0 transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+          className="!h-8 !w-8 !p-0 rounded-lg shrink-0 hover:scale-105 active:scale-95 cursor-pointer"
           aria-label="Next thumbnails"
         >
           <ChevronRight className="w-4 h-4" />
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -3,14 +3,14 @@
 import React, { useState, useEffect, memo, useMemo } from "react";
 import { Calendar, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { validateDateRange, getNextCustomRangeFromDate, parseDateOnly } from "@/lib/utils/renterUtils";
+import { validateDateRange, getNextCustomRangeFromDate, parseDateOnly } from "@/lib/utils/renter/renterUtils";
 import { calculateRangeTotal } from "./CustomDateRangeUtils";
 import { AddRangeForm } from "./AddRangeForm";
 import { CustomRangesTable } from "./CustomRangesTable";
 import { CustomRangesSummary } from "./CustomRangesSummary";
 import { Button } from "@/components/common";
 import { useTranslations } from "next-intl";
-import { RenterFormData, CustomDateRange } from "@/types/renter.types";
+import { RenterFormData, CustomDateRange } from "@/types/renter/renter.types";
 
 interface CustomDateRangeManagerProps {
     formData: RenterFormData;

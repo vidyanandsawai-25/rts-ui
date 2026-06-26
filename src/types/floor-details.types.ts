@@ -1,7 +1,7 @@
 import type React from 'react';
 import { LookupData } from "./common-details.types";
 import { FloorData, RoomAPIResponse, RoomTypeResponse } from "./room-details.types";
-import { RenterDetailItem, RenterMastItem } from "./renter-details.types";
+import { RenterDetailItem, RenterMastItem } from "./renter/renter-details.types";
 
 /* -------------------------------------------------------------------------- */
 /*                                  FLOOR DETAILS                             */
@@ -376,6 +376,9 @@ export interface BasicInfoSectionProps extends BaseFormSectionProps {
 
     /** Triggers lazy loading for specific dropdown data */
     handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
+
+    /** Indicates if we are in Add Floor mode */
+    isAddingNewFloor?: boolean;
 }
 
 /**
@@ -534,7 +537,7 @@ export {
     type ParameterInputProps
 } from "./room-details.types";
 export * from "./offset-details.types";
-export * from "./renter-details.types";
+export * from "./renter/renter-details.types";
 
 // FloorSubmissionPayload - used for floor submission API calls
 // FloorSubmissionPayload - used for floor submission API calls

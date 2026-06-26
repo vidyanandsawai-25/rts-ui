@@ -105,6 +105,25 @@ export default function FloorInformationForm({
         oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
         oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
       }));
+    } else if (field === 'oldCarpetAreaSqFeet') {
+      const carpetAreaSqFt = parseFloat(translateDevanagariDigits(value)) || 0;
+
+      // Calculate Carpet Area (Sq M) from Carpet Area (Sq Ft)
+      const carpetAreaSqM = carpetAreaSqFt > 0 ? convertSqFtToSqM(carpetAreaSqFt) : 0;
+
+      // Calculate Built-up Area (Sq Ft) from Carpet Area (Sq Ft) - adds 20%
+      const builtupAreaSqFt = carpetAreaSqFt > 0 ? calculateBuiltUpArea(carpetAreaSqFt) : 0;
+
+      // Calculate Built-up Area (Sq M) from Built-up Area (Sq Ft)
+      const builtupAreaSqMeter = builtupAreaSqFt > 0 ? convertSqFtToSqM(builtupAreaSqFt) : 0;
+
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        oldAreaSqMeter: carpetAreaSqM > 0 ? carpetAreaSqM.toFixed(2) : '',
+        oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
+        oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
+      }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
@@ -128,15 +147,13 @@ export default function FloorInformationForm({
 
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-4">
-      <div className="bg-white rounded-xl border border-blue-100 shadow-xs mb-10">
-        <div className="px-5 py-3 border-b border-blue-100 flex items-center gap-2">
+      <div className="bg-white rounded-xl border border-blue-100 shadow-xs p-5">
+        <div className="-mx-5 mb-5 px-5 pb-3 border-b border-blue-100 flex items-center gap-2">
           <Layers className="w-4 h-4 text-blue-600" />
           <h3 className="text-sm font-bold text-blue-700">
             {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
           </h3>
         </div>
-
-        <div className="p-5">
           {/* Floor Entry Form Fields */}
           <FloorFormFields
             t={t}
@@ -160,7 +177,7 @@ export default function FloorInformationForm({
 
           {/* Floor Details Table */}
           <div className="mt-5">
-            <div className="flex items-center justify-between mb-3 md:pr-3">            
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 md:pr-3">            
               <div className="flex items-center gap-2 border-b border-blue-100 pb-2 md:ml-2">
                 <Layers className="w-4 h-4 text-blue-600" />
                 <h4 className="text-sm font-bold text-slate-800">
@@ -168,7 +185,7 @@ export default function FloorInformationForm({
                 </h4>
               </div>
 
-              <div className="w-72">
+              <div className="w-full sm:w-72">
                 <SearchInput
                   value={search}
                   onChange={handleSearchInput}
@@ -193,7 +210,6 @@ export default function FloorInformationForm({
               onSearchChange={handleSearchChange}
             />
           </div>
-        </div>
       </div>
     </div>
   );

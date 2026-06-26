@@ -66,7 +66,7 @@ export const SocietyFormFields = ({
     onBlurField,
 }: SocietyFormFieldsProps & { onFocusField: (field: string) => void; onBlurField: () => void; }) => {
     return (
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
             <SocietyGeneralFields
                 societyEmail={societyEmail}
                 setSocietyEmail={setSocietyEmail}

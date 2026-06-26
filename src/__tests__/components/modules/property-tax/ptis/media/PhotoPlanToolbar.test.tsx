@@ -20,10 +20,6 @@ describe('PhotoPlanToolbar Component', () => {
     currentIndex: 0,
     totalCount: 3,
     hasImage: true,
-    rotation: 0,
-    onRotateLeft: vi.fn(),
-    onRotateRight: vi.fn(),
-    onReset: vi.fn(),
     onDownload: vi.fn(),
     onUpload: vi.fn(),
     onReplace: vi.fn(),
@@ -34,28 +30,6 @@ describe('PhotoPlanToolbar Component', () => {
     render(<PhotoPlanToolbar {...defaultProps} />);
     expect(screen.getByText('Test Photo')).toBeInTheDocument();
     expect(screen.getByText('Image 1 of 3')).toBeInTheDocument();
-  });
-
-  it('triggers rotate left, rotate right, and reset buttons when clicked', () => {
-    const { rerender } = render(<PhotoPlanToolbar {...defaultProps} />);
-    
-    const rotateLeftBtn = screen.getByLabelText('media.rotateLeft');
-    fireEvent.click(rotateLeftBtn);
-    expect(defaultProps.onRotateLeft).toHaveBeenCalled();
-
-    const rotateRightBtn = screen.getByLabelText('media.rotateRight');
-    fireEvent.click(rotateRightBtn);
-    expect(defaultProps.onRotateRight).toHaveBeenCalled();
-
-    // Reset button should be disabled when rotation is 0
-    const resetBtn = screen.getByLabelText('media.reset');
-    expect(resetBtn).toBeDisabled();
-
-    // Rerender with rotation > 0 to test reset enable
-    rerender(<PhotoPlanToolbar {...defaultProps} rotation={90} />);
-    expect(resetBtn).not.toBeDisabled();
-    fireEvent.click(resetBtn);
-    expect(defaultProps.onReset).toHaveBeenCalled();
   });
 
   it('triggers replace, delete, download when hasImage is true', () => {
@@ -82,15 +56,10 @@ describe('PhotoPlanToolbar Component', () => {
     expect(defaultProps.onUpload).toHaveBeenCalled();
   });
 
-  it('disables all buttons and displays spinners / dynamic text during mutations', () => {
+  it('disables buttons during mutations', () => {
     const { rerender } = render(
       <PhotoPlanToolbar {...defaultProps} isReplacing={true} />
     );
-
-    // Manipulation controls should be disabled
-    expect(screen.getByLabelText('media.rotateLeft')).toBeDisabled();
-    expect(screen.getByLabelText('media.rotateRight')).toBeDisabled();
-    expect(screen.getByLabelText('media.reset')).toBeDisabled();
 
     // Replace button should show spinner/replacing text and be disabled
     const replaceBtn = screen.getByLabelText('media.replaceImage');

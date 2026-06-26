@@ -24,6 +24,19 @@ function extractTaxDetailsFromResponse(
   return validateAndExtractApiResponse<TaxDetailsData>(apiResponse, endpoint);
 }
 
+function isTaxDetailsNotFound(response: ApiResponse<PtisMainTaxDetailsApiResponse>): boolean {
+  if (!response) return false;
+
+  const statusCodeStr = String(response.statusCode || response.data?.statusCode || '');
+  const errorMessage = String(response.error || (response.data as unknown as Record<string, unknown>)?.error || '').toLowerCase();
+
+  return (
+    statusCodeStr === '404' ||
+    errorMessage.includes('no tax details found') ||
+    errorMessage.includes('no tax details available')
+  );
+}
+
 /**
  * Fetches general tax details for a property using Rateable Value method.
  * Uses SSR with no-store cache to ensure fresh data on each request.
@@ -35,12 +48,23 @@ function extractTaxDetailsFromResponse(
  * @throws Error if API call fails or response is invalid
  */
 export async function getPtisMainTaxDetailsByPropertyId(propertyId: number): Promise<TaxDetailsData> {
-  const response = await apiClient.get<PtisMainTaxDetailsApiResponse>(
-    `/Property/${propertyId}/tax-details`,
-    { cache: 'no-store' }
-  );
+  try {
+    const response = await apiClient.get<PtisMainTaxDetailsApiResponse>(
+      `/Property/${propertyId}/tax-details`,
+      { cache: 'no-store' }
+    );
 
-  return extractTaxDetailsFromResponse(response, 'tax-details');
+    if (isTaxDetailsNotFound(response)) {
+      return {
+        propertyId,
+        policies: [],
+      };
+    }
+
+    return extractTaxDetailsFromResponse(response, 'tax-details');
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -54,10 +78,21 @@ export async function getPtisMainTaxDetailsByPropertyId(propertyId: number): Pro
  * @throws Error if API call fails or response is invalid
  */
 export async function getPtisMainTaxDetailsCvByPropertyId(propertyId: number): Promise<TaxDetailsData> {
-  const response = await apiClient.get<PtisMainTaxDetailsApiResponse>(
-    `/Property/${propertyId}/tax-details-cv`,
-    { cache: 'no-store' }
-  );
+  try {
+    const response = await apiClient.get<PtisMainTaxDetailsApiResponse>(
+      `/Property/${propertyId}/tax-details-cv`,
+      { cache: 'no-store' }
+    );
 
-  return extractTaxDetailsFromResponse(response, 'tax-details-cv');
+    if (isTaxDetailsNotFound(response)) {
+      return {
+        propertyId,
+        policies: [],
+      };
+    }
+
+    return extractTaxDetailsFromResponse(response, 'tax-details-cv');
+  } catch (error) {
+    throw error;
+  }
 }

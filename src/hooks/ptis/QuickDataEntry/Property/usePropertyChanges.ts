@@ -41,6 +41,7 @@ export const usePropertyChanges = ({
             String(formData.get("flatOrShopNo") ?? "").trim() !== (propertyData?.flatOrShopNo ?? "") ||
             String(formData.get("surveyNo") ?? "").trim() !== (propertyData?.surveyNo ?? "") ||
             String(formData.get("subZoneNo") ?? "").trim() !== (propertyData?.subZoneNo ?? "") ||
+            String(formData.get("rateSectionDescription") ?? "").trim() !== (propertyData?.rateSectionDescription ?? "") ||
             plotArea !== (propertyData?.plotArea ?? null) ||
             categoryId !== (propertyData?.categoryId ?? null) ||
             propertyTypeId !== (propertyData?.propertyTypeId ?? null) ||

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { Images, X, Plus } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
+import { Images, X, ChevronRight, Plus } from 'lucide-react';
+import { Button } from '@/components/common';
 import { MediaImageCard, AdditionalImagesGrid } from './MediaImageCards';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { ImageHoverPreview } from './ImageHoverPreview';
@@ -11,6 +11,7 @@ import { ChangeDetectionCard } from './ChangeDetectionCard';
 import { toast } from 'sonner';
 import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState';
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
+import { useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 
 export interface PropertyMediaPanelProps {
@@ -23,29 +24,51 @@ export interface PropertyMediaPanelProps {
   propertyId?: number;
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
+  loading?: boolean;
 }
 
 function PropertyMediaPanel({
   wardNo = '', propertyNo = '', propertyId,
   initialPhotoSlots = [], initialPhotos = [],
+  loading = false,
 }: PropertyMediaPanelProps): React.ReactElement {
   const { isDrawerOpen, drawerInitialCategoryIndex, openDrawer, closeDrawer } = useMediaDrawerState();
+  const { isPanelVisible, togglePanel } = useMediaPanel();
 
   const {
     showMoreImages, setShowMoreImages, hoverPreview, categories, handleCategoriesChange,
     photoPlanCategory, propertyPhotoCategory, gisCategory, gisPhoto, photoPlanPhoto,
-    propertyPhoto, remainingImages, handleImageHover, handleImageLeave,
+    propertyPhoto, remainingImages, handleImageHover, handleImageLeave, cancelImageLeave,
     fullyLoadedIds, setFullyLoadedIds, t,
   } = usePropertyMedia({ initialPhotoSlots, initialPhotos, propertyId });
 
+  const cdCategory = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
+  const cdBeforeImg = cdCategory?.images?.[0]?.src || '', cdAfterImg = cdCategory?.images?.[1]?.src || '';
+  const cdBeforeLabel = t('media.beforeCustomLabel') || 'Before (Old)', cdAfterLabel = t('media.afterCustomLabel') || 'After (New)';
+
   const handleCreateClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    openDrawer(photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0, undefined, 'create');
+    e.stopPropagation(); openDrawer(photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0, undefined, 'create');
   }, [photoPlanCategory, categories, openDrawer]);
+
+  if (loading) {
+    return (
+      <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 p-2.5 gap-2.5 animate-pulse min-h-[500px]">
+        {[1, 2, 3, 4].map(i => <div key={i} className="relative bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex-1 min-h-[110px] flex items-center justify-center"><div className="w-10 h-10 bg-slate-200 rounded-full" /></div>)}
+      </div>
+    );
+  }
 
   return (
     <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">
-      <ImageHoverPreview src={hoverPreview?.src ?? ''} src2={hoverPreview?.src2} title={hoverPreview?.title ?? ''} visible={hoverPreview !== null} />
+      <ImageHoverPreview
+        key={hoverPreview?.src ?? 'empty'}
+        src={hoverPreview?.src ?? ''}
+        src2={hoverPreview?.src2}
+        title={hoverPreview?.title ?? ''}
+        visible={hoverPreview !== null}
+        onMouseEnter={cancelImageLeave}
+        onMouseLeave={handleImageLeave}
+      />
 
       <div className="flex-1 overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">
         <MediaImageCard
@@ -54,7 +77,6 @@ function PropertyMediaPanel({
           alt={propertyPhoto?.alt || t('media.propertyPhoto')}
           label={propertyPhoto?.title || t('media.propertyPhoto')}
           hoverBorderColor="hover:border-blue-500"
-          priority
           badgeText={!showMoreImages && remainingImages.length > 0 ? `+${remainingImages.length} More` : undefined}
           onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
           onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || t('media.propertyPhoto'))}
@@ -64,7 +86,7 @@ function PropertyMediaPanel({
             <Button
               variant="edit"
               size="xs"
-              className="h-7 w-7 p-0 shadow-lg bg-white cursor-pointer"
+              className="!h-7 !w-7 !p-0 shadow-lg bg-white cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMoreImages((p) => !p);
@@ -100,7 +122,6 @@ function PropertyMediaPanel({
           alt={photoPlanPhoto?.alt || t('media.photoPlan')}
           label={photoPlanPhoto?.title || t('media.photoPlan')}
           hoverBorderColor="hover:border-purple-500"
-          priority
           onClick={() => openDrawer(photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0, 0)}
           onMouseEnter={() => handleImageHover(photoPlanPhoto?.fullSrc || photoPlanPhoto?.src || '', photoPlanPhoto?.title || t('media.photoPlan'))}
           onMouseLeave={handleImageLeave}
@@ -108,13 +129,15 @@ function PropertyMediaPanel({
           <Button
             variant="edit"
             size="xs"
-            className="h-7 w-7 p-0 shadow-lg bg-white cursor-pointer"
+            className="!h-7 !w-7 !p-0 shadow-lg bg-white cursor-pointer"
             onClick={handleCreateClick}
             aria-label="Create new plan"
           >
             <Plus className="w-3.5 h-3.5 cursor-pointer" />
           </Button>
         </MediaImageCard>
+
+        {/* Arrow button moved to outer container to keep it fixed in the middle of the 4 cards */}
 
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
         <GisMapCard
@@ -126,16 +149,16 @@ function PropertyMediaPanel({
 
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
         <ChangeDetectionCard
+          beforeImageSrc={cdBeforeImg}
+          afterImageSrc={cdAfterImg}
+          beforeLabel={cdBeforeLabel}
+          afterLabel={cdAfterLabel}
           onMouseEnter={() => {
-            const cdCat = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
-            const beforeImg = cdCat?.images?.[0]?.src || '/images/thane-earth-2018.jpg';
-            const afterImg = cdCat?.images?.[1]?.src || '/images/thane-earth-2026.jpg';
-            handleImageHover(beforeImg, t('media.changeDetection') || 'Change Detection', afterImg);
+            handleImageHover(cdBeforeImg, t('media.changeDetection') || 'Change Detection', cdAfterImg);
           }}
           onMouseLeave={handleImageLeave}
           onClick={() => {
-            const changeDetectionCategory = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
-            const changeDetectionIndex = changeDetectionCategory ? categories.indexOf(changeDetectionCategory) : -1;
+            const changeDetectionIndex = cdCategory ? categories.indexOf(cdCategory) : -1;
             if (changeDetectionIndex !== -1) {
               openDrawer(changeDetectionIndex);
             } else {
@@ -145,7 +168,14 @@ function PropertyMediaPanel({
         />
       </div>
 
-      {isDrawerOpen && (
+      {/* Arrow button anchored exactly in the middle of the panel on desktop */}
+      <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50 sm:hidden lg:block">
+        <button type="button" onClick={togglePanel} className="w-10 h-24 flex items-center justify-center bg-transparent p-0 border-none outline-none focus:outline-none cursor-pointer hover:scale-110 active:scale-95 group transition-transform duration-200" aria-label="Close panel">
+          <ChevronRight className="w-6 h-6 text-[#64748B] group-hover:[#2563EB] scale-y-[3.5] scale-x-[1.5] opacity-75 group-hover:opacity-100 animate-pulse group-hover:animate-none transition-all" strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {isDrawerOpen && isPanelVisible && (
         <PhotoPlanDrawer
           open={isDrawerOpen} onClose={closeDrawer} categories={categories}
           onCategoriesChange={handleCategoriesChange} wardNo={wardNo} propertyNo={propertyNo}

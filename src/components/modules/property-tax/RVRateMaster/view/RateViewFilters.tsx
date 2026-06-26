@@ -15,6 +15,7 @@ interface RateViewFiltersProps {
   onYearChange: (value: string) => void;
   onUseGroupChange: (value: string) => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  disabled?: boolean;
 }
 
 export function RateViewFilters({
@@ -28,6 +29,7 @@ export function RateViewFilters({
   onYearChange,
   onUseGroupChange,
   t,
+  disabled = false,
 }: RateViewFiltersProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 w-200">
@@ -45,6 +47,7 @@ export function RateViewFilters({
           value={selectedZone}
           onChange={(_name, value) => onZoneChange(value)}
           className="h-7 w-10 text-xs"
+          disabled={disabled}
         />
       </div>
 
@@ -62,6 +65,7 @@ export function RateViewFilters({
           value={selectedYear}
           onChange={(_name, value) => onYearChange(value)}
           className="h-7 w-20 text-xs"
+          disabled={disabled}
         />
       </div>
 
@@ -69,7 +73,7 @@ export function RateViewFilters({
       <div className="flex flex-col gap-1">
         <label htmlFor="useGroup-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
           <Users className="w-3.5 h-3.5 text-blue-500" />
-          {t('filters.useGroup')}
+          {t('filters.typeOfUseGroup')}
         </label>
         <SearchSelect
           id="useGroup-select"
@@ -79,6 +83,7 @@ export function RateViewFilters({
           value={selectedUseGroup ?? ""}
           onChange={(_name, value) => onUseGroupChange(value)}
           className="h-7 text-xs"
+          disabled={disabled}
         />
       </div>
     </div>

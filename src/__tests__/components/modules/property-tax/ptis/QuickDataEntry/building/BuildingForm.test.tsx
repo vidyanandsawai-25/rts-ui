@@ -21,21 +21,22 @@ vi.mock('next/navigation', () => ({
 // Mock next-intl
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => ({
-    'building.title': 'Building Permissions & Certificates',
+    'building.title': 'Building Permissions & Documents',
     'building.buildingPermit': 'Building Permit',
-    'building.certificateNumber': 'Certificate Number',
-    'building.certificateNumberPlaceholder': 'Enter certificate number',
-    'building.certificateDate': 'Certificate Date',
+    'building.certificateNumber': 'Document Number',
+    'building.certificateNumberPlaceholder': 'Enter document number',
+    'building.certificateDate': 'Document Date',
     'building.certificateDatePlaceholder': 'Select date',
     'building.uploadDocument': 'Upload Document',
     'building.viewDocument': 'View Document',
     'building.saveSuccess': 'Building permissions saved successfully!',
     'building.saveError': 'Error saving building permissions!',
     'common.saveChanges': 'Save Changes',
-    'building.errors.allZeros': 'Certificate number cannot be all zeros.',
+    'building.errors.allZeros': 'Document number cannot be all zeros.',
     'building.errors.dummyText': 'Dummy, sequential, or repetitive placeholder text is not allowed.',
-    'building.errors.invalidCharacters': 'Certificate number contains invalid characters.',
+    'building.errors.invalidCharacters': 'Document number contains invalid characters.',
     'building.errors.futureDate': 'Issue date cannot be in the future.',
+    'building.pendingSave': 'Pending Save',
   }[key] || key),
   useLocale: () => 'en',
 }));
@@ -73,7 +74,7 @@ describe('BuildingForm', () => {
 
   it('renders correctly with initial data', () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    expect(screen.getByText('Building Permissions & Certificates')).toBeInTheDocument();
+    expect(screen.getByText('Building Permissions & Documents')).toBeInTheDocument();
     expect(screen.getByDisplayValue('BP-001000')).toBeInTheDocument();
   });
 
@@ -85,16 +86,30 @@ describe('BuildingForm', () => {
 
   it('enables save button when data is modified', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     fireEvent.change(inputs[0], { target: { value: 'BP-UPDATED' } });
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     expect(saveBtn).not.toBeDisabled();
   });
 
+  it('disables save button when data is modified and then reverted to initial value', async () => {
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
+    
+    // Modify value
+    fireEvent.change(inputs[0], { target: { value: 'BP-UPDATED' } });
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    expect(saveBtn).not.toBeDisabled();
+
+    // Revert value to original 'BP-001000'
+    fireEvent.change(inputs[0], { target: { value: 'BP-001000' } });
+    expect(saveBtn).toBeDisabled();
+  });
+
   it('calls saveBuildingPermissionsAction when saving data', async () => {
     (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: true });
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     fireEvent.change(inputs[0], { target: { value: 'BP-UPDATED' } });
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
@@ -121,7 +136,7 @@ describe('BuildingForm', () => {
   it('handles submission error correctly', async () => {
     (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: false, error: 'Save failed' });
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     fireEvent.change(inputs[0], { target: { value: 'BP-FAILED' } });
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
@@ -150,7 +165,7 @@ describe('BuildingForm', () => {
 
   it('displays length validation error when certificate number violates constraints', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     // Category 2: Building Approval Certificate has min length 8. Set number to 'Short' (5 chars)
     fireEvent.change(inputs[0], { target: { value: 'Short' } });
@@ -165,7 +180,7 @@ describe('BuildingForm', () => {
 
   it('displays error when certificate number contains spaces', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     fireEvent.change(inputs[0], { target: { value: 'BP 123456' } });
 
@@ -179,7 +194,7 @@ describe('BuildingForm', () => {
 
   it('displays error when certificate number has repeated digits', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     fireEvent.change(inputs[0], { target: { value: '00000000' } });
 
@@ -196,7 +211,7 @@ describe('BuildingForm', () => {
       { certificateTypeId: 99, certificateTypeName: "Unknown Certificate", displayOrder: 99, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-999", fileName: "zero.pdf" }
     ];
     render(<BuildingForm initialBuildingPermission={zeroData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     // single '0' doesn't trigger repeated digits (length < 2) and has valid length (min 1)
     fireEvent.change(inputs[0], { target: { value: '0' } });
@@ -205,13 +220,13 @@ describe('BuildingForm', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(screen.getAllByText("Certificate number cannot be all zeros.")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Document number cannot be all zeros.")[0]).toBeInTheDocument();
     });
   });
 
   it('displays error when certificate number is dummy text', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     // 'test12345' has length 9 (>= 8) and is not repeated, so it passes length check, then triggers dummyText check.
     fireEvent.change(inputs[0], { target: { value: 'test12345' } });
@@ -229,7 +244,7 @@ describe('BuildingForm', () => {
       { certificateTypeId: 2, certificateTypeName: "Commencement Certificate (CC)", displayOrder: 20, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-456", fileName: "cc.pdf" }
     ];
     render(<BuildingForm initialBuildingPermission={copData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     // TMC is too short (length 3, pattern requires 5-50 chars)
     fireEvent.change(inputs[0], { target: { value: 'TMC' } });
@@ -244,7 +259,7 @@ describe('BuildingForm', () => {
 
   it('displays error when certificate number has dirty/invalid characters', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     // 'BP-123#45' has length 9 (>= 8) and has '#' which is invalid
     fireEvent.change(inputs[0], { target: { value: 'BP-123#45' } });
@@ -253,7 +268,7 @@ describe('BuildingForm', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(screen.getAllByText("Certificate number contains invalid characters.")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Document number contains invalid characters.")[0]).toBeInTheDocument();
     });
   });
 
@@ -262,7 +277,7 @@ describe('BuildingForm', () => {
       { certificateTypeId: 4, certificateTypeName: "Index 2", displayOrder: 40, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-789", fileName: "index2.pdf" }
     ];
     render(<BuildingForm initialBuildingPermission={indexData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     fireEvent.change(inputs[0], { target: { value: 'INVALID' } });
 
@@ -279,7 +294,7 @@ describe('BuildingForm', () => {
       { certificateTypeId: 5, certificateTypeName: "Electric Bill", displayOrder: 50, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-999", fileName: "bill.pdf" }
     ];
     render(<BuildingForm initialBuildingPermission={electricData} propertyId="123" />);
-    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     fireEvent.change(inputs[0], { target: { value: '123' } });
 
@@ -303,6 +318,96 @@ describe('BuildingForm', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText("common.validation.dateFuture")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('allows spaces in Commencement Certificate and saves successfully', async () => {
+    (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: true });
+    const copData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 2, certificateTypeName: "Commencement Certificate (CC)", displayOrder: 20, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-456", fileName: "cc.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={copData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
+    
+    // Valid CC number containing spaces, slashes, and hyphens
+    fireEvent.change(inputs[0], { target: { value: 'TMC / TDD - 0001 / 2023' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(saveBuildingPermissionsAction).toHaveBeenCalled();
+      expect(toast.success).toHaveBeenCalledWith("Building permissions saved successfully!");
+    });
+  });
+
+  it('enforces maxLength on input dynamically based on document type rules', async () => {
+    const electricData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 5, certificateTypeName: "Electric Bill", displayOrder: 50, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-999", fileName: "bill.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={electricData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
+    
+    // The Electric Bill has maxLength 12
+    expect(inputs[0]).toHaveAttribute('maxLength', '12');
+  });
+
+  it('rejects dates before 01-01-1900', async () => {
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    const dateInputs = screen.getAllByPlaceholderText(/Select date/i);
+    
+    // Date before 1900
+    fireEvent.change(dateInputs[0], { target: { value: '1899-12-31' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.dateBefore1900")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('rejects occupancy date if it is less than or equal to Commencement Certificate date', async () => {
+    const copAndCcData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 2, certificateTypeName: "Commencement Certificate (CC)", displayOrder: 20, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: "CC-12345", issueDate: "2023-06-01", documentGuid: "guid-456", fileName: "cc.pdf" },
+      { certificateTypeId: 3, certificateTypeName: "Occupancy Certificate (OC)", displayOrder: 30, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: "OC-12345", issueDate: "2023-06-02", documentGuid: "guid-789", fileName: "oc.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={copAndCcData} propertyId="123" />);
+
+    // Select the Occupancy Certificate in the sidebar to display it in the detail pane
+    const ocSidebarItem = screen.getByText("Occupancy Certificate (OC)");
+    fireEvent.click(ocSidebarItem);
+
+    // Change the date to be less than or equal to Commencement Certificate (2023-06-01)
+    const dateInputs = screen.getAllByPlaceholderText(/Select date/i);
+    fireEvent.change(dateInputs[0], { target: { value: '2023-05-31' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.occupancyDateAfterCommencement")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('updates form state locally when a file is selected and uploads on save', async () => {
+    (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: true });
+    
+    const customData = [
+      { certificateTypeId: 1, certificateTypeName: "Building Permission Certificate", displayOrder: 10, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: null, documentGuid: null, fileName: null }
+    ];
+    
+    const { container } = render(<BuildingForm initialBuildingPermission={customData} propertyId="123" />);
+    
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeInTheDocument();
+    
+    const file = new File(['dummy pdf'], 'test-cc.pdf', { type: 'application/pdf' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText("test-cc.pdf")).toBeInTheDocument();
+      expect(screen.getByText("Pending Save")).toBeInTheDocument();
     });
   });
 });

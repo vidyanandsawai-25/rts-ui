@@ -114,31 +114,6 @@ const mockPropertyData = {
   plotAreaMtrWidth: 12,
 };
 
-const mockSocietyDetails = {
-  propertyId: 123,
-  societyDetailId: 1,
-  wingId: 1,
-  wingNo: 'Wing A',
-  wingName: 'Wing A',
-  societyName: 'Gokuldham',
-  societyAddress: 'Powai',
-  secretaryName: 'Bhide',
-  managerName: 'Iyer',
-  landOwnerName: 'Jethalal',
-  builderName: 'Asit Modi',
-  societyNameEnglish: 'Gokuldham',
-  societyAddressEnglish: 'Powai',
-  secretaryNameEnglish: 'Bhide',
-  managerNameEnglish: 'Iyer',
-  landOwnerNameEnglish: 'Jethalal',
-  builderNameEnglish: 'Asit Modi',
-  managerMobileNo: '1234567890',
-  secretaryMobileNo: '0987654321',
-  societyEmailId: 'test@example.com',
-  secretaryEmailId: 'test2@example.com',
-  managerEmailId: 'test3@example.com',
-};
-
 describe('PropertyFormView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -151,7 +126,6 @@ describe('PropertyFormView', () => {
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
-        propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
         taxZones={[]}
       />
@@ -176,7 +150,6 @@ describe('PropertyFormView', () => {
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
-        propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
         taxZones={[]}
       />
@@ -205,7 +178,6 @@ describe('PropertyFormView', () => {
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
-        propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
         taxZones={[]}
       />
@@ -227,7 +199,6 @@ describe('PropertyFormView', () => {
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
-        propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
         taxZones={[]}
       />
@@ -260,7 +231,6 @@ describe('PropertyFormView', () => {
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
-        propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
         taxZones={[]}
       />
@@ -285,7 +255,6 @@ describe('PropertyFormView', () => {
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
-        propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
         taxZones={[]}
       />
@@ -304,6 +273,79 @@ describe('PropertyFormView', () => {
     expect(buildUpAreaInputs[0]).toHaveAttribute('readOnly');
   });
 
+  it('disables category input when property category is Apartment', () => {
+    const apartmentPropertyData = {
+      ...mockPropertyData,
+      categoryId: 2,
+      categoryName: 'Apartment',
+    };
+    const mockCategoriesWithApartment = [
+      ...mockPropertyCategories,
+      { id: 2, propertyCategoryName: 'Apartment', isActive: true, createdDate: '', updatedDate: null },
+    ];
+
+    render(
+      <PropertyFormView
+        MoujaMaster={mockMoujaMaster}
+        propertyCategories={mockCategoriesWithApartment}
+        propertyDescriptions={mockPropertyDescriptions}
+        propertyData={apartmentPropertyData as never}
+        locale="en"
+        taxZones={[]}
+      />
+    );
+
+    const categoryInput = screen.getByLabelText(/Category/i);
+    expect(categoryInput).toBeDisabled();
+  });
+
+  it('disables category input when property category name from API is lowercase (e.g., apartment)', () => {
+    const apartmentPropertyData = {
+      ...mockPropertyData,
+      categoryId: 2,
+      categoryName: 'apartment', // lowercase
+    };
+    const mockCategoriesWithApartment = [
+      ...mockPropertyCategories,
+      { id: 2, propertyCategoryName: 'Apartment', isActive: true, createdDate: '', updatedDate: null },
+    ];
+
+    render(
+      <PropertyFormView
+        MoujaMaster={mockMoujaMaster}
+        propertyCategories={mockCategoriesWithApartment}
+        propertyDescriptions={mockPropertyDescriptions}
+        propertyData={apartmentPropertyData as never}
+        locale="en"
+        taxZones={[]}
+      />
+    );
+
+    const categoryInput = screen.getByLabelText(/Category/i);
+    expect(categoryInput).toBeDisabled();
+  });
+
+  it('does not disable category input when changed to Apartment in UI before saving', () => {
+    const mockCategoriesWithApartment = [
+      ...mockPropertyCategories,
+      { id: 2, propertyCategoryName: 'Apartment', isActive: true, createdDate: '', updatedDate: null },
+    ];
+
+    render(
+      <PropertyFormView
+        MoujaMaster={mockMoujaMaster}
+        propertyCategories={mockCategoriesWithApartment}
+        propertyDescriptions={mockPropertyDescriptions}
+        propertyData={mockPropertyData as never} // original is Residential (id 1)
+        locale="en"
+        taxZones={[]}
+      />
+    );
+
+    const categoryInput = screen.getByLabelText(/Category/i);
+    expect(categoryInput).not.toBeDisabled();
+  });
+
   describe('Edge Cases', () => {
     it('shows error for negative numbers in numeric fields', async () => {
       render(
@@ -312,7 +354,6 @@ describe('PropertyFormView', () => {
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
-          propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
           taxZones={[]}
         />
@@ -337,7 +378,6 @@ describe('PropertyFormView', () => {
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
-          propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
           taxZones={[]}
         />
@@ -369,7 +409,6 @@ describe('PropertyFormView', () => {
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
-          propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
           taxZones={[]}
         />
@@ -408,7 +447,6 @@ describe('PropertyFormView', () => {
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={partialData as never}
-          propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
           taxZones={[]}
         />
@@ -436,7 +474,6 @@ describe('PropertyFormView', () => {
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={partialData as never}
-          propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
           taxZones={[]}
         />

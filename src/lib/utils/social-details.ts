@@ -23,6 +23,7 @@ export interface FlatSocialAttributeState {
     documentUrl?: string | null;
     photoBindingId?: number | null;
     photoGuid?: string | null;
+    pendingFile?: File;
 }
 
 /**

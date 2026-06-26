@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { useTranslations } from "next-intl";
 import { FullOffSetFormProps } from "@/types/offset-details.types";
+import { focusOffsetShapeSelect } from "@/lib/utils/floorSubmission/focus-helpers";
 import { OffsetFormSummary } from "./components/OffsetFormSummary";
 import { OffsetShapeInputs } from "./components/OffsetShapeInputs";
 import { OffsetHistoryTable } from "./components/OffsetHistoryTable";
@@ -45,12 +46,10 @@ export function OffSetForm({
         })), [t]);
 
     // Focus "Select Shape" when drawer opens (accessibility fix)
-    const shapeSelectRef = useRef(null);
     React.useEffect(() => {
-        if (offsetModalOpen && shapeSelectRef.current) {
+        if (offsetModalOpen) {
             const timer = setTimeout(() => {
-                // @ts-expect-error: shapeSelectRef may not be a standard input, but we want to focus for accessibility
-                shapeSelectRef.current?.focus?.();
+                focusOffsetShapeSelect(offsetModalOpen);
             }, 300);
             return () => clearTimeout(timer);
         }

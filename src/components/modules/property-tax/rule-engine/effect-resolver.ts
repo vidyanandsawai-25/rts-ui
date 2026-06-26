@@ -1,4 +1,4 @@
-import { EffectState, EffectTypeConfig } from '@/types/rule-engine.types';
+import { EffectState, EffectTypeConfig } from '@/types/rule-engine';
 import { fetchDynamicFieldOptionsAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 
 export async function resolveDynamicEffectParams(

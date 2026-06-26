@@ -1,4 +1,4 @@
-import { DataType, InputType, SourceType, ApiResponseMapping, FieldConfig, EffectTypeConfig } from '@/types/rule-engine.types';
+import { DataType, InputType, SourceType, ApiResponseMapping, FieldConfig, EffectTypeConfig } from '@/types/rule-engine';
 
 export function adaptEffectConfigToFieldConfig(config: EffectTypeConfig): FieldConfig {
   const isStaticApi = !!config.staticApiEndpoint;

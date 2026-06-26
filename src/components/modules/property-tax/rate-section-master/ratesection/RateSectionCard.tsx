@@ -3,12 +3,14 @@
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card, EditButton, DeleteButton } from "@/components/common";
+import { Tooltip } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { RateSectionCardProps } from "@/types/rateSectionMaster.types";
 
 export default function RateSectionCard({
   rate,
   index,
+  serialNo,
   isSelected,
   isNewlyCreated,
   onDelete,
@@ -51,8 +53,7 @@ export default function RateSectionCard({
     if (rateGuid) {
       onDelete(
         String(rateGuid),
-        description || t('messages.thisRateSection'),
-        String(rateId)
+        description || t('messages.thisRateSection')
       );
     }
   };
@@ -83,18 +84,20 @@ export default function RateSectionCard({
               className={`text-sm font-bold ${isSelected ? "text-white" : "text-[#1A86E8]"
                 }`}
             >
-              {rateId}
+              {serialNo}
             </span>
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <h4
-                className={`font-bold text-sm ${isSelected ? "text-[#2C4A75]" : "text-gray-900"
-                  }`}
-              >
-                {description || t('list.fallbackName')}
-              </h4>
+              <Tooltip content={description || t('list.fallbackName')} placement="top">
+                <h4
+                  className={`font-bold text-sm ${isSelected ? "text-[#2C4A75]" : "text-gray-900"
+                    }`}
+                >
+                  {(description && description.length > 30) ? `${description.substring(0, 30)}...` : (description || t('list.fallbackName'))}
+                </h4>
+              </Tooltip>
 
               <div className="flex gap-1 items-center">
                 <StatusBadge

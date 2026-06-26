@@ -8,7 +8,7 @@ import {
   getEffectTypes, getEffectTypeConfigs, getRateSections, getRuleCategories, getDynamicFieldOptions,
   createRuleField, updateRuleField, deleteRuleField
 } from '@/lib/api/rule-engine/config.service';
-import { RuleItem } from '@/types/rule-engine.types';
+import { RuleItem } from '@/types/rule-engine';
 import { createLogger } from '@/lib/utils/server-logger';
 
 const logger = createLogger('rule-engine:actions');

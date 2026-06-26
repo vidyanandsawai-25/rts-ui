@@ -354,6 +354,7 @@ export const CompactSelect = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onFocus={handleFocus}
+      onClick={(e) => e.stopPropagation()}
       disabled={disabled || isLoading}
       className="h-6 px-1 text-[10px] border border-gray-300 rounded bg-white hover:border-blue-400 focus:border-blue-500 focus:outline-none transition w-full min-w-[80px] cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
     >

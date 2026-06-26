@@ -35,7 +35,7 @@ export async function RateableTaxDetailsSection({
   taxDetailsError,
   locale,
 }: Props) {
-  
+
   const { data: rateableData, error } = await resolveValuationData<RateableValueResponse>({
     propertyId,
     initialData,
@@ -73,6 +73,7 @@ export async function RateableTaxDetailsSection({
           { label: t('totalAlv'), value: alv, color: 'purple' },
         ]}
         initialTaxDetails={initialTaxDetails}
+        locale={locale}
       />
     </div>
   );

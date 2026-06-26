@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CircleArrowLeft } from 'lucide-react';
-import { Tooltip } from '@/components/common';
+import { Tooltip, useConfirm } from '@/components/common';
 
 export function PtisBackButton() {
   const t = useTranslations('ptis');
@@ -73,6 +73,8 @@ export function PtisFooterDropdowns() {
   const t = useTranslations('ptis');
   const [selectedPolicy, setSelectedPolicy] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
+  const [qcStatus, setQcStatus] = useState('');
+  const { confirm } = useConfirm();
 
   const POLICY_OPTIONS = [
     { label: t('footerControls.policy.options.old'), value: 'old' },
@@ -88,6 +90,63 @@ export function PtisFooterDropdowns() {
     { label: t('footerControls.action.options.remove_remission'), value: 'remove_remission' },
     { label: t('footerControls.action.options.remove_all_appeals'), value: 'remove_all_appeals' },
   ];
+
+  const QC_STATUS_OPTIONS = qcStatus === 'QC Done'
+    ? [
+        { label: 'QC Revert', value: 'QC Revert' },
+        { label: 'ULB', value: 'ULB' },
+      ]
+    : [
+        { label: 'QC Done', value: 'QC Done' },
+        { label: 'ULB', value: 'ULB' },
+      ];
+
+  const handleQcStatusChange = (val: string) => {
+    if (!val) {
+      setQcStatus('');
+      return;
+    }
+
+    if (val === 'QC Revert') {
+      confirm({
+        variant: 'warning',
+        title: 'Confirm QC Revert',
+        description: 'Are you sure you want to revert the QC status?',
+        confirmText: 'Yes',
+        cancelText: 'No',
+        onConfirm: () => {
+          setQcStatus('');
+        },
+      });
+      return;
+    }
+
+    confirm({
+      variant: 'info',
+      title: 'Confirm QC Status Change',
+      description: `Are you sure you want to set the QC status to "${val}"?`,
+      confirmText: 'Yes',
+      cancelText: 'No',
+      onConfirm: () => {
+        if (val === 'QC Done') {
+          setTimeout(() => {
+            confirm({
+              variant: 'info',
+              title: t('footerControls.billDistribution.title') || 'Confirm Bill Distribution',
+              description: t('footerControls.billDistribution.description') || 'Are you sure you want to distribute the bill?',
+              confirmText: t('footerControls.billDistribution.confirmText') || 'Yes',
+              cancelText: t('footerControls.billDistribution.cancelText') || 'No',
+              onConfirm: () => {
+                setQcStatus('QC Done');
+              },
+            });
+          }, 100);
+        } else {
+          setQcStatus(val);
+        }
+      },
+    });
+  };
 
   return (
     <>
@@ -108,6 +167,22 @@ export function PtisFooterDropdowns() {
         options={ACTION_OPTIONS}
         className="w-[115px] sm:w-[150px] md:w-[165px] shrink-0"
       />
+
+      <FooterSelect
+        label="QC Status"
+        placeholder="QC Status"
+        value={qcStatus}
+        onChange={handleQcStatusChange}
+        options={QC_STATUS_OPTIONS}
+        selectedLabelOverride={qcStatus === 'QC Done' ? 'QC Done' : undefined}
+        className="w-[105px] sm:w-[130px] md:w-[145px] shrink-0"
+      />
+
+      {qcStatus === 'QC Done' && (
+        <div className="flex items-center gap-1 px-2.5 h-8.5 md:h-9 bg-emerald-600 border border-emerald-700 text-white text-[10px] font-bold rounded-lg shrink-0 shadow-sm transition-all duration-300 animate-in fade-in slide-in-from-right-4">
+          <span>✅ {t('footerControls.qcDoneLabel') || 'QC Done'}</span>
+        </div>
+      )}
     </>
   );
 }

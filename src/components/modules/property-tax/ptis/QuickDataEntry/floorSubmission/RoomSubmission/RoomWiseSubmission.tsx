@@ -21,6 +21,7 @@ import { InlineError } from "./components/InlineError";
 // Utils
 import { calculateRoomArea, calculateRoomTotal, getDimensionsString, isOffsetValid } from "@/lib/utils/RoomSubmission/room-submission.utils";
 import { isRoomComplete } from "@/lib/utils/RoomSubmission/room-validation.utils";
+import { focusFieldOrFallback } from "@/lib/utils/floorSubmission/focus-helpers";
 
 export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   externalAreaUnit?: "sq.m" | "sq.ft";
@@ -35,6 +36,15 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
 
   // Initialization & Side Effects
   useRoomInitialization(state, props, roomActions);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        focusFieldOrFallback('room-no-input', 'form');
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, state.isEditMode, state.editingIndex, state.rooms.length]);
 
   // --- Actions ---
   const handleToggleUnit = () => {

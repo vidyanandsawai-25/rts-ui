@@ -11,7 +11,7 @@ import {
     getSubFloorDataAction,
 } from '../actions';
 import { PageContainer } from '@/components/common/PageContainer';
-import { floorNeedsLookupLabels } from '@/lib/utils/renter-form-mapper';
+import { floorNeedsLookupLabels } from '@/lib/utils/renter/renter-form-mapper';
 
 import { cache } from 'react';
 

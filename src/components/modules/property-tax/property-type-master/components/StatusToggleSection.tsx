@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { CheckCircle2, X } from "lucide-react";
 import { ToggleSwitch, ValidationMessage } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
@@ -13,14 +14,15 @@ interface StatusToggleSectionProps {
   tCommon: (key: string) => string;
 }
 
-export const StatusToggleSection = ({
-  isEdit,
-  isActive,
-  handleToggleStatus,
-  error,
-  t,
-  tCommon,
-}: StatusToggleSectionProps) => {
+export const StatusToggleSection = React.forwardRef<HTMLButtonElement, StatusToggleSectionProps>(
+  ({
+    isEdit,
+    isActive,
+    handleToggleStatus,
+    error,
+    t,
+    tCommon,
+  }, ref) => {
   if (!isEdit) return null;
 
   return (
@@ -54,6 +56,7 @@ export const StatusToggleSection = ({
         </div>
 
         <ToggleSwitch
+          ref={ref}
           checked={isActive}
           onChange={handleToggleStatus}
           showPopup={false}
@@ -66,4 +69,7 @@ export const StatusToggleSection = ({
       />
     </div>
   );
-};
+}
+);
+
+StatusToggleSection.displayName = "StatusToggleSection";

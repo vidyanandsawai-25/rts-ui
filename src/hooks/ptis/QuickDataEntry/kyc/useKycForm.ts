@@ -83,6 +83,7 @@ export const useKycForm = (
       locale,
       canSubmit,
       setIsSubmitted,
+      hasChanges,
     },
     t,
     confirm,

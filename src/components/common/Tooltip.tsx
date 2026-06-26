@@ -90,7 +90,7 @@ export const Tooltip = ({
   const child = isValidElement(children)
     ? (children as React.ReactElement<React.HTMLAttributes<HTMLElement>>)
     : null;
-  
+
   const childRef = child
     ? (child as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref
     : null;
@@ -161,7 +161,7 @@ export const Tooltip = ({
           role="tooltip"
           aria-live="polite"
           className={cn(
-            "fixed z-[9999] whitespace-normal text-center px-4 py-2 min-w-[160px] max-w-[260px] rounded-lg shadow-lg text-xs font-medium pointer-events-none opacity-95",
+            "fixed z-[9999] whitespace-normal break-words text-center px-4 py-2 min-w-[160px] max-w-[260px] rounded-lg shadow-lg text-xs font-medium pointer-events-none opacity-95",
             "bg-gradient-to-br from-blue-500 via-blue-400 to-blue-300 text-white border border-blue-300",
             transformMap[placement],
             className

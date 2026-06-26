@@ -45,10 +45,11 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
   const adjustedArea = useMemo(() => formData.outer === 'Yes' ? calculatedArea * 0.8 : calculatedArea, [formData.outer, calculatedArea]);
 
   const totalAreaValue = useMemo(() => calculateTotal(
-    adjustedArea,
+    calculatedArea,
     parseInt(formData.roomCount) || 1,
-    currentRoomOffsets
-  ), [calculateTotal, adjustedArea, formData.roomCount, currentRoomOffsets]);
+    currentRoomOffsets,
+    formData.outer
+  ), [calculateTotal, calculatedArea, formData.roomCount, currentRoomOffsets, formData.outer]);
 
   return (
     <div className="relative z-30 mb-2 overflow-visible rounded-lg border border-gray-300 shadow-lg animate-fade-slide-up">
