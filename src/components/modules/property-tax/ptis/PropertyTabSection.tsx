@@ -213,7 +213,11 @@ export default function PropertyTabSection({
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel value="discountdetails" className="mt-0 pt-0">
-            <DiscountDataTab initialData={discountDetails} readOnly={true} />
+            <DiscountDataTab
+              propertyId={draft.propertyId ? Number(draft.propertyId) : undefined}
+              initialData={discountDetails}
+              readOnly={true}
+            />
           </Tabs.TabPanel>
           <Tabs.TabPanel value="olddetails" className="mt-0 pt-0">
             <OldDetailsTab
