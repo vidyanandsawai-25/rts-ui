@@ -56,6 +56,7 @@ export async function getCapitalValue(
             return {
                 success: false,
                 error: response.error || 'Failed to fetch capital value',
+                message: response.message,
                 statusCode: response.statusCode
             };
         }
@@ -63,6 +64,8 @@ export async function getCapitalValue(
         return {
             success: true,
             data: normalizeCapitalValueResponse(response.data),
+            message: response.message,
+            error: response.error,
             statusCode: response.statusCode
         };
     } catch (error: unknown) {

@@ -36,13 +36,16 @@ export async function RateableTaxDetailsSection({
   locale,
 }: Props) {
 
-  const { data: rateableData, error } = await resolveValuationData<RateableValueResponse>({
+  const ptisT = await getTranslations({ locale, namespace: 'ptis' });
+
+  const { data: rateableData, error, message, warning } = await resolveValuationData<RateableValueResponse>({
     propertyId,
     initialData,
     initialError,
     hasFetchedInitialData: hasFetchedData,
     fetcher: getRateableValue,
     fallbackUserMessage: 'Unable to load rateable valuation details.',
+    t: ptisT,
   });
 
   const t = await getTranslations({ locale, namespace: 'ptis.modules.PtisTaxDetails' });
@@ -53,11 +56,22 @@ export async function RateableTaxDetailsSection({
   const oldAreaTax = Number(oldDetails?.oldTotalTax || 0);
 
   const finalErrorMessage = error || null;
+  const successMessage = message || null;
+  const warningMessage = warning || null;
 
   return (
     <div className="space-y-0.5 p-0.5">
-      {showInlineError && (finalErrorMessage || taxDetailsError) && (
-        <ToastNotifier message={finalErrorMessage || taxDetailsError || ''} />
+      {showInlineError && finalErrorMessage && (
+        <ToastNotifier message={finalErrorMessage} type="error" />
+      )}
+      {showInlineError && taxDetailsError && (
+        <ToastNotifier message={taxDetailsError} type="error" />
+      )}
+      {showInlineError && warningMessage && (
+        <ToastNotifier message={warningMessage} type="warning" />
+      )}
+      {showInlineError && successMessage && (
+        <ToastNotifier message={successMessage} type="success" />
       )}
       <RateableTaxTable locale={locale} rateableData={rateableData} searchParams={searchParams} />
 

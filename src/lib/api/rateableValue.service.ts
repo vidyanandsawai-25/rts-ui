@@ -71,6 +71,7 @@ export async function getRateableValue(
             return {
                 success: false,
                 error: response.error || 'Failed to fetch rateable value',
+                message: response.message,
                 statusCode: response.statusCode
             };
         }
@@ -78,6 +79,8 @@ export async function getRateableValue(
         return {
             success: true,
             data: normalizeRateableValueResponse(response.data),
+            message: response.message,
+            error: response.error,
             statusCode: response.statusCode
         };
     } catch (error: unknown) {
