@@ -19,7 +19,8 @@ export interface RuleBlock {
   id: string;
   description: string;
   conditions: ConditionGroupState;
-  effect: EffectState;
+  effect?: EffectState;
+  effects: EffectState[];
   stopProcessing?: boolean;
   ruleScopeName?: string;
 }

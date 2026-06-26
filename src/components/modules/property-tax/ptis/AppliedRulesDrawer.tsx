@@ -73,6 +73,7 @@ export function AppliedRulesDrawer({
             paginationConfig={{ enabled: false }}
             containerClassName="border border-indigo-100 rounded-lg overflow-hidden shadow-sm"
             emptyText={t('appliedRules.noAppliedRules')}
+            getRowKey={(row, i) => `${String(row.ruleCode || row.id || i)}-${i}`}
           />
         </div>
       )}

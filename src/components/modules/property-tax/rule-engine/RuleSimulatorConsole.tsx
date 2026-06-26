@@ -145,7 +145,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
               <div className="flex flex-col gap-4">
                 {dryRunResult.workflows?.map((wf: DryRunWorkflow, wfIdx: number) => (
                   <RuleSimulatorWorkflow
-                    key={wf.workflowName || wfIdx}
+                    key={`${wf.workflowName || 'wf'}_${wfIdx}`}
                     workflow={wf}
                     showMatchedOnly={showMatchedOnly}
                     formatDryRunEffect={formatDryRunEffect}
