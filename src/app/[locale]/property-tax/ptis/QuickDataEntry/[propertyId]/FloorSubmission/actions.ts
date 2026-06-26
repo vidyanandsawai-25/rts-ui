@@ -26,47 +26,22 @@ import {
 
 import { validateFloorSubmissionPayload, validateRenterFormData } from '@/lib/validations/validateFloorSubmission';
 import { type ActionResult } from '@/types/common.types';
-import { FloorSubmissionPayload } from '@/types/floor-details.types';
+import {
+    FloorSubmissionPayload,
+    type SelectableProperty,
+    type DataEntrySameAsItem,
+    type DataEntrySameAsResponse
+} from '@/types/floor-details.types';
 import { apiClient } from '@/services/api.service';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-export interface SelectableProperty {
-    id: string | number;
-    propertyFloorId?: string | number | null;
-    propertyDetailsId?: string | number | null;
-    wardNo: string;
-    propertyNo: string;
-    partitionNo: string;
-    type: string | number;
-    wing: string;
-    flatNo: string;
-}
-
-interface DataEntrySameAsItem {
-    propertyId: number;
-    propertyFloorId?: number | null;
-    PropertyFloorId?: number | null;
-    propertyFloorID?: number | null;
-    PropertyFloorID?: number | null;
-    propertyDetailsId?: number | null;
-    PropertyDetailsId?: number | null;
-    propertyDetailsID?: number | null;
-    PropertyDetailsID?: number | null;
-    wardId: number;
-    propertyNo: string;
-    partitionNo: string;
-    type: string | number;
-    wingName: string;
-    flatOrShopNo: string;
-}
-
-interface DataEntrySameAsResponse {
-    success: boolean;
-    message: string;
-    items: DataEntrySameAsItem[];
-    errors: unknown;
-    correlationId: string | null;
+function getFirstDataEntrySameAsLabel(...values: Array<string | number | null | undefined>): string | undefined {
+    for (const value of values) {
+        const text = String(value ?? '').trim();
+        if (text && text !== '-' && !/^\d+$/.test(text)) return text;
+    }
+    return undefined;
 }
 
 export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string): Promise<SelectableProperty[]> {
@@ -79,8 +54,21 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             return [];
         }
         return response.data.items.map(item => {
-            const sourceId = item.propertyFloorId ?? item.PropertyFloorId ?? item.propertyFloorID ?? item.PropertyFloorID ?? null;
-            const detailsId = item.propertyDetailsId ?? item.PropertyDetailsId ?? item.propertyDetailsID ?? item.PropertyDetailsID ?? null;
+            const rawItem = item as any;
+            const sourceId = rawItem.propertyFloorId ?? rawItem.PropertyFloorId ?? rawItem.propertyFloorID ?? rawItem.PropertyFloorID ?? null;
+            const detailsId = rawItem.propertyDetailsId ?? rawItem.PropertyDetailsId ?? rawItem.propertyDetailsID ?? rawItem.PropertyDetailsID ?? null;
+            const typeLabel = getFirstDataEntrySameAsLabel(
+                rawItem.typeLabel,
+                rawItem.TypeLabel,
+                rawItem.typeName,
+                rawItem.TypeName,
+                rawItem.typeDescription,
+                rawItem.TypeDescription,
+                rawItem.propertyTypeName,
+                rawItem.PropertyTypeName,
+                rawItem.apartmentType,
+                rawItem.ApartmentType
+            );
 
             return {
                 id: item.propertyId,
@@ -90,6 +78,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 propertyNo: item.propertyNo || '-',
                 partitionNo: item.partitionNo || '-',
                 type: item.type ?? '-',
+                typeLabel: typeLabel ?? undefined,
                 wing: item.wingName || '-',
                 flatNo: item.flatOrShopNo || '-',
             };
@@ -99,9 +88,6 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
     }
 }
 
-/**
- * Individual fetchers for SSR lookups
- */
 export async function getFloorDataAction() {
     try {
         return await getFloorData();

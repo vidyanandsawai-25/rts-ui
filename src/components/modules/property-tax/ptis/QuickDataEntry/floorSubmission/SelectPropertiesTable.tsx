@@ -16,7 +16,17 @@ interface SelectPropertiesTableProps {
 type SelectablePropertyRow = Record<string, unknown> & SelectableProperty & {
   selected: boolean;
   selection: string;
+  typeDisplay: string;
 };
+
+function formatPropertyTypeDisplay(property: SelectableProperty): string {
+  const label = String(property.typeLabel ?? '').trim();
+  if (label) return label;
+
+  const rawType = String(property.type ?? '').trim();
+  if (!rawType || rawType === '-') return '-';
+  return rawType;
+}
 
 const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   t,
@@ -35,6 +45,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       ...property,
       selected: selectedIds.has(property.id),
       selection: String(property.id),
+      typeDisplay: formatPropertyTypeDisplay(property),
     })),
     [properties, selectedIds]
   );
@@ -92,7 +103,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       cellClassName: 'text-slate-600 whitespace-nowrap',
     },
     {
-      key: 'type',
+      key: 'typeDisplay',
       label: t('floor.selectProperties.type'),
       cellClassName: 'text-slate-600 whitespace-nowrap',
     },

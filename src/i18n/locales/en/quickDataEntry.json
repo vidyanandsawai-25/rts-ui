@@ -693,7 +693,8 @@
             "typeWise": "Type-wise",
             "propertyWise": "Property-wise",
             "parking": "Parking",
-            "close": "Close"
+            "close": "Close",
+            "show": "Show"
         },
         "selectProperties": {
             "title": "SELECT PROPERTIES",

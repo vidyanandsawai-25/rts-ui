@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2, MapPin, Hash, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmission';
 import { EditSidebarProps } from '@/types/floor-details.types';
-import { Drawer, LoadingPage, Tabs, SearchSelect, type SearchSelectOption } from '@/components/common';
+import { Drawer, LoadingPage, Tabs, SearchSelect, type SearchSelectOption, Input } from '@/components/common';
 import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
 import SelectPropertiesTable from './SelectPropertiesTable';
@@ -20,8 +21,8 @@ import {
 import { getWardListAction, getPropertyListByWardAction } from '@/app/[locale]/property-tax/ptis/actions';
 
 const DATA_ENTRY_SAME_AS_FILTER_TYPES: Record<string, string> = {
-  'type-wise': 'TYPE_WISE',
-  'property-wise': 'PROPERTY_WISE',
+  'type-wise': 'TYPEWISE',
+  'property-wise': 'PROPERTYWISE',
   parking: 'PARKING',
 };
 
@@ -43,7 +44,17 @@ function getNumericDataEntrySameAsId(...values: Array<string | number | null | u
   return undefined;
 }
 
+function getDataEntrySameAsTypeLabel(property: SelectableProperty | undefined): string {
+  const label = String(property?.typeLabel ?? '').trim();
+  if (label) return label;
+
+  const rawType = String(property?.type ?? '').trim();
+  if (!rawType || rawType === '-') return '-';
+  return rawType;
+}
+
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
+  const router = useRouter();
   const {
     t,
     isOperationLoading,
@@ -91,7 +102,24 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const [selectableProperties, setSelectableProperties] = React.useState<SelectableProperty[]>([]);
   const [selectedPropertyIds, setSelectedPropertyIds] = React.useState<Set<string | number>>(new Set());
   const [isLoadingProperties, setIsLoadingProperties] = React.useState(false);
-  const [searchWardId, setSearchWardId] = React.useState(props.wardId ? String(props.wardId) : '');
+
+  // Type-wise tab state
+  const currentPropertyType = React.useMemo(() => {
+    const match = selectableProperties.find(
+      (p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(props.partitionNo)
+    );
+    if (match) return String(match.type ?? '');
+    return '';
+  }, [selectableProperties, props.partitionNo]);
+
+  // Type-wise: editable new type (empty = use current property type)
+  const [typeWiseNewType, setTypeWiseNewType] = React.useState('');
+  React.useEffect(() => {
+    if (selectedPropertyIds.size === 0) {
+      setTypeWiseNewType('');
+    }
+  }, [selectedPropertyIds.size]);
+ const [searchWardId, setSearchWardId] = React.useState(props.wardId ? String(props.wardId) : '');
   const [searchPropertyNo, setSearchPropertyNo] = React.useState(props.propertyNo || '');
 
   // SearchSelect list options and loading states
@@ -181,6 +209,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(async () => {
     setShowDataEntrySameAsDrawer(true);
+    setTypeWiseNewType('');
     if (wardOptions.length === 0) {
       await loadWards();
     }
@@ -211,6 +240,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   const handleCloseDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(false);
+    setTypeWiseNewType('');
   }, []);
 
   const [isApplyingSameAs, setIsApplyingSameAs] = React.useState(false);
@@ -220,18 +250,13 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       (property) => normalizePartitionNo(property.partitionNo) === normalizePartitionNo(props.partitionNo)
     );
     const sourcePropertyMasterId = Number(sourceProperty?.id);
-    const sourceFloor = filteredFloors.find((floor) => getNumericDataEntrySameAsId(
-      floor.propertyDetailsId,
-      floor.id
-    ));
-    const sourcePropertyId = getNumericDataEntrySameAsId(
-      sourceProperty?.propertyFloorId,
-      sourceProperty?.propertyDetailsId,
-      sourceFloor?.propertyDetailsId,
-      sourceFloor?.id,
-      sourceProperty?.id
-    );
-    const sameAsType = getDataEntrySameAsType(sourceProperty?.type) ?? 0;
+    const sourcePropertyId = getNumericDataEntrySameAsId(sourceProperty?.id);
+    const sameAsType = dataEntrySameAsTab === 'property-wise'
+      ? 0
+      : (getDataEntrySameAsType(
+          typeWiseNewType.trim() ? typeWiseNewType.trim() : sourceProperty?.type
+        ) ?? 0);
+    const sameAsTypeLabel = getDataEntrySameAsTypeLabel(sourceProperty);
 
     if (!sourcePropertyId) {
       toast.error(`Source property ${props.partitionNo || ''} not found in selected property list.`);
@@ -286,16 +311,17 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         }
 
         if (appliedCount <= 0) {
-          toast.error(`No data was copied. Source: ${sourceDebug}, type: ${sameAsType}, processed: ${processed}.`);
+          toast.error(`No data was copied. Source: ${sourceDebug}, type: ${sameAsTypeLabel}, processed: ${processed}.`, { duration: 6000 });
           return;
         }
 
         toast.success(
-          `${t('floor.selectProperties.applySuccess') || 'Details applied successfully.'} Source: ${sourcePropertyId}, type: ${sameAsType}, copied: ${appliedCount}, processed: ${processed || destinationPropertyIds.length}.`
+          t('floor.selectProperties.applySuccess') || 'Details applied successfully.'
         );
         setSelectedPropertyIds(new Set());
+        setSelectableProperties([]);
+        router.refresh();
         handleCloseDataEntrySameAsDrawer();
-        window.location.reload();
       } else {
         toast.error(res.error || 'Failed to apply details.');
       }
@@ -304,7 +330,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     } finally {
       setIsApplyingSameAs(false);
     }
-  }, [props.partitionNo, selectableProperties, filteredFloors, selectedPropertyIds, dataEntrySameAsTab, handleCloseDataEntrySameAsDrawer, t]);
+  }, [props.partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, typeWiseNewType, handleCloseDataEntrySameAsDrawer, t, router]);
 
   const handleTogglePropertySelection = React.useCallback((id: string | number) => {
     setSelectedPropertyIds(prev => {
@@ -319,40 +345,79 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     setSelectedPropertyIds(new Set());
   }, []);
 
+  // Filter out the currently selected partition from the properties table
+  const filterPropertiesForTable = React.useCallback((properties: SelectableProperty[]) => {
+    return properties
+      .filter(p => p.partitionNo && p.partitionNo !== '-')
+      .filter(p => normalizePartitionNo(p.partitionNo) !== normalizePartitionNo(props.partitionNo))
+      .map(p => {
+        const wardOpt = wardOptions.find(o => o.value === String(p.wardNo));
+        return {
+          ...p,
+          wardNo: wardOpt ? wardOpt.label : p.wardNo
+        };
+      });
+  }, [props.partitionNo, wardOptions]);
+
+  const renderApplyButton = () => (
+    <div className="flex justify-end mt-4 px-1">
+      <button
+        type="button"
+        onClick={handleApplySameAsDetails}
+        disabled={isApplyingSameAs || selectedPropertyIds.size === 0}
+        className="flex items-center justify-center gap-1.5 h-9 px-5 rounded-md bg-green-600 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+      >
+        {isApplyingSameAs ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {t('floor.selectProperties.applying') || 'Applying...'}
+          </>
+        ) : (
+          t('floor.selectProperties.applyButton') || 'Apply Details'
+        )}
+      </button>
+    </div>
+  );
+
+  const renderFloorTableViewOnly = () => (
+    <FloorTable
+      t={t}
+      filteredFloors={filteredFloors}
+      floorSearch={floorSearch}
+      setFloorSearch={setFloorSearch}
+      selectedFloor={selectedFloor}
+      setSelectedFloor={setSelectedFloor}
+      isAddingNewFloor={isAddingNewFloor}
+      setIsAddingNewFloor={setIsAddingNewFloor}
+      handleAddFloor={handleAddFloor}
+      handleOpenDataEntrySameAs={handleOpenDataEntrySameAsDrawer}
+      updateUrlParams={updateUrlParams}
+      handleDeleteFloor={handleDeleteFloor}
+      startTransition={startTransition}
+      setFormErrors={setFormErrors}
+      floorLookup={floorLookup}
+      subFloorLookup={subFloorLookup}
+      constructionLookup={constructionLookup}
+      useLookup={useLookup}
+      subTypeData={subTypeData || []}
+      setEditingFloorForm={setEditingFloorForm}
+      viewOnly
+    />
+  );
+
+  // Parking tab: floor table + search + all properties (excluding current partition)
   const renderDataEntrySameAsFloorTable = () => (
     <>
-      <FloorTable
-        t={t}
-        filteredFloors={filteredFloors}
-        floorSearch={floorSearch}
-        setFloorSearch={setFloorSearch}
-        selectedFloor={selectedFloor}
-        setSelectedFloor={setSelectedFloor}
-        isAddingNewFloor={isAddingNewFloor}
-        setIsAddingNewFloor={setIsAddingNewFloor}
-        handleAddFloor={handleAddFloor}
-        handleOpenDataEntrySameAs={handleOpenDataEntrySameAsDrawer}
-        updateUrlParams={updateUrlParams}
-        handleDeleteFloor={handleDeleteFloor}
-        startTransition={startTransition}
-        setFormErrors={setFormErrors}
-        floorLookup={floorLookup}
-        subFloorLookup={subFloorLookup}
-        constructionLookup={constructionLookup}
-        useLookup={useLookup}
-        subTypeData={subTypeData || []}
-        setEditingFloorForm={setEditingFloorForm}
-        viewOnly
-      />
+      {renderFloorTableViewOnly()}
       {/* Ward No & Property No dropdowns */}
       <div className="flex items-end gap-3 mt-3 px-1">
         <div className="flex flex-col gap-1">
-          <label htmlFor="search-ward-id" className="text-[11px] font-semibold text-slate-600">
+          <label htmlFor="parking-search-ward-id" className="text-[11px] font-semibold text-slate-600">
             {t('floor.selectProperties.wardNo')}
           </label>
           <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
-              id="search-ward-id"
+              id="parking-search-ward-id"
               options={wardOptions}
               value={searchWardId}
               onChange={handleWardChange}
@@ -365,12 +430,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           </div>
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="search-property-no" className="text-[11px] font-semibold text-slate-600">
+          <label htmlFor="parking-search-property-no" className="text-[11px] font-semibold text-slate-600">
             {t('floor.selectProperties.propertyNo')}
           </label>
           <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
-              id="search-property-no"
+              id="parking-search-property-no"
               options={propertyOptions}
               value={searchPropertyNo}
               onChange={(_name, val) => {
@@ -398,42 +463,101 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       </div>
       <SelectPropertiesTable
         t={t}
-        properties={selectableProperties
-          .filter(p => p.partitionNo && p.partitionNo !== '-')
-          .map(p => {
-            const wardOpt = wardOptions.find(o => o.value === String(p.wardNo));
-            return {
-              ...p,
-              wardNo: wardOpt ? wardOpt.label : p.wardNo
-            };
-          })
-        }
+        properties={filterPropertiesForTable(selectableProperties)}
         selectedIds={selectedPropertyIds}
         onToggle={handleTogglePropertySelection}
         onClearSelection={handleClearPropertySelection}
         isLoading={isLoadingProperties}
       />
-      {selectedPropertyIds.size > 0 && (
-        <div className="flex justify-end mt-4 px-1">
-          <button
-            type="button"
-            onClick={handleApplySameAsDetails}
-            disabled={isApplyingSameAs}
-            className="flex items-center justify-center gap-1.5 h-9 px-5 rounded-md bg-green-600 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-          >
-            {isApplyingSameAs ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {t('floor.selectProperties.applying') || 'Applying...'}
-              </>
-            ) : (
-              t('floor.selectProperties.applyButton') || 'Apply Details'
-            )}
-          </button>
-        </div>
-      )}
+      {renderApplyButton()}
     </>
   );
+
+  // Type-wise tab: floor table + TYPE field (read-only) + Show button
+  // Table always visible — all properties (excluding current partition), same as parking tab
+  const renderTypeWiseTab = () => {
+    return (
+      <>
+        {renderFloorTableViewOnly()}
+
+        <div className="mt-3 px-3 py-2 bg-blue-50 border border-blue-100 rounded text-[12px] font-medium text-red-700 shadow-sm">
+          Please select properties from the list below and apply the selected partition's [TYPE] to these selected properties.
+        </div>
+
+        {/* Type-wise controls row */}
+        <div className="flex items-center gap-3 mt-3 px-1 flex-wrap">
+          {/* TYPE label + read-only current type */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Type</span>
+            <Input
+              type="text"
+              readOnly
+              naked
+              value={currentPropertyType}
+              className="h-8 w-16 rounded border border-slate-200 bg-slate-100 px-2 text-xs font-semibold text-center text-slate-500 cursor-default select-none outline-none"
+              placeholder="-"
+              aria-label="Current Type"
+            />
+          </div>
+
+          {/* Enter New Type — editable, overrides current type on apply */}
+          <Input
+            type="text"
+            naked
+            disabled={selectedPropertyIds.size === 0}
+            value={typeWiseNewType}
+            onChange={(e) => setTypeWiseNewType(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
+            placeholder="Enter New Type"
+            className="h-8 w-36 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-colors disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed"
+            aria-label="Enter New Type"
+          />
+        </div>
+
+
+        {/* Table — all properties excluding current partition */}
+        <SelectPropertiesTable
+          t={t}
+          properties={filterPropertiesForTable(selectableProperties)}
+          selectedIds={selectedPropertyIds}
+          onToggle={handleTogglePropertySelection}
+          onClearSelection={handleClearPropertySelection}
+          isLoading={isLoadingProperties}
+        />
+        {renderApplyButton()}
+
+        {/* Type explanation and classification note below */}
+        <div className="mt-4 px-3.5 py-3 bg-slate-100/60 border border-slate-200 rounded-md text-[11px] flex flex-col gap-1.5 shadow-sm">
+          <p className="font-bold text-red-700 text-xs">Note: Property Type Classification</p>
+          <p className="text-red-600 font-semibold">
+            * Type is used to indicate properties with the same area/plan.
+          </p>
+          <p className="text-red-500 font-medium">
+            * Examples: <span className="font-bold text-red-700">1</span> is Apartment, <span className="font-bold text-red-700">2</span> is Row House, <span className="font-bold text-red-700">3</span> is Shop, etc.
+          </p>
+        </div>
+      </>
+    );
+  };
+
+  // Property-wise tab: floor table + table of all properties (excluding current partition)
+  const renderPropertyWiseTab = () => {
+    return (
+      <>
+        {renderFloorTableViewOnly()}
+
+        {/* Table — all properties excluding current partition */}
+        <SelectPropertiesTable
+          t={t}
+          properties={filterPropertiesForTable(selectableProperties)}
+          selectedIds={selectedPropertyIds}
+          onToggle={handleTogglePropertySelection}
+          onClearSelection={handleClearPropertySelection}
+          isLoading={isLoadingProperties}
+        />
+        {renderApplyButton()}
+      </>
+    );
+  };
 
   // Show full-screen loader during save/update/delete operations
   if (isOperationLoading) {
@@ -523,7 +647,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       <div className={dataEntrySameAsDrawerClassName}>
         <Tabs
           value={dataEntrySameAsTab}
-          onChange={(value) => setDataEntrySameAsTab(String(value))}
+          onChange={(value) => {
+            setDataEntrySameAsTab(String(value));
+            setSelectedPropertyIds(new Set());
+          }}
           variant="pills"
           size="sm"
           className="h-full"
@@ -566,8 +693,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           >
             <div className="flex h-full flex-col overflow-hidden bg-slate-50">
               <div className="flex-1 overflow-y-auto p-4">
-                <Tabs.TabPanel value="type-wise" className="mt-0">{null}</Tabs.TabPanel>
-                <Tabs.TabPanel value="property-wise" className="mt-0">{null}</Tabs.TabPanel>
+                <Tabs.TabPanel value="type-wise" className="mt-0">{renderTypeWiseTab()}</Tabs.TabPanel>
+                <Tabs.TabPanel value="property-wise" className="mt-0">{renderPropertyWiseTab()}</Tabs.TabPanel>
                 <Tabs.TabPanel value="parking" className="mt-0">{renderDataEntrySameAsFloorTable()}</Tabs.TabPanel>
               </div>
 
@@ -616,6 +743,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           });
         }}
       />
+      
     </>
   );
 };
