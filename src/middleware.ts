@@ -97,10 +97,7 @@ export default function middleware(request: NextRequest) {
     }
 
     if (pathWithoutLocale === '/') {
-      if (!isLoggedIn) {
-        return redirectToLogin(request, locale, sessionExpired);
-      }
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      return NextResponse.redirect(new URL(`/${locale}/service`, request.url));
     }
 
     if (!isLoginRoute && !isLoggedIn) {
