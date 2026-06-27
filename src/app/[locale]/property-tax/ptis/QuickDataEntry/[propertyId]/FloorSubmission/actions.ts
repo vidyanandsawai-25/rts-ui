@@ -29,10 +29,11 @@ import { type ActionResult } from '@/types/common.types';
 import {
     FloorSubmissionPayload,
     type SelectableProperty,
-    type DataEntrySameAsItem,
     type DataEntrySameAsResponse
 } from '@/types/floor-details.types';
 import { apiClient } from '@/services/api.service';
+
+export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 

@@ -319,9 +319,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           t('floor.selectProperties.applySuccess') || 'Details applied successfully.'
         );
         setSelectedPropertyIds(new Set());
-        setSelectableProperties([]);
         router.refresh();
-        handleCloseDataEntrySameAsDrawer();
       } else {
         toast.error(res.error || 'Failed to apply details.');
       }
@@ -330,7 +328,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     } finally {
       setIsApplyingSameAs(false);
     }
-  }, [props.partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, typeWiseNewType, handleCloseDataEntrySameAsDrawer, t, router]);
+  }, [props.partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, typeWiseNewType, t, router]);
 
   const handleTogglePropertySelection = React.useCallback((id: string | number) => {
     setSelectedPropertyIds(prev => {
