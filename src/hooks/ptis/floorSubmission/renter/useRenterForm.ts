@@ -123,6 +123,7 @@ export const useRenterForm = ({
           String(renterDetails.selfDeclarationAmount).trim() !== ''
             ? Number(renterDetails.selfDeclarationAmount)
             : 0,
+        taxLiability: renterDetails.taxLiability || 'Renter',
         renterDetails: calculationResult?.renterDetails || [],
         renterMast: calculationResult?.fyBreakdown || [],
         grandTotal: calculationResult?.grandTotal || 0,
@@ -207,6 +208,7 @@ export const useRenterForm = ({
               rentYearly: (Number((finalPayload as any).rentMonthly) || 0) * 12,
               renterDetails: (finalPayload as any).renterDetails || parsed.renterDetails || [],
               renterMast: (finalPayload as any).renterMast || parsed.renterMast || [],
+              taxLiability: (finalPayload as any).taxLiability || parsed.taxLiability || 'Renter',
             };
             sessionStorage.setItem('editingFloorForm', JSON.stringify(updatedForm));
           }

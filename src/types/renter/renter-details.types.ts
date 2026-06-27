@@ -37,6 +37,7 @@ export interface RenterMastItem {
     totalRentCollected?: number;
     monthCount?: number;
     isActive?: boolean;
+    taxLiability?: string;
     [key: string]: unknown;
 }
 

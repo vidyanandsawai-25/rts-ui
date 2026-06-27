@@ -24,6 +24,7 @@ export interface RenterFormDataDetails {
     isCompounding?: boolean;
     viewMode?: 'monthly' | 'annual';
     customDateRanges: CustomDateRange[];
+    taxLiability?: string;
 }
 
 export interface RenterFormData {
