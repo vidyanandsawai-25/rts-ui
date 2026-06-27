@@ -2,7 +2,7 @@ import { getDashboardData } from './actions';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/common';
 import { AddRouteButton } from '@/components/modules/dashboard/AddRouteButton';
-import { LanguageSelector } from '@/components/modules/dashboard/LanguageSelector';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { DashboardTable } from '@/components/modules/dashboard/DashboardTable';
 
 /**

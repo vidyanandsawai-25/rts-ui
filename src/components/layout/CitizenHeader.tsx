@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { LogOut, User } from 'lucide-react';
 
-import { LanguageSelector } from '@/components/modules/dashboard/LanguageSelector';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { logoutCitizenAction } from '@/app/[locale]/service/login/actions';
 
 /** Exact same background color as admin Header.tsx */
