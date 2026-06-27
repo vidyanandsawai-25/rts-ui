@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Eye } from "lucide-react";
+import { EditLabelButton } from "@/components/common/ActionButtons";
 import { cn } from "@/lib/utils/cn";
 import { Select, MatrixCellInput } from "@/components/common";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
@@ -161,10 +162,21 @@ CompactCellInput.displayName = "CompactCellInput";
 
 interface ReadOnlyCellProps {
   value: string;
+  onClick?: () => void;
+  className?: string;
+  disabled?: boolean;
 }
 
-const ReadOnlyCell = ({ value }: ReadOnlyCellProps) => (
-  <div className="bg-gray-100 rounded border border-gray-300 px-1 py-0.5 text-[10px] text-center min-w-[60px]">
+const ReadOnlyCell = ({ value, onClick, className, disabled }: ReadOnlyCellProps) => (
+  <div 
+    className={cn(
+      "bg-gray-100 rounded border border-gray-300 px-1 py-0.5 text-[10px] text-center min-w-[60px]",
+      onClick && !disabled && "cursor-pointer hover:bg-gray-200 hover:border-gray-400 transition-colors",
+      onClick && disabled && "cursor-not-allowed opacity-70",
+      className
+    )}
+    onClick={!disabled ? onClick : undefined}
+  >
     {value || "-"}
   </div>
 );
@@ -181,6 +193,7 @@ interface ColumnBuilderConfig {
   getSubTypeOptions: (typeOfUseId: string) => DropdownOption[];
   updateFloorRow: (id: string, field: keyof FloorDataRow, value: string) => void;
   onOpenRoomSubmission: (row: FloorDataRow) => void;
+  onOpenFloorQCEdit?: (row: FloorDataRow) => void;
   copy: FloorQCSectionCopy;
 }
 
@@ -193,94 +206,66 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     conTypeOptions,
     useTypeOptions,
     getSubTypeOptions,
-    updateFloorRow,
     onOpenRoomSubmission,
+    onOpenFloorQCEdit,
     copy,
   } = config;
+
+  const getLabel = (val: string, options: DropdownOption[]) => {
+    if (!val) return "-";
+    const opt = options.find((o) => String(o.value) === String(val));
+    return opt ? opt.label : val;
+  };
 
   return [
     {
       key: "floorId",
       label: copy.columns.floor,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => (
-        <CompactSelect
-          value={row.floorId}
-          onChange={(v) => updateFloorRow(row.id, "floorId", v)}
-          options={floorOptions}
-        />
-      ),
+      render: (_v, row) => <ReadOnlyCell value={getLabel(row.floorId, floorOptions)} />,
     },
     {
       key: "conYear",
       label: copy.columns.conYear,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => (
-        <YearCellInput
-          value={row.conYear}
-          rowId={row.id}
-          columnId="conYear"
-          onChange={(v) => updateFloorRow(row.id, "conYear", v)}
-          error={row.conYear && !YEAR_REGEX.test(row.conYear) ? copy.validation.invalidYear : undefined}
-        />
-      ),
+      render: (_v, row) => <ReadOnlyCell value={row.conYear} />,
     },
     {
       key: "asstYear",
       label: copy.columns.asstYear,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => (
-        <YearCellInput
-          value={row.asstYear}
-          rowId={row.id}
-          columnId="asstYear"
-          onChange={(v) => updateFloorRow(row.id, "asstYear", v)}
-          error={row.asstYear && !YEAR_REGEX.test(row.asstYear) ? copy.validation.invalidYear : undefined}
-        />
-      ),
+      render: (_v, row) => <ReadOnlyCell value={row.asstYear} />,
     },
     {
       key: "constructionTypeId",
       label: copy.columns.conType,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => (
-        <CompactSelect
-          value={row.constructionTypeId}
-          onChange={(v) => updateFloorRow(row.id, "constructionTypeId", v)}
-          options={conTypeOptions}
-        />
-      ),
+      render: (_v, row) => <ReadOnlyCell value={getLabel(row.constructionTypeId, conTypeOptions)} />,
     },
     {
       key: "typeOfUseId",
       label: copy.columns.use,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => (
-        <CompactSelect
-          value={row.typeOfUseId}
-          onChange={(v) => updateFloorRow(row.id, "typeOfUseId", v)}
-          options={useTypeOptions}
-        />
-      ),
+      render: (_v, row) => <ReadOnlyCell value={getLabel(row.typeOfUseId, useTypeOptions)} />,
     },
     {
       key: "subTypeOfUseId",
       label: copy.columns.subTypeOfUse,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => (
-        <CompactSelect
-          value={row.subTypeOfUseId}
-          onChange={(v) => updateFloorRow(row.id, "subTypeOfUseId", v)}
-          options={getSubTypeOptions(row.typeOfUseId)}
-          disabled={!row.typeOfUseId}
-        />
-      ),
+      render: (_v, row) => <ReadOnlyCell value={getLabel(row.subTypeOfUseId, getSubTypeOptions(row.typeOfUseId))} />,
     },
     {
       key: "noOfRooms",
       label: copy.columns.noOfRooms,
       cellClassName: "px-0.5 py-0.5",
-      render: (_v, row) => <ReadOnlyCell value={String(row.noOfRooms || "")} />,
+      render: (_v, row) => (
+        <ReadOnlyCell 
+          value={String(row.noOfRooms || "")} 
+          onClick={() => onOpenRoomSubmission(row)} 
+          disabled={!row.pdnId}
+          className="h-full flex items-center justify-center"
+        />
+      ),
     },
     {
       key: "area",
@@ -307,37 +292,77 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
           </button>
         </div>
       ),
-    },
+    }
   ];
+}
+
+/**
+ * Action Column
+ */
+export function buildActionColumn(onOpenFloorQCEdit?: (row: FloorDataRow) => void): Column<FloorDataRow> {
+  return {
+    key: "actions",
+    label: "Action",
+    cellClassName: "px-0.5 py-0.5",
+    render: (_v, row) => (
+      <div className="flex items-center justify-center h-full">
+        {onOpenFloorQCEdit && (
+          <EditLabelButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenFloorQCEdit(row);
+            }}
+            title="Edit Floor QC"
+          />
+        )}
+      </div>
+    )
+  };
 }
 
 /**
  * Builds rateable method columns (read-only display)
  */
-export function buildRateableColumns(copy: FloorQCSectionCopy): Column<FloorDataRow>[] {
+export function buildRateableColumns(copy: FloorQCSectionCopy, onOpenRoomSubmission: (row: FloorDataRow) => void): Column<FloorDataRow>[] {
+  const makeClickableCell = (val: any, row: FloorDataRow) => (
+    <ReadOnlyCell 
+      value={val} 
+      onClick={() => onOpenRoomSubmission(row)} 
+      disabled={!row.pdnId}
+      className="h-full flex items-center justify-center min-h-[24px]"
+    />
+  );
   return [
-    { key: "rentMY", label: copy.columns.rentMY, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentMY} /> },
-    { key: "rateMY", label: copy.columns.rateMY, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rateMY} /> },
-    { key: "rentalValue", label: copy.columns.rentalValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentalValue} /> },
-    { key: "depreciation", label: copy.columns.depreciation, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.depreciation} /> },
-    { key: "alv", label: copy.columns.alv, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.alv} /> },
-    { key: "mr", label: copy.columns.mr, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.mr} /> },
-    { key: "rv", label: copy.columns.rv, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rv} /> },
+    { key: "rentMY", label: copy.columns.rentMY, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.rentMY, row) },
+    { key: "rateMY", label: copy.columns.rateMY, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.rateMY, row) },
+    { key: "rentalValue", label: copy.columns.rentalValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.rentalValue, row) },
+    { key: "depreciation", label: copy.columns.depreciation, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.depreciation, row) },
+    { key: "alv", label: copy.columns.alv, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.alv, row) },
+    { key: "mr", label: copy.columns.mr, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.mr, row) },
+    { key: "rv", label: copy.columns.rv, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.rv, row) },
   ];
 }
 
 /**
  * Builds capital method columns (read-only display)
  */
-export function buildCapitalColumns(copy: FloorQCSectionCopy): Column<FloorDataRow>[] {
+export function buildCapitalColumns(copy: FloorQCSectionCopy, onOpenRoomSubmission: (row: FloorDataRow) => void): Column<FloorDataRow>[] {
+  const makeClickableCell = (val: any, row: FloorDataRow) => (
+    <ReadOnlyCell 
+      value={val} 
+      onClick={() => onOpenRoomSubmission(row)} 
+      disabled={!row.pdnId}
+      className="h-full flex items-center justify-center min-h-[24px]"
+    />
+  );
   return [
-    { key: "sdrr", label: copy.columns.sdrr, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.sdrr} /> },
-    { key: "baseValue", label: copy.columns.baseValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.baseValue} /> },
-    { key: "floorFactor", label: copy.columns.floorFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.floorFactor} /> },
-    { key: "ageFactor", label: copy.columns.ageFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ageFactor} /> },
-    { key: "ntbFactor", label: copy.columns.ntbFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ntbFactor} /> },
-    { key: "useFactor", label: copy.columns.useFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.useFactor} /> },
-    { key: "capitalValue", label: copy.columns.capitalValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.capitalValue} /> },
+    { key: "sdrr", label: copy.columns.sdrr, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.sdrr, row) },
+    { key: "baseValue", label: copy.columns.baseValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.baseValue, row) },
+    { key: "floorFactor", label: copy.columns.floorFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.floorFactor, row) },
+    { key: "ageFactor", label: copy.columns.ageFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.ageFactor, row) },
+    { key: "ntbFactor", label: copy.columns.ntbFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.ntbFactor, row) },
+    { key: "useFactor", label: copy.columns.useFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.useFactor, row) },
+    { key: "capitalValue", label: copy.columns.capitalValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => makeClickableCell(row.capitalValue, row) },
   ];
 }
 
@@ -350,15 +375,16 @@ export function buildFloorQCColumns(
   dualMethodTab: "rateable" | "capital"
 ): Column<FloorDataRow>[] {
   const commonColumns = buildCommonColumns(config);
-  const rateableColumns = buildRateableColumns(config.copy);
-  const capitalColumns = buildCapitalColumns(config.copy);
+  const rateableColumns = buildRateableColumns(config.copy, config.onOpenRoomSubmission);
+  const capitalColumns = buildCapitalColumns(config.copy, config.onOpenRoomSubmission);
+  const actionCol = buildActionColumn(config.onOpenFloorQCEdit);
 
   if (subTab === "capital") {
-    return [...commonColumns, ...capitalColumns];
+    return [...commonColumns, ...capitalColumns, actionCol];
   } else if (subTab === "dual-method") {
     return dualMethodTab === "capital"
-      ? [...commonColumns, ...capitalColumns]
-      : [...commonColumns, ...rateableColumns];
+      ? [...commonColumns, ...capitalColumns, actionCol]
+      : [...commonColumns, ...rateableColumns, actionCol];
   }
-  return [...commonColumns, ...rateableColumns];
+  return [...commonColumns, ...rateableColumns, actionCol];
 }

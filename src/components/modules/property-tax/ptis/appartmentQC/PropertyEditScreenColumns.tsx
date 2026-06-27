@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
 import { ExternalLink } from "lucide-react";
+import { EditLabelButton } from "@/components/common/ActionButtons";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import { cn } from "@/lib/utils/cn";
 import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
@@ -168,23 +169,31 @@ interface ColumnBuilderProps {
   handleUseTypeDropdownClick: () => void;
   updateRow: (id: string, field: keyof DrawerFloorDataRow, value: string) => void;
   onOpenRoomSubmission: (row: DrawerFloorDataRow) => void;
+  onOpenFloorQCEdit: (row: DrawerFloorDataRow) => void;
 }
 
 // ─── Build Common Columns ───────────────────────────────────────────────────
 
 export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<DrawerFloorDataRow>[] {
-  const { floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission } = props;
+  const { floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, onOpenRoomSubmission, onOpenFloorQCEdit } = props;
   const t = useTranslations("appartmentQC");
+  
+  const getLabel = (val: string, options: DrawerDropdownOption[]) => {
+    if (!val) return "-";
+    const opt = options.find((o) => String(o.value) === String(val));
+    return opt ? opt.label : val;
+  };
+
   return useMemo(() => [
-    { key: "floorId", label: makeFloorQcHeader("floor", t),align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.floorId} onChange={(v) => updateRow(row.id, "floorId", v)} options={floorOptions} onDropdownClick={handleFloorDropdownClick} isLoading={isLoadingFloors} /> },
-    { key: "conYear", label: makeFloorQcHeader("conYear", t),width : "70px",align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.conYear} onChange={(v) => updateRow(row.id, "conYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.conYear && !YEAR_REGEX.test(row.conYear) ? t("floorQC.validation.invalidYear") : undefined} /> },
-    { key: "asstYear", label: makeFloorQcHeader("asstYear", t),width : "70px",align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.asstYear} onChange={(v) => updateRow(row.id, "asstYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.asstYear && !YEAR_REGEX.test(row.asstYear) ? t("floorQC.validation.invalidYear") : undefined} /> },
-    { key: "constructionTypeId", label: makeFloorQcHeader("conType", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.constructionTypeId} onChange={(v) => updateRow(row.id, "constructionTypeId", v)} options={conTypeOptions} onDropdownClick={handleConTypeDropdownClick} isLoading={isLoadingConTypes} /> },
-    { key: "typeOfUseId", label: makeFloorQcHeader("use", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.typeOfUseId} onChange={(v) => updateRow(row.id, "typeOfUseId", v)} options={useTypeOptions} onDropdownClick={handleUseTypeDropdownClick} isLoading={isLoadingUseTypes} /> },
+    { key: "floorId", label: makeFloorQcHeader("floor", t),align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={getLabel(row.floorId, floorOptions)} disabled /> },
+    { key: "conYear", label: makeFloorQcHeader("conYear", t),width : "70px",align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={row.conYear} disabled /> },
+    { key: "asstYear", label: makeFloorQcHeader("asstYear", t),width : "70px",align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={row.asstYear} disabled /> },
+    { key: "constructionTypeId", label: makeFloorQcHeader("conType", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={getLabel(row.constructionTypeId, conTypeOptions)} disabled /> },
+    { key: "typeOfUseId", label: makeFloorQcHeader("use", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={getLabel(row.typeOfUseId, useTypeOptions)} disabled /> },
     {
       key: "subTypeOfUseId", label: makeFloorQcHeader("subTypeOfUse", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
         const opts = getSubTypeOptions(row.typeOfUseId);
-        return <CompactSelect value={row.subTypeOfUseId} onChange={(v) => updateRow(row.id, "subTypeOfUseId", v)} options={opts} disabled={!row.typeOfUseId || opts.length === 0} isLoading={isLoadingUseTypes} />;
+        return <ReadOnlyCellHover value={getLabel(row.subTypeOfUseId, opts)} disabled />;
       }
     },
     {
@@ -206,8 +215,31 @@ export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<Drawer
           tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")}
         />
       )
-    },
-  ], [floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission, t]);
+    }
+  ], [floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, onOpenRoomSubmission, t]);
+}
+
+// ─── Action Column ──────────────────────────────────────────────────────────
+
+export function useDrawerActionColumn(props: { onOpenFloorQCEdit: (row: DrawerFloorDataRow) => void }): Column<DrawerFloorDataRow> {
+  const { onOpenFloorQCEdit } = props;
+  return useMemo(() => ({
+    key: "actions",
+    label: makeHeader("Action", "Edit row"),
+    align: "center",
+    cellClassName: "px-0.5 py-0.5",
+    render: (_v, row) => (
+      <div className="flex items-center justify-center h-full">
+        <EditLabelButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenFloorQCEdit(row);
+          }}
+          title="Edit Floor QC"
+        />
+      </div>
+    )
+  }), [onOpenFloorQCEdit]);
 }
 
 // ─── Rateable Columns ───────────────────────────────────────────────────────

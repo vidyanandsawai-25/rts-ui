@@ -21,6 +21,7 @@ import {
   useDrawerCommonColumns,
   useDrawerRateableColumns,
   useDrawerCapitalColumns,
+  useDrawerActionColumn,
 } from './PropertyEditScreenColumns';
 import {
   EditableInput,
@@ -39,6 +40,7 @@ import type { RoomAPIResponse } from '@/types/room-details.types';
 import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
 import { RoomWiseSubmission } from './roomSubmission/RoomWiseSubmission';
 import { ApartmentTaxDetailsTable } from './ApartmentTaxDetailsTable';
+import { FloorQCEditDrawer } from './FloorQCEditDrawer';
 import { limitSingleAtEmail, limitTwoDigitNumber } from '@/lib/utils/validation-rules';
 import { capitalizeEachWord } from '@/lib/utils/input-sanitization';
 
@@ -107,6 +109,11 @@ const ResidentialEditScreen = ({
   // State for client-side fetched room data
   const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
+  
+  // State for Floor QC Edit Drawer
+  const [floorQCEditDrawerOpen, setFloorQCEditDrawerOpen] = useState(false);
+  const [selectedFloorQCEditRow, setSelectedFloorQCEditRow] = useState<DrawerFloorDataRow | null>(null);
+
   const SELECTED_FLOOR_ROW_KEY = 'selectedFloorRow';
 
   const [selectedFloorRow, setSelectedFloorRow] = useState<DrawerFloorDataRow | null>(() => {
@@ -498,6 +505,21 @@ const ResidentialEditScreen = ({
     [hookHandleOpenRoomSubmission]
   );
 
+  const handleOpenFloorQCEdit = useCallback((row: DrawerFloorDataRow) => {
+    setSelectedFloorQCEditRow(row);
+    setFloorQCEditDrawerOpen(true);
+  }, []);
+
+  const handleSaveFloorQC = useCallback((updatedRow: DrawerFloorDataRow) => {
+    hook.updateFloorRow(updatedRow.id, 'floorId', updatedRow.floorId);
+    hook.updateFloorRow(updatedRow.id, 'conYear', updatedRow.conYear);
+    hook.updateFloorRow(updatedRow.id, 'asstYear', updatedRow.asstYear);
+    hook.updateFloorRow(updatedRow.id, 'constructionTypeId', updatedRow.constructionTypeId);
+    hook.updateFloorRow(updatedRow.id, 'typeOfUseId', updatedRow.typeOfUseId);
+    hook.updateFloorRow(updatedRow.id, 'subTypeOfUseId', updatedRow.subTypeOfUseId);
+    setFloorQCEditDrawerOpen(false);
+  }, [hook]);
+
   // Column definitions
   const commonColumns = useDrawerCommonColumns({
     floorOptions: hook.floorOptions,
@@ -512,19 +534,21 @@ const ResidentialEditScreen = ({
     handleUseTypeDropdownClick: hook.handleUseTypeDropdownClick,
     updateRow: hook.updateFloorRow,
     onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading,
+    onOpenFloorQCEdit: handleOpenFloorQCEdit,
   });
   const rateableColumns = useDrawerRateableColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
   const capitalColumns = useDrawerCapitalColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
+  const actionColumn = useDrawerActionColumn({ onOpenFloorQCEdit: handleOpenFloorQCEdit });
 
   const floorColumns = useMemo(() => {
-    if (hook.subTab === 'capital') return [...commonColumns, ...capitalColumns];
+    if (hook.subTab === 'capital') return [...commonColumns, ...capitalColumns, actionColumn];
     if (hook.subTab === 'dual-method') {
       return hook.dualMethodTab === 'capital'
-        ? [...commonColumns, ...capitalColumns]
-        : [...commonColumns, ...rateableColumns];
+        ? [...commonColumns, ...capitalColumns, actionColumn]
+        : [...commonColumns, ...rateableColumns, actionColumn];
     }
-    return [...commonColumns, ...rateableColumns];
-  }, [commonColumns, rateableColumns, capitalColumns, hook.subTab, hook.dualMethodTab]);
+    return [...commonColumns, ...rateableColumns, actionColumn];
+  }, [commonColumns, rateableColumns, capitalColumns, actionColumn, hook.subTab, hook.dualMethodTab]);
 
   // if (!propertyData) {
   //   return (
@@ -547,8 +571,10 @@ const ResidentialEditScreen = ({
 
   return (
     <>
-      <Drawer
-        open={open}
+      {/* Hide main drawer if floorQCEditDrawerOpen is true */}
+      <div style={{ display: floorQCEditDrawerOpen ? 'none' : 'block' }}>
+        <Drawer
+          open={open}
         onClose={hook.handleClose}
         width="xl"
         title={
@@ -807,18 +833,46 @@ const ResidentialEditScreen = ({
                 </div>
               )}
             </div>
-
-            {/* Tax Details Section */}
-            <ApartmentTaxDetailsTable
-              taxDetails={taxDetails}
-              dualMethodDetails={dualMethodTaxDetails}
-              loading={isLoadingTaxDetails}
-              activeMainTab={returnTo}
-              activeSubTab={subTabProp}
-            />
+            
+            {taxDetails && (
+              <div className="mt-4">
+                <ApartmentTaxDetailsTable
+                  taxDetails={taxDetails}
+                  subTab={hook.subTab as 'rateable' | 'capital'}
+                  dualMethodTaxDetails={null}
+                />
+              </div>
+            )}
+            {dualMethodTaxDetails && hook.subTab === 'dual-method' && (
+              <div className="mt-4">
+                <ApartmentTaxDetailsTable
+                  taxDetails={null}
+                  subTab="dual-method"
+                  dualMethodTaxDetails={dualMethodTaxDetails}
+                />
+              </div>
+            )}
           </div>
         )}
       </Drawer>
+      </div>
+
+      <FloorQCEditDrawer
+        open={floorQCEditDrawerOpen}
+        onClose={() => setFloorQCEditDrawerOpen(false)}
+        onSave={handleSaveFloorQC}
+        row={selectedFloorQCEditRow}
+        floorOptions={hook.floorOptions}
+        conTypeOptions={hook.conTypeOptions}
+        useTypeOptions={hook.useTypeOptions}
+        getSubTypeOptions={hook.getSubTypeOptionsForUseType}
+        isLoadingFloors={hook.isLoadingFloors}
+        isLoadingConTypes={hook.isLoadingConTypes}
+        isLoadingUseTypes={hook.isLoadingUseTypes}
+        handleFloorDropdownClick={hook.handleFloorDropdownClick}
+        handleConTypeDropdownClick={hook.handleConTypeDropdownClick}
+        handleUseTypeDropdownClick={hook.handleUseTypeDropdownClick}
+      />
 
       {/* Room Submission Drawer */}
       {hook.roomDrawerOpen && hook.roomPdnId && hook.roomPropertyId && (
