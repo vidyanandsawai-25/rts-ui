@@ -10,8 +10,8 @@ import { LogOut, User } from 'lucide-react';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { logoutCitizenAction } from '@/app/[locale]/service/login/actions';
 
-/** Exact same background color as admin Header.tsx */
-const HEADER_BG = '#4b70a6';
+/** Matching landing page theme deep navy (#0a3275) */
+const HEADER_BG = '#0a3275';
 
 interface CitizenHeaderProps {
   mobile?: string;
