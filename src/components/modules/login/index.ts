@@ -4,6 +4,7 @@
 export { LoginForm } from './LoginForm';
 export { LoginFormClient } from './LoginFormClient';
 export { LoginFormCouncilLogo } from './LoginFormCouncilLogo';
+export { CitizenLoginForm } from './CitizenLoginForm';
 export {
   FormLoadingOverlay,
   LoginCredentialFields,

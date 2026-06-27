@@ -20,3 +20,5 @@ export interface DashboardData {
   lastUpdate: string;
   [key: string]: unknown;
 }
+
+export type Language = 'en' | 'hi' | 'mr';

@@ -27,11 +27,11 @@ export function LanguageSelector() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 rounded-lg transition-colors text-white"
         title="Change language"
       >
-        <Globe size={18} />
-        <span className="text-sm font-medium">{localeNames[currentLocale]}</span>
+        <Globe size={14} className="shrink-0 text-white" />
+        <span className="hidden sm:inline text-xs font-semibold text-white">{localeNames[currentLocale]}</span>
       </button>
 
       {isOpen && (

@@ -1,0 +1,189 @@
+{
+  "login": {
+    "brand": {
+      "title": "Akola Municipal Corporation",
+      "subtitle": "Right to Service Portal"
+    },
+    "phone": {
+      "welcome": "Citizen Portal",
+      "subtitle": "Access municipal services online",
+      "tabMobile": "Mobile OTP",
+      "tabUpic": "UPIC ID",
+      "tabProperty": "Property ID",
+      "helperMobile": "Verify using your registered mobile number",
+      "helperUpic": "Enter your 10-character UPIC identifier",
+      "helperProperty": "Provide Node, Sector, and Property number",
+      "mobileLabel": "Phone Number",
+      "mobilePh": "Enter 10-digit mobile number",
+      "upicLabel": "UPIC ID",
+      "upicPh": "Enter UPIC ID (e.g. U123456789)",
+      "node": "Node ID",
+      "nodePh": "Node",
+      "sector": "Sector ID",
+      "sectorPh": "Sector",
+      "property": "Property Number",
+      "propertyPh": "Property No",
+      "sendOtp": "Send Verification Code",
+      "orContinue": "Are you a corporation official?",
+      "admin": "Go to Employee Login"
+    },
+    "otp": {
+      "enterSent": "Enter the code sent to",
+      "enterOtp": "Verification Code",
+      "otpPh": "######",
+      "verify": "Verify & Proceed",
+      "resend": "Resend Code",
+      "change": "Change Details"
+    },
+    "messages": {
+      "invalidPhone": "Please enter a valid 10-digit phone number.",
+      "invalidOtp": "Please enter a valid 6-digit OTP.",
+      "demoOtp": " (Demo OTP: {otp})",
+      "otpSent": "OTP sent successfully.",
+      "otpResent": "OTP resent successfully.",
+      "loginSuccess": "Authentication successful!",
+      "verifyFailed": "Invalid OTP. Please try again.",
+      "sendOtpFailed": "Failed to send OTP. Please try again.",
+      "notConnected": "Login method not connected yet."
+    }
+  },
+  "header": {
+    "municipalCorp": "Akola Municipal Corporation",
+    "rtsAct": "Right to Service Act 2015 (RTS)",
+    "help": "Help & Manual",
+    "logout": "Log Out",
+    "helpTitle": "Citizen Support Manual",
+    "helpSubtitle": "Everything you need to know about RTS services.",
+    "nav": {
+      "home": "Home",
+      "about": "About Us",
+      "services": "Services",
+      "departments": "Departments",
+      "grievance": "Citizen Grievance",
+      "eseva": "E-Seva Kendra",
+      "downloads": "Downloads",
+      "contact": "Contact"
+    },
+    "helpSections": [
+      {
+        "title": "About RTS Act 2015",
+        "content": [
+          "The Right to Service (RTS) Act 2015 ensures timely delivery of government services to citizens.",
+          "This portal provides easy access to municipal services under the RTS Act.",
+          "Citizens can apply, track applications, and access information 24/7."
+        ]
+      },
+      {
+        "title": "How to Use This Portal",
+        "content": [
+          "1. Login using your mobile number and OTP verification.",
+          "2. Choose the desired service from the dashboard.",
+          "3. Fill out the multi-step dynamic application form.",
+          "4. Upload the required documents.",
+          "5. Review, save draft, or submit the application."
+        ]
+      },
+      {
+        "title": "Available Services",
+        "content": [
+          "Birth & Death Certificates, Property Tax, Water Connection.",
+          "Trade License, NOC services, Marriage Registration.",
+          "Town Planning permissions, Health & Education services."
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "title": "Akola Municipal Corporation - Citizen Services Portal",
+    "copyright": "© 2026 All Rights Reserved - Akola Municipal Corporation",
+    "terms": "Terms of Service",
+    "contact": "Support Helpdesk",
+    "privacy": "Privacy Policy"
+  },
+  "landing": {
+    "hero": {
+      "act": "Right to Public Services Act 2015",
+      "slogan": "Your Rights, Our Responsibility",
+      "sub": "Time-bound, Transparent, and Citizen-Centric Services",
+      "featureTime": "Time-bound Service",
+      "featureTrans": "Transparent Process",
+      "featureFirst": "Citizen First"
+    },
+    "search": {
+      "placeholder": "Search services... (e.g. Birth Certificate, Construction permit, Trade license, Water connection...)",
+      "button": "Search"
+    },
+    "actions": {
+      "apply": "Apply for Service",
+      "applySub": "Fill application form online",
+      "status": "Check Status",
+      "statusSub": "Track your application status",
+      "download": "Download Certificate",
+      "downloadSub": "Get digital certificates",
+      "appeal": "File an Appeal",
+      "appealSub": "First / Second Appeal registration",
+      "grievance": "Raise Grievance",
+      "grievanceSub": "Register citizen complaint"
+    },
+    "stats": {
+      "title": "RTS Portal Dashboard",
+      "moreInfo": "More Info",
+      "services": "Total Services",
+      "servicesSub": "All available services",
+      "online": "Online Services",
+      "onlineSub": "Fully digitized",
+      "processed": "Applications Processed",
+      "processedSub": "Successfully completed",
+      "sla": "SLA Adherence",
+      "slaSub": "On-time service delivery"
+    },
+    "sections": {
+      "popular": "Popular Services",
+      "allServices": "View All Services",
+      "departments": "Department-wise Services",
+      "howItWorks": "How the Application Process Works",
+      "appealTitle": "Right to Public Services Act 2015",
+      "appealSub": "You have the right to file an appeal if your application is not decided within the scheduled time limit.",
+      "appealBtn1": "File First Appeal",
+      "appealBtn2": "File Second Appeal",
+      "grievanceTitle": "Citizen Grievance Service",
+      "grievanceSub": "Report issues in your neighborhood for prompt resolution.",
+      "grievancePothole": "Potholes on Road",
+      "grievanceGutter": "Sewer / Manhole Cover",
+      "grievanceClean": "Sanitation & Cleaning",
+      "grievanceBtn": "Report Issue",
+      "importantLinks": "Important Links"
+    },
+    "steps": {
+      "1": {
+        "title": "Select Service",
+        "sub": "Choose the service you need"
+      },
+      "2": {
+        "title": "Fill Application",
+        "sub": "Enter details in the online form"
+      },
+      "3": {
+        "title": "Upload Documents",
+        "sub": "Attach required certifications"
+      },
+      "4": {
+        "title": "Officer Verification",
+        "sub": "Concerned official reviews the details"
+      },
+      "5": {
+        "title": "Approval",
+        "sub": "Your application gets approved"
+      },
+      "6": {
+        "title": "Download Certificate",
+        "sub": "Download your signed certificate"
+      }
+    },
+    "footer": {
+      "followUs": "Follow Us",
+      "helpline": "RTS Helpline",
+      "email": "RTS Email Support"
+    }
+  }
+}

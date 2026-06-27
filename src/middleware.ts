@@ -4,8 +4,7 @@
  */
 
 import createMiddleware from 'next-intl/middleware';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { defaultLocale, locales } from './i18n/config';
 import {
   AUTH_COOKIES,
@@ -55,6 +54,11 @@ export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
 
+  // Citizen portal check
+  const isCitizenRoute = pathWithoutLocale === '/service' || pathWithoutLocale.startsWith('/service/');
+  const isCitizenLogin = pathWithoutLocale === '/service/login' || pathWithoutLocale.startsWith('/service/login/');
+  const isCitizenDashboard = pathWithoutLocale === '/service/dashboard' || pathWithoutLocale.startsWith('/service/dashboard/');
+
   const accessToken = request.cookies.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
   const refreshToken = request.cookies.get(AUTH_COOKIES.REFRESH_TOKEN)?.value;
   const sessionExpiresAt = request.cookies.get(AUTH_COOKIES.SESSION_EXPIRES_AT)?.value;
@@ -74,54 +78,73 @@ export default function middleware(request: NextRequest) {
     isLoginRoute &&
     request.nextUrl.searchParams.get('requireVerification') === '1';
 
-  if (isLoginRoute && isLoggedIn && !sessionExpiredLogin && !requireVerification) {
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
-  }
+  // 1. Citizen route redirection logic
+  if (isCitizenRoute) {
+    const hasCitizenSession = request.cookies.has('rts_session');
+    if (isCitizenLogin) {
+      if (hasCitizenSession) {
+        return NextResponse.redirect(new URL(`/${locale}/service/dashboard`, request.url));
+      }
+    } else if (isCitizenDashboard) {
+      if (!hasCitizenSession) {
+        return NextResponse.redirect(new URL(`/${locale}/service/login`, request.url));
+      }
+    }
+  } else {
+    // 2. Non-citizen route redirection logic
+    if (isLoginRoute && isLoggedIn && !sessionExpiredLogin && !requireVerification) {
+      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    }
 
-  if (pathWithoutLocale === '/') {
-    if (!isLoggedIn) {
+    if (pathWithoutLocale === '/') {
+      if (!isLoggedIn) {
+        return redirectToLogin(request, locale, sessionExpired);
+      }
+      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    }
+
+    if (!isLoginRoute && !isLoggedIn) {
       return redirectToLogin(request, locale, sessionExpired);
     }
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
-  if (!isLoginRoute && !isLoggedIn) {
-    return redirectToLogin(request, locale, sessionExpired);
-  }
-
+  // 3. Determine if it's a home or auth-related layout page
   const isAuthOrHome =
+    isCitizenRoute ||
     pathWithoutLocale === '/' ||
     pathWithoutLocale === '/home' ||
     pathWithoutLocale.startsWith('/home/') ||
     pathWithoutLocale === '/login' ||
     pathWithoutLocale.startsWith('/login/');
 
+  // 4. Clone the request with custom routing headers for Server Components
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
   requestHeaders.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
+  requestHeaders.set('x-middleware-request-x-pathname', pathname);
+  requestHeaders.set('x-middleware-request-x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  const intlResponse = intlMiddleware(request);
+  const modifiedRequest = new NextRequest(request, {
+    headers: requestHeaders,
+  });
 
-  if (intlResponse.headers.has('location')) {
-    if (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn)) {
-      clearAuthCookiesOnResponse(intlResponse);
+  // 5. Invoke next-intl middleware with the modified request
+  const response = intlMiddleware(modifiedRequest);
+
+  // 6. Mutate next-intl's response to add headers and clear auth cookies if redirecting
+  if (response.headers.has('location')) {
+    if (!isCitizenRoute && (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn))) {
+      clearAuthCookiesOnResponse(response);
     }
-    return intlResponse;
+    return response;
   }
 
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-  intlResponse.headers.forEach((value, key) => {
-    response.headers.set(key, value);
-  });
-  intlResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie);
-  });
   response.headers.set('x-pathname', pathname);
   response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
+  response.headers.set('x-middleware-request-x-pathname', pathname);
+  response.headers.set('x-middleware-request-x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  if (isLoginRoute && (!isLoggedIn || sessionExpired || sessionExpiredLogin)) {
+  if (!isCitizenRoute && isLoginRoute && (!isLoggedIn || sessionExpired || sessionExpiredLogin)) {
     clearAuthCookiesOnResponse(response);
   }
 

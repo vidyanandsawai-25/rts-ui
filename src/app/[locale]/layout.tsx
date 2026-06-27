@@ -79,10 +79,9 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
 
   return (
     <html lang={locale}>
-      <head>
-        <RuntimeConfigScript />
-      </head>
+      <head />
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
+        <RuntimeConfigScript />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             <ConditionalShell

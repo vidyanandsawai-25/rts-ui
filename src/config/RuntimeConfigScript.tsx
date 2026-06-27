@@ -6,6 +6,7 @@
  */
 
 import { getServerRuntimeConfig, validateRuntimeConfig } from './runtime-config';
+import { RuntimeConfigInject } from './RuntimeConfigInject';
 
 export function RuntimeConfigScript() {
   const config = getServerRuntimeConfig();
@@ -16,10 +17,5 @@ export function RuntimeConfigScript() {
   // Serialize config to be injected into the page
   const configScript = `window.__RUNTIME_CONFIG__ = ${JSON.stringify(config)};`;
   
-  return (
-    <script
-      id="runtime-config"
-      dangerouslySetInnerHTML={{ __html: configScript }}
-    />
-  );
+  return <RuntimeConfigInject configScript={configScript} />;
 }

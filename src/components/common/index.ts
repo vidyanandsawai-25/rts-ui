@@ -153,3 +153,6 @@ export { StatusToggleCard } from './StatusToggleCard';
 export { UnauthorizedPage } from './UnauthorizedPage';
 export { DocumentViewerModal } from './DocumentViewerModal';
 export type { DocumentViewerModalProps } from './DocumentViewerModal';
+
+export { GooglePlayBadge } from './GooglePlayBadge';
+export { SocialLinks } from './SocialLinks';
