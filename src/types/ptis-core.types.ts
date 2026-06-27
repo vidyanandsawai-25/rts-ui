@@ -136,6 +136,10 @@ export interface PropertySocialDetailItem {
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
+  isDiscountApplicable?: boolean;
+  documentGuid?: string | null;
+  percentage?: number | null;
+  amount?: number | null;
 }
 
 export interface DiscountData {

@@ -55,6 +55,7 @@ export async function getLockUnlockProperties(
   if (params.ToPropertyNo?.trim()) urlParams.append("ToPropertyNo", params.ToPropertyNo.trim());
   if (params.PartitionNo?.trim()) urlParams.append("PartitionNo", params.PartitionNo.trim());
   if (params.Search?.trim()) urlParams.append("Search", params.Search.trim());
+  if (params.SearchPartitionNo?.trim()) urlParams.append("SearchPartitionNo", params.SearchPartitionNo.trim());
   if (params.SearchTerm?.trim()) urlParams.append("SearchTerm", params.SearchTerm.trim());
   if (params.SortBy?.trim()) urlParams.append("SortBy", params.SortBy.trim());
   if (params.SortOrder?.trim()) urlParams.append("SortOrder", params.SortOrder.trim());

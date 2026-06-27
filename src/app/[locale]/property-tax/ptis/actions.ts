@@ -201,6 +201,16 @@ export async function fetchDiscountDetailsOnlyAction(propertyId: number) {
   return createAction(() => ptisService.getDiscountDetails(propertyId));
 }
 
+export async function fetchSocialDetailsOnlyAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
+  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(() => ptisService.getSocialDetails(propertyId));
+}
+
 export async function fetchBuildingPermissionOnlyAction(propertyId: number) {
   const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });

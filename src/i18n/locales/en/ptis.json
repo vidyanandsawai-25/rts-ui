@@ -177,6 +177,8 @@
     "societyDetails": "Society Details",
     "buildingPermission": "Building Permission",
     "discountData": "Discount & Social Data",
+    "discount": "Discount Data",
+    "social": "Social Data",
     "oldDetails": "Old Details",
     "rateable": "Rateable",
     "capital": "Capital",
@@ -401,7 +403,8 @@
     "lightTax": "Light Tax",
     "cleaningTax": "Cleaning Tax",
     "sewerageTax": "Sewerage Tax",
-    "treeTax": "Tree Tax"
+    "treeTax": "Tree Tax",
+    "taxTotal": "Tax Total"
   },
   "actions": {
     "save": "Save",
@@ -662,6 +665,9 @@
     "unauthorized": "You do not have permission to view this data.",
     "serverError": "Internal server error occurred while fetching data.",
     "generic": "Something went wrong while processing your request.",
+    "propertyDetailsNotFound": "Active property details not found for the given property ID.",
+    "invalidPropertyData": "Invalid property data detected. Please check the property use details.",
+    "typeOfUseGroupNotFound": "Type of use group configuration not found for the property.",
     "propertyNotSearched": "Please search for a property first before combining.",
     "noValuationData": "No valuation data available for the selected method.",
     "ratesNotFound": "Rates not found for the selected assessment year. Please configure the Rate Master.",
@@ -728,5 +734,11 @@
     "noAppliedRules": "No rules have been applied to this property.",
     "loading": "Loading applied rules...",
     "errorFetching": "Failed to fetch applied rules."
+  },
+  "capitalPlaceholder": {
+    "title": "Capital Valuation Calculation Required",
+    "description": "The capital valuation taxes for this property have not been loaded. Click below to retrieve and calculate the capital value on-demand.",
+    "button": "Calculate Capital Value",
+    "calculating": "Calculating..."
   }
 }

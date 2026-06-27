@@ -65,6 +65,12 @@ export function useLockUnlockColumns({
             }
           }}
           onChange={() => onSelectAllProperties()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isPending) {
+              e.preventDefault();
+              onSelectAllProperties();
+            }
+          }}
           aria-label="Select all properties"
           className="ml-2"
         />
@@ -77,6 +83,12 @@ export function useLockUnlockColumns({
           checked={isRowChecked(row.propertyId)}
           disabled={isPending}
           onChange={() => onSelectProperty(row.propertyId)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isPending) {
+              e.preventDefault();
+              onSelectProperty(row.propertyId);
+            }
+          }}
           aria-label={`Select property ${row.propertyNo}`}
           className="ml-2"
         />

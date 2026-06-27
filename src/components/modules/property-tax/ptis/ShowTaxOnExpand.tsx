@@ -27,10 +27,6 @@ export interface ShowTaxOnExpandProps {
 function buildTaxEntries(taxes: TaxEntry[] | undefined): TaxEntry[] {
   if (Array.isArray(taxes) && taxes.length > 0) {
     return taxes
-      .filter(
-        (tax) =>
-          tax.taxName?.toUpperCase() !== 'TAXTOTAL' && tax.taxName?.toUpperCase() !== 'TOTAL'
-      )
       .map((tax) => ({
         taxName: tax.taxName,
         amount: tax.amount ?? 0,
