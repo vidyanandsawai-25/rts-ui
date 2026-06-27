@@ -58,7 +58,7 @@ export function CitizenHeader({ mobile, locale: propLocale, ulbData }: CitizenHe
   const handleLogout = () => {
     startTransition(async () => {
       await logoutCitizenAction();
-      router.push(`/${activeLocale}/service/login`);
+      router.push(`/${activeLocale}/service`);
       router.refresh();
     });
   };
