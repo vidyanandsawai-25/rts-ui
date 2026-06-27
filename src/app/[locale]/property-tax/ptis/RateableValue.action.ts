@@ -27,10 +27,10 @@ export async function getRateableValue(
         const result = await getRateableValueApi(propertyIdNum, financeYear);
 
         if (!result.success) {
-            return { success: false, error: result.error, statusCode: result.statusCode };
+            return { success: false, error: result.error, message: result.message, statusCode: result.statusCode };
         }
 
-        return { success: true, data: result.data, statusCode: result.statusCode };
+        return { success: true, data: result.data, message: result.message, error: result.error, statusCode: result.statusCode };
     } catch (error: unknown) {
         return handleServerError(error, 'fetching rateable value');
     }

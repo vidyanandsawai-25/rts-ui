@@ -98,7 +98,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     (!propertyDetailsResult.success && propertyDetailsResult.error) || undefined;
 
   const sanitizedInitialError = propertyDetailsResult.error
-    ? getPtisUserSafeErrorMessage(propertyDetailsResult.error, undefined, t('error.generic'))
+    ? getPtisUserSafeErrorMessage(propertyDetailsResult.error, undefined, t('error.generic'), t)
     : undefined;
 
   const initialData: PtisInitialData = {
