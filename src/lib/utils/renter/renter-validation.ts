@@ -138,6 +138,14 @@ export const validateRenterForm = (
 ): ValidationError[] => {
   const errors: ValidationError[] = [];
 
+  // ─── Tax Liability ────────────────────────────────────────────────────────
+  if (!details.taxLiability || !details.taxLiability.trim()) {
+    errors.push({
+      field: 'taxLiability',
+      message: 'Tax Liability is required.',
+    });
+  }
+
   // ─── Agreement No ─────────────────────────────────────────────────────────
   if (!details.agreementId || !details.agreementId.trim()) {
     errors.push({

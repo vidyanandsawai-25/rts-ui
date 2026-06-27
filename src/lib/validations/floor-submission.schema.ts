@@ -73,6 +73,7 @@ export const renterMastItemSchema = z.object({
     durationTo: z.string().nullable().optional(),
     isActive: z.boolean().default(true),
     nonCalculateRentMonthly: z.number().optional().nullable(),
+    taxLiability: z.string().optional().nullable(),
 });
 
 export const renterSubmissionSchema = z.object({
@@ -88,6 +89,7 @@ export const renterSubmissionSchema = z.object({
     agreementToDate: z.string().optional().nullable(),
     agreementDate: z.string().optional().nullable(),
     nonCalculateRentMonthly: z.number().optional().nullable(),
+    taxLiability: z.string().optional().nullable(),
     renterDetails: z.array(renterDetailItemSchema).optional().default([]),
     renterMast: z.array(renterMastItemSchema).optional().default([]),
 });
