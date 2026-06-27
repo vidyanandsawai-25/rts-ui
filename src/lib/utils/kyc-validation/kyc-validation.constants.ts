@@ -77,6 +77,10 @@ export const kycValidators = {
     // Check if name contains any numbers (0-9) - REJECT if found
     if (/\d/.test(trimmed)) return false;
 
+    // A valid name must contain at least one letter
+    const hasValidChars = /[\p{L}]/u.test(trimmed);
+    if (!hasValidChars) return false;
+
     return (
       trimmed.length >= KYC_VALIDATION_RULES.NAME_MIN_LENGTH &&
       trimmed.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH
@@ -481,6 +485,9 @@ export const enhancedKycValidators = {
     if (!address) return true;
     const trimmed = address.trim();
     if (trimmed.length === 0) return true;
+
+    // Allow any sequence of hyphens like "-", "--", "---", etc.
+    if (/^-+$/.test(trimmed)) return true;
 
     // Check if address contains at least some valid letters or numbers
     const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);
