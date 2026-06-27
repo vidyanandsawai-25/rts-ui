@@ -240,6 +240,7 @@
     }
   },
   "fields": {
+    "localeSuffix": "(स्थानिक)",
     "upicId": "यूपीआयसी आयडी",
     "propertyHolder": "मालमत्ता धारक",
     "division": "विभाग",
