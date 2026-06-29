@@ -238,7 +238,6 @@ describe("PolicyConfigurationForm", () => {
     fireEvent.change(input, { target: { value: "A".repeat(60) } });
     expect(input.value).toHaveLength(40);
   });
-  
   it("maps legacy BIT value '1' and '0' to allowed values when allowedValues is present", () => {
     const initialData = {
       id: 1,
