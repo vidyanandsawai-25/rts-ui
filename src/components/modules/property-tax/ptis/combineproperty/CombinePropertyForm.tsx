@@ -128,9 +128,9 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   const handleShowHistory = () => {
     const params = new URLSearchParams(searchParams.toString());
     if (showHistory) {
-      params.delete('showHistory');
+      params.set('showHistory', 'false');
     } else {
-      params.set('showHistory', 'true');
+      params.delete('showHistory');
     }
     router.push(`?${params.toString()}`);
   };
@@ -278,7 +278,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
         handleProceed={() => {
           if (showHistory) {
             const params = new URLSearchParams(searchParams.toString());
-            params.delete('showHistory');
+            params.set('showHistory', 'false');
             router.push(`?${params.toString()}`);
           }
           handleProceed();
