@@ -439,6 +439,7 @@
         "title": "Owner & Contact Information",
         "ownerType": "Owner Category",
         "titleLabel": "Title",
+        "countryCode": "+91",
         "buildingName": "Building Name",
         "propertyHolderName": "Property Holder Name",
         "propertyHolderNameMarathi": "Property Holder Name (Regional)",
@@ -526,6 +527,7 @@
         }
     },
     "society": {
+        "countryCode": "+91",
         "title": "Society & Management Information",
         "errors": {
             "failedToConnect": {

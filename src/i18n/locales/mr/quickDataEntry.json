@@ -440,6 +440,7 @@
         "ownerType": "मालकाचा प्रवर्ग",
         "titleLabel": "शीर्षक",
         "buildingName": "इमारतीचे नाव",
+        "countryCode": "+91",
         "propertyHolderName": "मालमत्ताधारकाचे नाव",
         "propertyHolderNameMarathi": "मालमत्ताधारकाचे नाव (प्रादेशिक)",
         "propertyHolderNameEnglish": "मालमत्ताधारकाचे नाव (इंग्रजी)",
@@ -526,6 +527,7 @@
         }
     },
     "society": {
+        "countryCode": "+91",
         "title": "सोसायटी आणि व्यवस्थापन माहिती",
         "errors": {
             "failedToConnect": {

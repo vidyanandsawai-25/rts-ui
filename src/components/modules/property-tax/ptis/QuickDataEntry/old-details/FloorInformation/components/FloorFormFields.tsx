@@ -1,5 +1,5 @@
 "use client"
-import { Input, SearchSelect } from "@/components/common";
+import { AnimatedDigitInput, Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { FloorFormFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 import { FloorFormActions } from "./FloorFormActions";
@@ -85,17 +85,18 @@ export function FloorFormFields({
             </div>
 
             {/* Construction Year */}
+            {/* Construction Year */}
             <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.year')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <Input
+                <AnimatedDigitInput
+                    id="oldConstructionYear"
                     maxLength={4}
-                    value={formData.oldConstructionYear}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    value={String(formData.oldConstructionYear || '')}
+                    className="h-9 text-sm border-blue-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 rounded-lg"
                     placeholder="YYYY"
-                    onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9०-९]/g, '').slice(0, 4);
+                    onChange={(val) => {
                         onFieldChange('oldConstructionYear', val);
                         // Validate year in real-time
                         validateYearField('oldConstructionYear', val);
@@ -111,17 +112,17 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.assessmentYear')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <Input
+                <AnimatedDigitInput
+                    id="oldAssessmentYear"
                     maxLength={4}
-                    value={formData.oldAssessmentYear || ''}
-                    onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9०-९]/g, '').slice(0, 4);
+                    value={String(formData.oldAssessmentYear || '')}
+                    className="h-9 text-sm border-blue-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 rounded-lg"
+                    placeholder="YYYY"
+                    onChange={(val) => {
                         onFieldChange('oldAssessmentYear', val);
                         // Validate year in real-time
                         validateYearField('oldAssessmentYear', val);
                     }}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="YYYY"
                 />
                 {showError("oldAssessmentYear") && (
                     <span className="text-xs text-red-500">{errors.oldAssessmentYear}</span>
