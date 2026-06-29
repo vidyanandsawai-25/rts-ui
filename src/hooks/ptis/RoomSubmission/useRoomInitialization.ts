@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { RoomData, RoomWiseSubmissionProps } from "@/types/room-details.types";
+import { useEffect, useRef } from "react";
+import { RoomData, RoomWiseSubmissionProps, RoomAPIResponse } from "@/types/room-details.types";
 import { ShapeParameters } from "@/types/common-details.types";
 import { 
   convertAreaUnit, 
@@ -17,6 +17,9 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
     setPrevAreaUnit, prevAreaUnit, areaUnit, setShapeParameters, setFormData
   } = state;
 
+  const lastInitializedMaxRoomsRef = useRef<number | null>(null);
+  const lastInitializedExistingRoomsRef = useRef<RoomAPIResponse[] | null>(null);
+
   // 1. Mount Status
   useEffect(() => { setMounted(true); }, [setMounted]);
 
@@ -24,31 +27,40 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
   useEffect(() => {
     if (!isOpen) {
       lastInitializedFloorRef.current = null;
+      lastInitializedMaxRoomsRef.current = null;
+      lastInitializedExistingRoomsRef.current = null;
       return;
     }
 
-    // Always re-initialize if maxRooms changes, floor changes, or database IDs mismatch
     const safeMaxRooms = Math.min(maxRooms || 0, 100);
     const floorChanged = lastInitializedFloorRef.current !== (floorNumber || null);
-    const idsMismatch = existingRooms && existingRooms.some((r, i) => {
-      const currentRoom = rooms[i];
-      if (!currentRoom) return true;
-      const apiId = r.roomWiseSubmissionId ?? r.id;
-      const stateId = currentRoom.roomWiseSubmissionId ?? currentRoom.id;
-      return apiId !== stateId;
-    });
+    const maxRoomsChanged = lastInitializedMaxRoomsRef.current !== safeMaxRooms;
+    const existingRoomsChanged = lastInitializedExistingRoomsRef.current !== (existingRooms || null);
 
-    if (rooms.length !== safeMaxRooms || floorChanged || idsMismatch || rooms.length === 0) {
+    // Calculate idsMismatch only if references haven't changed but we need verification
+    let idsMismatch = false;
+    if (!floorChanged && !maxRoomsChanged && !existingRoomsChanged) {
+      // Core inputs haven't changed; avoid checking further to optimize performance.
+      return;
+    } else {
+      idsMismatch = !!(existingRooms && existingRooms.slice(0, safeMaxRooms).some((r, i) => {
+        const currentRoom = rooms[i];
+        if (!currentRoom) return true;
+        const apiId = r.roomWiseSubmissionId ?? r.id;
+        const stateId = currentRoom.roomWiseSubmissionId ?? currentRoom.id;
+        return apiId !== stateId;
+      }));
+    }
+
+    if (rooms.length !== safeMaxRooms || floorChanged || maxRoomsChanged || idsMismatch) {
       const initializedRooms = Array.from({ length: safeMaxRooms }, (_, i) => {
         if (existingRooms && existingRooms[i]) {
           const r = existingRooms[i];
-          // Merge offsets from all possible sources
           const offsetsRaw = [
             ...(Array.isArray(r.offsets) ? r.offsets : []),
             ...(Array.isArray(r.roomWiseMinusData) ? r.roomWiseMinusData : []),
             ...(Array.isArray(r.minusRooms) ? r.minusRooms : [])
           ];
-          // Deduplicate by id/roomWiseMinusId and filter out marked for deletion
           const seen = new Set();
           const offsets = offsetsRaw
             .filter(o => {
@@ -59,7 +71,6 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
               ...o,
               id: o.roomWiseMinusId ?? o.id,
               operation: o.isOffset === true ? 'add' : (o.isOffset === false ? 'subtract' : (o.type || o.operation || 'subtract')),
-              // Prefer o.area, fallback to o.areaSqMtr, then 0
               area: o.area ?? o.areaSqMtr ?? 0,
               shape: o.shapeType || o.shape || 'Rectangle'
             }))
@@ -89,12 +100,11 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
       });
       setRooms(initializedRooms);
       if (initializedRooms.length > 0) actions.handleEdit(0, initializedRooms[0]);
-      lastInitializedFloorRef.current = floorNumber || null;
-      return;
     }
 
-    // If already initialized and count matches, do nothing
     lastInitializedFloorRef.current = floorNumber || null;
+    lastInitializedMaxRoomsRef.current = safeMaxRooms;
+    lastInitializedExistingRoomsRef.current = existingRooms || null;
   }, [isOpen, maxRooms, existingRooms, floorNumber, setRooms, actions, rooms, lastInitializedFloorRef]);
 
   // 3. Area Unit Conversion Sync

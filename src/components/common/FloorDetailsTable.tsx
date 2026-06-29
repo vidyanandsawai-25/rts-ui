@@ -1,8 +1,8 @@
 'use client';
 
-import React, { type ReactNode, useState, useMemo } from 'react';
+import React, { type ReactNode, useState, useMemo, useRef, startTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, type LucideIcon } from 'lucide-react';
+import { ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, ChevronRight, Pencil, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from './Tooltip';
 
@@ -104,6 +104,11 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   expandIcon?: LucideIcon;
   expandHeaderIcon?: LucideIcon;
 
+  // Edit Props
+  onEditClick?: (row: Row, index: number) => void;
+  getEditHref?: (row: Row) => string;
+  editTooltip?: string;
+
   // Styling Configuration
   hoverable?: boolean;
   showBorder?: boolean;
@@ -125,6 +130,9 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   // Custom Content
   renderHeader?: () => ReactNode;
   renderFooter?: () => ReactNode;
+
+  // Scroll toggle visibility
+  showScrollButtons?: boolean;
 }
 
 /**
@@ -191,6 +199,9 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   renderExpanded,
   expandIcon: ExpandIcon = ChevronRight,
   expandHeaderIcon: ExpandHeaderIcon = Home,
+  onEditClick,
+  getEditHref,
+  editTooltip,
   hoverable = true,
   showBorder = true,
   striped = true,
@@ -207,9 +218,45 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   colorGroups = DEFAULT_ROW_COLOR_GROUPS,
   renderHeader,
   renderFooter,
+  showScrollButtons = true,
 }: FloorDetailsTableProps<Row>) {
   const router = useRouter();
-  const expandedRowIdSet = new Set(expandedRowIds.map(String));
+  const [localExpandedIds, setLocalExpandedIds] = useState<Set<string>>(() =>
+    new Set(expandedRowIds.map(String))
+  );
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isScrolledRight, setIsScrolledRight] = useState(false);
+
+  const handleScrollToggle = () => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    
+    if (isScrolledRight) {
+      container.scrollTo({ left: 0, behavior: 'smooth' });
+      setIsScrolledRight(false);
+    } else {
+      container.scrollTo({ left: maxScroll, behavior: 'smooth' });
+      setIsScrolledRight(true);
+    }
+  };
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    if (maxScroll <= 0) return;
+    const nextScrolledRight = container.scrollLeft > maxScroll / 2;
+    setIsScrolledRight((prev) => (prev !== nextScrolledRight ? nextScrolledRight : prev));
+  };
+
+  const serializedExpandedRowIds = JSON.stringify(expandedRowIds);
+  const [prevSerialized, setPrevSerialized] = useState(serializedExpandedRowIds);
+  if (serializedExpandedRowIds !== prevSerialized) {
+    setPrevSerialized(serializedExpandedRowIds);
+    setLocalExpandedIds(new Set(expandedRowIds.map(String)));
+  }
 
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -278,8 +325,10 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
   return (
     <div
+      ref={containerRef}
+      onScroll={handleScroll}
       className={cn(
-        'w-full overflow-x-auto bg-white shadow-sm',
+        'w-full overflow-x-auto bg-white shadow-sm transition-all duration-200',
         showBorder && 'border border-blue-200 rounded-xl',
         containerClassName
       )}
@@ -292,7 +341,8 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
             {showExpandColumn && (
               <th
                 className={cn(
-                  'w-[40px] min-w-[40px] px-0.5 py-0.5 border-r border-blue-400/20',
+                  (onEditClick || getEditHref) ? 'w-[75px] min-w-[75px]' : 'w-[40px] min-w-[40px]',
+                  'px-0.5 py-0.5 border-r border-blue-400/20',
                   headerCellClassName
                 )}
               >
@@ -362,6 +412,19 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                 )}
               </th>
             ))}
+
+            {/* Toggle Scroll Header (Sticky on the right) */}
+            {showScrollButtons && columns.length > 8 && (
+              <th className={cn("w-[40px] min-w-[40px] px-1 py-1 border-l border-blue-400/20 text-center align-middle sticky right-0 z-30 bg-[#1e3a8a]", headerCellClassName)}>
+                <button
+                  type="button"
+                  onClick={handleScrollToggle}
+                  className="inline-flex h-6 w-8 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500 hover:bg-blue-600 shadow-sm cursor-pointer transition-colors"
+                >
+                  <ChevronRight className={cn("h-3.5 w-3.5 text-white transition-transform duration-300", isScrolledRight && "rotate-180")} />
+                </button>
+              </th>
+            )}
           </tr>
         </thead>
 
@@ -369,7 +432,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
           {(!data || data.length === 0) ? (
             <tr className="h-[120px] bg-gray-50/30">
               <td
-                colSpan={columns.length + (showExpandColumn ? 1 : 0)}
+                colSpan={columns.length + (showExpandColumn ? 1 : 0) + (showScrollButtons && columns.length > 8 ? 1 : 0)}
                 className="px-6 py-10 text-center align-middle"
               >
                 <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
@@ -379,7 +442,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
             </tr>
           ) : (
             sortedData.map((row, index) => {
-              const isExpanded = expandedRowIdSet.has(String(row.id));
+              const isExpanded = localExpandedIds.has(String(row.id));
               const bgClass = striped ? getRowBackgroundClass(index, colorGroups) : '';
               const baseRowClass = rowClassName
                 ? rowClassName(row, index)
@@ -401,25 +464,57 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                           cellClassName
                         )}
                       >
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center gap-1.5">
                           {expandHref ? (
                             <button
-                              onClick={() => {
-                                router.push(expandHref, { scroll: false });
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setLocalExpandedIds((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(String(row.id))) {
+                                    next.delete(String(row.id));
+                                  } else {
+                                    next.add(String(row.id));
+                                  }
+                                  return next;
+                                });
+                                if (expandHref) {
+                                  startTransition(() => {
+                                    router.replace(expandHref, { scroll: false });
+                                  });
+                                }
                               }}
                               data-href={expandHref}
                               aria-label={expandedLabel}
                               aria-expanded={isExpanded}
-                              className="rounded border border-gray-300 p-0.5 transition-colors hover:border-blue-500 bg-white shadow-sm cursor-pointer"
+                              className="rounded-lg border border-blue-200 p-1 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 shadow-sm cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="h-3 w-3 text-gray-700" />
+                                <ChevronDown className="h-3.5 w-3.5 text-blue-600 font-bold" />
                               ) : (
-                                <ExpandIcon className="h-3 w-3 text-gray-700" />
+                                <ExpandIcon className="h-3.5 w-3.5 text-blue-600" />
                               )}
                             </button>
                           ) : (
                             <div className="h-3 w-3" />
+                          )}
+                          {(onEditClick || getEditHref) && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onEditClick) {
+                                  onEditClick(row, index);
+                                } else if (getEditHref) {
+                                  router.push(getEditHref(row), { scroll: false });
+                                }
+                              }}
+                              className="rounded-lg border border-blue-200 p-1 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 shadow-sm cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                              title={editTooltip || 'Edit'}
+                              aria-label={editTooltip || 'Edit row'}
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-blue-600" />
+                            </button>
                           )}
                         </div>
                       </td>
@@ -438,12 +533,25 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                         {col.render(row, index)}
                       </td>
                     ))}
+
+                    {/* Toggle Scroll Cell (Sticky on the right) */}
+                    {showScrollButtons && columns.length > 8 && (
+                      <td className={cn("px-1 py-1 text-center align-middle border-l border-gray-100 sticky right-0 z-10", bgClass || 'bg-white', cellClassName)}>
+                        <button
+                          type="button"
+                          onClick={handleScrollToggle}
+                          className="rounded-lg border border-blue-200 p-1 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 shadow-sm cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 mx-auto"
+                        >
+                          <ChevronRight className={cn("h-3.5 w-3.5 text-blue-600 transition-transform duration-300", isScrolledRight && "rotate-180")} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
 
                   {/* Expanded Row Content */}
                   {isExpanded && renderExpanded && (
                     <tr className={cn('border-b border-gray-100', bgClass, expandedRowClassName)}>
-                      <td colSpan={columns.length + (showExpandColumn ? 1 : 0)} className="p-0">
+                      <td colSpan={columns.length + (showExpandColumn ? 1 : 0) + (showScrollButtons && columns.length > 8 ? 1 : 0)} className="p-0">
                         <div className="w-full bg-blue-50/30 p-2 transition-all animate-in fade-in slide-in-from-top-1 duration-200">
                           {renderExpanded(row)}
                         </div>

@@ -287,6 +287,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           data={filteredFloors as (FloorData & { id: string | number })[]}
           columns={adaptedColumns as unknown as FloorDetailsTableColumn<FloorData & { id: string | number }>[]}
           showExpandColumn={false}
+          showScrollButtons={false}
           expandedRowIds={expandedRowIds}
           getExpandHref={(row) => `#floor-${row.id}`}
           renderExpanded={renderExpandedRooms}
