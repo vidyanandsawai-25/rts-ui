@@ -7,6 +7,7 @@ import {
   CompactSelect,
   CompactCellInput,
   ReadOnlyCellHover,
+  useDrawerActionColumn,
 } from '@/components/modules/property-tax/ptis/appartmentQC/PropertyEditScreenColumns';
 
 // Mock next-intl
@@ -117,6 +118,20 @@ describe('PropertyEditScreenColumns', () => {
       expect(screen.getByTestId('column-sdrr')).toBeInTheDocument();
       expect(screen.getByTestId('column-baseValue')).toBeInTheDocument();
       expect(screen.getByTestId('column-capitalValue')).toBeInTheDocument();
+    });
+  });
+
+  describe('useDrawerActionColumn', () => {
+    it('should return correct column configuration', () => {
+      const onOpenFloorQCEdit = vi.fn();
+      let actionColumn: ReturnType<typeof useDrawerActionColumn> | undefined;
+      const TestComponent = () => {
+        actionColumn = useDrawerActionColumn({ onOpenFloorQCEdit });
+        return null;
+      };
+      render(<TestComponent />);
+      expect(actionColumn?.key).toBe('actions');
+      expect(actionColumn?.label).toBeDefined();
     });
   });
 

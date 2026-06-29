@@ -138,6 +138,7 @@ vi.mock('@/components/modules/property-tax/ptis/appartmentQC/PropertyEditScreenC
   useDrawerCommonColumns: () => [],
   useDrawerRateableColumns: () => [],
   useDrawerCapitalColumns: () => [],
+  useDrawerActionColumn: () => ({}),
 }));
 
 // Mock PropertyEditDrawerInputs components

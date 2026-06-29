@@ -107,14 +107,8 @@ export function usePropertyEditScreenDrawer({
   const submissionHook = usePropertyEditScreenSubmission({
     propertyData,
     formData: stateHook.formData,
-    floorData: stateHook.floorData,
-    floorOptions: dropdownsHook.mergedFloorOptions,
-    conTypeOptions: dropdownsHook.mergedConTypeOptions,
-    useTypeOptions: dropdownsHook.mergedUseTypeOptions,
-    subTypeOptions: dropdownsHook.mergedSubTypeOptions,
     validateForm: validationHook.validateForm,
     validateFloorYears: validationHook.validateFloorYears,
-    setIsSavingFloorQC: stateHook.setIsSavingFloorQC,
     onSaveOrClose,
   });
 

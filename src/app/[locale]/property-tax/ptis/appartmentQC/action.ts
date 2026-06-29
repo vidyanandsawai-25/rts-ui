@@ -208,19 +208,12 @@ export async function revalidateApartmentQCAction(): Promise<ActionResult> {
 export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
     const { getFloorPaged } = await import("@/lib/api/floor.service");
-    const pageSize = 1000;
-    let page = 1;
-    let all: Array<{ value: string; label: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getFloorPaged(page, pageSize);
-      const items = res.items ?? [];
-      all = [...all, ...items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ value: String(f.id), label: f.description || f.floorCode || '' }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getFloorPaged(1, -1);
+    const items = res.items ?? [];
+    const all = items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ 
+      value: String(f.id), 
+      label: f.description || f.floorCode || '' 
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch floors");
@@ -233,19 +226,12 @@ export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value
 export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
     const { getConstructionPaged } = await import("@/lib/api/constructiontypemaster/construction-crud.service");
-    const pageSize = 1000;
-    let page = 1;
-    let all: Array<{ value: string; label: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getConstructionPaged(page, pageSize);
-      const items = res.items ?? [];
-      all = [...all, ...items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ value: String(c.id), label: c.description || c.constructionCode || '' }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getConstructionPaged(1, -1);
+    const items = res.items ?? [];
+    const all = items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ 
+      value: String(c.id), 
+      label: c.description || c.constructionCode || '' 
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch construction types");
@@ -258,19 +244,12 @@ export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Ar
 export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
     const { getUseTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
-    const pageSize = 5000;
-    let page = 1;
-    let all: Array<{ value: string; label: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getUseTypesPagedServer({ pageNumber: page, pageSize });
-      const items = res.items ?? [];
-      all = [...all, ...items.map(u => ({ value: String(u.typeOfUseId), label: u.description || u.typeOfUseCode }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
+    const items = res.items ?? [];
+    const all = items.map(u => ({ 
+      value: String(u.typeOfUseId), 
+      label: u.description || u.typeOfUseCode || '' 
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch use types");
@@ -283,23 +262,13 @@ export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ val
 export async function fetchAllSubTypesAction(): Promise<ActionResult<Array<{ value: string; label: string; typeOfUseId: string }>>> {
   try {
     const { getSubTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
-    const pageSize = 5000;
-    let page = 1;
-    let all: Array<{ value: string; label: string; typeOfUseId: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getSubTypesPagedServer({ pageNumber: page, pageSize });
-      const items = res.items ?? [];
-      all = [...all, ...items.map(s => ({ 
-        value: String(s.subTypeOfUseId), 
-        label: s.description,
-        typeOfUseId: String(s.typeOfUseId)
-      }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getSubTypesPagedServer({ pageNumber: 1, pageSize: -1 });
+    const items = res.items ?? [];
+    const all = items.map(s => ({ 
+      value: String(s.subTypeOfUseId), 
+      label: s.description || '',
+      typeOfUseId: String(s.typeOfUseId)
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch sub-types");

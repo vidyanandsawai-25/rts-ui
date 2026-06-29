@@ -124,6 +124,7 @@
     "noPropertyData": "No property data found.",
     "goBack": "Go Back",
     "cancel": "Cancel",
+    "update": "Update",
     "basicInformation": "Basic Information",
     "floorQC": "Floor QC",
     "roomWiseSubmission": "Room Wise Submission",
@@ -318,7 +319,8 @@
       "ageFactor": "Age Factor",
       "ntbFactor": "NTB Factor",
       "useFactor": "Use Factor",
-      "capitalValue": "Capital Value"
+      "capitalValue": "Capital Value",
+      "editFloorQC": "Edit Floor QC"
     },
      "toolTipFloorQC": {
       "tooltips": {
@@ -343,7 +345,8 @@
         "ageFactor": "Age Factor",
         "ntbFactor": "NTB Factor",
         "useFactor": "Use Factor",
-        "capitalValue": "Capital Value"
+        "capitalValue": "Capital Value",
+        "editFloorQC": "Edit Floor QC"
       }
     },
     "tabs": {
@@ -352,11 +355,19 @@
     },
     "validation": {
       "invalidYear": "Enter 4-digit year",
-      "yearOutOfRange": "Year out of range"
+      "yearOutOfRange": "Year out of range",
+      "floorRequired": "Floor is required",
+      "conYearRequired": "Construction year is required",
+      "conYearInvalid": "Construction year must be 4 digits",
+      "asstYearRequired": "Assessment year is required",
+      "asstYearInvalid": "Assessment year must be 4 digits",
+      "conTypeRequired": "Construction type is required",
+      "useRequired": "Use type is required"
     },
     "tooltips": {
       "viewRoomDetails": "View/Edit Room Details",
-      "noDetailId": "No detail ID available"
+      "noDetailId": "No detail ID available",
+      "editFloorQC": "Edit Floor QC"
     }
   },
   "list": {

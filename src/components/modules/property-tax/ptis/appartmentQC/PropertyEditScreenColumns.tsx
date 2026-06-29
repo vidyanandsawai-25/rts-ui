@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
 import { ExternalLink } from "lucide-react";
+import { EditLabelButton } from "@/components/common/ActionButtons";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import { cn } from "@/lib/utils/cn";
 import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
@@ -137,9 +138,9 @@ const makeHeader = (
     placement="top"
   >
     <div>
-     
+
       <span className="text-[10px] font-semibold text-gray-900">{label}</span>
-    
+
     </div>
   </Tooltip>
 ) as unknown as string;
@@ -173,22 +174,29 @@ interface ColumnBuilderProps {
 // ─── Build Common Columns ───────────────────────────────────────────────────
 
 export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<DrawerFloorDataRow>[] {
-  const { floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission } = props;
+  const { floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, onOpenRoomSubmission } = props;
   const t = useTranslations("appartmentQC");
+
+  const getLabel = (val: string, options: DrawerDropdownOption[]) => {
+    if (!val) return "-";
+    const opt = options.find((o) => String(o.value) === String(val));
+    return opt ? opt.label : val;
+  };
+
   return useMemo(() => [
-    { key: "floorId", label: makeFloorQcHeader("floor", t),align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.floorId} onChange={(v) => updateRow(row.id, "floorId", v)} options={floorOptions} onDropdownClick={handleFloorDropdownClick} isLoading={isLoadingFloors} /> },
-    { key: "conYear", label: makeFloorQcHeader("conYear", t),width : "70px",align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.conYear} onChange={(v) => updateRow(row.id, "conYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.conYear && !YEAR_REGEX.test(row.conYear) ? t("floorQC.validation.invalidYear") : undefined} /> },
-    { key: "asstYear", label: makeFloorQcHeader("asstYear", t),width : "70px",align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.asstYear} onChange={(v) => updateRow(row.id, "asstYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.asstYear && !YEAR_REGEX.test(row.asstYear) ? t("floorQC.validation.invalidYear") : undefined} /> },
-    { key: "constructionTypeId", label: makeFloorQcHeader("conType", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.constructionTypeId} onChange={(v) => updateRow(row.id, "constructionTypeId", v)} options={conTypeOptions} onDropdownClick={handleConTypeDropdownClick} isLoading={isLoadingConTypes} /> },
-    { key: "typeOfUseId", label: makeFloorQcHeader("use", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.typeOfUseId} onChange={(v) => updateRow(row.id, "typeOfUseId", v)} options={useTypeOptions} onDropdownClick={handleUseTypeDropdownClick} isLoading={isLoadingUseTypes} /> },
+    { key: "floorId", label: makeFloorQcHeader("floor", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={getLabel(row.floorId, floorOptions)} /> },
+    { key: "conYear", label: makeFloorQcHeader("conYear", t), width: "70px", align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={row.conYear} /> },
+    { key: "asstYear", label: makeFloorQcHeader("asstYear", t), width: "70px", align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={row.asstYear} /> },
+    { key: "constructionTypeId", label: makeFloorQcHeader("conType", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={getLabel(row.constructionTypeId, conTypeOptions)} /> },
+    { key: "typeOfUseId", label: makeFloorQcHeader("use", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={getLabel(row.typeOfUseId, useTypeOptions)} /> },
     {
-      key: "subTypeOfUseId", label: makeFloorQcHeader("subTypeOfUse", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
+      key: "subTypeOfUseId", label: makeFloorQcHeader("subTypeOfUse", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
         const opts = getSubTypeOptions(row.typeOfUseId);
-        return <CompactSelect value={row.subTypeOfUseId} onChange={(v) => updateRow(row.id, "subTypeOfUseId", v)} options={opts} disabled={!row.typeOfUseId || opts.length === 0} isLoading={isLoadingUseTypes} />;
+        return <ReadOnlyCellHover value={getLabel(row.subTypeOfUseId, opts)} />;
       }
     },
     {
-      key: "noOfRooms", label: makeFloorQcHeader("noOfRooms", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+      key: "noOfRooms", label: makeFloorQcHeader("noOfRooms", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
         <ReadOnlyCellHover
           value={String(row.noOfRooms || "")}
           onClick={() => onOpenRoomSubmission(row)}
@@ -198,7 +206,7 @@ export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<Drawer
       )
     },
     {
-      key: "area", label: makeFloorQcHeader("area", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+      key: "area", label: makeFloorQcHeader("area", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
         <ReadOnlyCellHover
           value={row.area}
           onClick={() => onOpenRoomSubmission(row)}
@@ -206,8 +214,34 @@ export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<Drawer
           tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")}
         />
       )
-    },
-  ], [floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission, t]);
+    }
+  ], [floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, onOpenRoomSubmission, t]);
+}
+
+// ─── Action Column ──────────────────────────────────────────────────────────
+
+export function useDrawerActionColumn(props: { onOpenFloorQCEdit: (row: DrawerFloorDataRow) => void }): Column<DrawerFloorDataRow> {
+  const { onOpenFloorQCEdit } = props;
+  const t = useTranslations("appartmentQC");
+  return useMemo(() => ({
+    key: "actions",
+    label: makeHeader(t("floorQC.columns.editFloorQC") || "Edit Floor QC", t("floorQC.tooltips.editFloorQC") || "Edit row"),
+    align: "center",
+    cellClassName: "px-0 py-0.1",
+    render: (_v, row) => (
+      <div className="flex items-center justify-center h-full">
+        <EditLabelButton
+          className="p-0"
+          size="xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenFloorQCEdit(row);
+          }}
+          title={t("floorQC.columns.editFloorQC") || "Edit Floor QC"}
+        />
+      </div>
+    )
+  }), [onOpenFloorQCEdit, t]);
 }
 
 // ─── Rateable Columns ───────────────────────────────────────────────────────
@@ -216,27 +250,41 @@ export function useDrawerRateableColumns(props: { onOpenRoomSubmission: (row: Dr
   const { onOpenRoomSubmission } = props;
   const t = useTranslations("appartmentQC");
   return useMemo(() => [
-    { key: "rentMY", label: makeFloorQcHeader("rentMY", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.rentMY} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "rateMY", label: makeFloorQcHeader("rateMY", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.rateMY} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "rentalValue", label: makeFloorQcHeader("rentalValue", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.rentalValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "depreciation", label: makeFloorQcHeader("depreciation", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.depreciation} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "alv", label: makeFloorQcHeader("alv", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.alv} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "mr", label: makeFloorQcHeader("mr", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.mr} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "rv", label: makeFloorQcHeader("rv", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.rv} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
+    {
+      key: "rentMY", label: makeFloorQcHeader("rentMY", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.rentMY} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "rateMY", label: makeFloorQcHeader("rateMY", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.rateMY} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "rentalValue", label: makeFloorQcHeader("rentalValue", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.rentalValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "depreciation", label: makeFloorQcHeader("depreciation", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.depreciation} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "alv", label: makeFloorQcHeader("alv", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.alv} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "mr", label: makeFloorQcHeader("mr", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.mr} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "rv", label: makeFloorQcHeader("rv", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.rv} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
   ], [t, onOpenRoomSubmission]);
 }
 
@@ -246,26 +294,40 @@ export function useDrawerCapitalColumns(props: { onOpenRoomSubmission: (row: Dra
   const { onOpenRoomSubmission } = props;
   const t = useTranslations("appartmentQC");
   return useMemo(() => [
-    { key: "sdrr", label: makeFloorQcHeader("sdrr", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.sdrr} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "baseValue", label: makeFloorQcHeader("baseValue", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.baseValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "floorFactor", label: makeFloorQcHeader("floorFactor", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.floorFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "ageFactor", label: makeFloorQcHeader("ageFactor", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.ageFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "ntbFactor", label: makeFloorQcHeader("ntbFactor", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.ntbFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "useFactor", label: makeFloorQcHeader("useFactor", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.useFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
-    { key: "capitalValue", label: makeFloorQcHeader("capitalValue", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
-      <ReadOnlyCellHover value={row.capitalValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-    )},
+    {
+      key: "sdrr", label: makeFloorQcHeader("sdrr", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.sdrr} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "baseValue", label: makeFloorQcHeader("baseValue", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.baseValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "floorFactor", label: makeFloorQcHeader("floorFactor", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.floorFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "ageFactor", label: makeFloorQcHeader("ageFactor", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.ageFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "ntbFactor", label: makeFloorQcHeader("ntbFactor", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.ntbFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "useFactor", label: makeFloorQcHeader("useFactor", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.useFactor} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
+    {
+      key: "capitalValue", label: makeFloorQcHeader("capitalValue", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+        <ReadOnlyCellHover value={row.capitalValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+      )
+    },
   ], [t, onOpenRoomSubmission]);
 }
