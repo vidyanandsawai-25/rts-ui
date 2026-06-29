@@ -29,6 +29,7 @@ import type {
   RoomTypeOption,
   FloorDataRow,
 } from "@/types/propertyEdit.types";
+import type { DrawerFloorDataRow } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
 import { RoomWiseSubmission } from "./roomSubmission/RoomWiseSubmission";
 import { FloorQCEditDrawer } from "./FloorQCEditDrawer";
 
@@ -223,7 +224,7 @@ export default function PropertyDetailsEditForm({
     setFloorQCEditDrawerOpen(true);
   }, []);
 
-  const handleSaveFloorQC = React.useCallback((updatedRow: import('@/hooks/apartmentQc/propertyEditScreenDrawer.types').DrawerFloorDataRow) => {
+  const handleSaveFloorQC = React.useCallback((updatedRow: DrawerFloorDataRow) => {
     updateFloorRow(updatedRow.id, "floorId", updatedRow.floorId);
     updateFloorRow(updatedRow.id, "conYear", updatedRow.conYear);
     updateFloorRow(updatedRow.id, "asstYear", updatedRow.asstYear);
@@ -501,7 +502,7 @@ export default function PropertyDetailsEditForm({
         open={floorQCEditDrawerOpen}
         onClose={() => setFloorQCEditDrawerOpen(false)}
         onSave={handleSaveFloorQC}
-        row={selectedFloorQCEditRow as unknown as import('@/hooks/apartmentQc/propertyEditScreenDrawer.types').DrawerFloorDataRow}
+        row={selectedFloorQCEditRow as unknown as DrawerFloorDataRow}
         floorOptions={floorOptions}
         conTypeOptions={conTypeOptions}
         useTypeOptions={useTypeOptions}

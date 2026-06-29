@@ -36,7 +36,11 @@ import {
   fetchApartmentTaxDetailsByIdAction,
   fetchApartmentTaxDetailsCvByIdAction,
   fetchDualMethodTaxDetailsByIdAction,
+  fetchOldPropertyDataAction,
+  syncRoomsForPropertyDetailsAction,
+  updateFloorQCDetailAction,
 } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
+import { getUserIdFromCookie } from '@/lib/utils/cookie';
 import type { RoomAPIResponse } from '@/types/room-details.types';
 import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
 import { RoomWiseSubmission } from './roomSubmission/RoomWiseSubmission';
@@ -272,8 +276,6 @@ const ResidentialEditScreen = ({
     };
 
     try {
-      const { fetchOldPropertyDataAction } =
-        await import('@/app/[locale]/property-tax/ptis/appartmentQC/action');
       const result = await fetchOldPropertyDataAction(oldPropNo);
 
       if (!result.success) {
@@ -477,8 +479,6 @@ const ResidentialEditScreen = ({
       }
 
       try {
-        const { syncRoomsForPropertyDetailsAction } =
-          await import('@/app/[locale]/property-tax/ptis/appartmentQC/action');
         const result = await syncRoomsForPropertyDetailsAction(
           Number(roomPropertyId),
           Number(roomPdnId)
@@ -527,9 +527,6 @@ const ResidentialEditScreen = ({
     }
 
     try {
-      const { updateFloorQCDetailAction } = await import('@/app/[locale]/property-tax/ptis/appartmentQC/action');
-      const { getUserIdFromCookie } = await import('@/lib/utils/cookie');
-      
       const floorOption = hook.floorOptions.find(opt => opt.value === updatedRow.floorId || opt.label === updatedRow.floorId);
       const conTypeOption = hook.conTypeOptions.find(opt => opt.value === updatedRow.constructionTypeId || opt.label === updatedRow.constructionTypeId);
       const useTypeOption = hook.useTypeOptions.find(opt => opt.value === updatedRow.typeOfUseId || opt.label === updatedRow.typeOfUseId);
