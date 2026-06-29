@@ -1,13 +1,15 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
-import { LogOut, User } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { User } from 'lucide-react';
 
 import { LanguageSelector } from '@/components/common/LanguageSelector';
+import { UserProfileDropdown, Drawer } from '@/components/common';
+import { TrackingPanel } from '@/components/modules/dashboard/TrackingPanel';
 import { logoutCitizenAction } from '@/app/[locale]/service/login/actions';
 
 /** Matching landing page theme deep navy (#0a3275) */
@@ -20,9 +22,9 @@ interface CitizenHeaderProps {
 }
 
 export function CitizenHeader({ mobile, locale: propLocale, ulbData }: CitizenHeaderProps) {
-  const t = useTranslations('rts.header');
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const currentLocale = useLocale();
   const activeLocale = currentLocale || propLocale;
 
@@ -149,27 +151,12 @@ export function CitizenHeader({ mobile, locale: propLocale, ulbData }: CitizenHe
 
             {/* Auth */}
             {mobile ? (
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                {/* User badge — md+ */}
-                <div className="hidden md:flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 h-9 text-white text-xs font-semibold shadow-sm">
-                  <User className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate max-w-[120px]">+91 {mobile}</span>
-                </div>
-
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  disabled={isPending}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-lg h-8 w-8 sm:h-9 sm:w-auto sm:px-3 flex items-center justify-center gap-1.5 shadow transition-all disabled:opacity-50 cursor-pointer shrink-0"
-                  aria-label={t('logout')}
-                  type="button"
-                >
-                  <LogOut className="w-3.5 h-3.5 shrink-0" />
-                  <span className="hidden sm:inline text-xs font-semibold">
-                    {activeLocale === 'mr' ? 'बाहेर' : activeLocale === 'hi' ? 'लॉग आउट' : 'Logout'}
-                  </span>
-                </button>
-              </div>
+              <UserProfileDropdown
+                mobile={mobile}
+                activeLocale={activeLocale}
+                onLogout={handleLogout}
+                onOpenApplications={() => setIsDrawerOpen(true)}
+              />
             ) : (
               <button
                 onClick={() => router.push(`/${activeLocale}/service/login`)}
@@ -185,6 +172,29 @@ export function CitizenHeader({ mobile, locale: propLocale, ulbData }: CitizenHe
           </div>
         </div>
       </div>
+
+      {/* Applications Drawer */}
+      <Drawer
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <User className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-bold text-gray-800">
+              {activeLocale === 'mr'
+                ? 'माझे अर्ज आणि ट्रॅकिंग'
+                : activeLocale === 'hi'
+                  ? 'मेरे आवेदन और ट्रैकिंग'
+                  : 'My Applications & Tracking'}
+            </h3>
+          </div>
+        }
+        width="lg"
+      >
+        <div className="p-4 sm:p-6 bg-slate-50 min-h-full">
+          <TrackingPanel authUser={{ mobile }} />
+        </div>
+      </Drawer>
     </header>
   );
 }

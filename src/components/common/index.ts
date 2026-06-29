@@ -156,3 +156,4 @@ export type { DocumentViewerModalProps } from './DocumentViewerModal';
 
 export { GooglePlayBadge } from './GooglePlayBadge';
 export { SocialLinks } from './SocialLinks';
+export { UserProfileDropdown } from './UserProfileDropdown';
