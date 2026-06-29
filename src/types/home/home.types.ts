@@ -12,6 +12,10 @@ export interface Service {
     subtext: string;
     stats?: Stat[];
     description?: string;
+    /** Module ID associated with this department (for cookie context) */
+    moduleId?: number;
+    /** Module name associated with this department (for cookie context) */
+    moduleName?: string;
 }
 
 export interface DashboardStats {

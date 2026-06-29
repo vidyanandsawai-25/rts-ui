@@ -68,7 +68,7 @@ export async function CapitalTaxDetailsSection({
       {showInlineError && successMessage && (
         <ToastNotifier message={successMessage} type="success" />
       )}
-      <CapitalTaxTable locale={locale} capitalData={capitalData} searchParams={searchParams} />
+      <CapitalTaxTable locale={locale} capitalData={capitalData} searchParams={searchParams} propertyId={propertyId} />
       <ValuationSummaryFooter
         title={t('title')}
         badges={[
