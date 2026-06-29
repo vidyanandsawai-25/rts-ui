@@ -22,6 +22,7 @@ export interface FloorFormFieldsProps {
   useOptions: SearchSelectOption[];
   subUseOptions: SearchSelectOption[];
   hasSubUseOptions: boolean;
+  handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
   formData: {
     id?: number;
     oldFloorId: string | number;

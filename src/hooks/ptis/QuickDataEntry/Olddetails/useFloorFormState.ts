@@ -84,9 +84,17 @@ export function useFloorFormState() {
     setFormData(editData);
     setInitialEditValues({ ...editData });
 
+    // Sync oldTypeOfUseId to URL query params on edit, so Sub Type options are fetched SSR
+    if (row.oldTypeOfUseId) {
+      const urlParams = new URLSearchParams(searchParams.toString());
+      urlParams.set('typeOfUseId', String(row.oldTypeOfUseId));
+      const queryString = urlParams.toString();
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+    }
+
     // Scroll to form for better UX
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [pathname, router, searchParams]);
 
   /**
    * Resets the form to initial empty state.

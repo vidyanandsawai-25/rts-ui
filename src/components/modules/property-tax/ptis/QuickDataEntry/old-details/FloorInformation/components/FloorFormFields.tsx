@@ -27,7 +27,8 @@ export function FloorFormFields({
     isSubmitting,
     isChanged,
     onSave,
-    onReset
+    onReset,
+    handleOpenDropdown
 }: FloorFormFieldsProps) {
 
     return (
@@ -37,20 +38,22 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.floorLabel')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <SearchSelect
-                    options={floorOptions}
-                    name="floor"
-                    onChange={(_, val) => onFieldChange('oldFloorId', val)}
-                    value={String(formData.oldFloorId)}
-                    forceSearchText={
-                      formData.oldFloorId && !floorOptions.some(o => o.value === String(formData.oldFloorId))
-                        ? String(formData?.floorDescription || '')
-                        : undefined
-                    }
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    autoFocus
-                    className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                />
+                <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
+                    <SearchSelect
+                        options={floorOptions}
+                        name="floor"
+                        onChange={(_, val) => onFieldChange('oldFloorId', val)}
+                        value={String(formData.oldFloorId)}
+                        forceSearchText={
+                          formData.oldFloorId && !floorOptions.some(o => o.value === String(formData.oldFloorId))
+                            ? String(formData?.floorDescription || '')
+                            : undefined
+                        }
+                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                        autoFocus
+                        className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    />
+                </div>
                 {showError("oldFloorId") && (
                     <span className="text-xs text-red-500">{errors.oldFloorId}</span>
                 )}
@@ -61,20 +64,21 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.subFloor')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <SearchSelect
-                    options={subFloorOptions}
-                    name="subFloor"
-                    onChange={(_, val) => onFieldChange('oldSubFloorId', val)}
-                    value={String(formData.oldSubFloorId)}
-                    forceSearchText={
-                      formData.oldSubFloorId && !subFloorOptions.some(o => o.value === String(formData.oldSubFloorId))
-                        ? String(formData?.subFloorDescription || '')
-                        : undefined
-                    }
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-
-                />
+                <div onFocusCapture={() => handleOpenDropdown('loadSubFloor')}>
+                    <SearchSelect
+                        options={subFloorOptions}
+                        name="subFloor"
+                        onChange={(_, val) => onFieldChange('oldSubFloorId', val)}
+                        value={String(formData.oldSubFloorId)}
+                        forceSearchText={
+                          formData.oldSubFloorId && !subFloorOptions.some(o => o.value === String(formData.oldSubFloorId))
+                            ? String(formData?.subFloorDescription || '')
+                            : undefined
+                        }
+                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    />
+                </div>
                 {showError("oldSubFloorId") && (
                     <span className="text-xs text-red-500">{errors.oldSubFloorId}</span>
                 )}
@@ -129,19 +133,21 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.conTyp')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <SearchSelect
-                    options={constructionTypeOptions}
-                    name="conTyp"
-                    onChange={(_, val) => onFieldChange('oldConstructionTypeId', val)}
-                    value={String(formData.oldConstructionTypeId)}
-                    forceSearchText={
-                      formData.oldConstructionTypeId && !constructionTypeOptions.some(o => o.value === String(formData.oldConstructionTypeId))
-                        ? String(formData?.constructionTypeDescription || '')
-                        : undefined
-                    }
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                />
+                <div onFocusCapture={() => handleOpenDropdown('loadConstruction')}>
+                    <SearchSelect
+                        options={constructionTypeOptions}
+                        name="conTyp"
+                        onChange={(_, val) => onFieldChange('oldConstructionTypeId', val)}
+                        value={String(formData.oldConstructionTypeId)}
+                        forceSearchText={
+                          formData.oldConstructionTypeId && !constructionTypeOptions.some(o => o.value === String(formData.oldConstructionTypeId))
+                            ? String(formData?.constructionTypeDescription || '')
+                            : undefined
+                        }
+                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    />
+                </div>
                 {showError("oldConstructionTypeId") && (
                     <span className="text-xs text-red-500">{errors.oldConstructionTypeId}</span>
                 )}
@@ -152,19 +158,21 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.floordtails.use')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <SearchSelect
-                    options={useOptions}
-                    name="use"
-                    onChange={(_, val) => onUseTypeChange(val)}
-                    value={String(formData.oldTypeOfUseId)}
-                    forceSearchText={
-                      formData.oldTypeOfUseId && !useOptions.some(o => o.value === String(formData.oldTypeOfUseId))
-                        ? String(formData?.typeOfUseDescription || '')
-                        : undefined
-                    }
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                />
+                <div onFocusCapture={() => handleOpenDropdown('loadUsage')}>
+                    <SearchSelect
+                        options={useOptions}
+                        name="use"
+                        onChange={(_, val) => onUseTypeChange(val)}
+                        value={String(formData.oldTypeOfUseId)}
+                        forceSearchText={
+                          formData.oldTypeOfUseId && !useOptions.some(o => o.value === String(formData.oldTypeOfUseId))
+                            ? String(formData?.typeOfUseDescription || '')
+                            : undefined
+                        }
+                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    />
+                </div>
                 {showError("oldTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldTypeOfUseId}</span>
                 )}
@@ -175,20 +183,22 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.subTyp')} {(hasSubUseOptions || formData.oldSubTypeOfUseId) && <span className="text-red-500 ml-1">*</span>}
                 </Label>
-                <SearchSelect
-                    name="subUseType"
-                    onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
-                    value={String(formData.oldSubTypeOfUseId)}
-                    disabled={!hasSubUseOptions && !formData.oldSubTypeOfUseId}
-                    options={subUseOptions}
-                    forceSearchText={
-                      formData.oldSubTypeOfUseId && !subUseOptions.some(o => o.value === String(formData.oldSubTypeOfUseId))
-                        ? String(formData?.subTypeOfUseDescription || '')
-                        : undefined
-                    }
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                />
+                <div onFocusCapture={() => formData.oldTypeOfUseId && handleOpenDropdown('loadSubType')}>
+                    <SearchSelect
+                        name="subUseType"
+                        onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
+                        value={String(formData.oldSubTypeOfUseId)}
+                        disabled={!hasSubUseOptions && !formData.oldSubTypeOfUseId}
+                        options={subUseOptions}
+                        forceSearchText={
+                          formData.oldSubTypeOfUseId && !subUseOptions.some(o => o.value === String(formData.oldSubTypeOfUseId))
+                            ? String(formData?.subTypeOfUseDescription || '')
+                            : undefined
+                        }
+                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    />
+                </div>
                 {showError("oldSubTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldSubTypeOfUseId}</span>
                 )}

@@ -69,7 +69,8 @@ export default function FloorInformationForm({
     handleReset,
     handleSave,
     handleDelete,
-    isChanged
+    isChanged,
+    handleOpenDropdown
   } = useFloorInformationForm({
     propertyId,
     locale,
@@ -173,6 +174,7 @@ export default function FloorInformationForm({
           isChanged={isChanged}
           onSave={handleSave}
           onReset={handleReset}
+          handleOpenDropdown={handleOpenDropdown}
         />
 
         {/* Floor Details Table */}
