@@ -11,7 +11,7 @@ interface KycFormActionsProps {
 export const KycFormActions: React.FC<KycFormActionsProps> = ({
   t,
   isUpdating,
-  hasChanges,
+  hasChanges,  
   canSubmit,
 }) => {
   return (

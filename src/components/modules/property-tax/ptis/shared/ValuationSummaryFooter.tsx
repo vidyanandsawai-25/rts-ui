@@ -2,6 +2,7 @@ import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 import { type BadgeThemeColor } from './TaxBadge';
 import { getTranslations } from 'next-intl/server';
 import TaxDetails from '../TaxDetails/TaxDetails';
+import { formatIndianNumber } from '@/lib/utils/format';
 
 /**
  * Represents a single badge in the summary footer (maintained for prop compatibility)
@@ -66,7 +67,8 @@ export async function ValuationSummaryFooter({
 
   // Simple formatting helper
   const formatCurrency = (val: number) => {
-    return '₹' + Math.round(val).toLocaleString('en-IN');
+    const decimals = Number.isInteger(val) ? 0 : 2;
+    return '₹' + formatIndianNumber(val, decimals, decimals);
   };
 
   const getDiffColor = (diff: number) => {

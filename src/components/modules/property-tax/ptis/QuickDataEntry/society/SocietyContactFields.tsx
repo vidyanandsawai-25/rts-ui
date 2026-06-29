@@ -123,7 +123,7 @@ export const SocietyContactFields = ({
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
                     }`}>
                     <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-                        +91
+                        {t('society.countryCode')}
                     </span>
                     <div id="manager-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
                         {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
@@ -237,7 +237,7 @@ export const SocietyContactFields = ({
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
                     }`}>
                     <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-                        +91
+                        {t('society.countryCode')}
                     </span>
                     <div id="secretary-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
                         {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (

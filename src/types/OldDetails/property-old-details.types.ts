@@ -235,6 +235,11 @@ export interface FloorInformationFormData {
   oldTypeOfUseId: string | number;
   /** Optional ID of the selected sub-type of use */
   oldSubTypeOfUseId: string | number;
+  floorDescription?: string;
+  subFloorDescription?: string | null;
+  constructionTypeDescription?: string;
+  typeOfUseDescription?: string;
+  subTypeOfUseDescription?: string | null;
   /** Carpet area in square feet */
   oldCarpetAreaSqFeet: string;
   /** Area in square feet */

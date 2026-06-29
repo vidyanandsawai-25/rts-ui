@@ -133,6 +133,9 @@ export const societyValidators = {
     const trimmed = address.trim();
     if (trimmed.length === 0) return true;
 
+    // Allow any sequence of hyphens like "-", "--", "---", etc.
+    if (/^-+$/.test(trimmed)) return true;
+
     // Check if address contains at least some valid letters or numbers
     const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);
     if (!hasValidChars) return false;
