@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input } from '@/components/common';
+import { AnimatedDigitInput, Input } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { KYC_VALIDATION_RULES, enhancedKycValidators, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { sanitizeAddress, sanitizeShopName, sanitizeEmailStrict, sanitizeName, capitalizeEachWordKycSociety } from '@/lib/utils/input-sanitization';
@@ -224,6 +224,31 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
         )}
       </div>
 
+      {/* Email ID */}
+      <div className="col-span-12 sm:col-span-6 md:col-span-2 space-y-1.5">
+        <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
+          {t('kyc.emailId')}
+        </Label>
+        <Input
+          id="kyc-email"
+          type="email"
+          placeholder={t('kyc.enterEmailId')}
+          value={formData.emailId ?? ''}
+          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${emailIdError ? 'border-red-300 focus:border-red-500' : ''}`}
+          onFocus={() => onFocusField('emailId')}
+          onKeyDown={preventEnterSubmit}
+          onBlur={onBlurField}
+          onChange={(e) => {
+            const sanitized = sanitizeEmailStrict(e.target.value);
+            setFormData((prev) => ({ ...prev, emailId: sanitized }));
+          }}
+        />
+        {emailIdError && (
+          <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
+        )}
+      </div>
+
       {/* Address Regional */}
       <div className="col-span-12 sm:col-span-6 md:col-span-4 space-y-1.5">
         <Label htmlFor="kyc-address" className="text-xs font-semibold text-gray-700">
@@ -291,19 +316,17 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
         <Label htmlFor="kyc-pincode" className="text-xs font-bold text-gray-700">
           {t('kyc.pinCode')}
         </Label>
-        <Input
+        <AnimatedDigitInput
           id="kyc-pincode"
-          type="text"
           placeholder={t('kyc.enterPinCode')}
-          value={formData.pinCode ?? ''}
+          value={String(formData.pinCode || '')}
           maxLength={6}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${pinCodeError ? 'border-red-300 focus:border-red-500' : ''}`}
+          className={pinCodeError ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300' : ''}
           onFocus={() => onFocusField('pinCode')}
           onKeyDown={preventEnterSubmit}
           onBlur={onBlurField}
-          onChange={(e) => {
-            const sanitized = e.target.value.replace(/\D/g, '').slice(0, 6);
-            setFormData((prev) => ({ ...prev, pinCode: sanitized }));
+          onChange={(val) => {
+            setFormData((prev) => ({ ...prev, pinCode: val }));
           }}
         />
         {pinCodeError && (
@@ -312,31 +335,6 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
               ? t('kyc.validation.invalidRepeatedSequence')
               : t('kyc.validation.invalidPinCode')}
           </span>
-        )}
-      </div>
-
-      {/* Email ID */}
-      <div className="col-span-12 sm:col-span-6 md:col-span-2 space-y-1.5">
-        <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
-          {t('kyc.emailId')}
-        </Label>
-        <Input
-          id="kyc-email"
-          type="email"
-          placeholder={t('kyc.enterEmailId')}
-          value={formData.emailId ?? ''}
-          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${emailIdError ? 'border-red-300 focus:border-red-500' : ''}`}
-          onFocus={() => onFocusField('emailId')}
-          onKeyDown={preventEnterSubmit}
-          onBlur={onBlurField}
-          onChange={(e) => {
-            const sanitized = sanitizeEmailStrict(e.target.value);
-            setFormData((prev) => ({ ...prev, emailId: sanitized }));
-          }}
-        />
-        {emailIdError && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
         )}
       </div>
     </>
