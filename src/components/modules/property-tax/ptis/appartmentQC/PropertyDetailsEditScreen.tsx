@@ -3,6 +3,7 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Drawer } from '@/components/common/Drawer';
 import { Button, CancelButton, LoadingPage, SaveButton } from '@/components/common';
 import { MasterTable } from '@/components/common/MasterTable';
@@ -21,6 +22,7 @@ import {
   useDrawerCommonColumns,
   useDrawerRateableColumns,
   useDrawerCapitalColumns,
+  useDrawerActionColumn,
 } from './PropertyEditScreenColumns';
 import {
   EditableInput,
@@ -34,11 +36,16 @@ import {
   fetchApartmentTaxDetailsByIdAction,
   fetchApartmentTaxDetailsCvByIdAction,
   fetchDualMethodTaxDetailsByIdAction,
+  fetchOldPropertyDataAction,
+  syncRoomsForPropertyDetailsAction,
+  updateFloorQCDetailAction,
 } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
+import { getUserIdFromCookie } from '@/lib/utils/cookie';
 import type { RoomAPIResponse } from '@/types/room-details.types';
 import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
 import { RoomWiseSubmission } from './roomSubmission/RoomWiseSubmission';
 import { ApartmentTaxDetailsTable } from './ApartmentTaxDetailsTable';
+import { FloorQCEditDrawer } from './FloorQCEditDrawer';
 import { limitSingleAtEmail, limitTwoDigitNumber } from '@/lib/utils/validation-rules';
 import { capitalizeEachWord } from '@/lib/utils/input-sanitization';
 
@@ -72,6 +79,9 @@ const ResidentialEditScreen = ({
   returnTo = 'amenities',
 }: ResidentialEditScreenProps) => {
   const t = useTranslations('appartmentQC');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [areaUnit, setAreaUnit] = useState<'sq.m' | 'sq.ft'>('sq.m');
 
   const handleToggleUnit = () => {
@@ -107,6 +117,16 @@ const ResidentialEditScreen = ({
   // State for client-side fetched room data
   const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
+  
+  // State for Floor QC Edit Drawer
+  const floorEditId = searchParams.get('floorEditId');
+  const floorQCEditDrawerOpen = !!floorEditId;
+  
+  const selectedFloorQCEditRow = useMemo(() => {
+    if (!floorEditId) return null;
+    return hookFloorData.find(row => String(row.pdnId) === floorEditId) || null;
+  }, [floorEditId, hookFloorData]);
+
   const SELECTED_FLOOR_ROW_KEY = 'selectedFloorRow';
 
   const [selectedFloorRow, setSelectedFloorRow] = useState<DrawerFloorDataRow | null>(() => {
@@ -256,8 +276,6 @@ const ResidentialEditScreen = ({
     };
 
     try {
-      const { fetchOldPropertyDataAction } =
-        await import('@/app/[locale]/property-tax/ptis/appartmentQC/action');
       const result = await fetchOldPropertyDataAction(oldPropNo);
 
       if (!result.success) {
@@ -461,8 +479,6 @@ const ResidentialEditScreen = ({
       }
 
       try {
-        const { syncRoomsForPropertyDetailsAction } =
-          await import('@/app/[locale]/property-tax/ptis/appartmentQC/action');
         const result = await syncRoomsForPropertyDetailsAction(
           Number(roomPropertyId),
           Number(roomPdnId)
@@ -498,6 +514,57 @@ const ResidentialEditScreen = ({
     [hookHandleOpenRoomSubmission]
   );
 
+  const handleOpenFloorQCEdit = useCallback((row: DrawerFloorDataRow) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set('floorEditId', String(row.pdnId));
+    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+  }, [router, pathname, searchParams]);
+
+  const handleSaveFloorQC = useCallback(async (updatedRow: DrawerFloorDataRow) => {
+    if (!propertyId || !updatedRow.pdnId) {
+      toast.error("Property ID or Detail ID is missing");
+      return;
+    }
+
+    try {
+      const floorOption = hook.floorOptions.find(opt => opt.value === updatedRow.floorId || opt.label === updatedRow.floorId);
+      const conTypeOption = hook.conTypeOptions.find(opt => opt.value === updatedRow.constructionTypeId || opt.label === updatedRow.constructionTypeId);
+      const useTypeOption = hook.useTypeOptions.find(opt => opt.value === updatedRow.typeOfUseId || opt.label === updatedRow.typeOfUseId);
+      const subTypeOption = hook.getSubTypeOptionsForUseType(updatedRow.typeOfUseId).find(opt => opt.value === updatedRow.subTypeOfUseId || opt.label === updatedRow.subTypeOfUseId);
+      
+      const payload = {
+        pdnId: updatedRow.pdnId,
+        id: updatedRow.pdnId,
+        floorId: floorOption ? parseInt(floorOption.value, 10) : undefined,
+        constructionTypeId: conTypeOption ? parseInt(conTypeOption.value, 10) : undefined,
+        typeOfUseId: useTypeOption ? parseInt(useTypeOption.value, 10) : undefined,
+        subTypeOfUseId: subTypeOption ? parseInt(subTypeOption.value, 10) : undefined,
+        constructionYear: updatedRow.conYear || undefined,
+        assessmentYear: updatedRow.asstYear || undefined,
+        updatedBy: getUserIdFromCookie() || 1,
+      };
+
+      const result = await updateFloorQCDetailAction(propertyId, updatedRow.pdnId, payload);
+      
+      if (result.success) {
+        toast.success("Floor QC updated successfully");
+        hook.updateFloorRow(updatedRow.id, 'floorId', updatedRow.floorId);
+        hook.updateFloorRow(updatedRow.id, 'conYear', updatedRow.conYear);
+        hook.updateFloorRow(updatedRow.id, 'asstYear', updatedRow.asstYear);
+        hook.updateFloorRow(updatedRow.id, 'constructionTypeId', updatedRow.constructionTypeId);
+        hook.updateFloorRow(updatedRow.id, 'typeOfUseId', updatedRow.typeOfUseId);
+        hook.updateFloorRow(updatedRow.id, 'subTypeOfUseId', updatedRow.subTypeOfUseId);
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete('floorEditId');
+        router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+      } else {
+        toast.error(result.error || "Failed to update Floor QC");
+      }
+    } catch {
+      toast.error("Failed to update Floor QC");
+    }
+  }, [propertyId, hook, router, pathname, searchParams]);
+
   // Column definitions
   const commonColumns = useDrawerCommonColumns({
     floorOptions: hook.floorOptions,
@@ -515,16 +582,17 @@ const ResidentialEditScreen = ({
   });
   const rateableColumns = useDrawerRateableColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
   const capitalColumns = useDrawerCapitalColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
+  const actionColumn = useDrawerActionColumn({ onOpenFloorQCEdit: handleOpenFloorQCEdit });
 
   const floorColumns = useMemo(() => {
-    if (hook.subTab === 'capital') return [...commonColumns, ...capitalColumns];
+    if (hook.subTab === 'capital') return [...commonColumns, ...capitalColumns, actionColumn];
     if (hook.subTab === 'dual-method') {
       return hook.dualMethodTab === 'capital'
-        ? [...commonColumns, ...capitalColumns]
-        : [...commonColumns, ...rateableColumns];
+        ? [...commonColumns, ...capitalColumns, actionColumn]
+        : [...commonColumns, ...rateableColumns, actionColumn];
     }
-    return [...commonColumns, ...rateableColumns];
-  }, [commonColumns, rateableColumns, capitalColumns, hook.subTab, hook.dualMethodTab]);
+    return [...commonColumns, ...rateableColumns, actionColumn];
+  }, [commonColumns, rateableColumns, capitalColumns, actionColumn, hook.subTab, hook.dualMethodTab]);
 
   // if (!propertyData) {
   //   return (
@@ -547,8 +615,10 @@ const ResidentialEditScreen = ({
 
   return (
     <>
-      <Drawer
-        open={open}
+      {/* Hide main drawer if floorQCEditDrawerOpen is true */}
+      <div style={{ display: floorQCEditDrawerOpen ? 'none' : 'block' }}>
+        <Drawer
+          open={open}
         onClose={hook.handleClose}
         width="xl"
         title={
@@ -807,18 +877,52 @@ const ResidentialEditScreen = ({
                 </div>
               )}
             </div>
-
-            {/* Tax Details Section */}
-            <ApartmentTaxDetailsTable
-              taxDetails={taxDetails}
-              dualMethodDetails={dualMethodTaxDetails}
-              loading={isLoadingTaxDetails}
-              activeMainTab={returnTo}
-              activeSubTab={subTabProp}
-            />
+            
+            {taxDetails && (
+              <div className="mt-4">
+                <ApartmentTaxDetailsTable
+                  taxDetails={taxDetails}
+                  dualMethodDetails={null}
+                  activeMainTab={hook.subTab}
+                  activeSubTab={hook.dualMethodTab}
+                />
+              </div>
+            )}
+            {dualMethodTaxDetails && hook.subTab === 'dual-method' && (
+              <div className="mt-4">
+                <ApartmentTaxDetailsTable
+                  taxDetails={null}
+                  dualMethodDetails={dualMethodTaxDetails}
+                  activeMainTab={hook.subTab}
+                  activeSubTab={hook.dualMethodTab}
+                />
+              </div>
+            )}
           </div>
         )}
       </Drawer>
+      </div>
+
+      <FloorQCEditDrawer
+        open={floorQCEditDrawerOpen}
+        onClose={() => {
+          const newParams = new URLSearchParams(searchParams.toString());
+          newParams.delete('floorEditId');
+          router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+        }}
+        onSave={handleSaveFloorQC}
+        row={selectedFloorQCEditRow}
+        floorOptions={hook.floorOptions}
+        conTypeOptions={hook.conTypeOptions}
+        useTypeOptions={hook.useTypeOptions}
+        getSubTypeOptions={hook.getSubTypeOptionsForUseType}
+        isLoadingFloors={hook.isLoadingFloors}
+        isLoadingConTypes={hook.isLoadingConTypes}
+        isLoadingUseTypes={hook.isLoadingUseTypes}
+        handleFloorDropdownClick={hook.handleFloorDropdownClick}
+        handleConTypeDropdownClick={hook.handleConTypeDropdownClick}
+        handleUseTypeDropdownClick={hook.handleUseTypeDropdownClick}
+      />
 
       {/* Room Submission Drawer */}
       {hook.roomDrawerOpen && hook.roomPdnId && hook.roomPropertyId && (

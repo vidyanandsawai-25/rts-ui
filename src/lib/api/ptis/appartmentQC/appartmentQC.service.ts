@@ -50,12 +50,12 @@ function buildQueryParams(params: ApartmentQCSearchParams): URLSearchParams {
 
   PARAM_MAPPINGS.forEach(({ key, queryParam, shouldTrim, skipEmptyCheck }) => {
     const value = params[key];
-    
+
     if (value === undefined) return;
-    
+
     // Skip empty string checks for numeric parameters
     if (!skipEmptyCheck && value === '') return;
-    
+
     // Handle string trimming
     if (shouldTrim && typeof value === 'string') {
       const trimmed = value.trim();
@@ -282,6 +282,8 @@ export async function getFloorQCByPropertyIdSafe(
  * Payload for updating a floor QC detail record
  */
 export interface FloorQCUpdatePayload {
+  id?: number;
+  pdnId?: number;
   floorId?: number;
   constructionTypeId?: number;
   typeOfUseId?: number;
@@ -301,13 +303,16 @@ export interface FloorQCUpdatePayload {
  * @returns API response
  */
 export async function updateFloorQCDetail(
-  propertyId: number | string,
+  _propertyId: number | string,
   detailId: number | string,
   payload: FloorQCUpdatePayload
 ): Promise<ApiResponse<unknown>> {
   try {
-    const endpoint = `/Property/apartmentQC-details/${propertyId}/detail/${detailId}`;
-    const response = await apiClient.patch<unknown>(endpoint, payload);
+    // Using the PATCH bulk endpoint for a single record update
+    const endpoint = `/ApartmentQC/${_propertyId}`;
+    const response = await apiClient.patch<unknown>(endpoint, [
+      { ...payload, detailId: Number(detailId) }
+    ]);
     return response;
   } catch (error) {
     logger.error('[appartmentQC.service] Error updating floor QC detail', { error: error as Error });
@@ -658,7 +663,7 @@ export async function getFilterOptions(
     if (partType) {
       params.append('PartType', partType);
     }
-    
+
     const endpoint = `/ApartmentQC/filter-options?${params.toString()}`;
     const response = await apiClient.get<FilterOptionsResponse>(endpoint);
     return response;
@@ -725,16 +730,16 @@ export async function exportApartmentQCToExcel(
   const params = new URLSearchParams();
   params.append('WardId', String(wardId));
   params.append('PropertyNo', propertyNo);
-  
+
   const endpoint = `${baseUrl}/ApartmentQC/export-excel?${params.toString()}`;
-  
+
   const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${authToken}`,
     },
   });
-  
+
   if (!response.ok) {
     throw new ApiError(
       response.status,
@@ -742,9 +747,9 @@ export async function exportApartmentQCToExcel(
       "Export Excel failed"
     );
   }
-  
+
   const blob = await response.blob();
-  
+
   // Create download link and trigger download
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -783,7 +788,7 @@ export async function getApartmentPropertyTaxDetails(
     qs.append('WardId', String(params.wardId));
     qs.append('PropertyNo', params.propertyNo);
     qs.append('PartType', params.partType);
-    
+
     const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -882,7 +887,7 @@ export async function getApartmentPropertyTaxDetailsCv(
     qs.append('WardId', String(params.wardId));
     qs.append('PropertyNo', params.propertyNo);
     qs.append('PartType', params.partType);
-    
+
     const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -969,12 +974,12 @@ export async function getDualMethodTaxDetails(
   partType: ApartmentPartType
 ): Promise<DualMethodTaxDetails> {
   const params = { wardId, propertyNo, partType };
-  
+
   const [rateable, capital] = await Promise.all([
     getApartmentPropertyTaxDetailsSafe(params),
     getApartmentPropertyTaxDetailsCvSafe(params),
   ]);
-  
+
   return {
     rateable,
     capital,
@@ -1003,7 +1008,7 @@ export async function getApartmentPropertyTaxDetailsById(
     const qs = new URLSearchParams();
     qs.append('Id', String(params.propertyId));
     qs.append('PartType', params.partType);
-    
+
     const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -1073,7 +1078,7 @@ export async function getApartmentPropertyTaxDetailsCvById(
     const qs = new URLSearchParams();
     qs.append('Id', String(params.propertyId));
     qs.append('PartType', params.partType);
-    
+
     const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -1142,12 +1147,12 @@ export async function getDualMethodTaxDetailsById(
   partType: ApartmentPartType
 ): Promise<DualMethodTaxDetails> {
   const params = { propertyId, partType };
-  
+
   const [rateable, capital] = await Promise.all([
     getApartmentPropertyTaxDetailsByIdSafe(params),
     getApartmentPropertyTaxDetailsCvByIdSafe(params),
   ]);
-  
+
   return {
     rateable,
     capital,
