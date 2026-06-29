@@ -1,4 +1,7 @@
 {
+  "floor": {
+    "editFloor": "Edit Floor"
+  },
   "title": "Property Tax Information System",
   "subtitle": "Manage property tax records and assessments",
   "media": {
@@ -472,7 +475,7 @@
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
       "taxAmount": "Tax Amount",
-      "appliedOn": "AppliedON"
+      "appliedOn": "Applied On"
     },
     "tooltips": {
       "taxable": "Taxable",

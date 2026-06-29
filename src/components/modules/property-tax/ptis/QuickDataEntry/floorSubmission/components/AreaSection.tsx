@@ -3,9 +3,8 @@
 import React from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
-import { Input } from '@/components/common';
+import { Input, AnimatedDigitInput } from '@/components/common';
 import { AreaSectionProps } from '@/types/floor-details.types';
-import { cn } from '@/lib/utils/cn';
 import { FieldWrapper, ReadOnlyField } from './SectionField';
 
 
@@ -36,29 +35,17 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
           )
         }
       >
-        <Input
+        <AnimatedDigitInput
           ref={roomsInputRef}
           id="floor-rooms"
-          type="text"
-          placeholder="0"
           maxLength={2}
-          value={editingFloorForm.rooms || ''}
-          onChange={(e) => {
-            const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+          value={String(editingFloorForm.rooms || '')}
+          placeholder="0"
+          disabled={!editingFloorForm.use}
+          onChange={(cleaned) => {
             setEditingFloorForm({ ...editingFloorForm, rooms: cleaned });
             if (formErrors.rooms) setFormErrors((prev) => ({ ...prev, rooms: '' }));
           }}
-          onKeyDown={(e) => {
-            const controlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'];
-            if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
-              e.preventDefault();
-            }
-          }}
-          disabled={!editingFloorForm.use}
-          className={cn(
-            "h-9 text-sm transition-all duration-200",
-            !editingFloorForm.use ? "bg-gray-100/80 cursor-not-allowed grayscale" : "bg-white hover:border-blue-400 focus:border-blue-500"
-          )}
         />
       </FieldWrapper>
 
