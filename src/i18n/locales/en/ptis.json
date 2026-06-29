@@ -240,6 +240,7 @@
     }
   },
   "fields": {
+    "localeSuffix": "(Locale)",
     "upicId": "UPIC ID",
     "propertyHolder": "Property Holder",
     "division": "Division",
@@ -271,7 +272,7 @@
     "occupierName": "Occupier Name",
     "aadharCardNo": "Aadhar No",
     "mobileNumber": "Mobile No",
-    "alternateMobileNo": "Alternate Mobile No",
+    "alternateMobileNo": "Alt. Mobile No",
     "pinCode": "Pincode",
     "emailId": "Email ID",
     "shopName": "Shop Name",

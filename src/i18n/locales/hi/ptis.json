@@ -240,6 +240,7 @@
     }
   },
   "fields": {
+    "localeSuffix": "(स्थानीय)",
     "upicId": "यूपीआईसी आईडी",
     "propertyHolder": "संपत्ति धारक",
     "division": "प्रभाग",
