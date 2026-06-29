@@ -40,6 +40,8 @@ export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu;
 // Validation for allowed characters, special chars in between, single space only, allows single char
 export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
+export const DISPLAY_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/]/gu;
+export const UNIT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/%]/gu;
 
 /* ================= TRANSLATION TEXT VALIDATION ================= */
 // Translation text: Allow multilingual characters, underscore, hyphen, basic punctuation

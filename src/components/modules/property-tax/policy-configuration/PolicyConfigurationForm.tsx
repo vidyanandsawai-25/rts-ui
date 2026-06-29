@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { CancelButton, SaveButton } from "@/components/common";
 import { MandatoryFieldsNotice } from "./components/MandatoryFieldsNotice";
 import type { PolicyConfigurationFormModel } from "@/types/policy-configuration.types";
-import { CODE_SANITIZE, DESCRIPTION_SANITIZE, TEXT_SANITIZE } from "@/lib/utils/validation-rules";
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE, TEXT_SANITIZE,DISPLAY_NAME_SANITIZE ,UNIT_SANITIZE} from "@/lib/utils/validation-rules";
 import { savePolicyConfiguration } from "@/app/[locale]/property-tax/policy-configuration/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
@@ -131,7 +131,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
     if (name === "policyCode") {
       sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase().substring(0, 40);
     } else if (name === "displayName") {
-       sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s,.\-\/]/gu, "").substring(0, 40);
+       sanitizedValue = value.replace(DISPLAY_NAME_SANITIZE, "").substring(0, 40);
     } else if (name === "description") {
       sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").substring(0, 100);
     } else if (name === "policyValue" || name === "defaultValue") {
@@ -141,7 +141,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
         sanitizedValue = value.replace(TEXT_SANITIZE, "").substring(0, 40);
       }
     } else if (name === "unit") {
-      sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s,.\-\/%]/gu, "").substring(0, 10);
+      sanitizedValue = value.replace(UNIT_SANITIZE, "").substring(0, 10);
     }
 
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
@@ -201,11 +201,9 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       category: true,
       displayName: true,
       description: true,
-      // dataType: true,
       policyValue: true,
       defaultValue: true,
       unit: true,
-      // effectiveFrom: true,
     });
 
     const v = validate(formData);
