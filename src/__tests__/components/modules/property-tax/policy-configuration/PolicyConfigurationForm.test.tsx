@@ -132,16 +132,13 @@ describe("PolicyConfigurationForm", () => {
     fireEvent.blur(screen.getByTestId("displayName"));
     fireEvent.change(screen.getByTestId("description"), { target: { value: "Standard Tax Rate" } });
     fireEvent.blur(screen.getByTestId("description"));
-    fireEvent.change(screen.getByTestId("dataType"), { target: { value: "DECIMAL" } });
-    fireEvent.blur(screen.getByTestId("dataType"));
     fireEvent.change(screen.getByTestId("policyValue"), { target: { value: "15" } });
     fireEvent.blur(screen.getByTestId("policyValue"));
     fireEvent.change(screen.getByTestId("defaultValue"), { target: { value: "10" } });
     fireEvent.blur(screen.getByTestId("defaultValue"));
     fireEvent.change(screen.getByTestId("unit"), { target: { value: "%" } });
     fireEvent.blur(screen.getByTestId("unit"));
-    fireEvent.change(screen.getByTestId("effectiveFrom"), { target: { value: "2026-06-03" } });
-    fireEvent.blur(screen.getByTestId("effectiveFrom"));
+   
 
     // Submit
     fireEvent.submit(screen.getByTestId("form"));
@@ -240,5 +237,74 @@ describe("PolicyConfigurationForm", () => {
     const input = screen.getByTestId("policyCode") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "A".repeat(60) } });
     expect(input.value).toHaveLength(40);
+  });
+  
+  it("maps legacy BIT value '1' and '0' to allowed values when allowedValues is present", () => {
+    const initialData = {
+      id: 1,
+      policyCode: "TEST_BIT",
+      category: "TAXATION",
+      displayName: "Test Bit Policy",
+      description: "Test",
+      dataType: "BIT",
+      policyValue: "1",
+      defaultValue: "0",
+      unit: "",
+      effectiveFrom: "2026-06-03T00:00:00Z",
+      effectiveTo: null,
+      isActive: true,
+      allowedValues: "Enable, Disable",
+    };
+    
+    render(<PolicyConfigurationForm initialData={initialData} />);
+    
+    expect(screen.getByTestId("policyValue")).toHaveValue("Enable");
+    expect(screen.getByTestId("defaultValue")).toHaveValue("Disable");
+  });
+
+  it("keeps value as is if it matches one of the allowed values", () => {
+    const initialData = {
+      id: 2,
+      policyCode: "TEST_BIT",
+      category: "TAXATION",
+      displayName: "Test Bit Policy",
+      description: "Test",
+      dataType: "VARCHAR",
+      policyValue: "Option2",
+      defaultValue: "Option1",
+      unit: "",
+      effectiveFrom: "2026-06-03T00:00:00Z",
+      effectiveTo: null,
+      isActive: true,
+      allowedValues: "Option1, Option2",
+    };
+    
+    render(<PolicyConfigurationForm initialData={initialData} />);
+    
+    expect(screen.getByTestId("policyValue")).toHaveValue("Option2");
+    expect(screen.getByTestId("defaultValue")).toHaveValue("Option1");
+  });
+
+  it("falls back to the first option if the value is neither in allowedValues nor a legacy BIT value", () => {
+    const initialData = {
+      id: 3,
+      policyCode: "TEST_BIT",
+      category: "TAXATION",
+      displayName: "Test Bit Policy",
+      description: "Test",
+      dataType: "VARCHAR",
+      policyValue: "RandomValue",
+      defaultValue: "AnotherRandom",
+      unit: "",
+      effectiveFrom: "2026-06-03T00:00:00Z",
+      effectiveTo: null,
+      isActive: true,
+      allowedValues: "OptionA, OptionB",
+    };
+    
+    render(<PolicyConfigurationForm initialData={initialData} />);
+    
+    expect(screen.getByTestId("policyValue")).toHaveValue("OptionA");
+    expect(screen.getByTestId("defaultValue")).toHaveValue("OptionA");
   });
 });

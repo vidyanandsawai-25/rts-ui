@@ -1,7 +1,6 @@
 import { Input, TextArea, ValidationMessage, Select } from "@/components/common";
 import type { PolicyConfigurationFormModel } from "@/types/policy-configuration.types";
 import {
-  POLICY_DATA_TYPES,
   POLICY_CATEGORIES,
   BIT_OPTIONS,
   getPlaceholderForDataType,
