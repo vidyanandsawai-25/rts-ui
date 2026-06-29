@@ -23,6 +23,7 @@ describe('useFloorInformationForm', () => {
   const mockState = {
     formData: { oldFloorId: '1' },
     setFormData: vi.fn(),
+    setInitialEditValues: vi.fn(),
     handleUseTypeChange: vi.fn(),
     handleEdit: vi.fn(),
     handleReset: vi.fn(),

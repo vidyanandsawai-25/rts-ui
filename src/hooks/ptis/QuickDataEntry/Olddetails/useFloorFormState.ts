@@ -58,7 +58,7 @@ export function useFloorFormState() {
   /**
    * Pre-fills form data for editing an existing record.
    */
-  const handleEdit = useCallback((row: OldFloorDetail) => {
+  const handleEdit = useCallback((row: OldFloorDetail) => {  
     const editData = {
       id: row.id,
       oldFloorId: String(row.oldFloorId),
@@ -72,19 +72,21 @@ export function useFloorFormState() {
       oldAreaSqFeet: String(row.oldCarpetAreaSqFeet || ""),
       oldAreaSqMeter: String(row.oldCarpetAreaSqMeter || ""),
       oldBuiltupAreaSqFeet: String(row.oldBuiltupAreaSqFeet || ""),
-      oldBuiltupAreaSqMeter: String(row.oldBuiltupAreaSqMeter || "")
+      oldBuiltupAreaSqMeter: String(row.oldBuiltupAreaSqMeter || ""),
+      // Store description strings dynamically inside formData
+      floorDescription: row.floorDescription,
+      subFloorDescription: row.subFloorDescription,
+      constructionTypeDescription: row.constructionTypeDescription,
+      typeOfUseDescription: row.typeOfUseDescription,
+      subTypeOfUseDescription: row.subTypeOfUseDescription,
     };
 
     setFormData(editData);
     setInitialEditValues({ ...editData });
 
-    if (row.oldTypeOfUseId !== undefined && row.oldTypeOfUseId !== null) {
-      handleUseTypeChange(row.oldTypeOfUseId, true);
-    }
-
     // Scroll to form for better UX
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [handleUseTypeChange]);
+  }, []);
 
   /**
    * Resets the form to initial empty state.

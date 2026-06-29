@@ -154,62 +154,62 @@ export default function FloorInformationForm({
             {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
           </h3>
         </div>
-          {/* Floor Entry Form Fields */}
-          <FloorFormFields
-            t={t}
-            floorOptions={transformedFloorOptions}
-            subFloorOptions={transformedSubFloorOptions}
-            constructionTypeOptions={transformedConstructionTypeOptions}
-            useOptions={transformedUseOptions}
-            subUseOptions={transformedSubUseOptions}
-            hasSubUseOptions={hasSubUseOptions}
-            formData={formData}
-            errors={errors}
-            showError={showError}
-            onFieldChange={handleFieldChange}
-            onUseTypeChange={handleUseTypeChange}
-            validateYearField={validateYearField}
-            isSubmitting={isSubmitting}
-            isChanged={isChanged}
-            onSave={handleSave}
-            onReset={handleReset}
-          />
+        {/* Floor Entry Form Fields */}
+        <FloorFormFields
+          t={t}
+          floorOptions={transformedFloorOptions}
+          subFloorOptions={transformedSubFloorOptions}
+          constructionTypeOptions={transformedConstructionTypeOptions}
+          useOptions={transformedUseOptions}
+          subUseOptions={transformedSubUseOptions}
+          hasSubUseOptions={hasSubUseOptions}
+          formData={formData}
+          errors={errors}
+          showError={showError}
+          onFieldChange={handleFieldChange}
+          onUseTypeChange={handleUseTypeChange}
+          validateYearField={validateYearField}
+          isSubmitting={isSubmitting}
+          isChanged={isChanged}
+          onSave={handleSave}
+          onReset={handleReset}
+        />
 
-          {/* Floor Details Table */}
-          <div className="mt-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 md:pr-3">            
-              <div className="flex items-center gap-2 border-b border-blue-100 pb-2 md:ml-2">
-                <Layers className="w-4 h-4 text-blue-600" />
-                <h4 className="text-sm font-bold text-slate-800">
-                  {t('oldDetails.existingFloorDetails') || 'Existing Floor Details'}
-                </h4>
-              </div>
-
-              <div className="w-full sm:w-72">
-                <SearchInput
-                  value={search}
-                  onChange={handleSearchInput}
-                  placeholder={tCommon('actions.search') || 'Search floor details...'}
-                  className="mb-0"
-                />
-              </div>
+        {/* Floor Details Table */}
+        <div className="mt-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 md:pr-3">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2 md:ml-2">
+              <Layers className="w-4 h-4 text-blue-600" />
+              <h4 className="text-sm font-bold text-slate-800">
+                {t('oldDetails.existingFloorDetails') || 'Existing Floor Details'}
+              </h4>
             </div>
-            <FloorTableSection
-              t={t}
-              tCommon={tCommon}
-              existingFloorDetails={existingFloorDetails}
-              totalCount={totalCount}
-              pageNumber={pageNumber}
-              pageSize={pageSize}
-              totalPages={totalPages}
-              searchTerm={searchTerm}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onPageChange={changePage}
-              onPageSizeChange={handlePageSizeChange}
-              onSearchChange={handleSearchChange}
-            />
+
+            <div className="w-full sm:w-72">
+              <SearchInput
+                value={search}
+                onChange={handleSearchInput}
+                placeholder={tCommon('actions.search') || 'Search floor details...'}
+                className="mb-0"
+              />
+            </div>
           </div>
+          <FloorTableSection
+            t={t}
+            tCommon={tCommon}
+            existingFloorDetails={existingFloorDetails}
+            totalCount={totalCount}
+            pageNumber={pageNumber}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            searchTerm={searchTerm}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onPageChange={changePage}
+            onPageSizeChange={handlePageSizeChange}
+            onSearchChange={handleSearchChange}
+          />
+        </div>
       </div>
     </div>
   );

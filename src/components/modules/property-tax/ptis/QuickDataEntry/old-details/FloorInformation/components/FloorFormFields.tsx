@@ -41,7 +41,12 @@ export function FloorFormFields({
                     options={floorOptions}
                     name="floor"
                     onChange={(_, val) => onFieldChange('oldFloorId', val)}
-                    value={String(formData.oldFloorId)}                    
+                    value={String(formData.oldFloorId)}
+                    forceSearchText={
+                      formData.oldFloorId && !floorOptions.some(o => o.value === String(formData.oldFloorId))
+                        ? String(formData?.floorDescription || '')
+                        : undefined
+                    }
                     placeholder={t('oldDetails.floordtails.selectPlaceholder')}
                     autoFocus
                     className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
@@ -61,6 +66,11 @@ export function FloorFormFields({
                     name="subFloor"
                     onChange={(_, val) => onFieldChange('oldSubFloorId', val)}
                     value={String(formData.oldSubFloorId)}
+                    forceSearchText={
+                      formData.oldSubFloorId && !subFloorOptions.some(o => o.value === String(formData.oldSubFloorId))
+                        ? String(formData?.subFloorDescription || '')
+                        : undefined
+                    }
                     placeholder={t('oldDetails.floordtails.selectPlaceholder')}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
 
@@ -124,6 +134,11 @@ export function FloorFormFields({
                     name="conTyp"
                     onChange={(_, val) => onFieldChange('oldConstructionTypeId', val)}
                     value={String(formData.oldConstructionTypeId)}
+                    forceSearchText={
+                      formData.oldConstructionTypeId && !constructionTypeOptions.some(o => o.value === String(formData.oldConstructionTypeId))
+                        ? String(formData?.constructionTypeDescription || '')
+                        : undefined
+                    }
                     placeholder={t('oldDetails.floordtails.selectPlaceholder')}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
@@ -142,6 +157,11 @@ export function FloorFormFields({
                     name="use"
                     onChange={(_, val) => onUseTypeChange(val)}
                     value={String(formData.oldTypeOfUseId)}
+                    forceSearchText={
+                      formData.oldTypeOfUseId && !useOptions.some(o => o.value === String(formData.oldTypeOfUseId))
+                        ? String(formData?.typeOfUseDescription || '')
+                        : undefined
+                    }
                     placeholder={t('oldDetails.floordtails.selectPlaceholder')}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
@@ -153,14 +173,19 @@ export function FloorFormFields({
             {/* Sub Type */}
             <div className="space-y-1.5 relative focus-within:z-50">
                 <Label className="text-xs font-semibold text-gray-700">
-                    {t('floor.subTyp')} {hasSubUseOptions && <span className="text-red-500 ml-1">*</span>}
+                    {t('floor.subTyp')} {(hasSubUseOptions || formData.oldSubTypeOfUseId) && <span className="text-red-500 ml-1">*</span>}
                 </Label>
                 <SearchSelect
                     name="subUseType"
                     onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
                     value={String(formData.oldSubTypeOfUseId)}
-                    disabled={!hasSubUseOptions}
+                    disabled={!hasSubUseOptions && !formData.oldSubTypeOfUseId}
                     options={subUseOptions}
+                    forceSearchText={
+                      formData.oldSubTypeOfUseId && !subUseOptions.some(o => o.value === String(formData.oldSubTypeOfUseId))
+                        ? String(formData?.subTypeOfUseDescription || '')
+                        : undefined
+                    }
                     placeholder={t('oldDetails.floordtails.selectPlaceholder')}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />

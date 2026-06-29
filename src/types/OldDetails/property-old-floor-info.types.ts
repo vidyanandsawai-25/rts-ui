@@ -35,6 +35,11 @@ export interface FloorFormFieldsProps {
     oldAreaSqMeter?: string;
     oldBuiltupAreaSqFeet?: string;
     oldBuiltupAreaSqMeter?: string;
+    floorDescription?: string;
+    subFloorDescription?: string | null;
+    constructionTypeDescription?: string;
+    typeOfUseDescription?: string;
+    subTypeOfUseDescription?: string | null;
   };
   errors: Record<string, string>;
   showError: (field: string) => boolean;
