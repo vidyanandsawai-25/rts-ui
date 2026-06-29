@@ -73,7 +73,7 @@ export async function RateableTaxDetailsSection({
       {showInlineError && successMessage && (
         <ToastNotifier message={successMessage} type="success" />
       )}
-      <RateableTaxTable locale={locale} rateableData={rateableData} searchParams={searchParams} />
+      <RateableTaxTable locale={locale} rateableData={rateableData} searchParams={searchParams} propertyId={propertyId} />
 
 
       <ValuationSummaryFooter

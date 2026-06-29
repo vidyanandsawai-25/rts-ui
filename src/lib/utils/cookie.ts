@@ -138,3 +138,43 @@ export function getUserIdFromCookie(): number | null {
   if (!Number.isFinite(id) || id <= 0) return null;
   return id;
 }
+
+// ---------------------------------------------------------------------------
+// Department / Module Context Cookies
+// ---------------------------------------------------------------------------
+
+/** Shape returned by department context cookie readers. */
+export interface DepartmentContext {
+  departmentId: number | null;
+  departmentName: string | undefined;
+  moduleId: number | null;
+  moduleName: string | undefined;
+}
+
+/** Helper: parse a cookie value as a positive integer or null. */
+function parsePositiveInt(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const n = parseInt(raw, 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+
+/** Client-side: reads the active department/module context set when navigating from home. */
+export function getDepartmentContextFromCookies(): DepartmentContext {
+  return {
+    departmentId: parsePositiveInt(getCookieValue('department_id')),
+    departmentName: getCookieValue('department_name'),
+    moduleId: parsePositiveInt(getCookieValue('module_id')),
+    moduleName: getCookieValue('module_name'),
+  };
+}
+
+/** Server-side: reads the active department/module context from the cookie store. */
+export function getDepartmentContextFromCookieStore(store: CookieStoreLike): DepartmentContext {
+  return {
+    departmentId: parsePositiveInt(decodeCookieValue(store.get('department_id')?.value)),
+    departmentName: decodeCookieValue(store.get('department_name')?.value),
+    moduleId: parsePositiveInt(decodeCookieValue(store.get('module_id')?.value)),
+    moduleName: decodeCookieValue(store.get('module_name')?.value),
+  };
+}
