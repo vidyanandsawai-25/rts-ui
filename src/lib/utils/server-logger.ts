@@ -72,6 +72,13 @@ const pinoConfig = {
 // Create the base pino logger
 const baseLogger = pino(pinoConfig);
 
+// In development, pino-pretty creates a WriteStream that many child loggers
+// attach listeners to. Increase the limit to prevent MaxListenersExceededWarning.
+if (isDevelopment) {
+  const EventEmitter = require('events') as typeof import('events');
+  EventEmitter.defaultMaxListeners = 30;
+}
+
 interface LogContext {
   operation?: string;
   userId?: number | string;

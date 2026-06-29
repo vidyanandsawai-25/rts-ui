@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ChangeDetectionCompare } from '@/components/modules/property-tax/ptis/media/ChangeDetectionCompare';
 import React from 'react';
 
@@ -8,8 +8,6 @@ import React from 'react';
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     if (key === 'media.backToGrid') return 'Back to Grid';
-    if (key === 'media.compareModeSlider') return 'Slider';
-    if (key === 'media.compareModeSideBySide') return 'Side-by-Side';
     return key;
   },
   useLocale: () => 'en',
@@ -21,18 +19,6 @@ vi.mock('next/image', () => ({
     <img src={src} alt={alt} {...props} />
   ),
 }));
-
-// Mock useConfirm
-const mockConfirm = vi.fn();
-vi.mock('@/components/common', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/common')>();
-  return {
-    ...actual,
-    useConfirm: () => ({
-      confirm: mockConfirm,
-    }),
-  };
-});
 
 const mockActiveCategory = {
   photoTypeId: 9999,
@@ -74,36 +60,13 @@ describe('ChangeDetectionCompare', () => {
         activeCategory={mockActiveCategory}
         onBackToGrid={handleBackToGrid}
         onImagesChange={handleImagesChange}
-        propertyId={123}
       />
     );
 
     // Check back to grid button
     expect(screen.getByText('Back to Grid')).toBeInTheDocument();
     
-    // Check mode buttons
-    expect(screen.getByText('Slider')).toBeInTheDocument();
-    expect(screen.getByText('Side-by-Side')).toBeInTheDocument();
-  });
-
-  it('allows switching view mode', () => {
-    const handleBackToGrid = vi.fn();
-    const handleImagesChange = vi.fn();
-
-    render(
-      <ChangeDetectionCompare
-        activeCategory={mockActiveCategory}
-        onBackToGrid={handleBackToGrid}
-        onImagesChange={handleImagesChange}
-        propertyId={123}
-      />
-    );
-
-    const sideBySideBtn = screen.getByText('Side-by-Side');
-    fireEvent.click(sideBySideBtn);
-
-    // After switching, slider mode button should not be active/white styled in the same way (can be clicked)
-    const sliderBtn = screen.getByText('Slider');
-    fireEvent.click(sliderBtn);
+    // Check for Change Detection title/header path
+    expect(screen.getByText('Change Detection')).toBeInTheDocument();
   });
 });

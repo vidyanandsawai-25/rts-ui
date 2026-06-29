@@ -26,6 +26,34 @@ export function isCacheValid(propertyId: number): boolean {
   return Date.now() - entry.timestamp < CACHE_TTL_MS;
 }
 
+function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
+  if (a.length !== b.length) return false;
+  return a.every((slot, i) => {
+    const other = b[i];
+    return (
+      slot.photoTypeId === other?.photoTypeId &&
+      slot.photoTypeCode === other?.photoTypeCode &&
+      slot.hasPhoto === other?.hasPhoto &&
+      slot.photoCount === other?.photoCount &&
+      slot.propertyPhotoId === other?.propertyPhotoId &&
+      slot.viewUrl === other?.viewUrl
+    );
+  });
+}
+
+function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
+  if (a.length !== b.length) return false;
+  return a.every((photo, i) => {
+    const other = b[i];
+    return (
+      photo.propertyPhotoId === other?.propertyPhotoId &&
+      photo.photoTypeId === other?.photoTypeId &&
+      photo.viewUrl === other?.viewUrl &&
+      photo.displayOrder === other?.displayOrder
+    );
+  });
+}
+
 /**
  * Hook to manage property photos and photo slots.
  * Fully SSR-based with client-side cache persistence to avoid redundant API calls.
@@ -58,9 +86,9 @@ export function usePropertyPhotosQuery(
 
   // Sync state if propertyId or initial props change (derived state pattern)
   const isPropChange =
-    initialPhotoSlots !== prevInitialPhotoSlots ||
-    initialPhotos !== prevInitialPhotos ||
-    propertyId !== prevPropertyId;
+    propertyId !== prevPropertyId ||
+    !areSlotsEqual(initialPhotoSlots, prevInitialPhotoSlots) ||
+    !arePhotosEqual(initialPhotos, prevInitialPhotos);
 
   if (isPropChange) {
     let nextPhotoSlots = initialPhotoSlots;

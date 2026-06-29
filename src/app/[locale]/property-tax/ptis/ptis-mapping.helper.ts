@@ -63,8 +63,9 @@ export async function mapPtisFetchResults({
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
-    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes
-  ] = (detailResults.length > 0 ? detailResults : Array(15).fill(null)) as [
+    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
+    basicDetailsRes, waybackReleasesRes
+  ] = (detailResults.length > 0 ? detailResults : Array(17).fill(null)) as [
     { amenities: PagedResponse<ApartmentQCDetail>; commercial: PagedResponse<ApartmentQCDetail>; residential: PagedResponse<ApartmentQCDetail>; } | null,
     ActionResult<RateableValueResponse> | null,
     ActionResult<CapitalValueResponse> | null,
@@ -79,7 +80,9 @@ export async function mapPtisFetchResults({
     ActionResult<PropertyPhotoDto[]> | null,
     ActionResult<DualMethodResponse> | null,
     TaxDetailsResult | null,
-    ActionResult<{ items: PropertyRuleLogItem[] }> | null
+    ActionResult<{ items: PropertyRuleLogItem[] }> | null,
+    { success: boolean; data?: any } | null,
+    any[] | null
   ];
 
   const emptyPaged: PagedResponse<ApartmentQCDetail> = {
@@ -110,6 +113,14 @@ export async function mapPtisFetchResults({
     ? { ...defaultDiscountData, ...discountResult.data } : defaultDiscountData;
   const initialPhotoSlots = photoSlotsRes?.success && photoSlotsRes.data ? photoSlotsRes.data : [];
   const initialPhotos = photosRes?.success && photosRes.data ? photosRes.data : [];
+  const waybackReleases = waybackReleasesRes || [];
+
+  const latitude = basicDetailsRes?.success && basicDetailsRes.data?.latitude
+    ? parseFloat(basicDetailsRes.data.latitude)
+    : undefined;
+  const longitude = basicDetailsRes?.success && basicDetailsRes.data?.longitude
+    ? parseFloat(basicDetailsRes.data.longitude)
+    : undefined;
 
   const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
     ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)
@@ -176,5 +187,8 @@ export async function mapPtisFetchResults({
     activeTab,
     hasAppliedRules: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items && ruleLogsRes.data.items.length > 0 ? true : false,
     appliedRulesList: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items ? ruleLogsRes.data.items : [],
+    latitude,
+    longitude,
+    waybackReleases,
   };
 }

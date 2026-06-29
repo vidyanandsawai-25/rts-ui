@@ -76,7 +76,13 @@ export async function getCurrentWorkflowDetailAction(
     if (result.success) {
       return { success: true, data: result.data };
     }
-    logger.error('getCurrentWorkflowDetailAction error', { error: result.error, propertyId });
+    // 404 is expected when a property has no workflow record yet — log as warn, not error
+    const is404 = typeof result.error === 'string' && result.error.includes('404');
+    if (is404) {
+      logger.warn('No workflow detail found for property (expected for new properties)', { propertyId });
+    } else {
+      logger.error('getCurrentWorkflowDetailAction error', { error: result.error, propertyId });
+    }
     return { success: false, error: result.error || 'Action failed' };
   } catch (error: unknown) {
     logger.error('getCurrentWorkflowDetailAction exception', { propertyId }, error);

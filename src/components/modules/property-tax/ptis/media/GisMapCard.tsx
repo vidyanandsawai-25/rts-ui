@@ -28,6 +28,7 @@ export function GisMapCard({ image, onClick, onMouseEnter, onMouseLeave }: GisMa
         className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
         width={400}
         height={300}
+        priority
       />
       {/* Animated property marker */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">

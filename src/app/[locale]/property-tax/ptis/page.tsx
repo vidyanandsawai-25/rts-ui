@@ -96,7 +96,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     capitalTaxError,
     activeTab,
     hasAppliedRules,
-    appliedRulesList
+    appliedRulesList,
+    latitude,
+    longitude,
+    waybackReleases,
   } = pageData;
 
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
@@ -165,6 +168,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           initialPhotoSlots={initialPhotoSlots}
           initialPhotos={initialPhotos}
           initialMediaPanelVisible={initialMediaPanelVisible}
+          initialLatitude={latitude}
+          initialLongitude={longitude}
+          initialWaybackReleases={waybackReleases}
         >
           <div className="flex flex-col gap-6 w-full">
             <PropertyTabSection

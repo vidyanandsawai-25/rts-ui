@@ -10,6 +10,8 @@ import { ChangeDetectionCompare } from './ChangeDetectionCompare';
 import { usePhotoPlanDrawerState } from '@/hooks/ptis/photoplan/usePhotoPlanDrawerState';
 import { patchCategory } from '@/lib/utils/ptis-photo-plan-localization';
 
+import type { WaybackRelease } from '@/lib/api/wayback.service';
+
 interface PhotoPlanDrawerBodyProps {
   categories: PhotoCategory[];
   onCategoriesChange: (categories: PhotoCategory[]) => void;
@@ -17,6 +19,9 @@ interface PhotoPlanDrawerBodyProps {
   propertyId?: number;
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
 }
 
 export function PhotoPlanDrawerBody({
@@ -26,6 +31,9 @@ export function PhotoPlanDrawerBody({
   propertyId,
   fullyLoadedIds,
   onFullyLoadedIdsChange,
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases,
 }: PhotoPlanDrawerBodyProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -79,7 +87,6 @@ export function PhotoPlanDrawerBody({
         {activeCategory?.photoTypeCode === 'CHANGE_DETECTION' && viewMode === 'compare' ? (
           <ChangeDetectionCompare
             activeCategory={activeCategory}
-            propertyId={propertyId}
             onBackToGrid={() => {
               setSelectedImageIndex(null);
               setViewMode('grid');
@@ -87,6 +94,9 @@ export function PhotoPlanDrawerBody({
             onImagesChange={(updatedImages) => {
               onCategoriesChange(patchCategory(cachedCategories, selectedCategoryIndex, updatedImages));
             }}
+            initialLatitude={initialLatitude}
+            initialLongitude={initialLongitude}
+            initialWaybackReleases={initialWaybackReleases}
           />
         ) : isSplit ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">

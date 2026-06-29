@@ -43,6 +43,8 @@ export interface PropertyDetailsData {
   ownerName?: string;
   categoryId?: number;
   rateSectionDescription?: string;
+  latitude?: string | null;
+  longitude?: string | null;
 }
 
 export interface KYCDetailsData {
@@ -321,6 +323,8 @@ export interface PropertyBasicDetailsApiResponse {
   ownerName?: string;
   ownerNameEnglish?: string;
   rateSectionDescription?: string;
+  latitude?: string | null;
+  longitude?: string | null;
 }
 
 export interface SocietyDetailsApiResponse {

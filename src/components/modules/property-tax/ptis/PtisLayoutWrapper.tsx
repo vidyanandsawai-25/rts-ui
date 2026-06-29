@@ -6,6 +6,7 @@ import { MediaPanelToggle } from './MediaPanelToggle';
 import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
 import { usePropertyPhotosQuery } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
+import type { WaybackRelease } from '@/lib/api/wayback.service';
 
 interface PtisLayoutWrapperProps {
   children: React.ReactNode;
@@ -19,6 +20,9 @@ interface PtisLayoutWrapperProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   initialMediaPanelVisible?: boolean;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
 }
 
 function PtisLayoutWrapperContent({
@@ -32,6 +36,9 @@ function PtisLayoutWrapperContent({
   propertyId,
   initialPhotoSlots = [],
   initialPhotos = [],
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases = [],
 }: Omit<PtisLayoutWrapperProps, 'initialMediaPanelVisible'>) {
   const { isPanelVisible } = useMediaPanel();
   const { loading, photoSlots, photos } = usePropertyPhotosQuery(
@@ -71,6 +78,9 @@ function PtisLayoutWrapperContent({
             initialPhotoSlots={photoSlots}
             initialPhotos={photos}
             loading={loading}
+            initialLatitude={initialLatitude}
+            initialLongitude={initialLongitude}
+            initialWaybackReleases={initialWaybackReleases}
           />
         </div>
       </div>

@@ -15,6 +15,24 @@ export interface UsePhotoPlanDrawerStateProps {
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
 }
 
+function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
+  if (a.length !== b.length) return false;
+  return a.every((cat, i) => {
+    const other = b[i];
+    if (cat.photoTypeId !== other?.photoTypeId) return false;
+    if (cat.photoTypeCode !== other?.photoTypeCode) return false;
+    if (cat.images.length !== other.images.length) return false;
+    return cat.images.every((img, j) => {
+      const otherImg = other.images[j];
+      return (
+        img.propertyPhotoId === otherImg?.propertyPhotoId &&
+        img.src === otherImg?.src &&
+        img.hasPhoto === otherImg?.hasPhoto
+      );
+    });
+  });
+}
+
 export function usePhotoPlanDrawerState({
   categories,
   onCategoriesChange,
@@ -57,7 +75,7 @@ export function usePhotoPlanDrawerState({
   const [prevCategories, setPrevCategories] = useState<PhotoCategory[]>(categories);
 
   useEffect(() => {
-    if (categories !== prevCategories) {
+    if (!areCategoriesEqual(categories, prevCategories)) {
       Promise.resolve().then(() => {
         setPrevCategories(categories);
         setCachedCategories((prev) => mergeCategories(prev, categories));

@@ -16,6 +16,8 @@ import { getRateableValue } from './RateableValue.action';
 import { getDualMethod } from './DualMethod.action';
 import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
 import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
+import { ptisService } from '@/lib/api/ptis/tab/ptis.service';
+import { fetchWaybackReleases } from '@/lib/api/wayback.service';
 
 export async function fetchPropertyDetailsConcurrently(
   propertyId: number,
@@ -75,5 +77,7 @@ export async function fetchPropertyDetailsConcurrently(
     valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
     fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
     propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
+    propertyId ? ptisService.getPropertyBasicDetails(propertyId) : Promise.resolve(null),
+    fetchWaybackReleases(),
   ]);
 }

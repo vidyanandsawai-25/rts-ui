@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useCallback } from 'react';
 import { Images, X, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/common';
@@ -13,6 +11,8 @@ import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState'
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 import { useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
+import { WAYBACK_STATIC_TILE_URL, type WaybackRelease } from '@/lib/api/wayback.service';
+import { getDefaultCoordinates, latLngToTile } from '@/lib/utils/coordinate-utils';
 
 export interface PropertyMediaPanelProps {
   wardNo?: string;
@@ -25,12 +25,18 @@ export interface PropertyMediaPanelProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   loading?: boolean;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
 }
 
 function PropertyMediaPanel({
   wardNo = '', propertyNo = '', propertyId,
   initialPhotoSlots = [], initialPhotos = [],
   loading = false,
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases = [],
 }: PropertyMediaPanelProps): React.ReactElement {
   const { isDrawerOpen, drawerInitialCategoryIndex, openDrawer, closeDrawer } = useMediaDrawerState();
   const { isPanelVisible, togglePanel } = useMediaPanel();
@@ -42,9 +48,33 @@ function PropertyMediaPanel({
     fullyLoadedIds, setFullyLoadedIds, t,
   } = usePropertyMedia({ initialPhotoSlots, initialPhotos, propertyId });
 
+  // Derive coordinates and releases directly from server-side props
+  const coords = initialLatitude && initialLongitude
+    ? { lat: initialLatitude, lng: initialLongitude }
+    : getDefaultCoordinates();
+  const waybackReleases = initialWaybackReleases;
+
   const cdCategory = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
-  const cdBeforeImg = cdCategory?.images?.[0]?.src || '', cdAfterImg = cdCategory?.images?.[1]?.src || '';
-  const cdBeforeLabel = t('media.beforeCustomLabel') || 'Before (Old)', cdAfterLabel = t('media.afterCustomLabel') || 'After (New)';
+  
+  let cdBeforeImg = cdCategory?.images?.[0]?.src || '';
+  let cdAfterImg = cdCategory?.images?.[1]?.src || '';
+  let cdBeforeLabel = t('media.beforeCustomLabel') || 'Before (Old)';
+  let cdAfterLabel = t('media.afterCustomLabel') || 'After (New)';
+
+  // Fallback to real Wayback satellite tiles if no custom uploads are present in the catalog
+  if (!cdBeforeImg && waybackReleases.length > 0) {
+    const activeCoords = coords || getDefaultCoordinates();
+    const tile = latLngToTile(activeCoords.lat, activeCoords.lng, 17);
+    const beforeRelease = waybackReleases[0];
+    const afterRelease = waybackReleases[waybackReleases.length - 1];
+
+    if (beforeRelease && afterRelease) {
+      cdBeforeImg = WAYBACK_STATIC_TILE_URL(beforeRelease.releaseId, tile.x, tile.y, tile.z);
+      cdAfterImg = WAYBACK_STATIC_TILE_URL(afterRelease.releaseId, tile.x, tile.y, tile.z);
+      cdBeforeLabel = `Before (${beforeRelease.year})`;
+      cdAfterLabel = `After (${afterRelease.year})`;
+    }
+  }
 
   const handleCreateClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); openDrawer(photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0, undefined, 'create');
@@ -181,6 +211,9 @@ function PropertyMediaPanel({
           onCategoriesChange={handleCategoriesChange} wardNo={wardNo} propertyNo={propertyNo}
           initialCategoryIndex={drawerInitialCategoryIndex} propertyId={propertyId}
           fullyLoadedIds={fullyLoadedIds} onFullyLoadedIdsChange={setFullyLoadedIds}
+          initialLatitude={coords.lat}
+          initialLongitude={coords.lng}
+          initialWaybackReleases={waybackReleases}
         />
       )}
     </div>

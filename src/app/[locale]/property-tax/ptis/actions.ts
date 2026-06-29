@@ -130,6 +130,15 @@ export async function fetchPropertyDetailsOnlyAction(
   );
 }
 
+export async function fetchPropertyBasicDetailsAction(propertyId: number) {
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(() => ptisService.getPropertyBasicDetails(propertyId));
+}
+
 export async function fetchKycDetailsOnlyAction(propertyId: number) {
   const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });

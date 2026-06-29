@@ -102,4 +102,6 @@ export interface PropertyBasicDetailsApiResponse {
   plotAreaMtrWidth: number;
   wingId: number;
   wingName: string;
+  latitude?: string | null;
+  longitude?: string | null;
 }

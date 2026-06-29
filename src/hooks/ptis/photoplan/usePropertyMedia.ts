@@ -12,6 +12,34 @@ export interface UsePropertyMediaProps {
   propertyId?: number;
 }
 
+function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
+  if (a.length !== b.length) return false;
+  return a.every((slot, i) => {
+    const other = b[i];
+    return (
+      slot.photoTypeId === other?.photoTypeId &&
+      slot.photoTypeCode === other?.photoTypeCode &&
+      slot.hasPhoto === other?.hasPhoto &&
+      slot.photoCount === other?.photoCount &&
+      slot.propertyPhotoId === other?.propertyPhotoId &&
+      slot.viewUrl === other?.viewUrl
+    );
+  });
+}
+
+function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
+  if (a.length !== b.length) return false;
+  return a.every((photo, i) => {
+    const other = b[i];
+    return (
+      photo.propertyPhotoId === other?.propertyPhotoId &&
+      photo.photoTypeId === other?.photoTypeId &&
+      photo.viewUrl === other?.viewUrl &&
+      photo.displayOrder === other?.displayOrder
+    );
+  });
+}
+
 export function usePropertyMedia({
   initialPhotoSlots = [],
   initialPhotos = [],
@@ -25,12 +53,12 @@ export function usePropertyMedia({
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
   const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
 
-  if (initialPhotos !== prevInitialPhotos) {
+  if (!arePhotosEqual(initialPhotos, prevInitialPhotos)) {
     setPhotos(initialPhotos);
     setPrevInitialPhotos(initialPhotos);
   }
 
-  if (initialPhotoSlots !== prevInitialPhotoSlots) {
+  if (!areSlotsEqual(initialPhotoSlots, prevInitialPhotoSlots)) {
     setFullyLoadedIds(new Set());
     setPrevInitialPhotoSlots(initialPhotoSlots);
   }

@@ -186,15 +186,17 @@ export function ImageWithFallback({
           }}
           width={fill ? undefined : width}
           height={fill ? undefined : height}
-          fill={fill}
+          fill={fill || undefined}
           sizes={sizes ?? (fill ? '100vw' : undefined)}
-          priority={priority}
+          priority={priority || undefined}
           quality={75}
           loading={priority ? undefined : 'lazy'}
           unoptimized={
             isBlobOrDataUrl(effectiveSrc) ||
             !effectiveSrc.startsWith('/') ||
             effectiveSrc.startsWith('/api/documents/')
+              ? true
+              : undefined
           }
         />
       )}

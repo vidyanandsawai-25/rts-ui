@@ -55,6 +55,8 @@ export const ptisMapper = {
       ownerName: data.ownerName || data.ownerNameEnglish || '',
       categoryId: data.categoryId,
       rateSectionDescription: data.rateSectionDescription || '',
+      latitude: data.latitude || null,
+      longitude: data.longitude || null,
     };
   },
 

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface UseChangeDetectionCompareProps {
-  mode: 'slider' | 'side-by-side';
+  mode: 'slider' | 'side-by-side' | 'wayback';
 }
 
 export function useChangeDetectionCompare({ mode }: UseChangeDetectionCompareProps) {
