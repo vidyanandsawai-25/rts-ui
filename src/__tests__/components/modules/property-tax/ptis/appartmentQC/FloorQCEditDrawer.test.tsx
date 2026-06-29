@@ -127,7 +127,7 @@ describe('FloorQCEditDrawer', () => {
   it('validates year length on save', async () => {
     const invalidYearProps = {
       ...defaultProps,
-      row: { ...defaultProps.row, conYear: '2022', asstYear: '123' } as unknown as DrawerFloorDataRow
+      row: { ...defaultProps.row, conYear: '202', asstYear: '123' } as unknown as DrawerFloorDataRow
     };
     render(<FloorQCEditDrawer {...invalidYearProps} />);
     const user = userEvent.setup();
