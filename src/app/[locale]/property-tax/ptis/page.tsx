@@ -19,6 +19,7 @@ import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis
 
 import { fetchPtisPageData } from './ptis-fetch.service';
 import { PtisNavigationProvider } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
+import { getWorkflowStagesAction, getCurrentWorkflowDetailAction } from './workflowStageActions';
 import { PtisInitialData } from '@/types/ptis.types';
 
 interface PtisPageProps {
@@ -44,8 +45,20 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const { locale } = resolvedParams;
   const t = await getTranslations({ locale, namespace: 'ptis' });
 
-  // 1. Fetch all data concurrently on the server
-  const pageData = await fetchPtisPageData(resolvedSearchParams, locale);
+  // 1. Fetch all data concurrently on the server.
+  const [pageData, workflowStagesResult] = await Promise.all([
+    fetchPtisPageData(resolvedSearchParams, locale),
+    getWorkflowStagesAction(),
+  ]);
+
+  const workflowStages = workflowStagesResult?.success ? (workflowStagesResult.data || []) : [];
+  if (!workflowStagesResult?.success) {
+    console.error('Failed to load workflow stages:', workflowStagesResult?.error);
+  }
+
+  const currentWorkflow = pageData.resolvedPropertyId
+    ? await getCurrentWorkflowDetailAction(pageData.resolvedPropertyId)
+    : null;
 
   // 2. Perform URL normalization redirects
   if (pageData.shouldRedirect && pageData.redirectUrl) {
@@ -240,7 +253,13 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           actions={footerActions}
           properties={rawPropertyData}
           leftContent={<PtisBackButton />}
-          rightContent={<PtisFooterDropdowns />}
+          rightContent={
+            <PtisFooterDropdowns
+              workflowStages={workflowStages}
+              propertyId={resolvedPropertyId}
+              currentWorkflowStageId={currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined}
+            />
+          }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}
           societyDetailId={societyDetails.societyDetailId}
         />

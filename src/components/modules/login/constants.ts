@@ -93,6 +93,22 @@ export const ULB_COOKIES = {
 } as const;
 
 /**
+ * Department & Module context cookie names.
+ * Set when the user clicks a department card on the home screen
+ * so downstream pages know the active department/module.
+ */
+export const DEPARTMENT_COOKIES = {
+  /** Currently selected department ID */
+  DEPARTMENT_ID: 'department_id',
+  /** Currently selected department name */
+  DEPARTMENT_NAME: 'department_name',
+  /** Currently selected module ID */
+  MODULE_ID: 'module_id',
+  /** Currently selected module name */
+  MODULE_NAME: 'module_name',
+} as const;
+
+/**
  * All cookies that should be cleared on logout.
  */
 /** Query param value for login page (`?error=sessionExpired`) after automatic session expiry. */
@@ -111,6 +127,10 @@ export const LOGOUT_CLEAR_COOKIES = [
   ULB_COOKIES.ULB_NAME_LOCAL,
   ULB_COOKIES.ULB_LOGO,
   ULB_COOKIES.ULB_CODE,
+  DEPARTMENT_COOKIES.DEPARTMENT_ID,
+  DEPARTMENT_COOKIES.DEPARTMENT_NAME,
+  DEPARTMENT_COOKIES.MODULE_ID,
+  DEPARTMENT_COOKIES.MODULE_NAME,
   'forgot_flow',
   'forgot_reset_otp',
 ] as const;
