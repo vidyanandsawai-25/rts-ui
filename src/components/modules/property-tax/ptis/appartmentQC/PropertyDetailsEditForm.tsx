@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   CancelButton,
   SaveButton,
@@ -223,7 +223,7 @@ export default function PropertyDetailsEditForm({
     setFloorQCEditDrawerOpen(true);
   }, []);
 
-  const handleSaveFloorQC = React.useCallback((updatedRow: any) => {
+  const handleSaveFloorQC = React.useCallback((updatedRow: import('@/hooks/apartmentQc/propertyEditScreenDrawer.types').DrawerFloorDataRow) => {
     updateFloorRow(updatedRow.id, "floorId", updatedRow.floorId);
     updateFloorRow(updatedRow.id, "conYear", updatedRow.conYear);
     updateFloorRow(updatedRow.id, "asstYear", updatedRow.asstYear);
@@ -257,6 +257,7 @@ export default function PropertyDetailsEditForm({
       getSubTypeOptions,
       updateFloorRow,
       roomSidebar.handleOpen,
+      handleOpenFloorQCEdit,
       copy.floorQC,
       subTabProp,
       dualMethodTab,
@@ -500,7 +501,7 @@ export default function PropertyDetailsEditForm({
         open={floorQCEditDrawerOpen}
         onClose={() => setFloorQCEditDrawerOpen(false)}
         onSave={handleSaveFloorQC}
-        row={selectedFloorQCEditRow as any}
+        row={selectedFloorQCEditRow as unknown as import('@/hooks/apartmentQc/propertyEditScreenDrawer.types').DrawerFloorDataRow}
         floorOptions={floorOptions}
         conTypeOptions={conTypeOptions}
         useTypeOptions={useTypeOptions}

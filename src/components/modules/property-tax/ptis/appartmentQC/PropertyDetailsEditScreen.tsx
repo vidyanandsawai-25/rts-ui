@@ -3,6 +3,7 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Drawer } from '@/components/common/Drawer';
 import { Button, CancelButton, LoadingPage, SaveButton } from '@/components/common';
 import { MasterTable } from '@/components/common/MasterTable';
@@ -74,6 +75,9 @@ const ResidentialEditScreen = ({
   returnTo = 'amenities',
 }: ResidentialEditScreenProps) => {
   const t = useTranslations('appartmentQC');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [areaUnit, setAreaUnit] = useState<'sq.m' | 'sq.ft'>('sq.m');
 
   const handleToggleUnit = () => {
@@ -111,8 +115,13 @@ const ResidentialEditScreen = ({
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
   
   // State for Floor QC Edit Drawer
-  const [floorQCEditDrawerOpen, setFloorQCEditDrawerOpen] = useState(false);
-  const [selectedFloorQCEditRow, setSelectedFloorQCEditRow] = useState<DrawerFloorDataRow | null>(null);
+  const floorEditId = searchParams.get('floorEditId');
+  const floorQCEditDrawerOpen = !!floorEditId;
+  
+  const selectedFloorQCEditRow = useMemo(() => {
+    if (!floorEditId) return null;
+    return hookFloorData.find(row => String(row.pdnId) === floorEditId) || null;
+  }, [floorEditId, hookFloorData]);
 
   const SELECTED_FLOOR_ROW_KEY = 'selectedFloorRow';
 
@@ -506,19 +515,58 @@ const ResidentialEditScreen = ({
   );
 
   const handleOpenFloorQCEdit = useCallback((row: DrawerFloorDataRow) => {
-    setSelectedFloorQCEditRow(row);
-    setFloorQCEditDrawerOpen(true);
-  }, []);
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set('floorEditId', String(row.pdnId));
+    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+  }, [router, pathname, searchParams]);
 
-  const handleSaveFloorQC = useCallback((updatedRow: DrawerFloorDataRow) => {
-    hook.updateFloorRow(updatedRow.id, 'floorId', updatedRow.floorId);
-    hook.updateFloorRow(updatedRow.id, 'conYear', updatedRow.conYear);
-    hook.updateFloorRow(updatedRow.id, 'asstYear', updatedRow.asstYear);
-    hook.updateFloorRow(updatedRow.id, 'constructionTypeId', updatedRow.constructionTypeId);
-    hook.updateFloorRow(updatedRow.id, 'typeOfUseId', updatedRow.typeOfUseId);
-    hook.updateFloorRow(updatedRow.id, 'subTypeOfUseId', updatedRow.subTypeOfUseId);
-    setFloorQCEditDrawerOpen(false);
-  }, [hook]);
+  const handleSaveFloorQC = useCallback(async (updatedRow: DrawerFloorDataRow) => {
+    if (!propertyId || !updatedRow.pdnId) {
+      toast.error("Property ID or Detail ID is missing");
+      return;
+    }
+
+    try {
+      const { updateFloorQCDetailAction } = await import('@/app/[locale]/property-tax/ptis/appartmentQC/action');
+      const { getUserIdFromCookie } = await import('@/lib/utils/cookie');
+      
+      const floorOption = hook.floorOptions.find(opt => opt.value === updatedRow.floorId || opt.label === updatedRow.floorId);
+      const conTypeOption = hook.conTypeOptions.find(opt => opt.value === updatedRow.constructionTypeId || opt.label === updatedRow.constructionTypeId);
+      const useTypeOption = hook.useTypeOptions.find(opt => opt.value === updatedRow.typeOfUseId || opt.label === updatedRow.typeOfUseId);
+      const subTypeOption = hook.getSubTypeOptionsForUseType(updatedRow.typeOfUseId).find(opt => opt.value === updatedRow.subTypeOfUseId || opt.label === updatedRow.subTypeOfUseId);
+      
+      const payload = {
+        pdnId: updatedRow.pdnId,
+        id: updatedRow.pdnId,
+        floorId: floorOption ? parseInt(floorOption.value, 10) : undefined,
+        constructionTypeId: conTypeOption ? parseInt(conTypeOption.value, 10) : undefined,
+        typeOfUseId: useTypeOption ? parseInt(useTypeOption.value, 10) : undefined,
+        subTypeOfUseId: subTypeOption ? parseInt(subTypeOption.value, 10) : undefined,
+        constructionYear: updatedRow.conYear || undefined,
+        assessmentYear: updatedRow.asstYear || undefined,
+        updatedBy: getUserIdFromCookie() || 1,
+      };
+
+      const result = await updateFloorQCDetailAction(propertyId, updatedRow.pdnId, payload);
+      
+      if (result.success) {
+        toast.success("Floor QC updated successfully");
+        hook.updateFloorRow(updatedRow.id, 'floorId', updatedRow.floorId);
+        hook.updateFloorRow(updatedRow.id, 'conYear', updatedRow.conYear);
+        hook.updateFloorRow(updatedRow.id, 'asstYear', updatedRow.asstYear);
+        hook.updateFloorRow(updatedRow.id, 'constructionTypeId', updatedRow.constructionTypeId);
+        hook.updateFloorRow(updatedRow.id, 'typeOfUseId', updatedRow.typeOfUseId);
+        hook.updateFloorRow(updatedRow.id, 'subTypeOfUseId', updatedRow.subTypeOfUseId);
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete('floorEditId');
+        router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+      } else {
+        toast.error(result.error || "Failed to update Floor QC");
+      }
+    } catch {
+      toast.error("Failed to update Floor QC");
+    }
+  }, [propertyId, hook, router, pathname, searchParams]);
 
   // Column definitions
   const commonColumns = useDrawerCommonColumns({
@@ -534,7 +582,6 @@ const ResidentialEditScreen = ({
     handleUseTypeDropdownClick: hook.handleUseTypeDropdownClick,
     updateRow: hook.updateFloorRow,
     onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading,
-    onOpenFloorQCEdit: handleOpenFloorQCEdit,
   });
   const rateableColumns = useDrawerRateableColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
   const capitalColumns = useDrawerCapitalColumns({ onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading });
@@ -838,8 +885,9 @@ const ResidentialEditScreen = ({
               <div className="mt-4">
                 <ApartmentTaxDetailsTable
                   taxDetails={taxDetails}
-                  subTab={hook.subTab as 'rateable' | 'capital'}
-                  dualMethodTaxDetails={null}
+                  dualMethodDetails={null}
+                  activeMainTab={hook.subTab}
+                  activeSubTab={hook.dualMethodTab}
                 />
               </div>
             )}
@@ -847,8 +895,9 @@ const ResidentialEditScreen = ({
               <div className="mt-4">
                 <ApartmentTaxDetailsTable
                   taxDetails={null}
-                  subTab="dual-method"
-                  dualMethodTaxDetails={dualMethodTaxDetails}
+                  dualMethodDetails={dualMethodTaxDetails}
+                  activeMainTab={hook.subTab}
+                  activeSubTab={hook.dualMethodTab}
                 />
               </div>
             )}
@@ -859,7 +908,11 @@ const ResidentialEditScreen = ({
 
       <FloorQCEditDrawer
         open={floorQCEditDrawerOpen}
-        onClose={() => setFloorQCEditDrawerOpen(false)}
+        onClose={() => {
+          const newParams = new URLSearchParams(searchParams.toString());
+          newParams.delete('floorEditId');
+          router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
+        }}
         onSave={handleSaveFloorQC}
         row={selectedFloorQCEditRow}
         floorOptions={hook.floorOptions}

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton } from "@/components/common";
+import { SaveButton, CancelButton } from "@/components/common";
 import { EditableSelect, EditableInput } from "./PropertyEditDrawerInputs";
-import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
 import { useTranslations } from "next-intl";
 
@@ -13,17 +12,17 @@ interface FloorQCEditDrawerProps {
   onClose: () => void;
   onSave: (updatedRow: DrawerFloorDataRow) => void;
   row: DrawerFloorDataRow | null;
-  
+
   // Dropdown states and loading
   floorOptions: DrawerDropdownOption[];
   conTypeOptions: DrawerDropdownOption[];
   useTypeOptions: DrawerDropdownOption[];
   getSubTypeOptions: (typeOfUseId: string) => DrawerDropdownOption[];
-  
+
   isLoadingFloors: boolean;
   isLoadingConTypes: boolean;
   isLoadingUseTypes: boolean;
-  
+
   // Handlers to trigger lazy loading
   handleFloorDropdownClick: () => void;
   handleConTypeDropdownClick: () => void;
@@ -48,10 +47,13 @@ export const FloorQCEditDrawer = ({
 }: FloorQCEditDrawerProps) => {
   const t = useTranslations("appartmentQC");
   const [formData, setFormData] = useState<DrawerFloorDataRow | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open && row) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({ ...row });
+      setErrors({});
     }
   }, [open, row]);
 
@@ -59,12 +61,62 @@ export const FloorQCEditDrawer = ({
 
   const updateField = (field: keyof DrawerFloorDataRow, value: string) => {
     setFormData((prev) => prev ? { ...prev, [field]: value } : null);
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
   };
 
   const handleSaveClick = () => {
     if (formData) {
-      onSave(formData);
+      const newErrors: Record<string, string> = {};
+      let hasError = false;
+
+      if (!formData.floorId) {
+        newErrors.floorId = t("floorQC.validation.floorRequired") || "Floor is required";
+        hasError = true;
+      }
+      if (!formData.conYear) {
+        newErrors.conYear = t("floorQC.validation.conYearRequired") || "Construction year is required";
+        hasError = true;
+      } else if (formData.conYear.length !== 4) {
+        newErrors.conYear = t("floorQC.validation.conYearInvalid") || "Construction year must be 4 digits";
+        hasError = true;
+      }
+      if (!formData.asstYear) {
+        newErrors.asstYear = t("floorQC.validation.asstYearRequired") || "Assessment year is required";
+        hasError = true;
+      } else if (formData.asstYear.length !== 4) {
+        newErrors.asstYear = t("floorQC.validation.asstYearInvalid") || "Assessment year must be 4 digits";
+        hasError = true;
+      }
+      if (!formData.constructionTypeId) {
+        newErrors.constructionTypeId = t("floorQC.validation.conTypeRequired") || "Construction type is required";
+        hasError = true;
+      }
+      if (!formData.typeOfUseId) {
+        newErrors.typeOfUseId = t("floorQC.validation.useRequired") || "Use type is required";
+        hasError = true;
+      }
+
+      setErrors(newErrors);
+
+      if (!hasError) {
+        onSave(formData);
+      }
     }
+  };
+
+  const getMatchedValue = (value: string | undefined, options: DrawerDropdownOption[]) => {
+    if (!value) return "";
+    const match = options.find(opt => opt.value === value || opt.label === value);
+    return match ? match.value : value;
+  };
+
+  const getDisplayOptions = (value: string | undefined, options: DrawerDropdownOption[]) => {
+    if (!value) return options;
+    const exists = options.some(opt => opt.value === value || opt.label === value);
+    if (exists) return options;
+    return [{ value, label: value }, ...options];
   };
 
   return (
@@ -72,32 +124,33 @@ export const FloorQCEditDrawer = ({
       open={open}
       onClose={onClose}
       width="md"
-      title="Edit Floor QC"
+      title={<span className="text-gray-900 font-semibold">{t("floorQC.columns.editFloorQC") || "Edit Floor QC"}</span>}
       footer={
-        <>
-          <CancelButton onClick={onClose} label={t("drawer.cancel")} />
+        <div className="flex justify-end gap-3 w-full">
+          <CancelButton onClick={onClose} label={t("drawer.cancel") || "Cancel"} />
           <SaveButton
             onClick={handleSaveClick}
-            label="Save / Update"
+            label={t("drawer.update") || "Update"}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           />
-        </>
+        </div>
       }
     >
       <div className="p-6 space-y-4">
         <div onClick={handleFloorDropdownClick}>
           <EditableSelect
-            label={t("floorQC.columns.floor") + " *"}
-            value={formData.floorId}
+            label={t("floorQC.columns.floor")}
+            value={getMatchedValue(formData.floorId, floorOptions)}
             onChange={(v) => updateField("floorId", v)}
-            options={floorOptions}
+            options={getDisplayOptions(formData.floorId, floorOptions)}
             isLoading={isLoadingFloors}
             required
+            error={errors.floorId}
           />
         </div>
-        
+
         <EditableInput
-          label={t("floorQC.columns.conYear") + " *"}
+          label={t("floorQC.columns.conYear")}
           value={formData.conYear}
           onChange={(v) => {
             let newValue = v;
@@ -106,10 +159,11 @@ export const FloorQCEditDrawer = ({
             updateField("conYear", newValue);
           }}
           required
+          error={errors.conYear}
         />
 
         <EditableInput
-          label={t("floorQC.columns.asstYear") + " *"}
+          label={t("floorQC.columns.asstYear")}
           value={formData.asstYear}
           onChange={(v) => {
             let newValue = v;
@@ -118,42 +172,45 @@ export const FloorQCEditDrawer = ({
             updateField("asstYear", newValue);
           }}
           required
+          error={errors.asstYear}
         />
 
         <div onClick={handleConTypeDropdownClick}>
           <EditableSelect
-            label={t("floorQC.columns.conType") + " *"}
-            value={formData.constructionTypeId}
+            label={t("floorQC.columns.conType")}
+            value={getMatchedValue(formData.constructionTypeId, conTypeOptions)}
             onChange={(v) => updateField("constructionTypeId", v)}
-            options={conTypeOptions}
+            options={getDisplayOptions(formData.constructionTypeId, conTypeOptions)}
             isLoading={isLoadingConTypes}
             required
+            error={errors.constructionTypeId}
           />
         </div>
 
         <div onClick={handleUseTypeDropdownClick}>
           <EditableSelect
-            label={t("floorQC.columns.use") + " *"}
-            value={formData.typeOfUseId}
+            label={t("floorQC.columns.use")}
+            value={getMatchedValue(formData.typeOfUseId, useTypeOptions)}
             onChange={(v) => {
               updateField("typeOfUseId", v);
               // Reset sub-type when use type changes
               updateField("subTypeOfUseId", "");
             }}
-            options={useTypeOptions}
+            options={getDisplayOptions(formData.typeOfUseId, useTypeOptions)}
             isLoading={isLoadingUseTypes}
             required
+            error={errors.typeOfUseId}
           />
         </div>
 
         <div onClick={handleUseTypeDropdownClick}>
           <EditableSelect
-            label={t("floorQC.columns.subTypeOfUse") + " *"}
-            value={formData.subTypeOfUseId}
+            label={t("floorQC.columns.subTypeOfUse")}
+            value={getMatchedValue(formData.subTypeOfUseId, getSubTypeOptions(formData.typeOfUseId))}
             onChange={(v) => updateField("subTypeOfUseId", v)}
-            options={getSubTypeOptions(formData.typeOfUseId)}
+            options={getDisplayOptions(formData.subTypeOfUseId, getSubTypeOptions(formData.typeOfUseId))}
             isLoading={isLoadingUseTypes}
-            required
+            error={errors.subTypeOfUseId}
           />
         </div>
       </div>

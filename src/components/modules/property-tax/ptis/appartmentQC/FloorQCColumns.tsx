@@ -5,7 +5,6 @@ import { Eye } from "lucide-react";
 import { EditLabelButton } from "@/components/common/ActionButtons";
 import { cn } from "@/lib/utils/cn";
 import { Select, MatrixCellInput } from "@/components/common";
-import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import type { Column } from "@/components/common/MasterTable";
 import type { FloorDataRow, DropdownOption, FloorQCSectionCopy } from "@/types/propertyEdit.types";
 
@@ -207,7 +206,6 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     useTypeOptions,
     getSubTypeOptions,
     onOpenRoomSubmission,
-    onOpenFloorQCEdit,
     copy,
   } = config;
 
@@ -299,10 +297,10 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
 /**
  * Action Column
  */
-export function buildActionColumn(onOpenFloorQCEdit?: (row: FloorDataRow) => void): Column<FloorDataRow> {
+export function buildActionColumn(copy: FloorQCSectionCopy, onOpenFloorQCEdit?: (row: FloorDataRow) => void): Column<FloorDataRow> {
   return {
     key: "actions",
-    label: "Action",
+    label: (copy.columns as Record<string, string>).editFloorQC || "Edit Floor QC",
     cellClassName: "px-0.5 py-0.5",
     render: (_v, row) => (
       <div className="flex items-center justify-center h-full">
@@ -312,7 +310,7 @@ export function buildActionColumn(onOpenFloorQCEdit?: (row: FloorDataRow) => voi
               e.stopPropagation();
               onOpenFloorQCEdit(row);
             }}
-            title="Edit Floor QC"
+            title={(copy.tooltips as Record<string, string>)?.editFloorQC || "Edit Floor QC"}
           />
         )}
       </div>
@@ -324,9 +322,9 @@ export function buildActionColumn(onOpenFloorQCEdit?: (row: FloorDataRow) => voi
  * Builds rateable method columns (read-only display)
  */
 export function buildRateableColumns(copy: FloorQCSectionCopy, onOpenRoomSubmission: (row: FloorDataRow) => void): Column<FloorDataRow>[] {
-  const makeClickableCell = (val: any, row: FloorDataRow) => (
+  const makeClickableCell = (val: string | number | undefined | null, row: FloorDataRow) => (
     <ReadOnlyCell 
-      value={val} 
+      value={val != null ? String(val) : ""} 
       onClick={() => onOpenRoomSubmission(row)} 
       disabled={!row.pdnId}
       className="h-full flex items-center justify-center min-h-[24px]"
@@ -347,9 +345,9 @@ export function buildRateableColumns(copy: FloorQCSectionCopy, onOpenRoomSubmiss
  * Builds capital method columns (read-only display)
  */
 export function buildCapitalColumns(copy: FloorQCSectionCopy, onOpenRoomSubmission: (row: FloorDataRow) => void): Column<FloorDataRow>[] {
-  const makeClickableCell = (val: any, row: FloorDataRow) => (
+  const makeClickableCell = (val: string | number | undefined | null, row: FloorDataRow) => (
     <ReadOnlyCell 
-      value={val} 
+      value={val != null ? String(val) : ""} 
       onClick={() => onOpenRoomSubmission(row)} 
       disabled={!row.pdnId}
       className="h-full flex items-center justify-center min-h-[24px]"
@@ -377,7 +375,7 @@ export function buildFloorQCColumns(
   const commonColumns = buildCommonColumns(config);
   const rateableColumns = buildRateableColumns(config.copy, config.onOpenRoomSubmission);
   const capitalColumns = buildCapitalColumns(config.copy, config.onOpenRoomSubmission);
-  const actionCol = buildActionColumn(config.onOpenFloorQCEdit);
+  const actionCol = buildActionColumn(config.copy, config.onOpenFloorQCEdit);
 
   if (subTab === "capital") {
     return [...commonColumns, ...capitalColumns, actionCol];

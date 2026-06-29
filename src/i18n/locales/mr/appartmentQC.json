@@ -122,6 +122,7 @@
     "noPropertyData": "कोणतीही मालमत्ता डेटा सापडला नाही.",
     "goBack": "मागे जा",
     "cancel": "रद्द करा",
+    "update": "अद्यतनित करा",
     "basicInformation": "मूलभूत माहिती",
     "floorQC": "फ्लोअर QC",
     "roomWiseSubmission": "खोलीनिहाय सादरीकरण",
@@ -316,7 +317,8 @@
       "ageFactor": "वय घटक",
       "ntbFactor": "NTB घटक",
       "useFactor": "वापर घटक",
-      "capitalValue": "भांडवली मूल्य"
+      "capitalValue": "भांडवली मूल्य",
+      "editFloorQC": "मजला QC संपादित करा"
     },
      "toolTipFloorQC": {
       "tooltips": {
@@ -341,7 +343,8 @@
         "ageFactor": "वय गुणांक",
         "ntbFactor": "NTB गुणांक",
         "useFactor": "वापर गुणांक",
-        "capitalValue": "भांडवली मूल्य"
+        "capitalValue": "भांडवली मूल्य",
+        "editFloorQC": "मजला QC संपादित करा"
       }
     },
     "tabs": {
@@ -350,11 +353,19 @@
     },
     "validation": {
       "invalidYear": "4-अंकी वर्ष प्रविष्ट करा",
-      "yearOutOfRange": "वर्ष मर्यादेबाहेर"
+      "yearOutOfRange": "वर्ष मर्यादेबाहेर",
+      "floorRequired": "मजला आवश्यक आहे",
+      "conYearRequired": "बांधकाम वर्ष आवश्यक आहे",
+      "conYearInvalid": "बांधकाम वर्ष 4-अंकी असणे आवश्यक आहे",
+      "asstYearRequired": "मूल्यांकन वर्ष आवश्यक आहे",
+      "asstYearInvalid": "मूल्यांकन वर्ष 4-अंकी असणे आवश्यक आहे",
+      "conTypeRequired": "बांधकाम प्रकार आवश्यक आहे",
+      "useRequired": "वापर प्रकार आवश्यक आहे"
     },
     "tooltips": {
       "viewRoomDetails": "खोली तपशील पहा/संपादित करा",
-      "noDetailId": "कोणताही तपशील आयडी उपलब्ध नाही"
+      "noDetailId": "कोणताही तपशील आयडी उपलब्ध नाही",
+      "editFloorQC": "मजला QC संपादित करा"
     }
   },
   "list": {
