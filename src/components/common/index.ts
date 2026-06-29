@@ -55,6 +55,9 @@ export type { CardProps } from './Card';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
+export { AnimatedDigitInput } from './AnimatedDigitInput';
+export type { AnimatedDigitInputProps } from './AnimatedDigitInput';
+
 export { TextArea } from './Textarea';
 export type { TextAreaProps } from './Textarea';
 
