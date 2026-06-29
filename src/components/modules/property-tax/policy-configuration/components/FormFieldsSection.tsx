@@ -17,6 +17,7 @@ interface FormFieldsSectionProps {
   onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSelectBlur: (e: React.FocusEvent<HTMLSelectElement>) => void;
   t: (key: string) => string;
+  isEdit?: boolean;
 }
 
 export function FormFieldsSection({
@@ -28,6 +29,7 @@ export function FormFieldsSection({
   onBlur,
   onSelectBlur,
   t,
+  isEdit,
 }: FormFieldsSectionProps) {
   const valuePlaceholder = formData.dataType
     ? getPlaceholderForDataType(formData.dataType)
@@ -40,12 +42,6 @@ export function FormFieldsSection({
   // BIT type check
   const isBitType = formData.dataType?.toUpperCase() === "BIT";
 
-  /**
-   * allowedValues se dropdown options banao.
-   * "Enable,Disable" → [{label:"Enable",value:"Enable"},{label:"Disable",value:"Disable"}]
-   * "Monthly,Yearly" → [{label:"Monthly",value:"Monthly"},{label:"Yearly",value:"Yearly"}]
-   * BIT ke liye fallback: agar allowedValues null/empty ho toh BIT_OPTIONS use karo.
-   */
   const allowedOptions: { label: string; value: string }[] | null = (() => {
     if (formData.allowedValues && formData.allowedValues.trim()) {
       return formData.allowedValues
@@ -77,6 +73,7 @@ export function FormFieldsSection({
             onBlur={onBlur}
             placeholder={t("form.fields.policyCode.placeholder")}
             fullWidth
+            disabled={isEdit}
           />
           <ValidationMessage message={errors.policyCode} visible={showError("policyCode")} />
         </div>
@@ -129,21 +126,7 @@ export function FormFieldsSection({
 
       {/* Row 4: Data Type + Unit */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Select
-            name="dataType"
-            label={t("form.fields.dataType.label")}
-            required
-            options={POLICY_DATA_TYPES}
-            value={formData.dataType}
-            onChange={onSelectChange}
-            onBlur={onSelectBlur}
-            placeholder={t("form.fields.dataType.placeholder")}
-            error={showError("dataType") ? errors.dataType : undefined}
-          />
-          <ValidationMessage message={errors.dataType} visible={showError("dataType")} />
-        </div>
-        <div>
+     <div>
           {/* Unit: optional for all data types */}
           <Input
             name="unit"
@@ -162,6 +145,7 @@ export function FormFieldsSection({
       <div className="grid grid-cols-2 gap-4">
         <div>
           {useDropdown ? (
+             <div className="[&_ul[role='listbox']]:!top-full [&_ul[role='listbox']]:!bottom-auto [&_ul[role='listbox']]:!mt-1 [&_ul[role='listbox']]:!mb-0">
             <Select
               name="policyValue"
               label={t("form.fields.policyValue.label")}
@@ -173,6 +157,7 @@ export function FormFieldsSection({
               placeholder={dropdownPlaceholder}
               error={showError("policyValue") ? errors.policyValue : undefined}
             />
+              </div>
           ) : (
             <Input
               name="policyValue"
@@ -191,6 +176,7 @@ export function FormFieldsSection({
 
         <div>
           {useDropdown ? (
+             <div className="[&_ul[role='listbox']]:!top-full [&_ul[role='listbox']]:!bottom-auto [&_ul[role='listbox']]:!mt-1 [&_ul[role='listbox']]:!mb-0">
             <Select
               name="defaultValue"
               label={t("form.fields.defaultValue.label")}
@@ -202,6 +188,7 @@ export function FormFieldsSection({
               placeholder={dropdownPlaceholder}
               error={showError("defaultValue") ? errors.defaultValue : undefined}
             />
+              </div>
           ) : (
             <Input
               name="defaultValue"
@@ -218,35 +205,6 @@ export function FormFieldsSection({
           <ValidationMessage message={errors.defaultValue} visible={showError("defaultValue")} />
         </div>
       </div>
-
-      {/* Row 6: Effective From + Effective To */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Input
-            name="effectiveFrom"
-            label={t("form.fields.effectiveFrom.label")}
-            required
-            type="date"
-            value={formData.effectiveFrom ? formData.effectiveFrom.split("T")[0] : ""}
-            onChange={onChange}
-            onBlur={onBlur}
-            fullWidth
-          />
-          <ValidationMessage message={errors.effectiveFrom} visible={showError("effectiveFrom")} />
-        </div>
-        <div>
-          <Input
-            name="effectiveTo"
-            label={t("form.fields.effectiveTo.label")}
-            type="date"
-            value={formData.effectiveTo ? formData.effectiveTo.split("T")[0] : ""}
-            onChange={onChange}
-            onBlur={onBlur}
-            fullWidth
-          />
-        </div>
-      </div>
-
-    </div>
+ </div>
   );
 }
