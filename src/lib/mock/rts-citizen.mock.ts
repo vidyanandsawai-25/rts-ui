@@ -293,3 +293,20 @@ export function getMockServiceFields(_rtsServiceId: number): ServiceFieldGroupDT
     },
   ];
 }
+
+export interface CitizenProfile {
+  name: string;
+  upicId: string;
+  propertyNo: string;
+  mobile: string;
+}
+
+export function getMockCitizenProfile(mobile: string): CitizenProfile {
+  return {
+    name: 'धारक . .',
+    upicId: 'AKLMC089194',
+    propertyNo: 'B3-434',
+    mobile: mobile || '9119593544',
+  };
+}
+

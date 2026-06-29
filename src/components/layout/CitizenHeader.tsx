@@ -11,22 +11,24 @@ import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserProfileDropdown, Drawer } from '@/components/common';
 import { TrackingPanel } from '@/components/modules/dashboard/TrackingPanel';
 import { logoutCitizenAction } from '@/app/[locale]/service/login/actions';
+import { type CitizenProfile } from '@/lib/mock/rts-citizen.mock';
 
 /** Matching landing page theme deep navy (#0a3275) */
 const HEADER_BG = '#0a3275';
 
 interface CitizenHeaderProps {
-  mobile?: string;
+  profile?: CitizenProfile;
   locale: string;
   ulbData?: any;
 }
 
-export function CitizenHeader({ mobile, locale: propLocale, ulbData }: CitizenHeaderProps) {
+export function CitizenHeader({ profile, locale: propLocale, ulbData }: CitizenHeaderProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const currentLocale = useLocale();
   const activeLocale = currentLocale || propLocale;
+  const mobile = profile?.mobile;
 
   const getUlbName = () => {
     const rawName = ulbData?.ulbName || '';
@@ -152,7 +154,7 @@ export function CitizenHeader({ mobile, locale: propLocale, ulbData }: CitizenHe
             {/* Auth */}
             {mobile ? (
               <UserProfileDropdown
-                mobile={mobile}
+                profile={profile!}
                 activeLocale={activeLocale}
                 onLogout={handleLogout}
                 onOpenApplications={() => setIsDrawerOpen(true)}
