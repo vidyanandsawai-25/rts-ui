@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { FileSpreadsheet } from "lucide-react";
 import { Badge, Button } from "@/components/common";
-import type { PropertyStatus } from "@/types/property-search.types";
+import type { PropertyStatus } from "@/types/property-search";
 
 interface ResultsHeaderProps {
   selectedStatus: PropertyStatus | null;

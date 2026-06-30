@@ -1,6 +1,27 @@
+"use client";
+
 import { useTranslations } from "next-intl";
-import type { RvCvCellProps } from "@/types/property-search.types";
+import type { RvCvCellProps } from "@/types/property-search";
 import { formatNumberOnly } from "./result-styles";
+
+export function formatRvCvText(
+  rv: number | null | undefined,
+  cv: number | null | undefined
+): string {
+  const hasRv = typeof rv === "number" && rv !== null && rv !== undefined && rv > 0;
+  const hasCv = typeof cv === "number" && cv !== null && cv !== undefined && cv > 0;
+
+  if (hasRv && hasCv) {
+    return `RV :- ${formatNumberOnly(rv)}\nCV :- ${formatNumberOnly(cv)}`;
+  }
+  if (hasRv) {
+    return `RV :- ${formatNumberOnly(rv)}`;
+  }
+  if (hasCv) {
+    return `CV :- ${formatNumberOnly(cv)}`;
+  }
+  return "-";
+}
 
 export function RvCvCell({ rv, cv }: RvCvCellProps) {
   const t = useTranslations("propertySearch");
@@ -32,4 +53,3 @@ export function RvCvCell({ rv, cv }: RvCvCellProps) {
     </div>
   );
 }
-

@@ -7,7 +7,7 @@ import type {
   SearchCriteria,
   SearchFieldErrorMap,
   UsePropertySearchFormProps,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import { validateSearchCriteria } from "@/components/modules/property-tax/search-property/validateSearchCriteria";
 import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
 import { sanitizePropertySearchField } from "@/lib/validations/property-search-input-sanitizers";
@@ -57,6 +57,8 @@ export function usePropertySearchForm({
   selectedStatus = null,
   onSearch,
   onReset,
+  onZoneChange,
+  onWardChange,
   validationT,
 }: UsePropertySearchFormProps) {
   const criteriaKey = JSON.stringify(initialCriteria);
@@ -202,8 +204,9 @@ export function usePropertySearchForm({
         submitAttempted: false,
         touchedFields: new Set(),
       }));
+      onZoneChange?.(zoneId);
     },
-    [criteriaKey, getBaseFormState]
+    [criteriaKey, getBaseFormState, onZoneChange]
   );
 
   const handleWardChange = React.useCallback(
@@ -211,8 +214,9 @@ export function usePropertySearchForm({
       const wardId = Number(value) || 0;
       setField("wardId", wardId);
       markFieldTouched("wardId");
+      onWardChange?.(wardId);
     },
-    [markFieldTouched, setField]
+    [markFieldTouched, setField, onWardChange]
   );
 
   const handleSubmit = React.useCallback(
@@ -283,14 +287,29 @@ export function usePropertySearchForm({
     onReset();
   }, [criteriaKey, onReset]);
 
-  const handleClearFilterTag = React.useCallback(
+  const handleClearField = React.useCallback(
     (field: keyof SearchCriteria) => {
       let nextFormState: SearchCriteria;
       if (field === "zoneId") {
         nextFormState = { ...formState, zoneId: 0, wardId: 0 };
+      } else if (field === "wardId") {
+        nextFormState = { ...formState, wardId: 0 };
+      } else if (field === "rateableValueFilter") {
+        nextFormState = {
+          ...formState,
+          rateableValueFilter: "",
+          rateableValueFrom: "",
+          rateableValueTo: "",
+        };
+      } else if (field === "capitalValueFilter") {
+        nextFormState = {
+          ...formState,
+          capitalValueFilter: "",
+          capitalValueFrom: "",
+          capitalValueTo: "",
+        };
       } else {
-        const nextValue = field === "wardId" ? 0 : "";
-        nextFormState = { ...formState, [field]: nextValue };
+        nextFormState = { ...formState, [field]: "" };
       }
 
       setDraft((prev) => ({
@@ -304,9 +323,15 @@ export function usePropertySearchForm({
 
       if (isSearchActive) {
         onSearch(nextFormState, activeTab);
+      } else {
+        if (field === "zoneId") {
+          onZoneChange?.(0);
+        } else if (field === "wardId") {
+          onWardChange?.(0);
+        }
       }
     },
-    [criteriaKey, formState, activeTab, isSearchActive, onSearch]
+    [criteriaKey, formState, activeTab, isSearchActive, onSearch, onZoneChange, onWardChange]
   );
 
   return {
@@ -323,7 +348,7 @@ export function usePropertySearchForm({
     handleWardChange,
     handleSubmit,
     handleReset,
-    handleClearFilterTag,
+    handleClearField,
   };
 }
 

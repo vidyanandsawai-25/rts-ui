@@ -2,7 +2,7 @@
 
 import type { Column } from "@/components/common";
 import { Tooltip } from "@/components/common";
-import type { SearchResult, ZoneOption, WardOption } from "@/types/property-search.types";
+import type { SearchResult, ZoneOption, WardOption } from "@/types/property-search";
 import {
   COLUMN_WIDTHS,
   formatDisplayText,
@@ -255,9 +255,9 @@ export function buildPropertySearchColumns(
     ),
     withFixedWidth(
       {
-        key: "rv",
+        key: "rvCv",
         label: t("columns.rvCv"),
-        tooltip: t("columns.rvCvTooltip"),
+        tooltip: t("columns.rvCvTooltip") ?? t("columns.rvCv"),
         align: "center",
         cellClassName: NUMERIC_CELL,
         render: (_, row) => <RvCvCell rv={row.rv} cv={row.cv} />,

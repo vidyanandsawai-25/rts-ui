@@ -5,7 +5,7 @@
  * would fail submission validation. Empty input is always preserved.
  */
 
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 import {
   collapseMultipleSpaces,
   PROPERTY_SEARCH_FIELD_LIMITS,

@@ -1,6 +1,7 @@
 /**
  * i18n Request Configuration
  * Server-side locale detection and message loading
+ * Force reload: 1
  */
 
 import { getRequestConfig } from 'next-intl/server';

@@ -4,7 +4,7 @@
 
 import { apiClient } from "@/services/api.service";
 import { createLogger } from "@/lib/utils/server-logger";
-import type { LookupOptionsApiResponse } from "@/types/property-search-api.types";
+import type { LookupOptionsApiResponse } from "@/types/property-search";
 import { normalizeLookupOptions } from "../guards/lookup-guards";
 import { EMPTY_LOOKUP_OPTIONS, lookupCacheOptions } from "../cache-options";
 

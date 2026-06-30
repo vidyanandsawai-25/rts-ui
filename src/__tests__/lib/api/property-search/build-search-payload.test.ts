@@ -22,7 +22,7 @@ describe("buildPropertySearchPayload", () => {
       {
         ...INITIAL_SEARCH_CRITERIA,
         propertyType: "1",
-        typeFilter: "surveyCompleted",
+        typeFilter: "dataEntry",
       },
       true,
       "quick-search"
@@ -35,7 +35,7 @@ describe("buildPropertySearchPayload", () => {
   it("still maps type filter to dashboard filter when assessment status is not selected", () => {
     const payload = buildPropertySearchPayload(
       null,
-      { ...INITIAL_SEARCH_CRITERIA, typeFilter: "surveyCompleted" },
+      { ...INITIAL_SEARCH_CRITERIA, typeFilter: "dataEntry" },
       true,
       "quick-search"
     );
@@ -49,6 +49,7 @@ describe("buildPropertySearchPayload", () => {
       null,
       {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "top",
         rateableValueFrom: "1",
       },
@@ -56,8 +57,9 @@ describe("buildPropertySearchPayload", () => {
       "values-dues"
     );
 
+    expect(payload.valuationTypeFilter).toBe("RV");
     expect(payload.rvOrCv).toBe("RV");
-    expect(payload.amountFilterOperator).toBe("top");
+    expect(payload.amountFilterOperator).toBe("TOP");
     expect(payload.topCount).toBe(1);
     expect(payload.amountValue).toBeUndefined();
     expect(payload.pageSize).toBe(-1);
@@ -69,6 +71,7 @@ describe("buildPropertySearchPayload", () => {
       null,
       {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "top",
         rateableValueFrom: "",
       },
@@ -84,6 +87,7 @@ describe("buildPropertySearchPayload", () => {
       null,
       {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "cv",
         rateableValueFilter: "exact",
         rateableValueFrom: "1224880",
       },
@@ -93,7 +97,8 @@ describe("buildPropertySearchPayload", () => {
 
     expect(payload.amountFilterOperator).toBe("Equals");
     expect(payload.amountValue).toBe(1224880);
-    expect(payload.rvOrCv).toBe("RV");
+    expect(payload.valuationTypeFilter).toBe("RV");
+    expect(payload.rvOrCv).toBe("CV");
     expect(payload.pageSize).toBe(-1);
     expect(payload.pageNumber).toBe(1);
   });
@@ -103,6 +108,7 @@ describe("buildPropertySearchPayload", () => {
       null,
       {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "exact",
         rateableValueFrom: "1,07,45,17,92,073.64",
       },
@@ -118,6 +124,7 @@ describe("buildPropertySearchPayload", () => {
       null,
       {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "between",
         rateableValueFrom: "1224866",
         rateableValueTo: "1224874",
@@ -128,8 +135,9 @@ describe("buildPropertySearchPayload", () => {
 
     expect(payload.amountValue).toBe(1224866);
     expect(payload.amountTo).toBe(1224874);
+    expect(payload.valuationTypeFilter).toBe("RV");
     expect(payload.rvOrCv).toBe("RV");
-    expect(payload.amountFilterOperator).toBeUndefined();
+    expect(payload.amountFilterOperator).toBe("Between");
     expect(payload.pageSize).toBe(-1);
     expect(payload.pageNumber).toBe(1);
   });
@@ -212,5 +220,74 @@ describe("buildPropertySearchPayload", () => {
 
     expect(payload.propertyNoFrom).toBe("NK-10");
     expect(payload.propertyNoTo).toBe("NK-10");
+  });
+
+  it("maps valuationMethod=totalTax to valuationTypeFilter=TotalTax in payload", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "totalTax",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "5000",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.valuationTypeFilter).toBe("TotalTax");
+    expect(payload.rvOrCv).toBeUndefined();
+    expect(payload.amountValue).toBe(5000);
+  });
+
+  it("maps valuationMethod=rv to valuationTypeFilter=RV and rvOrCv=RV in payload", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "5000",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.valuationTypeFilter).toBe("RV");
+    expect(payload.rvOrCv).toBe("RV");
+  });
+
+  it("maps valuationMethod=cv to valuationTypeFilter=RV and rvOrCv=CV in payload", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "cv",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "5000",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.valuationTypeFilter).toBe("RV");
+    expect(payload.rvOrCv).toBe("CV");
+  });
+
+  it("maps valuationMethod=rvCv to valuationTypeFilter=RV and rvOrCv=RVorCV in payload", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rvCv",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "5000",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.valuationTypeFilter).toBe("RV");
+    expect(payload.rvOrCv).toBe("RVorCV");
   });
 });

@@ -7,7 +7,7 @@ import type {
   SearchCriteria,
   SearchTab,
   UsePropertySearchNavigationProps,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import {
   applyTabSearchCriteria,
   clearTabFieldsFromParams,

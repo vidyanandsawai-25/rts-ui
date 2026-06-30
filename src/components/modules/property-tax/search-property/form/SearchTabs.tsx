@@ -4,7 +4,7 @@ import React from "react";
 import { FileSearch, IndianRupee, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Tabs, TabList, Tab, TabPanel, ValidationMessage } from "@/components/common";
-import type { SearchTab } from "@/types/property-search.types";
+import type { SearchTab } from "@/types/property-search";
 import {
   SEARCH_BRAND_ACTIVE_TAB,
   SEARCH_BRAND_TAB_ACTIVE,
@@ -75,7 +75,7 @@ export function SearchTabs({
           </Tab>
         </TabList>
 
-        <div className="border-t border-slate-200 bg-slate-50/30 px-1.5 pt-1.5 pb-2.5">
+        <div className="border-t border-slate-200 bg-slate-50/30 px-1.5 pt-1 pb-1.5">
           <TabPanel
             value="quick-search"
             className="mt-0 animate-in fade-in duration-200"

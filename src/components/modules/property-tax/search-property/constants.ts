@@ -1,4 +1,4 @@
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 
 /**
  * Empty/initial state for the Property Search form.
@@ -50,10 +50,15 @@ export const PROPERTY_TYPE_OPTIONS = [
 ] as const;
 
 export const TYPE_FILTER_OPTIONS = [
-  "surveyCompleted",
-  "dataEntryCompleted",
-  "qcCompleted",
-  "noticeDistributed",
+  "geoSequencing",
+  "internalSurvey",
+  "dataEntry",
+  "assessment",
+  "approvalByUlb",
+  "noticeDistribution",
+  "hearingAndAppeal",
+  "billDistribution",
+  "billGeneration",
 ] as const;
 
 export type PropertyTypeOption = (typeof PROPERTY_TYPE_OPTIONS)[number];
@@ -67,8 +72,13 @@ export const LEGACY_PROPERTY_TYPE_VALUES: Record<string, PropertyTypeOption> = {
 };
 
 export const LEGACY_TYPE_FILTER_VALUES: Record<string, TypeFilterOption> = {
-  "Survey Completed": "surveyCompleted",
-  "Data Entry Completed": "dataEntryCompleted",
-  "QC Completed": "qcCompleted",
-  "Notice Distributed": "noticeDistributed",
+  "Geo-sequencing": "geoSequencing",
+  "Internal Survey": "internalSurvey",
+  "Data Entry & Quality Co...": "dataEntry",
+  Assessment: "assessment",
+  "Approval by ULB": "approvalByUlb",
+  "Notice Distribution": "noticeDistribution",
+  "Hearing and Appeals": "hearingAndAppeal",
+  "Bills Distribution": "billDistribution",
+  "Bill Generation": "billGeneration",
 };

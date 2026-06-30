@@ -8,10 +8,11 @@ import { MasterTable, ValidationMessage } from "@/components/common";
 import type {
   PropertySearchResultsProps,
   SearchResult,
-} from "@/types/property-search.types";
-import { usePropertySearchResults } from "@/hooks/property-search";
+} from "@/types/property-search";
+import { usePropertySearchResults } from "@/hooks/search-property";
 import { buildPropertySearchColumns } from "./results/columns";
 import { ResultsHeader } from "./results/ResultsHeader";
+import { formatRvCvText } from "./results/RvCvCell";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
@@ -65,10 +66,7 @@ export function PropertySearchResults({
         [t("columns.description")]: row.description || "-",
         [t("columns.ownerOccupier")]: finalOwnerOccupier,
         [t("columns.mobileAlternate")]: `${row.mobile || "-"}${row.alternateMobile ? `\n[Alt]: ${row.alternateMobile}` : ""}`,
-        [t("columns.rvCv")]: [
-          row.rv > 0 ? `RV: ${row.rv}` : "",
-          row.cv != null && row.cv > 0 ? `CV: ${row.cv}` : "",
-        ].filter(Boolean).join("\n") || "-",
+        [t("columns.rvCv")]: formatRvCvText(row.rv, row.cv),
         [t("columns.totalTax")]: row.totalTax != null ? row.totalTax : "-",
         [t("columns.address")]: row.address || "-",
       };
