@@ -4,17 +4,39 @@ import React from "react";
 import { useLocale, useTranslations } from "next-intl";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { MasterTable, ValidationMessage } from "@/components/common";
+import { ValidationMessage } from "@/components/common";
 import type {
   PropertySearchResultsProps,
-  SearchResult,
 } from "@/types/property-search";
 import { usePropertySearchResults } from "@/hooks/search-property";
 import { buildPropertySearchColumns } from "./results/columns";
 import { ResultsHeader } from "./results/ResultsHeader";
-import { formatRvCvText } from "./results/RvCvCell";
+import { PropertySearchTable } from "./results/PropertySearchTable";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+
+type PageToken = number | "dots";
+
+function buildPagination(current: number, total: number): PageToken[] {
+  const pages: PageToken[] = [];
+  const window = 3;
+  const start = Math.max(1, current - Math.floor(window / 2));
+  const end = Math.min(total, start + window - 1);
+
+  if (start > 1) {
+    pages.push(1);
+    if (start > 2) pages.push("dots");
+  }
+
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (end < total) {
+    if (end < total - 1) pages.push("dots");
+    pages.push(total);
+  }
+
+  return pages;
+}
 
 export function PropertySearchResults({
   selectedStatus,
@@ -39,44 +61,37 @@ export function PropertySearchResults({
     handlePageSizeChange,
   } = usePropertySearchResults({ results });
 
+  const pages = React.useMemo(() => {
+    return buildPagination(pageNumber, Math.max(1, totalPages));
+  }, [pageNumber, totalPages]);
+
   const handleExportToExcel = React.useCallback(() => {
     if (filteredData.length === 0) {
       toast.error(t("noDataToExport"));
       return;
     }
 
-    const excelData = filteredData.map((row) => {
-      const propVal = row.partitionNo ? `${row.propertyNo}-${row.partitionNo}` : row.propertyNo;
-      const oldPropVal = row.oldPropertyNo ? ` (Old: ${row.oldPropertyNo})` : "";
-      const rawHolder = row.holderName?.trim() || "";
-      const isPlaceholderHolder = rawHolder.toLowerCase() === "the holder";
-      const holder = isPlaceholderHolder ? "" : rawHolder;
-      const holderMr = isPlaceholderHolder ? "" : (row.holderNameMarathi?.trim() || "");
-      
-      const ownerVal = holder ? `${holder}${holderMr ? ` (${holderMr})` : ""}` : "";
-      const occupierVal = row.occupierName ? `${ownerVal ? "\n" : ""}[Occupier]: ${row.occupierName}${row.occupierNameMarathi ? ` (${row.occupierNameMarathi})` : ""}` : "";
-      const finalOwnerOccupier = ownerVal || occupierVal ? `${ownerVal}${occupierVal}` : "-";
-
-      return {
-        [t("columns.upicId")]: row.upicId || "-",
-        [t("columns.zoneWard")]: `${row.zone || "-"} / ${row.ward || "-"}`,
-        [t("columns.propertyPartition")]: `${propVal || "-"}${oldPropVal}`,
-        [t("columns.category")]: row.category || "-",
-        [t("columns.societyName")]: row.societyName || "-",
-        [t("columns.description")]: row.description || "-",
-        [t("columns.ownerOccupier")]: finalOwnerOccupier,
-        [t("columns.mobileAlternate")]: `${row.mobile || "-"}${row.alternateMobile ? `\n[Alt]: ${row.alternateMobile}` : ""}`,
-        [t("columns.rvCv")]: formatRvCvText(row.rv, row.cv),
-        [t("columns.totalTax")]: row.totalTax != null ? row.totalTax : "-",
-        [t("columns.address")]: row.address || "-",
-      };
-    });
+    const excelData = filteredData.map((row) => ({
+      "UPIC ID": row.upicId ?? "",
+      Zone: row.zoneName ?? "",
+      Ward: row.wardName ?? "",
+      "PROP-PART NO": row.partitionNo ? `${row.propertyNo}-${row.partitionNo}` : (row.propertyNo ?? ""),
+      "Old Property No.": row.oldPropertyNo ?? "",
+      Category: row.category ?? "",
+      "Property Description": row.description ?? "",
+      "Owner Name": row.holderName ?? "",
+      "Occupier Name": row.occupierName ?? "",
+      "Mobile No.": row.mobile ?? "",
+      "Alternate Mobile No.": row.alternateMobile ?? "",
+      "Rateable Value (RV)": row.rv ?? "",
+      "Capital Value (CV)": row.cv ?? "",
+      Address: row.address ?? "",
+    }));
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Property Data");
 
-    // Auto-fit column widths
     const maxLens = Object.keys(excelData[0]).map((key) => {
       let maxLen = key.length;
       for (const row of excelData) {
@@ -113,7 +128,7 @@ export function PropertySearchResults({
         type="error"
       />
 
-      <MasterTable<SearchResult>
+      <PropertySearchTable
         columns={columns}
         data={paginatedData}
         loading={loading}
@@ -123,13 +138,9 @@ export function PropertySearchResults({
         totalPages={totalPages}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        containerClassName="w-full min-w-0"
-        tableClassName="table-fixed w-full min-w-[1800px]"
-        maxBodyHeightClassName="max-h-[calc(100vh-280px)]"
-        emptyText={searchError ? t("searchFailed") : t("noResults")}
-        pageSizeOptions={PAGE_SIZE_OPTIONS}
-        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-        getRowKey={(row) => row.id}
+        searchError={searchError}
+        pages={pages}
+        PAGE_SIZE_OPTIONS={PAGE_SIZE_OPTIONS}
       />
     </div>
   );

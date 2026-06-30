@@ -14,7 +14,7 @@ import type {
   MainCardsResponse,
   WorkflowCardItem,
 } from "@/types/property-search";
-import { normalizePropertySearchResponse } from "../guards/property-item-guards";
+import { normalizePropertySearchResponse, normalizePropertySearchItem } from "../guards/property-item-guards";
 import { normalizeDashboardStatsResponse } from "../guards/dashboard-stats-guards";
 
 const logger = createLogger("property-search/search");
@@ -168,5 +168,30 @@ export async function fetchWorkflowCards(
     logger.error("Failed to fetch workflow cards", { error: error as Error });
     return [];
   }
+}
+
+interface ApartmentUnitListResponse {
+  success: boolean;
+  message?: string;
+  items?: unknown[];
+}
+
+export async function fetchApartmentUnitList(
+  propertyId: number
+): Promise<SearchResult[]> {
+  const response = await apiClient.get<ApartmentUnitListResponse>(
+    `/PropertySearch/search/apartmentunitlist?propertyId=${propertyId}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch apartment unit list",
+      "Apartment unit list retrieval failed"
+    );
+  }
+
+  const rawItems = response.data.items || [];
+  return rawItems.map((item) => normalizePropertySearchItem(item as Record<string, unknown>));
 }
 
