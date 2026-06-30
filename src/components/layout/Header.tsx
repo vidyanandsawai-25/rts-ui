@@ -248,62 +248,6 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
               role="status"
               aria-live="polite"
             >
-              <style>{`
-                @keyframes session-pill-blink {
-                  0%, 100% {
-                    opacity: 1;
-                    transform: scale(1);
-                  }
-                  50% {
-                    opacity: 0.85;
-                    transform: scale(0.98);
-                  }
-                }
-                @keyframes critical-border-flash {
-                  0%, 100% {
-                    border-color: rgba(239, 68, 68, 1);
-                    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-                  }
-                  50% {
-                    border-color: rgba(239, 68, 68, 0.3);
-                    box-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
-                  }
-                }
-                @keyframes warning-border-flash {
-                  0%, 100% {
-                    border-color: rgba(245, 158, 11, 0.9);
-                    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-                  }
-                  50% {
-                    border-color: rgba(245, 158, 11, 0.3);
-                    box-shadow: 0 0 4px rgba(245, 158, 11, 0.1);
-                  }
-                }
-                @keyframes timer-blink-smooth {
-                  0%, 100% { opacity: 1; }
-                  50% { opacity: 0.35; }
-                }
-                @keyframes timer-blink-sharp {
-                  0%, 100% { opacity: 1; }
-                  50% { opacity: 0.05; }
-                }
-                .session-warn-active {
-                  animation: session-pill-blink 1.2s ease-in-out infinite;
-                }
-                .critical-flash-active {
-                  animation: critical-border-flash 0.8s ease-in-out infinite;
-                }
-                .warning-flash-active {
-                  animation: warning-border-flash 1.5s ease-in-out infinite;
-                }
-                .timer-blink-smooth {
-                  animation: timer-blink-smooth 1.5s ease-in-out infinite;
-                }
-                .timer-blink-sharp {
-                  animation: timer-blink-sharp 0.8s steps(1) infinite;
-                }
-              `}</style>
-
               <span className="relative flex h-3 w-3 shrink-0">
                 <span
                   className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${

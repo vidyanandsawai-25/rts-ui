@@ -54,16 +54,18 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100 px-4 py-10">
-      <LoginForm
-        key={`${locale}-${username}`}
-        username={username}
-        locale={locale}
-        errorMessage={errorMessage}
-        infoMessage={infoMessage}
-        ulbData={ulbData}
-        copy={copy}
-      />
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100">
+      <div className="flex min-h-full w-full flex-col items-center justify-center p-4 md:p-6">
+        <LoginForm
+          key={`${locale}-${username}`}
+          username={username}
+          locale={locale}
+          errorMessage={errorMessage}
+          infoMessage={infoMessage}
+          ulbData={ulbData}
+          copy={copy}
+        />
+      </div>
     </div>
   );
 }
