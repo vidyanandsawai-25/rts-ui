@@ -21,11 +21,11 @@ async function getYearToReleaseIdMap(): Promise<Record<number, number>> {
         next: { revalidate: 86400 } // cache configuration for 24 hours
       });
       if (!res.ok) throw new Error('Failed to fetch wayback config');
-      const config = await res.json();
+      const config = (await res.json()) as Record<string, { itemTitle?: string }>;
       const dateRx = /(\d{4}-\d{2}-\d{2})/;
       const byYear: Record<number, { releaseId: number; date: string }> = {};
 
-      Object.entries(config).forEach(([key, value]: [string, any]) => {
+      Object.entries(config).forEach(([key, value]) => {
         const releaseId = parseInt(key, 10);
         if (isNaN(releaseId)) return;
         const match = dateRx.exec(value.itemTitle ?? '');
@@ -113,8 +113,9 @@ export async function GET(
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
-  } catch (error: any) {
-    return new NextResponse(JSON.stringify({ error: error.message }), {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return new NextResponse(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

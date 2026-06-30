@@ -2,6 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import { useTimelapseState } from '@/hooks/ptis/useTimelapseState';
 import { TimelapseControls } from './TimelapseControls';
 import { TimelineTrack } from './TimelineTrack';
@@ -24,6 +25,7 @@ export function ChangeTimelapse({
   initialLng,
   initialWaybackReleases,
 }: ChangeTimelapseProps): React.ReactElement {
+  const t = useTranslations('ptis');
   const {
     waybackReleases,
     lat,
@@ -126,14 +128,14 @@ export function ChangeTimelapse({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
-            Fetching satellite history catalog...
+            {t('media.fetchingCatalog')}
           </div>
         )}
       </div>
 
       <div className="p-2 px-4 bg-slate-950 text-slate-500 text-[10px] flex justify-between select-none">
-        <span>Drag to pan · Scroll to zoom · Click a year to jump</span>
-        <span>© Esri, Wayback, Maxar</span>
+        <span>{t('media.interactionGuide')}</span>
+        <span>{t('media.attribution')}</span>
       </div>
     </div>
   );

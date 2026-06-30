@@ -42,15 +42,30 @@ export function HistoricalPingPongController({
   const loopRef = useRef<number | null>(null);
 
   const playingRef = useRef(playing);
-  playingRef.current = playing;
   const speedRef = useRef(speed);
-  speedRef.current = speed;
   const yearsRef = useRef(years);
-  yearsRef.current = years;
   const activeYearRef = useRef(activeYear);
-  activeYearRef.current = activeYear;
   const onActiveYearChangeRef = useRef(onActiveYearChange);
-  onActiveYearChangeRef.current = onActiveYearChange;
+
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
+
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
+
+  useEffect(() => {
+    yearsRef.current = years;
+  }, [years]);
+
+  useEffect(() => {
+    activeYearRef.current = activeYear;
+  }, [activeYear]);
+
+  useEffect(() => {
+    onActiveYearChangeRef.current = onActiveYearChange;
+  }, [onActiveYearChange]);
 
   const updateLoadingState = () => {
     if (!onLoadChange || yearsRef.current.length === 0) return;
