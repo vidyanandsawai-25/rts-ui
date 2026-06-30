@@ -125,7 +125,7 @@ export const RoomWiseSubmission: React.FC<
 
   return (
     <div
-      className={`w-full p-0 flex flex-col bg-white overflow-visible ${
+      className={`w-full p-0 flex flex-col bg-white overflow-visible z-[112] ${
         displayMode === "modal" ? "" : "mb-6"
       }`}
     >

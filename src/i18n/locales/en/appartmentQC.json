@@ -1,4 +1,3 @@
-
 {
   "columns": {
     "srNo": "Sr. No.",
@@ -27,7 +26,6 @@
     "toiletCount": "Toilet Count",
     "bhk": "BHK",
     "use": "Use",
-    
     "carpetAreaSqFt": "Carpet Area (sqFt)",
     "carpetAreaSqMtr": "Carpet Area (sqMtr)",
     "carpetASqFt": "Carpet A (sqFt)",
@@ -53,7 +51,8 @@
     "totalTax": "Total Tax",
     "mobileNo": "Mobile No.",
     "emailId": "Email ID",
-    "ocDate": "OC Date"
+    "ocDate": "OC Date",
+    "kyc": "KYC"
   },
   "taxDetails": {
     "title": "Property Tax Details Summary",
@@ -129,6 +128,11 @@
     "floorQC": "Floor QC",
     "roomWiseSubmission": "Room Wise Submission",
     "loadingRoomData": "Loading room data...",
+    "viewImage": "View Image",
+    "propertyPhotos": "Property Photos",
+    "loadingPhotos": "Loading photos...",
+    "noPhotos": "No photos available",
+    "photoLoadError": "Failed to load property photos",
     "tabs": {
       "rateable": "Rateable Value",
       "capital": "Capital Value"
@@ -141,7 +145,7 @@
   "tooltips": {
     "srNo": "Serial Number",
     "propertyNo": "Property Number",
-    "oldPropertyNo": "Old Property Number", 
+    "oldPropertyNo": "Old Property Number",
     "wing": "Wing Name",
     "flatOrShopNo": "Flat/Shop Number",
     "ownerName": "Owner Name",
@@ -155,7 +159,7 @@
     "apartmentType": "Apartment Type",
     "oldRV": "Old Rental Value",
     "newRV": "New Rental Value",
-  "oldConstArea": "Old Construction Area",
+    "oldConstArea": "Old Construction Area",
     "totalTax": "Total Tax",
     "flatOrShopName": "Flat/Shop Name",
     "renterName": "Renter Name",
@@ -168,16 +172,19 @@
     "mobileNo": "Mobile Number",
     "emailId": "Email ID",
     "bhk": "BHK",
-  "rentMonthly": "rent Monthly",
-  "propertyTypeName": "Description of the property type",
-  "oldTotalTax": "Old Total Tax",
-  "newTotalTax": "New Total Tax",
-  "newTaxTotalCV": "New Tax Total (CV)",
-  "totalTaxCV": "Total Tax (CV)",
-  "newTaxTotalRV": "New Tax Total (RV)",
-  "rateableValue": "Rateable Value",
-  "capitalValue": "Capital Value",
-  "cv": "Capital Value"
+    "rentMonthly": "rent Monthly",
+    "propertyTypeName": "Description of the property type",
+    "oldTotalTax": "Old Total Tax",
+    "newTotalTax": "New Total Tax",
+    "newTaxTotalCV": "New Tax Total (CV)",
+    "totalTaxCV": "Total Tax (CV)",
+    "newTaxTotalRV": "New Tax Total (RV)",
+    "rateableValue": "Rateable Value",
+    "capitalValue": "Capital Value",
+    "cv": "Capital Value",
+    "kyc": "Know Your Customer",
+    "viewKycDetails": "View KYC Details",
+    "hideKycDetails": "Hide KYC Details"
   },
   "pageTitle": "Edit Property Details",
   "badges": {
@@ -322,7 +329,7 @@
       "capitalValue": "Capital Value",
       "editFloorQC": "Edit Floor QC"
     },
-     "toolTipFloorQC": {
+    "toolTipFloorQC": {
       "tooltips": {
         "floor": "Floor",
         "conYear": "Construction Year",
