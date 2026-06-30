@@ -15,13 +15,13 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
   const cookieStore = await cookies();
   const locale = await getLocale();
   const sessionCookie = cookieStore.get('rts_session')?.value || '';
+  const isLoggedIn = !!sessionCookie;
   
   // Extract mobile number from the cookie: local_mobile_timestamp
-  const mobile = sessionCookie.split('_')[1] || '';
-  const profile = getMockCitizenProfile(mobile);
+  const mobile = isLoggedIn ? (sessionCookie.split('_')[1] || '') : '';
+  const profile = isLoggedIn ? getMockCitizenProfile(mobile) : undefined;
 
   const { ulbData } = await fetchLoginBrandingAction();
-  const isLoggedIn = !!sessionCookie;
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-slate-50 font-sans">

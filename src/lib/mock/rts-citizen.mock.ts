@@ -306,7 +306,7 @@ export function getMockCitizenProfile(mobile: string): CitizenProfile {
     name: 'धारक . .',
     upicId: 'AKLMC089194',
     propertyNo: 'B3-434',
-    mobile: mobile || '9119593544',
+    mobile: mobile,
   };
 }
 
