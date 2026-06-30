@@ -11,6 +11,7 @@ import type {
   OldDetailsData,
   OldFloorDetailsData,
   OldTaxesData,
+  TabHeaderInfoData,
 } from '@/types/ptis.types';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ActionResult } from '@/types/common.types';
@@ -63,8 +64,9 @@ export async function mapPtisFetchResults({
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
-    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes
-  ] = (detailResults.length > 0 ? detailResults : Array(15).fill(null)) as [
+    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
+    tabHeaderInfoResult
+  ] = (detailResults.length > 0 ? detailResults : Array(16).fill(null)) as [
     { amenities: PagedResponse<ApartmentQCDetail>; commercial: PagedResponse<ApartmentQCDetail>; residential: PagedResponse<ApartmentQCDetail>; } | null,
     ActionResult<RateableValueResponse> | null,
     ActionResult<CapitalValueResponse> | null,
@@ -79,7 +81,8 @@ export async function mapPtisFetchResults({
     ActionResult<PropertyPhotoDto[]> | null,
     ActionResult<DualMethodResponse> | null,
     TaxDetailsResult | null,
-    ActionResult<{ items: PropertyRuleLogItem[] }> | null
+    ActionResult<{ items: PropertyRuleLogItem[] }> | null,
+    { success: boolean; data?: TabHeaderInfoData } | null
   ];
 
   const emptyPaged: PagedResponse<ApartmentQCDetail> = {
@@ -142,6 +145,9 @@ export async function mapPtisFetchResults({
     redirectUrl = `/${locale}/property-tax/ptis?${newParams.toString()}`;
   }
 
+  const tabHeaderInfo = tabHeaderInfoResult?.success && tabHeaderInfoResult.data
+    ? tabHeaderInfoResult.data : null;
+
   return {
     criticalError,
     resolvedPropertyId,
@@ -176,5 +182,6 @@ export async function mapPtisFetchResults({
     activeTab,
     hasAppliedRules: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items && ruleLogsRes.data.items.length > 0 ? true : false,
     appliedRulesList: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items ? ruleLogsRes.data.items : [],
+    tabHeaderInfo,
   };
 }
