@@ -60,12 +60,12 @@ export const Navbar = ({
     return (
         <div className="w-full">
             {/* Navigation Bar */}
-            <nav className="bg-[#004c8c] text-white flex justify-end items-center px-6 py-1 shadow-md overflow-x-auto">
-                <div className="flex items-center gap-6">
+            <nav className="bg-[#004c8c] text-white flex justify-end items-center px-4 py-2 sm:px-6 sm:py-1.5 shadow-md overflow-x-auto lg:overflow-x-visible">
+                <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
                     {/* Session Expiration Warning (Pulsing Highlight Pill) */}
                     {warningActive && secondsLeft > 0 && (
                         <div
-                            className={`flex items-center gap-3 rounded-xl border px-4 py-1.5 text-xs sm:text-sm font-bold shadow-lg backdrop-blur-md self-center shrink-0 transition-all duration-300 ${
+                            className={`flex items-center gap-2 sm:gap-3 rounded-xl border px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-bold shadow-lg backdrop-blur-md self-center shrink-0 transition-all duration-300 ${
                                 isCritical
                                     ? 'border-red-500 bg-red-950/80 text-white shadow-red-500/30 critical-flash-active'
                                     : 'border-amber-500/70 bg-amber-950/60 text-amber-100 shadow-amber-500/20 warning-flash-active'
@@ -73,61 +73,7 @@ export const Navbar = ({
                             role="status"
                             aria-live="polite"
                         >
-                            <style>{`
-                                @keyframes session-pill-blink {
-                                    0%, 100% {
-                                        opacity: 1;
-                                        transform: scale(1);
-                                    }
-                                    50% {
-                                        opacity: 0.85;
-                                        transform: scale(0.98);
-                                    }
-                                }
-                                @keyframes critical-border-flash {
-                                    0%, 100% {
-                                        border-color: rgba(239, 68, 68, 1);
-                                        box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-                                    }
-                                    50% {
-                                        border-color: rgba(239, 68, 68, 0.3);
-                                        box-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
-                                    }
-                                }
-                                @keyframes warning-border-flash {
-                                    0%, 100% {
-                                        border-color: rgba(245, 158, 11, 0.9);
-                                        box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-                                    }
-                                    50% {
-                                        border-color: rgba(245, 158, 11, 0.3);
-                                        box-shadow: 0 0 4px rgba(245, 158, 11, 0.1);
-                                    }
-                                }
-                                @keyframes timer-blink-smooth {
-                                    0%, 100% { opacity: 1; }
-                                    50% { opacity: 0.35; }
-                                }
-                                @keyframes timer-blink-sharp {
-                                    0%, 100% { opacity: 1; }
-                                    50% { opacity: 0.05; }
-                                }
-                                .session-warn-active {
-                                    animation: session-pill-blink 1.2s ease-in-out infinite;
-                                }
-                                .critical-flash-active {
-                                    animation: critical-border-flash 0.8s ease-in-out infinite;
-                                }
-                                .warning-flash-active {
-                                    animation: warning-border-flash 1.5s ease-in-out infinite;
-                                }
-                                .timer-blink-smooth {
-                                    animation: timer-blink-smooth 1.5s ease-in-out infinite;
-                                }
-                                .timer-blink-sharp {
-                                    animation: timer-blink-sharp 0.8s steps(1) infinite;
-                                }
-                            `}</style>
+
 
                             <span className="relative flex h-2.5 w-2.5 shrink-0">
                                 <span
@@ -166,24 +112,25 @@ export const Navbar = ({
 
                     <Link
                         href={`/${locale}/configuration-settings/office-master`}
-                        className="flex items-center gap-2 hover:text-blue-200 transition-colors"
+                        className="flex items-center gap-1.5 sm:gap-2 hover:text-blue-200 transition-colors shrink-0"
+                        title={t('navigation.settings')}
                     >
                         <Settings className="w-4 h-4" />
-                        <span className="text-sm font-medium">{t('navigation.settings')}</span>
+                        <span className="hidden md:inline text-sm font-medium">{t('navigation.settings')}</span>
                     </Link>
 
                     {/* User info */}
                     <div className="relative">
                         <button
                             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                            className="flex items-center gap-3 text-left focus:outline-none group border-l border-blue-400 pl-6"
+                            className="flex items-center gap-2 sm:gap-3 text-left focus:outline-none group border-l border-blue-400 pl-3 sm:pl-4 md:pl-6 shrink-0"
                         >
-                            <div className="w-9 h-9 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-400/30 group-hover:bg-blue-500/30 transition-colors">
-                                <User className="w-5 h-5 text-blue-100" />
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-400/30 group-hover:bg-blue-500/30 transition-colors shrink-0">
+                                <User className="w-4 sm:w-5 h-4 sm:h-5 text-blue-100" />
                             </div>
-                            <div className="hidden sm:flex items-baseline gap-1">
-                                <span className="text-xs text-blue-200">{t('app.welcome')}</span>
-                                <span className="text-sm font-semibold text-white">{username || t('app.defaultUser')}</span>
+                            <div className="hidden sm:flex flex-col md:flex-row md:items-baseline gap-0.5 md:gap-1">
+                                <span className="text-[10px] sm:text-xs text-blue-200 leading-none">{t('app.welcome')}</span>
+                                <span className="text-xs sm:text-sm font-semibold text-white truncate max-w-[80px] md:max-w-[120px] lg:max-w-none">{username || t('app.defaultUser')}</span>
                             </div>
                         </button>
 
@@ -219,22 +166,7 @@ export const Navbar = ({
                 </div>
             </div>
 
-            <style jsx>{`
-                @keyframes marquee {
-                    0% { transform: translateX(100%); }
-                    100% { transform: translateX(-100%); }
-                }
-                .animate-marquee {
-                    animation: marquee 20s linear infinite;
-                    min-width: 100%;
-                }
-                @media (prefers-reduced-motion: reduce) {
-                    .animate-marquee {
-                        animation: none !important;
-                        transform: none !important;
-                    }
-                }
-            `}</style>
+
         </div>
     );
 };
