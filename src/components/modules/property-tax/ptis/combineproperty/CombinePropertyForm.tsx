@@ -289,23 +289,29 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
 
       {showHistory ? (
         <div className="px-4 py-4 flex flex-col gap-4">
-          <MasterTable<HistoryRow>
-            columns={historyColumns}
-            data={(historyData?.items || []) as HistoryRow[]}
-            paginationConfig={{
-              enabled: true,
-              showPageSizeSelector: true,
-            }}
-            pageNumber={historyData?.pageNumber || 1}
-            pageSize={historyData?.pageSize || 10}
-            totalCount={historyData?.totalCount || 0}
-            totalPages={historyData?.totalPages || 0}
-            onPageChange={(page) => handleHistoryTableChange(page, historyData?.pageSize || 10)}
-            onPageSizeChange={(size) => handleHistoryTableChange(historyData?.pageNumber || 1, size)}
-            height="md"
-            getRowKey={(row, i) => `history-${row.propertyId || 0}-${i}`}
-            emptyText={t('emptyTableText')}
-          />
+          {(!historyData?.items || historyData.items.length === 0) ? (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-gray-500 font-medium">{t('noCombinePropertyHistoryFound')}</p>
+            </div>
+          ) : (
+            <MasterTable<HistoryRow>
+              columns={historyColumns}
+              data={(historyData?.items || []) as HistoryRow[]}
+              paginationConfig={{
+                enabled: true,
+                showPageSizeSelector: true,
+              }}
+              pageNumber={historyData?.pageNumber || 1}
+              pageSize={historyData?.pageSize || 10}
+              totalCount={historyData?.totalCount || 0}
+              totalPages={historyData?.totalPages || 0}
+              onPageChange={(page) => handleHistoryTableChange(page, historyData?.pageSize || 10)}
+              onPageSizeChange={(size) => handleHistoryTableChange(historyData?.pageNumber || 1, size)}
+              height="md"
+              getRowKey={(row, i) => `history-${row.propertyId || 0}-${i}`}
+              emptyText={t('emptyTableText')}
+            />
+          )}
         </div>
       ) : (
         <CombinePropertyReviewSection
