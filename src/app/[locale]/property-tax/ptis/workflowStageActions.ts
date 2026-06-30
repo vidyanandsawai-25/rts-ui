@@ -4,14 +4,8 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { getDepartmentContextFromCookieStore, getUserIdFromCookies } from '@/lib/utils/cookie';
 import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
-import type {
-  PropertyWorkflowStage,
-  PropertyWorkflowDetail,
-} from '@/types/propertyWorkflowStage.types';
+import type { PropertyWorkflowStage, PropertyWorkflowDetail } from '@/types/propertyWorkflowStage.types';
 import { workflowStageActionSchema } from '@/lib/validations/ptis.schema';
-import { createLogger } from '@/lib/utils/server-logger';
-
-const logger = createLogger('WorkflowStageActions');
 
 export async function getWorkflowStagesAction(): Promise<{
   success: boolean;
@@ -23,10 +17,8 @@ export async function getWorkflowStagesAction(): Promise<{
     if (result.success) {
       return { success: true, data: result.data };
     }
-    logger.error('getWorkflowStagesAction error', { error: result.error });
     return { success: false, error: result.error || 'Action failed' };
   } catch (error: unknown) {
-    logger.error('getWorkflowStagesAction exception', {}, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -60,10 +52,8 @@ export async function savePropertyWorkflowStageAction(
       revalidatePath(`/${locale}/property-tax/ptis`, 'page');
       return { success: true, data: result.data };
     }
-    logger.error('savePropertyWorkflowStageAction error', { error: result.error, propertyId });
     return { success: false, error: result.error || 'Action failed' };
   } catch (error: unknown) {
-    logger.error('savePropertyWorkflowStageAction exception', { propertyId }, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -79,21 +69,12 @@ export async function getCurrentWorkflowDetailAction(
     if (result.success) {
       return { success: true, data: result.data };
     }
-    // 404 is expected when a property has no workflow record yet — log as warn, not error
-    const is404 = typeof result.error === 'string' && result.error.includes('404');
-    if (is404) {
-      logger.info('No workflow detail found for property (expected for new properties)', {
-        propertyId,
-      });
-    } else {
-      logger.error('getCurrentWorkflowDetailAction error', { error: result.error, propertyId });
-    }
     return { success: false, error: result.error || 'Action failed' };
   } catch (error: unknown) {
-    logger.error('getCurrentWorkflowDetailAction exception', { propertyId }, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
 }
+
