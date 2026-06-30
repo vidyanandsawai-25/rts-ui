@@ -9,6 +9,7 @@ import {
   fetchDiscountDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
+  fetchTabHeaderInfoAction,
 } from './actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
@@ -79,5 +80,6 @@ export async function fetchPropertyDetailsConcurrently(
     propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
     propertyId ? ptisService.getPropertyBasicDetails(propertyId) : Promise.resolve(null),
     fetchWaybackReleases(),
+    propertyId ? fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null),
   ]);
 }

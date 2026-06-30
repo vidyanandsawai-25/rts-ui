@@ -11,7 +11,10 @@ import type {
   OldDetailsData,
   OldFloorDetailsData,
   OldTaxesData,
+  TabHeaderInfoData,
+  PropertyBasicDetailsApiResponse,
 } from '@/types/ptis.types';
+import type { WaybackRelease } from '@/lib/api/wayback.service';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ActionResult } from '@/types/common.types';
 import type { PropertyListItem } from '@/types/ptis.types';
@@ -64,8 +67,8 @@ export async function mapPtisFetchResults({
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
     discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
-    basicDetailsRes, waybackReleasesRes
-  ] = (detailResults.length > 0 ? detailResults : Array(17).fill(null)) as [
+    basicDetailsRes, waybackReleasesRes, tabHeaderInfoResult
+  ] = (detailResults.length > 0 ? detailResults : Array(18).fill(null)) as [
     { amenities: PagedResponse<ApartmentQCDetail>; commercial: PagedResponse<ApartmentQCDetail>; residential: PagedResponse<ApartmentQCDetail>; } | null,
     ActionResult<RateableValueResponse> | null,
     ActionResult<CapitalValueResponse> | null,
@@ -81,8 +84,9 @@ export async function mapPtisFetchResults({
     ActionResult<DualMethodResponse> | null,
     TaxDetailsResult | null,
     ActionResult<{ items: PropertyRuleLogItem[] }> | null,
-    { success: boolean; data?: any } | null,
-    any[] | null
+    { success: boolean; data?: PropertyBasicDetailsApiResponse } | null,
+    WaybackRelease[] | null,
+    { success: boolean; data?: TabHeaderInfoData } | null
   ];
 
   const emptyPaged: PagedResponse<ApartmentQCDetail> = {
@@ -153,6 +157,9 @@ export async function mapPtisFetchResults({
     redirectUrl = `/${locale}/property-tax/ptis?${newParams.toString()}`;
   }
 
+  const tabHeaderInfo = tabHeaderInfoResult?.success && tabHeaderInfoResult.data
+    ? tabHeaderInfoResult.data : null;
+
   return {
     criticalError,
     resolvedPropertyId,
@@ -190,5 +197,6 @@ export async function mapPtisFetchResults({
     latitude,
     longitude,
     waybackReleases,
+    tabHeaderInfo,
   };
 }
