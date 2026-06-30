@@ -257,6 +257,7 @@ export interface ApartmentPropertyTaxDetailsParams {
   wardId: string | number;
   propertyNo: string;
   partType: ApartmentPartType; // Amenity=Amenities, C=Commercial, R=Residential
+  partitionNo?: string;
 }
 
 /**

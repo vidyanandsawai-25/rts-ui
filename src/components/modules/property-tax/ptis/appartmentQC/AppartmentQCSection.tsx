@@ -28,6 +28,7 @@ interface AppartmentQCSectionProps {
   };
   wardId?: string;
   propertyNo?: string;
+  partitionNo?: string;
 }
 
 interface DrawerLocalData {
@@ -42,8 +43,9 @@ const AppartmentQCSection = ({
     commercial: emptyPagedResponse,
     residential: emptyPagedResponse
   },
-  wardId = '',
-  propertyNo = '',
+  wardId = "",
+  propertyNo = "",
+  partitionNo,
 }: AppartmentQCSectionProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,17 +85,17 @@ const AppartmentQCSection = ({
       setTaxDetailsLoading(true);
 
       if (activeSubTab === 'rateable') {
-        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
         if (result.success && result.data) {
           setTaxDetails(result.data);
         }
       } else if (activeSubTab === 'capital') {
-        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
+        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
         if (result.success && result.data) {
           setTaxDetails(result.data);
         }
       } else if (activeSubTab === 'dual-method') {
-        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
         if (result.success && result.data) {
           setDualMethodDetails(result.data);
         }
@@ -103,7 +105,7 @@ const AppartmentQCSection = ({
     } finally {
       setTaxDetailsLoading(false);
     }
-  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
+  }, [activeSubTab, activeMainTab, wardId, propertyNo, partitionNo]);
 
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';

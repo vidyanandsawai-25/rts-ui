@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { UsePropertySearchFiltersProps } from "@/types/property-search.types";
+import type { UsePropertySearchFiltersProps } from "@/types/property-search";
 
 /**
  * Hook for managing filtered lookup options.

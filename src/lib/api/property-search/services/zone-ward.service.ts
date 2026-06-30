@@ -8,7 +8,7 @@ import { createLogger } from "@/lib/utils/server-logger";
 import type {
   WardApiResponse,
   ZoneApiResponse,
-} from "@/types/property-search-api.types";
+} from "@/types/property-search";
 import {
   isWardShape,
   isZoneShape,
