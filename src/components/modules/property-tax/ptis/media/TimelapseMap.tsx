@@ -143,28 +143,41 @@ export const TimelapseMap = React.memo(function TimelapseMap({
   useEffect(() => {
     if (!mapInstance || !(mapInstance as unknown as { _container?: HTMLElement })._container) return;
 
-    try {
-      mapInstance.setView([lat, lng], 17);
+    let active = true;
 
-      const boundsPadding = 0.003;
-      const maxBounds = L.latLngBounds(
-        [lat - boundsPadding, lng - boundsPadding],
-        [lat + boundsPadding, lng + boundsPadding]
-      );
-      mapInstance.setMaxBounds(maxBounds);
+    // Defer view updates by 50ms to guarantee DOM layout has finished.
+    // This allows Leaflet to correctly compute container size during invalidateSize.
+    const timer = setTimeout(() => {
+      if (!active) return;
+      try {
+        mapInstance.invalidateSize({ animate: false });
+        mapInstance.setView([lat, lng], 17);
 
-      if (cachedMarker) cachedMarker.setLatLng([lat, lng]);
+        const boundsPadding = 0.003;
+        const maxBounds = L.latLngBounds(
+          [lat - boundsPadding, lng - boundsPadding],
+          [lat + boundsPadding, lng + boundsPadding]
+        );
+        mapInstance.setMaxBounds(maxBounds);
 
-      const delta = 0.0005;
-      if (cachedHighlight) {
-        cachedHighlight.setBounds([
-          [lat - delta, lng - delta],
-          [lat + delta, lng + delta],
-        ]);
+        if (cachedMarker) cachedMarker.setLatLng([lat, lng]);
+
+        const delta = 0.0005;
+        if (cachedHighlight) {
+          cachedHighlight.setBounds([
+            [lat - delta, lng - delta],
+            [lat + delta, lng + delta],
+          ]);
+        }
+      } catch {
+        // Safe fallback
       }
-    } catch {
-      // Safe fallback
-    }
+    }, 50);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [mapInstance, lat, lng]);
 
   // Update Labels visibility

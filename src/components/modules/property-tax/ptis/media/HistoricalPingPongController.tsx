@@ -87,7 +87,7 @@ export function HistoricalPingPongController({
     let layer = cache.get(year);
     if (!layer) {
       layer = L.tileLayer(getTileUrl(year), {
-        maxNativeZoom: 19,
+        maxNativeZoom: 18,
         maxZoom: 21,
         keepBuffer: 12,
         updateWhenIdle: true,

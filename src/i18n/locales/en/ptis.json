@@ -17,7 +17,7 @@
     "labels": "Labels",
     "googleMap": "Click to view on Google Map",
     "fetchingCatalog": "Fetching satellite history catalog...",
-    "interactionGuide": "Drag to pan · Scroll to zoom · Click a year to jump",
+    "interactionGuide": "Drag to pan · Click a year to jump",
     "attribution": "© Esri, Wayback, Maxar",
     "backToGrid": "Back to Grid",
     "compareModeSlider": "Slider",

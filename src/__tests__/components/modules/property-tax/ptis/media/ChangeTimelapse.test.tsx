@@ -30,17 +30,22 @@ let shouldFail2014 = false;
 // Mock next/dynamic to return our mock map component synchronously
 vi.mock('next/dynamic', () => ({
   default: () => {
-    return function MockTimelapseMap(props: any) {
+    interface MockMapProps {
+      activeRelease?: { year: number; releaseId: number };
+      onReleaseError: (releaseId: number) => void;
+    }
+
+    return function MockTimelapseMap({ activeRelease, onReleaseError }: MockMapProps) {
       // Simulate calling onReleaseError if release is 2014 and shouldFail2014 is true
       React.useEffect(() => {
-        if (shouldFail2014 && props.activeRelease?.year === 2014) {
-          props.onReleaseError(props.activeRelease.releaseId);
+        if (shouldFail2014 && activeRelease?.year === 2014) {
+          onReleaseError(activeRelease.releaseId);
         }
-      }, [props.activeRelease, props.onReleaseError]);
+      }, [activeRelease, onReleaseError]);
 
       return (
         <div data-testid="mock-timelapse-map">
-          Mock Map Year: {props.activeRelease?.year || 'none'}
+          Mock Map Year: {activeRelease?.year || 'none'}
         </div>
       );
     };

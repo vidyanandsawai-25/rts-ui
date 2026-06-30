@@ -6,7 +6,7 @@ interface CachedTile {
 }
 
 const tileCache = new Map<string, CachedTile>();
-const pendingRequests = new Map<string, Promise<CachedTile>>();
+const pendingRequests = new Map<string, Promise<CachedTile | null>>();
 
 let yearToReleaseIdMap: Record<number, number> | null = null;
 let mapFetchPromise: Promise<Record<number, number>> | null = null;
@@ -54,9 +54,12 @@ async function getYearToReleaseIdMap(): Promise<Record<number, number>> {
   return mapFetchPromise;
 }
 
-async function fetchTile(releaseId: number, z: string, x: string, y: string): Promise<CachedTile> {
+async function fetchTile(releaseId: number, z: string, x: string, y: string): Promise<CachedTile | null> {
   const url = `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/${releaseId}/${z}/${y}/${x}`;
   const response = await fetch(url);
+  if (response.status === 404) {
+    return null;
+  }
   if (!response.ok) {
     throw new Error(`Failed to fetch tile from ArcGIS: ${response.statusText}`);
   }
@@ -97,7 +100,9 @@ export async function GET(
             throw new Error(`No release ID found for year ${year}`);
           }
           const result = await fetchTile(releaseId, z, x, y);
-          tileCache.set(cacheKey, result);
+          if (result) {
+            tileCache.set(cacheKey, result);
+          }
           return result;
         } finally {
           pendingRequests.delete(cacheKey);
@@ -107,6 +112,10 @@ export async function GET(
     }
 
     const tile = await fetchPromise;
+    if (!tile) {
+      return new NextResponse(null, { status: 404 });
+    }
+
     return new NextResponse(new Uint8Array(tile.data), {
       headers: {
         'Content-Type': tile.contentType,
