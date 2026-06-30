@@ -247,6 +247,10 @@ describe('KycFormView', () => {
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
 
     const submitBtn = getSaveButton();
-    expect(submitBtn).toBeDisabled();
+    expect(submitBtn).not.toBeDisabled();
+
+    fireEvent.click(submitBtn);
+    expect(toast.error).toHaveBeenCalledWith('Invalid email address.');
+    expect(updatePropertyKycAction).not.toHaveBeenCalled();
   });
 });
