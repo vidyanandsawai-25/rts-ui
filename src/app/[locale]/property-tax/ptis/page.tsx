@@ -184,6 +184,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               initialDualSectionData={dualSectionData}
               wardId={resolvedWardId}
               propertyNo={propertyNo}
+              partitionNo={partitionNo}
               hasAppliedRules={hasAppliedRules || false}
               appliedRules={appliedRulesList || []}
               rateableSection={
