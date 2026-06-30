@@ -187,8 +187,8 @@ const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [], error }) => 
     }
 
     return (
-        <section className="w-full p-4 sm:p-8 md:p-12 min-h-[400px]" aria-label="Available Services">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 sm:gap-10 max-w-7xl mx-auto">
+        <section className="w-full p-4 sm:p-6 md:p-8 min-h-[300px]" aria-label="Available Services">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
                 {services.map(({ id, ...rest }) => (
                     <ServiceCard key={id} departmentId={id} {...rest} />
                 ))}

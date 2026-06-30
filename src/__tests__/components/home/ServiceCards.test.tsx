@@ -109,7 +109,7 @@ describe('ServiceCards Component', () => {
   it('renders section with correct styling', () => {
     const { container } = render(<ServiceCards services={mockServices} />);
     const section = container.querySelector('section');
-    expect(section).toHaveClass('w-full', 'min-h-[400px]');
+    expect(section).toHaveClass('w-full', 'min-h-[300px]');
   });
 
   it('renders section with correct accessibility attributes', () => {

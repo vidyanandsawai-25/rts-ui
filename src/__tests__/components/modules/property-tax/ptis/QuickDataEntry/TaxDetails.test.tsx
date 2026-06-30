@@ -143,23 +143,23 @@ describe('TaxDetails Component', () => {
     it('should display tax amounts correctly formatted', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      // Check for formatted numbers (Indian number format with 2 decimal places)
-      expect(screen.getByText('5,000.00')).toBeInTheDocument();
-      expect(screen.getByText('1,500.00')).toBeInTheDocument();
-      expect(screen.getByText('500.00')).toBeInTheDocument();
+      // Check for formatted numbers (Indian number format without decimal places for whole numbers)
+      expect(screen.getByText('5,000')).toBeInTheDocument();
+      expect(screen.getByText('1,500')).toBeInTheDocument();
+      expect(screen.getByText('500')).toBeInTheDocument();
     });
 
     it('should calculate and display total tax correctly', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      // Total should be 5000 + 1500 + 500 = 7000.00
-      expect(screen.getByText('7,000.00')).toBeInTheDocument();
+      // Total should be 5000 + 1500 + 500 = 7000
+      expect(screen.getByText('7,000')).toBeInTheDocument();
     });
 
     it('should display zeros for empty amounts', () => {
       render(<TaxDetails initialTaxDetails={emptyTaxDetailsData} />);
 
-      const zeroValues = screen.getAllByText('0.00');
+      const zeroValues = screen.getAllByText('0');
       expect(zeroValues.length).toBeGreaterThan(0);
     });
   });
@@ -255,7 +255,7 @@ describe('TaxDetails Component', () => {
       };
 
       render(<TaxDetails initialTaxDetails={zeroData} />);
-      const zeroValues = screen.getAllByText('0.00');
+      const zeroValues = screen.getAllByText('0');
       expect(zeroValues.length).toBeGreaterThan(0);
     });
   });
@@ -432,7 +432,7 @@ describe('TaxDetails Component', () => {
     it('should show 0.00 total for empty tax amounts', () => {
       render(<TaxDetails initialTaxDetails={emptyTaxDetailsData} />);
 
-      const zeroValues = screen.getAllByText('0.00');
+      const zeroValues = screen.getAllByText('0');
       expect(zeroValues.length).toBeGreaterThan(0);
     });
   });

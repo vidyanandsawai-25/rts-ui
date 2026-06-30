@@ -198,6 +198,7 @@ interface EditableSelectProps {
   className?: string;
   required?: boolean;
   isLoading?: boolean;
+  error?: string;
 }
 
 /**
@@ -212,6 +213,7 @@ export const EditableSelect = memo(({
   className = "",
   required = false,
   isLoading = false,
+  error,
 }: EditableSelectProps) => (
   <div className={cn("flex flex-col", className)}>
     <Select
@@ -223,8 +225,9 @@ export const EditableSelect = memo(({
       placeholder={isLoading ? "Loading..." : placeholder}
       disabled={isLoading}
       selectSize="sm"
-      className="text-xs"
+      className={cn("text-xs", error && "[&>div]:border-red-500")}
     />
+    <ValidationMessage message={error} visible={!!error} type="error" />
   </div>
 ), (prev, next) =>
   prev.label === next.label &&
@@ -233,7 +236,8 @@ export const EditableSelect = memo(({
   prev.placeholder === next.placeholder &&
   prev.isLoading === next.isLoading &&
   prev.className === next.className &&
-  prev.options === next.options
+  prev.options === next.options &&
+  prev.error === next.error
 );
 EditableSelect.displayName = "EditableSelect";
 

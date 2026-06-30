@@ -36,6 +36,9 @@ vi.mock('next-intl', () => ({
       'kyc.pinCode': 'Pin Code',
       'kyc.enterPinCode': 'Enter 6 digit pin code',
       'kyc.validation.invalidPinCode': 'Pin code must be exactly 6 digits',
+      'kyc.validation.invalidName': 'Invalid name. Only letters and basic punctuation are allowed.',
+      'kyc.validation.invalidEmail': 'Invalid email address.',
+      'kyc.validation.invalidAddress': 'Invalid address.',
       'kyc.aadharCardNo': 'Aadhar Card No',
       'kyc.mobileNo': 'Mobile No',
       'kyc.select': 'Select',
@@ -244,6 +247,10 @@ describe('KycFormView', () => {
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
 
     const submitBtn = getSaveButton();
-    expect(submitBtn).toBeDisabled();
+    expect(submitBtn).not.toBeDisabled();
+
+    fireEvent.click(submitBtn);
+    expect(toast.error).toHaveBeenCalledWith('Invalid email address.');
+    expect(updatePropertyKycAction).not.toHaveBeenCalled();
   });
 });

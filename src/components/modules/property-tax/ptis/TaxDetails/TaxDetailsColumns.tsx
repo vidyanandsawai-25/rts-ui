@@ -27,7 +27,8 @@ export function getTaxDetailsColumns(
       key: 'taxes' as keyof TaxRow,
       label: t('taxes'),
       width: '125px',
-      headerClassName: HEADER_TEXT_CLASSES,
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
+      cellClassName: CELL_CENTER_CLASS,
       render: (_v, row) => (
         <div className={`${TAX_LABEL_CLASSES} ${getTaxLabelStyle(row.labelKey || row.taxes)}`}>
           {row.taxes}
@@ -43,11 +44,15 @@ export function getTaxDetailsColumns(
       label: taxName,
       headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
       cellClassName: CELL_CENTER_CLASS,
-      render: (_v, row) => (
-        <div className={NUMBER_CELL_CLASSES}>
-          {formatIndianNumber(Number(row[taxName] ?? 0), 2, 2)}
-        </div>
-      ),
+      render: (_v, row) => {
+        const num = Number(row[taxName] ?? 0);
+        const decimals = Number.isInteger(num) ? 0 : 2;
+        return (
+          <div className={NUMBER_CELL_CLASSES}>
+            {formatIndianNumber(num, decimals, decimals)}
+          </div>
+        );
+      },
     });
   });
 
@@ -57,11 +62,15 @@ export function getTaxDetailsColumns(
     label: t('totalTax'),
     headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
     cellClassName: CELL_CENTER_CLASS,
-    render: (_v, row) => (
-      <div className={TOTAL_CELL_CLASSES}>
-        {formatIndianNumber(Number(row.totalTax), 2, 2)}
-      </div>
-    ),
+    render: (_v, row) => {
+      const num = Number(row.totalTax);
+      const decimals = Number.isInteger(num) ? 0 : 2;
+      return (
+        <div className={TOTAL_CELL_CLASSES}>
+          {formatIndianNumber(num, decimals, decimals)}
+        </div>
+      );
+    },
   });
 
   return columns;

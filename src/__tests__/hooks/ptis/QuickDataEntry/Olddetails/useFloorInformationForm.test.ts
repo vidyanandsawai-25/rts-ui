@@ -10,6 +10,19 @@ import { toast } from 'sonner';
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorFormState');
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorFormValidation');
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorFormApi');
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ propertyId: '123', locale: 'en' }),
+  usePathname: () => '/test-path',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
@@ -23,6 +36,7 @@ describe('useFloorInformationForm', () => {
   const mockState = {
     formData: { oldFloorId: '1' },
     setFormData: vi.fn(),
+    setInitialEditValues: vi.fn(),
     handleUseTypeChange: vi.fn(),
     handleEdit: vi.fn(),
     handleReset: vi.fn(),
