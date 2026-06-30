@@ -32,7 +32,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       focusFieldOrFallback('floor-is-taxable', '.bg-white.rounded-xl');
     }, 100);
     return () => clearTimeout(timer);
-  }, [editingFloorForm.id, editingFloorForm.floorId, isAddingNewFloor]);
+  }, [editingFloorForm.id, isAddingNewFloor]);
 
   const handleYearValueChange = (
     field: 'conYr' | 'asstYr',
@@ -41,7 +41,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   ) => {
     const newForm = { ...editingFloorForm, [field]: value };
     setEditingFloorForm(newForm);
-    
+
     let currentError = '';
     if (value.length === 4) {
       const validation = validateField(field, value);
@@ -52,10 +52,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
     setFormErrors((prev) => {
       const updated = { ...prev, [field]: currentError };
-      
+
       const conYrVal = String(newForm.conYr || '');
       const asstYrVal = String(newForm.asstYr || '');
-      
+
       if (conYrVal.length === 4 && asstYrVal.length === 4) {
         const conYear = parseInt(conYrVal, 10);
         const asstYear = parseInt(asstYrVal, 10);
@@ -86,12 +86,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     if (!validation.isValid) {
       fieldErr = validation.error || errorMsg;
     }
-    
+
     setFormErrors((prev) => {
       const updated = { ...prev, [field]: fieldErr };
       const conYrVal = String(editingFloorForm.conYr || '');
       const asstYrVal = String(editingFloorForm.asstYr || '');
-      
+
       if (conYrVal.length === 4 && asstYrVal.length === 4) {
         const conYear = parseInt(conYrVal, 10);
         const asstYear = parseInt(asstYrVal, 10);
@@ -129,6 +129,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           }}
           placeholder={t('floor.selectTaxableStatus')}
           className="h-9 text-sm border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          autoFocus
         />
       </FieldWrapper>
 
@@ -165,6 +166,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               } else {
                 setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
               }
+              // Automatically move focus to the subfloor field after selection
+              setTimeout(() => {
+                focusFieldOrFallback('floor-sub-floor', '.bg-white.rounded-xl');
+              }, 50);
             }}
             placeholder={t('floor.selectFloor')}
             className="h-9 text-sm"
