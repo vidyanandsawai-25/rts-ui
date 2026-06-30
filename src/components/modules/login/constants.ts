@@ -77,6 +77,9 @@ export const AUTH_COOKIES = {
 /** Seconds to show session-timeout message before redirecting to login. */
 export const SESSION_TIMEOUT_REDIRECT_SECONDS = 60;
 
+/** Inactivity timeout duration (seconds) before auto logging out (10 minutes). */
+export const INACTIVITY_TIMEOUT_SECONDS = 10 * 60;
+
 /**
  * ULB (Urban Local Body) branding cookie names.
  * Client-readable for UI display.
@@ -143,14 +146,9 @@ export const LOGOUT_CLEAR_COOKIES = [
  * Fallback session length (seconds) only when JWT/API expiry is absent.
  * Override with `NTIS_SESSION_MAX_AGE_SECONDS` in the environment.
  */
-const parsedSessionMaxAge = Number.parseInt(
-  process.env.NTIS_SESSION_MAX_AGE_SECONDS ?? '',
-  10
-);
+const parsedSessionMaxAge = Number.parseInt(process.env.NTIS_SESSION_MAX_AGE_SECONDS ?? '', 10);
 export const DEFAULT_SESSION_MAX_AGE_SECONDS =
-  Number.isFinite(parsedSessionMaxAge) && parsedSessionMaxAge > 0
-    ? parsedSessionMaxAge
-    : 60 * 60; // 1 hour
+  Number.isFinite(parsedSessionMaxAge) && parsedSessionMaxAge > 0 ? parsedSessionMaxAge : 60 * 60; // 1 hour
 
 /**
  * Base options for secure HTTP-only cookies (maxAge set per login from token expiry).

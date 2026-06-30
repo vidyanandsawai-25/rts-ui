@@ -2,7 +2,7 @@
 
 import { Input, Label, ValidationMessage } from "@/components/common";
 import { useTranslations } from "next-intl";
-import type { LookupInputProps } from "@/types/property-search.types";
+import type { LookupInputProps } from "@/types/property-search";
 import { COMPACT_INPUT_CLASS, COMPACT_LABEL_CLASS } from "../form-field-styles";
 import { cn } from "@/lib/utils/cn";
 
@@ -18,17 +18,22 @@ export function LookupInput({
   onBlur,
   disabled,
   maxLength,
+  onClear,
 }: LookupInputProps) {
   const listId = `${id}-datalist`;
   const t = useTranslations("propertySearch.form");
 
   const handleClear = () => {
-    onChange("");
+    if (onClear) {
+      onClear();
+    } else {
+      onChange("");
+    }
   };
 
   return (
     <div className="flex flex-col w-full">
-      <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+      <div className="mb-0.5 h-4 flex items-center justify-between gap-1">
         <Label
           htmlFor={id}
           className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}

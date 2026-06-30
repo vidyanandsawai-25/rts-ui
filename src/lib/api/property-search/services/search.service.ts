@@ -6,12 +6,15 @@ import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { createLogger } from "@/lib/utils/server-logger";
 import type { PagedResponse } from "@/types/common.types";
-import type { PropertySearchCriteriaPayload } from "@/types/property-search-api.types";
+import type { PropertySearchCriteriaPayload } from "@/types/property-search";
 import type {
   PropertyStatsData,
   SearchResult,
-} from "@/types/property-search.types";
-import { normalizePropertySearchResponse } from "../guards/property-item-guards";
+  CardFilterParams,
+  MainCardsResponse,
+  WorkflowCardItem,
+} from "@/types/property-search";
+import { normalizePropertySearchResponse, normalizePropertySearchItem } from "../guards/property-item-guards";
 import { normalizeDashboardStatsResponse } from "../guards/dashboard-stats-guards";
 
 const logger = createLogger("property-search/search");
@@ -46,6 +49,9 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.dashboardFilter != null && criteria.dashboardFilter > 0) {
     params.set("DashboardFilter", String(criteria.dashboardFilter));
   }
+  if (criteria.valuationTypeFilter) {
+    params.set("ValuationTypeFilter", criteria.valuationTypeFilter);
+  }
   if (criteria.rvOrCv) params.set("RVorCV", criteria.rvOrCv);
   if (criteria.amountFilterOperator) {
     params.set("AmountFilterOperator", criteria.amountFilterOperator);
@@ -73,7 +79,7 @@ export async function searchProperties(
   criteria: PropertySearchCriteriaPayload
 ): Promise<PagedResponse<SearchResult>> {
   const response = await apiClient.get<unknown>(
-    `/Property/search?${buildSearchParams(criteria)}`
+    `/PropertySearch/search/grid?${buildSearchParams(criteria)}`
   );
 
   if (!response.success) {
@@ -106,3 +112,86 @@ export async function fetchPropertyStats(): Promise<PropertyStatsData[]> {
     return [];
   }
 }
+
+function buildCardParams(paramsObj: CardFilterParams): string {
+  const params = new URLSearchParams();
+  if (paramsObj.propertyAssessmentStatusId) {
+    params.set("propertyAssessmentStatusId", String(paramsObj.propertyAssessmentStatusId));
+  }
+  if (paramsObj.workflowStageId) {
+    params.set("workflowStageId", String(paramsObj.workflowStageId));
+  }
+  if (paramsObj.propertyDescriptionId) {
+    params.set("propertyDescriptionId", String(paramsObj.propertyDescriptionId));
+  }
+  if (paramsObj.zoneId) {
+    params.set("zoneId", String(paramsObj.zoneId));
+  }
+  if (paramsObj.wardId) {
+    params.set("wardId", String(paramsObj.wardId));
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+export async function fetchMainCards(
+  params?: CardFilterParams
+): Promise<MainCardsResponse | null> {
+  try {
+    const qs = params ? buildCardParams(params) : "";
+    const response = await apiClient.get<{ items: MainCardsResponse }>(
+      `/PropertySearch/search/dashboard/main-cards${qs}`
+    );
+    if (!response.success || response.data == null) {
+      return null;
+    }
+    return response.data.items || null;
+  } catch (error) {
+    logger.error("Failed to fetch main cards", { error: error as Error });
+    return null;
+  }
+}
+
+export async function fetchWorkflowCards(
+  params?: CardFilterParams
+): Promise<WorkflowCardItem[]> {
+  try {
+    const qs = params ? buildCardParams(params) : "";
+    const response = await apiClient.get<{ items: WorkflowCardItem[] }>(
+      `/PropertySearch/search/dashboard/workflow-cards${qs}`
+    );
+    if (!response.success || response.data == null) {
+      return [];
+    }
+    return response.data.items || [];
+  } catch (error) {
+    logger.error("Failed to fetch workflow cards", { error: error as Error });
+    return [];
+  }
+}
+
+interface ApartmentUnitListResponse {
+  success: boolean;
+  message?: string;
+  items?: unknown[];
+}
+
+export async function fetchApartmentUnitList(
+  propertyId: number
+): Promise<SearchResult[]> {
+  const response = await apiClient.get<ApartmentUnitListResponse>(
+    `/PropertySearch/search/apartmentunitlist?propertyId=${propertyId}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch apartment unit list",
+      "Apartment unit list retrieval failed"
+    );
+  }
+
+  const rawItems = response.data.items || [];
+  return rawItems.map((item) => normalizePropertySearchItem(item as Record<string, unknown>));
+}
+

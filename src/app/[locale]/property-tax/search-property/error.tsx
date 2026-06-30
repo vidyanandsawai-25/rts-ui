@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { AlertCircle } from "lucide-react";
 import { Button, Card, CardContent, PageContainer } from "@/components/common";
 import { resolveSearchErrorMessage } from "@/lib/api/property-search/resolve-search-error-message";
-import type { PropertySearchErrorProps } from "@/types/property-search.types";
+import type { PropertySearchErrorProps } from "@/types/property-search";
 
 export default function Error({ error, reset }: PropertySearchErrorProps) {
   const t = useTranslations("propertySearch.error");

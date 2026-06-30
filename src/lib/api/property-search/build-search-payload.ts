@@ -1,12 +1,12 @@
 import {
   applyTabSearchCriteria,
 } from "@/components/modules/property-tax/search-property/search-field-groups";
-import type { PropertySearchCriteriaPayload } from "@/types/property-search-api.types";
+import type { PropertySearchCriteriaPayload } from "@/types/property-search";
 import type {
   PropertyStatus,
   SearchCriteria,
   SearchTab,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import {
   getDashboardFilterForStatus,
   getDashboardFilterForTypeFilter,
@@ -17,22 +17,15 @@ function normalizeMobileForApi(value: string): string | undefined {
   return digits || undefined;
 }
 
-/** UI filter keys ΓåÆ .NET `AmountFilterOperator` query values. */
+/** UI filter keys ➔ .NET `AmountFilterOperator` query values. */
 const AMOUNT_FILTER_OPERATOR_BY_UI: Record<string, string> = {
   exact: "Equals",
   moreThan: "GreaterThan",
   lessThan: "LessThan",
-  top: "top",
+  top: "TOP",
+  between: "Between",
 };
 
-function resolveValuesDuesRvOrCv(
-  criteria: SearchCriteria
-): PropertySearchCriteriaPayload["rvOrCv"] | undefined {
-  if (criteria.rateableValueFilter.trim() !== "") {
-    return "RV";
-  }
-  return undefined;
-}
 
 function getValuesDuesAmountFields(criteria: SearchCriteria): {
   filterType: string;
@@ -164,11 +157,30 @@ export function buildPropertySearchPayload(
   }
 
   if (activeTab === "values-dues") {
-    const rvOrCv = resolveValuesDuesRvOrCv(criteria);
     const { filterType, amountFrom, amountTo } = getValuesDuesAmountFields(criteria);
+
+    let valuationTypeFilter: string | undefined = undefined;
+    let rvOrCv: string | undefined = undefined;
+
+    if (criteria.valuationMethod === "totalTax") {
+      valuationTypeFilter = "TotalTax";
+    } else if (criteria.valuationMethod === "rv") {
+      valuationTypeFilter = "RV";
+      rvOrCv = "RV";
+    } else if (criteria.valuationMethod === "cv") {
+      valuationTypeFilter = "RV";
+      rvOrCv = "CV";
+    }
+
+    // Retain a fallback for legacy rvCv tests/values if encountered
+    else if (criteria.valuationMethod === "rvCv") {
+      valuationTypeFilter = "RV";
+      rvOrCv = "RVorCV";
+    }
 
     const valuesPayload: PropertySearchCriteriaPayload = {
       ...payload,
+      valuationTypeFilter,
       rvOrCv,
     };
 
@@ -182,9 +194,9 @@ export function buildPropertySearchPayload(
       if (amountValue == null || amountToValue == null) {
         return withUnpagedResults(valuesPayload);
       }
-      // Between: AmountValue + AmountTo (no AmountFilterOperator).
       return withUnpagedResults({
         ...valuesPayload,
+        amountFilterOperator: "Between",
         amountValue,
         amountTo: amountToValue,
       });
@@ -195,7 +207,7 @@ export function buildPropertySearchPayload(
       if (amountValue == null) {
         return withUnpagedResults(valuesPayload);
       }
-      // Exact Value (UI) ΓåÆ AmountFilterOperator=Equals + AmountValue.
+      // Exact Value (UI) ➔ AmountFilterOperator=Equals + AmountValue.
       return withUnpagedResults({
         ...valuesPayload,
         amountFilterOperator: "Equals",

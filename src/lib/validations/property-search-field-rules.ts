@@ -6,7 +6,7 @@ import type {
   SearchCriteria,
   SearchTab,
   SearchValidationKey,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 
 export type PropertySearchValidationTranslator = (
   key: SearchValidationKey
