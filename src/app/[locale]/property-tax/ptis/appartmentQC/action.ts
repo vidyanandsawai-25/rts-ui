@@ -1055,12 +1055,13 @@ export async function fetchApartmentPropertyTaxDetailsAction(
 export async function fetchApartmentPropertyTaxDetailsByTabAction(
   wardId: string | number,
   propertyNo: string,
-  mainTab: string
+  mainTab: string,
+  partitionNo?: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
     const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
-    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType, partitionNo });
     return {
       success: true,
       data,
@@ -1088,12 +1089,13 @@ export async function fetchApartmentPropertyTaxDetailsByTabAction(
 export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
   wardId: string | number,
   propertyNo: string,
-  mainTab: string
+  mainTab: string,
+  partitionNo?: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
     const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
-    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType });
+    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType, partitionNo });
     return {
       success: true,
       data,
@@ -1120,12 +1122,13 @@ export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
 export async function fetchDualMethodTaxDetailsByTabAction(
   wardId: string | number,
   propertyNo: string,
-  mainTab: string
+  mainTab: string,
+  partitionNo?: string
 ): Promise<ActionResult<DualMethodTaxDetails>> {
   try {
     const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
-    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType);
+    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType, partitionNo);
     return {
       success: true,
       data,

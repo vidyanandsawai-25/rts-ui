@@ -877,27 +877,13 @@ const ResidentialEditScreen = ({
                 </div>
               )}
             </div>
-            
-            {taxDetails && (
-              <div className="mt-4">
-                <ApartmentTaxDetailsTable
-                  taxDetails={taxDetails}
-                  dualMethodDetails={null}
-                  activeMainTab={hook.subTab}
-                  activeSubTab={hook.dualMethodTab}
-                />
-              </div>
-            )}
-            {dualMethodTaxDetails && hook.subTab === 'dual-method' && (
-              <div className="mt-4">
-                <ApartmentTaxDetailsTable
-                  taxDetails={null}
-                  dualMethodDetails={dualMethodTaxDetails}
-                  activeMainTab={hook.subTab}
-                  activeSubTab={hook.dualMethodTab}
-                />
-              </div>
-            )}
+              <ApartmentTaxDetailsTable
+              taxDetails={taxDetails}
+              dualMethodDetails={dualMethodTaxDetails}
+              loading={isLoadingTaxDetails}
+              activeMainTab={returnTo}
+              activeSubTab={subTabProp}
+            />
           </div>
         )}
       </Drawer>

@@ -788,6 +788,9 @@ export async function getApartmentPropertyTaxDetails(
     qs.append('WardId', String(params.wardId));
     qs.append('PropertyNo', params.propertyNo);
     qs.append('PartType', params.partType);
+    if (params.partitionNo) {
+      qs.append('PartitionNo', params.partitionNo);
+    }
 
     const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
@@ -887,6 +890,9 @@ export async function getApartmentPropertyTaxDetailsCv(
     qs.append('WardId', String(params.wardId));
     qs.append('PropertyNo', params.propertyNo);
     qs.append('PartType', params.partType);
+    if (params.partitionNo) {
+      qs.append('PartitionNo', params.partitionNo);
+    }
 
     const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
@@ -966,14 +972,16 @@ import type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
  * @param wardId - The ward ID
  * @param propertyNo - The property number
 * @param partType - The part type (Amenity, C, or R)
+ * @param partitionNo - (Optional) The partition number
  * @returns Object containing both RV and CV tax details
  */
 export async function getDualMethodTaxDetails(
   wardId: string | number,
   propertyNo: string,
-  partType: ApartmentPartType
+  partType: ApartmentPartType,
+  partitionNo?: string
 ): Promise<DualMethodTaxDetails> {
-  const params = { wardId, propertyNo, partType };
+  const params = { wardId, propertyNo, partType, partitionNo };
 
   const [rateable, capital] = await Promise.all([
     getApartmentPropertyTaxDetailsSafe(params),
