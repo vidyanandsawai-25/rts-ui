@@ -15,7 +15,12 @@ export const WAYBACK_MAP_TILE_URL = (releaseId: number): string =>
  * Direct tile URL for static image previews (e.g. Change Detection card thumbnails).
  * Requires pre-computed tile coordinates (x, y, z).
  */
-export const WAYBACK_STATIC_TILE_URL = (releaseId: number, x: number, y: number, z: number): string =>
+export const WAYBACK_STATIC_TILE_URL = (
+  releaseId: number,
+  x: number,
+  y: number,
+  z: number
+): string =>
   `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/${releaseId}/${z}/${y}/${x}`;
 
 export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
@@ -37,7 +42,7 @@ export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
       if (!match) return;
       const date = match[1];
       const year = parseInt(date.slice(0, 4), 10);
-      if (isNaN(year) || year < 2014) return;
+      if (isNaN(year) || year < 2015) return;
       if (!byYear[year] || date > byYear[year].date) {
         byYear[year] = { releaseId, date };
       }

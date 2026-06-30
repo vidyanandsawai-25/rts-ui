@@ -94,6 +94,14 @@ function PtisLayoutWrapperContent({
  * and state persistence via SSR-friendly cookies.
  */
 export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactElement {
+  React.useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/tile-sw.js').catch(() => {
+        // Safe silent fallback for local/non-SSL testing
+      });
+    }
+  }, []);
+
   return (
     <MediaPanelProvider initialVisible={props.initialMediaPanelVisible ?? false}>
       <PtisLayoutWrapperContent {...props} />

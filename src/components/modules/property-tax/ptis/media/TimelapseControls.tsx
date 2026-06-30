@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play, Pause, ChevronLeft, ChevronRight, Map, Eye, EyeOff, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
 
 interface TimelapseControlsProps {
@@ -37,12 +38,16 @@ export function TimelapseControls({
   lng,
   loading,
 }: TimelapseControlsProps): React.ReactElement {
+  const t = useTranslations('ptis');
+
   return (
     <div className="tl-ctrl flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-950/95 border-b border-slate-900 text-white text-xs select-none backdrop-blur-md">
       {/* Left Section: Playing & Navigation Controls */}
       <div className="flex items-center gap-2">
         <span className="text-base leading-none">🛰</span>
-        <span className="text-[11.5px] font-bold font-sans tracking-wide text-slate-200">Historical Satellite</span>
+        <span className="text-[11.5px] font-bold font-sans tracking-wide text-slate-200">
+          {t('media.historicalSatellite')}
+        </span>
 
         <div className="h-4 w-px bg-slate-800 mx-1" />
 
@@ -85,12 +90,12 @@ export function TimelapseControls({
           {playing ? (
             <>
               <Pause className="w-3.5 h-3.5 fill-current" />
-              <span>Pause</span>
+              <span>{t('media.pause')}</span>
             </>
           ) : (
             <>
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Play</span>
+              <span>{t('media.play')}</span>
             </>
           )}
         </button>
@@ -114,17 +119,27 @@ export function TimelapseControls({
       <div className="flex items-center gap-2">
         {/* Speed Selector */}
         <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-white select-none">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Speed:</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+            {t('media.speed')}
+          </span>
           <select
             value={speed}
             onChange={(e) => onSpeedChange(Number(e.target.value))}
             className="bg-transparent text-white border-none focus:outline-none text-[10px] cursor-pointer font-bold font-sans pr-1"
             aria-label="Playback speed"
           >
-            <option value={6000} className="bg-slate-900 text-white">0.5x (Slow)</option>
-            <option value={4500} className="bg-slate-900 text-white">1x (Normal)</option>
-            <option value={3000} className="bg-slate-900 text-white">1.5x (Medium)</option>
-            <option value={2000} className="bg-slate-900 text-white">2x (Fast)</option>
+            <option value={6000} className="bg-slate-900 text-white">
+              {t('media.speedSlow')}
+            </option>
+            <option value={4500} className="bg-slate-900 text-white">
+              {t('media.speedNormal')}
+            </option>
+            <option value={3000} className="bg-slate-900 text-white">
+              {t('media.speedMedium')}
+            </option>
+            <option value={2000} className="bg-slate-900 text-white">
+              {t('media.speedFast')}
+            </option>
           </select>
         </div>
 
@@ -140,7 +155,7 @@ export function TimelapseControls({
           aria-label={showLabels ? 'Hide map labels' : 'Show map labels'}
         >
           {showLabels ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-          <span>Labels</span>
+          <span>{t('media.labels')}</span>
         </button>
 
         <div className="h-4 w-px bg-slate-800 mx-1" />
@@ -157,7 +172,7 @@ export function TimelapseControls({
           aria-label="Open property location on Google Maps"
         >
           <Map className="w-3.5 h-3.5" />
-          <span>Click to view on Google Map</span>
+          <span>{t('media.googleMap')}</span>
         </button>
 
         {loading && (

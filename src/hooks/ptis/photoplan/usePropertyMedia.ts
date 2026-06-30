@@ -4,7 +4,10 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
-import { mapSlotsToCategories, findCategory } from '@/components/modules/property-tax/ptis/media/mediaData';
+import {
+  mapSlotsToCategories,
+  findCategory,
+} from '@/components/modules/property-tax/ptis/media/mediaData';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -47,11 +50,18 @@ export function usePropertyMedia({
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const [hoverPreview, setHoverPreview] = useState<{ src: string; src2?: string; title: string } | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<{
+    src: string;
+    src2?: string;
+    title: string;
+    beforeLabel?: string;
+    afterLabel?: string;
+  } | null>(null);
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [prevInitialPhotos, setPrevInitialPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
-  const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
+  const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] =
+    useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
 
   if (!arePhotosEqual(initialPhotos, prevInitialPhotos)) {
     setPhotos(initialPhotos);
@@ -68,33 +78,41 @@ export function usePropertyMedia({
     [initialPhotoSlots, photos, fullyLoadedIds, t]
   );
 
-  const handleCategoriesChange = useCallback((newCats: PhotoCategory[]) => {
-    const updated: PropertyPhotoDto[] = [];
-    newCats.forEach(c => c.images.forEach(img => {
-      if (img.propertyPhotoId && img.hasPhoto) {
-        updated.push({
-          propertyPhotoId: img.propertyPhotoId,
-          propertyId: propertyId || 0,
-          photoTypeId: img.photoTypeId || 0,
-          photoTypeCode: img.photoTypeCode || '',
-          photoTypeName: c.photoTypeName,
-          displayOrder: img.displayOrder,
-          remarks: img.remarks ? `${img.title} | ${img.remarks}` : img.title,
-          viewUrl: img.src,
-        });
-      }
-    }));
-    setPhotos(updated);
-  }, [propertyId]);
+  const handleCategoriesChange = useCallback(
+    (newCats: PhotoCategory[]) => {
+      const updated: PropertyPhotoDto[] = [];
+      newCats.forEach((c) =>
+        c.images.forEach((img) => {
+          if (img.propertyPhotoId && img.hasPhoto) {
+            updated.push({
+              propertyPhotoId: img.propertyPhotoId,
+              propertyId: propertyId || 0,
+              photoTypeId: img.photoTypeId || 0,
+              photoTypeCode: img.photoTypeCode || '',
+              photoTypeName: c.photoTypeName,
+              displayOrder: img.displayOrder,
+              remarks: img.remarks ? `${img.title} | ${img.remarks}` : img.title,
+              viewUrl: img.src,
+            });
+          }
+        })
+      );
+      setPhotos(updated);
+    },
+    [propertyId]
+  );
 
-  const [photoPlanCategory, propertyPhotoCategory] = useMemo(() => [
-    findCategory(categories, ['PHOTO_PLAN'], ['photo plan', 'plan']),
-    findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']) ||
-      findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']),
-  ], [categories]);
+  const [photoPlanCategory, propertyPhotoCategory] = useMemo(
+    () => [
+      findCategory(categories, ['PHOTO_PLAN'], ['photo plan', 'plan']),
+      findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']) ||
+        findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']),
+    ],
+    [categories]
+  );
 
-  const gisCategory = useMemo(() =>
-    findCategory(categories, ['GIS'], ['gis', 'satellite view']),
+  const gisCategory = useMemo(
+    () => findCategory(categories, ['GIS'], ['gis', 'satellite view']),
     [categories]
   );
 
@@ -127,13 +145,16 @@ export function usePropertyMedia({
 
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleImageHover = useCallback((src: string, title: string, src2?: string) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    setHoverPreview({ src, src2, title });
-  }, []);
+  const handleImageHover = useCallback(
+    (src: string, title: string, src2?: string, beforeLabel?: string, afterLabel?: string) => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      setHoverPreview({ src, src2, title, beforeLabel, afterLabel });
+    },
+    []
+  );
 
   const handleImageLeave = useCallback(() => {
     if (hoverTimeoutRef.current) {

@@ -4,7 +4,10 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { getDepartmentContextFromCookieStore, getUserIdFromCookies } from '@/lib/utils/cookie';
 import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
-import type { PropertyWorkflowStage, PropertyWorkflowDetail } from '@/types/propertyWorkflowStage.types';
+import type {
+  PropertyWorkflowStage,
+  PropertyWorkflowDetail,
+} from '@/types/propertyWorkflowStage.types';
 import { workflowStageActionSchema } from '@/lib/validations/ptis.schema';
 import { createLogger } from '@/lib/utils/server-logger';
 
@@ -79,7 +82,9 @@ export async function getCurrentWorkflowDetailAction(
     // 404 is expected when a property has no workflow record yet — log as warn, not error
     const is404 = typeof result.error === 'string' && result.error.includes('404');
     if (is404) {
-      logger.warn('No workflow detail found for property (expected for new properties)', { propertyId });
+      logger.info('No workflow detail found for property (expected for new properties)', {
+        propertyId,
+      });
     } else {
       logger.error('getCurrentWorkflowDetailAction error', { error: result.error, propertyId });
     }
@@ -92,4 +97,3 @@ export async function getCurrentWorkflowDetailAction(
     };
   }
 }
-
