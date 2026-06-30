@@ -380,83 +380,83 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-1 min-w-0 flex-grow justify-center">
-            {/* Row 1: Summary Info Fields */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
-              {/* Old No */}
-              <div className="flex items-center gap-1 min-w-0">
-                <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-                  {t('fields.oldNo')}:
-                </span>
-                <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] lg:max-w-none">
-                  {tabHeaderInfo
-                    ? `${tabHeaderInfo.oldWardNo || '-'}/${tabHeaderInfo.oldPropertyNo || '-'}${
-                        tabHeaderInfo.oldPartitionNo !== null &&
-                        tabHeaderInfo.oldPartitionNo !== undefined &&
-                        tabHeaderInfo.oldPartitionNo !== ''
-                          ? `/${tabHeaderInfo.oldPartitionNo}`
-                          : ''
-                      }`
-                    : '-'}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div className="hidden sm:block h-4 w-px bg-slate-400" />
-
-              {/* Property Holder */}
-              <div className="flex items-center gap-1 min-w-0">
-                <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-                  {t('fields.propertyHolder')}:
-                </span>
-                <Tooltip content={tabHeaderInfo?.ownerName || ownerName || '-'}>
-                  <span className="font-bold text-slate-700 text-sm lg:text-sm truncate max-w-[120px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[250px] xl:max-w-[300px]">
-                    {tabHeaderInfo?.ownerName || ownerName || '-'}
-                  </span>
-                </Tooltip>
-              </div>
-
-              {/* Divider */}
-              <div className="hidden sm:block h-4 w-px bg-slate-400" />
-
-              {/* Property Description */}
-              <div className="flex items-center gap-1 min-w-0">
-                <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-                  {t('fields.propertyDescription')}:
-                </span>
-                <span className="font-bold text-red-700 text-xs lg:text-sm truncate max-w-[80px] lg:max-w-none">
-                  {tabHeaderInfo?.description || propertyDescription || '-'}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div className="hidden sm:block h-4 w-px bg-slate-400" />
-
-              {/* UPIC ID */}
-              <div className="flex items-center gap-1 min-w-0">
-                <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-                  {t('fields.upicId')}:
-                </span>
-                <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
-                  {tabHeaderInfo?.upicId || upicId || '-'}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div className="hidden sm:block h-4 w-px bg-slate-400" />
-
-              {/* Assessment status */}
-              <div className="flex items-center gap-1 min-w-0">
-                <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-                  {t('fields.assessmentStatus')}:
-                </span>
-                <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[120px] lg:max-w-none">
-                  {tabHeaderInfo?.statusName || '-'}
-                </span>
-              </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 flex-grow justify-start">
+            {/* Old No */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.oldNo')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] lg:max-w-none">
+                {tabHeaderInfo
+                  ? `${tabHeaderInfo.oldWardNo || '-'}/${tabHeaderInfo.oldPropertyNo || '-'}${
+                      tabHeaderInfo.oldPartitionNo !== null &&
+                      tabHeaderInfo.oldPartitionNo !== undefined &&
+                      tabHeaderInfo.oldPartitionNo !== ''
+                        ? `/${tabHeaderInfo.oldPartitionNo}`
+                        : ''
+                    }`
+                  : '-'}
+              </span>
             </div>
 
-            {/* Row 2: Address */}
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Property Holder */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.propertyHolder')}:
+              </span>
+              <Tooltip content={tabHeaderInfo?.ownerName || ownerName || '-'}>
+                <span className="font-bold text-slate-700 text-sm lg:text-sm truncate max-w-[120px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[250px] xl:max-w-[300px]">
+                  {tabHeaderInfo?.ownerName || ownerName || '-'}
+                </span>
+              </Tooltip>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Property Description */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.propertyDescription')}:
+              </span>
+              <span className="font-bold text-red-700 text-xs lg:text-sm truncate max-w-[80px] lg:max-w-none">
+                {tabHeaderInfo?.description || propertyDescription || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* UPIC ID */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.upicId')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
+                {tabHeaderInfo?.upicId || upicId || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Assessment status */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.assessmentStatus')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[120px] lg:max-w-none">
+                {tabHeaderInfo?.statusName || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Address */}
             <div className="flex items-center gap-1 min-w-0">
               <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
                 {t('fields.address')}:
