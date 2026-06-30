@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { usePropertySearchResults } from "@/hooks/property-search/usePropertySearchResults";
-import type { SearchResult } from "@/types/property-search.types";
+import { usePropertySearchResults } from "@/hooks/search-property/usePropertySearchResults";
+import type { SearchResult } from "@/types/property-search";
 
 function makeResult(id: string, propertyId = 1): SearchResult {
   return {

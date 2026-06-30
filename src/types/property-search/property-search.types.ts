@@ -6,6 +6,7 @@
 
 import type { ReactNode, RefObject } from "react";
 import type { PropertyAssessmentStatusOption } from "@/types/property-assessment-status.types";
+import type { PropertyWorkflowStageOption } from "@/types/property-workflow-stage-master.types";
 
 /* ================= STATUS ================= */
 
@@ -164,11 +165,13 @@ export interface LookupOptions {
 export interface PropertySearchProps {
   results: SearchResult[];
   totalCount: number;
-  stats: PropertyStatsData[];
+  mainCards?: MainCardsResponse | null;
+  workflowCards?: WorkflowCardItem[] | null;
   zoneOptions: ZoneOption[];
   wardOptions: WardOption[];
   allWardOptions: WardOption[];
   propertyTypeOptions: PropertyAssessmentStatusOption[];
+  workflowStageOptions: PropertyWorkflowStageOption[];
   propertyDescriptionOptions: PropertyDescriptionOption[];
   lookupOptions: LookupOptions;
   selectedStatus: PropertyStatus | null;
@@ -181,7 +184,8 @@ export interface PropertySearchProps {
 export interface PropertyStatsProps {
   selectedStatus: PropertyStatus | null;
   onStatusClick: (status: PropertyStatus) => void;
-  statsData: PropertyStatsData[];
+  mainCards?: MainCardsResponse | null;
+  workflowCards?: WorkflowCardItem[] | null;
   disabled?: boolean;
   containerRef?: RefObject<HTMLDivElement | null>;
 }
@@ -194,11 +198,14 @@ export interface PropertySearchFormProps {
   zoneOptions: ZoneOption[];
   wardOptions: WardOption[];
   propertyTypeOptions: PropertyAssessmentStatusOption[];
+  workflowStageOptions: PropertyWorkflowStageOption[];
   propertyDescriptionOptions: PropertyDescriptionOption[];
   lookupOptions: LookupOptions;
   onSearch: (criteria: SearchCriteria, tab: SearchTab) => void;
   onReset: () => void;
   onTabChange: (tab: SearchTab) => void;
+  onZoneChange?: (zoneId: number) => void;
+  onWardChange?: (wardId: number) => void;
   disabled?: boolean;
   /** Disables only Search/Reset while a URL navigation is in progress. */
   searchPending?: boolean;
@@ -239,9 +246,8 @@ export interface LookupInputProps {
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   maxLength?: number;
+  onClear?: () => void;
 }
-
-
 
 export interface UpicLinkCellProps {
   upicId: string;
@@ -310,6 +316,8 @@ export interface UsePropertySearchFormProps {
   selectedStatus?: PropertyStatus | null;
   onSearch: (criteria: SearchCriteria, tab: SearchTab) => void;
   onReset: () => void;
+  onZoneChange?: (zoneId: number) => void;
+  onWardChange?: (wardId: number) => void;
   validationT: (key: SearchValidationKey) => string;
 }
 
@@ -339,6 +347,7 @@ export type SearchValidationKey =
   | "rateableValueRangeInvalid"
   | "capitalValueBetweenRequired"
   | "rateableValueInvalid"
+  | "valuationMethodRequired"
   | "noSearchCriteria";
 
 export type SearchValidationResult =
@@ -358,4 +367,43 @@ export interface PropertySearchPageProps {
 export interface PropertySearchErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
+}
+
+export interface MainCardsResponse {
+  previouslyRegistered: {
+    structureCount: number;
+    unitCount: number;
+    demand: number;
+  };
+  assessmentApproved: {
+    assessed: {
+      structureCount: number;
+      unitCount: number;
+      demand: number;
+    };
+    unassessed: {
+      structureCount: number;
+      unitCount: number;
+      demand: number;
+    };
+  };
+  additionalRevenueGenerated: {
+    structureCount: number;
+    unitCount: number;
+    demand: number;
+  };
+}
+
+export interface WorkflowCardItem {
+  stageName: string;
+  structureCount: number;
+  unitCount: number;
+}
+
+export interface CardFilterParams {
+  propertyAssessmentStatusId?: number;
+  workflowStageId?: number;
+  propertyDescriptionId?: number;
+  zoneId?: number;
+  wardId?: number;
 }
