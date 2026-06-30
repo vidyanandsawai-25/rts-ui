@@ -27,7 +27,8 @@ export function getTaxDetailsColumns(
       key: 'taxes' as keyof TaxRow,
       label: t('taxes'),
       width: '125px',
-      headerClassName: HEADER_TEXT_CLASSES,
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
+      cellClassName: CELL_CENTER_CLASS,
       render: (_v, row) => (
         <div className={`${TAX_LABEL_CLASSES} ${getTaxLabelStyle(row.labelKey || row.taxes)}`}>
           {row.taxes}
