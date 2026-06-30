@@ -72,5 +72,6 @@
   "showHistory": "इतिहास दिखाएं",
   "hideHistory": "इतिहास छुपाएं",
   "basePropertyTooltip": "यह आधार संपत्ति है",
-  "combinePropertyTooltip": "इस संपत्ति को हम आधार संपत्ति में मिला रहे हैं"
+  "combinePropertyTooltip": "इस संपत्ति को हम आधार संपत्ति में मिला रहे हैं",
+  "noCombinePropertyHistoryFound": "कोई संपत्ति संयोजन इतिहास नहीं मिला"
 }
