@@ -36,3 +36,7 @@ export {
 } from './useApartmentTaxDetailsTable';
 
 export { useTaxTableColumns } from './useTaxTableColumns';
+
+// Property Photo Viewer Hook
+export { usePropertyPhotoViewer } from './usePropertyPhotoViewer';
+export type { UsePropertyPhotoViewerProps } from './usePropertyPhotoViewer';

@@ -1,7 +1,9 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError, handleApiResponse } from '@/lib/utils/api';
 import { logger } from '@/lib/utils/logger';
+import { getDownloadDocumentUrl, getViewDocumentUrl } from '@/lib/utils/document-utils';
 import type { ApartmentQCDetail, ApartmentQCResponse, ApartmentQCSearchParams } from '@/types/apartmentQC.types';
+import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
 import type { ApiResponse } from '@/types/common.types';
 
 /* ============================================================
@@ -992,6 +994,191 @@ export async function getDualMethodTaxDetails(
     rateable,
     capital,
   };
+}
+
+/* ============================================================
+   PROPERTY PHOTOS — FETCH API
+   Endpoint: GET /property-photos/types-with-status/{propertyId}
+   Fetches photo slots and normalizes the items that already have documents
+ ============================================================ */
+
+interface PropertyPhotoApiWrapper<T> {
+  success: boolean;
+  message?: string;
+  items?: T[];
+  errors?: string[] | null;
+  correlationId?: string | null;
+}
+
+function normalizePropertyPhoto(
+  item: Partial<PropertyPhotoDto & PropertyPhotoTypeWithStatusDto>,
+  propertyId: number
+): PropertyPhotoDto | null {
+  const documentGuid = typeof item.documentGuid === 'string' ? item.documentGuid.trim() : '';
+  if (!documentGuid) {
+    return null;
+  }
+
+  return {
+    propertyPhotoId: item.propertyPhotoId ?? item.photoTypeId ?? 0,
+    propertyId: item.propertyId ?? propertyId,
+    photoTypeId: item.photoTypeId ?? 0,
+    photoTypeCode: item.photoTypeCode ?? '',
+    photoTypeName: item.photoTypeName ?? item.photoTypeCode ?? '',
+    displayOrder: item.displayOrder,
+    remarks: item.remarks,
+    documentGuid,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+    viewUrl: item.viewUrl || getViewDocumentUrl(documentGuid),
+    downloadUrl: item.downloadUrl || getDownloadDocumentUrl(documentGuid),
+  };
+}
+
+function sortPropertyPhotos<T extends { displayOrder?: number; propertyPhotoId?: number }>(
+  items: T[]
+): T[] {
+  return [...items].sort((a, b) => {
+    const displayOrderDiff = (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER);
+    if (displayOrderDiff !== 0) {
+      return displayOrderDiff;
+    }
+
+    return (a.propertyPhotoId ?? 0) - (b.propertyPhotoId ?? 0);
+  });
+}
+
+function selectApartmentQcViewerPhotos(
+  items: Array<Partial<PropertyPhotoDto & PropertyPhotoTypeWithStatusDto>>,
+  propertyId: number
+): PropertyPhotoDto[] {
+  const selectedPhotos = new Map<string, PropertyPhotoDto>();
+
+  for (const item of sortPropertyPhotos(items)) {
+    const normalizedPhoto = normalizePropertyPhoto(item, propertyId);
+    if (!normalizedPhoto) {
+      continue;
+    }
+
+    const uniqueKey =
+      normalizedPhoto.propertyPhotoId > 0
+        ? `photo:${normalizedPhoto.propertyPhotoId}`
+        : `document:${normalizedPhoto.documentGuid}`;
+
+    if (!selectedPhotos.has(uniqueKey)) {
+      selectedPhotos.set(uniqueKey, normalizedPhoto);
+    }
+  }
+
+  return Array.from(selectedPhotos.values());
+}
+
+export async function getPropertyPhotos(
+  propertyId: number
+): Promise<ApiResponse<PropertyPhotoDto[]>> {
+  try {
+    const [slotResult, photoResult] = await Promise.allSettled([
+      apiClient.get<PropertyPhotoApiWrapper<PropertyPhotoTypeWithStatusDto>>(
+        `/property-photos/types-with-status/${propertyId}`,
+        { cache: 'no-store' }
+      ),
+      apiClient.get<PropertyPhotoApiWrapper<PropertyPhotoDto>>(
+        `/property-photos/property/${propertyId}`,
+        { cache: 'no-store' }
+      ),
+    ]);
+
+    const slotResponse = slotResult.status === 'fulfilled' ? slotResult.value : null;
+    const photoResponse = photoResult.status === 'fulfilled' ? photoResult.value : null;
+
+    const slotPhotos =
+      slotResponse?.success && slotResponse.data?.success
+        ? (slotResponse.data.items ?? []).filter((item) => item.hasPhoto && !!item.documentGuid)
+        : [];
+
+    const propertyPhotos =
+      photoResponse?.success && photoResponse.data?.success ? (photoResponse.data.items ?? []) : [];
+
+    const allPhotos = selectApartmentQcViewerPhotos(
+      [...propertyPhotos, ...slotPhotos],
+      propertyId
+    );
+
+    if (allPhotos.length > 0) {
+      return {
+        success: true,
+        statusCode: photoResponse?.statusCode ?? slotResponse?.statusCode,
+        data: allPhotos,
+        message:
+          photoResponse?.data?.message ||
+          slotResponse?.data?.message ||
+          photoResponse?.message ||
+          slotResponse?.message,
+      };
+    }
+
+    return {
+      success: false,
+      statusCode: slotResponse?.statusCode || photoResponse?.statusCode || 500,
+      error:
+        slotResponse?.error ||
+        photoResponse?.error ||
+        'Failed to fetch property photos',
+      message:
+        slotResponse?.message ||
+        photoResponse?.message ||
+        'Failed to fetch property photos',
+    };
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching property photos', { error: error as Error });
+    return { success: false, statusCode: 500, error: error instanceof Error ? error.message : 'Failed to fetch property photos' };
+  }
+}
+
+/**
+ * Fetch property photos with error handling.
+ * 
+ * @param propertyId - The property ID
+ * @returns Array of PropertyPhotoDto or throws error
+ */
+export async function getPropertyPhotosLocalized(
+  propertyId: number
+): Promise<PropertyPhotoDto[]> {
+  try {
+    const res = await getPropertyPhotos(propertyId);
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch property photos",
+        "Get property photos failed"
+      );
+    }
+    return res.data;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching property photos', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch property photos"
+    );
+  }
+}
+
+/**
+ * Safe wrapper - Fetch property photos. Returns empty array on failure.
+ * 
+ * @param propertyId - The property ID
+ * @returns Array of PropertyPhotoDto or empty array on failure
+ */
+export async function getPropertyPhotosSafe(
+  propertyId: number
+): Promise<PropertyPhotoDto[]> {
+  try {
+    return await getPropertyPhotosLocalized(propertyId);
+  } catch {
+    return [];
+  }
 }
 
 /* ============================================================
