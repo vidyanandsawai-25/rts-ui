@@ -78,8 +78,8 @@ export async function fetchPropertyDetailsConcurrently(
     valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
     fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
     propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
-    propertyId ? ptisService.getPropertyBasicDetails(propertyId) : Promise.resolve(null),
-    fetchWaybackReleases(),
+    initialMediaPanelVisible && propertyId ? ptisService.getPropertyBasicDetails(propertyId) : Promise.resolve(null),
+    initialMediaPanelVisible ? fetchWaybackReleases() : Promise.resolve(null),
     propertyId ? fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null),
   ]);
 }

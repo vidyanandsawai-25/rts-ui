@@ -164,7 +164,7 @@ export function TimelapseControls({
         <button
           type="button"
           onClick={() => {
-            if (lat && lng) {
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
               window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank', 'noopener,noreferrer');
             }
           }}
@@ -176,7 +176,7 @@ export function TimelapseControls({
         </button>
 
         {loading && (
-          <span className="flex items-center justify-center ml-1" aria-label="Loading satellite tiles">
+          <span className="relative flex items-center justify-center ml-1" aria-label="Loading satellite tiles">
             <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-amber-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
           </span>
