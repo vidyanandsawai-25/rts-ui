@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback } from 'react';
 import { Images, X, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/common';
@@ -67,10 +69,12 @@ function PropertyMediaPanel({
   } = usePropertyMedia({ initialPhotoSlots, initialPhotos, propertyId });
 
   // Derive coordinates and releases directly from server-side props
-  const coords =
-    initialLatitude && initialLongitude
-      ? { lat: initialLatitude, lng: initialLongitude }
-      : getDefaultCoordinates();
+  const hasCoords =
+    typeof initialLatitude === 'number' &&
+    Number.isFinite(initialLatitude) &&
+    typeof initialLongitude === 'number' &&
+    Number.isFinite(initialLongitude);
+  const coords = hasCoords ? { lat: initialLatitude, lng: initialLongitude } : getDefaultCoordinates();
   const waybackReleases = initialWaybackReleases;
 
   const cdCategory = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
@@ -282,7 +286,7 @@ function PropertyMediaPanel({
           aria-label="Close panel"
         >
           <ChevronRight
-            className="w-6 h-6 text-[#64748B] group-hover:[#2563EB] scale-y-[3.5] scale-x-[1.5] opacity-75 group-hover:opacity-100 animate-pulse group-hover:animate-none transition-all"
+            className="w-6 h-6 text-[#64748B] group-hover:text-[#2563EB] scale-y-[3.5] scale-x-[1.5] opacity-75 group-hover:opacity-100 animate-pulse group-hover:animate-none transition-all"
             strokeWidth={2.5}
           />
         </button>

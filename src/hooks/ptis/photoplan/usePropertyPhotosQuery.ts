@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 
 export interface UsePropertyPhotosQueryResult {
@@ -80,35 +80,37 @@ export function usePropertyPhotosQuery(
   });
 
   // Track previous inputs for render-phase sync
-  const [prevPropertyId, setPrevPropertyId] = useState<number | undefined>(propertyId);
-  const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
-  const [prevInitialPhotos, setPrevInitialPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
+  const prevPropertyIdRef = useRef(propertyId);
+  const prevSlotsRef = useRef(initialPhotoSlots);
+  const prevPhotosRef = useRef(initialPhotos);
 
   // Sync state if propertyId or initial props change (derived state pattern)
-  const isPropChange =
-    propertyId !== prevPropertyId ||
-    !areSlotsEqual(initialPhotoSlots, prevInitialPhotoSlots) ||
-    !arePhotosEqual(initialPhotos, prevInitialPhotos);
+  useEffect(() => {
+    const isPropChange =
+      propertyId !== prevPropertyIdRef.current ||
+      !areSlotsEqual(initialPhotoSlots, prevSlotsRef.current) ||
+      !arePhotosEqual(initialPhotos, prevPhotosRef.current);
 
-  if (isPropChange) {
-    let nextPhotoSlots = initialPhotoSlots;
-    let nextPhotos = initialPhotos;
+    if (isPropChange) {
+      let nextPhotoSlots = initialPhotoSlots;
+      let nextPhotos = initialPhotos;
 
-    if (propertyId && !isPanelOpen) {
-      // When panel is closed, props are empty. Retrieve from cache if available.
-      if (propertyMediaCache.has(propertyId)) {
-        const cached = propertyMediaCache.get(propertyId)!;
-        nextPhotoSlots = cached.photoSlots;
-        nextPhotos = cached.photos;
+      if (propertyId && !isPanelOpen) {
+        // When panel is closed, props are empty. Retrieve from cache if available.
+        if (propertyMediaCache.has(propertyId)) {
+          const cached = propertyMediaCache.get(propertyId)!;
+          nextPhotoSlots = cached.photoSlots;
+          nextPhotos = cached.photos;
+        }
       }
-    }
 
-    setPhotoSlots(nextPhotoSlots);
-    setPhotos(nextPhotos);
-    setPrevPropertyId(propertyId);
-    setPrevInitialPhotoSlots(initialPhotoSlots);
-    setPrevInitialPhotos(initialPhotos);
-  }
+      setPhotoSlots(nextPhotoSlots);
+      setPhotos(nextPhotos);
+      prevPropertyIdRef.current = propertyId;
+      prevSlotsRef.current = initialPhotoSlots;
+      prevPhotosRef.current = initialPhotos;
+    }
+  }, [propertyId, isPanelOpen, initialPhotoSlots, initialPhotos]);
 
   // Side-effect: Update the client-side cache when the panel is open and fresh props are loaded
   useEffect(() => {

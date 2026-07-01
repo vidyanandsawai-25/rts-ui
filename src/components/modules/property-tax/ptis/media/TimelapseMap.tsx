@@ -44,6 +44,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
   waybackReleases,
   onLoadChange,
   onActiveYearChange,
+  onReleaseError,
   onStopPlaying,
 }: TimelapseMapProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -218,6 +219,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
         speed={speed}
         onActiveYearChange={onActiveYearChange}
         onStopPlaying={onStopPlaying}
+        onReleaseError={onReleaseError}
       />
     </>
   );

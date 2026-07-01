@@ -134,12 +134,13 @@ export async function mapPtisFetchResults({
     }
   }
 
-  const latitude = basicDetailsRes?.success && basicDetailsRes.data?.latitude
-    ? parseFloat(basicDetailsRes.data.latitude)
-    : undefined;
-  const longitude = basicDetailsRes?.success && basicDetailsRes.data?.longitude
-    ? parseFloat(basicDetailsRes.data.longitude)
-    : undefined;
+  const latitudeStr = basicDetailsRes?.success ? basicDetailsRes.data?.latitude : undefined;
+  const latitudeNum = latitudeStr ? parseFloat(latitudeStr) : NaN;
+  const latitude = Number.isFinite(latitudeNum) ? latitudeNum : undefined;
+
+  const longitudeStr = basicDetailsRes?.success ? basicDetailsRes.data?.longitude : undefined;
+  const longitudeNum = longitudeStr ? parseFloat(longitudeStr) : NaN;
+  const longitude = Number.isFinite(longitudeNum) ? longitudeNum : undefined;
 
   const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
     ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)

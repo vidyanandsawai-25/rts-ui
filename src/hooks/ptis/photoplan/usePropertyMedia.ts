@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
@@ -58,20 +58,24 @@ export function usePropertyMedia({
     afterLabel?: string;
   } | null>(null);
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
-  const [prevInitialPhotos, setPrevInitialPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
-  const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] =
-    useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
 
-  if (!arePhotosEqual(initialPhotos, prevInitialPhotos)) {
-    setPhotos(initialPhotos);
-    setPrevInitialPhotos(initialPhotos);
-  }
+  const prevPhotosRef = useRef<PropertyPhotoDto[]>(initialPhotos);
+  const prevSlotsRef = useRef<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
 
-  if (!areSlotsEqual(initialPhotoSlots, prevInitialPhotoSlots)) {
-    setFullyLoadedIds(new Set());
-    setPrevInitialPhotoSlots(initialPhotoSlots);
-  }
+  useEffect(() => {
+    if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {
+      setPhotos(initialPhotos);
+      prevPhotosRef.current = initialPhotos;
+    }
+  }, [initialPhotos]);
+
+  useEffect(() => {
+    if (!areSlotsEqual(initialPhotoSlots, prevSlotsRef.current)) {
+      setFullyLoadedIds(new Set());
+      prevSlotsRef.current = initialPhotoSlots;
+    }
+  }, [initialPhotoSlots]);
 
   const categories = useMemo(
     () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t),

@@ -165,7 +165,7 @@ export function TimelapseControls({
           type="button"
           onClick={() => {
             if (lat && lng) {
-              window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+              window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank', 'noopener,noreferrer');
             }
           }}
           className="bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-bold rounded text-[10px] px-3.5 py-1.5 cursor-pointer transition-all duration-200 border-none flex items-center gap-1.5 shadow-md shadow-emerald-950/20"

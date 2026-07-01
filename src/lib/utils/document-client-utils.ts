@@ -1,3 +1,5 @@
+'use client';
+
 import { getDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
 import { toast } from 'sonner';
 

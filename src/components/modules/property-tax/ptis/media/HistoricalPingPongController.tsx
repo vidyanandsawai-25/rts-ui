@@ -16,6 +16,7 @@ interface HistoricalPingPongControllerProps {
   speed: number;
   onActiveYearChange?: (year: number) => void;
   onStopPlaying?: () => void;
+  onReleaseError?: (releaseId: number) => void;
 }
 
 // WeakMap to cache layers per L.Map instance without mutating the map object itself
@@ -41,6 +42,7 @@ export function HistoricalPingPongController({
   speed,
   onActiveYearChange,
   onStopPlaying,
+  onReleaseError,
 }: HistoricalPingPongControllerProps): null {
   const years = useMemo(() => releases.map((r) => r.year), [releases]);
   const lruOrderRef = useRef<number[]>([]);
@@ -53,6 +55,7 @@ export function HistoricalPingPongController({
   const activeYearRef = useRef(activeYear);
   const onActiveYearChangeRef = useRef(onActiveYearChange);
   const onStopPlayingRef = useRef(onStopPlaying);
+  const onReleaseErrorRef = useRef(onReleaseError);
 
   useEffect(() => {
     playingRef.current = playing;
@@ -77,6 +80,10 @@ export function HistoricalPingPongController({
   useEffect(() => {
     onStopPlayingRef.current = onStopPlaying;
   }, [onStopPlaying]);
+
+  useEffect(() => {
+    onReleaseErrorRef.current = onReleaseError;
+  }, [onReleaseError]);
 
   // Reset cache and remove layers when coordinates change (switching property)
   useEffect(() => {
@@ -129,7 +136,12 @@ export function HistoricalPingPongController({
       };
       layer.on('loading', () => setLoad(true));
       layer.on('load', () => setLoad(false));
-      layer.on('tileerror', () => setLoad(false));
+      layer.on('tileerror', () => {
+        setLoad(false);
+        if (onReleaseErrorRef.current && releaseId) {
+          onReleaseErrorRef.current(releaseId);
+        }
+      });
 
       cache.set(year, layer);
     }

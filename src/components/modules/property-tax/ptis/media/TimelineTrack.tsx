@@ -19,7 +19,7 @@ export function TimelineTrack({
   return (
     <div className="tl-bar relative bg-slate-950 border-b border-slate-900 px-6 py-2 flex items-center justify-between overflow-x-auto overflow-y-hidden min-h-[56px] gap-2 scrollbar-none">
       {/* Connecting line track */}
-      <div className="absolute left-10 right-10 top-[29px] h-[2px] bg-slate-850 pointer-events-none" />
+      <div className="absolute left-10 right-10 top-[29px] h-[2px] bg-slate-800 pointer-events-none" />
 
       {releases.map((rel, i) => (
         <div key={rel.releaseId} className="relative z-10 flex flex-col items-center gap-1.5">

@@ -95,13 +95,14 @@ function PtisLayoutWrapperContent({
  */
 export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactElement {
   React.useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (const registration of registrations) {
-          registration.unregister().catch(() => {});
-        }
-      }).catch(() => {});
-    }
+    // Avoid unregistering service workers in production unless explicitly intended.
+    if (process.env.NODE_ENV !== 'development') return;
+    if (!('serviceWorker' in navigator)) return;
+
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => Promise.allSettled(registrations.map((r) => r.unregister())))
+      .catch(() => {});
   }, []);
 
   return (
