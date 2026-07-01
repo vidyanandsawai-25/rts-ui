@@ -150,14 +150,18 @@ export function SubTypeSection({
               renderActions={(row) => (
                 <div className="flex items-center gap-2">
                   <EditButton
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       router.push(
                         `/${locale}/property-tax/typeofusemaster/subtype/edit/${row.subTypeOfUseId}`
-                      )
-                    }
+                      );
+                    }}
                   />
                   <DeleteButton
-                    onClick={() => onDeleteSubType(row as UseSubType)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteSubType(row as UseSubType);
+                    }}
                   />
                 </div>
               )}
