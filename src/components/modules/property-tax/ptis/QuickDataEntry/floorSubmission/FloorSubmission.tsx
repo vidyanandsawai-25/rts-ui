@@ -529,9 +529,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           <p className="text-red-600 font-semibold">
             * Type is used to indicate properties with the same area/plan.
           </p>
-          <p className="text-red-500 font-medium">
-            * Examples: <span className="font-bold text-red-700">1</span> is Apartment, <span className="font-bold text-red-700">2</span> is Row House, <span className="font-bold text-red-700">3</span> is Shop, etc.
-          </p>
         </div>
       </>
     );
