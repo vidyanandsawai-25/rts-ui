@@ -134,11 +134,23 @@ export async function mapPtisFetchResults({
     }
   }
 
-  const latitudeStr = basicDetailsRes?.success ? basicDetailsRes.data?.latitude : undefined;
+  const latitudeStr =
+    basicDetailsRes?.success && basicDetailsRes.data?.latitude
+      ? basicDetailsRes.data.latitude
+      : propertyDetailsResult.success &&
+        propertyDetailsResult.propertyDetails?.latitude
+        ? propertyDetailsResult.propertyDetails.latitude
+        : undefined;
   const latitudeNum = latitudeStr ? parseFloat(latitudeStr) : NaN;
   const latitude = Number.isFinite(latitudeNum) ? latitudeNum : undefined;
 
-  const longitudeStr = basicDetailsRes?.success ? basicDetailsRes.data?.longitude : undefined;
+  const longitudeStr =
+    basicDetailsRes?.success && basicDetailsRes.data?.longitude
+      ? basicDetailsRes.data.longitude
+      : propertyDetailsResult.success &&
+        propertyDetailsResult.propertyDetails?.longitude
+        ? propertyDetailsResult.propertyDetails.longitude
+        : undefined;
   const longitudeNum = longitudeStr ? parseFloat(longitudeStr) : NaN;
   const longitude = Number.isFinite(longitudeNum) ? longitudeNum : undefined;
 
