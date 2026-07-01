@@ -71,7 +71,7 @@ export function FloorTableSection({
     confirm({
       variant: "delete",
       title: tCommon("messages.confirmDelete"),
-      meta: { id: row.id, name: row.floor },
+      meta: { name: row.floor },
       onConfirm: async () => {
         await onDelete(row.id);
       }

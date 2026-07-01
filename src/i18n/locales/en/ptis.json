@@ -246,6 +246,8 @@
     "localeSuffix": "(Locale)",
     "upicId": "UPIC ID",
     "propertyHolder": "Property Holder",
+    "assessmentStatus": "Assessment status",
+    "oldNo": "Old No.",
     "division": "Division",
     "plotNo": "Plot No",
     "plotArea": "Plot Area",

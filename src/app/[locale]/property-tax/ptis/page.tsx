@@ -10,7 +10,10 @@ import { FOOTER_REGISTRY, DEFAULT_ACTION_STYLE } from '@/config/footer-registry'
 import { FooterAction } from '@/lib/api/footer.service';
 
 import { BottomActionBar } from '@/components/layout/BottomActionBar';
-import { PtisBackButton, PtisFooterDropdowns } from '@/components/modules/property-tax/ptis/PtisFooterControls';
+import {
+  PtisBackButton,
+  PtisFooterDropdowns,
+} from '@/components/modules/property-tax/ptis/PtisFooterControls';
 import PtisMainScreen from '@/components/modules/property-tax/ptis/PtisMainScreen';
 import PropertyTabSection from '@/components/modules/property-tax/ptis/PropertyTabSection';
 import { PtisLayoutWrapper } from '@/components/modules/property-tax/ptis/PtisLayoutWrapper';
@@ -51,7 +54,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     getWorkflowStagesAction(),
   ]);
 
-  const workflowStages = workflowStagesResult?.success ? (workflowStagesResult.data || []) : [];
+  const workflowStages = workflowStagesResult?.success ? workflowStagesResult.data || [] : [];
   if (!workflowStagesResult?.success) {
     console.error('Failed to load workflow stages:', workflowStagesResult?.error);
   }
@@ -96,7 +99,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     capitalTaxError,
     activeTab,
     hasAppliedRules,
-    appliedRulesList
+    appliedRulesList,
+    tabHeaderInfo,
   } = pageData;
 
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
@@ -107,8 +111,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const rawPartitionNo = toSafeString(resolvedSearchParams?.partitionNo);
   const partitionNo = rawPartitionNo === '0' ? '' : rawPartitionNo;
 
-  const initialError =
-    (!propertyDetailsResult.success && propertyDetailsResult.error) || undefined;
+  const initialError = (!propertyDetailsResult.success && propertyDetailsResult.error) || undefined;
 
   const sanitizedInitialError = propertyDetailsResult.error
     ? getPtisUserSafeErrorMessage(propertyDetailsResult.error, undefined, t('error.generic'), t)
@@ -128,6 +131,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     oldTaxesData,
     showOldTaxInfo: showOldTaxParam,
     discountDetails,
+    tabHeaderInfo,
   };
 
   const footerActions: FooterAction[] = FALLBACK_FOOTER_ACTIONS.map((action, index) => {
@@ -166,7 +170,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           initialPhotos={initialPhotos}
           initialMediaPanelVisible={initialMediaPanelVisible}
         >
-          <div className="flex flex-col gap-6 w-full">
+          <div className="flex flex-col gap-2 w-full">
             <PropertyTabSection
               initialData={initialData}
               initialWardId={resolvedWardId}
@@ -176,7 +180,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             <PtisMainScreen
               locale={locale}
               propertyId={resolvedPropertyId}
-            categoryId={propertyDetailsResult.propertyDetails.categoryId}
+              categoryId={propertyDetailsResult.propertyDetails.categoryId}
               ptisParams={ptisParams}
               resolvedSearchParams={resolvedSearchParams}
               error={sanitizedInitialError}
@@ -184,6 +188,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               initialDualSectionData={dualSectionData}
               wardId={resolvedWardId}
               propertyNo={propertyNo}
+              partitionNo={partitionNo}
               hasAppliedRules={hasAppliedRules || false}
               appliedRules={appliedRulesList || []}
               rateableSection={
@@ -193,7 +198,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                   hasFetchedData={rateableResult != null}
                   oldDetails={initialData.oldDetails || defaultOldDetails}
                   propertyId={resolvedPropertyId}
-                  searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+                  searchParams={
+                    resolvedSearchParams as Record<string, string | string[] | undefined>
+                  }
                   initialTaxDetails={rateableTaxDetails}
                   taxDetailsError={rateableTaxError}
                   locale={locale}
@@ -207,7 +214,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                     hasFetchedData={capitalResult != null}
                     oldDetails={initialData.oldDetails || defaultOldDetails}
                     propertyId={resolvedPropertyId}
-                    searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+                    searchParams={
+                      resolvedSearchParams as Record<string, string | string[] | undefined>
+                    }
                     initialTaxDetails={capitalTaxDetails}
                     taxDetailsError={capitalTaxError}
                     locale={locale}
@@ -222,7 +231,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                     hasFetchedData={dualSectionData != null}
                     oldDetails={initialData.oldDetails || defaultOldDetails}
                     propertyId={resolvedPropertyId}
-                    searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+                    searchParams={
+                      resolvedSearchParams as Record<string, string | string[] | undefined>
+                    }
                     locale={locale}
                     initialTaxDetails={rateableTaxDetails}
                     taxDetailsError={rateableTaxError}
@@ -238,7 +249,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                     hasFetchedData={dualSectionData != null}
                     oldDetails={initialData.oldDetails || defaultOldDetails}
                     propertyId={resolvedPropertyId}
-                    searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+                    searchParams={
+                      resolvedSearchParams as Record<string, string | string[] | undefined>
+                    }
                     locale={locale}
                     initialTaxDetails={capitalTaxDetails}
                     taxDetailsError={capitalTaxError}
@@ -257,7 +270,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             <PtisFooterDropdowns
               workflowStages={workflowStages}
               propertyId={resolvedPropertyId}
-              currentWorkflowStageId={currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined}
+              currentWorkflowStageId={
+                currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined
+              }
             />
           }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}

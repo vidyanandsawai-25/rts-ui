@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { filterPropertiesAction } from "@/app/[locale]/property-tax/search-property/action";
 import { searchProperties } from "@/lib/api/property-search";
-import type { SearchResult } from "@/types/property-search.types";
+import type { SearchResult } from "@/types/property-search";
 import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
 
 // Mock the API client

@@ -3,7 +3,7 @@
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common";
-import type { CopyCellProps } from "@/types/property-search.types";
+import type { CopyCellProps } from "@/types/property-search";
 
 export function CopyCell({ value, label }: CopyCellProps) {
   const handleCopy = async () => {

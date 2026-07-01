@@ -9,11 +9,11 @@ import type {
   PropertyStatus,
   SearchCriteria,
   SearchTab,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import { PropertyStats } from "./PropertyStats";
 import { PropertySearchForm } from "./PropertySearchForm";
 import { PropertySearchResults } from "./PropertySearchResults";
-import { usePropertySearchNavigation } from "@/hooks/property-search";
+import { usePropertySearchNavigation } from "@/hooks/search-property";
 
 /**
  * PropertySearch
@@ -25,11 +25,13 @@ import { usePropertySearchNavigation } from "@/hooks/property-search";
  */
 export function PropertySearch({
   results,
-  stats,
+  mainCards,
+  workflowCards,
   zoneOptions,
   wardOptions,
   allWardOptions,
   propertyTypeOptions,
+  workflowStageOptions,
   propertyDescriptionOptions,
   lookupOptions,
   selectedStatus,
@@ -58,6 +60,8 @@ export function PropertySearch({
     updateSearchCriteria,
     resetSearch,
     updateStatus,
+    updateZone,
+    updateWard,
   } = usePropertySearchNavigation({ startTransition });
 
   const handleStatusFilter = useCallback(
@@ -113,7 +117,7 @@ export function PropertySearch({
           title={t("title")}
           subtitle={t("subtitle")}
           icon={SearchIcon}
-          className="py-1.5 sm:py-2 px-3 sm:px-4 border-l-4 border-l-[#004c8c] [&>div>div:first-child>div:first-child]:border-[#004c8c]/20 [&>div>div:first-child>div:first-child]:bg-[#004c8c]/10 [&_svg]:text-[#004c8c]"
+          className="py-1 sm:py-1 px-3 sm:px-3 border-l-4 border-l-[#004c8c] [&>div>div:first-child>div:first-child]:border-[#004c8c]/20 [&>div>div:first-child>div:first-child]:bg-[#004c8c]/10 [&>div>div:first-child>div:first-child]:!p-1 [&_svg]:text-[#004c8c] [&_svg]:!w-4 [&_svg]:!h-4 [&_p]:!mt-0"
         />
 
         <Card
@@ -121,15 +125,16 @@ export function PropertySearch({
           padding="none"
           className="rounded-lg shadow-sm border border-slate-200 overflow-visible shrink-0"
         >
-          <CardContent className="p-2 space-y-2">
+          <CardContent className="py-1 px-2 space-y-1">
             <PropertyStats
               selectedStatus={displayedStatus}
               onStatusClick={handleStatusFilter}
-              statsData={stats}
+              mainCards={mainCards}
+              workflowCards={workflowCards}
               disabled={isPending}
             />
 
-            <div className="border-t border-slate-100 pt-2">
+            <div className="border-t border-slate-100 pt-1">
               <PropertySearchForm
                 initialCriteria={criteria}
                 activeTab={activeTab}
@@ -137,11 +142,14 @@ export function PropertySearch({
                 zoneOptions={zoneOptions}
                 wardOptions={wardOptions}
                 propertyTypeOptions={propertyTypeOptions}
+                workflowStageOptions={workflowStageOptions}
                 propertyDescriptionOptions={propertyDescriptionOptions}
                 lookupOptions={lookupOptions}
                 onSearch={handleSearch}
                 onReset={handleReset}
                 onTabChange={handleTabChange}
+                onZoneChange={updateZone}
+                onWardChange={updateWard}
                 searchPending={isPending}
               />
             </div>
