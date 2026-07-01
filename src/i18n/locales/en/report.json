@@ -1,0 +1,71 @@
+{
+  "pageTitle": "Generate Custom Report",
+  "pageSubtitle": "Select a report type and specify the required filters, then click Get Report to download the PDF.",
+  "fields": {
+    "reportType": "Report Type"
+  },
+  "buttons": {
+    "generate": "Get Report",
+    "reset": "Reset Filters"
+  },
+  "placeholders": {
+    "selectReport": "Select a report…",
+    "selectZone": "Select a zone…",
+    "selectWard": "Select a ward…",
+    "selectProperty": "Select a property…",
+    "selectPartition": "Select a partition…",
+    "pendingZone": "Select a zone first",
+    "pendingWard": "Select a ward first",
+    "pendingProperty": "Select a property first"
+  },
+  "validation": {
+    "reportRequired": "Please select a report type.",
+    "fieldRequired": "{label} is required.",
+    "dateRangeInvalid": "To Date must be on or after From Date."
+  },
+  "status": {
+    "queued": "Report queued. Generating — your download will start automatically when it's ready."
+  },
+  "success": {
+    "downloaded": "Report downloaded successfully."
+  },
+  "errors": {
+    "generationFailed": "Failed to generate report. Please try again.",
+    "loadFailed": "Failed to load report data. Please refresh the page."
+  },
+  "jobs": {
+    "title": "My Reports",
+    "refresh": "Refresh",
+    "empty": "No reports yet. Submit one above and it will appear here.",
+    "download": "Download",
+    "columns": {
+      "report": "Report",
+      "status": "Status",
+      "requested": "Requested",
+      "completed": "Completed",
+      "actions": "Actions"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "retrying": "Retrying"
+    }
+  },
+  "proTip": {
+    "title": "Pro Tip",
+    "body": "For large date ranges or ward-level reports, generation may take a few seconds. The PDF will download automatically once ready."
+  },
+  "loading": {
+    "message": "Loading report options…"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An error occurred while loading the reports page.",
+    "errorId": "Error ID: {id}",
+    "goHome": "Go Home",
+    "tryAgain": "Try Again"
+  }
+}

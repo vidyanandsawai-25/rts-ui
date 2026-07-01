@@ -32,7 +32,8 @@ export interface RuntimeConfig {
  * Default configuration values
  */
 const defaultConfig: RuntimeConfig = {
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+  // apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+  apiBaseUrl: 'http://localhost:5268/api',
   appEnv: 'development',
   authEnabled: false,
   featureAnalytics: false,
