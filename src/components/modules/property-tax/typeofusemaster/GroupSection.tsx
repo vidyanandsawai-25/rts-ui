@@ -3,7 +3,6 @@ import { useLocale } from "next-intl";
 import { LayoutGrid } from "lucide-react";
 import { AddButton, DeleteButton, EditButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { Tooltip } from "@/components/common/Tooltip";
 import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import {
   clsx,
@@ -41,17 +40,18 @@ function GroupNameLabel({ name }: { name: string }) {
   }
 
   return (
-    <Tooltip content={name} placement="bottom">
-      <span
-        className="min-w-0 text-sm font-semibold text-blue-600 cursor-help truncate"
-        title=""
-      >
-        {/* Visible truncated text */}
+    <div className="group relative flex items-center">
+      <span className="min-w-0 text-sm font-semibold text-blue-600 cursor-help truncate border-b border-dashed border-blue-400/50 hover:border-blue-400 transition-colors">
         <span aria-hidden="true">{shortenGroupName(name)}</span>
-        {/* Full name for screen readers and tests */}
         <span className="sr-only">{name}</span>
       </span>
-    </Tooltip>
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 flex -translate-x-1/2 -translate-y-1 flex-col items-center opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="h-0 w-0 border-x-[5px] border-b-[6px] border-x-transparent border-b-slate-900" />
+        <div className="whitespace-nowrap rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium tracking-wide text-white shadow-lg ring-1 ring-white/10">
+          {name}
+        </div>
+      </div>
+    </div>
   );
 }
 

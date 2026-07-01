@@ -56,7 +56,7 @@ export function SubTypeSection({
 
   return (
     <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white shadow-sm lg:h-[600px] flex flex-col">
-      <div className="flex flex-col gap-3 rounded-t-2xl border-b border-slate-100 px-4 py-3 sticky top-0 bg-white">
+      <div className="flex gap-3 rounded-t-2xl border-b border-slate-100 px-4 py-3 sticky top-0 bg-white justify-between z-10 flex-col sm:flex-row sm:items-center sm:justify-between">
         {/* Top row: Title + badge */}
         <div className="font-semibold text-slate-900 flex flex-wrap items-center gap-2">
           {t('subtype.title')}
