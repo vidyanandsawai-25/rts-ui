@@ -67,7 +67,7 @@ export function useGroupFormValidation({
         
         if (!name) return t('group.fields.groupName') + ' ' + t('messages.createError');
         if (isAllZeros(name)) return t('group.fields.groupName') + ' ' + t('messages.cannotBeAllZeros');
-        if (name.length > 100) return t('group.fields.groupName') + ' ' + t('messages.maxLength', { count: 100 });
+        if (name.length > 50) return t('group.fields.groupName') + ' ' + t('messages.maxLength', { count: 50 });
         if (!TEXT_ALLOWED.test(name)) return t('group.fields.groupName') + ' ' + t('messages.allowedChars');
         if (isDuplicateGroupName(name)) return t('messages.duplicateGroupName');
         

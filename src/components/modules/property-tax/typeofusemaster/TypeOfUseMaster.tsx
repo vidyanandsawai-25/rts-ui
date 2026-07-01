@@ -63,7 +63,6 @@ export default function TypeOfUseMaster({
   const { typeSearch, setTypeSearch, onTypeSearchChange } = useTypeSearch({
     typeSearchFromServer,
     selectedGroupId,
-    allGroups,
     pushUrl,
   });
 
@@ -89,7 +88,6 @@ export default function TypeOfUseMaster({
     urlQ,
     selectedTypeId,
     selectedGroupId,
-    allGroups,
     pushUrl,
   });
 
@@ -106,7 +104,6 @@ export default function TypeOfUseMaster({
   // Use type pagination handlers hook
   const { handleTypePageChange, handleTypePageSizeChange } =
     useTypePaginationHandlers({
-      allGroups,
       selectedGroupId,
       typePageSize,
       pushUrl,
@@ -204,6 +201,8 @@ export default function TypeOfUseMaster({
             changeSubPageSize={changeSubPageSize}
             onDeleteSubType={handleDeleteSubType}
             t={t}
+            allTypes={allTypes}
+            onTypeSelect={handleTypeSelect}
           />
         </div>
       </div>
