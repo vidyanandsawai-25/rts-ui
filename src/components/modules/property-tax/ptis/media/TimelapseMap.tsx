@@ -21,6 +21,7 @@ interface TimelapseMapProps {
   onLoadChange: (loading: boolean) => void;
   onActiveYearChange: (year: number) => void;
   onReleaseError?: (releaseId: number) => void;
+  onStopPlaying?: () => void;
 }
 
 const LABELS_URL =
@@ -43,6 +44,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
   waybackReleases,
   onLoadChange,
   onActiveYearChange,
+  onStopPlaying,
 }: TimelapseMapProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
@@ -207,13 +209,15 @@ export const TimelapseMap = React.memo(function TimelapseMap({
       <div ref={containerRef} className="absolute inset-0 w-full h-full border border-slate-700 rounded-lg overflow-hidden bg-slate-950" />
       <HistoricalPingPongController
         map={mapInstance}
-        years={waybackReleases.map((r) => r.year)}
+        releases={waybackReleases}
         activeYear={activeRelease?.year ?? 0}
-        getTileUrl={(year) => `/api/tiles/${year}/{z}/{x}/{y}`}
+        lat={lat}
+        lng={lng}
         onLoadChange={onLoadChange}
         playing={playing}
         speed={speed}
         onActiveYearChange={onActiveYearChange}
+        onStopPlaying={onStopPlaying}
       />
     </>
   );

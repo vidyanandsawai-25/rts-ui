@@ -45,6 +45,7 @@ export interface PropertyDetailsData {
   rateSectionDescription?: string;
   latitude?: string | null;
   longitude?: string | null;
+  constructionYear?: string | null;
 }
 
 export interface KYCDetailsData {
@@ -325,6 +326,7 @@ export interface PropertyBasicDetailsApiResponse {
   rateSectionDescription?: string;
   latitude?: string | null;
   longitude?: string | null;
+  constructionYear?: string | null;
 }
 
 export interface SocietyDetailsApiResponse {

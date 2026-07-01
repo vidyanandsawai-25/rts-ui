@@ -1,18 +1,21 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import L from 'leaflet';
 import { logger } from '@/lib/utils/logger';
+import { WAYBACK_MAP_TILE_URL, type WaybackRelease } from '@/lib/api/wayback.service';
 
 interface HistoricalPingPongControllerProps {
   map: L.Map | null;
-  years: number[];
+  releases: WaybackRelease[];
   activeYear: number;
-  getTileUrl: (year: number) => string;
+  lat?: number;
+  lng?: number;
   onLoadChange?: (loading: boolean) => void;
   playing: boolean;
   speed: number;
   onActiveYearChange?: (year: number) => void;
+  onStopPlaying?: () => void;
 }
 
 // WeakMap to cache layers per L.Map instance without mutating the map object itself
@@ -29,14 +32,17 @@ function getMapCache(map: L.Map): Map<number, L.TileLayer> {
 
 export function HistoricalPingPongController({
   map,
-  years,
+  releases,
   activeYear,
-  getTileUrl,
+  lat,
+  lng,
   onLoadChange,
   playing,
   speed,
   onActiveYearChange,
+  onStopPlaying,
 }: HistoricalPingPongControllerProps): null {
+  const years = useMemo(() => releases.map((r) => r.year), [releases]);
   const lruOrderRef = useRef<number[]>([]);
   const layerLoadingStateRef = useRef<Map<number, boolean>>(new Map());
   const loopRef = useRef<number | null>(null);
@@ -46,6 +52,7 @@ export function HistoricalPingPongController({
   const yearsRef = useRef(years);
   const activeYearRef = useRef(activeYear);
   const onActiveYearChangeRef = useRef(onActiveYearChange);
+  const onStopPlayingRef = useRef(onStopPlaying);
 
   useEffect(() => {
     playingRef.current = playing;
@@ -67,15 +74,33 @@ export function HistoricalPingPongController({
     onActiveYearChangeRef.current = onActiveYearChange;
   }, [onActiveYearChange]);
 
+  useEffect(() => {
+    onStopPlayingRef.current = onStopPlaying;
+  }, [onStopPlaying]);
+
+  // Reset cache and remove layers when coordinates change (switching property)
+  useEffect(() => {
+    if (!map) return;
+    const cache = getMapCache(map);
+    cache.forEach((layer) => {
+      if (map.hasLayer(layer)) {
+        map.removeLayer(layer);
+      }
+    });
+    cache.clear();
+    lruOrderRef.current = [];
+    layerLoadingStateRef.current.clear();
+  }, [map, lat, lng]);
+
   const updateLoadingState = () => {
     if (!onLoadChange || yearsRef.current.length === 0) return;
     const active = activeYearRef.current;
     const activeIdx = yearsRef.current.indexOf(active);
     if (activeIdx === -1) return;
 
-    const nextYear = yearsRef.current[(activeIdx + 1) % yearsRef.current.length];
+    const nextYear = activeIdx < yearsRef.current.length - 1 ? yearsRef.current[activeIdx + 1] : null;
     const isActiveLoading = layerLoadingStateRef.current.get(active) || false;
-    const isNextLoading = (nextYear !== undefined && layerLoadingStateRef.current.get(nextYear)) || false;
+    const isNextLoading = (nextYear !== null && layerLoadingStateRef.current.get(nextYear)) || false;
 
     onLoadChange(isActiveLoading || isNextLoading);
   };
@@ -86,7 +111,9 @@ export function HistoricalPingPongController({
     const cache = getMapCache(map);
     let layer = cache.get(year);
     if (!layer) {
-      layer = L.tileLayer(getTileUrl(year), {
+      const release = releases.find((r) => r.year === year);
+      const releaseId = release?.releaseId ?? 0;
+      layer = L.tileLayer(WAYBACK_MAP_TILE_URL(releaseId), {
         maxNativeZoom: 18,
         maxZoom: 21,
         keepBuffer: 12,
@@ -129,13 +156,12 @@ export function HistoricalPingPongController({
       if (prevYear !== null) getOrCreateLayer(prevYear).setOpacity(0.0).setZIndex(5);
       if (nextYear !== null) getOrCreateLayer(nextYear).setOpacity(0.0).setZIndex(5);
 
-      // Hide and remove other cached layers from Leaflet map
+      // Hide other cached layers but keep them on the Leaflet map in the DOM to prevent refetching during replay
       const cache = getMapCache(map);
       cache.forEach((layer, y) => {
         if (y !== activeYear && y !== prevYear && y !== nextYear) {
           if (map.hasLayer(layer)) {
-            layer.setOpacity(0.0);
-            map.removeLayer(layer);
+            layer.setOpacity(0.0).setZIndex(1);
           }
           if (layerLoadingStateRef.current.get(y)) {
             layerLoadingStateRef.current.set(y, false);
@@ -207,7 +233,11 @@ export function HistoricalPingPongController({
 
       if (!active || !playingRef.current) return;
 
-      const nextIdx = (currentIdx + 1) % yearsRef.current.length;
+      const nextIdx = currentIdx + 1;
+      if (nextIdx >= yearsRef.current.length) {
+        onStopPlayingRef.current?.();
+        return;
+      }
       onActiveYearChangeRef.current?.(yearsRef.current[nextIdx]);
       run();
     };

@@ -11,7 +11,7 @@ import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState'
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 import { useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
-import { type WaybackRelease } from '@/lib/api/wayback.service';
+import { type WaybackRelease, WAYBACK_STATIC_TILE_URL } from '@/lib/api/wayback.service';
 import { getDefaultCoordinates, latLngToTile } from '@/lib/utils/coordinate-utils';
 
 export interface PropertyMediaPanelProps {
@@ -88,8 +88,8 @@ function PropertyMediaPanel({
     const afterRelease = waybackReleases[waybackReleases.length - 1];
 
     if (beforeRelease && afterRelease) {
-      cdBeforeImg = `/api/tiles/${beforeRelease.year}/${tile.z}/${tile.x}/${tile.y}`;
-      cdAfterImg = `/api/tiles/${afterRelease.year}/${tile.z}/${tile.x}/${tile.y}`;
+      cdBeforeImg = WAYBACK_STATIC_TILE_URL(beforeRelease.releaseId, tile.x, tile.y, tile.z);
+      cdAfterImg = WAYBACK_STATIC_TILE_URL(afterRelease.releaseId, tile.x, tile.y, tile.z);
       cdBeforeLabel = `Before (${beforeRelease.year})`;
       cdAfterLabel = `After (${afterRelease.year})`;
     }

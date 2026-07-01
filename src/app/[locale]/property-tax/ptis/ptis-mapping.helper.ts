@@ -117,7 +117,22 @@ export async function mapPtisFetchResults({
     ? { ...defaultDiscountData, ...discountResult.data } : defaultDiscountData;
   const initialPhotoSlots = photoSlotsRes?.success && photoSlotsRes.data ? photoSlotsRes.data : [];
   const initialPhotos = photosRes?.success && photosRes.data ? photosRes.data : [];
-  const waybackReleases = waybackReleasesRes || [];
+
+  const constructionYearStr = 
+    basicDetailsRes?.success && basicDetailsRes.data?.constructionYear
+      ? basicDetailsRes.data.constructionYear
+      : propertyDetailsResult.success && propertyDetailsResult.propertyDetails?.constructionYear
+      ? propertyDetailsResult.propertyDetails.constructionYear
+      : undefined;
+
+  let waybackReleases = waybackReleasesRes || [];
+  if (constructionYearStr) {
+    const yearParsed = parseInt(constructionYearStr, 10);
+    if (!isNaN(yearParsed)) {
+      const startYear = Math.max(2015, yearParsed - 1);
+      waybackReleases = waybackReleases.filter((r) => r.year >= startYear);
+    }
+  }
 
   const latitude = basicDetailsRes?.success && basicDetailsRes.data?.latitude
     ? parseFloat(basicDetailsRes.data.latitude)

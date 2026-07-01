@@ -96,9 +96,11 @@ function PtisLayoutWrapperContent({
 export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactElement {
   React.useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/tile-sw.js').catch(() => {
-        // Safe silent fallback for local/non-SSL testing
-      });
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister().catch(() => {});
+        }
+      }).catch(() => {});
     }
   }, []);
 

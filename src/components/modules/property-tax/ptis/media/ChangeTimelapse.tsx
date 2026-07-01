@@ -125,6 +125,7 @@ export function ChangeTimelapse({
             onLoadChange={setLoading}
             onActiveYearChange={handleActiveYearChange}
             onReleaseError={handleReleaseError}
+            onStopPlaying={() => setPlaying(false)}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
