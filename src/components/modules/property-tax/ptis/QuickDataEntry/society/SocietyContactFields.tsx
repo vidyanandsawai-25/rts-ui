@@ -8,6 +8,7 @@ import {
 import {
     sanitizeEmailStrict,
     sanitizeName,
+    sanitizeAddress,
     capitalizeEachWordKycSociety
 } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
@@ -22,11 +23,11 @@ interface SocietyContactFieldsProps {
     setSecretaryEmail: (email: string) => void;
     managerName: string;
     setManagerName: (name: string) => void;
-    secretaryName: string;
-    setSecretaryName: (name: string) => void;
+    societyAddress: string;
+    setSocietyAddress: (address: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
-            'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName',
+            'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
     onFocusField: (field: string) => void;
@@ -43,22 +44,27 @@ export const SocietyContactFields = ({
     setSecretaryEmail,
     managerName,
     setManagerName,
-    secretaryName,
-    setSecretaryName,
+    societyAddress,
+    setSocietyAddress,
     showError,
     onFocusField,
     onBlurField,
 }: SocietyContactFieldsProps) => {
 
+    const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    };
 
     return (
         <>
-            {/* Manager Details */}
+            {/* 7. Manager Name */}
             <div className="space-y-1.5">
                 <Label htmlFor="manager-name" className="text-xs font-semibold text-gray-700">{t('society.managerName')}</Label>
                 <Input
                     id="manager-name"
-                    value={managerName}
+                    value={managerName || ''}
                     placeholder={t('society.managerNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerName', !managerName || societyValidators.isValidPersonName(managerName))
@@ -66,12 +72,12 @@ export const SocietyContactFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('managerName')}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={() => {
                         onBlurField();
                         setManagerName(capitalizeEachWordKycSociety(managerName.trim().replace(/\s+/g, ' '), true));
                     }}
                     onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
                         const capitalized = capitalizeEachWordKycSociety(sanitized, false);
                         if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
@@ -88,32 +94,61 @@ export const SocietyContactFields = ({
                 )}
             </div>
 
+            {/* 8. Secretary Mobile */}
             <div className="space-y-1.5">
-                <Label htmlFor="manager-email" className="text-xs font-semibold text-gray-700">{t('society.managerEmail')}</Label>
-                <Input
-                    id="manager-email"
-                    type="email"
-                    placeholder={t('society.managerEmailPlaceholder')}
-                    value={managerEmail}
-                    maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail, true))
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                    onFocus={() => onFocusField('managerEmail')}
-                    onBlur={onBlurField}
-                    onChange={(e) => {
-                        const sanitized = sanitizeEmailStrict(e.target.value);
-                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
-                            setManagerEmail(sanitized);
-                        }
-                    }}
-                />
-                {showError('managerEmail', societyValidators.isValidEmail(managerEmail, true)) && (
-                    <span className="text-xs text-red-500">{t('society.validation.managerEmail')}</span>
+                <Label htmlFor="secretary-mobile-0" className="text-xs font-semibold text-gray-700">
+                    {t('society.secretaryMobile')}
+                </Label>
+                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
+                    ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
+                    : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
+                    }`}>
+                    <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
+                        {t('society.countryCode')}
+                    </span>
+                    <div id="secretary-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
+                        {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
+                            <Input
+                                key={i}
+                                id={i === 0 ? 'secretary-mobile-0' : undefined}
+                                aria-label={`${t('society.secretaryMobile')} digit ${i + 1} of 10`}
+                                type="text"
+                                maxLength={1}
+                                inputMode="numeric"
+                                pattern="[0-9]"
+                                value={secretaryMobileInput.digits[i]}
+                                onChange={(e) => secretaryMobileInput.handleChange(i, e.target.value)}
+                                onKeyDown={(e) => {
+                                    secretaryMobileInput.handleKeyDown(i, e);
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                onFocus={secretaryMobileInput.handleFocus}
+                                onBlur={secretaryMobileInput.handleBlur}
+                                ref={secretaryMobileInput.setRef(i)}
+                                naked
+                                error={showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) ? 'error' : undefined}
+                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
+                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
+                                    : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
+                                    } ${secretaryMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+                {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
+                    <span className="text-xs text-red-500">
+                        {secretaryMobileInput.value && kycValidators.hasRepeatedSequence(secretaryMobileInput.value.replace(/\D/g, ''), 5)
+                            ? t('society.validation.invalidRepeatedSequence')
+                            : (secretaryMobileInput.value && !/^[6-9]/.test(secretaryMobileInput.value.replace(/\D/g, '')))
+                                ? t('society.validation.invalidMobileStart')
+                                : t('society.validation.invalidMobile')}
+                    </span>
                 )}
             </div>
 
+            {/* 9. Manager Mobile */}
             <div className="space-y-1.5">
                 <Label htmlFor="manager-mobile-0" className="text-xs font-semibold text-gray-700">
                     {t('society.managerMobileNo')}
@@ -167,54 +202,21 @@ export const SocietyContactFields = ({
                 )}
             </div>
 
-            {/* Secretary Details */}
-            <div className="space-y-1.5">
-                <Label htmlFor="secretary-name" className="text-xs font-semibold text-gray-700">{t('society.secretaryName')}</Label>
-                <Input
-                    id="secretary-name"
-                    value={secretaryName}
-                    placeholder={t('society.secretaryNamePlaceholder')}
-                    maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName))
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                    onFocus={() => onFocusField('secretaryName')}
-                    onBlur={() => {
-                        onBlurField();
-                        setSecretaryName(capitalizeEachWordKycSociety(secretaryName.trim().replace(/\s+/g, ' '), true));
-                    }}
-                    onChange={(e) => {
-                        // Sanitize to remove invalid characters immediately
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWordKycSociety(sanitized, false);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setSecretaryName(capitalized);
-                        }
-                    }}
-                />
-                {showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName)) && (
-                    <span className="text-xs text-red-500">
-                        {secretaryName && (secretaryName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || secretaryName.trim().length > SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH)
-                            ? t('society.validation.invalidNameLength')
-                            : t('society.validation.secretaryName')}
-                    </span>
-                )}
-            </div>
-
+            {/* 10. Secretary Email */}
             <div className="space-y-1.5">
                 <Label htmlFor="secretary-email" className="text-xs font-semibold text-gray-700">{t('society.secretaryEmail')}</Label>
                 <Input
                     id="secretary-email"
                     type="email"
                     placeholder={t('society.secretaryEmailPlaceholder')}
-                    value={secretaryEmail}
+                    value={secretaryEmail || ''}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail, true))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
                     onFocus={() => onFocusField('secretaryEmail')}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={onBlurField}
                     onChange={(e) => {
                         const sanitized = sanitizeEmailStrict(e.target.value);
@@ -228,55 +230,62 @@ export const SocietyContactFields = ({
                 )}
             </div>
 
+            {/* 11. Manager Email */}
             <div className="space-y-1.5">
-                <Label htmlFor="secretary-mobile-0" className="text-xs font-semibold text-gray-700">
-                    {t('society.secretaryMobile')}
+                <Label htmlFor="manager-email" className="text-xs font-semibold text-gray-700">{t('society.managerEmail')}</Label>
+                <Input
+                    id="manager-email"
+                    type="email"
+                    placeholder={t('society.managerEmailPlaceholder')}
+                    value={managerEmail || ''}
+                    maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail, true))
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
+                    onFocus={() => onFocusField('managerEmail')}
+                    onKeyDown={preventEnterSubmit}
+                    onBlur={onBlurField}
+                    onChange={(e) => {
+                        const sanitized = sanitizeEmailStrict(e.target.value);
+                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
+                            setManagerEmail(sanitized);
+                        }
+                    }}
+                />
+                {showError('managerEmail', societyValidators.isValidEmail(managerEmail, true)) && (
+                    <span className="text-xs text-red-500">{t('society.validation.managerEmail')}</span>
+                )}
+            </div>
+
+            {/* 12. Society Address */}
+            <div className="space-y-1.5">
+                <Label htmlFor="society-address" className="text-xs font-semibold text-gray-700">
+                    {t('society.societyAddress')}
                 </Label>
-                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
-                    ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
-                    : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
-                    }`}>
-                    <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-                        {t('society.countryCode')}
-                    </span>
-                    <div id="secretary-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
-                        {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
-                            <Input
-                                key={i}
-                                id={i === 0 ? 'secretary-mobile-0' : undefined}
-                                aria-label={`${t('society.secretaryMobile')} digit ${i + 1} of 10`}
-                                type="text"
-                                maxLength={1}
-                                inputMode="numeric"
-                                pattern="[0-9]"
-                                value={secretaryMobileInput.digits[i]}
-                                onChange={(e) => secretaryMobileInput.handleChange(i, e.target.value)}
-                                onKeyDown={(e) => {
-                                    secretaryMobileInput.handleKeyDown(i, e);
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                    }
-                                }}
-                                onFocus={secretaryMobileInput.handleFocus}
-                                onBlur={secretaryMobileInput.handleBlur}
-                                ref={secretaryMobileInput.setRef(i)}
-                                naked
-                                error={showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) ? 'error' : undefined}
-                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
-                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
-                                    : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
-                                    } ${secretaryMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
-                            />
-                        ))}
-                    </div>
-                </div>
-                {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
+                <Input
+                    id="society-address"
+                    name="societyAddress"
+                    value={societyAddress || ''}
+                    placeholder={t('society.societyAddressPlaceholder')}
+                    maxLength={SOCIETY_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyAddress', !societyAddress || societyValidators.isValidAddress(societyAddress))
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
+                    onFocus={() => onFocusField('societyAddress')}
+                    onKeyDown={preventEnterSubmit}
+                    onBlur={onBlurField}
+                    onChange={(e) => {
+                        const sanitized = sanitizeAddress(e.target.value);
+                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.ADDRESS_MAX_LENGTH) {
+                            setSocietyAddress(sanitized);
+                        }
+                    }}
+                />
+                {showError('societyAddress', !societyAddress || societyValidators.isValidAddress(societyAddress)) && (
                     <span className="text-xs text-red-500">
-                        {secretaryMobileInput.value && kycValidators.hasRepeatedSequence(secretaryMobileInput.value.replace(/\D/g, ''), 5)
-                            ? t('society.validation.invalidRepeatedSequence')
-                            : (secretaryMobileInput.value && !/^[6-9]/.test(secretaryMobileInput.value.replace(/\D/g, '')))
-                                ? t('society.validation.invalidMobileStart')
-                                : t('society.validation.invalidMobile')}
+                        {t('society.validation.societyAddress')}
                     </span>
                 )}
             </div>
