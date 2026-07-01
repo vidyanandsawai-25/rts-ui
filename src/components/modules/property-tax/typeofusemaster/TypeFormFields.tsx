@@ -231,7 +231,7 @@ export function DescriptionInput({
         placeholder={t('type.placeholders.description')}
         fullWidth
         className="rounded-xl px-4 py-2"
-        maxLength={100}
+        maxLength={80}
         required
       />
       <ValidationMessage message={error} visible={showError ?? false} />

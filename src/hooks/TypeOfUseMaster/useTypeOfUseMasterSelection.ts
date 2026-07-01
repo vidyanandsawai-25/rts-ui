@@ -46,6 +46,7 @@ export function useTypeOfUseMasterSelection({
 
   const initialSelectedGroupId = (() => {
     if (urlGroupId) {
+      if (urlGroupId === "ALL") return "ALL";
       const groupByApiId = findGroupByApiId(urlGroupId);
       if (groupByApiId) return groupByApiId.typeOfUseGroupId;
     }
@@ -57,15 +58,22 @@ export function useTypeOfUseMasterSelection({
         if (group) return group.typeOfUseGroupId;
       }
     }
-    return firstGroup?.typeOfUseGroupId ?? 0;
+    return "ALL";
   })();
 
-  const [selectedGroupId, setSelectedGroupId] = useState(initialSelectedGroupId);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | number>(initialSelectedGroupId);
 
   const selectedTypeId = urlTypeId || initialSelectedTypeId;
 
   useEffect(() => {
     if (!urlGroupId) return;
+
+    if (urlGroupId === "ALL") {
+      if (selectedGroupId !== "ALL") {
+        setTimeout(() => setSelectedGroupId("ALL"), 0);
+      }
+      return;
+    }
 
     const groupByApiId = findGroupByApiId(urlGroupId);
     if (groupByApiId && groupByApiId.typeOfUseGroupId !== selectedGroupId) {
