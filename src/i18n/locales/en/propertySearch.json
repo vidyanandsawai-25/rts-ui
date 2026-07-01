@@ -9,7 +9,16 @@
     "qualityAnalysis": "Quality Analysis",
     "assessmentCompleted": "Assessment Completed",
     "filterHint": "Click a card to filter results by assessment stage",
-    "activeFilter": "Filtering"
+    "activeFilter": "Filtering",
+    "previouslyRegistered": "Previously Registered Properties & Demand",
+    "assessmentApproved": "Assessment Approved",
+    "assessed": "Assessed",
+    "unassessed": "Unassessed",
+    "additionalRevenue": "Additional Revenue Generated",
+    "structure": "Structure",
+    "unit": "Unit",
+    "units": "Units",
+    "demand": "Demand"
   },
   "form": {
     "sections": {
@@ -42,7 +51,8 @@
       "shopBuildingName": "Shop/Building Name",
       "societyName": "Society Name",
       "address": "Address",
-      "filters": "Filters"
+      "filters": "Filters",
+      "valuationMethod": "Valuation Method"
     },
     "tooltips": {
       "propertyNo": "Letters, numbers, hyphen (-), and slash (/). Max 20 characters. Example: P-2023-001, 10/A",
@@ -99,10 +109,16 @@
         "partiallyAssessed": "Partially Assessed"
       },
       "typeFilter": {
-        "surveyCompleted": "Survey Completed",
-        "dataEntryCompleted": "Data Entry Completed",
-        "qcCompleted": "QC Completed",
-        "noticeDistributed": "Notice Distributed"
+        "geoSequencing": "Geo-sequencing",
+        "internalSurvey": "Internal Survey",
+        "dataEntry": "Data Entry & Quality Control",
+        "assessment": "Assessment",
+        "approvalByUlb": "Approval by ULB",
+        "noticeDistribution": "Notice Distribution",
+        "hearingAndAppeal": "Hearing and Appeals",
+        "billDistribution": "Bills Distribution",
+        "billGeneration": "Bill Generation",
+        "qcRevert": "QC Revert"
       },
       "description": {
         "residential": "Residential",
@@ -111,6 +127,11 @@
       "valuation": {
         "rv": "Rateable Value (RV)",
         "cv": "Capital Value (CV)"
+      },
+      "valuationMethod": {
+        "rv": "RV",
+        "cv": "CV",
+        "totalTax": "Total Tax"
       },
       "filterType": {
         "exact": "Exact Value",
@@ -157,6 +178,7 @@
       "rateableValueRangeInvalid": "Rateable Value 'To' amount must be greater than or equal to 'From'.",
       "capitalValueBetweenRequired": "Enter both amount fields.",
       "rateableValueInvalid": "Rateable Value must contain positive numbers only.",
+      "valuationMethodRequired": "Please select a valuation method.",
       "noSearchCriteria": "Select at least one filter (Zone, Ward, Property No, UPIC ID, Holder Name, Mobile, etc.) before searching."
     }
   },
@@ -170,14 +192,17 @@
     "applyFilterHint": "Apply a filter above or click a stat card to view properties.",
     "searchFailed": "Search could not be completed. See the error message above.",
     "noDataToExport": "No data to export",
+    "noUnits": "No apartment units found.",
+    "apartmentUnits": "Apartment Units ({count})",
+    "loadingUnits": "Loading apartment units...",
     "format": {
       "currency": "₹{amount}"
     },
     "columns": {
       "upicId": "UPIC ID",
       "zoneWard": "Zone & Ward",
-      "propertyPartition": "PROP & PART NO",
-      "propertyPartitionTooltip": "Property Number & Partition Number",
+      "propertyPartition": "PROP-PART NO",
+      "propertyPartitionTooltip": "Property-Partition Number & Old Property Number",
       "ownerOccupier": "OWNER & OCCUPIER",
       "zone": "Zone",
       "ward": "Ward",

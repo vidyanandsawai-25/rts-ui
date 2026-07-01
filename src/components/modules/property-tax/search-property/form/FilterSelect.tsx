@@ -15,6 +15,7 @@ interface FilterSelectProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>, value: string) => void;
   disabled?: boolean;
   clearLabel?: string;
+  onClear?: () => void;
 }
 
 export function FilterSelect({
@@ -25,12 +26,17 @@ export function FilterSelect({
   onChange,
   disabled = false,
   clearLabel = "Clear",
+  onClear,
 }: FilterSelectProps) {
   const handleClear = () => {
-    const event = {
-      target: { name: "", value: "" },
-    } as React.ChangeEvent<HTMLSelectElement>;
-    onChange(event, "");
+    if (onClear) {
+      onClear();
+    } else {
+      const event = {
+        target: { name: "", value: "" },
+      } as React.ChangeEvent<HTMLSelectElement>;
+      onChange(event, "");
+    }
   };
 
   const handleSelectChange = (name: string, val: string) => {
@@ -42,7 +48,7 @@ export function FilterSelect({
 
   return (
     <div className="w-full">
-      <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+      <div className="mb-1 h-5 flex items-center justify-between gap-1">
         <Label className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}>{label}</Label>
         {value && !disabled && (
           <button

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { UsePropertySearchResultsProps } from "@/types/property-search.types";
+import type { UsePropertySearchResultsProps } from "@/types/property-search";
 
 const DEFAULT_PAGE_SIZE = 10;
 

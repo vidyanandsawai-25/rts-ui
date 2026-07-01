@@ -7,7 +7,7 @@ import type {
   LookupOptions,
   SearchCriteria,
   SearchFieldErrorMap,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import { LookupInput } from "./LookupInput";
 import { PROPERTY_SEARCH_FIELD_LIMITS } from "@/lib/validations/property-search-field-rules";
 import { Button } from "@/components/common";
@@ -26,6 +26,7 @@ interface QuickSearchPanelProps {
   searchPending: boolean;
   isSubmitDisabled: boolean;
   onReset: () => void;
+  onClearField: (field: keyof SearchCriteria) => void;
 }
 
 export function QuickSearchPanel({
@@ -39,13 +40,14 @@ export function QuickSearchPanel({
   searchPending,
   isSubmitDisabled,
   onReset,
+  onClearField,
 }: QuickSearchPanelProps) {
   const t = useTranslations("propertySearch.form");
   const tCommon = useTranslations("common");
 
   return (
-    <div className="overflow-x-auto px-2 pb-1 pt-1.5">
-      <div className="grid min-w-[62rem] max-w-[72rem] grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] items-start gap-x-1.5 gap-y-1">
+    <div className="overflow-x-auto px-2 pb-0.5 pt-1">
+      <div className="grid min-w-[62rem] max-w-[72rem] grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] items-start gap-x-1 gap-y-0.5">
         <LookupInput
           id="scanQR"
           label={t("fields.scanQR")}
@@ -57,6 +59,7 @@ export function QuickSearchPanel({
           onChange={(v) => setField("scanQR", v)}
           onBlur={onFieldBlur("scanQR")}
           disabled={disabled}
+          onClear={() => onClearField("scanQR")}
         />
         <LookupInput
           id="upicId"
@@ -70,6 +73,7 @@ export function QuickSearchPanel({
           onBlur={onFieldBlur("upicId")}
           disabled={disabled}
           maxLength={PROPERTY_SEARCH_FIELD_LIMITS.upicId}
+          onClear={() => onClearField("upicId")}
         />
         <LookupInput
           id="propertyNoFrom"
@@ -83,6 +87,7 @@ export function QuickSearchPanel({
           onBlur={onFieldBlur("propertyNoFrom")}
           disabled={disabled}
           maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
+          onClear={() => onClearField("propertyNoFrom")}
         />
         <LookupInput
           id="propertyNoTo"
@@ -96,6 +101,7 @@ export function QuickSearchPanel({
           onBlur={onFieldBlur("propertyNoTo")}
           disabled={disabled}
           maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
+          onClear={() => onClearField("propertyNoTo")}
         />
         <LookupInput
           id="oldPropertyNo"
@@ -109,9 +115,10 @@ export function QuickSearchPanel({
           onBlur={onFieldBlur("oldPropertyNo")}
           disabled={disabled}
           maxLength={PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo}
+          onClear={() => onClearField("oldPropertyNo")}
         />
         <div className="flex flex-col w-full">
-          <div className="mb-1 h-[18px] flex items-center"></div>
+          <div className="mb-0.5 h-4 flex items-center"></div>
           <div className="flex items-center gap-1.5 h-8">
             <Button
               type="submit"

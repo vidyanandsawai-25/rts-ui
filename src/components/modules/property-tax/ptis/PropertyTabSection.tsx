@@ -191,6 +191,7 @@ export default function PropertyTabSection({
           upicId={data.upicId}
           ownerName={data.ownerName || kycDetailsData.propertyHolderName}
           propertyDescription={data.propertyDescription}
+          tabHeaderInfo={initialData?.tabHeaderInfo}
         />
 
         <PropertyTabHeaders activeTab={localTab} />

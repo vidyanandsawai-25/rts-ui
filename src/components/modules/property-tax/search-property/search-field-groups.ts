@@ -1,4 +1,4 @@
-import type { SearchCriteria, SearchTab } from "@/types/property-search.types";
+import type { SearchCriteria, SearchTab } from "@/types/property-search";
 
 type StringCriteriaField = {
   [K in keyof SearchCriteria]: SearchCriteria[K] extends string ? K : never;
@@ -108,7 +108,6 @@ export function applyTabSearchCriteria(
   }
 
   if (tab === "values-dues") {
-    next.valuationMethod = "";
     next.capitalValueFilter = "";
     next.capitalValueFrom = "";
     next.capitalValueTo = "";
@@ -137,7 +136,6 @@ export function clearTabFieldsFromParams(
   }
 
   if (tab === "values-dues") {
-    params.delete("valuationMethod");
     params.delete("capitalValueFilter");
     params.delete("capitalValueFrom");
     params.delete("capitalValueTo");

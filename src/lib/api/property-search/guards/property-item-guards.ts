@@ -6,12 +6,12 @@ import { ApiError } from "@/lib/utils/api";
 import type {
   PropertySearchApiItem,
   PropertySearchApiResponse,
-} from "@/types/property-search-api.types";
+} from "@/types/property-search";
 import {
   PROPERTY_STATUSES,
   type PropertyStatus,
   type SearchResult,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import type { PagedResponse } from "@/types/common.types";
 
 function readField(obj: Record<string, unknown>, camel: string, pascal: string): unknown {
@@ -247,6 +247,12 @@ function extractPropertySearchRawItems(data: unknown): unknown[] {
     if (Array.isArray(nested.Items)) {
       return nested.Items;
     }
+    
+    // Handle the new /PropertySearch/search/grid structure: items.results.items
+    const nestedResults = nested.results as Record<string, unknown> | undefined;
+    if (nestedResults && Array.isArray(nestedResults.items)) {
+      return nestedResults.items;
+    }
   }
 
   const nestedData = obj.data;
@@ -319,12 +325,16 @@ export function normalizePropertySearchResponse(
     }
 
     const items = mapPropertySearchItems(rawItems);
-    const envelopeItems =
+    const itemsObject =
       typeof data === "object" && data !== null
         ? ((data as Record<string, unknown>).items as
             | Record<string, unknown>
             | undefined)
         : undefined;
+
+    const envelopeItems = itemsObject?.results
+      ? (itemsObject.results as Record<string, unknown>)
+      : itemsObject;
 
     return {
       items,

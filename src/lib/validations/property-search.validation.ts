@@ -10,7 +10,7 @@ import type {
   SearchTab,
   SearchValidationKey,
   SearchValidationResult,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import {
   getPropertySearchFieldErrors,
   hasPropertySearchFieldErrors,
@@ -56,17 +56,22 @@ export function validatePropertySearchCriteria(
 
   if (tab === "values-dues") {
     const filter = normalized.rateableValueFilter;
-    if (filter === "between") {
-      if (!normalized.rateableValueFrom || !normalized.rateableValueTo) {
-        return fail("rateableValueBetweenRequired", t);
+    if (filter) {
+      if (!normalized.valuationMethod) {
+        return fail("valuationMethodRequired", t);
       }
-    } else if (filter === "top") {
-      if (!normalized.rateableValueFrom) {
-        return fail("rateableValueInvalid", t);
-      }
-    } else if (filter === "exact" || filter === "moreThan" || filter === "lessThan") {
-      if (!normalized.rateableValueFrom) {
-        return fail("rateableValueInvalid", t);
+      if (filter === "between") {
+        if (!normalized.rateableValueFrom || !normalized.rateableValueTo) {
+          return fail("rateableValueBetweenRequired", t);
+        }
+      } else if (filter === "top") {
+        if (!normalized.rateableValueFrom) {
+          return fail("rateableValueInvalid", t);
+        }
+      } else if (filter === "exact" || filter === "moreThan" || filter === "lessThan") {
+        if (!normalized.rateableValueFrom) {
+          return fail("rateableValueInvalid", t);
+        }
       }
     }
   }
