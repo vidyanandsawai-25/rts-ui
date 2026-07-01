@@ -45,16 +45,17 @@ function pickLangText(v: LangText | string | undefined, lang: Language): string 
 // ---- ORDER YOU ASKED (based on English display name) ----
 const DEPT_ORDER = [
   "Property Tax",
+  "Water Supply",
   "Trade License",
-  "Water Connection",
-  "NOC",
-  "Birth & Death",
   "Town Planning",
-  "Marriage Certificate",
-  "Education",                         
+  "Birth & Death",
+  "Education",
   "Health",
+  "PWD",
+  "Fire",
+  "Hawkers",
+  "Tree Authority",
   "Sanitation",
-  "Tree",
 ];
 
 const normalize = (s: string) =>

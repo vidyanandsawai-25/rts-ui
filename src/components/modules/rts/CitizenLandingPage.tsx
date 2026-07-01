@@ -19,15 +19,18 @@ import {
   Flame,
   BookOpen,
   HeartPulse,
-  Wifi,
   TreePine,
   ShieldCheck,
   Droplets,
   Laptop,
   Zap,
-  Clock
+  Clock,
+  Wrench
 } from 'lucide-react';
 import { getServiceFormConfig } from '@/data/serviceFormConfig';
+import { rtsServiceDetails } from '@/data/rtsServiceDetails';
+import { getMockDepartments } from '@/lib/mock/rts-citizen.mock';
+import { Modal, Button } from '@/components/common';
 
 interface CitizenLandingPageProps {
   isLoggedIn: boolean;
@@ -38,7 +41,9 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
   const locale = useLocale();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('town-planning');
+  const [activeTab, setActiveTab] = useState('property-tax');
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const getTransText = (mr: string, hi: string, en: string) => {
     if (locale === 'mr') return mr;
@@ -84,122 +89,44 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
     {
       label: locale === 'mr' ? 'सेवा अर्ज करा' : locale === 'hi' ? 'सेवा के लिए आवेदन करें' : 'Apply for Service',
       icon: <FileEdit className="w-5 h-5 text-blue-600" />,
-      colorClass: 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
+      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-blue-50',
     },
 
     {
       label: locale === 'mr' ? 'प्रमाणपत्र डाउनलोड' : locale === 'hi' ? 'प्रमाणपत्र डाउनलोड करें' : 'Download Certificate',
       icon: <Download className="w-5 h-5 text-purple-600" />,
-      colorClass: 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
+      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-purple-50',
     },
     {
       label: locale === 'mr' ? 'शुल्क भरा' : locale === 'hi' ? 'शुल्क भुगतान करें' : 'Pay Fees',
       icon: <CreditCard className="w-5 h-5 text-orange-600" />,
-      colorClass: 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
+      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-orange-50',
     },
     {
       label: locale === 'mr' ? 'अपील दाखल करा' : locale === 'hi' ? 'अपील दर्ज करें' : 'File Appeal',
       icon: <Scale className="w-5 h-5 text-red-600" />,
-      colorClass: 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
+      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-red-50',
     },
     {
       label: locale === 'mr' ? 'तक्रार नोंदवा' : locale === 'hi' ? 'शिकायत दर्ज करें' : 'Register Grievance',
       icon: <MessageSquare className="w-5 h-5 text-teal-600" />,
-      colorClass: 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
+      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-teal-50',
     },
     {
       label: locale === 'mr' ? 'अर्ज ट्रॅक करा' : locale === 'hi' ? 'आवेदन ट्रैक करें' : 'Track Application',
       icon: <Search className="w-5 h-5 text-indigo-600" />,
-      colorClass: 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
+      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-indigo-50',
     }
   ];
 
   // Department-wise services mapping with icons representing them (all 12 departments, exactly 65 services)
   const deptCards = [
-    {
-      id: 'town-planning',
-      title: locale === 'mr' ? 'नगररचना / बांधकाम' : locale === 'hi' ? 'नगर नियोजन / निर्माण' : 'Town Planning',
-      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80',
-      btnColor: 'bg-blue-600 hover:bg-blue-700',
-      textColor: 'text-blue-900',
-      bgColor: 'bg-blue-50/50',
-      borderColor: 'border-blue-200',
-      bannerBg: 'bg-[#0B3C5D]',
-      icon: <Building2 className="w-4 h-4" />,
-      services: [
-        { id: '7200', name: locale === 'mr' ? 'व्यापार / व्यवसाय / साठा करण्यासाठी ना-हरकत प्रमाणपत्र' : 'NOC for Trade / Business / Storage' },
-        { id: '7201', name: locale === 'mr' ? 'मंडपासाठी ना-हरकत प्रमाणपत्र' : 'NOC for Mandap' },
-        { id: '7207', name: locale === 'mr' ? 'झोन दाखला देणे' : 'Zone Certificate' },
-        { id: '7208', name: locale === 'mr' ? 'भाग नकाशा देणे' : 'Part Map Copy' },
-        { id: '7209', name: locale === 'mr' ? 'बांधकाम परवाना देणे' : 'Construction Permit' },
-        { id: '7210', name: locale === 'mr' ? 'जोते प्रमाणपत्र देणे' : 'Plinth Certificate' },
-        { id: '7211', name: locale === 'mr' ? 'भोगवटा प्रमाणपत्र देणे' : 'Occupancy Certificate' }
-      ],
-      stats: getTransText('७ सेवा', '7 सेवाएं', '7 Services')
-    },
-    {
-      id: 'trade-license',
-      title: locale === 'mr' ? 'व्यापार परवाना' : locale === 'hi' ? 'व्यापार लाइसेंस' : 'Trade License',
-      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
-      btnColor: 'bg-amber-600 hover:bg-amber-700',
-      textColor: 'text-amber-900',
-      bgColor: 'bg-amber-50/50',
-      borderColor: 'border-amber-200',
-      bannerBg: 'bg-[#C66922]',
-      icon: <Briefcase className="w-4 h-4" />,
-      services: [
-        { id: '7190', name: locale === 'mr' ? 'नवीन परवाना मिळणे' : 'New Trade License' },
-        { id: '7191', name: locale === 'mr' ? 'परवान्याचे नूतनीकरण' : 'License Renewal' },
-        { id: '7192', name: locale === 'mr' ? 'परवाना हस्तांतरण' : 'License Transfer' },
-        { id: '7193', name: locale === 'mr' ? 'परवाना डुप्लिकेट प्रत देणे' : 'Duplicate License Copy' },
-        { id: '7194', name: locale === 'mr' ? 'व्यवसायाचे नाव बदलणे / प्रतिष्ठानाचे नाव बदलणे' : 'Change of Business/Establishment Name' },
-        { id: '7195', name: locale === 'mr' ? 'व्यवसाय बदलणे' : 'Change of Business Type' },
-        { id: '7197', name: locale === 'mr' ? 'परवाना धारक / भागीदाराचे नाव बदलणे' : 'Change of License Holder/Partner Name' },
-        { id: '7197', name: locale === 'mr' ? 'भागीदारी संस्थेतील भागीदार वाढ / कमी करणे' : 'Add/Remove Partners' },
-        { id: '7198', name: locale === 'mr' ? 'परवाना रद्द करणे' : 'Cancel Trade License' },
-        { id: '7199', name: locale === 'mr' ? 'कालबाह्य परवान्याच्या नूतनीकरणाबाबत सूचना देणे' : 'Notice for Renewal of Expired License' }
-      ],
-      stats: getTransText('१० सेवा', '10 सेवाएं', '10 Services')
-    },
-    {
-      id: 'fire',
-      title: locale === 'mr' ? 'अग्निशमन विभाग' : locale === 'hi' ? 'अग्निशमन विभाग' : 'Fire Department',
-      image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
-      btnColor: 'bg-rose-600 hover:bg-rose-700',
-      textColor: 'text-rose-900',
-      bgColor: 'bg-rose-50/50',
-      borderColor: 'border-rose-200',
-      bannerBg: 'bg-[#B22222]',
-      icon: <Flame className="w-4 h-4" />,
-      services: [
-        { id: '7202', name: locale === 'mr' ? 'अग्निशमन ना-हरकत दाखला देणे' : 'Fire NOC' },
-        { id: '7203', name: locale === 'mr' ? 'अग्निशमन अंतिम ना-हरकत दाखला देणे' : 'Final Fire NOC' }
-      ],
-      stats: getTransText('२ सेवा', '2 सेवाएं', '2 Services')
-    },
-    {
-      id: 'birth-death',
-      title: locale === 'mr' ? 'जन्म-मृत्यू-विवाह' : locale === 'hi' ? 'जन्म-मृत्यु-विवाह' : 'Birth, Death & Marriage',
-      image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=500&auto=format&fit=crop&q=80',
-      btnColor: 'bg-emerald-600 hover:bg-emerald-700',
-      textColor: 'text-emerald-900',
-      bgColor: 'bg-emerald-50/50',
-      borderColor: 'border-emerald-200',
-      bannerBg: 'bg-[#2D8C4E]',
-      icon: <Baby className="w-4 h-4" />,
-      services: [
-        { id: '7204', name: locale === 'mr' ? 'जन्म प्रमाणपत्र देणे' : 'Birth Certificate' },
-        { id: '7205', name: locale === 'mr' ? 'मृत्यू प्रमाणपत्र देणे' : 'Death Certificate' },
-        { id: '7121', name: locale === 'mr' ? 'विवाह नोंदणी प्रमाणपत्र देणे' : 'Marriage Registration Certificate' }
-      ],
-      stats: getTransText('३ सेवा', '3 सेवाएं', '3 Services')
-    },
     {
       id: 'property-tax',
       title: locale === 'mr' ? 'मालमत्ता कर' : locale === 'hi' ? 'संपत्ति कर' : 'Property Tax',
@@ -223,9 +150,10 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
         { id: '7271', name: locale === 'mr' ? 'मालमत्ता कर उतारा देणे' : 'Property Tax Assessment Extract' },
         { id: '7186', name: locale === 'mr' ? 'थकबाकी नसल्याचा दाखला देणे' : 'No Dues Certificate (Property Tax)' },
         { id: '7187', name: locale === 'mr' ? 'दस्ताच्या आधारे मालमत्ता हस्तांतरण नोंद प्रमाणपत्र देणे' : 'Property Transfer Registry via Deed' },
-        { id: '7187', name: locale === 'mr' ? 'वारसा हक्काने मालमत्ता हस्तांतरण नोंद प्रमाणपत्र देणे' : 'Property Transfer via Inheritance' }
+        { id: '7188', name: locale === 'mr' ? 'वारसा हक्काने मालमत्ता हस्तांतरण नोंद प्रमाणपत्र देणे' : 'Property Transfer via Inheritance' },
+        { id: '7189', name: locale === 'mr' ? 'मालकी हक्कात बदल करणे' : 'Change of Ownership / Title' }
       ],
-      stats: getTransText('१३ सेवा', '13 सेवाएं', '13 Services')
+      stats: getTransText('१४ सेवा', '14 सेवाएं', '14 Services')
     },
     {
       id: 'water-supply',
@@ -256,8 +184,74 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       stats: getTransText('१४ सेवा', '14 सेवाएं', '14 Services')
     },
     {
+      id: 'trade-license',
+      title: locale === 'mr' ? 'व्यापार परवाना' : locale === 'hi' ? 'व्यापार लाइसेंस' : 'Trade License',
+      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
+      btnColor: 'bg-amber-600 hover:bg-amber-700',
+      textColor: 'text-amber-900',
+      bgColor: 'bg-amber-50/50',
+      borderColor: 'border-amber-200',
+      bannerBg: 'bg-[#C66922]',
+      icon: <Briefcase className="w-4 h-4" />,
+      services: [
+        { id: '7190', name: locale === 'mr' ? 'नवीन परवाना मिळणे' : 'New Trade License' },
+        { id: '7191', name: locale === 'mr' ? 'परवान्याचे नूतनीकरण' : 'License Renewal' },
+        { id: '7192', name: locale === 'mr' ? 'परवाना हस्तांतरण' : 'License Transfer' },
+        { id: '7193', name: locale === 'mr' ? 'परवाना डुप्लिकेट प्रत देणे' : 'Duplicate License Copy' },
+        { id: '7194', name: locale === 'mr' ? 'व्यवसायाचे नाव बदलणे / प्रतिष्ठानाचे नाव बदलणे' : 'Change of Business/Establishment Name' },
+        { id: '7195', name: locale === 'mr' ? 'व्यवसाय बदलणे' : 'Change of Business Type' },
+        { id: '7197', name: locale === 'mr' ? 'परवाना धारक / भागीदाराचे नाव बदलणे' : 'Change of License Holder/Partner Name' },
+        { id: '7197', name: locale === 'mr' ? 'भागीदारी संस्थेतील भागीदार वाढ / कमी करणे' : 'Add/Remove Partners' },
+        { id: '7198', name: locale === 'mr' ? 'परवाना रद्द करणे' : 'Cancel Trade License' },
+        { id: '7199', name: locale === 'mr' ? 'कालबाह्य परवान्याच्या नूतनीकरणाबाबत सूचना देणे' : 'Notice for Renewal of Expired License' },
+        { id: '8266', name: locale === 'mr' ? 'लॉजिंग हाऊस परवाना देणे' : 'Issue Lodging House License' },
+        { id: '8267', name: locale === 'mr' ? 'लॉजिंग हाऊस परवान्याचे नूतनीकरण करणे' : 'Lodging House License Renewal' },
+        { id: '8268', name: locale === 'mr' ? 'मंगल कार्यालय / सभागृह परवाना देणे' : 'Issue Banquet Hall/Auditorium License' },
+        { id: '8269', name: locale === 'mr' ? 'मंगल कार्यालय / सभागृह परवान्याचे नूतनीकरण करणे' : 'Banquet Hall/Auditorium License Renewal' }
+      ],
+      stats: getTransText('१४ सेवा', '14 सेवाएं', '14 Services')
+    },
+    {
+      id: 'town-planning',
+      title: locale === 'mr' ? 'नगररचना / बांधकाम' : locale === 'hi' ? 'नगर नियोजन / निर्माण' : 'Town Planning',
+      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80',
+      btnColor: 'bg-blue-600 hover:bg-blue-700',
+      textColor: 'text-blue-900',
+      bgColor: 'bg-blue-50/50',
+      borderColor: 'border-blue-200',
+      bannerBg: 'bg-[#0B3C5D]',
+      icon: <Building2 className="w-4 h-4" />,
+      services: [
+        { id: '7200', name: locale === 'mr' ? 'व्यापार / व्यवसाय / साठा करण्यासाठी ना-हरकत प्रमाणपत्र' : 'NOC for Trade / Business / Storage' },
+        { id: '7201', name: locale === 'mr' ? 'मंडपासाठी ना-हरकत प्रमाणपत्र' : 'NOC for Mandap' },
+        { id: '7207', name: locale === 'mr' ? 'झोन दाखला देणे' : 'Zone Certificate' },
+        { id: '7208', name: locale === 'mr' ? 'भाग नकाशा देणे' : 'Part Map Copy' },
+        { id: '7209', name: locale === 'mr' ? 'बांधकाम परवाना देणे' : 'Construction Permit' },
+        { id: '7210', name: locale === 'mr' ? 'जोते प्रमाणपत्र देणे' : 'Plinth Certificate' },
+        { id: '7211', name: locale === 'mr' ? 'भोगवटा प्रमाणपत्र देणे' : 'Occupancy Certificate' }
+      ],
+      stats: getTransText('७ सेवा', '7 सेवाएं', '7 Services')
+    },
+    {
+      id: 'birth-death',
+      title: locale === 'mr' ? 'जन्म-मृत्यू' : locale === 'hi' ? 'जन्म-मृत्यु' : 'Birth & Death',
+      image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=500&auto=format&fit=crop&q=80',
+      btnColor: 'bg-emerald-600 hover:bg-emerald-700',
+      textColor: 'text-emerald-900',
+      bgColor: 'bg-emerald-50/50',
+      borderColor: 'border-emerald-200',
+      bannerBg: 'bg-[#2D8C4E]',
+      icon: <Baby className="w-4 h-4" />,
+      services: [
+        { id: '7204', name: locale === 'mr' ? 'जन्म प्रमाणपत्र देणे' : 'Birth Certificate' },
+        { id: '7205', name: locale === 'mr' ? 'मृत्यू प्रमाणपत्र देणे' : 'Death Certificate' },
+        { id: '7121', name: locale === 'mr' ? 'विवाह नोंदणी प्रमाणपत्र देणे' : 'Marriage Registration Certificate' }
+      ],
+      stats: getTransText('३ सेवा', '3 सेवाएं', '3 Services')
+    },
+    {
       id: 'education',
-      title: locale === 'mr' ? 'शिक्षण विभाग' : locale === 'hi' ? 'शिक्षा विभाग' : 'Education Department',
+      title: locale === 'mr' ? 'शिक्षण' : locale === 'hi' ? 'शिक्षा' : 'Education',
       image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&auto=format&fit=crop&q=80',
       btnColor: 'bg-purple-600 hover:bg-purple-700',
       textColor: 'text-purple-900',
@@ -273,8 +267,8 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       stats: getTransText('३ सेवा', '3 सेवाएं', '3 Services')
     },
     {
-      id: 'halls',
-      title: locale === 'mr' ? 'शुश्रूषा गृह / मंगल कार्यालय' : locale === 'hi' ? 'नर्सिंग Home व मंगल कार्यालय' : 'Nursing Home & Halls',
+      id: 'health',
+      title: locale === 'mr' ? 'आरोग्य' : locale === 'hi' ? 'स्वास्थ्य' : 'Health',
       image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&auto=format&fit=crop&q=80',
       btnColor: 'bg-violet-600 hover:bg-violet-700',
       textColor: 'text-violet-900',
@@ -285,17 +279,46 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       services: [
         { id: '8270', name: locale === 'mr' ? 'महाराष्ट्र शुश्रूषा गृह नोंदणी अधिनियम, 1949 अंतर्गत शुश्रूषा गृह परवाना देणे' : 'Issue Nursing Home License' },
         { id: '8271', name: locale === 'mr' ? 'महाराष्ट्र शुश्रूषा गृह नोंदणी अधिनियम, 1949 अंतर्गत शुश्रूषा गृह परवान्याचे नूतनीकरण करणे' : 'Nursing Home License Renewal' },
-        { id: '8272', name: locale === 'mr' ? 'महाराष्ट्र शुश्रूषा गृह नोंदणी अधिनियम, 1949 अंतर्गत परवानाधारक / भागीदाराचे नाव बदलणे' : 'Change Nursing Home Owner/Partner Name' },
-        { id: '8266', name: locale === 'mr' ? 'लॉजिंग हाऊस परवाना देणे' : 'Issue Lodging House License' },
-        { id: '8267', name: locale === 'mr' ? 'लॉजिंग हाऊस परवान्याचे नूतनीकरण करणे' : 'Lodging House License Renewal' },
-        { id: '8268', name: locale === 'mr' ? 'मंगल कार्यालय / सभागृह परवाना देणे' : 'Issue Banquet Hall/Auditorium License' },
-        { id: '8269', name: locale === 'mr' ? 'मंगल कार्यालय / सभागृह परवान्याचे नूतनीकरण करणे' : 'Banquet Hall/Auditorium License Renewal' }
+        { id: '8272', name: locale === 'mr' ? 'महाराष्ट्र शुश्रूषा गृह नोंदणी अधिनियम, 1949 अंतर्गत परवानाधारक / भागीदाराचे नाव बदलणे' : 'Change Nursing Home Owner/Partner Name' }
       ],
-      stats: getTransText('७ सेवा', '7 सेवाएं', '7 Services')
+      stats: getTransText('३ सेवा', '3 सेवाएं', '3 Services')
+    },
+    {
+      id: 'pwd',
+      title: locale === 'mr' ? 'बांधकाम (PWD)' : locale === 'hi' ? 'बांधकाम (PWD)' : 'PWD',
+      image: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500&auto=format&fit=crop&q=80',
+      btnColor: 'bg-cyan-600 hover:bg-cyan-700',
+      textColor: 'text-cyan-900',
+      bgColor: 'bg-cyan-50/50',
+      borderColor: 'border-cyan-200',
+      bannerBg: 'bg-[#008B8B]',
+      icon: <Wrench className="w-4 h-4" />,
+      services: [
+        { id: '8277', name: locale === 'mr' ? 'भूमिगत दूरसंचार वाहिनी (Optical Fibre Cable) टाकण्यासाठी परवानगी देणे' : 'Underground Optical Fibre Cable Laying Permission' },
+        { id: '9001', name: locale === 'mr' ? 'महानगरपालिका / नगरपालिका / नगरपंचायत क्षेत्रातील रस्त्यावरील खड्डे बुजविणे' : 'ULB Area Pothole Repair Work' },
+        { id: '9002', name: locale === 'mr' ? 'महानगरपालिका / नगरपालिका / नगरपंचायत क्षेत्रातील गटारांवरील झाकणे सुस्थितीत ठेवणे' : 'ULB Area Drainage/Manhole Cover Fixing' }
+      ],
+      stats: getTransText('३ सेवा', '3 सेवाएं', '3 Services')
+    },
+    {
+      id: 'fire',
+      title: locale === 'mr' ? 'अग्निशमन' : locale === 'hi' ? 'अग्निशमन' : 'Fire',
+      image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
+      btnColor: 'bg-rose-600 hover:bg-rose-700',
+      textColor: 'text-rose-900',
+      bgColor: 'bg-rose-50/50',
+      borderColor: 'border-rose-200',
+      bannerBg: 'bg-[#B22222]',
+      icon: <Flame className="w-4 h-4" />,
+      services: [
+        { id: '7202', name: locale === 'mr' ? 'अग्निशमन ना-हरकत दाखला देणे' : 'Fire NOC' },
+        { id: '7203', name: locale === 'mr' ? 'अग्निशमन अंतिम ना-हरकत दाखला देणे' : 'Final Fire NOC' }
+      ],
+      stats: getTransText('२ सेवा', '2 सेवाएं', '2 Services')
     },
     {
       id: 'hawkers',
-      title: locale === 'mr' ? 'फेरीवाले विभाग' : locale === 'hi' ? 'फेरीवाला विभाग' : 'Street Vendors / Hawkers',
+      title: locale === 'mr' ? 'फेरीवाले' : locale === 'hi' ? 'फेरीवाले' : 'Hawkers',
       image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&auto=format&fit=crop&q=80',
       btnColor: 'bg-teal-600 hover:bg-teal-700',
       textColor: 'text-teal-900',
@@ -309,23 +332,8 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       stats: getTransText('१ सेवा', '1 सेवा', '1 Service')
     },
     {
-      id: 'ofc',
-      title: locale === 'mr' ? 'OFC परवानगी विभाग' : locale === 'hi' ? 'ओएफसी अनुमति विभाग' : 'Optical Fibre Cable (OFC)',
-      image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&auto=format&fit=crop&q=80',
-      btnColor: 'bg-cyan-600 hover:bg-cyan-700',
-      textColor: 'text-cyan-900',
-      bgColor: 'bg-cyan-50/50',
-      borderColor: 'border-cyan-200',
-      bannerBg: 'bg-[#008B8B]',
-      icon: <Wifi className="w-4 h-4" />,
-      services: [
-        { id: '8277', name: locale === 'mr' ? 'भूमिगत दूरसंचार वाहिनी (Optical Fibre Cable) टाकण्यासाठी परवानगी देणे' : 'Underground Optical Fibre Cable Laying Permission' }
-      ],
-      stats: getTransText('१ सेवा', '1 सेवा', '1 Service')
-    },
-    {
       id: 'tree',
-      title: locale === 'mr' ? 'वृक्षतोड परवानगी' : locale === 'hi' ? 'वृक्ष संरक्षण विभाग' : 'Tree Conservation',
+      title: locale === 'mr' ? 'वृक्ष प्राधिकरण' : locale === 'hi' ? 'वृक्ष प्राधिकरण' : 'Tree Authority',
       image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80',
       btnColor: 'bg-green-600 hover:bg-green-700',
       textColor: 'text-green-900',
@@ -339,9 +347,9 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       stats: getTransText('१ सेवा', '1 सेवा', '1 Service')
     },
     {
-      id: 'civic-amenities',
-      title: locale === 'mr' ? 'नागरी सुविधा विभाग' : locale === 'hi' ? 'नागरिक सुविधा विभाग' : 'Civic Amenities',
-      image: 'https://images.unsplash.com/photo-1473163928189-364b2c4e1135?w=500&auto=format&fit=crop&q=80',
+      id: 'sanitation',
+      title: locale === 'mr' ? 'स्वच्छता' : locale === 'hi' ? 'स्वच्छता' : 'Sanitation',
+      image: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=500&auto=format&fit=crop&q=80',
       btnColor: 'bg-orange-600 hover:bg-orange-700',
       textColor: 'text-orange-900',
       bgColor: 'bg-orange-50/50',
@@ -349,11 +357,9 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       bannerBg: 'bg-[#FF8C00]',
       icon: <ShieldCheck className="w-4 h-4" />,
       services: [
-        { id: '9001', name: locale === 'mr' ? 'महानगरपालिका / नगरपालिका / नगरपंचायत क्षेत्रातील रस्त्यावरील खड्डे बुजविणे' : 'ULB Area Pothole Repair Work' },
-        { id: '9002', name: locale === 'mr' ? 'महानगरपालिका / नगरपालिका / नगरपंचायत क्षेत्रातील गटारांवरील झाकणे सुस्थितीत ठेवणे' : 'ULB Area Drainage/Manhole Cover Fixing' },
         { id: '8255', name: locale === 'mr' ? 'महानगरपालिका / नगरपालिका / नगरपंचायत क्षेत्रात स्वच्छता राखणे' : 'Maintaining Sanitation & Cleanliness in ULB' }
       ],
-      stats: getTransText('३ सेवा', '3 सेवाएं', '3 Services')
+      stats: getTransText('१ सेवा', '1 सेवा', '1 Service')
     }
   ];
 
@@ -654,7 +660,10 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
                     {filteredServices.map((item, idx) => (
                       <div
                         key={idx}
-                        onClick={() => handleServiceClick(item.service, item.id)}
+                        onClick={() => {
+                          setSelectedServiceId(item.id);
+                          setIsDetailsOpen(true);
+                        }}
                         className="flex flex-col justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-green-50/20 hover:border-green-300 transition-all cursor-pointer group"
                       >
                         <div className="flex items-start gap-2.5">
@@ -698,7 +707,7 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
                 </span>
               </div>
 
-              {/* Scrollable Department Tabs Bar */}
+              {/* Scrollable Department Tabs Bar (One Line) */}
               <div className="flex gap-2 overflow-x-auto pb-2.5 pt-1.5 no-scrollbar w-full">
                 {deptCards.map((dept) => {
                   const isActive = activeTab === dept.id;
@@ -707,10 +716,10 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
                       key={dept.id}
                       type="button"
                       onClick={() => setActiveTab(dept.id)}
-                      className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shrink-0 shadow-sm ${
+                      className={`flex-grow md:flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shrink-0 shadow-sm ${
                         isActive
                           ? `${dept.bannerBg} text-white border-transparent scale-[1.02] shadow-md`
-                          : 'bg-white text-slate-755 border-slate-200 hover:border-slate-350 hover:bg-slate-50'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50'
                       }`}
                     >
                       <span className={isActive ? 'text-white' : 'text-slate-500 shrink-0'}>
@@ -767,7 +776,10 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
                         {activeDept.services.map((item, idx) => (
                           <div
                             key={idx}
-                            onClick={() => handleServiceClick(item.name, item.id)}
+                            onClick={() => {
+                              setSelectedServiceId(item.id);
+                              setIsDetailsOpen(true);
+                            }}
                             className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-blue-50/20 hover:border-blue-200/50 transition-all cursor-pointer group"
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0 group-hover:scale-125 transition-transform" />
@@ -787,6 +799,137 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
 
       </div>
 
+      {/* Service Details Modal */}
+      {isDetailsOpen && selectedServiceId && (() => {
+        const details = rtsServiceDetails[selectedServiceId];
+        const depts = getMockDepartments();
+        // Find service name dynamically
+        let serviceName = '';
+        let deptName = '';
+        for (const dept of depts) {
+          const svc = dept.services.find((s) => s.id === selectedServiceId);
+          if (svc) {
+            serviceName = getTransText(svc.name.mr || '', svc.name.hi || '', svc.name.en || '');
+            deptName = getTransText(dept.name.mr || '', dept.name.hi || '', dept.name.en || '');
+            break;
+          }
+        }
+
+        const transSla = details ? getTransText(details.sla.mr, details.sla.hi, details.sla.en) : '7 Days';
+        const transFees = details ? getTransText(details.fees.mr, details.fees.hi, details.fees.en) : 'Free';
+        const transOfficer = details ? getTransText(details.officer.mr, details.officer.hi, details.officer.en) : '-';
+        const transDocs = details ? (locale === 'mr' ? details.documents.mr : locale === 'hi' ? details.documents.hi : details.documents.en) : [];
+
+        return (
+          <Modal
+            open={isDetailsOpen}
+            onClose={() => {
+              setIsDetailsOpen(false);
+              setSelectedServiceId(null);
+            }}
+            title={serviceName || 'सेवा तपशील'}
+            subtitle={deptName}
+            maxWidth="md"
+          >
+            <div className="space-y-5">
+              {/* Top stats grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-blue-500 tracking-wider">
+                      {locale === 'mr' ? 'कालावधी (SLA)' : locale === 'hi' ? 'समय सीमा (SLA)' : 'Time Limit (SLA)'}
+                    </p>
+                    <p className="text-sm font-extrabold text-slate-800">{transSla}</p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 shrink-0">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-amber-600 tracking-wider">
+                      {locale === 'mr' ? 'शुल्क / आकार' : locale === 'hi' ? 'शुल्क / प्रभार' : 'Fees / Charges'}
+                    </p>
+                    <p className="text-sm font-extrabold text-slate-800">{transFees}</p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
+                      {locale === 'mr' ? 'स्वीकृती अधिकारी' : locale === 'hi' ? 'स्वीकृति अधिकारी' : 'Receiving Officer'}
+                    </p>
+                    <p className="text-sm font-extrabold text-slate-800">{transOfficer}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mandatory Documents List */}
+              <div className="bg-white p-5 border border-slate-200 rounded-xl space-y-3">
+                <h5 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-blue-600" />
+                  <span>
+                    {locale === 'mr'
+                      ? 'आवश्यक बंधनकारक कागदपत्रे'
+                      : locale === 'hi'
+                        ? 'आवश्यक अनिवार्य दस्तावेज'
+                        : 'Mandatory Documents Required'}
+                  </span>
+                </h5>
+                {transDocs.length > 0 ? (
+                  <ul className="space-y-2 text-xs sm:text-sm text-slate-600 font-semibold list-disc pl-5">
+                    {transDocs.map((doc, dIdx) => (
+                      <li key={dIdx} className="leading-relaxed">{doc}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-slate-400 font-semibold italic">
+                    {locale === 'mr'
+                      ? 'या सेवेसाठी कोणतीही कागदपत्रे नमूद केलेली नाहीत.'
+                      : locale === 'hi'
+                        ? 'इस सेवा के लिए कोई दस्तावेज निर्दिष्ट नहीं हैं।'
+                        : 'No documents specified for this service.'}
+                  </p>
+                )}
+              </div>
+
+              {/* Process trigger inside Modal Footer/Bottom */}
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => {
+                    setIsDetailsOpen(false);
+                    setSelectedServiceId(null);
+                  }}
+                  className="font-bold"
+                >
+                  {locale === 'mr' ? 'बंद करा' : locale === 'hi' ? 'बंद करें' : 'Close'}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => {
+                    setIsDetailsOpen(false);
+                    setSelectedServiceId(null);
+                    handleServiceClick(serviceName, selectedServiceId);
+                  }}
+                  className="font-extrabold"
+                >
+                  {locale === 'mr' ? 'अर्ज प्रक्रियेला सुरुवात करा' : locale === 'hi' ? 'आवेदन प्रक्रिया शुरू करें' : 'Apply / Process'} &rarr;
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        );
+      })()}
 
     </div>
   );

@@ -9,6 +9,8 @@ interface UserProfileDropdownProps {
   activeLocale: string;
   onLogout: () => void;
   onOpenApplications: () => void;
+  hasMultipleProperties?: boolean;
+  onOpenProperties?: () => void;
 }
 
 export function UserProfileDropdown({
@@ -16,6 +18,8 @@ export function UserProfileDropdown({
   activeLocale,
   onLogout,
   onOpenApplications,
+  hasMultipleProperties = false,
+  onOpenProperties,
 }: UserProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,6 +43,7 @@ export function UserProfileDropdown({
       upicId: 'UPIC ID',
       propertyNo: 'Property No',
       mobileNo: 'Mobile No',
+      switchProperty: 'Switch Property',
     },
     mr: {
       profile: 'नागरिक तपशील',
@@ -47,6 +52,7 @@ export function UserProfileDropdown({
       upicId: 'UPIC आयडी',
       propertyNo: 'मालमत्ता क्रमांक',
       mobileNo: 'मोबाईल क्रमांक',
+      switchProperty: 'मालमत्ता बदला',
     },
     hi: {
       profile: 'नागरिक विवरण',
@@ -55,6 +61,7 @@ export function UserProfileDropdown({
       upicId: 'UPIC आईडी',
       propertyNo: 'संपत्ति संख्या',
       mobileNo: 'मोबाइल नंबर',
+      switchProperty: 'संपत्ति बदलें',
     },
   }[activeLocale as 'en' | 'mr' | 'hi'] || {
     profile: 'Citizen Profile',
@@ -63,6 +70,7 @@ export function UserProfileDropdown({
     upicId: 'UPIC ID',
     propertyNo: 'Property No',
     mobileNo: 'Mobile No',
+    switchProperty: 'Switch Property',
   };
 
   return (
@@ -144,6 +152,20 @@ export function UserProfileDropdown({
               <ClipboardList size={16} className="text-gray-400 hover:text-blue-500 shrink-0" />
               <span>{labels.myApplications}</span>
             </button>
+
+            {hasMultipleProperties && onOpenProperties && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenProperties();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-xs sm:text-sm text-gray-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-colors text-left font-bold cursor-pointer"
+                type="button"
+              >
+                <Landmark size={16} className="text-gray-400 hover:text-blue-500 shrink-0" />
+                <span>{labels.switchProperty}</span>
+              </button>
+            )}
 
             <div className="h-px bg-gray-100 my-1" />
 

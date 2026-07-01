@@ -28,17 +28,40 @@ function mapUlbConfigApiToMaster(raw: UlbConfigApiBody): UlbMaster {
  * construction’s service layer, but with graceful degradation instead of throwing).
  */
 export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
+  const defaultUlb: UlbMaster = {
+    id: 1,
+    ulbCode: "AKOLA",
+    ulbName: "Akola Municipal Corporation",
+    ulbNameLocal: "अकोला महानगरपालिका",
+    ulbTypeId: 1,
+    isActive: true,
+    ulbLogo: "https://akolamc.in/images/councilLogo/akola.png",
+    email: "support@akolamc.in",
+    phoneNo: "18002689959",
+    websiteUrl: "https://akolamc.in",
+    ulbAddress: "Akola Municipal Corporation Building, Near Open Theatre, Opposite Pharya Heights, New Radhakisan Plots, M.G. Road, Ganesh Nagar, Akola, Maharashtra 444001",
+  };
+
   try {
     const res = await authService.getUlbConfig();
     if (!res.success || !res.data) {
       logger.debug('ULB config unavailable for login branding', { success: res.success });
-      return undefined;
+      return defaultUlb;
     }
-    return mapUlbConfigApiToMaster(res.data);
+    const apiUlb = mapUlbConfigApiToMaster(res.data);
+    return {
+      ...apiUlb,
+      ulbName: "Akola Municipal Corporation",
+      ulbNameLocal: "अकोला महानगरपालिका",
+      ulbLogo: "https://akolamc.in/images/councilLogo/akola.png",
+      email: "support@akolamc.in",
+      phoneNo: "18002689959",
+      ulbAddress: "Akola Municipal Corporation Building, Near Open Theatre, Opposite Pharya Heights, New Radhakisan Plots, M.G. Road, Ganesh Nagar, Akola, Maharashtra 444001",
+    };
   } catch (error) {
     logger.warn('Failed to load ULB config for login branding', {
       error: error instanceof Error ? error : new Error(String(error)),
     });
-    return undefined;
+    return defaultUlb;
   }
 }

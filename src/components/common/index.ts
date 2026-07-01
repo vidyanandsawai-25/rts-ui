@@ -71,6 +71,7 @@ export type { ToastProps, ToastContainerProps } from './Toast';
 export { Calendar } from './Calendar';
 
 export { Drawer } from './Drawer';
+export { Modal } from './Modal';
 
 export { MultiSelectDropdown } from './Dropdown';
 export { MultiSelect } from './MultiSelect';

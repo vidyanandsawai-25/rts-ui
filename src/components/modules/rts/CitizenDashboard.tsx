@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
-import { departments } from '@/data/departments';
+import { getMockDepartments } from '@/lib/mock/rts-citizen.mock';
 import ServiceGrid from './ServiceGrid';
 import { Layers } from 'lucide-react';
 
 export function CitizenDashboard() {
   const locale = useLocale();
+  const departments = getMockDepartments();
   const [selectedDeptId, setSelectedDeptId] = useState(departments[0]?.id || '');
 
   const activeDept = departments.find((d) => d.id === selectedDeptId);

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Input, Button, ValidationMessage, Card, CardHeader, CardContent } from '@/components/common';
-import { sendCitizenOtpAction, verifyCitizenOtpAction } from '@/app/[locale]/service/login/actions';
+import { sendCitizenOtpAction, verifyCitizenOtpAction, fetchNodesAction, fetchSectorsAction } from '@/app/[locale]/service/login/actions';
 import { LoginFormCouncilLogo } from './LoginFormCouncilLogo';
 import { Landmark } from 'lucide-react';
 
@@ -42,6 +42,84 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const [propertyNo, setPropertyNo] = useState('');
   const [otp, setOtp] = useState('');
 
+  // Dropdown options & loading states for property login
+  const [nodes, setNodes] = useState<{ value: string; items: string }[]>([]);
+  const [sectors, setSectors] = useState<{ value: string; items: string }[]>([]);
+  const [loadingNodes, setLoadingNodes] = useState(false);
+  const [loadingSectors, setLoadingSectors] = useState(false);
+
+  // Property Suggestions Autocomplete States
+  const [propertySuggestions, setPropertySuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Fetch nodes on mount
+  useEffect(() => {
+    async function loadNodes() {
+      setLoadingNodes(true);
+      try {
+        const res = await fetchNodesAction();
+        if (res.success && Array.isArray(res.data)) {
+          setNodes(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to load nodes:', err);
+      } finally {
+        setLoadingNodes(false);
+      }
+    }
+    loadNodes();
+  }, []);
+
+  // Fetch sectors when selected node changes
+  useEffect(() => {
+    if (!nodeId) {
+      setSectors([]);
+      setSectorId('');
+      return;
+    }
+    async function loadSectors() {
+      setLoadingSectors(true);
+      try {
+        const res = await fetchSectorsAction(nodeId);
+        if (res.success && Array.isArray(res.data)) {
+          setSectors(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to load sectors:', err);
+      } finally {
+        setLoadingSectors(false);
+      }
+    }
+    loadSectors();
+  }, [nodeId]);
+
+  const handlePropertyNoChange = (val: string) => {
+    setPropertyNo(val);
+    if (!val.trim()) {
+      setPropertySuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const inputVal = val.trim();
+    // Dynamically generate property suggestions (e.g. typing 5 will suggest 5, 5-1, 5-2, 56, etc.)
+    const generated = [
+      inputVal,
+      inputVal + '-1',
+      inputVal + '-2',
+      inputVal + '6',
+      inputVal + '0',
+      inputVal + '2',
+      inputVal + '5',
+      inputVal + '01',
+      inputVal + '12',
+      inputVal + '8',
+      inputVal + '4',
+      inputVal + '7',
+    ].filter((item, index, self) => self.indexOf(item) === index);
+    setPropertySuggestions(generated);
+    setShowSuggestions(true);
+  };
+
   // Messages States
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -58,23 +136,41 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     setError(null);
     setInfo(null);
 
-    if (method === 'upic' || method === 'property') {
-      setError(t('messages.notConnected'));
-      return;
-    }
-
-    if (!/^\d{10}$/.test(mobile)) {
+    if (method === 'mobile' && !/^\d{10}$/.test(mobile)) {
       setError(t('messages.invalidPhone'));
       return;
     }
 
+    if (method === 'upic' && !upicId.trim()) {
+      setError('Please enter a UPIC ID.');
+      return;
+    }
+
+    if (method === 'property') {
+      if (!nodeId) {
+        setError('Please select a Node.');
+        return;
+      }
+      if (!sectorId) {
+        setError('Please select a Sector.');
+        return;
+      }
+      if (!propertyNo.trim()) {
+        setError('Please enter a Property Number.');
+        return;
+      }
+    }
+
     startTransition(async () => {
-      const res = await sendCitizenOtpAction(method, { mobile });
+      const res = await sendCitizenOtpAction(method, {
+        mobile,
+        upicId,
+        propertyNo: method === 'property' ? `${sectorId}-${propertyNo}` : undefined
+      });
       if (res.success && res.txnId) {
         setMaskedPhone(res.maskedPhone || '');
         setStep('otp');
-        const extraDemo = res.demoOtp ? t('messages.demoOtp', { otp: res.demoOtp }) : '';
-        setInfo(`${t('messages.otpSent')}${extraDemo}`);
+        setInfo(t('messages.otpSent'));
       } else {
         setError(res.error || t('messages.sendOtpFailed'));
       }
@@ -111,10 +207,13 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     setError(null);
     setInfo(null);
     startTransition(async () => {
-      const res = await sendCitizenOtpAction('mobile', { mobile });
+      const res = await sendCitizenOtpAction(method, {
+        mobile,
+        upicId,
+        propertyNo: method === 'property' ? `${sectorId}-${propertyNo}` : undefined
+      });
       if (res.success) {
-        const extraDemo = res.demoOtp ? t('messages.demoOtp', { otp: res.demoOtp }) : '';
-        setInfo(`${t('messages.otpResent')}${extraDemo}`);
+        setInfo(t('messages.otpResent'));
       } else {
         setError(res.error || t('messages.resendFailed'));
       }
@@ -275,28 +374,88 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                   {method === 'property' && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          label={t('phone.node')}
-                          placeholder={t('phone.nodePh')}
-                          value={nodeId}
-                          onChange={(e) => setNodeId(e.target.value)}
-                          fullWidth
-                        />
-                        <Input
-                          label={t('phone.sector')}
-                          placeholder={t('phone.sectorPh')}
-                          value={sectorId}
-                          onChange={(e) => setSectorId(e.target.value)}
-                          fullWidth
-                        />
+                        {/* Node Select */}
+                        <div className="flex flex-col">
+                          <label className="mb-1.5 text-sm font-medium text-gray-700">
+                            {t('phone.node') || 'Node'}
+                          </label>
+                          <select
+                            value={nodeId}
+                            onChange={(e) => setNodeId(e.target.value)}
+                            disabled={loadingNodes}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:opacity-50 h-[38px]"
+                          >
+                            <option value="">{loadingNodes ? 'Loading...' : 'Select Node'}</option>
+                            {nodes.map((n) => (
+                              <option key={n.value} value={n.value}>
+                                {n.items}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Sector Select */}
+                        <div className="flex flex-col">
+                          <label className="mb-1.5 text-sm font-medium text-gray-700">
+                            {t('phone.sector') || 'Sector'}
+                          </label>
+                          <select
+                            value={sectorId}
+                            onChange={(e) => setSectorId(e.target.value)}
+                            disabled={!nodeId || loadingSectors}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:opacity-50 h-[38px]"
+                          >
+                            <option value="">
+                              {!nodeId
+                                ? 'Select Node first'
+                                : loadingSectors
+                                  ? 'Loading...'
+                                  : 'Select Sector'}
+                            </option>
+                            {sectors.map((s) => (
+                              <option key={s.value} value={s.value}>
+                                {s.items}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <Input
-                        label={t('phone.property')}
-                        placeholder={t('phone.propertyPh')}
-                        value={propertyNo}
-                        onChange={(e) => setPropertyNo(e.target.value)}
-                        fullWidth
-                      />
+
+                      {/* Property Suggestions Autocomplete */}
+                      <div className="relative">
+                        <Input
+                          label={t('phone.property')}
+                          placeholder={t('phone.propertyPh')}
+                          value={propertyNo}
+                          onChange={(e) => handlePropertyNoChange(e.target.value)}
+                          onFocus={() => {
+                            if (propertyNo.trim()) {
+                              setShowSuggestions(true);
+                            }
+                          }}
+                          onBlur={() => {
+                            setTimeout(() => setShowSuggestions(false), 200);
+                          }}
+                          fullWidth
+                        />
+                        {showSuggestions && propertySuggestions.length > 0 && (
+                          <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg z-[150] divide-y divide-gray-100">
+                            {propertySuggestions.map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                type="button"
+                                onClick={() => {
+                                  setPropertyNo(suggestion);
+                                  setShowSuggestions(false);
+                                }}
+                                className="w-full text-left px-3.5 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-600 transition-colors font-semibold cursor-pointer"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 

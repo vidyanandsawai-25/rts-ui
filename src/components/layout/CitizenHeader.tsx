@@ -5,12 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { User } from 'lucide-react';
+import { User, Landmark } from 'lucide-react';
 
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserProfileDropdown, Drawer } from '@/components/common';
 import { TrackingPanel } from '@/components/modules/dashboard/TrackingPanel';
-import { logoutCitizenAction } from '@/app/[locale]/service/login/actions';
+import { logoutCitizenAction, switchCitizenPropertyAction } from '@/app/[locale]/service/login/actions';
 import { type CitizenProfile } from '@/lib/mock/rts-citizen.mock';
 
 /** Matching landing page theme deep navy (#0a3275) */
@@ -18,17 +18,31 @@ const HEADER_BG = '#0a3275';
 
 interface CitizenHeaderProps {
   profile?: CitizenProfile;
+  properties?: any[];
   locale: string;
   ulbData?: any;
 }
 
-export function CitizenHeader({ profile, locale: propLocale, ulbData }: CitizenHeaderProps) {
+export function CitizenHeader({ profile, properties = [], locale: propLocale, ulbData }: CitizenHeaderProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isPropertiesDrawerOpen, setIsPropertiesDrawerOpen] = useState(false);
   const currentLocale = useLocale();
   const activeLocale = currentLocale || propLocale;
   const mobile = profile?.mobile;
+
+  const handleSwitchProperty = (ownerId: number) => {
+    startTransition(async () => {
+      const res = await switchCitizenPropertyAction(ownerId);
+      if (res.success) {
+        setIsPropertiesDrawerOpen(false);
+        router.refresh();
+      } else {
+        alert(res.error || 'Failed to switch property.');
+      }
+    });
+  };
 
   const getUlbName = () => {
     const rawName = ulbData?.ulbName || '';
@@ -158,6 +172,8 @@ export function CitizenHeader({ profile, locale: propLocale, ulbData }: CitizenH
                 activeLocale={activeLocale}
                 onLogout={handleLogout}
                 onOpenApplications={() => setIsDrawerOpen(true)}
+                hasMultipleProperties={properties.length > 1}
+                onOpenProperties={() => setIsPropertiesDrawerOpen(true)}
               />
             ) : (
               <button
@@ -195,6 +211,78 @@ export function CitizenHeader({ profile, locale: propLocale, ulbData }: CitizenH
       >
         <div className="p-4 sm:p-6 bg-slate-50 min-h-full">
           <TrackingPanel authUser={{ mobile }} />
+        </div>
+      </Drawer>
+
+      {/* Properties Drawer */}
+      <Drawer
+        open={isPropertiesDrawerOpen}
+        onClose={() => setIsPropertiesDrawerOpen(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <Landmark className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-bold text-gray-800">
+              {activeLocale === 'mr'
+                ? 'माझ्या मालमत्ता'
+                : activeLocale === 'hi'
+                  ? 'मेरी संपत्तियां'
+                  : 'My Properties'}
+            </h3>
+          </div>
+        }
+        width="md"
+      >
+        <div className="p-4 sm:p-6 bg-slate-50 min-h-full">
+          <p className="text-xs text-gray-500 font-semibold mb-4">
+            {activeLocale === 'mr'
+              ? 'कृपया पाहा आणि मालमत्ता निवडा:'
+              : activeLocale === 'hi'
+                ? 'कृपया देखें और संपत्ति चुनें:'
+                : 'Please select a property to view:'}
+          </p>
+          <div className="space-y-3">
+            {properties.map((prop) => {
+              const isSelected = profile && Number(profile.ownerId) === Number(prop.ownerId);
+              return (
+                <button
+                  key={prop.ownerId}
+                  onClick={() => handleSwitchProperty(prop.ownerId)}
+                  className={`w-full text-left p-4 rounded-xl border transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50/50 shadow-md ring-1 ring-blue-500'
+                      : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md'
+                  }`}
+                  type="button"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-extrabold text-gray-800">
+                      {prop.ownerNameMarathi || 'धारक . .'}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-semibold">
+                      <span className="flex items-center gap-1">
+                        <span className="font-bold text-gray-400">UPIC ID:</span>
+                        <span className="text-gray-700">{prop.upicNo}</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="font-bold text-gray-400">Property No:</span>
+                        <span className="text-gray-700">{prop.propertyNo}</span>
+                      </span>
+                    </div>
+                    {prop.propertyDescription && (
+                      <p className="text-[11px] text-gray-400 truncate max-w-sm">
+                        {prop.propertyDescription}
+                      </p>
+                    )}
+                  </div>
+                  {isSelected && (
+                    <span className="shrink-0 inline-flex items-center justify-center bg-blue-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                      {activeLocale === 'mr' ? 'सक्रिय' : activeLocale === 'hi' ? 'सक्रिय' : 'Active'}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </Drawer>
     </header>

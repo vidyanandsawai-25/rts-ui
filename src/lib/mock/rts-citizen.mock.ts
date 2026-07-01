@@ -24,65 +24,6 @@ import type {
 // ── MOCK DEPARTMENTS (replace with DB fetch) ─────────────────────────────────
 export function getMockDepartments(): DepartmentDTO[] {
   return [
-    // ── Town Planning ────────────────────────────────────────────────────────
-    {
-      id: 'town-planning',
-      name: { en: 'Town Planning', hi: 'नगर नियोजन / निर्माण', mr: 'नगररचना / बांधकाम' },
-      icon: 'Building2',
-      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80',
-      services: [
-        { id: '7200', name: { en: 'NOC for Trade / Business / Storage', hi: 'व्यापार / व्यवसाय / भंडारण के लिए एनओसी', mr: 'व्यापार / व्यवसाय / साठा करण्यासाठी ना-हरकत प्रमाणपत्र' }, icon: 'Building2', color: 'bg-blue-400' },
-        { id: '7201', name: { en: 'NOC for Mandap', hi: 'मंडप के लिए एनओसी', mr: 'मंडपासाठी ना-हरकत प्रमाणपत्र' }, icon: 'Tent', color: 'bg-indigo-400' },
-        { id: '7207', name: { en: 'Zone Certificate', hi: 'जोन प्रमाणपत्र', mr: 'झोन दाखला देणे' }, icon: 'Map', color: 'bg-purple-400' },
-        { id: '7208', name: { en: 'Part Map Copy', hi: 'भाग मानचित्र प्रति', mr: 'भाग नकाशा देणे' }, icon: 'Copy', color: 'bg-pink-400' },
-        { id: '7209', name: { en: 'Construction Permit', hi: 'निर्माण अनुमति', mr: 'बांधकाम परवाना देणे' }, icon: 'FileText', color: 'bg-rose-400' },
-        { id: '7210', name: { en: 'Plinth Certificate', hi: 'प्लिंथ प्रमाणपत्र', mr: 'जोते प्रमाणपत्र देणे' }, icon: 'FileCheck', color: 'bg-red-400' },
-        { id: '7211', name: { en: 'Occupancy Certificate', hi: 'भोगवटा प्रमाणपत्र', mr: 'भोगवटा प्रमाणपत्र देणे' }, icon: 'Home', color: 'bg-orange-400' },
-      ],
-    },
-    // ── Trade License ────────────────────────────────────────────────────────
-    {
-      id: 'trade-license',
-      name: { en: 'Trade License', hi: 'व्यापार लाइसेंस', mr: 'व्यापार परवाना' },
-      icon: 'Briefcase',
-      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
-      services: [
-        { id: '7190', name: { en: 'New Trade License', hi: 'नया व्यापार लाइसेंस', mr: 'नवीन परवाना मिळणे' }, icon: 'FilePlus', color: 'bg-amber-400' },
-        { id: '7191', name: { en: 'License Renewal', hi: 'लाइसेंस नवीनीकरण', mr: 'परवान्याचे नूतनीकरण' }, icon: 'RefreshCw', color: 'bg-yellow-400' },
-        { id: '7192', name: { en: 'License Transfer', hi: 'लाइसेंस हस्तांतरण', mr: 'परवाना हस्तांतरण' }, icon: 'UserCheck', color: 'bg-lime-400' },
-        { id: '7193', name: { en: 'Duplicate License Copy', hi: 'डुप्लिकेट लाइसेंस प्रति', mr: 'परवाना डुप्लिकेट प्रत देणे' }, icon: 'Copy', color: 'bg-green-400' },
-        { id: '7194', name: { en: 'Change of Business/Establishment Name', hi: 'व्यवसाय का नाम बदलना', mr: 'व्यवसायाचे नाव बदलणे / प्रतिष्ठानाचे नाव बदलणे' }, icon: 'Edit3', color: 'bg-emerald-400' },
-        { id: '7195', name: { en: 'Change of Business Type', hi: 'व्यवसाय बदलना', mr: 'व्यवसाय बदलणे' }, icon: 'RefreshCw', color: 'bg-teal-400' },
-        { id: '7196', name: { en: 'Change of License Holder/Partner Name', hi: 'लाइसेंस धारक का नाम बदलना', mr: 'परवाना धारक / भागीदाराचे नाव बदलणे' }, icon: 'UserCheck', color: 'bg-cyan-400' },
-        { id: '7197', name: { en: 'Add/Remove Partners', hi: 'भागीदारों को जोड़ना/हटाना', mr: 'भागीदारी संस्थेतील भागीदार वाढ / कमी करणे' }, icon: 'Users', color: 'bg-sky-400' },
-        { id: '7198', name: { en: 'Cancel Trade License', hi: 'लाइसेंस रद्द करना', mr: 'परवाना रद्द करणे' }, icon: 'Trash2', color: 'bg-blue-400' },
-        { id: '7199', name: { en: 'Notice for Renewal of Expired License', hi: 'समाप्त लाइसेंस नवीनीकरण सूचना', mr: 'कालबाह्य परवान्याच्या नूतनीकरणाबाबत सूचना देणे' }, icon: 'Bell', color: 'bg-indigo-400' },
-      ],
-    },
-    // ── Fire Department ──────────────────────────────────────────────────────
-    {
-      id: 'fire',
-      name: { en: 'Fire Department', hi: 'अग्निशमन विभाग', mr: 'अग्निशमन' },
-      icon: 'Flame',
-      image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
-      services: [
-        { id: '7202', name: { en: 'Fire NOC', hi: 'अग्निशमन एनओसी', mr: 'अग्निशमन ना-हरकत दाखला देणे' }, icon: 'Flame', color: 'bg-red-500' },
-        { id: '7203', name: { en: 'Final Fire NOC', hi: 'अंतिम अग्निशमन एनओसी', mr: 'अग्निशमन अंतिम ना-हरकत दाखला देणे' }, icon: 'ShieldAlert', color: 'bg-rose-500' },
-      ],
-    },
-    // ── Birth, Death & Marriage ──────────────────────────────────────────────
-    {
-      id: 'birth-death',
-      name: { en: 'Birth, Death & Marriage', hi: 'जन्म-मृत्यु-विवाह', mr: 'जन्म-मृत्यू-विवाह' },
-      icon: 'HeartPulse',
-      image: 'https://images.unsplash.com/photo-1613587261040-f2faa7e5bf23?w=800',
-      services: [
-        { id: '7204', name: { en: 'Birth Certificate', hi: 'जन्म प्रमाणपत्र', mr: 'जन्म प्रमाणपत्र देणे' }, icon: 'Baby', color: 'bg-blue-400' },
-        { id: '7205', name: { en: 'Death Certificate', hi: 'मृत्यु प्रमाणपत्र', mr: 'मृत्यू प्रमाणपत्र देणे' }, icon: 'HeartOff', color: 'bg-red-400' },
-        { id: '7121', name: { en: 'Marriage Registration Certificate', hi: 'विवाह पंजीकरण', mr: 'विवाह नोंदणी प्रमाणपत्र देणे' }, icon: 'Heart', color: 'bg-pink-400' },
-      ],
-    },
-    // ── Property Tax ─────────────────────────────────────────────────────────
     {
       id: 'property-tax',
       name: { en: 'Property Tax', hi: 'संपत्ति कर', mr: 'मालमत्ता कर' },
@@ -104,7 +45,6 @@ export function getMockDepartments(): DepartmentDTO[] {
         { id: '7188', name: { en: 'Property Transfer via Inheritance', hi: 'उत्तराधिकार द्वारा हस्तांतरण', mr: 'वारसा हक्काने मालमत्ता हस्तांतरण नोंद प्रमाणपत्र देणे' }, icon: 'UserCheck', color: 'bg-zinc-400' },
       ],
     },
-    // ── Water Supply ─────────────────────────────────────────────────────────
     {
       id: 'water-supply',
       name: { en: 'Water Supply', hi: 'जल आपूर्ति', mr: 'पाणीपुरवठा' },
@@ -127,19 +67,39 @@ export function getMockDepartments(): DepartmentDTO[] {
         { id: '7173', name: { en: 'Report Bad Water Quality', hi: 'खराब पानी गुणवत्ता रिपोर्ट', mr: 'पाण्याच्या गुणवत्तेबाबत तक्रार नोंदविणे' }, icon: 'Info', color: 'bg-red-400' },
       ],
     },
-    // ── Education ────────────────────────────────────────────────────────────
     {
-      id: 'education',
-      name: { en: 'Education', hi: 'शिक्षा', mr: 'शिक्षण' },
-      icon: 'GraduationCap',
-      image: 'https://images.unsplash.com/photo-1739249327281-e918124ac540?w=800',
+      id: 'trade-license',
+      name: { en: 'Trade License', hi: 'व्यापार लाइसेंस', mr: 'व्यापार परवाना' },
+      icon: 'Briefcase',
+      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
       services: [
-        { id: '8273', name: { en: 'Issue Leaving/Duplicate Leaving Certificate', hi: 'स्कूल छोड़ने का प्रमाणपत्र', mr: 'विद्यार्थ्यांचा शाळा सोडल्याचा दाखला व द्वितीय दाखला देणे' }, icon: 'School', color: 'bg-purple-400' },
-        { id: '8274', name: { en: 'Issue Migration Certificate', hi: 'माइग्रेशन प्रमाणपत्र', mr: 'स्थलांतर दाखला देणे' }, icon: 'MoveRight', color: 'bg-orange-400' },
-        { id: '8275', name: { en: 'Issue Duplicate Marksheet', hi: 'दुय्यम गुणपत्रक', mr: 'द्वितीय गुणपत्रक देणे' }, icon: 'Award', color: 'bg-yellow-400' },
+        { id: '7190', name: { en: 'New Trade License', hi: 'नया व्यापार लाइसेंस', mr: 'नवीन परवाना मिळणे' }, icon: 'FilePlus', color: 'bg-amber-400' },
+        { id: '7191', name: { en: 'License Renewal', hi: 'लाइसेंस नवीनीकरण', mr: 'परवान्याचे नूतनीकरण' }, icon: 'RefreshCw', color: 'bg-yellow-400' },
+        { id: '7192', name: { en: 'License Transfer', hi: 'लाइसेंस हस्तांतरण', mr: 'परवाना हस्तांतरण' }, icon: 'UserCheck', color: 'bg-lime-400' },
+        { id: '7193', name: { en: 'Duplicate License Copy', hi: 'डुप्लिकेट लाइसेंस प्रति', mr: 'परवाना डुप्लिकेट प्रत देणे' }, icon: 'Copy', color: 'bg-green-400' },
+        { id: '7194', name: { en: 'Change of Business/Establishment Name', hi: 'व्यवसाय का नाम बदलना', mr: 'व्यवसायाचे नाव बदलणे / प्रतिष्ठानाचे नाव बदलणे' }, icon: 'Edit3', color: 'bg-emerald-400' },
+        { id: '7195', name: { en: 'Change of Business Type', hi: 'व्यवसाय बदलना', mr: 'व्यवसाय बदलणे' }, icon: 'RefreshCw', color: 'bg-teal-400' },
+        { id: '7196', name: { en: 'Change of License Holder/Partner Name', hi: 'लाइसेंस धारक का नाम बदलना', mr: 'परवाना धारक / भागीदाराचे नाव बदलणे' }, icon: 'UserCheck', color: 'bg-cyan-400' },
+        { id: '7197', name: { en: 'Add/Remove Partners', hi: 'भागीदारों को जोड़ना/हटाना', mr: 'भागीदारी संस्थेतील भागीदार वाढ / कमी करणे' }, icon: 'Users', color: 'bg-sky-400' },
+        { id: '7198', name: { en: 'Cancel Trade License', hi: 'लाइसेंस रद्द करना', mr: 'परवाना रद्द करणे' }, icon: 'Trash2', color: 'bg-blue-400' },
+        { id: '7199', name: { en: 'Notice for Renewal of Expired License', hi: 'समाप्त लाइसेंस नवीनीकरण सूचना', mr: 'कालबाह्य परवान्याच्या नूतनीकरणाबाबत सूचना देणे' }, icon: 'Bell', color: 'bg-indigo-400' },
       ],
     },
-    // ── Halls & Nursing Homes ────────────────────────────────────────────────
+    {
+      id: 'town-planning',
+      name: { en: 'Town Planning', hi: 'नगर नियोजन / निर्माण', mr: 'नगररचना / बांधकाम' },
+      icon: 'Building2',
+      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80',
+      services: [
+        { id: '7200', name: { en: 'NOC for Trade / Business / Storage', hi: 'व्यापार / व्यवसाय / भंडारण के लिए एनओसी', mr: 'व्यापार / व्यवसाय / साठा करण्यासाठी ना-हरकत प्रमाणपत्र' }, icon: 'Building2', color: 'bg-blue-400' },
+        { id: '7201', name: { en: 'NOC for Mandap', hi: 'मंडप के लिए एनओसी', mr: 'मंडपासाठी ना-हरकत प्रमाणपत्र' }, icon: 'Tent', color: 'bg-indigo-400' },
+        { id: '7207', name: { en: 'Zone Certificate', hi: 'जोन प्रमाणपत्र', mr: 'झोन दाखला देणे' }, icon: 'Map', color: 'bg-purple-400' },
+        { id: '7208', name: { en: 'Part Map Copy', hi: 'भाग मानचित्र प्रति', mr: 'भाग नकाशा देणे' }, icon: 'Copy', color: 'bg-pink-400' },
+        { id: '7209', name: { en: 'Construction Permit', hi: 'निर्माण अनुमति', mr: 'बांधकाम परवाना देणे' }, icon: 'FileText', color: 'bg-rose-400' },
+        { id: '7210', name: { en: 'Plinth Certificate', hi: 'प्लिंथ प्रमाणपत्र', mr: 'जोते प्रमाणपत्र देणे' }, icon: 'FileCheck', color: 'bg-red-400' },
+        { id: '7211', name: { en: 'Occupancy Certificate', hi: 'भोगवटा प्रमाणपत्र', mr: 'भोगवटा प्रमाणपत्र देणे' }, icon: 'Home', color: 'bg-orange-400' },
+      ],
+    },
     {
       id: 'halls',
       name: { en: 'Nursing Home & Halls', hi: 'नर्सिंग होम व हॉल', mr: 'शुश्रूषा गृह / मंगल कार्यालय' },
@@ -155,37 +115,28 @@ export function getMockDepartments(): DepartmentDTO[] {
         { id: '8269', name: { en: 'Banquet Hall/Auditorium License Renewal', hi: 'सभागृह नवीनीकरण', mr: 'मंगल कार्यालय / सभागृह परवान्याचे नूतनीकरण करणे' }, icon: 'RefreshCcw', color: 'bg-fuchsia-400' },
       ],
     },
-    // ── Hawkers ──────────────────────────────────────────────────────────────
     {
-      id: 'hawkers',
-      name: { en: 'Street Vendors / Hawkers', hi: 'फेरीवाला', mr: 'फेरीवाले' },
-      icon: 'ShoppingCart',
-      image: 'https://images.unsplash.com/photo-1751759192037-a51efd95a480?w=800',
+      id: 'birth-death',
+      name: { en: 'Birth, Death & Marriage', hi: 'जन्म-मृत्यु-विवाह', mr: 'जन्म-मृत्यू-विवाह' },
+      icon: 'HeartPulse',
+      image: 'https://images.unsplash.com/photo-1613587261040-f2faa7e5bf23?w=800',
       services: [
-        { id: '8278', name: { en: 'Street Vendor Registration Certificate', hi: 'फेरीवाला पंजीकरण प्रमाणपत्र', mr: 'फेरीवाले नोंदणी प्रमाणपत्र देणे' }, icon: 'Store', color: 'bg-teal-400' },
+        { id: '7204', name: { en: 'Birth Certificate', hi: 'जन्म प्रमाणपत्र', mr: 'जन्म प्रमाणपत्र देणे' }, icon: 'Baby', color: 'bg-blue-400' },
+        { id: '7205', name: { en: 'Death Certificate', hi: 'मृत्यु प्रमाणपत्र', mr: 'मृत्यू प्रमाणपत्र देणे' }, icon: 'HeartOff', color: 'bg-red-400' },
+        { id: '7121', name: { en: 'Marriage Registration Certificate', hi: 'विवाह पंजीकरण', mr: 'विवाह नोंदणी प्रमाणपत्र देणे' }, icon: 'Heart', color: 'bg-pink-400' },
       ],
     },
-    // ── OFC ──────────────────────────────────────────────────────────────────
     {
-      id: 'ofc',
-      name: { en: 'Optical Fibre Cable (OFC)', hi: 'ऑप्टिकल फाइबर केबल', mr: 'OFC परवानगी' },
-      icon: 'Wifi',
-      image: 'https://images.unsplash.com/photo-1650532924043-ace81d44a7f3?w=800',
+      id: 'education',
+      name: { en: 'Education', hi: 'शिक्षा', mr: 'शिक्षण' },
+      icon: 'GraduationCap',
+      image: 'https://images.unsplash.com/photo-1739249327281-e918124ac540?w=800',
       services: [
-        { id: '8277', name: { en: 'Underground Optical Fibre Cable Laying Permission', hi: 'OFC बिछाने की अनुमति', mr: 'भूमिगत दूरसंचार वाहिनी (Optical Fibre Cable) टाकण्यासाठी परवानगी देणे' }, icon: 'Cable', color: 'bg-cyan-400' },
+        { id: '8273', name: { en: 'Issue Leaving/Duplicate Leaving Certificate', hi: 'स्कूल छोड़ने का प्रमाणपत्र', mr: 'विद्यार्थ्यांचा शाळा सोडल्याचा दाखला व द्वितीय दाखला देणे' }, icon: 'School', color: 'bg-purple-400' },
+        { id: '8274', name: { en: 'Issue Migration Certificate', hi: 'माइग्रेशन प्रमाणपत्र', mr: 'स्थलांतर दाखला देणे' }, icon: 'MoveRight', color: 'bg-orange-400' },
+        { id: '8275', name: { en: 'Issue Duplicate Marksheet', hi: 'दुय्यम गुणपत्रक', mr: 'द्वितीय गुणपत्रक देणे' }, icon: 'Award', color: 'bg-yellow-400' },
       ],
     },
-    // ── Tree Conservation ────────────────────────────────────────────────────
-    {
-      id: 'tree',
-      name: { en: 'Tree Conservation', hi: 'वृक्ष संरक्षण', mr: 'वृक्षतोड परवानगी' },
-      icon: 'TreePine',
-      image: 'https://images.unsplash.com/photo-1645753359575-c51cd95db8f9?w=800',
-      services: [
-        { id: '8276', name: { en: 'Tree Cutting Permission under 1975 Act', hi: 'वृक्ष काटने की अनुमति', mr: 'महाराष्ट्र (नागरी क्षेत्रे) वृक्ष संरक्षण व संवर्धन अधिनियम, 1975 अंतर्गत वृक्षतोड परवानगी देणे' }, icon: 'Axe', color: 'bg-green-400' },
-      ],
-    },
-    // ── Civic Amenities ──────────────────────────────────────────────────────
     {
       id: 'civic-amenities',
       name: { en: 'Civic Amenities', hi: 'नागरिक सुविधाएं', mr: 'नागरी सुविधा' },
@@ -197,6 +148,43 @@ export function getMockDepartments(): DepartmentDTO[] {
         { id: '8255', name: { en: 'Maintaining Sanitation & Cleanliness in ULB', hi: 'स्वच्छता बनाए रखना', mr: 'महानगरपालिका / नगरपालिका / नगरपंचायत क्षेत्रात स्वच्छता राखणे' }, icon: 'Trash2', color: 'bg-lime-400' },
       ],
     },
+    {
+      id: 'fire',
+      name: { en: 'Fire Department', hi: 'अग्निशमन विभाग', mr: 'अग्निशमन' },
+      icon: 'Flame',
+      image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
+      services: [
+        { id: '7202', name: { en: 'Fire NOC', hi: 'अग्निशमन एनओसी', mr: 'अग्निशमन ना-हरकत दाखला देणे' }, icon: 'Flame', color: 'bg-red-500' },
+        { id: '7203', name: { en: 'Final Fire NOC', hi: 'अंतिम अग्निशमन एनओसी', mr: 'अग्निशमन अंतिम ना-हरकत दाखला देणे' }, icon: 'ShieldAlert', color: 'bg-rose-500' },
+      ],
+    },
+    {
+      id: 'hawkers',
+      name: { en: 'Street Vendors / Hawkers', hi: 'फेरीवाला', mr: 'फेरीवाले' },
+      icon: 'ShoppingCart',
+      image: 'https://images.unsplash.com/photo-1751759192037-a51efd95a480?w=800',
+      services: [
+        { id: '8278', name: { en: 'Street Vendor Registration Certificate', hi: 'फेरीवाला पंजीकरण प्रमाणपत्र', mr: 'फेरीवाले नोंदणी प्रमाणपत्र देणे' }, icon: 'Store', color: 'bg-teal-400' },
+      ],
+    },
+    {
+      id: 'ofc',
+      name: { en: 'Optical Fibre Cable (OFC)', hi: 'ऑप्टिकल फाइबर केबल', mr: 'OFC परवानगी' },
+      icon: 'Wifi',
+      image: 'https://images.unsplash.com/photo-1650532924043-ace81d44a7f3?w=800',
+      services: [
+        { id: '8277', name: { en: 'Underground Optical Fibre Cable Laying Permission', hi: 'OFC बिछाने की अनुमति', mr: 'भूमिगत दूरसंचार वाहिनी (Optical Fibre Cable) टाकण्यासाठी परवानगी देणे' }, icon: 'Cable', color: 'bg-cyan-400' },
+      ],
+    },
+    {
+      id: 'tree',
+      name: { en: 'Tree Conservation', hi: 'वृक्ष संरक्षण', mr: 'वृक्षतोड परवानगी' },
+      icon: 'TreePine',
+      image: 'https://images.unsplash.com/photo-1645753359575-c51cd95db8f9?w=800',
+      services: [
+        { id: '8276', name: { en: 'Tree Cutting Permission under 1975 Act', hi: 'वृक्ष काटने की अनुमति', mr: 'महाराष्ट्र (नागरी क्षेत्रे) वृक्ष संरक्षण व संवर्धन अधिनियम, 1975 अंतर्गत वृक्षतोड परवानगी देणे' }, icon: 'Axe', color: 'bg-green-400' },
+      ],
+    }
   ];
 }
 
@@ -299,6 +287,7 @@ export interface CitizenProfile {
   upicId: string;
   propertyNo: string;
   mobile: string;
+  ownerId?: number;
 }
 
 export function getMockCitizenProfile(mobile: string): CitizenProfile {
@@ -307,6 +296,7 @@ export function getMockCitizenProfile(mobile: string): CitizenProfile {
     upicId: 'AKLMC089194',
     propertyNo: 'B3-434',
     mobile: mobile,
+    ownerId: 1,
   };
 }
 
