@@ -61,6 +61,7 @@ const mockMessages = {
     title: "Type of Use Master",
     subtitle: "Use Group → Type → Sub-Type",
     group: {
+      allGroups: "All Groups",
       title: "Use Groups",
       add: "Add Use Group",
       addSubtitle: "Create a new Use Group",

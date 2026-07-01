@@ -2,6 +2,7 @@
     "title": "Type of Use Master",
     "subtitle": "Use Group → Type → Sub-Type",
     "group": {
+        "allGroups": "All Groups",
         "title": "Use Groups",
         "addSubtitle": "Create a new Use Group",
         "add": "Add Use Group",
