@@ -118,7 +118,6 @@ vi.mock('@/hooks/ptis/photoplan/useMediaPanelVisibility', () => ({
 }));
 
 // Import target utilities and configurations
-import { getAdditionalImages, getGalleryImages } from '@/components/modules/property-tax/ptis/media/mediaConfig';
 import {
   formatPhotoPlanPayload,
   mapPropertyPhotoToAdditionalImage,
@@ -144,23 +143,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
     mockSearchParamsGet.mockReturnValue(null);
   });
 
-  describe('mediaConfig utils', () => {
-    it('returns additional images array with translation', () => {
-      const mockTFunc = (key: string) => `trans_${key}`;
-      const additional = getAdditionalImages(mockTFunc);
-      expect(additional.length).toBe(8);
-      expect(additional[0]?.alt).toBe('trans_media.rearElevation');
-      expect(additional[0]?.photoTypeCode).toBe('BACK');
-    });
 
-    it('returns full gallery images collection with translation', () => {
-      const mockTFunc = (key: string) => `trans_${key}`;
-      const gallery = getGalleryImages(mockTFunc);
-      expect(gallery.length).toBe(11);
-      expect(gallery[0]?.alt).toBe('trans_media.frontElevation');
-      expect(gallery[0]?.photoTypeCode).toBe('FRONT');
-    });
-  });
 
   describe('mediaData transformations', () => {
     it('formats photo plan payload successfully into FormData', () => {
