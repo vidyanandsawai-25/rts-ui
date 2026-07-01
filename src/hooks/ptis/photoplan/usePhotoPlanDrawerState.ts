@@ -19,11 +19,16 @@ function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
   if (a.length !== b.length) return false;
   return a.every((cat, i) => {
     const other = b[i];
-    if (cat.photoTypeId !== other?.photoTypeId) return false;
-    if (cat.photoTypeCode !== other?.photoTypeCode) return false;
-    if (cat.images.length !== other.images.length) return false;
-    return cat.images.every((img, j) => {
-      const otherImg = other.images[j];
+    if (!other) return false;
+    if (cat.photoTypeId !== other.photoTypeId) return false;
+    if (cat.photoTypeCode !== other.photoTypeCode) return false;
+    
+    const catImages = cat.images || [];
+    const otherImages = other.images || [];
+    if (catImages.length !== otherImages.length) return false;
+    
+    return catImages.every((img, j) => {
+      const otherImg = otherImages[j];
       return (
         img.propertyPhotoId === otherImg?.propertyPhotoId &&
         img.src === otherImg?.src &&
