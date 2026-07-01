@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-
 import { AddButton, Tabs } from "@/components/common";
 import { SearchInput } from "@/components/common/SearchInput";
-
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules";
 
 type TabKey = "tap-status" | "tap-type" | "tap-size" | "water-rate";
 
@@ -30,8 +29,6 @@ export function WaterConnectionToolbar() {
   const currentSearchTerm = searchParams.get("q") ?? "";
   const [search, setSearch] = useState<string>(currentSearchTerm);
 
-
-  // Keep refs updated after render so the timer callback always has latest values
   const pathnameRef = useRef(pathname);
   const searchParamsRef = useRef(searchParams);
   const currentSearchTermRef = useRef(currentSearchTerm);
@@ -42,10 +39,8 @@ export function WaterConnectionToolbar() {
     currentSearchTermRef.current = currentSearchTerm;
   }, [pathname, searchParams, currentSearchTerm]);
 
-  // Sync the input when the URL q param changes externally
-  // (tab switch, browser back/forward, direct URL change)
-  // Track last value set by effect to avoid repeated setState
   const lastSetByEffect = useRef<string>(currentSearchTerm);
+
   useEffect(() => {
     if (lastSetByEffect.current !== currentSearchTerm) {
       setSearch(currentSearchTerm);
@@ -53,19 +48,20 @@ export function WaterConnectionToolbar() {
     }
   }, [currentSearchTerm]);
 
-  // Debounce: ONLY fires when the user actually types (search state changes)
-  // Refs are used for everything else so those changes don't reset the timer
   useEffect(() => {
     if (search === currentSearchTermRef.current) return;
 
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParamsRef.current.toString());
+
       params.set("page", "1");
+
       if (search.trim()) {
         params.set("q", search.trim());
       } else {
         params.delete("q");
       }
+
       router.push(`${pathnameRef.current}?${params.toString()}`);
     }, 400);
 
@@ -108,8 +104,10 @@ export function WaterConnectionToolbar() {
       <SearchInput
         value={search}
         onChange={(value) => {
-          // Remove all special characters except alphanumerics and spaces
-          const sanitized = value.replace(/[^a-zA-Z0-9 ]/g, "");
+          const sanitized = value
+            .normalize("NFC")
+            .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "");
+
           setSearch(sanitized);
         }}
         placeholder={searchPlaceholder}

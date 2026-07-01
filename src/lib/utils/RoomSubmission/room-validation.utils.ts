@@ -8,9 +8,9 @@ export const validateRoomDetails = (
   const errors: Record<string, string> = {};
   
   // 1. Room Number Validation
-  if (!roomData.roomNo) {
-    errors.roomNo = "roomSubmission.validation.enterRoomNumber";
-  }
+  // if (!roomData.roomNo) {
+  //   errors.roomNo = "roomSubmission.validation.enterRoomNumber";
+  // }
   
   // 2. Capacity Validation
   const requestedCount = parseInt(String(roomData.roomCount || "1")) || 1;
