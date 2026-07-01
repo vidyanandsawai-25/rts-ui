@@ -60,8 +60,8 @@ export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
 // Generic alphanumeric with single spaces: Unicode letters, marks, numbers, and single spaces only.
 // No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed.
 // Must start and end with alphanumeric, single space allowed between words.
-export const ALPHANUMERIC_WITH_SPACES_REGEX = /^[\p{L}\p{M}\p{N}]+(\s[\p{L}\p{M}\p{N}]+)*$/u;
-export const ALPHANUMERIC_WITH_SPACES_SANITIZE = /[^\p{L}\p{M}\p{N}\s]/gu;
+export const ALPHANUMERIC_WITH_SPACES_REGEX =/^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
+export const ALPHANUMERIC_WITH_SPACES_SANITIZE =/[^\p{L}\p{M}\p{N}.\s]/gu;
 
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
