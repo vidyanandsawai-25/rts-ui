@@ -84,18 +84,30 @@ function PropertyMediaPanel({
   let cdBeforeLabel = t('media.beforeCustomLabel') || 'Before (Old)';
   let cdAfterLabel = t('media.afterCustomLabel') || 'After (New)';
 
-  // Fallback to real Wayback satellite tiles if no custom uploads are present in the catalog
-  if (!cdBeforeImg && waybackReleases.length > 0) {
+  // Always pre-calculate fallback Wayback satellite tile URLs
+  let fallbackBeforeUrl = '';
+  let fallbackAfterUrl = '';
+  if (waybackReleases.length > 0) {
     const activeCoords = coords || getDefaultCoordinates();
     const tile = latLngToTile(activeCoords.lat, activeCoords.lng, 17);
     const beforeRelease = waybackReleases[0];
     const afterRelease = waybackReleases[waybackReleases.length - 1];
 
     if (beforeRelease && afterRelease) {
-      cdBeforeImg = WAYBACK_STATIC_TILE_URL(beforeRelease.releaseId, tile.x, tile.y, tile.z);
-      cdAfterImg = WAYBACK_STATIC_TILE_URL(afterRelease.releaseId, tile.x, tile.y, tile.z);
-      cdBeforeLabel = `Before (${beforeRelease.year})`;
-      cdAfterLabel = `After (${afterRelease.year})`;
+      fallbackBeforeUrl = WAYBACK_STATIC_TILE_URL(beforeRelease.releaseId, tile.x, tile.y, tile.z);
+      fallbackAfterUrl = WAYBACK_STATIC_TILE_URL(afterRelease.releaseId, tile.x, tile.y, tile.z);
+
+      const hasBeforePhoto = cdCategory?.images?.[0]?.hasPhoto;
+      const hasAfterPhoto = cdCategory?.images?.[1]?.hasPhoto;
+
+      if (!cdBeforeImg || !hasBeforePhoto) {
+        cdBeforeImg = fallbackBeforeUrl;
+        cdBeforeLabel = `Before (${beforeRelease.year})`;
+      }
+      if (!cdAfterImg || !hasAfterPhoto) {
+        cdAfterImg = fallbackAfterUrl;
+        cdAfterLabel = `After (${afterRelease.year})`;
+      }
     }
   }
 
@@ -135,6 +147,8 @@ function PropertyMediaPanel({
         title={hoverPreview?.title ?? ''}
         beforeLabel={hoverPreview?.beforeLabel}
         afterLabel={hoverPreview?.afterLabel}
+        fallbackSrc={hoverPreview?.fallbackSrc}
+        fallbackSrc2={hoverPreview?.fallbackSrc2}
         visible={hoverPreview !== null}
         onMouseEnter={cancelImageLeave}
         onMouseLeave={handleImageLeave}
@@ -256,13 +270,17 @@ function PropertyMediaPanel({
           afterImageSrc={cdAfterImg}
           beforeLabel={cdBeforeLabel}
           afterLabel={cdAfterLabel}
+          fallbackBeforeSrc={fallbackBeforeUrl}
+          fallbackAfterSrc={fallbackAfterUrl}
           onMouseEnter={() => {
             handleImageHover(
               cdBeforeImg,
               t('media.changeDetection') || 'Change Detection',
               cdAfterImg,
               cdBeforeLabel,
-              cdAfterLabel
+              cdAfterLabel,
+              fallbackBeforeUrl,
+              fallbackAfterUrl
             );
           }}
           onMouseLeave={handleImageLeave}

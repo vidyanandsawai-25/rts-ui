@@ -12,6 +12,8 @@ interface ImageHoverPreviewProps {
   onMouseLeave?: () => void;
   beforeLabel?: string;
   afterLabel?: string;
+  fallbackSrc?: string;
+  fallbackSrc2?: string;
 }
 
 /**
@@ -27,6 +29,8 @@ export function ImageHoverPreview({
   onMouseLeave,
   beforeLabel,
   afterLabel,
+  fallbackSrc,
+  fallbackSrc2,
 }: ImageHoverPreviewProps): React.ReactElement | null {
   const [zoomScale, setZoomScale] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -146,6 +150,7 @@ export function ImageHoverPreview({
               <div className="relative h-full w-full overflow-hidden border-r border-slate-200 bg-slate-900">
                 <ImageWithFallback
                   src={src}
+                  fallbackSrc={fallbackSrc}
                   alt={`${beforeLabel || 'Before'} Satellite View`}
                   className="w-full h-full object-cover"
                   width={480}
@@ -162,6 +167,7 @@ export function ImageHoverPreview({
               <div className="relative h-full w-full overflow-hidden bg-slate-900">
                 <ImageWithFallback
                   src={src2}
+                  fallbackSrc={fallbackSrc2}
                   alt={`${afterLabel || 'After'} Satellite View`}
                   className="w-full h-full object-cover"
                   width={480}
@@ -177,8 +183,9 @@ export function ImageHoverPreview({
           ) : (
             <ImageWithFallback
               src={src}
+              fallbackSrc={fallbackSrc}
               alt={title}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               width={960}
               height={1200}
               priority

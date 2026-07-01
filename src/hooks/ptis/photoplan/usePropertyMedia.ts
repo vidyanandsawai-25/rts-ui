@@ -56,6 +56,8 @@ export function usePropertyMedia({
     title: string;
     beforeLabel?: string;
     afterLabel?: string;
+    fallbackSrc?: string;
+    fallbackSrc2?: string;
   } | null>(null);
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
@@ -150,12 +152,20 @@ export function usePropertyMedia({
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleImageHover = useCallback(
-    (src: string, title: string, src2?: string, beforeLabel?: string, afterLabel?: string) => {
+    (
+      src: string,
+      title: string,
+      src2?: string,
+      beforeLabel?: string,
+      afterLabel?: string,
+      fallbackSrc?: string,
+      fallbackSrc2?: string
+    ) => {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
         hoverTimeoutRef.current = null;
       }
-      setHoverPreview({ src, src2, title, beforeLabel, afterLabel });
+      setHoverPreview({ src, src2, title, beforeLabel, afterLabel, fallbackSrc, fallbackSrc2 });
     },
     []
   );
