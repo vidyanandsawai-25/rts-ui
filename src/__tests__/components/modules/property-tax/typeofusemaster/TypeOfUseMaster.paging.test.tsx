@@ -42,9 +42,9 @@ const mockMessages = {
   typeofusemaster: {
     title: "Type of Use Master",
     subtitle: "Use Group → Type → Sub-Type",
-    group: { title: "Use Groups", add: "Add Use Group" },
+    group: { title: "Use Groups", add: "Add Use Group", allGroups: "All Groups" },
     type: { title: "Types of Use", add: "Add Type of Use", noTypes: "No types found for selected group.", searchPlaceholder: "Search types..." },
-    subtype: { title: "Sub-Types of Use", add: "Add Sub-Type of Use", searchPlaceholder: "Search sub-types..." },
+    subtype: { title: "Sub-Types of Use", add: "Add Sub-Type of Use", searchPlaceholder: "Search sub-types...", fields: { status: "Status" } },
     table: { columns: { serial: "#", subTypeName: "Sub-Type Name", searchSequence: "Search Sequence", status: "Status", actions: "Actions" }, showing: "Showing", to: "to", of: "of", records: "records" },
     status: { active: "Active", inactive: "Inactive" },
     buttons: { add: "Add", edit: "Edit", delete: "Delete" },

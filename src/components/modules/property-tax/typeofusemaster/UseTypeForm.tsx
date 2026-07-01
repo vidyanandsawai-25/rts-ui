@@ -275,7 +275,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
             <DescriptionInput
               value={formData.description || ""}
               onChange={(value) => {
-                const cleaned = sanitizeDescription(value, 100);
+                const cleaned = sanitizeDescription(value, 80);
                 setFormData((p) => ({ ...p, description: cleaned }));
                 if (submittedOnce) clearFieldError("description");
               }}
