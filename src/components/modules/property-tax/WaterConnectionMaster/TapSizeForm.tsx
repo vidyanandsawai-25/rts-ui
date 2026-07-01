@@ -81,12 +81,16 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const showError = (field: keyof TapSizeFormModel) =>
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
-  const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
-    if ((field === "sizeName" || field === "unit") && typeof value === "string") {
-      value = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trim();
-    }
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+   const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
+   if ((field === "sizeName" || field === "unit") && typeof value === "string") {
+     value = value
+       .normalize("NFC")
+       .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+       .replace(/\s+/g, " ")
+       .trim();
+   }
+   setFormData((prev) => ({ ...prev, [field]: value }));
+ };
 
   const handleBlur = (field: keyof TapSizeFormModel) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
