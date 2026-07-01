@@ -45,9 +45,11 @@ import type { RoomAPIResponse } from '@/types/room-details.types';
 import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
 import { RoomWiseSubmission } from './roomSubmission/RoomWiseSubmission';
 import { ApartmentTaxDetailsTable } from './ApartmentTaxDetailsTable';
-import { FloorQCEditDrawer } from './FloorQCEditDrawer';
+import { PropertyPhotoViewer } from './PropertyPhotoViewer';
+import { PropertyPhotoToggle } from './PropertyPhotoToggle';
 import { limitSingleAtEmail, limitTwoDigitNumber } from '@/lib/utils/validation-rules';
 import { capitalizeEachWord } from '@/lib/utils/input-sanitization';
+import { FloorQCEditDrawer } from './FloorQCEditDrawer';
 
 interface ResidentialEditScreenProps {
   open: boolean;
@@ -112,6 +114,9 @@ const ResidentialEditScreen = ({
     floorData: hookFloorData,
     refetchFloorQC: hookRefetchFloorQC,
     handleOpenRoomSubmission: hookHandleOpenRoomSubmission,
+    photoViewerOpen,
+    handleOpenPhotoViewer: hookHandleOpenPhotoViewer,
+    handleClosePhotoViewer: hookHandleClosePhotoViewer,
   } = hook;
 
   // State for client-side fetched room data
@@ -646,167 +651,181 @@ const ResidentialEditScreen = ({
         {isDrawerLoading ? (
           <LoadingPage />
         ) : (
-          <div className="p-3 space-y-3">
-            {/* Basic Information Section */}
-            <div className="border border-blue-200 rounded-lg overflow-hidden shadow-sm">
-              <button
-                type="button"
-                onClick={() => hook.setIsBasicInfoOpen(!hook.isBasicInfoOpen)}
-                className="w-full bg-blue-600 text-gray-100 px-3 py-2 flex items-center justify-between hover:bg-blue-500 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  <span className="font-semibold text-sm">{t('drawer.basicInformation')}</span>
+          <div className="p-3 space-y-3 h-full">
+            <div
+              className={`grid h-full items-start transition-all duration-300 ${
+                photoViewerOpen
+                  ? 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_216px] gap-3'
+                  : 'grid-cols-1'
+              }`}
+            >
+              <div className="space-y-3 min-w-0">
+                {/* Basic Information Section */}
+                <div className="border border-blue-200 rounded-lg overflow-hidden shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => hook.setIsBasicInfoOpen(!hook.isBasicInfoOpen)}
+                    className="w-full bg-blue-600 text-gray-100 px-3 py-2 flex items-center justify-between hover:bg-blue-500 transition"
+                  >
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      <span className="font-semibold text-sm">{t('drawer.basicInformation')}</span>
+                    </div>
+                    {hook.isBasicInfoOpen ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+                  {hook.isBasicInfoOpen && (
+                    <div className="p-3 bg-white space-y-2">
+                      <div className="grid grid-cols-4 gap-2">
+                        <EditableInput
+                          label={t('basicInfo.fields.ownerName.label')}
+                          value={hook.formData.ownerName}
+                          onChange={(v) => hook.updateFormField('ownerName', capitalizeEachWord(v))}
+                          required
+                          error={hook.formErrors.ownerName}
+                          onBlur={() => hook.handleFieldBlur('ownerName')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.occupierName.label')}
+                          value={hook.formData.occupierName}
+                          onChange={(v) =>
+                            hook.updateFormField('occupierName', capitalizeEachWord(v))
+                          }
+                          required
+                          error={hook.formErrors.occupierName}
+                          onBlur={() => hook.handleFieldBlur('occupierName')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.renterName.label')}
+                          value={hook.formData.renterName}
+                          onChange={(v) =>
+                            hook.updateFormField('renterName', capitalizeEachWord(v))
+                          }
+                          error={hook.formErrors.renterName}
+                          onBlur={() => hook.handleFieldBlur('renterName')}
+                        />
+                        <EditableSelect
+                          label={t('basicInfo.fields.propertyDescription.label')}
+                          value={hook.formData.propertyTypeId}
+                          onChange={(v) => {
+                            hook.updateFormField('propertyTypeId', v);
+                            const s = hook.propertyTypeOptions.find((o) => o.value === v);
+                            hook.updateFormField('propertyDescription', s?.label || '');
+                          }}
+                          options={hook.propertyTypeOptions}
+                          isLoading={hook.isLoadingPropertyTypes}
+                        />
+                      </div>
+                      <div className="grid grid-cols-7 gap-2">
+                        <EditableInput
+                          label={t('basicInfo.fields.bhk.label')}
+                          value={hook.formData.bhk}
+                          onChange={(v) => hook.updateFormField('bhk', limitTwoDigitNumber(v))}
+                          error={hook.formErrors.bhk}
+                          onBlur={() => hook.handleFieldBlur('bhk')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.mobileNo.label')}
+                          value={hook.formData.mobileNo}
+                          onChange={(v) => hook.updateFormField('mobileNo', v)}
+                          error={hook.formErrors.mobileNo}
+                          onBlur={() => hook.handleFieldBlur('mobileNo')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.emailId.label')}
+                          value={hook.formData.emailId}
+                          type="text"
+                          onChange={(v) => hook.updateFormField('emailId', limitSingleAtEmail(v))}
+                          error={hook.formErrors.emailId}
+                          onBlur={() => hook.handleFieldBlur('emailId')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.flatOrShopName.label')}
+                          value={hook.formData.flatOrShopName}
+                          onChange={(v) =>
+                            hook.updateFormField('flatOrShopName', capitalizeEachWord(v))
+                          }
+                          error={hook.formErrors.flatOrShopName}
+                          onBlur={() => hook.handleFieldBlur('flatOrShopName')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.wingName.label')}
+                          value={hook.formData.wingName}
+                          onChange={(v) => hook.updateFormField('wingName', capitalizeEachWord(v))}
+                          error={hook.formErrors.wingName}
+                          onBlur={() => hook.handleFieldBlur('wingName')}
+                        />
+                        <EditableInput
+                          label={t('basicInfo.fields.flatOrShopNo.label')}
+                          value={hook.formData.flatOrShopNo}
+                          onChange={(v) => hook.updateFormField('flatOrShopNo', v)}
+                          required
+                          error={hook.formErrors.flatOrShopNo}
+                          onBlur={() => hook.handleFieldBlur('flatOrShopNo')}
+                        />
+                        <EditableInputWithRefresh
+                          label={t('basicInfo.fields.oldPropertyNo.label')}
+                          value={hook.formData.oldPropertyNo}
+                          onChange={(v) => hook.updateFormField('oldPropertyNo', v)}
+                          onRefresh={handleOldPropertyRefresh}
+                          error={hook.formErrors.oldPropertyNo}
+                          onBlur={() => hook.handleFieldBlur('oldPropertyNo')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-7 gap-2">
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.remark.label')}
+                          value={hook.formData.remark}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldRV.label')}
+                          value={hook.formData.oldRV}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.newRV.label')}
+                          value={hook.formData.newRV}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldTax.label')}
+                          value={hook.formData.oldTax}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.newTax.label')}
+                          value={hook.formData.newTax}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldArea.label')}
+                          value={hook.formData.oldArea}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.newArea.label')}
+                          value={hook.formData.newArea}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldUseType.label')}
+                          value={hook.formData.oldUseType}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldConstructionType.label')}
+                          value={hook.formData.oldConstructionType}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldCSN.label')}
+                          value={hook.formData.oldCSN}
+                        />
+                        <ReadOnlyInput
+                          label={t('basicInfo.fields.oldConstructionYear.label')}
+                          value={hook.formData.oldConstructionYear}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {hook.isBasicInfoOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-              {hook.isBasicInfoOpen && (
-                <div className="p-3 bg-white space-y-2">
-                  <div className="grid grid-cols-4 gap-2">
-                    <EditableInput
-                      label={t('basicInfo.fields.ownerName.label')}
-                      value={hook.formData.ownerName}
-                      onChange={(v) => hook.updateFormField('ownerName', capitalizeEachWord(v))}
-                      required
-                      error={hook.formErrors.ownerName}
-                      onBlur={() => hook.handleFieldBlur('ownerName')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.occupierName.label')}
-                      value={hook.formData.occupierName}
-                      onChange={(v) => hook.updateFormField('occupierName', capitalizeEachWord(v))}
-                      required
-                      error={hook.formErrors.occupierName}
-                      onBlur={() => hook.handleFieldBlur('occupierName')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.renterName.label')}
-                      value={hook.formData.renterName}
-                      onChange={(v) => hook.updateFormField('renterName', capitalizeEachWord(v))}
-                      error={hook.formErrors.renterName}
-                      onBlur={() => hook.handleFieldBlur('renterName')}
-                    />
-                    <EditableSelect
-                      label={t('basicInfo.fields.propertyDescription.label')}
-                      value={hook.formData.propertyTypeId}
-                      onChange={(v) => {
-                        hook.updateFormField('propertyTypeId', v);
-                        const s = hook.propertyTypeOptions.find((o) => o.value === v);
-                        hook.updateFormField('propertyDescription', s?.label || '');
-                      }}
-                      options={hook.propertyTypeOptions}
-                      isLoading={hook.isLoadingPropertyTypes}
-                    />
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    <EditableInput
-                      label={t('basicInfo.fields.bhk.label')}
-                      value={hook.formData.bhk}
-                      onChange={(v) => hook.updateFormField('bhk', limitTwoDigitNumber(v))}
-                      error={hook.formErrors.bhk}
-                      onBlur={() => hook.handleFieldBlur('bhk')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.mobileNo.label')}
-                      value={hook.formData.mobileNo}
-                      onChange={(v) => hook.updateFormField('mobileNo', v)}
-                      error={hook.formErrors.mobileNo}
-                      onBlur={() => hook.handleFieldBlur('mobileNo')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.emailId.label')}
-                      value={hook.formData.emailId}
-                      type="text"
-                      onChange={(v) => hook.updateFormField('emailId', limitSingleAtEmail(v))}
-                      error={hook.formErrors.emailId}
-                      onBlur={() => hook.handleFieldBlur('emailId')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.flatOrShopName.label')}
-                      value={hook.formData.flatOrShopName}
-                      onChange={(v) => hook.updateFormField('flatOrShopName', capitalizeEachWord(v))}
-                      error={hook.formErrors.flatOrShopName}
-                      onBlur={() => hook.handleFieldBlur('flatOrShopName')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.wingName.label')}
-                      value={hook.formData.wingName}
-                      onChange={(v) => hook.updateFormField('wingName', capitalizeEachWord(v))}
-                      error={hook.formErrors.wingName}
-                      onBlur={() => hook.handleFieldBlur('wingName')}
-                    />
-                    <EditableInput
-                      label={t('basicInfo.fields.flatOrShopNo.label')}
-                      value={hook.formData.flatOrShopNo}
-                      onChange={(v) => hook.updateFormField('flatOrShopNo', v)}
-                      required
-                      error={hook.formErrors.flatOrShopNo}
-                      onBlur={() => hook.handleFieldBlur('flatOrShopNo')}
-                    />
-                    <EditableInputWithRefresh
-                      label={t('basicInfo.fields.oldPropertyNo.label')}
-                      value={hook.formData.oldPropertyNo}
-                      onChange={(v) => hook.updateFormField('oldPropertyNo', v)}
-                      onRefresh={handleOldPropertyRefresh}
-                      error={hook.formErrors.oldPropertyNo}
-                      onBlur={() => hook.handleFieldBlur('oldPropertyNo')}
-                    />
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.remark.label')}
-                      value={hook.formData.remark}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldRV.label')}
-                      value={hook.formData.oldRV}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.newRV.label')}
-                      value={hook.formData.newRV}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldTax.label')}
-                      value={hook.formData.oldTax}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.newTax.label')}
-                      value={hook.formData.newTax}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldArea.label')}
-                      value={hook.formData.oldArea}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.newArea.label')}
-                      value={hook.formData.newArea}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldUseType.label')}
-                      value={hook.formData.oldUseType}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldConstructionType.label')}
-                      value={hook.formData.oldConstructionType}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldCSN.label')}
-                      value={hook.formData.oldCSN}
-                    />
-                    <ReadOnlyInput
-                      label={t('basicInfo.fields.oldConstructionYear.label')}
-                      value={hook.formData.oldConstructionYear}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Floor QC Section */}
             <div className="border border-blue-200 rounded-lg overflow-hidden shadow-sm">
@@ -846,7 +865,7 @@ const ResidentialEditScreen = ({
                           data={hook.floorData}
                           loading={hook.isLoadingFloorQCData}
                           tableClassName="text-[10px] w-max min-w-full"
-                          theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20"
+                          theadClassName="bg-[#e8eef4] text-black sticky top-0 z-0"
                           height="sm"
                           onRowClick={(row) => handleOpenRoomSubmissionWithLoading(row as DrawerFloorDataRow)}
                         />
@@ -857,7 +876,7 @@ const ResidentialEditScreen = ({
                           data={hook.floorData}
                           loading={hook.isLoadingFloorQCData}
                           tableClassName="text-[10px] w-max min-w-full"
-                          theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20"
+                          theadClassName="bg-[#e8eef4] text-black sticky top-0 z-0"
                           height="sm"
                           onRowClick={(row) => handleOpenRoomSubmissionWithLoading(row as DrawerFloorDataRow)}
                         />
@@ -869,7 +888,7 @@ const ResidentialEditScreen = ({
                       data={hook.floorData}
                       loading={hook.isLoadingFloorQCData}
                       tableClassName="text-[10px] w-max min-w-full"
-                      theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20"
+                      theadClassName="bg-[#e8eef4] text-black sticky top-0 z-0"
                       height="sm"
                       onRowClick={(row) => handleOpenRoomSubmissionWithLoading(row as DrawerFloorDataRow)}
                     />
@@ -885,9 +904,23 @@ const ResidentialEditScreen = ({
               activeSubTab={subTabProp}
             />
           </div>
+	  
+	    {photoViewerOpen && (
+                <div className="sticky top-3 self-start">
+                  <PropertyPhotoViewer
+                    open={photoViewerOpen}
+                    propertyId={propertyId}
+                    onClose={hookHandleClosePhotoViewer}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </Drawer>
       </div>
+       {/* Floating Property Photo Toggle Button (right side) — only when main drawer is open and viewer is closed */}
+      {open && !photoViewerOpen && <PropertyPhotoToggle onClick={hookHandleOpenPhotoViewer} />}
 
       <FloorQCEditDrawer
         open={floorQCEditDrawerOpen}

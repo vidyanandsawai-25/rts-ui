@@ -16,6 +16,8 @@ export interface DrawerFloorDataRow {
   // Rateable method fields
   rentMY: string;
   rateMY: string;
+  monthlyRate?: string | number | null;
+  yearlyRate?: string | number | null;
   rentalValue: string;
   depreciation: string;
   alv: string;
