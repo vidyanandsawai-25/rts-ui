@@ -45,10 +45,13 @@ function GroupNameLabel({ name }: { name: string }) {
         <span aria-hidden="true">{shortenGroupName(name)}</span>
         <span className="sr-only">{name}</span>
       </span>
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 flex -translate-x-1/2 -translate-y-1 flex-col items-center opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+      <div 
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 flex -translate-x-1/2 -translate-y-1 flex-col items-center opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+      >
         <div className="h-0 w-0 border-x-[5px] border-b-[6px] border-x-transparent border-b-slate-900" />
         <div className="whitespace-nowrap rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium tracking-wide text-white shadow-lg ring-1 ring-white/10">
-          {name}
+          {name}{"\u200B"}
         </div>
       </div>
     </div>
