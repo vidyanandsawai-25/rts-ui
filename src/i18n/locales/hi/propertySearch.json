@@ -192,14 +192,17 @@
     "applyFilterHint": "संपत्तियाँ देखने के लिए ऊपर फ़िल्टर लगाएँ या किसी कार्ड पर क्लिक करें।",
     "searchFailed": "खोज पूरी नहीं हो सकी। ऊपर दिया गया त्रुटि संदेश देखें।",
     "noDataToExport": "निर्यात के लिए कोई डेटा नहीं है",
+    "noUnits": "कोई अपार्टमेंट इकाई नहीं मिली।",
+    "apartmentUnits": "अपार्टमेंट इकाइयां ({count})",
+    "loadingUnits": "अपार्टमेंट इकाइयां लोड हो रही हैं...",
     "format": {
       "currency": "₹{amount}"
     },
     "columns": {
       "upicId": "UPIC आईडी",
       "zoneWard": "ज़ोन और वार्ड",
-      "propertyPartition": "सं. और विभाजन क्र.",
-      "propertyPartitionTooltip": "संपत्ति संख्या और विभाजन संख्या",
+      "propertyPartition": "सं.-विभाजन क्र.",
+      "propertyPartitionTooltip": "संपत्ति-विभाजन संख्या और पुरानी संपत्ति संख्या",
       "ownerOccupier": "धारक और अधिभोगी",
       "zone": "ज़ोन",
       "ward": "वार्ड",

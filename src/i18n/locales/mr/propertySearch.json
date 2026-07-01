@@ -192,14 +192,17 @@
     "applyFilterHint": "मालमत्ता पाहण्यासाठी वरील फिल्टर लावा किंवा कार्डवर क्लिक करा.",
     "searchFailed": "शोध पूर्ण होऊ शकला नाही. वरील त्रुटी संदेश पहा.",
     "noDataToExport": "निर्यात करण्यासाठी डेटा नाही",
+    "noUnits": "कोणतीही अपार्टमेंट युनिट आढळली नाहीत.",
+    "apartmentUnits": "अपार्टमेंट युनिट्स ({count})",
+    "loadingUnits": "अपार्टमेंट युनिट्स लोड होत आहेत...",
     "format": {
       "currency": "₹{amount}"
     },
     "columns": {
       "upicId": "UPIC आयडी",
       "zoneWard": "झोन आणि वॉर्ड",
-      "propertyPartition": "म. आणि विभाजन क्र.",
-      "propertyPartitionTooltip": "मालमत्ता क्रमांक आणि विभाजन क्रमांक",
+      "propertyPartition": "म.-विभाजन क्र.",
+      "propertyPartitionTooltip": "मालमत्ता-विभाजन क्रमांक आणि जुना मालमत्ता क्रमांक",
       "ownerOccupier": "धारक आणि रहिवासी",
       "zone": "झोन",
       "ward": "वॉर्ड",

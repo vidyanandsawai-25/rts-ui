@@ -30,6 +30,7 @@ import {
   fetchZones,
   fetchMainCards,
   fetchWorkflowCards,
+  fetchApartmentUnitList,
 } from "@/lib/api/property-search";
 import { resolveSearchErrorMessage } from "@/lib/api/property-search/resolve-search-error-message";
 import { hasTabSearchInput } from "@/components/modules/property-tax/search-property/search-field-groups";
@@ -321,5 +322,19 @@ export async function listAllWardsAction(): Promise<WardApiResponse[]> {
     return allWards.flat();
   } catch {
     return [];
+  }
+}
+
+export async function fetchApartmentUnitListAction(
+  propertyId: number
+): Promise<{ items: SearchResult[] | null; error: string | null }> {
+  try {
+    const items = await fetchApartmentUnitList(propertyId);
+    return { items, error: null };
+  } catch (err) {
+    return {
+      items: null,
+      error: err instanceof Error ? err.message : "Failed to fetch apartment unit list",
+    };
   }
 }

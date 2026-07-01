@@ -9,6 +9,7 @@ import {
   fetchDiscountDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
+  fetchTabHeaderInfoAction,
 } from './actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
@@ -75,5 +76,6 @@ export async function fetchPropertyDetailsConcurrently(
     valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
     fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
     propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
+    propertyId ? fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null),
   ]);
 }

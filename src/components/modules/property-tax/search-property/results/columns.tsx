@@ -84,23 +84,28 @@ function PropertyNoPartitionCell({ row, t }: { row: SearchResult; t: Translator 
   const oldProp = row.oldPropertyNo?.trim() || "";
 
   const primary = partNo ? `${propNo}-${partNo}` : propNo;
-  const tooltipText = oldProp ? `${primary} (${t("columns.oldPropertyNoShort")}: ${oldProp})` : primary;
 
   return (
-    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-center items-center justify-center w-full" title={tooltipText}>
+    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-center items-center justify-center w-full">
       {primary ? (
         <CopyCell value={primary} label={t("columns.propertyNo")} />
       ) : (
         <span className="text-xs text-gray-400">-</span>
       )}
-      <span className="text-xs text-gray-500">
-        {oldProp ? `${t("columns.oldPropertyNoShort")}: ${oldProp}` : "-"}
-      </span>
+      {oldProp ? (
+        <Tooltip content={oldProp} placement="top">
+          <span className="text-xs font-medium text-slate-700 cursor-help border-b border-dashed border-slate-400 max-w-full truncate block px-1">
+            {oldProp}
+          </span>
+        </Tooltip>
+      ) : (
+        <span className="text-xs text-gray-400">-</span>
+      )}
     </div>
   );
 }
 
-function OwnerOccupierCell({ row }: { row: SearchResult }) {
+export function OwnerOccupierCell({ row }: { row: SearchResult }) {
   const rawHolder = row.holderName?.trim() || "";
   const isPlaceholderHolder = rawHolder.toLowerCase() === "the holder";
   const holder = isPlaceholderHolder ? "" : rawHolder;
@@ -202,7 +207,12 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "propertyPartition",
-        label: t("columns.propertyPartition"),
+        label: (
+          <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5">
+            <span className="block">{t("columns.propertyPartition")}</span>
+            <span className="block">{t("columns.oldPropertyNoShort")}</span>
+          </div>
+        ),
         tooltip: t("columns.propertyPartitionTooltip"),
         align: "center",
         render: (_, row) => <PropertyNoPartitionCell row={row} t={t} />,
@@ -212,8 +222,9 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "category",
-        label: t("columns.categoryShort"),
+        label: t("columns.category"),
         tooltip: t("columns.category"),
+        align: "center",
       },
       COLUMN_WIDTHS.category
     ),
@@ -222,6 +233,7 @@ export function buildPropertySearchColumns(
         key: "societyName",
         label: t("columns.societyNameShort"),
         tooltip: t("columns.societyName"),
+        align: "center",
       },
       COLUMN_WIDTHS.societyName
     ),
@@ -230,6 +242,7 @@ export function buildPropertySearchColumns(
         key: "description",
         label: t("columns.descriptionShort"),
         tooltip: t("columns.description"),
+        align: "center",
       },
       COLUMN_WIDTHS.description
     ),

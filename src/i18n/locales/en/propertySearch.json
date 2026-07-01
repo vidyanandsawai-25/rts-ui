@@ -192,14 +192,17 @@
     "applyFilterHint": "Apply a filter above or click a stat card to view properties.",
     "searchFailed": "Search could not be completed. See the error message above.",
     "noDataToExport": "No data to export",
+    "noUnits": "No apartment units found.",
+    "apartmentUnits": "Apartment Units ({count})",
+    "loadingUnits": "Loading apartment units...",
     "format": {
       "currency": "₹{amount}"
     },
     "columns": {
       "upicId": "UPIC ID",
       "zoneWard": "Zone & Ward",
-      "propertyPartition": "PROP & PART NO",
-      "propertyPartitionTooltip": "Property Number & Partition Number",
+      "propertyPartition": "PROP-PART NO",
+      "propertyPartitionTooltip": "Property-Partition Number & Old Property Number",
       "ownerOccupier": "OWNER & OCCUPIER",
       "zone": "Zone",
       "ward": "Ward",
