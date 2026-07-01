@@ -18,7 +18,7 @@
     "assessmentYear": "मूल्यांकन वर्ष",
     "asstYear": "मू. वर्ष",
     "constructionYear": "निर्माण वर्ष",
-    "OldConstructionYear":"पुराना निर्माण वर्ष",
+    "OldConstructionYear": "पुराना निर्माण वर्ष",
     "surveyConstructionYear": "निर्माण वर्ष",
     "conYear": "नि. वर्ष",
     "constructionType": "निर्माण प्रकार",
@@ -51,7 +51,8 @@
     "totalTax": "कुल कर",
     "mobileNo": "मोबाइल नं",
     "emailId": "ईमेल आईडी",
-    "ocDate": "ओसी दिनांक"
+    "ocDate": "ओसी दिनांक",
+    "kyc": "केवाईसी"
   },
   "taxDetails": {
     "title": "संपत्ति कर विवरण सारांश",
@@ -126,6 +127,11 @@
     "floorQC": "फ़्लोर QC",
     "roomWiseSubmission": "कक्षवार प्रविष्टि",
     "loadingRoomData": "कक्ष डेटा लोड हो रहा है...",
+    "viewImage": "प्रतिकारन",
+    "propertyPhotos": "संपत्ति फ़ाइल",
+    "loadingPhotos": "प्रतिकारन लोड हो रहा है...",
+    "noPhotos": "प्रतिकारन नहीं",
+    "photoLoadError": "प्रतिकारन लोड करने में अपना लाभ नहीं",
     "tabs": {
       "rateable": "करयोग्य मूल्य",
       "capital": "पूंजी मूल्य"
@@ -138,7 +144,7 @@
   "tooltips": {
     "srNo": "क्रम संख्या",
     "propertyNo": "संपत्ति नंबर",
-    "oldPropertyNo": "पुराना संपत्ति नंबर", 
+    "oldPropertyNo": "पुराना संपत्ति नंबर",
     "wing": "विंग नाम",
     "flatOrShopNo": "फ्लैट/दुकान नंबर",
     "ownerName": "मालिक का नाम",
@@ -152,7 +158,7 @@
     "apartmentType": "अपार्टमेंट प्रकार",
     "oldRV": "पुराना आरवी",
     "newRV": "नया आरवी",
-  "oldConstArea": "पुराना निर्माण क्षेत्र",
+    "oldConstArea": "पुराना निर्माण क्षेत्र",
     "totalTax": "कुल कर",
     "flatOrShopName": "फ्लैट/दुकान का नाम",
     "renterName": "किराएदार का नाम",
@@ -165,16 +171,19 @@
     "mobileNo": "मोबाइल नंबर",
     "emailId": "ईमेल आईडी",
     "bhk": "BHK",
-  "rentMonthly": "मासिक किराया",
-  "propertyTypeName": "संपत्ति प्रकार का विवरण",
-  "oldTotalTax": "पुराना कुल कर",
-  "newTotalTax": "नया कुल कर",
-  "newTaxTotalCV": "नया कर कुल (CV)",
-  "newTaxTotalRV": "नया कर कुल (RV)",
-  "totalTaxCV": "कुल कर (CV)",
-  "rateableValue": "करयोग्य मूल्य",
-  "capitalValue": "पूंजी मूल्य",
-  "cv": "पूंजी मूल्य"
+    "rentMonthly": "मासिक किराया",
+    "propertyTypeName": "संपत्ति प्रकार का विवरण",
+    "oldTotalTax": "पुराना कुल कर",
+    "newTotalTax": "नया कुल कर",
+    "newTaxTotalCV": "नया कर कुल (CV)",
+    "newTaxTotalRV": "नया कर कुल (RV)",
+    "totalTaxCV": "कुल कर (CV)",
+    "rateableValue": "करयोग्य मूल्य",
+    "capitalValue": "पूंजी मूल्य",
+    "cv": "पूंजी मूल्य",
+    "kyc": "केवाईसी",
+    "viewKycDetails": "केवाईसी विवरण देखें",
+    "hideKycDetails": "केवाईसी विवरण छुपाएं"
   },
   "pageTitle": "संपत्ति विवरण संपादित करें",
   "badges": {
@@ -318,7 +327,7 @@
       "useFactor": "उपयोग फैक्टर",
       "capitalValue": "पूंजी मूल्य"
     },
-     "toolTipFloorQC": {
+    "toolTipFloorQC": {
       "tooltips": {
         "floor": "मंजिल",
         "conYear": "निर्माण वर्ष",
