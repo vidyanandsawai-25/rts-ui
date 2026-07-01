@@ -1,14 +1,9 @@
-import { useState } from 'react';
-import type { UseGroup } from '@/types/typeOfUse.types';
-
-function getGroupApiId(g: UseGroup): string {
-  return String(g.typeOfUseGroupId);
-}
+import { useState, useEffect, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface UseTypeSearchParams {
   typeSearchFromServer?: string;
-  selectedGroupId: number;
-  allGroups: UseGroup[];
+  selectedGroupId: string | number;
   pushUrl: (params: {
     groupId?: string;
     typeSearch?: string;
@@ -21,24 +16,37 @@ interface UseTypeSearchParams {
 export function useTypeSearch({
   typeSearchFromServer,
   selectedGroupId,
-  allGroups,
   pushUrl,
 }: UseTypeSearchParams) {
   const [typeSearch, setTypeSearch] = useState(typeSearchFromServer ?? "");
+  const debouncedSearch = useDebounce(typeSearch, 400);
 
-  const onTypeSearchChange = (val: string) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
+  const prevServerSearchRef = useRef(typeSearchFromServer);
+  // Sync local state when the server-provided search value changes externally
+  useEffect(() => {
+    if (prevServerSearchRef.current !== typeSearchFromServer) {
+      prevServerSearchRef.current = typeSearchFromServer;
+      setTypeSearch(typeSearchFromServer ?? "");
+    }
+  }, [typeSearchFromServer]);
 
-    setTypeSearch(val);
+  useEffect(() => {
+    // Only push if the debounced value differs from the server search value
+    if (debouncedSearch === (typeSearchFromServer ?? "")) return;
+
+    const currentGroupApiId = String(selectedGroupId);
 
     pushUrl({
       groupId: currentGroupApiId,
-      typeSearch: val,
+      typeSearch: debouncedSearch,
       typeId: undefined,
       pn: 1,
       typePn: 1,
     });
+  }, [debouncedSearch, selectedGroupId, pushUrl, typeSearchFromServer]);
+
+  const onTypeSearchChange = (val: string) => {
+    setTypeSearch(val);
   };
 
   return {
