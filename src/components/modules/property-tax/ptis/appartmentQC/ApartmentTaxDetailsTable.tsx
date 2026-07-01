@@ -94,10 +94,8 @@ export function ApartmentTaxDetailsTable({
         loadingText={tPtis('apartmentTabs.loading')}
         emptyText={t('taxDetails.noData')}
         headerExtra={
-          <div className="flex gap-2 items-center">
-            <div className="text-sm font-semibold text-[#1E3A8A]">
-              {headerTitle}
-            </div>
+          <div className="flex gap-2 items-center z-0">
+            <div className="text-sm font-semibold text-[#1E3A8A]">{headerTitle}</div>
             <span className="text-[#6B7280]">-</span>
             <div className="text-sm text-[#6B7280]">
               {headerSubtitle}
@@ -107,7 +105,7 @@ export function ApartmentTaxDetailsTable({
         getRowKey={(row) => row.id}
         rowClassName={getRowClassName}
         height="xs"
-        theadClassName="bg-[#d9e3ec]"
+        theadClassName="bg-[#d9e3ec] z-0"
         containerClassName="shadow-sm"
         paginationConfig={{ enabled: false }}
       />
