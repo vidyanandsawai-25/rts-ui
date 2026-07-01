@@ -24,8 +24,8 @@ import {
   updateTapSizeAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import {
-  TAP_SIZE_REGEX,
-  TAP_SIZE_SANITIZE,
+  ALPHANUMERIC_WITH_SPACES_REGEX,
+  ALPHANUMERIC_WITH_SPACES_SANITIZE,
 } from "@/lib/utils/validation-rules";
 
 const MAX_NAME = 5;
@@ -61,13 +61,13 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
       const errs: Partial<Record<keyof TapSizeFormModel, string>> = {};
       if (!data.sizeName.trim())
         errs.sizeName = t("validation.sizeNameRequired");
-      else if (!TAP_SIZE_REGEX.test(data.sizeName.trim()))
+      else if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(data.sizeName.trim()))
         errs.sizeName = t("validation.sizeNameInvalid");
       else if (data.sizeName.length > MAX_NAME)
         errs.sizeName = t("validation.sizeNameLength", { count: MAX_NAME });
       if (!data.unit.trim())
         errs.unit = t("validation.unitRequired");
-      else if (!TAP_SIZE_REGEX.test(data.unit.trim()))
+      else if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(data.unit.trim()))
         errs.unit = t("validation.unitInvalid");
       else if (data.unit.length > MAX_UNIT)
         errs.unit = t("validation.unitLength", { count: MAX_UNIT });
@@ -83,7 +83,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
 
   const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
     if ((field === "sizeName" || field === "unit") && typeof value === "string") {
-      value = value.replace(TAP_SIZE_SANITIZE, "");
+      value = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "");
     }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
