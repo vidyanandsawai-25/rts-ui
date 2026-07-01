@@ -44,7 +44,7 @@ export function TimelapseControls({
     <div className="tl-ctrl flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-950/95 border-b border-slate-900 text-white text-xs select-none backdrop-blur-md">
       {/* Left Section: Playing & Navigation Controls */}
       <div className="flex items-center gap-2">
-        <span className="text-base leading-none">🛰</span>
+        <span className="text-base leading-none" aria-hidden="true">🛰</span>
         <span className="text-[11.5px] font-bold font-sans tracking-wide text-slate-200">
           {t('media.historicalSatellite')}
         </span>

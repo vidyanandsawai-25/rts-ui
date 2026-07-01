@@ -63,19 +63,17 @@ export function useTimelapseState({
     setLng(initialLng ?? defaultCoords.lng);
   }, [initialLat, initialLng]);
 
-  // Auto-advance past failed 2014 release
+  // Auto-advance past failed releases (e.g. missing tiles for certain years)
   useEffect(() => {
     if (waybackReleases.length === 0) return;
     const currentRelease = waybackReleases[activeIdx];
     if (!currentRelease) return;
 
-    if (failedReleases.has(currentRelease.releaseId) && currentRelease.year === 2014) {
-      const index2015 = waybackReleases.findIndex((r) => r.year === 2015);
-      if (index2015 !== -1) {
-        setActiveIdx(index2015);
-      } else if (activeIdx < waybackReleases.length - 1) {
-        setActiveIdx(activeIdx + 1);
-      }
+    if (failedReleases.has(currentRelease.releaseId)) {
+      const nextIdx = waybackReleases.findIndex(
+        (r, i) => i > activeIdx && !failedReleases.has(r.releaseId)
+      );
+      if (nextIdx !== -1) setActiveIdx(nextIdx);
     }
   }, [activeIdx, failedReleases, waybackReleases]);
 
