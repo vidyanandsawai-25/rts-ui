@@ -119,7 +119,7 @@ export function PropertyPhotoToggle({
       onTouchStart={handleTouchStart}
       onClick={handleClick}
       style={{ top: `${topY}px` }}
-      className="hidden lg:flex fixed right-0 z-[111] group items-center gap-2 pl-3.5 pr-2.5 py-2.5 rounded-l-full rounded-r-none border border-r-0 border-[#4b70a6] bg-gradient-to-r from-[#4b70a6] to-[#5a82b8] hover:from-[#3a5d8f] hover:to-[#4b70a6] shadow-md hover:shadow-lg text-white transition-[background,box-shadow] duration-300 ease-in-out cursor-pointer focus:outline-none select-none"
+      className="hidden lg:flex fixed right-0 z-[110] group items-center gap-2 pl-3.5 pr-2.5 py-2.5 rounded-l-full rounded-r-none border border-r-0 border-[#4b70a6] bg-gradient-to-r from-[#4b70a6] to-[#5a82b8] hover:from-[#3a5d8f] hover:to-[#4b70a6] shadow-md hover:shadow-lg text-white transition-[background,box-shadow] duration-300 ease-in-out cursor-pointer focus:outline-none select-none"
       aria-label={label}
     >
       <ImageIcon className="w-5 h-5 shrink-0 text-white group-hover:scale-110 transition-transform duration-200 pointer-events-none" />

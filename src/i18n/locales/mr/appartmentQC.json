@@ -128,6 +128,11 @@
     "floorQC": "फ्लोअर QC",
     "roomWiseSubmission": "खोलीनिहाय सादरीकरण",
     "loadingRoomData": "खोली डेटा लोड होत आहे...",
+    "viewImage": "प्रतिकारन",
+    "propertyPhotos": "संपत्ति फ़ाइल",
+    "loadingPhotos": "प्रतिकारन लोड हो रहा है...",
+    "noPhotos": "प्रतिकारन नहीं",
+    "photoLoadError": "प्रतिकारन लोड करने में अपना लाभ नहीं",
     "tabs": {
       "rateable": "करयोग्य मूल्य",
       "capital": "भांडवली मूल्य"
