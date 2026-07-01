@@ -55,11 +55,11 @@ export const SocietyGeneralFields = ({
 
     const t = useTranslations('quickDataEntry');
 
-    // const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    //     if (e.key === 'Enter') {
-    //         e.preventDefault();
-    //     }
-    // };
+    const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    };
 
     return (
         <>
@@ -79,7 +79,7 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('landOwnerName')}
-                    // onKeyDown={preventEnterSubmit}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={() => {
                         onBlurField();
                         setLandOwnerName(capitalizeEachWordKycSociety(landOwnerName.trim().replace(/\s+/g, ' '), true));
@@ -119,7 +119,7 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('builderName')}
-                    // onKeyDown={preventEnterSubmit}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={() => {
                         onBlurField();
                         setBuilderName(capitalizeEachWordKycSociety(builderName.trim().replace(/\s+/g, ' '), true));
@@ -159,7 +159,7 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('societyName')}
-                    // onKeyDown={preventEnterSubmit}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={() => {
                         onBlurField();
                         setSocietyName(capitalizeEachWordKycSociety(societyName.trim().replace(/\s+/g, ' '), true));
@@ -216,7 +216,7 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('societyEmail')}
-                    // onKeyDown={preventEnterSubmit}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={onBlurField}
                     onChange={(e) => {
                         const value = e.target.value;
@@ -244,16 +244,19 @@ export const SocietyGeneralFields = ({
                         : ''
                         }`}
                     onFocus={() => onFocusField('secretaryName')}
-                    // onKeyDown={preventEnterSubmit}
+                    onKeyDown={preventEnterSubmit}
                     onBlur={() => {
                         onBlurField();
                         setSecretaryName(capitalizeEachWordKycSociety(secretaryName.trim().replace(/\s+/g, ' '), true));
                     }}
                     onChange={(e) => {
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWordKycSociety(sanitized, false);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setSecretaryName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setSecretaryName(finalVal);
                         }
                     }}
                 />

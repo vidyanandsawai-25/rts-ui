@@ -78,10 +78,13 @@ export const SocietyContactFields = ({
                         setManagerName(capitalizeEachWordKycSociety(managerName.trim().replace(/\s+/g, ' '), true));
                     }}
                     onChange={(e) => {
-                        const sanitized = sanitizeName(e.target.value);
-                        const capitalized = capitalizeEachWordKycSociety(sanitized, false);
-                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setManagerName(capitalized);
+                        const val = e.target.value;
+                        const start = e.target.selectionStart ?? val.length;
+                        const isAtEnd = start >= val.length;
+                        const sanitized = sanitizeName(val);
+                        const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                        if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setManagerName(finalVal);
                         }
                     }}
                 />
@@ -111,7 +114,7 @@ export const SocietyContactFields = ({
                             <Input
                                 key={i}
                                 id={i === 0 ? 'secretary-mobile-0' : undefined}
-                                aria-label={`${t('society.secretaryMobile')} digit ${i + 1} of 10`}
+                                aria-label={`${t('society.secretaryMobile')} digit ${i + 1} of ${SOCIETY_VALIDATION_RULES.MOBILE_LENGTH}`}
                                 type="text"
                                 maxLength={1}
                                 inputMode="numeric"
@@ -165,7 +168,7 @@ export const SocietyContactFields = ({
                             <Input
                                 key={i}
                                 id={i === 0 ? 'manager-mobile-0' : undefined}
-                                aria-label={`${t('society.managerMobileNo')} digit ${i + 1} of 10`}
+                                aria-label={`${t('society.managerMobileNo')} digit ${i + 1} of ${SOCIETY_VALIDATION_RULES.MOBILE_LENGTH}`}
                                 type="text"
                                 maxLength={1}
                                 inputMode="numeric"
