@@ -24,6 +24,7 @@ import { fetchPtisPageData } from './ptis-fetch.service';
 import { PtisNavigationProvider } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
 import { getWorkflowStagesAction, getCurrentWorkflowDetailAction } from './workflowStageActions';
 import { PtisInitialData } from '@/types/ptis.types';
+import ReassessmentPage from './reassesment/page';
 
 interface PtisPageProps {
   params: Promise<{ locale: string }>;
@@ -259,6 +260,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                   />
                 ) : null
               }
+              reassessmentSection={<ReassessmentPage />}
             />
           </div>
         </PtisLayoutWrapper>
