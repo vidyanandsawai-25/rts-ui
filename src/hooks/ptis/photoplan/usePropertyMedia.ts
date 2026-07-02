@@ -13,6 +13,8 @@ export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   propertyId?: number;
+  initialLatitude?: number;
+  initialLongitude?: number;
 }
 
 function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
@@ -37,8 +39,14 @@ function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
     return (
       photo.propertyPhotoId === other?.propertyPhotoId &&
       photo.photoTypeId === other?.photoTypeId &&
+      photo.photoTypeCode === other?.photoTypeCode &&
       photo.viewUrl === other?.viewUrl &&
-      photo.displayOrder === other?.displayOrder
+      photo.downloadUrl === other?.downloadUrl &&
+      photo.documentGuid === other?.documentGuid &&
+      photo.displayOrder === other?.displayOrder &&
+      photo.remarks === other?.remarks &&
+      photo.fileName === other?.fileName &&
+      photo.mimeType === other?.mimeType
     );
   });
 }
@@ -47,6 +55,8 @@ export function usePropertyMedia({
   initialPhotoSlots = [],
   initialPhotos = [],
   propertyId,
+  initialLatitude,
+  initialLongitude,
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
@@ -122,18 +132,25 @@ export function usePropertyMedia({
     [categories]
   );
 
+  const hasCoords =
+    typeof initialLatitude === 'number' &&
+    Number.isFinite(initialLatitude) &&
+    typeof initialLongitude === 'number' &&
+    Number.isFinite(initialLongitude);
+
   const gisPhoto = useMemo(() => {
     const photo = gisCategory?.images?.[0];
+    const srcVal = hasCoords ? '/gis_static.png' : '';
     return {
-      src: '/gis_static.png',
-      fullSrc: '/gis_static.png',
+      src: srcVal,
+      fullSrc: srcVal,
       alt: photo?.alt || t('media.satelliteView') || 'Satellite View',
       title: photo?.title || t('media.satelliteView') || 'Satellite View',
       photoTypeId: photo?.photoTypeId || gisCategory?.photoTypeId || 0,
       photoTypeCode: photo?.photoTypeCode || gisCategory?.photoTypeCode || 'GIS',
       propertyPhotoId: photo?.propertyPhotoId,
     };
-  }, [gisCategory, t]);
+  }, [gisCategory, t, hasCoords]);
 
   const photoPlanPhoto = photoPlanCategory?.images[0];
   const propertyPhoto = propertyPhotoCategory?.images[0];

@@ -48,8 +48,14 @@ function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
     return (
       photo.propertyPhotoId === other?.propertyPhotoId &&
       photo.photoTypeId === other?.photoTypeId &&
+      photo.photoTypeCode === other?.photoTypeCode &&
       photo.viewUrl === other?.viewUrl &&
-      photo.displayOrder === other?.displayOrder
+      photo.downloadUrl === other?.downloadUrl &&
+      photo.documentGuid === other?.documentGuid &&
+      photo.displayOrder === other?.displayOrder &&
+      photo.remarks === other?.remarks &&
+      photo.fileName === other?.fileName &&
+      photo.mimeType === other?.mimeType
     );
   });
 }

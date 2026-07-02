@@ -22,6 +22,10 @@ function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
     if (!other) return false;
     if (cat.photoTypeId !== other.photoTypeId) return false;
     if (cat.photoTypeCode !== other.photoTypeCode) return false;
+    if (cat.photoTypeName !== other.photoTypeName) return false;
+    if (cat.photoCount !== other.photoCount) return false;
+    if (cat.hasPhoto !== other.hasPhoto) return false;
+    if (cat.isCustom !== other.isCustom) return false;
     
     const catImages = cat.images || [];
     const otherImages = other.images || [];
@@ -32,7 +36,13 @@ function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
       return (
         img.propertyPhotoId === otherImg?.propertyPhotoId &&
         img.src === otherImg?.src &&
-        img.hasPhoto === otherImg?.hasPhoto
+        img.fullSrc === otherImg?.fullSrc &&
+        img.hasPhoto === otherImg?.hasPhoto &&
+        img.title === otherImg?.title &&
+        img.remarks === otherImg?.remarks &&
+        img.displayOrder === otherImg?.displayOrder &&
+        img.documentGuid === otherImg?.documentGuid &&
+        img.downloadUrl === otherImg?.downloadUrl
       );
     });
   });

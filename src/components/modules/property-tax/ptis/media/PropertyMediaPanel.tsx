@@ -66,7 +66,13 @@ function PropertyMediaPanel({
     fullyLoadedIds,
     setFullyLoadedIds,
     t,
-  } = usePropertyMedia({ initialPhotoSlots, initialPhotos, propertyId });
+  } = usePropertyMedia({
+    initialPhotoSlots,
+    initialPhotos,
+    propertyId,
+    initialLatitude,
+    initialLongitude,
+  });
 
   // Derive coordinates and releases directly from server-side props
   const hasCoords =
@@ -84,11 +90,11 @@ function PropertyMediaPanel({
   let cdBeforeLabel = t('media.beforeCustomLabel') || 'Before (Old)';
   let cdAfterLabel = t('media.afterCustomLabel') || 'After (New)';
 
-  // Always pre-calculate fallback Wayback satellite tile URLs
+  // Always pre-calculate fallback Wayback satellite tile URLs (only if coordinates are present)
   let fallbackBeforeUrl = '';
   let fallbackAfterUrl = '';
-  if (waybackReleases.length > 0) {
-    const activeCoords = coords || getDefaultCoordinates();
+  if (hasCoords && waybackReleases.length > 0) {
+    const activeCoords = coords;
     const tile = latLngToTile(activeCoords.lat, activeCoords.lng, 17);
     const beforeRelease = waybackReleases[0];
     const afterRelease = waybackReleases[waybackReleases.length - 1];
@@ -254,6 +260,7 @@ function PropertyMediaPanel({
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
         <GisMapCard
           image={gisPhoto}
+          hasCoords={hasCoords}
           onClick={() => openDrawer(gisCategory ? categories.indexOf(gisCategory) : 0, 0)}
           onMouseEnter={() =>
             handleImageHover(
@@ -322,8 +329,8 @@ function PropertyMediaPanel({
           propertyId={propertyId}
           fullyLoadedIds={fullyLoadedIds}
           onFullyLoadedIdsChange={setFullyLoadedIds}
-          initialLatitude={coords.lat}
-          initialLongitude={coords.lng}
+          initialLatitude={hasCoords ? initialLatitude : undefined}
+          initialLongitude={hasCoords ? initialLongitude : undefined}
           initialWaybackReleases={waybackReleases}
         />
       )}
