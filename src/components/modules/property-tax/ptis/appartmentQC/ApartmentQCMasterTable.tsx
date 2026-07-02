@@ -327,7 +327,7 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                 groupedData.length === 0 ? (
                   <tr>
                     <td colSpan={columns.length} className="py-10 text-center text-slate-500">
-                      No Data Found
+                      {t('table.noData')}
                     </td>
                   </tr>
                 ) : (
