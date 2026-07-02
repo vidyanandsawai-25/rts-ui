@@ -179,16 +179,22 @@ const AppartmentQCSection = ({
   const convertedData = useMemo(() => transformApartmentData(activePagedData.items || [], activeMainTab), [activePagedData, activeMainTab]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
-    const propertyId = String(row.id || row.propertyDetailsId || '');
-    if (!propertyId) return;
-
-    // Open drawer by updating URL params instead of navigating
-    // Keep the original propertyId and use editPropertyId for the drawer
+    const basePath = pathname.endsWith('/appartmentQC') ? pathname : pathname + '/appartmentQC';
     const params = new URLSearchParams(searchParams.toString());
-    params.set('drawer', 'edit');
-    params.set('editPropertyId', propertyId);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParams, pathname, router]);
+    
+    const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
+    if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
+    
+    params.delete('parentPropertyId');
+    params.delete('parentPropertyNo');
+    
+    params.set('returnTab', 'propertydetails');
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', activeMainTab);
+    params.set('subTab', activeSubTab);
+
+    router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
+  }, [pathname, router, searchParams, activeMainTab, activeSubTab]);
 
   // Drawer state management - fetch data client-side when drawer opens
   const drawerOpen = searchParams.get('drawer') === 'edit';

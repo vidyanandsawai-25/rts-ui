@@ -146,7 +146,7 @@ export const EditableInputWithRefresh = memo(({
           placeholder={placeholder}
           maxLength={maxLength}
           className={cn(
-            "h-7 px-2 pr-8 text-xs",
+            "pr-9",
             error && "border-red-500"
           )}
         />
@@ -155,7 +155,7 @@ export const EditableInputWithRefresh = memo(({
           onClick={handleRefresh}
           disabled={!value || isRefreshing}
           className={cn(
-            "absolute right-1 bottom-0 h-7 w-6 flex items-center justify-center rounded",
+            "absolute right-1 bottom-1 h-[30px] w-8 flex items-center justify-center rounded",
             "hover:bg-gray-100 transition-colors",
             (!value || isRefreshing) && "opacity-40 cursor-not-allowed"
           )}
