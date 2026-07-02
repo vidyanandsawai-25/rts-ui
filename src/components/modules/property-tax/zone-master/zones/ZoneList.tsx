@@ -200,7 +200,9 @@ export default function ZoneList({
 
                             if (!zoneId) return;
 
-                            router.push(`${pathname}/edit/${zoneId}`);
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.set("editZone", String(zoneId));
+                            router.push(`${pathname}?${params.toString()}`);
                           }}
                         />
                         <DeleteButton

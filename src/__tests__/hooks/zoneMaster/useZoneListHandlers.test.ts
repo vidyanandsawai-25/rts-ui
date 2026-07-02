@@ -20,8 +20,9 @@ vi.mock("@/components/common", () => ({
   })),
 }));
 
-vi.mock("@/components/modules/property-tax/zone-master/zones/zoneHandlers", () => ({
-  handleZoneDelete: vi.fn(),
+vi.mock("@/app/[locale]/property-tax/zone-master/actions", () => ({
+  deleteZoneAction: vi.fn(),
+  fetchWardsPagedAction: vi.fn(),
 }));
 
 describe("useZoneListHandlers", () => {
