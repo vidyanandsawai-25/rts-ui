@@ -14,7 +14,6 @@ import {
   normalizeDataEntrySameAsType,
   getDataEntrySameAsType,
   getNumericDataEntrySameAsId,
-  getDataEntrySameAsTypeLabel,
 } from './sameAsUtils';
 
 interface UseDataEntrySameAsProps {
@@ -24,6 +23,14 @@ interface UseDataEntrySameAsProps {
   partitionNo?: string;
   t: (key: string, values?: Record<string, string | number | Date>) => string;
 }
+
+function comparePartitionNo(a: SelectableProperty, b: SelectableProperty): number {
+  return String(a.partitionNo ?? '').localeCompare(String(b.partitionNo ?? ''), undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  });
+}
+
 
 export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t }: UseDataEntrySameAsProps) {
   const router = useRouter();
@@ -114,7 +121,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
       .map(p => {
         const wardOpt = wardOptions.find(o => o.value === String(p.wardNo));
         return { ...p, wardNo: wardOpt ? wardOpt.label : p.wardNo };
-      });
+      })
+      .sort(comparePartitionNo);
   }, [partitionNo, wardOptions]);
 
   const sourcePropertyIds = React.useMemo(() => {
@@ -191,3 +199,5 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     handleClearPropertySelection,
   };
 }
+
+
