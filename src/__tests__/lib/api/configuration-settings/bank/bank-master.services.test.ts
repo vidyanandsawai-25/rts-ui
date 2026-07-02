@@ -134,6 +134,7 @@ describe('deleteBank', () => {
       statusCode: 204,
     });
     await expect(deleteBank('1')).resolves.toBeUndefined();
+    expect(apiClient.delete).toHaveBeenCalledWith('/BankMaster/1/purge');
   });
 
   it('throws ApiError on failure', async () => {
@@ -143,5 +144,6 @@ describe('deleteBank', () => {
       statusCode: 404,
     });
     await expect(deleteBank('1')).rejects.toBeInstanceOf(ApiError);
+    expect(apiClient.delete).toHaveBeenCalledWith('/BankMaster/1/purge');
   });
 });

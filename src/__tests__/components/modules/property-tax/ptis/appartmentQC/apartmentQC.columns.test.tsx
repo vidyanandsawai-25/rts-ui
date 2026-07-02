@@ -19,7 +19,7 @@ describe('apartmentQC.columns', () => {
     it('should return commercial tab columns for rateable sub-tab', () => {
       const columns = getApartmentQCColumns('commercial', 'rateable', t);
       expect(columns.length).toBeGreaterThan(0);
-      expect(columns.some(col => col.key === 'srNo')).toBe(true);
+      expect(columns.some(col => col.key === 'Sr.No')).toBe(true);
       expect(columns.some(col => col.key === 'propertyNo')).toBe(true);
     });
 
@@ -55,16 +55,14 @@ describe('apartmentQC.columns', () => {
       expect(columns.length).toBeGreaterThan(0);
     });
 
-    it('should include srNo column with correct numbering', () => {
+    it('should include serial and records columns for grouped table rows', () => {
       const columns = getApartmentQCColumns('residential', 'rateable', t, 2, 10);
-      const srNoCol = columns.find(col => col.key === 'srNo');
+      const srNoCol = columns.find(col => col.key === 'Sr.No');
+      const recordsCol = columns.find(col => col.key === 'Records');
+
       expect(srNoCol).toBeDefined();
-      if (srNoCol?.render) {
-        const row1 = srNoCol.render(null, {}, 0);
-        const row2 = srNoCol.render(null, {}, 1);
-        expect(row1).toBe(11); // (2-1)*10 +1
-        expect(row2).toBe(12);
-      }
+      expect(srNoCol?.groupRowSpan).toBe(true);
+      expect(recordsCol).toBeDefined();
     });
 
     it('should render multi-record values with tooltip', () => {

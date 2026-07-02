@@ -62,7 +62,7 @@ const AppartmentQCSection = ({
   const isUpdatingFromUrl = useRef(false);
 
   // Column filters
-  const { activeFilters, handleFilterChange } = useColumnFilters({
+  const { activeFilters, handleFilterChange, fetchFilterOptions, isFilterPending } = useColumnFilters({
     wardId,
     propertyNo,
     activeMainTab,
@@ -257,7 +257,7 @@ const AppartmentQCSection = ({
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
       <div className="flex-1 overflow-auto text-gray-900 bg-gray-50/30 p-2 relative min-h-[200px]">
-        {isPending && (
+        {(isPending || isFilterPending) && (
           <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
             <LoadingPage translationNamespace="ptis.loading" />
           </div>
@@ -267,12 +267,13 @@ const AppartmentQCSection = ({
             columns={columns} data={convertedData} title={getTabTitle(activeMainTab, tAqc)} activeTab={activeSubTab}
             searchQuery={searchQuery} onSearchChange={(q) => { isUpdatingFromUrl.current = true; setSearchQuery(q); updateUrl({ searchTerm: q, pageNumber: 1 }); setTimeout(() => { isUpdatingFromUrl.current = false; }, 0); }}
             onRowClick={handleRowClick}
-            loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
+            loading={isPending || isFilterPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
             pageNumber={activePagedData.pageNumber} pageSize={activePagedData.pageSize} totalCount={activePagedData.totalCount} totalPages={activePagedData.totalPages}
             onPageChange={(p) => updateUrl({ pageNumber: p })} onPageSizeChange={(s) => updateUrl({ pageSize: s, pageNumber: 1 })}
             _applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
+            onFetchFilterOptions={fetchFilterOptions}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
