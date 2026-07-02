@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'sonner';
 import * as kycActions from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action';
@@ -278,6 +278,21 @@ describe('useKycForm', () => {
 
       expect(result.current.canSubmit()).toBe(false);
     });
+
+    it('should prevent submission with repeated pincode digits', () => {
+      const { result } = renderHook(() =>
+        useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
+      );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          pinCode: '111111',
+        }));
+      });
+
+      expect(result.current.canSubmit()).toBe(false);
+    });
   });
 
   describe('handleSubmit', () => {
@@ -319,7 +334,7 @@ describe('useKycForm', () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(toast.error).toHaveBeenCalledWith('kyc.validation.pleaseFixErrors');
+      expect(toast.error).toHaveBeenCalledWith('kyc.validation.invalidName');
       expect(mockConfirm).not.toHaveBeenCalled();
     });
 
@@ -327,6 +342,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -339,7 +361,6 @@ describe('useKycForm', () => {
           variant: 'update',
           meta: {
             name: 'John Doe',
-            id: 123,
           },
         })
       );
@@ -355,25 +376,34 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(kycActions.updatePropertyKycAction).toHaveBeenCalledWith(
-        123,
-        expect.objectContaining({
-          propertyId: 123,
-          ownerTypeId: 1,
-          ownerName: 'John Doe',
-          emailId: 'john@example.com',
-          mobileNo: '9876543210',
-          adharCardNo: '223456789012',
-          pinCode: '123456',
-        }),
-        'en'
-      );
+      await waitFor(() => {
+        expect(kycActions.updatePropertyKycAction).toHaveBeenCalledWith(
+          123,
+          expect.objectContaining({
+            propertyId: 123,
+            ownerTypeId: 1,
+            ownerName: 'John Doe',
+            emailId: 'changed@example.com',
+            mobileNo: '9876543210',
+            adharCardNo: '223456789012',
+            pinCode: '123456',
+          }),
+          'en'
+        );
+      });
     });
 
     it('should show success toast and refresh on successful submission', async () => {
@@ -386,14 +416,23 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(toast.success).toHaveBeenCalledWith('KYC updated successfully');
-      expect(mockRouter.refresh).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('KYC updated successfully');
+        expect(mockRouter.refresh).toHaveBeenCalled();
+      });
     });
 
     it('should show error toast on failed submission', async () => {
@@ -406,13 +445,22 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(toast.error).toHaveBeenCalledWith('Update failed');
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Update failed');
+      });
     });
 
     it('should handle JSON error responses', async () => {
@@ -432,13 +480,22 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(toast.error).toHaveBeenCalledWith('Name is required\nInvalid email');
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Name is required\nInvalid email');
+      });
     });
 
     it('should set isUpdating state during submission', async () => {
@@ -452,6 +509,13 @@ describe('useKycForm', () => {
       const { result } = renderHook(() =>
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
@@ -479,20 +543,29 @@ describe('useKycForm', () => {
         )
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(kycActions.updatePropertyKycAction).toHaveBeenCalledWith(
-        123,
-        expect.objectContaining({
-          ownerTypeId: null,
-          ownerType: null,
-        }),
-        'en'
-      );
+      await waitFor(() => {
+        expect(kycActions.updatePropertyKycAction).toHaveBeenCalledWith(
+          123,
+          expect.objectContaining({
+            ownerTypeId: null,
+            ownerType: null,
+          }),
+          'en'
+        );
+      });
     });
   });
 
@@ -529,13 +602,22 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          emailId: 'changed@example.com',
+        }));
+      });
+
       const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>;
 
       await act(async () => {
         await result.current.handleSubmit(mockEvent);
       });
 
-      expect(result.current.isSubmitted).toBe(false);
+      await waitFor(() => {
+        expect(result.current.isSubmitted).toBe(false);
+      });
     });
   });
 });

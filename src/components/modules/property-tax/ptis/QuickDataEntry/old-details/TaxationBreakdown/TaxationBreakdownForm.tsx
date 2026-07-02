@@ -37,10 +37,12 @@ export default function TaxationBreakdownForm({
   } = useTaxationBreakdownForm(initialData, yearOptions);
 
   const transformedYearOptions = useMemo(() => {
-    return (yearOptions || []).map((y) => ({
-      label: String(y.year),
-      value: String(y.id),
-    }));
+    return [...(yearOptions || [])]
+      .sort((a, b) => (b.year || 0) - (a.year || 0))
+      .map((y) => ({
+        label: String(y.year),
+        value: String(y.id),
+      }));
   }, [yearOptions]);
 
   // Check if year is already set (financeYearId and year are available)
@@ -78,11 +80,11 @@ export default function TaxationBreakdownForm({
           </div>
         )}
 
-        {/* 3-column form layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+        {/* 4-column form layout */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-3">
           <div className="relative flex flex-col space-y-1.5 z-[100] group">
             <Label className="text-xs font-semibold text-slate-700 transition-colors group-focus-within:text-blue-600">
-             {t("assessmentYear")} <span className="text-red-500 ml-0.5">*</span>
+              {t("assessmentYear")} <span className="text-red-500 ml-0.5">*</span>
             </Label>
             {isYearLocked ? (
               <Input
@@ -90,6 +92,7 @@ export default function TaxationBreakdownForm({
                 className="h-9 text-sm rounded-lg border-slate-500 bg-slate-50 cursor-not-allowed text-slate-500 font-medium"
                 value={selectedYearDisplay}
                 disabled
+                autoFocus
                 readOnly
               />
             ) : (
@@ -97,11 +100,11 @@ export default function TaxationBreakdownForm({
                 <SearchSelect
                   options={transformedYearOptions}
                   placeholder={t("selectYearPlaceholder")}
-                  className={`h-9 text-sm rounded-lg focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${
-                    validationErrors.yearMaster
+                  autoFocus
+                  className={`h-9 text-sm rounded-lg focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${validationErrors.yearMaster
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10 text-red-900 bg-red-50/30'
                       : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 text-gray-900 bg-white'
-                  }`}
+                    }`}
                   name="yearMaster"
                   onChange={(_, val) => setSelectedYearId(val)}
                   value={selectedYearId}

@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import { RuleItem, RuleListResponse, DryRunResult } from '@/types/rule-engine.types';
+import { RuleItem, RuleListResponse, DryRunResult } from '@/types/rule-engine';
 import { ApiResponse } from '@/types/common.types';
 
 interface BackendRuleDto {

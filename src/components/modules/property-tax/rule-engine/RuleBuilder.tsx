@@ -4,8 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-import { RuleItem, RuleScope, FieldConfig, EffectTypeConfig } from '@/types/rule-engine.types';
-import { useRuleBuilder } from './useRuleBuilder';
+import { RuleItem, RuleScope, FieldConfig, EffectTypeConfig } from '@/types/rule-engine';
+import { useRuleBuilder } from '@/hooks/rule-engine/useRuleBuilder';
 import RuleBuilderHeader from './RuleBuilderHeader';
 import RuleBuilderCard from './RuleBuilderCard';
 import RuleSaveReasonModal from './RuleSaveReasonModal';
@@ -38,15 +38,17 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     ruleCategory, setRuleCategory,
     ruleDescription, setRuleDescription,
     priority, setPriority,
+    isActive, setIsActive,
     rulesList, fields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
     isSaving, 
     addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
+    updateBlockEffect, addEffectToBlock, removeEffectFromBlock,
   } = useRuleBuilder(props);
 
   // Serialise current form state — passed to SaveRulesButton which holds the initial snapshot
-  const currentData = JSON.stringify({ ruleName, ruleCategory, description: ruleDescription, priority, ruleScopeId, rulesList });
+  const currentData = JSON.stringify({ ruleName, ruleCategory, description: ruleDescription, priority, ruleScopeId, rulesList, isActive });
 
   const currentDataRef = React.useRef(currentData);
   React.useEffect(() => {
@@ -109,6 +111,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
             priority={priority} setPriority={setPriority}
             scopes={props.scopes}
             ruleCategoryOptions={props.ruleCategoryOptions}
+            isActive={isActive} setIsActive={setIsActive}
           />
         </div>
 
@@ -129,6 +132,9 @@ export default function RuleBuilder(props: RuleBuilderProps) {
             onRemoveRuleBlock={removeRuleBlock}
             onMoveRuleBlock={moveRuleBlock}
             onUpdateRuleBlock={updateRuleBlock}
+            onUpdateBlockEffect={updateBlockEffect}
+            onAddEffectToBlock={addEffectToBlock}
+            onRemoveEffectFromBlock={removeEffectFromBlock}
           />
         </div>
       </div>

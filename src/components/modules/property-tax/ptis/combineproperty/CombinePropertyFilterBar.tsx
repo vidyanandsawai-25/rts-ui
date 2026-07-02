@@ -167,18 +167,18 @@ export function CombinePropertyFilterBar({
       )}
 
       {/* ---- Action buttons ---- */}
-      <div className="flex items-end gap-2 shrink-0 ml-auto">
-        <ShowHistoryButton 
-          size="sm" 
-          label={showHistory ? t('hideHistory') || 'Hide History' : t('showHistory') || 'Show History'} 
-          onClick={onShowHistory} 
-        />
-        <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
+      <div className="flex items-end gap-2 shrink-0">
         <AddButton
           label={isPending ? t('loadingButton') : t('proceed', { count: selectedCount })}
           size="sm"
           disabled={!canProceed || isPending}
           onClick={handleProceed}
+        />
+        <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
+        <ShowHistoryButton 
+          size="sm" 
+          label={showHistory ? t('hideHistory') || 'Hide History' : t('showHistory') || 'Show History'} 
+          onClick={onShowHistory} 
         />
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import type { Column } from "@/components/common";
 import { Tooltip } from "@/components/common";
-import type { SearchResult, ZoneOption, WardOption } from "@/types/property-search.types";
+import type { SearchResult, ZoneOption, WardOption } from "@/types/property-search";
 import {
   COLUMN_WIDTHS,
   formatDisplayText,
@@ -71,11 +71,9 @@ function ZoneWardCell({
   const tooltipText = [zoneLabel, wardLabel].filter(Boolean).join(" / ");
 
   return (
-    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-left" title={tooltipText}>
-      <span className="font-semibold text-gray-800 text-[11px]">{formatDisplayText(zoneLabel)}</span>
-      {wardLabel ? (
-        <span className="text-[10px] text-gray-500 leading-tight">{wardLabel}</span>
-      ) : null}
+    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-center items-center justify-center w-full" title={tooltipText}>
+      <span className="font-semibold text-gray-800 text-[11px]">{zoneLabel ? formatDisplayText(zoneLabel) : "-"}</span>
+      <span className="text-[10px] text-gray-500 leading-tight block">{wardLabel ? wardLabel : "-"}</span>
     </div>
   );
 }
@@ -86,35 +84,34 @@ function PropertyNoPartitionCell({ row, t }: { row: SearchResult; t: Translator 
   const oldProp = row.oldPropertyNo?.trim() || "";
 
   const primary = partNo ? `${propNo}-${partNo}` : propNo;
-  const tooltipText = oldProp ? `${primary} (${t("columns.oldPropertyNoShort")}: ${oldProp})` : primary;
 
   return (
-    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-left" title={tooltipText}>
+    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-center items-center justify-center w-full">
       {primary ? (
         <CopyCell value={primary} label={t("columns.propertyNo")} />
       ) : (
-        <span>-</span>
+        <span className="text-xs text-gray-400">-</span>
       )}
       {oldProp ? (
-        <span className="text-xs text-gray-500">
-          {t("columns.oldPropertyNoShort")}: {oldProp}
-        </span>
-      ) : null}
+        <Tooltip content={oldProp} placement="top">
+          <span className="text-xs font-medium text-slate-700 cursor-help border-b border-dashed border-slate-400 max-w-full truncate block px-1">
+            {oldProp}
+          </span>
+        </Tooltip>
+      ) : (
+        <span className="text-xs text-gray-400">-</span>
+      )}
     </div>
   );
 }
 
-function OwnerOccupierCell({ row }: { row: SearchResult }) {
+export function OwnerOccupierCell({ row }: { row: SearchResult }) {
   const rawHolder = row.holderName?.trim() || "";
   const isPlaceholderHolder = rawHolder.toLowerCase() === "the holder";
   const holder = isPlaceholderHolder ? "" : rawHolder;
   const holderMr = isPlaceholderHolder ? "" : (row.holderNameMarathi?.trim() || "");
   const occupier = row.occupierName?.trim() || "";
   const occupierMr = row.occupierNameMarathi?.trim() || "";
-
-  if (!holder && !occupier && !occupierMr) {
-    return <span>-</span>;
-  }
 
   const tooltipParts: string[] = [];
   if (holder) {
@@ -126,23 +123,31 @@ function OwnerOccupierCell({ row }: { row: SearchResult }) {
   const tooltipText = tooltipParts.join(" / ");
 
   return (
-    <div className="flex flex-col gap-1.5 break-words whitespace-normal text-left" title={tooltipText}>
-      {holder ? (
-        <div className="flex flex-col gap-0.5">
-          <span className="font-bold text-gray-900">{holder}</span>
-          {holderMr ? (
-            <span className="text-xs text-gray-500 font-normal">{holderMr}</span>
-          ) : null}
-        </div>
-      ) : null}
-      {occupier || occupierMr ? (
-        <div className={`flex flex-col gap-0.5 pt-1 ${holder ? "border-t border-slate-100" : ""}`}>
-          <span className="text-xs font-medium text-slate-700">{formatDisplayText(occupier)}</span>
-          {occupierMr ? (
-            <span className="text-[10px] text-gray-400 font-normal">{occupierMr}</span>
-          ) : null}
-        </div>
-      ) : null}
+    <div className="flex flex-col gap-1.5 break-words whitespace-normal text-center items-center justify-center w-full" title={tooltipText}>
+      <div className="flex flex-col gap-0.5 items-center justify-center w-full">
+        {holder ? (
+          <>
+            <span className="font-bold text-gray-900">{holder}</span>
+            {holderMr ? (
+              <span className="text-xs text-gray-500 font-normal">{holderMr}</span>
+            ) : null}
+          </>
+        ) : (
+          <span className="text-xs text-gray-400">-</span>
+        )}
+      </div>
+      <div className="flex flex-col gap-0.5 pt-1 border-t border-slate-100 items-center justify-center w-full">
+        {occupier || occupierMr ? (
+          <>
+            <span className="text-xs font-medium text-slate-700">{formatDisplayText(occupier)}</span>
+            {occupierMr ? (
+              <span className="text-[10px] text-gray-400 font-normal">{occupierMr}</span>
+            ) : null}
+          </>
+        ) : (
+          <span className="text-xs text-gray-400">-</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -153,17 +158,15 @@ function MobileAlternateCell({ row, t }: { row: SearchResult; t: Translator }) {
   const tooltipText = alt ? `${primary} (${t("columns.alt")}: ${alt})` : primary;
 
   return (
-    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-left" title={tooltipText}>
+    <div className="flex flex-col gap-0.5 break-words whitespace-normal text-center items-center justify-center w-full" title={tooltipText}>
       {primary ? (
         <CopyCell value={primary} label={t("columns.mobile")} />
       ) : (
-        <span>-</span>
+        <span className="text-xs text-gray-400">-</span>
       )}
-      {alt ? (
-        <span className="text-xs text-gray-500">
-          {t("columns.alt")}: {alt}
-        </span>
-      ) : null}
+      <span className="text-xs text-gray-500">
+        {alt ? `${t("columns.alt")}: ${alt}` : "-"}
+      </span>
     </div>
   );
 }
@@ -196,6 +199,7 @@ export function buildPropertySearchColumns(
         key: "zoneWard",
         label: t("columns.zoneWard"),
         tooltip: t("columns.zoneWard"),
+        align: "center",
         render: (_, row) => <ZoneWardCell row={row} zoneOptions={zoneOptions} allWardOptions={allWardOptions} />,
       },
       COLUMN_WIDTHS.zoneWard
@@ -203,8 +207,14 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "propertyPartition",
-        label: t("columns.propertyPartition"),
+        label: (
+          <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5">
+            <span className="block">{t("columns.propertyPartition")}</span>
+            <span className="block">{t("columns.oldPropertyNoShort")}</span>
+          </div>
+        ),
         tooltip: t("columns.propertyPartitionTooltip"),
+        align: "center",
         render: (_, row) => <PropertyNoPartitionCell row={row} t={t} />,
       },
       COLUMN_WIDTHS.propertyPartition
@@ -212,8 +222,9 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "category",
-        label: t("columns.categoryShort"),
+        label: t("columns.category"),
         tooltip: t("columns.category"),
+        align: "center",
       },
       COLUMN_WIDTHS.category
     ),
@@ -222,6 +233,7 @@ export function buildPropertySearchColumns(
         key: "societyName",
         label: t("columns.societyNameShort"),
         tooltip: t("columns.societyName"),
+        align: "center",
       },
       COLUMN_WIDTHS.societyName
     ),
@@ -230,6 +242,7 @@ export function buildPropertySearchColumns(
         key: "description",
         label: t("columns.descriptionShort"),
         tooltip: t("columns.description"),
+        align: "center",
       },
       COLUMN_WIDTHS.description
     ),
@@ -238,6 +251,7 @@ export function buildPropertySearchColumns(
         key: "ownerOccupier",
         label: t("columns.ownerOccupier"),
         tooltip: t("columns.ownerOccupier"),
+        align: "center",
         render: (_, row) => <OwnerOccupierCell row={row} />,
       },
       COLUMN_WIDTHS.ownerOccupier
@@ -247,16 +261,17 @@ export function buildPropertySearchColumns(
         key: "mobileAlternate",
         label: t("columns.mobileAlternate"),
         tooltip: t("columns.mobileAlternateTooltip"),
+        align: "center",
         render: (_, row) => <MobileAlternateCell row={row} t={t} />,
       },
       COLUMN_WIDTHS.mobileAlternate
     ),
     withFixedWidth(
       {
-        key: "rv",
-        label: t("columns.rv"),
-        tooltip: t("columns.rv"),
-        align: "left",
+        key: "rvCv",
+        label: t("columns.rvCv"),
+        tooltip: t("columns.rvCvTooltip") ?? t("columns.rvCv"),
+        align: "center",
         cellClassName: NUMERIC_CELL,
         render: (_, row) => <RvCvCell rv={row.rv} cv={row.cv} />,
       },
@@ -267,6 +282,7 @@ export function buildPropertySearchColumns(
         key: "totalTax",
         label: t("columns.totalTax"),
         tooltip: t("columns.totalTax"),
+        align: "center",
         render: (value) => (
           <span className="font-medium text-gray-800 whitespace-nowrap tabular-nums">
             {formatInr(Number(value ?? 0))}
@@ -280,6 +296,7 @@ export function buildPropertySearchColumns(
         key: "address",
         label: t("columns.address"),
         tooltip: t("columns.address"),
+        align: "center",
       },
       COLUMN_WIDTHS.address
     ),

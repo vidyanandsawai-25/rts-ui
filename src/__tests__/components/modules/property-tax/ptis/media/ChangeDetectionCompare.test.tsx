@@ -24,11 +24,15 @@ vi.mock('next/image', () => ({
 
 // Mock useConfirm
 const mockConfirm = vi.fn();
-vi.mock('@/components/common', () => ({
-  useConfirm: () => ({
-    confirm: mockConfirm,
-  }),
-}));
+vi.mock('@/components/common', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/common')>();
+  return {
+    ...actual,
+    useConfirm: () => ({
+      confirm: mockConfirm,
+    }),
+  };
+});
 
 const mockActiveCategory = {
   photoTypeId: 9999,
@@ -36,25 +40,25 @@ const mockActiveCategory = {
   photoTypeName: 'Change Detection',
   images: [
     {
-      src: '/images/thane-earth-2018.jpg',
-      fullSrc: '/images/thane-earth-2018.jpg',
-      alt: '2018 Satellite View',
-      title: '2018 Satellite View',
+      src: '',
+      fullSrc: '',
+      alt: 'Before (Old)',
+      title: 'Before (Old)',
       photoTypeId: 9999,
       photoTypeCode: 'CHANGE_DETECTION',
       propertyPhotoId: 9998,
-      hasPhoto: true,
+      hasPhoto: false,
       displayOrder: 1,
     },
     {
-      src: '/images/thane-earth-2026.jpg',
-      fullSrc: '/images/thane-earth-2026.jpg',
-      alt: '2026 Satellite View',
-      title: '2026 Satellite View',
+      src: '',
+      fullSrc: '',
+      alt: 'After (New)',
+      title: 'After (New)',
       photoTypeId: 9999,
       photoTypeCode: 'CHANGE_DETECTION',
       propertyPhotoId: 9999,
-      hasPhoto: true,
+      hasPhoto: false,
       displayOrder: 2,
     }
   ],

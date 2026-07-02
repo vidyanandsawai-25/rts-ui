@@ -18,7 +18,7 @@
     "assessmentYear": "मूल्यांकन वर्ष",
     "asstYear": "मू. वर्ष",
     "constructionYear": "बांधकाम वर्ष",
-    "OldConstructionYear":"जुने बांधकाम वर्ष",
+    "OldConstructionYear": "जुने बांधकाम वर्ष",
     "surveyConstructionYear": "बांधकाम वर्ष",
     "conYear": "बां. वर्ष",
     "constructionType": "बांधकाम प्रकार",
@@ -51,7 +51,8 @@
     "totalTax": "एकूण कर",
     "mobileNo": "मोबाईल क्र",
     "emailId": "ईमेल आयडी",
-    "ocDate": "ओसी दिनांक"
+    "ocDate": "ओसी दिनांक",
+    "kyc": "केवायसी"
   },
   "taxDetails": {
     "title": "मालमत्ता कर तपशील सारांश",
@@ -122,10 +123,16 @@
     "noPropertyData": "कोणतीही मालमत्ता डेटा सापडला नाही.",
     "goBack": "मागे जा",
     "cancel": "रद्द करा",
+    "update": "अद्यतनित करा",
     "basicInformation": "मूलभूत माहिती",
     "floorQC": "फ्लोअर QC",
     "roomWiseSubmission": "खोलीनिहाय सादरीकरण",
     "loadingRoomData": "खोली डेटा लोड होत आहे...",
+    "viewImage": "प्रतिकारन",
+    "propertyPhotos": "संपत्ति फ़ाइल",
+    "loadingPhotos": "प्रतिकारन लोड हो रहा है...",
+    "noPhotos": "प्रतिकारन नहीं",
+    "photoLoadError": "प्रतिकारन लोड करने में अपना लाभ नहीं",
     "tabs": {
       "rateable": "करयोग्य मूल्य",
       "capital": "भांडवली मूल्य"
@@ -138,7 +145,7 @@
   "tooltips": {
     "srNo": "अनुक्रमांक",
     "propertyNo": "मालमत्ता क्र",
-    "oldPropertyNo": "जुना मालमत्ता क्र", 
+    "oldPropertyNo": "जुना मालमत्ता क्र",
     "wing": "विंग",
     "flatOrShopNo": "फ्लॅट/दुकान क्र",
     "ownerName": "मालकाचे नाव",
@@ -152,7 +159,7 @@
     "apartmentType": "अपार्टमेंट प्रकार",
     "oldRV": "जुना आरव्ही",
     "newRV": "नवीन आरव्ही",
-  "oldConstArea": "जुने बांधकाम क्षेत्रफळ",
+    "oldConstArea": "जुने बांधकाम क्षेत्रफळ",
     "totalTax": "एकूण कर",
     "flatOrShopName": "फ्लॅट/दुकान नाव",
     "renterName": "भाडेकरूचे नाव",
@@ -165,16 +172,19 @@
     "mobileNo": "मोबाईल नंबर",
     "emailId": "ईमेल आयडी",
     "bhk": "BHK",
-  "rentMonthly": "मासिक भाडे",
-  "propertyTypeName": "मालमत्तेचा प्रकार",
-  "oldTotalTax": "जुना एकूण कर",
-  "newTotalTax": "नवीन एकूण कर",
-  "newTaxTotalCV": "नवीन कर एकूण (CV)",
-  "newTaxTotalRV": "नवीन कर एकूण (RV)",
-  "totalTaxCV": "एकूण कर (CV)",
-  "rateableValue": "करयोग्य मूल्य",
-  "capitalValue": "भांडवली मूल्य",
-  "cv": "भांडवली मूल्य"
+    "rentMonthly": "मासिक भाडे",
+    "propertyTypeName": "मालमत्तेचा प्रकार",
+    "oldTotalTax": "जुना एकूण कर",
+    "newTotalTax": "नवीन एकूण कर",
+    "newTaxTotalCV": "नवीन कर एकूण (CV)",
+    "newTaxTotalRV": "नवीन कर एकूण (RV)",
+    "totalTaxCV": "एकूण कर (CV)",
+    "rateableValue": "करयोग्य मूल्य",
+    "capitalValue": "भांडवली मूल्य",
+    "cv": "भांडवली मूल्य",
+    "kyc": "केवाईसी",
+    "viewKycDetails": "केवाईसी तपशील पहा",
+    "hideKycDetails": "केवाईसी तपशील लपवा"
   },
   "pageTitle": "मालमत्ता तपशील संपादित करा",
   "badges": {
@@ -251,10 +261,10 @@
         "label": "टिप्पणी"
       },
       "oldRV": {
-        "label": "जुना RV"
+        "label": "जुना करपात्र मूल्य"
       },
       "newRV": {
-        "label": "नवीन RV"
+        "label": "नवीन करपात्र मूल्य"
       },
       "oldTax": {
         "label": "जुना कर"
@@ -263,10 +273,10 @@
         "label": "नवीन कर"
       },
       "oldArea": {
-        "label": "जुने क्षेत्र (sq.mtr)"
+        "label": "जुने क्षेत्र (चौ. मी.)"
       },
       "newArea": {
-        "label": "नवीन क्षेत्र (sq.mtr)"
+        "label": "नवीन क्षेत्र (चौ. मी.)"
       },
       "oldUseType": {
         "label": "जुना उपयोग प्रकार"
@@ -307,16 +317,44 @@
       "rateMY": "दर म/व",
       "rentalValue": "भाडे मूल्य",
       "depreciation": "घसारा",
-      "alv": "ALV",
-      "mr": "M.R.",
-      "rv": "RV",
+      "alv": "वार्षिक भाडे मूल्य",
+      "mr": "देखभाल",
+      "rv": "करपात्र मूल्य",
       "sdrr": "SDRR",
       "baseValue": "आधार मूल्य",
       "floorFactor": "मजला घटक",
       "ageFactor": "वय घटक",
       "ntbFactor": "NTB घटक",
       "useFactor": "वापर घटक",
-      "capitalValue": "भांडवली मूल्य"
+      "capitalValue": "भांडवली मूल्य",
+      "editFloorQC": "मजला QC संपादित करा"
+    },
+    "toolTipFloorQC": {
+      "tooltips": {
+        "floor": "मजला",
+        "conYear": "बांधकाम वर्ष",
+        "asstYear": "मूल्यांकन वर्ष",
+        "conType": "बांधकाम प्रकार",
+        "use": "वापराचा प्रकार",
+        "subTypeOfUse": "उप-वापर प्रकार",
+        "noOfRooms": "खोल्यांची संख्या",
+        "area": "क्षेत्रफळ",
+        "rentMY": "भाडे मासिक / वार्षिक",
+        "rateMY": "दर मासिक / वार्षिक",
+        "rentalValue": "भाडे मूल्य",
+        "depreciation": "घसारा",
+        "alv": "वार्षिक भाडे मूल्य",
+        "mr": "देखभाल",
+        "rv": "करपात्र मूल्य",
+        "sdrr": "SDRR",
+        "baseValue": "आधार मूल्य",
+        "floorFactor": "मजला गुणांक",
+        "ageFactor": "वय गुणांक",
+        "ntbFactor": "NTB गुणांक",
+        "useFactor": "वापर गुणांक",
+        "capitalValue": "भांडवली मूल्य",
+        "editFloorQC": "मजला QC संपादित करा"
+      }
     },
     "tabs": {
       "rateable": "दर योग्य",
@@ -324,11 +362,19 @@
     },
     "validation": {
       "invalidYear": "4-अंकी वर्ष प्रविष्ट करा",
-      "yearOutOfRange": "वर्ष मर्यादेबाहेर"
+      "yearOutOfRange": "वर्ष मर्यादेबाहेर",
+      "floorRequired": "मजला आवश्यक आहे",
+      "conYearRequired": "बांधकाम वर्ष आवश्यक आहे",
+      "conYearInvalid": "बांधकाम वर्ष 4-अंकी असणे आवश्यक आहे",
+      "asstYearRequired": "मूल्यांकन वर्ष आवश्यक आहे",
+      "asstYearInvalid": "मूल्यांकन वर्ष 4-अंकी असणे आवश्यक आहे",
+      "conTypeRequired": "बांधकाम प्रकार आवश्यक आहे",
+      "useRequired": "वापर प्रकार आवश्यक आहे"
     },
     "tooltips": {
       "viewRoomDetails": "खोली तपशील पहा/संपादित करा",
-      "noDetailId": "कोणताही तपशील आयडी उपलब्ध नाही"
+      "noDetailId": "कोणताही तपशील आयडी उपलब्ध नाही",
+      "editFloorQC": "मजला QC संपादित करा"
     }
   },
   "list": {

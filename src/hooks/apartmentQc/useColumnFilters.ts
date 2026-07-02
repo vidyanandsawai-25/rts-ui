@@ -12,13 +12,31 @@ interface FilterOption {
 interface UseColumnFiltersProps {
   wardId: number | string;
   propertyNo: string;
+  activeMainTab?: string;
+}
+
+/**
+ * Convert main tab value to PartType for API call.
+ */
+function getPartTypeFromMainTab(mainTab: string): string | undefined {
+  switch (mainTab) {
+    case 'commercial':
+      return 'C';
+    case 'residential':
+      return 'R';
+    case 'amenities':
+      return 'Amenity';
+    default:
+      return undefined;
+  }
 }
 
 /**
  * Hook for managing column filters in Apartment QC tables.
  * Handles filter state from URL params and provides methods for fetching options and updating filters.
  */
-export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) {
+export function useColumnFilters({ wardId, propertyNo, activeMainTab }: UseColumnFiltersProps) {
+  const partType = useMemo(() => getPartTypeFromMainTab(activeMainTab || ''), [activeMainTab]);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -78,7 +96,7 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
     }
 
     try {
-      const result = await fetchFilterOptionsAction(wardId, propertyNo, field);
+      const result = await fetchFilterOptionsAction(wardId, propertyNo, field, partType);
       
       if (!result.success || !result.data) {
         return [];
@@ -128,7 +146,7 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
       logger.error(`[useColumnFilters] Failed to fetch filter options for ${field}`, { error: error as Error });
       return [];
     }
-  }, [wardId, propertyNo]);
+  }, [wardId, propertyNo, partType]);
 
   return {
     activeFilters,

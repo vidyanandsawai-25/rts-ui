@@ -5,8 +5,7 @@ import React, { memo } from "react";
 import { Label } from "@/components/common/label";
 import { Input } from "@/components/common";
 import { useTranslations } from "next-intl";
-import { RenterFormDataDetails } from "@/types/renter.types";
-import { RenterFormData } from "@/types/renter.types";
+import { RenterFormDataDetails, RenterFormData } from "@/types/renter/renter.types";
 import { capitalizeEachWord } from "@/lib/utils/input-sanitization";
 
 interface EditRenterInformationProps {

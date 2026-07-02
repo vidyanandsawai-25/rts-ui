@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   CancelButton,
   SaveButton,
@@ -29,7 +29,9 @@ import type {
   RoomTypeOption,
   FloorDataRow,
 } from "@/types/propertyEdit.types";
+import type { DrawerFloorDataRow } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
 import { RoomWiseSubmission } from "./roomSubmission/RoomWiseSubmission";
+import { FloorQCEditDrawer } from "./FloorQCEditDrawer";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -214,6 +216,24 @@ export default function PropertyDetailsEditForm({
     roomSidebar,
   } = form;
 
+  const [floorQCEditDrawerOpen, setFloorQCEditDrawerOpen] = React.useState(false);
+  const [selectedFloorQCEditRow, setSelectedFloorQCEditRow] = React.useState<FloorDataRow | null>(null);
+
+  const handleOpenFloorQCEdit = React.useCallback((row: FloorDataRow) => {
+    setSelectedFloorQCEditRow(row);
+    setFloorQCEditDrawerOpen(true);
+  }, []);
+
+  const handleSaveFloorQC = React.useCallback((updatedRow: DrawerFloorDataRow) => {
+    updateFloorRow(updatedRow.id, "floorId", updatedRow.floorId);
+    updateFloorRow(updatedRow.id, "conYear", updatedRow.conYear);
+    updateFloorRow(updatedRow.id, "asstYear", updatedRow.asstYear);
+    updateFloorRow(updatedRow.id, "constructionTypeId", updatedRow.constructionTypeId);
+    updateFloorRow(updatedRow.id, "typeOfUseId", updatedRow.typeOfUseId);
+    updateFloorRow(updatedRow.id, "subTypeOfUseId", updatedRow.subTypeOfUseId);
+    setFloorQCEditDrawerOpen(false);
+  }, [updateFloorRow]);
+
   // Build floor QC columns using extracted builder
   const floorColumns: Column<FloorDataRow>[] = useMemo(
     () =>
@@ -225,6 +245,7 @@ export default function PropertyDetailsEditForm({
           getSubTypeOptions,
           updateFloorRow,
           onOpenRoomSubmission: roomSidebar.handleOpen,
+          onOpenFloorQCEdit: handleOpenFloorQCEdit,
           copy: copy.floorQC,
         },
         subTabProp,
@@ -237,6 +258,7 @@ export default function PropertyDetailsEditForm({
       getSubTypeOptions,
       updateFloorRow,
       roomSidebar.handleOpen,
+      handleOpenFloorQCEdit,
       copy.floorQC,
       subTabProp,
       dualMethodTab,
@@ -475,6 +497,23 @@ export default function PropertyDetailsEditForm({
           />
         </aside>
       )}
+
+      <FloorQCEditDrawer
+        open={floorQCEditDrawerOpen}
+        onClose={() => setFloorQCEditDrawerOpen(false)}
+        onSave={handleSaveFloorQC}
+        row={selectedFloorQCEditRow as unknown as DrawerFloorDataRow}
+        floorOptions={floorOptions}
+        conTypeOptions={conTypeOptions}
+        useTypeOptions={useTypeOptions}
+        getSubTypeOptions={getSubTypeOptions}
+        isLoadingFloors={false}
+        isLoadingConTypes={false}
+        isLoadingUseTypes={false}
+        handleFloorDropdownClick={() => {}}
+        handleConTypeDropdownClick={() => {}}
+        handleUseTypeDropdownClick={() => {}}
+      />
     </div>
   );
 }

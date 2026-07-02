@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslations } from "next-intl";
-import { Button, Tooltip } from "@/components/common";
+import { Tooltip } from "@/components/common";
 import { AlertCircle } from "lucide-react";
 
 interface RoomSubmissionHeaderProps {
@@ -12,9 +12,8 @@ interface RoomSubmissionHeaderProps {
   displayMode?: 'modal' | 'dialog' | 'inline';
 }
 
-export const RoomSubmissionHeader: React.FC<RoomSubmissionHeaderProps> = ({
-  floorNumber, areaUnit, handleToggleUnit, maxRooms, availableRooms, displayMode = 'modal'
-}) => {
+export const RoomSubmissionHeader: React.FC<RoomSubmissionHeaderProps> = (props) => {
+  const { floorNumber, maxRooms, availableRooms, displayMode = 'modal' } = props;
   const t = useTranslations("quickDataEntry");
 
   if (displayMode !== 'modal') return null;
@@ -27,6 +26,8 @@ export const RoomSubmissionHeader: React.FC<RoomSubmissionHeaderProps> = ({
             {t("floor.floorLabel")} {floorNumber}
           </div>
         )}
+        {/* Unit Toggle Pill - Hidden on UI */}
+        {/*
         <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/20 ml-2">
           <Button
             variant="ghost" size="xs"
@@ -43,6 +44,7 @@ export const RoomSubmissionHeader: React.FC<RoomSubmissionHeaderProps> = ({
             {t("roomSubmission.input.buttons.sqft")}
           </Button>
         </div>
+        */}
       </div>
       <h2 className="text-white text-lg font-bold flex-1 text-center">{t("roomSubmission.title")}</h2>
       {maxRooms && (

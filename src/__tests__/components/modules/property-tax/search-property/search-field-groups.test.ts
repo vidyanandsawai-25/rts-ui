@@ -4,7 +4,7 @@ import {
   hasTabSearchInput,
 } from "@/components/modules/property-tax/search-property/search-field-groups";
 import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 
 describe("search-field-groups", () => {
   describe("applyTabSearchCriteria", () => {

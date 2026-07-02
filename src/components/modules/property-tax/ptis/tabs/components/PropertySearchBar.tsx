@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Search, Loader2 } from 'lucide-react';
-import { Button, Input, SearchSelect } from '@/components/common';
+import { Button, Input, SearchSelect, Tooltip } from '@/components/common';
 import { Label } from '@/components/common/label';
 import type { SearchSelectOption } from '@/components/common';
 import { normalizePartition } from '@/lib/utils/format';
@@ -12,6 +12,7 @@ import {
   buildPartitionOptionKey,
 } from '@/hooks/ptis/tab/usePropertyOptions';
 import type { PartitionOptionValue } from '@/hooks/ptis/tab/usePropertyOptions';
+import type { TabHeaderInfoData } from '@/types/ptis.types';
 
 export interface PropertySearchBarProps {
   wardNo: string;
@@ -47,6 +48,7 @@ export interface PropertySearchBarProps {
   upicId: string;
   ownerName: string;
   propertyDescription: string;
+  tabHeaderInfo?: TabHeaderInfoData | null;
 }
 
 export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
@@ -72,6 +74,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   upicId,
   ownerName,
   propertyDescription,
+  tabHeaderInfo,
 }) => {
   const t = useTranslations('ptis');
 
@@ -190,133 +193,282 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
     <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-2 py-2">
       <form
         onSubmit={handleFormSubmit}
-        className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs text-blue-700 font-bold"
+        className="flex flex-col sm:flex-row sm:items-stretch gap-2 text-xs text-blue-700 font-bold"
         method="GET"
       >
-        {/* Ward No */}
-        <div className="flex items-center gap-1 relative">
-          <Label
-            htmlFor="wardNo"
-            className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
+        {/* Search Inputs (Left Section) */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Ward No */}
+          <div className="flex items-center gap-1 relative">
+            <Label
+              htmlFor="wardNo"
+              className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
+            >
+              {t('search.wardNo')}:
+            </Label>
+            <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
+              <SearchSelect
+                id="wardNo"
+                options={wardOptions}
+                value={wardValue}
+                onChange={handleWardChange}
+                forceSearchText={wardNo || undefined}
+                sanitizeInput={sanitizeWardNo}
+                className="h-7 text-xs lg:text-sm"
+                isLoading={isFetchingWardOptions}
+                loadingPlaceholder={t('search.loading')}
+                noOptionsPlaceholder={t('search.noOptionsAvailable')}
+                onInputFocus={onFetchWardList}
+              />
+              <Input type="hidden" name="wardNo" value={wardNo} />
+              <Input type="hidden" name="wardId" value={wardValue} />
+            </div>
+          </div>
+
+          {/* Property No */}
+          <div className="flex items-center gap-1 relative">
+            <Label
+              htmlFor="propertyNo"
+              className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
+            >
+              {t('search.propertyNo')}:
+            </Label>
+            <div className="w-24 sm:w-28 lg:w-38 relative [&_ul]:top-full [&_ul]:!z-30">
+              <SearchSelect
+                id="propertyNo"
+                options={propertyOptions}
+                value={propertySelectValue}
+                onChange={handlePropertyChange}
+                forceSearchText={propertyNo || undefined}
+                sanitizeInput={sanitizePropertyNo}
+                className="h-7 text-xs lg:text-sm"
+                disabled={!wardId}
+                isLoading={false}
+                loadingPlaceholder={t('search.loading')}
+                noOptionsPlaceholder={t('search.noOptionsAvailable')}
+              />
+              <Input type="hidden" name="propertyNo" value={propertyNo} />
+            </div>
+          </div>
+
+          {/* Partition No */}
+          <div className="flex items-center gap-1 relative">
+            <Label
+              htmlFor="partitionNo"
+              className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
+            >
+              {t('search.partitionNo')}:
+            </Label>
+            <div className="w-16 sm:w-25 relative [&_ul]:top-full [&_ul]:!z-30">
+              <SearchSelect
+                id="partitionNo"
+                options={partitionOptions}
+                value={partitionSelectValue}
+                onChange={handlePartitionChange}
+                forceSearchText={partitionNo || undefined}
+                sanitizeInput={sanitizePartitionNo}
+                className="h-7 text-xs lg:text-sm"
+                disabled={!wardId || !propertyNo}
+                isLoading={false}
+                loadingPlaceholder={t('search.loading')}
+                noOptionsPlaceholder={t('search.noOptionsAvailable')}
+              />
+              <Input type="hidden" name="partitionNo" value={partitionNo} />
+            </div>
+          </div>
+
+          {/* Search Button */}
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            className="h-7 w-7 bg-blue-900 hover:bg-blue-700"
+            disabled={isSearching}
+            aria-label={t('search.searchButton')}
           >
-            {t('search.wardNo')}:
-          </Label>
-          <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
-            <SearchSelect
-              id="wardNo"
-              options={wardOptions}
-              value={wardValue}
-              onChange={handleWardChange}
-              forceSearchText={wardNo || undefined}
-              sanitizeInput={sanitizeWardNo}
-              className="h-7 text-xs lg:text-sm"
-              isLoading={isFetchingWardOptions}
-              loadingPlaceholder={t('search.loading')}
-              noOptionsPlaceholder={t('search.noOptionsAvailable')}
-              onInputFocus={onFetchWardList}
-            />
-            <Input type="hidden" name="wardNo" value={wardNo} />
-            <Input type="hidden" name="wardId" value={wardValue} />
-          </div>
+            {isSearching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+          </Button>
         </div>
 
-        {/* Property No */}
-        <div className="flex items-center gap-1 relative">
-          <Label
-            htmlFor="propertyNo"
-            className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
-          >
-            {t('search.propertyNo')}:
-          </Label>
-          <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
-            <SearchSelect
-              id="propertyNo"
-              options={propertyOptions}
-              value={propertySelectValue}
-              onChange={handlePropertyChange}
-              forceSearchText={propertyNo || undefined}
-              sanitizeInput={sanitizePropertyNo}
-              className="h-7 text-xs lg:text-sm"
-              disabled={!wardId}
-              isLoading={false}
-              loadingPlaceholder={t('search.loading')}
-              noOptionsPlaceholder={t('search.noOptionsAvailable')}
-            />
-            <Input type="hidden" name="propertyNo" value={propertyNo} />
-          </div>
-        </div>
+        {/* Vertical Divider */}
+        <div className="hidden sm:block self-stretch w-px bg-slate-400 my-0.5" />
 
-        {/* Partition No */}
-        <div className="flex items-center gap-1 relative">
-          <Label
-            htmlFor="partitionNo"
-            className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
-          >
-            {t('search.partitionNo')}:
-          </Label>
-          <div className="w-16 sm:w-20 relative [&_ul]:top-full [&_ul]:!z-30">
-            <SearchSelect
-              id="partitionNo"
-              options={partitionOptions}
-              value={partitionSelectValue}
-              onChange={handlePartitionChange}
-              forceSearchText={partitionNo || undefined}
-              sanitizeInput={sanitizePartitionNo}
-              className="h-7 text-xs lg:text-sm"
-              disabled={!wardId || !propertyNo}
-              isLoading={false}
-              loadingPlaceholder={t('search.loading')}
-              noOptionsPlaceholder={t('search.noOptionsAvailable')}
-            />
-            <Input type="hidden" name="partitionNo" value={partitionNo} />
-          </div>
-        </div>
+        {/* Summary Info (Right Section) */}
+        {!tabHeaderInfo ? (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 flex-grow justify-start">
+            {/* Old No */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.oldNo')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] lg:max-w-none">
+                -
+              </span>
+            </div>
 
-        {/* Search Button */}
-        <Button
-          type="submit"
-          variant="primary"
-          size="sm"
-          className="h-7 w-7 bg-blue-900 hover:bg-blue-700"
-          disabled={isSearching}
-          aria-label={t('search.searchButton')}
-        >
-          {isSearching ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Search className="h-4 w-4" />
-          )}
-        </Button>
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
 
-        {/* Summary Info */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
-          <div className="flex items-center gap-1 min-w-0">
-            <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-              {t('fields.upicId')}:
-            </span>
-            <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
-              {upicId || '-'}
-            </span>
+            {/* Property Holder */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.propertyHolder')}:
+              </span>
+              <Tooltip content={ownerName || '-'}>
+                <span className="font-bold text-slate-700 text-sm lg:text-sm truncate max-w-[120px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[250px] xl:max-w-[300px]">
+                  {ownerName || '-'}
+                </span>
+              </Tooltip>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Property Description */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.propertyDescription')}:
+              </span>
+              <span className="font-bold text-red-700 text-xs lg:text-sm truncate max-w-[80px] lg:max-w-none">
+                {propertyDescription || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* UPIC ID */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.upicId')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
+                {upicId || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Assessment status */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.assessmentStatus')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[120px] lg:max-w-none">
+                -
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Address */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.address')}:
+              </span>
+              <Tooltip content="-">
+                <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[500px]">
+                  -
+                </span>
+              </Tooltip>
+            </div>
           </div>
-          <div className="hidden sm:block h-4 w-px bg-slate-400" />
-          <div className="flex items-center gap-1 min-w-0">
-            <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-              {t('fields.propertyHolder')}:
-            </span>
-            <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
-              {ownerName || '-'}
-            </span>
+        ) : (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 flex-grow justify-start">
+            {/* Old No */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.oldNo')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] lg:max-w-none">
+                {tabHeaderInfo
+                  ? `${tabHeaderInfo.oldWardNo || '-'}/${tabHeaderInfo.oldPropertyNo || '-'}${
+                      tabHeaderInfo.oldPartitionNo !== null &&
+                      tabHeaderInfo.oldPartitionNo !== undefined &&
+                      tabHeaderInfo.oldPartitionNo !== ''
+                        ? `/${tabHeaderInfo.oldPartitionNo}`
+                        : ''
+                    }`
+                  : '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Property Holder */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.propertyHolder')}:
+              </span>
+              <Tooltip content={tabHeaderInfo?.ownerName || ownerName || '-'}>
+                <span className="font-bold text-slate-700 text-sm lg:text-sm truncate max-w-[120px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[250px] xl:max-w-[300px]">
+                  {tabHeaderInfo?.ownerName || ownerName || '-'}
+                </span>
+              </Tooltip>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Property Description */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.propertyDescription')}:
+              </span>
+              <span className="font-bold text-red-700 text-xs lg:text-sm truncate max-w-[80px] lg:max-w-none">
+                {tabHeaderInfo?.description || propertyDescription || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* UPIC ID */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.upicId')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
+                {tabHeaderInfo?.upicId || upicId || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Assessment status */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.assessmentStatus')}:
+              </span>
+              <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[120px] lg:max-w-none">
+                {tabHeaderInfo?.statusName || '-'}
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
+            {/* Address */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+                {t('fields.address')}:
+              </span>
+              <Tooltip content={tabHeaderInfo?.address || '-'}>
+                <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[500px]">
+                  {tabHeaderInfo?.address || '-'}
+                </span>
+              </Tooltip>
+            </div>
           </div>
-          <div className="hidden sm:block h-4 w-px bg-slate-400" />
-          <div className="flex items-center gap-1 min-w-0">
-            <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
-              {t('fields.propertyDescription')}:
-            </span>
-            <span className="font-bold text-red-700 text-xs lg:text-sm truncate max-w-[80px] lg:max-w-none">
-              {propertyDescription || '-'}
-            </span>
-          </div>
-        </div>
+        )}
       </form>
     </div>
   );

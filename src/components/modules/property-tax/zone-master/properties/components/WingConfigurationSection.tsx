@@ -104,6 +104,7 @@ export function WingConfigurationSection({
             }}
             placeholder="0"
             required
+            disabled={form.generationType === "VC"}
           />
           <ValidationMessage
             message={errors.noOfFlatOnOneFloor}
@@ -142,6 +143,7 @@ export function WingConfigurationSection({
             }}
             placeholder="0"
             required
+            disabled={form.generationType === "HC"}
           />
           <ValidationMessage
             message={errors.incrementedBy}
@@ -168,8 +170,20 @@ export function WingConfigurationSection({
             options={generationTypeOptions}
             value={form.generationType}
             onChange={(_, value) => {
-              setForm({ ...form, generationType: value });
-              setErrors({ ...errors, generationType: undefined });
+              const newForm = { ...form, generationType: value };
+              if (value === "HC") {
+                newForm.incrementedBy = "1";
+              }
+              if (value === "VC") {
+                newForm.noOfFlatOnOneFloor = "1";
+              }
+              setForm(newForm);
+              setErrors({ 
+                ...errors, 
+                generationType: undefined, 
+                incrementedBy: undefined, 
+                noOfFlatOnOneFloor: undefined 
+              });
             }}
             placeholder={t("partitionForm.wing.selectGenerationType")}
             selectSize="md"

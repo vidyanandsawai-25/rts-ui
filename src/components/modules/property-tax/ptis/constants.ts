@@ -66,4 +66,5 @@ export const PTIS_TAX_KEY_MAP: Record<string, string> = {
   'TREE TAX': 'treeTax',
   'EDUCATION TAX': 'educationTax',
   'EMPLOYMENT TAX': 'employmentTax',
+  'TAXTOTAL': 'taxTotal',
 };

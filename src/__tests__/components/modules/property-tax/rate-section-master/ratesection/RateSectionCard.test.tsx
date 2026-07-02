@@ -28,6 +28,7 @@ vi.mock("@/components/common", () => ({
       Delete
     </button>
   ),
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/components/common/StatusBadge", () => ({
@@ -45,6 +46,7 @@ describe("RateSectionCard", () => {
   const defaultProps = {
     rate: mockRate,
     index: 0,
+    serialNo: 1,
     isSelected: false,
     isNewlyCreated: false,
     onDelete: vi.fn(),
@@ -113,8 +115,8 @@ describe("RateSectionCard", () => {
     const onDelete = vi.fn();
     render(<RateSectionCard {...defaultProps} onDelete={onDelete} />);
     fireEvent.click(screen.getByTestId("delete-button"));
-    // Third argument is now String(rateId) = "1" instead of rateSectionNo
-    expect(onDelete).toHaveBeenCalledWith("1", "Rate Section 1", "1");
+    // Third argument (rateNo) is now removed, it only expects 2 arguments
+    expect(onDelete).toHaveBeenCalledWith("1", "Rate Section 1");
   });
 
   it("disables delete button when deletingId matches", () => {

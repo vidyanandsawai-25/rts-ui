@@ -11,6 +11,8 @@ interface RightActionsProps {
   actions: FooterAction[];
   onActionClick: (command: string) => void;
   isLoading?: boolean;
+  isActionPending?: boolean;
+  clickedCommand?: string | null;
   iconOnly?: boolean;
 }
 

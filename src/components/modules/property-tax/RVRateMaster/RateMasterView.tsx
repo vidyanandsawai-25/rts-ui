@@ -137,8 +137,10 @@ export default function RateMasterView({
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const isDrawerOpen = pathname.includes('/add') || pathname.includes('/EditDelete') || pathname.includes('/edit');
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-1" inert={isDrawerOpen ? true : undefined}>
       {/* Combined Filters and Action Buttons Section */}
       <div className="bg-white border border-blue-200 rounded-xl shadow-sm p-2 md:p-3 pl-6">
         <div className="flex flex-col lg:flex-row gap-2 items-start lg:items-end">
@@ -155,6 +157,7 @@ export default function RateMasterView({
               onYearChange={handleYearChange}
               onUseGroupChange={handleUseGroupChange}
               t={t}
+              disabled={isDrawerOpen}
             />
           </div>
 
@@ -164,8 +167,8 @@ export default function RateMasterView({
             onEditRate={handleEditRate}
             onDeleteRate={handleDeleteRate}
             onDownloadRates={handleDownloadRates}
-            isDownloadDisabled={isDownloadDisabled}
-            isActionDisabled={!!frequencyMismatch}
+            isDownloadDisabled={isDownloadDisabled || isDrawerOpen}
+            isActionDisabled={!!frequencyMismatch || isDrawerOpen}
             t={t}
           />
         </div>

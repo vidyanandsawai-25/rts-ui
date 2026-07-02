@@ -77,7 +77,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
       let nextValue: UseSubType[K] = value;
 
       if (key === "description" && typeof value === "string") {
-        nextValue = sanitizeDescription(value, 100) as UseSubType[K];
+        nextValue = sanitizeDescription(value, 80) as UseSubType[K];
         markTouched("description");
       }
 

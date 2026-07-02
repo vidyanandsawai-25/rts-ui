@@ -6,11 +6,11 @@
 import type {
   PropertyDashboardStatsApiItem,
   PropertyDashboardStatsApiResponse,
-} from "@/types/property-search-api.types";
+} from "@/types/property-search";
 import type {
   PropertyStatsData,
   PropertyStatus,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 
 function toCount(value: unknown): number {
   const parsed = Number(value);

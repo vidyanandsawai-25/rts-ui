@@ -9,7 +9,16 @@
     "qualityAnalysis": "गुणवत्ता विश्लेषण",
     "assessmentCompleted": "मूल्यांकन पूर्ण",
     "filterHint": "मूल्यांकन टप्प्यानुसार निकाल फिल्टर करण्यासाठी कार्डवर क्लिक करा",
-    "activeFilter": "फिल्टर सक्रिय"
+    "activeFilter": "फिल्टर सक्रिय",
+    "previouslyRegistered": "पूर्वी नोंदणीकृत मालमत्ता आणि मागणी",
+    "assessmentApproved": "मूल्यांकन मंजूर",
+    "assessed": "मूल्यांकन झालेले",
+    "unassessed": "मूल्यांकन न झालेले",
+    "additionalRevenue": "अतिरिक्त महसूल निर्माण",
+    "structure": "संरचना",
+    "unit": "युनिट",
+    "units": "युनिट्स",
+    "demand": "मागणी"
   },
   "form": {
     "sections": {
@@ -42,12 +51,13 @@
       "shopBuildingName": "दुकान/इमारत नाव",
       "societyName": "सोसायटीचे नाव",
       "address": "पत्ता",
-      "filters": "फिल्टर"
+      "filters": "फिल्टर",
+      "valuationMethod": "मूल्यांकन पद्धत"
     },
     "tooltips": {
       "propertyNo": "अक्षरे, अंक, हायफन (-) आणि स्लॅश (/). कमाल 20 अक्षरे. उदा.: P-2023-001, 10/A",
-      "propertyNoFrom": "फक्त संख्या. कमाल 20 अंक. उदा.: 100",
-      "propertyNoTo": "फक्त संख्या. कमाल 20 अंक. उदा.: 200",
+      "propertyNoFrom": "अक्षरे, संख्या, हायफन (-) आणि स्लॅश (/). कमाल 20 अक्षरे. उदा.: NK10, NK-10",
+      "propertyNoTo": "अक्षरे, संख्या, हायफन (-) आणि स्लॅश (/). कमाल 20 अक्षरे. उदा.: NK20, NK-20",
       "oldPropertyNo": "फक्त अक्षरे आणि संख्या. कमाल 25 अक्षरे.",
       "upicId": "फक्त अक्षरे आणि संख्या. कमाल 15 अक्षरे.",
       "citySurveyNo": "अक्षरे, अंक, हायफन (-) आणि स्लॅश (/). कमाल 20 अक्षरे. उदा.: CSN005A, 12/3",
@@ -99,10 +109,16 @@
         "partiallyAssessed": "अर्धवट मूल्यांकन"
       },
       "typeFilter": {
-        "surveyCompleted": "सर्वेक्षण पूर्ण",
-        "dataEntryCompleted": "डेटा एंट्री पूर्ण",
-        "qcCompleted": "QC पूर्ण",
-        "noticeDistributed": "सूचना वितरित"
+        "geoSequencing": "जिओ-सिक्वेन्सिंग",
+        "internalSurvey": "अंतर्गत सर्वेक्षण",
+        "dataEntry": "डेटा प्रविष्टी आणि गुणवत्ता नियंत्रण",
+        "assessment": "मूल्यांकन",
+        "approvalByUlb": "ULB द्वारे मंजूरी",
+        "noticeDistribution": "सूचना वितरण",
+        "hearingAndAppeal": "सुनावणी आणि अपील",
+        "billDistribution": "विधेयक वितरण",
+        "billGeneration": "विधेयक निर्मिती",
+        "qcRevert": "क्यूसी रिव्हर्ट"
       },
       "description": {
         "residential": "निवासी",
@@ -111,6 +127,11 @@
       "valuation": {
         "rv": "वार्षिक भाडे मूल्य (RV)",
         "cv": "भांडवल मूल्य (CV)"
+      },
+      "valuationMethod": {
+        "rv": "RV",
+        "cv": "CV",
+        "totalTax": "एकूण कर"
       },
       "filterType": {
         "exact": "अचूक मूल्य",
@@ -139,7 +160,7 @@
       "wardRequiresZone": "वार्ड निवडण्यापूर्वी झोन निवडा.",
       "propertyNoFromRequired": "Property No. 'To' वापरताना 'From' मूल्य भरा.",
       "propertyNoRangeInvalid": "मालमत्ता क्र. 'To' हे 'From' पेक्षा कमी असू शकत नाही.",
-      "propertyNoInvalid": "मालमत्ता क्रमांकामध्ये फक्त संख्या असणे आवश्यक आहे.",
+      "propertyNoInvalid": "मालमत्ता क्रमांकामध्ये फक्त अक्षरे, संख्या, हायफन (-) आणि स्लॅश (/) असणे आवश्यक आहे.",
       "oldPropertyNoInvalid": "जुन्या मालमत्ता क्रमांकामध्ये फक्त अक्षरे आणि संख्या असणे आवश्यक आहे.",
       "upicIdInvalid": "UPIC आयडीमध्ये फक्त अक्षरे आणि संख्या असणे आवश्यक आहे.",
       "citySurveyNoInvalid": "नगर सर्वेक्षण क्र. किमान 2 अक्षरे असावे आणि वैध स्वरूपात (अक्षरे, अंक, हायफन, स्लॅश).",
@@ -157,6 +178,7 @@
       "rateableValueRangeInvalid": "रेटेबल व्हॅल्यू 'To' रक्कम 'From' पेक्षा जास्त किंवा समान असावी.",
       "capitalValueBetweenRequired": "दोन्ही रक्कम भरा.",
       "rateableValueInvalid": "रेटेबल व्हॅल्यूमध्ये फक्त धन संख्या असणे आवश्यक आहे.",
+      "valuationMethodRequired": "कृपया मूल्यांकन पद्धत निवडा.",
       "noSearchCriteria": "शोधण्यापूर्वी किमान एक फिल्टर (झोन, वॉर्ड, मालमत्ता क्र., UPIC ID, धारक नाव, मोबाइल इ.) निवडा."
     }
   },
@@ -170,14 +192,17 @@
     "applyFilterHint": "मालमत्ता पाहण्यासाठी वरील फिल्टर लावा किंवा कार्डवर क्लिक करा.",
     "searchFailed": "शोध पूर्ण होऊ शकला नाही. वरील त्रुटी संदेश पहा.",
     "noDataToExport": "निर्यात करण्यासाठी डेटा नाही",
+    "noUnits": "कोणतीही अपार्टमेंट युनिट आढळली नाहीत.",
+    "apartmentUnits": "अपार्टमेंट युनिट्स ({count})",
+    "loadingUnits": "अपार्टमेंट युनिट्स लोड होत आहेत...",
     "format": {
       "currency": "₹{amount}"
     },
     "columns": {
       "upicId": "UPIC आयडी",
       "zoneWard": "झोन आणि वॉर्ड",
-      "propertyPartition": "म. आणि विभाजन क्र.",
-      "propertyPartitionTooltip": "मालमत्ता क्रमांक आणि विभाजन क्रमांक",
+      "propertyPartition": "म.-विभाजन क्र.",
+      "propertyPartitionTooltip": "मालमत्ता-विभाजन क्रमांक आणि जुना मालमत्ता क्रमांक",
       "ownerOccupier": "धारक आणि रहिवासी",
       "zone": "झोन",
       "ward": "वॉर्ड",
@@ -212,6 +237,8 @@
       "address": "पत्ता",
       "rv": "आरव्ही",
       "cv": "सीव्ही",
+      "rvLabel": "RV:",
+      "cvLabel": "CV:",
       "rvCv": "आरव्ही/सीव्ही",
       "rvCvTooltip": "रेटएबल मूल्य / भांडवली मूल्य",
       "totalTax": "एकूण कर",

@@ -20,9 +20,9 @@ export function LoginForm({ copy, ulbData, ...clientProps }: LoginFormProps) {
   return (
     <div className="w-full max-w-md">
       <Card className="overflow-hidden rounded-2xl border border-white/40 bg-white/80 shadow-2xl backdrop-blur-md transition-all duration-500 ease-in-out">
-        <CardHeader className="flex flex-col items-center space-y-1 pb-2 pt-8 text-center">
-          <div className="relative mb-6 drop-shadow-lg transition-transform duration-300 hover:scale-105">
-            <div className="relative flex h-28 w-24 items-center justify-center">
+        <CardHeader className="flex flex-col items-center space-y-1 pb-2 pt-6 sm:pt-8 text-center">
+          <div className="relative mb-4 sm:mb-6 drop-shadow-lg transition-transform duration-300 hover:scale-105">
+            <div className="relative flex h-24 w-20 sm:h-28 sm:w-24 items-center justify-center">
               {logoSrc ? (
                 <LoginFormCouncilLogo key={logoSrc} logoSrc={logoSrc} title={title} />
               ) : (
@@ -54,7 +54,7 @@ export function LoginForm({ copy, ulbData, ...clientProps }: LoginFormProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 px-8 pb-10 pt-4">
+        <CardContent className="space-y-4 sm:space-y-6 px-6 sm:px-8 pb-8 sm:pb-10 pt-4">
           <LoginFormClient copy={copy} {...clientProps} />
         </CardContent>
       </Card>

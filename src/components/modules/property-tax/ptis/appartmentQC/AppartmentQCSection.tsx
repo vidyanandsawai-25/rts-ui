@@ -28,6 +28,7 @@ interface AppartmentQCSectionProps {
   };
   wardId?: string;
   propertyNo?: string;
+  partitionNo?: string;
 }
 
 interface DrawerLocalData {
@@ -42,8 +43,9 @@ const AppartmentQCSection = ({
     commercial: emptyPagedResponse,
     residential: emptyPagedResponse
   },
-  wardId = '',
-  propertyNo = '',
+  wardId = "",
+  propertyNo = "",
+  partitionNo,
 }: AppartmentQCSectionProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,9 +62,10 @@ const AppartmentQCSection = ({
   const isUpdatingFromUrl = useRef(false);
 
   // Column filters
-  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+  const { activeFilters, handleFilterChange } = useColumnFilters({
     wardId,
     propertyNo,
+    activeMainTab,
   });
 
   // Tax details state - supports rateable, capital, and dual method
@@ -82,17 +85,17 @@ const AppartmentQCSection = ({
       setTaxDetailsLoading(true);
 
       if (activeSubTab === 'rateable') {
-        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
         if (result.success && result.data) {
           setTaxDetails(result.data);
         }
       } else if (activeSubTab === 'capital') {
-        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
+        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
         if (result.success && result.data) {
           setTaxDetails(result.data);
         }
       } else if (activeSubTab === 'dual-method') {
-        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
         if (result.success && result.data) {
           setDualMethodDetails(result.data);
         }
@@ -102,7 +105,7 @@ const AppartmentQCSection = ({
     } finally {
       setTaxDetailsLoading(false);
     }
-  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
+  }, [activeSubTab, activeMainTab, wardId, propertyNo, partitionNo]);
 
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';
@@ -144,6 +147,25 @@ const AppartmentQCSection = ({
     });
     startTransition(() => router.replace(`${pathname}?${newParams.toString()}`, { scroll: false }));
   }, [searchParams, pathname, router]);
+
+  const handleSort = useCallback((columnKey: string) => {
+    const currentSortBy = searchParams.get('sortBy') || '';
+    const currentSortOrder = searchParams.get('sortOrder') || '';
+
+    let nextSortBy: string | null = columnKey;
+    let nextSortOrder: string | null = 'asc';
+
+    if (currentSortBy === columnKey) {
+      if (currentSortOrder === 'asc') {
+        nextSortOrder = 'desc';
+      } else if (currentSortOrder === 'desc') {
+        nextSortBy = null;
+        nextSortOrder = null;
+      }
+    }
+
+    updateUrl({ sortBy: nextSortBy, sortOrder: nextSortOrder, pageNumber: 1 });
+  }, [searchParams, updateUrl]);
 
   const activePagedData = useMemo(() => {
     if (!initialData) return emptyPagedResponse;
@@ -251,9 +273,9 @@ const AppartmentQCSection = ({
             _applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
-            onFetchFilterOptions={fetchFilterOptions}
             sortBy={sortBy}
             sortOrder={sortOrder}
+            onSort={handleSort}
             wardId={wardId}
             propertyNo={propertyNo}
           />

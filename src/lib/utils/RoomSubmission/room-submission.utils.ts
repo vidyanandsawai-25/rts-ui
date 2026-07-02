@@ -66,10 +66,21 @@ export const calculateRoomArea = (formData: RoomFormData, shapeParameters: Shape
   return calculateSingleShapeArea(formData.shape, shapeParameters, formData.length, formData.width);
 };
 
-export const calculateRoomTotal = (area: number, roomCountVal: string | number, offsets: OffsetData[]) => {
+export const calculateRoomTotal = (
+  area: number,
+  roomCountVal: string | number,
+  offsets: OffsetData[],
+  outer?: string | boolean
+) => {
   const roomCount = typeof roomCountVal === "string" ? parseInt(roomCountVal) || 1 : roomCountVal;
   const netOffset = calculateNetOffsetArea(offsets);
-  return (area - netOffset) * roomCount;
+  const isOuter = outer === "Yes" || outer === true;
+  
+  let remainingArea = area - netOffset;
+  if (isOuter) {
+    remainingArea = remainingArea * 0.8;
+  }
+  return remainingArea * roomCount;
 };
 
 export const isOffsetValid = (offsetData: OffsetData, selectedShape: string): boolean => {

@@ -44,6 +44,7 @@ export function useExistingRateCheck({
 
     const checkExistingRates = async () => {
       setIsCheckingRates(true);
+      setExistingRateFound(false);
       try {
         const existingRates = await getRateMasterByFilters(selectedZone, selectedUseGroup, assessmentYear);
         const ratesExist = existingRates && existingRates.length > 0;

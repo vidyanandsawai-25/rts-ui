@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle, XCircle, CornerDownRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine.types';
+import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine';
 
 interface RuleSimulatorWorkflowProps {
   workflow: DryRunWorkflow;
@@ -16,11 +16,7 @@ export default function RuleSimulatorWorkflow({
   formatDryRunEffect,
   t,
 }: RuleSimulatorWorkflowProps) {
-  const [expandedJson, setExpandedJson] = React.useState<Record<string, boolean>>({});
 
-  const toggleJson = (ruleCode: string) => {
-    setExpandedJson((prev) => ({ ...prev, [ruleCode]: !prev[ruleCode] }));
-  };
 
   const displayedSubRules = React.useMemo(() => {
     return showMatchedOnly
@@ -55,13 +51,13 @@ export default function RuleSimulatorWorkflow({
 
       {/* Sub rules inside Workflow */}
       <div className="divide-y divide-slate-200">
-        {displayedSubRules.map((sr: DryRunSubRule) => {
+        {displayedSubRules.map((sr: DryRunSubRule, idx: number) => {
           const isMatched = sr.isMatch;
           const isSkipped = sr.wasSkipped;
 
           return (
             <div 
-              key={sr.ruleCode} 
+              key={`${sr.ruleCode}_${sr.arrayIndex ?? idx}`} 
               className={`p-5 flex flex-col gap-3 transition-colors ${
                 isMatched 
                   ? 'bg-emerald-50/20 hover:bg-emerald-50/30' 
@@ -122,15 +118,36 @@ export default function RuleSimulatorWorkflow({
               )}
 
               {/* Output Action Block */}
-              {isMatched && sr.effect && (
+              {isMatched && ((sr.effects && sr.effects.length > 0) || sr.effect) && (
                 <div className="flex flex-col gap-2.5 bg-emerald-50/50 p-3 rounded-xl border border-emerald-200/80 mt-1 shadow-sm">
-                  <div className="flex items-center gap-2.5 text-xs font-black text-emerald-950">
-                    <CornerDownRight className="w-4 h-4 text-emerald-700 shrink-0" />
-                    <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="flex items-start gap-2 text-xs font-black text-emerald-950">
+                    <CornerDownRight className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                    <div className="flex flex-col gap-2 w-full font-sans">
                       <span className="text-slate-600 font-bold">{t('simulation.outcomeAction')}:</span>
-                      <code className="bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded font-mono font-black border border-emerald-300">
-                        {formatDryRunEffect(sr.effect)}
-                      </code>
+                      <div className="flex flex-col gap-2 pl-2 border-l border-emerald-200">
+                        {(sr.effects && sr.effects.length > 0 ? sr.effects : (sr.effect ? [sr.effect] : [])).map((eff, effIdx, effArr) => {
+                          const hasStepComputed = eff.computedValue !== undefined && eff.computedValue !== null;
+                          return (
+                            <div key={`${sr.ruleCode ?? 'sr'}-${sr.arrayIndex ?? idx}-eff-${effIdx}`} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="flex items-center gap-1.5">
+                                {effArr.length > 1 && (
+                                  <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100/85 px-1 rounded select-none">
+                                    #{effIdx + 1}
+                                  </span>
+                                )}
+                                <code className="bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded font-mono font-black border border-emerald-300 text-xs">
+                                  {formatDryRunEffect(eff)}
+                                </code>
+                              </div>
+                              {hasStepComputed && (
+                                <div className="text-[11px] text-slate-500 font-semibold self-end sm:self-auto">
+                                  {t('simulation.stepRate') || 'Step Rate'}: <span className="font-bold text-slate-800 font-mono">{typeof eff.computedValue === 'number' ? eff.computedValue.toFixed(2) : eff.computedValue}</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                   
@@ -156,30 +173,7 @@ export default function RuleSimulatorWorkflow({
                     </div>
                   )}
 
-                  {/* Toggle JSON trace */}
-                  <div className="mt-2 pt-2 border-t border-emerald-200/40 flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleJson(sr.ruleCode)}
-                      className="text-[10.5px] font-black text-emerald-950 hover:text-emerald-900 transition duration-150 flex items-center gap-1.5 w-fit bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3 py-1.5 rounded-xl shadow-sm"
-                    >
-                      {expandedJson[sr.ruleCode] ? t('simulation.hideJsonTrace') : t('simulation.showJsonTrace')}
-                    </button>
-                    {expandedJson[sr.ruleCode] && (
-                      <pre className="text-[10px] bg-slate-900 text-slate-100 p-3.5 rounded-xl overflow-auto max-h-[220px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner w-full">
-                        {JSON.stringify({
-                          ruleCode: sr.ruleCode,
-                          ruleName: sr.ruleName,
-                          expression: sr.expression,
-                          isMatch: sr.isMatch,
-                          matchStatus: sr.matchStatus,
-                          baseRate: sr.baseRate,
-                          computedValue: sr.computedValue,
-                          effect: sr.effect
-                        }, null, 2)}
-                      </pre>
-                    )}
-                  </div>
+
                 </div>
               )}
             </div>
