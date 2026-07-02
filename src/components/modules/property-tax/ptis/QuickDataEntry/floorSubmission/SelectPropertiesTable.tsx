@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { MasterTable, type Column } from '@/components/common';
+import { Loader2 } from 'lucide-react';
+import { Checkbox, MasterTable, type Column } from '@/components/common';
 import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 
 interface SelectPropertiesTableProps {
@@ -11,11 +12,13 @@ interface SelectPropertiesTableProps {
   onToggle: (id: string | number) => void;
   onClearSelection: () => void;
   isLoading?: boolean;
+  disabledIds?: Set<string | number>;
 }
 
 type SelectablePropertyRow = Record<string, unknown> &
   SelectableProperty & {
     selected: boolean;
+    disabled: boolean;
     selection: string;
     propertyDisplay: string;
     typeDisplay: string;
@@ -50,10 +53,15 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   onToggle,
   onClearSelection,
   isLoading = false,
+  disabledIds = new Set(),
 }) => {
   const selectedCount = selectedIds.size;
+  const selectableProperties = React.useMemo(
+    () => properties.filter((property) => !disabledIds.has(property.id)),
+    [disabledIds, properties]
+  );
   const allSelected =
-    properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
+    selectableProperties.length > 0 && selectableProperties.every((property) => selectedIds.has(property.id));
   const someSelected = selectedCount > 0 && !allSelected;
 
   const tableData = React.useMemo<SelectablePropertyRow[]>(
@@ -61,11 +69,12 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       properties.map((property) => ({
         ...property,
         selected: selectedIds.has(property.id),
+        disabled: disabledIds.has(property.id),
         selection: String(property.id),
         propertyDisplay: formatPropertyDisplay(property),
         typeDisplay: formatPropertyTypeDisplay(property),
       })),
-    [properties, selectedIds]
+    [disabledIds, properties, selectedIds]
   );
 
   const handleSelectAll = React.useCallback(() => {
@@ -74,73 +83,75 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       return;
     }
 
-    properties.forEach((property) => {
+    selectableProperties.forEach((property) => {
       if (!selectedIds.has(property.id)) onToggle(property.id);
     });
-  }, [allSelected, onClearSelection, onToggle, properties, selectedIds]);
+  }, [allSelected, onClearSelection, onToggle, selectableProperties, selectedIds]);
+
+  const checkboxClassName =
+    'h-4 w-4 border-slate-400 bg-white text-white data-[state=checked]:border-slate-800 data-[state=checked]:bg-slate-800 data-[state=indeterminate]:border-slate-800 data-[state=indeterminate]:bg-slate-800 [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:stroke-[3.5] disabled:opacity-100 disabled:border-slate-700 disabled:data-[state=checked]:bg-slate-700';
 
   const columns = React.useMemo<Column<SelectablePropertyRow>[]>(
     () => [
       {
         key: 'selection',
         label: (
-          <input
-            type="checkbox"
+          <Checkbox
             checked={allSelected}
-            ref={(el) => {
-              if (el) el.indeterminate = someSelected;
-            }}
-            onChange={handleSelectAll}
-            className="w-3.5 h-3.5 rounded border-gray-300 accent-violet-600 cursor-pointer"
+            indeterminate={someSelected}
+            onCheckedChange={handleSelectAll}
+            className={checkboxClassName}
             aria-label={t('floor.selectProperties.selectAll')}
           />
         ),
         width: '44px',
         align: 'center',
         render: (_value, row) => (
-          <input
-            type="checkbox"
+          <Checkbox
             checked={row.selected}
-            onChange={() => onToggle(row.id)}
+            disabled={row.disabled}
+            onCheckedChange={() => {
+              if (!row.disabled) onToggle(row.id);
+            }}
             onClick={(event) => event.stopPropagation()}
-            className="w-3.5 h-3.5 rounded border-gray-300 accent-violet-600 cursor-pointer"
+            className={checkboxClassName}
             aria-label={t('floor.selectProperties.selectProperty', { propertyNo: row.propertyNo })}
           />
         ),
       },
       {
         key: 'propertyDisplay',
-        label: 'Property',
+        label: t('floor.selectProperties.property'),
         width: '220px',
-        cellClassName: 'whitespace-nowrap font-bold text-violet-700',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
       },
       {
         key: 'typeDisplay',
         label: t('floor.selectProperties.type'),
         width: '70px',
-        cellClassName: 'text-slate-600 whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
       },
       {
         key: 'wing',
         label: t('floor.selectProperties.wing'),
         width: '70px',
         align: 'center',
-        cellClassName: 'text-slate-600 whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
       },
       {
         key: 'flatNo',
         label: t('floor.selectProperties.flatNo'),
         width: '90px',
-        cellClassName: 'text-slate-600 whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
       },
     ],
-    [allSelected, handleSelectAll, onToggle, someSelected, t]
+    [allSelected, checkboxClassName, handleSelectAll, onToggle, someSelected, t]
   );
 
   const headerExtra =
     selectedCount > 0 ? (
       <div className="ml-auto flex items-center gap-2">
-        <span className="px-2 py-0.5 text-slate-700 rounded-full text-[10px] font-bold">
+        <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
           {t('floor.selectProperties.selected', { count: selectedCount })}
         </span>
         <button
@@ -154,20 +165,30 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
     ) : null;
 
   return (
-    <MasterTable<SelectablePropertyRow>
-      columns={columns}
-      data={tableData}
-      loading={isLoading}
-      getRowKey={(row) => row.id}
-      onRowClick={(row) => onToggle(row.id)}
-      headerTitle={t('floor.selectProperties.title')}
-      headerExtra={headerExtra}
-      emptyText={t('floor.selectProperties.noProperties')}
-      loadingText={t('floor.selectProperties.loading')}
-      containerClassName="mt-3"
-      tableClassName="table-fixed text-[11px] [&_th]:px-3 [&_td]:px-3"
-      maxBodyHeightClassName="max-h-[260px]"
-    />
+    <div className="mt-3">
+      {isLoading && (
+        <div className="mb-2 flex items-center gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>{t('floor.selectProperties.loading')}</span>
+        </div>
+      )}
+      <MasterTable<SelectablePropertyRow>
+        columns={columns}
+        data={tableData}
+        loading={isLoading}
+        getRowKey={(row) => row.id}
+        onRowClick={(row) => {
+          if (!row.disabled) onToggle(row.id);
+        }}
+        headerTitle={t('floor.selectProperties.title')}
+        headerExtra={headerExtra}
+        emptyText={t('floor.selectProperties.noProperties')}
+        loadingText={t('floor.selectProperties.loading')}
+        containerClassName=""
+        tableClassName="table-fixed text-xs [&_th]:px-3 [&_td]:px-3"
+        maxBodyHeightClassName="max-h-[260px]"
+      />
+    </div>
   );
 };
 

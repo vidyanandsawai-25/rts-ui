@@ -90,12 +90,11 @@
             "no": "No",
             "rooms": "Rooms",
             "areaSqM": "Area (Sq.M)",
-            "areaSqFt": "Area (Sq.Ft)",            
+            "areaSqFt": "Area (Sq.Ft)",
             "sqMeter": "m²",
             "sqFeet": "Sq.Feet",
             "ward": "Ward",
             "property": "Property",
-            
             "partition": "Partition",
             "selectedFloorDetails": "Selected Floor Details"
         },
@@ -713,7 +712,18 @@
             "search": "Search",
             "applyButton": "Apply Details",
             "applying": "Applying...",
-            "applySuccess": "Details applied successfully."
+            "applySuccess": "Details applied successfully.",
+            "property": "Property",
+            "currentType": "Current Type",
+            "typeWiseInstruction": "Please select properties from the list below and apply the selected partition's type to these selected properties.",
+            "typeClassificationNoteTitle": "Note: Property Type Classification",
+            "typeClassificationNote": "* Type is used to indicate properties with the same area/plan.",
+            "sourcePropertyNotFound": "Source property {partitionNo} was not found in the selected property list.",
+            "selectDestinationProperty": "Select at least one destination property.",
+            "noDestinationProcessed": "No destination property was processed.",
+            "noDataCopied": "No data was copied. Source: {source}, type: {type}, processed: {processed}.",
+            "applyFailed": "Failed to apply details.",
+            "unknownError": "Unknown error occurred."
         },
         "addFloor": "Add Floor",
         "selectedFloorDetails": "Selected Floor Details",

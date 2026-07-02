@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, MapPin, Hash, Layers } from 'lucide-react';
+import { MapPin, Hash, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmission';
 import { EditSidebarProps } from '@/types/floor-details.types';
 import { Drawer, LoadingPage, Tabs, SearchSelect, type SearchSelectOption, Input } from '@/components/common';
+import { UpdateButton } from '@/components/common/ActionButtons';
 import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
 import SelectPropertiesTable from './SelectPropertiesTable';
@@ -27,6 +28,10 @@ const DATA_ENTRY_SAME_AS_FILTER_TYPES: Record<string, string> = {
 };
 
 function normalizePartitionNo(value: string | number | null | undefined): string {
+  return String(value ?? '').trim().toUpperCase();
+}
+
+function normalizeDataEntrySameAsType(value: string | number | null | undefined): string {
   return String(value ?? '').trim().toUpperCase();
 }
 
@@ -112,14 +117,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     return '';
   }, [selectableProperties, props.partitionNo]);
 
-  // Type-wise: editable new type (empty = use current property type)
-  const [typeWiseNewType, setTypeWiseNewType] = React.useState('');
-  React.useEffect(() => {
-    if (selectedPropertyIds.size === 0) {
-      setTypeWiseNewType('');
-    }
-  }, [selectedPropertyIds.size]);
- const [searchWardId, setSearchWardId] = React.useState(props.wardId ? String(props.wardId) : '');
+  const [searchWardId, setSearchWardId] = React.useState(props.wardId ? String(props.wardId) : '');
   const [searchPropertyNo, setSearchPropertyNo] = React.useState(props.propertyNo || '');
 
   // SearchSelect list options and loading states
@@ -209,7 +207,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(async () => {
     setShowDataEntrySameAsDrawer(true);
-    setTypeWiseNewType('');
+    const shouldAutoLoadProperties = !!(searchWardId && searchPropertyNo);
+    if (shouldAutoLoadProperties) {
+      setIsLoadingProperties(true);
+    }
     if (wardOptions.length === 0) {
       await loadWards();
     }
@@ -219,14 +220,17 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     if (searchWardId && searchPropertyNo && selectableProperties.length === 0) {
       const wardId = Number(searchWardId);
       if (wardId && searchPropertyNo.trim()) {
-        setIsLoadingProperties(true);
         try {
           const results = await fetchDataEntrySameAsAction(wardId, searchPropertyNo.trim());
           setSelectableProperties(results);
         } finally {
           setIsLoadingProperties(false);
         }
+      } else {
+        setIsLoadingProperties(false);
       }
+    } else if (shouldAutoLoadProperties) {
+      setIsLoadingProperties(false);
     }
   }, [
     wardOptions.length,
@@ -240,7 +244,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   const handleCloseDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(false);
-    setTypeWiseNewType('');
   }, []);
 
   const [isApplyingSameAs, setIsApplyingSameAs] = React.useState(false);
@@ -253,13 +256,11 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     const sourcePropertyId = getNumericDataEntrySameAsId(sourceProperty?.id);
     const sameAsType = dataEntrySameAsTab === 'property-wise'
       ? 0
-      : (getDataEntrySameAsType(
-          typeWiseNewType.trim() ? typeWiseNewType.trim() : sourceProperty?.type
-        ) ?? 0);
+      : (getDataEntrySameAsType(sourceProperty?.type) ?? 0);
     const sameAsTypeLabel = getDataEntrySameAsTypeLabel(sourceProperty);
 
     if (!sourcePropertyId) {
-      toast.error(`Source property ${props.partitionNo || ''} not found in selected property list.`);
+      toast.error(t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: props.partitionNo || '-' }));
       return;
     }
 
@@ -275,7 +276,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       ));
 
     if (destinationPropertyIds.length === 0) {
-      toast.error('Select at least one destination property.');
+      toast.error(t('floor.selectProperties.selectDestinationProperty'));
       return;
     }
 
@@ -306,48 +307,48 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         ].reduce((total, count) => total + Number(count ?? 0), 0);
 
         if (processed <= 0) {
-          toast.error('No destination property was processed.');
+          toast.error(t('floor.selectProperties.noDestinationProcessed'));
           return;
         }
 
         if (appliedCount <= 0) {
-          toast.error(`No data was copied. Source: ${sourceDebug}, type: ${sameAsTypeLabel}, processed: ${processed}.`, { duration: 6000 });
+          toast.error(t('floor.selectProperties.noDataCopied', { source: sourceDebug, type: sameAsTypeLabel, processed }), { duration: 6000 });
           return;
         }
 
         toast.success(
-          t('floor.selectProperties.applySuccess') || 'Details applied successfully.'
+          t('floor.selectProperties.applySuccess')
         );
-        setSelectedPropertyIds(new Set());
+
+        if (dataEntrySameAsTab === 'type-wise') {
+          const updatedIds = new Set(destinationPropertyIds);
+          setSelectableProperties((prev) =>
+            prev.map((property) =>
+              updatedIds.has(Number(property.id))
+                ? { ...property, type: sourceProperty?.type ?? property.type, typeLabel: sourceProperty?.typeLabel ?? property.typeLabel }
+                : property
+            )
+          );
+        } else {
+          setSelectedPropertyIds(new Set());
+        }
+
         router.refresh();
       } else {
-        toast.error(res.error || 'Failed to apply details.');
+        toast.error(res.error || t('floor.selectProperties.applyFailed'));
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unknown error occurred.');
+      toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
     } finally {
       setIsApplyingSameAs(false);
     }
-  }, [props.partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, typeWiseNewType, t, router]);
+  }, [props.partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, t, router]);
 
-  const handleTogglePropertySelection = React.useCallback((id: string | number) => {
-    setSelectedPropertyIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const handleClearPropertySelection = React.useCallback(() => {
-    setSelectedPropertyIds(new Set());
-  }, []);
-
-  // Filter out the currently selected partition from the properties table
-  const filterPropertiesForTable = React.useCallback((properties: SelectableProperty[]) => {
+  // Filter out the currently selected partition unless the active view needs to show the source row.
+  const filterPropertiesForTable = React.useCallback((properties: SelectableProperty[], includeCurrentPartition = false) => {
     return properties
       .filter(p => p.partitionNo && p.partitionNo !== '-')
-      .filter(p => normalizePartitionNo(p.partitionNo) !== normalizePartitionNo(props.partitionNo))
+      .filter(p => includeCurrentPartition || normalizePartitionNo(p.partitionNo) !== normalizePartitionNo(props.partitionNo))
       .map(p => {
         const wardOpt = wardOptions.find(o => o.value === String(p.wardNo));
         return {
@@ -357,23 +358,58 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       });
   }, [props.partitionNo, wardOptions]);
 
+  const sourcePropertyIds = React.useMemo(() => {
+    const sourceProperty = selectableProperties.find(
+      (property) => normalizePartitionNo(property.partitionNo) === normalizePartitionNo(props.partitionNo)
+    );
+
+    return sourceProperty ? new Set<string | number>([sourceProperty.id]) : new Set<string | number>();
+  }, [props.partitionNo, selectableProperties]);
+
+  const typeWiseLockedPropertyIds = React.useMemo(() => {
+    const currentType = normalizeDataEntrySameAsType(currentPropertyType);
+    if (!currentType) return new Set<string | number>(sourcePropertyIds);
+
+    const matchingPropertyIds = filterPropertiesForTable(selectableProperties, true)
+      .filter((property) => normalizeDataEntrySameAsType(property.type) === currentType)
+      .map((property) => property.id);
+
+    return new Set<string | number>([...sourcePropertyIds, ...matchingPropertyIds]);
+  }, [currentPropertyType, filterPropertiesForTable, selectableProperties, sourcePropertyIds]);
+
+  const activeLockedPropertyIds = dataEntrySameAsTab === 'type-wise' ? typeWiseLockedPropertyIds : sourcePropertyIds;
+
+  React.useEffect(() => {
+    if (!showDataEntrySameAsDrawer) return;
+    setSelectedPropertyIds(new Set(activeLockedPropertyIds));
+  }, [activeLockedPropertyIds, showDataEntrySameAsDrawer]);
+
+  const handleTogglePropertySelection = React.useCallback((id: string | number) => {
+    if (activeLockedPropertyIds.has(id)) return;
+
+    setSelectedPropertyIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, [activeLockedPropertyIds]);
+
+  const handleClearPropertySelection = React.useCallback(() => {
+    setSelectedPropertyIds(new Set(activeLockedPropertyIds));
+  }, [activeLockedPropertyIds]);
+
   const renderApplyButton = () => (
     <div className="flex justify-end mt-4 px-1">
-      <button
+      <UpdateButton
         type="button"
+        size="sm"
+        label={isApplyingSameAs ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyButton')}
         onClick={handleApplySameAsDetails}
-        disabled={isApplyingSameAs || selectedPropertyIds.size === 0}
-        className="flex items-center justify-center gap-1.5 h-9 px-5 rounded-md bg-green-600 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-      >
-        {isApplyingSameAs ? (
-          <>
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            {t('floor.selectProperties.applying') || 'Applying...'}
-          </>
-        ) : (
-          t('floor.selectProperties.applyButton') || 'Apply Details'
-        )}
-      </button>
+        disabled={selectedPropertyIds.size === 0}
+        isLoading={isApplyingSameAs}
+        className="h-9 px-5 text-xs font-semibold rounded-md"
+      />
     </div>
   );
 
@@ -422,8 +458,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               sanitizeInput={sanitizeWardNo}
               className="h-8 text-xs"
               isLoading={isFetchingWards}
-              loadingPlaceholder={t('search.loading') || 'Loading...'}
-              noOptionsPlaceholder={t('search.noOptionsAvailable') || 'No options'}
+              loadingPlaceholder={t('search.loading')}
+              noOptionsPlaceholder={t('search.noOptionsAvailable')}
             />
           </div>
         </div>
@@ -445,8 +481,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               className="h-8 text-xs"
               disabled={!searchWardId || isFetchingProperties}
               isLoading={isFetchingProperties}
-              loadingPlaceholder={t('search.loading') || 'Loading...'}
-              noOptionsPlaceholder={t('search.noOptionsAvailable') || 'No options'}
+              loadingPlaceholder={t('search.loading')}
+              noOptionsPlaceholder={t('search.noOptionsAvailable')}
             />
           </div>
         </div>
@@ -456,16 +492,17 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           disabled={!searchWardId || !searchPropertyNo.trim() || isLoadingProperties}
           className="h-8 px-4 rounded-md bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {t('floor.selectProperties.search') || 'Search'}
+          {t('floor.selectProperties.search')}
         </button>
       </div>
       <SelectPropertiesTable
         t={t}
-        properties={filterPropertiesForTable(selectableProperties)}
+        properties={filterPropertiesForTable(selectableProperties, true)}
         selectedIds={selectedPropertyIds}
         onToggle={handleTogglePropertySelection}
         onClearSelection={handleClearPropertySelection}
         isLoading={isLoadingProperties}
+        disabledIds={sourcePropertyIds}
       />
       {renderApplyButton()}
     </>
@@ -479,14 +516,14 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         {renderFloorTableViewOnly()}
 
         <div className="mt-3 px-3 py-2 bg-blue-50 border border-blue-100 rounded text-[12px] font-medium text-red-700 shadow-sm">
-          Please select properties from the list below and apply the selected partition's [TYPE] to these selected properties.
+          {t('floor.selectProperties.typeWiseInstruction')}
         </div>
 
         {/* Type-wise controls row */}
         <div className="flex items-center gap-3 mt-3 px-1 flex-wrap">
           {/* TYPE label + read-only current type */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Type</span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">{t('floor.selectProperties.type')}</span>
             <Input
               type="text"
               readOnly
@@ -494,40 +531,29 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               value={currentPropertyType}
               className="h-8 w-16 rounded border border-slate-200 bg-slate-100 px-2 text-xs font-semibold text-center text-slate-500 cursor-default select-none outline-none"
               placeholder="-"
-              aria-label="Current Type"
+              aria-label={t('floor.selectProperties.currentType')}
             />
           </div>
-
-          {/* Enter New Type — editable, overrides current type on apply */}
-          <Input
-            type="text"
-            naked
-            disabled={selectedPropertyIds.size === 0}
-            value={typeWiseNewType}
-            onChange={(e) => setTypeWiseNewType(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
-            placeholder="Enter New Type"
-            className="h-8 w-36 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-colors disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed"
-            aria-label="Enter New Type"
-          />
         </div>
 
 
         {/* Table — all properties excluding current partition */}
         <SelectPropertiesTable
           t={t}
-          properties={filterPropertiesForTable(selectableProperties)}
+          properties={filterPropertiesForTable(selectableProperties, true)}
           selectedIds={selectedPropertyIds}
           onToggle={handleTogglePropertySelection}
           onClearSelection={handleClearPropertySelection}
           isLoading={isLoadingProperties}
+          disabledIds={typeWiseLockedPropertyIds}
         />
         {renderApplyButton()}
 
         {/* Type explanation and classification note below */}
         <div className="mt-4 px-3.5 py-3 bg-slate-100/60 border border-slate-200 rounded-md text-[11px] flex flex-col gap-1.5 shadow-sm">
-          <p className="font-bold text-red-700 text-xs">Note: Property Type Classification</p>
+          <p className="font-bold text-red-700 text-xs">{t('floor.selectProperties.typeClassificationNoteTitle')}</p>
           <p className="text-red-600 font-semibold">
-            * Type is used to indicate properties with the same area/plan.
+            {t('floor.selectProperties.typeClassificationNote')}
           </p>
         </div>
       </>
@@ -543,11 +569,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         {/* Table — all properties excluding current partition */}
         <SelectPropertiesTable
           t={t}
-          properties={filterPropertiesForTable(selectableProperties)}
+          properties={filterPropertiesForTable(selectableProperties, true)}
           selectedIds={selectedPropertyIds}
           onToggle={handleTogglePropertySelection}
           onClearSelection={handleClearPropertySelection}
           isLoading={isLoadingProperties}
+          disabledIds={sourcePropertyIds}
         />
         {renderApplyButton()}
       </>
@@ -660,15 +687,15 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                     <MapPin className="h-3 w-3 text-white/80" />
-                    <span>{t('roomSubmission.info.ward') || 'Ward'}: {props.wardNo || '—'}</span>
+                    <span>{t('roomSubmission.info.ward')}: {props.wardNo || '—'}</span>
                   </div>
                   <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                     <Hash className="h-3 w-3 text-white/80" />
-                    <span>{t('roomSubmission.info.property') || 'Property'}: {props.propertyNo || '—'}</span>
+                    <span>{t('roomSubmission.info.property')}: {props.propertyNo || '—'}</span>
                   </div>
                   <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                     <Layers className="h-3 w-3 text-white/80" />
-                    <span>{t('roomSubmission.info.partition') || 'Partition'}: {props.partitionNo || '—'}</span>
+                    <span>{t('roomSubmission.info.partition')}: {props.partitionNo || '—'}</span>
                   </div>
                 </div>
                 <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
@@ -744,3 +771,5 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 };
 
 export default FloorSubmission;
+
+
