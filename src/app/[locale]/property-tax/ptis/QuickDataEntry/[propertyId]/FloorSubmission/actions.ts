@@ -37,7 +37,15 @@ export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-function getFirstDataEntrySameAsLabel(...values: Array<string | number | null | undefined>): string | undefined {
+function getFirstDataEntrySameAsValue(rawItem: Record<string, unknown>, ...keys: string[]): string | number | null {
+    for (const key of keys) {
+        const value = rawItem[key];
+        if ((typeof value === 'string' || typeof value === 'number') && String(value).trim() !== '') return value;
+    }
+    return null;
+}
+
+function getFirstDataEntrySameAsLabel(...values: unknown[]): string | undefined {
     for (const value of values) {
         const text = String(value ?? '').trim();
         if (text && text !== '-' && !/^\d+$/.test(text)) return text;
@@ -55,9 +63,9 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             return [];
         }
         return response.data.items.map(item => {
-            const rawItem = item as any;
-            const sourceId = rawItem.propertyFloorId ?? rawItem.PropertyFloorId ?? rawItem.propertyFloorID ?? rawItem.PropertyFloorID ?? null;
-            const detailsId = rawItem.propertyDetailsId ?? rawItem.PropertyDetailsId ?? rawItem.propertyDetailsID ?? rawItem.PropertyDetailsID ?? null;
+            const rawItem = item as unknown as Record<string, unknown>;
+            const sourceId = getFirstDataEntrySameAsValue(rawItem, 'propertyFloorId', 'PropertyFloorId', 'propertyFloorID', 'PropertyFloorID');
+            const detailsId = getFirstDataEntrySameAsValue(rawItem, 'propertyDetailsId', 'PropertyDetailsId', 'propertyDetailsID', 'PropertyDetailsID');
             const typeLabel = getFirstDataEntrySameAsLabel(
                 rawItem.typeLabel,
                 rawItem.TypeLabel,
@@ -82,6 +90,8 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 typeLabel: typeLabel ?? undefined,
                 wing: item.wingName || '-',
                 flatNo: item.flatOrShopNo || '-',
+                carpetAreaSqFeet: getFirstDataEntrySameAsValue(rawItem, 'carpetAreaSqFeet', 'CarpetAreaSqFeet', 'carpetAreaSqFt', 'CarpetAreaSqFt', 'carpetAreaSqft', 'CarpetAreaSqft', 'totalCarpetAreaSqFeet', 'TotalCarpetAreaSqFeet', 'totalCarpetAreaSqFt', 'TotalCarpetAreaSqFt'),
+                carpetAreaSqMeter: getFirstDataEntrySameAsValue(rawItem, 'carpetAreaSqMeter', 'CarpetAreaSqMeter', 'carpetAreaSqMtr', 'CarpetAreaSqMtr', 'carpetAreaSqM', 'CarpetAreaSqM', 'totalCarpetAreaSqMeter', 'TotalCarpetAreaSqMeter', 'totalCarpetAreaSqMtr', 'TotalCarpetAreaSqMtr'),
             };
         });
     } catch {
@@ -303,3 +313,4 @@ export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPa
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
 }
+

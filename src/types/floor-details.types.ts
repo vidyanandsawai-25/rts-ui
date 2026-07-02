@@ -630,6 +630,8 @@ export interface SelectableProperty {
     typeLabel?: string;
     wing: string;
     flatNo: string;
+    carpetAreaSqFeet?: number | string | null;
+    carpetAreaSqMeter?: number | string | null;
 }
 
 export interface DataEntrySameAsItem {
@@ -647,6 +649,10 @@ export interface DataEntrySameAsItem {
     apartmentType?: string | null;
     wingName: string;
     flatOrShopNo: string;
+    carpetAreaSqFeet?: number | string | null;
+    CarpetAreaSqFeet?: number | string | null;
+    carpetAreaSqMeter?: number | string | null;
+    CarpetAreaSqMeter?: number | string | null;
 }
 
 export interface DataEntrySameAsResponse {

@@ -730,6 +730,7 @@
             "propertyNo": "Property No.",
             "partitionNo": "Partition No.",
             "type": "Type",
+            "carpetArea": "Carpet Area (Sq.Ft / Sq.M)",
             "wing": "Wing",
             "flatNo": "Flat No.",
             "selected": "{count} selected",

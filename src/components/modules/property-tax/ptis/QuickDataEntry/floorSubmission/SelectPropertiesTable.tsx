@@ -23,6 +23,7 @@ type SelectablePropertyRow = Record<string, unknown> &
     selection: string;
     propertyDisplay: string;
     typeDisplay: string;
+    carpetAreaDisplay: string;
   };
 
 function formatPropertyPart(value: unknown): string {
@@ -45,6 +46,13 @@ function formatPropertyTypeDisplay(property: SelectableProperty): string {
   const rawType = String(property.type ?? '').trim();
   if (!rawType || rawType === '-') return '-';
   return rawType;
+}
+
+function formatCarpetAreaDisplay(property: SelectableProperty): string {
+  const sqFeet = property.carpetAreaSqFeet;
+  const sqMeter = property.carpetAreaSqMeter;
+  if (sqFeet == null && sqMeter == null) return '-';
+  return `${sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00'} / ${sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00'}`;
 }
 
 const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
@@ -74,6 +82,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         selection: String(property.id),
         propertyDisplay: formatPropertyDisplay(property),
         typeDisplay: formatPropertyTypeDisplay(property),
+        carpetAreaDisplay: formatCarpetAreaDisplay(property),
       })),
     [disabledIds, properties, selectedIds]
   );
@@ -130,6 +139,12 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         key: 'typeDisplay',
         label: t('floor.selectProperties.type'),
         width: '70px',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
+      },
+      {
+        key: 'carpetAreaDisplay',
+        label: t('floor.selectProperties.carpetArea'),
+        width: '120px',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
       },
       {
