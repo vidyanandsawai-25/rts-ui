@@ -43,7 +43,7 @@ const Amenities = ({
   const sortOrder = searchParams.get('sortOrder') || '';
 
   // Column filters
-  const { activeFilters, handleFilterChange } = useColumnFilters({
+  const { activeFilters, handleFilterChange, fetchFilterOptions, isFilterPending } = useColumnFilters({
     wardId,
     propertyNo,
   });
@@ -89,7 +89,7 @@ const Amenities = ({
           updateQueryParams({ searchTerm: sanitized, pageNumber: 1 }); 
         }}
         onRowClick={handleRowClick}
-        loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
+        loading={isPending || isFilterPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
         sortBy={sortBy}
@@ -97,6 +97,7 @@ const Amenities = ({
         onSort={handleSort}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
+        onFetchFilterOptions={fetchFilterOptions}
       />
     </div>
   );
