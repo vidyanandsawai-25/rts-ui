@@ -50,25 +50,6 @@ export function ChangeTimelapse({
     typeof initialLng === 'number' &&
     Number.isFinite(initialLng);
 
-  if (!hasCoords) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center h-full bg-slate-950 text-slate-400 p-8 select-none">
-        <div className="flex flex-col items-center gap-3 max-w-md text-center">
-          <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
-            <svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <h3 className="text-white text-base font-semibold">Change Detection Location Unset</h3>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            GPS coordinates (latitude and longitude) are not available for this property in the database. A dynamic historical satellite map cannot be loaded.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const handlePlayToggle = React.useCallback(() => {
     setPlaying((p) => {
       if (!p && activeIdx >= waybackReleases.length - 1) setActiveIdx(0);
@@ -110,6 +91,25 @@ export function ChangeTimelapse({
   const handleToggleLabels = React.useCallback(() => {
     setShowLabels((v) => !v);
   }, [setShowLabels]);
+
+  if (!hasCoords) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center h-full bg-slate-950 text-slate-400 p-8 select-none">
+        <div className="flex flex-col items-center gap-3 max-w-md text-center">
+          <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+            <svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h3 className="text-white text-base font-semibold">{t('media.changeDetectionLocationUnset')}</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            {t('media.changeDetectionLocationUnsetDescription')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tl-wrap flex flex-col h-full bg-slate-900 border border-slate-800 overflow-hidden select-none">

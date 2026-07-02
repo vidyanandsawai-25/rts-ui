@@ -35,6 +35,8 @@
     "satelliteTitle": "जीआयएस / सॅटेलाइट दृश्य",
     "satelliteView": "जीआयएस / सॅलाइट दृश्य",
     "changeDetection": "बदल शोधणे",
+    "changeDetectionLocationUnset": "बदल शोधण्याचे स्थान सेट केलेले नाही",
+    "changeDetectionLocationUnsetDescription": "या मालमत्तेसाठी डेटाबेसमध्ये जीपीएस निर्देशांक (अक्षांश आणि रेखांश) उपलब्ध नाहीत. एक डायनॅमिक ऐतिहासिक उपग्रह नकाशा लोड केला जाऊ शकत नाही.",
     "changeDetectionComingSoon": "बदल शोधण्याचे तपशील लवकरच येत आहेत.",
     "photoPlan": "फोटो प्लॅन",
     "showPhotoPlan": "फोटो प्लॅन दाखवा",

@@ -35,6 +35,8 @@
     "satelliteTitle": "GIS / Satellite View",
     "satelliteView": "GIS / Satellite View",
     "changeDetection": "Change Detection",
+    "changeDetectionLocationUnset": "Change Detection Location Unset",
+    "changeDetectionLocationUnsetDescription": "GPS coordinates (latitude and longitude) are not available for this property in the database. A dynamic historical satellite map cannot be loaded.",
     "changeDetectionComingSoon": "Change Detection details coming soon.",
     "photoPlan": "Photo Plan",
     "showPhotoPlan": "Show Photo Plan",
