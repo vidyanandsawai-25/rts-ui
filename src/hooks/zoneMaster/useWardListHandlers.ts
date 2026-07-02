@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { WardItem } from "@/types/wardMaster.types";
 import { useConfirm } from "@/components/common";
-import { handleWardDelete, handleWardEdit } from "@/components/modules/property-tax/zone-master/wards/wardHandlers";
+import { toast } from "sonner";
+import { deleteWardAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { getWardColumns } from "@/components/modules/property-tax/zone-master/wards/wardColumns";
 
 interface UseWardListHandlersProps {
@@ -70,23 +71,62 @@ export function useWardListHandlers({
   const { confirm } = useConfirm();
 
   const handleDelete = useCallback((row: WardItem) => {
-    handleWardDelete({
-      row,
-      confirm,
-      refreshData,
-      t: (key: string, values?: Record<string, unknown>) => t(key, values)
+    const wardId = row.id;
+    const wardNo = row.wardNo;
+
+    if (!wardId) {
+      toast.error(t("messages.invalidWard"));
+      return;
+    }
+
+    confirm({
+      variant: "delete",
+      title: t("wardList.deleteTitle"),
+      description: t("dialogs.deleteDescription", {
+        name: wardNo,
+      }),
+      confirmText: t("actions.delete"),
+      cancelText: t("actions.cancel"),
+      onConfirm: async () => {
+        try {
+          const result = await deleteWardAction(wardId);
+
+          if (result.success) {
+            toast.success(t("messages.wardDeleteSuccess"));
+            refreshData();
+          } else {
+            const errorMsg = result.error?.toLowerCase() || "";
+
+            // Check for "in use" or "referenced" errors
+            if (
+              errorMsg.includes("cannot be deleted") ||
+              errorMsg.includes("referenced") ||
+              errorMsg.includes("in use") ||
+              errorMsg.includes("foreign key") ||
+              errorMsg.includes("reference constraint") ||
+              errorMsg.includes("dependent") ||
+              errorMsg.includes("409")
+            ) {
+              toast.error(t("wardMessages.wardCannotBeDeleted", { wardNo }));
+            } else {
+              toast.error(t("messages.wardDeleteError"));
+            }
+          }
+        } catch {
+          toast.error(t("messages.wardDeleteException"));
+        }
+      },
     });
   }, [t, confirm, refreshData]);
 
   const handleEdit = useCallback(
     (row: WardItem) => {
-      handleWardEdit({
-        row,
-        searchParams,
-        selectedZoneId,
-        pathname,
-        router
-      });
+      const params = new URLSearchParams(searchParams.toString());
+      if (selectedZoneId !== null) {
+        params.set("zoneId", String(selectedZoneId));
+      }
+      params.set("editWard", String(row.id));
+      router.push(`${pathname}?${params.toString()}`);
     },
     [searchParams, selectedZoneId, pathname, router]
   );
