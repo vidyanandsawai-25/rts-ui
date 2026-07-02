@@ -3,6 +3,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { Checkbox, MasterTable, type Column } from '@/components/common';
+import { ClearButton } from '@/components/common/ActionButtons';
 import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 
 interface SelectPropertiesTableProps {
@@ -154,13 +155,12 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
           {t('floor.selectProperties.selected', { count: selectedCount })}
         </span>
-        <button
+        <ClearButton
           type="button"
+          label={t('floor.selectProperties.clearSelection')}
           onClick={onClearSelection}
-          className="text-[11px] font-semibold text-slate-700 border border-slate-300 rounded-md px-2.5 py-1 transition-colors"
-        >
-          {t('floor.selectProperties.clearSelection')}
-        </button>
+          className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
+        />
       </div>
     ) : null;
 
