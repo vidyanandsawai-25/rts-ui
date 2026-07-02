@@ -69,12 +69,15 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
         const handleKeyDown = React.useCallback(
             (e: React.KeyboardEvent<HTMLButtonElement>): void => {
                 onKeyDown?.(e);
-                if (!e.defaultPrevented && e.key === ' ') {
-                    e.preventDefault();
-                    toggle();
-                }
-                if (e.key === 'Enter') {
-                    e.preventDefault();
+                if (!e.defaultPrevented) {
+                    if (e.key === ' ') {
+                        e.preventDefault();
+                        toggle();
+                    } else if (e.key === 'Enter') {
+                        // Prevent button's native Enter-to-click behavior
+                        // per ARIA spec: only Space should toggle checkboxes
+                        e.preventDefault();
+                    }
                 }
             },
             [onKeyDown, toggle]

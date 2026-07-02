@@ -56,6 +56,13 @@ export const SEARCH_ALPHANUMERIC_SANITIZE = /[^A-Za-z0-9\s+\-]/g;
 export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
 
+/* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
+ // Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
+ // No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
+ // Must start and end with an alphanumeric; a single separator is allowed between tokens.
+export const ALPHANUMERIC_WITH_SPACES_REGEX =/^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
+export const ALPHANUMERIC_WITH_SPACES_SANITIZE =/[^\p{L}\p{M}\p{N}.\s]/gu;
+
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
 export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
@@ -77,6 +84,32 @@ export const limitSingleAtEmail = (v: string): string => {
     cleaned.slice(0, first + 1) +
     cleaned.slice(first + 1).replace(/@/g, '')
   );
+};
+export const OWNER_NAME_REGEX =
+  /^[\p{L}\p{M}\s.,&'()\/\-:]+$/u;
+export const OWNER_NAME_SANITIZE =
+  /[^\p{L}\p{M}\s.,&'()\/\-:]/gu;
+
+
+export const limitOldPropertyNo = (v: string) => {
+  const cleaned = v
+    .replace(/[^0-9/-]/g, '')       // allow only digits, /, -
+    .replace(/([/-]){2,}/g, '$1');  // prevent duplicate separators
+
+  const parts = cleaned.split(/([/-])/);
+
+  let result = '';
+
+  for (const part of parts) {
+    if (part === '/' || part === '-') {
+      result += part;
+    } else {
+      const digits = part.replace(/\D/g, '');
+      result += digits; // allow unlimited digits per block
+    }
+  }
+
+  return result;
 };
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
 export const PINCODE_6_REGEX = /^[0-9]{6}$/;

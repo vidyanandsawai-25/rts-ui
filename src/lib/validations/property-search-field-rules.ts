@@ -6,7 +6,7 @@ import type {
   SearchCriteria,
   SearchTab,
   SearchValidationKey,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 
 export type PropertySearchValidationTranslator = (
   key: SearchValidationKey
@@ -181,11 +181,6 @@ function validateAmount(value: string, max: number): boolean {
   return true;
 }
 
-function validateDigitsOnly(value: string, max: number): boolean {
-  const trimmed = trimFieldValue(value);
-  if (!trimmed) return true;
-  return isWithinMaxLength(trimmed, max) && DIGITS_ONLY_PATTERN.test(trimmed);
-}
 
 function validateAlphanumericOnly(value: string, max: number): boolean {
   const trimmed = trimFieldValue(value);
@@ -226,7 +221,7 @@ export function validateSearchFieldValue(
   switch (field) {
     case "propertyNoFrom":
     case "propertyNoTo":
-      return validateDigitsOnly(
+      return validateAlphanumericWithSeparators(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.propertyNo
       )

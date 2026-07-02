@@ -28,6 +28,7 @@ export function useTypeOfUseValidations({
   typeOfUseList,
   t,
 }: UseTypeOfUseValidationsProps) {
+  const [initialIds] = useState<Set<number>>(new Set(initialTypeOfUseIds));
   const [selectedTypeOfUseIds, setSelectedTypeOfUseIds] = useState<Set<number>>(
     new Set(initialTypeOfUseIds)
   );
@@ -107,6 +108,7 @@ export function useTypeOfUseValidations({
 
   return {
     selectedTypeOfUseIds,
+    initialTypeOfUseIds: initialIds,
     persistedPropertyTypeId,
     setPersistedPropertyTypeId,
     toggleTypeOfUse,

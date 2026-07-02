@@ -6,7 +6,7 @@ import { ApiError } from "@/lib/utils/api";
 import type {
   WardApiResponse,
   ZoneApiResponse,
-} from "@/types/property-search-api.types";
+} from "@/types/property-search";
 
 function resolveZoneId(data: Record<string, unknown>): number {
   const raw = data.id ?? data.zoneId;

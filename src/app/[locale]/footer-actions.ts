@@ -25,6 +25,8 @@ export interface FooterActionPayload {
   rateableExpand?: string | string[];
   capitalExpand?: string | string[];
   dualExpand?: string | string[];
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 const ptisEditRedirectSchema = z.object({
@@ -108,8 +110,22 @@ export async function handleFooterAction(
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
 
-        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab, valuationTab, appartmentTab, subTab, showDetails, rateableExpand, capitalExpand, dualExpand } =
-          validationResult.data;
+        const {
+          propertyId,
+          locale,
+          wardNo,
+          wardId,
+          propertyNo,
+          partitionNo,
+          tab,
+          valuationTab,
+          appartmentTab,
+          subTab,
+          showDetails,
+          rateableExpand,
+          capitalExpand,
+          dualExpand,
+        } = validationResult.data;
 
         const params = new URLSearchParams();
         if (wardNo) params.set('wardNo', wardNo);
@@ -173,6 +189,8 @@ export async function handleFooterAction(
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
         if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
         if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.categoryId) params.set('categoryId', String(payload.categoryId));
+        if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
@@ -206,10 +224,12 @@ export async function handleFooterAction(
         params.set('propertyId', payload.propertyId);
         if (payload.wardId) params.set('wardId', String(payload.wardId));
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
-        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);      
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
         if (payload.partitionNo !== undefined) params.set('partitionNo', payload.partitionNo);
         if (payload.valuationTab) params.set('valuationTab', payload.valuationTab);
-        redirect(`/${payloadLocale}/property-tax/ptis/applicable-taxes/applicable?${params.toString()}`);
+        redirect(
+          `/${payloadLocale}/property-tax/ptis/applicable-taxes/applicable?${params.toString()}`
+        );
       }
       case 'PTIS_REFRESH': {
         const payloadLocale = payload.locale || 'en';

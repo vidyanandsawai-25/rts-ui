@@ -47,6 +47,7 @@ describe('useFloorFormState', () => {
 
     expect(result.current.formData.id).toBe(1);
     expect(result.current.formData.oldFloorId).toBe('10');
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining('typeOfUseId=3'), expect.any(Object));
   });
 
   it('should sync oldTypeOfUseId to URL search params', () => {

@@ -14,6 +14,7 @@ interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
     onInputChange: (field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => void;
     onFileUpload: (file: File) => void;
+    onFileDelete: () => void;
     validationError?: string;
     t: {
         (key: string, values?: Record<string, string | number>): string;
@@ -25,6 +26,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     data,
     onInputChange,
     onFileUpload,
+    onFileDelete,
     validationError,
     t,
 }) => {
@@ -45,6 +47,17 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         } else {
             onFileUpload(file);
         }
+    };
+
+    const handleFileDeleteWithConfirm = () => {
+        confirm({
+            title: t("discount.confirmDeleteTitle") || "Delete Document",
+            description: t("discount.confirmDeleteDesc") || "Are you sure you want to delete the attached document? This action cannot be undone.",
+            confirmText: t("discount.confirmDeleteOk") || "Yes, Delete",
+            cancelText: t("discount.confirmDeleteCancel") || "No, Cancel",
+            variant: "delete",
+            onConfirm: onFileDelete
+        });
     };
     if (!data) {
         return (
@@ -152,6 +165,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         isDisabled={isDisabled || isRequiredFieldMissing}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
+                        onFileDelete={handleFileDeleteWithConfirm}
                         t={t}
                         label={displayName}
                     />

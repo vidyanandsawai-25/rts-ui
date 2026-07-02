@@ -44,7 +44,7 @@ export default function OldTaxationForm({
           </h3>
         </div>
 
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
           {/* Property Identification Fields */}
           <PropertyDetailsFields
             t={t}

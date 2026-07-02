@@ -1,8 +1,8 @@
 
 'use client';
 
-import React from "react";
-import Link from "next/link";
+import React, { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Service, ServiceCardProps } from "@/types/home/home.types";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/common/Badge";
 import { Button } from "@/components/common/ActionButton";
 import { resolveIcon } from "@/lib/utils/icon-mapping";
+import { setDepartmentContextAction } from "@/app/[locale]/home/action";
 
 /**
  * Gets the icon component for a department ID or name
@@ -45,18 +46,45 @@ const getIcon = (iconKey: string) => {
 };
 
 
-const ServiceCard: React.FC<ServiceCardProps> = ({
+const ServiceCard: React.FC<ServiceCardProps & { departmentId: number }> = ({
+    departmentId,
     link,
     icon,
     title,
     subtext,
-    stats
+    stats,
+    moduleId,
+    moduleName
 }) => {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+
+    /**
+     * SSR-safe navigation: Set cookies via server action FIRST, then navigate.
+     *
+     * Why not <Link> with onClick?
+     * → <Link> navigates immediately, the server action may not complete
+     *   before the destination page renders on the server (SSR).
+     * → Using router.push() after await ensures cookies are set
+     *   before the destination page's SSR reads them.
+     */
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        startTransition(async () => {
+            await setDepartmentContextAction(departmentId, title, moduleId, moduleName);
+            router.push(link);
+        });
+    };
+
     return (
-        <Link 
-            href={link} 
-            className="block group decoration-0 no-underline h-full"
+        <a
+            href={link}
+            className={cn(
+                "block group decoration-0 no-underline h-full cursor-pointer",
+                isPending && "opacity-70 pointer-events-none"
+            )}
             aria-label={`Navigate to ${title}`}
+            onClick={handleClick}
         >
             <article className={cn(
                 "relative p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 min-h-[180px]",
@@ -84,7 +112,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     </div>
                 </div>
             </article>
-        </Link>
+        </a>
     );
 };
 
@@ -159,10 +187,10 @@ const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [], error }) => 
     }
 
     return (
-        <section className="w-full p-4 sm:p-8 md:p-12 min-h-[400px]" aria-label="Available Services">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 sm:gap-10 max-w-7xl mx-auto">
+        <section className="w-full p-4 sm:p-6 md:p-8 min-h-[300px]" aria-label="Available Services">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
                 {services.map(({ id, ...rest }) => (
-                    <ServiceCard key={id} {...rest} />
+                    <ServiceCard key={id} departmentId={id} {...rest} />
                 ))}
             </div>
         </section>

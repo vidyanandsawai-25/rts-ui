@@ -35,7 +35,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 export const photoPlanService = {
   // 1. GET - All current photos for a property
   async getPhotosByProperty(propertyId: number): Promise<ApiResponse<PropertyPhotoDto[]>> {
-    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoDto[]>>(`/property-photos/property/${propertyId}`);
+    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoDto[]>>(`/property-photos/property/${propertyId}`, { cache: 'no-store' });
     return response.success && response.data
       ? { success: response.data.success, statusCode: response.statusCode, data: response.data.items, message: response.data.message || response.message }
       : { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
@@ -43,7 +43,7 @@ export const photoPlanService = {
 
   // 1b. GET - All grouped photos for a property (nested by category)
   async getGroupedPhotosByProperty(propertyId: number): Promise<ApiResponse<PropertyPhotoGalleryDto>> {
-    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoGalleryDto>>(`/property-photos/property/${propertyId}/grouped`);
+    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoGalleryDto>>(`/property-photos/property/${propertyId}/grouped`, { cache: 'no-store' });
     return response.success && response.data
       ? { success: response.data.success, statusCode: response.statusCode, data: response.data.items, message: response.data.message || response.message }
       : { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
@@ -51,7 +51,7 @@ export const photoPlanService = {
 
   // 2. GET - All active photo types with status for a property
   async getPhotoTypesWithStatus(propertyId: number): Promise<ApiResponse<PropertyPhotoTypeWithStatusDto[]>> {
-    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoTypeWithStatusDto[]>>(`/property-photos/types-with-status/${propertyId}`);
+    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoTypeWithStatusDto[]>>(`/property-photos/types-with-status/${propertyId}`, { cache: 'no-store' });
     return response.success && response.data
       ? { success: response.data.success, statusCode: response.statusCode, data: response.data.items, message: response.data.message || response.message }
       : { success: false, statusCode: response.statusCode, error: response.error, message: response.message };

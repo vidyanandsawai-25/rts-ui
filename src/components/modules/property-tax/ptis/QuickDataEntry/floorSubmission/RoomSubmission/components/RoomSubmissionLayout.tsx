@@ -17,7 +17,7 @@ interface RoomSubmissionLayoutProps {
   props: RoomWiseSubmissionProps & { floorData?: FloorData };
   InlineError: React.FC<{ message: string }>;
   calculateArea: () => number;
-  calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[]) => number;
+  calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[], outer?: string | boolean) => number;
 }
 
 export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({

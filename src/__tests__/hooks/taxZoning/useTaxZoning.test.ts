@@ -168,6 +168,19 @@ describe('useTaxZoning', () => {
     expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining('page=1'));
   });
 
+  it('should handle sorting', () => {
+    const { result } = renderHook(() => useTaxZoning(baseProps));
+    
+    act(() => {
+      const wardColumn = result.current.columns.find(c => c.key === 'wardNo');
+      // @ts-expect-error - label is a React element
+      wardColumn?.label?.props?.onSort?.('wardNo');
+    });
+    
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining('sortBy=wardNo'));
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining('sortOrder=asc'));
+  });
+
   it('should generate preview data when all fields are set', () => {
     const { result } = renderHook(() => useTaxZoning(baseProps));
     

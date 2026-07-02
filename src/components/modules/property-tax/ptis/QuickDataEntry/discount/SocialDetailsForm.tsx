@@ -30,6 +30,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         handleInputChange,
         handleToggleEnabled,
         handlePhotoUpload,
+        handlePhotoDelete,
         handleSave
     } = useSocialDetailsForm(initialSocialData, propertyId);
 
@@ -163,6 +164,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         socialData={socialData}
                         onInputChange={handleInputChange}
                         onPhotoUpload={handlePhotoUpload}
+                        onPhotoDelete={handlePhotoDelete}
                         validationErrors={validationErrors}
                         isAttributeEnabled={isAttributeEnabled}
                         t={t as unknown as {

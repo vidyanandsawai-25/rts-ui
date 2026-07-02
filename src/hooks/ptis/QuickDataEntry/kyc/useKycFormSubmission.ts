@@ -4,8 +4,7 @@ import { updatePropertyKycAction } from '@/app/[locale]/property-tax/ptis/QuickD
 import { KycDetails, KycFormData, OwnerTypeApiItem } from '@/types/property-kyc.types';
 import type { ConfirmContextType } from '@/components/common/ConfirmProvider';
 import type { useDigitInputs } from '@/hooks/useDigitInputs';
-
-
+import { validateKycForm } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 interface UseKycFormSubmissionProps {
   formData: KycFormData;
   mobileInput: ReturnType<typeof useDigitInputs>;
@@ -16,6 +15,7 @@ interface UseKycFormSubmissionProps {
   locale: string;
   canSubmit: () => boolean;
   setIsSubmitted: (value: boolean) => void;
+  hasChanges: boolean;
 }
 
 /**
@@ -45,6 +45,7 @@ export const useKycFormSubmission = (
     locale,
     canSubmit,
     setIsSubmitted,
+    hasChanges,
   }: UseKycFormSubmissionProps,
   t: (key: string) => string,
   confirm: ConfirmContextType['confirm'],
@@ -72,7 +73,19 @@ export const useKycFormSubmission = (
       return;
     }
 
-    // Validate form data
+    // Guard 1: Require changes before allowing submit
+    if (!hasChanges) {
+      return;
+    }
+
+    // Guard 2: Validate form data with specific schema rules
+    const validationError = validateKycForm(formData, mobileInput.value, alternateMobileInput.value, aadharInput.value, t);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    // Final safety check
     if (!canSubmit()) {
       toast.error(t('kyc.validation.pleaseFixErrors'));
       return;
@@ -83,7 +96,6 @@ export const useKycFormSubmission = (
       variant: 'update',
       meta: {
         name: formData.ownerName || t('kyc.recordLabel'),
-        id: KycDetailsData?.propertyId,
       },
       onConfirm: async () => {
         startTransition(async () => {
@@ -111,18 +123,18 @@ export const useKycFormSubmission = (
               ownerTitle: formData.ownerTitle?.trim() || null,
               ownerName: formData.ownerName?.trim() || null,
               ownerTitleEnglish: KycDetailsData.ownerTitleEnglish ?? null,
-              ownerNameEnglish: KycDetailsData.ownerNameEnglish ?? null,
+              ownerNameEnglish: formData.ownerNameEnglish?.trim() || null,
               occupierTitle: KycDetailsData.occupierTitle ?? null,
               occupierName: formData.occupierName?.trim() || null,
               occupierTitleEnglish: KycDetailsData.occupierTitleEnglish ?? null,
-              occupierNameEnglish: KycDetailsData.occupierNameEnglish ?? null,
+              occupierNameEnglish: formData.occupierNameEnglish?.trim() || null,
               flatOrShopName: formData.flatOrShopName?.trim() || null,
-              flatOrShopNameEnglish: KycDetailsData.flatOrShopNameEnglish ?? null,
+              flatOrShopNameEnglish: formData.flatOrShopNameEnglish?.trim() || null,
               flatOrShopNo: KycDetailsData.flatOrShopNo ?? null,
               flatOrShopNoEnglish: KycDetailsData.flatOrShopNoEnglish ?? null,
               address: formData.address?.trim() || null,
               location: formData.location?.trim() || null,
-              addressEnglish: KycDetailsData.addressEnglish ?? null,
+              addressEnglish: formData.addressEnglish?.trim() || null,
               locationEnglish: KycDetailsData.locationEnglish ?? null,
               pinCode: formData.pinCode?.trim() || null,
             };

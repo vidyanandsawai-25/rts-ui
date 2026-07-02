@@ -97,10 +97,22 @@ export interface SearchSelectProps {
    * Direction/placement of the menu dropdown. Defaults to 'bottom'.
    */
   menuPlacement?: 'top' | 'bottom';
+  tabIndex?: number;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEnter?: () => void;
   /**
    * Optional validation error message.
    */
   error?: string;
+    /**
+   * Optional autoFocus prop to focus the input on mount.
+   */
+  autoFocus?: boolean;
+}
+
+/** Helper to normalize string for forgiving/flexible option matching. */
+function normalizeSearchText(str: string): string {
+  return str.toLowerCase().replace(/[\s-]/g, '');
 }
 
 export function SearchSelect({
@@ -123,6 +135,10 @@ export function SearchSelect({
   loadingPlaceholder,
   noOptionsPlaceholder,
   error,
+  tabIndex,
+  onKeyDown,
+  onEnter,
+  autoFocus = false,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -204,7 +220,10 @@ export function SearchSelect({
     // If search is disabled, always show all options
     if (disableSearch) return validOptions;
     if (!hasTyped) return validOptions;
-    return validOptions.filter((opt) => opt.label.toLowerCase().includes(search.toLowerCase()));
+    const cleanSearch = normalizeSearchText(search);
+    return validOptions.filter((opt) =>
+      normalizeSearchText(opt.label).includes(cleanSearch)
+    );
   }, [search, hasTyped, validOptions, disableSearch]);
 
   /* ---------------- Validate and clear on blur ---------------- */
@@ -218,9 +237,10 @@ export function SearchSelect({
     }
     setIsOpen(false);
     if (!hasOptions) return;
-    const matched = validOptions.find((opt) => opt.label === search);
+    const cleanSearch = normalizeSearchText(search);
+    const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
     if (matched) {
-      // If user typed an exact match and blurred, commit it
+      // If user typed a match and blurred, commit it
       if (hasTyped) {
         onChange(fallbackName, matched.value);
         setHasTyped(false);
@@ -277,9 +297,25 @@ export function SearchSelect({
         break;
       case 'Enter':
         e.preventDefault();
-        if (highlightedIndex >= 0) {
-          const opt = filteredOptions[highlightedIndex];
-          if (opt) handleSelect(opt.value);
+        const selectedOption =
+          highlightedIndex >= 0
+            ? filteredOptions[highlightedIndex]
+            : filteredOptions[0];
+        if (selectedOption) {
+          handleSelect(selectedOption.value);
+          onEnter?.();
+          return;
+        }
+
+        if (hasTyped) {
+          const exactMatch = validOptions.find(
+            (opt) => normalizeSearchText(opt.label) === normalizeSearchText(search)
+          );
+          if (exactMatch) {
+            handleSelect(exactMatch.value);
+            onEnter?.();
+            return;
+          }
         }
         break;
       case 'Escape':
@@ -311,6 +347,7 @@ export function SearchSelect({
           type="text"
           name={fallbackName}
           value={displayValue}
+          autoFocus={autoFocus}   
           placeholder={
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
@@ -346,7 +383,11 @@ export function SearchSelect({
           }}
           onBlur={handleBlur}
           onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e) => {
+            handleKeyDown(e);
+            onKeyDown?.(e);
+          }}
+          tabIndex={tabIndex}
           className={`
             w-full h-9 rounded-md border bg-white px-3 pr-9 text-sm text-slate-900
             placeholder:text-slate-400

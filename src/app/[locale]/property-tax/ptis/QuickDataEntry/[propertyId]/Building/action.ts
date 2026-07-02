@@ -76,19 +76,19 @@ async function cleanApiError(err: string | undefined | null, locale: string): Pr
 
   const cleanMsg = str.toLowerCase();
   if (cleanMsg.includes("without an issue date")) {
-    return t("building.errors.cannotEnableWithoutDate") || "Cannot enable certificate without an issue date.";
+    return t("building.errors.cannotEnableWithoutDate") || "Cannot enable document without an issue date.";
   }
   if (cleanMsg.includes("without a certificate number")) {
-    return t("building.errors.cannotEnableWithoutNumber") || "Cannot enable certificate without a certificate number.";
+    return t("building.errors.cannotEnableWithoutNumber") || "Cannot enable document without a document number.";
   }
   if (cleanMsg.includes("cannot be in the future")) {
     return t("building.errors.futureDate") || "Issue date cannot be in the future.";
   }
   if (cleanMsg.includes("cannot exceed 100 characters")) {
-    return t("building.errors.numberExceedsLimit") || "Certificate number cannot exceed 100 characters.";
+    return t("building.errors.numberExceedsLimit") || "Document number cannot exceed 100 characters.";
   }
   if (cleanMsg.includes("not found")) {
-    return t("building.errors.notFound") || "Certificate not found.";
+    return t("building.errors.notFound") || "Document not found.";
   }
   if (cleanMsg.includes("could not be converted") || cleanMsg.includes("system.nullable")) {
     return t("common.validation.invalidDate") || "Value format is invalid.";

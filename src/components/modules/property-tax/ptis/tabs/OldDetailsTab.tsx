@@ -142,19 +142,19 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               </FieldShell>
 
               <FieldShell
-                id="oldRV"
-                label={t('fields.oldRV')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
-              >
-                <ValueDisplay value={oldDetailsData?.oldRV || ''} />
-              </FieldShell>
-
-              <FieldShell
                 id="oldALV"
                 label={t('fields.oldALV')}
                 className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldALV || ''} />
+              </FieldShell>
+
+              <FieldShell
+                id="oldRV"
+                label={t('fields.oldRV')}
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
+              >
+                <ValueDisplay value={oldDetailsData?.oldRV || ''} />
               </FieldShell>
 
               <FieldShell

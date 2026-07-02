@@ -1,5 +1,10 @@
 import type { ActionResult } from '@/types/common.types';
 
+export interface PtisTranslationFunction {
+  (key: string, values?: Record<string, string | number | Date>): string;
+  has(key: string): boolean;
+}
+
 interface ResolveValuationDataOptions<T> {
   propertyId?: number;
   initialData?: T | null;
@@ -7,11 +12,14 @@ interface ResolveValuationDataOptions<T> {
   hasFetchedInitialData?: boolean;
   fetcher: (propertyId: number) => Promise<ActionResult<T>>;
   fallbackUserMessage: string;
+  t?: PtisTranslationFunction;
 }
 
 interface ResolveValuationDataResult<T> {
   data: T | null;
   error?: string;
+  message?: string;
+  warning?: string;
 }
 
 export const PTIS_VALUATION_ERROR_MESSAGES = {
@@ -23,32 +31,53 @@ export const PTIS_VALUATION_ERROR_MESSAGES = {
 } as const;
 
 /**
+ * Localizes raw backend exception messages case-insensitively.
+ */
+export function localizeBackendError(rawError: string, t: PtisTranslationFunction): string {
+  const errUpper = rawError.toUpperCase();
+  if (errUpper.includes('PROPERTYDETAILSNOTFOUND') || errUpper.includes('PROPERTY DETAILS NOT FOUND')) {
+    return t.has('error.propertyDetailsNotFound') ? t('error.propertyDetailsNotFound') : rawError;
+  }
+  if (errUpper.includes('INVALIDPROPERTYDATA') || errUpper.includes('INVALID PROPERTY DATA')) {
+    return t.has('error.invalidPropertyData') ? t('error.invalidPropertyData') : rawError;
+  }
+  if (errUpper.includes('TYPEOFUSEGROUPNOTFOUND') || errUpper.includes('TYPE OF USE GROUP NOT FOUND')) {
+    return t.has('error.typeOfUseGroupNotFound') ? t('error.typeOfUseGroupNotFound') : rawError;
+  }
+  return rawError;
+}
+
+/**
  * Converts raw API/action errors into user-safe messages for PTIS valuation modules.
  * Prioritizes rawError if it exists, otherwise falls back to status-based or predefined messages.
  */
 export function getPtisUserSafeErrorMessage(
   rawError: string | undefined,
   statusCode: number | undefined,
-  fallbackUserMessage: string
+  fallbackUserMessage: string,
+  t?: PtisTranslationFunction
 ): string {
   if (rawError?.trim()) {
+    if (t) {
+      return localizeBackendError(rawError, t);
+    }
     return rawError;
   }
 
   if (statusCode === 404) {
-    return PTIS_VALUATION_ERROR_MESSAGES.notFound;
+    return t?.has('error.notFound') ? t('error.notFound') : PTIS_VALUATION_ERROR_MESSAGES.notFound;
   }
 
   if (statusCode === 401 || statusCode === 403) {
-    return PTIS_VALUATION_ERROR_MESSAGES.unauthorized;
+    return t?.has('error.unauthorized') ? t('error.unauthorized') : PTIS_VALUATION_ERROR_MESSAGES.unauthorized;
   }
 
   if (statusCode === 400) {
-    return PTIS_VALUATION_ERROR_MESSAGES.invalidRequest;
+    return t?.has('error.invalidRequest') ? t('error.invalidRequest') : PTIS_VALUATION_ERROR_MESSAGES.invalidRequest;
   }
 
   if (statusCode != null && statusCode >= 500) {
-    return PTIS_VALUATION_ERROR_MESSAGES.serverIssue;
+    return t?.has('error.serverError') ? t('error.serverError') : PTIS_VALUATION_ERROR_MESSAGES.serverIssue;
   }
 
   return fallbackUserMessage;
@@ -64,6 +93,7 @@ export async function resolveValuationData<T>({
   hasFetchedInitialData = false,
   fetcher,
   fallbackUserMessage,
+  t,
 }: ResolveValuationDataOptions<T>): Promise<ResolveValuationDataResult<T>> {
   if (initialData != null) {
     return { data: initialData };
@@ -72,7 +102,7 @@ export async function resolveValuationData<T>({
   if (initialError) {
     return {
       data: null,
-      error: getPtisUserSafeErrorMessage(initialError, undefined, fallbackUserMessage),
+      error: getPtisUserSafeErrorMessage(initialError, undefined, fallbackUserMessage, t),
     };
   }
 
@@ -86,11 +116,15 @@ export async function resolveValuationData<T>({
 
   const result = await fetcher(propertyId);
   if (result.success) {
-    return { data: result.data ?? null };
+    return {
+      data: result.data ?? null,
+      message: result.message,
+      warning: result.error ? getPtisUserSafeErrorMessage(result.error, undefined, '', t) : undefined,
+    };
   }
 
   return {
     data: null,
-    error: result.error || getPtisUserSafeErrorMessage(undefined, result.statusCode, fallbackUserMessage),
+    error: getPtisUserSafeErrorMessage(result.error, result.statusCode, fallbackUserMessage, t),
   };
 }

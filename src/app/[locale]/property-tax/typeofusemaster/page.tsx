@@ -33,17 +33,15 @@ export default async function Page({
   /* ---------------------------------------------------
    * 1️⃣ Resolve paging + searches
    * --------------------------------------------------- */
-  // SubType pagination
   const pageNumber = Number(params.pn ?? 1);
   const pageSize = Number(params.ps ?? 5);
 
-  // Type pagination (server-side)
   const typePageNumber = Number(params.typePn ?? 1);
   const typePageSize = Number(params.typePs ?? 10);
 
   const subTypeSearch = params.q ?? "";
   const typeSearch = params.typeSearch ?? "";
-  const groupId = params.groupId ?? "";
+  const groupId = params.groupId ?? "ALL";
 
   /* ---------------------------------------------------
    * 2️⃣ Load GROUPS (always full)
@@ -95,7 +93,7 @@ export default async function Page({
     }
 
     // ✅ Default to first type only if no params at all (initial load)
-    if (!typeParam && !groupParam) {
+    if (!typeParam && (!groupParam || groupParam === "ALL")) {
       return String(allTypesResp.items?.[0]?.typeOfUseId ?? "");
     }
 
@@ -105,18 +103,14 @@ export default async function Page({
   /* ---------------------------------------------------
    * 5️⃣ Load TYPES (PAGINATED BY GROUP for display)
    * --------------------------------------------------- */
-  // ✅ PERFORMANCE: Fetch only current page of types for the selected group
-  // This reduces data transfer when displaying the type list
-  const effectiveGroupId = groupId || (groupsResp.items?.[0])?.typeOfUseGroupId || "";
+  const effectiveGroupId = groupId || "ALL";
   
-  const typesResp = effectiveGroupId
-    ? await getTypesByGroupPaged({
-        pageNumber: typePageNumber,
-        pageSize: typePageSize,
-        typeOfUseGroupId: Number(effectiveGroupId) || undefined,
-        searchTerm: typeSearch || undefined,
-      })
-    : { items: [], totalCount: 0, totalPages: 1 };
+  const typesResp = await getTypesByGroupPaged({
+    pageNumber: typePageNumber,
+    pageSize: typePageSize,
+    typeOfUseGroupId: effectiveGroupId === "ALL" ? undefined : (Number(effectiveGroupId) || undefined),
+    searchTerm: typeSearch || undefined,
+  });
 
   /* ---------------------------------------------------
    * 6️⃣ Build master data

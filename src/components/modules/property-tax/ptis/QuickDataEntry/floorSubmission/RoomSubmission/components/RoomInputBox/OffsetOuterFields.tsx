@@ -45,15 +45,24 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
   return (
     <>
       {/* Offset */}
-      <div className={cn("px-1 flex-shrink-0 flex flex-col justify-center", formData.offsetMinus === 'Yes' && isEditMode ? 'cursor-pointer' : '')} 
-           style={{ width: COLUMN_WIDTHS.offset }}
-           onClick={() => {
-             if (formData.offsetMinus === 'Yes' && isEditMode && !offsetModalOpen) {
-               setOffsetModalOpen(true); setOffsetList([...currentRoomOffsets]);
-               setOffsetData({ length: '', width: '', radius: '', base: '', height: '', side: '', base1: '', base2: '', area: 0, shape: 'Rectangle', operation: 'subtract', shapeType: 'Rectangle' });
-               setSelectedOperation('subtract'); setSelectedShape('Rectangle');
-             }
-           }}>
+      <div 
+        ref={(el) => {
+          if (focusRefs?.current && el) {
+            const btn = el.querySelector('button[role="combobox"]') as HTMLElement | null;
+            // eslint-disable-next-line react-hooks/immutability
+            focusRefs.current['offset'] = btn;
+          }
+        }}
+        className={cn("px-1 flex-shrink-0 flex flex-col justify-center", formData.offsetMinus === 'Yes' && isEditMode ? 'cursor-pointer' : '')} 
+        style={{ width: COLUMN_WIDTHS.offset }}
+        onClick={() => {
+          if (formData.offsetMinus === 'Yes' && isEditMode && !offsetModalOpen) {
+            setOffsetModalOpen(true); setOffsetList([...currentRoomOffsets]);
+            setOffsetData({ length: '', width: '', radius: '', base: '', height: '', side: '', base1: '', base2: '', area: 0, shape: 'Rectangle', operation: 'subtract', shapeType: 'Rectangle' });
+            setSelectedOperation('subtract'); setSelectedShape('Rectangle');
+          }
+        }}
+      >
         <Select
           options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
           value={formData.offsetMinus}
@@ -71,12 +80,22 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
               setTimeout(() => { focusRefs?.current['outer']?.focus(); (focusRefs?.current['outer'] as HTMLElement)?.click(); }, 100);
             }
           }}
-          disabled={!isEditMode || formData.outer === 'Yes' || offsetModalOpen}
+          disabled={!isEditMode || offsetModalOpen}
           className="w-full h-[40px]"
         />
       </div>
 
-      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.outer }}>
+      <div 
+        ref={(el) => {
+          if (focusRefs?.current && el) {
+            const btn = el.querySelector('button[role="combobox"]') as HTMLElement | null;
+            // eslint-disable-next-line react-hooks/immutability
+            focusRefs.current['outer'] = btn;
+          }
+        }}
+        className="flex flex-col justify-center flex-shrink-0 px-1" 
+        style={{ width: COLUMN_WIDTHS.outer }}
+      >
         <Select
           options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
           value={formData.outer}

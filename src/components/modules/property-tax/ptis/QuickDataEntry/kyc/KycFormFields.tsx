@@ -37,13 +37,13 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
   );
 
   const showError = (field: keyof KycFormData | 'mobile' | 'alternateMobile' | 'aadhar', isValid: boolean): boolean => {
-    if (focusedField === field) return false;
+    if (focusedField === field && !isSubmitted) return false;
     return baseShowError(field, isValid);
   };
 
   return (
     <div className="space-y-3">
-      {/* Row 1: Personal Info - Owner Type, Title, Property Holder Name, Occupier Name */}
+      {/* Row 1: Personal Info - Owner Type, Title, Property Holder Name */}
       <div className="grid grid-cols-12 gap-x-4 gap-y-3">
         <PersonalInfoFields
           t={t}
@@ -56,7 +56,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
         />
       </div>
 
-      {/* Row 2: Address & Email Info - Shop Name, Address, Email ID */}
+      {/* Row 2: Occupier & Shop Name */}
       <div className="grid grid-cols-12 gap-x-4 gap-y-3">
         <AddressInfoFields
           t={t}
@@ -65,11 +65,12 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
           showError={showError}
           onFocusField={setFocusedField}
           onBlurField={() => setFocusedField(null)}
+          section="occupier-shop"
         />
       </div>
 
       {/* Row 3: Contact Info - Aadhar Card No, Mobile No, Alternate Mobile No */}
-      <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
         <ContactInfoFields
           t={t}
           formData={formData}
@@ -78,6 +79,19 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
           alternateMobileInput={alternateMobileInput}
           aadharInput={aadharInput}
           showError={showError}
+        />
+      </div>
+
+      {/* Row 4: Address & Email Info - Address, Email ID, Pin Code */}
+      <div className="grid grid-cols-12 gap-x-4 gap-y-3">
+        <AddressInfoFields
+          t={t}
+          formData={formData}
+          setFormData={setFormData}
+          showError={showError}
+          onFocusField={setFocusedField}
+          onBlurField={() => setFocusedField(null)}
+          section="address-email-pincode"
         />
       </div>
     </div>

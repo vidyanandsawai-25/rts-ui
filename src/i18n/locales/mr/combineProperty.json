@@ -72,5 +72,6 @@
   "showHistory": "इतिहास दाखवा",
   "hideHistory": "इतिहास लपवा",
   "basePropertyTooltip": "ही आधार मालमत्ता आहे",
-  "combinePropertyTooltip": "ही मालमत्ता आपण आधार मालमत्तेत एकत्र करत आहोत"
+  "combinePropertyTooltip": "ही मालमत्ता आपण आधार मालमत्तेत एकत्र करत आहोत",
+  "noCombinePropertyHistoryFound": "कोणताही मालमत्ता एकत्रीकरणाचा इतिहास आढळला नाही"
 }

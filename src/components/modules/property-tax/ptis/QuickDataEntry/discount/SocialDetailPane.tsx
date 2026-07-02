@@ -17,6 +17,7 @@ interface SocialDetailPaneProps {
     socialData: Record<number, FlatSocialAttributeState>;
     onInputChange: (attributeId: number, field: keyof FlatSocialAttributeState, value: string | number | boolean | null | undefined) => void;
     onPhotoUpload: (socialAttributeId: number, file: File) => void;
+    onPhotoDelete: (socialAttributeId: number) => void;
     validationErrors?: Record<number, string>;
     isAttributeEnabled: (attr: FlatSocialAttributeState) => boolean;
     t: {
@@ -31,6 +32,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     socialData,
     onInputChange,
     onPhotoUpload,
+    onPhotoDelete,
     validationErrors,
     isAttributeEnabled,
     t,
@@ -60,6 +62,17 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
             cancelText: t("discount.confirmReplaceCancel") || "No, Cancel",
             variant: "warning",
             onConfirm: () => onPhotoUpload(data.socialAttributeId, file)
+        });
+    };
+
+    const handlePhotoDeleteWithConfirm = () => {
+        confirm({
+            title: t("discount.confirmDeleteTitle") || "Delete Document",
+            description: t("discount.confirmDeleteDesc") || "Are you sure you want to delete the attached document? This action cannot be undone.",
+            confirmText: t("discount.confirmDeleteOk") || "Yes, Delete",
+            cancelText: t("discount.confirmDeleteCancel") || "No, Cancel",
+            variant: "delete",
+            onConfirm: () => onPhotoDelete(data.socialAttributeId)
         });
     };
 
@@ -178,6 +191,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         isDisabled={isDisabled || isRequiredFieldMissing}
                         isDocumentInvalid={isPhotoInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
+                        onFileDelete={handlePhotoDeleteWithConfirm}
                         t={t as (key: string, values?: Record<string, string | number>) => string}
                         label={displayName}
                     />

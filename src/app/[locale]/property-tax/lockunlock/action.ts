@@ -12,7 +12,8 @@ import {
   LockedScreen,
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
-  BulkLockUnlockPayload
+  BulkLockUnlockPayload,
+  LockUnlockPropertyItem,
 } from "@/types/lockunlock.types";
 
 /**
@@ -41,14 +42,65 @@ export async function fetchLockUnlockPropertiesPagedAction(
 
 /**
  * Server Action to submit a bulk lock/unlock request.
+ * Supports select-all mode by resolving all matching property IDs server-side
+ * when selectAll is true, then passing the resolved IDs to the legacy API.
  */
 export async function bulkLockUnlockPropertiesAction(
   payload: BulkLockUnlockPayload
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
-    const result = await bulkLockUnlockProperties(payload);
+    const resolvedPayload: {
+      propertyIds: number[];
+      screenIds: number[];
+      action: "lock" | "unlock";
+    } = { propertyIds: [], screenIds: payload.screenIds, action: payload.action };
 
-    // Revalidate paths for all supported locale configurations
+    if (payload.selectAll && payload.filters) {
+      const queryParams: LockUnlockPropertiesQueryParams = {
+        WardId: payload.filters.wardId,
+        FromPropertyNo: payload.filters.fromProperty,
+        ToPropertyNo: payload.filters.toProperty,
+        PartitionNo: payload.filters.partitionNo,
+        Search: payload.filters.search,
+        PageNumber: 1,
+        PageSize: -1,
+      };
+
+      const allProperties = await getLockUnlockProperties(queryParams);
+
+      if (!allProperties || !allProperties.items || allProperties.items.length === 0) {
+        return {
+          success: false,
+          error: "No properties found matching the current filters.",
+        };
+      }
+
+      const allPropertyIds = allProperties.items.map((p: LockUnlockPropertyItem) => p.propertyId);
+      const excludedIds = payload.excludedPropertyIds ?? [];
+
+      resolvedPayload.propertyIds = allPropertyIds.filter(
+        (id: number) => !excludedIds.includes(id)
+      );
+
+      if (resolvedPayload.propertyIds.length === 0) {
+        return {
+          success: false,
+          error: "No properties selected after applying exclusions.",
+        };
+      }
+    } else {
+      resolvedPayload.propertyIds = payload.propertyIds ?? [];
+    }
+
+    if (resolvedPayload.propertyIds.length === 0) {
+      return {
+        success: false,
+        error: "At least one property must be selected.",
+      };
+    }
+
+    const result = await bulkLockUnlockProperties(resolvedPayload);
+
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/lockunlock`, "page");
     }
@@ -56,13 +108,13 @@ export async function bulkLockUnlockPropertiesAction(
     if (result.success === false) {
       return {
         success: false,
-        error: result.message || "Failed to complete bulk lock/unlock operation"
+        error: result.message || "Failed to Complete Operation",
       };
     }
 
     return {
       success: true,
-      message: result.message || "Bulk lock/unlock action completed successfully"
+      message: result.message || "Action Completed Successfully",
     };
   } catch (error: unknown) {
     if (error instanceof ApiError) {

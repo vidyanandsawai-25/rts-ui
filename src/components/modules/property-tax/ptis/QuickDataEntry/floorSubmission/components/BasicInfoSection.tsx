@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SearchSelect } from '@/components/common';
+import { SearchSelect, AnimatedDigitInput } from '@/components/common';
 import { BasicInfoSectionProps } from '@/types/floor-details.types';
 import { FloorData } from '@/types/room-details.types';
 import { getSelectOptions } from '@/lib/utils/form-options.util';
@@ -9,6 +9,7 @@ import { normalizeToStringArray } from '@/lib/utils/dropdown-helpers';
 import { FieldWrapper } from './SectionField';
 import { validateField } from '@/lib/validations/validateFloorSubmission';
 import { toast } from 'sonner';
+import { focusFieldOrFallback } from '@/lib/utils/floorSubmission/focus-helpers';
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   t,
@@ -23,27 +24,24 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   getFloorDescription,
   getSubFloorDescription,
   handleOpenDropdown,
+  isAddingNewFloor,
 }) => {
-  const [lastTypedIndex, setLastTypedIndex] = React.useState<{ conYr: number; asstYr: number }>({ conYr: -1, asstYr: -1 });
 
-  const handleYearChange = (
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      focusFieldOrFallback('floor-is-taxable', '.bg-white.rounded-xl');
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [editingFloorForm.id, isAddingNewFloor]);
+
+  const handleYearValueChange = (
     field: 'conYr' | 'asstYr',
-    rawVal: string,
+    value: string,
     errorTranslationKey: string
   ) => {
-    const value = rawVal.replace(/\D/g, '').slice(0, 4);
-    const prevVal = String(editingFloorForm[field] || '');
-    
-    // Only set animation for the newly added character index
-    if (value.length > prevVal.length) {
-      setLastTypedIndex((prev) => ({ ...prev, [field]: value.length - 1 }));
-    } else {
-      setLastTypedIndex((prev) => ({ ...prev, [field]: -1 })); // Reset on delete or backspace
-    }
-
     const newForm = { ...editingFloorForm, [field]: value };
     setEditingFloorForm(newForm);
-    
+
     let currentError = '';
     if (value.length === 4) {
       const validation = validateField(field, value);
@@ -54,10 +52,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
     setFormErrors((prev) => {
       const updated = { ...prev, [field]: currentError };
-      
+
       const conYrVal = String(newForm.conYr || '');
       const asstYrVal = String(newForm.asstYr || '');
-      
+
       if (conYrVal.length === 4 && asstYrVal.length === 4) {
         const conYear = parseInt(conYrVal, 10);
         const asstYear = parseInt(asstYrVal, 10);
@@ -78,78 +76,40 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     });
   };
 
-  const renderAnimatedYearInput = (
+  const handleYearBlur = (
     field: 'conYr' | 'asstYr',
-    id: string,
-    placeholder: string,
+    val: string,
     errorMsg: string
   ) => {
-    const value = String(editingFloorForm[field] || '');
-    
-    return (
-      <div className="relative w-full h-9 rounded-lg border border-gray-300 hover:border-gray-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 overflow-hidden bg-white flex items-center">
-        {/* Hidden but functional real input overlaying the whole field */}
-        <input
-          id={id}
-          type="text"
-          maxLength={4}
-          value={value}
-          onChange={(e) => handleYearChange(field, e.target.value, errorMsg)}
-          onBlur={(e) => {
-            const val = e.target.value;
-            const validation = validateField(field, val);
-            let fieldErr = '';
-            if (!validation.isValid) {
-              fieldErr = validation.error || errorMsg;
-            }
-            
-            setFormErrors((prev) => {
-              const updated = { ...prev, [field]: fieldErr };
-              const conYrVal = String(editingFloorForm.conYr || '');
-              const asstYrVal = String(editingFloorForm.asstYr || '');
-              
-              if (conYrVal.length === 4 && asstYrVal.length === 4) {
-                const conYear = parseInt(conYrVal, 10);
-                const asstYear = parseInt(asstYrVal, 10);
-                if (!isNaN(conYear) && !isNaN(asstYear) && conYear > asstYear) {
-                  const errMsg = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
-                  updated.asstYr = errMsg;
-                  if (prev.asstYr !== errMsg) {
-                    toast.error(errMsg);
-                  }
-                } else {
-                  const crossFieldError = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
-                  if (prev.asstYr === crossFieldError || updated.asstYr === crossFieldError) {
-                    updated.asstYr = '';
-                  }
-                }
-              }
-              return updated;
-            });
-          }}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-text z-10 text-sm px-3 focus:outline-none"
-        />
-        
-        {/* Visual representation of characters */}
-        <div className="absolute inset-0 flex items-center px-3 gap-0.5 pointer-events-none select-none">
-          {value.length === 0 ? (
-            <span className="text-gray-400 text-sm font-normal">{placeholder}</span>
-          ) : (
-            value.split('').map((char, index) => {
-              const shouldAnimate = index === lastTypedIndex[field];
-              return (
-                <span
-                  key={`${index}-${char}`}
-                  className={`inline-block text-sm font-semibold text-gray-800 ${shouldAnimate ? 'animate-digit-pop' : ''}`}
-                >
-                  {char}
-                </span>
-              );
-            })
-          )}
-        </div>
-      </div>
-    );
+    const validation = validateField(field, val);
+    let fieldErr = '';
+    if (!validation.isValid) {
+      fieldErr = validation.error || errorMsg;
+    }
+
+    setFormErrors((prev) => {
+      const updated = { ...prev, [field]: fieldErr };
+      const conYrVal = String(editingFloorForm.conYr || '');
+      const asstYrVal = String(editingFloorForm.asstYr || '');
+
+      if (conYrVal.length === 4 && asstYrVal.length === 4) {
+        const conYear = parseInt(conYrVal, 10);
+        const asstYear = parseInt(asstYrVal, 10);
+        if (!isNaN(conYear) && !isNaN(asstYear) && conYear > asstYear) {
+          const errMsg = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          updated.asstYr = errMsg;
+          if (prev.asstYr !== errMsg) {
+            toast.error(errMsg);
+          }
+        } else {
+          const crossFieldError = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          if (prev.asstYr === crossFieldError || updated.asstYr === crossFieldError) {
+            updated.asstYr = '';
+          }
+        }
+      }
+      return updated;
+    });
   };
 
   return (
@@ -169,6 +129,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           }}
           placeholder={t('floor.selectTaxableStatus')}
           className="h-9 text-sm border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          autoFocus
         />
       </FieldWrapper>
 
@@ -205,6 +166,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               } else {
                 setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
               }
+              // Automatically move focus to the subfloor field after selection
+              setTimeout(() => {
+                focusFieldOrFallback('floor-sub-floor', '.bg-white.rounded-xl');
+              }, 50);
             }}
             placeholder={t('floor.selectFloor')}
             className="h-9 text-sm"
@@ -249,7 +214,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
       {/* Con Yr (Construction Year) */}
       <FieldWrapper label={t('roomSubmission.table.conYr')} htmlFor="floor-con-yr" required error={formErrors.conYr}>
-        {renderAnimatedYearInput('conYr', 'floor-con-yr', '2020', t('floor.errors.constructionYearInvalid'))}
+        <AnimatedDigitInput
+          id="floor-con-yr"
+          maxLength={4}
+          value={String(editingFloorForm.conYr || '')}
+          placeholder="2020"
+          onChange={(val) => handleYearValueChange('conYr', val, t('floor.errors.constructionYearInvalid'))}
+          onBlur={(e) => handleYearBlur('conYr', e.target.value, t('floor.errors.constructionYearInvalid'))}
+        />
       </FieldWrapper>
 
       {/* Asst Yr (Assessment Year) */}
@@ -259,7 +231,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
         required
         error={formErrors.asstYr === (t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year') ? undefined : formErrors.asstYr}
       >
-        {renderAnimatedYearInput('asstYr', 'floor-asst-yr', '2024', t('floor.errors.assessmentYearInvalid'))}
+        <AnimatedDigitInput
+          id="floor-asst-yr"
+          maxLength={4}
+          value={String(editingFloorForm.asstYr || '')}
+          placeholder="2024"
+          onChange={(val) => handleYearValueChange('asstYr', val, t('floor.errors.assessmentYearInvalid'))}
+          onBlur={(e) => handleYearBlur('asstYr', e.target.value, t('floor.errors.assessmentYearInvalid'))}
+        />
       </FieldWrapper>
     </>
   );

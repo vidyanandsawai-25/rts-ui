@@ -14,6 +14,14 @@ vi.mock('next/navigation', () => ({
     useParams: vi.fn(),
 }));
 
+// Mock ConfirmProvider
+const mockConfirm = vi.fn();
+vi.mock('@/components/common/ConfirmProvider', () => ({
+    useConfirm: () => ({
+        confirm: mockConfirm,
+    }),
+}));
+
 // Mock next-intl
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => {

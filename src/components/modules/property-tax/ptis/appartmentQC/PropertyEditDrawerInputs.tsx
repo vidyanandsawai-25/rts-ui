@@ -198,6 +198,7 @@ interface EditableSelectProps {
   className?: string;
   required?: boolean;
   isLoading?: boolean;
+  error?: string;
 }
 
 /**
@@ -212,6 +213,7 @@ export const EditableSelect = memo(({
   className = "",
   required = false,
   isLoading = false,
+  error,
 }: EditableSelectProps) => (
   <div className={cn("flex flex-col", className)}>
     <Select
@@ -223,8 +225,9 @@ export const EditableSelect = memo(({
       placeholder={isLoading ? "Loading..." : placeholder}
       disabled={isLoading}
       selectSize="sm"
-      className="text-xs"
+      className={cn("text-xs", error && "[&>div]:border-red-500")}
     />
+    <ValidationMessage message={error} visible={!!error} type="error" />
   </div>
 ), (prev, next) =>
   prev.label === next.label &&
@@ -233,7 +236,8 @@ export const EditableSelect = memo(({
   prev.placeholder === next.placeholder &&
   prev.isLoading === next.isLoading &&
   prev.className === next.className &&
-  prev.options === next.options
+  prev.options === next.options &&
+  prev.error === next.error
 );
 EditableSelect.displayName = "EditableSelect";
 
@@ -354,6 +358,7 @@ export const CompactSelect = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onFocus={handleFocus}
+      onClick={(e) => e.stopPropagation()}
       disabled={disabled || isLoading}
       className="h-6 px-1 text-[10px] border border-gray-300 rounded bg-white hover:border-blue-400 focus:border-blue-500 focus:outline-none transition w-full min-w-[80px] cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
     >

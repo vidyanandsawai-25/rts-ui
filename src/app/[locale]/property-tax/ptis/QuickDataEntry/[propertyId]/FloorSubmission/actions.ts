@@ -105,9 +105,9 @@ export async function getConstructionTypeDataAction() {
     }
 }
 
-export async function getTypeOfUseDataAction() {
+export async function getTypeOfUseDataAction(propertyTypeId?: string | number) {
     try {
-        return await getTypeOfUseData();
+        return await getTypeOfUseData(propertyTypeId);
     } catch (_error) {
         return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchUsageTypes" };
     }

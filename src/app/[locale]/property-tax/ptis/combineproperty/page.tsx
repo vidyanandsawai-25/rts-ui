@@ -76,6 +76,8 @@ export default async function Page({ searchParams }: PageProps) {
             isActive: true,
             createdDate: null,
             updatedDate: null,
+            categoryId: categoryId ? Number(categoryId) : undefined,
+            societyDetailId: societyDetailId ? Number(societyDetailId) : undefined,
           };
         }
       } catch {
@@ -91,6 +93,8 @@ export default async function Page({ searchParams }: PageProps) {
           isActive: true,
           createdDate: null,
           updatedDate: null,
+          categoryId: categoryId ? Number(categoryId) : undefined,
+          societyDetailId: societyDetailId ? Number(societyDetailId) : undefined,
         };
       }
     } else {
@@ -141,7 +145,8 @@ export default async function Page({ searchParams }: PageProps) {
 
   // ── 4. Fetch history data if requested ─────────
   let historyData: PagedResponse<PropertyCombineDetails> | undefined;
-  if (showHistory === 'true' && wardId) {
+  const isShowHistory = showHistory !== 'false';
+  if (isShowHistory && wardId) {
     historyData = await fetchCombinePropertiesHistoryAction({
       wardId: Number(wardId),
       propertyNo: propertyNo,
@@ -163,7 +168,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   // ── 5. Fetch review data if combinePartitionNo is present in URL ─────────
   let initialReviewData: PropertyCombineDetails[] = [];
-  if (wardId && propertyNos && combinePartitionNo && showHistory !== 'true') {
+  if (wardId && propertyNos && combinePartitionNo && !isShowHistory) {
     try {
       const data = await fetchPropertyCombineDetailsAction({
         wardId: Number(wardId),
@@ -192,7 +197,7 @@ export default async function Page({ searchParams }: PageProps) {
       selectedWardId={wardId}
       selectedWardNo={wardNo}
       selectedPropertyNo={propertyNo}
-      showHistory={showHistory === 'true'}
+      showHistory={isShowHistory}
       historyData={historyData}
       historyDetailsData={historyDetailsData}
       initialReviewData={initialReviewData}

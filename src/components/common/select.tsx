@@ -122,6 +122,22 @@ export function Select({
     }
   }, [highlightedIndex, open]);
 
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleOutsideClick);
+    return () => {
+      document.removeEventListener('click', handleOutsideClick);
+    };
+  }, [open]);
+
   const handleSelect = (val: string) => {
     if (value === undefined) {
       setInternalValueState(val);

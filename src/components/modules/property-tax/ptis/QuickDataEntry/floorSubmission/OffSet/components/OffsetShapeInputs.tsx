@@ -45,7 +45,7 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
     return (
         <div className="space-y-3">
             <div className="flex gap-2.5 items-end">
-                <div className="flex-shrink-0 w-[130px]">
+                <div id="offset-shape-select-container" className="flex-shrink-0 w-[130px]">
                     <Label className="block text-xs font-semibold mb-1.5 text-gray-700">
                         {t("offset.labels.selectShape")}
                     </Label>

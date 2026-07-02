@@ -68,7 +68,9 @@ export async function getTaxZoningPagedServer(
   pageSize: number,
   taxZoneId?: number,
   wardId?: number,
-  groupBy?: string
+  groupBy?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
@@ -78,6 +80,8 @@ export async function getTaxZoningPagedServer(
   if (taxZoneId) params.append("TaxZoneId", taxZoneId.toString());
   if (wardId) params.append("WardId", wardId.toString());
   if (groupBy) params.append("GroupBy", groupBy);
+  if (typeof sortBy === "string" && sortBy.trim()) params.append("SortBy", sortBy.trim());
+  if (typeof sortOrder === "string" && sortOrder.trim()) params.append("SortOrder", sortOrder.trim());
 
   const response = await apiClient.get<PagedResponse<TaxZoning> | { items: PagedResponse<TaxZoning> }>(
     `/TaxZoning?${params.toString()}`

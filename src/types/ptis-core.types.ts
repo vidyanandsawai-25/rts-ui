@@ -24,13 +24,17 @@ export interface KYCDetailsData {
   title: string;
   propertyHolderName: string;
   propertyHolderNameMarathi: string;
+  propertyHolderNameEnglish?: string;
   occupierName: string;
   occupierNameMarathi: string;
+  occupierNameEnglish?: string;
   aadharCardNo: string;
   mobileNumber: string;
   email: string;
   shopName: string;
+  shopNameEnglish?: string;
   address: string;
+  addressEnglish?: string;
   wingNo: string;
   flatNo: string;
   shopNo: string;
@@ -136,6 +140,10 @@ export interface PropertySocialDetailItem {
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
+  isDiscountApplicable?: boolean;
+  documentGuid?: string | null;
+  percentage?: number | null;
+  amount?: number | null;
 }
 
 export interface DiscountData {

@@ -1,6 +1,6 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+ 
 import { useMemo, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { FloorData } from '@/types/room-details.types';
 import { EditSidebarProps } from '@/types/floor-details.types';
@@ -8,7 +8,7 @@ import { LookupData } from '@/types/common-details.types';
 import { normalizeFloorData } from '@/lib/utils/floorSubmission/floor-normalization';
 import { getCookieValue } from '@/lib/utils/cookie';
 import { ReadonlyURLSearchParams } from 'next/navigation';
-
+ 
 export const useFloorSync = (params: {
   props: EditSidebarProps;
   isAddingNewFloor: boolean;
@@ -34,9 +34,9 @@ export const useFloorSync = (params: {
     searchParams,
     INITIAL_FORM_STATE,
   } = params;
-
+ 
   const { initialFloors = [], initialFloorDetails = null, initialPropertyID } = props;
-
+ 
   // 1. Map Initial Floors (Derived State)
   const mappedInitialFloors = useMemo(() => {
     return initialFloors.map((f) =>
@@ -49,19 +49,19 @@ export const useFloorSync = (params: {
       })
     );
   }, [initialFloors, props.floorData, props.subFloorData, props.constructionTypeData, props.useData, props.subTypeData]);
-
+ 
   // 2. Sync localFloors with mappedInitialFloors (useEffect)
   useEffect(() => {
     setLocalFloors(mappedInitialFloors);
   }, [mappedInitialFloors, setLocalFloors]);
-
+ 
   // 3. Sync initialFloorDetails with form state (useEffect)
   const currentDetailsId = useMemo(() => {
     return typeof initialFloorDetails === 'object' && initialFloorDetails !== null
       ? (initialFloorDetails as Record<string, unknown>).id as string | number | undefined
       : undefined;
   }, [initialFloorDetails]);
-
+ 
   useEffect(() => {
     if (initialFloorDetails) {
       if (hasSyncedRef.current !== currentDetailsId) {
@@ -72,7 +72,7 @@ export const useFloorSync = (params: {
           use: props.useData as LookupData[],
           subType: props.subTypeData as LookupData[],
         });
-
+ 
         // Check for renter sessionStorage or cookie during sync
         let renterData: any = null;
         try {
@@ -81,7 +81,7 @@ export const useFloorSync = (params: {
             renterData = JSON.parse(sessionRenter);
           }
         } catch (_e) { }
-
+ 
         if (!renterData) {
           const renterCookie = getCookieValue('renter_data');
           if (renterCookie) {
@@ -93,7 +93,7 @@ export const useFloorSync = (params: {
             } catch (_e) { }
           }
         }
-
+ 
         // Check if there is an in-progress saved form in sessionStorage for this floor
         let savedForm: any = null;
         try {
@@ -109,9 +109,9 @@ export const useFloorSync = (params: {
             savedForm = restoredSessionFormRef.current;
           }
         } catch (_e) { }
-
+ 
         let finalForm = savedForm ? { ...savedForm } : { ...floorDataMapped };
-
+ 
         if (renterData) {
           const mergedRenterFields = {
             renter: 'Yes',
@@ -120,7 +120,7 @@ export const useFloorSync = (params: {
             agreementToDate: renterData.agreementDateTo || renterData.agreementToDate || finalForm.agreementToDate || null,
             agreementDate: renterData.agreementDate || finalForm.agreementDate || null,
             rentMonthly: renterData.rentMonthly || renterData.nonCalculateRentMonthly || finalForm.rentMonthly || 0,
-            nonCalculateRentMonthly: renterData.nonCalculateRentMonthly || renterData.rentMonthly || finalForm.nonCalculateRentMonthly || 0,
+            nonCalculateRentMonthly: renterData.nonCalculateRentMonthly || 0,
             rentYearly: (Number(renterData.nonCalculateRentMonthly || renterData.rentMonthly) || 0) * 12,
             renterDetails: renterData.renterDetails || finalForm.renterDetails || [],
             renterMast: renterData.renterMast || finalForm.renterMast || [],
@@ -129,8 +129,10 @@ export const useFloorSync = (params: {
             ...finalForm,
             ...mergedRenterFields,
           };
+        } else if (savedForm) {
+          finalForm.renter = floorDataMapped.renter === 'Yes' ? 'Yes' : 'No';
         }
-
+ 
         setEditingFloorForm(finalForm);
         setSelectedFloor(finalForm);
         hasSyncedRef.current = currentDetailsId ?? null;
@@ -156,18 +158,18 @@ export const useFloorSync = (params: {
     setSelectedFloor,
     INITIAL_FORM_STATE,
   ]);
-
+ 
   // Real-time autosave disabled to prevent unsaved changes from persisting across manual browser refreshes
-
+ 
   // 4. Sync URL Param Renter Cookie (useEffect Sync)
   const currentFloorIdUrl = searchParams.get('floorId');
   const currentDrawerUrl = searchParams.get('drawer');
-
+ 
   useEffect(() => {
     if (currentFloorIdUrl === 'new' || currentDrawerUrl === 'add') {
       setIsAddingNewFloor(true);
       setSelectedFloor(null);
-
+ 
       let savedForm: any = null;
       try {
         const sessionForm = sessionStorage.getItem('editingFloorForm');
@@ -182,7 +184,7 @@ export const useFloorSync = (params: {
           savedForm = restoredSessionFormRef.current;
         }
       } catch (_e) { }
-
+ 
       let renterData: any = null;
       try {
         const sessionRenter = sessionStorage.getItem('renter_data_new');
@@ -190,9 +192,9 @@ export const useFloorSync = (params: {
           renterData = JSON.parse(sessionRenter);
         }
       } catch (_e) { }
-
+ 
       let finalForm = savedForm ? { ...savedForm } : null;
-
+ 
       if (renterData) {
         const mergedRenterFields = {
           renter: 'Yes',
@@ -201,12 +203,12 @@ export const useFloorSync = (params: {
           agreementToDate: renterData.agreementDateTo || renterData.agreementToDate || (finalForm?.agreementToDate || null),
           agreementDate: renterData.agreementDate || (finalForm?.agreementDate || null),
           rentMonthly: renterData.rentMonthly || renterData.nonCalculateRentMonthly || (finalForm?.rentMonthly || 0),
-          nonCalculateRentMonthly: renterData.nonCalculateRentMonthly || renterData.rentMonthly || (finalForm?.nonCalculateRentMonthly || 0),
+          nonCalculateRentMonthly: renterData.nonCalculateRentMonthly || 0,
           rentYearly: (Number(renterData.nonCalculateRentMonthly || renterData.rentMonthly) || 0) * 12,
           renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
           renterMast: renterData.renterMast || (finalForm?.renterMast || []),
         };
-
+ 
         if (finalForm) {
           finalForm = {
             ...finalForm,
@@ -218,8 +220,10 @@ export const useFloorSync = (params: {
             ...mergedRenterFields,
           };
         }
+      } else if (finalForm) {
+        finalForm.renter = 'No';
       }
-
+ 
       if (finalForm) {
         setEditingFloorForm((prev) => ({
           ...prev,
@@ -235,7 +239,7 @@ export const useFloorSync = (params: {
           renterData = JSON.parse(sessionRenter);
         }
       } catch (_e) { }
-
+ 
       if (!renterData) {
         const cookieKey = `renter_${currentFloorIdUrl}`;
         const renterCookie = getCookieValue(cookieKey);
@@ -245,7 +249,7 @@ export const useFloorSync = (params: {
           } catch (_e) { }
         }
       }
-
+ 
       // Check if there is an in-progress saved form in sessionStorage for this floor
       let savedForm: any = null;
       try {
@@ -261,9 +265,9 @@ export const useFloorSync = (params: {
           savedForm = restoredSessionFormRef.current;
         }
       } catch (_e) { }
-
+ 
       let finalForm = savedForm ? { ...savedForm } : null;
-
+ 
       if (renterData) {
         const mergedRenterFields = {
           renter: 'Yes',
@@ -272,12 +276,12 @@ export const useFloorSync = (params: {
           agreementToDate: renterData.agreementDateTo || renterData.agreementToDate || (finalForm?.agreementToDate || null),
           agreementDate: renterData.agreementDate || (finalForm?.agreementDate || null),
           rentMonthly: renterData.rentMonthly || renterData.nonCalculateRentMonthly || (finalForm?.rentMonthly || 0),
-          nonCalculateRentMonthly: renterData.nonCalculateRentMonthly || renterData.rentMonthly || (finalForm?.nonCalculateRentMonthly || 0),
+          nonCalculateRentMonthly: renterData.nonCalculateRentMonthly || 0,
           rentYearly: (Number(renterData.nonCalculateRentMonthly || renterData.rentMonthly) || 0) * 12,
           renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
           renterMast: renterData.renterMast || (finalForm?.renterMast || []),
         };
-
+ 
         if (finalForm) {
           finalForm = {
             ...finalForm,
@@ -290,8 +294,11 @@ export const useFloorSync = (params: {
             id: renterData.id || renterData.propertyDetailsId || currentFloorIdUrl,
           };
         }
+      } else if (finalForm) {
+        const originalFloor = mappedInitialFloors.find(f => String(f.id) === String(currentFloorIdUrl));
+        finalForm.renter = originalFloor?.renter === 'Yes' ? 'Yes' : 'No';
       }
-
+ 
       if (finalForm) {
         setEditingFloorForm((prev) => ({
           ...prev,
@@ -300,7 +307,7 @@ export const useFloorSync = (params: {
         setSelectedFloor(finalForm);
       }
     }
-  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor]);
-
+  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors]);
+ 
   return { mappedInitialFloors };
 };

@@ -46,16 +46,11 @@ export const calculateRoomAreas = (
     const actualOffset = isOff ? Math.min(offsetArea, mainArea) : 0;
     const baseArea = mainArea - actualOffset;
 
-    let carpetArea: number;
-    let builtUpArea: number;
-
+    let carpetArea = baseArea;
     if (isOut) {
-        builtUpArea = baseArea;
-        carpetArea = builtUpArea * 0.80;
-    } else {
-        carpetArea = baseArea;
-        builtUpArea = carpetArea * 1.20;
+        carpetArea = baseArea * 0.80;
     }
+    const builtUpArea = carpetArea * 1.20;
 
     return {
         mainArea: Number(mainArea.toFixed(2)),
@@ -128,15 +123,18 @@ export const calculateNetAdjustment = (offsets: OffsetData[]): number => {
 export const calculateRoomWiseTotals = (rooms: RoomData[], excludeIndex?: number | null) => {
     let roomsConsumed = 0;
     let grandTotal = 0;
+    let builtupGrandTotal = 0;
 
     rooms.forEach((room, idx) => {
         const isExcluded = excludeIndex !== undefined && excludeIndex !== null && idx === excludeIndex;
 
         const carpet = parseFloat(String(room.carpetArea || room.total || 0)) || 0;
+        const builtUp = Number((carpet * 1.20).toFixed(2));
         const count = parseInt(String(room.roomCount || 1)) || 1;
 
         // Sum totals for ALL rooms
         grandTotal += (carpet * count);
+        builtupGrandTotal += (builtUp * count);
 
         // Count consumed rooms (for allocation logic capacity checking)
         if (!isExcluded) {
@@ -144,9 +142,6 @@ export const calculateRoomWiseTotals = (rooms: RoomData[], excludeIndex?: number
             if (isFilled) roomsConsumed += count;
         }
     });
-
-    // Built-up Area = Total Area + (20% of Total Area)
-    const builtupGrandTotal = grandTotal * 1.20;
 
     return {
         grandTotal,

@@ -91,6 +91,7 @@ const FloorForm: React.FC<FloorFormProps> = ({
           getFloorDescription={(val: string, lookup: LookupData[]): string => val ? (getFloorDescription(val, lookup) || String(editingFloorForm.floorDescription || '')) : ''}
           getSubFloorDescription={(val: string, lookup: LookupData[]): string => val ? (getSubFloorDescription(val, lookup) || String(editingFloorForm.subFloorDescription || '')) : ''}
           handleOpenDropdown={handleOpenDropdown}
+          isAddingNewFloor={isAddingNewFloor}
         />
 
         <UsageSection

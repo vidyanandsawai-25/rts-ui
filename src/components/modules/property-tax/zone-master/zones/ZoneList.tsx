@@ -15,6 +15,7 @@ import {
 } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
 import { useZoneListHandlers } from "@/hooks/zoneMaster/useZoneListHandlers";
+import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface Props {
   zones: ZoneItem[];
@@ -87,7 +88,10 @@ export default function ZoneList({
             className="w-64 mb-0"
             placeholder={t("zoneList.searchPlaceholder")}
             value={localSearch}
-            onChange={(value) => setLocalSearch(value)}
+            onChange={(value) => {
+              const sanitized = value.replace(TEXT_SANITIZE, '');
+              setLocalSearch(sanitized);
+            }}
           />
 
           <AddButton
@@ -196,7 +200,9 @@ export default function ZoneList({
 
                             if (!zoneId) return;
 
-                            router.push(`${pathname}/edit/${zoneId}`);
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.set("editZone", String(zoneId));
+                            router.push(`${pathname}?${params.toString()}`);
                           }}
                         />
                         <DeleteButton

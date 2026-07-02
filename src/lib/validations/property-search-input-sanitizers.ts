@@ -5,7 +5,7 @@
  * would fail submission validation. Empty input is always preserved.
  */
 
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 import {
   collapseMultipleSpaces,
   PROPERTY_SEARCH_FIELD_LIMITS,
@@ -89,8 +89,8 @@ const addressField =
   };
 
 const SANITIZERS: Partial<Record<keyof SearchCriteria, Sanitizer>> = {
-  propertyNoFrom: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.propertyNo),
-  propertyNoTo: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.propertyNo),
+  propertyNoFrom: alphanumericWithSeparators(PROPERTY_SEARCH_FIELD_LIMITS.propertyNo),
+  propertyNoTo: alphanumericWithSeparators(PROPERTY_SEARCH_FIELD_LIMITS.propertyNo),
   oldPropertyNo: alphanumericOnly(
     PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo
   ),
