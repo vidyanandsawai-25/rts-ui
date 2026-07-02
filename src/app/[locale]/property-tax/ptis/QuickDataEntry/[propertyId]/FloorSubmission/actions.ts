@@ -37,22 +37,6 @@ export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-function getFirstDataEntrySameAsValue(rawItem: Record<string, unknown>, ...keys: string[]): string | number | null {
-    for (const key of keys) {
-        const value = rawItem[key];
-        if ((typeof value === 'string' || typeof value === 'number') && String(value).trim() !== '') return value;
-    }
-    return null;
-}
-
-function getFirstDataEntrySameAsLabel(...values: unknown[]): string | undefined {
-    for (const value of values) {
-        const text = String(value ?? '').trim();
-        if (text && text !== '-' && !/^\d+$/.test(text)) return text;
-    }
-    return undefined;
-}
-
 export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string): Promise<SelectableProperty[]> {
     try {
         const params = new URLSearchParams();
@@ -63,35 +47,22 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             return [];
         }
         return response.data.items.map(item => {
-            const rawItem = item as unknown as Record<string, unknown>;
-            const sourceId = getFirstDataEntrySameAsValue(rawItem, 'propertyFloorId', 'PropertyFloorId', 'propertyFloorID', 'PropertyFloorID');
-            const detailsId = getFirstDataEntrySameAsValue(rawItem, 'propertyDetailsId', 'PropertyDetailsId', 'propertyDetailsID', 'PropertyDetailsID');
-            const typeLabel = getFirstDataEntrySameAsLabel(
-                rawItem.typeLabel,
-                rawItem.TypeLabel,
-                rawItem.typeName,
-                rawItem.TypeName,
-                rawItem.typeDescription,
-                rawItem.TypeDescription,
-                rawItem.propertyTypeName,
-                rawItem.PropertyTypeName,
-                rawItem.apartmentType,
-                rawItem.ApartmentType
-            );
+            const rawItem = item as any;
+            const typeLabel = (rawItem.typeLabel || rawItem.typeName || undefined) as string | undefined;
 
             return {
                 id: item.propertyId,
-                propertyFloorId: sourceId,
-                propertyDetailsId: detailsId,
+                propertyFloorId: rawItem.propertyFloorId ?? null,
+                propertyDetailsId: rawItem.propertyDetailsId ?? null,
                 wardNo: String(item.wardId),
                 propertyNo: item.propertyNo || '-',
                 partitionNo: item.partitionNo || '-',
                 type: item.type ?? '-',
-                typeLabel: typeLabel ?? undefined,
+                typeLabel: typeLabel,
                 wing: item.wingName || '-',
                 flatNo: item.flatOrShopNo || '-',
-                carpetAreaSqFeet: getFirstDataEntrySameAsValue(rawItem, 'carpetAreaSqFeet', 'CarpetAreaSqFeet', 'carpetAreaSqFt', 'CarpetAreaSqFt', 'carpetAreaSqft', 'CarpetAreaSqft', 'totalCarpetAreaSqFeet', 'TotalCarpetAreaSqFeet', 'totalCarpetAreaSqFt', 'TotalCarpetAreaSqFt'),
-                carpetAreaSqMeter: getFirstDataEntrySameAsValue(rawItem, 'carpetAreaSqMeter', 'CarpetAreaSqMeter', 'carpetAreaSqMtr', 'CarpetAreaSqMtr', 'carpetAreaSqM', 'CarpetAreaSqM', 'totalCarpetAreaSqMeter', 'TotalCarpetAreaSqMeter', 'totalCarpetAreaSqMtr', 'TotalCarpetAreaSqMtr'),
+                carpetAreaSqFeet: rawItem.totalCarpetAreaSqFeet ?? rawItem.carpetAreaSqFeet ?? null,
+                carpetAreaSqMeter: rawItem.totalCarpetAreaSqMeter ?? rawItem.carpetAreaSqMeter ?? null,
             };
         });
     } catch {
@@ -313,4 +284,3 @@ export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPa
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
 }
-
