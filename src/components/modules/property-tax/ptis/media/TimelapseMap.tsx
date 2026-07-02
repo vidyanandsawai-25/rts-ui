@@ -57,9 +57,9 @@ export const TimelapseMap = React.memo(function TimelapseMap({
       const DefaultIcon = L.Icon.Default as unknown as { prototype: LeafletDefaultIconPrototype };
       delete DefaultIcon.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconUrl: '/leaflet/marker-icon.png',
-        iconRetinaUrl: '/leaflet/marker-icon-2x.png',
-        shadowUrl: '/leaflet/marker-shadow.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       });
 
       cachedMapContainer = document.createElement('div');
