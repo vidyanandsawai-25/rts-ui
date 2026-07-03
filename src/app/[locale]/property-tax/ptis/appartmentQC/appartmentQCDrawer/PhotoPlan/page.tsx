@@ -1,8 +1,10 @@
 
-const page = () => {
-    return (
-        <div>PhotoPlan</div>
-    )
-}
+import { useTranslations } from "next-intl";
 
-export default page
+const PhotoPlanPage = () => {
+    const t = useTranslations("appartmentQC");
+
+    return <div>{t("drawer.photoPlan.title", { fallback: "Photo Plan" })}</div>;
+};
+
+export default PhotoPlanPage;

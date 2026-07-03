@@ -1,6 +1,6 @@
+import Propertybasicform from '@/components/modules/property-tax/ptis/appartmentQC/appartmentQCDrawer/Property-basic-info/Propertybasicform';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import Propertybasicform from './Propertybasicform';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -16,7 +16,7 @@ vi.mock('next/navigation', () => ({
 // Mock next-intl
 vi.mock('next-intl', () => ({
   useTranslations: () => {
-    const t = (key: string, options?: any) => {
+    const t = (key: string, options?: { fallback?: string }) => {
       if (options?.fallback) return options.fallback;
       return key;
     };
@@ -26,9 +26,9 @@ vi.mock('next-intl', () => ({
 
 // Mock custom hooks and actions
 vi.mock('@/components/common', async (importOriginal) => {
-  const actual = await importOriginal() as any;
+  const actual = await importOriginal();
   return {
-    ...actual,
+    ...(actual as Record<string, unknown>),
     useToast: () => ({
       success: vi.fn(),
       error: vi.fn(),

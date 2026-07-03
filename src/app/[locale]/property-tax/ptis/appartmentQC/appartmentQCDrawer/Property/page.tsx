@@ -1,5 +1,6 @@
 import { fetchApartmentQCDetailsSafeAction, fetchAllPropertyTypesAction, fetchOldPropertyDataAction } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import Propertybasicform from '@/components/modules/property-tax/ptis/appartmentQC/appartmentQCDrawer/Property-basic-info/Propertybasicform';
+import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
 
 export default async function PropertyPage({
   searchParams
@@ -25,13 +26,13 @@ export default async function PropertyPage({
 
   const actualPropertyId = editPropertyId || spPropertyId;
 
-  let propertyData = null;
+  let propertyData: ApartmentQCDetail | undefined;
   if (actualPropertyId) {
     const res = await fetchApartmentQCDetailsSafeAction({ propertyId: actualPropertyId });
-    propertyData = res[0] || null;
+    propertyData = res[0] ?? undefined;
   } else if (wardId && propertyNo) {
     const res = await fetchApartmentQCDetailsSafeAction({ wardId, propertyNo });
-    propertyData = res[0] || null;
+    propertyData = res[0] ?? undefined;
   }
 
   let oldPropertyFetchResult = null;

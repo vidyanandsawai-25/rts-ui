@@ -85,7 +85,8 @@ interface EditableInputWithRefreshProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  onRefresh: () => Promise<void>;
+  onClick?: () => Promise<void>;
+  onRefresh?: () => Promise<void>;
   className?: string;
   type?: string;
   required?: boolean;
@@ -102,6 +103,7 @@ export const EditableInputWithRefresh = memo(({
   label,
   value,
   onChange,
+  onClick,
   onRefresh,
   className = "",
   type = "text",
@@ -112,6 +114,7 @@ export const EditableInputWithRefresh = memo(({
   placeholder,
 }: EditableInputWithRefreshProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const clickHandler = onClick ?? onRefresh;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
@@ -122,11 +125,11 @@ export const EditableInputWithRefresh = memo(({
   };
 
   const handleRefresh = async () => {
-    if (!value || isRefreshing) return;
+    if (!value || isRefreshing || !clickHandler) return;
     
     setIsRefreshing(true);
     try {
-      await onRefresh();
+      await clickHandler();
     } finally {
       setIsRefreshing(false);
     }
@@ -153,11 +156,11 @@ export const EditableInputWithRefresh = memo(({
         <button
           type="button"
           onClick={handleRefresh}
-          disabled={!value || isRefreshing}
+          disabled={!value || isRefreshing || !clickHandler}
           className={cn(
             "absolute right-1 bottom-1 h-[30px] w-8 flex items-center justify-center rounded",
             "hover:bg-gray-100 transition-colors",
-            (!value || isRefreshing) && "opacity-40 cursor-not-allowed"
+            (!value || isRefreshing || !clickHandler) && "opacity-40 cursor-not-allowed"
           )}
           title="Refresh old property data"
         >

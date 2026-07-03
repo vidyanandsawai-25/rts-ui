@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, useEffect } from "react";
+import React, { useMemo, useState, useTransition, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Input, Select, ValidationMessage } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
@@ -17,6 +17,7 @@ import {
   EMAIL_REGEX,
   limitSingleAtEmail
 } from "@/lib/utils/validation-rules";
+import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 
 // ─── Compact Form Field Component ─────────────────────────────────────────────
 interface CompactFieldProps {
@@ -48,6 +49,72 @@ interface ReadOnlyFieldProps {
   value: string;
   type?: string;
 }
+
+type PropertyData = Partial<ApartmentQCDetail>;
+
+interface PropertyTypeOptionSource {
+  id: string | number;
+  code?: string;
+  propertyDescription?: string;
+}
+
+type OldPropertyData = Pick<
+  ApartmentQCDetail,
+  | "oldRV"
+  | "oldTotalTax"
+  | "oldConstructionArea"
+  | "oldUseType"
+  | "oldConstructionType"
+  | "oldConstructionYear"
+  | "oldCSN"
+>;
+
+interface OldPropertyFetchResult {
+  success: boolean;
+  data?: OldPropertyData | null;
+  message?: string;
+  error?: string;
+}
+
+interface PropertyBasicFormProps {
+  propertyData?: PropertyData;
+  propertyTypes?: PropertyTypeOptionSource[];
+  oldPropertyFetchResult?: OldPropertyFetchResult | null;
+}
+
+type OldFieldState = {
+  oldRV: string;
+  oldTax: string;
+  oldArea: string;
+  oldUseType: string;
+  oldConstructionType: string;
+  oldConstructionYear: string;
+  oldCSN: string;
+};
+
+const hasAnyOldPropertyData = (data?: OldPropertyData | null) => {
+  if (!data) return false;
+
+  const hasOldRV = data.oldRV != null && data.oldRV !== 0;
+  const hasOldTax = data.oldTotalTax != null && data.oldTotalTax !== 0;
+  const hasOldArea = data.oldConstructionArea != null && data.oldConstructionArea !== 0;
+  const hasOldUseType = Boolean(data.oldUseType && data.oldUseType.trim() !== "");
+  const hasOldConType = Boolean(data.oldConstructionType && data.oldConstructionType.trim() !== "");
+  const hasOldConYear = Boolean(data.oldConstructionYear && data.oldConstructionYear.trim() !== "");
+  const hasOldCSN = Boolean(data.oldCSN && data.oldCSN.trim() !== "");
+
+  return hasOldRV || hasOldTax || hasOldArea || hasOldUseType || hasOldConType || hasOldConYear || hasOldCSN;
+};
+
+const mapOldPropertyFields = (data?: OldPropertyData | null): OldFieldState => ({
+  oldRV: data?.oldRV != null ? String(data.oldRV) : "",
+  oldTax: data?.oldTotalTax != null ? String(data.oldTotalTax) : "",
+  oldArea: data?.oldConstructionArea != null ? String(data.oldConstructionArea) : "",
+  oldUseType: data?.oldUseType || "",
+  oldConstructionType: data?.oldConstructionType || "",
+  oldConstructionYear: data?.oldConstructionYear || "",
+  oldCSN: data?.oldCSN || "",
+});
 
 const CompactField = ({
   label,
@@ -129,7 +196,7 @@ ReadOnlyField.displayName = "ReadOnlyField";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function Propertybasicform({ propertyData, propertyTypes, oldPropertyFetchResult }: any) {
+export default function Propertybasicform({ propertyData, propertyTypes, oldPropertyFetchResult }: PropertyBasicFormProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -144,15 +211,15 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
     ownerName: propertyData?.ownerName || "",
     occupierName: propertyData?.occupierName || "",
     renterName: propertyData?.renterName || "",
-    propertyTypeId: String((propertyData as any)?.propertyType || ""),
-    bhk: String((propertyData as any)?.bhk || ""),
+    propertyTypeId: String(propertyData?.propertyType || ""),
+    bhk: String(propertyData?.bhk || ""),
     mobileNo: propertyData?.mobileNo || "",
     emailId: propertyData?.emailId || "",
     flatOrShopName: propertyData?.flatOrShopName || "",
-    wingName: String((propertyData as any)?.wing || ""),
+    wingName: String(propertyData?.wing || ""),
     flatOrShopNo: propertyData?.flatOrShopNo || "",
     oldPropertyNo: propertyData?.oldPropertyNo || "",
-    remark: String((propertyData as any)?.remark || ""),
+    remark: String(propertyData?.remark || ""),
     oldRV: String(propertyData?.oldRV || ""),
     newRV: String(propertyData?.rVorCVValue || ""),
     oldTax: String(propertyData?.oldTotalTax || ""),
@@ -167,9 +234,9 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
 
   const t = useTranslations("appartmentQC");
 
-  const propertyTypeOptions = propertyTypes?.map((p: any) => ({
+  const propertyTypeOptions = propertyTypes?.map((p) => ({
     value: String(p.id),
-    label: p.propertyDescription || p.code,
+    label: p.propertyDescription || p.code || "",
   })) || [];
 
   const handleFieldChange = (field: string, value: string) => {
@@ -185,18 +252,25 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
     handleFieldChange("propertyTypeId", value);
   };
 
-  const clearOldPropertyFields = () => {
-    setFormData(prev => ({
-      ...prev,
-      oldRV: "",
-      oldTax: "",
-      oldArea: "",
-      oldUseType: "",
-      oldConstructionType: "",
-      oldConstructionYear: "",
-      oldCSN: "",
-    }));
-  };
+  const oldPropertyFields = useMemo<OldFieldState>(() => {
+    if (!oldPropertyFetchResult) {
+      return {
+        oldRV: formData.oldRV,
+        oldTax: formData.oldTax,
+        oldArea: formData.oldArea,
+        oldUseType: formData.oldUseType,
+        oldConstructionType: formData.oldConstructionType,
+        oldConstructionYear: formData.oldConstructionYear,
+        oldCSN: formData.oldCSN,
+      };
+    }
+
+    if (oldPropertyFetchResult.success && oldPropertyFetchResult.data && hasAnyOldPropertyData(oldPropertyFetchResult.data)) {
+      return mapOldPropertyFields(oldPropertyFetchResult.data);
+    }
+
+    return mapOldPropertyFields(null);
+  }, [oldPropertyFetchResult, formData.oldRV, formData.oldTax, formData.oldArea, formData.oldUseType, formData.oldConstructionType, formData.oldConstructionYear, formData.oldCSN]);
 
   const handleOldPropertyRefresh = async () => {
     if (!formData.oldPropertyNo) return;
@@ -210,56 +284,28 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const refreshToken = searchParams.get("_refresh");
+  const refreshedOldPropertyNo = searchParams.get("oldPropertyNo") || "";
+
   useEffect(() => {
-    if (!oldPropertyFetchResult) return;
+    // Show old-property fetch toasts only for explicit refresh button clicks.
+    if (!oldPropertyFetchResult || !refreshToken) return;
 
     if (oldPropertyFetchResult.success && oldPropertyFetchResult.data) {
-      const d = oldPropertyFetchResult.data;
-
-      const hasOldRV = d.oldRV != null && d.oldRV !== 0;
-      const hasOldTax = d.oldTotalTax != null && d.oldTotalTax !== 0;
-      const hasOldArea = d.oldConstructionArea != null && d.oldConstructionArea !== 0;
-      const hasOldUseType = d.oldUseType && d.oldUseType.trim() !== "";
-      const hasOldConType = d.oldConstructionType && d.oldConstructionType.trim() !== "";
-      const hasOldConYear = d.oldConstructionYear && d.oldConstructionYear.trim() !== "";
-      const hasOldCSN = d.oldCSN && d.oldCSN.trim() !== "";
-
-      const hasAnyData =
-        hasOldRV ||
-        hasOldTax ||
-        hasOldArea ||
-        hasOldUseType ||
-        hasOldConType ||
-        hasOldConYear ||
-        hasOldCSN;
-
-      if (!hasAnyData) {
-        clearOldPropertyFields();
-        toastError(`No old property data found for property no. "${formData.oldPropertyNo}"`);
+      if (!hasAnyOldPropertyData(oldPropertyFetchResult.data)) {
+        toastError(`No old property data found for property no. "${refreshedOldPropertyNo}"`);
         return;
       }
-
-      setFormData(prev => ({
-        ...prev,
-        oldRV: d.oldRV != null ? String(d.oldRV) : "",
-        oldTax: d.oldTotalTax != null ? String(d.oldTotalTax) : "",
-        oldArea: d.oldConstructionArea != null ? String(d.oldConstructionArea) : "",
-        oldUseType: d.oldUseType || "",
-        oldConstructionType: d.oldConstructionType || "",
-        oldConstructionYear: d.oldConstructionYear || "",
-        oldCSN: d.oldCSN || "",
-      }));
       toastSuccess(oldPropertyFetchResult.message || "Old property data refreshed");
     } else {
-      clearOldPropertyFields();
       toastError(oldPropertyFetchResult.error || "No old property data found");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [oldPropertyFetchResult]);
+  }, [oldPropertyFetchResult, refreshToken, refreshedOldPropertyNo, toastError, toastSuccess]);
 
   const handleUpdate = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!propertyData?.id) {
+    const propertyId = propertyData?.id;
+    if (!propertyId) {
       toastError("Property ID not found.");
       return;
     }
@@ -308,7 +354,7 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             oldPropertyNo: formData.oldPropertyNo,
           };
 
-          const result = await updateBasicDetailsAction(propertyData.id, payload);
+          const result = await updateBasicDetailsAction(propertyId, payload);
           if (result.success) {
             toastSuccess(result.message || "Updated successfully");
             setHasChanges(false);
@@ -419,22 +465,22 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
               label={t('basicInfo.fields.oldPropertyNo.label', { fallback: "Old Property No." })}
               value={formData.oldPropertyNo}
               onChange={(v) => handleFieldChange("oldPropertyNo", v)}
-              onRefresh={handleOldPropertyRefresh}
+              onClick={handleOldPropertyRefresh}
               maxLength={50}
               placeholder={t('basicInfo.fields.oldPropertyNo.placeholder', { fallback: "" })}
             />
 
             <ReadOnlyField label={t('basicInfo.fields.remark.label', { fallback: "Remark" })} value={formData.remark} />
-            <ReadOnlyField label={t('basicInfo.fields.oldRV.label', { fallback: "Old RV" })} value={formData.oldRV} type="number" />
+            <ReadOnlyField label={t('basicInfo.fields.oldRV.label', { fallback: "Old RV" })} value={oldPropertyFields.oldRV} type="number" />
             <ReadOnlyField label={t('basicInfo.fields.newRV.label', { fallback: "New RV" })} value={formData.newRV} type="number" />
-            <ReadOnlyField label={t('basicInfo.fields.oldTax.label', { fallback: "Old Tax" })} value={formData.oldTax} type="number" />
+            <ReadOnlyField label={t('basicInfo.fields.oldTax.label', { fallback: "Old Tax" })} value={oldPropertyFields.oldTax} type="number" />
             <ReadOnlyField label={t('basicInfo.fields.newTax.label', { fallback: "New Tax" })} value={formData.newTax} type="number" />
-            <ReadOnlyField label={t('basicInfo.fields.oldArea.label', { fallback: "Old Area (sq.mtr)" })} value={formData.oldArea} type="number" />
+            <ReadOnlyField label={t('basicInfo.fields.oldArea.label', { fallback: "Old Area (sq.mtr)" })} value={oldPropertyFields.oldArea} type="number" />
             <ReadOnlyField label={t('basicInfo.fields.newArea.label', { fallback: "New Area (sq.mtr)" })} value={formData.newArea} type="number" />
-            <ReadOnlyField label={t('basicInfo.fields.oldUseType.label', { fallback: "Old Use Type" })} value={formData.oldUseType} />
-            <ReadOnlyField label={t('basicInfo.fields.oldConstructionType.label', { fallback: "Old Construction Type" })} value={formData.oldConstructionType} />
-            <ReadOnlyField label={t('basicInfo.fields.oldCSN.label', { fallback: "Old CSN" })} value={formData.oldCSN} type="number" />
-            <ReadOnlyField label={t('basicInfo.fields.oldConstructionYear.label', { fallback: "Old Construction Year" })} value={formData.oldConstructionYear} type="number" />
+            <ReadOnlyField label={t('basicInfo.fields.oldUseType.label', { fallback: "Old Use Type" })} value={oldPropertyFields.oldUseType} />
+            <ReadOnlyField label={t('basicInfo.fields.oldConstructionType.label', { fallback: "Old Construction Type" })} value={oldPropertyFields.oldConstructionType} />
+            <ReadOnlyField label={t('basicInfo.fields.oldCSN.label', { fallback: "Old CSN" })} value={oldPropertyFields.oldCSN} type="number" />
+            <ReadOnlyField label={t('basicInfo.fields.oldConstructionYear.label', { fallback: "Old Construction Year" })} value={oldPropertyFields.oldConstructionYear} type="number" />
           </div>
 
           <div className="flex justify-end space-x-2 mt-4">

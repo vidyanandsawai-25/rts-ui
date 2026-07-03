@@ -1,8 +1,10 @@
 
-const page = () => {
-    return (
-        <div>TaxDetails</div>
-    )
-}
+import { useTranslations } from "next-intl";
 
-export default page
+const AppartmentQCTaxDetailsPage = () => {
+    const t = useTranslations("appartmentQC");
+
+    return <div>{t("drawer.taxDetails.title", { fallback: "Tax Details" })}</div>;
+};
+
+export default AppartmentQCTaxDetailsPage;
