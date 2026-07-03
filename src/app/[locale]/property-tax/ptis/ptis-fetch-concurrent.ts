@@ -33,7 +33,7 @@ export async function fetchPropertyDetailsConcurrently(
   filterPropertyType: string,
   sortBy: string,
   sortOrder: string,
-  valuationTab: 'rateable' | 'capital' | 'dual' | 'apartment' | undefined,
+  valuationTab: 'rateable' | 'capital' | 'dual' | 'apartment' | 'reassessment' | undefined,
   showDetailsParam: boolean,
   initialMediaPanelVisible: boolean
 ) {

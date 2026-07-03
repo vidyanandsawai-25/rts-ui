@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { RotateCw } from 'lucide-react';
 
 interface SummaryCardData {

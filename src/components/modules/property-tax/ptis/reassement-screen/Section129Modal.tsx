@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { ArrowUpRight, Calculator } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import { Modal } from '@/components/common/Modal';
 import { MasterTable } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';

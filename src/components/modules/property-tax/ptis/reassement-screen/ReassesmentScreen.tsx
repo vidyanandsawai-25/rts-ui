@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import {
     ArrowUpRight,
     TrendingUp,
     FileText,
     Clock,
-    Layers
+    Layers,
+    AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { MasterTable } from '@/components/common';
@@ -16,56 +18,61 @@ import { Section129Modal } from './Section129Modal';
 import { OldFloorDetails } from './components/OldFloorDetails';
 import { NewFloorDetails } from './components/NewFloorDetails';
 import { TaxSummaryCards } from './components/TaxSummaryCards';
+import type {
+    MappedFloorDetail,
+    ReassessmentTaxRow,
+    MappedRetrospectiveColumn,
+    MappedRetrospectiveRow,
+    ReassessmentPhoto,
+} from '@/types/reassessment.types';
 
 // ============================================
 // INTERFACES
 // ============================================
 
-interface FloorDetail extends Record<string, unknown> {
-    floor: string;
-    conYear: string;
-    asstYear: string;
-    constType: string;
-    use: string;
-    carpetAreaSqFt: number;
-    carpetAreaSqM: number;
-    builtUpAreaSqFt: number;
-    builtUpAreaSqM: number;
-    rate: number;
-    renter: string;
-    taxLiability: string;
-    rentMy: number;
-    rentalValue: number;
-    depreciation: number;
-    alv: number;
-    mr: number;
-    rv: number;
-    status?: 'Same' | 'Changed' | 'New';
-    bgClass?: string;
+interface TaxColumn {
+    key: string;
+    label: string;
+    displayOrder: number;
 }
 
-interface TaxDetailRow extends Record<string, unknown> {
+interface DynamicTaxRow extends Record<string, unknown> {
     taxes: string;
-    generalTax: number;
-    waterTax: number;
-    waterBenefitTax: number;
-    sewerageTax: number;
-    spEduTax: number;
-    employeeTax: number;
-    treeTax: number;
-    fireTax: number;
-    lightTax: number;
-    drainTax: number;
     totalTax: string;
     isTotal?: boolean;
     isAdditional?: boolean;
+    [key: string]: unknown;
+}
+
+interface ReassesmentScreenProps {
+    oldFloorDetails?: MappedFloorDetail[];
+    newFloorDetails?: MappedFloorDetail[];
+    taxColumns?: TaxColumn[];
+    taxRows?: ReassessmentTaxRow[];
+    retrospectiveTaxColumns?: MappedRetrospectiveColumn[];
+    retrospectiveTaxRows?: MappedRetrospectiveRow[];
+    retrospectiveError?: string;
+    error?: string;
+    isLoading?: boolean;
+    photos?: ReassessmentPhoto[];
 }
 
 // ============================================
 // MAIN COMPONENT
 // ============================================
 
-export default function ReassesmentScreen() {
+export default function ReassesmentScreen({
+    oldFloorDetails = [],
+    newFloorDetails = [],
+    taxColumns = [],
+    taxRows = [],
+    retrospectiveTaxColumns = [],
+    retrospectiveTaxRows = [],
+    retrospectiveError,
+    error,
+    isLoading = false,
+    photos = [],
+}: ReassesmentScreenProps) {
     // Modal states
     const [showRetroModal, setShowRetroModal] = useState(false);
     const [showSec129Modal, setShowSec129Modal] = useState(false);
@@ -133,162 +140,65 @@ export default function ReassesmentScreen() {
     }, [isNewAutoScrolling]);
 
     // ============================================
-    // MOCK DATA
+    // FORMAT HELPERS
     // ============================================
 
-    // Mock data for Old Floor Details
-    const oldFloorDetails: FloorDetail[] = [
-        {
-            floor: 'G',
-            conYear: '2000',
-            asstYear: '2024',
-            constType: 'A',
-            use: 'Residential',
-            carpetAreaSqFt: 500,
-            carpetAreaSqM: 46.45,
-            builtUpAreaSqFt: 650,
-            builtUpAreaSqM: 60.39,
-            rate: 850,
-            renter: 'Self Occupied',
-            taxLiability: '',
-            rentMy: 0,
-            rentalValue: 0,
-            depreciation: 5000,
-            alv: 45000,
-            mr: 2250,
-            rv: 42750
-        },
-        {
-            floor: '1',
-            conYear: '2000',
-            asstYear: '2024',
-            constType: 'A',
-            use: 'Residential',
-            carpetAreaSqFt: 300,
-            carpetAreaSqM: 27.87,
-            builtUpAreaSqFt: 400,
-            builtUpAreaSqM: 37.16,
-            rate: 750,
-            renter: 'Ravi Kumar',
-            taxLiability: 'Self',
-            rentMy: 15000,
-            rentalValue: 180000,
-            depreciation: 3000,
-            alv: 177000,
-            mr: 8850,
-            rv: 168150
+    const formatCurrency = (value: number): string => {
+        if (value >= 10000000) {
+            return `₹${(value / 10000000).toFixed(2)}Cr`;
+        } else if (value >= 100000) {
+            return `₹${(value / 100000).toFixed(2)}L`;
         }
-    ];
+        return `₹${value.toLocaleString('en-IN')}`;
+    };
 
-    // Mock data for New Floor Details
-    const newFloorDetails: FloorDetail[] = [
-        {
-            floor: 'G',
-            conYear: '2000',
-            asstYear: '2024',
-            constType: 'A',
-            use: 'Residential',
-            carpetAreaSqFt: 500,
-            carpetAreaSqM: 46.45,
-            builtUpAreaSqFt: 650,
-            builtUpAreaSqM: 60.39,
-            rate: 850,
-            renter: 'Self Occupied',
-            taxLiability: '',
-            rentMy: 0,
-            rentalValue: 0,
-            depreciation: 5000,
-            alv: 45000,
-            mr: 2250,
-            rv: 42750,
-            status: 'Same',
-            bgClass: 'bg-emerald-50 text-emerald-800 border-emerald-200'
-        },
-        {
-            floor: '1',
-            conYear: '2000',
-            asstYear: '2024',
-            constType: 'A',
-            use: 'Commercial',
-            carpetAreaSqFt: 500,
-            carpetAreaSqM: 46.45,
-            builtUpAreaSqFt: 650,
-            builtUpAreaSqM: 60.39,
-            rate: 950,
-            renter: 'Self Occupied',
-            taxLiability: 'Self',
-            rentMy: 25000,
-            rentalValue: 300000,
-            depreciation: 4000,
-            alv: 296000,
-            mr: 14800,
-            rv: 281200,
-            status: 'Changed',
-            bgClass: 'bg-amber-50 text-amber-800 border-amber-200'
-        },
-        {
-            floor: '2',
-            conYear: '2024',
-            asstYear: '2024',
-            constType: 'A',
-            use: 'Residential',
-            carpetAreaSqFt: 250,
-            carpetAreaSqM: 23.23,
-            builtUpAreaSqFt: 320,
-            builtUpAreaSqM: 29.73,
-            rate: 900,
-            renter: 'Self Occupied',
-            taxLiability: 'Self',
-            rentMy: 20000,
-            rentalValue: 240000,
-            depreciation: 2000,
-            alv: 238000,
-            mr: 11900,
-            rv: 226100,
-            status: 'New',
-            bgClass: 'bg-rose-50 text-rose-800 border-rose-200'
-        }
-    ];
+    const formatNumber = (value: number): string => {
+        return value.toLocaleString('en-IN');
+    };
 
     // ============================================
-    // DETAILED TAXES TABLE
+    // DYNAMIC TAX TABLE GENERATION
     // ============================================
 
     // Helper renderers for Detailed Taxes Table Grid
-    const numericTaxRender = (val: any, row: TaxDetailRow) => {
+    const numericTaxRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
+        const numVal = typeof val === 'number' ? val : 0;
         return (
             <span className={cn(
                 "font-mono",
                 row.isTotal ? "text-blue-900" : row.isAdditional ? "text-sky-700" : ""
             )}>
-                {val}
+                {formatNumber(numVal)}
             </span>
         );
     };
 
-    const totalTaxRender = (val: any, row: TaxDetailRow) => {
+    const totalTaxRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
+        const displayVal = typeof val === 'string' || typeof val === 'number' ? val : '';
         return (
             <span className={cn(
                 "font-mono pr-2",
                 row.isTotal ? "text-blue-950 font-black" : "text-slate-800 font-extrabold"
             )}>
-                {val}
+                {displayVal}
             </span>
         );
     };
 
-    const taxesLabelRender = (val: any, row: TaxDetailRow) => {
+    const taxesLabelRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
+        const displayVal = typeof val === 'string' || typeof val === 'number' ? val : '';
         return (
             <span className={cn(
                 "font-sans font-bold",
                 row.isTotal ? "text-blue-900" : row.isAdditional ? "text-sky-700" : "text-gray-500"
             )}>
-                {val}
+                {displayVal}
             </span>
         );
     };
 
-    const detailedTaxesColumns: Column<TaxDetailRow>[] = [
+    // Generate dynamic columns from tax data
+    const detailedTaxesColumns: Column<DynamicTaxRow>[] = [
         { 
             key: 'taxes', 
             label: 'Taxes', 
@@ -296,167 +206,95 @@ export default function ReassesmentScreen() {
             align: 'left', 
             render: taxesLabelRender
         },
-        { 
-            key: 'generalTax', 
-            label: 'General Tax (₹)', 
-            width: '95px', 
-            align: 'center', 
+        ...taxColumns.map((col) => ({
+            key: col.key,
+            label: col.label,
+            width: '100px',
+            align: 'center' as const,
             render: numericTaxRender
-        },
-        { 
-            key: 'waterTax', 
-            label: 'Water Tax (₹)', 
-            width: '95px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'waterBenefitTax', 
-            label: 'Water Benefit Tax (₹)', 
-            width: '125px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'sewerageTax', 
-            label: 'Sewerage Tax (₹)', 
-            width: '110px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'spEduTax', 
-            label: 'Sp. Edu. Tax (₹)', 
-            width: '105px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'employeeTax', 
-            label: 'Employee (₹)', 
-            width: '100px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'treeTax', 
-            label: 'Tree (₹)', 
-            width: '80px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'fireTax', 
-            label: 'Fire (₹)', 
-            width: '80px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'lightTax', 
-            label: 'Light (₹)', 
-            width: '80px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
-        { 
-            key: 'drainTax', 
-            label: 'Drain (₹)', 
-            width: '80px', 
-            align: 'center', 
-            render: numericTaxRender
-        },
+        })),
         { 
             key: 'totalTax', 
             label: 'Total Tax (₹)', 
-            width: '100px', 
-            align: 'right', 
+            width: '120px', 
+            align: 'right' as const, 
             headerClassName: 'bg-slate-100 font-black text-right pr-3', 
             render: totalTaxRender
         }
     ];
 
-    const detailedTaxesData: TaxDetailRow[] = [
-        {
-            taxes: 'Old Taxes',
-            generalTax: 1000,
-            waterTax: 150,
-            waterBenefitTax: 80,
-            sewerageTax: 120,
-            spEduTax: 200,
-            employeeTax: 100,
-            treeTax: 50,
-            fireTax: 50,
-            lightTax: 75,
-            drainTax: 90,
-            totalTax: '1,915'
-        },
-        {
-            taxes: 'Additional Revenue',
-            generalTax: 500,
-            waterTax: 75,
-            waterBenefitTax: 40,
-            sewerageTax: 60,
-            spEduTax: 100,
-            employeeTax: 50,
-            treeTax: 25,
-            fireTax: 30,
-            lightTax: 35,
-            drainTax: 45,
-            totalTax: '960',
-            isAdditional: true
-        },
-        {
-            taxes: 'Total Tax',
-            generalTax: 1500,
-            waterTax: 225,
-            waterBenefitTax: 120,
-            sewerageTax: 180,
-            spEduTax: 300,
-            employeeTax: 150,
-            treeTax: 75,
-            fireTax: 80,
-            lightTax: 110,
-            drainTax: 135,
-            totalTax: '2,875',
-            isTotal: true
-        }
-    ];
+    // Transform tax rows to table format
+    const detailedTaxesData: DynamicTaxRow[] = taxRows.map((row) => {
+        const rowData: DynamicTaxRow = {
+            taxes: row.label,
+            totalTax: formatCurrency(row.totalTax),
+            isTotal: row.rowType === 'total',
+            isAdditional: row.rowType === 'additional',
+        };
+        
+        // Add each tax column value
+        Object.entries(row.taxes).forEach(([key, value]) => {
+            rowData[key] = value;
+        });
+        
+        return rowData;
+    });
 
     // ============================================
-    // SUMMARY CARDS DATA (Original Design)
+    // SUMMARY CARDS DATA (Calculated from tax data)
     // ============================================
+
+    // Calculate summary from floor details and tax data
+    const calculateTotalArea = (floors: MappedFloorDetail[]) => 
+        floors.reduce((sum, f) => sum + (f.carpetAreaSqM || 0), 0);
+
+    const oldTotalArea = calculateTotalArea(oldFloorDetails);
+    const newTotalArea = calculateTotalArea(newFloorDetails);
+    const areaDiff = newTotalArea - oldTotalArea;
+
+    const oldTotalRV = oldFloorDetails.reduce((sum, f) => sum + (f.rv || 0), 0);
+    const newTotalRV = newFloorDetails.reduce((sum, f) => sum + (f.rv || 0), 0);
+    const rvDiff = newTotalRV - oldTotalRV;
+
+    const oldTotalTax = taxRows.find(r => r.rowType === 'old')?.totalTax || 0;
+    const newTotalTax = taxRows.find(r => r.rowType === 'total')?.totalTax || 0;
+    const taxDiff = newTotalTax - oldTotalTax;
+
+    // Determine if use type changed
+    const oldUses = [...new Set(oldFloorDetails.map(f => f.use))].join(', ') || 'N/A';
+    const newUses = [...new Set(newFloorDetails.map(f => f.use))].join(', ') || 'N/A';
+    const useChanged = oldUses !== newUses;
 
     const summaryCardsData = [
         {
-            label: 'Area',
-            oldValue: '97.55',
-            newValue: '150.51',
-            difference: '+52.96',
+            label: 'Carpet Area',
+            oldValue: `${oldTotalArea.toFixed(2)}`,
+            newValue: `${newTotalArea.toFixed(2)}`,
+            difference: `${areaDiff >= 0 ? '+' : ''}${areaDiff.toFixed(2)}`,
             unit: 'm²',
             color: 'sky' as const
         },
         {
-            label: 'Use',
-            oldValue: 'Residential',
-            newValue: 'Commercial',
-            difference: 'CHANGED',
+            label: 'Type of Use',
+            oldValue: oldUses.length > 20 ? oldUses.substring(0, 20) + '...' : oldUses,
+            newValue: newUses.length > 20 ? newUses.substring(0, 20) + '...' : newUses,
+            difference: useChanged ? 'CHANGED' : 'SAME',
             unit: 'Type',
             color: 'purple' as const
         },
         {
             label: 'RV',
-            oldValue: '₹210,900',
-            newValue: '₹550,050',
-            difference: '+₹339,150',
+            oldValue: formatCurrency(oldTotalRV),
+            newValue: formatCurrency(newTotalRV),
+            difference: `${rvDiff >= 0 ? '+' : ''}${formatCurrency(rvDiff)}`,
             unit: '₹',
             color: 'amber' as const
         },
         {
             label: 'Total Tax',
-            oldValue: '₹222,000',
-            newValue: '₹579,000',
-            difference: '+₹357,000',
+            oldValue: formatCurrency(oldTotalTax),
+            newValue: formatCurrency(newTotalTax),
+            difference: `${taxDiff >= 0 ? '+' : ''}${formatCurrency(taxDiff)}`,
             unit: '₹',
             color: 'emerald' as const
         }
@@ -465,6 +303,45 @@ export default function ReassesmentScreen() {
     // ============================================
     // RENDER
     // ============================================
+
+    // Show error state
+    if (error) {
+        return (
+            <div className="w-full bg-[#f8fafc] p-4 rounded-xl border border-gray-200">
+                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+                    <div>
+                        <p className="text-sm font-semibold">Error Loading Reassessment Data</p>
+                        <p className="text-sm mt-0.5">{error}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="w-full bg-[#f8fafc] p-4 rounded-xl border border-gray-200">
+                <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-3 text-gray-600">Loading reassessment data...</span>
+                </div>
+            </div>
+        );
+    }
+
+    // Show empty state if no data
+    if (oldFloorDetails.length === 0 && newFloorDetails.length === 0 && taxRows.length === 0) {
+        return (
+            <div className="w-full bg-[#f8fafc] p-4 rounded-xl border border-gray-200">
+                <div className="flex items-center justify-center py-12 text-gray-500">
+                    <FileText className="h-6 w-6 mr-2" />
+                    <span>No reassessment data available</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-[#f8fafc] p-4 flex flex-col gap-6 rounded-xl border border-gray-200">
@@ -490,22 +367,40 @@ export default function ReassesmentScreen() {
                         <div>
                             <h4 className="text-xs font-semibold text-gray-500 mb-2">Photograph as per Municipal Corp. Registration</h4>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=80"
-                                        alt="Old Property Front"
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-350"
-                                    />
-                                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Front View</div>
-                                </div>
-                                <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-[#0f2342]">
-                                    <img
-                                        src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgjDJ8MXn6JTzeP1HNLC4BUgUax6wNhHfZGFOcJNIY0oOlTO4F7PgzZRBQUky16pSvdpIUk0uZ8x10E8b0MiJ4GiyaSSXJmJYVBZ7kJDdLOIApmsqU9WMqRIfTf6_pX7eXh_af2_CbmXsi4VPhKoNkCy2p1AzuUM_1iP_MEDTnd0NU4GJdJNkOvx9VaY9o/s2482/PLAN_page-0001.jpg"
-                                        alt="Old Blueprints"
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-350"
-                                    />
-                                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Floor Plan</div>
-                                </div>
+                                {(() => {
+                                    const oldPropertyPhoto = photos.find(p => p.type === 'OLD_PROPERTY_PHOTO');
+                                    const oldPlanPhoto = photos.find(p => p.type === 'OLD_PLAN_PHOTO');
+                                    return (
+                                        <>
+                                            <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
+                                                {oldPropertyPhoto ? (
+                                                    <ImageWithFallback 
+                                                        src={`/api/documents/${oldPropertyPhoto.documentGuid}/view`}
+                                                        alt="Old Property Photo"
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-400 text-xs">Old Property Photo</span>
+                                                )}
+                                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Old Property Photo</div>
+                                            </div>
+                                            <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-[#0f2342] flex items-center justify-center">
+                                                {oldPlanPhoto ? (
+                                                    <ImageWithFallback 
+                                                        src={`/api/documents/${oldPlanPhoto.documentGuid}/view`}
+                                                        alt="Old Plan Photo"
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-300 text-xs">Old Plan Photo</span>
+                                                )}
+                                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Old Plan Photo</div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
 
@@ -534,22 +429,40 @@ export default function ReassesmentScreen() {
                         <div>
                             <h4 className="text-xs font-semibold text-gray-500 mb-2">Photograph as per New Survey</h4>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80"
-                                        alt="New Property"
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-350"
-                                    />
-                                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">New View</div>
-                                </div>
-                                <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-150">
-                                    <img
-                                        src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiQl0jsSf7-3Wv3SjTp0eBoxR6NXuu9bj8lDLoShgR9VS0IKCZVr3k5C77MlRnxx-A29pla-B5aWeJllEdBJTy2It-OXgxlBwQvnAEVgkOVN5RJDJ8UES8AbAYXOYTQPgblkkF44-lQDm5b9CFy4qrWzPXnZ8qJeQb0LTxXQlex5XM_Psz3y2w_tbdH4aI/s2482/PLAN_page-0001%20(1).jpg"
-                                        alt="New Drafting"
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-350"
-                                    />
-                                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Survey Plan</div>
-                                </div>
+                                {(() => {
+                                    const newPropertyPhoto = photos.find(p => p.type === 'NEW_PROPERTY_PHOTO');
+                                    const newPlanPhoto = photos.find(p => p.type === 'NEW_PLAN_PHOTO');
+                                    return (
+                                        <>
+                                            <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
+                                                {newPropertyPhoto ? (
+                                                    <ImageWithFallback 
+                                                        src={`/api/documents/${newPropertyPhoto.documentGuid}/view`}
+                                                        alt="New Property Photo"
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-400 text-xs">New Property Photo</span>
+                                                )}
+                                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">New Property Photo</div>
+                                            </div>
+                                            <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-150 flex items-center justify-center">
+                                                {newPlanPhoto ? (
+                                                    <ImageWithFallback 
+                                                        src={`/api/documents/${newPlanPhoto.documentGuid}/view`}
+                                                        alt="New Plan Photo"
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-400 text-xs">New Plan Photo</span>
+                                                )}
+                                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">New Plan Photo</div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
 
@@ -591,10 +504,11 @@ export default function ReassesmentScreen() {
                     </div>
                 </div>
 
-                {/* Summary Cards - Original Design */}
+                {/* Summary Cards */}
                 <TaxSummaryCards cards={summaryCardsData} />
 
-                {/* Detailed Taxes Table Grid */}
+                {/* Detailed Taxes Table Grid - Dynamic */}
+                {detailedTaxesData.length > 0 && (
                 <div className="min-w-0">
                     <MasterTable
                         columns={detailedTaxesColumns}
@@ -608,6 +522,7 @@ export default function ReassesmentScreen() {
                         )}
                     />
                 </div>
+                )}
             </div>
 
             {/* ==========================================
@@ -618,6 +533,9 @@ export default function ReassesmentScreen() {
             <RetrospectiveTaxModal
                 open={showRetroModal}
                 onClose={() => setShowRetroModal(false)}
+                columns={retrospectiveTaxColumns}
+                rows={retrospectiveTaxRows}
+                error={retrospectiveError}
             />
 
             {/* Section 129 Progressive Calc Modal */}

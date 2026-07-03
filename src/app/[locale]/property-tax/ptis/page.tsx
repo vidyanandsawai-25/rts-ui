@@ -260,7 +260,13 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                   />
                 ) : null
               }
-              reassessmentSection={<ReassessmentPage />}
+              reassessmentSection={
+                <ReassessmentPage 
+                  wardId={resolvedWardId} 
+                  propertyNo={propertyNo} 
+                  partitionNo={partitionNo} 
+                />
+              }
             />
           </div>
         </PtisLayoutWrapper>

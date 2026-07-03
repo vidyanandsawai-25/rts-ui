@@ -3,74 +3,52 @@
 import { EyeIconButton, MasterTable } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';
 import { cn } from '@/lib/utils/cn';
-
-interface FloorDetail extends Record<string, unknown> {
-    floor: string;
-    conYear: string;
-    asstYear: string;
-    constType: string;
-    use: string;
-    carpetAreaSqFt: number;
-    carpetAreaSqM: number;
-    builtUpAreaSqFt: number;
-    builtUpAreaSqM: number;
-    rate: number;
-    renter: string;
-    taxLiability: string;
-    rentMy: number;
-    rentalValue: number;
-    depreciation: number;
-    alv: number;
-    mr: number;
-    rv: number;
-    status?: 'Same' | 'Changed' | 'New';
-    bgClass?: string;
-}
+import type { MappedFloorDetail } from '@/types/reassessment.types';
 
 interface NewFloorDetailsProps {
-    data: FloorDetail[];
+    data: MappedFloorDetail[];
     isAutoScrolling: boolean;
     onToggleAutoScroll: () => void;
 }
 
 // Column definitions for New Floor Details
-const newColumns: Column<FloorDetail>[] = [
+const newColumns: Column<MappedFloorDetail>[] = [
     {
         key: 'floor',
-        label: 'Floor ↑↓',
+        label: 'Floor',
         width: '64px',
         align: 'center',
         cellClassName: 'font-bold'
     },
     {
         key: 'conYear',
-        label: 'Con Year ↑↓',
+        label: 'Con Year',
         width: '96px',
         align: 'center'
     },
     {
         key: 'asstYear',
-        label: 'Asst Year ↑↓',
+        label: 'Asst Year',
         width: '96px',
         align: 'center'
     },
     {
         key: 'constType',
-        label: 'Const Type ↑↓',
+        label: 'Const Type',
         width: '96px',
         align: 'center',
         cellClassName: 'font-bold text-sky-800'
     },
     {
         key: 'use',
-        label: 'Use ↑↓',
+        label: 'Use',
         width: '128px',
         align: 'left',
         cellClassName: 'text-emerald-700'
     },
     {
         key: 'carpetAreaSqFt',
-        label: 'Carpet A ↑↓',
+        label: 'Carpet A',
         width: '128px',
         align: 'right',
         cellClassName: 'text-emerald-700 font-mono',
@@ -78,7 +56,7 @@ const newColumns: Column<FloorDetail>[] = [
     },
     {
         key: 'builtUpAreaSqFt',
-        label: 'Built-up A ↑↓',
+        label: 'Built-up A',
         width: '128px',
         align: 'right',
         cellClassName: 'text-emerald-700 font-mono',
@@ -86,14 +64,14 @@ const newColumns: Column<FloorDetail>[] = [
     },
     {
         key: 'rate',
-        label: 'Rate ↑↓',
+        label: 'Rate',
         width: '96px',
         align: 'right',
         cellClassName: 'text-emerald-700 font-mono'
     },
     {
         key: 'taxLiability',
-        label: 'Tax Liability ↑↓',
+        label: 'Tax Liability',
         width: '128px',
         align: 'center',
         cellClassName: 'font-mono',
@@ -101,14 +79,14 @@ const newColumns: Column<FloorDetail>[] = [
     },
     {
         key: 'rentMy',
-        label: 'Rent M/Y ↑↓',
+        label: 'Rent M/Y',
         width: '112px',
         align: 'right',
         cellClassName: 'font-mono'
     },
     {
         key: 'rentalValue',
-        label: 'Rental Value ↑↓',
+        label: 'Rental Value',
         width: '128px',
         align: 'right',
         cellClassName: 'font-bold font-mono',
@@ -116,14 +94,14 @@ const newColumns: Column<FloorDetail>[] = [
     },
     {
         key: 'depreciation',
-        label: 'Depreciation ↑↓',
+        label: 'Depreciation',
         width: '112px',
         align: 'right',
         cellClassName: 'font-mono'
     },
     {
         key: 'alv',
-        label: 'ALV ↑↓',
+        label: 'ALV',
         width: '128px',
         align: 'right',
         cellClassName: 'font-bold font-mono',
@@ -131,14 +109,14 @@ const newColumns: Column<FloorDetail>[] = [
     },
     {
         key: 'mr',
-        label: 'M&R ↑↓',
+        label: 'M&R',
         width: '96px',
         align: 'right',
         cellClassName: 'font-mono'
     },
     {
         key: 'rv',
-        label: 'RV ↑↓',
+        label: 'RV',
         width: '128px',
         align: 'right',
         cellClassName: 'font-bold font-mono',
@@ -158,21 +136,6 @@ const newColumns: Column<FloorDetail>[] = [
             )}>
                 {val}
             </span>
-        )
-    },
-    {
-        key: 'action',
-        label: 'Action',
-        width: '96px',
-        align: 'center',
-        render: (_, row: any) => (
-            row.status !== 'Same' ? (
-                <button className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-2.5 py-1 rounded shadow-sm hover:shadow active:scale-95 transition-all">
-                    Split
-                </button>
-            ) : (
-                <span className="text-gray-400 font-semibold">-</span>
-            )
         )
     }
 ];
