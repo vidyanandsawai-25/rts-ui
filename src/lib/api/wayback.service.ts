@@ -25,10 +25,13 @@ export const WAYBACK_STATIC_TILE_URL = (
 
 export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
     const res = await fetch(
       'https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json',
-      { cache: 'force-cache' }
+      { cache: 'force-cache', signal: controller.signal }
     );
+    clearTimeout(timeoutId);
     if (!res.ok) return [];
 
     const config: Record<string, { itemTitle?: string }> = await res.json();

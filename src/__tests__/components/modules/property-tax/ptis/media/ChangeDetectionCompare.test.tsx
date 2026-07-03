@@ -15,9 +15,11 @@ vi.mock('next-intl', () => ({
 
 // Mock next/image
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    <img src={src} alt={alt} {...props} />
-  ),
+  default: (props: React.ComponentProps<'img'> & { fill?: boolean }) => {
+    const { fill: _f, ...rest } = props;
+    const ImgTag = 'img';
+    return <ImgTag {...rest} />;
+  },
 }));
 
 const mockActiveCategory = {
