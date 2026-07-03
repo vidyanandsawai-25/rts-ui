@@ -113,7 +113,7 @@ export async function updateBank(id: string, data: BankMasterDto, userId: number
 
 /** Deletes a bank record by ID. */
 export async function deleteBank(id: string): Promise<void> {
-  const response = await apiClient.delete<void>(`/BankMaster/${encodeURIComponent(id)}`);
+  const response = await apiClient.delete<void>(`/BankMaster/${encodeURIComponent(id)}/purge`);
 
   if (!response.success) {
     throw new ApiError(

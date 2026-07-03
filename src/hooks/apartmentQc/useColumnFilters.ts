@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { fetchFilterOptionsAction, type FilterField } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import { getPropertyTypeByIdAction } from '@/app/[locale]/property-tax/propertytype/action';
@@ -40,6 +40,7 @@ export function useColumnFilters({ wardId, propertyNo, activeMainTab }: UseColum
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isFilterPending, startTransition] = useTransition();
 
   // Parse active filters from URL params
   const activeFilters = useMemo(() => {
@@ -86,7 +87,9 @@ export function useColumnFilters({ wardId, propertyNo, activeMainTab }: UseColum
     // Reset to page 1 when filters change
     params.set('pageNumber', '1');
 
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
   }, [pathname, router, searchParams]);
 
   // Fetch filter options for a specific field
@@ -152,6 +155,7 @@ export function useColumnFilters({ wardId, propertyNo, activeMainTab }: UseColum
     activeFilters,
     handleFilterChange,
     fetchFilterOptions,
+    isFilterPending,
   };
 }
 

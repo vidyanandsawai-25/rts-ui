@@ -66,6 +66,10 @@ const Page = async ({ searchParams }: PageProps) => {
     searchTerm,
     sortBy,
     sortOrder,
+    wing: params.filterWing,
+    flatOrShopNo: params.filterFlatOrShopNo,
+    apartmentType: params.filterApartmentType,
+    propertyType: params.filterPropertyType,
   });
 
   const data: ApartmentQCDetail[] = result.success ? (result.data?.items ?? []) : [];
