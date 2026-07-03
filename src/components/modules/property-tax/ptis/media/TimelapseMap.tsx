@@ -81,9 +81,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
         minZoom: 15, maxZoom: 21, scrollWheelZoom: false,
         doubleClickZoom: false, touchZoom: false, attributionControl: false,
       }).setView([initial.lat, initial.lng], 17);
-      map.scrollWheelZoom.disable();
-      map.doubleClickZoom.disable();
-      map.touchZoom.disable();
+      map.scrollWheelZoom.disable(); map.doubleClickZoom.disable(); map.touchZoom.disable();
       const tapMap = map as unknown as { tap?: { disable: () => void } };
       if (tapMap.tap) tapMap.tap.disable();
       cachedMapInstance = map;
@@ -103,14 +101,9 @@ export const TimelapseMap = React.memo(function TimelapseMap({
     containerRef.current.appendChild(cachedMapContainer);
     setMapInstance(cachedMapInstance);
 
-    const resizeObserver = new ResizeObserver(() => {
-      if (cachedMapInstance) cachedMapInstance.invalidateSize();
-    });
+    const resizeObserver = new ResizeObserver(() => cachedMapInstance?.invalidateSize());
     resizeObserver.observe(containerRef.current);
-
-    const timer = setTimeout(() => {
-      if (cachedMapInstance) cachedMapInstance.invalidateSize();
-    }, 100);
+    const timer = setTimeout(() => cachedMapInstance?.invalidateSize(), 100);
 
     return () => {
       clearTimeout(timer);

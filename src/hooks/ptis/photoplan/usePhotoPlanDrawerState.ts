@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
-import { mergeCategories } from '@/lib/utils/ptis-photo-plan-localization';
+import { mergeCategories, areCategoriesEqual } from '@/lib/utils/ptis-photo-plan-localization';
 import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 import { usePhotoPlanMutations } from './usePhotoPlanMutations';
 import { useMediaDrawerState } from './useMediaDrawerState';
@@ -15,32 +15,7 @@ export interface UsePhotoPlanDrawerStateProps {
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
 }
 
-function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
 
-  return a.every((cat, i) => {
-    const other = b[i];
-    if (!other) return false;
-
-    if (cat.photoTypeId !== other.photoTypeId) return false;
-    if (cat.photoTypeCode !== other.photoTypeCode) return false;
-    if (cat.photoTypeName !== other.photoTypeName) return false;
-
-    if (cat.images.length !== other.images.length) return false;
-
-    return cat.images.every((img, j) => {
-      const oImg = other.images[j];
-      return (
-        img.propertyPhotoId === oImg?.propertyPhotoId &&
-        img.src === oImg?.src &&
-        img.fullSrc === oImg?.fullSrc &&
-        img.hasPhoto === oImg?.hasPhoto &&
-        img.displayOrder === oImg?.displayOrder
-      );
-    });
-  });
-}
 
 export function usePhotoPlanDrawerState({
   categories,

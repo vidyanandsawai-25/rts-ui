@@ -19,15 +19,11 @@ interface HistoricalPingPongControllerProps {
   onReleaseError?: (releaseId: number) => void;
 }
 const mapTileLayersCache = new WeakMap<L.Map, Map<number, L.TileLayer>>();
+const getMapCache = (map: L.Map): Map<number, L.TileLayer> => {
+  if (!mapTileLayersCache.has(map)) mapTileLayersCache.set(map, new Map());
+  return mapTileLayersCache.get(map)!;
+};
 
-function getMapCache(map: L.Map): Map<number, L.TileLayer> {
-  let cache = mapTileLayersCache.get(map);
-  if (!cache) {
-    cache = new Map<number, L.TileLayer>();
-    mapTileLayersCache.set(map, cache);
-  }
-  return cache;
-}
 export function HistoricalPingPongController({
   map,
   releases,
@@ -52,9 +48,7 @@ export function HistoricalPingPongController({
   useEffect(() => {
     if (!map) return;
     const cache = getMapCache(map);
-    cache.forEach((layer) => {
-      if (map.hasLayer(layer)) map.removeLayer(layer);
-    });
+    cache.forEach((layer) => map.hasLayer(layer) && map.removeLayer(layer));
     cache.clear();
     lruOrderRef.current = [];
     layerLoadingStateRef.current.clear();
@@ -62,12 +56,10 @@ export function HistoricalPingPongController({
   const updateLoadingState = useCallback(() => {
     if (!onLoadChange || stateRef.current.years.length === 0) return;
     const active = stateRef.current.activeYear;
-    const activeIdx = stateRef.current.years.indexOf(active);
-    if (activeIdx === -1) return;
-    const nextYear = activeIdx < stateRef.current.years.length - 1 ? stateRef.current.years[activeIdx + 1] : null;
-    const isActiveLoading = layerLoadingStateRef.current.get(active) || false;
-    const isNextLoading = (nextYear !== null && layerLoadingStateRef.current.get(nextYear)) || false;
-    onLoadChange(isActiveLoading || isNextLoading);
+    const idx = stateRef.current.years.indexOf(active);
+    if (idx === -1) return;
+    const next = idx < stateRef.current.years.length - 1 ? stateRef.current.years[idx + 1] : null;
+    onLoadChange(!!layerLoadingStateRef.current.get(active) || (next !== null && !!layerLoadingStateRef.current.get(next)));
   }, [onLoadChange]);
 
   const getOrCreateLayer = useCallback((year: number): L.TileLayer => {
@@ -148,10 +140,7 @@ export function HistoricalPingPongController({
 
   useEffect(() => {
     if (!playing) {
-      if (loopRef.current) {
-        clearTimeout(loopRef.current);
-        loopRef.current = null;
-      }
+      if (loopRef.current) { clearTimeout(loopRef.current); loopRef.current = null; }
       return;
     }
 
@@ -168,10 +157,7 @@ export function HistoricalPingPongController({
 
       if (!active || !stateRef.current.playing) return;
 
-      if (stateRef.current.activeYear !== currentYear) {
-        run();
-        return;
-      }
+      if (stateRef.current.activeYear !== currentYear) { run(); return; }
 
       if (layerLoadingStateRef.current.get(currentYear)) {
         await new Promise<void>((resolve) => {
@@ -190,16 +176,10 @@ export function HistoricalPingPongController({
 
       if (!active || !stateRef.current.playing) return;
 
-      if (stateRef.current.activeYear !== currentYear) {
-        run();
-        return;
-      }
+      if (stateRef.current.activeYear !== currentYear) { run(); return; }
 
       const nextIdx = currentIdx + 1;
-      if (nextIdx >= stateRef.current.years.length) {
-        stateRef.current.onStopPlaying?.();
-        return;
-      }
+      if (nextIdx >= stateRef.current.years.length) { stateRef.current.onStopPlaying?.(); return; }
       stateRef.current.onActiveYearChange?.(stateRef.current.years[nextIdx]);
       run();
     };
@@ -208,10 +188,7 @@ export function HistoricalPingPongController({
 
     return () => {
       active = false;
-      if (loopRef.current) {
-        clearTimeout(loopRef.current);
-        loopRef.current = null;
-      }
+      if (loopRef.current) { clearTimeout(loopRef.current); loopRef.current = null; }
     };
   }, [playing]);
 
