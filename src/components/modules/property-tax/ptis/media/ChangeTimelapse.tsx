@@ -158,11 +158,6 @@ export function ChangeTimelapse({
           </div>
         )}
       </div>
-
-      <div className="p-2 px-4 bg-slate-950 text-slate-500 text-[10px] flex justify-between select-none">
-        <span>{t('media.interactionGuide')}</span>
-        <span>{t('media.attribution')}</span>
-      </div>
     </div>
   );
 }

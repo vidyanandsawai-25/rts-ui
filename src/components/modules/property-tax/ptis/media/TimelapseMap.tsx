@@ -74,6 +74,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
         scrollWheelZoom: false,
         doubleClickZoom: false,
         touchZoom: false,
+        attributionControl: false,
       }).setView([lat, lng], 17);
 
       map.scrollWheelZoom.disable();
