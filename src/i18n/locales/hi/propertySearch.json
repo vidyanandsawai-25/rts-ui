@@ -33,7 +33,7 @@
     "fields": {
       "propertyType": "संपत्ति प्रकार",
       "typeFilter": "प्रकार फ़िल्टर",
-      "propertyDescription": "संपत्ति विवरण",
+      "propertyDescription": "श्रेणी विवरण",
       "zone": "ज़ोन",
       "ward": "वार्ड",
       "scanQR": "QR स्कैन करें",
@@ -73,7 +73,7 @@
     "placeholders": {
       "propertyType": "संपत्ति प्रकार चुनें",
       "typeFilter": "प्रकार फ़िल्टर चुनें",
-      "propertyDescription": "संपत्ति विवरण चुनें",
+      "propertyDescription": "श्रेणी विवरण चुनें",
       "zone": "ज़ोन चुनें",
       "ward": "वार्ड चुनें",
       "wardSelectZoneFirst": "पहले ज़ोन चुनें",
@@ -195,6 +195,11 @@
     "noUnits": "कोई अपार्टमेंट इकाई नहीं मिली।",
     "apartmentUnits": "अपार्टमेंट इकाइयां ({count})",
     "loadingUnits": "अपार्टमेंट इकाइयां लोड हो रही हैं...",
+    "backToProperties": "संपत्तियों पर वापस जाएं",
+    "viewingUnitsFor": "के लिए इकाइयां देख रहे हैं",
+    "apartment": "अपार्टमेंट",
+    "totalUnits": "कुल {count} इकाइयां",
+    "unit": "इकाई",
     "format": {
       "currency": "₹{amount}"
     },

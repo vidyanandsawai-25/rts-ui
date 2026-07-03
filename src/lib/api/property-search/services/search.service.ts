@@ -14,7 +14,7 @@ import type {
   MainCardsResponse,
   WorkflowCardItem,
 } from "@/types/property-search";
-import { normalizePropertySearchResponse, normalizePropertySearchItem } from "../guards/property-item-guards";
+import { normalizePropertySearchResponse, normalizePropertySearchItem, extractPropertySearchRawItems } from "../guards/property-item-guards";
 import { normalizeDashboardStatsResponse } from "../guards/dashboard-stats-guards";
 
 const logger = createLogger("property-search/search");
@@ -49,6 +49,12 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.dashboardFilter != null && criteria.dashboardFilter > 0) {
     params.set("DashboardFilter", String(criteria.dashboardFilter));
   }
+  if (criteria.valuationMethod) {
+    params.set("ValuationMethod", criteria.valuationMethod);
+  }
+  if (criteria.filterType) {
+    params.set("FilterType", criteria.filterType);
+  }
   if (criteria.valuationTypeFilter) {
     params.set("ValuationTypeFilter", criteria.valuationTypeFilter);
   }
@@ -65,12 +71,11 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.topCount != null) {
     params.set("TopCount", String(criteria.topCount));
   }
-  // pageSize = -1 means "return all records" for client-side table pagination.
-  if (criteria.pageSize === -1) {
-    params.set("PageSize", "-1");
-    if (criteria.pageNumber) {
-      params.set("PageNumber", String(criteria.pageNumber));
-    }
+  if (criteria.pageSize != null) {
+    params.set("PageSize", String(criteria.pageSize));
+  }
+  if (criteria.pageNumber != null) {
+    params.set("PageNumber", String(criteria.pageNumber));
   }
   return params.toString();
 }
@@ -78,9 +83,10 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
 export async function searchProperties(
   criteria: PropertySearchCriteriaPayload
 ): Promise<PagedResponse<SearchResult>> {
-  const response = await apiClient.get<unknown>(
-    `/PropertySearch/search/grid?${buildSearchParams(criteria)}`
-  );
+  const qs = buildSearchParams(criteria);
+  const url = `/PropertySearch/search/grid?${qs}`;
+
+  const response = await apiClient.get<unknown>(url);
 
   if (!response.success) {
     throw new ApiError(
@@ -191,7 +197,7 @@ export async function fetchApartmentUnitList(
     );
   }
 
-  const rawItems = response.data.items || [];
+  const rawItems = extractPropertySearchRawItems(response.data);
   return rawItems.map((item) => normalizePropertySearchItem(item as Record<string, unknown>));
 }
 

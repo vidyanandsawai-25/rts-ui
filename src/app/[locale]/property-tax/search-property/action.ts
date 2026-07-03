@@ -16,10 +16,10 @@ import type {
   LookupOptionsApiResponse,
 } from "@/types/property-search";
 import type { PropertyAssessmentStatusOption } from "@/types/property-assessment-status.types";
-import type { PropertyTypeCategory } from "@/types/property-type-category.types";
+import type { PropertyCategory } from "@/types/property-category.types";
 import type { PropertyWorkflowStageOption } from "@/types/property-workflow-stage-master.types";
 import { getPropertyAssessmentStatuses } from "@/lib/api/property-assessment-status.service";
-import { getPropertyTypeCategories } from "@/lib/api/property-type-category.service";
+import { getPropertyCategories } from "@/lib/api/property-category.service";
 import { getPropertyWorkflowStages } from "@/lib/api/property-workflow-stage-master.service";
 import { buildPropertySearchPayload } from "@/lib/api/property-search/build-search-payload";
 import {
@@ -199,15 +199,15 @@ function formatAssessmentStatusLabel(statusName: string): string {
     .join(" ");
 }
 
-export async function listPropertyTypeCategoriesAction(): Promise<
-  PropertyTypeCategory[]
+export async function listPropertyCategoriesAction(): Promise<
+  PropertyCategory[]
 > {
   try {
-    const categories = await getPropertyTypeCategories();
+    const categories = await getPropertyCategories();
     return categories
       .filter((category) => category.isActive)
       .sort((a, b) =>
-        a.propertyTypeCategory.localeCompare(b.propertyTypeCategory, "mr")
+        a.propertyCategoryName.localeCompare(b.propertyCategoryName, "mr")
       );
   } catch {
     return [];
@@ -245,21 +245,32 @@ export async function filterPropertiesAction(
   selectedStatus: PropertyStatus | null,
   searchCriteria: SearchCriteria,
   isSearchActive: boolean,
-  activeTab: SearchTab
-): Promise<{ results: SearchResult[]; error: string | null }> {
+  activeTab: SearchTab,
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<{ results: SearchResult[]; totalCount: number; error: string | null }> {
   if (!isSearchActive && !selectedStatus) {
-    return { results: [], error: null };
+    return { results: [], totalCount: 0, error: null };
   }
 
   if (isSearchActive && !selectedStatus && !hasTabSearchInput(searchCriteria, activeTab)) {
-    return { results: [], error: null };
+    return { results: [], totalCount: 0, error: null };
   }
+
+  const isRangeSearch =
+    isSearchActive &&
+    activeTab === "quick-search" &&
+    !!searchCriteria.propertyNoFrom &&
+    !!searchCriteria.propertyNoTo &&
+    searchCriteria.propertyNoFrom !== searchCriteria.propertyNoTo;
 
   const payload = buildPropertySearchPayload(
     selectedStatus,
     searchCriteria,
     isSearchActive,
-    activeTab
+    activeTab,
+    isRangeSearch ? undefined : pageNumber,
+    isRangeSearch ? -1 : pageSize
   );
 
   try {
@@ -277,14 +288,21 @@ export async function filterPropertiesAction(
       comparePropertyNo(a.propertyNo, b.propertyNo)
     );
 
-    return { results: sortedResults, error: null };
+    if (isRangeSearch) {
+      const totalCount = sortedResults.length;
+      const start = (pageNumber - 1) * pageSize;
+      const slicedResults = sortedResults.slice(start, start + pageSize);
+      return { results: slicedResults, totalCount, error: null };
+    }
+
+    return { results: sortedResults, totalCount: result.totalCount, error: null };
   } catch (err) {
     const message =
       err instanceof Error
           ? resolveSearchErrorMessage(err)
           : "Property search failed. Please review your filters and try again.";
 
-    return { results: [], error: message };
+    return { results: [], totalCount: 0, error: message };
   }
 }
 
