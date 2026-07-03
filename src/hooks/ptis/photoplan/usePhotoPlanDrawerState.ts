@@ -100,7 +100,7 @@ export function usePhotoPlanDrawerState({
   }, []);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
-  
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (initialCategoryIndex !== prevInitialCategoryIndex) {
       setPrevInitialCategoryIndex(initialCategoryIndex);
@@ -117,6 +117,7 @@ export function usePhotoPlanDrawerState({
       setViewModeState(targetMode);
     }
   }, [initialCategoryIndex, prevInitialCategoryIndex, categories, searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     updateUrlParams({
