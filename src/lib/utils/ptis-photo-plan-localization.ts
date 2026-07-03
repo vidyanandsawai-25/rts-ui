@@ -152,7 +152,12 @@ export function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]): bool
         img.src === oImg?.src &&
         img.fullSrc === oImg?.fullSrc &&
         img.hasPhoto === oImg?.hasPhoto &&
-        img.displayOrder === oImg?.displayOrder
+        img.displayOrder === oImg?.displayOrder &&
+        img.title === oImg?.title &&
+        img.alt === oImg?.alt &&
+        img.remarks === oImg?.remarks &&
+        img.documentGuid === oImg?.documentGuid &&
+        img.downloadUrl === oImg?.downloadUrl
       );
     });
   });

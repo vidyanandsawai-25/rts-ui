@@ -31,8 +31,6 @@ export const ptisSocialMapper = {
           rawItems = rawData.discountAttributes;
         } else if (Array.isArray(rawData.items)) {
           rawItems = rawData.items;
-        } else if (Array.isArray(rawData)) {
-          rawItems = rawData;
         }
       }
     }

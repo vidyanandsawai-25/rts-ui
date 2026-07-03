@@ -100,20 +100,23 @@ export function usePhotoPlanDrawerState({
   }, []);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
-  if (initialCategoryIndex !== prevInitialCategoryIndex) {
-    setPrevInitialCategoryIndex(initialCategoryIndex);
-    setSelectedCategoryIndexState(initialCategoryIndex);
-    const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
-    const hasImages = targetCat?.images && targetCat.images.length > 0;
-    let targetIdx: number | null = hasImages ? 0 : null;
-    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
-    const selParam = searchParams.get('selectedImageIndex');
-    if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
-    const modeParam = searchParams.get('viewMode');
-    if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
-    setSelectedImageIndexState(targetIdx);
-    setViewModeState(targetMode);
-  }
+  
+  useEffect(() => {
+    if (initialCategoryIndex !== prevInitialCategoryIndex) {
+      setPrevInitialCategoryIndex(initialCategoryIndex);
+      setSelectedCategoryIndexState(initialCategoryIndex);
+      const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
+      const hasImages = targetCat?.images && targetCat.images.length > 0;
+      let targetIdx: number | null = hasImages ? 0 : null;
+      let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
+      const selParam = searchParams.get('selectedImageIndex');
+      if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
+      const modeParam = searchParams.get('viewMode');
+      if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
+      setSelectedImageIndexState(targetIdx);
+      setViewModeState(targetMode);
+    }
+  }, [initialCategoryIndex, prevInitialCategoryIndex, categories, searchParams]);
 
   useEffect(() => {
     updateUrlParams({
