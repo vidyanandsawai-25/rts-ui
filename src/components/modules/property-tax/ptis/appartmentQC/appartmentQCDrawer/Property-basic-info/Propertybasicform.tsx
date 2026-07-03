@@ -252,6 +252,9 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
     handleFieldChange("propertyTypeId", value);
   };
 
+  const refreshToken = searchParams.get("_refresh");
+  const refreshedOldPropertyNo = searchParams.get("oldPropertyNo") || "";
+
   const oldPropertyFields = useMemo<OldFieldState>(() => {
     if (!oldPropertyFetchResult) {
       return {
@@ -283,24 +286,62 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
 
     router.push(`${pathname}?${params.toString()}`);
   };
-
-  const refreshToken = searchParams.get("_refresh");
-  const refreshedOldPropertyNo = searchParams.get("oldPropertyNo") || "";
+  // 1. Sync Stale URLs
+  // We use a ref to track which property we've already synced. This prevents the effect 
+  // from running on every render and accidentally undoing a user's manual search.
+  const syncedPropertyIdRef = React.useRef<number | string | null>(null);
 
   useEffect(() => {
-    // Show old-property fetch toasts only for explicit refresh button clicks.
-    if (!oldPropertyFetchResult || !refreshToken) return;
+    const propertyId = propertyData?.id;
+    if (!propertyId || syncedPropertyIdRef.current === propertyId) return;
+
+    syncedPropertyIdRef.current = propertyId;
+
+    const initialOldNo = propertyData.oldPropertyNo || "";
+    const currentUrlOldNo = searchParams.get("oldPropertyNo") || "";
+
+    if (currentUrlOldNo !== initialOldNo) {
+      const params = new URLSearchParams(searchParams.toString());
+      if (initialOldNo) params.set("oldPropertyNo", initialOldNo);
+      else params.delete("oldPropertyNo");
+
+      params.delete("_refresh");
+      router.replace(`${pathname}?${params.toString()}`);
+    }
+  }, [propertyData, pathname, router, searchParams]);
+
+  // 2. Handle Toast Notifications
+  // We use a ref to remember the last processed token. This prevents the toast 
+  // from firing multiple times if the component re-renders for other reasons (like typing).
+  const processedRefreshTokenRef = React.useRef<string | null>(refreshToken);
+
+  useEffect(() => {
+    if (!oldPropertyFetchResult || !refreshToken || processedRefreshTokenRef.current === refreshToken) {
+      return;
+    }
+
+    processedRefreshTokenRef.current = refreshToken;
 
     if (oldPropertyFetchResult.success && oldPropertyFetchResult.data) {
       if (!hasAnyOldPropertyData(oldPropertyFetchResult.data)) {
-        toastError(`No old property data found for property no. "${refreshedOldPropertyNo}"`);
-        return;
+        const fallbackMsg = `No old-property record found for OldPropertyNo '${refreshedOldPropertyNo}'.`;
+        const errorMsg = t.has('messages.oldPropertyNotFound')
+          ? t('messages.oldPropertyNotFound', { oldPropertyNo: refreshedOldPropertyNo })
+          : fallbackMsg;
+        toastError(errorMsg);
+      } else {
+        const successMsg = t.has('messages.oldPropertyDataRefreshed')
+          ? t('messages.oldPropertyDataRefreshed')
+          : "Old property data refreshed";
+        toastSuccess(oldPropertyFetchResult.message || successMsg);
       }
-      toastSuccess(oldPropertyFetchResult.message || "Old property data refreshed");
     } else {
-      toastError(oldPropertyFetchResult.error || "No old property data found");
+      const defaultErrorMsg = t.has('messages.noOldPropertyDataFound')
+        ? t('messages.noOldPropertyDataFound')
+        : "No old property data found";
+      toastError(oldPropertyFetchResult.error || defaultErrorMsg);
     }
-  }, [oldPropertyFetchResult, refreshToken, refreshedOldPropertyNo, toastError, toastSuccess]);
+  }, [oldPropertyFetchResult, refreshToken, refreshedOldPropertyNo, toastError, toastSuccess, t]);
 
   const handleUpdate = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
