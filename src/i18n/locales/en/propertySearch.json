@@ -33,7 +33,7 @@
     "fields": {
       "propertyType": "Property Type",
       "typeFilter": "Type Filter",
-      "propertyDescription": "Category Description",
+      "propertyDescription": "Category Type",
       "zone": "Zone",
       "ward": "Ward",
       "scanQR": "Scan QR",
@@ -73,7 +73,7 @@
     "placeholders": {
       "propertyType": "Select Property Type",
       "typeFilter": "Select Type Filter",
-      "propertyDescription": "Select Category Description",
+      "propertyDescription": "Select Category Type",
       "zone": "Select Zone",
       "ward": "Select Ward",
       "wardSelectZoneFirst": "Select Zone First",

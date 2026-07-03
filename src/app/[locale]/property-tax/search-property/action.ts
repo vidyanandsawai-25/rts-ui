@@ -1,7 +1,6 @@
 "use server";
 
 import type {
-  PropertyStatsData,
   PropertyStatus,
   SearchCriteria,
   SearchResult,
@@ -23,7 +22,6 @@ import { getPropertyCategories } from "@/lib/api/property-category.service";
 import { getPropertyWorkflowStages } from "@/lib/api/property-workflow-stage-master.service";
 import { buildPropertySearchPayload } from "@/lib/api/property-search/build-search-payload";
 import {
-  fetchPropertyStats,
   searchProperties,
   fetchLookupOptions,
   fetchWardsByZone,
@@ -37,14 +35,6 @@ import { hasTabSearchInput } from "@/components/modules/property-tax/search-prop
 
 /* ================= CONSTANTS ================= */
 
-const DEFAULT_STATS: PropertyStatsData[] = [
-  { label: "Register Property", value: "0" },
-  { label: "Geo-Sequencing", value: "0" },
-  { label: "Survey", value: "0" },
-  { label: "Data Processing", value: "0" },
-  { label: "Quality Analysis", value: "0" },
-  { label: "Assessment Completed", value: "0" },
-];
 
 function parsePositiveInteger(value: string): number | null {
   const trimmed = value.trim();
@@ -308,11 +298,6 @@ export async function filterPropertiesAction(
 
 /* ================= STATS ================= */
 
-export async function getPropertyStatsAction(): Promise<PropertyStatsData[]> {
-  const stats = await fetchPropertyStats();
-  // Return empty array fallback if API fails, UI will use DEFAULT_STATS
-  return stats.length > 0 ? stats : DEFAULT_STATS;
-}
 
 export async function getMainCardsAction(params?: CardFilterParams): Promise<MainCardsResponse | null> {
   return fetchMainCards(params);

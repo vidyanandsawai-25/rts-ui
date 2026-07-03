@@ -8,14 +8,12 @@ import { createLogger } from "@/lib/utils/server-logger";
 import type { PagedResponse } from "@/types/common.types";
 import type { PropertySearchCriteriaPayload } from "@/types/property-search";
 import type {
-  PropertyStatsData,
   SearchResult,
   CardFilterParams,
   MainCardsResponse,
   WorkflowCardItem,
 } from "@/types/property-search";
 import { normalizePropertySearchResponse, normalizePropertySearchItem, extractPropertySearchRawItems } from "../guards/property-item-guards";
-import { normalizeDashboardStatsResponse } from "../guards/dashboard-stats-guards";
 
 const logger = createLogger("property-search/search");
 
@@ -97,26 +95,6 @@ export async function searchProperties(
   }
 
   return normalizePropertySearchResponse(response.data);
-}
-
-export async function fetchPropertyStats(): Promise<PropertyStatsData[]> {
-  try {
-    const response = await apiClient.get<unknown>(
-      "/Property/search/dashboard-stats"
-    );
-
-    if (!response.success || response.data == null) {
-      logger.warn("Dashboard stats request failed", {
-        statusCode: response.statusCode,
-      });
-      return [];
-    }
-
-    return normalizeDashboardStatsResponse(response.data);
-  } catch (error) {
-    logger.error("Failed to fetch property stats", { error: error as Error });
-    return [];
-  }
 }
 
 function buildCardParams(paramsObj: CardFilterParams): string {

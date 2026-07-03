@@ -114,22 +114,3 @@ export interface PropertySearchCriteriaPayload {
   pageNumber?: number;
   pageSize?: number;
 }
-
-/* ================= Dashboard Stats API Types ================= */
-
-export interface PropertyDashboardStatsApiItem {
-  registeredPropertyCount: number;
-  geoSequencingPropertyCount: number;
-  surveyPropertyCount: number;
-  dataProcessingPropertyCount: number;
-  qualityAnalysisPropertyCount: number;
-  assessmentCompletedPropertyCount: number;
-}
-
-export interface PropertyDashboardStatsApiResponse {
-  success: boolean;
-  message: string | null;
-  items: PropertyDashboardStatsApiItem;
-  errors: string | null;
-  correlationId: string | null;
-}
