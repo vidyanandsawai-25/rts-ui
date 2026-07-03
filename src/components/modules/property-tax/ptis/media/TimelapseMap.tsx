@@ -23,15 +23,20 @@ interface TimelapseMapProps {
   onStopPlaying?: () => void;
 }
 
-const LABELS_URL =
-  'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+const LABELS_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
 
-// Cache Leaflet instances globally to avoid recreating DOM/Map on mount/unmount
+/**
+ * Module-level singletons — intentional design for Leaflet map lifecycle.
+ * Leaflet maps cannot be destroyed/recreated during React drawer transitions
+ * without causing DOM leaks and flickering. Only ONE TimelapseMap instance
+ * may be mounted at a time (enforced by the PhotoPlan drawer architecture).
+ */
 let cachedMapContainer: HTMLDivElement | null = null;
 let cachedMapInstance: L.Map | null = null;
 let cachedLabelsLayer: L.TileLayer | null = null;
 let cachedMarker: L.CircleMarker | null = null;
 let cachedHighlight: L.Rectangle | null = null;
+let mountCount = 0;
 
 export const TimelapseMap = React.memo(function TimelapseMap({
   lat,
@@ -48,12 +53,20 @@ export const TimelapseMap = React.memo(function TimelapseMap({
 }: TimelapseMapProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+  const initRef = useRef({ lat, lng, showLabels });
+
+  useEffect(() => {
+    mountCount++;
+    if (mountCount > 1) console.warn('[TimelapseMap] Multiple instances detected — singleton pattern expects exactly one.');
+    return () => { mountCount--; };
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const initial = initRef.current;
+
     if (!cachedMapContainer) {
-      // Fix default Leaflet icon paths
       const DefaultIcon = L.Icon.Default as unknown as { prototype: LeafletDefaultIconPrototype };
       delete DefaultIcon.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -61,62 +74,30 @@ export const TimelapseMap = React.memo(function TimelapseMap({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       });
-
       cachedMapContainer = document.createElement('div');
       cachedMapContainer.className = 'absolute inset-0 w-full h-full';
-
       const map = L.map(cachedMapContainer, {
-        zoomControl: true,
-        zoomAnimation: true,
-        fadeAnimation: true,
-        minZoom: 15,
-        maxZoom: 21,
-        scrollWheelZoom: false,
-        doubleClickZoom: false,
-        touchZoom: false,
-        attributionControl: false,
-      }).setView([lat, lng], 17);
-
+        zoomControl: true, zoomAnimation: true, fadeAnimation: true,
+        minZoom: 15, maxZoom: 21, scrollWheelZoom: false,
+        doubleClickZoom: false, touchZoom: false, attributionControl: false,
+      }).setView([initial.lat, initial.lng], 17);
       map.scrollWheelZoom.disable();
       map.doubleClickZoom.disable();
       map.touchZoom.disable();
       const tapMap = map as unknown as { tap?: { disable: () => void } };
       if (tapMap.tap) tapMap.tap.disable();
-
       cachedMapInstance = map;
 
       cachedLabelsLayer = L.tileLayer(LABELS_URL, {
-        maxNativeZoom: 19,
-        maxZoom: 21,
-        opacity: 0.9,
-        keepBuffer: 12,
-        attribution: 'Labels © Esri',
+        maxNativeZoom: 19, maxZoom: 21, opacity: 0.9, keepBuffer: 12, attribution: 'Labels © Esri',
       });
-      if (showLabels) cachedLabelsLayer.addTo(map);
+      if (initial.showLabels) cachedLabelsLayer.addTo(map);
 
-      cachedMarker = L.circleMarker([lat, lng], {
-        radius: 6,
-        color: '#ff2200',
-        fillColor: '#ff3300',
-        fillOpacity: 1,
-        weight: 2,
+      cachedMarker = L.circleMarker([initial.lat, initial.lng], { radius: 6, color: '#ff2200', fillColor: '#ff3300', fillOpacity: 1, weight: 2 }).addTo(map);
+
+      cachedHighlight = L.rectangle([[initial.lat - 0.0005, initial.lng - 0.0005], [initial.lat + 0.0005, initial.lng + 0.0005]], {
+        color: '#ff2200', weight: 2.5, opacity: 0.9, fillColor: '#ff5500', fillOpacity: 0.07, className: 'property-highlight',
       }).addTo(map);
-
-      const delta = 0.0005;
-      cachedHighlight = L.rectangle(
-        [
-          [lat - delta, lng - delta],
-          [lat + delta, lng + delta],
-        ],
-        {
-          color: '#ff2200',
-          weight: 2.5,
-          opacity: 0.9,
-          fillColor: '#ff5500',
-          fillOpacity: 0.07,
-          className: 'property-highlight',
-        }
-      ).addTo(map);
     }
 
     containerRef.current.appendChild(cachedMapContainer);
@@ -139,17 +120,12 @@ export const TimelapseMap = React.memo(function TimelapseMap({
       }
       setMapInstance(null);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update center, bounds, marker & highlight when coords change
   useEffect(() => {
     if (!mapInstance || !(mapInstance as unknown as { _container?: HTMLElement })._container) return;
-
     let active = true;
 
-    // Defer view updates by 50ms to guarantee DOM layout has finished.
-    // This allows Leaflet to correctly compute container size during invalidateSize.
     const timer = setTimeout(() => {
       if (!active) return;
       try {
@@ -183,7 +159,6 @@ export const TimelapseMap = React.memo(function TimelapseMap({
     };
   }, [mapInstance, lat, lng]);
 
-  // Update Labels visibility
   useEffect(() => {
     if (!mapInstance || !(mapInstance as unknown as { _container?: HTMLElement })._container || !cachedLabelsLayer) return;
 

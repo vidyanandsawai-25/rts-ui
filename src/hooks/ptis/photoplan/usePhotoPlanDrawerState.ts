@@ -16,36 +16,7 @@ export interface UsePhotoPlanDrawerStateProps {
 }
 
 function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
-  if (a.length !== b.length) return false;
-  return a.every((cat, i) => {
-    const other = b[i];
-    if (!other) return false;
-    if (cat.photoTypeId !== other.photoTypeId) return false;
-    if (cat.photoTypeCode !== other.photoTypeCode) return false;
-    if (cat.photoTypeName !== other.photoTypeName) return false;
-    if (cat.photoCount !== other.photoCount) return false;
-    if (cat.hasPhoto !== other.hasPhoto) return false;
-    if (cat.isCustom !== other.isCustom) return false;
-    
-    const catImages = cat.images || [];
-    const otherImages = other.images || [];
-    if (catImages.length !== otherImages.length) return false;
-    
-    return catImages.every((img, j) => {
-      const otherImg = otherImages[j];
-      return (
-        img.propertyPhotoId === otherImg?.propertyPhotoId &&
-        img.src === otherImg?.src &&
-        img.fullSrc === otherImg?.fullSrc &&
-        img.hasPhoto === otherImg?.hasPhoto &&
-        img.title === otherImg?.title &&
-        img.remarks === otherImg?.remarks &&
-        img.displayOrder === otherImg?.displayOrder &&
-        img.documentGuid === otherImg?.documentGuid &&
-        img.downloadUrl === otherImg?.downloadUrl
-      );
-    });
-  });
+  return JSON.stringify(a) === JSON.stringify(b);
 }
 
 export function usePhotoPlanDrawerState({
@@ -131,27 +102,17 @@ export function usePhotoPlanDrawerState({
   }, []);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
-  
   if (initialCategoryIndex !== prevInitialCategoryIndex) {
     setPrevInitialCategoryIndex(initialCategoryIndex);
     setSelectedCategoryIndexState(initialCategoryIndex);
-    const targetIndex = initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0;
-    const targetCat = categories[targetIndex];
+    const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
     const hasImages = targetCat?.images && targetCat.images.length > 0;
-
     let targetIdx: number | null = hasImages ? 0 : null;
-    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION'
-      ? (hasImages ? 'compare' : 'grid')
-      : (hasImages ? 'viewer' : 'grid');
-    
+    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
     const selParam = searchParams.get('selectedImageIndex');
-    if (selParam !== null) {
-      const parsed = parseInt(selParam, 10);
-      if (!isNaN(parsed)) targetIdx = parsed;
-    }
+    if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
     const modeParam = searchParams.get('viewMode');
     if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
-
     setSelectedImageIndexState(targetIdx);
     setViewModeState(targetMode);
   }
@@ -236,4 +197,3 @@ export function usePhotoPlanDrawerState({
     handleNext, handlePrev, handleDownload, openDrawer,
   };
 }
-

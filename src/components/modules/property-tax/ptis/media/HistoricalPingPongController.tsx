@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useCallback } from 'react';
 import L from 'leaflet';
 import { logger } from '@/lib/utils/logger';
 import { WAYBACK_MAP_TILE_URL, type WaybackRelease } from '@/lib/api/wayback.service';
@@ -18,8 +18,6 @@ interface HistoricalPingPongControllerProps {
   onStopPlaying?: () => void;
   onReleaseError?: (releaseId: number) => void;
 }
-
-// WeakMap to cache layers per L.Map instance without mutating the map object itself
 const mapTileLayersCache = new WeakMap<L.Map, Map<number, L.TileLayer>>();
 
 function getMapCache(map: L.Map): Map<number, L.TileLayer> {
@@ -30,7 +28,6 @@ function getMapCache(map: L.Map): Map<number, L.TileLayer> {
   }
   return cache;
 }
-
 export function HistoricalPingPongController({
   map,
   releases,
@@ -48,73 +45,33 @@ export function HistoricalPingPongController({
   const lruOrderRef = useRef<number[]>([]);
   const layerLoadingStateRef = useRef<Map<number, boolean>>(new Map());
   const loopRef = useRef<number | null>(null);
-
-  const playingRef = useRef(playing);
-  const speedRef = useRef(speed);
-  const yearsRef = useRef(years);
-  const activeYearRef = useRef(activeYear);
-  const onActiveYearChangeRef = useRef(onActiveYearChange);
-  const onStopPlayingRef = useRef(onStopPlaying);
-  const onReleaseErrorRef = useRef(onReleaseError);
-
+  const stateRef = useRef({ playing, speed, years, activeYear, onActiveYearChange, onStopPlaying, onReleaseError });
   useEffect(() => {
-    playingRef.current = playing;
-  }, [playing]);
-
-  useEffect(() => {
-    speedRef.current = speed;
-  }, [speed]);
-
-  useEffect(() => {
-    yearsRef.current = years;
-  }, [years]);
-
-  useEffect(() => {
-    activeYearRef.current = activeYear;
-  }, [activeYear]);
-
-  useEffect(() => {
-    onActiveYearChangeRef.current = onActiveYearChange;
-  }, [onActiveYearChange]);
-
-  useEffect(() => {
-    onStopPlayingRef.current = onStopPlaying;
-  }, [onStopPlaying]);
-
-  useEffect(() => {
-    onReleaseErrorRef.current = onReleaseError;
-  }, [onReleaseError]);
-
-  // Reset cache and remove layers when coordinates change (switching property)
+    stateRef.current = { playing, speed, years, activeYear, onActiveYearChange, onStopPlaying, onReleaseError };
+  }, [playing, speed, years, activeYear, onActiveYearChange, onStopPlaying, onReleaseError]);
   useEffect(() => {
     if (!map) return;
     const cache = getMapCache(map);
     cache.forEach((layer) => {
-      if (map.hasLayer(layer)) {
-        map.removeLayer(layer);
-      }
+      if (map.hasLayer(layer)) map.removeLayer(layer);
     });
     cache.clear();
     lruOrderRef.current = [];
     layerLoadingStateRef.current.clear();
   }, [map, lat, lng]);
-
-  const updateLoadingState = () => {
-    if (!onLoadChange || yearsRef.current.length === 0) return;
-    const active = activeYearRef.current;
-    const activeIdx = yearsRef.current.indexOf(active);
+  const updateLoadingState = useCallback(() => {
+    if (!onLoadChange || stateRef.current.years.length === 0) return;
+    const active = stateRef.current.activeYear;
+    const activeIdx = stateRef.current.years.indexOf(active);
     if (activeIdx === -1) return;
-
-    const nextYear = activeIdx < yearsRef.current.length - 1 ? yearsRef.current[activeIdx + 1] : null;
+    const nextYear = activeIdx < stateRef.current.years.length - 1 ? stateRef.current.years[activeIdx + 1] : null;
     const isActiveLoading = layerLoadingStateRef.current.get(active) || false;
     const isNextLoading = (nextYear !== null && layerLoadingStateRef.current.get(nextYear)) || false;
-
     onLoadChange(isActiveLoading || isNextLoading);
-  };
+  }, [onLoadChange]);
 
-  const getOrCreateLayer = (year: number): L.TileLayer => {
+  const getOrCreateLayer = useCallback((year: number): L.TileLayer => {
     if (!map) return L.tileLayer('');
-
     const cache = getMapCache(map);
     let layer = cache.get(year);
     if (!layer) {
@@ -138,21 +95,14 @@ export function HistoricalPingPongController({
       layer.on('load', () => setLoad(false));
       layer.on('tileerror', () => {
         setLoad(false);
-        if (onReleaseErrorRef.current && releaseId) {
-          onReleaseErrorRef.current(releaseId);
-        }
+        if (stateRef.current.onReleaseError && releaseId) stateRef.current.onReleaseError(releaseId);
       });
-
       cache.set(year, layer);
     }
-
-    if (map.getContainer() && !map.hasLayer(layer)) {
-      layer.addTo(map);
-    }
+    if (map.getContainer() && !map.hasLayer(layer)) layer.addTo(map);
     return layer;
-  };
+  }, [map, releases, updateLoadingState]);
 
-  // Sync activeYear and preload prev/next
   useEffect(() => {
     if (!map || !map.getContainer() || years.length === 0) return;
     const activeIdx = years.indexOf(activeYear);
@@ -162,34 +112,25 @@ export function HistoricalPingPongController({
     const nextYear = activeIdx < years.length - 1 ? years[activeIdx + 1] : null;
 
     try {
-      const activeLayer = getOrCreateLayer(activeYear);
-      activeLayer.setOpacity(1.0).setZIndex(10);
-
+      getOrCreateLayer(activeYear).setOpacity(1.0).setZIndex(10);
       if (prevYear !== null) getOrCreateLayer(prevYear).setOpacity(0.0).setZIndex(5);
       if (nextYear !== null) getOrCreateLayer(nextYear).setOpacity(0.0).setZIndex(5);
 
-      // Hide other cached layers but keep them on the Leaflet map in the DOM to prevent refetching during replay
       const cache = getMapCache(map);
       cache.forEach((layer, y) => {
         if (y !== activeYear && y !== prevYear && y !== nextYear) {
-          if (map.hasLayer(layer)) {
-            layer.setOpacity(0.0).setZIndex(1);
-          }
-          if (layerLoadingStateRef.current.get(y)) {
-            layerLoadingStateRef.current.set(y, false);
-          }
+          if (map.hasLayer(layer)) layer.setOpacity(0.0).setZIndex(1);
+          if (layerLoadingStateRef.current.get(y)) layerLoadingStateRef.current.set(y, false);
         }
       });
 
-      // Update LRU Cache order
       const idx = lruOrderRef.current.indexOf(activeYear);
       if (idx !== -1) lruOrderRef.current.splice(idx, 1);
       lruOrderRef.current.push(activeYear);
 
-      // Evict oldest if cache exceeds size 25
       while (lruOrderRef.current.length > 25) {
         const oldest = lruOrderRef.current.shift();
-        if (oldest !== undefined && oldest !== activeYearRef.current) {
+        if (oldest !== undefined && oldest !== stateRef.current.activeYear) {
           const oldLayer = cache.get(oldest);
           if (oldLayer) {
             oldLayer.off();
@@ -203,10 +144,8 @@ export function HistoricalPingPongController({
     } catch (err) {
       logger.error('Error updating map layers in controller', { error: err as Error });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, activeYear, years]);
+  }, [map, activeYear, years, getOrCreateLayer, updateLoadingState]);
 
-  // Autoplay loop
   useEffect(() => {
     if (!playing) {
       if (loopRef.current) {
@@ -218,39 +157,32 @@ export function HistoricalPingPongController({
 
     let active = true;
     const run = async () => {
-      if (!active || !playingRef.current) return;
-      const currentYear = activeYearRef.current;
-      const currentIdx = yearsRef.current.indexOf(currentYear);
+      if (!active || !stateRef.current.playing) return;
+      const currentYear = stateRef.current.activeYear;
+      const currentIdx = stateRef.current.years.indexOf(currentYear);
       if (currentIdx === -1) return;
 
       await new Promise((resolve) => {
-        loopRef.current = setTimeout(resolve, speedRef.current) as unknown as number;
+        loopRef.current = setTimeout(resolve, stateRef.current.speed) as unknown as number;
       });
 
-      if (!active || !playingRef.current) return;
+      if (!active || !stateRef.current.playing) return;
 
       if (layerLoadingStateRef.current.get(currentYear)) {
         await new Promise<void>((resolve) => {
-          const check = () => {
-            if (!active || !playingRef.current) return resolve();
-            if (!layerLoadingStateRef.current.get(currentYear)) {
-              resolve();
-            } else {
-              setTimeout(check, 100);
-            }
-          };
+          const check = () => (!active || !stateRef.current.playing || !layerLoadingStateRef.current.get(currentYear)) ? resolve() : setTimeout(check, 100);
           check();
         });
       }
 
-      if (!active || !playingRef.current) return;
+      if (!active || !stateRef.current.playing) return;
 
       const nextIdx = currentIdx + 1;
-      if (nextIdx >= yearsRef.current.length) {
-        onStopPlayingRef.current?.();
+      if (nextIdx >= stateRef.current.years.length) {
+        stateRef.current.onStopPlaying?.();
         return;
       }
-      onActiveYearChangeRef.current?.(yearsRef.current[nextIdx]);
+      stateRef.current.onActiveYearChange?.(stateRef.current.years[nextIdx]);
       run();
     };
 

@@ -1,31 +1,57 @@
-'use server';
+// Server-side mapping helper — imported only from server modules, not a callable action
 
 import {
   defaultDiscountData,
   defaultBuildingPermission,
 } from '@/lib/constants/ptis.constants';
 import { buildDetailsFromResults, buildPropertyOptions, InitialDataResult } from './ptis-data';
-import type {
-  KYCDetailsData,
-  SocietyDetailsData,
-  OldDetailsData,
-  OldFloorDetailsData,
-  OldTaxesData,
-  TabHeaderInfoData,
-} from '@/types/ptis.types';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ActionResult } from '@/types/common.types';
 import type { PropertyListItem } from '@/types/ptis.types';
+import type { PropertyRuleLogItem } from '@/types/rule-engine';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { PagedResponse, ApartmentQCDetail } from '@/types/apartmentQC.types';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
-import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
-import type { PagedResponse, ApartmentQCDetail } from '@/types/apartmentQC.types';
+import type {
+  KYCDetailsData,
+  SocietyDetailsData,
+  BuildingPermissionData,
+  OldDetailsData,
+  OldFloorDetailsData,
+  OldTaxesData,
+  DiscountData,
+  TabHeaderInfoData,
+} from '@/types/ptis.types';
+import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
 
-import type { PropertyRuleLogItem } from '@/types/rule-engine';
+type ConcurrentResultsTuple = [
+  {
+    amenities: PagedResponse<ApartmentQCDetail>;
+    commercial: PagedResponse<ApartmentQCDetail>;
+    residential: PagedResponse<ApartmentQCDetail>;
+  } | null,
+  ActionResult<RateableValueResponse> | null,
+  ActionResult<CapitalValueResponse> | null,
+  ActionResult<KYCDetailsData> | null,
+  ActionResult<SocietyDetailsData> | null,
+  ActionResult<BuildingPermissionData> | null,
+  ActionResult<OldDetailsData> | null,
+  ActionResult<OldFloorDetailsData[]> | null,
+  ActionResult<OldTaxesData> | null,
+  ActionResult<DiscountData> | null,
+  ActionResult<PropertyPhotoTypeWithStatusDto[]> | null,
+  ActionResult<PropertyPhotoDto[]> | null,
+  ActionResult<DualMethodResponse> | null,
+  TaxDetailsResult | null,
+  { success: boolean; data?: { items?: PropertyRuleLogItem[] } } | null,
+  WaybackRelease[] | null,
+  ActionResult<TabHeaderInfoData> | null
+];
+
 
 export async function mapPtisFetchResults({
   propertyDetailsResult,
@@ -62,40 +88,15 @@ export async function mapPtisFetchResults({
   propertyIdParam: number | undefined;
   wardOptions: SearchSelectOption[];
 }) {
+  const results = detailResults.length > 0 ? detailResults : Array(17).fill(null);
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
     discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
     waybackReleasesRes, tabHeaderInfoResult
-  ] = (detailResults.length > 0 ? detailResults : Array(17).fill(null)) as [
-    { amenities: PagedResponse<ApartmentQCDetail>; commercial: PagedResponse<ApartmentQCDetail>; residential: PagedResponse<ApartmentQCDetail>; } | null,
-    ActionResult<RateableValueResponse> | null,
-    ActionResult<CapitalValueResponse> | null,
-    { success: boolean; data?: KYCDetailsData } | null,
-    { success: boolean; data?: SocietyDetailsData } | null,
-    { success: boolean; data?: Record<string, unknown> } | null,
-    { success: boolean; data?: OldDetailsData } | null,
-    { success: boolean; data?: OldFloorDetailsData[] } | null,
-    { success: boolean; data?: OldTaxesData } | null,
-    { success: boolean; data?: Record<string, unknown> } | null,
-    ActionResult<PropertyPhotoTypeWithStatusDto[]> | null,
-    ActionResult<PropertyPhotoDto[]> | null,
-    ActionResult<DualMethodResponse> | null,
-    TaxDetailsResult | null,
-    ActionResult<{ items: PropertyRuleLogItem[] }> | null,
-    WaybackRelease[] | null,
-    { success: boolean; data?: TabHeaderInfoData } | null
-  ];
+  ] = results as unknown as ConcurrentResultsTuple;
 
-  const emptyPaged: PagedResponse<ApartmentQCDetail> = {
-    items: [],
-    totalCount: 0,
-    pageNumber: 1,
-    pageSize: 10,
-    totalPages: 1,
-    hasPrevious: false,
-    hasNext: false,
-  };
+  const emptyPaged: PagedResponse<ApartmentQCDetail> = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
 
   const apartmentData = aptData || {
     amenities: emptyPaged,
@@ -108,50 +109,23 @@ export async function mapPtisFetchResults({
   const { kycDetails, societyDetails, oldDetails, oldFloorTableData, oldTaxesData } = buildDetailsFromResults(
     kycResult, societyResult, oldDetailsResult, oldFloorResult, oldTaxesResult
   );
-  
   const buildingPermission = buildingPermissionResult?.success && buildingPermissionResult.data
     ? { ...defaultBuildingPermission, ...buildingPermissionResult.data } : defaultBuildingPermission;
   const discountDetails = discountResult?.success && discountResult.data
     ? { ...defaultDiscountData, ...discountResult.data } : defaultDiscountData;
   const initialPhotoSlots = photoSlotsRes?.success && photoSlotsRes.data ? photoSlotsRes.data : [];
   const initialPhotos = photosRes?.success && photosRes.data ? photosRes.data : [];
-
-  const constructionYearStr = 
-    propertyDetailsResult.success && propertyDetailsResult.propertyDetails?.constructionYear
-      ? propertyDetailsResult.propertyDetails.constructionYear
-      : undefined;
-
-  let waybackReleases = waybackReleasesRes || [];
-  if (constructionYearStr) {
-    const yearParsed = parseInt(constructionYearStr, 10);
-    if (!isNaN(yearParsed)) {
-      const startYear = Math.max(2015, yearParsed - 1);
-      waybackReleases = waybackReleases.filter((r) => r.year >= startYear);
-    }
-  }
-
-  const latitudeStr =
-    propertyDetailsResult.success &&
-    propertyDetailsResult.propertyDetails?.latitude
-      ? propertyDetailsResult.propertyDetails.latitude
-      : undefined;
-  const latitudeNum = latitudeStr ? parseFloat(latitudeStr) : NaN;
-  const latitude = Number.isFinite(latitudeNum) ? latitudeNum : undefined;
-
-  const longitudeStr =
-    propertyDetailsResult.success &&
-    propertyDetailsResult.propertyDetails?.longitude
-      ? propertyDetailsResult.propertyDetails.longitude
-      : undefined;
-  const longitudeNum = longitudeStr ? parseFloat(longitudeStr) : NaN;
-  const longitude = Number.isFinite(longitudeNum) ? longitudeNum : undefined;
-
+  const constYear = propertyDetailsResult.success ? propertyDetailsResult.propertyDetails?.constructionYear : undefined;
+  const startYear = constYear && !isNaN(parseInt(constYear, 10)) ? Math.max(2015, parseInt(constYear, 10) - 1) : null;
+  const waybackReleases = startYear ? (waybackReleasesRes || []).filter((r: WaybackRelease) => r.year >= startYear) : (waybackReleasesRes || []);
+  const latStr = propertyDetailsResult.success ? propertyDetailsResult.propertyDetails?.latitude : undefined;
+  const latitude = latStr && Number.isFinite(parseFloat(latStr)) ? parseFloat(latStr) : undefined;
+  const lngStr = propertyDetailsResult.success ? propertyDetailsResult.propertyDetails?.longitude : undefined;
+  const longitude = lngStr && Number.isFinite(parseFloat(lngStr)) ? parseFloat(lngStr) : undefined;
   const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
     ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)
     : undefined;
-
   const taxDetails = taxDetailsRes || { rateableTaxDetails: undefined, capitalTaxDetails: undefined, rateableTaxError: undefined, capitalTaxError: undefined };
-
   const rawPropertyData = propertyListResult?.success && propertyListResult.data ? propertyListResult.data : [];
   const propertyOptions = buildPropertyOptions(rawPropertyData);
 

@@ -19,22 +19,10 @@ interface ImageWithFallbackProps {
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   style?: React.CSSProperties;
 }
-
-/** blob: and data: URLs are browser-generated — Next.js optimizer cannot handle them. */
 function isBlobOrDataUrl(src: string): boolean {
   return src.startsWith('blob:') || src.startsWith('data:');
 }
-
-/**
- * Image component with built-in loading skeleton, error fallback, and optimization.
- * All URLs are rendered through NextImage — blob/data/external URLs set `unoptimized`
- * to bypass the Next.js image optimizer.
- */
-// In-memory cache for document base64 data URLs to prevent re-fetching and flickering
 export const documentCache = new Map<string, string | Promise<string>>();
-
-/** Remove a single document from the in-memory cache so it will be re-fetched.
- *  Call this after replacing an image to ensure the new version loads. */
 export function clearDocumentCacheEntry(src: string): void {
   if (!src || !src.startsWith('/api/documents/')) return;
   const guid = src.split('/')[3];

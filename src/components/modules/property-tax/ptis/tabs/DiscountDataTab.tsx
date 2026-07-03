@@ -7,7 +7,7 @@ import FieldShell from '@/components/common/FieldShell';
 import { ValueDisplay } from './components/ValueDisplay';
 import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis.types';
 import { AlertCircle, Loader2, Eye, ChevronsDown, ChevronsUp } from 'lucide-react';
-import { fetchSocialDetailsOnlyAction } from '@/app/[locale]/property-tax/ptis/actions';
+import { fetchSocialDetailsOnlyAction } from '@/app/[locale]/property-tax/ptis/ptis-detail-actions';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import { toast } from 'sonner';
 

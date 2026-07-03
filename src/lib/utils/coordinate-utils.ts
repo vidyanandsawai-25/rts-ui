@@ -1,36 +1,7 @@
-import { getUlbDataFromCookies } from '@/lib/utils/cookie';
-
-interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
 interface TileCoordinates {
   x: number;
   y: number;
   z: number;
-}
-
-/**
- * Returns the default centre-point coordinates based on the active ULB (Urban Local Body).
- * Falls back to Thane if no match is found.
- */
-export function getDefaultCoordinates(): Coordinates {
-  const ulb = getUlbDataFromCookies();
-  const name = (ulb.ulbName || '').toLowerCase();
-  const code = (ulb.ulbCode || '').toLowerCase();
-
-  if (name.includes('mumbai') || code.includes('mcgm') || code.includes('bmc')) {
-    return { lat: 19.076, lng: 72.8777 };
-  }
-  if (name.includes('amravati') || code.includes('amc') || code.includes('amt')) {
-    return { lat: 20.932, lng: 77.7523 };
-  }
-  if (name.includes('pune') || code.includes('pmc')) {
-    return { lat: 18.5204, lng: 73.8567 };
-  }
-
-  return { lat: 19.2183, lng: 72.9781 };
 }
 
 /**

@@ -8,6 +8,8 @@ import {
   mapSlotsToCategories,
   findCategory,
 } from '@/components/modules/property-tax/ptis/media/mediaData';
+import { propertyMediaCache, areSlotsEqual, arePhotosEqual, evictOldestCacheEntry } from './usePropertyPhotosQuery';
+import { useImageHoverPreview } from './useImageHoverPreview';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -15,41 +17,11 @@ export interface UsePropertyMediaProps {
   propertyId?: number;
   initialLatitude?: number;
   initialLongitude?: number;
+  onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
+  onPhotoSlotsChange?: (slots: PropertyPhotoTypeWithStatusDto[]) => void;
 }
 
-function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
-  if (a.length !== b.length) return false;
-  return a.every((slot, i) => {
-    const other = b[i];
-    return (
-      slot.photoTypeId === other?.photoTypeId &&
-      slot.photoTypeCode === other?.photoTypeCode &&
-      slot.hasPhoto === other?.hasPhoto &&
-      slot.photoCount === other?.photoCount &&
-      slot.propertyPhotoId === other?.propertyPhotoId &&
-      slot.viewUrl === other?.viewUrl
-    );
-  });
-}
 
-function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
-  if (a.length !== b.length) return false;
-  return a.every((photo, i) => {
-    const other = b[i];
-    return (
-      photo.propertyPhotoId === other?.propertyPhotoId &&
-      photo.photoTypeId === other?.photoTypeId &&
-      photo.photoTypeCode === other?.photoTypeCode &&
-      photo.viewUrl === other?.viewUrl &&
-      photo.downloadUrl === other?.downloadUrl &&
-      photo.documentGuid === other?.documentGuid &&
-      photo.displayOrder === other?.displayOrder &&
-      photo.remarks === other?.remarks &&
-      photo.fileName === other?.fileName &&
-      photo.mimeType === other?.mimeType
-    );
-  });
-}
 
 export function usePropertyMedia({
   initialPhotoSlots = [],
@@ -57,18 +29,12 @@ export function usePropertyMedia({
   propertyId,
   initialLatitude,
   initialLongitude,
+  onPhotosChange,
+  onPhotoSlotsChange,
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const [hoverPreview, setHoverPreview] = useState<{
-    src: string;
-    src2?: string;
-    title: string;
-    beforeLabel?: string;
-    afterLabel?: string;
-    fallbackSrc?: string;
-    fallbackSrc2?: string;
-  } | null>(null);
+  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave } = useImageHoverPreview();
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
@@ -114,8 +80,37 @@ export function usePropertyMedia({
         })
       );
       setPhotos(updated);
+
+      // Revalidate/update slots locally to keep front-end state in sync
+      const updatedSlots = initialPhotoSlots.map((slot) => {
+        const cat = newCats.find((c) => c.photoTypeId === slot.photoTypeId);
+        if (!cat) return slot;
+        const catPhotos = updated.filter((p) => p.photoTypeId === slot.photoTypeId);
+        const hasAnyPhoto = catPhotos.length > 0;
+        const firstPhoto = catPhotos[0];
+        return {
+          ...slot,
+          hasPhoto: hasAnyPhoto,
+          photoCount: catPhotos.length,
+          propertyPhotoId: firstPhoto?.propertyPhotoId,
+          viewUrl: firstPhoto?.viewUrl,
+        };
+      });
+
+      onPhotosChange?.(updated);
+      onPhotoSlotsChange?.(updatedSlots);
+
+      // Update client cache to avoid stale values if drawer is closed/reopened
+      if (propertyId) {
+        propertyMediaCache.set(propertyId, {
+          photoSlots: updatedSlots,
+          photos: updated,
+          timestamp: Date.now(),
+        });
+        evictOldestCacheEntry();
+      }
     },
-    [propertyId]
+    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange]
   );
 
   const [photoPlanCategory, propertyPhotoCategory] = useMemo(
@@ -166,43 +161,7 @@ export function usePropertyMedia({
     });
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleImageHover = useCallback(
-    (
-      src: string,
-      title: string,
-      src2?: string,
-      beforeLabel?: string,
-      afterLabel?: string,
-      fallbackSrc?: string,
-      fallbackSrc2?: string
-    ) => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-        hoverTimeoutRef.current = null;
-      }
-      setHoverPreview({ src, src2, title, beforeLabel, afterLabel, fallbackSrc, fallbackSrc2 });
-    },
-    []
-  );
-
-  const handleImageLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoverPreview(null);
-      hoverTimeoutRef.current = null;
-    }, 150);
-  }, []);
-
-  const cancelImageLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-  }, []);
 
   return {
     showMoreImages,

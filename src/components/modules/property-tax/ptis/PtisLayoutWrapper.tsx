@@ -41,7 +41,7 @@ function PtisLayoutWrapperContent({
   initialWaybackReleases = [],
 }: Omit<PtisLayoutWrapperProps, 'initialMediaPanelVisible'>) {
   const { isPanelVisible } = useMediaPanel();
-  const { loading, photoSlots, photos } = usePropertyPhotosQuery(
+  const { loading, photoSlots, photos, setPhotoSlots, setPhotos } = usePropertyPhotosQuery(
     propertyId,
     isPanelVisible,
     initialPhotoSlots,
@@ -81,6 +81,8 @@ function PtisLayoutWrapperContent({
             initialLatitude={initialLatitude}
             initialLongitude={initialLongitude}
             initialWaybackReleases={initialWaybackReleases}
+            onPhotosChange={setPhotos}
+            onPhotoSlotsChange={setPhotoSlots}
           />
         </div>
       </div>

@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from './ImageWithFallback';
 
@@ -16,10 +15,6 @@ interface ImageHoverPreviewProps {
   fallbackSrc2?: string;
 }
 
-/**
- * Floating preview panel that appears to the left of the media sidebar
- * when hovering over an image card. Supports zoom and click-and-drag pan.
- */
 export function ImageHoverPreview({
   src,
   src2,

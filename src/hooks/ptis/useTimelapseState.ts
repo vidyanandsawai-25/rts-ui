@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
-import { getDefaultCoordinates } from '@/lib/utils/coordinate-utils';
 
 interface UseTimelapseStateOptions {
   initialLat?: number;
@@ -41,8 +40,8 @@ export function useTimelapseState({
   initialWaybackReleases = [],
 }: UseTimelapseStateOptions): UseTimelapseStateReturn {
   const [waybackReleases, setWaybackReleases] = useState<WaybackRelease[]>(() => initialWaybackReleases);
-  const [lat, setLat] = useState(() => initialLat ?? getDefaultCoordinates().lat);
-  const [lng, setLng] = useState(() => initialLng ?? getDefaultCoordinates().lng);
+  const [lat, setLat] = useState(() => initialLat ?? 0);
+  const [lng, setLng] = useState(() => initialLng ?? 0);
   const [activeIdx, setActiveIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,9 +57,8 @@ export function useTimelapseState({
   }, [initialWaybackReleases]);
 
   useEffect(() => {
-    const defaultCoords = getDefaultCoordinates();
-    setLat(initialLat ?? defaultCoords.lat);
-    setLng(initialLng ?? defaultCoords.lng);
+    setLat(initialLat ?? 0);
+    setLng(initialLng ?? 0);
   }, [initialLat, initialLng]);
 
   // Auto-advance past failed releases (e.g. missing tiles for certain years)

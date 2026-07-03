@@ -10,7 +10,7 @@ import {
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
   fetchTabHeaderInfoAction,
-} from './actions';
+} from './ptis-detail-actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
@@ -38,7 +38,7 @@ export async function fetchPropertyDetailsConcurrently(
   showDetailsParam: boolean,
   initialMediaPanelVisible: boolean
 ) {
-  return Promise.all([
+  const settled = await Promise.allSettled([
     wardId && propertyNo
       ? getApartmentQCDataAction(
           wardId,
@@ -80,4 +80,5 @@ export async function fetchPropertyDetailsConcurrently(
     initialMediaPanelVisible ? fetchWaybackReleases() : Promise.resolve(null),
     propertyId ? fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null),
   ]);
+  return settled.map((r) => (r.status === 'fulfilled' ? r.value : null));
 }

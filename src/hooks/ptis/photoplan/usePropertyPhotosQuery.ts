@@ -9,9 +9,11 @@ export interface UsePropertyPhotosQueryResult {
   photos: PropertyPhotoDto[];
   error: string | null;
   refetch: () => Promise<void>;
+  setPhotoSlots: React.Dispatch<React.SetStateAction<PropertyPhotoTypeWithStatusDto[]>>;
+  setPhotos: React.Dispatch<React.SetStateAction<PropertyPhotoDto[]>>;
 }
 
-// Client-side module-level cache keyed by propertyId
+// Client-side module-level cache keyed by propertyId with LRU eviction
 export const propertyMediaCache = new Map<number, {
   photoSlots: PropertyPhotoTypeWithStatusDto[];
   photos: PropertyPhotoDto[];
@@ -19,6 +21,17 @@ export const propertyMediaCache = new Map<number, {
 }>();
 
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_CACHE_SIZE = 10;
+
+export function evictOldestCacheEntry(): void {
+  if (propertyMediaCache.size <= MAX_CACHE_SIZE) return;
+  let oldestKey: number | null = null;
+  let oldestTime = Infinity;
+  propertyMediaCache.forEach((entry, key) => {
+    if (entry.timestamp < oldestTime) { oldestTime = entry.timestamp; oldestKey = key; }
+  });
+  if (oldestKey !== null) propertyMediaCache.delete(oldestKey);
+}
 
 export function isCacheValid(propertyId: number): boolean {
   if (!propertyMediaCache.has(propertyId)) return false;
@@ -26,7 +39,7 @@ export function isCacheValid(propertyId: number): boolean {
   return Date.now() - entry.timestamp < CACHE_TTL_MS;
 }
 
-function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
+export function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
   if (a.length !== b.length) return false;
   return a.every((slot, i) => {
     const other = b[i];
@@ -41,7 +54,7 @@ function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoType
   });
 }
 
-function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
+export function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
   if (a.length !== b.length) return false;
   return a.every((photo, i) => {
     const other = b[i];
@@ -125,6 +138,7 @@ export function usePropertyPhotosQuery(
         photos: initialPhotos,
         timestamp: Date.now(),
       });
+      evictOldestCacheEntry();
     }
   }, [propertyId, isPanelOpen, initialPhotoSlots, initialPhotos]);
 
@@ -140,5 +154,7 @@ export function usePropertyPhotosQuery(
     photos,
     error: null,
     refetch: noopRefetch,
+    setPhotoSlots,
+    setPhotos,
   };
 }
