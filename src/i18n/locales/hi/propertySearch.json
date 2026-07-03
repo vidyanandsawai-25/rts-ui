@@ -33,7 +33,7 @@
     "fields": {
       "propertyType": "संपत्ति प्रकार",
       "typeFilter": "प्रकार फ़िल्टर",
-      "propertyDescription": "श्रेणी विवरण",
+      "propertyDescription": "श्रेणी प्रकार",
       "zone": "ज़ोन",
       "ward": "वार्ड",
       "scanQR": "QR स्कैन करें",
@@ -73,7 +73,7 @@
     "placeholders": {
       "propertyType": "संपत्ति प्रकार चुनें",
       "typeFilter": "प्रकार फ़िल्टर चुनें",
-      "propertyDescription": "श्रेणी विवरण चुनें",
+      "propertyDescription": "श्रेणी प्रकार चुनें",
       "zone": "ज़ोन चुनें",
       "ward": "वार्ड चुनें",
       "wardSelectZoneFirst": "पहले ज़ोन चुनें",

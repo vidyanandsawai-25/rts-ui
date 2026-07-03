@@ -207,7 +207,7 @@ export function PropertySearchResults({
             {t("backToProperties") || "Back to Properties"}
           </button>
           <span>
-            {t("viewingUnitsFor")} {t("apartment")}: <strong>{activeApartment.upicId || activeApartment.propertyNo}</strong> ({t("totalUnits", { count: units.length })})
+            {t("viewingUnitsFor")} {t("apartment")}: <strong>{activeApartment.upicId || activeApartment.propertyNo}</strong>
           </span>
         </div>
       )}
