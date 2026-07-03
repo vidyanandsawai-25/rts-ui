@@ -262,6 +262,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               }
               reassessmentSection={
                 <ReassessmentPage 
+                  params={params}
                   wardId={resolvedWardId} 
                   propertyNo={propertyNo} 
                   partitionNo={partitionNo} 

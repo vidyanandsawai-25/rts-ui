@@ -1,151 +1,155 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { EyeIconButton, MasterTable } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';
 import type { MappedFloorDetail } from '@/types/reassessment.types';
 
 interface OldFloorDetailsProps {
-    data: MappedFloorDetail[];
-    isAutoScrolling: boolean;
-    onToggleAutoScroll: () => void;
+  data: MappedFloorDetail[];
+  isAutoScrolling: boolean;
+  onToggleAutoScroll: () => void;
 }
 
-// Column definitions for Old Floor Details
-const oldColumns: Column<MappedFloorDetail>[] = [
-    {
-        key: 'floor',
-        label: 'Floor',
-        width: '64px',
-        align: 'center',
-        cellClassName: 'font-bold'
-    },
-    {
-        key: 'conYear',
-        label: 'Con Year',
-        width: '96px',
-        align: 'center'
-    },
-    {
-        key: 'asstYear',
-        label: 'Asst Year',
-        width: '96px',
-        align: 'center'
-    },
-    {
-        key: 'constType',
-        label: 'Const Type',
-        width: '96px',
-        align: 'center',
-        cellClassName: 'font-bold text-sky-800'
-    },
-    {
-        key: 'use',
-        label: 'Use',
-        width: '128px',
-        align: 'left',
-        cellClassName: 'text-emerald-700'
-    },
-    {
-        key: 'carpetAreaSqFt',
-        label: 'Carpet A',
-        width: '128px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-mono',
-        render: (_, row: any) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
-    },
-    {
-        key: 'builtUpAreaSqFt',
-        label: 'Built-up A',
-        width: '128px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-mono',
-        render: (_, row: any) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
-    },
-    {
-        key: 'rate',
-        label: 'Rate',
-        width: '96px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-mono'
-    },
-    {
-        key: 'renter',
-        label: 'Renter',
-        width: '144px',
-        align: 'left',
-        cellClassName: 'text-emerald-700'
-    },
-    {
-        key: 'taxLiability',
-        label: 'Tax Liability',
-        width: '128px',
-        align: 'center',
-        cellClassName: 'font-mono',
-        render: (val: any) => val || '-'
-    },
-    {
-        key: 'rentMy',
-        label: 'Rent M/Y',
-        width: '112px',
-        align: 'right',
-        cellClassName: 'font-mono'
-    },
-    {
-        key: 'rentalValue',
-        label: 'Rental Value',
-        width: '128px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-bold font-mono',
-        render: (val: any) => val.toLocaleString()
-    },
-    {
-        key: 'depreciation',
-        label: 'Depreciation',
-        width: '112px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-mono'
-    },
-    {
-        key: 'alv',
-        label: 'ALV',
-        width: '128px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-bold font-mono',
-        render: (val: any) => val.toLocaleString()
-    },
-    {
-        key: 'mr',
-        label: 'M&R',
-        width: '96px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-mono'
-    },
-    {
-        key: 'rv',
-        label: 'RV',
-        width: '128px',
-        align: 'right',
-        cellClassName: 'text-emerald-700 font-bold font-mono',
-        render: (val: any) => val.toLocaleString()
-    }
-];
-
 export function OldFloorDetails({ 
-    data, 
-    isAutoScrolling, 
-    onToggleAutoScroll 
+  data, 
+  isAutoScrolling, 
+  onToggleAutoScroll 
 }: OldFloorDetailsProps) {
-    return (
-        <div className="flex-grow flex flex-col min-w-0">
-            <div className="flex justify-between items-center mb-2">
-                <h4 className="text-xs font-bold text-sky-950">Old Floor Details</h4>
-                <EyeIconButton
-                    onClick={onToggleAutoScroll}
-                    isAutoScrolling={isAutoScrolling}
-                    startTitle="Start Auto Scroll"
-                    stopTitle="Stop Auto Scroll"
-                />
-            </div>
+  // Translations
+  const t = useTranslations('reassessment');
+
+  // Column definitions for Old Floor Details
+  const oldColumns: Column<MappedFloorDetail>[] = [
+    {
+      key: 'floor',
+      label: t('floorDetails.columns.floor'),
+      width: '64px',
+      align: 'left',
+      cellClassName: 'font-bold'
+    },
+    {
+      key: 'conYear',
+      label: t('floorDetails.columns.conYear'),
+      width: '96px',
+      align: 'left'
+    },
+    {
+      key: 'asstYear',
+      label: t('floorDetails.columns.asstYear'),
+      width: '96px',
+      align: 'left'
+    },
+    {
+      key: 'constType',
+      label: t('floorDetails.columns.constType'),
+      width: '96px',
+      align: 'left',
+      cellClassName: 'font-bold text-sky-800'
+    },
+    {
+      key: 'use',
+      label: t('floorDetails.columns.use'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'text-emerald-700'
+    },
+    {
+      key: 'carpetAreaSqFt',
+      label: t('floorDetails.columns.carpetArea'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono',
+      render: (_, row: any) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
+    },
+    {
+      key: 'builtUpAreaSqFt',
+      label: t('floorDetails.columns.builtUpArea'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono',
+      render: (_, row: any) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
+    },
+    {
+      key: 'rate',
+      label: t('floorDetails.columns.rate'),
+      width: '96px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono'
+    },
+    {
+      key: 'renter',
+      label: t('floorDetails.columns.renter'),
+      width: '144px',
+      align: 'left',
+      cellClassName: 'text-emerald-700'
+    },
+    {
+      key: 'taxLiability',
+      label: t('floorDetails.columns.taxLiability'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'font-mono',
+      render: (val: any) => val || '-'
+    },
+    {
+      key: 'rentMy',
+      label: t('floorDetails.columns.rentMy'),
+      width: '112px',
+      align: 'left',
+      cellClassName: 'font-mono'
+    },
+    {
+      key: 'rentalValue',
+      label: t('floorDetails.columns.rentalValue'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-bold font-mono',
+      render: (val: any) => val.toLocaleString()
+    },
+    {
+      key: 'depreciation',
+      label: t('floorDetails.columns.depreciation'),
+      width: '112px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono'
+    },
+    {
+      key: 'alv',
+      label: t('floorDetails.columns.alv'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-bold font-mono',
+      render: (val: any) => val.toLocaleString()
+    },
+    {
+      key: 'mr',
+      label: t('floorDetails.columns.mr'),
+      width: '96px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono'
+    },
+    {
+      key: 'rv',
+      label: t('floorDetails.columns.rv'),
+      width: '128px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-bold font-mono',
+      render: (val: any) => val.toLocaleString()
+    }
+  ];
+
+  return (
+    <div className="flex-grow flex flex-col min-w-0">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="text-xs font-bold text-sky-950">{t('floorDetails.oldTitle')}</h4>
+        <EyeIconButton
+          onClick={onToggleAutoScroll}
+          isAutoScrolling={isAutoScrolling}
+          startTitle={t('buttons.startAutoScroll')}
+          stopTitle={t('buttons.stopAutoScroll')}
+        />
+      </div>
 
             <div id="old-table-container" className="min-w-0">
                 <MasterTable

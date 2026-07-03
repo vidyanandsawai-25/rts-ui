@@ -143,7 +143,7 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
     },
     {
       rowType: 'additional',
-      label: 'Additional Revenue',
+      label: 'New Taxes',
       taxes: additionalTaxes,
       totalTax: (totalTax?.newAmount ?? 0) - (totalTax?.oldAmount ?? 0),
     },

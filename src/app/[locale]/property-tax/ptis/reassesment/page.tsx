@@ -1,103 +1,86 @@
-'use client';
-
-import { useEffect, useState, useTransition } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Search } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import ReassesmentScreen from '@/components/modules/property-tax/ptis/reassement-screen/ReassesmentScreen';
 import {
-    getMappedReassessmentDataAction,
-    getMappedRetrospectiveTaxDataAction,
-    type MappedReassessmentData,
-    type MappedRetrospectiveData,
+  getMappedReassessmentDataAction,
+  getMappedRetrospectiveTaxDataAction,
 } from './action';
 
 interface ReassessmentPageProps {
-    wardId?: number;
-    propertyNo?: string;
-    partitionNo?: string;
+  params: Promise<{ locale: string }>;
+  wardId?: number;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
-export default function ReassessmentPage({ 
-    wardId: propWardId, 
-    propertyNo: propPropertyNo, 
-    partitionNo: propPartitionNo 
+export default async function ReassessmentPage({
+  params,
+  wardId: propWardId,
+  propertyNo: propPropertyNo,
+  partitionNo: propPartitionNo,
 }: ReassessmentPageProps) {
-    const searchParams = useSearchParams();
-    const [isPending, startTransition] = useTransition();
-    const [data, setData] = useState<MappedReassessmentData | null>(null);
-    const [retrospectiveData, setRetrospectiveData] = useState<MappedRetrospectiveData | null>(null);
-    const [error, setError] = useState<string | undefined>();
-    const [retrospectiveError, setRetrospectiveError] = useState<string | undefined>();
-    const [hasFetched, setHasFetched] = useState(false);
+  // Get params and locale
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
+  
+  // Get translations
+  const t = await getTranslations({ locale, namespace: 'reassessment' });
+  
+  // Get params from props
+  const wardId = propWardId || 0;
+  const propertyNo = propPropertyNo || '';
+  const partitionNo = propPartitionNo || '';
 
-    // Get params from props or searchParams
-    const wardId = propWardId || Number(searchParams.get('wardId')) || 0;
-    const propertyNo = propPropertyNo || searchParams.get('propertyNo') || '';
-    const partitionNo = propPartitionNo || searchParams.get('partitionNo') || '';
-
-    useEffect(() => {
-        // Don't fetch if required params are missing
-        if (!wardId || !propertyNo) {
-            return;
-        }
-
-        // Avoid re-fetching
-        if (hasFetched) {
-            return;
-        }
-
-        startTransition(async () => {
-            try {
-                const [reassessmentResult, retrospectiveResult] = await Promise.all([
-                    getMappedReassessmentDataAction(wardId, propertyNo, partitionNo),
-                    getMappedRetrospectiveTaxDataAction(wardId, propertyNo, partitionNo),
-                ]);
-
-                if (reassessmentResult.success && reassessmentResult.data) {
-                    setData(reassessmentResult.data);
-                    setError(undefined);
-                } else {
-                    setError(reassessmentResult.error || 'Failed to load reassessment data');
-                }
-
-                if (retrospectiveResult.success && retrospectiveResult.data) {
-                    setRetrospectiveData(retrospectiveResult.data);
-                    setRetrospectiveError(undefined);
-                } else {
-                    setRetrospectiveError(retrospectiveResult.error || 'Failed to load retrospective tax details');
-                }
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-            } finally {
-                setHasFetched(true);
-            }
-        });
-    }, [wardId, propertyNo, partitionNo, hasFetched]);
-
-    // Show message if required params are missing
-    if (!wardId || !propertyNo) {
-        return (
-            <div className="p-4">
-                <ReassesmentScreen 
-                    error="Ward ID and Property Number are required to view reassessment details."
-                />
-            </div>
-        );
-    }
-
+  // Don't render anything if required params are missing (ptis/page.tsx handles this)
+  if (!wardId || !propertyNo) {
     return (
-        <div className="p-4">
-            <ReassesmentScreen 
-                oldFloorDetails={data?.oldFloorDetails}
-                newFloorDetails={data?.newFloorDetails}
-                taxColumns={data?.taxColumns}
-                taxRows={data?.taxRows}
-                error={error}
-                isLoading={isPending}
-                retrospectiveTaxColumns={retrospectiveData?.columns}
-                retrospectiveTaxRows={retrospectiveData?.rows}
-                retrospectiveError={retrospectiveError}
-                photos={data?.photos}
-            />
+      <div className="p-4">
+        <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center text-center space-y-4">
+                {/* Empty State Icon */}
+                <div className="rounded-full bg-blue-50 p-3">
+                  <Search className="h-8 w-8 text-blue-600" />
+                </div>
+                {/* Title */}
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {t('emptyState.title')}
+                </h2>
+                {/* Description */}
+                <p className="text-gray-600 text-sm">
+                  {t('emptyState.description')}
+                </p>
+              </div>
         </div>
+      </div>
     );
+  }
+
+  // Fetch data on server
+  const [reassessmentResult, retrospectiveResult] = await Promise.all([
+    getMappedReassessmentDataAction(wardId, propertyNo, partitionNo),
+    getMappedRetrospectiveTaxDataAction(wardId, propertyNo, partitionNo),
+  ]);
+
+  // Throw errors for Next.js error boundary to handle
+  if (!reassessmentResult.success) {
+    throw new Error(reassessmentResult.error || 'Failed to load reassessment data');
+  }
+
+  const data = reassessmentResult.data;
+  const retrospectiveData = retrospectiveResult.success ? retrospectiveResult.data : null;
+
+  return (
+    <div className="p-4">
+      <ReassesmentScreen
+        oldFloorDetails={data?.oldFloorDetails}
+        newFloorDetails={data?.newFloorDetails}
+        taxColumns={data?.taxColumns}
+        taxRows={data?.taxRows}
+        retrospectiveTaxColumns={retrospectiveData?.columns}
+        retrospectiveTaxRows={retrospectiveData?.rows}
+        retrospectiveError={retrospectiveResult.success ? undefined : retrospectiveResult.error}
+        photos={data?.photos}
+      />
+    </div>
+  );
 }

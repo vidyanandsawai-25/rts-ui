@@ -134,3 +134,18 @@ export function toTitleCase(str: string | null | undefined): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+// --- Reassessment Specific Formatting Utilities ---
+
+export function formatReassessmentCurrency(value: number): string {
+  if (value >= 10000000) {
+    return `₹${(value / 10000000).toFixed(2)}Cr`;
+  } else if (value >= 100000) {
+    return `₹${(value / 100000).toFixed(2)}L`;
+  }
+  return `₹${value.toLocaleString('en-IN')}`;
+}
+
+export function formatReassessmentNumber(value: number): string {
+  return value.toLocaleString('en-IN');
+}
