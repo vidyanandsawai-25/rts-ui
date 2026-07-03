@@ -61,19 +61,7 @@ export function useTimelapseState({
     setLng(initialLng ?? 0);
   }, [initialLat, initialLng]);
 
-  // Auto-advance past failed releases (e.g. missing tiles for certain years)
-  useEffect(() => {
-    if (waybackReleases.length === 0) return;
-    const currentRelease = waybackReleases[activeIdx];
-    if (!currentRelease) return;
 
-    if (failedReleases.has(currentRelease.releaseId)) {
-      const nextIdx = waybackReleases.findIndex(
-        (r, i) => i > activeIdx && !failedReleases.has(r.releaseId)
-      );
-      if (nextIdx !== -1) setActiveIdx(nextIdx);
-    }
-  }, [activeIdx, failedReleases, waybackReleases]);
 
   const activeRelease = waybackReleases[activeIdx] ?? null;
 

@@ -3,11 +3,10 @@
 import { ptisService } from '@/lib/api/ptis/tab/ptis.service';
 import { propertyIdActionSchema } from '@/lib/validations/ptis.schema';
 import { getPropertyRuleLogs } from '@/lib/api/rule-engine/property-rule-log.service';
-import { getPtisValidationSchemas, createAction } from './actions';
+import { createAction } from './actions';
 
 export async function fetchKycDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -16,8 +15,7 @@ export async function fetchKycDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchSocietyDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -26,8 +24,7 @@ export async function fetchSocietyDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchOldDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -36,8 +33,7 @@ export async function fetchOldDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchOldFloorDetailsAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -46,8 +42,7 @@ export async function fetchOldFloorDetailsAction(propertyId: number) {
 }
 
 export async function fetchOldTaxesDetailsAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -67,8 +62,7 @@ export async function fetchApartmentQCDetailsAction(propertyId?: number) {
 }
 
 export async function fetchDiscountDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -77,8 +71,7 @@ export async function fetchDiscountDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchSocialDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
@@ -87,8 +80,7 @@ export async function fetchSocialDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchBuildingPermissionOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }

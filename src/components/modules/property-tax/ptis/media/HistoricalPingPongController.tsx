@@ -168,14 +168,32 @@ export function HistoricalPingPongController({
 
       if (!active || !stateRef.current.playing) return;
 
+      if (stateRef.current.activeYear !== currentYear) {
+        run();
+        return;
+      }
+
       if (layerLoadingStateRef.current.get(currentYear)) {
         await new Promise<void>((resolve) => {
-          const check = () => (!active || !stateRef.current.playing || !layerLoadingStateRef.current.get(currentYear)) ? resolve() : setTimeout(check, 100);
+          const startTime = Date.now();
+          const check = () => {
+            const timePassed = Date.now() - startTime;
+            if (!active || !stateRef.current.playing || !layerLoadingStateRef.current.get(currentYear) || timePassed > 3000) {
+              resolve();
+            } else {
+              setTimeout(check, 100);
+            }
+          };
           check();
         });
       }
 
       if (!active || !stateRef.current.playing) return;
+
+      if (stateRef.current.activeYear !== currentYear) {
+        run();
+        return;
+      }
 
       const nextIdx = currentIdx + 1;
       if (nextIdx >= stateRef.current.years.length) {

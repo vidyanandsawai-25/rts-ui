@@ -127,20 +127,4 @@ describe('ChangeTimelapse', () => {
 
     expect(screen.getByTestId('mock-timelapse-map')).toHaveTextContent('Mock Map Year: 2014');
   });
-
-  it('automatically skips/advances from 2014 to 2015 when 2014 release loading fails', () => {
-    shouldFail2014 = true;
-    // In our mock map, if year === 2014, it calls props.onReleaseError(releaseId) immediately.
-    // Let's verify that the active index auto-advances to 2015 (releaseId 102).
-    render(
-      <ChangeTimelapse
-        initialLat={19.076}
-        initialLng={72.877}
-        initialWaybackReleases={mockReleases}
-      />
-    );
-
-    // Map should automatically update to 2015 because 2014 failed and we auto-advanced
-    expect(screen.getByTestId('mock-timelapse-map')).toHaveTextContent('Mock Map Year: 2015');
-  });
 });

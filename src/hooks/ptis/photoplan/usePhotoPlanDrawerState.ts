@@ -16,7 +16,30 @@ export interface UsePhotoPlanDrawerStateProps {
 }
 
 function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]) {
-  return JSON.stringify(a) === JSON.stringify(b);
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+
+  return a.every((cat, i) => {
+    const other = b[i];
+    if (!other) return false;
+
+    if (cat.photoTypeId !== other.photoTypeId) return false;
+    if (cat.photoTypeCode !== other.photoTypeCode) return false;
+    if (cat.photoTypeName !== other.photoTypeName) return false;
+
+    if (cat.images.length !== other.images.length) return false;
+
+    return cat.images.every((img, j) => {
+      const oImg = other.images[j];
+      return (
+        img.propertyPhotoId === oImg?.propertyPhotoId &&
+        img.src === oImg?.src &&
+        img.fullSrc === oImg?.fullSrc &&
+        img.hasPhoto === oImg?.hasPhoto &&
+        img.displayOrder === oImg?.displayOrder
+      );
+    });
+  });
 }
 
 export function usePhotoPlanDrawerState({

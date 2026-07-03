@@ -77,7 +77,7 @@ export async function fetchPropertyDetailsConcurrently(
     valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
     fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
     propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
-    initialMediaPanelVisible ? fetchWaybackReleases() : Promise.resolve(null),
+    fetchWaybackReleases(),
     propertyId ? fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null),
   ]);
   return settled.map((r) => (r.status === 'fulfilled' ? r.value : null));
