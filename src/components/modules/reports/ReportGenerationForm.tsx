@@ -1,12 +1,14 @@
 'use client';
 
 import { Select } from '@/components/common/select';
+import { Button, Card } from '@/components/common';
 import { useReportForm } from '@/hooks/useReportForm';
 import { ReportParamField } from './ReportParamField';
 import type { ReportGenerationFormProps } from '@/types/report.types';
 import type { Option } from '@/components/common/select';
+import { ArrowLeft } from 'lucide-react';
 
-export function ReportGenerationForm({ copy, reportDefinitions, onQueued }: ReportGenerationFormProps) {
+export function ReportGenerationForm({ copy, reportDefinitions, onQueued, selectedReportCode, onBack }: ReportGenerationFormProps) {
   const {
     reportCode,
     paramValues,
@@ -21,7 +23,7 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued }: Repo
     handleSubmit,
     handleReset,
     selectedDefinition,
-  } = useReportForm({ reportDefinitions, onQueued });
+  } = useReportForm({ reportDefinitions, onQueued, selectedReportCode });
 
   const reportOptions: Option[] = reportDefinitions.map((d) => ({
     value: d.reportCode,
@@ -29,12 +31,12 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued }: Repo
   }));
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <Card className="rounded-xl shadow-sm">
       {/* Form panel */}
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col gap-5"
+        className="flex flex-col gap-5"
       >
         {/* Report Type */}
         <Select
@@ -56,7 +58,7 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued }: Repo
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
-            <span>Loading parameters…</span>
+            <span>Loading parameters...</span>
           </div>
         )}
 
@@ -89,35 +91,35 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued }: Repo
 
         {/* Buttons */}
         <div className="flex flex-wrap gap-3 mt-2">
-          <button
+          {onBack && (
+            <Button
+              type="button"
+              variant="secondary"
+              icon={ArrowLeft}
+              onClick={onBack}
+              disabled={isSubmitting}
+            >
+              Back
+            </Button>
+          )}
+          <Button
             type="button"
+            variant="secondary"
             onClick={handleReset}
             disabled={isSubmitting}
-            className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             {copy.buttons.reset}
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            isLoading={isSubmitting}
             disabled={isSubmitting}
-            className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {isSubmitting && (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-            )}
             {copy.buttons.generate}
-          </button>
+          </Button>
         </div>
       </form>
-
-      {/* Pro-tip side panel */}
-      <aside className="bg-blue-50 border border-blue-100 rounded-xl p-5 flex flex-col gap-3 h-fit">
-        <p className="text-sm font-semibold text-blue-800">{copy.proTip.title}</p>
-        <p className="text-sm text-blue-700 leading-relaxed">{copy.proTip.body}</p>
-      </aside>
-    </div>
+    </Card>
   );
 }
+

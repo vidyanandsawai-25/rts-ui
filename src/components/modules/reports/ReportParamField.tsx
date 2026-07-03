@@ -1,7 +1,7 @@
 'use client';
 
 import { Select } from '@/components/common/select';
-import { Input } from '@/components/common';
+import { Checkbox, Input } from '@/components/common';
 import { useLookupOptions } from '@/hooks/useLookupOptions';
 import type { ReportParameterDefinition } from '@/types/report.types';
 
@@ -16,7 +16,7 @@ interface ReportParamFieldProps {
 }
 
 /**
- * Renders ONE report parameter generically from its metadata — no per-report or per-dropdown code.
+ * Renders ONE report parameter generically from its metadata - no per-report or per-dropdown code.
  * 'select' fetches its options from the generic lookup endpoint (by OptionsSource + parent value);
  * 'date' supports a min-bound from its cascade parent (date ranges); plus text/number/boolean.
  */
@@ -42,7 +42,7 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
           name={param.parameterKey}
           label={param.label}
           required={param.isRequired}
-          placeholder={cascadeBlocked ? 'Select the previous field first' : loading ? 'Loading…' : 'Select…'}
+          placeholder={cascadeBlocked ? 'Select the previous field first' : loading ? 'Loading...' : 'Select...'}
           options={options.map((o) => ({ value: o.value, label: o.label }))}
           value={value}
           disabled={cascadeBlocked || loading}
@@ -87,17 +87,13 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
 
     case 'boolean':
       return (
-        <label className="flex items-center gap-2 text-sm text-gray-700 py-1">
-          <input
-            type="checkbox"
-            name={param.parameterKey}
-            checked={value === 'true'}
-            onChange={(e) => change(e.target.checked ? 'true' : 'false')}
-            onBlur={blur}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600"
-          />
-          <span>{param.label}{param.isRequired ? ' *' : ''}</span>
-        </label>
+        <Checkbox
+          name={param.parameterKey}
+          checked={value === 'true'}
+          onCheckedChange={(checked) => change(checked ? 'true' : 'false')}
+          onBlur={blur}
+          label={`${param.label}${param.isRequired ? ' *' : ''}`}
+        />
       );
 
     default: // 'text'

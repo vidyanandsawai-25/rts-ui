@@ -15,12 +15,26 @@ export async function getReportLookup(key: string, parentValue?: string): Promis
   return result.data;
 }
 
+function normalizeReportDefinition(raw: Record<string, unknown>): ReportDefinition {
+  return {
+    id: Number(raw.id ?? raw.Id ?? raw.reportDefinitionId ?? raw.ReportDefinitionId ?? 0),
+    reportCode: String(raw.reportCode ?? raw.ReportCode ?? raw.code ?? raw.Code ?? ''),
+    reportName: String(raw.reportName ?? raw.ReportName ?? raw.name ?? raw.Name ?? ''),
+    category: String(raw.category ?? raw.Category ?? ''),
+    description: String(raw.description ?? raw.Description ?? ''),
+    templateFile: String(raw.templateFile ?? raw.TemplateFile ?? ''),
+    dataProviderCode: String(raw.dataProviderCode ?? raw.DataProviderCode ?? ''),
+    isActive: Boolean(raw.isActive ?? raw.IsActive ?? true),
+    sortOrder: Number(raw.sortOrder ?? raw.SortOrder ?? 0),
+  };
+}
+
 export async function getReportDefinitions(): Promise<ReportDefinition[]> {
-  const result = await apiClient.get<PagedResponse<ReportDefinition>>(
+  const result = await apiClient.get<PagedResponse<Record<string, unknown>>>(
     '/Report?PageSize=-1&IsActive=true'
   );
   if (!result.success || !result.data) return [];
-  return result.data.items ?? [];
+  return (result.data.items ?? []).map(normalizeReportDefinition);
 }
 
 export async function getReportParameters(reportDefinitionId: number): Promise<ReportParameterDefinition[]> {

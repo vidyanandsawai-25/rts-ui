@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { MasterTable, Badge } from '@/components/common';
+import { MasterTable, Badge, Card } from '@/components/common';
 import type { Column } from '@/components/common';
 import type { ReportJob, ReportJobStatus, ReportJobsListProps } from '@/types/report.types';
 
@@ -17,9 +17,9 @@ const STATUS_VARIANT: Record<ReportJobStatus, BadgeVariant> = {
 };
 
 function formatDate(value: string | null): string {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
+  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString();
 }
 
 export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: ReportJobsListProps) {
@@ -58,7 +58,7 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: Repor
   ];
 
   return (
-    <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+    <Card className="rounded-xl shadow-sm">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">{copy.title}</h2>
       <MasterTable<ReportJob>
         columns={columns}
@@ -68,7 +68,7 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: Repor
         paginationConfig={{ enabled: false }}
         renderActions={(row) =>
           row.downloadAvailable ? (
-            // Direct link — the proxy returns Content-Disposition: attachment, so the browser
+            // Direct link - the proxy returns Content-Disposition: attachment, so the browser
             // streams the PDF to disk without buffering it in JS memory.
             <a
               href={`/api/report-download/${encodeURIComponent(row.reportRequestId)}`}
@@ -77,13 +77,13 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: Repor
               {copy.download}
             </a>
           ) : (
-            <span className="text-xs text-gray-400">—</span>
+            <span className="text-xs text-gray-400">-</span>
           )
         }
       />
       {!loading && jobs.length === 0 && (
         <p className="text-sm text-gray-500 text-center py-6">{copy.empty}</p>
       )}
-    </section>
+    </Card>
   );
 }

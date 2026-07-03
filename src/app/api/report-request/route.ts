@@ -6,6 +6,9 @@ import { serverFetch } from '@/lib/utils/server-fetch';
 /**
  * Queues an async report request. Proxies POST {base}/Report/request and returns the
  * { reportRequestId, status } envelope the client polls on.
+ *
+ * userId is read from the user_id cookie server-side and merged into parameters
+ * automatically - the client UI does NOT need to send it.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -16,6 +19,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Inject userId from session cookie - never exposed to the browser UI
+    const userId = cookieStore.get('user_id')?.value;
+
+    // Merge userId into parameters; client-supplied value (if any) is overridden for security
+    const enrichedBody = {
+      ...body,
+      parameters: {
+        ...(body.parameters ?? {}),
+        ...(userId ? { userId, UserId: userId } : {}),
+      },
+    };
 
     const config = getAppConfig();
     const baseUrl = config.api.baseUrl?.trim().replace(/\/+$/, '');
@@ -29,7 +44,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(enrichedBody),
     });
 
     const text = await upstream.text();
@@ -45,3 +60,4 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+

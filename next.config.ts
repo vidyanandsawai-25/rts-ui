@@ -27,6 +27,8 @@ const extraServerActionOrigins = [
 ];
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@microsoft/signalr"],
+
   experimental: {
     serverActions: {
       allowedOrigins: extraServerActionOrigins,
@@ -34,6 +36,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2mb",
     },
   },
+
 
   // Production standalone build
   output: process.env.NODE_ENV === "production" ? "standalone" : undefined,

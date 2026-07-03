@@ -46,9 +46,11 @@ function validate(
 interface UseReportFormOptions {
   reportDefinitions: ReportDefinition[];
   onQueued?: () => void;
+  /** Pre-selected report code from the category grid. */
+  selectedReportCode?: string;
 }
 
-export function useReportForm({ reportDefinitions, onQueued }: UseReportFormOptions) {
+export function useReportForm({ reportDefinitions, onQueued, selectedReportCode }: UseReportFormOptions) {
   const t = useTranslations('report');
   const state = useReportFormState();
   const {
@@ -71,6 +73,16 @@ export function useReportForm({ reportDefinitions, onQueued }: UseReportFormOpti
   const [parametersLoading, setParametersLoading] = useState(false);
   const [parametersError, setParametersError] = useState<string | null>(null);
   const mountedRef = useRef(true);
+
+  // Sync selectedReportCode from parent (category grid click) into the form state
+  useEffect(() => {
+    if (selectedReportCode && selectedReportCode !== reportCode) {
+      setReportCode(selectedReportCode);
+      setErrors({});
+      setParamValues({});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedReportCode]);
 
   useEffect(() => {
     mountedRef.current = true;

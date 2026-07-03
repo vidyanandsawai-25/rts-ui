@@ -130,15 +130,19 @@ export interface ReportGenerationFormProps {
   copy: ReportFormCopy;
   reportDefinitions: ReportDefinition[];
   zones: ZoneSummary[];
+  /** Pre-selected report code from the category grid. */
+  selectedReportCode?: string;
   /** Called after a request is successfully queued, so the jobs list can refresh. */
   onQueued?: () => void;
+  /** Called when the user wants to go back to the report selection grid. */
+  onBack?: () => void;
 }
 
 export interface ReportsWorkspaceProps {
-  copy: ReportFormCopy;
+  copy?: ReportFormCopy;
   jobsCopy: ReportJobsCopy;
   reportDefinitions: ReportDefinition[];
-  zones: ZoneSummary[];
+  zones?: ZoneSummary[];
 }
 
 export interface ReportJobsListProps {

@@ -2,6 +2,9 @@ import { getTranslations } from 'next-intl/server';
 import { getReportDefinitions, getZones } from '@/lib/api/report.service';
 import { ReportsWorkspace } from '@/components/modules/reports/ReportsWorkspace';
 import type { ReportFormCopy, ReportJobsCopy } from '@/types/report.types';
+import { PageContainer } from '@/components/common';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,18 +80,31 @@ export default async function ReportsPage({ params }: PageProps) {
     },
   };
 
+  const goHomeAction = (
+    <Link
+      href={`/${locale}/home`}
+      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-all"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      {t('error.goHome')}
+    </Link>
+  );
+
   return (
-    <div className="p-6 max-w-5xl mx-auto flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-bold text-gray-900">{copy.pageTitle}</h1>
-        <p className="mt-1 text-sm text-gray-500">{copy.pageSubtitle}</p>
-      </header>
+    <PageContainer
+      title={copy.pageTitle}
+      subtitle={copy.pageSubtitle}
+      actions={goHomeAction}
+      className="p-6 w-full flex flex-col gap-6"
+    >
       <ReportsWorkspace
         copy={copy}
         jobsCopy={jobsCopy}
         reportDefinitions={reportDefinitions}
         zones={zones}
       />
-    </div>
+    </PageContainer>
   );
 }
+
+

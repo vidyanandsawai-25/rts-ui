@@ -180,27 +180,32 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
   const headerList = await headers();
   const pathname = headerList.get('x-pathname') || '';
   const isPtisRoute = pathname.includes('/property-tax/ptis');
+  const isReportRoute = pathname.split('/').some((segment) => segment === 'reports');
 
   const { rawScreens } = await getLayoutChromeData();
 
   return (
     <PermissionsProvider screens={rawScreens}>
       <div className="flex min-h-screen flex-col bg-[#f8fafc]">
-        <Suspense fallback={null}>
-          <SidebarWithData locale={locale} />
-        </Suspense>
+        {!isReportRoute && (
+          <Suspense fallback={null}>
+            <SidebarWithData locale={locale} />
+          </Suspense>
+        )}
 
-        <Suspense fallback={<HeaderSkeleton />}>
-          <HeaderWithRequestContext />
-        </Suspense>
+        {!isReportRoute && (
+          <Suspense fallback={<HeaderSkeleton />}>
+            <HeaderWithRequestContext />
+          </Suspense>
+        )}
 
-        <main className="flex-1 transition-all duration-300 pt-20 flex flex-col layout-content-shifted">
-          <div className="flex-1 w-full px-3 py-3 md:px-4">{children}</div>
+        <main className={`flex-1 transition-all duration-300 flex flex-col ${isReportRoute ? '' : 'pt-20 layout-content-shifted'}`}>
+          <div className="flex-1 w-full px-1 py-1 md:px-4">{children}</div>
         </main>
 
         {!isPtisRoute && (
           <Suspense fallback={<FooterSkeleton />}>
-            <div className="layout-content-shifted">
+            <div className={isReportRoute ? '' : 'layout-content-shifted'}>
               <FooterWithUlb />
             </div>
           </Suspense>
