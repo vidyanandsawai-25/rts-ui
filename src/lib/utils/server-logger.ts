@@ -74,9 +74,13 @@ const baseLogger = pino(pinoConfig);
 
 // In development, pino-pretty creates a WriteStream that many child loggers
 // attach listeners to. Increase the limit on process streams to prevent MaxListenersExceededWarning.
-if (isDevelopment) {
-  process.stdout.setMaxListeners(30);
-  process.stderr.setMaxListeners(30);
+if (isDevelopment && typeof process !== 'undefined') {
+  if (process.stdout && typeof process.stdout.setMaxListeners === 'function') {
+    process.stdout.setMaxListeners(30);
+  }
+  if (process.stderr && typeof process.stderr.setMaxListeners === 'function') {
+    process.stderr.setMaxListeners(30);
+  }
 }
 
 interface LogContext {

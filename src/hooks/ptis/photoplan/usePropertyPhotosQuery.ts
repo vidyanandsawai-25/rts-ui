@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 
 export interface UsePropertyPhotosQueryResult {
@@ -86,20 +86,20 @@ export function usePropertyPhotosQuery(
   });
 
   // Track previous inputs for render-phase sync
-  const prevPropertyIdRef = useRef(propertyId);
-  const prevSlotsRef = useRef(initialPhotoSlots);
-  const prevPhotosRef = useRef(initialPhotos);
+  const [prevPropertyId, setPrevPropertyId] = useState(propertyId);
+  const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] = useState(initialPhotoSlots);
+  const [prevInitialPhotos, setPrevInitialPhotos] = useState(initialPhotos);
 
   // Sync state if propertyId or initial props change (derived state pattern during render)
   const isPropChange =
-    propertyId !== prevPropertyIdRef.current ||
-    !areSlotsEqual(initialPhotoSlots, prevSlotsRef.current) ||
-    !arePhotosEqual(initialPhotos, prevPhotosRef.current);
+    propertyId !== prevPropertyId ||
+    !areSlotsEqual(initialPhotoSlots, prevInitialPhotoSlots) ||
+    !arePhotosEqual(initialPhotos, prevInitialPhotos);
 
   if (isPropChange) {
-    prevPropertyIdRef.current = propertyId;
-    prevSlotsRef.current = initialPhotoSlots;
-    prevPhotosRef.current = initialPhotos;
+    setPrevPropertyId(propertyId);
+    setPrevInitialPhotoSlots(initialPhotoSlots);
+    setPrevInitialPhotos(initialPhotos);
 
     let nextPhotoSlots = initialPhotoSlots;
     let nextPhotos = initialPhotos;
@@ -132,8 +132,10 @@ export function usePropertyPhotosQuery(
     // No-op as we rely on server/cookie sync and local cache
   }, []);
 
+  const isLoading = !!(isPanelOpen && propertyId && !isCacheValid(propertyId) && photoSlots.length === 0);
+
   return {
-    loading: false,
+    loading: isLoading,
     photoSlots,
     photos,
     error: null,
