@@ -193,13 +193,11 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
           </Suspense>
         )}
 
-        {!isReportRoute && (
-          <Suspense fallback={<HeaderSkeleton />}>
-            <HeaderWithRequestContext />
-          </Suspense>
-        )}
+        <Suspense fallback={<HeaderSkeleton />}>
+          <HeaderWithRequestContext />
+        </Suspense>
 
-        <main className={`flex-1 transition-all duration-300 flex flex-col ${isReportRoute ? '' : 'pt-20 layout-content-shifted'}`}>
+        <main className={`flex-1 transition-all duration-300 flex flex-col pt-20 ${isReportRoute ? '' : 'layout-content-shifted'}`}>
           <div className="flex-1 w-full px-1 py-1 md:px-4">{children}</div>
         </main>
 
