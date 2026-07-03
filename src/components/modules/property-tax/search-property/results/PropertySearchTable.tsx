@@ -2,10 +2,8 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { fetchApartmentUnitListAction } from "@/app/[locale]/property-tax/search-property/action";
 import { cn } from "@/lib/utils/cn";
 import { WRAP_HEADER, WRAP_CELL } from "./result-styles";
-import { ApartmentUnitsSubTable } from "./ApartmentUnitsSubTable";
 import { PropertySearchPagination } from "./PropertySearchPagination";
 import type { SearchResult } from "@/types/property-search";
 import type { Column } from "@/components/common";
@@ -23,6 +21,8 @@ interface PropertySearchTableProps {
   searchError: string | null;
   pages: (number | "dots")[];
   PAGE_SIZE_OPTIONS: number[];
+  onLoadUnits: (row: SearchResult) => Promise<void>;
+  viewMode: "properties" | "units";
 }
 
 export function PropertySearchTable({
@@ -38,14 +38,11 @@ export function PropertySearchTable({
   searchError,
   pages,
   PAGE_SIZE_OPTIONS,
+  onLoadUnits,
+  viewMode,
 }: PropertySearchTableProps) {
   const t = useTranslations("propertySearch.results");
   const tCommon = useTranslations("common");
-
-  const [expandedRows, setExpandedRows] = React.useState<Record<string, boolean>>({});
-  const [unitsData, setUnitsData] = React.useState<Record<number, SearchResult[]>>({});
-  const [unitsLoading, setUnitsLoading] = React.useState<Record<number, boolean>>({});
-  const [unitsError, setUnitsError] = React.useState<Record<number, string | null>>({});
 
   const isRowExpandable = React.useCallback((row: SearchResult) => {
     return (
@@ -54,33 +51,6 @@ export function PropertySearchTable({
     );
   }, []);
 
-  const toggleRow = async (row: SearchResult, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const rowKey = String(row.id);
-    const wasExpanded = !!expandedRows[rowKey];
-    const isExpanding = !wasExpanded;
-
-    setExpandedRows((prev) => ({ ...prev, [rowKey]: isExpanding }));
-
-    if (isExpanding && !unitsData[row.propertyId] && !unitsLoading[row.propertyId]) {
-      setUnitsLoading((prev) => ({ ...prev, [row.propertyId]: true }));
-      setUnitsError((prev) => ({ ...prev, [row.propertyId]: null }));
-      try {
-        const res = await fetchApartmentUnitListAction(row.propertyId);
-        if (res.error) {
-          setUnitsError((prev) => ({ ...prev, [row.propertyId]: res.error }));
-        } else {
-          setUnitsData((prev) => ({ ...prev, [row.propertyId]: res.items || [] }));
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to load apartment units";
-        setUnitsError((prev) => ({ ...prev, [row.propertyId]: msg }));
-      } finally {
-        setUnitsLoading((prev) => ({ ...prev, [row.propertyId]: false }));
-      }
-    }
-  };
-
   return (
     <div className="flex flex-col gap-4 w-full min-w-0">
       <div className="border border-blue-200 rounded-xl bg-white shadow-sm overflow-hidden">
@@ -88,21 +58,25 @@ export function PropertySearchTable({
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-20 bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF] border-b border-blue-200 transition-colors duration-200 hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]">
               <tr>
-                <th className="w-10 px-2 py-3 text-center text-sm font-semibold text-[#1E3A8A] rounded-tl-lg" />
-                {columns.map((col) => (
-                  <th
-                    key={String(col.key)}
-                    style={{ width: col.width }}
-                    className={cn(
-                      "px-2 py-3 text-sm font-semibold text-[#1E3A8A]",
-                      col.align === "center" ? "text-center" : col.align === "right" ? "text-right" : "text-left",
-                      WRAP_HEADER,
-                      col.headerClassName
-                    )}
-                  >
-                    {col.label}
-                  </th>
-                ))}
+                <th className="w-10 px-2 py-3 text-center text-sm font-semibold text-[#1E3A8A] rounded-tl-lg border-r border-blue-200/60" />
+                {columns.map((col, index) => {
+                  const hasBorder = col.key !== "scrollbarSpacer" && index < columns.length - 2;
+                  return (
+                    <th
+                      key={String(col.key)}
+                      style={{ width: col.width }}
+                      className={cn(
+                        "px-2 py-3 text-sm font-semibold text-[#1E3A8A]",
+                        hasBorder ? "border-r border-blue-200/60" : "",
+                        col.align === "center" ? "text-center" : col.align === "right" ? "text-right" : "text-left",
+                        WRAP_HEADER,
+                        col.headerClassName
+                      )}
+                    >
+                      {col.label}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
 
@@ -122,19 +96,18 @@ export function PropertySearchTable({
               ) : (
                 data.map((row, i) => {
                   const rowKey = String(row.id);
-                  const expandable = isRowExpandable(row);
-                  const isExpanded = !!expandedRows[rowKey];
+                  const expandable = viewMode === "properties" && isRowExpandable(row);
 
                   return (
                     <React.Fragment key={rowKey}>
                       <tr className="border-b border-blue-100 hover:bg-blue-50/40">
-                        <td className="w-10 px-2 py-2 text-center align-middle">
+                        <td className="w-10 px-2 py-2 text-center align-middle border-r border-blue-100/60">
                           {expandable ? (
                             <button
                               type="button"
-                              onClick={(e) => toggleRow(row, e)}
-                              className="p-1 hover:bg-blue-50 rounded text-[#1E3A8A] flex items-center justify-center mx-auto transition-transform duration-200"
-                              aria-label={isExpanded ? "Collapse row" : "Expand row"}
+                              onClick={() => onLoadUnits(row)}
+                              className="p-1 hover:bg-blue-50 rounded text-[#1E3A8A] flex items-center justify-center mx-auto transition-transform duration-200 cursor-pointer animate-pulse-subtle"
+                              aria-label="Load apartment units"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -144,10 +117,7 @@ export function PropertySearchTable({
                                 strokeWidth="2.5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                className={cn(
-                                  "w-3.5 h-3.5 transform transition-transform duration-200",
-                                  isExpanded ? "rotate-90" : "rotate-0"
-                                )}
+                                className="w-3.5 h-3.5"
                               >
                                 <polyline points="9 18 15 12 9 6" />
                               </svg>
@@ -155,31 +125,24 @@ export function PropertySearchTable({
                           ) : null}
                         </td>
 
-                        {columns.map((col) => (
-                          <td
-                            key={String(col.key)}
-                            className={cn(
-                              "px-2 py-2 text-gray-700",
-                              col.align === "center" ? "text-center" : col.align === "right" ? "text-right" : "text-left",
-                              WRAP_CELL,
-                              col.cellClassName
-                            )}
-                          >
-                            {col.render ? col.render(row[col.key], row, i) : String(row[col.key] ?? "-")}
-                          </td>
-                        ))}
+                        {columns.map((col, index) => {
+                          const hasBorder = col.key !== "scrollbarSpacer" && index < columns.length - 2;
+                          return (
+                            <td
+                              key={String(col.key)}
+                              className={cn(
+                                "px-2 py-2 text-gray-700",
+                                hasBorder ? "border-r border-blue-100/60" : "",
+                                col.align === "center" ? "text-center" : col.align === "right" ? "text-right" : "text-left",
+                                WRAP_CELL,
+                                col.cellClassName
+                              )}
+                            >
+                              {col.render ? col.render(row[col.key], row, i) : String(row[col.key] ?? "-")}
+                            </td>
+                          );
+                        })}
                       </tr>
-                      {isExpanded && (
-                        <tr className="bg-slate-50/50 border-b border-blue-50 hover:bg-transparent">
-                          <td colSpan={columns.length + 1} className="px-6 py-4 align-top">
-                            <ApartmentUnitsSubTable
-                              units={unitsData[row.propertyId] || []}
-                              loading={!!unitsLoading[row.propertyId]}
-                              error={unitsError[row.propertyId] || null}
-                            />
-                          </td>
-                        </tr>
-                      )}
                     </React.Fragment>
                   );
                 })

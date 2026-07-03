@@ -93,6 +93,7 @@ export interface SearchResult {
   plotNo: string;
   wingFlatNo: string;
   propertyCount: number;
+  childUnitCount?: number;
   category: string;
   description: string;
   mobile: string;
@@ -165,6 +166,8 @@ export interface LookupOptions {
 export interface PropertySearchProps {
   results: SearchResult[];
   totalCount: number;
+  pageNumber: number;
+  pageSize: number;
   mainCards?: MainCardsResponse | null;
   workflowCards?: WorkflowCardItem[] | null;
   zoneOptions: ZoneOption[];
@@ -215,6 +218,11 @@ export interface PropertySearchResultsProps {
   selectedStatus: PropertyStatus | null;
   isSearchActive: boolean;
   results: SearchResult[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  onPageChange: (page: number, size: number) => void;
+  onPageSizeChange: (size: number) => void;
   loading?: boolean;
   searchError?: string | null;
   zoneOptions: ZoneOption[];
@@ -323,6 +331,11 @@ export interface UsePropertySearchFormProps {
 
 export interface UsePropertySearchResultsProps {
   results: SearchResult[];
+  totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
 }
 
 /* ================= VALIDATION ================= */
@@ -357,7 +370,7 @@ export type SearchValidationResult =
 /* ================= PAGE / ERROR ================= */
 
 export type PropertySearchRawParams = Partial<
-  Record<keyof SearchCriteria | "status" | "isActive" | "tab", string>
+  Record<keyof SearchCriteria | "status" | "isActive" | "tab" | "pageNumber" | "pageSize", string>
 >;
 
 export interface PropertySearchPageProps {

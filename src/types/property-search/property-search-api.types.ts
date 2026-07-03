@@ -43,6 +43,7 @@ export interface PropertySearchApiItem {
   plotNo: string | null;
   wingFlatNo: string | null;
   propertyCount?: number | null;
+  childUnitCount?: number | null;
   categoryName: string | null;
   propertyDescription: string | null;
   mobile: string | null;
@@ -99,6 +100,8 @@ export interface PropertySearchCriteriaPayload {
   societyName?: string;
   address?: string;
   dashboardFilter?: number;
+  valuationMethod?: string;
+  filterType?: string;
   /** Values & Dues: `RV` or `CV` or `TotalTax` */
   rvOrCv?: string;
   /** Valuation Type Filter: `RV` or `TotalTax` */
