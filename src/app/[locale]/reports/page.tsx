@@ -1,8 +1,8 @@
-import { getTranslations } from 'next-intl/server';
+﻿import { getTranslations } from 'next-intl/server';
 import { getReportDefinitions, getZones } from '@/lib/api/report.service';
 import { ReportsWorkspace } from '@/components/modules/reports/ReportsWorkspace';
 import type { ReportFormCopy, ReportJobsCopy } from '@/types/report.types';
-import { PageContainer } from '@/components/common';
+import { PageContainer, TableHeader } from '@/components/common';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -92,11 +92,14 @@ export default async function ReportsPage({ params }: PageProps) {
 
   return (
     <PageContainer
-      title={copy.pageTitle}
-      subtitle={copy.pageSubtitle}
-      actions={goHomeAction}
       className="p-6 w-full flex flex-col gap-6"
     >
+      <TableHeader
+        title={copy.pageTitle}
+        subtitle={copy.pageSubtitle}
+        icon="fileText"
+        rightContent={goHomeAction}
+      />
       <ReportsWorkspace
         copy={copy}
         jobsCopy={jobsCopy}

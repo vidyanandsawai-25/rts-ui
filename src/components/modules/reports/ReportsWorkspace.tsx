@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import {
@@ -13,17 +13,18 @@ import {
 } from 'lucide-react';
 import { ReportParametersPanel } from '@/components/modules/reports/ReportParametersPanel';
 import { ReportJobsList } from '@/components/modules/reports/ReportJobsList';
-import { Button, Card, Tabs, TabList, Tab, TabPanel } from '@/components/common';
+import { Button, Card } from '@/components/common';
 import { useReportJobs } from '@/hooks/useReportJobs';
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
 
-const REPORT_CODE_PREFIXES: Record<string, string[]> = {
-  assessment: ['ass', 'asm', 'nodue', 'noduecertificate', 'noduecertificate'],
-  amc: ['amc'],
-  transaction: ['txn', 'trn', 'tra'],
-  approval: ['apr', 'app', 'apv'],
-  discount: ['dis', 'dsc'],
-  others: ['oth', 'mis'],
+// Sirf non-assessment reports yahan specifically map karo.
+// Assessment DEFAULT hai — jo bhi yahan nahi hai woh automatically Assessment mein jayega.
+// Example: AMC reports add karne ho to: amc: ['AmcSlip', 'AmcDemand']
+const REPORT_CODES_BY_CATEGORY: Record<string, string[]> = {
+  amc: [],
+  transaction: [],
+  approval: [],
+  discount: [],
 };
 
 type Step = 1 | 2 | 3;
@@ -133,30 +134,25 @@ function EmptyState() {
 
 function resolveCategoryKey(report: ReportDefinition): string {
   const rawReport = report as ReportDefinition & Record<string, unknown>;
-  
   const reportCode = String(
     rawReport.reportCode ?? rawReport.ReportCode ?? rawReport.code ?? rawReport.Code ?? ''
-  ).trim().toLowerCase();
-  const normalizedReportCode = reportCode.replace(/[_\s-]+/g, '');
-  const codePrefix = reportCode.split('-')[0]?.replace(/[_\s-]+/g, '') ?? '';
+  ).trim();
+  const normalizedReportCode = reportCode.toLowerCase().replace(/[_\s-]+/g, '');
 
-  // 1. Check code prefix match first for specific categories (excluding others fallback)
-  const prefixMatch = CATEGORIES.find((cat) =>
+  // Specific category mapping check (non-assessment categories)
+  const codeMatch = CATEGORIES.find((cat) =>
     cat.key !== 'others' &&
-    REPORT_CODE_PREFIXES[cat.key]?.some((prefix) =>
-      normalizedReportCode.includes(prefix) || codePrefix.startsWith(prefix)
+    cat.key !== 'assessment' &&          // assessment is the default, skip here
+    REPORT_CODES_BY_CATEGORY[cat.key]?.some((code) =>
+      normalizedReportCode === code.toLowerCase().replace(/[_\s-]+/g, '')
     )
   );
-  if (prefixMatch) return prefixMatch.key;
 
-  // 2. Fallback to direct category field match
-  const categoryField = String(rawReport.category ?? rawReport.Category ?? '').trim().toLowerCase();
-  const catMatch = CATEGORIES.find(
-    (cat) => cat.key === categoryField || cat.label.toLowerCase() === categoryField
-  );
-  if (catMatch) return catMatch.key;
+  // If matched a specific non-assessment category, use it
+  if (codeMatch) return codeMatch.key;
 
-  return 'others';
+  // Default: ALL reports go to Assessment unless specifically mapped elsewhere
+  return 'assessment';
 }
 
 // --- Main Workspace ----------------------------------------------------------
@@ -229,20 +225,58 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
       {/* Step 1: no category selected */}
       {currentStep === 1 && <EmptyState />}
 
-      {/* Steps 2 & 3: LEFT vertical tabs + RIGHT parameters panel */}
-      {currentStep >= 2 && activeCategoryDef && (
-        <Card padding="none" className="rounded-xl overflow-hidden shadow-sm min-h-[420px]">
-          <Tabs
-            value={selectedReport ? String(selectedReport.id) : ''}
-            onChange={(value) => {
-              const report = activeReports.find((item) => String(item.id) === String(value));
-              if (report) handleSelectReport(report);
-            }}
-            orientation="vertical"
-            className="grid grid-cols-1 md:grid-cols-2 min-h-[420px]"
-          >
-            {/* LEFT column (Reports list) */}
-            <div className="border-r border-gray-100 flex flex-col h-full bg-slate-50/10">
+      {/* ── STEP 2: Category selected → show all reports as Tab grid (2 per row) ── */}
+      {currentStep === 2 && activeCategoryDef && (
+        <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
+          {/* Header */}
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
+            <FileText className="w-3.5 h-3.5 text-gray-400" />
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              {activeCategoryDef.label}
+            </span>
+            <span className="ml-1 text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
+              {activeReports.length}
+            </span>
+          </div>
+
+          {activeReports.length === 0 ? (
+            <div className="py-12 text-center text-sm text-gray-400">
+              No reports found for this category.
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-3 p-4">
+              {activeReports.map((report) => (
+                <button
+                  key={report.id}
+                  type="button"
+                  onClick={() => handleSelectReport(report)}
+                  className="
+                    w-[calc(50%-6px)] text-left rounded-lg border px-3 py-3
+                    border-gray-200 bg-white
+                    hover:border-blue-300 hover:bg-blue-50/20 hover:shadow-sm
+                    transition-all duration-150 focus:outline-none
+                  "
+                >
+                  <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate text-gray-400">
+                    {report.reportCode}
+                  </p>
+                  <p className="text-xs font-semibold leading-snug text-gray-800">
+                    {report.reportName}
+                  </p>
+                </button>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* ── STEP 3: Report selected → LEFT list + RIGHT form (equal width) ── */}
+      {currentStep === 3 && activeCategoryDef && selectedReport && (
+        <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
+          <div className="flex min-h-[420px]">
+
+            {/* LEFT: vertical report list (50%) */}
+            <div className="w-1/2 border-r border-gray-100 flex flex-col bg-gray-50/30">
               <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
                 <FileText className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
@@ -252,55 +286,38 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
                   {activeReports.length}
                 </span>
               </div>
-              {activeReports.length === 0 ? (
-                <div className="py-10 text-center text-xs text-gray-400 px-4">
-                  No reports found for this category.
-                </div>
-              ) : (
-                <TabList className="overflow-y-auto flex-1 max-h-[500px] flex-col items-stretch p-0 border-0 bg-white">
-                  {activeReports.map((report) => {
-                    const isSelected = selectedReport?.id === report.id;
-                    return (
-                      <Tab
-                        key={report.id}
-                        value={String(report.id)}
-                        className="group w-full justify-between rounded-none border-b border-r-0 border-gray-100 last:border-b-0 px-4 py-3.5 data-[state=active]:bg-blue-50/50 data-[state=active]:border-l-4 data-[state=active]:border-l-[#004c8c] data-[state=active]:text-[#004c8c] data-[state=inactive]:border-l-4 data-[state=inactive]:border-l-transparent data-[state=inactive]:bg-white"
-                      >
-                        <span className="flex w-full items-center justify-between gap-2">
-                          <span className="min-w-0 text-left">
-                            <span className={`block text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-[#004c8c]/70' : 'text-gray-400'}`}>
-                              {report.reportCode}
-                            </span>
-                            <span className={`block text-sm leading-snug truncate font-semibold ${isSelected ? 'text-[#004c8c]' : 'text-gray-700'}`}>
-                              {report.reportName}
-                            </span>
-                          </span>
-                          {isSelected && (
-                            <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full bg-[#004c8c] flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" />
-                            </span>
-                          )}
-                        </span>
-                      </Tab>
-                    );
-                  })}
-                </TabList>
-              )}
+              <div className="flex-1 overflow-y-auto">
+                {activeReports.map((report) => {
+                  const isSelected = selectedReport.id === report.id;
+                  return (
+                    <button
+                      key={report.id}
+                      type="button"
+                      onClick={() => handleSelectReport(report)}
+                      className={`w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 transition-all duration-150 focus:outline-none
+                        ${isSelected
+                          ? 'bg-blue-50/60 border-l-4 border-l-[#004c8c]'
+                          : 'bg-white border-l-4 border-l-transparent hover:bg-blue-50/20'
+                        }`}
+                    >
+                      <p className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate ${isSelected ? 'text-[#004c8c]/70' : 'text-gray-400'}`}>
+                        {report.reportCode}
+                      </p>
+                      <p className={`text-xs font-semibold leading-snug ${isSelected ? 'text-[#004c8c]' : 'text-gray-700'}`}>
+                        {report.reportName}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* RIGHT column (Parameters panel) */}
-            <div className="overflow-y-auto max-h-[500px] bg-white h-full">
-              {selectedReport ? (
-                activeReports.map((report) => (
-                  <TabPanel key={report.id} value={String(report.id)} className="m-0 h-full">
-                    <ReportParametersPanel report={report} onQueued={handleQueued} />
-                  </TabPanel>
-                ))
-              ) : (
-                <ReportParametersPanel report={null} onQueued={handleQueued} />
-              )}
+            {/* RIGHT: parameters form (50%) */}
+            <div className="w-1/2 overflow-y-auto bg-white">
+              <ReportParametersPanel report={selectedReport} onQueued={handleQueued} />
             </div>
-          </Tabs>
+
+          </div>
         </Card>
       )}
 
@@ -312,26 +329,6 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
           reportDefinitions={reportDefinitions}
         />
       )}
-
-      {/* Diagnostics panel */}
-      <details className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono">
-        <summary className="font-bold cursor-pointer text-gray-700">Diagnostics: Click to see all {reportDefinitions.length} loaded reports</summary>
-        <div className="mt-2 max-h-[300px] overflow-y-auto flex flex-col gap-1">
-          {reportDefinitions.length === 0 ? (
-            <p className="text-red-500 font-bold">API returned 0 report definitions. Check backend connection or database.</p>
-          ) : (
-            reportDefinitions.map(r => {
-              const categoryKey = resolveCategoryKey(r);
-              return (
-                <div key={r.id} className="border-b border-gray-100 py-1 flex justify-between">
-                  <span>Code: <b>{r.reportCode}</b> | Name: {r.reportName} | Cat: {r.category}</span>
-                  <span className="text-blue-600 font-bold">Resolved: {categoryKey}</span>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </details>
     </div>
   );
 }
