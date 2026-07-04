@@ -15,7 +15,7 @@ import { UpicLinkCell } from "./UpicLinkCell";
 import { CopyCell } from "./CopyCell";
 import { RvCvCell } from "./RvCvCell";
 
-type Translator = (key: string) => string;
+type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
 
 function withFixedWidth(
   column: Column<SearchResult> & { tooltip?: string },
@@ -73,7 +73,7 @@ function ZoneWardCell({
   return (
     <div className="flex flex-col gap-0.5 break-words whitespace-normal text-center items-center justify-center w-full" title={tooltipText}>
       <span className="font-semibold text-gray-800 text-[11px]">{zoneLabel ? formatDisplayText(zoneLabel) : "-"}</span>
-      <span className="text-[10px] text-gray-500 leading-tight block">{wardLabel ? wardLabel : "-"}</span>
+      <span className="text-[11px] text-gray-700 font-semibold leading-tight block">{wardLabel ? wardLabel : "-"}</span>
     </div>
   );
 }
@@ -175,7 +175,8 @@ export function buildPropertySearchColumns(
   t: Translator,
   locale: string,
   zoneOptions: ZoneOption[],
-  allWardOptions: WardOption[]
+  allWardOptions: WardOption[],
+  viewMode?: "properties" | "units"
 ): Column<SearchResult>[] {
   return [
     withFixedWidth(
@@ -225,6 +226,23 @@ export function buildPropertySearchColumns(
         label: t("columns.category"),
         tooltip: t("columns.category"),
         align: "center",
+        render: (value, row) => {
+          const displayVal = formatDisplayText(String(value ?? ""));
+          if (displayVal.toLowerCase() === "apartment") {
+            const unitCount = row.childUnitCount ?? row.propertyCount ?? 0;
+            if (viewMode !== "units") {
+              return (
+                <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5" title={t("apartmentUnits", { count: unitCount })}>
+                  <span className="font-semibold text-gray-800 text-xs">{displayVal}</span>
+                  <span className="text-[11px] text-gray-700 font-semibold block">
+                    {t("unit")}: {unitCount}
+                  </span>
+                </div>
+              );
+            }
+          }
+          return <span>{displayVal}</span>;
+        },
       },
       COLUMN_WIDTHS.category
     ),
@@ -262,6 +280,7 @@ export function buildPropertySearchColumns(
         label: t("columns.mobileAlternate"),
         tooltip: t("columns.mobileAlternateTooltip"),
         align: "center",
+        headerClassName: `${WRAP_HEADER} !whitespace-nowrap`,
         render: (_, row) => <MobileAlternateCell row={row} t={t} />,
       },
       COLUMN_WIDTHS.mobileAlternate

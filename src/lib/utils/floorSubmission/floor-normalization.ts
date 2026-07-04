@@ -161,6 +161,15 @@ export function normalizeFloorData(
   const rentersList = (raw.renterMast || raw.renters || raw.renterMasts || []) as RenterMastItem[];
   const firstRenter = Array.isArray(rentersList) && rentersList.length > 0 ? rentersList[0] : null;
 
+  const getProp = (obj: Record<string, unknown>, key: string) => {
+    if (!obj) return undefined;
+    const lowerKey = key.toLowerCase();
+    const actualKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey);
+    return actualKey ? obj[actualKey] : undefined;
+  };
+  const l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
+  const w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
+
   // 3. Return a clean, normalized object
   return {
     ...raw, // Preserve original fields for safety
@@ -176,6 +185,8 @@ export function normalizeFloorData(
     rooms: getString(raw.rooms) || getString(raw.noOfRooms) || '',
     areaSqFt: getString(raw.areaSqFt) || getString(raw.carpetAreaSqFeet) || '',
     areaSqM: getString(raw.areaSqM) || getString(raw.carpetAreaSqMeter) || '',
+    length: l !== undefined && l !== null ? String(l) : '',
+    width: w !== undefined && w !== null ? String(w) : '',
     builtupAreaSqFt: getString(raw.builtupAreaSqFt) || getString(raw.builtupAreaSqFeet) || '0.00',
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
     isTaxable: (raw.isTaxable === 'Yes' || raw.isTaxable === true) ? 'Yes' : 'No',

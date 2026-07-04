@@ -117,6 +117,7 @@ export interface TypeOfUseApiItem {
     isActive: boolean;
     createdDate: string;
     updatedDate: string | null;
+    [key: string]: unknown;
 }
 
 // Represents the DTO for updating property basic details. Matches UpdatePropertyBasicDetailsDto in C#

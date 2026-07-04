@@ -1,10 +1,15 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common';
 import { EditSidebarProps } from '@/types/floor-details.types';
 import { FloorData } from '@/types/room-details.types';
+import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
+import { ConstructionTypeResponse } from '@/types/floor-details.types';
+
+import { useFloorAreaValidation, isRecordOpenPlot } from './useFloorAreaValidation';
 
 // Split Hooks
 import { useFloorFormState } from './useFloorFormState';
@@ -17,6 +22,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   const t = useTranslations('quickDataEntry');
   const [, startTransition] = useTransition();
   const { confirm } = useConfirm();
+  const hasAutoPopulatedOpenSpaceRef = useRef(false);
 
   // 1. Core Form State
   const formState = useFloorFormState();
@@ -37,9 +43,179 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     validateForm,
   } = formState;
 
+  // Extract property category from initialPropertyData
+  const propertyCategory = useMemo(() => {
+    if (props.initialPropertyData) {
+      return {
+        categoryId: props.initialPropertyData.categoryId as number | undefined,
+        categoryName: props.initialPropertyData.categoryName as string | undefined,
+      };
+    }
+    return { categoryId: undefined, categoryName: undefined };
+  }, [props.initialPropertyData]);
+
+  // Check if category is Plot
+  const isPlotCategory = useMemo(
+    () => checkIsPlotCategory(propertyCategory.categoryName),
+    [propertyCategory.categoryName]
+  );
+
+  // Auto-select OpenPlot if category is Plot, otherwise default to Construction
+  const [selectedFloorTypeState, setSelectedFloorTypeState] = useState<'Construction' | 'OpenPlot'>(
+    isPlotCategory ? 'OpenPlot' : 'Construction'
+  );
+
+  const selectedFloorType = isPlotCategory
+    ? 'OpenPlot'
+    : selectedFloor
+      ? (isRecordOpenPlot(selectedFloor) ? 'OpenPlot' : 'Construction')
+      : selectedFloorTypeState;
+
+  const [plotAreaSqM, setPlotAreaSqM] = useState<number>(
+    props.initialPlotArea?.totalPlotArea ? Number(props.initialPlotArea.totalPlotArea) : 0
+  );
+
+  useEffect(() => {
+    if (props.initialPlotArea?.totalPlotArea) {
+      setPlotAreaSqM(Number(props.initialPlotArea.totalPlotArea));
+    }
+  }, [props.initialPlotArea]);
+
   // 2. URL and Navigation
   const urlSync = useFloorUrlSync();
   const { searchParams, updateUrlParams, router, locale, propertyId } = urlSync;
+
+  const syncResult = useFloorSync({
+    props,
+    isAddingNewFloor,
+    setIsAddingNewFloor,
+    editingFloorForm,
+    setEditingFloorForm,
+    localFloors,
+    setLocalFloors,
+    setSelectedFloor,
+    selectedFloor,
+    updateUrlParams,
+    searchParams,
+    INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
+    selectedFloorType,
+  });
+  const mappedInitialFloors = syncResult?.mappedInitialFloors || [];
+
+  // Area validations & computations extracted to useFloorAreaValidation hook
+  const {
+    totalConstructionAreaSqM,
+    totalOpenSpaceAreaSqM,
+    remainingAvailablePlotAreaSqM,
+    availableRemainingOpenSpaceAreaSqM,
+    availableRemainingConstructionAreaSqM,
+    isOpenSpaceAreaExceeded,
+    isFloorAreaExceeded,
+    isAreaExceeded,
+    enteredFloorAreaSqM,
+    alreadyUtilizedOpenSpaceAreaSqM,
+    enteredOpenSpaceAreaSqM,
+    isGroundFloorAreaExceeded,
+    isOpenSpaceNegative,
+  } = useFloorAreaValidation({
+    localFloors,
+    selectedFloor,
+    editingFloorForm,
+    selectedFloorType,
+    isAddingNewFloor,
+    plotAreaSqM,
+    floorLookup: props.floorData,
+    initialFloors: mappedInitialFloors,
+  });
+
+
+
+  // Reset form fields when transitioning from Plot category to non-Plot category
+  const prevIsPlotCategoryRef = useRef(isPlotCategory);
+  useEffect(() => {
+    if (!isPlotCategory && prevIsPlotCategoryRef.current) {
+      setEditingFloorForm((prev) => ({
+        ...prev,
+        length: '',
+        width: '',
+        areaSqFt: '',
+        areaSqM: '',
+      }));
+    }
+    prevIsPlotCategoryRef.current = isPlotCategory;
+  }, [isPlotCategory, setEditingFloorForm]);
+
+  // Auto-map construction type "op" (open plot) for Open Space / Open Plot
+  useEffect(() => {
+    if (selectedFloorType === 'OpenPlot') {
+      const openPlotCon = props.constructionTypeData?.find(
+        (c: ConstructionTypeResponse) =>
+          String(c.constructionCode || '').toLowerCase() === 'op' ||
+          String(c.description || '').toLowerCase() === 'open plot'
+      );
+      if (openPlotCon) {
+        const conId = String(openPlotCon.constructionTypeId || openPlotCon.id || '');
+        const conDesc = String(openPlotCon.description || '');
+        if (editingFloorForm.constructionTypeId !== conId || editingFloorForm.conTyp !== conDesc) {
+          setEditingFloorForm(prev => ({
+            ...prev,
+            constructionTypeId: conId,
+            conTyp: conDesc,
+            constructionTypeDescription: conDesc,
+          }));
+        }
+      }
+    } else if (selectedFloorType === 'Construction') {
+      const openPlotCon = props.constructionTypeData?.find(
+        (c: ConstructionTypeResponse) =>
+          String(c.constructionCode || '').toLowerCase() === 'op' ||
+          String(c.description || '').toLowerCase() === 'open plot'
+      );
+      const openPlotConId = openPlotCon ? String(openPlotCon.constructionTypeId || openPlotCon.id || '') : '';
+      if (
+        openPlotConId &&
+        (editingFloorForm.constructionTypeId === openPlotConId ||
+          String(editingFloorForm.conTyp).toLowerCase() === 'open plot' ||
+          String(editingFloorForm.conTyp).toLowerCase() === 'op')
+      ) {
+        setEditingFloorForm(prev => ({
+          ...prev,
+          constructionTypeId: '',
+          conTyp: '',
+          constructionTypeDescription: '',
+        }));
+      }
+    }
+  }, [selectedFloorType, props.constructionTypeData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);
+
+  // Auto-populate remaining area for new Open Space records immediately on opening the tab
+  useEffect(() => {
+    if (!isAddingNewFloor) {
+      hasAutoPopulatedOpenSpaceRef.current = false;
+      return;
+    }
+
+    if (selectedFloorType === 'OpenPlot' && isAddingNewFloor) {
+      if (hasAutoPopulatedOpenSpaceRef.current) {
+        return;
+      }
+
+      const currentArea = parseFloat(String(editingFloorForm.areaSqM || '0')) || 0;
+      const currentLen = parseFloat(String(editingFloorForm.length || '0')) || 0;
+      if (currentArea === 0 && currentLen === 0 && availableRemainingOpenSpaceAreaSqM > 0) {
+        setEditingFloorForm(prev => ({
+          ...prev,
+          length: String(availableRemainingOpenSpaceAreaSqM.toFixed(2)),
+          width: '1.00',
+          areaSqM: String(availableRemainingOpenSpaceAreaSqM.toFixed(2)),
+          areaSqFt: String((availableRemainingOpenSpaceAreaSqM * 10.764).toFixed(2)),
+        }));
+        hasAutoPopulatedOpenSpaceRef.current = true;
+      }
+    }
+  }, [selectedFloorType, isAddingNewFloor, availableRemainingOpenSpaceAreaSqM, setEditingFloorForm, editingFloorForm.areaSqM, editingFloorForm.length]);
+
+  // 2. URL and Navigation already initialized at the top of the hook
 
   // 3. Data Handlers (Save, Delete, etc.)
   const handlers = useFloorDataHandlers({
@@ -53,14 +229,22 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     localFloors,
     setLocalFloors,
     setFormErrors,
-    validateForm: () => validateForm(editingFloorForm, t),
+    validateForm: () => validateForm(editingFloorForm, t, selectedFloorType),
     startTransition,
     router,
     locale,
     propertyId,
-    confirm,
-    t,
+    confirm: confirm,
+    t: t,
     INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
+    selectedFloorType: selectedFloorType,
+    // validation fields
+    isOpenSpaceAreaExceeded,
+    isFloorAreaExceeded,
+    availableRemainingOpenSpaceAreaSqM,
+    availableRemainingConstructionAreaSqM,
+    isGroundFloorAreaExceeded,
+    isOpenSpaceNegative,
   });
 
   const { handleSave, handleDeleteFloor, handleOpenRenterManagement, isSaving, isDeleting } = handlers;
@@ -81,20 +265,16 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
 
   const { handleOpenDropdown, resetForm, handleAddFloor } = actions;
 
-  // 5. Data Sync and Derived Data
-  useFloorSync({
-    props,
-    isAddingNewFloor,
-    setIsAddingNewFloor,
-    editingFloorForm,
-    setEditingFloorForm,
-    localFloors,
-    setLocalFloors,
-    setSelectedFloor,
-    updateUrlParams,
-    searchParams,
-    INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
-  });
+  // Auto-trigger lazy loading of construction type data when switching to OpenPlot
+  useEffect(() => {
+    if (selectedFloorType === 'OpenPlot') {
+      if (!props.constructionTypeData || props.constructionTypeData.length === 0) {
+        handleOpenDropdown('loadConstruction');
+      }
+    }
+  }, [selectedFloorType, props.constructionTypeData, handleOpenDropdown]);
+
+  // useFloorSync already initialized at the top of the hook
 
   const [floorSearch, setFloorSearch] = useState('');
 
@@ -149,5 +329,39 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     handleSave,
     validateForm,
     startTransition,
+    selectedFloorType,
+    setSelectedFloorType: (type: 'Construction' | 'OpenPlot') => {
+      setSelectedFloorTypeState(type);
+      hasAutoPopulatedOpenSpaceRef.current = false;
+      if (selectedFloor) {
+        const isPlot = isRecordOpenPlot(selectedFloor);
+        const currentType = isPlot ? 'OpenPlot' : 'Construction';
+        if (currentType !== type) {
+          setSelectedFloor(null);
+          setEditingFloorForm(INITIAL_FORM_STATE);
+          setFormErrors({});
+        }
+      } else {
+        setEditingFloorForm(INITIAL_FORM_STATE);
+        setFormErrors({});
+      }
+    },
+    isPlotCategory,
+    // validation exports
+    plotAreaSqM,
+    setPlotAreaSqM,
+    isAreaExceeded,
+    isOpenSpaceAreaExceeded,
+    isFloorAreaExceeded,
+    totalConstructionAreaSqM,
+    totalOpenSpaceAreaSqM,
+    remainingAvailablePlotAreaSqM,
+    availableRemainingOpenSpaceAreaSqM,
+    availableRemainingConstructionAreaSqM,
+    enteredFloorAreaSqM,
+    alreadyUtilizedOpenSpaceAreaSqM,
+    enteredOpenSpaceAreaSqM,
+    totalUtilizedOpenSpaceAreaSqM: totalOpenSpaceAreaSqM,
+    locale,
   };
 };

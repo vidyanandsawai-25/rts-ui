@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { usePropertySearchResults } from "@/hooks/search-property/usePropertySearchResults";
 import type { SearchResult } from "@/types/property-search";
 
@@ -76,5 +76,36 @@ describe("usePropertySearchResults", () => {
 
     rerender({ results: [...results] });
     expect(result.current.pageNumber).toBe(2);
+  });
+
+  it("uses server-side pagination when totalCount is provided", () => {
+    const results = Array.from({ length: 5 }, (_, index) =>
+      makeResult(`a-${index + 1}`)
+    );
+    const onPageChange = vi.fn();
+    const onPageSizeChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      usePropertySearchResults({
+        results,
+        totalCount: 100,
+        pageNumber: 3,
+        pageSize: 5,
+        onPageChange,
+        onPageSizeChange,
+      })
+    );
+
+    expect(result.current.totalCount).toBe(100);
+    expect(result.current.pageNumber).toBe(3);
+    expect(result.current.pageSize).toBe(5);
+    expect(result.current.totalPages).toBe(20);
+    expect(result.current.paginatedData).toEqual(results);
+
+    result.current.handlePageChange(4);
+    expect(onPageChange).toHaveBeenCalledWith(4);
+
+    result.current.handlePageSizeChange(20);
+    expect(onPageSizeChange).toHaveBeenCalledWith(20);
   });
 });

@@ -173,6 +173,14 @@ describe('FloorTable', () => {
     expect(addButton).toHaveTextContent('floor.addFloor');
   });
 
+  it('renders add plot button when selectedFloorType is OpenPlot', () => {
+    render(<FloorTable {...mockProps} selectedFloorType="OpenPlot" />);
+    
+    const addButton = screen.getByTestId('add-floor-button');
+    expect(addButton).toBeInTheDocument();
+    expect(addButton).toHaveTextContent('floor.addSpace');
+  });
+
   it('calls handleAddFloor when add button is clicked', () => {
     render(<FloorTable {...mockProps} />);
     

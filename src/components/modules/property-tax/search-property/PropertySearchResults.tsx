@@ -9,6 +9,9 @@ import type {
   PropertySearchResultsProps,
 } from "@/types/property-search";
 import { usePropertySearchResults } from "@/hooks/search-property";
+import { ArrowLeft } from "lucide-react";
+import { fetchApartmentUnitListAction } from "@/app/[locale]/property-tax/search-property/action";
+import type { SearchResult } from "@/types/property-search";
 import { buildPropertySearchColumns } from "./results/columns";
 import { ResultsHeader } from "./results/ResultsHeader";
 import { PropertySearchTable } from "./results/PropertySearchTable";
@@ -40,8 +43,13 @@ function buildPagination(current: number, total: number): PageToken[] {
 
 export function PropertySearchResults({
   selectedStatus,
-  isSearchActive,
+  isSearchActive: _isSearchActive,
   results,
+  totalCount: totalCountProp,
+  pageNumber: pageNumberProp,
+  pageSize: pageSizeProp,
+  onPageChange,
+  onPageSizeChange,
   loading = false,
   searchError = null,
   zoneOptions,
@@ -49,6 +57,21 @@ export function PropertySearchResults({
 }: PropertySearchResultsProps): React.ReactElement {
   const t = useTranslations("propertySearch.results");
   const locale = useLocale();
+
+  const [viewMode, setViewMode] = React.useState<"properties" | "units">("properties");
+  const [activeApartment, setActiveApartment] = React.useState<SearchResult | null>(null);
+  const [units, setUnits] = React.useState<SearchResult[]>([]);
+  const [unitsLoading, setUnitsLoading] = React.useState(false);
+
+  const [prevResults, setPrevResults] = React.useState(results);
+  if (results !== prevResults) {
+    setPrevResults(results);
+    setViewMode("properties");
+    setActiveApartment(null);
+    setUnits([]);
+  }
+
+  const displayResults = viewMode === "units" ? units : results;
 
   const {
     filteredData,
@@ -59,7 +82,39 @@ export function PropertySearchResults({
     totalPages,
     handlePageChange,
     handlePageSizeChange,
-  } = usePropertySearchResults({ results });
+  } = usePropertySearchResults({
+    results: displayResults,
+    totalCount: viewMode === "units" ? undefined : totalCountProp,
+    pageNumber: viewMode === "units" ? undefined : pageNumberProp,
+    pageSize: viewMode === "units" ? undefined : pageSizeProp,
+    onPageChange: (page) => onPageChange(page, pageSizeProp),
+    onPageSizeChange,
+  });
+
+  const handleLoadUnits = React.useCallback(async (row: SearchResult) => {
+    setUnitsLoading(true);
+    try {
+      const res = await fetchApartmentUnitListAction(row.propertyId);
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        setUnits(res.items || []);
+        setActiveApartment(row);
+        setViewMode("units");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load apartment units";
+      toast.error(msg);
+    } finally {
+      setUnitsLoading(false);
+    }
+  }, []);
+
+  const handleBackToProperties = React.useCallback(() => {
+    setViewMode("properties");
+    setActiveApartment(null);
+    setUnits([]);
+  }, []);
 
   const pages = React.useMemo(() => {
     return buildPagination(pageNumber, Math.max(1, totalPages));
@@ -71,22 +126,43 @@ export function PropertySearchResults({
       return;
     }
 
-    const excelData = filteredData.map((row) => ({
-      "UPIC ID": row.upicId ?? "",
-      Zone: row.zoneName ?? "",
-      Ward: row.wardName ?? "",
-      "PROP-PART NO": row.partitionNo ? `${row.propertyNo}-${row.partitionNo}` : (row.propertyNo ?? ""),
-      "Old Property No.": row.oldPropertyNo ?? "",
-      Category: row.category ?? "",
-      "Property Description": row.description ?? "",
-      "Owner Name": row.holderName ?? "",
-      "Occupier Name": row.occupierName ?? "",
-      "Mobile No.": row.mobile ?? "",
-      "Alternate Mobile No.": row.alternateMobile ?? "",
-      "Rateable Value (RV)": row.rv ?? "",
-      "Capital Value (CV)": row.cv ?? "",
-      Address: row.address ?? "",
-    }));
+    const excelData = filteredData.map((row) => {
+      const displayZone = row.zone?.trim() || "";
+      const displayWard = row.ward?.trim() || "";
+
+      const zoneOpt = zoneOptions.find(
+        (opt) => opt.label.startsWith(`${displayZone} - `) || opt.label === displayZone
+      );
+      const zoneLabel = zoneOpt ? zoneOpt.label : displayZone;
+
+      const wardOpt = allWardOptions.find(
+        (opt) => opt.label.startsWith(`${displayWard} - `) || opt.label === displayWard
+      );
+      const wardLabel = wardOpt ? wardOpt.label : displayWard;
+
+      const rawHolder = row.holderName?.trim() || "";
+      const isPlaceholderHolder = rawHolder.toLowerCase() === "the holder";
+      const holder = isPlaceholderHolder ? "" : rawHolder;
+
+      return {
+        "UPIC ID": row.upicId ?? "",
+        Zone: zoneLabel,
+        Ward: wardLabel,
+        "PROP-PART NO": row.partitionNo ? `${row.propertyNo}-${row.partitionNo}` : (row.propertyNo ?? ""),
+        "Old Property No.": row.oldPropertyNo ?? "",
+        Category: row.category ?? "",
+        "Society Name": row.societyName ?? "",
+        "Property Description": row.description ?? "",
+        "Owner Name": holder,
+        "Occupier Name": row.occupierName ?? "",
+        "Mobile No.": row.mobile ?? "",
+        "Alternate Mobile No.": row.alternateMobile ?? "",
+        "Rateable Value (RV)": row.rv ?? 0,
+        "Capital Value (CV)": row.cv ?? "",
+        "Total Tax": row.totalTax ?? 0,
+        Address: row.address ?? "",
+      };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
@@ -105,22 +181,36 @@ export function PropertySearchResults({
     worksheet["!cols"] = maxLens;
 
     XLSX.writeFile(workbook, "Property_Search_Results.xlsx");
-  }, [filteredData, t]);
+  }, [filteredData, zoneOptions, allWardOptions, t]);
 
   const columns = React.useMemo(
-    () => buildPropertySearchColumns(t, locale, zoneOptions, allWardOptions),
-    [t, locale, zoneOptions, allWardOptions]
+    () => buildPropertySearchColumns(t, locale, zoneOptions, allWardOptions, viewMode),
+    [t, locale, zoneOptions, allWardOptions, viewMode]
   );
 
   return (
     <div className="space-y-2">
       <ResultsHeader
         selectedStatus={selectedStatus}
-        isSearchActive={isSearchActive}
-        totalCount={totalCount}
-        exportDisabled={filteredData.length === 0 || loading}
+        exportDisabled={filteredData.length === 0 || loading || unitsLoading}
         onExport={handleExportToExcel}
       />
+
+      {viewMode === "units" && activeApartment && (
+        <div className="flex items-center gap-2 mb-2 p-1.5 bg-blue-50/50 border border-blue-200/60 rounded-lg text-sm text-[#1E3A8A] font-medium">
+          <button
+            type="button"
+            onClick={handleBackToProperties}
+            className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-blue-50 border border-blue-200 rounded-md text-xs font-semibold shadow-sm transition-all duration-200 cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.5} />
+            {t("backToProperties") || "Back to Properties"}
+          </button>
+          <span>
+            {t("viewingUnitsFor")} {t("apartment")}: <strong>{activeApartment.upicId || activeApartment.propertyNo}</strong>
+          </span>
+        </div>
+      )}
 
       <ValidationMessage
         message={searchError ?? undefined}
@@ -131,7 +221,7 @@ export function PropertySearchResults({
       <PropertySearchTable
         columns={columns}
         data={paginatedData}
-        loading={loading}
+        loading={loading || unitsLoading}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={totalCount}
@@ -141,6 +231,8 @@ export function PropertySearchResults({
         searchError={searchError}
         pages={pages}
         PAGE_SIZE_OPTIONS={PAGE_SIZE_OPTIONS}
+        onLoadUnits={handleLoadUnits}
+        viewMode={viewMode}
       />
     </div>
   );
