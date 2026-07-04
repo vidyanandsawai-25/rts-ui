@@ -9,7 +9,7 @@ import { ApartmentQCDetail, PagedResponse, ApartmentTaxDetailsItems, DualMethodT
 import { LoadingPage } from '@/components/common/LoadingPage';
 import { getApartmentQCColumns } from './apartmentQC.columns';
 import { emptyPagedResponse, transformApartmentData, getTabTitle } from './apartmentQC.utils';
-import PropertyDetailsEditScreenNew from './PropertyDetailsEditScreen';
+// import PropertyDetailsEditScreenNew from './PropertyDetailsEditScreen';
 import {
   fetchApartmentQCDetailsSafeAction,
   fetchFloorQCByPropertyIdSafeAction,
@@ -200,7 +200,7 @@ const AppartmentQCSection = ({
   const drawerOpen = searchParams.get('drawer') === 'edit';
   const selectedPropertyId = searchParams.get('editPropertyId');
 
-  const [drawerLocalData, setDrawerLocalData] = useState<DrawerLocalData | null>(null);
+  const [, setDrawerLocalData] = useState<DrawerLocalData | null>(null);
 
   // Fetch drawer data client-side when the drawer opens. The reset to `null`
   // lives in the cleanup return so React's set-state-in-effect rule is happy
@@ -248,18 +248,6 @@ const AppartmentQCSection = ({
     };
   }, [drawerOpen, selectedPropertyId, activeSubTab]);
 
-  const selectedPropertyData = drawerLocalData?.basicInfo ?? null;
-
-  const handleCloseDrawer = useCallback(async () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('drawer');
-    params.delete('editPropertyId');
-    // Keep the original propertyId intact
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    // Refetch tax details when drawer is closed
-    await refetchTaxDetails();
-  }, [searchParams, pathname, router, refetchTaxDetails]);
-
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
       <div className="flex-1 overflow-auto text-gray-900 bg-gray-50/30 p-2 relative min-h-[200px]">
@@ -298,9 +286,9 @@ const AppartmentQCSection = ({
         </div>
       </div>
 
-       <PropertyDetailsEditScreenNew
+       {/* <PropertyDetailsEditScreenNew
             key={`property-edit-${selectedPropertyId || 'new'}`}
-            open={drawerOpen}
+            open={drawerOpen} 
             onClose={handleCloseDrawer}
             onSaveOrClose={refetchTaxDetails}
             propertyData={selectedPropertyData}
@@ -308,7 +296,7 @@ const AppartmentQCSection = ({
             returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
             initialFloorQCData={drawerLocalData?.floorQCData}
             initialPropertyTypes={drawerLocalData?.propertyTypes}
-          />
+          /> */}
     </div>
   );
 };

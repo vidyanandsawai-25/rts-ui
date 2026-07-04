@@ -215,7 +215,13 @@
     "basicDetailsUpdated": "Basic details updated successfully",
     "roomDataUpdated": "Room data updated - area refreshed",
     "failedToLoadRooms": "Failed to load existing rooms",
-    "cannotOpenRoomSubmission": "Cannot open room submission - no detail ID"
+    "cannotOpenRoomSubmission": "Cannot open room submission - no detail ID",
+    "fetchFloorQCDetailsSuccess": "Successfully fetched floor QC details",
+    "fetchFloorQCDetailsFailed": "Failed to fetch floor QC details",
+    "fetchFloorsFailed": "Failed to fetch floors",
+    "fetchConTypesFailed": "Failed to fetch construction types",
+    "fetchUseTypesFailed": "Failed to fetch use types",
+    "fetchSubTypesFailed": "Failed to fetch sub-use types"
   },
   "basicInfo": {
     "title": "Basic Information",
@@ -311,6 +317,17 @@
   },
   "floorQC": {
     "title": "Floor QC",
+    "form": {
+      "loading": "Loading...",
+      "selectFloor": "Select Floor",
+      "selectConType": "Select Type",
+      "selectUse": "Select Use",
+      "selectSubType": "Select Sub Type",
+      "yearPlaceholder": "YYYY",
+      "roomsPlaceholder": "e.g. 2",
+      "autoCalculated": "AUTO-CALCULATED",
+      "sqFt": "SQ FT"
+    },
     "columns": {
       "floor": "Floor",
       "conYear": "Con Year",
@@ -334,7 +351,8 @@
       "ntbFactor": "NTB Factor",
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
-      "editFloorQC": "Edit Floor QC"
+      "action": "Action",
+      "editFloorQC": "Edit Floor Details"
     },
     "toolTipFloorQC": {
       "tooltips": {
@@ -360,7 +378,8 @@
         "ntbFactor": "NTB Factor",
         "useFactor": "Use Factor",
         "capitalValue": "Capital Value",
-        "editFloorQC": "Edit Floor QC"
+        "action": "Action",
+        "editFloorQC": "Edit Floor Details"
       }
     },
     "tabs": {
