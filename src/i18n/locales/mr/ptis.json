@@ -125,7 +125,6 @@
     "imageOf": "{total} पैकी {current}",
     "fullView": "{title} - पूर्ण दृश्य",
     "photoFile": "फोटो फाईल",
-    "backToGrid": "ग्रिडवर परत जा",
     "retry": "पुन्हा प्रयत्न करा",
     "uploadInstructions": "अपलोड करण्याच्या सूचना",
     "allowedFormats": "स्वीकार्य स्वरूप: JPEG, JPG, PNG",
@@ -424,7 +423,9 @@
     "showFloorDetails": "मजला तपशील पहा",
     "hideFloorDetails": "मजला तपशील लपवा",
     "showOldTax": "जुना कर पहा",
-    "hideOldTax": "जुना कर लपवा"
+    "hideOldTax": "जुना कर लपवा",
+    "newFloor": "नवीन मजला",
+    "openPlot": "खुली जागा"
   },
   "loading": {
     "message": "मालमत्ता तपशील लोड होत आहे",

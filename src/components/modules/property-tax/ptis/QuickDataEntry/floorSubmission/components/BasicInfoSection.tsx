@@ -11,7 +11,7 @@ import { validateField } from '@/lib/validations/validateFloorSubmission';
 import { toast } from 'sonner';
 import { focusFieldOrFallback } from '@/lib/utils/floorSubmission/focus-helpers';
 
-export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
+export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorType?: 'Construction' | 'OpenPlot' }> = ({
   t,
   editingFloorForm,
   setEditingFloorForm,
@@ -24,6 +24,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   getFloorDescription,
   getSubFloorDescription,
   handleOpenDropdown,
+  selectedFloorType = 'Construction',
   isAddingNewFloor,
 }) => {
 
@@ -134,95 +135,96 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       </FieldWrapper>
 
       {/* Floor */}
-      <FieldWrapper label={t('floor.floorLabel')} htmlFor="floor-floor" required error={formErrors.floorId || formErrors.floor}>
-        <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
-          <SearchSelect
-            id="floor-floor"
-            name="floorId"
-            options={[
-              { label: t('floor.selectFloor'), value: "" },
-              ...getSelectOptions(
-                normalizeToStringArray(floorOptions),
-                floorLookup,
-                'floorId',
-                'description',
-                'floorCode',
-                editingFloorForm.floorId,
-                getFloorDescription
-              )
-            ]}
-            value={String(editingFloorForm.floorId ?? '')}
-            onChange={(_name, value) => {
-              const desc = getFloorDescription(value, floorLookup);
-              setEditingFloorForm((prev: FloorData) => ({
-                ...prev,
-                floorId: value,
-                floor: desc || value,
-                floorDescription: desc || value
-              }));
-              // Simple required validation: if value is empty, show error
-              if (!value) {
-                setFormErrors((prev) => ({ ...prev, floorId: t('floor.errors.floorRequired') || 'Floor selection is required' }));
-              } else {
-                setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
-              }
-              // Automatically move focus to the subfloor field after selection
-              setTimeout(() => {
-                focusFieldOrFallback('floor-sub-floor', '.bg-white.rounded-xl');
-              }, 50);
-            }}
-            placeholder={t('floor.selectFloor')}
-            className="h-9 text-sm"
-          />
-        </div>
-      </FieldWrapper>
+      {selectedFloorType !== 'OpenPlot' && (
+        <FieldWrapper label={t('floor.floorLabel')} htmlFor="floor-floor" required error={formErrors.floorId || formErrors.floor}>
+          <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
+            <SearchSelect
+              id="floor-floor"
+              name="floorId"
+              options={[
+                { label: t('floor.selectFloor'), value: "" },
+                ...getSelectOptions(
+                  normalizeToStringArray(floorOptions),
+                  floorLookup,
+                  'floorId',
+                  'description',
+                  'floorCode',
+                  editingFloorForm.floorId,
+                  getFloorDescription
+                )
+              ]}
+              value={String(editingFloorForm.floorId ?? '')}
+              onChange={(_name, value) => {
+                const desc = getFloorDescription(value, floorLookup);
+                setEditingFloorForm((prev: FloorData) => ({ 
+                  ...prev, 
+                  floorId: value,
+                  floor: desc || value,
+                  floorDescription: desc || value 
+                }));
+                // Simple required validation: if value is empty, show error
+                if (!value) {
+                  setFormErrors((prev) => ({ ...prev, floorId: t('floor.errors.floorRequired') || 'Floor selection is required' }));
+                } else {
+                  setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
+                }
+              }}
+              placeholder={t('floor.selectFloor')}
+              className="h-9 text-sm"
+            />
+          </div>
+        </FieldWrapper>
+      )}
 
       {/* Sub Floor */}
-      <FieldWrapper label={t('floor.subFloor')} htmlFor="floor-sub-floor" error={formErrors.subFloorId || formErrors.subFloor}>
-        <div onFocusCapture={() => handleOpenDropdown('loadSubFloor')}>
-          <SearchSelect
-            id="floor-sub-floor"
-            name="subFloorId"
-            options={[
-              { label: t('floor.selectSubFloor'), value: "" },
-              ...getSelectOptions(
-                normalizeToStringArray(subFloorOptions),
-                subFloorLookup,
-                'subFloorId',
-                'description',
-                'subFloorCode',
-                editingFloorForm.subFloorId,
-                getSubFloorDescription
-              )
-            ]}
-            value={String(editingFloorForm.subFloorId ?? '')}
-            onChange={(_name, value) => {
-              const desc = getSubFloorDescription(value, subFloorLookup);
-              setEditingFloorForm((prev: FloorData) => ({
-                ...prev,
-                subFloorId: value === "" ? undefined : value,
-                subFloor: value === "" ? "" : (desc || value),
-                subFloorDescription: value === "" ? "" : (desc || value)
-              }));
-              // // Simple required validation: if value is empty, show error
-            }}
-            placeholder={t('floor.selectSubFloor')}
-            className="h-9 text-sm"
-          />
-        </div>
-      </FieldWrapper>
+      {selectedFloorType !== 'OpenPlot' && (
+        <FieldWrapper label={t('floor.subFloor')} htmlFor="floor-sub-floor" error={formErrors.subFloorId || formErrors.subFloor}>
+          <div onFocusCapture={() => handleOpenDropdown('loadSubFloor')}>
+            <SearchSelect
+              id="floor-sub-floor"
+              name="subFloorId"
+              options={[ 
+                { label: t('floor.selectSubFloor'), value: "" },
+                ...getSelectOptions(
+                  normalizeToStringArray(subFloorOptions),
+                  subFloorLookup,
+                  'subFloorId',
+                  'description',
+                  'subFloorCode',
+                  editingFloorForm.subFloorId,
+                  getSubFloorDescription
+                )
+              ]}
+              value={String(editingFloorForm.subFloorId ?? '')}
+              onChange={(_name, value) => {
+                const desc = getSubFloorDescription(value, subFloorLookup);
+                setEditingFloorForm((prev: FloorData) => ({ 
+                  ...prev, 
+                  subFloorId: value === "" ? undefined : value,
+                  subFloor: value === "" ? "" : (desc || value),
+                  subFloorDescription: value === "" ? "" : (desc || value)
+                }));
+              }}
+              placeholder={t('floor.selectSubFloor')}
+              className="h-9 text-sm"
+            />
+          </div>
+        </FieldWrapper>
+      )}
 
       {/* Con Yr (Construction Year) */}
-      <FieldWrapper label={t('roomSubmission.table.conYr')} htmlFor="floor-con-yr" required error={formErrors.conYr}>
-        <AnimatedDigitInput
-          id="floor-con-yr"
-          maxLength={4}
-          value={String(editingFloorForm.conYr || '')}
-          placeholder="2020"
-          onChange={(val) => handleYearValueChange('conYr', val, t('floor.errors.constructionYearInvalid'))}
-          onBlur={(e) => handleYearBlur('conYr', e.target.value, t('floor.errors.constructionYearInvalid'))}
-        />
-      </FieldWrapper>
+      {selectedFloorType !== 'OpenPlot' && (
+        <FieldWrapper label={t('roomSubmission.table.conYr')} htmlFor="floor-con-yr" required error={formErrors.conYr}>
+          <AnimatedDigitInput
+            id="floor-con-yr"
+            maxLength={4}
+            value={String(editingFloorForm.conYr || '')}
+            placeholder="2020"
+            onChange={(val) => handleYearValueChange('conYr', val, t('floor.errors.constructionYearInvalid'))}
+            onBlur={(e) => handleYearBlur('conYr', e.target.value, t('floor.errors.constructionYearInvalid'))}
+          />
+        </FieldWrapper>
+      )}
 
       {/* Asst Yr (Assessment Year) */}
       <FieldWrapper

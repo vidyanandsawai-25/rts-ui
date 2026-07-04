@@ -139,6 +139,7 @@ export function SearchSelect({
   onKeyDown,
   onEnter,
   autoFocus = false,
+  menuPlacement,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -149,6 +150,7 @@ export function SearchSelect({
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
+  const activePlacement = menuPlacement || placement;
   // Accessible id for aria attributes and listbox
   const accessibleId = name || id || 'search-select';
 
@@ -160,6 +162,8 @@ export function SearchSelect({
   const didSelectRef = useRef<boolean>(false);
 
   useEffect(() => {
+    if (menuPlacement) return;
+
     if (isOpen && wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
@@ -171,7 +175,7 @@ export function SearchSelect({
     } else {
       setPlacement('bottom');
     }
-  }, [isOpen]);
+  }, [isOpen, menuPlacement]);
 
   /* ---------------- Safety checks ---------------- */
 
@@ -426,7 +430,7 @@ export function SearchSelect({
             shadow-xl shadow-slate-300/60
             ring-1 ring-slate-200
             animate-in fade-in-0 zoom-in-95 duration-150
-            ${placement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
+            ${activePlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
           `}
         >
           {filteredOptions.length === 0 && !isLoading ? (

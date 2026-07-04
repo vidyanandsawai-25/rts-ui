@@ -38,8 +38,8 @@ const sanitizeRoomBase = (room: Record<string, unknown>) => ({
 });
 
 const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string, unknown> = {}) => {
-    const isOffsetVal = minus.isOffset !== undefined 
-        ? Boolean(minus.isOffset) 
+    const isOffsetVal = minus.isOffset !== undefined
+        ? Boolean(minus.isOffset)
         : (minus.operation === 'add' || minus.operation === 'Add' || minus.operation === true);
 
     return {
@@ -60,7 +60,7 @@ const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string,
     };
 };
 
-const parseSafeInt = (value: any): number => {
+const parseSafeInt = (value: unknown): number => {
     if (value === undefined || value === null) return 0;
     const num = Number(value);
     if (!isNaN(num)) return num;
@@ -77,10 +77,10 @@ const parseSafeInt = (value: any): number => {
  * Returns null when the input cannot be parsed — the backend treats explicit
  * null as "no date" rather than barfing on garbled strings like "Invalid Date".
  */
-const toIsoOrNull = (value: any): string | null => {
+const toIsoOrNull = (value: unknown): string | null => {
     if (value === undefined || value === null || value === '') return null;
     try {
-        const d = new Date(value);
+        const d = new Date(value as any);
         if (isNaN(d.getTime())) return null;
         return d.toISOString();
     } catch {
@@ -88,28 +88,34 @@ const toIsoOrNull = (value: any): string | null => {
     }
 };
 
-const sanitizeFloorBase = (payload: any) => {
+const sanitizeFloorBase = (payload: Record<string, any>) => {
     const rawDetailsId = Number(payload.propertyDetailsId || payload.id || 0);
     const safeDetailsId = rawDetailsId > 0 && rawDetailsId < 1_000_000_000_000 ? rawDetailsId : 0;
-    
+
     // Check both raw API keys and UI normalized keys
-    const floorIdVal = parseSafeInt(payload.floorId !== undefined ? payload.floorId : payload.floorID);
-    
+    const rawFloorId = payload.floorId !== undefined ? payload.floorId : payload.floorID;
+    const floorIdVal = (rawFloorId === undefined || rawFloorId === null || rawFloorId === "" || rawFloorId === 0 || rawFloorId === "0" || String(rawFloorId).toLowerCase() === "select floor" || String(rawFloorId) === "-Select-")
+        ? null
+        : parseSafeInt(rawFloorId);
+
     const rawSubFloorId = payload.subFloorId !== undefined ? payload.subFloorId : payload.subFloorID;
     const subFloorIdVal = (rawSubFloorId === undefined || rawSubFloorId === null || rawSubFloorId === "" || rawSubFloorId === 0 || rawSubFloorId === "0" || String(rawSubFloorId).toLowerCase() === "select sub floor" || String(rawSubFloorId).toLowerCase() === "select subfloor" || String(rawSubFloorId) === "-Select-")
-        ? null 
+        ? null
         : parseSafeInt(rawSubFloorId);
 
-    const constructionTypeIdVal = parseSafeInt(payload.constructionTypeId !== undefined ? payload.constructionTypeId : (payload.constructionId ?? payload.ConstructionTypeId));
+    const rawConstructionTypeId = payload.constructionTypeId !== undefined ? payload.constructionTypeId : (payload.constructionId ?? payload.ConstructionTypeId);
+    const constructionTypeIdVal = (rawConstructionTypeId === undefined || rawConstructionTypeId === null || rawConstructionTypeId === "" || rawConstructionTypeId === 0 || rawConstructionTypeId === "0" || String(rawConstructionTypeId).toLowerCase() === "select type" || String(rawConstructionTypeId) === "-Select-")
+        ? null
+        : parseSafeInt(rawConstructionTypeId);
     const typeOfUseIdVal = parseSafeInt(payload.typeOfUseId !== undefined ? payload.typeOfUseId : payload.useId);
-    
+
     const rawSubTypeOfUseId = payload.subTypeOfUseId !== undefined ? payload.subTypeOfUseId : payload.subTypId;
     const subTypeOfUseIdVal = (rawSubTypeOfUseId === undefined || rawSubTypeOfUseId === null || rawSubTypeOfUseId === "" || rawSubTypeOfUseId === 0 || rawSubTypeOfUseId === "0" || String(rawSubTypeOfUseId).toLowerCase() === "select subtype" || String(rawSubTypeOfUseId).toLowerCase() === "select sub type" || String(rawSubTypeOfUseId) === "-Select-")
-        ? null 
+        ? null
         : parseSafeInt(rawSubTypeOfUseId);
 
     const floorDescriptionVal = String(payload.floorDescription || payload.floor || '');
-    
+
     const rawSubFloorDesc = payload.subFloorDescription || payload.subFloor || '';
     const subFloorDescriptionVal = (subFloorIdVal === null || !rawSubFloorDesc || String(rawSubFloorDesc).toLowerCase() === "select sub floor" || String(rawSubFloorDesc).toLowerCase() === "select subfloor" || String(rawSubFloorDesc) === "-Select-")
         ? null
@@ -117,14 +123,26 @@ const sanitizeFloorBase = (payload: any) => {
 
     const constructionTypeDescriptionVal = String(payload.constructionTypeDescription || payload.conTyp || '');
     const typeOfUseDescriptionVal = String(payload.typeOfUseDescription || payload.use || '');
-    
+
     const rawSubTypeOfUseDesc = payload.subTypeOfUseDescription || payload.subTyp || '';
     const subTypeOfUseDescriptionVal = (subTypeOfUseIdVal === null || !rawSubTypeOfUseDesc || String(rawSubTypeOfUseDesc).toLowerCase() === "select subtype" || String(rawSubTypeOfUseDesc).toLowerCase() === "select sub type" || String(rawSubTypeOfUseDesc) === "-Select-")
         ? null
         : String(rawSubTypeOfUseDesc);
 
-    const constructionYearVal = String(payload.constructionYear !== undefined ? payload.constructionYear : (payload.conYr || ''));
+    const isOpenPlotVal = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
+
+    const lengthVal = payload.length !== undefined && payload.length !== null && payload.length !== ''
+        ? Number(payload.length)
+        : (payload.lengthMtr !== undefined && payload.lengthMtr !== null && payload.lengthMtr !== '' ? Number(payload.lengthMtr) : null);
+
+    const widthVal = payload.width !== undefined && payload.width !== null && payload.width !== ''
+        ? Number(payload.width)
+        : (payload.widthMtr !== undefined && payload.widthMtr !== null && payload.widthMtr !== '' ? Number(payload.widthMtr) : null);
+
     const assessmentYearVal = String(payload.assessmentYear !== undefined ? payload.assessmentYear : (payload.asstYr || ''));
+    const constructionYearVal = isOpenPlotVal
+        ? assessmentYearVal
+        : String(payload.constructionYear !== undefined ? payload.constructionYear : (payload.conYr || ''));
 
     const carpetAreaSqFeetVal = Number(payload.carpetAreaSqFeet !== undefined ? payload.carpetAreaSqFeet : (payload.areaSqFt || 0));
     const carpetAreaSqMeterVal = Number(payload.carpetAreaSqMeter !== undefined ? payload.carpetAreaSqMeter : (payload.areaSqM || 0));
@@ -132,25 +150,27 @@ const sanitizeFloorBase = (payload: any) => {
     const builtupAreaSqFeetVal = Number(payload.builtupAreaSqFeet !== undefined ? payload.builtupAreaSqFeet : (payload.builtupAreaSqFt || 0));
     const noOfRoomsVal = Number(payload.noOfRooms !== undefined ? payload.noOfRooms : (payload.rooms || 0));
 
-    const renterYesNoVal = payload.renterYesNo !== undefined 
-        ? Boolean(payload.renterYesNo) 
-        : (payload.isRenter !== undefined 
-            ? Boolean(payload.isRenter) 
+    const renterYesNoVal = payload.renterYesNo !== undefined
+        ? Boolean(payload.renterYesNo)
+        : (payload.isRenter !== undefined
+            ? Boolean(payload.isRenter)
             : (payload.renter === 'Yes' || payload.renter === true));
     const isTaxableVal = payload.isTaxable !== undefined ? (payload.isTaxable === 'Yes' || payload.isTaxable === true) : Boolean(payload.isTaxable);
+
+
 
     return {
         isActive: true,
         id: safeDetailsId,
         propertyDetailsId: safeDetailsId,
         propertyId: Number(payload.propertyId) || 0,
-        floorId: floorIdVal,
+        ...(floorIdVal !== null && floorIdVal !== undefined ? { floorId: floorIdVal } : {}),
         floorDescription: floorDescriptionVal,
         subFloorId: subFloorIdVal,
         subFloorDescription: subFloorDescriptionVal,
         constructionYear: constructionYearVal,
         assessmentYear: assessmentYearVal,
-        constructionTypeId: constructionTypeIdVal,
+        ...(constructionTypeIdVal !== null && constructionTypeIdVal !== undefined ? { constructionTypeId: constructionTypeIdVal } : {}),
         constructionTypeDescription: constructionTypeDescriptionVal,
         typeOfUseId: typeOfUseIdVal,
         typeOfUseDescription: typeOfUseDescriptionVal,
@@ -180,6 +200,11 @@ const sanitizeFloorBase = (payload: any) => {
         occupancyApplyOrNot: Boolean(payload.occupancyApplyOrNot),
         occupancyNumber: String(payload.occupancyNumber || ''),
         nonCalculateRentMonthly: Number(payload.nonCalculateRentMonthly) || 0,
+        isOpenPlot: isOpenPlotVal,
+        length: isOpenPlotVal ? lengthVal : null,
+        width: isOpenPlotVal ? widthVal : null,
+        lengthMtr: isOpenPlotVal ? lengthVal : null,
+        widthMtr: isOpenPlotVal ? widthVal : null,
     };
 };
 
@@ -197,13 +222,16 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
     const sanitizedRenterDetails = sanitizeRenterDetailsForCreate(payload, parentPropertyDetailsId);
     const sanitizedRenterMast = sanitizeRenterMastForCreate(payload, parentPropertyDetailsId);
 
+    const isOpenPlotVal = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
+
     return {
         ...sanitizeFloorBase(payload),
         createdBy: 0,
         renterDetails: sanitizedRenterDetails,
         renterMast: sanitizedRenterMast,
         renters: sanitizedRenterMast,
-        roomWiseSubmissionDetails: (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoom)
+        roomWiseSubmissionDetails: isOpenPlotVal ? [] : (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoom),
+        roomWiseMinusData: isOpenPlotVal ? [] : undefined
     } as unknown as FloorSubmissionPayload;
 }
 
@@ -220,6 +248,8 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
     const sanitizedRenterDetails = sanitizeRenterDetailsForUpdate(payload, parentPropertyDetailsId);
     const sanitizedRenterMast = sanitizeRenterMastForUpdate(payload, parentPropertyDetailsId);
 
+    const isOpenPlotVal = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
+
     return {
         ...sanitizeFloorBase(payload),
         updatedBy: 0,
@@ -232,7 +262,8 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
         // the same primary keys.
         renters: sanitizedRenterMast,
         renterMast: sanitizedRenterMast,
-        roomWiseSubmissionDetails: (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoomUpdate),
+        roomWiseSubmissionDetails: isOpenPlotVal ? [] : (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoomUpdate),
+        roomWiseMinusData: isOpenPlotVal ? [] : undefined
     };
 }
 
@@ -248,15 +279,15 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
     const rawParentId = Number(base.propertyDetailsId || data.propertyDetailsId || data.id || 0);
     const parentPropertyDetailsId = rawParentId > 0 && rawParentId < 1_000_000_000_000 ? rawParentId : 1;
     const isUpdate = rawParentId > 0 && rawParentId < 1_000_000_000_000;
-    
+
     // Rooms Mapping: merge both raw roomWiseSubmissionDetails and UI-normalized roomData
     const rawRooms = ((data.roomWiseSubmissionDetails || data.propertyRooms || []) as Record<string, unknown>[]) || [];
     const uiRooms = ((data.roomData || []) as Record<string, unknown>[]) || [];
-    
+
     const sanitizeRoom = (room: Record<string, unknown>) => {
         const roomId = Number(room.id || room.roomWiseSubmissionId || 0);
         const hasRealRoomId = roomId > 0 && roomId < 1_000_000_000_000;
-        
+
         return {
             isActive: true,
             // Only include id when it's a real persisted record (> 0 and not a temporary millisecond timestamp UI ID)
@@ -288,10 +319,10 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             roomWiseMinusData: (((room.roomWiseMinusData || room.minusRooms || room.offsets || []) as Record<string, unknown>[]) || []).map(m => {
                 const minusId = Number(m.id || m.roomWiseMinusId || 0);
                 const hasRealMinusId = minusId > 0 && minusId < 1_000_000_000_000;
-                const isOffsetVal = m.isOffset !== undefined 
-                    ? Boolean(m.isOffset) 
+                const isOffsetVal = m.isOffset !== undefined
+                    ? Boolean(m.isOffset)
                     : (m.operation === 'add' || m.operation === 'Add' || m.operation === true);
-                
+
                 return {
                     isActive: true,
                     id: hasRealMinusId ? minusId : 0,
@@ -324,8 +355,8 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
     combinedRooms.forEach((r) => {
         const idVal = Number(r.id || r.roomWiseSubmissionId || 0);
         const roomNoVal = String(r.roomNo || '');
-        const exists = uniqueRooms.some(existing => 
-            (idVal > 0 && Number(existing.id || existing.roomWiseSubmissionId || 0) === idVal) || 
+        const exists = uniqueRooms.some(existing =>
+            (idVal > 0 && Number(existing.id || existing.roomWiseSubmissionId || 0) === idVal) ||
             (roomNoVal && String(existing.roomNo || '') === roomNoVal)
         );
         if (!exists) {
@@ -335,17 +366,18 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
 
     return {
         ...base,
-        ...(isUpdate ? { 
-            updatedBy: 0, 
+        ...(isUpdate ? {
+            updatedBy: 0,
             isRenter: base.isRenter,
             renterYesNo: base.renterYesNo,
-        } : { 
+        } : {
             createdBy: 0,
             isRenter: base.isRenter,
             renterYesNo: base.renterYesNo,
         }),
         ...sanitizeRenterRowsFromData(data, parentPropertyDetailsId, isUpdate),
-        roomWiseSubmissionDetails: uniqueRooms.map(sanitizeRoom),
+        roomWiseSubmissionDetails: base.isOpenPlot ? [] : uniqueRooms.map(sanitizeRoom),
+        roomWiseMinusData: base.isOpenPlot ? [] : undefined,
         ...(data.renterCustomIncrements ? { renterCustomIncrements: data.renterCustomIncrements } : {}),
         ...(data.renterTableEntries ? { renterTableEntries: data.renterTableEntries } : {}),
         ...(data.grandTotal !== undefined ? { grandTotal: Number(data.grandTotal) } : {}),
