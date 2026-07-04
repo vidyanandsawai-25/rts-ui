@@ -3,9 +3,10 @@ import FloorSubmission from '@/components/modules/property-tax/ptis/QuickDataEnt
 import { FloorSubmissionErrorBoundary } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/error/FloorSubmissionErrorBoundary';
 import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from '@/types/floor-details.types';
 import { FloorData, RoomTypeResponse } from '@/types/room-details.types';
+import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { normalizeObjectResponse, normalizeArrayResponse, normalizeWrappedResponse, } from '@/lib/utils/action-response-helpers';
+import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, getPlotAreaAction, } from './actions';
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
-import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, } from './actions';
 
 // Force dynamic rendering — this page relies on per-request search params.
 export const dynamic = 'force-dynamic';
@@ -124,6 +125,8 @@ export default async function FloorSubmissionPage({
         roomTypeDataResult,
         floorDetailRaw,
         initialFloorsRaw,
+        propertyBasicDetailsRaw,
+        initialPlotAreaResult,
     ] = await Promise.all([
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
@@ -133,6 +136,8 @@ export default async function FloorSubmissionPage({
         getRoomTypeDataAction(),
         (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
         (knownPropertyId && !hasPropertyKeys) ? getFloorSubmissionsByOwnerAction(knownPropertyId) : Promise.resolve([]),
+        knownPropertyId ? getPropertyBasicDetailsAction(knownPropertyId) : Promise.resolve(null),
+        (initialPropertyID && initialPropertyID !== 'new') ? getPlotAreaAction(initialPropertyID) : Promise.resolve(null),
     ]);
 
     /** 
@@ -168,6 +173,21 @@ export default async function FloorSubmissionPage({
     const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult, 'Sub-floor data');
     let subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult, 'Sub-usage types');
     const roomTypeData = checkResult<RoomTypeResponse>(roomTypeDataResult, 'Room types');
+
+    // ── Resolve property data & ID ──────────────────────────────────────────
+    const propertyBasicDetails = propertyBasicDetailsRaw as PropertyBasicDetailsApiItem | null;
+    if (propertyBasicDetails && initialPropertyData) {
+        initialPropertyData = {
+            ...initialPropertyData,
+            categoryId: propertyBasicDetails.categoryId,
+            categoryName: propertyBasicDetails.categoryName,
+        };
+    } else if (propertyBasicDetails) {
+        initialPropertyData = {
+            categoryId: propertyBasicDetails.categoryId,
+            categoryName: propertyBasicDetails.categoryName,
+        };
+    }
 
     // ── Floor List (already fetched in Phase 1 if propertyId was known) ─────
     let finalFloorsRaw = initialFloorsRaw;
@@ -230,6 +250,12 @@ export default async function FloorSubmissionPage({
         }
     }
 
+    // Resolve Plot Area data
+    let initialPlotArea = null;
+    if (initialPlotAreaResult && 'success' in initialPlotAreaResult && initialPlotAreaResult.success) {
+        initialPlotArea = initialPlotAreaResult.data;
+    }
+
     // ── Render ──────────────────────────────────────────────────────────────
     return (
         <FloorSubmissionErrorBoundary>
@@ -253,6 +279,7 @@ export default async function FloorSubmissionPage({
                 initialPropertyID={initialPropertyID}
                 initialFloors={initialFloors}
                 initialFloorDetails={initialFloorDetails}
+                initialPlotArea={initialPlotArea}
                 locale={locale}
                 apiErrors={metadataErrors}
             />
