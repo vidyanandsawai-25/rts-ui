@@ -44,7 +44,7 @@ export const FloorQCTable = ({
               data={hook.floorData}
               loading={hook.isLoadingFloorQCData}
               tableClassName="w-max min-w-full border-collapse border border-blue-400/20 shadow-[0_0_15px_-3px_rgba(0,0,0,0.1)] text-sm"
-              theadClassName="bg-[#1e3a8a] text-white sticky top-0 z-20 shadow-md"
+              theadClassName="bg-[#1e3a8a] text-white sticky top-0 z-0 shadow-md"
               rowClassName={(_row) => {
                 return `h-[36px] border-b border-gray-100 transition-colors hover:bg-blue-100/60 `;
               }}
@@ -57,7 +57,7 @@ export const FloorQCTable = ({
               data={hook.floorData}
               loading={hook.isLoadingFloorQCData}
               tableClassName="w-max min-w-full border-collapse border border-blue-400/20 shadow-[0_0_15px_-3px_rgba(0,0,0,0.1)] text-sm"
-              theadClassName="bg-[#1e3a8a] text-white sticky top-0 z-20 shadow-md"
+              theadClassName="bg-[#1e3a8a] text-white sticky top-0 z-0 shadow-md"
               rowClassName={(_row,) => {
                 return `h-[36px] border-b border-gray-100 transition-colors hover:bg-blue-100/60 `;
               }}
@@ -71,7 +71,7 @@ export const FloorQCTable = ({
           data={hook.floorData}
           loading={hook.isLoadingFloorQCData}
           tableClassName="w-max min-w-full border-collapse border border-blue-400/20 shadow-[0_0_15px_-3px_rgba(0,0,0,0.1)] text-sm"
-          theadClassName="bg-[#1e3a8a] text-white sticky top-0 z-20 shadow-md"
+          theadClassName="bg-[#1e3a8a] text-white sticky top-0 z-0 shadow-md"
           rowClassName={(_row) => {
             return `h-[36px] border-b border-gray-100 transition-colors hover:bg-blue-100/60`;
           }}

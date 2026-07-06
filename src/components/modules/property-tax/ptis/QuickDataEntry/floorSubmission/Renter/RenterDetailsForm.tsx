@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, i18next/no-literal-string */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect, memo, useMemo, useTransition, useCallback } from 'react';

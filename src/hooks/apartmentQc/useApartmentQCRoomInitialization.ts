@@ -35,6 +35,8 @@ export const useApartmentQCRoomInitialization = (
     setFormData,
   } = state;
 
+  const noOfRooms = props.selectedFloorRow?.noOfRooms;
+
   // 1. Mount flag
   useEffect(() => {
     setMounted(true);
@@ -51,7 +53,7 @@ export const useApartmentQCRoomInitialization = (
 
     const source: RoomAPIResponse[] = existingRooms || [];
 
-    const targetCount = Number(props.selectedFloorRow?.noOfRooms) || 0;
+    const targetCount = Number(noOfRooms) || 0;
     const maxCount = Math.max(targetCount, source.length);
 
     const loaded = Array.from({ length: maxCount }).map((_, i) => {
@@ -130,7 +132,7 @@ export const useApartmentQCRoomInitialization = (
 
     setRooms(loaded);
     // Intentionally NOT calling handleEdit — start in add mode.
-  }, [isOpen, existingRooms, setRooms, setEditingIndex, setIsEditMode]);
+  }, [isOpen, existingRooms, setRooms, setEditingIndex, setIsEditMode, noOfRooms]);
 
   // 3. Area-unit conversion sync (same logic as useRoomInitialization)
   useEffect(() => {

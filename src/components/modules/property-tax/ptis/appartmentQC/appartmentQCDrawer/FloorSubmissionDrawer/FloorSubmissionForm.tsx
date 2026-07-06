@@ -359,8 +359,8 @@ export const FloorSubmissionForm = ({
                             disabled
                             className="bg-gray-50 text-gray-800 opacity-100 pr-[85px] h-9 text-sm border-gray-200 rounded-lg cursor-pointer pointer-events-none"
                         />
-                        <div className="absolute inset-0 z-10" />
-                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center h-7 px-2 bg-slate-50 border border-slate-200 rounded-md text-[10px] font-bold text-slate-700 tracking-wider pointer-events-none z-20">
+                        <div className="absolute inset-0 z-0" />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center h-7 px-2 bg-slate-50 border border-slate-200 rounded-md text-[10px] font-bold text-slate-700 tracking-wider pointer-events-none">
                             {t('floorQC.form.sqFt')}
                             <div className="w-px h-3 bg-slate-300 mx-1.5" />
                             <LayoutGrid className="w-3.5 h-3.5 text-blue-500" />
