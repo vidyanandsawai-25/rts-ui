@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Plus, Trash2, Upload, FileImage, AlertCircle, RefreshCw, Split } from 'lucide-react';
-import { Button, useConfirm } from '@/components/common';
+import { Button, useConfirm, Card } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from './ImageWithFallback';
 import type { AdditionalImage } from './MediaImageCards';
@@ -74,10 +74,10 @@ export function PhotoPlanGrid({
       {isLoading ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4 pb-8">
           {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={idx} className="h-40 rounded-lg bg-white border border-slate-200 p-2 flex flex-col gap-2 shadow-sm animate-pulse">
+            <Card key={idx} padding="none" className="h-40 p-2 flex flex-col gap-2 shadow-sm animate-pulse border border-slate-200">
               <div className="flex-1 bg-slate-100 rounded" />
               <div className="h-4 bg-slate-200 rounded w-3/4" />
-            </div>
+            </Card>
           ))}
         </div>
       ) : error ? (
@@ -101,8 +101,9 @@ export function PhotoPlanGrid({
           {images.map((img, index) => {
             const isSelected = selectedImageIndex === index;
             return (
-              <div
+              <Card
                 key={img.propertyPhotoId || index} onClick={() => onSelectImage(index)}
+                padding="none"
                 className={`relative group bg-white rounded-lg overflow-hidden border transition-all cursor-pointer h-40 flex flex-col ${isSelected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md'}`}
               >
                 <div className="flex-1 bg-slate-100 overflow-hidden relative">
@@ -131,25 +132,25 @@ export function PhotoPlanGrid({
                     {img.displayOrder !== undefined && <span className="text-[9px] bg-slate-100 text-slate-600 font-medium px-1.5 py-0.5 rounded">{t('media.displayOrder')}: {img.displayOrder}</span>}
                   </div>
                 </div>
-              </div>
+              </Card>
             );
           })}
           {photoTypeCode === 'CHANGE_DETECTION' ? (
             onCompare && (
-              <div onClick={onCompare} className="border border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group rounded-lg shadow-sm">
+              <Card onClick={onCompare} padding="none" className="border border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group rounded-lg shadow-sm">
                 <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
                   <Split className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
                 </div>
                 <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">{t('media.compareImages') || 'Compare Images'}</span>
-              </div>
+              </Card>
             )
           ) : (
-            <div onClick={onAddPhoto} className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
+            <Card onClick={onAddPhoto} padding="none" className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
               <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
                 <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
               </div>
               <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">{t('media.uploadImage') || 'Add Photo'}</span>
-            </div>
+            </Card>
           )}
         </div>
       )}
