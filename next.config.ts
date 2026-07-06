@@ -48,16 +48,23 @@ const nextConfig: NextConfig = {
   compress: true,
   trailingSlash: false,
 
-  // 🔥 IMPORTANT: disable powered header (clean proxy behavior)
   poweredByHeader: false,
 
   // Security headers
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: "/((?!api/report-download).*)",
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+      {
+        source: "/api/report-download/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Home,
   BarChart2,
@@ -10,10 +10,14 @@ import {
   MoreHorizontal,
   FileText,
   Check,
+  Loader2,
+  X,
+  Download,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { ReportParametersPanel } from '@/components/modules/reports/ReportParametersPanel';
 import { ReportJobsList } from '@/components/modules/reports/ReportJobsList';
-import { Button, Card } from '@/components/common';
+import { Card } from '@/components/common';
 import { useReportJobs } from '@/hooks/useReportJobs';
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
 
@@ -34,18 +38,20 @@ interface Category {
   label: string;
   labelHi: string;
   icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  borderColor: string;
+  color: string;      // text class e.g. text-blue-600
+  bgColor: string;    // background class e.g. bg-blue-50
+  borderColor: string;// border class e.g. border-blue-500
+  glowClass: string;  // shadow class e.g. shadow-blue-100
+  iconBg: string;     // icon wrapper bg e.g. bg-blue-100
 }
 
 const CATEGORIES: Category[] = [
-  { key: 'assessment', label: 'Assessment', labelHi: 'मूल्यांकन', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
-  { key: 'amc', label: 'AMC', labelHi: 'एएमसी', icon: BarChart2, color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
-  { key: 'transaction', label: 'Transaction', labelHi: 'व्यवहार', icon: CreditCard, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
-  { key: 'approval', label: 'Approval', labelHi: 'मंजुरी', icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
-  { key: 'discount', label: 'Discount', labelHi: 'सूट', icon: Tag, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
-  { key: 'others', label: 'Others', labelHi: 'इतर', icon: MoreHorizontal, color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' },
+  { key: 'assessment', label: 'Assessment', labelHi: 'मूल्यांकन', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50/70', borderColor: 'border-blue-500', glowClass: 'shadow-blue-100/70', iconBg: 'bg-blue-100' },
+  { key: 'amc', label: 'AMC', labelHi: 'एएमसी', icon: BarChart2, color: 'text-amber-600', bgColor: 'bg-amber-50/70', borderColor: 'border-amber-500', glowClass: 'shadow-amber-100/70', iconBg: 'bg-amber-100' },
+  { key: 'transaction', label: 'Transaction', labelHi: 'व्यवहार', icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-50/70', borderColor: 'border-emerald-500', glowClass: 'shadow-emerald-100/70', iconBg: 'bg-emerald-100' },
+  { key: 'approval', label: 'Approval', labelHi: 'मंजुरी', icon: CheckCircle, color: 'text-indigo-600', bgColor: 'bg-indigo-50/70', borderColor: 'border-indigo-500', glowClass: 'shadow-indigo-100/70', iconBg: 'bg-indigo-100' },
+  { key: 'discount', label: 'Discount', labelHi: 'सूट', icon: Tag, color: 'text-rose-600', bgColor: 'bg-rose-50/70', borderColor: 'border-rose-500', glowClass: 'shadow-rose-100/70', iconBg: 'bg-rose-100' },
+  { key: 'others', label: 'Others', labelHi: 'इतर', icon: MoreHorizontal, color: 'text-slate-600', bgColor: 'bg-slate-50/70', borderColor: 'border-slate-500', glowClass: 'shadow-slate-100/70', iconBg: 'bg-slate-100' },
 ];
 
 const STEPS = [
@@ -56,7 +62,7 @@ const STEPS = [
 
 function Stepper({ currentStep }: { currentStep: Step }) {
   return (
-    <Card padding="none" className="rounded-xl px-6 py-4 shadow-sm">
+    <Card padding="none" className="rounded-xl px-6 py-4 shadow-sm border border-gray-100">
       <div className="flex items-center w-full">
         {STEPS.map((step, idx) => {
           const stepNum = (idx + 1) as Step;
@@ -97,24 +103,31 @@ function CategoryCard({ category, count, isSelected, onClick }: {
 }) {
   const Icon = category.icon;
   return (
-    <Button
+    <button
       type="button"
-      variant="secondary"
       onClick={onClick}
-      className={`relative h-auto rounded-lg border p-2.5 text-center cursor-pointer hover:-translate-y-0.5 flex-col items-center gap-1.5 w-full
-        ${isSelected ? `${category.borderColor} bg-slate-50/55 shadow-sm -translate-y-0.5` : 'border-gray-200 hover:border-gray-300'}`}
+      className={`relative rounded-xl border p-3 text-center cursor-pointer transition-all duration-300 flex flex-col items-center gap-2 w-full hover:-translate-y-1 hover:shadow-md focus:outline-none
+        ${isSelected 
+          ? `${category.borderColor} ${category.bgColor} ${category.glowClass} border-2 shadow-lg scale-[1.03]` 
+          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+        }`}
     >
-      <span className="flex flex-col items-center gap-1">
-        <span className={`p-1.5 rounded-lg ${isSelected ? category.bgColor : 'bg-gray-50'}`}>
-          <Icon className={`w-4 h-4 ${isSelected ? category.color : 'text-gray-500'}`} />
-        </span>
-        <span>
-          <span className={`block text-xs font-bold leading-tight ${isSelected ? category.color : 'text-gray-700'}`}>{category.label}</span>
-          <span className="block text-[9px] text-gray-400 leading-tight">{category.labelHi}</span>
-        </span>
-        <span className="text-[10px] text-gray-500 font-medium">{count} reports</span>
+      <span className={`p-2 rounded-xl transition-all duration-300 ${isSelected ? category.iconBg : 'bg-gray-50 text-gray-400 group-hover:bg-gray-100'}`}>
+        <Icon className={`w-5 h-5 ${isSelected ? category.color : 'text-gray-500'}`} />
       </span>
-    </Button>
+      <div className="flex flex-col items-center">
+        <span className={`block text-xs font-bold leading-tight ${isSelected ? 'text-gray-900 font-extrabold' : 'text-gray-700'}`}>{category.label}</span>
+        <span className="block text-[10px] text-gray-400 leading-tight mt-0.5">{category.labelHi}</span>
+      </div>
+      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 transition-all duration-300
+        ${isSelected 
+          ? `${category.color} ${category.iconBg}` 
+          : 'text-gray-500 bg-gray-100'
+        }`}
+      >
+        {count} reports
+      </span>
+    </button>
   );
 }
 
@@ -165,6 +178,57 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
   const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(null);
   const [showJobs, setShowJobs] = useState(false);
 
+  // States for instant generation preview
+  const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [previewReport, setPreviewReport] = useState<ReportDefinition | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Poll status of report request
+  useEffect(() => {
+    if (!activeRequestId || !isGenerating) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    let isCancelled = false;
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`/api/report-status/${encodeURIComponent(activeRequestId)}`, { cache: 'no-store' });
+        if (!res.ok) {
+          throw new Error('Failed to fetch status');
+        }
+        const data = await res.json();
+        
+        if (isCancelled) return;
+
+        if (data.status === 'Completed') {
+          setIsGenerating(false);
+          toast.success('Report generated successfully!');
+          refresh(); // refresh the background jobs list
+        } else if (data.status === 'Failed' || data.status === 'Cancelled') {
+          setIsGenerating(false);
+          setActiveRequestId(null);
+          toast.error('Report generation failed.');
+        } else {
+          // Continue polling
+          timer = setTimeout(checkStatus, 1500);
+        }
+      } catch (err: any) {
+        if (isCancelled) return;
+        setIsGenerating(false);
+        setActiveRequestId(null);
+        toast.error('Error checking report status.');
+      }
+    };
+
+    // start immediately
+    checkStatus();
+
+    return () => {
+      isCancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [activeRequestId, isGenerating, refresh]);
+
   const reportsByCategory = useMemo(() => {
     const map = new Map<string, ReportDefinition[]>(CATEGORIES.map((cat) => [cat.key, []]));
 
@@ -196,9 +260,14 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
     setCurrentStep(3);
   };
 
-  const handleQueued = () => {
+  const handleQueued = (requestId: string) => {
     setShowJobs(true);
     refresh();
+    if (requestId) {
+      setActiveRequestId(requestId);
+      setPreviewReport(selectedReport);
+      setIsGenerating(true);
+    }
   };
 
   const activeCategoryDef = CATEGORIES.find((c) => c.key === selectedCategory);
@@ -251,7 +320,7 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
                   type="button"
                   onClick={() => handleSelectReport(report)}
                   className="
-                    w-[calc(50%-6px)] text-left rounded-lg border px-3 py-3
+                    w-[calc(25%-9px)] text-left rounded-lg border px-3 py-3
                     border-gray-200 bg-white
                     hover:border-blue-300 hover:bg-blue-50/20 hover:shadow-sm
                     transition-all duration-150 focus:outline-none
@@ -270,55 +339,89 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
         </Card>
       )}
 
-      {/* ── STEP 3: Report selected → LEFT list + RIGHT form (equal width) ── */}
+      {/* ── STEP 3: Report selected → LEFT card grid + RIGHT form ── */}
       {currentStep === 3 && activeCategoryDef && selectedReport && (
-        <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
-          <div className="flex min-h-[420px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          
+          {/* LEFT: 1-column card grid list (5 cols) */}
+          <Card padding="none" className="lg:col-span-5 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
+            {/* Header */}
+            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#004c8c]" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                {activeCategoryDef.label} Reports
+              </span>
+              <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">
+                {activeReports.length}
+              </span>
+            </div>
 
-            {/* LEFT: vertical report list (50%) */}
-            <div className="w-1/2 border-r border-gray-100 flex flex-col bg-gray-50/30">
-              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
-                <FileText className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  {activeCategoryDef.label}
-                </span>
-                <span className="ml-auto text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
-                  {activeReports.length}
-                </span>
-              </div>
-              <div className="flex-1 overflow-y-auto">
+            {/* 1-column card list */}
+            <div className="flex-1 overflow-y-auto p-4 max-h-[460px]">
+              <div className="flex flex-col gap-3">
                 {activeReports.map((report) => {
-                  const isSelected = selectedReport.id === report.id;
+                  const isActive = selectedReport.id === report.id;
                   return (
                     <button
                       key={report.id}
                       type="button"
                       onClick={() => handleSelectReport(report)}
-                      className={`w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 transition-all duration-150 focus:outline-none
-                        ${isSelected
-                          ? 'bg-blue-50/60 border-l-4 border-l-[#004c8c]'
-                          : 'bg-white border-l-4 border-l-transparent hover:bg-blue-50/20'
+                      className={`group relative text-left rounded-xl border p-4 transition-all duration-300 focus:outline-none flex items-center justify-between
+                        ${isActive
+                          ? 'border-[#004c8c] bg-blue-50/40 shadow-md shadow-blue-100/30 border-l-4 border-l-[#004c8c] -translate-y-0.5'
+                          : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/10 hover:-translate-y-0.5'
                         }`}
                     >
-                      <p className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate ${isSelected ? 'text-[#004c8c]/70' : 'text-gray-400'}`}>
-                        {report.reportCode}
-                      </p>
-                      <p className={`text-xs font-semibold leading-snug ${isSelected ? 'text-[#004c8c]' : 'text-gray-700'}`}>
-                        {report.reportName}
-                      </p>
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        {/* Icon wrapper */}
+                        <span className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300
+                          ${isActive
+                            ? 'bg-[#004c8c] text-white shadow-sm'
+                            : 'bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500'
+                          }`}
+                        >
+                          <FileText className="w-4.5 h-4.5" />
+                        </span>
+
+                        <div className="min-w-0">
+                          <p className={`text-[9px] font-bold uppercase tracking-wider mb-0.5
+                            ${isActive ? 'text-[#004c8c]/70' : 'text-gray-400'}`}
+                          >
+                            {report.reportCode}
+                          </p>
+                          <p className={`text-xs font-bold leading-tight
+                            ${isActive ? 'text-[#004c8c] font-extrabold' : 'text-gray-700 group-hover:text-gray-900'}`}
+                          >
+                            {report.reportName}
+                          </p>
+                        </div>
+                      </div>
+
+                      {isActive && (
+                        <span className="w-5 h-5 rounded-full bg-blue-100 text-[#004c8c] flex items-center justify-center text-[10px] font-bold">
+                          ✓
+                        </span>
+                      )}
                     </button>
                   );
                 })}
               </div>
             </div>
+          </Card>
 
-            {/* RIGHT: parameters form (50%) */}
-            <div className="w-1/2 overflow-y-auto bg-white">
+          {/* RIGHT: parameters form (7 cols) */}
+          <Card padding="none" className="lg:col-span-7 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
+            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                Configure Parameters
+              </span>
+            </div>
+            <div className="flex-1 overflow-y-auto">
               <ReportParametersPanel report={selectedReport} onQueued={handleQueued} />
             </div>
+          </Card>
 
-          </div>
-        </Card>
+        </div>
       )}
 
       {showJobs && (
@@ -328,6 +431,82 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
           copy={jobsCopy}
           reportDefinitions={reportDefinitions}
         />
+      )}
+
+      {/* Instant Generating Loader Overlay */}
+      {isGenerating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full flex flex-col items-center justify-center shadow-2xl border border-gray-100 text-center gap-4">
+            <span className="w-12 h-12 rounded-full bg-blue-50 text-[#004c8c] flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 leading-tight">Generating Report</h3>
+              <p className="text-xs text-gray-400 mt-1">Please wait while the server builds your document preview...</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsGenerating(false);
+                setActiveRequestId(null);
+              }}
+              className="w-full mt-2 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Center PDF Preview Modal Overlay */}
+      {activeRequestId && !isGenerating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-gray-100 w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col shadow-2xl border border-gray-200 overflow-hidden relative">
+            
+            {/* Modal Header */}
+            <div className="bg-white px-5 py-3.5 border-b border-gray-200 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                  <FileText className="w-5 h-5" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">
+                    {previewReport?.reportName || 'Report Preview'}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={`/api/report-download/${encodeURIComponent(activeRequestId)}`}
+                  download
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors shadow-sm"
+                >
+                  <Download className="w-3.5 h-3.5" /> PDF
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveRequestId(null);
+                    setPreviewReport(null);
+                  }}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body: PDF Iframe */}
+            <div className="flex-1 bg-gray-200/50 p-4 relative">
+              <iframe
+                src={`/api/report-download/${encodeURIComponent(activeRequestId)}?inline=true&view=pdf#toolbar=0`}
+                className="w-full h-full rounded-xl border border-gray-200 shadow-inner bg-white"
+                title="Report Preview"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,30 +1,30 @@
-﻿'use client';
+'use client';
 
-import { useState, useEffect, useTransition } from 'react';
-import { Send, Loader2, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
+import { useState, useEffect, useMemo, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Send, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button, Input, SearchSelect } from '@/components/common';
+import { Button, SearchSelect, Tabs, TabList, Tab } from '@/components/common';
 import {
   getFinancialYearsAction,
   getZonesAction,
   getWardsByZoneAction,
-  resolvePropertyIdAction,
-  resolvePropertiesAction,
-  type PropertySummaryItem,
+  getPropertiesByWardAction,
 } from '@/app/[locale]/reports/action';
 import type { FinancialYear } from '@/types/financialYear.types';
-import type { ZoneSummary, WardSummary, ReportDefinition } from '@/types/report.types';
+import type { ZoneSummary, WardSummary, PropertySummary, ReportDefinition } from '@/types/report.types';
 
 interface ReportParametersPanelProps {
   /** The selected report from the left tabs panel */
   report: ReportDefinition | null;
   /** Called when a report is successfully queued */
-  onQueued?: () => void;
+  onQueued?: (reportRequestId: string) => void;
 }
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5">
+    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+      <span className="w-1.5 h-3.5 rounded-full bg-blue-600 block shrink-0" />
       {children}
       {required && <span className="text-red-500 ml-0.5">*</span>}
     </label>
@@ -36,21 +36,27 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
   const [zones, setZones] = useState<ZoneSummary[]>([]);
   const [wards, setWards] = useState<WardSummary[]>([]);
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Read Zone/Ward from URL Search Parameters
+  const zoneId = searchParams.get('zoneId') ?? '';
+  const wardId = searchParams.get('wardId') ?? '';
+
   // Form values
   const [financialYearId, setFinancialYearId] = useState('');
-  const [zoneId, setZoneId] = useState('');
-  const [wardId, setWardId] = useState('');
-  const [propertyNo, setPropertyNo] = useState('');
-
-  // Partitions resolution state
-  const [matchingProperties, setMatchingProperties] = useState<PropertySummaryItem[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
-  const [searchingProperties, setSearchingProperties] = useState(false);
+  const [propertyMode, setPropertyMode] = useState<'single' | 'range'>('single');
+  const [fromPropertyNo, setFromPropertyNo] = useState('');
+  const [toPropertyNo, setToPropertyNo] = useState('');
 
   // Loading states
   const [loadingYears, setLoadingYears] = useState(true);
   const [loadingZones, setLoadingZones] = useState(true);
   const [loadingWards, setLoadingWards] = useState(false);
+  const [properties, setProperties] = useState<PropertySummary[]>([]);
+  const [loadingProperties, setLoadingProperties] = useState(false);
 
   const [isPending, startTransition] = useTransition();
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -72,7 +78,6 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
   }, []);
 
   useEffect(() => {
-    setWardId('');
     setWards([]);
     if (!zoneId) return;
     setLoadingWards(true);
@@ -82,49 +87,62 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
     });
   }, [zoneId]);
 
-  // Debounced resolution of property No & ward into matches
   useEffect(() => {
-    setMatchingProperties([]);
+    setProperties([]);
     setSelectedPropertyId('');
-    setErrorMsg('');
-    setSubmitStatus('idle');
-
-    const trimmed = propertyNo.trim();
-    if (!trimmed) return;
-
-    const delayDebounce = setTimeout(async () => {
-      setSearchingProperties(true);
-      try {
-        const props = await resolvePropertiesAction(trimmed, wardId ? Number(wardId) : undefined);
-        setMatchingProperties(props);
-        if (props.length === 1) {
-          // Auto select if only 1 exists
-          setSelectedPropertyId(String(props[0].propertyId));
-        }
-      } catch {
-        // Silently catch
-      } finally {
-        setSearchingProperties(false);
-      }
-    }, 600);
-
-    return () => clearTimeout(delayDebounce);
-  }, [propertyNo, wardId]);
+    setFromPropertyNo('');
+    setToPropertyNo('');
+    if (!wardId) return;
+    setLoadingProperties(true);
+    getPropertiesByWardAction(Number(wardId))
+      .then((props) => {
+        setProperties(props);
+      })
+      .finally(() => {
+        setLoadingProperties(false);
+      });
+  }, [wardId]);
 
   useEffect(() => {
     setSubmitStatus('idle');
     setErrorMsg('');
   }, [report]);
 
+  const handleZoneChange = (val: string) => {
+    const next = new URLSearchParams(searchParams.toString());
+    if (val) {
+      next.set('zoneId', val);
+    } else {
+      next.delete('zoneId');
+    }
+    next.delete('wardId'); // clear ward when zone changes
+    router.push(`${pathname}?${next.toString()}`);
+  };
+
+  const handleWardChange = (val: string) => {
+    const next = new URLSearchParams(searchParams.toString());
+    if (val) {
+      next.set('wardId', val);
+    } else {
+      next.delete('wardId');
+    }
+    router.push(`${pathname}?${next.toString()}`);
+  };
+
   const handleReset = () => {
     setFinancialYearId('');
-    setZoneId('');
-    setWardId('');
-    setPropertyNo('');
-    setMatchingProperties([]);
     setSelectedPropertyId('');
+    setFromPropertyNo('');
+    setToPropertyNo('');
+    setProperties([]);
     setSubmitStatus('idle');
     setErrorMsg('');
+
+    // Clear zone/ward from URL
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('zoneId');
+    next.delete('wardId');
+    router.push(`${pathname}?${next.toString()}`);
   };
 
   const handleSubmit = () => {
@@ -133,30 +151,11 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
     setSubmitStatus('idle');
     setErrorMsg('');
 
-    // If multiple properties/partitions exist but user did not select one
-    if (matchingProperties.length > 1 && !selectedPropertyId) {
-      setSubmitStatus('error');
-      setErrorMsg('Multiple properties/partitions found. Please select a partition from the dropdown first.');
-      return;
-    }
-
     startTransition(async () => {
       try {
-        let propertyId: number | null = null;
-
-        if (propertyNo.trim()) {
-          if (selectedPropertyId) {
-            propertyId = Number(selectedPropertyId);
-          } else {
-            // Fallback resolve
-            propertyId = await resolvePropertyIdAction(propertyNo.trim(), wardId ? Number(wardId) : undefined);
-            if (propertyId === null) {
-              setSubmitStatus('error');
-              setErrorMsg(`Property number "${propertyNo}" not found. Please check and try again.`);
-              return;
-            }
-          }
-        }
+        const selectedProperty = properties.find((p) => String(p.propertyId) === selectedPropertyId);
+        const currentPropertyNo = selectedProperty ? selectedProperty.propertyNo : '';
+        const propertyId = (propertyMode === 'single' && selectedPropertyId) ? Number(selectedPropertyId) : null;
 
         // Build parameters - userId is injected server-side in the route handler
         const parameters: Record<string, string> = {};
@@ -172,9 +171,19 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
           parameters.wardId = wardId;
           parameters.WardId = wardId;
         }
-        if (propertyNo.trim()) {
-          parameters.propertyNo = propertyNo.trim();
-          parameters.PropertyNo = propertyNo.trim();
+        if (propertyMode === 'single' && currentPropertyNo) {
+          parameters.propertyNo = currentPropertyNo;
+          parameters.PropertyNo = currentPropertyNo;
+        }
+        if (propertyMode === 'range') {
+          if (fromPropertyNo.trim()) {
+            parameters.fromPropertyNo = fromPropertyNo.trim();
+            parameters.FromPropertyNo = fromPropertyNo.trim();
+          }
+          if (toPropertyNo.trim()) {
+            parameters.toPropertyNo = toPropertyNo.trim();
+            parameters.ToPropertyNo = toPropertyNo.trim();
+          }
         }
         if (propertyId !== null) {
           parameters.propertyId = String(propertyId);
@@ -194,9 +203,10 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
           return;
         }
 
+        const result = await response.json().catch(() => ({}));
         setSubmitStatus('success');
         toast.success(`Report "${report.reportName}" queued successfully!`);
-        onQueued?.();
+        onQueued?.(result.reportRequestId || '');
       } catch {
         setSubmitStatus('error');
         setErrorMsg('Network error. Please try again.');
@@ -216,6 +226,25 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
     value: String(w.id),
     label: w.description || w.wardNo || `Ward ${w.id}`,
   }));
+  const propertyOptions = useMemo(() => {
+    return properties.map((p: any) => {
+      let label = p.propertyNo;
+      if (p.fromProperty) {
+        label += `-${p.fromProperty}`;
+        if (p.toProperty && p.toProperty !== p.fromProperty) {
+          label += ` – ${p.toProperty}`;
+        }
+      } else if (p.toProperty) {
+        label += `-${p.toProperty}`;
+      } else if (p.partitionNo) {
+        label += `-${p.partitionNo}`;
+      }
+      return {
+        label,
+        value: String(p.propertyId),
+      };
+    });
+  }, [properties]);
 
   if (!report) {
     return (
@@ -250,7 +279,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
             id="zone"
             name="zone"
             value={zoneId}
-            onChange={(_, val) => setZoneId(val)}
+            onChange={(_, val) => handleZoneChange(val)}
             placeholder="All Zones"
             options={zoneOptions}
             isLoading={loadingZones}
@@ -262,7 +291,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
             id="ward"
             name="ward"
             value={wardId}
-            onChange={(_, val) => setWardId(val)}
+            onChange={(_, val) => handleWardChange(val)}
             disabled={!zoneId || loadingWards}
             placeholder={loadingWards ? 'Loading...' : !zoneId ? 'Select zone first' : 'All Wards'}
             options={wardOptions}
@@ -271,63 +300,94 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         </div>
       </div>
 
+      {/* Property Mode Toggle */}
       <div>
-        <FieldLabel>Property Number</FieldLabel>
-        <Input
-          type="text"
-          id="propertyNo"
-          value={propertyNo}
-          onChange={(e) => setPropertyNo(e.target.value)}
-          placeholder="e.g. 001001"
-          fullWidth
-          className="border-gray-200 py-2.5 focus:ring-blue-500"
-        />
-        <p className="text-[10px] text-gray-400 mt-1">Enter the property number - the system will find the property ID automatically.</p>
+        <FieldLabel>Property Selection</FieldLabel>
+        <Tabs
+          value={propertyMode}
+          onChange={(value) => {
+            const nextMode = value as 'single' | 'range';
+            setPropertyMode(nextMode);
+            if (nextMode === 'single') {
+              setFromPropertyNo('');
+              setToPropertyNo('');
+              return;
+            }
+            setSelectedPropertyId('');
+          }}
+          variant="pills"
+          size="sm"
+          className="mb-3"
+        >
+          <TabList className="flex w-full gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" scrollable={false}>
+            <Tab value="single" className="flex-1 justify-center py-2 text-xs font-semibold">
+              Property No
+            </Tab>
+            <Tab value="range" className="flex-1 justify-center py-2 text-xs font-semibold">
+              From Property To Property
+            </Tab>
+          </TabList>
+        </Tabs>
+
+        {/* Single Property Dropdown */}
+        {propertyMode === 'single' && (
+          <div>
+            <label className="block text-[12px] font-medium text-gray-400 mb-1">Property No</label>
+            <SearchSelect
+              id="propertySelect"
+              name="propertySelect"
+              value={selectedPropertyId}
+              onChange={(_, val) => setSelectedPropertyId(val)}
+              disabled={!wardId || loadingProperties}
+              placeholder={loadingProperties ? 'Loading...' : !wardId ? 'Select ward first' : 'Select property'}
+              options={propertyOptions}
+              isLoading={loadingProperties}
+            />
+          </div>
+        )}
+
+        {/* Range Property Dropdowns */}
+        {propertyMode === 'range' && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[12px] font-medium text-gray-400 mb-1">From Property</label>
+              <SearchSelect
+                id="fromPropertyNo"
+                name="fromPropertyNo"
+                value={fromPropertyNo}
+                onChange={(_, val) => setFromPropertyNo(val)}
+                disabled={!wardId || loadingProperties}
+                placeholder={loadingProperties ? 'Loading...' : !wardId ? 'Select ward first' : 'Select start property'}
+                options={propertyOptions}
+                isLoading={loadingProperties}
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-medium text-gray-400 mb-1">To Property</label>
+              <SearchSelect
+                id="toPropertyNo"
+                name="toPropertyNo"
+                value={toPropertyNo}
+                onChange={(_, val) => setToPropertyNo(val)}
+                disabled={!wardId || loadingProperties}
+                placeholder={loadingProperties ? 'Loading...' : !wardId ? 'Select ward first' : 'Select end property'}
+                options={propertyOptions}
+                isLoading={loadingProperties}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── Partition Select Dropdown ── */}
-      {searchingProperties && (
-        <div className="flex items-center gap-2 text-xs text-gray-400 py-1">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Resolving property partitions...
-        </div>
-      )}
-
-      {!searchingProperties && matchingProperties.length > 1 && (
-        <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3.5 flex flex-col gap-2">
-          <FieldLabel required>Partition / Owner</FieldLabel>
-          <SearchSelect
-            id="selectedPropertyId"
-            name="selectedPropertyId"
-            value={selectedPropertyId}
-            onChange={(_, val) => setSelectedPropertyId(val)}
-            placeholder="Select a partition"
-            options={matchingProperties.map((p) => ({
-              value: String(p.propertyId),
-              label: p.partitionNo 
-                ? `Partition ${p.partitionNo} (${p.ownerName})` 
-                : `Main Property (No Partition) (${p.ownerName})`,
-            }))}
-          />
-          <p className="text-[10px] text-gray-400">Multiple partitions found for Property No. {propertyNo}. Please choose one to generate its report.</p>
-        </div>
-      )}
-
-      {!searchingProperties && propertyNo.trim() !== '' && matchingProperties.length === 0 && (
-        <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>No matching property found for Number "{propertyNo}".</span>
-        </div>
-      )}
-
       {submitStatus === 'error' && (
-        <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 bg-rose-50/70 border border-rose-100/80 rounded-xl px-4 py-3 text-xs font-semibold text-rose-800">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
           <span>{errorMsg}</span>
         </div>
       )}
       {submitStatus === 'success' && (
-        <div className="flex items-start gap-2.5 bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm text-green-700">
-          <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 bg-emerald-50/70 border border-emerald-100/80 rounded-xl px-4 py-3 text-xs font-semibold text-emerald-800">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-600" />
           <span>Report queued! It will appear in the jobs list when ready.</span>
         </div>
       )}
@@ -340,7 +400,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
           icon={RotateCcw}
           onClick={handleReset}
           disabled={isPending}
-          className="border-gray-200 text-gray-600"
+          className="border-gray-200 text-gray-600 hover:bg-gray-50 active:scale-95 transition-all duration-150 rounded-xl px-4 py-2.5 font-bold"
         >
           Reset
         </Button>
@@ -350,8 +410,8 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
           icon={Send}
           isLoading={isPending}
           onClick={handleSubmit}
-          disabled={isPending || !financialYearId || (propertyNo.trim() !== '' && matchingProperties.length === 0)}
-          className="flex-1 bg-[#004c8c] hover:bg-[#003d6f] border-[#004c8c] text-white shadow-sm shadow-blue-100"
+          disabled={isPending || !financialYearId}
+          className="flex-1 bg-gradient-to-r from-[#004c8c] to-[#0060ad] hover:from-[#003d6f] hover:to-[#004c8c] border-0 text-white font-bold tracking-wide shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 rounded-xl py-2.5"
         >
           {isPending ? 'Queuing...' : 'Generate Report'}
         </Button>
