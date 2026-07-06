@@ -146,7 +146,7 @@ function QuickDataEntryContent({
                 {categoryName && (
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
                         <Tag className="h-3 w-3 text-white/95" />
-                        <span>{t('floor.propertyCategory') || 'Property Category'}: {categoryName}</span>
+                        <span>{t('floor.propertyCategory')}: {categoryName}</span>
                     </div>
                 )}
             </div>

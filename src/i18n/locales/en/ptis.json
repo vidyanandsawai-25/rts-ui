@@ -125,7 +125,6 @@
     "imageOf": "{current} of {total}",
     "fullView": "{title} - Full View",
     "photoFile": "Photo File",
-    "backToGrid": "Back to Grid",
     "retry": "Retry",
     "uploadInstructions": "Upload Instructions",
     "allowedFormats": "Allowed formats: JPEG, JPG, PNG",
@@ -425,7 +424,9 @@
     "showFloorDetails": "Show Floor Details",
     "hideFloorDetails": "Hide Floor Details",
     "showOldTax": "Show Old Tax",
-    "hideOldTax": "Hide Old Tax"
+    "hideOldTax": "Hide Old Tax",
+    "newFloor": "New Floor",
+    "openPlot": "Open Space"
   },
   "loading": {
     "message": "Loading Property Details",

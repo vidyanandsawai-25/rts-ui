@@ -125,7 +125,6 @@
     "imageOf": "{total} में से {current}",
     "fullView": "{title} - पूर्ण दृश्य",
     "photoFile": "फोटो फ़ाइल",
-    "backToGrid": "ग्रिड पर वापस जाएं",
     "retry": "पुनः प्रयास करें",
     "uploadInstructions": "अपलोड निर्देश",
     "allowedFormats": "अनुमत प्रारूप: JPEG, JPG, PNG",
@@ -425,7 +424,9 @@
     "showFloorDetails": "मंजिल का विवरण दिखाएं",
     "hideFloorDetails": "मंजिल का विवरण छुपाएं",
     "showOldTax": "पुराना कर दिखाएं",
-    "hideOldTax": "पुराना कर छुपाएं"
+    "hideOldTax": "पुराना कर छुपाएं",
+    "newFloor": "नई मंजिल",
+    "openPlot": "खुली जगह"
   },
   "loading": {
     "message": "संपत्ति विवरण लोड हो रहा है",

@@ -54,7 +54,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
 
     if (rooms.length !== safeMaxRooms || floorChanged || maxRoomsChanged || idsMismatch) {
       const initializedRooms = Array.from({ length: safeMaxRooms }, (_, i) => {
-        if (existingRooms && existingRooms[i]) {
+        if (Array.isArray(existingRooms) && existingRooms[i]) {
           const r = existingRooms[i];
           const offsetsRaw = [
             ...(Array.isArray(r.offsets) ? r.offsets : []),
@@ -64,6 +64,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
           const seen = new Set();
           const offsets = offsetsRaw
             .filter(o => {
+              if (!o) return false;
               const markedForDeletion = o.MarkedForDeletion ?? o.markedForDeletion;
               return markedForDeletion !== 1 && markedForDeletion !== true;
             })
