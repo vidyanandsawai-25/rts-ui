@@ -120,7 +120,7 @@ export function useFloorSubmissionForm(
     
     try {
       const propertyIdCandidate = formData.propertyId ?? searchParams.get('editPropertyId');
-      const detailIdCandidate = formData.pdnId ?? formData.id;
+      const detailIdCandidate = formData.pdnId;
 
       const propertyId =
         typeof propertyIdCandidate === 'number' || typeof propertyIdCandidate === 'string'

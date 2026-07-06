@@ -44,7 +44,7 @@ export default async function FloorSubmissionPage(props: { searchParams: Promise
   let useTypes: UseType[] = [];
   let subTypes: UseSubType[] = [];
 
-  const apiType = subTab === 'dual-method' ? 'Dual' : subTab;
+  const apiType = subTab === 'dual-method' ? 'dual' : subTab;
 
   const [
     floorDataRes,

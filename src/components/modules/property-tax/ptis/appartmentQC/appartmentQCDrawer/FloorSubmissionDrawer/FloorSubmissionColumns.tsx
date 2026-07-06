@@ -105,7 +105,7 @@ export function useFloorSubmissionColumns({
     ], [t]);
 
     const actionColumn: Column<FloorSubmissionRow> = useMemo(() => ({
-        key: "action",
+        key: "action" as keyof FloorSubmissionRow,
         label: makeFloorQcHeader("action", t),
         align: "center",
         render: (_v, row) => (

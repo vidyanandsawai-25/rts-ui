@@ -1226,7 +1226,7 @@ export async function getApartmentPropertyTaxDetailsByIdLocalized(
     const res = await getApartmentPropertyTaxDetailsById(params);
 
     if (!res.success || !res.data) {
-      if (res.statusCode === 404 && res.error === "No tax details found for the filtered properties") {
+      if (res.statusCode === 404) {
         return null;
       }
       throw new ApiError(
@@ -1299,7 +1299,7 @@ export async function getApartmentPropertyTaxDetailsCvByIdLocalized(
   try {
     const res = await getApartmentPropertyTaxDetailsCvById(params);
     if (!res.success || !res.data) {
-      if (res.statusCode === 404 && res.error === "No tax details found for the filtered properties") {
+      if (res.statusCode === 404) {
         return null;
       }
       throw new ApiError(

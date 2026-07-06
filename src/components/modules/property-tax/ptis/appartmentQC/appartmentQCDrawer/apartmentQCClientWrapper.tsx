@@ -10,13 +10,13 @@ import { ApartmentQCTabNavigation } from './apartmentQCTabNavigation';
 
 export function ApartmentQCClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
     return (
-        <ApartemntQCContent categoryName={categoryName}>
+        <ApartmentQCContent categoryName={categoryName}>
             {children}
-        </ApartemntQCContent>
+        </ApartmentQCContent>
     );
 }
 
-function ApartemntQCContent({
+function ApartmentQCContent({
     children,
     categoryName,
 }: { children: ReactNode; categoryName?: string }) {

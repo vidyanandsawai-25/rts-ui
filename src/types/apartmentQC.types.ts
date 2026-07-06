@@ -276,8 +276,8 @@ export interface DualMethodTaxDetails {
   rateable: ApartmentTaxDetailsItems | null;
   capital: ApartmentTaxDetailsItems | null;
 }
-export interface FloorSubmissionRow {
-  [key: string]: unknown;
+export type FloorSubmissionRow = {
+  propertyId?: number | string;
   id: string;
   pdnId: number | null;
   floorId: string;

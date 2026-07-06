@@ -488,7 +488,7 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             <CompactField
               label={t('basicInfo.fields.wingName.label', { fallback: "Wing" })}
               value={formData.wingName}
-              onChange={(v) => handleFieldChange("wingName", v.replace(/\D/g, ''))}
+              onChange={(v) => handleFieldChange("wingName", v)}
               maxLength={20}
               placeholder={t('basicInfo.fields.wingName.placeholder', { fallback: "" })}
             />

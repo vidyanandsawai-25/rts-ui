@@ -6,9 +6,9 @@ export function useFloorSubmissionState(initialFloorData: ApartmentQCDetail[], i
   
   const mappedFloorData: FloorSubmissionRow[] = useMemo(() => {
     return initialFloorData.map((item, index) => ({
-      id: `row-${item.pdnId || index + 1}`,
-      pdnId: item.pdnId || null,
-      floorId: String(item.floor || ""),
+      id: `row-${item.pdnId ?? index + 1}`,
+      pdnId: item.pdnId ?? null,
+      floorId: String(item.floor ?? ""),
       conYear: String(item.constructionYear || ""),
       asstYear: String(item.assessmentYear || ""),
       constructionTypeId: String(item.constructionType || ""),
