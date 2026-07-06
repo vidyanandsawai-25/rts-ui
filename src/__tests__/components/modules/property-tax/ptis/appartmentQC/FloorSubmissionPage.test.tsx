@@ -74,7 +74,7 @@ describe('FloorSubmissionPage', () => {
 
     render(element as React.ReactElement);
 
-    expect(getFloorQCDetailsAction).toHaveBeenCalledWith('550299', 'Dual');
+    expect(getFloorQCDetailsAction).toHaveBeenCalledWith('550299', 'dual');
     expect(fetchFloorsAction).toHaveBeenCalledTimes(1);
     expect(fetchConstructionTypesAction).toHaveBeenCalledTimes(1);
     expect(fetchUseTypesAction).toHaveBeenCalledTimes(1);
