@@ -31,7 +31,7 @@ vi.mock('@/components/common/FieldShell', () => ({
 }));
 
 // Mock server actions
-vi.mock('@/app/[locale]/property-tax/ptis/actions', () => ({
+vi.mock('@/app/[locale]/property-tax/ptis/ptis-detail-actions', () => ({
   fetchSocialDetailsOnlyAction: vi.fn(() =>
     Promise.resolve({
       success: true,

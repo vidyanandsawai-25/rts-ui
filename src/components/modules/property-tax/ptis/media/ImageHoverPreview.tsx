@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from './ImageWithFallback';
 
@@ -10,12 +9,12 @@ interface ImageHoverPreviewProps {
   visible: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  beforeLabel?: string;
+  afterLabel?: string;
+  fallbackSrc?: string;
+  fallbackSrc2?: string;
 }
 
-/**
- * Floating preview panel that appears to the left of the media sidebar
- * when hovering over an image card. Supports zoom and click-and-drag pan.
- */
 export function ImageHoverPreview({
   src,
   src2,
@@ -23,6 +22,10 @@ export function ImageHoverPreview({
   visible,
   onMouseEnter,
   onMouseLeave,
+  beforeLabel,
+  afterLabel,
+  fallbackSrc,
+  fallbackSrc2,
 }: ImageHoverPreviewProps): React.ReactElement | null {
   const [zoomScale, setZoomScale] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -60,7 +63,7 @@ export function ImageHoverPreview({
         let newZoom = prev - e.deltaY * 0.0035;
         if (newZoom < minZoom) newZoom = minZoom;
         if (newZoom > maxZoom) newZoom = maxZoom;
-        
+
         // Reset pan offset if zoomed back to 1
         if (newZoom === 1) {
           setPanOffset({ x: 0, y: 0 });
@@ -90,7 +93,7 @@ export function ImageHoverPreview({
 
     const rect = containerRef.current.getBoundingClientRect();
     const contentWidth = rect.width - 16; // 480px content area
-    const contentHeight = rect.height;    // 600px content area
+    const contentHeight = rect.height; // 600px content area
 
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
@@ -142,15 +145,16 @@ export function ImageHoverPreview({
               <div className="relative h-full w-full overflow-hidden border-r border-slate-200 bg-slate-900">
                 <ImageWithFallback
                   src={src}
-                  alt="2018 Satellite View"
-                  className="w-full h-full object-contain"
+                  fallbackSrc={fallbackSrc}
+                  alt={`${beforeLabel || 'Before'} Satellite View`}
+                  className="w-full h-full object-cover"
                   width={480}
                   height={1200}
                   priority
                 />
                 {/* Year Badge */}
                 <div className="absolute top-4 left-4 z-10 bg-black/75 text-white text-[11px] font-bold px-2.5 py-1 rounded shadow-md backdrop-blur-[1px]">
-                  2018
+                  {beforeLabel || '2018'}
                 </div>
               </div>
 
@@ -158,23 +162,25 @@ export function ImageHoverPreview({
               <div className="relative h-full w-full overflow-hidden bg-slate-900">
                 <ImageWithFallback
                   src={src2}
-                  alt="2026 Satellite View"
-                  className="w-full h-full object-contain"
+                  fallbackSrc={fallbackSrc2}
+                  alt={`${afterLabel || 'After'} Satellite View`}
+                  className="w-full h-full object-cover"
                   width={480}
                   height={1200}
                   priority
                 />
                 {/* Year Badge */}
                 <div className="absolute top-4 left-4 z-10 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded shadow-md">
-                  2026
+                  {afterLabel || '2026'}
                 </div>
               </div>
             </div>
           ) : (
             <ImageWithFallback
               src={src}
+              fallbackSrc={fallbackSrc}
               alt={title}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               width={960}
               height={1200}
               priority
@@ -185,9 +191,7 @@ export function ImageHoverPreview({
         {/* Caption Overlay - White text with a dark gradient backing at the bottom-left */}
         {/* Placed outside the zoomed container to keep it in place at normal scale */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-5 z-10 pointer-events-none">
-          <p className="text-white text-sm font-semibold tracking-wide drop-shadow-md">
-            {title}
-          </p>
+          <p className="text-white text-sm font-semibold tracking-wide drop-shadow-md">{title}</p>
         </div>
       </div>
     </div>
