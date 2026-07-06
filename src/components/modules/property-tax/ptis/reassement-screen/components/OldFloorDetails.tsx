@@ -9,12 +9,14 @@ interface OldFloorDetailsProps {
   data: MappedFloorDetail[];
   isAutoScrolling: boolean;
   onToggleAutoScroll: () => void;
+  scrollContainerRef?: React.Ref<HTMLDivElement>;
 }
 
 export function OldFloorDetails({ 
   data, 
   isAutoScrolling, 
-  onToggleAutoScroll 
+  onToggleAutoScroll,
+  scrollContainerRef 
 }: OldFloorDetailsProps) {
   // Translations
   const t = useTranslations('reassessment');
@@ -160,6 +162,7 @@ export function OldFloorDetails({
                     theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
                     rowClassName={() => "[&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200"}
                     height="xs"
+                    scrollContainerRef={scrollContainerRef}
                 />
             </div>
         </div>

@@ -29,7 +29,7 @@ export function useReassessmentTaxTable({
 }) {
   // Helper renderers for Detailed Taxes Table Grid
   const numericTaxRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
-    const numVal = typeof val === 'number' ? val : 0;
+    const numVal = typeof val === 'number' ? Math.abs(val) : 0;
     return (
       <span
         className={cn(
@@ -43,7 +43,14 @@ export function useReassessmentTaxTable({
   };
 
   const totalTaxRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
-    const displayVal = typeof val === 'string' || typeof val === 'number' ? val : '';
+    let displayVal;
+    if (typeof val === 'number') {
+      displayVal = formatReassessmentCurrency(Math.abs(val));
+    } else if (typeof val === 'string') {
+      displayVal = val;
+    } else {
+      displayVal = '';
+    }
     return (
       <span
         className={cn(
@@ -94,7 +101,7 @@ export function useReassessmentTaxTable({
   const detailedTaxesData: DynamicTaxRow[] = taxRows.map((row) => {
     const rowData: DynamicTaxRow = {
       taxes: row.label,
-      totalTax: formatReassessmentCurrency(row.totalTax),
+      totalTax: formatReassessmentCurrency(Math.abs(row.totalTax)),
       isTotal: row.rowType === 'total',
       isAdditional: row.rowType === 'additional',
     };

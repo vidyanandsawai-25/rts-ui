@@ -7,7 +7,9 @@
     "oldPropertyPhoto": "Old Property Photo",
     "oldPlanPhoto": "Old Plan Photo",
     "newPropertyPhoto": "New Property Photo",
-    "newPlanPhoto": "New Plan Photo"
+    "newPlanPhoto": "New Plan Photo",
+    "photoAsPerOld": "Old Property Photo",
+    "photoAsPerNew": "New Property Photo"
   },
   "sectionHeaders": {
     "municipalRegistration": "Details as per Municipal Corp. Registration",

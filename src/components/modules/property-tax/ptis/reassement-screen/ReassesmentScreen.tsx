@@ -26,6 +26,7 @@ import type {
 import { useReassessmentSummaryCards } from '@/hooks/ptis/reassessment/useReassessmentSummaryCards';
 import { useReassessmentTaxTable } from '@/hooks/ptis/reassessment/useReassessmentTaxTable';
 import { useReassessmentAutoScroll } from '@/hooks/ptis/reassessment/useReassessmentAutoScroll';
+import { useSynchronizedScrolling } from '@/hooks/ptis/reassessment/useSynchronizedScrolling';
 import { cn } from '@/lib/utils/cn';
 
 // ============================================
@@ -97,6 +98,8 @@ export default function ReassesmentScreen({
     taxColumns,
     taxRows,
   });
+  
+  const { oldTableRef, newTableRef } = useSynchronizedScrolling();
 
   // ============================================
   // RENDER
@@ -123,7 +126,7 @@ export default function ReassesmentScreen({
             {/* Photos */}
             <div>
               <h4 className="text-xs font-semibold text-gray-500 mb-2">
-                Photograph as per Municipal Corp. Registration
+                {t('photoLabels.photoAsPerOld')}
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 {(() => {
@@ -171,6 +174,7 @@ export default function ReassesmentScreen({
 
             {/* Old Floor Details */}
             <OldFloorDetails
+              scrollContainerRef={oldTableRef}
               data={oldFloorDetails}
               isAutoScrolling={isOldAutoScrolling}
               onToggleAutoScroll={() => setIsOldAutoScrolling(!isOldAutoScrolling)}
@@ -193,7 +197,7 @@ export default function ReassesmentScreen({
             {/* Photos */}
             <div>
               <h4 className="text-xs font-semibold text-gray-500 mb-2">
-                Photograph as per New Survey
+                {t('photoLabels.photoAsPerNew')}
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 {(() => {
@@ -241,6 +245,7 @@ export default function ReassesmentScreen({
 
             {/* New Floor Details */}
             <NewFloorDetails
+              scrollContainerRef={newTableRef}
               data={newFloorDetails}
               isAutoScrolling={isNewAutoScrolling}
               onToggleAutoScroll={() => setIsNewAutoScrolling(!isNewAutoScrolling)}

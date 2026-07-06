@@ -7,7 +7,9 @@
     "oldPropertyPhoto": "पुरानी प्रॉपर्टी फोटो",
     "oldPlanPhoto": "पुराना प्लान फोटो",
     "newPropertyPhoto": "नई प्रॉपर्टी फोटो",
-    "newPlanPhoto": "नया प्लान फोटो"
+    "newPlanPhoto": "नया प्लान फोटो",
+    "photoAsPerOld": "नगर निगम के पंजीकरण के अनुसार छायाचित्र",
+    "photoAsPerNew": "नए सर्वेक्षणानुसार छायाचित्र"
   },
   "sectionHeaders": {
     "municipalRegistration": "म्यूनिसिपल कॉर्पोरेशन पंजीकरण के अनुसार विवरण",

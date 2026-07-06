@@ -10,12 +10,14 @@ interface NewFloorDetailsProps {
   data: MappedFloorDetail[];
   isAutoScrolling: boolean;
   onToggleAutoScroll: () => void;
+  scrollContainerRef?: React.Ref<HTMLDivElement>;
 }
 
 export function NewFloorDetails({ 
   data, 
   isAutoScrolling, 
-  onToggleAutoScroll 
+  onToggleAutoScroll,
+  scrollContainerRef 
 }: NewFloorDetailsProps) {
   // Translations
   const t = useTranslations('reassessment');
@@ -177,6 +179,7 @@ export function NewFloorDetails({
                         row.status === 'New' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
                     )}
                     height="xs"
+                    scrollContainerRef={scrollContainerRef}
                 />
             </div>
         </div>
