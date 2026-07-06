@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Send, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button, SearchSelect, Tabs, TabList, Tab } from '@/components/common';
+import { ApplyButton, ClearButton, SearchSelect, Tabs, TabList, Tab } from '@/components/common';
 import {
   getFinancialYearsAction,
   getZonesAction,
@@ -61,6 +61,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
   const [isPending, startTransition] = useTransition();
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ financialYearId?: string; zoneId?: string; wardId?: string }>({});
 
   useEffect(() => {
     getFinancialYearsAction().then((years) => {
@@ -109,6 +110,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
   }, [report]);
 
   const handleZoneChange = (val: string) => {
+    setFieldErrors((prev) => ({ ...prev, zoneId: undefined, wardId: undefined }));
     const next = new URLSearchParams(searchParams.toString());
     if (val) {
       next.set('zoneId', val);
@@ -120,6 +122,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
   };
 
   const handleWardChange = (val: string) => {
+    setFieldErrors((prev) => ({ ...prev, wardId: undefined }));
     const next = new URLSearchParams(searchParams.toString());
     if (val) {
       next.set('wardId', val);
@@ -137,6 +140,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
     setProperties([]);
     setSubmitStatus('idle');
     setErrorMsg('');
+    setFieldErrors({});
 
     // Clear zone/ward from URL
     const next = new URLSearchParams(searchParams.toString());
@@ -150,6 +154,18 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
 
     setSubmitStatus('idle');
     setErrorMsg('');
+
+    const nextFieldErrors: { financialYearId?: string; zoneId?: string; wardId?: string } = {};
+    if (!financialYearId) nextFieldErrors.financialYearId = 'Financial year is required.';
+    if (!zoneId) nextFieldErrors.zoneId = 'Zone is required.';
+    if (!wardId) nextFieldErrors.wardId = 'Ward is required.';
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSubmitStatus('error');
+      setErrorMsg('Please fill all required fields.');
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -265,37 +281,46 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
           id="financialYear"
           name="financialYear"
           value={financialYearId}
-          onChange={(_, val) => setFinancialYearId(val)}
+          onChange={(_, val) => {
+            setFinancialYearId(val);
+            setFieldErrors((prev) => ({ ...prev, financialYearId: undefined }));
+          }}
           placeholder="Select year"
           options={yearOptions}
           isLoading={loadingYears}
+          required
+          error={fieldErrors.financialYearId}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <FieldLabel>Zone No.</FieldLabel>
+          <FieldLabel required>Zone No.</FieldLabel>
           <SearchSelect
             id="zone"
             name="zone"
             value={zoneId}
             onChange={(_, val) => handleZoneChange(val)}
-            placeholder="All Zones"
+            placeholder="Select zone"
             options={zoneOptions}
             isLoading={loadingZones}
+            required
+            error={fieldErrors.zoneId}
           />
         </div>
         <div>
-          <FieldLabel>Ward No.</FieldLabel>
+          <FieldLabel required>Ward No.</FieldLabel>
           <SearchSelect
             id="ward"
             name="ward"
             value={wardId}
             onChange={(_, val) => handleWardChange(val)}
             disabled={!zoneId || loadingWards}
-            placeholder={loadingWards ? 'Loading...' : !zoneId ? 'Select zone first' : 'All Wards'}
+            placeholder={loadingWards ? 'Loading...' : !zoneId ? 'Select zone first' : 'Select ward'}
             options={wardOptions}
             isLoading={loadingWards}
+            required
+            error={fieldErrors.wardId}
           />
         </div>
       </div>
@@ -393,28 +418,22 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
       )}
 
       <div className="flex gap-2.5 mt-2 pt-3 border-t border-gray-100">
-        <Button
+        <ClearButton
           type="button"
-          variant="secondary"
           size="md"
-          icon={RotateCcw}
+          label="Reset"
           onClick={handleReset}
           disabled={isPending}
-          className="border-gray-200 text-gray-600 hover:bg-gray-50 active:scale-95 transition-all duration-150 rounded-xl px-4 py-2.5 font-bold"
-        >
-          Reset
-        </Button>
-        <Button
+        />
+        <ApplyButton
           type="button"
           size="md"
-          icon={Send}
+          label={isPending ? 'Queuing...' : 'Generate Report'}
           isLoading={isPending}
           onClick={handleSubmit}
-          disabled={isPending || !financialYearId}
-          className="flex-1 bg-gradient-to-r from-[#004c8c] to-[#0060ad] hover:from-[#003d6f] hover:to-[#004c8c] border-0 text-white font-bold tracking-wide shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 rounded-xl py-2.5"
-        >
-          {isPending ? 'Queuing...' : 'Generate Report'}
-        </Button>
+          disabled={isPending || !financialYearId || !zoneId || !wardId}
+          className="w-auto min-w-[150px] rounded-xl py-2.5 font-bold tracking-wide shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+        />
       </div>
     </div>
   );

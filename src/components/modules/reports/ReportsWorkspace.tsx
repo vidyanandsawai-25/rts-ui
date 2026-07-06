@@ -17,7 +17,7 @@ import {
 import { toast } from 'sonner';
 import { ReportParametersPanel } from '@/components/modules/reports/ReportParametersPanel';
 import { ReportJobsList } from '@/components/modules/reports/ReportJobsList';
-import { Card } from '@/components/common';
+import { Card, Tabs, TabList, Tab } from '@/components/common';
 import { useReportJobs } from '@/hooks/useReportJobs';
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
 
@@ -343,8 +343,8 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
       {currentStep === 3 && activeCategoryDef && selectedReport && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           
-          {/* LEFT: 1-column card grid list (5 cols) */}
-          <Card padding="none" className="lg:col-span-5 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
+          {/* LEFT: 2-column card grid list (6 cols) */}
+          <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
             {/* Header */}
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#004c8c]" />
@@ -356,61 +356,65 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
               </span>
             </div>
 
-            {/* 1-column card list */}
+            {/* 2-column card grid */}
             <div className="flex-1 overflow-y-auto p-4 max-h-[460px]">
-              <div className="flex flex-col gap-3">
-                {activeReports.map((report) => {
-                  const isActive = selectedReport.id === report.id;
-                  return (
-                    <button
-                      key={report.id}
-                      type="button"
-                      onClick={() => handleSelectReport(report)}
-                      className={`group relative text-left rounded-xl border p-4 transition-all duration-300 focus:outline-none flex items-center justify-between
-                        ${isActive
-                          ? 'border-[#004c8c] bg-blue-50/40 shadow-md shadow-blue-100/30 border-l-4 border-l-[#004c8c] -translate-y-0.5'
-                          : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/10 hover:-translate-y-0.5'
-                        }`}
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        {/* Icon wrapper */}
-                        <span className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300
+              <Tabs
+                value={selectedReport.id}
+                onChange={(val) => {
+                  const rep = activeReports.find((r) => r.id === Number(val));
+                  if (rep) handleSelectReport(rep);
+                }}
+                variant="pills"
+                className="w-full"
+              >
+                <TabList className="grid grid-cols-2 gap-3 bg-transparent border-0 p-0" scrollable={false}>
+                  {activeReports.map((report) => {
+                    const isActive = selectedReport.id === report.id;
+                    return (
+                      <Tab
+                        key={report.id}
+                        value={report.id}
+                        className={`relative text-left rounded-xl border p-4 transition-all duration-300 focus:outline-none flex items-center justify-between w-full h-auto bg-white hover:border-blue-200 hover:bg-blue-50/10 hover:-translate-y-0.5
                           ${isActive
-                            ? 'bg-[#004c8c] text-white shadow-sm'
-                            : 'bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500'
+                            ? 'border-[#004c8c] bg-blue-50/40 shadow-md shadow-blue-100/30 border-l-4 border-l-[#004c8c] -translate-y-0.5'
+                            : 'border-gray-200'
                           }`}
-                        >
-                          <FileText className="w-4.5 h-4.5" />
-                        </span>
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Icon wrapper */}
+                          <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
+                            ${isActive
+                              ? 'bg-[#004c8c] text-white shadow-sm'
+                              : 'bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500'
+                            }`}
+                          >
+                            <FileText className="w-4 h-4" />
+                          </span>
 
-                        <div className="min-w-0">
-                          <p className={`text-[9px] font-bold uppercase tracking-wider mb-0.5
-                            ${isActive ? 'text-[#004c8c]/70' : 'text-gray-400'}`}
-                          >
-                            {report.reportCode}
-                          </p>
-                          <p className={`text-xs font-bold leading-tight
-                            ${isActive ? 'text-[#004c8c] font-extrabold' : 'text-gray-700 group-hover:text-gray-900'}`}
-                          >
-                            {report.reportName}
-                          </p>
+                          <div className="min-w-0">
+                            <p className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate
+                              ${isActive ? 'text-[#004c8c]/70' : 'text-gray-400'}`}
+                            >
+                              {report.reportCode}
+                            </p>
+                            <p className={`text-xs font-bold leading-tight truncate
+                              ${isActive ? 'text-[#004c8c] font-extrabold' : 'text-gray-700 group-hover:text-gray-900'}`}
+                            >
+                              {report.reportName}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
-                      {isActive && (
-                        <span className="w-5 h-5 rounded-full bg-blue-100 text-[#004c8c] flex items-center justify-center text-[10px] font-bold">
-                          ✓
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                      </Tab>
+                    );
+                  })}
+                </TabList>
+              </Tabs>
             </div>
           </Card>
 
-          {/* RIGHT: parameters form (7 cols) */}
-          <Card padding="none" className="lg:col-span-7 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
+          {/* RIGHT: parameters form (6 cols) */}
+          <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                 Configure Parameters
