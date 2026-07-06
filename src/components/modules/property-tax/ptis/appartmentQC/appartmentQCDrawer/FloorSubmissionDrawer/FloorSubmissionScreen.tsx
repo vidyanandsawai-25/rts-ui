@@ -55,6 +55,9 @@ export const FloorSubmissionScreen = ({
             params.delete('editRowId');
         }
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        if (!row) {
+            router.refresh();
+        }
     };
 
     const [isPhotoViewerOpen, setIsPhotoViewerOpen] = React.useState(false);

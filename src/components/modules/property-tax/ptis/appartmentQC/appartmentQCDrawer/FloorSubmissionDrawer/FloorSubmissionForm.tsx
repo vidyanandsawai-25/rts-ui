@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Input, AnimatedDigitInput, SearchSelect, SaveButton, CancelButton, Label, ValidationMessage, Drawer, Button } from '@/components/common';
+import { Input, AnimatedDigitInput, SearchSelect, SaveButton, CancelButton, Label, ValidationMessage } from '@/components/common';
 import { useFloorSubmissionForm } from '@/hooks/apartmentQc/useFloorSubmissionForm';
 import type { FloorSubmissionRow } from '@/types/apartmentQC.types';
-import { LayoutGrid, Layers } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import { getRoomWiseSubmissionsAction } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import RoomWiseSubmission from '@/components/modules/property-tax/ptis/appartmentQC/roomSubmission/RoomWiseSubmission';
@@ -192,6 +192,7 @@ export const FloorSubmissionForm = ({
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
 
         setIsRoomDrawerOpen(false);
+        router.refresh();
     };
 
     const selectedFloorRow = React.useMemo<DrawerFloorDataRow>(() => ({
@@ -382,80 +383,29 @@ export const FloorSubmissionForm = ({
                 </div>
             </div>
 
-            {isRoomDrawerOpen && (
-                <div className="[&>div.fixed.right-0]:!w-[95vw] xl:[&>div.fixed.right-0]:!w-[1200px]">
-                    <Drawer
-                        open={isRoomDrawerOpen}
-                        onClose={handleCloseRoomDrawer}
-                        width="xl"
-                        title={
-                            <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-4">
-                                    <h2 className="text-base font-bold flex items-center gap-2 text-blue-900">
-                                        <Layers className="w-4 h-4 text-blue-600" />
-                                        {t('drawer.roomWiseSubmission')}
-                                        ({areaUnit === 'sq.m' ? t('drawer.units.sqM') : t('drawer.units.sqFt')})
-                                    </h2>
-
-                                    <div className="flex items-center bg-blue-50/50 rounded-full p-0.5 border border-blue-100 shadow-inner ml-2">
-                                        <Button
-                                            type="button"
-                                            size="xs"
-                                            variant="ghost"
-                                            onClick={() => areaUnit === 'sq.ft' && handleToggleUnit()}
-                                            className={`px-4 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${
-                                                areaUnit === 'sq.m'
-                                                    ? 'bg-white text-blue-600 shadow-sm scale-105'
-                                                    : 'text-blue-400/70 hover:text-blue-600'
-                                            }`}
-                                        >
-                                            {t('drawer.units.sqM')}
-                                        </Button>
-
-                                        <Button
-                                            type="button"
-                                            size="xs"
-                                            variant="ghost"
-                                            onClick={() => areaUnit === 'sq.m' && handleToggleUnit()}
-                                            className={`px-4 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${
-                                                areaUnit === 'sq.ft'
-                                                    ? 'bg-white text-blue-600 shadow-sm scale-105'
-                                                    : 'text-blue-400/70 hover:text-blue-600'
-                                            }`}
-                                        >
-                                            {t('drawer.units.sqFt')}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    >
-                        {!isLoadingRooms && (
-                            <RoomWiseSubmission
-                                isOpen={isRoomDrawerOpen}
-                                onClose={handleCloseRoomDrawer}
-                                onUpdate={(data) => {
-                                    handleFieldChange('area', String(data.totalAreaSqM));
-                                    handleFieldChange('noOfRooms', String(data.roomCount));
-                                }}
-                                displayMode="inline"
-                                initialPropertyID={resolvedPropertyId}
-                                initialFloorId={initialRow.pdnId ?? undefined}
-                                floorNumber={String(initialRow.floorId || '')}
-                                existingRooms={existingRooms}
-                                selectedFloorRow={selectedFloorRow}
-                                floorLookup={floors}
-                                constructionLookup={conTypes}
-                                useLookup={useTypes}
-                                subTypeLookup={subTypes}
-                                t={t}
-                                externalAreaUnit={areaUnit}
-                                onExternalToggleUnit={handleToggleUnit}
-                                maxRooms={100}
-                            />
-                        )}
-                    </Drawer>
-                </div>
+            {isRoomDrawerOpen && !isLoadingRooms && (
+                <RoomWiseSubmission
+                    isOpen={isRoomDrawerOpen}
+                    onClose={handleCloseRoomDrawer}
+                    onUpdate={(data) => {
+                        handleFieldChange('area', String(data.totalAreaSqM));
+                        handleFieldChange('noOfRooms', String(data.roomCount));
+                    }}
+                    displayMode="modal"
+                    initialPropertyID={resolvedPropertyId}
+                    initialFloorId={initialRow.pdnId ?? undefined}
+                    floorNumber={String(initialRow.floorId || '')}
+                    existingRooms={existingRooms}
+                    selectedFloorRow={selectedFloorRow}
+                    floorLookup={floors}
+                    constructionLookup={conTypes}
+                    useLookup={useTypes}
+                    subTypeLookup={subTypes}
+                    t={t}
+                    externalAreaUnit={areaUnit}
+                    onExternalToggleUnit={handleToggleUnit}
+                    maxRooms={100}
+                />
             )}
         </div>
     );

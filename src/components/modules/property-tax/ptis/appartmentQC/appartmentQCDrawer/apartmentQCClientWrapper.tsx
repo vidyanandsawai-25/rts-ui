@@ -25,6 +25,7 @@ function ApartemntQCContent({
     const searchParams = useSearchParams();
     const routeParams = useParams();
     const t = useTranslations('quickDataEntry');
+    const tQC = useTranslations('appartmentQC');
 
     const locale = routeParams.locale as string;
     const wardNo = searchParams.get("wardNo") || "";
@@ -35,9 +36,16 @@ function ApartemntQCContent({
     const handleClose = () => {
             const params = new URLSearchParams(searchParams.toString());
             
+            // Restore propertyId if it was stripped out in FloorSubmission tab
+            const editPropId = params.get('editPropertyId');
+            if (editPropId && !params.has('propertyId')) {
+                params.set('propertyId', editPropId);
+            }
+
             // Delete drawer-specific parameters if any
             params.delete('drawer');
             params.delete('editPropertyId');
+            params.delete('editRowId');
             
             // If valuationTab is apartment, remove the tab parameter so it doesn't switch to propertydetails
             const valTab = params.get('valuationTab') || valuationTab;
@@ -65,7 +73,7 @@ function ApartemntQCContent({
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4 lg:gap-6">
             <h2 className="flex items-center gap-2 text-[15px] font-bold leading-tight text-white">
                 <FileText className="h-4 w-4 text-white" />
-                {t('roomSubmission.quickDataEntry')}
+               {tQC('drawer.apartmentQCHeading')}
             </h2>
             <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">

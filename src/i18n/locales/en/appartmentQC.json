@@ -123,6 +123,7 @@
     "apply": "Apply"
   },
   "drawer": {
+    "apartmentQCHeading": "Apartment QC",
     "title": "Property Details",
     "noPropertyData": "No property data found.",
     "goBack": "Go Back",

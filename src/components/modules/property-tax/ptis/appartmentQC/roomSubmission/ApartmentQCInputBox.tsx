@@ -57,18 +57,12 @@ export const ApartmentQCInputBox: React.FC<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = (key: string, options?: Record<string, unknown>) => tRaw(key as any, options as any);
 
-  // Show UPDATE only when we have a real room (with area or DB id) in focus.
+  // Show UPDATE when a row is selected for editing, even if it's an empty/placeholder row.
   const isActualUpdate = Boolean(
     isEditMode &&
       editingIndex !== null &&
       editingIndex !== undefined &&
-      rooms[editingIndex] &&
-      (Number(rooms[editingIndex].area || 0) > 0 ||
-        Number(
-          rooms[editingIndex].id ||
-            rooms[editingIndex].roomWiseSubmissionId ||
-            0
-        ) > 0)
+      rooms[editingIndex]
   );
 
   const calculatedArea = useMemo(() => calculateArea(), [calculateArea]);

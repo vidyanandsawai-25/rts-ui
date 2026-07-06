@@ -2,14 +2,13 @@
 
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Home, Layers, Calculator, Image } from 'lucide-react';
+import { Home, Layers, Calculator } from 'lucide-react';
 import { Tab } from '@/types/property-basic-details.types';
 
 const TABS: Tab[] = [
   { label: 'basicProperty', href: 'Property', icon: Home },
   { label: 'floorQC', href: 'FloorSubmission', icon: Layers },
   { label: 'taxDetails', href: 'AppartmentQCTaxDetails', icon: Calculator },
-  { label: 'photoPlan', href: 'PhotoPlan', icon: Image },
 ];
 
 const TAB_GRADIENT_CLASSES = {
