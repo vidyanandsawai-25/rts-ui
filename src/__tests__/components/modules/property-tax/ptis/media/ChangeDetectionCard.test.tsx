@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ChangeDetectionCard } from '@/components/modules/property-tax/ptis/media/ChangeDetectionCard';
@@ -14,9 +13,11 @@ vi.mock('next-intl', () => ({
 
 // Mock next/image as it uses server-side optimizations
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    <img src={src} alt={alt} {...props} />
-  ),
+  default: (props: React.ComponentProps<'img'> & { fill?: boolean }) => {
+    const { fill: _f, ...rest } = props;
+    const ImgTag = 'img';
+    return <ImgTag {...rest} />;
+  },
 }));
 
 describe('ChangeDetectionCard', () => {

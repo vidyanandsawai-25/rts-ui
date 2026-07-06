@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Noto_Sans_Devanagari } from 'next/font/google';
 import '../globals.css';
+import 'leaflet/dist/leaflet.css';
 import { appConfig } from '@/config/app.config';
 import { RuntimeConfigScript } from '@/config/RuntimeConfigScript';
 import { NextIntlClientProvider } from 'next-intl';
