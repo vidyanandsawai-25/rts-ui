@@ -49,15 +49,7 @@ export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
       return defaultUlb;
     }
     const apiUlb = mapUlbConfigApiToMaster(res.data);
-    return {
-      ...apiUlb,
-      ulbName: "Akola Municipal Corporation",
-      ulbNameLocal: "अकोला महानगरपालिका",
-      ulbLogo: "https://akolamc.in/images/councilLogo/akola.png",
-      email: "support@akolamc.in",
-      phoneNo: "18002689959",
-      ulbAddress: "Akola Municipal Corporation Building, Near Open Theatre, Opposite Pharya Heights, New Radhakisan Plots, M.G. Road, Ganesh Nagar, Akola, Maharashtra 444001",
-    };
+    return apiUlb;
   } catch (error) {
     logger.warn('Failed to load ULB config for login branding', {
       error: error instanceof Error ? error : new Error(String(error)),
