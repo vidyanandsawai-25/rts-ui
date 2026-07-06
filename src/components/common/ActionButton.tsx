@@ -60,6 +60,7 @@ export function Button({
   iconPosition = 'left',
   isLoading = false,
   disabled = false,
+  hidden = false,
   className = '',
   children,
   type = 'button',
@@ -155,6 +156,8 @@ export function Button({
     edit: 'text-[#1A86E8] hover:bg-blue-50 border border-blue-400 hover:shadow-md hover:scale-105',
     delete: 'text-red-500 hover:bg-red-50 border border-red-400 hover:shadow-md hover:scale-105',
   };
+
+  if (hidden) return null;
 
   return (
     <button

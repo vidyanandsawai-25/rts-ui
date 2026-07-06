@@ -21,6 +21,14 @@ export function OldFloorDetails({
   // Translations
   const t = useTranslations('reassessment');
 
+  const formatNumberish = (val: unknown): string => {
+    return typeof val === 'number' ? val.toLocaleString() : '-';
+  };
+
+  const formatTaxLiability = (val: unknown): string => {
+    return typeof val === 'string' || typeof val === 'number' ? String(val) : '-';
+  };
+
   // Column definitions for Old Floor Details
   const oldColumns: Column<MappedFloorDetail>[] = [
     {
@@ -62,7 +70,7 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: any) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
+      render: (_, row: MappedFloorDetail) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
     },
     {
       key: 'builtUpAreaSqFt',
@@ -70,7 +78,7 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: any) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
+      render: (_, row: MappedFloorDetail) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
     },
     {
       key: 'rate',
@@ -92,7 +100,7 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-mono',
-      render: (val: any) => val || '-'
+      render: (val: unknown) => formatTaxLiability(val)
     },
     {
       key: 'rentMy',
@@ -107,7 +115,7 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: any) => val.toLocaleString()
+      render: (val: unknown) => formatNumberish(val)
     },
     {
       key: 'depreciation',
@@ -122,7 +130,7 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: any) => val.toLocaleString()
+      render: (val: unknown) => formatNumberish(val)
     },
     {
       key: 'mr',
@@ -137,7 +145,7 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: any) => val.toLocaleString()
+      render: (val: unknown) => formatNumberish(val)
     }
   ];
 

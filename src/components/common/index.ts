@@ -47,6 +47,8 @@ export {
   LockButton,
   UnlockButton,
   SearchButton,
+  RetrospectiveDetailsButton,
+  Section129Button,
 } from './ActionButtons';
 export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';

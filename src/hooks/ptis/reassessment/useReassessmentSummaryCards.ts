@@ -26,7 +26,7 @@ export function useReassessmentSummaryCards({
   const rvDiff = newTotalRV - oldTotalRV;
 
   const oldTotalTax = taxRows.find((r) => r.rowType === 'old')?.totalTax || 0;
-  const newTotalTax = taxRows.find((r) => r.rowType === 'total')?.totalTax || 0;
+  const newTotalTax = taxRows.find((r) => r.rowType === 'additional')?.totalTax || 0;
   const taxDiff = newTotalTax - oldTotalTax;
 
   // Determine if use type changed

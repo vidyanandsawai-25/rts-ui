@@ -79,20 +79,31 @@ export function useReassessmentTaxTable({
 
   // Generate dynamic columns from tax data
   const detailedTaxesColumns: Column<DynamicTaxRow>[] = [
-    { key: 'taxes', label: 'Taxes', width: '140px', align: 'left', render: taxesLabelRender },
+    { 
+      key: 'taxes', 
+      label: 'Taxes', 
+      width: '140px', 
+      align: 'left', 
+      render: taxesLabelRender,
+      headerClassName: 'whitespace-nowrap',
+      cellClassName: 'whitespace-nowrap',
+    },
     ...taxColumns.map((col) => ({
       key: col.key,
       label: col.label,
-      width: '100px',
+      width: '140px',
       align: 'center' as const,
       render: numericTaxRender,
+      headerClassName: 'whitespace-nowrap',
+      cellClassName: 'whitespace-nowrap',
     })),
     {
       key: 'totalTax',
       label: 'Total Tax (₹)',
-      width: '120px',
+      width: '140px',
       align: 'right' as const,
-      headerClassName: 'bg-slate-100 font-black text-right pr-3',
+      headerClassName: 'bg-slate-100 font-black text-right pr-3 whitespace-nowrap',
+      cellClassName: 'whitespace-nowrap',
       render: totalTaxRender,
     },
   ];

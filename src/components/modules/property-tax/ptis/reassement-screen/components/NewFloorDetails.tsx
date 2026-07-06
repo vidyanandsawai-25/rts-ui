@@ -21,6 +21,14 @@ export function NewFloorDetails({
 }: NewFloorDetailsProps) {
   // Translations
   const t = useTranslations('reassessment');
+
+  const formatNumberish = (val: unknown): string => {
+    return typeof val === 'number' ? val.toLocaleString() : '-';
+  };
+
+  const formatTaxLiability = (val: unknown): string => {
+    return typeof val === 'string' || typeof val === 'number' ? String(val) : '-';
+  };
   
   // Column definitions for New Floor Details
   const newColumns: Column<MappedFloorDetail>[] = [
@@ -63,7 +71,7 @@ export function NewFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: any) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
+      render: (_, row: MappedFloorDetail) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
     },
     {
       key: 'builtUpAreaSqFt',
@@ -71,7 +79,7 @@ export function NewFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: any) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
+      render: (_, row: MappedFloorDetail) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
     },
     {
       key: 'rate',
@@ -86,7 +94,7 @@ export function NewFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-mono',
-      render: (val: any) => val || '-'
+      render: (val: unknown) => formatTaxLiability(val)
     },
     {
       key: 'rentMy',
@@ -101,7 +109,7 @@ export function NewFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-bold font-mono',
-      render: (val: any) => val.toLocaleString()
+      render: (val: unknown) => formatNumberish(val)
     },
     {
       key: 'depreciation',
@@ -116,7 +124,7 @@ export function NewFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-bold font-mono',
-      render: (val: any) => val.toLocaleString()
+      render: (val: unknown) => formatNumberish(val)
     },
     {
       key: 'mr',
@@ -131,14 +139,14 @@ export function NewFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-bold font-mono',
-      render: (val: any) => val.toLocaleString()
+      render: (val: unknown) => formatNumberish(val)
     },
     {
       key: 'status',
       label: t('floorDetails.columns.status'),
       width: '96px',
       align: 'left',
-      render: (val: any) => (
+      render: (val: unknown) => (
         <span className={cn(
           "inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm",
           val === 'Same' && "bg-emerald-100 text-emerald-800 border-emerald-200",

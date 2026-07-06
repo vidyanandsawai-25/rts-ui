@@ -129,29 +129,40 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
 
   // Calculate additional revenue (new - old) for each tax
   const additionalTaxes: { [key: string]: number } = {};
+  let additionalTotalTax = 0;
+  
   taxHeads.forEach((tax) => {
     const key = tax.taxName.replace(/\s+/g, '');
-    additionalTaxes[key] = tax.newAmount - tax.oldAmount;
+    const difference = tax.newAmount - tax.oldAmount;
+    additionalTaxes[key] = difference;
+    additionalTotalTax += difference;
   });
 
+  // Calculate totals by summing individual tax values for validation
+  const oldTotalCalculated = Object.values(oldTaxes).reduce((sum, val) => sum + val, 0);
+  const newTotalCalculated = Object.values(newTaxes).reduce((sum, val) => sum + val, 0);
+  
   const rows: ReassessmentTaxRow[] = [
     {
       rowType: 'old',
       label: 'Old Taxes',
       taxes: oldTaxes,
-      totalTax: totalTax?.oldAmount ?? 0,
+      // Use API-provided total if available, otherwise use calculated sum
+      totalTax: totalTax?.oldAmount ?? oldTotalCalculated,
     },
     {
       rowType: 'additional',
       label: 'New Taxes',
       taxes: newTaxes,
-      totalTax: totalTax?.newAmount ?? 0,
+      // Use API-provided total if available, otherwise use calculated sum
+      totalTax: totalTax?.newAmount ?? newTotalCalculated,
     },
     {
       rowType: 'total',
       label: 'Total Tax',
-      taxes: newTaxes,
-      totalTax: totalTax?.newAmount ?? 0,
+      taxes: additionalTaxes,
+      // Calculate difference: use API totals if available, otherwise use sum of differences
+      totalTax: totalTax ? (totalTax.newAmount - totalTax.oldAmount) : additionalTotalTax,
     },
   ];
 

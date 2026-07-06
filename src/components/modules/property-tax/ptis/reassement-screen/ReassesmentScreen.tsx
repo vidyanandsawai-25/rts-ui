@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import {
-  ArrowUpRight,
   TrendingUp,
   FileText,
-  Clock,
   Layers,
 } from 'lucide-react';
-import { MasterTable } from '@/components/common';
+import {
+  MasterTable,
+  RetrospectiveDetailsButton,
+  Section129Button,
+} from '@/components/common';
 import { RetrospectiveTaxModal } from './RetrospectiveTaxModal';
 import { Section129Modal } from './Section129Modal';
 import { OldFloorDetails } from './components/OldFloorDetails';
@@ -264,20 +266,17 @@ export default function ReassesmentScreen({
             {t('sectionHeaders.taxDetails')}
           </h3>
           <div className="flex gap-2">
-            <button
+            <RetrospectiveDetailsButton
               onClick={() => setShowRetroModal(true)}
-              className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 active:scale-98 transition-all shadow-sm"
-            >
-              <Clock className="h-3.5 w-3.5" />
-              {t('buttons.retrospectiveDetails')}
-            </button>
-            <button
+              label={t('buttons.retrospectiveDetails')}
+              className="font-bold active:scale-98 shadow-sm"
+            />
+            <Section129Button
               onClick={() => setShowSec129Modal(true)}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 active:scale-98 transition-all shadow-sm"
-            >
-              <ArrowUpRight className="h-3.5 w-3.5" />
-              {t('buttons.section129')}
-            </button>
+              label={t('buttons.section129')}
+              hidden
+              className="font-bold active:scale-98 shadow-sm"
+            />
           </div>
         </div>
 
