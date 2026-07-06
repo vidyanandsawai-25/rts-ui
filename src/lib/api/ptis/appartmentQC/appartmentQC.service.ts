@@ -1221,10 +1221,14 @@ export async function getApartmentPropertyTaxDetailsById(
  */
 export async function getApartmentPropertyTaxDetailsByIdLocalized(
   params: ApartmentPropertyTaxDetailsByIdParams
-): Promise<ApartmentTaxDetailsItems> {
+): Promise<ApartmentTaxDetailsItems | null> {
   try {
     const res = await getApartmentPropertyTaxDetailsById(params);
+
     if (!res.success || !res.data) {
+      if (res.statusCode === 404) {
+        return null;
+      }
       throw new ApiError(
         res.statusCode ?? 500,
         res.error || "Failed to fetch apartment property tax details",
@@ -1291,10 +1295,13 @@ export async function getApartmentPropertyTaxDetailsCvById(
  */
 export async function getApartmentPropertyTaxDetailsCvByIdLocalized(
   params: ApartmentPropertyTaxDetailsByIdParams
-): Promise<ApartmentTaxDetailsItems> {
+): Promise<ApartmentTaxDetailsItems | null> {
   try {
     const res = await getApartmentPropertyTaxDetailsCvById(params);
     if (!res.success || !res.data) {
+      if (res.statusCode === 404) {
+        return null;
+      }
       throw new ApiError(
         res.statusCode ?? 500,
         res.error || "Failed to fetch apartment property CV tax details",

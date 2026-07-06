@@ -123,6 +123,7 @@
     "apply": "लागू करा"
   },
   "drawer": {
+    "apartmentQCHeading": "अपार्टमेंट QC",
     "title": "मालमत्ता तपशील",
     "noPropertyData": "कोणतीही मालमत्ता डेटा सापडला नाही.",
     "goBack": "मागे जा",
@@ -130,6 +131,9 @@
     "update": "अद्यतनित करा",
     "basicInformation": "मूलभूत माहिती",
     "floorQC": "फ्लोअर QC",
+    "basicProperty": "मूलभूत मालमत्ता",
+    "taxDetails": "कर तपशील",
+    "photoPlan": "फोटो आराखडा",
     "roomWiseSubmission": "खोलीनिहाय सादरीकरण",
     "loadingRoomData": "खोली डेटा लोड होत आहे...",
     "viewImage": "प्रतिकारन",
@@ -186,7 +190,7 @@
     "rateableValue": "करयोग्य मूल्य",
     "capitalValue": "भांडवली मूल्य",
     "cv": "भांडवली मूल्य",
-    "kyc": "केवाईसी",
+    "kyc": "तुमच्या ग्राहकाची ओळख",
     "viewKycDetails": "केवाईसी तपशील पहा",
     "hideKycDetails": "केवाईसी तपशील लपवा"
   },
@@ -308,6 +312,17 @@
   },
   "floorQC": {
     "title": "मजला QC",
+    "form": {
+      "loading": "लोड होत आहे...",
+      "selectFloor": "मजला निवडा",
+      "selectConType": "प्रकार निवडा",
+      "selectUse": "वापर निवडा",
+      "selectSubType": "उप प्रकार निवडा",
+      "yearPlaceholder": "YYYY",
+      "roomsPlaceholder": "उदा. 2",
+      "autoCalculated": "स्वयं-गणना",
+      "sqFt": "चौ. फूट"
+    },
     "columns": {
       "floor": "मजला",
       "conYear": "बांधकाम वर्ष",
@@ -331,7 +346,8 @@
       "ntbFactor": "NTB घटक",
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य",
-      "editFloorQC": "मजला QC संपादित करा"
+      "editFloorQC": "मजल्याचे तपशील संपादित करा",
+      "action": "क्रिया"
     },
     "toolTipFloorQC": {
       "tooltips": {
@@ -357,7 +373,8 @@
         "ntbFactor": "NTB गुणांक",
         "useFactor": "वापर गुणांक",
         "capitalValue": "भांडवली मूल्य",
-        "editFloorQC": "मजला QC संपादित करा"
+        "editFloorQC": "मजला QC संपादित करा",
+        "action": "क्रिया"
       }
     },
     "tabs": {
