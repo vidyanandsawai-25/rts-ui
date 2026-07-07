@@ -7,6 +7,8 @@ import {
 } from "@/lib/utils/RoomSubmission/room-calculation.util";
 import { RoomSubmissionState } from "./useRoomSubmissionState";
 
+import { checkIsUtilityCategory } from "@/lib/utils/floorSubmission/floor-utility-checks";
+
 export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWiseSubmissionProps, actions: { handleEdit: (idx: number, room?: RoomData) => void }) => {
   const { 
     isOpen, floorNumber, existingRooms, maxRooms 
@@ -32,7 +34,9 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
       return;
     }
 
-    const safeMaxRooms = Math.min(maxRooms || 0, 100);
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+    const computedRooms = isUtility ? (existingRooms?.length || 0) : Math.max(maxRooms || 0, existingRooms?.length || 0);
+    const safeMaxRooms = isUtility ? computedRooms : Math.min(computedRooms, 100);
     const floorChanged = lastInitializedFloorRef.current !== (floorNumber || null);
     const maxRoomsChanged = lastInitializedMaxRoomsRef.current !== safeMaxRooms;
     const existingRoomsChanged = lastInitializedExistingRoomsRef.current !== (existingRooms || null);
@@ -100,13 +104,13 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
         };
       });
       setRooms(initializedRooms);
-      if (initializedRooms.length > 0) actions.handleEdit(0, initializedRooms[0]);
+      if (initializedRooms.length > 0 && !isUtility) actions.handleEdit(0, initializedRooms[0]);
     }
 
     lastInitializedFloorRef.current = floorNumber || null;
     lastInitializedMaxRoomsRef.current = safeMaxRooms;
     lastInitializedExistingRoomsRef.current = existingRooms || null;
-  }, [isOpen, maxRooms, existingRooms, floorNumber, setRooms, actions, rooms, lastInitializedFloorRef]);
+  }, [isOpen, maxRooms, existingRooms, floorNumber, setRooms, actions, rooms, lastInitializedFloorRef, props.floorData?.typeOfUseCategoryId]);
 
   // 3. Area Unit Conversion Sync
   useEffect(() => {
@@ -159,7 +163,8 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
 
   // 4. Auto-edit Next Empty Room
   useEffect(() => {
-    if (!isOpen || !maxRooms || maxRooms < 2 || isEditMode || editingIndex !== null || rooms.length === 0 || hasAutoActivatedRef.current) return;
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+    if (isUtility || !isOpen || !maxRooms || maxRooms < 2 || isEditMode || editingIndex !== null || rooms.length === 0 || hasAutoActivatedRef.current) return;
 
     const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.remark && r.remark !== "-Select-" && r.shape && r.shape !== "-Select-";
     const lastFilled = [...rooms].reverse().findIndex(isRoomFilled);
@@ -173,5 +178,5 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
       hasAutoActivatedRef.current = true;
       setTimeout(() => actions.handleEdit(targetIdx), 200);
     }
-  }, [rooms, isOpen, maxRooms, isEditMode, editingIndex, actions, hasAutoActivatedRef]);
+  }, [rooms, isOpen, maxRooms, isEditMode, editingIndex, actions, hasAutoActivatedRef, props.floorData?.typeOfUseCategoryId]);
 };

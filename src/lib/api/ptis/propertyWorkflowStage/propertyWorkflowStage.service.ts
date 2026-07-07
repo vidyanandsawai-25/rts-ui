@@ -102,4 +102,33 @@ export const propertyWorkflowStageService = {
       };
     }
   },
+
+  async getPropertyWorkflowDetails(
+    propertyId: number | string
+  ): Promise<{ success: boolean; data?: PropertyWorkflowDetail[]; error?: string }> {
+    try {
+      const response = await fetchWithCertSupport<PagedResult<PropertyWorkflowDetail>>(
+        `/Property/${propertyId}/workflow-details`
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: getErrorFormattedMessage(response.error, 'Failed to fetch workflow details'),
+        };
+      }
+
+      const rawData = response.data;
+      if (!rawData || !rawData.items) {
+        return { success: false, error: 'Workflow details not found' };
+      }
+
+      return { success: true, data: Array.isArray(rawData.items) ? rawData.items : [rawData.items] };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch workflow details',
+      };
+    }
+  },
 };

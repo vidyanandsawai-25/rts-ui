@@ -41,6 +41,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
     errorTranslationKey: string
   ) => {
     const newForm = { ...editingFloorForm, [field]: value };
+    if (selectedFloorType === 'OpenPlot' && field === 'asstYr') {
+      newForm.conYr = value;
+    }
     setEditingFloorForm(newForm);
 
     let currentError = '';
@@ -53,6 +56,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
 
     setFormErrors((prev) => {
       const updated = { ...prev, [field]: currentError };
+      if (selectedFloorType === 'OpenPlot' && field === 'asstYr') {
+        updated.conYr = '';
+      }
 
       const conYrVal = String(newForm.conYr || '');
       const asstYrVal = String(newForm.asstYr || '');
@@ -82,6 +88,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
     val: string,
     errorMsg: string
   ) => {
+    if (selectedFloorType === 'OpenPlot' && field === 'asstYr') {
+      setEditingFloorForm((prev) => ({
+        ...prev,
+        asstYr: val,
+        conYr: val,
+      }));
+    }
+
     const validation = validateField(field, val);
     let fieldErr = '';
     if (!validation.isValid) {
@@ -90,8 +104,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
 
     setFormErrors((prev) => {
       const updated = { ...prev, [field]: fieldErr };
-      const conYrVal = String(editingFloorForm.conYr || '');
-      const asstYrVal = String(editingFloorForm.asstYr || '');
+      if (selectedFloorType === 'OpenPlot' && field === 'asstYr') {
+        updated.conYr = '';
+      }
+      const conYrVal = String(selectedFloorType === 'OpenPlot' && field === 'asstYr' ? val : (editingFloorForm.conYr || ''));
+      const asstYrVal = String(selectedFloorType === 'OpenPlot' && field === 'asstYr' ? val : (editingFloorForm.asstYr || ''));
 
       if (conYrVal.length === 4 && asstYrVal.length === 4) {
         const conYear = parseInt(conYrVal, 10);

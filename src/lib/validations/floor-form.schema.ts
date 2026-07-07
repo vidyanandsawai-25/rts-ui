@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 const currentFinancialStartYear = new Date().getMonth() >= 3 ? new Date().getFullYear() : new Date().getFullYear() - 1;
 
@@ -97,6 +98,7 @@ export const floorFormSchema = z.object({
     .transform(val => String(val ?? '').trim())
     .refine(val => val.length > 0 && isValidDropdownValue(val), 'Type of use is required'),
   typeOfUseId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
+  typeOfUseCategoryId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   subTyp: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
@@ -263,20 +265,24 @@ export const floorFormSchema = z.object({
     }
 
     // Validate rooms
-    if (!data.rooms || data.rooms.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Number of rooms is required',
-        path: ['rooms'],
-      });
-    } else {
-      const num = parseInt(data.rooms, 10);
-      if (isNaN(num) || num <= 0) {
+    const isUtilityCategory = checkIsUtilityCategory(data.typeOfUseCategoryId);
+
+    if (!isUtilityCategory) {
+      if (!data.rooms || data.rooms.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Number of rooms must be a positive number',
+          message: 'Number of rooms is required',
           path: ['rooms'],
         });
+      } else {
+        const num = parseInt(data.rooms, 10);
+        if (isNaN(num) || num <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Number of rooms must be a positive number',
+            path: ['rooms'],
+          });
+        }
       }
     }
   }

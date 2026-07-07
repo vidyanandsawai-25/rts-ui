@@ -7,6 +7,7 @@ import { Input, AnimatedDigitInput } from '@/components/common';
 import { AreaSectionProps } from '@/types/floor-details.types';
 import { FieldWrapper, ReadOnlyField } from './SectionField';
 import { cn } from '@/lib/utils/cn';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Construction' | 'OpenPlot'; isDrawer?: boolean }> = ({
   t,
@@ -21,16 +22,17 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
   isDrawer = false,
 }) => {
 
+  const isUtility = checkIsUtilityCategory(editingFloorForm?.typeOfUseCategoryId);
   const isOpenPlot = selectedFloorType === 'OpenPlot';
 
   const content = (
     <>
       {/* Rooms */}
-      {!isOpenPlot && (
+      {!isOpenPlot && !isUtility && (
         <FieldWrapper
           label={t('floor.rooms')}
           htmlFor="floor-rooms"
-          required
+          required={!isUtility}
           error={formErrors.rooms}
           labelExtra={
             !formErrors.rooms && !editingFloorForm.use && (
@@ -99,17 +101,19 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const roomsStr = editingFloorForm.rooms !== undefined && editingFloorForm.rooms !== null ? String(editingFloorForm.rooms) : '';
-                    const roomCount = parseInt(roomsStr, 10);
-                    if (!roomsStr || isNaN(roomCount) || roomCount <= 0) {
-                      setFormErrors((prev) => ({
-                        ...prev,
-                        rooms: t('floor.errors.roomsRequiredForDetails') || 'Number of rooms must be greater than zero before entering room details.'
-                      }));
-                      toast.error(
-                        t('floor.errors.roomGuidance') || 'Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor.'
-                      );
-                      return;
+                    if (!isUtility) {
+                      const roomsStr = editingFloorForm.rooms !== undefined && editingFloorForm.rooms !== null ? String(editingFloorForm.rooms) : '';
+                      const roomCount = parseInt(roomsStr, 10);
+                      if (!roomsStr || isNaN(roomCount) || roomCount <= 0) {
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          rooms: t('floor.errors.roomsRequiredForDetails') || 'Number of rooms must be greater than zero before entering room details.'
+                        }));
+                        toast.error(
+                          t('floor.errors.roomGuidance') || 'Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor.'
+                        );
+                        return;
+                      }
                     }
                     setShowRoomSubmission(true);
                   }}

@@ -205,6 +205,13 @@ export function normalizeFloorData(
     constructionTypeId,
     typeOfUseId,
     subTypeOfUseId,
+    typeOfUseCategoryId: raw.typeOfUseCategoryId !== undefined ? (raw.typeOfUseCategoryId as number | string | null) : (() => {
+      if (typeOfUseId && lookups.use) {
+        const found = lookups.use.find(u => String(u.typeOfUseId || u.id || '') === String(typeOfUseId));
+        return found ? (found.typeOfUseCategoryId !== undefined && found.typeOfUseCategoryId !== null ? (found.typeOfUseCategoryId as number | string | null) : null) : null;
+      }
+      return null;
+    })(),
 
     // Preserved Descriptions for initialLabel fallbacks
     floorDescription: floorDesc,

@@ -72,15 +72,17 @@ export const useFloorAreaValidation = ({
       (f) => isRecordOpenPlot(f) && (!selectedFloor || f.id !== selectedFloor.id)
     );
     let sum = openSpaceFloors.reduce((s, f) => s + (parseFloat(String(f.areaSqM || f.builtupAreaSqM || '0')) || 0), 0);
-    if (selectedFloorType === 'OpenPlot') {
+    if (selectedFloorType === 'OpenPlot' && (selectedFloor || isAddingNewFloor)) {
       sum += parseFloat(String(editingFloorForm.areaSqM || editingFloorForm.builtupAreaSqM || '0')) || 0;
     }
     return sum;
-  }, [activeFloors, selectedFloor, editingFloorForm, selectedFloorType]);
+  }, [activeFloors, selectedFloor, editingFloorForm, selectedFloorType, isAddingNewFloor]);
 
   // 5. Remaining Area for the Summary Section: Remaining Area = Total Plot Area - Utilized Area - Open Space Area
   const remainingAvailablePlotAreaSqM = useMemo(() => {
-    return plotAreaSqM - totalConstructionAreaSqM - totalOpenSpaceAreaSqM;
+    const rawRemaining = plotAreaSqM - totalConstructionAreaSqM - totalOpenSpaceAreaSqM;
+    // Round to 4 decimal places to prevent floating-point precision issues (e.g. 1000 - 529.2 - 470.8 = -5.68e-14)
+    return Math.round(rawRemaining * 10000) / 10000;
   }, [plotAreaSqM, totalConstructionAreaSqM, totalOpenSpaceAreaSqM]);
 
   // 6. Max available area for the currently edited Construction record
