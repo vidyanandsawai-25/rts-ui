@@ -36,6 +36,29 @@ export async function fetchPropertyDetailsConcurrently(
   showDetailsParam: boolean,
   initialMediaPanelVisible: boolean
 ) {
+  const rateableValuePromise = getRateableValue(propertyId);
+  
+  const capitalValuePromise = valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam)
+    ? getCapitalValue(propertyId)
+    : Promise.resolve(null);
+
+  const dualMethodPromise = valuationTab === 'dual'
+    ? getDualMethod(propertyId)
+    : Promise.resolve(null);
+
+  const taxDetailsPromise = fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam);
+
+  // Chain the rule logs fetching to run only after all calculation actions resolve.
+  // This avoids the race condition where rule logs are queried before calculation creates them.
+  const ruleLogsPromise = Promise.all([
+    rateableValuePromise.catch(() => null),
+    capitalValuePromise.catch(() => null),
+    dualMethodPromise.catch(() => null),
+    taxDetailsPromise.catch(() => null),
+  ]).then(async () => {
+    return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
+  }).catch(() => null);
+
   return Promise.all([
     wardId && propertyNo
       ? getApartmentQCDataAction(
@@ -59,10 +82,8 @@ export async function fetchPropertyDetailsConcurrently(
           partitionNo
         )
       : Promise.resolve(null),
-    getRateableValue(propertyId),
-    valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam)
-      ? getCapitalValue(propertyId)
-      : Promise.resolve(null),
+    rateableValuePromise,
+    capitalValuePromise,
     fetchKycDetailsOnlyAction(propertyId),
     fetchSocietyDetailsOnlyAction(propertyId),
     fetchBuildingPermissionOnlyAction(propertyId),
@@ -72,8 +93,8 @@ export async function fetchPropertyDetailsConcurrently(
     fetchDiscountDetailsOnlyAction(propertyId),
     initialMediaPanelVisible ? photoPlanService.getPhotoTypesWithStatus(propertyId) : Promise.resolve(null),
     initialMediaPanelVisible ? photoPlanService.getPhotosByProperty(propertyId) : Promise.resolve(null),
-    valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
-    fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
-    propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
+    dualMethodPromise,
+    taxDetailsPromise,
+    ruleLogsPromise,
   ]);
 }
