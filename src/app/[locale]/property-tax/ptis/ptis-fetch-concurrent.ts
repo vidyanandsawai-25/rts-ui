@@ -9,7 +9,7 @@ import {
   fetchDiscountDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
-} from './actions';
+} from './ptis-detail-actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
