@@ -3,8 +3,10 @@
 import React, { useState, useRef, memo, useMemo, useEffect, useCallback } from 'react';
 import { Button, Input } from '@/components/common';
 import { Label } from '@/components/common/label';
+import { Select } from '@/components/common/select';
 import { Upload, Eye, Loader2, Calendar, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils/cn';
 
 import { Swal } from '@/lib/utils/alerts';
 import { extractAgreementData } from '@/lib/utils/renter/renterUtils';
@@ -68,7 +70,7 @@ const isValidAgreementId = (val: string) => /^[A-Za-z0-9_-]*$/.test(val);
 
 const fieldLabelClassName = 'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
 const errorClassName =
-  'text-[10px] text-red-500 font-medium mt-0.5 animate-in fade-in duration-200';
+  'text-[10px] text-red-500 font-medium absolute top-full left-0 mt-0.5 whitespace-nowrap animate-in fade-in duration-200';
 const errorBorderClassName = 'border-red-400 focus:ring-red-100';
 
 const AgreementDetails = memo(
@@ -77,6 +79,11 @@ const AgreementDetails = memo(
     const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
     const [showDocumentPreview, setShowDocumentPreview] = useState(false);
     const [isProcessingOCR, setIsProcessingOCR] = useState(false);
+
+    const taxLiabilityOptions = useMemo(() => [
+      { label: t('floor.renterSection.self'), value: 'Self' },
+      { label: t('floor.renterSection.renter'), value: 'Renter' },
+    ], [t]);
 
     // ─── Field-Level Validation Errors (Reactive & Touched-Driven) ─────────────
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -124,6 +131,7 @@ const AgreementDetails = memo(
       );
       const nextErrors: Record<string, string> = {};
       const relevantFields = [
+        'taxLiability',
         'agreementId',
         'agreementDate',
         'renterName',
@@ -232,11 +240,15 @@ const AgreementDetails = memo(
     };
 
     return (
-      <div className="bg-white/60 border border-gray-200 p-4 rounded-xl shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
+      <div className="bg-white/60 border border-gray-200 p-4 rounded-xl shadow-sm flex flex-col gap-5">
+        {/* Row 1: Document, Tax Liability, Agreement No, Agreement Date, Renter Name, Duration */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row lg:flex-nowrap gap-4 items-start">
           {/* Document Upload */}
           <div
-            className={`${uploadedDocument ? 'lg:col-span-2' : 'lg:col-span-1'} flex flex-col gap-1.5`}
+            className={cn(
+              "flex flex-col gap-1.5 shrink-0",
+              uploadedDocument ? "col-span-1 sm:col-span-2 lg:w-[180px]" : "col-span-1 sm:col-span-1 lg:w-[60px]"
+            )}
           >
             <Label className={fieldLabelClassName}>{t('floor.renterSection.document')}</Label>
             <div className="flex items-center gap-1">
@@ -327,8 +339,36 @@ const AgreementDetails = memo(
             </div>
           </div>
 
+          {/* Tax Liability */}
+          <div className="col-span-1 lg:w-[110px] shrink-0 flex flex-col gap-1.5 relative">
+            <Label className={fieldLabelClassName}>
+              {t('floor.renterSection.taxLiability')} <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              options={taxLiabilityOptions}
+              value={formData?.renterDetails?.taxLiability || ''}
+              onChange={(_, val) => {
+                setFormData((prev) => {
+                  return {
+                    ...prev,
+                    renterDetails: { ...prev.renterDetails, taxLiability: val },
+                  };
+                });
+                markTouched('taxLiability');
+              }}
+              onBlur={() => markTouched('taxLiability')}
+              className={cn(
+                "h-10 text-xs font-medium w-full text-slate-700 [&>button]:!text-xs [&>button]:!px-2.5 [&>button>span]:!text-xs",
+                fieldErrors.taxLiability && "[&>button]:!border-red-400 [&>button]:focus:!ring-red-100"
+              )}
+            />
+            {fieldErrors.taxLiability && (
+              <p className={errorClassName}>{fieldErrors.taxLiability}</p>
+            )}
+          </div>
+
           {/* Agreement No — Alphanumeric only */}
-          <div className="lg:col-span-2 flex flex-col gap-1.5">
+          <div className="col-span-1 lg:w-[100px] shrink-0 flex flex-col gap-1.5 relative">
             <Label className={fieldLabelClassName}>
               {t('floor.renterSection.agreementId')} <span className="text-red-500">*</span>
             </Label>
@@ -355,7 +395,7 @@ const AgreementDetails = memo(
           </div>
 
           {/* Agreement Date — DD-MM-YYYY */}
-          <div className="lg:col-span-2 flex flex-col gap-1.5">
+          <div className="col-span-1 lg:w-[125px] shrink-0 flex flex-col gap-1.5 relative">
             <Label className={fieldLabelClassName}>
               {t('floor.renterSection.agreementDate')} <span className="text-red-500">*</span>
             </Label>
@@ -412,7 +452,7 @@ const AgreementDetails = memo(
           </div>
 
           {/* Renter Name — Alphabets only */}
-          <div className="lg:col-span-3 flex flex-col gap-1.5">
+          <div className="col-span-1 lg:flex-[2] lg:min-w-[180px] flex flex-col gap-1.5 relative">
             <Label className={fieldLabelClassName}>
               {t('floor.renterSection.renterName')} <span className="text-red-500">*</span>
             </Label>
@@ -458,7 +498,10 @@ const AgreementDetails = memo(
 
           {/* Duration (From - To) — DD-MM-YYYY, From < To */}
           <div
-            className={`${uploadedDocument ? 'lg:col-span-3' : 'lg:col-span-4'} flex flex-col gap-1.5`}
+            className={cn(
+              "flex flex-col gap-1.5 relative",
+              uploadedDocument ? "col-span-1 sm:col-span-2 lg:flex-[1.5] lg:min-w-[250px]" : "col-span-1 sm:col-span-1 lg:flex-[1.5] lg:min-w-[250px]"
+            )}
           >
             <Label className={fieldLabelClassName}>
               {t('floor.renterSection.durationFromTo')} <span className="text-red-500">*</span>
@@ -578,12 +621,15 @@ const AgreementDetails = memo(
               <p className={errorClassName}>{fieldErrors.agreementDateFrom}</p>
             )}
             {fieldErrors.agreementDateTo && (
-              <p className={errorClassName}>{fieldErrors.agreementDateTo}</p>
+              <p className={cn(errorClassName, "left-auto right-0 text-right")}>{fieldErrors.agreementDateTo}</p>
             )}
           </div>
+        </div>
 
+        {/* Row 2: Rent Agreement(Monthly), Self Declaration(Monthly) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
           {/* Rent Agreement(Monthly) */}
-          <div className="lg:col-span-2 flex flex-col gap-1.5">
+          <div className="lg:col-span-2 flex flex-col gap-1.5 relative">
             <Label className={fieldLabelClassName}>
               {t('floor.renterSection.rentAgreementMonthly')}{' '}
               <span className="text-red-500">*</span>
@@ -610,7 +656,7 @@ const AgreementDetails = memo(
           </div>
 
           {/* Self Declaration(Monthly) */}
-          <div className="lg:col-span-2 flex flex-col gap-1.5">
+          <div className="lg:col-span-2 flex flex-col gap-1.5 relative">
             <Label className={fieldLabelClassName}>
               {t('floor.renterSection.selfDeclarationMonthly')}
             </Label>

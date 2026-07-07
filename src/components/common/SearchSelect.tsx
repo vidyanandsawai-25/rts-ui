@@ -97,11 +97,14 @@ export interface SearchSelectProps {
    * Direction/placement of the menu dropdown. Defaults to 'bottom'.
    */
   menuPlacement?: 'top' | 'bottom';
+  tabIndex?: number;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEnter?: () => void;
   /**
    * Optional validation error message.
    */
   error?: string;
-  /**
+    /**
    * Optional autoFocus prop to focus the input on mount.
    */
   autoFocus?: boolean;
@@ -131,9 +134,12 @@ export function SearchSelect({
   inputMode = 'text',
   loadingPlaceholder,
   noOptionsPlaceholder,
-  menuPlacement,
   error,
+  tabIndex,
+  onKeyDown,
+  onEnter,
   autoFocus = false,
+  menuPlacement,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -144,7 +150,7 @@ export function SearchSelect({
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
-  const resolvedPlacement = menuPlacement || placement;
+  const activePlacement = menuPlacement || placement;
   // Accessible id for aria attributes and listbox
   const accessibleId = name || id || 'search-select';
 
@@ -156,9 +162,8 @@ export function SearchSelect({
   const didSelectRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (menuPlacement) {
-      return;
-    }
+    if (menuPlacement) return;
+
     if (isOpen && wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
@@ -296,9 +301,25 @@ export function SearchSelect({
         break;
       case 'Enter':
         e.preventDefault();
-        if (highlightedIndex >= 0) {
-          const opt = filteredOptions[highlightedIndex];
-          if (opt) handleSelect(opt.value);
+        const selectedOption =
+          highlightedIndex >= 0
+            ? filteredOptions[highlightedIndex]
+            : filteredOptions[0];
+        if (selectedOption) {
+          handleSelect(selectedOption.value);
+          onEnter?.();
+          return;
+        }
+
+        if (hasTyped) {
+          const exactMatch = validOptions.find(
+            (opt) => normalizeSearchText(opt.label) === normalizeSearchText(search)
+          );
+          if (exactMatch) {
+            handleSelect(exactMatch.value);
+            onEnter?.();
+            return;
+          }
         }
         break;
       case 'Escape':
@@ -330,7 +351,7 @@ export function SearchSelect({
           type="text"
           name={fallbackName}
           value={displayValue}
-          autoFocus={autoFocus}          
+          autoFocus={autoFocus}   
           placeholder={
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
@@ -366,7 +387,11 @@ export function SearchSelect({
           }}
           onBlur={handleBlur}
           onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e) => {
+            handleKeyDown(e);
+            onKeyDown?.(e);
+          }}
+          tabIndex={tabIndex}
           className={`
             w-full h-9 rounded-md border bg-white px-3 pr-9 text-sm text-slate-900
             placeholder:text-slate-400
@@ -405,7 +430,7 @@ export function SearchSelect({
             shadow-xl shadow-slate-300/60
             ring-1 ring-slate-200
             animate-in fade-in-0 zoom-in-95 duration-150
-            ${resolvedPlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
+            ${activePlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
           `}
         >
           {filteredOptions.length === 0 && !isLoading ? (

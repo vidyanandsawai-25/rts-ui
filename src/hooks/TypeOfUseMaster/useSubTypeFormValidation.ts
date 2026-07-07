@@ -46,8 +46,8 @@ export function useSubTypeFormValidation({
 
         if (!desc) return t('messages.subTypeNameRequired');
         if (isAllZeros(desc)) return t('messages.subTypeNameLabel') + ' ' + t('messages.cannotBeAllZeros');
-        if (desc.length > 100)
-          return t('messages.subTypeNameLabel') + ' ' + t('messages.maxLength', { count: 100 });
+        if (desc.length > 80)
+          return t('messages.subTypeNameLabel') + ' ' + t('messages.maxLength', { count: 80 });
         if (!DESCRIPTION_REGEX.test(desc))
           return t('messages.subTypeNameLabel') + ' ' + t('messages.allowedChars');
         if (isDuplicateDescription(desc)) return t('messages.duplicateSubTypeName');

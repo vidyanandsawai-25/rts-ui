@@ -56,7 +56,9 @@ export function PropertySelectionCard({
               label={t("selectPropertyCard.wardNo")}
               required
               value={formData.wardId}
+              tabIndex={0}
               onChange={handleSelectChange}
+              onEnter={() => document.getElementById("fromProperty")?.focus()}
               options={wardOptions}
               placeholder={t("selectPropertyCard.selectWard")}
             />
@@ -68,6 +70,7 @@ export function PropertySelectionCard({
               required
               value={formData.fromProperty}
               onChange={handleSelectChange}
+              onEnter={() => document.getElementById("toProperty")?.focus()}
               options={propertyOptions}
               placeholder={t("selectPropertyCard.selectStartRange")}
               isLoading={isLoadingProperties}
@@ -89,6 +92,7 @@ export function PropertySelectionCard({
           </div>
           <div className="flex items-end gap-3">
             <SearchButton
+              id="showButton"
               label={t("selectPropertyCard.showButton")}
               size="sm"
               onClick={handleShow}

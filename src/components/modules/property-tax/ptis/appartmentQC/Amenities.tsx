@@ -43,7 +43,7 @@ const Amenities = ({
   const sortOrder = searchParams.get('sortOrder') || '';
 
   // Column filters
-  const { activeFilters, handleFilterChange } = useColumnFilters({
+  const { activeFilters, handleFilterChange, fetchFilterOptions, isFilterPending } = useColumnFilters({
     wardId,
     propertyNo,
   });
@@ -65,9 +65,22 @@ const Amenities = ({
   }, [pathname, router, searchParams]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
-    const rowId = String(row.id || row.propertyId || 'new');
-    router.push(`${pathname}/edit/${rowId}`);
-  }, [pathname, router]);
+    const basePath = pathname.split('/appartmentQC')[0] + '/appartmentQC';
+    const params = new URLSearchParams(searchParams.toString());
+    
+    const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
+    if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
+    
+    params.delete('parentPropertyId');
+    params.delete('parentPropertyNo');
+    
+    params.set('returnTab', 'propertydetails');
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', 'amenities');
+    params.set('subTab', activeTab);
+
+    router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
+  }, [pathname, router, searchParams, activeTab]);
 
   const handleSort = useCallback((columnKey: string) => {
     const nextSortOrder = sortBy === columnKey && sortOrder === 'asc' ? 'desc' : 'asc';
@@ -89,7 +102,7 @@ const Amenities = ({
           updateQueryParams({ searchTerm: sanitized, pageNumber: 1 }); 
         }}
         onRowClick={handleRowClick}
-        loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
+        loading={isPending || isFilterPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
         sortBy={sortBy}
@@ -97,6 +110,7 @@ const Amenities = ({
         onSort={handleSort}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
+        onFetchFilterOptions={fetchFilterOptions}
       />
     </div>
   );

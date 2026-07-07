@@ -41,6 +41,7 @@ interface PtisMainScreenProps {
   initialDualSectionData?: DualMethodSectionData;
   wardId?: number | string;
   propertyNo?: string;
+  partitionNo?: string;
   rateableSection?: React.ReactNode;
   capitalSection?: React.ReactNode;
   dualRateableSection?: React.ReactNode;
@@ -56,6 +57,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   initialApartmentData,
   wardId,
   propertyNo,
+  partitionNo,
   ptisParams,
   propertyId,
   resolvedSearchParams,
@@ -87,7 +89,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
       : requestedTab;
 
   const activeMainTab =
-    searchParams.get('appartmentTab') || 'residential';
+    searchParams.get('appartmentTab') || 'amenities';
 
   const activeSubTab =
     searchParams.get('subTab') || 'rateable';
@@ -276,6 +278,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   initialData={initialApartmentData}
                   wardId={wardId?.toString() || ''}
                   propertyNo={propertyNo || ''}
+                  partitionNo={partitionNo}
                 />
               )}
 

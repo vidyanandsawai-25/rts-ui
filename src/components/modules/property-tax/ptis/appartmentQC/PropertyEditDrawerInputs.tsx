@@ -85,7 +85,8 @@ interface EditableInputWithRefreshProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  onRefresh: () => Promise<void>;
+  onClick?: () => Promise<void>;
+  onRefresh?: () => Promise<void>;
   className?: string;
   type?: string;
   required?: boolean;
@@ -102,6 +103,7 @@ export const EditableInputWithRefresh = memo(({
   label,
   value,
   onChange,
+  onClick,
   onRefresh,
   className = "",
   type = "text",
@@ -112,6 +114,7 @@ export const EditableInputWithRefresh = memo(({
   placeholder,
 }: EditableInputWithRefreshProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const clickHandler = onClick ?? onRefresh;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
@@ -122,11 +125,11 @@ export const EditableInputWithRefresh = memo(({
   };
 
   const handleRefresh = async () => {
-    if (!value || isRefreshing) return;
+    if (!value || isRefreshing || !clickHandler) return;
     
     setIsRefreshing(true);
     try {
-      await onRefresh();
+      await clickHandler();
     } finally {
       setIsRefreshing(false);
     }
@@ -146,18 +149,18 @@ export const EditableInputWithRefresh = memo(({
           placeholder={placeholder}
           maxLength={maxLength}
           className={cn(
-            "h-7 px-2 pr-8 text-xs",
+            "pr-9",
             error && "border-red-500"
           )}
         />
         <button
           type="button"
           onClick={handleRefresh}
-          disabled={!value || isRefreshing}
+          disabled={!value || isRefreshing || !clickHandler}
           className={cn(
-            "absolute right-1 bottom-0 h-7 w-6 flex items-center justify-center rounded",
+            "absolute right-1 bottom-1 h-[30px] w-8 flex items-center justify-center rounded",
             "hover:bg-gray-100 transition-colors",
-            (!value || isRefreshing) && "opacity-40 cursor-not-allowed"
+            (!value || isRefreshing || !clickHandler) && "opacity-40 cursor-not-allowed"
           )}
           title="Refresh old property data"
         >
@@ -198,6 +201,7 @@ interface EditableSelectProps {
   className?: string;
   required?: boolean;
   isLoading?: boolean;
+  error?: string;
 }
 
 /**
@@ -212,6 +216,7 @@ export const EditableSelect = memo(({
   className = "",
   required = false,
   isLoading = false,
+  error,
 }: EditableSelectProps) => (
   <div className={cn("flex flex-col", className)}>
     <Select
@@ -223,8 +228,9 @@ export const EditableSelect = memo(({
       placeholder={isLoading ? "Loading..." : placeholder}
       disabled={isLoading}
       selectSize="sm"
-      className="text-xs"
+      className={cn("text-xs", error && "[&>div]:border-red-500")}
     />
+    <ValidationMessage message={error} visible={!!error} type="error" />
   </div>
 ), (prev, next) =>
   prev.label === next.label &&
@@ -233,7 +239,8 @@ export const EditableSelect = memo(({
   prev.placeholder === next.placeholder &&
   prev.isLoading === next.isLoading &&
   prev.className === next.className &&
-  prev.options === next.options
+  prev.options === next.options &&
+  prev.error === next.error
 );
 EditableSelect.displayName = "EditableSelect";
 

@@ -48,10 +48,10 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
             if (value && (value === '0' || parseFloat(value) < 1)) value = '';
             handleInputChange('roomNo', value);
           }}
-          disabled={false}
+          disabled={true}
           className="text-center h-[40px]"
           placeholder={t('roomSubmission.input.placeholders.auto')}
-          error={validationErrors.roomNo ? t(validationErrors.roomNo) : undefined}
+          // error={validationErrors.roomNo ? t(validationErrors.roomNo) : undefined}
         />
       </div>
 

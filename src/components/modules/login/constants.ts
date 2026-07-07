@@ -77,6 +77,9 @@ export const AUTH_COOKIES = {
 /** Seconds to show session-timeout message before redirecting to login. */
 export const SESSION_TIMEOUT_REDIRECT_SECONDS = 60;
 
+/** Inactivity timeout duration (seconds) before auto logging out (10 minutes). */
+export const INACTIVITY_TIMEOUT_SECONDS = 10 * 60;
+
 /**
  * ULB (Urban Local Body) branding cookie names.
  * Client-readable for UI display.
@@ -90,6 +93,22 @@ export const ULB_COOKIES = {
   ULB_LOGO: 'ulb_logo',
   /** Council code */
   ULB_CODE: 'ulb_code',
+} as const;
+
+/**
+ * Department & Module context cookie names.
+ * Set when the user clicks a department card on the home screen
+ * so downstream pages know the active department/module.
+ */
+export const DEPARTMENT_COOKIES = {
+  /** Currently selected department ID */
+  DEPARTMENT_ID: 'department_id',
+  /** Currently selected department name */
+  DEPARTMENT_NAME: 'department_name',
+  /** Currently selected module ID */
+  MODULE_ID: 'module_id',
+  /** Currently selected module name */
+  MODULE_NAME: 'module_name',
 } as const;
 
 /**
@@ -111,6 +130,10 @@ export const LOGOUT_CLEAR_COOKIES = [
   ULB_COOKIES.ULB_NAME_LOCAL,
   ULB_COOKIES.ULB_LOGO,
   ULB_COOKIES.ULB_CODE,
+  DEPARTMENT_COOKIES.DEPARTMENT_ID,
+  DEPARTMENT_COOKIES.DEPARTMENT_NAME,
+  DEPARTMENT_COOKIES.MODULE_ID,
+  DEPARTMENT_COOKIES.MODULE_NAME,
   'forgot_flow',
   'forgot_reset_otp',
 ] as const;
@@ -123,14 +146,9 @@ export const LOGOUT_CLEAR_COOKIES = [
  * Fallback session length (seconds) only when JWT/API expiry is absent.
  * Override with `NTIS_SESSION_MAX_AGE_SECONDS` in the environment.
  */
-const parsedSessionMaxAge = Number.parseInt(
-  process.env.NTIS_SESSION_MAX_AGE_SECONDS ?? '',
-  10
-);
+const parsedSessionMaxAge = Number.parseInt(process.env.NTIS_SESSION_MAX_AGE_SECONDS ?? '', 10);
 export const DEFAULT_SESSION_MAX_AGE_SECONDS =
-  Number.isFinite(parsedSessionMaxAge) && parsedSessionMaxAge > 0
-    ? parsedSessionMaxAge
-    : 60 * 60; // 1 hour
+  Number.isFinite(parsedSessionMaxAge) && parsedSessionMaxAge > 0 ? parsedSessionMaxAge : 60 * 60; // 1 hour
 
 /**
  * Base options for secure HTTP-only cookies (maxAge set per login from token expiry).

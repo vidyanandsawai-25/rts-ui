@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ShieldAlert } from "lucide-react";
-import { LockButton, UnlockButton, SearchButton, Card, PageContainer } from "@/components/common";
+import { LockButton, UnlockButton, Card, PageContainer } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput } from "@/components/common/SearchInput";
@@ -32,6 +32,7 @@ export default function LockUnlockMaster({
 }: LockUnlockMasterProps): React.ReactElement {
   const searchParams = useSearchParams();
   const t = useTranslations("lockUnlock");
+  const tableModalRef = React.useRef<import("./TableModal").TableModalRef>(null);
 
   const {
     formData,
@@ -50,7 +51,6 @@ export default function LockUnlockMaster({
     isLoadingProperties,
     propertySearchTerm,
     handlePropertySearch,
-    handleSearchButtonClick,
     pagination,
     handleSelectChange,
     handleClearAll,
@@ -60,14 +60,24 @@ export default function LockUnlockMaster({
     handlePageChange,
     handlePageSizeChange,
     columns,
-  } = useLockUnlockMaster({
+   } = useLockUnlockMaster({
     wardIdFromUrl: searchParams.get("wardId") || "",
     screens,
     dropdownProperties,
     initialProperties,
     initialPagination,
+    wards,
   });
 
+  React.useEffect(() => {
+    if (editModal.isOpen && tableModalRef.current) {
+      // Add a small delay to ensure the drawer is fully rendered
+      const timer = setTimeout(() => {
+        tableModalRef.current?.focusFirstCheckbox();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [editModal.isOpen]);
   // Map Wards to options format for SearchSelect
   const wardOptions = (wards || []).map((w) => ({
     label: w.wardNo,
@@ -79,15 +89,14 @@ export default function LockUnlockMaster({
     : selectedPropertyIds.length;
 
   return (
-  <PageContainer>
-    <div className="space-y-2 flex flex-col gap-4.5 w-full select-none">
+  <PageContainer className="overflow-auto">
+    <div className="space-y-1 flex flex-col gap-4.5 w-full select-none">
       <TableHeader
         title={t("title")}
         subtitle={t("subtitle")}
         icon={ShieldAlert}
       />
-
-      <div className="flex flex-col xl:grid xl:grid-cols-12 gap-2 items-stretch">
+      <div className="grid grid-cols-12 gap-2 items-stretch">
         {/* Left Panel */}
         <div className="col-span-5 flex flex-col gap-2 h-full">
           <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col gap-4 p-4 bg-white">
@@ -109,7 +118,6 @@ export default function LockUnlockMaster({
             />
           </Card>
         </div>
-
         {/* Right Panel */}
         <div className="col-span-7 flex h-full">
           <div className="flex-1">
@@ -132,24 +140,19 @@ export default function LockUnlockMaster({
                   }}
                   //headerTitle={t("resultsTable.propertyMasterTitle")}
                   headerExtra={
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full justify-start">
+                    <div className="flex gap-3 w-full justify-between">
                       <SearchInput
                         value={propertySearchTerm}
                         onChange={handlePropertySearch}
                         placeholder={t(
                           "resultsTable.searchPropertyPlaceholder"
                         )}
-                        className="!mb-0 w-80"
+                        className="!mb-0 w-115px"
                       />
-
-                      <SearchButton
-                        size="sm"
-                        label={t("resultsTable.searchButton")}
-                        onClick={handleSearchButtonClick}
-                      />
-
+                      <div className="flex gap-3 ">
                       <LockButton
                         size="sm"
+                        className="justify-end"
                         label={t("resultsTable.lockButton")}
                         disabled={
                           (!isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
@@ -158,7 +161,6 @@ export default function LockUnlockMaster({
                         }
                         onClick={() => handleBulkAction("lock")}
                       />
-
                       <UnlockButton
                         size="sm"
                         label={t("resultsTable.unlockButton")}
@@ -172,6 +174,7 @@ export default function LockUnlockMaster({
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 justify-end">
                        {t("screenSelectionCard.selectedCount", { count: selectedCount})}
                       </span>
+                      </div>
                     </div>
                   }
                 />
@@ -179,7 +182,6 @@ export default function LockUnlockMaster({
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[400px] border border-slate-300 rounded-xl bg-slate-50/50 text-slate-400 text-center gap-2">
                 <ShieldAlert className="w-8 h-8 text-slate-300" />
-
                 <p className="text-xs font-semibold text-slate-500">
                   {t("resultsTable.placeholderText")}
                 </p>
@@ -188,8 +190,8 @@ export default function LockUnlockMaster({
           </div>
         </div>
       </div>
-
       <TableModal
+        ref={tableModalRef}
         editModal={editModal}
         setEditModal={setEditModal}
         screens={screens}

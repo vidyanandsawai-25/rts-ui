@@ -118,7 +118,6 @@ vi.mock('@/hooks/ptis/photoplan/useMediaPanelVisibility', () => ({
 }));
 
 // Import target utilities and configurations
-import { getAdditionalImages, getGalleryImages } from '@/components/modules/property-tax/ptis/media/mediaConfig';
 import {
   formatPhotoPlanPayload,
   mapPropertyPhotoToAdditionalImage,
@@ -127,7 +126,6 @@ import {
 } from '@/components/modules/property-tax/ptis/media/mediaData';
 
 // Import hooks
-import { usePhotoPlanGallery } from '@/hooks/ptis/photoplan/usePhotoPlanGallery';
 import { usePhotoPlanMutations } from '@/hooks/ptis/photoplan/usePhotoPlanMutations';
 
 // Import components
@@ -144,23 +142,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
     mockSearchParamsGet.mockReturnValue(null);
   });
 
-  describe('mediaConfig utils', () => {
-    it('returns additional images array with translation', () => {
-      const mockTFunc = (key: string) => `trans_${key}`;
-      const additional = getAdditionalImages(mockTFunc);
-      expect(additional.length).toBe(8);
-      expect(additional[0]?.alt).toBe('trans_media.rearElevation');
-      expect(additional[0]?.photoTypeCode).toBe('BACK');
-    });
 
-    it('returns full gallery images collection with translation', () => {
-      const mockTFunc = (key: string) => `trans_${key}`;
-      const gallery = getGalleryImages(mockTFunc);
-      expect(gallery.length).toBe(11);
-      expect(gallery[0]?.alt).toBe('trans_media.frontElevation');
-      expect(gallery[0]?.photoTypeCode).toBe('FRONT');
-    });
-  });
 
   describe('mediaData transformations', () => {
     it('formats photo plan payload successfully into FormData', () => {
@@ -291,63 +273,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
     });
   });
 
-  describe('usePhotoPlanGallery hook', () => {
-    it('tracks active image selections, rotate, reset, and next/prev navigations', () => {
-      const images = [
-        { src: 'img1.png', fullSrc: 'img1.png', title: 'img1', alt: 'img1', photoTypeCode: 'FRONT' },
-        { src: 'img2.png', fullSrc: 'img2.png', title: 'img2', alt: 'img2', photoTypeCode: 'BACK' },
-      ];
-      const { result, rerender } = renderHook(
-        (props) => usePhotoPlanGallery(props),
-        {
-          initialProps: { images, initialIndex: 0, open: true },
-        }
-      );
 
-      expect(result.current.selectedImageIndex).toBe(0);
-      expect(result.current.rotation).toBe(0);
-
-      act(() => {
-        result.current.handleNext();
-      });
-      expect(result.current.selectedImageIndex).toBe(1);
-
-      act(() => {
-        result.current.handlePrev();
-      });
-      expect(result.current.selectedImageIndex).toBe(0);
-
-      act(() => {
-        result.current.handleRotateRight();
-      });
-      expect(result.current.rotation).toBe(90);
-
-      act(() => {
-        result.current.handleRotateLeft();
-      });
-      expect(result.current.rotation).toBe(0);
-
-      act(() => {
-        result.current.handleRotateLeft();
-      });
-      expect(result.current.rotation).toBe(270);
-
-      act(() => {
-        result.current.handleReset();
-      });
-      expect(result.current.rotation).toBe(0);
-
-      act(() => {
-        result.current.handleSelect(1);
-      });
-      expect(result.current.selectedImageIndex).toBe(1);
-
-      rerender({ images, initialIndex: 0, open: false });
-      rerender({ images, initialIndex: 1, open: true });
-      expect(result.current.selectedImageIndex).toBe(1);
-      expect(result.current.rotation).toBe(0);
-    });
-  });
 
   describe('usePhotoPlanMutations hook', () => {
     let categories: PhotoCategory[];

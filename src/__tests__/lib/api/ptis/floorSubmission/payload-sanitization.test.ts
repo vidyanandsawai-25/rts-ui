@@ -292,4 +292,51 @@ describe('Payload Sanitization Tests', () => {
       expect(secondMinus.isOffset).toBe(false);
     });
   });
+
+  describe('Open Space Mapping Requirements', () => {
+    it('should map Open Space fields correctly when isOpenPlot is true or selectedFloorType is OpenPlot', () => {
+      const openSpacePayload = {
+        propertyDetailsId: 206094,
+        propertyId: 1024,
+        isOpenPlot: true,
+        length: 12.5,
+        width: 10,
+        roomWiseSubmissionDetails: [
+          { id: 1, roomNo: 'Room 1', lengthMtr: 5 }
+        ]
+      };
+
+      const result = sanitizeRenterPayload(openSpacePayload);
+
+      expect(result.isOpenPlot).toBe(true);
+      expect(result.length).toBe(12.5);
+      expect(result.width).toBe(10);
+      expect(result.lengthMtr).toBe(12.5);
+      expect(result.widthMtr).toBe(10);
+      expect(result.roomWiseSubmissionDetails).toEqual([]);
+      expect(result.roomWiseMinusData).toEqual([]);
+    });
+
+    it('should set isOpenPlot to false and length/width to null for non-Open Space submissions', () => {
+      const constructionPayload = {
+        propertyDetailsId: 206094,
+        propertyId: 1024,
+        selectedFloorType: 'Construction',
+        length: 12.5,
+        width: 10,
+        roomWiseSubmissionDetails: [
+          { id: 1, roomNo: 'Room 1', lengthMtr: 5 }
+        ]
+      };
+
+      const result = sanitizeRenterPayload(constructionPayload);
+
+      expect(result.isOpenPlot).toBe(false);
+      expect(result.length).toBeNull();
+      expect(result.width).toBeNull();
+      expect(result.lengthMtr).toBeNull();
+      expect(result.widthMtr).toBeNull();
+      expect(result.roomWiseSubmissionDetails).toHaveLength(1);
+    });
+  });
 });

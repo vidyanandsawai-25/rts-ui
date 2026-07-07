@@ -135,7 +135,9 @@
       "validation": {
         "sizeCodeRequired": "Size Code is required",
         "sizeNameRequired": "Size Name is required",
+        "sizeNameInvalid": "Size Name must not contain special characters",
         "unitRequired": "Unit is required",
+        "unitInvalid": "Unit must not contain special characters",
         "sizeCodeLength": "Size Code cannot exceed {count} characters",
         "sizeNameLength": "Size Name cannot exceed {count} characters",
         "unitLength": "Unit cannot exceed {count} characters"

@@ -1,11 +1,28 @@
 {
+  "floor": {
+    "editFloor": "Edit Floor"
+  },
   "title": "Property Tax Information System",
   "subtitle": "Manage property tax records and assessments",
   "media": {
     "title": "Media / Images",
+    "historicalSatellite": "Historical Satellite",
+    "pause": "Pause",
+    "play": "Play",
+    "speed": "Speed:",
+    "speedSlow": "0.5x (Slow)",
+    "speedNormal": "1x (Normal)",
+    "speedMedium": "1.5x (Medium)",
+    "speedFast": "2x (Fast)",
+    "labels": "Labels",
+    "googleMap": "Click to view on Google Map",
+    "fetchingCatalog": "Fetching satellite history catalog...",
+    "interactionGuide": "Drag to pan · Click a year to jump",
+    "attribution": "© Esri, Wayback, Maxar",
     "backToGrid": "Back to Grid",
     "compareModeSlider": "Slider",
     "compareModeSideBySide": "Side-by-Side",
+    "compareModeWayback": "Wayback Map",
     "beforeSatelliteLabel": "2018 Satellite",
     "afterSatelliteLabel": "2026 Satellite",
     "uploadBefore": "Upload Before (Old)",
@@ -18,6 +35,8 @@
     "satelliteTitle": "GIS / Satellite View",
     "satelliteView": "GIS / Satellite View",
     "changeDetection": "Change Detection",
+    "changeDetectionLocationUnset": "Change Detection Location Unset",
+    "changeDetectionLocationUnsetDescription": "GPS coordinates (latitude and longitude) are not available for this property in the database. A dynamic historical satellite map cannot be loaded.",
     "changeDetectionComingSoon": "Change Detection details coming soon.",
     "photoPlan": "Photo Plan",
     "showPhotoPlan": "Show Photo Plan",
@@ -177,6 +196,8 @@
     "societyDetails": "Society Details",
     "buildingPermission": "Building Permission",
     "discountData": "Discount & Social Data",
+    "discount": "Discount Data",
+    "social": "Social Data",
     "oldDetails": "Old Details",
     "rateable": "Rateable",
     "capital": "Capital",
@@ -238,8 +259,11 @@
     }
   },
   "fields": {
+    "localeSuffix": "(Locale)",
     "upicId": "UPIC ID",
     "propertyHolder": "Property Holder",
+    "assessmentStatus": "Assessment status",
+    "oldNo": "Old No.",
     "division": "Division",
     "plotNo": "Plot No",
     "plotArea": "Plot Area",
@@ -269,7 +293,7 @@
     "occupierName": "Occupier Name",
     "aadharCardNo": "Aadhar No",
     "mobileNumber": "Mobile No",
-    "alternateMobileNo": "Alternate Mobile No",
+    "alternateMobileNo": "Alt. Mobile No",
     "pinCode": "Pincode",
     "emailId": "Email ID",
     "shopName": "Shop Name",
@@ -401,7 +425,8 @@
     "lightTax": "Light Tax",
     "cleaningTax": "Cleaning Tax",
     "sewerageTax": "Sewerage Tax",
-    "treeTax": "Tree Tax"
+    "treeTax": "Tree Tax",
+    "taxTotal": "Tax Total"
   },
   "actions": {
     "save": "Save",
@@ -468,7 +493,7 @@
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
       "taxAmount": "Tax Amount",
-      "appliedOn": "AppliedON"
+      "appliedOn": "Applied On"
     },
     "tooltips": {
       "taxable": "Taxable",
@@ -662,6 +687,9 @@
     "unauthorized": "You do not have permission to view this data.",
     "serverError": "Internal server error occurred while fetching data.",
     "generic": "Something went wrong while processing your request.",
+    "propertyDetailsNotFound": "Active property details not found for the given property ID.",
+    "invalidPropertyData": "Invalid property data detected. Please check the property use details.",
+    "typeOfUseGroupNotFound": "Type of use group configuration not found for the property.",
     "propertyNotSearched": "Please search for a property first before combining.",
     "noValuationData": "No valuation data available for the selected method.",
     "ratesNotFound": "Rates not found for the selected assessment year. Please configure the Rate Master.",
@@ -728,5 +756,11 @@
     "noAppliedRules": "No rules have been applied to this property.",
     "loading": "Loading applied rules...",
     "errorFetching": "Failed to fetch applied rules."
+  },
+  "capitalPlaceholder": {
+    "title": "Capital Valuation Calculation Required",
+    "description": "The capital valuation taxes for this property have not been loaded. Click below to retrieve and calculate the capital value on-demand.",
+    "button": "Calculate Capital Value",
+    "calculating": "Calculating..."
   }
 }

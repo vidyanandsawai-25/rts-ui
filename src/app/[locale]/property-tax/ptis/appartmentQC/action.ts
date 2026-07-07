@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import type { PropertyPhotoDto } from "@/types/photoplan.types";
 import type { ApartmentQCDetail, ApartmentQCSearchParams } from "@/types/apartmentQC.types";
 import {
   getApartmentQCDetailsLocalized,
@@ -208,19 +209,12 @@ export async function revalidateApartmentQCAction(): Promise<ActionResult> {
 export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
     const { getFloorPaged } = await import("@/lib/api/floor.service");
-    const pageSize = 1000;
-    let page = 1;
-    let all: Array<{ value: string; label: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getFloorPaged(page, pageSize);
-      const items = res.items ?? [];
-      all = [...all, ...items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ value: String(f.id), label: f.description || f.floorCode || '' }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getFloorPaged(1, -1);
+    const items = res.items ?? [];
+    const all = items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ 
+      value: String(f.id), 
+      label: f.description || f.floorCode || '' 
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch floors");
@@ -233,19 +227,12 @@ export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value
 export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
     const { getConstructionPaged } = await import("@/lib/api/constructiontypemaster/construction-crud.service");
-    const pageSize = 1000;
-    let page = 1;
-    let all: Array<{ value: string; label: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getConstructionPaged(page, pageSize);
-      const items = res.items ?? [];
-      all = [...all, ...items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ value: String(c.id), label: c.description || c.constructionCode || '' }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getConstructionPaged(1, -1);
+    const items = res.items ?? [];
+    const all = items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ 
+      value: String(c.id), 
+      label: c.description || c.constructionCode || '' 
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch construction types");
@@ -258,19 +245,12 @@ export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Ar
 export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
     const { getUseTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
-    const pageSize = 5000;
-    let page = 1;
-    let all: Array<{ value: string; label: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getUseTypesPagedServer({ pageNumber: page, pageSize });
-      const items = res.items ?? [];
-      all = [...all, ...items.map(u => ({ value: String(u.typeOfUseId), label: u.description || u.typeOfUseCode }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
+    const items = res.items ?? [];
+    const all = items.map(u => ({ 
+      value: String(u.typeOfUseId), 
+      label: u.description || u.typeOfUseCode || '' 
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch use types");
@@ -283,23 +263,13 @@ export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ val
 export async function fetchAllSubTypesAction(): Promise<ActionResult<Array<{ value: string; label: string; typeOfUseId: string }>>> {
   try {
     const { getSubTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
-    const pageSize = 5000;
-    let page = 1;
-    let all: Array<{ value: string; label: string; typeOfUseId: string }> = [];
-    let hasMore = true;
-    
-    while (hasMore) {
-      const res = await getSubTypesPagedServer({ pageNumber: page, pageSize });
-      const items = res.items ?? [];
-      all = [...all, ...items.map(s => ({ 
-        value: String(s.subTypeOfUseId), 
-        label: s.description,
-        typeOfUseId: String(s.typeOfUseId)
-      }))];
-      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
-      else page++;
-    }
-    
+    const res = await getSubTypesPagedServer({ pageNumber: 1, pageSize: -1 });
+    const items = res.items ?? [];
+    const all = items.map(s => ({ 
+      value: String(s.subTypeOfUseId), 
+      label: s.description || '',
+      typeOfUseId: String(s.typeOfUseId)
+    }));
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch sub-types");
@@ -1086,12 +1056,13 @@ export async function fetchApartmentPropertyTaxDetailsAction(
 export async function fetchApartmentPropertyTaxDetailsByTabAction(
   wardId: string | number,
   propertyNo: string,
-  mainTab: string
+  mainTab: string,
+  partitionNo?: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
     const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
-    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType, partitionNo });
     return {
       success: true,
       data,
@@ -1119,12 +1090,13 @@ export async function fetchApartmentPropertyTaxDetailsByTabAction(
 export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
   wardId: string | number,
   propertyNo: string,
-  mainTab: string
+  mainTab: string,
+  partitionNo?: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
     const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
-    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType });
+    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType, partitionNo });
     return {
       success: true,
       data,
@@ -1151,12 +1123,13 @@ export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
 export async function fetchDualMethodTaxDetailsByTabAction(
   wardId: string | number,
   propertyNo: string,
-  mainTab: string
+  mainTab: string,
+  partitionNo?: string
 ): Promise<ActionResult<DualMethodTaxDetails>> {
   try {
     const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
-    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType);
+    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType, partitionNo);
     return {
       success: true,
       data,
@@ -1184,7 +1157,7 @@ export async function fetchDualMethodTaxDetailsByTabAction(
 export async function fetchApartmentTaxDetailsByIdAction(
   propertyId: string | number,
   mainTab: string
-): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
     const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
@@ -1210,7 +1183,7 @@ export async function fetchApartmentTaxDetailsByIdAction(
 export async function fetchApartmentTaxDetailsCvByIdAction(
   propertyId: string | number,
   mainTab: string
-): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
     const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
@@ -1248,5 +1221,49 @@ export async function fetchDualMethodTaxDetailsByIdAction(
     };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch dual method tax details");
+  }
+}
+
+/* ============================================================
+   PROPERTY PHOTOS ACTION
+   Fetches all photos for a property by property ID
+ ============================================================ */
+
+/**
+ * Fetch property photos by property ID.
+ * 
+ * @param propertyId - The property ID
+ * @returns ActionResult with array of PropertyPhotoDto
+ */
+export async function fetchPropertyPhotosAction(
+  propertyId: number
+): Promise<ActionResult<PropertyPhotoDto[]>> {
+  try {
+    const { getPropertyPhotosLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const data = await getPropertyPhotosLocalized(propertyId);
+    return {
+      success: true,
+      data,
+      message: "Property photos fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch property photos");
+  }
+}
+
+/**
+ * Safe variant - Fetch property photos, returns empty array on failure.
+ * 
+ * @param propertyId - The property ID
+ * @returns Array of PropertyPhotoDto
+ */
+export async function fetchPropertyPhotosSafeAction(
+  propertyId: number
+): Promise<PropertyPhotoDto[]> {
+  try {
+    const { getPropertyPhotosSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    return await getPropertyPhotosSafe(propertyId);
+  } catch {
+    return [];
   }
 }

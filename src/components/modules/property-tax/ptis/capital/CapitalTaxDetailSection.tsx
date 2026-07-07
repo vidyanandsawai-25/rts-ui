@@ -35,26 +35,40 @@ export async function CapitalTaxDetailsSection({
   locale,
 }: Props) {
 
-  const { data: capitalData, error } = await resolveValuationData<CapitalValueResponse>({
+  const ptisT = await getTranslations({ locale, namespace: 'ptis' });
+
+  const { data: capitalData, error, message, warning } = await resolveValuationData<CapitalValueResponse>({
     propertyId,
     initialData,
     initialError,
     hasFetchedInitialData: hasFetchedData,
     fetcher: getCapitalValue,
     fallbackUserMessage: 'Unable to load capital valuation details.',
+    t: ptisT,
   });
 
   const t = await getTranslations({ locale, namespace: 'ptis.modules.PtisTaxDetails' });
   const { cv, tax } = calculateCapitalTotal(capitalData);
 
   const finalErrorMessage = error || null;
+  const successMessage = message || null;
+  const warningMessage = warning || null;
 
   return (
     <div className="space-y-0.5 p-0.5">
-      {showInlineError && (finalErrorMessage || taxDetailsError) && (
-        <ToastNotifier message={finalErrorMessage || taxDetailsError || ''} />
+      {showInlineError && finalErrorMessage && (
+        <ToastNotifier message={finalErrorMessage} type="error" />
       )}
-      <CapitalTaxTable locale={locale} capitalData={capitalData} searchParams={searchParams} />
+      {showInlineError && taxDetailsError && (
+        <ToastNotifier message={taxDetailsError} type="error" />
+      )}
+      {showInlineError && warningMessage && (
+        <ToastNotifier message={warningMessage} type="warning" />
+      )}
+      {showInlineError && successMessage && (
+        <ToastNotifier message={successMessage} type="success" />
+      )}
+      <CapitalTaxTable locale={locale} capitalData={capitalData} searchParams={searchParams} propertyId={propertyId} />
       <ValuationSummaryFooter
         title={t('title')}
         badges={[

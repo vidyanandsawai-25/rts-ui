@@ -19,11 +19,28 @@ describe('validateRenterForm', () => {
     incrementType: 'Percentage',
     incrementValue: '5',
     customDateRanges: [],
+    taxLiability: 'Renter',
   };
 
   it('should pass with valid data', () => {
     const errors = validateRenterForm(validBaseForm);
     expect(errors).toHaveLength(0);
+  });
+
+  describe('Tax Liability Validation', () => {
+    it('should reject empty or missing tax liability', () => {
+      const errors = validateRenterForm({ ...validBaseForm, taxLiability: '' });
+      const matched = errors.filter((e) => e.field === 'taxLiability');
+      expect(matched).not.toHaveLength(0);
+      expect(matched[0].message).toBe('Tax Liability is required.');
+    });
+
+    it('should allow valid tax liability values like Self or Renter', () => {
+      ['Self', 'Renter'].forEach((val) => {
+        const errors = validateRenterForm({ ...validBaseForm, taxLiability: val });
+        expect(errors.filter((e) => e.field === 'taxLiability')).toHaveLength(0);
+      });
+    });
   });
 
   describe('Agreement No Validation', () => {

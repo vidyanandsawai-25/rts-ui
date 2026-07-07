@@ -11,21 +11,23 @@ import {
   type WardOption,
   type ZoneOption,
   type PropertyDescriptionOption,
-} from "@/types/property-search.types";
+  type CardFilterParams,
+} from "@/types/property-search";
 import type { PropertyAssessmentStatusOption } from "@/types/property-assessment-status.types";
 import {
   LEGACY_TYPE_FILTER_VALUES,
-  TYPE_FILTER_OPTIONS,
 } from "@/components/modules/property-tax/search-property/constants";
 import {
   filterPropertiesAction,
-  getPropertyStatsAction,
   listLookupOptionsAction,
   listPropertyAssessmentStatusesAction,
-  listPropertyTypeCategoriesAction,
+  listPropertyCategoriesAction,
+  listPropertyWorkflowStagesAction,
   listWardsByZoneAction,
   listZonesAction,
   listAllWardsAction,
+  getMainCardsAction,
+  getWorkflowCardsAction,
 } from "./action";
 
 const EMPTY_LOOKUP = {
@@ -86,10 +88,28 @@ function sanitizePropertyType(raw: string | undefined): string {
 function sanitizeTypeFilter(raw: string | undefined): string {
   const value = trim(raw);
   if (!value) return "";
-  if ((TYPE_FILTER_OPTIONS as readonly string[]).includes(value)) {
+  if (/^\d+$/.test(value)) {
     return value;
   }
-  return LEGACY_TYPE_FILTER_VALUES[value] ?? "";
+  const typeFilterOptionMap: Record<string, string> = {
+    geoSequencing: "1",
+    internalSurvey: "2",
+    dataEntry: "3",
+    assessment: "4",
+    approvalByUlb: "5",
+    noticeDistribution: "6",
+    hearingAndAppeal: "7",
+    billDistribution: "8",
+    billGeneration: "9",
+  };
+  if (value in typeFilterOptionMap) {
+    return typeFilterOptionMap[value];
+  }
+  const legacyMapped = LEGACY_TYPE_FILTER_VALUES[value];
+  if (legacyMapped && legacyMapped in typeFilterOptionMap) {
+    return typeFilterOptionMap[legacyMapped];
+  }
+  return "";
 }
 
 function buildCriteria(raw: PropertySearchRawParams): SearchCriteria {
@@ -150,6 +170,8 @@ export default async function PropertySearchPage({
   searchParams,
 }: PropertySearchPageProps): Promise<React.ReactElement> {
   const raw = await searchParams;
+  const pageNumber = toInt(raw.pageNumber as string | undefined) || 1;
+  const pageSize = toInt(raw.pageSize as string | undefined) || 10;
   const selectedStatus = sanitizeStatus(raw.status);
   const initialCriteria = buildCriteria(raw);
   const activeTab = sanitizeTab(raw.tab, raw);
@@ -162,17 +184,37 @@ export default async function PropertySearchPage({
 
   const hasZone = initialCriteria.zoneId > 0;
 
+  // Determine if any dropdown filter is applied during an active search
+  const hasDropdownFilter =
+    isSearchActive &&
+    (!!initialCriteria.propertyType ||
+     !!initialCriteria.typeFilter ||
+     !!initialCriteria.propertyDescription ||
+     initialCriteria.zoneId > 0 ||
+     initialCriteria.wardId > 0);
+
+  const cardFilterParams: CardFilterParams | undefined = hasDropdownFilter
+    ? {
+        propertyAssessmentStatusId: initialCriteria.propertyType ? parseInt(initialCriteria.propertyType, 10) : undefined,
+        workflowStageId: initialCriteria.typeFilter ? parseInt(initialCriteria.typeFilter, 10) : undefined,
+        propertyDescriptionId: initialCriteria.propertyDescription ? parseInt(initialCriteria.propertyDescription, 10) : undefined,
+        zoneId: initialCriteria.zoneId > 0 ? initialCriteria.zoneId : undefined,
+        wardId: initialCriteria.wardId > 0 ? initialCriteria.wardId : undefined,
+      }
+    : undefined;
+
   // Parallel SSR fetches. Heavy data sources (zones, categories, lookup)
   // are cached at the fetch layer; lookup is skipped entirely when no zone
   // is selected to save a needless round trip.
   // Default property records load on every visit. Stat cards filter immediately.
   // Form filters apply only after Search (`isActive=1`). Draft zone/ward URL
   // params load dropdown options but do not filter the table until Search.
-  const [zones, propertyAssessmentStatuses, propertyTypeCategories, wards, lookup, searchOutcome, stats, allWards] =
+  const [zones, propertyAssessmentStatuses, propertyCategories, propertyWorkflowStages, wards, lookup, searchOutcome, allWards, mainCards, workflowCards] =
     await Promise.all([
       listZonesAction(),
       listPropertyAssessmentStatusesAction(),
-      listPropertyTypeCategoriesAction(),
+      listPropertyCategoriesAction(),
+      listPropertyWorkflowStagesAction(),
       hasZone
         ? listWardsByZoneAction(initialCriteria.zoneId)
         : Promise.resolve([]),
@@ -183,19 +225,22 @@ export default async function PropertySearchPage({
         selectedStatus,
         searchCriteriaForFetch,
         isSearchActive,
-        activeTab
+        activeTab,
+        pageNumber,
+        pageSize
       ),
-      getPropertyStatsAction(),
       listAllWardsAction(),
+      getMainCardsAction(cardFilterParams),
+      getWorkflowCardsAction(cardFilterParams),
     ]);
 
   const propertyTypeOptions: PropertyAssessmentStatusOption[] =
     propertyAssessmentStatuses;
 
   const propertyDescriptionOptions: PropertyDescriptionOption[] =
-    propertyTypeCategories.map((category) => ({
+    propertyCategories.map((category) => ({
       id: category.id,
-      label: category.propertyTypeCategory,
+      label: category.propertyCategoryName,
     }));
 
   const zoneOptions: ZoneOption[] = zones.map((z) => {
@@ -240,19 +285,23 @@ export default async function PropertySearchPage({
   return (
     <PropertySearch
       results={searchOutcome.results}
-      totalCount={searchOutcome.results.length}
-      stats={stats}
+      totalCount={searchOutcome.totalCount}
+      pageNumber={pageNumber}
+      pageSize={pageSize}
+      mainCards={mainCards}
+      workflowCards={workflowCards}
       zoneOptions={zoneOptions}
       wardOptions={wardOptions}
       allWardOptions={allWardOptions}
       propertyTypeOptions={propertyTypeOptions}
+      workflowStageOptions={propertyWorkflowStages}
       propertyDescriptionOptions={propertyDescriptionOptions}
       lookupOptions={lookupOptions}
       selectedStatus={selectedStatus}
       isSearchActive={isSearchActive}
       activeTab={activeTab}
       criteria={initialCriteria}
-      searchError={searchOutcome.error}
+      searchError={null}
     />
   );
 }

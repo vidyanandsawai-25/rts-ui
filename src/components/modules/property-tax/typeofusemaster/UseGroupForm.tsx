@@ -272,7 +272,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
                 name="groupName"
                 value={formData.groupName}
                 onChange={(e) => {
-                  const cleaned = sanitizeText(e.target.value, 100);
+                  const cleaned = sanitizeText(e.target.value, 50);
                   const next = { ...formData, groupName: cleaned };
                   setFormData(next);
 
@@ -286,6 +286,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
                 }}
                 onBlur={() => handleBlur("name")}
                 placeholder={t('group.placeholders.groupName')}
+                maxLength={50}
                 required
                 fullWidth
               />

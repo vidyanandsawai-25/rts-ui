@@ -9,6 +9,8 @@ interface ChangeDetectionCardProps {
   afterImageSrc?: string;
   beforeLabel?: string;
   afterLabel?: string;
+  fallbackBeforeSrc?: string;
+  fallbackAfterSrc?: string;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -19,6 +21,8 @@ export function ChangeDetectionCard({
   afterImageSrc = '',
   beforeLabel = 'Before (Old)',
   afterLabel = 'After (New)',
+  fallbackBeforeSrc,
+  fallbackAfterSrc,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -43,6 +47,7 @@ export function ChangeDetectionCard({
         <div className="relative h-full w-full overflow-hidden group/before border-r border-slate-200">
           <ImageWithFallback
             src={beforeImageSrc}
+            fallbackSrc={fallbackBeforeSrc}
             alt={`${beforeLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
@@ -58,6 +63,7 @@ export function ChangeDetectionCard({
         <div className="relative h-full w-full overflow-hidden group/after">
           <ImageWithFallback
             src={afterImageSrc}
+            fallbackSrc={fallbackAfterSrc}
             alt={`${afterLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"

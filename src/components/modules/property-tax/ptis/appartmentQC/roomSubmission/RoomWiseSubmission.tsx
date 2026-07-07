@@ -19,7 +19,6 @@ import { useApartmentQCRoomListActions } from "@/hooks/apartmentQc/useApartmentQ
 import { useApartmentQCRoomPersistenceActions } from "@/hooks/apartmentQc/useApartmentQCRoomPersistenceActions";
 
 // ── Shared UI components (unchanged) ─────────────────────────────────────────
-import { RoomSubmissionHeader } from "./components/RoomSubmissionHeader";
 import { ApartmentQCRoomLayout } from "./ApartmentQCRoomLayout";
 import { RoomSubmissionFooter } from "../../QuickDataEntry/floorSubmission/RoomSubmission/components/RoomSubmissionFooter";
 import { InlineError } from "../../QuickDataEntry/floorSubmission/RoomSubmission/components/InlineError";
@@ -31,7 +30,9 @@ import {
   getDimensionsString,
   isOffsetValid,
 } from "@/lib/utils/RoomSubmission/room-submission.utils";
-import { MasterTable, Tooltip } from "@/components/common";
+import { MasterTable, Tooltip, Drawer, Button } from "@/components/common";
+import { createPortal } from "react-dom";
+import { Layers } from "lucide-react";
 
 
 export const RoomWiseSubmission: React.FC<
@@ -123,27 +124,17 @@ export const RoomWiseSubmission: React.FC<
 
   if (!state.mounted || !isOpen) return null;
 
-  return (
+  const content = (
     <div
-      className={`w-full p-0 flex flex-col bg-white overflow-visible ${
-        displayMode === "modal" ? "" : "mb-6"
-      }`}
+      className={`w-full p-0 flex flex-col bg-white overflow-visible z-[112] ${displayMode === "modal" ? "" : "mb-6"
+        }`}
     >
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="bg-white flex flex-col rounded-lg shadow-md border border-gray-200 overflow-visible">
 
-          <RoomSubmissionHeader
-            floorNumber={props.floorNumber}
-            areaUnit={state.areaUnit}
-            handleToggleUnit={handleToggleUnit}
-            maxRooms={props.maxRooms}
-            availableRooms={state.availableRooms}
-            displayMode={displayMode}
-          />
-
           {/* Selected floor row from Floor QC table */}
           {props.selectedFloorRow && (
-            <div className="mb-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="mb-4 p-1 animate-in fade-in slide-in-from-top-4 duration-500">
               <MasterTable<DrawerFloorDataRow>
                 columns={[
                   {
@@ -327,6 +318,59 @@ export const RoomWiseSubmission: React.FC<
       <OffSetSidebar {...fullOffSetProps} />
     </div>
   );
+
+  if (displayMode === "modal") {
+    if (typeof window === "undefined") return null;
+    return createPortal(
+      <Drawer open={isOpen}
+        onClose={onClose} width="xl" hideHeader={false}
+        title={
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-4">
+              <h2 className="text-base font-bold flex items-center gap-2 text-blue-900">
+                <Layers className="w-4 h-4 text-blue-600" />
+                {props.t?.('drawer.roomWiseSubmission') || 'Room Wise Submission'}
+                ({state.areaUnit === 'sq.m' ? (props.t?.('drawer.units.sqM') || 'Sq.m') : (props.t?.('drawer.units.sqFt') || 'Sq.ft')})
+              </h2>
+
+              <div className="flex items-center bg-blue-50/50 rounded-full p-0.5 border border-blue-100 shadow-inner ml-2">
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => state.areaUnit === 'sq.ft' && handleToggleUnit()}
+                  className={`px-4 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${state.areaUnit === 'sq.m'
+                    ? 'bg-white text-blue-600 shadow-sm scale-105'
+                    : 'text-blue-400/70 hover:text-blue-600'
+                    }`}
+                >
+                  {props.t?.('drawer.units.sqM') || 'Sq.m'}
+                </Button>
+
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => state.areaUnit === 'sq.m' && handleToggleUnit()}
+                  className={`px-4 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${state.areaUnit === 'sq.ft'
+                    ? 'bg-white text-blue-600 shadow-sm scale-105'
+                    : 'text-blue-400/70 hover:text-blue-600'
+                    }`}
+                >
+                  {props.t?.('drawer.units.sqFt') || 'Sq.ft'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {content}
+      </Drawer>,
+      document.body
+    );
+  }
+
+  return content;
 };
 
 export default RoomWiseSubmission;

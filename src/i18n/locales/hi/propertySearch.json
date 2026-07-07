@@ -9,7 +9,16 @@
     "qualityAnalysis": "गुणवत्ता विश्लेषण",
     "assessmentCompleted": "मूल्यांकन पूर्ण",
     "filterHint": "मूल्यांकन चरण के अनुसार परिणाम फ़िल्टर करने के लिए कार्ड पर क्लिक करें",
-    "activeFilter": "फ़िल्टर सक्रिय"
+    "activeFilter": "फ़िल्टर सक्रिय",
+    "previouslyRegistered": "पहले से पंजीकृत संपत्तियाँ और मांग",
+    "assessmentApproved": "मूल्यांकन स्वीकृत",
+    "assessed": "मूल्यांकित",
+    "unassessed": "अमूल्यांकित",
+    "additionalRevenue": "अतिरिक्त उत्पन्न राजस्व",
+    "structure": "संरचना",
+    "unit": "इकाई",
+    "units": "इकाइयाँ",
+    "demand": "मांग"
   },
   "form": {
     "sections": {
@@ -24,7 +33,7 @@
     "fields": {
       "propertyType": "संपत्ति प्रकार",
       "typeFilter": "प्रकार फ़िल्टर",
-      "propertyDescription": "संपत्ति विवरण",
+      "propertyDescription": "श्रेणी प्रकार",
       "zone": "ज़ोन",
       "ward": "वार्ड",
       "scanQR": "QR स्कैन करें",
@@ -42,7 +51,8 @@
       "shopBuildingName": "दुकान/भवन का नाम",
       "societyName": "सोसायटी का नाम",
       "address": "पता",
-      "filters": "फ़िल्टर"
+      "filters": "फ़िल्टर",
+      "valuationMethod": "मूल्यांकन विधि"
     },
     "tooltips": {
       "propertyNo": "अक्षर, संख्या, हाइफ़न (-) और स्लैश (/). अधिकतम 20 अक्षर। उदा.: P-2023-001, 10/A",
@@ -63,7 +73,7 @@
     "placeholders": {
       "propertyType": "संपत्ति प्रकार चुनें",
       "typeFilter": "प्रकार फ़िल्टर चुनें",
-      "propertyDescription": "संपत्ति विवरण चुनें",
+      "propertyDescription": "श्रेणी प्रकार चुनें",
       "zone": "ज़ोन चुनें",
       "ward": "वार्ड चुनें",
       "wardSelectZoneFirst": "पहले ज़ोन चुनें",
@@ -99,10 +109,16 @@
         "partiallyAssessed": "आंशिक मूल्यांकित"
       },
       "typeFilter": {
-        "surveyCompleted": "सर्वेक्षण पूर्ण",
-        "dataEntryCompleted": "डेटा प्रविष्टि पूर्ण",
-        "qcCompleted": "QC पूर्ण",
-        "noticeDistributed": "नोटिस वितरित"
+        "geoSequencing": "जियो-सीक्वेंसिंग",
+        "internalSurvey": "आंतरिक सर्वेक्षण",
+        "dataEntry": "डेटा प्रविष्टि और गुणवत्ता नियंत्रण",
+        "assessment": "मूल्यांकन",
+        "approvalByUlb": "ULB द्वारा मंजूरी",
+        "noticeDistribution": "नोटिस वितरण",
+        "hearingAndAppeal": "सुनवाई और अपील",
+        "billDistribution": "विधेयक वितरण",
+        "billGeneration": "विधेयक निर्माण",
+        "qcRevert": "क्यूसी रिवर्ट"
       },
       "description": {
         "residential": "आवासीय",
@@ -111,6 +127,11 @@
       "valuation": {
         "rv": "वार्षिक भाड़ा मूल्य (RV)",
         "cv": "पूँजी मूल्य (CV)"
+      },
+      "valuationMethod": {
+        "rv": "RV",
+        "cv": "CV",
+        "totalTax": "कुल कर"
       },
       "filterType": {
         "exact": "सटीक मान",
@@ -157,6 +178,7 @@
       "rateableValueRangeInvalid": "रेटेबल वैल्यू 'To' राशि 'From' से अधिक या बराबर होनी चाहिए।",
       "capitalValueBetweenRequired": "दोनों राशि दर्ज करें।",
       "rateableValueInvalid": "रेटेबल वैल्यू में केवल धनात्मक संख्याएँ होनी चाहिए।",
+      "valuationMethodRequired": "कृपया मूल्यांकन विधि चुनें।",
       "noSearchCriteria": "खोज करने से पहले कम से कम एक फ़िल्टर (ज़ोन, वार्ड, संपत्ति क्र., UPIC ID, धारक नाम, मोबाइल आदि) चुनें।"
     }
   },
@@ -170,14 +192,22 @@
     "applyFilterHint": "संपत्तियाँ देखने के लिए ऊपर फ़िल्टर लगाएँ या किसी कार्ड पर क्लिक करें।",
     "searchFailed": "खोज पूरी नहीं हो सकी। ऊपर दिया गया त्रुटि संदेश देखें।",
     "noDataToExport": "निर्यात के लिए कोई डेटा नहीं है",
+    "noUnits": "कोई अपार्टमेंट इकाई नहीं मिली।",
+    "apartmentUnits": "अपार्टमेंट इकाइयां ({count})",
+    "loadingUnits": "अपार्टमेंट इकाइयां लोड हो रही हैं...",
+    "backToProperties": "संपत्तियों पर वापस जाएं",
+    "viewingUnitsFor": "के लिए इकाइयां देख रहे हैं",
+    "apartment": "अपार्टमेंट",
+    "totalUnits": "कुल {count} इकाइयां",
+    "unit": "इकाई",
     "format": {
       "currency": "₹{amount}"
     },
     "columns": {
       "upicId": "UPIC आईडी",
       "zoneWard": "ज़ोन और वार्ड",
-      "propertyPartition": "सं. और विभाजन क्र.",
-      "propertyPartitionTooltip": "संपत्ति संख्या और विभाजन संख्या",
+      "propertyPartition": "सं.-विभाजन क्र.",
+      "propertyPartitionTooltip": "संपत्ति-विभाजन संख्या और पुरानी संपत्ति संख्या",
       "ownerOccupier": "धारक और अधिभोगी",
       "zone": "ज़ोन",
       "ward": "वार्ड",

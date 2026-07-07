@@ -113,6 +113,16 @@ describe('PropertyEditDrawerInputs', () => {
       fireEvent.change(select, { target: { value: '2' } });
       expect(onChange).toHaveBeenCalledWith('2');
     });
+
+    it('shows validation message when error is provided', () => {
+      const onChange = vi.fn();
+      const options = [
+        { value: '1', label: 'Option 1' },
+      ];
+      render(<EditableSelect label="Test Select" value="1" onChange={onChange} options={options} error="Test error" />);
+      expect(screen.getByTestId('validation-message')).toBeInTheDocument();
+      expect(screen.getByTestId('validation-message')).toHaveTextContent('Test error');
+    });
   });
 
   describe('ReadOnlyInput', () => {

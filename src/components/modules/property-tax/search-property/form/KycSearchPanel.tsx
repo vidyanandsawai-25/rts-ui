@@ -6,7 +6,7 @@ import { Input, Label, ValidationMessage } from "@/components/common";
 import type {
   SearchCriteria,
   SearchFieldErrorMap,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import { COMPACT_INPUT_CLASS, COMPACT_LABEL_CLASS } from "../form-field-styles";
 import {
   KYC_SEARCH_FIELDS,
@@ -30,6 +30,7 @@ interface KycSearchPanelProps {
   searchPending: boolean;
   isSubmitDisabled: boolean;
   onReset: () => void;
+  onClearField: (field: keyof SearchCriteria) => void;
 }
 
 function KycField({
@@ -39,6 +40,7 @@ function KycField({
   disabled,
   onInputChange,
   onInputBlur,
+  onClearField,
   label,
   placeholder,
   tooltip,
@@ -50,6 +52,7 @@ function KycField({
   disabled: boolean;
   onInputChange: KycSearchPanelProps["onInputChange"];
   onInputBlur: KycSearchPanelProps["onInputBlur"];
+  onClearField: KycSearchPanelProps["onClearField"];
   label: string;
   placeholder: string;
   tooltip: string;
@@ -60,15 +63,12 @@ function KycField({
   const t = useTranslations("propertySearch.form");
 
   const handleClear = () => {
-    const event = {
-      target: { name: String(field), value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(field)(event);
+    onClearField(field);
   };
 
   return (
     <div className="flex min-w-0 flex-col w-full">
-      <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+      <div className="mb-0.5 h-4 flex items-center justify-between gap-1">
         <Label
           htmlFor={field}
           className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}
@@ -121,6 +121,7 @@ export function KycSearchPanel({
   searchPending,
   isSubmitDisabled,
   onReset,
+  onClearField,
 }: KycSearchPanelProps) {
   const t = useTranslations("propertySearch.form");
   const tCommon = useTranslations("common");
@@ -134,6 +135,7 @@ export function KycSearchPanel({
       disabled={disabled}
       onInputChange={onInputChange}
       onInputBlur={onInputBlur}
+      onClearField={onClearField}
       label={t(`fields.${field}`)}
       placeholder={t(`placeholders.${field}`)}
       tooltip={t(`tooltips.${field}`)}
@@ -142,11 +144,11 @@ export function KycSearchPanel({
   );
 
   return (
-    <div className="overflow-x-auto px-2 pb-1 pt-1.5">
-      <div className="grid min-w-[56rem] max-w-[76rem] grid-cols-[1.2fr_0.8fr_1.8fr_2.8fr_auto] items-start gap-x-1.5 gap-y-1">
+    <div className="overflow-x-auto px-2 pb-0.5 pt-1">
+      <div className="grid min-w-[56rem] max-w-[76rem] grid-cols-[1.2fr_0.8fr_1.8fr_2.8fr_auto] items-start gap-x-1 gap-y-0.5">
         {KYC_SEARCH_FIELDS.map(renderField)}
         <div className="flex flex-col w-full">
-          <div className="mb-1 h-[18px] flex items-center"></div>
+          <div className="mb-0.5 h-4 flex items-center"></div>
           <div className="flex items-center gap-1.5 h-8">
             <Button
               type="submit"

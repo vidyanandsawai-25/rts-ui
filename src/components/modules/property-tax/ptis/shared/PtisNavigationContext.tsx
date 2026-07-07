@@ -104,6 +104,7 @@ export function PtisNavigationProvider({ children, properties }: PtisNavigationP
       const rawPart = targetProperty.partitionNo;
       newParams.set('partitionNo', rawPart && rawPart.trim() !== '' && rawPart !== '0' ? rawPart : '0');
       newParams.delete('pageNumber');
+      newParams.delete('valuationTab');
 
       startTransition(() => {
         router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });

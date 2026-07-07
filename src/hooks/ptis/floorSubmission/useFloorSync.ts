@@ -1,6 +1,6 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+ 
 import { useMemo, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { FloorData } from '@/types/room-details.types';
 import { EditSidebarProps } from '@/types/floor-details.types';
@@ -8,6 +8,59 @@ import { LookupData } from '@/types/common-details.types';
 import { normalizeFloorData } from '@/lib/utils/floorSubmission/floor-normalization';
 import { getCookieValue } from '@/lib/utils/cookie';
 import { ReadonlyURLSearchParams } from 'next/navigation';
+import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
+import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
+
+ 
+function getRenterDataFromStorage(floorId: string | number | null | undefined, initialPropertyID?: string | number): any {
+  if (!floorId) return null;
+  let renterData: any = null;
+  try {
+    const sessionRenter = sessionStorage.getItem(floorId === 'new' ? 'renter_data_new' : `renter_data_${floorId}`);
+    if (sessionRenter) {
+      renterData = JSON.parse(sessionRenter);
+    }
+  } catch (_e) { }
+
+  if (!renterData && floorId !== 'new') {
+    const cookieKey = `renter_${floorId}`;
+    const renterCookie = getCookieValue(cookieKey) || getCookieValue('renter_data');
+    if (renterCookie) {
+      try {
+        const parsed = JSON.parse(renterCookie);
+        if (cookieKey === `renter_${floorId}` || 
+            (String(parsed.propertyId) === String(initialPropertyID) && String(parsed.floorId) === String(floorId))) {
+          renterData = parsed;
+        }
+      } catch (_e) { }
+    }
+  }
+  return renterData;
+}
+
+function getSavedFormFromStorage(floorId: string | number | null | undefined, restoredSessionFormRef: React.MutableRefObject<any>): any {
+  if (!floorId) return null;
+  let savedForm: any = null;
+  try {
+    const sessionForm = sessionStorage.getItem('editingFloorForm');
+    if (sessionForm) {
+      const parsed = JSON.parse(sessionForm);
+      const isMatch = floorId === 'new' ? (!parsed.id || parsed.id === 'new') : (String(parsed.id) === String(floorId));
+      if (isMatch) {
+        savedForm = parsed;
+        restoredSessionFormRef.current = parsed;
+        sessionStorage.removeItem('editingFloorForm'); // Clear immediately
+      }
+    } else if (restoredSessionFormRef.current) {
+      const parsed = restoredSessionFormRef.current;
+      const isMatch = floorId === 'new' ? (!parsed.id || parsed.id === 'new') : (String(parsed.id) === String(floorId));
+      if (isMatch) {
+        savedForm = parsed;
+      }
+    }
+  } catch (_e) { }
+  return savedForm;
+}
 
 export const useFloorSync = (params: {
   props: EditSidebarProps;
@@ -18,12 +71,18 @@ export const useFloorSync = (params: {
   localFloors: FloorData[];
   setLocalFloors: (val: FloorData[]) => void;
   setSelectedFloor: (val: FloorData | null) => void;
+  selectedFloor: FloorData | null;
   updateUrlParams: (params: Record<string, string | null>) => void;
   searchParams: ReadonlyURLSearchParams;
   INITIAL_FORM_STATE: FloorData;
+  selectedFloorType?: 'Construction' | 'OpenPlot';
 }) => {
   const hasSyncedRef = useRef<string | number | null>(null);
   const restoredSessionFormRef = useRef<any>(null);
+  const hasInitializedPlotAreaRef = useRef<string | null>(null);
+  const currentFloorIdUrl = params.searchParams.get('floorId');
+  const currentDrawerUrl = params.searchParams.get('drawer');
+
   const {
     props,
     isAddingNewFloor,
@@ -31,12 +90,16 @@ export const useFloorSync = (params: {
     setEditingFloorForm,
     setLocalFloors,
     setSelectedFloor,
-    searchParams,
+    selectedFloor,
     INITIAL_FORM_STATE,
   } = params;
 
-  const { initialFloors = [], initialFloorDetails = null, initialPropertyID } = props;
+  useEffect(() => {
+    hasInitializedPlotAreaRef.current = null;
+  }, [currentFloorIdUrl, currentDrawerUrl]);
 
+  const { initialFloors = [], initialFloorDetails = null, initialPropertyID } = props;
+ 
   // 1. Map Initial Floors (Derived State)
   const mappedInitialFloors = useMemo(() => {
     return initialFloors.map((f) =>
@@ -49,19 +112,19 @@ export const useFloorSync = (params: {
       })
     );
   }, [initialFloors, props.floorData, props.subFloorData, props.constructionTypeData, props.useData, props.subTypeData]);
-
+ 
   // 2. Sync localFloors with mappedInitialFloors (useEffect)
   useEffect(() => {
     setLocalFloors(mappedInitialFloors);
   }, [mappedInitialFloors, setLocalFloors]);
-
+ 
   // 3. Sync initialFloorDetails with form state (useEffect)
   const currentDetailsId = useMemo(() => {
     return typeof initialFloorDetails === 'object' && initialFloorDetails !== null
       ? (initialFloorDetails as Record<string, unknown>).id as string | number | undefined
       : undefined;
   }, [initialFloorDetails]);
-
+ 
   useEffect(() => {
     if (initialFloorDetails) {
       if (hasSyncedRef.current !== currentDetailsId) {
@@ -72,46 +135,13 @@ export const useFloorSync = (params: {
           use: props.useData as LookupData[],
           subType: props.subTypeData as LookupData[],
         });
-
-        // Check for renter sessionStorage or cookie during sync
-        let renterData: any = null;
-        try {
-          const sessionRenter = sessionStorage.getItem(`renter_data_${floorDataMapped.id}`);
-          if (sessionRenter) {
-            renterData = JSON.parse(sessionRenter);
-          }
-        } catch (_e) { }
-
-        if (!renterData) {
-          const renterCookie = getCookieValue('renter_data');
-          if (renterCookie) {
-            try {
-              const parsed = JSON.parse(renterCookie);
-              if (String(parsed.propertyId) === String(initialPropertyID) && String(parsed.floorId) === String(floorDataMapped.id)) {
-                renterData = parsed;
-              }
-            } catch (_e) { }
-          }
-        }
-
-        // Check if there is an in-progress saved form in sessionStorage for this floor
-        let savedForm: any = null;
-        try {
-          const sessionForm = sessionStorage.getItem('editingFloorForm');
-          if (sessionForm) {
-            const parsed = JSON.parse(sessionForm);
-            if (String(parsed.id) === String(floorDataMapped.id)) {
-              savedForm = parsed;
-              restoredSessionFormRef.current = parsed;
-              sessionStorage.removeItem('editingFloorForm'); // Clear immediately so it does not persist across page reloads
-            }
-          } else if (restoredSessionFormRef.current && String(restoredSessionFormRef.current.id) === String(floorDataMapped.id)) {
-            savedForm = restoredSessionFormRef.current;
-          }
-        } catch (_e) { }
-
+ 
+        // Hydrate from Storage
+        const renterData = getRenterDataFromStorage(floorDataMapped.id, initialPropertyID);
+        const savedForm = getSavedFormFromStorage(floorDataMapped.id, restoredSessionFormRef);
+ 
         let finalForm = savedForm ? { ...savedForm } : { ...floorDataMapped };
-
+ 
         if (renterData) {
           const mergedRenterFields = {
             renter: 'Yes',
@@ -129,8 +159,10 @@ export const useFloorSync = (params: {
             ...finalForm,
             ...mergedRenterFields,
           };
+        } else if (savedForm) {
+          finalForm.renter = floorDataMapped.renter === 'Yes' ? 'Yes' : 'No';
         }
-
+ 
         setEditingFloorForm(finalForm);
         setSelectedFloor(finalForm);
         hasSyncedRef.current = currentDetailsId ?? null;
@@ -156,43 +188,21 @@ export const useFloorSync = (params: {
     setSelectedFloor,
     INITIAL_FORM_STATE,
   ]);
-
+ 
   // Real-time autosave disabled to prevent unsaved changes from persisting across manual browser refreshes
-
+ 
   // 4. Sync URL Param Renter Cookie (useEffect Sync)
-  const currentFloorIdUrl = searchParams.get('floorId');
-  const currentDrawerUrl = searchParams.get('drawer');
-
+ 
   useEffect(() => {
     if (currentFloorIdUrl === 'new' || currentDrawerUrl === 'add') {
       setIsAddingNewFloor(true);
       setSelectedFloor(null);
-
-      let savedForm: any = null;
-      try {
-        const sessionForm = sessionStorage.getItem('editingFloorForm');
-        if (sessionForm) {
-          const parsed = JSON.parse(sessionForm);
-          if (!parsed.id || parsed.id === 'new') {
-            savedForm = parsed;
-            restoredSessionFormRef.current = parsed;
-            sessionStorage.removeItem('editingFloorForm'); // Clear immediately
-          }
-        } else if (restoredSessionFormRef.current && (!restoredSessionFormRef.current.id || restoredSessionFormRef.current.id === 'new')) {
-          savedForm = restoredSessionFormRef.current;
-        }
-      } catch (_e) { }
-
-      let renterData: any = null;
-      try {
-        const sessionRenter = sessionStorage.getItem('renter_data_new');
-        if (sessionRenter) {
-          renterData = JSON.parse(sessionRenter);
-        }
-      } catch (_e) { }
-
+ 
+      const savedForm = getSavedFormFromStorage('new', restoredSessionFormRef);
+      const renterData = getRenterDataFromStorage('new');
+ 
       let finalForm = savedForm ? { ...savedForm } : null;
-
+ 
       if (renterData) {
         const mergedRenterFields = {
           renter: 'Yes',
@@ -206,7 +216,7 @@ export const useFloorSync = (params: {
           renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
           renterMast: renterData.renterMast || (finalForm?.renterMast || []),
         };
-
+ 
         if (finalForm) {
           finalForm = {
             ...finalForm,
@@ -218,8 +228,10 @@ export const useFloorSync = (params: {
             ...mergedRenterFields,
           };
         }
+      } else if (finalForm) {
+        finalForm.renter = 'No';
       }
-
+ 
       if (finalForm) {
         setEditingFloorForm((prev) => ({
           ...prev,
@@ -228,42 +240,11 @@ export const useFloorSync = (params: {
         }));
       }
     } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new' && !isAddingNewFloor) {
-      let renterData: any = null;
-      try {
-        const sessionRenter = sessionStorage.getItem(`renter_data_${currentFloorIdUrl}`);
-        if (sessionRenter) {
-          renterData = JSON.parse(sessionRenter);
-        }
-      } catch (_e) { }
-
-      if (!renterData) {
-        const cookieKey = `renter_${currentFloorIdUrl}`;
-        const renterCookie = getCookieValue(cookieKey);
-        if (renterCookie) {
-          try {
-            renterData = JSON.parse(renterCookie);
-          } catch (_e) { }
-        }
-      }
-
-      // Check if there is an in-progress saved form in sessionStorage for this floor
-      let savedForm: any = null;
-      try {
-        const sessionForm = sessionStorage.getItem('editingFloorForm');
-        if (sessionForm) {
-          const parsed = JSON.parse(sessionForm);
-          if (String(parsed.id) === String(currentFloorIdUrl)) {
-            savedForm = parsed;
-            restoredSessionFormRef.current = parsed;
-            sessionStorage.removeItem('editingFloorForm'); // Clear immediately
-          }
-        } else if (restoredSessionFormRef.current && String(restoredSessionFormRef.current.id) === String(currentFloorIdUrl)) {
-          savedForm = restoredSessionFormRef.current;
-        }
-      } catch (_e) { }
-
+      const renterData = getRenterDataFromStorage(currentFloorIdUrl, initialPropertyID);
+      const savedForm = getSavedFormFromStorage(currentFloorIdUrl, restoredSessionFormRef);
+ 
       let finalForm = savedForm ? { ...savedForm } : null;
-
+ 
       if (renterData) {
         const mergedRenterFields = {
           renter: 'Yes',
@@ -277,7 +258,7 @@ export const useFloorSync = (params: {
           renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
           renterMast: renterData.renterMast || (finalForm?.renterMast || []),
         };
-
+ 
         if (finalForm) {
           finalForm = {
             ...finalForm,
@@ -290,8 +271,11 @@ export const useFloorSync = (params: {
             id: renterData.id || renterData.propertyDetailsId || currentFloorIdUrl,
           };
         }
+      } else if (finalForm) {
+        const originalFloor = mappedInitialFloors.find(f => String(f.id) === String(currentFloorIdUrl));
+        finalForm.renter = originalFloor?.renter === 'Yes' ? 'Yes' : 'No';
       }
-
+ 
       if (finalForm) {
         setEditingFloorForm((prev) => ({
           ...prev,
@@ -300,7 +284,54 @@ export const useFloorSync = (params: {
         setSelectedFloor(finalForm);
       }
     }
-  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor]);
+  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors, initialPropertyID]);
+
+  useEffect(() => {
+    const isPropertyCategoryPlot = checkIsPlotCategory(props.initialPropertyData?.categoryName as string | undefined);
+    const isPlot = isPropertyCategoryPlot;
+
+    if (isPlot && props.initialPlotArea) {
+      if (hasInitializedPlotAreaRef.current === 'initialized') {
+        return;
+      }
+
+      const apiLength = props.initialPlotArea.length;
+      const apiWidth = props.initialPlotArea.width;
+      const apiTotalPlotArea = props.initialPlotArea.totalPlotArea;
+
+      setEditingFloorForm((prev) => {
+        const hasNoLength = !prev.length || parseFloat(String(prev.length)) === 0;
+        const hasNoWidth = !prev.width || parseFloat(String(prev.width)) === 0;
+        const hasNoArea = !prev.areaSqM || parseFloat(String(prev.areaSqM)) === 0;
+
+        if ((hasNoLength && apiLength) || (hasNoWidth && apiWidth) || (hasNoArea && apiTotalPlotArea)) {
+          const updated = { ...prev };
+          if (hasNoLength && apiLength) updated.length = String(apiLength);
+          if (hasNoWidth && apiWidth) updated.width = String(apiWidth);
+          if (hasNoArea && apiTotalPlotArea) {
+            updated.areaSqM = String(apiTotalPlotArea);
+            updated.areaSqFt = convertSqMToSqFt(Number(apiTotalPlotArea)).toFixed(2);
+          }
+          return updated;
+        }
+        return prev;
+      });
+      hasInitializedPlotAreaRef.current = 'initialized';
+    }
+  }, [
+    props.initialPlotArea,
+    props.initialPropertyData?.categoryName,
+    setEditingFloorForm,
+  ]);
+
+  // Auto open Add Open Plot Details form when category is Plot and no records exist
+  useEffect(() => {
+    const isPlot = checkIsPlotCategory(props.initialPropertyData?.categoryName as string | undefined);
+    const hasNoFloorIdInUrl = !currentFloorIdUrl || currentFloorIdUrl === 'new';
+    if (isPlot && props.initialFloors.length === 0 && hasNoFloorIdInUrl && !isAddingNewFloor && !selectedFloor) {
+      setIsAddingNewFloor(true);
+    }
+  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, isAddingNewFloor, selectedFloor, setIsAddingNewFloor]);
 
   return { mappedInitialFloors };
 };

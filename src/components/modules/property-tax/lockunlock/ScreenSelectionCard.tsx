@@ -111,10 +111,12 @@ export function ScreenSelectionCard({
     });
   };
 
-  // Clear selection on currently visible filtered screens only
+  // Clear selection on currently visible filtered screens only and reset view filters
   const handleClearAllFiltered = () => {
     const filteredIds = new Set(filteredScreens.map((s) => s.id));
     setSelectedScreenIds((prev) => prev.filter((id) => !filteredIds.has(id)));
+    setSearchTerm("");
+    updateQueries({ screenSearch: null, screenModule: null });
   };
 
   return (
@@ -134,7 +136,7 @@ export function ScreenSelectionCard({
       <CardContent className="py-4 space-y-4">
         {/* Filters Row */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <SearchInput
+          <SearchInput   
             value={searchTerm}
             onChange={(val) => {
               const sanitized = val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
@@ -173,7 +175,7 @@ export function ScreenSelectionCard({
             />
           </div>
         </div>
-
+  
         {/* Screen List */}
         <div className="border border-slate-200/80 rounded-xl p-2 bg-slate-50/20 max-h-[300px] overflow-auto custom-scrollbar">
           {screens.length === 0 ? (
@@ -189,12 +191,25 @@ export function ScreenSelectionCard({
                   return (
                     <div
                       key={screen.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isChecked}
                       onClick={() => {
                         setSelectedScreenIds((prev) =>
                           isChecked
                             ? prev.filter((id) => id !== screen.id)
                             : [...prev, screen.id]
                         );
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setSelectedScreenIds((prev) =>
+                            isChecked
+                              ? prev.filter((id) => id !== screen.id)
+                              : [...prev, screen.id]
+                          );
+                        }
                       }}
                       className={cn(
                         "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none w-full",

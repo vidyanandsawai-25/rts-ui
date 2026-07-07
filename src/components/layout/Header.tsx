@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { User, Settings, Lock, Globe, ChevronDown, LogOut, Router, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { UlbMaster } from '@/types/master.types';
+import type { MenuItem } from '@/types/menu.types';
 import { Badge, Button, Card, Tooltip } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
 import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
@@ -63,9 +64,10 @@ interface HeaderProps {
   userDisplayName?: string;
   /** Best-effort client IP from request headers (server layout). */
   clientIp?: string;
+  menuItems?: MenuItem[];
 }
 
-export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
+export function Header({ ulbData, userDisplayName, clientIp, menuItems }: HeaderProps) {
   const t = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
@@ -113,6 +115,59 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
   const headerDetails = t('app.assessmentSystem');
+
+  const activeMenuName = useMemo(() => {
+    if (!menuItems || menuItems.length === 0) return null;
+
+    const localePattern = new RegExp(`^/(${locales.join('|')})`);
+    const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
+
+    const allPaths: string[] = [];
+    menuItems.forEach((item) => {
+      if (item.href && item.href !== '#') {
+        allPaths.push(item.href.startsWith('/') ? item.href : `/${item.href}`);
+      }
+      if (item.subItems) {
+        item.subItems.forEach((sub) => {
+          if (sub.href && sub.href !== '#') {
+            allPaths.push(sub.href.startsWith('/') ? sub.href : `/${sub.href}`);
+          }
+        });
+      }
+    });
+
+    const isPathActive = (itemPath: string): boolean => {
+      if (pathWithoutLocale === itemPath) return true;
+      if (!pathWithoutLocale.startsWith(`${itemPath}/`)) return false;
+
+      const hasMoreSpecificMatch = allPaths.some((otherPath) => {
+        if (otherPath === itemPath) return false;
+        return (
+          otherPath.length > itemPath.length &&
+          (pathWithoutLocale === otherPath || pathWithoutLocale.startsWith(`${otherPath}/`))
+        );
+      });
+
+      return !hasMoreSpecificMatch;
+    };
+
+    for (const item of menuItems) {
+      if (item.subItems) {
+        for (const sub of item.subItems) {
+          const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
+          if (isPathActive(subPath)) {
+            return sub.name;
+          }
+        }
+      }
+      const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
+      if (isPathActive(itemPath)) {
+        return item.name;
+      }
+    }
+
+    return null;
+  }, [menuItems, pathname]);
 
   const localeLabel = useMemo(() => {
     if (locale === 'en') return t('language.english');
@@ -232,7 +287,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
                 <span>{t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
-                <span className="font-medium text-yellow-300">{headerDetails}</span>
+                <span className="font-medium text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>
             </div>
           </div>
@@ -248,62 +303,6 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
               role="status"
               aria-live="polite"
             >
-              <style>{`
-                @keyframes session-pill-blink {
-                  0%, 100% {
-                    opacity: 1;
-                    transform: scale(1);
-                  }
-                  50% {
-                    opacity: 0.85;
-                    transform: scale(0.98);
-                  }
-                }
-                @keyframes critical-border-flash {
-                  0%, 100% {
-                    border-color: rgba(239, 68, 68, 1);
-                    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-                  }
-                  50% {
-                    border-color: rgba(239, 68, 68, 0.3);
-                    box-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
-                  }
-                }
-                @keyframes warning-border-flash {
-                  0%, 100% {
-                    border-color: rgba(245, 158, 11, 0.9);
-                    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-                  }
-                  50% {
-                    border-color: rgba(245, 158, 11, 0.3);
-                    box-shadow: 0 0 4px rgba(245, 158, 11, 0.1);
-                  }
-                }
-                @keyframes timer-blink-smooth {
-                  0%, 100% { opacity: 1; }
-                  50% { opacity: 0.35; }
-                }
-                @keyframes timer-blink-sharp {
-                  0%, 100% { opacity: 1; }
-                  50% { opacity: 0.05; }
-                }
-                .session-warn-active {
-                  animation: session-pill-blink 1.2s ease-in-out infinite;
-                }
-                .critical-flash-active {
-                  animation: critical-border-flash 0.8s ease-in-out infinite;
-                }
-                .warning-flash-active {
-                  animation: warning-border-flash 1.5s ease-in-out infinite;
-                }
-                .timer-blink-smooth {
-                  animation: timer-blink-smooth 1.5s ease-in-out infinite;
-                }
-                .timer-blink-sharp {
-                  animation: timer-blink-sharp 0.8s steps(1) infinite;
-                }
-              `}</style>
-
               <span className="relative flex h-3 w-3 shrink-0">
                 <span
                   className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${

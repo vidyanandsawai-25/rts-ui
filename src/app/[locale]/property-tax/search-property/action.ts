@@ -1,41 +1,40 @@
 "use server";
 
 import type {
-  PropertyStatsData,
   PropertyStatus,
   SearchCriteria,
   SearchResult,
   SearchTab,
-} from "@/types/property-search.types";
+  CardFilterParams,
+  MainCardsResponse,
+  WorkflowCardItem,
+} from "@/types/property-search";
 import type {
   ZoneApiResponse,
   WardApiResponse,
   LookupOptionsApiResponse,
-} from "@/types/property-search-api.types";
+} from "@/types/property-search";
 import type { PropertyAssessmentStatusOption } from "@/types/property-assessment-status.types";
-import type { PropertyTypeCategory } from "@/types/property-type-category.types";
+import type { PropertyCategory } from "@/types/property-category.types";
+import type { PropertyWorkflowStageOption } from "@/types/property-workflow-stage-master.types";
 import { getPropertyAssessmentStatuses } from "@/lib/api/property-assessment-status.service";
-import { getPropertyTypeCategories } from "@/lib/api/property-type-category.service";
+import { getPropertyCategories } from "@/lib/api/property-category.service";
+import { getPropertyWorkflowStages } from "@/lib/api/property-workflow-stage-master.service";
 import { buildPropertySearchPayload } from "@/lib/api/property-search/build-search-payload";
 import {
-  fetchPropertyStats,
   searchProperties,
   fetchLookupOptions,
   fetchWardsByZone,
   fetchZones,
+  fetchMainCards,
+  fetchWorkflowCards,
+  fetchApartmentUnitList,
 } from "@/lib/api/property-search";
 import { resolveSearchErrorMessage } from "@/lib/api/property-search/resolve-search-error-message";
+import { hasTabSearchInput } from "@/components/modules/property-tax/search-property/search-field-groups";
 
 /* ================= CONSTANTS ================= */
 
-const DEFAULT_STATS: PropertyStatsData[] = [
-  { label: "Register Property", value: "0" },
-  { label: "Geo-Sequencing", value: "0" },
-  { label: "Survey", value: "0" },
-  { label: "Data Processing", value: "0" },
-  { label: "Quality Analysis", value: "0" },
-  { label: "Assessment Completed", value: "0" },
-];
 
 function parsePositiveInteger(value: string): number | null {
   const trimmed = value.trim();
@@ -190,16 +189,34 @@ function formatAssessmentStatusLabel(statusName: string): string {
     .join(" ");
 }
 
-export async function listPropertyTypeCategoriesAction(): Promise<
-  PropertyTypeCategory[]
+export async function listPropertyCategoriesAction(): Promise<
+  PropertyCategory[]
 > {
   try {
-    const categories = await getPropertyTypeCategories();
+    const categories = await getPropertyCategories();
     return categories
       .filter((category) => category.isActive)
       .sort((a, b) =>
-        a.propertyTypeCategory.localeCompare(b.propertyTypeCategory, "mr")
+        a.propertyCategoryName.localeCompare(b.propertyCategoryName, "mr")
       );
+  } catch {
+    return [];
+  }
+}
+
+export async function listPropertyWorkflowStagesAction(): Promise<
+  PropertyWorkflowStageOption[]
+> {
+  try {
+    const stages = await getPropertyWorkflowStages();
+    return stages
+      .filter((stage) => stage.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((stage) => ({
+        id: stage.id,
+        stageName: stage.stageName,
+        description: stage.description,
+      }));
   } catch {
     return [];
   }
@@ -218,22 +235,38 @@ export async function filterPropertiesAction(
   selectedStatus: PropertyStatus | null,
   searchCriteria: SearchCriteria,
   isSearchActive: boolean,
-  activeTab: SearchTab
-): Promise<{ results: SearchResult[]; error: string | null }> {
+  activeTab: SearchTab,
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<{ results: SearchResult[]; totalCount: number; error: string | null }> {
   if (!isSearchActive && !selectedStatus) {
-    return { results: [], error: null };
+    return { results: [], totalCount: 0, error: null };
   }
+
+  if (isSearchActive && !selectedStatus && !hasTabSearchInput(searchCriteria, activeTab)) {
+    return { results: [], totalCount: 0, error: null };
+  }
+
+  const isRangeSearch =
+    isSearchActive &&
+    activeTab === "quick-search" &&
+    !!searchCriteria.propertyNoFrom &&
+    !!searchCriteria.propertyNoTo &&
+    searchCriteria.propertyNoFrom !== searchCriteria.propertyNoTo;
 
   const payload = buildPropertySearchPayload(
     selectedStatus,
     searchCriteria,
     isSearchActive,
-    activeTab
+    activeTab,
+    isRangeSearch ? undefined : pageNumber,
+    isRangeSearch ? -1 : pageSize
   );
 
   try {
     const result = await searchProperties(payload);
     const normalizedResults = result.items ?? [];
+
     const shouldEnforcePropertyNoRange =
       isSearchActive && activeTab === "quick-search";
 
@@ -245,23 +278,33 @@ export async function filterPropertiesAction(
       comparePropertyNo(a.propertyNo, b.propertyNo)
     );
 
-    return { results: sortedResults, error: null };
+    if (isRangeSearch) {
+      const totalCount = sortedResults.length;
+      const start = (pageNumber - 1) * pageSize;
+      const slicedResults = sortedResults.slice(start, start + pageSize);
+      return { results: slicedResults, totalCount, error: null };
+    }
+
+    return { results: sortedResults, totalCount: result.totalCount, error: null };
   } catch (err) {
     const message =
       err instanceof Error
           ? resolveSearchErrorMessage(err)
           : "Property search failed. Please review your filters and try again.";
 
-    return { results: [], error: message };
+    return { results: [], totalCount: 0, error: message };
   }
 }
 
 /* ================= STATS ================= */
 
-export async function getPropertyStatsAction(): Promise<PropertyStatsData[]> {
-  const stats = await fetchPropertyStats();
-  // Return empty array fallback if API fails, UI will use DEFAULT_STATS
-  return stats.length > 0 ? stats : DEFAULT_STATS;
+
+export async function getMainCardsAction(params?: CardFilterParams): Promise<MainCardsResponse | null> {
+  return fetchMainCards(params);
+}
+
+export async function getWorkflowCardsAction(params?: CardFilterParams): Promise<WorkflowCardItem[]> {
+  return fetchWorkflowCards(params);
 }
 
 /* ================= WARD OPTIONS (legacy signature kept for compat) ================= */
@@ -282,5 +325,19 @@ export async function listAllWardsAction(): Promise<WardApiResponse[]> {
     return allWards.flat();
   } catch {
     return [];
+  }
+}
+
+export async function fetchApartmentUnitListAction(
+  propertyId: number
+): Promise<{ items: SearchResult[] | null; error: string | null }> {
+  try {
+    const items = await fetchApartmentUnitList(propertyId);
+    return { items, error: null };
+  } catch (err) {
+    return {
+      items: null,
+      error: err instanceof Error ? err.message : "Failed to fetch apartment unit list",
+    };
   }
 }

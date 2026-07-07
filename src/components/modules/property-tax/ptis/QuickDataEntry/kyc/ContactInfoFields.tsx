@@ -111,7 +111,7 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
           }`}>
           <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-            +91
+            {t('kyc.countryCode')}
           </span>
           <div className="flex gap-0.5 flex-1 h-full items-center">
             {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
@@ -166,7 +166,7 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
             : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
             }`}>
             <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-              +91
+             {t('kyc.countryCode')}
             </span>
             <div className="flex gap-0.5 flex-1 h-full items-center">
               {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
@@ -194,7 +194,7 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                   className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value))
                     ? 'border-red-300 focus:border-red-500'
                     : 'border-gray-300 focus:border-blue-500'
-                    }`}
+                    } ${alternateMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
                 />
               ))}
             </div>

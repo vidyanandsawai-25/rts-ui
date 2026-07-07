@@ -6,7 +6,7 @@ import {
 } from "@/lib/validations/property-search-field-rules";
 import { sanitizePropertySearchField } from "@/lib/validations/property-search-input-sanitizers";
 import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 
 const t = (key: string) => key;
 
@@ -324,6 +324,7 @@ describe("property-search.validation", () => {
     it("rejects empty values-dues criteria in validatePropertySearchCriteria", () => {
       const criteriaBetween: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "between",
         rateableValueFrom: "",
         rateableValueTo: "",
@@ -333,6 +334,7 @@ describe("property-search.validation", () => {
 
       const criteriaTop: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "top",
         rateableValueFrom: "",
       };
@@ -341,11 +343,23 @@ describe("property-search.validation", () => {
 
       const criteriaExact: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
         rateableValueFilter: "exact",
         rateableValueFrom: "",
       };
       const resultExact = validatePropertySearchCriteria(criteriaExact, "values-dues", t);
       expect(resultExact).toEqual({ valid: false, message: "rateableValueInvalid" });
+    });
+
+    it("rejects values-dues criteria when valuationMethod is missing", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "1000",
+      };
+      const result = validatePropertySearchCriteria(criteria, "values-dues", t);
+      expect(result).toEqual({ valid: false, message: "valuationMethodRequired" });
     });
   });
 });

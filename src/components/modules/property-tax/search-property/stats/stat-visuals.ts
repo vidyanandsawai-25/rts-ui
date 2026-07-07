@@ -1,4 +1,4 @@
-import type { PropertyStatVisual } from "@/types/property-search.types";
+import type { PropertyStatVisual } from "@/types/property-search";
 
 export const STAT_VISUALS: readonly PropertyStatVisual[] = [
   {

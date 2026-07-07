@@ -89,6 +89,7 @@ export function BottomActionBar({
           const rawPart = targetProperty.partitionNo;
           newParams.set('partitionNo', rawPart && rawPart.trim() !== '' && rawPart !== '0' ? rawPart : '0');
           newParams.delete('pageNumber');
+          newParams.delete('valuationTab');
         }
       } else {
         newParams.set('pageNumber', String(page));
