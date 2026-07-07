@@ -1,0 +1,94 @@
+{
+  "title": "दंड नियम मास्टर (Penalty Rule Master)",
+  "subtitle": "दंड नियम कोड, नाव, गणना प्रकार, मूल्य आणि वाढीव कालावधी व्यवस्थापित करा",
+  "searchPlaceholder": "दंड नियम रेकॉर्ड शोधा...",
+  "add": "दंड नियम जोडा",
+  "edit": "दंड नियम संपादित करा",
+  "delete": "दंड नियम हटवा",
+  "actions": "कृती",
+  "penaltyCode": "दंड कोड",
+  "penaltyName": "दंड नाव",
+  "calculationType": "गणना प्रकार",
+  "penaltyValue": "दंड मूल्य",
+  "gracePeriodDays": "वाढीव कालावधी दिवस",
+  "status": "स्थिती",
+  "showing": "दर्शवित आहे",
+  "to": "ते",
+  "of": "पैकी",
+  "entries": "प्रविष्टी",
+  "active": "सक्रिय",
+  "form": {
+    "addTitle": "नवीन दंड नियम जोडा",
+    "editTitle": "दंड नियम संपादित करा",
+    "addSubtitle": "नवीन दंड नियम कॉन्फिगरेशन तयार करा",
+    "editSubtitle": "अस्तित्वात असलेले दंड नियम कॉन्फिगरेशन अद्यतनित करा",
+    "subtitle": "नवीन दंड नियम कॉन्फिगरेशन तयार करा",
+    "actions": {
+      "save": "दंड नियम तयार करा",
+      "update": "दंड नियम अद्यतनित करा",
+      "cancel": "रद्द करा"
+    },
+    "fields": {
+      "code": {
+        "label": "दंड कोड",
+        "placeholder": "उदा. LATERENT_FLAT"
+      },
+      "description": {
+        "label": "दंड नाव",
+        "placeholder": "उदा. Late Rent Flat Fee"
+      },
+      "calculationType": {
+        "label": "गणना प्रकार",
+        "placeholder": "-- निवडा --",
+        "options": {
+          "percentage": "टक्केवारी (Percentage)",
+          "flatAmount": "फ्लॅट रक्कम (Flat Amount)",
+          "perDay": "दररोज (Per Day)"
+        }
+      },
+      "value": {
+        "label": "दंड मूल्य",
+        "placeholder": "मूल्य प्रविष्ट करा"
+      },
+      "gracePeriod": {
+        "label": "वाढीव कालावधी दिवस",
+        "placeholder": "उदा. ५"
+      }
+    },
+    "status": {
+      "label": "स्थिती",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "description": "दंड नियम सध्या आहे"
+    },
+    "validation": {
+      "codeRequired": "दंड कोड आवश्यक आहे",
+      "codeFormat": "दंड कोडमध्ये फक्त अक्षरे, अंक आणि अंडरस्कोअर असू शकतात (सुरुवातीला/शेवटी नाही)",
+      "codeMaxLength": "दंड कोड {count} पेक्षा जास्त अक्षरांचा नसावा",
+      "descriptionRequired": "दंड नाव आवश्यक आहे",
+      "descriptionFormat": "दंड नावामध्ये अवैध अक्षरे आहेत",
+      "descriptionMaxLength": "दंड नाव {count} पेक्षा जास्त अक्षरांचे नसावे",
+      "calculationTypeRequired": "गणना प्रकार आवश्यक आहे",
+      "valueRequired": "दंड मूल्य आवश्यक आहे",
+      "valueInvalid": "दंड मूल्य एक वैध गैर-ऋणात्मक संख्या असणे आवश्यक आहे",
+      "gracePeriodRequired": "वाढीव कालावधी दिवस आवश्यक आहे",
+      "gracePeriodInvalid": "वाढीव कालावधी दिवस एक वैध गैर-ऋणात्मक पूर्णांक असणे आवश्यक आहे",
+      "fixErrors": "कृपया प्रमाणीकरण त्रुटी दुरुस्त करा",
+      "mandatoryNotice": "<b>*</b> चिन्हांकित फील्ड अनिवार्य आहेत"
+    },
+    "messages": {
+      "createSuccess": "दंड नियम यशस्वीरित्या तयार केला गेला",
+      "updateSuccess": "दंड नियम यशस्वीरित्या अद्यतनित केला गेला",
+      "deleteSuccess": "दंड नियम यशस्वीरित्या हटवला",
+      "error": "दंड नियम जतन करण्यात अक्षम"
+    }
+  },
+  "deleteConfirm": "आपण नक्की हा दंड नियम रेकॉर्ड डिलीट करू इच्छिता?",
+  "error": {
+    "title": "दंड नियम डेटा लोड करण्यात अयशस्वी",
+    "description": "दंड नियम माहिती लोड करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+    "errorId": "त्रुटी आयडी: {id}",
+    "goHome": "मुख्यपृष्ठावर जा",
+    "tryAgain": "पुन्हा प्रयत्न करा"
+  }
+}
