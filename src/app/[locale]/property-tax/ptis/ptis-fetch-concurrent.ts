@@ -9,7 +9,6 @@ import {
   fetchDiscountDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
-  fetchTabHeaderInfoAction,
 } from './ptis-detail-actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
@@ -17,7 +16,6 @@ import { getRateableValue } from './RateableValue.action';
 import { getDualMethod } from './DualMethod.action';
 import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
 import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
-import { fetchWaybackReleases } from '@/lib/api/wayback.service';
 
 export async function fetchPropertyDetailsConcurrently(
   propertyId: number,
@@ -38,7 +36,30 @@ export async function fetchPropertyDetailsConcurrently(
   showDetailsParam: boolean,
   initialMediaPanelVisible: boolean
 ) {
-  const settled = await Promise.allSettled([
+  const rateableValuePromise = getRateableValue(propertyId);
+  
+  const capitalValuePromise = valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam)
+    ? getCapitalValue(propertyId)
+    : Promise.resolve(null);
+
+  const dualMethodPromise = valuationTab === 'dual'
+    ? getDualMethod(propertyId)
+    : Promise.resolve(null);
+
+  const taxDetailsPromise = fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam);
+
+  // Chain the rule logs fetching to run only after all calculation actions resolve.
+  // This avoids the race condition where rule logs are queried before calculation creates them.
+  const ruleLogsPromise = Promise.all([
+    rateableValuePromise.catch(() => null),
+    capitalValuePromise.catch(() => null),
+    dualMethodPromise.catch(() => null),
+    taxDetailsPromise.catch(() => null),
+  ]).then(async () => {
+    return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
+  }).catch(() => null);
+
+  return Promise.all([
     wardId && propertyNo
       ? getApartmentQCDataAction(
           wardId,
@@ -61,10 +82,8 @@ export async function fetchPropertyDetailsConcurrently(
           partitionNo
         )
       : Promise.resolve(null),
-    getRateableValue(propertyId),
-    valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam)
-      ? getCapitalValue(propertyId)
-      : Promise.resolve(null),
+    rateableValuePromise,
+    capitalValuePromise,
     fetchKycDetailsOnlyAction(propertyId),
     fetchSocietyDetailsOnlyAction(propertyId),
     fetchBuildingPermissionOnlyAction(propertyId),
@@ -74,11 +93,8 @@ export async function fetchPropertyDetailsConcurrently(
     fetchDiscountDetailsOnlyAction(propertyId),
     initialMediaPanelVisible ? photoPlanService.getPhotoTypesWithStatus(propertyId) : Promise.resolve(null),
     initialMediaPanelVisible ? photoPlanService.getPhotosByProperty(propertyId) : Promise.resolve(null),
-    valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null),
-    fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam),
-    propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null),
-    fetchWaybackReleases(),
-    propertyId ? fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null),
+    dualMethodPromise,
+    taxDetailsPromise,
+    ruleLogsPromise,
   ]);
-  return settled.map((r) => (r.status === 'fulfilled' ? r.value : null));
 }
