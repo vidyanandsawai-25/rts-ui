@@ -48,7 +48,7 @@ export default function AssetPhotoTypeForm({
   const photoTypeCodeRef = useRef<HTMLInputElement>(null);
 
   const categoryOptions = categories.map((c) => ({ label: c.name, value: String(c.id) }));
-  const typeOptions = types.map((t) => ({ label: t.name, value: String(t.id) }));
+  const typeOptions = types.map((type) => ({ label: type.name, value: String(type.id) }));
 
   useEffect(() => {
     if (open) {

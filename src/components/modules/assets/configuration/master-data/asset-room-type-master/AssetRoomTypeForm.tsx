@@ -43,7 +43,7 @@ export default function AssetRoomTypeForm({
   const statusToggleRef = useRef<HTMLButtonElement>(null);
   const roomTypeCodeRef = useRef<HTMLInputElement>(null);
 
-  const typeOptions = types.map((t) => ({ label: t.name, value: String(t.id) }));
+  const typeOptions = types.map((type) => ({ label: type.name, value: String(type.id) }));
 
   useEffect(() => {
     if (open) {
