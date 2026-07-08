@@ -41,9 +41,8 @@ describe('useExcelExport', () => {
     URL.createObjectURL = vi.fn(() => 'blob:mock-url');
     URL.revokeObjectURL = vi.fn();
     
-    // Spy on anchor click
-    const mockLink = { click: vi.fn(), setAttribute: vi.fn(), remove: vi.fn(), href: '', download: '' };
-    clickSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLAnchorElement);
+    // Spy on anchor click on real anchor elements
+    clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     
     // Mock atob to return a valid string representing binary data
     vi.stubGlobal('atob', vi.fn(() => 'mock-binary-data'));
