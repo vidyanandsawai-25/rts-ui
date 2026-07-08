@@ -16,6 +16,7 @@ interface ChangeDetectionCompareProps {
   initialLatitude?: number;
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
+  propertyId?: number;
 }
 
 export function ChangeDetectionCompare({
@@ -25,6 +26,7 @@ export function ChangeDetectionCompare({
   initialLatitude,
   initialLongitude,
   initialWaybackReleases,
+  propertyId,
 }: ChangeDetectionCompareProps): React.ReactElement {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-900 select-none relative">
@@ -39,6 +41,7 @@ export function ChangeDetectionCompare({
           initialLat={initialLatitude}
           initialLng={initialLongitude}
           initialWaybackReleases={initialWaybackReleases}
+          propertyId={propertyId}
         />
       </div>
     </div>

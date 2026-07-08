@@ -79,6 +79,18 @@ export function HistoricalPingPongController({
         attribution: '© Esri, Wayback, Maxar',
       });
 
+      const layerWithCreateTile = layer as unknown as {
+        createTile: (coords: L.Coords, done: L.DoneCallback) => HTMLElement;
+      };
+      
+      const originalCreateTile = layerWithCreateTile.createTile;
+      layerWithCreateTile.createTile = function (coords: L.Coords, done: L.DoneCallback) {
+        const tile = originalCreateTile.call(this, coords, done) as HTMLImageElement;
+        tile.setAttribute('fetchpriority', 'high');
+        tile.setAttribute('loading', 'eager');
+        return tile;
+      };
+
       const setLoad = (loading: boolean) => {
         layerLoadingStateRef.current.set(year, loading);
         updateLoadingState();

@@ -39,29 +39,64 @@ export function useTimelapseState({
   initialLng,
   initialWaybackReleases = [],
 }: UseTimelapseStateOptions): UseTimelapseStateReturn {
-  const [waybackReleases, setWaybackReleases] = useState<WaybackRelease[]>(() => initialWaybackReleases);
+  const [waybackReleases, setWaybackReleases] = useState<WaybackRelease[]>(() => initialWaybackReleases || []);
   const [lat, setLat] = useState(() => initialLat ?? 0);
   const [lng, setLng] = useState(() => initialLng ?? 0);
   const [activeIdx, setActiveIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!initialWaybackReleases || initialWaybackReleases.length === 0);
   const [showLabels, setShowLabels] = useState(true);
   const [failedReleases, setFailedReleases] = useState<Set<number>>(() => new Set());
   const [speed, setSpeed] = useState(6000);
-
-  // Re-sync server-passed props after navigation (Rule SSR-5 / Section 6)
-  useEffect(() => {
-    if (initialWaybackReleases) {
-      setWaybackReleases(initialWaybackReleases);
-    }
-  }, [initialWaybackReleases]);
 
   useEffect(() => {
     setLat(initialLat ?? 0);
     setLng(initialLng ?? 0);
   }, [initialLat, initialLng]);
 
+  // Re-sync server-passed props after navigation
+  useEffect(() => {
+    if (initialWaybackReleases && initialWaybackReleases.length > 0) {
+      setWaybackReleases(initialWaybackReleases);
+      setLoading(false);
+    }
+  }, [initialWaybackReleases]);
 
+  // Fetch sparse local changes dynamically when coordinates are available
+  useEffect(() => {
+    if (!lat || !lng) {
+      setLoading(false);
+      return;
+    }
+
+    // We always want to fetch the sparse local changes when in the map modal.
+    // The initialWaybackReleases are just for the static preview card fallback.
+
+    let isMounted = true;
+    const loadLocalChanges = async () => {
+      setLoading(true);
+      try {
+        const { fetchLocalChanges } = await import('@/lib/api/wayback.service');
+        const localReleases = await fetchLocalChanges(lat, lng);
+        
+        if (isMounted && localReleases.length > 0) {
+          setWaybackReleases(localReleases);
+          // If the currently active index is out of bounds, reset to 0
+          setActiveIdx((current) => current >= localReleases.length ? 0 : current);
+        }
+      } catch (error) {
+        console.error("Failed to load local changes", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadLocalChanges();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [lat, lng]);
 
   const activeRelease = waybackReleases[activeIdx] ?? null;
 

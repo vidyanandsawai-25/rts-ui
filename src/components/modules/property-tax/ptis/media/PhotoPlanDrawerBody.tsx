@@ -110,6 +110,7 @@ export function PhotoPlanDrawerBody({
             initialLatitude={initialLatitude}
             initialLongitude={initialLongitude}
             initialWaybackReleases={initialWaybackReleases}
+            propertyId={propertyId}
           />
         ) : isSplit ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
