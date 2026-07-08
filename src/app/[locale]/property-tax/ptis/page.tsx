@@ -166,6 +166,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               currentWorkflowStageId={
                 currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined
               }
+              propertyNo={propertyNo}
+              ownerName={kycDetails.propertyHolderName || ''}
             />
           }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}

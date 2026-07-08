@@ -12,6 +12,7 @@ import {
   getSubTypeOfUseDataAction,
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorFormState } from '@/hooks/ptis/floorSubmission/useFloorFormState';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse } from '@/types/floor-details.types';
 import { LookupData } from '@/types/common-details.types';
@@ -378,18 +379,22 @@ Please enter an area less than or equal to the available area.`;
 
     // Validate rooms count mismatch first (for construction floors)
     if (selectedFloorType === 'Construction') {
-      const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
-      const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
-        ? editingFloorForm.roomWiseSubmissionDetails.length
-        : 0;
+      const isUtility = checkIsUtilityCategory(editingFloorForm.typeOfUseCategoryId);
 
-      if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {
-        setFormErrors((prev) => ({
-          ...prev,
-          rooms: t('floor.errors.roomCountMismatch') || `Expected details for ${enteredRooms} rooms, but found ${roomDetailsCount}. Please update room details.`
-        }));
-        toast.error(t('floor.errors.roomCountMismatch') || `Expected details for ${enteredRooms} rooms, but found ${roomDetailsCount}. Please update room details.`);
-        return;
+      if (!isUtility) {
+        const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
+        const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
+          ? editingFloorForm.roomWiseSubmissionDetails.length
+          : 0;
+
+        if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {
+          setFormErrors((prev) => ({
+            ...prev,
+            rooms: t('floor.errors.roomCountMismatch') || `Expected details for ${enteredRooms} rooms, but found ${roomDetailsCount}. Please update room details.`
+          }));
+          toast.error(t('floor.errors.roomCountMismatch') || `Expected details for ${enteredRooms} rooms, but found ${roomDetailsCount}. Please update room details.`);
+          return;
+        }
       }
     }
 

@@ -78,3 +78,20 @@ export async function getCurrentWorkflowDetailAction(
   }
 }
 
+export async function getPropertyWorkflowDetailsAction(
+  propertyId: number | string
+): Promise<{ success: boolean; data?: PropertyWorkflowDetail[]; error?: string }> {
+  try {
+    const result = await propertyWorkflowStageService.getPropertyWorkflowDetails(propertyId);
+    if (result.success) {
+      return { success: true, data: result.data };
+    }
+    return { success: false, error: result.error || 'Action failed' };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+

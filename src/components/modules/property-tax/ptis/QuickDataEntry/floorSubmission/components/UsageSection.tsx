@@ -9,6 +9,7 @@ import { getSelectOptions } from '@/lib/utils/form-options.util';
 import { normalizeToStringArray } from '@/lib/utils/dropdown-helpers';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { FieldWrapper } from './SectionField';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 const limitDecimalString = (val: string, maxBefore: number = 10, maxAfter: number = 2): string => {
   let filtered = '';
@@ -152,6 +153,9 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
               startTransition(() => {
                 updateUrlParams({ typeOfUseId: value, loadSubType: 'true' });
               });
+              const selectedUse = useLookup?.find(u => String(u.typeOfUseId || u.id || '') === String(value));
+              const categoryId: number | null = selectedUse ? (selectedUse.typeOfUseCategoryId !== undefined && selectedUse.typeOfUseCategoryId !== null ? Number(selectedUse.typeOfUseCategoryId) : null) : null;
+              const isUtil = checkIsUtilityCategory(categoryId);
               setEditingFloorForm((prev: FloorData) => ({
                 ...prev,
                 typeOfUseId: value,
@@ -159,9 +163,11 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
                 typeOfUseDescription: desc || value,
                 subTypeOfUseId: "",
                 subTyp: "",
-                subTypeOfUseDescription: ""
+                subTypeOfUseDescription: "",
+                typeOfUseCategoryId: categoryId,
+                ...(isUtil ? { rooms: "0" } : {})
               }));
-              setFormErrors((prev) => ({ ...prev, typeOfUseId: '', use: '' }));
+              setFormErrors((prev) => ({ ...prev, typeOfUseId: '', use: '', rooms: '' }));
             }}
             placeholder={!isUseEnabled ? t('floor.selectConTypFirst') : t('floor.selectUsage')}
             disabled={!isUseEnabled}

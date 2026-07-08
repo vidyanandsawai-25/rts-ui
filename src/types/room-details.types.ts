@@ -70,6 +70,7 @@ export interface FloorData {
     constructionYear?: string;
     assessmentYear?: string;
     roomData?: RoomData[];
+    typeOfUseCategoryId?: number | string | null;
     [key: string]: unknown;
 }
 
@@ -172,6 +173,7 @@ export interface RoomWiseSubmissionProps {
     constructionLookup?: DrawerDropdownOption[];
     useLookup?: DrawerDropdownOption[];
     subTypeLookup?: DrawerDropdownOption[];
+    floorData?: FloorData;
 }
 
 export interface RoomTableHeaderProps {

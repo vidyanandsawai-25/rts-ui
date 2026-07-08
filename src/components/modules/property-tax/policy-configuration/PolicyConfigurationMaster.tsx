@@ -59,11 +59,26 @@ export default function PolicyConfigurationMaster({
     return () => clearTimeout(timer);
   }, [searchTermState, search, base, pageSize, router]);
 
-  const normalizedData = useMemo(
-    () => (data ?? []).map((x) => ({ ...x, status: x.isActive })),
-    [data]
-  );
-
+ const normalizedData = useMemo(() => {
+    const list = (data ?? []).map((x) => ({ ...x, status: x.isActive }));
+    const trimmedSearch = search.trim().toLowerCase();
+    
+    if (trimmedSearch) {
+      list.sort((a, b) => {
+        const aCode = a.policyCode?.toLowerCase() || "";
+        const bCode = b.policyCode?.toLowerCase() || "";
+        const aStarts = aCode.startsWith(trimmedSearch);
+        const bStarts = bCode.startsWith(trimmedSearch);
+        
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        
+        return aCode.localeCompare(bCode);
+      });
+    }
+    
+    return list;
+  }, [data, search]);
   const columns = useMemo(() => getPolicyConfigurationColumns(t), [t]);
 
   /**

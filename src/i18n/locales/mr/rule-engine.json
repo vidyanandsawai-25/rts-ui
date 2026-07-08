@@ -23,7 +23,11 @@
     "priority": "प्राधान्य",
     "priorityPlaceholder": "उदा. 1",
     "selectCategory": "श्रेणी निवडा",
-    "selectScope": "नियम व्याप्ती निवडा"
+    "selectScope": "नियम व्याप्ती निवडा",
+    "stopProcessing": "प्रक्रिया थांबवा",
+    "stopProcessingActive": "यंत्र थांबवा",
+    "stopProcessingInactive": "सुरू ठेवा",
+    "stopProcessingHint": "सक्रिय केल्यास, हा नियम संच जुळल्यावर लायब्ररीमधील पुढील कोणत्याही नियमांचे मूल्यांकन केले जाणार नाही।"
   },
   "conditionRow": {
     "selectField": "फील्ड निवडा",

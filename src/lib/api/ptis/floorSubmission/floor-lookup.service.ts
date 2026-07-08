@@ -70,10 +70,15 @@ export async function getTypeOfUseData(propertyTypeId?: string | number): Promis
         const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(`/TypeOfUseByPropertyType/${propertyTypeId}`, "Failed to fetch types of use by property type");
         return rawItems.map(item => ({
             ...item,
-            typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0)
+            typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
+            typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
         }));
     }
-    return fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
+    const rawItems = await fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
+    return rawItems.map(item => ({
+        ...item,
+        typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
+    }));
 }
 
 /**

@@ -18,12 +18,14 @@ interface ChangeTimelapseProps {
   initialLat?: number;
   initialLng?: number;
   initialWaybackReleases?: WaybackRelease[];
+  propertyId?: number;
 }
 
 export function ChangeTimelapse({
   initialLat,
   initialLng,
   initialWaybackReleases,
+  propertyId,
 }: ChangeTimelapseProps): React.ReactElement {
   const t = useTranslations('ptis');
   const {
@@ -128,6 +130,7 @@ export function ChangeTimelapse({
         lat={lat}
         lng={lng}
         loading={loading}
+        propertyId={propertyId}
       />
 
       <TimelineTrack
