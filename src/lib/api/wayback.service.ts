@@ -21,7 +21,7 @@ export const WAYBACK_STATIC_TILE_URL = (
   y: number,
   z: number
 ): string =>
-  `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/${releaseId}/${z}/${y}/${x}`;
+  `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${releaseId}/${z}/${y}/${x}`;
 
 export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
   try {
@@ -59,6 +59,44 @@ export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
         year: parseInt(year, 10),
       }));
   } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetches only the sparse Wayback releases where actual imagery changes occurred for the given coordinates.
+ */
+export async function fetchLocalChanges(lat: number, lng: number): Promise<WaybackRelease[]> {
+  try {
+    // Dynamic import to avoid SSR issues with the esri library
+    const { getWaybackItemsWithLocalChanges } = await import('@esri/wayback-core');
+    const items = await getWaybackItemsWithLocalChanges(
+      { latitude: lat, longitude: lng },
+      18
+    );
+
+    const mapped = items.map(i => {
+      const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
+      const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
+      const year = parseInt(dateStr.slice(0, 4), 10);
+      return {
+        releaseId: i.releaseNum,
+        date: dateStr,
+        year
+      };
+    });
+
+    // Deduplicate by year, keeping the latest release per year, and sort chronologically
+    const byYear: Record<number, WaybackRelease> = {};
+    mapped.forEach(rel => {
+      if (!byYear[rel.year] || rel.date > byYear[rel.year].date) {
+        byYear[rel.year] = rel;
+      }
+    });
+
+    return Object.values(byYear).sort((a, b) => a.year - b.year);
+  } catch (error) {
+    console.error('Error fetching local changes from Esri:', error);
     return [];
   }
 }

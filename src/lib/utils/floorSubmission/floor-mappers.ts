@@ -21,6 +21,7 @@ import {
 import { resolveIdFromDescription } from "./floor-resolvers";
 import { mapRoomDataToApi } from "./room-mappers";
 import { mapRenterPayloadFields } from "@/lib/utils/renter/renter-payload-mapper";
+import { checkIsUtilityCategory } from "./floor-utility-checks";
 
 // Re-export children utilities for consistent access
 export * from "./floor-descriptions";
@@ -59,6 +60,7 @@ export const mapFormToPayload = (params: {
   } = params;
 
   const isOpenSpace = selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot';
+  const isUtility = checkIsUtilityCategory(formData.typeOfUseCategoryId);
 
   // Resolve IDs primarily from explicit ID fields, fallback to resolving from descriptions
   const floorId = Number(formData.floorId) || resolveIdFromDescription(
@@ -133,7 +135,7 @@ export const mapFormToPayload = (params: {
     builtupAreaSqFeet: isOpenSpace
       ? parseFloat(String(formData.areaSqFt || 0))
       : parseFloat(String(formData.builtupAreaSqFt || 0)),
-    noOfRooms: parseInt(String(formData.rooms)) || 0,
+    noOfRooms: isUtility ? 0 : (parseInt(String(formData.rooms)) || 0),
     isTaxable: formData.isTaxable === 'Yes' || formData.isTaxable === true,
     taxLiability: String(formData.taxLiability || ''),
     occupancyDate: formData.occupancyDate || null,
@@ -152,8 +154,9 @@ export const mapFormToPayload = (params: {
           const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
           return matchIndex === index;
         })
-        .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId)),
+        .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId, isUtility)),
     roomWiseMinusData: isOpenSpace ? [] : undefined,
+    typeOfUseCategoryId: formData.typeOfUseCategoryId,
     selectedFloorType: (selectedFloorType || formData.selectedFloorType) as "Construction" | "OpenPlot" | undefined,
     isOpenPlot: isOpenSpace,
     length: isOpenSpace

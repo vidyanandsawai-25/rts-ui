@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -5,11 +6,12 @@ import { FooterSelect } from './FooterSelect';
 import { useTranslations } from 'next-intl';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CircleArrowLeft } from 'lucide-react';
+import { CircleArrowLeft, Route } from 'lucide-react';
 import { Tooltip, useConfirm } from '@/components/common';
 import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
 import { toast } from 'sonner';
 import { savePropertyWorkflowStageAction } from '@/app/[locale]/property-tax/ptis/workflowStageActions';
+import { PropertyTrackingModal } from './PropertyTrackingModal';
 
 export function PtisBackButton() {
   const t = useTranslations('ptis');
@@ -74,10 +76,14 @@ export function PtisFooterDropdowns({
   workflowStages = [],
   propertyId,
   currentWorkflowStageId,
+  propertyNo,
+  ownerName,
 }: {
   workflowStages?: PropertyWorkflowStage[];
   propertyId?: number | string;
   currentWorkflowStageId?: number;
+  propertyNo?: string;
+  ownerName?: string;
 }) {
   const t = useTranslations('ptis');
   const pathname = usePathname();
@@ -95,6 +101,8 @@ export function PtisFooterDropdowns({
   const [isSaving, setIsSaving] = useState(false);
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
+
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
 
   const [prevStageId, setPrevStageId] = useState(currentWorkflowStageId);
   const [prevStages, setPrevStages] = useState(workflowStages);
@@ -268,6 +276,26 @@ export function PtisFooterDropdowns({
           <span>✅ {t('footerControls.qcDoneLabel') || 'QC Done'}</span>
         </div>
       )}
+
+      <button type="button"
+        onClick={() => {
+          setIsTrackingModalOpen(true);
+        }}
+        className="h-8.5 md:h-9 px-3 inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 text-blue-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-100 hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-100/50 text-xs font-semibold"
+      >
+        <Route className="w-4 h-4" />
+        Track Status
+      </button>
+
+      <PropertyTrackingModal
+        isOpen={isTrackingModalOpen}
+        onClose={() => setIsTrackingModalOpen(false)}
+        propertyId={propertyId}
+        propertyNo={propertyNo}
+        ownerName={ownerName}
+        workflowStages={workflowStages}
+        currentWorkflowStageId={currentWorkflowStageId}
+      />
     </>
   );
 }

@@ -588,6 +588,7 @@ export interface FloorSubmissionPayload {
     lengthMtr?: number | string | null;
     widthMtr?: number | string | null;
     roomWiseMinusData?: unknown[];
+    typeOfUseCategoryId?: number | string | null;
 }
 
 // QuickDataEntryPayload - used for quick data entry submission

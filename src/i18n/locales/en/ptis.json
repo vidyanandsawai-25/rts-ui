@@ -16,6 +16,7 @@
     "speedFast": "2x (Fast)",
     "labels": "Labels",
     "googleMap": "Click to view on Google Map",
+    "gisPortal": "Click to view on GIS Portal",
     "fetchingCatalog": "Fetching satellite history catalog...",
     "interactionGuide": "Drag to pan · Click a year to jump",
     "attribution": "© Esri, Wayback, Maxar",

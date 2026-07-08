@@ -119,6 +119,7 @@ export interface TypeOfUseApiItem {
     isActive: boolean;
     createdDate: string;
     updatedDate: string | null;
+    typeOfUseCategoryId?: number | null;
     [key: string]: unknown;
 }
 

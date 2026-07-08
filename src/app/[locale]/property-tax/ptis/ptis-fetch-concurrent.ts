@@ -96,5 +96,7 @@ export async function fetchPropertyDetailsConcurrently(
     dualMethodPromise,
     taxDetailsPromise,
     ruleLogsPromise,
+    import('@/lib/api/wayback.service').then(m => m.fetchWaybackReleases()).catch(() => null),
+    import('./ptis-detail-actions').then(m => propertyId ? m.fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null)).catch(() => null),
   ]);
 }
