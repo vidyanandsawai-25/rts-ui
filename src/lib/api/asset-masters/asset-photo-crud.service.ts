@@ -95,7 +95,7 @@ export async function createAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
         "Create asset photo type failed"
       );
     }
-    return response.message;
+    return (response.data as { message?: string } | undefined)?.message;
   } catch (error) {
     logger.error("Error creating asset photo type", { error: error as Error });
     throw error;
@@ -130,7 +130,7 @@ export async function updateAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
         "Update asset photo type failed"
       );
     }
-    return response.message;
+    return (response.data as { message?: string } | undefined)?.message;
   } catch (error) {
     logger.error("Error updating asset photo type", { error: error as Error });
     throw error;
@@ -183,7 +183,10 @@ export async function getAssetCategories(): Promise<AssetCategory[]> {
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset categories", "Get asset categories failed");
     }
-    return response.data?.items ?? [];
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data.items ?? [];
   } catch (error) {
     logger.error("Error fetching asset categories", { error: error as Error });
     throw error;
@@ -201,7 +204,10 @@ export async function getAssetTypes(): Promise<AssetType[]> {
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset types", "Get asset types failed");
     }
-    return response.data?.items ?? [];
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data.items ?? [];
   } catch (error) {
     logger.error("Error fetching asset types", { error: error as Error });
     throw error;

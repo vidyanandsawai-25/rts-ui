@@ -92,7 +92,7 @@ export async function createAssetRoomType(data: AssetRoomTypeFormModel): Promise
         "Create asset room type failed"
       );
     }
-    return response.message;
+    return (response.data as { message?: string } | undefined)?.message;
   } catch (error) {
     logger.error("Error creating asset room type", { error: error as Error });
     throw error;
@@ -123,7 +123,7 @@ export async function updateAssetRoomType(data: AssetRoomTypeFormModel): Promise
         "Update asset room type failed"
       );
     }
-    return response.message;
+    return (response.data as { message?: string } | undefined)?.message;
   } catch (error) {
     logger.error("Error updating asset room type", { error: error as Error });
     throw error;
@@ -175,7 +175,10 @@ export async function getAssetTypes(): Promise<AssetType[]> {
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset types", "Get asset types failed");
     }
-    return response.data?.items ?? [];
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data.items ?? [];
   } catch (error) {
     logger.error("Error fetching asset types", { error: error as Error });
     throw error;
