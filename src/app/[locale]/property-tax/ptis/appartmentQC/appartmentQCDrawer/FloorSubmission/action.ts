@@ -112,6 +112,16 @@ export async function fetchSubTypesAction(typeOfUseId?: string | number): Promis
   }
 }
 
+export async function fetchSubFloorsAction(): Promise<ActionResult<Array<{ id?: string | number; description?: string; subFloorCode?: string; subFloorId?: string | number }>>> {
+  try {
+    const { getSubFloorData } = await import("@/lib/api/ptis/floorSubmission/floor-lookup.service");
+    const data = await getSubFloorData();
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleActionError(error, "messages.fetchSubFloorsFailed");
+  }
+}
+
 /* ============================================================
    ROOM SUBMISSION ACTIONS (Re-exported from global actions)
  ============================================================ */

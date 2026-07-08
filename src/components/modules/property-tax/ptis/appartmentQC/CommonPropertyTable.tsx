@@ -31,7 +31,7 @@ const FILTERABLE_COLUMNS: Record<string, FilterField> = {
 };
 
 const SORT_COLUMN_KEYS: Record<string, string> = {
-  propertyNo: 'PartitionNo',
+  propertyNo: 'PropertyNo',
   flatOrShopNo: 'FlatOrShopNo',
   constructionYear: 'ConstructionYear',
   assessmentYear: 'AssessmentYear',
@@ -41,11 +41,11 @@ const SORT_COLUMN_KEYS: Record<string, string> = {
   bhk: 'Bhk',
   carpetArea: 'CarpetASqFt',
   builtupArea: 'BuiltupASqFt',
-  oldConstArea: 'NewConstructionArea',
+  oldConstArea: 'OldConstructionArea',
   typeOfUse: 'TypeOfUse',
   constructionType: 'ConstructionType',
   rateableValue: 'RateableValue',
-  oldRV: 'NewTaxTotalRV',
+  oldRV: 'OldRV',
   capitalValue: 'CapitalValue',
   totalTax: 'NewTaxTotal',
   newTaxTotalCV: 'NewTaxTotalCV',
@@ -277,7 +277,22 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 
         const isPropertyNo = col.key === 'propertyNo';
         const isOldPropertyNo = col.key === 'oldPropertyNo';
-        const sortButton = (
+                const sortableColumns = [
+          'propertyNo',
+          'flatOrShopNo',
+          'ownerName',
+          'occupierName',
+          'mobileNo',
+          'emailId',
+        ];
+        const disableSort = !sortableColumns.includes(col.key as string);
+
+
+        const sortButton = disableSort ? (
+          <span className="inline-flex items-center justify-center p-1 gap-1 w-full h-full text-[11px] font-semibold text-white">
+            <span className="truncate">{columnLabel}</span>
+          </span>
+        ) : (
           <ApartmentSortButton
             label={columnLabel}
             sortDirection={sortDirection}

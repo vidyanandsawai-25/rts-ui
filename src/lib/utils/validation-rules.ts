@@ -57,11 +57,11 @@ export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
 
 /* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
- // Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
- // No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
- // Must start and end with an alphanumeric; a single separator is allowed between tokens.
-export const ALPHANUMERIC_WITH_SPACES_REGEX =/^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
-export const ALPHANUMERIC_WITH_SPACES_SANITIZE =/[^\p{L}\p{M}\p{N}.\s]/gu;
+// Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
+// No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
+// Must start and end with an alphanumeric; a single separator is allowed between tokens.
+export const ALPHANUMERIC_WITH_SPACES_REGEX = /^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
+export const ALPHANUMERIC_WITH_SPACES_SANITIZE = /[^\p{L}\p{M}\p{N}.\s]/gu;
 
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
@@ -141,3 +141,7 @@ export const isAllZeros = (value: string): boolean => {
   if (trimmed.length === 0) return false;
   return /^0+$/.test(trimmed);
 };
+
+// Apartment QC Basic Information form validation 
+export const OWNERNAME_REGEX =
+   /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
