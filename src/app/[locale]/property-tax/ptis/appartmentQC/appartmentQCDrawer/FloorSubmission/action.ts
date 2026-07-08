@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { revalidatePath } from "next/cache";
 
-import { getFloorQCByPropertyIdSafe } from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
+import { getFloorQCByPropertyIdSafe, syncRoomsForPropertyDetailsLocalized, updateFloorQCDetailLocalized, updateFloorQCDetailsBulkLocalized } from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
 import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
@@ -13,6 +13,9 @@ import { getUseTypesPagedServer, getSubTypesPagedServer } from "@/lib/api/typeof
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import { getRoomTypeData, getSubFloorData } from "@/lib/api/ptis/floorSubmission";
+import { createRoomWiseMinusSafe, createRoomWiseSubmissionSafe, deleteRoomWiseSubmissionSafe, getRoomWiseSubmissionsSafe, updateRoomWiseMinusSafe, updateRoomWiseSubmissionSafe } from "@/lib/api/ptis/appartmentQC/appartmentQC-room.service";
+import type { RoomWiseSubmissionData } from "@/lib/api/ptis/appartmentQC/appartmentQC-room.service";
 
 interface SubTypeFetchParams {
   pageNumber: number;
@@ -114,7 +117,6 @@ export async function fetchSubTypesAction(typeOfUseId?: string | number): Promis
 
 export async function fetchSubFloorsAction(): Promise<ActionResult<Array<{ id?: string | number; description?: string; subFloorCode?: string; subFloorId?: string | number }>>> {
   try {
-    const { getSubFloorData } = await import("@/lib/api/ptis/floorSubmission/floor-lookup.service");
     const data = await getSubFloorData();
     return { success: true, data: data || [] };
   } catch (error) {
@@ -128,7 +130,6 @@ export async function fetchSubFloorsAction(): Promise<ActionResult<Array<{ id?: 
 
 export async function fetchRoomTypesAction(): Promise<ActionResult<Array<{ id: number; code: string; name: string; description: string }>>> {
   try {
-    const { getRoomTypeData } = await import("@/lib/api/ptis/floorSubmission/floor-lookup.service");
     const data = await getRoomTypeData();
     return {
       success: true,
@@ -152,7 +153,6 @@ export async function fetchRoomWiseSubmissionsAction(params: {
   propertyDetailsId?: number;
 }): Promise<ActionResult<unknown[]>> {
   try {
-    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const data = await getRoomWiseSubmissionsSafe(params);
     return { success: true, data };
   } catch (error: unknown) {
@@ -167,9 +167,8 @@ export async function fetchRoomWiseSubmissionsAction(params: {
 export async function getRoomWiseSubmissionsAction(params: {
   propertyId: number;
   propertyDetailsId: number;
-}): Promise<{ success: boolean; data?: import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service").RoomWiseSubmissionData[]; error?: string }> {
+}): Promise<{ success: boolean; data?: RoomWiseSubmissionData[]; error?: string }> {
   try {
-    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const data = await getRoomWiseSubmissionsSafe({
       propertyId: params.propertyId,
       propertyDetailsId: params.propertyDetailsId,
@@ -226,7 +225,6 @@ export async function createRoomWiseSubmissionAction(payload: {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { createRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const resolveIsOffset = (offset: { isOffset?: boolean; operation?: string }) =>
       offset.isOffset !== undefined
         ? offset.isOffset
@@ -294,11 +292,6 @@ export async function updateRoomWithOffsetsAction(
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { 
-      updateRoomWiseSubmissionSafe,
-      createRoomWiseMinusSafe,
-      updateRoomWiseMinusSafe
-    } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
 
     // Update main room (without roomWiseMinusData since we handle offsets separately)
     const { roomWiseMinusData, ...roomPayload } = payload;
@@ -416,7 +409,6 @@ export async function updateRoomWiseSubmissionAction(
  */
 export async function deleteRoomWiseSubmissionAction(id: number): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseSubmissionSafe(id);
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete room" };
@@ -438,7 +430,6 @@ export async function syncRoomsForPropertyDetailsAction(
   propertyDetailsId: number | string
 ): Promise<ActionResult<void>> {
   try {
-    const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await syncRoomsForPropertyDetailsLocalized(propertyId, propertyDetailsId);
     return { success: true, message: "Rooms synced successfully" };
   } catch (error) {
@@ -480,7 +471,6 @@ export async function updateFloorQCDetailAction(
   payload: FloorQCUpdatePayload
 ): Promise<ActionResult> {
   try {
-    const { updateFloorQCDetailLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateFloorQCDetailLocalized(propertyId, detailId, payload);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -519,7 +509,6 @@ export async function updateFloorQCDetailsBulkAction(
   items: FloorQCBulkUpdateItem[]
 ): Promise<ActionResult> {
   try {
-    const { updateFloorQCDetailsBulkLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateFloorQCDetailsBulkLocalized(propertyId, items);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");

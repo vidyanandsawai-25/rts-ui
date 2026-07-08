@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FloorQCEditDrawer } from '@/components/modules/property-tax/ptis/appartmentQC/FloorQCEditDrawer';
-import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
+import type { DrawerFloorDataRow } from '@/types/propertyEditScreenDrawer.types';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({

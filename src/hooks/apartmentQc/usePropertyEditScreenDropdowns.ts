@@ -12,7 +12,7 @@ import type { UseType, UseSubType } from "@/types/typeOfUse.types";
 import {
   DrawerDropdownOption,
   DrawerSubTypeOption,
-} from "./propertyEditScreenDrawer.types";
+} from "../../types/propertyEditScreenDrawer.types";
 
 interface UsePropertyEditScreenDropdownsArgs {
   // Props passed from parent

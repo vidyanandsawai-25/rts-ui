@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { getRoomWiseSubmissionsAction } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import RoomWiseSubmission from '@/components/modules/property-tax/ptis/appartmentQC/roomSubmission/RoomWiseSubmission';
 import type { RoomAPIResponse } from '@/types/room-details.types';
-import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
+import type { DrawerFloorDataRow } from '@/types/propertyEditScreenDrawer.types';
 
 import type { Floor } from '@/types/floor.types';
 import type { ConstructionType } from '@/types/construction.types';
@@ -432,7 +432,7 @@ export const FloorSubmissionForm = ({
                             {t('floorQC.columns.areaSqMtr')}
                         </Label>
                         <span className="ml-auto shrink-0 text-[9px] text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded">
-                            {t('floorQC.columns.autoCalculated')}
+                            {t('floorQC.form.autoCalculated')}
                         </span>
                     </div>
                     <Input
@@ -476,7 +476,7 @@ export const FloorSubmissionForm = ({
                         variant="primary"
                         icon={Save}
                         onClick={handleSave}
-                        disabled={isSaving} 
+                        disabled={isSaving}
                     >
                         {isEditMode ? t('drawer.update') : t('buttons.save')}
                     </Button>
