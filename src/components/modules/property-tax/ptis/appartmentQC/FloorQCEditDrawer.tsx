@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Drawer } from "@/components/common/Drawer";
 import { SaveButton, CancelButton } from "@/components/common";
 import { EditableSelect, EditableInput } from "./PropertyEditDrawerInputs";
-import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
+import { DrawerFloorDataRow, DrawerDropdownOption } from "@/types/propertyEditScreenDrawer.types";
 import { useTranslations } from "next-intl";
 
 interface FloorQCEditDrawerProps {

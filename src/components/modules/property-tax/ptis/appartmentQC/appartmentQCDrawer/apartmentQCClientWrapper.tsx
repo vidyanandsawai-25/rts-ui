@@ -57,12 +57,13 @@ function ApartmentQCContent({
     };
 
     const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
+    const isPhotoOpen = searchParams.get('photo') === 'true';
 
     const drawerClassName = cn(
-        "[&_div.fixed.right-0]:!w-[97vw]",
-        "md:[&_div.fixed.right-0]:!w-[1000px]",
-        "lg:[&_div.fixed.right-0]:!w-[1100px]",
-        "xl:[&_div.fixed.right-0]:!w-[1200px]",
+        !isPhotoOpen && "[&_div.fixed.right-0]:!w-[97vw]",
+        !isPhotoOpen && "md:[&_div.fixed.right-0]:!w-[1000px]",
+        !isPhotoOpen && "lg:[&_div.fixed.right-0]:!w-[1100px]",
+        !isPhotoOpen && "xl:[&_div.fixed.right-0]:!w-[1200px]",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child]:!bg-blue-600",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child_h2]:!text-white",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child_button_svg]:!text-white",
@@ -105,7 +106,7 @@ function ApartmentQCContent({
                     {!isRenterPage && (
                         <ApartmentQCTabNavigation/>
                     )}
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-auto" key={pathname}>
                         {children}
                     </div>
                 </div>

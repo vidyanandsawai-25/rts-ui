@@ -5,19 +5,11 @@ import { useTranslations } from 'next-intl';
 
 import CommonPropertyTable from './CommonPropertyTable';
 import ApartmentTaxDetailsTable from './ApartmentTaxDetailsTable';
-import { ApartmentQCDetail, PagedResponse, ApartmentTaxDetailsItems, DualMethodTaxDetails } from '@/types/apartmentQC.types';
+import { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
 import { LoadingPage } from '@/components/common/LoadingPage';
 import { getApartmentQCColumns } from './apartmentQC.columns';
 import { emptyPagedResponse, transformApartmentData, getTabTitle } from './apartmentQC.utils';
-// import PropertyDetailsEditScreenNew from './PropertyDetailsEditScreen';
-import {
-  fetchApartmentQCDetailsSafeAction,
-  fetchFloorQCByPropertyIdSafeAction,
-  fetchAllPropertyTypesAction,
-  fetchApartmentPropertyTaxDetailsByTabAction,
-  fetchApartmentPropertyTaxDetailsCvByTabAction,
-  fetchDualMethodTaxDetailsByTabAction,
-} from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
+import { useAppartmentQCSectionData } from '@/hooks/apartmentQc/useAppartmentQCSectionData';
 import { useColumnFilters } from '@/hooks/apartmentQc/useColumnFilters';
 
 interface AppartmentQCSectionProps {
@@ -31,11 +23,7 @@ interface AppartmentQCSectionProps {
   partitionNo?: string;
 }
 
-interface DrawerLocalData {
-  basicInfo: ApartmentQCDetail | null;
-  floorQCData: ApartmentQCDetail[];
-  propertyTypes: Array<{ value: string; label: string }>;
-}
+
 
 const AppartmentQCSection = ({
   initialData = {
@@ -51,7 +39,6 @@ const AppartmentQCSection = ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  // const [drawerLoading, setDrawerLoading] = useState(false);
 
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
@@ -68,44 +55,19 @@ const AppartmentQCSection = ({
     activeMainTab,
   });
 
-  // Tax details state - supports rateable, capital, and dual method
-  const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
-  const [dualMethodDetails, setDualMethodDetails] = useState<DualMethodTaxDetails | null>(null);
-  const [taxDetailsLoading, setTaxDetailsLoading] = useState(false);
-
-  // Function to refetch tax details (used when property details drawer is closed after saving)
-  const refetchTaxDetails = useCallback(async () => {
-    if (!wardId || !propertyNo) {
-      return;
-    }
-
-    try {
-      setTaxDetails(null);
-      setDualMethodDetails(null);
-      setTaxDetailsLoading(true);
-
-      if (activeSubTab === 'rateable') {
-        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
-        if (result.success && result.data) {
-          setTaxDetails(result.data);
-        }
-      } else if (activeSubTab === 'capital') {
-        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
-        if (result.success && result.data) {
-          setTaxDetails(result.data);
-        }
-      } else if (activeSubTab === 'dual-method') {
-        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
-        if (result.success && result.data) {
-          setDualMethodDetails(result.data);
-        }
-      }
-    } catch {
-      // Error handled silently, state already null
-    } finally {
-      setTaxDetailsLoading(false);
-    }
-  }, [activeSubTab, activeMainTab, wardId, propertyNo, partitionNo]);
+  const {
+    taxDetails,
+    dualMethodDetails,
+    taxDetailsLoading
+  } = useAppartmentQCSectionData({
+    wardId,
+    propertyNo,
+    partitionNo,
+    activeMainTab,
+    activeSubTab,
+    drawerOpen: searchParams.get('drawer') === 'edit',
+    selectedPropertyId: searchParams.get('editPropertyId')
+  });
 
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';
@@ -113,31 +75,6 @@ const AppartmentQCSection = ({
       queueMicrotask(() => setSearchQuery(urlSearchTerm));
     }
   }, [searchParams, searchQuery]);
-
-  // Fetch tax details based on selected sub-tab (rateable, capital, or dual-method)
-  useEffect(() => {
-    if (!wardId || !propertyNo) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const fetchData = async () => {
-      try {
-        if (!cancelled) {
-          await refetchTaxDetails();
-        }
-      } catch {
-        // Error handled silently
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeSubTab, activeMainTab, wardId, propertyNo, refetchTaxDetails]);
 
   const updateUrl = useCallback((params: Record<string, string | number | null>) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -196,57 +133,7 @@ const AppartmentQCSection = ({
     router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
   }, [pathname, router, searchParams, activeMainTab, activeSubTab]);
 
-  // Drawer state management - fetch data client-side when drawer opens
-  const drawerOpen = searchParams.get('drawer') === 'edit';
-  const selectedPropertyId = searchParams.get('editPropertyId');
 
-  const [, setDrawerLocalData] = useState<DrawerLocalData | null>(null);
-
-  // Fetch drawer data client-side when the drawer opens. The reset to `null`
-  // lives in the cleanup return so React's set-state-in-effect rule is happy
-  // — cleanups are exempt and they still fire on dep changes / unmount.
-  useEffect(() => {
-    if (!drawerOpen || !selectedPropertyId) return;
-
-    let cancelled = false;
-
-    // queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
-
-    const type = activeSubTab === 'dual-method' ? 'dual' : activeSubTab;
-
-    Promise.all([
-      fetchApartmentQCDetailsSafeAction({ propertyId: selectedPropertyId, pageSize: 1 }),
-      fetchFloorQCByPropertyIdSafeAction(Number(selectedPropertyId), type),
-      fetchAllPropertyTypesAction(),
-    ])
-      .then(([basicArr, floorArr, propTypesRes]) => {
-        if (cancelled) return;
-
-        setDrawerLocalData({
-          basicInfo: basicArr.length > 0 ? basicArr[0] : null,
-          floorQCData: floorArr,
-          propertyTypes: propTypesRes.success && propTypesRes.data ? propTypesRes.data : [],
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
-
-        setDrawerLocalData({
-          basicInfo: null,
-          floorQCData: [],
-          propertyTypes: [],
-        });
-      })
-      // .finally(() => {
-      //   if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
-      // });
-
-    return () => {
-      cancelled = true;
-      setDrawerLocalData(null);
-      // setDrawerLoading(false);
-    };
-  }, [drawerOpen, selectedPropertyId, activeSubTab]);
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
@@ -285,18 +172,6 @@ const AppartmentQCSection = ({
           />
         </div>
       </div>
-
-       {/* <PropertyDetailsEditScreenNew
-            key={`property-edit-${selectedPropertyId || 'new'}`}
-            open={drawerOpen} 
-            onClose={handleCloseDrawer}
-            onSaveOrClose={refetchTaxDetails}
-            propertyData={selectedPropertyData}
-            subTab={activeSubTab}
-            returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
-            initialFloorQCData={drawerLocalData?.floorQCData}
-            initialPropertyTypes={drawerLocalData?.propertyTypes}
-          /> */}
     </div>
   );
 };

@@ -75,7 +75,13 @@ export async function fetchLocalChanges(lat: number, lng: number): Promise<Wayba
       18
     );
 
-    const mapped = items.map(i => {
+    interface IWaybackItem {
+      itemTitle?: string;
+      releaseDatetime: string | number | Date;
+      releaseNum: number;
+    }
+
+    const mapped = items.map((i: IWaybackItem) => {
       const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
       const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
       const year = parseInt(dateStr.slice(0, 4), 10);
@@ -88,7 +94,7 @@ export async function fetchLocalChanges(lat: number, lng: number): Promise<Wayba
 
     // Deduplicate by year, keeping the latest release per year, and sort chronologically
     const byYear: Record<number, WaybackRelease> = {};
-    mapped.forEach(rel => {
+    mapped.forEach((rel: WaybackRelease) => {
       if (!byYear[rel.year] || rel.date > byYear[rel.year].date) {
         byYear[rel.year] = rel;
       }

@@ -113,6 +113,6 @@ describe('FloorSubmissionScreen', () => {
 
     expect(screen.queryByTestId('photo-viewer')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('photo-toggle'));
-    expect(screen.getByTestId('photo-viewer')).toHaveTextContent('photo:101');
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('photo=true'), { scroll: false });
   });
 });

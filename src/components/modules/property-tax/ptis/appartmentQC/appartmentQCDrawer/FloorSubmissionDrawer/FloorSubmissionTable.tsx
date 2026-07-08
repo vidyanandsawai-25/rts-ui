@@ -13,7 +13,7 @@ interface FloorQCTableProps {
   t: (key: string) => string;
   floorColumns: Column<FloorSubmissionRow>[];
   tableStyle: (col: Column<FloorSubmissionRow>) => Column<FloorSubmissionRow>;
-
+  onRowClick?: (row: FloorSubmissionRow, index: number) => void;
 }
 
 export const FloorQCTable = ({
@@ -21,7 +21,7 @@ export const FloorQCTable = ({
   t,
   floorColumns,
   tableStyle,
-
+  onRowClick,
 }: FloorQCTableProps) => {
 
   return (
@@ -48,6 +48,7 @@ export const FloorQCTable = ({
               rowClassName={(_row) => {
                 return `h-[36px] border-b border-gray-100 transition-colors hover:bg-blue-100/60 `;
               }}
+              onRowClick={onRowClick}
               height="sm"
             />
           </Tabs.TabPanel>
@@ -61,6 +62,7 @@ export const FloorQCTable = ({
               rowClassName={(_row,) => {
                 return `h-[36px] border-b border-gray-100 transition-colors hover:bg-blue-100/60 `;
               }}
+              onRowClick={onRowClick}
               height="sm"
             />
           </Tabs.TabPanel>
@@ -75,6 +77,7 @@ export const FloorQCTable = ({
           rowClassName={(_row) => {
             return `h-[36px] border-b border-gray-100 transition-colors hover:bg-blue-100/60`;
           }}
+          onRowClick={onRowClick}
           height="sm"
         />
       )}
