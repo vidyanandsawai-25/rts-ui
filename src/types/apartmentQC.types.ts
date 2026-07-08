@@ -288,6 +288,13 @@ export type FloorSubmissionRow = {
   subTypeOfUseId: string;
   noOfRooms: string;
   area: string;
+  taxable?: string;
+  subFloorId?: string;
+  renter?: string;
+  areaSqFt?: string;
+  areaSqMtr?: string;
+  buildupAreaSqFt?: string;
+  buildupAreaSqMtr?: string;
   rentMY: string;
   rateMY: string;
   monthlyRate?: number;

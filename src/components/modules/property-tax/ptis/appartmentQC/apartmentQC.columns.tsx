@@ -301,7 +301,12 @@ export const getApartmentQCColumns = (
       { key: 'totalTax', label: t('columns.tax') },
       { key: 'wing', label: t('columns.wingName') },
       { key: 'flatOrShopNo', label: t('columns.shopNo') },
-      { key: 'flatOrShopName', label: t('columns.shopName') },
+      { 
+        key: 'flatOrShopName', 
+        label: t('columns.shopName'),
+        render: renderTruncatedText,
+        cellClassName: 'text-left min-w-[170px] max-w-[170px]'
+      },
       { key: 'rentMonthly', label: t('columns.rent') },
       { key: 'renterName', label: t('columns.renterName') },
       { key: 'propertyTypeName', label: t('columns.description'), render: renderMultiRecordMax2 },

@@ -10,7 +10,7 @@ import { usePropertyEditScreenDropdowns } from "./usePropertyEditScreenDropdowns
 import { usePropertyEditScreenFloorQC } from "./usePropertyEditScreenFloorQC";
 import { usePropertyEditScreenValidation } from "./usePropertyEditScreenValidation";
 import { usePropertyEditScreenSubmission } from "./usePropertyEditScreenSubmission";
-import type { DrawerFloorDataRow } from "./propertyEditScreenDrawer.types";
+import type { DrawerFloorDataRow } from "../../types/propertyEditScreenDrawer.types";
 
 interface UsePropertyEditScreenDrawerArgs {
   open: boolean;

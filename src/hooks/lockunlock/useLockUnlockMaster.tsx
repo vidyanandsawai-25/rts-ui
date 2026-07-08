@@ -14,7 +14,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 export interface UseLockUnlockMasterProps {
   wardIdFromUrl: string;
   screens: LockedScreen[];
-  dropdownProperties: { label: string; value: string }[];
+  dropdownProperties: { label: string; value: string; propertyId?: number }[];
   initialProperties?: LockUnlockPropertyItem[];
   initialPagination?: PaginationState;
   wards?: WardItem[];
@@ -290,7 +290,8 @@ export function useLockUnlockMaster({
         }
 
         if (selectedPartitions.length > 0) {
-          partitionNoStr = selectedPartitions.join(",");
+          const uniquePartitions = Array.from(new Set(selectedPartitions));
+          partitionNoStr = uniquePartitions.join(",");
         }
       }
     }
@@ -484,7 +485,7 @@ export function useLockUnlockMaster({
         params.delete("search");
       }
       router.push(`${pathname}?${params.toString()}`);
-      
+
       if (showResults) {
         fetchProperties(1, pagination.pageSize, debouncedSearchTerm, true);
       }
@@ -581,11 +582,11 @@ export function useLockUnlockMaster({
             if (response.success) {
               toast.success(
                 response.message ||
-                  t("messages.propertySuccess", {
-                    action: willLock
-                      ? t("resultsTable.status.locked").toLowerCase()
-                      : t("resultsTable.status.unlocked").toLowerCase()
-                  })
+                t("messages.propertySuccess", {
+                  action: willLock
+                    ? t("resultsTable.status.locked").toLowerCase()
+                    : t("resultsTable.status.unlocked").toLowerCase()
+                })
               );
               handleShow();
             } else {
@@ -683,21 +684,25 @@ export function useLockUnlockMaster({
       onConfirm: async () => {
         startTransition(async () => {
           try {
-            const payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
+            let payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
               screenIds: selectedScreenIds.map(Number),
               action,
             };
 
             if (isAllPropertiesSelected) {
               const { fromProperty, toProperty, partitionNo } = getPropertyQueryRange();
-              payload.selectAll = true;
-              payload.excludedPropertyIds = excludedPropertyIds;
-              payload.filters = {
-                wardId: Number(formData.wardId),
-                fromProperty,
-                toProperty,
-                partitionNo,
-                search: lastAppliedSearchRef.current || undefined,
+              payload = {
+                selectAll: true,
+                excludedPropertyIds,
+                screenIds: selectedScreenIds.map(Number),
+                action,
+                filters: {
+                  wardId: Number(formData.wardId),
+                  fromProperty,
+                  toProperty,
+                  partitionNo,
+                  search: lastAppliedSearchRef.current || undefined,
+                },
               };
             } else {
               payload.propertyIds = selectedPropertyIds.map(Number);
