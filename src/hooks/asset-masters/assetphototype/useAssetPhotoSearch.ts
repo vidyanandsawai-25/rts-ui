@@ -29,7 +29,7 @@ export function useAssetPhotoSearch({
     startTransition(() => {
       setSearch(currentSearchTerm);
     });
-  }, [currentSearchTerm]);
+  }, [currentSearchTerm, startTransition]);
 
   const handleSearchChange = useCallback((value: string) => {
     let sanitized = value.replace(TEXT_SANITIZE, "");
