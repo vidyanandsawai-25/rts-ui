@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils/cn";
 interface StatusToggleCardProps {
   statusToggleRef: React.RefObject<HTMLButtonElement | null>;
   isActive: boolean;
-  handleToggleStatus: () => void;
+  handleToggleStatus: (checked: boolean) => void;
   statusLabel: string;
   statusDescription: string;
   activeText: string;

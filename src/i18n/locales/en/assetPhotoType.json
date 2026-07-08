@@ -91,7 +91,7 @@
     "validationError": "Invalid data provided. Please check all fields.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "notFound": "Asset photo type not found.",
-    "inUse": "Cannot deactivate/delete this AssetPhotoType because it is referenced by other asset records.",
+    "inUse": "Cannot deactivate/delete this Asset Photo Type because it is referenced by other asset records.",
     "operationFailed": "Operation failed. Please try again later."
   },
   "success": {

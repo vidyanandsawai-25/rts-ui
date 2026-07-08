@@ -161,6 +161,8 @@ export default function AssetPhotoTypeForm({
               checked={formData.isRequired}
               onChange={handleToggleRequired}
               showPopup={false}
+              activeLabel={t("form.fields.isRequired.label")}
+              inactiveLabel={t("form.fields.isRequired.label")}
             />
           </div>
 

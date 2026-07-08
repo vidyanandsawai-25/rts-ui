@@ -118,18 +118,17 @@ export function useAssetPhotoForm({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
 
-    const sanitizedValue = sanitizeFieldValue(name, value);
-
     if (name === "displayOrder") {
-      const sanitizedValue = value.replace(/[^0-9]/g, "").substring(0, 4);
-      setDisplayOrderValue(sanitizedValue);
+      const digits = value.replace(/[^0-9]/g, "").substring(0, 4);
+      setDisplayOrderValue(digits);
       setFormData((p) => ({
         ...p,
-        displayOrder: sanitizedValue === "" ? 0 : Number(sanitizedValue),
+        displayOrder: digits === "" ? 0 : Number(digits),
       }));
       return;
     }
 
+    const sanitizedValue = sanitizeFieldValue(name, value);
     setFormData((p) => ({
       ...p,
       [name]: sanitizedValue,
