@@ -30,6 +30,7 @@ import { useReassessmentTaxTable } from '@/hooks/ptis/reassessment/useReassessme
 import { useReassessmentAutoScroll } from '@/hooks/ptis/reassessment/useReassessmentAutoScroll';
 import { useSynchronizedScrolling } from '@/hooks/ptis/reassessment/useSynchronizedScrolling';
 import { cn } from '@/lib/utils/cn';
+import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 // ============================================
 // INTERFACES
@@ -141,7 +142,7 @@ export default function ReassesmentScreen({
                       <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
                         {oldPropertyPhoto ? (
                           <ImageWithFallback
-                            src={`/api/documents/${oldPropertyPhoto.documentGuid}/view`}
+                            src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
                             alt={t('photoLabels.oldPropertyPhoto')}
                             fill
                             className="object-cover"
@@ -156,7 +157,7 @@ export default function ReassesmentScreen({
                       <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-[#0f2342] flex items-center justify-center">
                         {oldPlanPhoto ? (
                           <ImageWithFallback
-                            src={`/api/documents/${oldPlanPhoto.documentGuid}/view`}
+                            src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
                             alt={t('photoLabels.oldPlanPhoto')}
                             fill
                             className="object-cover"
@@ -212,7 +213,7 @@ export default function ReassesmentScreen({
                       <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
                         {newPropertyPhoto ? (
                           <ImageWithFallback
-                            src={`/api/documents/${newPropertyPhoto.documentGuid}/view`}
+                            src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
                             alt={t('photoLabels.newPropertyPhoto')}
                             fill
                             className="object-cover"
@@ -227,7 +228,7 @@ export default function ReassesmentScreen({
                       <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
                         {newPlanPhoto ? (
                           <ImageWithFallback
-                            src={`/api/documents/${newPlanPhoto.documentGuid}/view`}
+                            src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
                             alt={t('photoLabels.newPlanPhoto')}
                             fill
                             className="object-cover"

@@ -1,5 +1,3 @@
-'use client';
-
 import { MappedFloorDetail, ReassessmentTaxRow } from '@/types/reassessment.types';
 import { formatReassessmentCurrency } from '@/lib/utils/format';
 

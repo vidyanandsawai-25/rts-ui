@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Column } from '@/components/common/MasterTable';
 import { cn } from '@/lib/utils/cn';

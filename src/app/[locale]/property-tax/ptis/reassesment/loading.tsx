@@ -1,5 +1,3 @@
-'use client';
-
 import { LoadingPage } from '@/components/common';
 
 export default function ReassessmentLoading() {
