@@ -6,6 +6,7 @@ import { MediaPanelToggle } from './MediaPanelToggle';
 import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
 import { usePropertyPhotosQuery } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
+import type { WaybackRelease } from '@/lib/api/wayback.service';
 
 interface PtisLayoutWrapperProps {
   children: React.ReactNode;
@@ -19,6 +20,9 @@ interface PtisLayoutWrapperProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   initialMediaPanelVisible?: boolean;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
 }
 
 function PtisLayoutWrapperContent({
@@ -32,9 +36,12 @@ function PtisLayoutWrapperContent({
   propertyId,
   initialPhotoSlots = [],
   initialPhotos = [],
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases = [],
 }: Omit<PtisLayoutWrapperProps, 'initialMediaPanelVisible'>) {
   const { isPanelVisible } = useMediaPanel();
-  const { loading, photoSlots, photos } = usePropertyPhotosQuery(
+  const { loading, photoSlots, photos, setPhotoSlots, setPhotos } = usePropertyPhotosQuery(
     propertyId,
     isPanelVisible,
     initialPhotoSlots,
@@ -71,6 +78,11 @@ function PtisLayoutWrapperContent({
             initialPhotoSlots={photoSlots}
             initialPhotos={photos}
             loading={loading}
+            initialLatitude={initialLatitude}
+            initialLongitude={initialLongitude}
+            initialWaybackReleases={initialWaybackReleases}
+            onPhotosChange={setPhotos}
+            onPhotoSlotsChange={setPhotoSlots}
           />
         </div>
       </div>
@@ -84,6 +96,22 @@ function PtisLayoutWrapperContent({
  * and state persistence via SSR-friendly cookies.
  */
 export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactElement {
+  React.useEffect(() => {
+    // Avoid unregistering service workers in production unless explicitly intended.
+    if (process.env.NODE_ENV !== 'development') return;
+    if (!('serviceWorker' in navigator)) return;
+
+    // Check opt-in flags (query param ?clearSW=true or localStorage)
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldClear = urlParams.get('clearSW') === 'true' || localStorage.getItem('clear-sw-dev') === 'true';
+    if (!shouldClear) return;
+
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => Promise.allSettled(registrations.map((r) => r.unregister())))
+      .catch(() => {});
+  }, []);
+
   return (
     <MediaPanelProvider initialVisible={props.initialMediaPanelVisible ?? false}>
       <PtisLayoutWrapperContent {...props} />

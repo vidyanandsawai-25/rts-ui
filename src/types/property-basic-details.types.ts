@@ -104,6 +104,8 @@ export interface PropertyBasicDetailsApiItem {
     wingId: number | null;
     wingName: string | null;
     rateSectionDescription?: string | null;
+    latitude?: string | null;
+    longitude?: string | null;
 }
 
 export interface TypeOfUseApiItem {
@@ -117,6 +119,7 @@ export interface TypeOfUseApiItem {
     isActive: boolean;
     createdDate: string;
     updatedDate: string | null;
+    typeOfUseCategoryId?: number | null;
     [key: string]: unknown;
 }
 

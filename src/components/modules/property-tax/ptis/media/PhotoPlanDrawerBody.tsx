@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { PhotoPlanSidebar, type PhotoCategory } from './PhotoPlanSidebar';
 import { PhotoPlanGrid } from './PhotoPlanGrid';
@@ -10,6 +10,8 @@ import { ChangeDetectionCompare } from './ChangeDetectionCompare';
 import { usePhotoPlanDrawerState } from '@/hooks/ptis/photoplan/usePhotoPlanDrawerState';
 import { patchCategory } from '@/lib/utils/ptis-photo-plan-localization';
 
+import type { WaybackRelease } from '@/lib/api/wayback.service';
+
 interface PhotoPlanDrawerBodyProps {
   categories: PhotoCategory[];
   onCategoriesChange: (categories: PhotoCategory[]) => void;
@@ -17,6 +19,9 @@ interface PhotoPlanDrawerBodyProps {
   propertyId?: number;
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
 }
 
 export function PhotoPlanDrawerBody({
@@ -26,6 +31,9 @@ export function PhotoPlanDrawerBody({
   propertyId,
   fullyLoadedIds,
   onFullyLoadedIdsChange,
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases,
 }: PhotoPlanDrawerBodyProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -57,11 +65,24 @@ export function PhotoPlanDrawerBody({
     : 0;
 
   const isSplit = viewMode === 'viewer';
-  const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+    let style: HTMLStyleElement | null = null;
+    if (!isTest) {
+      style = document.createElement('style');
+      style.textContent = '.drawer-instance:has(.photo-plan-drawer-content) { width: 50% !important; max-width: 50vw !important; } div:has(+ .drawer-instance:has(.photo-plan-drawer-content)) { background-color: transparent !important; backdrop-filter: none !important; }';
+      document.head.appendChild(style);
+    }
+    return () => {
+      document.body.style.overflow = '';
+      if (style) style.remove();
+    };
+  }, []);
 
   return (
     <div className="relative flex flex-col xl:flex-row h-[calc(100vh-56px)] bg-slate-50 overflow-hidden photo-plan-drawer-content w-full">
-      {!isTest && <style dangerouslySetInnerHTML={{ __html: 'body { overflow: hidden !important; } .drawer-instance:has(.photo-plan-drawer-content) { width: 50% !important; max-width: 50vw !important; } div:has(+ .drawer-instance:has(.photo-plan-drawer-content)) { background-color: transparent !important; backdrop-filter: none !important; }' }} />}
       {isUploading && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-50 flex items-center justify-center animate-in fade-in duration-200">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
@@ -79,7 +100,6 @@ export function PhotoPlanDrawerBody({
         {activeCategory?.photoTypeCode === 'CHANGE_DETECTION' && viewMode === 'compare' ? (
           <ChangeDetectionCompare
             activeCategory={activeCategory}
-            propertyId={propertyId}
             onBackToGrid={() => {
               setSelectedImageIndex(null);
               setViewMode('grid');
@@ -87,6 +107,10 @@ export function PhotoPlanDrawerBody({
             onImagesChange={(updatedImages) => {
               onCategoriesChange(patchCategory(cachedCategories, selectedCategoryIndex, updatedImages));
             }}
+            initialLatitude={initialLatitude}
+            initialLongitude={initialLongitude}
+            initialWaybackReleases={initialWaybackReleases}
+            propertyId={propertyId}
           />
         ) : isSplit ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">

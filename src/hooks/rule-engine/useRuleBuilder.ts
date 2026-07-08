@@ -38,6 +38,7 @@ export function useRuleBuilder({
   const [ruleName, setRuleName] = React.useState(initialRule?.ruleName ?? '');
   const [ruleCode, setRuleCode] = React.useState(initialRule?.ruleCode ?? '');
   const [isActive, setIsActive] = React.useState(initialRule?.isActive ?? true);
+  const [stopProcessing, setStopProcessing] = React.useState(initialRule?.stopProcessing ?? false);
   const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? 0);
   const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? '');
   const [ruleDescription, setRuleDescription] = React.useState(initialRule?.description ?? '');
@@ -192,7 +193,7 @@ export function useRuleBuilder({
         ruleCategory,
         changeReason: changeReason.trim(),
         priority: priority,
-        stopProcessing: rulesList[0]?.stopProcessing || false,
+        stopProcessing,
       };
       const res = await onSaveRule(payload);
       if (res.success) {
@@ -210,6 +211,7 @@ export function useRuleBuilder({
     ruleName, setRuleName,
     ruleCode, setRuleCode,
     isActive, setIsActive,
+    stopProcessing, setStopProcessing,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
     ruleDescription, setRuleDescription,

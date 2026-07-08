@@ -8,6 +8,7 @@
  */
 
 import { z } from 'zod';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 /**
  * Returns keys that can be translated in the UI layer
@@ -123,6 +124,7 @@ export const floorSubmissionSchema = z.object({
         .default(''),
     typeOfUseId: z.coerce.number()
         .positive('floor.errors.typeOfUseRequired'),
+    typeOfUseCategoryId: z.coerce.number().nullable().optional(),
     typeOfUseDescription: z.string()
         .transform(val => val.trim())
         .pipe(z.string().min(1, 'floor.errors.typeOfUseRequired')),
@@ -227,7 +229,8 @@ export const floorSubmissionSchema = z.object({
         }
 
         // Enforce noOfRooms
-        if (data.noOfRooms === undefined || data.noOfRooms <= 0) {
+        const isUtility = checkIsUtilityCategory(data.typeOfUseCategoryId);
+        if (!isUtility && (data.noOfRooms === undefined || data.noOfRooms <= 0)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'floor.errors.roomCountRequired',

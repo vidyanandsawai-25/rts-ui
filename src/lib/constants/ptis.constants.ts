@@ -35,6 +35,7 @@ export const defaultPropertyDetails: PropertyDetailsData = {
   noOfCommercialToilets: '',
   ownerName: '',
   rateSectionDescription: '',
+  constructionYear: null,
 };
 
 /**

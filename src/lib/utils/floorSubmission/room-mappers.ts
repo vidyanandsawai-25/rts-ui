@@ -104,7 +104,7 @@ export const mapOffsetToApi = (offset: OffsetData, roomSubmissionId: number = 0)
  * Maps UI RoomData to API RoomSubmissionItem payload
  * Converts form data structure to API-expected format
  */
-export const mapRoomDataToApi = (room: RoomData, propertyId: number = 0, propertyDetailsId: number = 0): RoomAPIResponse => {
+export const mapRoomDataToApi = (room: RoomData, propertyId: number = 0, propertyDetailsId: number = 0, isUtility?: boolean): RoomAPIResponse => {
   const params = (room.shapeParameters || room.shapeParams || {}) as Record<string, unknown>;
 
   const shape = room.shape || SHAPE_TYPES.RECTANGLE;
@@ -172,7 +172,7 @@ export const mapRoomDataToApi = (room: RoomData, propertyId: number = 0, propert
     widthMtr,
     heightMtr,
     areaSqMtr,
-    noOfRooms: Number(room.roomCount || room.noOfRooms || 1),
+    noOfRooms: isUtility ? 0 : Number(room.roomCount || room.noOfRooms || 1),
     totalAreaSqMtr: toApiNumber([room.totalAreaSqMtr, room.total, room.area], 0),
     roomNo: (room.roomNo as string) || '',
     roomType: (room.roomType || room.utilities as string) || 'Residential',
@@ -180,7 +180,7 @@ export const mapRoomDataToApi = (room: RoomData, propertyId: number = 0, propert
     shape,
     outerYesNo: room.outerYesNo === true || room.outer === 'Yes',
     minusYesNo: (finalOffsets as unknown[]).length > 0,
-    submissionType: "Room",
+    submissionType: isUtility ? "utility" : "Room",
     base1Mtr,
     base2Mtr,
     roomWiseMinusData: (finalOffsets as OffsetData[]).map(o =>

@@ -1157,7 +1157,7 @@ export async function fetchDualMethodTaxDetailsByTabAction(
 export async function fetchApartmentTaxDetailsByIdAction(
   propertyId: string | number,
   mainTab: string
-): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
     const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
@@ -1183,7 +1183,7 @@ export async function fetchApartmentTaxDetailsByIdAction(
 export async function fetchApartmentTaxDetailsCvByIdAction(
   propertyId: string | number,
   mainTab: string
-): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
     const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);

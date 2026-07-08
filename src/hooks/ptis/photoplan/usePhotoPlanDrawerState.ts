@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
-import { mergeCategories } from '@/lib/utils/ptis-photo-plan-localization';
+import { mergeCategories, areCategoriesEqual } from '@/lib/utils/ptis-photo-plan-localization';
 import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 import { usePhotoPlanMutations } from './usePhotoPlanMutations';
 import { useMediaDrawerState } from './useMediaDrawerState';
@@ -14,6 +14,8 @@ export interface UsePhotoPlanDrawerStateProps {
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
 }
+
+
 
 export function usePhotoPlanDrawerState({
   categories,
@@ -57,7 +59,7 @@ export function usePhotoPlanDrawerState({
   const [prevCategories, setPrevCategories] = useState<PhotoCategory[]>(categories);
 
   useEffect(() => {
-    if (categories !== prevCategories) {
+    if (!areCategoriesEqual(categories, prevCategories)) {
       Promise.resolve().then(() => {
         setPrevCategories(categories);
         setCachedCategories((prev) => mergeCategories(prev, categories));
@@ -98,30 +100,24 @@ export function usePhotoPlanDrawerState({
   }, []);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
-  
-  if (initialCategoryIndex !== prevInitialCategoryIndex) {
-    setPrevInitialCategoryIndex(initialCategoryIndex);
-    setSelectedCategoryIndexState(initialCategoryIndex);
-    const targetIndex = initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0;
-    const targetCat = categories[targetIndex];
-    const hasImages = targetCat?.images && targetCat.images.length > 0;
-
-    let targetIdx: number | null = hasImages ? 0 : null;
-    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION'
-      ? (hasImages ? 'compare' : 'grid')
-      : (hasImages ? 'viewer' : 'grid');
-    
-    const selParam = searchParams.get('selectedImageIndex');
-    if (selParam !== null) {
-      const parsed = parseInt(selParam, 10);
-      if (!isNaN(parsed)) targetIdx = parsed;
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (initialCategoryIndex !== prevInitialCategoryIndex) {
+      setPrevInitialCategoryIndex(initialCategoryIndex);
+      setSelectedCategoryIndexState(initialCategoryIndex);
+      const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
+      const hasImages = targetCat?.images && targetCat.images.length > 0;
+      let targetIdx: number | null = hasImages ? 0 : null;
+      let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
+      const selParam = searchParams.get('selectedImageIndex');
+      if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
+      const modeParam = searchParams.get('viewMode');
+      if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
+      setSelectedImageIndexState(targetIdx);
+      setViewModeState(targetMode);
     }
-    const modeParam = searchParams.get('viewMode');
-    if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
-
-    setSelectedImageIndexState(targetIdx);
-    setViewModeState(targetMode);
-  }
+  }, [initialCategoryIndex, prevInitialCategoryIndex, categories, searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     updateUrlParams({
@@ -203,4 +199,3 @@ export function usePhotoPlanDrawerState({
     handleNext, handlePrev, handleDownload, openDrawer,
   };
 }
-

@@ -65,9 +65,22 @@ const Amenities = ({
   }, [pathname, router, searchParams]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
-    const rowId = String(row.id || row.propertyId || 'new');
-    router.push(`${pathname}/edit/${rowId}`);
-  }, [pathname, router]);
+    const basePath = pathname.split('/appartmentQC')[0] + '/appartmentQC';
+    const params = new URLSearchParams(searchParams.toString());
+    
+    const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
+    if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
+    
+    params.delete('parentPropertyId');
+    params.delete('parentPropertyNo');
+    
+    params.set('returnTab', 'propertydetails');
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', 'amenities');
+    params.set('subTab', activeTab);
+
+    router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
+  }, [pathname, router, searchParams, activeTab]);
 
   const handleSort = useCallback((columnKey: string) => {
     const nextSortOrder = sortBy === columnKey && sortOrder === 'asc' ? 'desc' : 'asc';

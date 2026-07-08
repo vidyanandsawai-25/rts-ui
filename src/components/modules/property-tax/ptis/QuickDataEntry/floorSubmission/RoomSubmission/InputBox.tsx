@@ -9,7 +9,7 @@ import { DimensionAreaFields } from './components/RoomInputBox/DimensionAreaFiel
 import { OffsetOuterFields } from './components/RoomInputBox/OffsetOuterFields';
 import { TotalActionFields } from './components/RoomInputBox/TotalActionFields';
 
-export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObject<Record<string, HTMLElement | null>> }> = ({
+export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObject<Record<string, HTMLElement | null>>; isUtilityCategory?: boolean }> = ({
   formData,
   handleInputChange,
   rooms,
@@ -33,8 +33,17 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
   areaUnit,
   focusRefs,
   roomTypeData,
+  isUtilityCategory,
 }) => {
   const t = useTranslations('quickDataEntry');
+
+  const isInputEnabled = isUtilityCategory ? true : isEditMode;
+
+  React.useEffect(() => {
+    if (isUtilityCategory && formData.roomCount !== '1') {
+      handleInputChange('roomCount', '1');
+    }
+  }, [isUtilityCategory, formData.roomCount, handleInputChange]);
 
   const isActualUpdate =
     Boolean(isEditMode && 
@@ -80,7 +89,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
             <RoomTypeShapeFields 
               formData={formData} 
               handleInputChange={handleInputChange} 
-              isEditMode={isEditMode} 
+              isEditMode={isInputEnabled} 
               validationErrors={validationErrors} 
               focusRefs={focusRefs!} 
               t={t} 
@@ -90,19 +99,20 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
             <DimensionAreaFields 
               formData={formData} 
               handleInputChange={handleInputChange} 
-              isEditMode={isEditMode} 
+              isEditMode={isInputEnabled} 
               validationErrors={validationErrors} 
               focusRefs={focusRefs!} 
               t={t} 
               areaUnit={areaUnit} 
               calculatedArea={calculatedArea} 
               adjustedArea={adjustedArea} 
+              isUtilityCategory={isUtilityCategory}
             />
 
             <OffsetOuterFields 
               formData={formData} 
               handleInputChange={handleInputChange} 
-              isEditMode={isEditMode} 
+              isEditMode={isInputEnabled} 
               focusRefs={focusRefs!} 
               t={t} 
               offsetModalOpen={Boolean(offsetModalOpen)} 
@@ -117,7 +127,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
             />
 
             <TotalActionFields 
-              isEditMode={isEditMode} 
+              isEditMode={isInputEnabled} 
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               t={t as any} 
               totalAreaValue={totalAreaValue} 
@@ -127,6 +137,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
               maxRooms={maxRooms} 
               availableRooms={availableRooms} 
               rooms={rooms} 
+              isUtilityCategory={isUtilityCategory}
             />
           </div>
         </div>

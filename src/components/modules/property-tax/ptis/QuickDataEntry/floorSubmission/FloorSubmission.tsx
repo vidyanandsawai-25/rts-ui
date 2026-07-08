@@ -8,9 +8,10 @@ import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
 import { RoomSubmissionModal, PlotAreaCalculator, FloorTypeToggle, SubmissionOverlayLoader, SubmissionApiErrors } from './components';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
-import { RoomAPIResponse } from '@/types/room-details.types';
+import { RoomAPIResponse, FloorData } from '@/types/room-details.types';
 import { updatePlotAreaAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import type { PlotAreaPayload } from '@/lib/api/ptis/floorSubmission/plot-area.service';
+import { normalizeFloorFormData, getTypeOfUseId } from '@/lib/utils/floorSubmission/floor-mappers';
 
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const {
@@ -131,35 +132,43 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               layout="single-row"
               propertyId={props.initialPropertyID}
               initialPlotArea={props.initialPlotArea}
-              onLoad={(sqFt, sqM, len, wid) => {
+              onLoad={(_sqFt, sqM) => {
                 setPlotAreaSqM(parseFloat(sqM) || 0);
-                // Only map Plot Area Calculator values to Floor/OpenSpace form for Plot categories
-                // For non-Plot categories (Individual, etc.), the calculator is display-only
-                if (!isPlotCategory) return;
-                setEditingFloorForm((prev) => ({
-                  ...prev,
-                  ...(len ? { length: len } : {}),
-                  ...(wid ? { width: wid } : {}),
-                  ...(selectedFloorType === 'OpenPlot' ? {
-                    areaSqFt: sqFt,
-                    areaSqM: sqM,
-                  } : {}),
-                }));
+                // onLoad should only set the plot area. It should not modify form state on initial mount.
               }}
               onApply={async (sqFt: string, sqM: string, len?: string, wid?: string) => {
                 setPlotAreaSqM(parseFloat(sqM) || 0);
                 // Only map Plot Area Calculator values to Floor/OpenSpace form for Plot categories
                 // For non-Plot categories (Individual, etc.), no form field mapping occurs
                 if (isPlotCategory) {
-                  setEditingFloorForm((prev) => ({
-                    ...prev,
-                    ...(len ? { length: len } : {}),
-                    ...(wid ? { width: wid } : {}),
-                    ...(selectedFloorType === 'OpenPlot' ? {
+                  const existingFloor = filteredFloors[0];
+                  if (existingFloor) {
+                    setSelectedFloor(existingFloor);
+                    setIsAddingNewFloor(false);
+                    updateUrlParams({
+                      floorId: String(existingFloor.id),
+                      typeOfUseId: getTypeOfUseId(existingFloor) || null,
+                      drawer: null,
+                    });
+                    setEditingFloorForm({
+                      ...normalizeFloorFormData(existingFloor),
+                      ...(len ? { length: len } : {}),
+                      ...(wid ? { width: wid } : {}),
                       areaSqFt: sqFt,
                       areaSqM: sqM,
-                    } : {}),
-                  }));
+                    } as FloorData);
+                  } else {
+                    setIsAddingNewFloor(true);
+                    setEditingFloorForm((prev) => ({
+                      ...prev,
+                      ...(len ? { length: len } : {}),
+                      ...(wid ? { width: wid } : {}),
+                      ...(selectedFloorType === 'OpenPlot' ? {
+                        areaSqFt: sqFt,
+                        areaSqM: sqM,
+                      } : {}),
+                    }));
+                  }
                   setFormErrors((prev) => ({
                     ...prev,
                     ...(len ? { length: '' } : {}),

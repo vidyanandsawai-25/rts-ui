@@ -10,9 +10,11 @@ import {
     sanitizeRenterRowsFromData,
 } from './renter-payload-sanitization';
 
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const sanitizeRoomBase = (room: Record<string, unknown>) => ({
+const sanitizeRoomBase = (room: Record<string, unknown>, isUtility?: boolean) => ({
     isActive: true,
     // Only include id when it's a real persisted record (> 0 and not a temporary millisecond timestamp UI ID)
     ...(Number(room.id) > 0 && Number(room.id) < 1_000_000_000_000 ? { id: Number(room.id) } : {}),
@@ -24,7 +26,7 @@ const sanitizeRoomBase = (room: Record<string, unknown>) => ({
     heightMtr: Number(room.heightMtr || 0),
     breadth: Number(room.breadth || 0),
     areaSqMtr: Number(room.areaSqMtr || 0),
-    noOfRooms: Number(room.noOfRooms || 1),
+    noOfRooms: isUtility ? 0 : Number(room.noOfRooms || 1),
     totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
     roomNo: String(room.roomNo || ''),
     roomType: String(room.roomType || 'Room'),
@@ -32,7 +34,7 @@ const sanitizeRoomBase = (room: Record<string, unknown>) => ({
     shape: String(room.shape || 'Rectangle'),
     outerYesNo: Boolean(room.outerYesNo),
     minusYesNo: Boolean(room.minusYesNo),
-    submissionType: String(room.submissionType || 'Room'),
+    submissionType: isUtility ? 'utility' : String(room.submissionType || 'Room'),
     base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
     base2Mtr: Number(room.base2Mtr || 0),
 });
@@ -213,8 +215,9 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
 export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubmissionPayload {
     const rawParentId = Number(payload.propertyDetailsId || 0);
     const parentPropertyDetailsId = rawParentId > 0 && rawParentId < 1_000_000_000_000 ? rawParentId : 1;
+    const isUtility = checkIsUtilityCategory(payload.typeOfUseCategoryId);
     const sanitizeRoom = (room: Record<string, unknown>) => ({
-        ...sanitizeRoomBase(room),
+        ...sanitizeRoomBase(room, isUtility),
         createdBy: 0,
         roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { createdBy: 0, roomWiseSubmissionId: Number(m.roomWiseSubmissionId || 0) }))
     });
@@ -238,8 +241,9 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
 export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Record<string, unknown> {
     const rawParentId = Number(payload.propertyDetailsId || 0);
     const parentPropertyDetailsId = rawParentId > 0 && rawParentId < 1_000_000_000_000 ? rawParentId : 1;
+    const isUtility = checkIsUtilityCategory(payload.typeOfUseCategoryId);
     const sanitizeRoomUpdate = (room: Record<string, unknown>) => ({
-        ...sanitizeRoomBase(room),
+        ...sanitizeRoomBase(room, isUtility),
         updatedBy: 0,
         roomWiseSubmissionId: Number(room.id || room.roomWiseSubmissionId || 0),
         roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { updatedBy: 0, roomWiseMinusId: Number(m.id || m.roomWiseMinusId || 0), roomWiseSubmissionId: Number(m.roomWiseSubmissionId || room.id || room.roomWiseSubmissionId || 0) })),
@@ -279,6 +283,7 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
     const rawParentId = Number(base.propertyDetailsId || data.propertyDetailsId || data.id || 0);
     const parentPropertyDetailsId = rawParentId > 0 && rawParentId < 1_000_000_000_000 ? rawParentId : 1;
     const isUpdate = rawParentId > 0 && rawParentId < 1_000_000_000_000;
+    const isUtility = checkIsUtilityCategory(data.typeOfUseCategoryId as number | string | null | undefined);
 
     // Rooms Mapping: merge both raw roomWiseSubmissionDetails and UI-normalized roomData
     const rawRooms = ((data.roomWiseSubmissionDetails || data.propertyRooms || []) as Record<string, unknown>[]) || [];
@@ -299,7 +304,7 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             heightMtr: Number(room.heightMtr || room.height || 0),
             breadth: Number(room.breadth || 0),
             areaSqMtr: Number(room.areaSqMtr || room.area || 0),
-            noOfRooms: Number(room.noOfRooms || room.roomCount || 1),
+            noOfRooms: isUtility ? 0 : Number(room.noOfRooms || room.roomCount || 1),
             totalAreaSqMtr: Number(room.totalAreaSqMtr || room.total || room.area || 0),
             roomNo: String(room.roomNo || ''),
             roomType: String(room.roomType || room.utilities || 'Room'),
@@ -307,7 +312,7 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             shape: String(room.shape || 'Rectangle'),
             outerYesNo: room.outerYesNo !== undefined ? Boolean(room.outerYesNo) : (room.outer === 'Yes'),
             minusYesNo: room.minusYesNo !== undefined ? Boolean(room.minusYesNo) : (room.offsetMinus === 'Yes'),
-            submissionType: String(room.submissionType || 'Room'),
+            submissionType: isUtility ? 'utility' : String(room.submissionType || 'Room'),
             base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
             base2Mtr: Number(room.base2Mtr || 0),
             ...(isUpdate ? {

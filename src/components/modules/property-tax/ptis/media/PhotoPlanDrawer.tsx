@@ -7,6 +7,7 @@ import { Images } from 'lucide-react';
 import { Drawer } from '@/components/common';
 import { PhotoPlanDrawerBody } from './PhotoPlanDrawerBody';
 import type { PhotoCategory } from './PhotoPlanSidebar';
+import type { WaybackRelease } from '@/lib/api/wayback.service';
 
 interface PhotoPlanDrawerProps {
   open: boolean;
@@ -19,6 +20,9 @@ interface PhotoPlanDrawerProps {
   propertyId?: number;
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
 }
 
 export function PhotoPlanDrawer({
@@ -32,6 +36,9 @@ export function PhotoPlanDrawer({
   propertyId,
   fullyLoadedIds,
   onFullyLoadedIdsChange,
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases,
 }: PhotoPlanDrawerProps): React.ReactNode {
   const t = useTranslations('ptis');
 
@@ -76,6 +83,9 @@ export function PhotoPlanDrawer({
         propertyId={propertyId}
         fullyLoadedIds={fullyLoadedIds}
         onFullyLoadedIdsChange={onFullyLoadedIdsChange}
+        initialLatitude={initialLatitude}
+        initialLongitude={initialLongitude}
+        initialWaybackReleases={initialWaybackReleases}
       />
     </Drawer>,
     document.body

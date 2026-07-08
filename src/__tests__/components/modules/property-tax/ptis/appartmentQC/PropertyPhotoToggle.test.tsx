@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { PropertyPhotoToggle } from '@/components/modules/property-tax/ptis/appartmentQC/PropertyPhotoToggle';
+import { PropertyPhotoToggle } from '@/components/modules/property-tax/ptis/appartmentQC/appartmentQCDrawer/FloorSubmissionDrawer/PropertyPhotoToggle';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
