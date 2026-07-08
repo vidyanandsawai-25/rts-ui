@@ -46,6 +46,7 @@ interface PtisMainScreenProps {
   capitalSection?: React.ReactNode;
   dualRateableSection?: React.ReactNode;
   dualCapitalSection?: React.ReactNode;
+  reassessmentSection?: React.ReactNode;
   hasAppliedRules?: boolean;
   appliedRules?: PropertyRuleLogItem[];
 }
@@ -65,6 +66,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   capitalSection,
   dualRateableSection,
   dualCapitalSection,
+  reassessmentSection,
   hasAppliedRules = false,
   appliedRules = [],
 }) => {
@@ -155,6 +157,11 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
       value: 'dual',
       label: t('tabs.dual'),
       activeGradient: 'from-orange-600 to-red-600',
+    },
+    {
+      value: 'reassessment',
+      label: t('tabs.reassessment'),
+      activeGradient: 'from-red-600 to-yellow-600',
     },
     ...(showApartmentTab
       ? [
@@ -294,12 +301,14 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   capitalSection={dualCapitalSection}
                 />
               )}
+              {activeTab === 'reassessment' && reassessmentSection}
 
               {![
                 'rateable',
                 'capital',
                 'apartment',
-                'dual'
+                'dual',
+                'reassessment', 
               ].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[500px] text-gray-400 p-4">
                   <div className="p-1 rounded-full bg-slate-50 border border-slate-100 mb-4 text-4xl opacity-20">
