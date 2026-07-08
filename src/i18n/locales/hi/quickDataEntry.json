@@ -740,6 +740,8 @@
             "selectProperty": "??????? {propertyNo} ?????",
             "search": "खोजें",
             "applyButton": "विवरण लागू करें",
+            "applyPropertyButton": "संपत्ति लागू करें",
+            "applyTypeSubmission": "प्रकार सबमिशन लागू करें",
             "applying": "लागू किया जा रहा है...",
             "applySuccess": "विवरण सफलतापूर्वक लागू किया गया।",
             "property": "संपत्ति",

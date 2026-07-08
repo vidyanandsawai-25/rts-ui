@@ -19,7 +19,7 @@ interface DataEntrySameAsDrawerProps {
   propertyNo?: string;
   partitionNo?: string;
   initialPropertyID?: string | number;
-  
+
   // FloorTable related props
   filteredFloors: FloorData[];
   floorSearch: string;
@@ -86,13 +86,13 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                 </div>
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
-                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700">
+                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.typeWise')}
                 </Tabs.Tab>
-                <Tabs.Tab value="property-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700">
+                <Tabs.Tab value="property-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.propertyWise')}
                 </Tabs.Tab>
-                <Tabs.Tab value="parking" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700">
+                <Tabs.Tab value="parking" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.parking')}
                 </Tabs.Tab>
               </Tabs.TabList>
@@ -114,23 +114,14 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   disabledIds={hook.typeWiseLockedPropertyIds}
                   isApplying={hook.isApplyingSameAs}
                   onApply={hook.handleApplySameAsDetails}
+                  changeTypeInput={hook.changeTypeInput}
+                  setChangeTypeInput={hook.setChangeTypeInput}
+                  isApplyingTypeSubmission={hook.isApplyingTypeSubmission}
+                  onApplyTypeSubmission={hook.handleApplyTypeSubmission}
                 />
               </Tabs.TabPanel>
               <Tabs.TabPanel value="property-wise" className="mt-0">
                 <PropertyWiseTab
-                  {...props}
-                  properties={displayedProperties}
-                  selectedIds={hook.selectedPropertyIds}
-                  onToggle={hook.handleTogglePropertySelection}
-                  onClearSelection={hook.handleClearPropertySelection}
-                  isLoading={hook.isLoadingProperties}
-                  disabledIds={hook.sourcePropertyIds}
-                  isApplying={hook.isApplyingSameAs}
-                  onApply={hook.handleApplySameAsDetails}
-                />
-              </Tabs.TabPanel>
-              <Tabs.TabPanel value="parking" className="mt-0">
-                <ParkingTab
                   {...props}
                   properties={displayedProperties}
                   selectedIds={hook.selectedPropertyIds}
@@ -151,6 +142,19 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   sanitizeWardNo={hook.sanitizeWardNo}
                   sanitizePropertyNo={hook.sanitizePropertyNo}
                   handleSearchProperties={hook.handleSearchProperties}
+                />
+              </Tabs.TabPanel>
+              <Tabs.TabPanel value="parking" className="mt-0">
+                <ParkingTab
+                  {...props}
+                  properties={displayedProperties}
+                  selectedIds={hook.selectedPropertyIds}
+                  onToggle={hook.handleTogglePropertySelection}
+                  onClearSelection={hook.handleClearPropertySelection}
+                  isLoading={hook.isLoadingProperties}
+                  disabledIds={hook.sourcePropertyIds}
+                  isApplying={hook.isApplyingSameAs}
+                  onApply={hook.handleApplySameAsDetails}
                 />
               </Tabs.TabPanel>
             </div>

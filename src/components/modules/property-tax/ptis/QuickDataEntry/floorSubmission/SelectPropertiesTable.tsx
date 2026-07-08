@@ -14,6 +14,7 @@ interface SelectPropertiesTableProps {
   onClearSelection: () => void;
   isLoading?: boolean;
   disabledIds?: Set<string | number>;
+  hideTypeColumn?: boolean;
 }
 
 type SelectablePropertyRow = Record<string, unknown> &
@@ -63,6 +64,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   onClearSelection,
   isLoading = false,
   disabledIds = new Set(),
+  hideTypeColumn = false,
 }) => {
   const selectedCount = selectedIds.size;
   const selectableProperties = React.useMemo(
@@ -135,11 +137,27 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         width: '220px',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
       },
+      ...(hideTypeColumn
+        ? []
+        : [
+            {
+              key: 'typeDisplay',
+              label: t('floor.selectProperties.type'),
+              width: '70px',
+              cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+            },
+          ]),
       {
-        key: 'typeDisplay',
-        label: t('floor.selectProperties.type'),
-        width: '70px',
-        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
+        key: 'wingFlatNo',
+        label: `${t('floor.selectProperties.wing')}/${t('floor.selectProperties.flatNo')}`,
+        width: '160px',
+        align: 'center',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+        render: (_value, row) => {
+          const wing = row.wing ? String(row.wing).trim() : '-';
+          const flat = row.flatNo ? String(row.flatNo).trim() : '-';
+          return `${wing} / ${flat}`;
+        }
       },
       {
         key: 'carpetAreaDisplay',
@@ -147,21 +165,8 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         width: '120px',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
       },
-      {
-        key: 'wing',
-        label: t('floor.selectProperties.wing'),
-        width: '70px',
-        align: 'center',
-        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
-      },
-      {
-        key: 'flatNo',
-        label: t('floor.selectProperties.flatNo'),
-        width: '90px',
-        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
-      },
     ],
-    [allSelected, checkboxClassName, handleSelectAll, onToggle, someSelected, t]
+    [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t]
   );
 
   const headerExtra =
@@ -194,6 +199,15 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         getRowKey={(row) => row.id}
         onRowClick={(row) => {
           if (!row.disabled) onToggle(row.id);
+        }}
+        rowClassName={(row) => {
+          if (row.disabled) {
+            return 'bg-green-50 hover:!bg-green-100';
+          }
+          if (row.selected) {
+            return '!bg-blue-50 hover:!bg-blue-100';
+          }
+          return '';
         }}
         headerTitle={t('floor.selectProperties.title')}
         headerExtra={headerExtra}

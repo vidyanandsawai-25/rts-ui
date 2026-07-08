@@ -630,6 +630,8 @@ export interface SelectableProperty {
     typeLabel?: string;
     wing: string;
     flatNo: string;
+    carpetAreaSqFeet?: number | null;
+    carpetAreaSqMeter?: number | null;
 }
 
 export interface DataEntrySameAsItem {

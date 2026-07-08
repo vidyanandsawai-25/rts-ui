@@ -8,6 +8,7 @@ import SelectPropertiesTable from '../SelectPropertiesTable';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
 import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import { ONE_TO_NINETY_NINE_REGEX } from '@/lib/utils/validation-rules';
 
 interface TypeWiseTabProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
@@ -20,6 +21,10 @@ interface TypeWiseTabProps {
   disabledIds: Set<string | number>;
   isApplying: boolean;
   onApply: () => void;
+  changeTypeInput: string;
+  setChangeTypeInput: (val: string) => void;
+  isApplyingTypeSubmission: boolean;
+  onApplyTypeSubmission: () => void;
 
   // FloorTable props
   filteredFloors: FloorData[];
@@ -53,14 +58,20 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   disabledIds,
   isApplying,
   onApply,
+  changeTypeInput,
+  setChangeTypeInput,
+  isApplyingTypeSubmission,
+  onApplyTypeSubmission,
   ...floorTableProps
 }) => {
+  const isChangeTypeDisabled = selectedIds.size <= disabledIds.size;
+
   return (
     <>
       <FloorTable
         {...floorTableProps}
         t={t}
-        handleOpenDataEntrySameAs={() => {}}
+        handleOpenDataEntrySameAs={() => { }}
         viewOnly
       />
 
@@ -83,6 +94,37 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
             aria-label={t('floor.selectProperties.currentType')}
           />
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+            {t('floor.selectProperties.changeType')}
+          </span>
+          <Input
+            type="text"
+            value={changeTypeInput}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '' || ONE_TO_NINETY_NINE_REGEX.test(val)) {
+                setChangeTypeInput(val);
+              }
+            }}
+            disabled={isChangeTypeDisabled}
+            className={`h-8 w-16 rounded border border-slate-200 px-2 text-xs font-semibold text-center outline-none transition-colors ${isChangeTypeDisabled
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-80 select-none'
+              : 'bg-white text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+              }`}
+            placeholder="-"
+            aria-label={t('floor.selectProperties.changeType')}
+          />
+        </div>
+        <UpdateButton
+          type="button"
+          size="sm"
+          label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
+          onClick={onApply}
+          disabled={selectedIds.size === 0}
+          isLoading={isApplying}
+          className="h-9 px-5 text-xs font-semibold rounded-md"
+        />
       </div>
 
       <SelectPropertiesTable
@@ -99,13 +141,14 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
         <UpdateButton
           type="button"
           size="sm"
-          label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyButton')}
-          onClick={onApply}
-          disabled={selectedIds.size === 0}
-          isLoading={isApplying}
+          label={isApplyingTypeSubmission ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypeSubmission')}
+          onClick={onApplyTypeSubmission}
+          disabled={isChangeTypeDisabled || isApplyingTypeSubmission}
+          isLoading={isApplyingTypeSubmission}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />
       </div>
+
 
       <div className="mt-4 px-3.5 py-3 bg-slate-100/60 border border-slate-200 rounded-md text-[11px] flex flex-col gap-1.5 shadow-sm">
         <p className="font-bold text-red-700 text-xs">{t('floor.selectProperties.typeClassificationNoteTitle')}</p>

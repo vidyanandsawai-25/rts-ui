@@ -740,6 +740,8 @@
             "selectProperty": "???????? {propertyNo} ?????",
             "search": "शोधा",
             "applyButton": "तपशील लागू करा",
+            "applyPropertyButton": "मालमत्ता लागू करा",
+            "applyTypeSubmission": "प्रकार सबमिशन लागू करा",
             "applying": "लागू केले जात आहे...",
             "applySuccess": "तपशील यशस्वीरित्या लागू केले.",
             "property": "मालमत्ता",
