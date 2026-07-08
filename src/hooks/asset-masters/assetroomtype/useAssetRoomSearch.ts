@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
@@ -19,8 +19,16 @@ export function useAssetRoomSearch({
   sortOrder,
 }: UseAssetRoomSearchProps) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const currentSearchTerm = searchParams.get("q") || "";
+  const [search, setSearch] = useState(currentSearchTerm);
   const debouncedSearch = useDebounce(search, 300);
+
+  const [prevSearchTerm, setPrevSearchTerm] = useState(currentSearchTerm);
+  if (currentSearchTerm !== prevSearchTerm) {
+    setSearch(currentSearchTerm);
+    setPrevSearchTerm(currentSearchTerm);
+  }
 
   const handleSearchChange = useCallback((value: string) => {
     let sanitized = value.replace(TEXT_SANITIZE, "");
@@ -29,21 +37,25 @@ export function useAssetRoomSearch({
   }, []);
 
   useEffect(() => {
+    const trimmed = debouncedSearch.trim();
+    const current = currentSearchTerm.trim();
+    if (trimmed === current) return;
+
     const params = new URLSearchParams();
     params.set("page", "1");
     params.set("pageSize", String(pageSize));
-    if (debouncedSearch.trim()) {
-      params.set("q", debouncedSearch.trim());
+    if (trimmed) {
+      params.set("q", trimmed);
     }
     if (sortBy) params.set("sortBy", sortBy);
     if (sortOrder) params.set("sortOrder", sortOrder);
 
     router.push(`/${locale}/assets/configuration/master-data/asset-room-type?${params.toString()}`);
-  }, [debouncedSearch, pageSize, locale, sortBy, sortOrder, router]);
+  }, [debouncedSearch, currentSearchTerm, pageSize, locale, sortBy, sortOrder, router]);
 
   return {
     search,
-    currentSearchTerm: debouncedSearch.trim() || undefined,
+    currentSearchTerm: currentSearchTerm.trim() || undefined,
     handleSearchChange,
   };
 }

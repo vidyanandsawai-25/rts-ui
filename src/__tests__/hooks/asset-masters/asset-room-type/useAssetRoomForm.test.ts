@@ -80,6 +80,18 @@ describe("useAssetRoomForm", () => {
     expect(result.current.formData.roomTypeName).toBe("New Room Name");
   });
 
+  it("should sanitize and update form data on handleBlur", () => {
+    const { result } = renderHook(() => useAssetRoomForm(mockProps));
+
+    act(() => {
+      result.current.handleBlur({
+        target: { name: "roomTypeCode", value: "ROOM_#123" },
+      } as unknown as React.FocusEvent<HTMLInputElement>);
+    });
+
+    expect(result.current.formData.roomTypeCode).toBe("ROOM_123");
+  });
+
   it("should toggle status", () => {
     const { result } = renderHook(() => useAssetRoomForm(mockProps));
 
@@ -120,5 +132,15 @@ describe("useAssetRoomForm", () => {
     expect(actions.createAssetRoomAction).toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalled();
     expect(mockProps.onSuccess).toHaveBeenCalled();
+  });
+
+  it("should handle non-numeric select values in handleSelectChange and set them to null", () => {
+    const { result } = renderHook(() => useAssetRoomForm(mockProps));
+
+    act(() => {
+      result.current.handleSelectChange("assetTypeId", "abc");
+    });
+
+    expect(result.current.formData.assetTypeId).toBeNull();
   });
 });

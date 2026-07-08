@@ -27,6 +27,27 @@ interface UseAssetRoomFormProps {
   onCancel?: () => void;
 }
 
+const sanitizeFieldValue = (name: string, value: string): string => {
+  let sanitizedValue = value;
+  if (name === "description") {
+    sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    if (sanitizedValue.length > DESCRIPTION_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
+    }
+  } else if (name === "roomTypeName") {
+    sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    if (sanitizedValue.length > NAME_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
+    }
+  } else if (name === "roomTypeCode") {
+    sanitizedValue = value.replace(CODE_SANITIZE, "");
+    if (sanitizedValue.length > CODE_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
+    }
+  }
+  return sanitizedValue;
+};
+
 export function useAssetRoomForm({
   id,
   initialData,
@@ -87,25 +108,7 @@ export function useAssetRoomForm({
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-
-    let sanitizedValue = value;
-    if (name === "description") {
-      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
-      if (sanitizedValue.length > DESCRIPTION_MAX) {
-        sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
-      }
-    } else if (name === "roomTypeName") {
-      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
-      if (sanitizedValue.length > NAME_MAX) {
-        sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
-      }
-    } else if (name === "roomTypeCode") {
-      sanitizedValue = value.replace(CODE_SANITIZE, "");
-      if (sanitizedValue.length > CODE_MAX) {
-        sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
-      }
-    }
-
+    const sanitizedValue = sanitizeFieldValue(name, value);
     setFormData((p) => ({
       ...p,
       [name]: sanitizedValue,
@@ -116,9 +119,10 @@ export function useAssetRoomForm({
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
+    const sanitizedValue = sanitizeFieldValue(name, value);
     const updatedFormData = {
       ...formData,
-      [name]: value,
+      [name]: sanitizedValue,
     };
 
     setFormData(updatedFormData);
@@ -217,7 +221,8 @@ export function useAssetRoomForm({
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string): void => {
-    const numericValue = value ? Number(value) : null;
+    const parsed = Number(value);
+    const numericValue = value && Number.isFinite(parsed) ? parsed : null;
     setFormData((p) => {
       const updated = {
         ...p,

@@ -27,6 +27,27 @@ interface UseAssetPhotoFormProps {
   onCancel?: () => void;
 }
 
+const sanitizeFieldValue = (name: string, value: string): string => {
+  let sanitizedValue = value;
+  if (name === "description") {
+    sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    if (sanitizedValue.length > DESCRIPTION_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
+    }
+  } else if (name === "photoTypeName") {
+    sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    if (sanitizedValue.length > NAME_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
+    }
+  } else if (name === "photoTypeCode") {
+    sanitizedValue = value.replace(CODE_SANITIZE, "");
+    if (sanitizedValue.length > CODE_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
+    }
+  }
+  return sanitizedValue;
+};
+
 export function useAssetPhotoForm({
   id,
   initialData,
@@ -97,23 +118,7 @@ export function useAssetPhotoForm({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
 
-    let sanitizedValue = value;
-    if (name === "description") {
-      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
-      if (sanitizedValue.length > DESCRIPTION_MAX) {
-        sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
-      }
-    } else if (name === "photoTypeName") {
-      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
-      if (sanitizedValue.length > NAME_MAX) {
-        sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
-      }
-    } else if (name === "photoTypeCode") {
-      sanitizedValue = value.replace(CODE_SANITIZE, "");
-      if (sanitizedValue.length > CODE_MAX) {
-        sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
-      }
-    }
+    const sanitizedValue = sanitizeFieldValue(name, value);
 
     if (name === "displayOrder") {
       const sanitizedValue = value.replace(/[^0-9]/g, "").substring(0, 4);
@@ -135,7 +140,7 @@ export function useAssetPhotoForm({
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    let sanitizedValue = value;
+    let sanitizedValue = sanitizeFieldValue(name, value);
     if (name === "displayOrder" && value === "") {
       sanitizedValue = "0";
       setDisplayOrderValue("0");
@@ -246,7 +251,8 @@ export function useAssetPhotoForm({
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string): void => {
-    const numericValue = value ? Number(value) : null;
+    const parsed = Number(value);
+    const numericValue = value && Number.isFinite(parsed) ? parsed : null;
     setFormData((p) => {
       const updated = {
         ...p,

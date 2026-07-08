@@ -85,6 +85,18 @@ describe("useAssetPhotoForm", () => {
     expect(result.current.formData.photoTypeName).toBe("New Photo Name");
   });
 
+  it("should sanitize and update form data on handleBlur", () => {
+    const { result } = renderHook(() => useAssetPhotoForm(mockProps));
+
+    act(() => {
+      result.current.handleBlur({
+        target: { name: "photoTypeCode", value: "PHOTO_#123" },
+      } as unknown as React.FocusEvent<HTMLInputElement>);
+    });
+
+    expect(result.current.formData.photoTypeCode).toBe("PHOTO_123");
+  });
+
   it("should toggle status", () => {
     const { result } = renderHook(() => useAssetPhotoForm(mockProps));
 
@@ -140,5 +152,15 @@ describe("useAssetPhotoForm", () => {
     expect(actions.createAssetPhotoAction).toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalled();
     expect(mockProps.onSuccess).toHaveBeenCalled();
+  });
+
+  it("should handle non-numeric select values in handleSelectChange and set them to null", () => {
+    const { result } = renderHook(() => useAssetPhotoForm(mockProps));
+
+    act(() => {
+      result.current.handleSelectChange("assetTypeId", "abc");
+    });
+
+    expect(result.current.formData.assetTypeId).toBeNull();
   });
 });
