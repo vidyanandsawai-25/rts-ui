@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import { getPropertyTypeByIdAction } from "@/app/[locale]/property-tax/propertytype/action";
-import { DrawerFormData, DrawerFormErrors, DrawerFloorDataRow, DrawerDropdownOption, DrawerSubTypeOption, INITIAL_DRAWER_FORM_DATA } from "./propertyEditScreenDrawer.types";
+import { DrawerFormData, DrawerFormErrors, DrawerFloorDataRow, DrawerDropdownOption, DrawerSubTypeOption, INITIAL_DRAWER_FORM_DATA } from "../../types/propertyEditScreenDrawer.types";
 import { OWNER_NAME_SANITIZE, TEXT_SANITIZE, limitOldPropertyNo } from "@/lib/utils/validation-rules";
 
 interface UsePropertyEditScreenStateArgs { open: boolean; propertyData?: ApartmentQCDetail | null; }

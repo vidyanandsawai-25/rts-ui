@@ -23,6 +23,7 @@ interface FloorSubmissionScreenProps {
     constructionTypeOptions?: ConstructionType[];
     useOptions?: UseType[];
     subUseTypeOptions?: UseSubType[];
+    subFloorOptions?: Array<{ id?: string | number; subFloorId?: string | number; subFloorCode?: string; description?: string }>;
     propertyId?: string | number | null;
 }
 
@@ -33,6 +34,7 @@ export const FloorSubmissionScreen = ({
     constructionTypeOptions = [],
     useOptions = [],
     subUseTypeOptions = [],
+    subFloorOptions = [],
     propertyId: propPropertyId = null
 }: FloorSubmissionScreenProps) => {
     const t = useTranslations('appartmentQC');
@@ -60,7 +62,16 @@ export const FloorSubmissionScreen = ({
         }
     };
 
-    const [isPhotoViewerOpen, setIsPhotoViewerOpen] = React.useState(false);
+    const isPhotoViewerOpen = searchParams.get('photo') === 'true';
+    const setIsPhotoViewerOpen = (open: boolean) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (open) {
+            params.set('photo', 'true');
+        } else {
+            params.delete('photo');
+        }
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
     
     // Use propertyId from props, fallback to pdnId from the first row of data
     const resolvedPropertyId = propPropertyId ?? initialFloorData?.[0]?.pdnId ?? null;
@@ -82,7 +93,7 @@ export const FloorSubmissionScreen = ({
 
     return (
         <div className="flex gap-4 w-full">
-            <div className={`relative space-y-6 p-3 bg-slate-50 rounded-xl transition-all duration-300 ${isPhotoViewerOpen ? 'w-[75%]' : 'w-full'}`}>
+            <div className={`relative space-y-6 p-3 bg-slate-50 rounded-xl transition-all duration-300 ${isPhotoViewerOpen ? 'w-[80%]' : 'w-full'}`}>
                 <div className='rounded-xl border border-slate-200 bg-white shadow-blue-200 shadow-sm p-2'>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2 px-2">
                     {t('floorQC.title')}
@@ -93,6 +104,7 @@ export const FloorSubmissionScreen = ({
                         t={t}
                         floorColumns={floorColumns}
                         tableStyle={tableStyle}
+                        onRowClick={(row) => setEditingRow(row)}
                     />
                 </div>
             </div>
@@ -114,6 +126,7 @@ export const FloorSubmissionScreen = ({
                             constructionTypeOptions={constructionTypeOptions}
                             useOptions={useOptions}
                             subUseTypeOptions={subUseTypeOptions}
+                            subFloorOptions={subFloorOptions}
                             isEditMode={true}
                         />
                     </div>
@@ -122,7 +135,7 @@ export const FloorSubmissionScreen = ({
             </div>
 
             {isPhotoViewerOpen && (
-                <div className="w-[25%] sticky top-3 self-start">
+                <div className="w-[20%] sticky top-3 self-start">
                     <PropertyPhotoViewer
                         open={isPhotoViewerOpen}
                         propertyId={numericPropertyId}

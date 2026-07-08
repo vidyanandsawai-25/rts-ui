@@ -7,7 +7,7 @@ import { ExternalLink } from "lucide-react";
 import { EditLabelButton } from "@/components/common/ActionButtons";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import { cn } from "@/lib/utils/cn";
-import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
+import { DrawerFloorDataRow, DrawerDropdownOption } from "@/types/propertyEditScreenDrawer.types";
 import { Tooltip } from "@/components/common";
 
 // ─── Compact Select (Table Cell) ────────────────────────────────────────────
@@ -21,7 +21,7 @@ interface CompactSelectProps {
   onDropdownClick?: () => void;
   isLoading?: boolean;
 }
-
+  
 export const CompactSelect = ({
   value, onChange, options, placeholder = "Select", disabled = false, onDropdownClick, isLoading = false,
 }: CompactSelectProps) => {
@@ -255,14 +255,16 @@ export function useDrawerRateableColumns(props: { onOpenRoomSubmission: (row: Dr
         <ReadOnlyCellHover value={row.rentMY} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
       )
     },
-    { key: "rateMY", label: makeFloorQcHeader("rateMY", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
-      const monthlyRate = row.monthlyRate ?? row.rateMY;
-      const yearlyRate = row.yearlyRate ?? '';
-      const displayValue = yearlyRate ? `${monthlyRate} / ${yearlyRate}` : String(monthlyRate);
-      return (
-        <ReadOnlyCellHover value={displayValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
-      );
-    }},
+    {
+      key: "rateMY", label: makeFloorQcHeader("rateMY", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
+        const monthlyRate = row.monthlyRate ?? row.rateMY;
+        const yearlyRate = row.yearlyRate ?? '';
+        const displayValue = yearlyRate ? `${monthlyRate} / ${yearlyRate}` : String(monthlyRate);
+        return (
+          <ReadOnlyCellHover value={displayValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
+        );
+      }
+    },
     {
       key: "rentalValue", label: makeFloorQcHeader("rentalValue", t), align: "center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
         <ReadOnlyCellHover value={row.rentalValue} onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} tooltip={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} />
