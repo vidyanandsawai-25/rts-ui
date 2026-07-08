@@ -5,7 +5,14 @@ import { MappedFloorDetail, ReassessmentTaxRow } from "@/types/reassessment.type
 
 // Mock formatReassessmentCurrency
 vi.mock("@/lib/utils/format", () => ({
-  formatReassessmentCurrency: (num: number) => `₹${num.toLocaleString()}`,
+  formatReassessmentCurrency: (value: number) => {
+    if (value >= 10000000) {
+      return `₹${(value / 10000000).toFixed(2)}Cr`;
+    } else if (value >= 100000) {
+      return `₹${(value / 100000).toFixed(2)}L`;
+    }
+    return `₹${value.toLocaleString('en-IN')}`;
+  },
 }));
 
 describe("useReassessmentSummaryCards", () => {
@@ -127,8 +134,8 @@ describe("useReassessmentSummaryCards", () => {
         t: mockT,
       })
     );
-    expect(result.current[2].oldValue).toBe("₹120,000");
-    expect(result.current[2].newValue).toBe("₹144,000");
+    expect(result.current[2].oldValue).toBe("₹1.20L");
+    expect(result.current[2].newValue).toBe("₹1.44L");
     expect(result.current[2].difference).toBe("+₹24,000");
   });
 
