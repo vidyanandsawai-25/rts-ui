@@ -684,7 +684,7 @@ export function useLockUnlockMaster({
       onConfirm: async () => {
         startTransition(async () => {
           try {
-            const payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
+            let payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
               screenIds: selectedScreenIds.map(Number),
               action,
             };
