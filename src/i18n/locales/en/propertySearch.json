@@ -33,7 +33,7 @@
     "fields": {
       "propertyType": "Property Type",
       "typeFilter": "Type Filter",
-      "propertyDescription": "Property Description",
+      "propertyDescription": "Category Type",
       "zone": "Zone",
       "ward": "Ward",
       "scanQR": "Scan QR",
@@ -73,7 +73,7 @@
     "placeholders": {
       "propertyType": "Select Property Type",
       "typeFilter": "Select Type Filter",
-      "propertyDescription": "Select Property Description",
+      "propertyDescription": "Select Category Type",
       "zone": "Select Zone",
       "ward": "Select Ward",
       "wardSelectZoneFirst": "Select Zone First",
@@ -195,6 +195,11 @@
     "noUnits": "No apartment units found.",
     "apartmentUnits": "Apartment Units ({count})",
     "loadingUnits": "Loading apartment units...",
+    "backToProperties": "Back to Properties",
+    "viewingUnitsFor": "Viewing units for",
+    "apartment": "Apartment",
+    "totalUnits": "Total {count} units",
+    "unit": "Unit",
     "format": {
       "currency": "₹{amount}"
     },
@@ -224,7 +229,7 @@
       "descriptionShort": "PROP DESC",
       "alt": "Alt",
       "mobile": "Mobile",
-      "mobileAlternate": "MOB NO. & ALT MOB NO",
+      "mobileAlternate": "Mob & Alt Mob No",
       "mobileAlternateTooltip": "Mobile Number & Alternate Mobile Number",
       "holderName": "Property Holder Name",
       "holderNameShort": "HOLDER NAME",

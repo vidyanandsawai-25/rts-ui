@@ -1,87 +1,151 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
-import { mapSlotsToCategories, findCategory } from '@/components/modules/property-tax/ptis/media/mediaData';
+import {
+  mapSlotsToCategories,
+  findCategory,
+} from '@/components/modules/property-tax/ptis/media/mediaData';
+import { propertyMediaCache, areSlotsEqual, arePhotosEqual, evictOldestCacheEntry } from './usePropertyPhotosQuery';
+import { useImageHoverPreview } from './useImageHoverPreview';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   propertyId?: number;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
+  onPhotoSlotsChange?: (slots: PropertyPhotoTypeWithStatusDto[]) => void;
 }
+
+
 
 export function usePropertyMedia({
   initialPhotoSlots = [],
   initialPhotos = [],
   propertyId,
+  initialLatitude,
+  initialLongitude,
+  onPhotosChange,
+  onPhotoSlotsChange,
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const [hoverPreview, setHoverPreview] = useState<{ src: string; src2?: string; title: string } | null>(null);
+  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave } = useImageHoverPreview();
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
-  const [prevInitialPhotos, setPrevInitialPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
-  const [prevInitialPhotoSlots, setPrevInitialPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
 
-  if (initialPhotos !== prevInitialPhotos) {
-    setPhotos(initialPhotos);
-    setPrevInitialPhotos(initialPhotos);
-  }
+  const prevPhotosRef = useRef<PropertyPhotoDto[]>(initialPhotos);
+  const prevSlotsRef = useRef<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
 
-  if (initialPhotoSlots !== prevInitialPhotoSlots) {
-    setFullyLoadedIds(new Set());
-    setPrevInitialPhotoSlots(initialPhotoSlots);
-  }
+  useEffect(() => {
+    if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {
+      setPhotos(initialPhotos);
+      prevPhotosRef.current = initialPhotos;
+    }
+  }, [initialPhotos]);
+
+  useEffect(() => {
+    if (!areSlotsEqual(initialPhotoSlots, prevSlotsRef.current)) {
+      setFullyLoadedIds(new Set());
+      prevSlotsRef.current = initialPhotoSlots;
+    }
+  }, [initialPhotoSlots]);
 
   const categories = useMemo(
     () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t),
     [initialPhotoSlots, photos, fullyLoadedIds, t]
   );
 
-  const handleCategoriesChange = useCallback((newCats: PhotoCategory[]) => {
-    const updated: PropertyPhotoDto[] = [];
-    newCats.forEach(c => c.images.forEach(img => {
-      if (img.propertyPhotoId && img.hasPhoto) {
-        updated.push({
-          propertyPhotoId: img.propertyPhotoId,
-          propertyId: propertyId || 0,
-          photoTypeId: img.photoTypeId || 0,
-          photoTypeCode: img.photoTypeCode || '',
-          photoTypeName: c.photoTypeName,
-          displayOrder: img.displayOrder,
-          remarks: img.remarks ? `${img.title} | ${img.remarks}` : img.title,
-          viewUrl: img.src,
+  const handleCategoriesChange = useCallback(
+    (newCats: PhotoCategory[]) => {
+      const updated: PropertyPhotoDto[] = [];
+      newCats.forEach((c) =>
+        c.images.forEach((img) => {
+          if (img.propertyPhotoId && img.hasPhoto) {
+            updated.push({
+              propertyPhotoId: img.propertyPhotoId,
+              propertyId: propertyId || 0,
+              photoTypeId: img.photoTypeId || 0,
+              photoTypeCode: img.photoTypeCode || '',
+              photoTypeName: c.photoTypeName,
+              displayOrder: img.displayOrder,
+              remarks: img.remarks ? `${img.title} | ${img.remarks}` : img.title,
+              viewUrl: img.src,
+            });
+          }
+        })
+      );
+      setPhotos(updated);
+
+      // Revalidate/update slots locally to keep front-end state in sync
+      const updatedSlots = initialPhotoSlots.map((slot) => {
+        const cat = newCats.find((c) => c.photoTypeId === slot.photoTypeId);
+        if (!cat) return slot;
+        const catPhotos = updated.filter((p) => p.photoTypeId === slot.photoTypeId);
+        const hasAnyPhoto = catPhotos.length > 0;
+        const firstPhoto = catPhotos[0];
+        return {
+          ...slot,
+          hasPhoto: hasAnyPhoto,
+          photoCount: catPhotos.length,
+          propertyPhotoId: firstPhoto?.propertyPhotoId,
+          viewUrl: firstPhoto?.viewUrl,
+        };
+      });
+
+      onPhotosChange?.(updated);
+      onPhotoSlotsChange?.(updatedSlots);
+
+      // Update client cache to avoid stale values if drawer is closed/reopened
+      if (propertyId) {
+        propertyMediaCache.set(propertyId, {
+          photoSlots: updatedSlots,
+          photos: updated,
+          timestamp: Date.now(),
         });
+        evictOldestCacheEntry();
       }
-    }));
-    setPhotos(updated);
-  }, [propertyId]);
+    },
+    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange]
+  );
 
-  const [photoPlanCategory, propertyPhotoCategory] = useMemo(() => [
-    findCategory(categories, ['PHOTO_PLAN'], ['photo plan', 'plan']),
-    findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']) ||
-      findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']),
-  ], [categories]);
-
-  const gisCategory = useMemo(() =>
-    findCategory(categories, ['GIS'], ['gis', 'satellite view']),
+  const [photoPlanCategory, propertyPhotoCategory] = useMemo(
+    () => [
+      findCategory(categories, ['PHOTO_PLAN'], ['photo plan', 'plan']),
+      findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']) ||
+        findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']),
+    ],
     [categories]
   );
 
+  const gisCategory = useMemo(
+    () => findCategory(categories, ['GIS'], ['gis', 'satellite view']),
+    [categories]
+  );
+
+  const hasCoords =
+    typeof initialLatitude === 'number' &&
+    Number.isFinite(initialLatitude) &&
+    typeof initialLongitude === 'number' &&
+    Number.isFinite(initialLongitude);
+
   const gisPhoto = useMemo(() => {
     const photo = gisCategory?.images?.[0];
+    const srcVal = hasCoords ? '/gis_static.png' : '';
     return {
-      src: '/gis_static.png',
-      fullSrc: '/gis_static.png',
+      src: srcVal,
+      fullSrc: srcVal,
       alt: photo?.alt || t('media.satelliteView') || 'Satellite View',
       title: photo?.title || t('media.satelliteView') || 'Satellite View',
       photoTypeId: photo?.photoTypeId || gisCategory?.photoTypeId || 0,
       photoTypeCode: photo?.photoTypeCode || gisCategory?.photoTypeCode || 'GIS',
       propertyPhotoId: photo?.propertyPhotoId,
     };
-  }, [gisCategory, t]);
+  }, [gisCategory, t, hasCoords]);
 
   const photoPlanPhoto = photoPlanCategory?.images[0];
   const propertyPhoto = propertyPhotoCategory?.images[0];
@@ -97,32 +161,7 @@ export function usePropertyMedia({
     });
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleImageHover = useCallback((src: string, title: string, src2?: string) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    setHoverPreview({ src, src2, title });
-  }, []);
-
-  const handleImageLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoverPreview(null);
-      hoverTimeoutRef.current = null;
-    }, 150);
-  }, []);
-
-  const cancelImageLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-  }, []);
 
   return {
     showMoreImages,

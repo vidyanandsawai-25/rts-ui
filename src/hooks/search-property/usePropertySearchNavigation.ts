@@ -109,6 +109,7 @@ export function usePropertySearchNavigation({
         }
 
         params.set("isActive", "1");
+        params.delete("pageNumber");
       });
       navigateTo(url);
     },
@@ -165,6 +166,7 @@ export function usePropertySearchNavigation({
         }
         params.delete("wardId");
         params.delete("status");
+        params.delete("pageNumber");
       });
       navigateTo(url);
     },
@@ -183,6 +185,7 @@ export function usePropertySearchNavigation({
           params.delete("wardId");
         }
         params.delete("status");
+        params.delete("pageNumber");
       });
       navigateTo(url);
     },
@@ -223,6 +226,26 @@ export function usePropertySearchNavigation({
         } else {
           params.delete("status");
         }
+        params.delete("pageNumber");
+      });
+      navigateTo(url);
+    },
+    [buildUrl, navigateTo]
+  );
+
+  const updatePage = useCallback(
+    (page: number, size: number) => {
+      const url = buildUrl((params) => {
+        if (page > 1) {
+          params.set("pageNumber", String(page));
+        } else {
+          params.delete("pageNumber");
+        }
+        if (size > 0 && size !== 10) {
+          params.set("pageSize", String(size));
+        } else {
+          params.delete("pageSize");
+        }
       });
       navigateTo(url);
     },
@@ -237,5 +260,6 @@ export function usePropertySearchNavigation({
     updateWard,
     updateStatus,
     updateDraftCriteria,
+    updatePage,
   };
 }

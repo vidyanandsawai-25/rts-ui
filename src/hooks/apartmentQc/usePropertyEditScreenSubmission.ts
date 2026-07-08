@@ -6,7 +6,7 @@ import {
   BasicDetailsUpdatePayload,
 } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
-import { DrawerFormData } from "./propertyEditScreenDrawer.types";
+import { DrawerFormData } from "../../types/propertyEditScreenDrawer.types";
 
 
 interface UsePropertyEditScreenSubmissionArgs {

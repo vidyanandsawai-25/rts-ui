@@ -40,6 +40,8 @@ export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu;
 // Validation for allowed characters, special chars in between, single space only, allows single char
 export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
+export const DISPLAY_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/]/gu;
+export const UNIT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/%]/gu;
 
 /* ================= TRANSLATION TEXT VALIDATION ================= */
 // Translation text: Allow multilingual characters, underscore, hyphen, basic punctuation
@@ -57,11 +59,11 @@ export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
 
 /* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
- // Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
- // No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
- // Must start and end with an alphanumeric; a single separator is allowed between tokens.
-export const ALPHANUMERIC_WITH_SPACES_REGEX =/^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
-export const ALPHANUMERIC_WITH_SPACES_SANITIZE =/[^\p{L}\p{M}\p{N}.\s]/gu;
+// Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
+// No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
+// Must start and end with an alphanumeric; a single separator is allowed between tokens.
+export const ALPHANUMERIC_WITH_SPACES_REGEX = /^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
+export const ALPHANUMERIC_WITH_SPACES_SANITIZE = /[^\p{L}\p{M}\p{N}.\s]/gu;
 
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
@@ -141,3 +143,7 @@ export const isAllZeros = (value: string): boolean => {
   if (trimmed.length === 0) return false;
   return /^0+$/.test(trimmed);
 };
+
+// Apartment QC Basic Information form validation 
+export const OWNERNAME_REGEX =
+   /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;

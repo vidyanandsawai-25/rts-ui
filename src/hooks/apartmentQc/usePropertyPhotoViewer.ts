@@ -1,8 +1,7 @@
-'use client';
-
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import type { PropertyPhotoDto } from '@/types/photoplan.types';
+import { fetchPropertyPhotosSafeAction } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 
 export interface UsePropertyPhotoViewerProps {
   propertyId?: number | null;
@@ -65,9 +64,7 @@ export function usePropertyPhotoViewer({
     const fetchPhotos = async () => {
       try {
         setIsLoading(true);
-        const { fetchPropertyPhotosSafeAction } = await import(
-          '@/app/[locale]/property-tax/ptis/appartmentQC/action'
-        );
+      
         const data = await fetchPropertyPhotosSafeAction(propertyId);
         const resolvedPhotos: Array<ViewerPhoto | null> = [];
 

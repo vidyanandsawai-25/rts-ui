@@ -115,6 +115,8 @@ function normalizePropertySearchApiItem(
     wingFlatNo: readApiText(raw, "wingFlatNo", "WingFlatNo") || null,
     propertyCount:
       toOptionalNumber(readField(raw, "propertyCount", "PropertyCount")) ?? null,
+    childUnitCount:
+      toOptionalNumber(readField(raw, "childUnitCount", "ChildUnitCount")) ?? null,
     categoryName: readApiText(raw, "categoryName", "CategoryName") || null,
     propertyDescription:
       readApiText(raw, "propertyDescription", "PropertyDescription") || null,
@@ -183,6 +185,7 @@ export function normalizePropertySearchItem(
     plotNo: toRawText(item.plotNo),
     wingFlatNo: toRawText(item.wingFlatNo),
     propertyCount: item.propertyCount ?? 0,
+    childUnitCount: item.childUnitCount ?? undefined,
     category: toRawText(item.categoryName),
     description: toRawText(item.propertyDescription),
     mobile: formatMobileNumber(toRawText(item.mobile)),
@@ -227,7 +230,7 @@ function isDirectPagedPropertySearch(
   return Array.isArray(obj.items);
 }
 
-function extractPropertySearchRawItems(data: unknown): unknown[] {
+export function extractPropertySearchRawItems(data: unknown): unknown[] {
   if (!data || typeof data !== "object") {
     return [];
   }

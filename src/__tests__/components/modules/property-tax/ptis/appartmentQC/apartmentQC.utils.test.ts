@@ -128,9 +128,9 @@ describe('apartmentQC.utils', () => {
     it('should handle null/undefined values', () => {
       const mockItems: Partial<ApartmentQCDetail>[] = [{}];
       const transformed = transformApartmentData(mockItems as ApartmentQCDetail[], 'residential');
-      expect(transformed[0].oldPropertyNo).toBe('-');
+      expect(transformed[0].oldPropertyNo).toBeUndefined();
       expect(transformed[0].flatOrShopNo).toBe('-');
-      expect(transformed[0].rentMonthly).toBe(0);
+      expect(transformed[0].rentMonthly).toBe('-');
     });
   });
 

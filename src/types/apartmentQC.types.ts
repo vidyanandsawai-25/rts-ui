@@ -276,3 +276,39 @@ export interface DualMethodTaxDetails {
   rateable: ApartmentTaxDetailsItems | null;
   capital: ApartmentTaxDetailsItems | null;
 }
+export type FloorSubmissionRow = {
+  propertyId?: number | string;
+  id: string;
+  pdnId: number | null;
+  floorId: string;
+  conYear: string;
+  asstYear: string;
+  constructionTypeId: string;
+  typeOfUseId: string;
+  subTypeOfUseId: string;
+  noOfRooms: string;
+  area: string;
+  taxable?: string;
+  subFloorId?: string;
+  renter?: string;
+  areaSqFt?: string;
+  areaSqMtr?: string;
+  buildupAreaSqFt?: string;
+  buildupAreaSqMtr?: string;
+  rentMY: string;
+  rateMY: string;
+  monthlyRate?: number;
+  yearlyRate?: number;
+  rentalValue: string;
+  depreciation: string;
+  alv: string;
+  mr: string;
+  rv: string;
+  sdrr: string;
+  baseValue: string;
+  floorFactor: string;
+  ageFactor: string;
+  ntbFactor: string;
+  useFactor: string;
+  capitalValue: string;
+}

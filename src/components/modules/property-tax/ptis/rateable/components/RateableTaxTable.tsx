@@ -26,11 +26,11 @@ export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData
   const rootT = useTranslations('ptis');
   const details = getRateableDetails(rateableData);
   const rows = details.map(mapRateableRow);
-  
-  const expandedParam = Array.isArray(searchParams.rateableExpand) 
-    ? searchParams.rateableExpand[searchParams.rateableExpand.length - 1] 
+
+  const expandedParam = Array.isArray(searchParams.rateableExpand)
+    ? searchParams.rateableExpand[searchParams.rateableExpand.length - 1]
     : searchParams.rateableExpand;
-    
+
   const expandedRowIds = parseExpandedRowIds(expandedParam);
 
   return (

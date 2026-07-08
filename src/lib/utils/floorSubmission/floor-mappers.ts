@@ -21,6 +21,7 @@ import {
 import { resolveIdFromDescription } from "./floor-resolvers";
 import { mapRoomDataToApi } from "./room-mappers";
 import { mapRenterPayloadFields } from "@/lib/utils/renter/renter-payload-mapper";
+import { checkIsUtilityCategory } from "./floor-utility-checks";
 
 // Re-export children utilities for consistent access
 export * from "./floor-descriptions";
@@ -43,6 +44,7 @@ export const mapFormToPayload = (params: {
   propertyId: number | string;
   isAddingNew: boolean;
   existingFloorId?: number | string;
+  selectedFloorType?: 'Construction' | 'OpenPlot';
 }): FloorSubmissionPayload => {
   const {
     formData,
@@ -53,8 +55,12 @@ export const mapFormToPayload = (params: {
     subTypeLookup,
     propertyId,
     isAddingNew,
-    existingFloorId
+    existingFloorId,
+    selectedFloorType
   } = params;
+
+  const isOpenSpace = selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot';
+  const isUtility = checkIsUtilityCategory(formData.typeOfUseCategoryId);
 
   // Resolve IDs primarily from explicit ID fields, fallback to resolving from descriptions
   const floorId = Number(formData.floorId) || resolveIdFromDescription(
@@ -109,13 +115,13 @@ export const mapFormToPayload = (params: {
     createdBy: 0,
     propertyId: Number(propertyId || 0),
     propertyDetailsId: propDetailsId,
-    floorId,
+    ...(!isOpenSpace && floorId ? { floorId } : {}),
     floorDescription,
     subFloorId,
     subFloorDescription,
-    constructionYear: String(formData.conYr || ''),
+    constructionYear: isOpenSpace ? String(formData.asstYr || '') : String(formData.conYr || ''),
     assessmentYear: String(formData.asstYr || ''),
-    constructionTypeId: conTypId,
+    ...(conTypId ? { constructionTypeId: conTypId } : {}),
     constructionTypeDescription,
     typeOfUseId: useId,
     typeOfUseDescription,
@@ -123,25 +129,47 @@ export const mapFormToPayload = (params: {
     subTypeOfUseDescription,
     carpetAreaSqMeter: parseFloat(String(formData.areaSqM || 0)),
     carpetAreaSqFeet: parseFloat(String(formData.areaSqFt || 0)),
-    builtupAreaSqMeter: parseFloat(String(formData.builtupAreaSqM || 0)),
-    builtupAreaSqFeet: parseFloat(String(formData.builtupAreaSqFt || 0)),
-    noOfRooms: parseInt(String(formData.rooms)) || 0,
+    builtupAreaSqMeter: isOpenSpace
+      ? parseFloat(String(formData.areaSqM || 0))
+      : parseFloat(String(formData.builtupAreaSqM || 0)),
+    builtupAreaSqFeet: isOpenSpace
+      ? parseFloat(String(formData.areaSqFt || 0))
+      : parseFloat(String(formData.builtupAreaSqFt || 0)),
+    noOfRooms: isUtility ? 0 : (parseInt(String(formData.rooms)) || 0),
     isTaxable: formData.isTaxable === 'Yes' || formData.isTaxable === true,
     taxLiability: String(formData.taxLiability || ''),
     occupancyDate: formData.occupancyDate || null,
     occupancyApplyOrNot: formData.occupancyApplyOrNot === 'Yes' || formData.occupancyApplyOrNot === true,
     occupancyNumber: String(formData.occupancyNumber || ''),
     ...mapRenterPayloadFields(formData),
-    roomWiseSubmissionDetails: ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
-      .filter((r, index, self) => {
-        // Calculate effective area from any possible field
-        const area = Number(r.area || 0) || Number(r.areaSqMtr || 0) || Number(r.totalAreaSqMtr || 0) || Number(r.total || 0);
-        if (area <= 0) return false;
+    roomWiseSubmissionDetails: isOpenSpace
+      ? []
+      : ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
+        .filter((r, index, self) => {
+          // Calculate effective area from any possible field
+          const area = Number(r.area || 0) || Number(r.areaSqMtr || 0) || Number(r.totalAreaSqMtr || 0) || Number(r.total || 0);
+          if (area <= 0) return false;
 
-        // Deduplicate: if ID exists, match by ID; otherwise match by roomNo if it exists
-        const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
-        return matchIndex === index;
-      })
-      .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId)),
+          // Deduplicate: if ID exists, match by ID; otherwise match by roomNo if it exists
+          const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
+          return matchIndex === index;
+        })
+        .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId, isUtility)),
+    roomWiseMinusData: isOpenSpace ? [] : undefined,
+    typeOfUseCategoryId: formData.typeOfUseCategoryId,
+    selectedFloorType: (selectedFloorType || formData.selectedFloorType) as "Construction" | "OpenPlot" | undefined,
+    isOpenPlot: isOpenSpace,
+    length: isOpenSpace
+      ? (formData.length ? Number(formData.length) : null)
+      : null,
+    width: isOpenSpace
+      ? (formData.width ? Number(formData.width) : null)
+      : null,
+    lengthMtr: isOpenSpace
+      ? (formData.length ? Number(formData.length) : null)
+      : null,
+    widthMtr: isOpenSpace
+      ? (formData.width ? Number(formData.width) : null)
+      : null,
   };
 };

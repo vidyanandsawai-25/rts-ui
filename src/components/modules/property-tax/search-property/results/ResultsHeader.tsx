@@ -2,13 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { FileSpreadsheet } from "lucide-react";
-import { Badge, Button } from "@/components/common";
+import { Button } from "@/components/common";
 import type { PropertyStatus } from "@/types/property-search";
 
 interface ResultsHeaderProps {
   selectedStatus: PropertyStatus | null;
-  isSearchActive: boolean;
-  totalCount: number;
   exportDisabled: boolean;
   onExport: () => void;
 }
@@ -24,8 +22,6 @@ const STATUS_I18N_KEY: Record<PropertyStatus, string> = {
 
 export function ResultsHeader({
   selectedStatus,
-  isSearchActive,
-  totalCount,
   exportDisabled,
   onExport,
 }: ResultsHeaderProps) {
@@ -43,17 +39,6 @@ export function ResultsHeader({
               ({t("statusLabel")}: {tStats(STATUS_I18N_KEY[selectedStatus])})
             </span>
           )}
-          {isSearchActive && (
-            <span className="ml-1.5 text-xs font-medium text-[#004c8c]">
-              ({t("searchActive")})
-            </span>
-          )}
-          <span className="ml-2 text-xs font-normal text-gray-500 inline-flex items-center gap-1">
-            · {t("totalRecords")}:
-            <Badge variant="secondary" size="sm">
-              {totalCount}
-            </Badge>
-          </span>
         </h3>
       </div>
       <Button

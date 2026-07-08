@@ -27,7 +27,6 @@ export interface UsePhotoPlanMutationsProps {
   setViewMode?: (mode: 'grid' | 'viewer' | 'compare') => void;
   setViewerIndexAndMode?: (index: number | null, mode: 'grid' | 'viewer' | 'compare') => void;
 }
-
 export function usePhotoPlanMutations({
   propertyId, categories, onCategoriesChange,
   selectedCategoryIndex, selectedImageIndex, viewMode,
@@ -94,8 +93,9 @@ export function usePhotoPlanMutations({
       const res = await replacePropertyPhotoAction(propertyPhotoId, formData, locale);
       if (res.success && res.data) {
         clearDocumentCacheEntry(targetImg.src);
-        const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
-        const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url } : img);
+        const data = res.data;
+        const url = (data.documentGuid ? getViewDocumentUrl(data.documentGuid) : data.viewUrl) || '';
+        const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
         setViewerIndexAndModeValue(index, 'viewer');

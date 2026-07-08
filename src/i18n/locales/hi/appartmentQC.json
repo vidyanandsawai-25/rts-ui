@@ -13,6 +13,7 @@
     "renterName": "किरायेदार का नाम",
     "description": "विवरण",
     "type": "प्रकार",
+    "records": "अभिलेख",
     "apartmentType": " प्रकार",
     "floor": "मंजिल",
     "assessmentYear": "मूल्यांकन वर्ष",
@@ -21,6 +22,7 @@
     "OldConstructionYear": "पुराना निर्माण वर्ष",
     "surveyConstructionYear": "निर्माण वर्ष",
     "conYear": "नि. वर्ष",
+    "constructionArea": "निर्माण क्षेत्र",
     "constructionType": "निर्माण प्रकार",
     "conType": "नि. प्रकार",
     "toiletCount": "शौचालय की संख्या",
@@ -43,12 +45,14 @@
     "oldTax": "पुराना कर",
     "newRV": "नया आरवी",
     "newTaxRV": "नया कर(आरवी)",
+    "rv": "आरवी",
     "capitalValue": "पूंजीगत मूल्य",
     "totalTaxCV": "कुल कर(सीवी)",
     "newCV": "नया सीवी",
     "newTax": "नया कर",
     "cv": "सीवी",
     "totalTax": "कुल कर",
+    "tax": "कर",
     "mobileNo": "मोबाइल नं",
     "emailId": "ईमेल आईडी",
     "ocDate": "ओसी दिनांक",
@@ -119,12 +123,17 @@
     "apply": "लागू करें"
   },
   "drawer": {
+    "apartmentQCHeading": "अपार्टमेंट QC",
     "title": "संपत्ति विवरण",
     "noPropertyData": "कोई संपत्ति डेटा नहीं मिला।",
     "goBack": "वापस जाएं",
     "cancel": "रद्द करें",
+    "update": "अपडेट करें",
     "basicInformation": "मूल जानकारी",
     "floorQC": "फ़्लोर QC",
+    "basicProperty": "मूल संपत्ति",
+    "taxDetails": "कर विवरण",
+    "photoPlan": "फोटो प्लान",
     "roomWiseSubmission": "कक्षवार प्रविष्टि",
     "loadingRoomData": "कक्ष डेटा लोड हो रहा है...",
     "viewImage": "प्रतिकारन",
@@ -158,14 +167,14 @@
     "apartmentType": "अपार्टमेंट प्रकार",
     "oldRV": "पुराना आरवी",
     "newRV": "नया आरवी",
-    "oldConstArea": "पुराना निर्माण क्षेत्र",
+    "oldConstArea": "निर्माण क्षेत्र",
     "totalTax": "कुल कर",
     "flatOrShopName": "फ्लैट/दुकान का नाम",
     "renterName": "किराएदार का नाम",
     "description": "संपत्ति विवरण",
     "constructionType": "निर्माण प्रकार",
     "toiletCount": "शौचालय की संख्या",
-    "oldconstructionArea": "पुराना निर्माण क्षेत्र",
+    "oldconstructionArea": "निर्माण क्षेत्र",
     "oldtax": "पुराना कर",
     "newtax": "नया कर",
     "mobileNo": "मोबाइल नंबर",
@@ -181,7 +190,7 @@
     "rateableValue": "करयोग्य मूल्य",
     "capitalValue": "पूंजी मूल्य",
     "cv": "पूंजी मूल्य",
-    "kyc": "केवाईसी",
+    "kyc": "अपने ग्राहक को जानें",
     "viewKycDetails": "केवाईसी विवरण देखें",
     "hideKycDetails": "केवाईसी विवरण छुपाएं"
   },
@@ -303,6 +312,17 @@
   },
   "floorQC": {
     "title": "फ्लोर QC",
+    "form": {
+      "loading": "लोड हो रहा है...",
+      "selectFloor": "मंजिल चुनें",
+      "selectConType": "प्रकार चुनें",
+      "selectUse": "उपयोग चुनें",
+      "selectSubType": "उप प्रकार चुनें",
+      "yearPlaceholder": "YYYY",
+      "roomsPlaceholder": "उदा. 2",
+      "autoCalculated": "स्वतः-गणना की गई",
+      "sqFt": "वर्ग फुट"
+    },
     "columns": {
       "floor": "फ्लोर",
       "conYear": "निर्माण वर्ष",
@@ -311,6 +331,13 @@
       "use": "उपयोग",
       "subTypeOfUse": "उप उपयोग प्रकार",
       "noOfRooms": "कमरों की संख्या",
+      "taxable": "कर योग्य",
+      "subFloor": "उप मंजिल",
+      "renter": "किरायेदार",
+      "areaSqFt": "क्षेत्रफल (वर्ग फुट)",
+      "areaSqMtr": "क्षेत्रफल (वर्ग मीटर)",
+      "buildupAreaSqFt": "निर्मित क्षेत्रफल (वर्ग फुट)",
+      "buildupAreaSqMtr": "निर्मित क्षेत्रफल (वर्ग मीटर)",
       "area": "क्षेत्र",
       "rentMY": "किराया म/व",
       "rateMY": "दर म/व",
@@ -325,7 +352,9 @@
       "ageFactor": "आयु फैक्टर",
       "ntbFactor": "NTB फैक्टर",
       "useFactor": "उपयोग फैक्टर",
-      "capitalValue": "पूंजी मूल्य"
+      "capitalValue": "पूंजी मूल्य",
+      "editFloorQC": "मंजिल का विवरण संपादित करें",
+      "action": "कार्रवाई"
     },
     "toolTipFloorQC": {
       "tooltips": {
@@ -350,7 +379,9 @@
         "ageFactor": "आयु गुणांक",
         "ntbFactor": "NTB गुणांक",
         "useFactor": "उपयोग गुणांक",
-        "capitalValue": "पूंजी मूल्य"
+        "capitalValue": "पूंजी मूल्य",
+        "editFloorQC": "फ्लोर QC विवरण संपादित करें",
+        "action": "कार्रवाई"
       }
     },
     "tabs": {
@@ -359,11 +390,19 @@
     },
     "validation": {
       "invalidYear": "4-अंकीय वर्ष दर्ज करें",
-      "yearOutOfRange": "वर्ष सीमा से बाहर"
+      "yearOutOfRange": "वर्ष सीमा से बाहर",
+      "floorRequired": "मंजिल आवश्यक है",
+      "conYearRequired": "निर्माण वर्ष आवश्यक है",
+      "conYearInvalid": "निर्माण वर्ष 4-अंकीय होना चाहिए",
+      "asstYearRequired": "मूल्यांकन वर्ष आवश्यक है",
+      "asstYearInvalid": "मूल्यांकन वर्ष 4-अंकीय होना चाहिए",
+      "conTypeRequired": "निर्माण प्रकार आवश्यक है",
+      "useRequired": "उपयोग प्रकार आवश्यक है"
     },
     "tooltips": {
       "viewRoomDetails": "कमरे का विवरण देखें/संपादित करें",
-      "noDetailId": "कोई विवरण आईडी उपलब्ध नहीं"
+      "noDetailId": "कोई विवरण आईडी उपलब्ध नहीं",
+      "editFloorQC": "फ्लोर QC संपादित करें"
     }
   },
   "list": {
