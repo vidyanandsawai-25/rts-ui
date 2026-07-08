@@ -92,8 +92,8 @@
     "reportsHeader": "{category} Reports",
     "configureParameters": "Configure Parameters",
     "generating": {
-      "title": "Generating Report",
-      "subtitle": "Please wait while the server builds your document preview...",
+      "title": "Preparing Report",
+      "subtitle": "Please wait while your report is being prepared...",
       "cancel": "Cancel"
     },
     "preview": {
