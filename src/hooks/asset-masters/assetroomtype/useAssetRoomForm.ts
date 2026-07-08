@@ -15,6 +15,10 @@ import {
   validateForm,
   commonValidations
 } from "@/lib/utils/validation";
+import {
+  ALPHANUMERIC_WITH_SPACES_REGEX,
+  ALPHANUMERIC_WITH_SPACES_SANITIZE
+} from "@/lib/utils/validation-rules";
 
 const CODE_MAX = 50;
 const NAME_MAX = 100;
@@ -35,12 +39,12 @@ const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "roomTypeName") {
-    sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
   } else if (name === "roomTypeCode") {
-    sanitizedValue = value.replace(CODE_SANITIZE, "");
+    sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase();
     if (sanitizedValue.length > CODE_MAX) {
       sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
     }
@@ -83,11 +87,13 @@ export function useAssetRoomForm({
           format: 'form.validation.roomTypeCodeFormat',
           maxLength: 'form.validation.roomTypeCodeMaxLength',
         }),
-        roomTypeName: commonValidations.masterDescription(t, NAME_MAX, {
-          required: 'form.validation.roomTypeNameRequired',
-          format: 'form.validation.roomTypeNameFormat',
-          maxLength: 'form.validation.roomTypeNameMaxLength',
-        }),
+        roomTypeName: (val: unknown) => {
+          const str = String(val ?? '').trim();
+          if (!str) return t('form.validation.roomTypeNameRequired');
+          if (str.length > NAME_MAX) return t('form.validation.roomTypeNameMaxLength', { count: NAME_MAX });
+          if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(str)) return t('form.validation.roomTypeNameFormat');
+          return undefined;
+        },
         description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
           required: 'form.validation.descriptionRequired',
           format: 'form.validation.descriptionFormat',

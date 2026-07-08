@@ -51,16 +51,34 @@ export function AssetRoomTypeMaster({
 
   React.useEffect(() => {
     const allowed = [10, 20, 30, 40, 50];
+    let newPageSize = pageSize;
+    let hasChanged = false;
+    const params = new URLSearchParams(window.location.search);
+
     if (!allowed.includes(pageSize)) {
-      const nearest = allowed.reduce((prev, curr) =>
+      newPageSize = allowed.reduce((prev, curr) =>
         Math.abs(curr - pageSize) < Math.abs(prev - pageSize) ? curr : prev
       );
+      params.set("pageSize", String(newPageSize));
+      hasChanged = true;
+    }
 
-      const params = new URLSearchParams(window.location.search);
-      params.set("pageSize", String(nearest));
+    const rawPageStr = params.get("page");
+    if (rawPageStr !== null) {
+      const rawPage = parseInt(rawPageStr, 10);
+      if (!Number.isFinite(rawPage) || rawPage < 1) {
+        params.set("page", "1");
+        hasChanged = true;
+      } else if (totalPages > 0 && rawPage > totalPages) {
+        params.set("page", String(totalPages));
+        hasChanged = true;
+      }
+    }
+
+    if (hasChanged) {
       router.replace(`/${locale}/assets/configuration/master-data/asset-room-type?${params.toString()}`);
     }
-  }, [pageSize, locale, router]);
+  }, [pageNumber, pageSize, totalPages, locale, router]);
 
   const handleSort = useCallback(
     (columnKey: string) => {

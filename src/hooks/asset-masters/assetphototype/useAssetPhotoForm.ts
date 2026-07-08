@@ -15,6 +15,10 @@ import {
   validateForm,
   commonValidations
 } from "@/lib/utils/validation";
+import {
+  ALPHANUMERIC_WITH_SPACES_REGEX,
+  ALPHANUMERIC_WITH_SPACES_SANITIZE
+} from "@/lib/utils/validation-rules";
 
 const CODE_MAX = 50;
 const NAME_MAX = 100;
@@ -35,12 +39,12 @@ const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "photoTypeName") {
-    sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
   } else if (name === "photoTypeCode") {
-    sanitizedValue = value.replace(CODE_SANITIZE, "");
+    sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase();
     if (sanitizedValue.length > CODE_MAX) {
       sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
     }
@@ -90,11 +94,13 @@ export function useAssetPhotoForm({
           format: 'form.validation.photoTypeCodeFormat',
           maxLength: 'form.validation.photoTypeCodeMaxLength',
         }),
-        photoTypeName: commonValidations.masterDescription(t, NAME_MAX, {
-          required: 'form.validation.photoTypeNameRequired',
-          format: 'form.validation.photoTypeNameFormat',
-          maxLength: 'form.validation.photoTypeNameMaxLength',
-        }),
+        photoTypeName: (val: unknown) => {
+          const str = String(val ?? '').trim();
+          if (!str) return t('form.validation.photoTypeNameRequired');
+          if (str.length > NAME_MAX) return t('form.validation.photoTypeNameMaxLength', { count: NAME_MAX });
+          if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(str)) return t('form.validation.photoTypeNameFormat');
+          return undefined;
+        },
         description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
           required: 'form.validation.descriptionRequired',
           format: 'form.validation.descriptionFormat',
