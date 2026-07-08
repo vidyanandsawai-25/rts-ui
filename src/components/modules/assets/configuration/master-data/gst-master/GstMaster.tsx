@@ -23,12 +23,12 @@ export function GstMaster({ data, pageNumber, pageSize, totalCount, totalPages, 
   const toast = useToast();
   const [isPending, startTransition] = React.useTransition();
   const [search, setSearch] = React.useState(searchTerm ?? "");
-  const [prevSearchTerm, setPrevSearchTerm] = React.useState(searchTerm);
-
-  if (searchTerm !== prevSearchTerm) {
-    setSearch(searchTerm ?? "");
-    setPrevSearchTerm(searchTerm);
-  }
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchTerm ?? "");
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const pathname = usePathname();
   const isSubRoute = pathname !== `/${locale}/assets/configuration/master-data/gst-master`.replace(/\/+/g, "/");

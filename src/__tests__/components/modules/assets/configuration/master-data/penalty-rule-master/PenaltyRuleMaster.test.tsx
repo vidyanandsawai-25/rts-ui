@@ -91,7 +91,7 @@ describe("PenaltyRuleMaster List Component", () => {
     expect(screen.getByText("LATE_RENT")).toBeInTheDocument();
     expect(screen.getByText("Late Rent")).toBeInTheDocument();
     expect(screen.getByText("10%")).toBeInTheDocument(); // Formatted percentage
-    expect(screen.getByText("5 days")).toBeInTheDocument(); // Formatted grace period
+    expect(screen.getByText("5")).toBeInTheDocument(); // Formatted grace period
   });
 
   test("triggers page redirect on Add Penalty Rule click", () => {

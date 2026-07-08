@@ -73,6 +73,7 @@
       "valueInvalid": "Penalty value must be a valid non-negative number",
       "gracePeriodRequired": "Grace period days is required",
       "gracePeriodInvalid": "Grace period days must be a valid non-negative integer",
+      "mustBeActive": "New penalty rule records must be active",
       "fixErrors": "Please fix validation errors",
       "mandatoryNotice": "Fields marked with <b>*</b> are mandatory"
     },

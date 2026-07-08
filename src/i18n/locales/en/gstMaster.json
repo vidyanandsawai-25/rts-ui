@@ -29,7 +29,7 @@
     "fields": {
       "code": {
         "label": "Tax Code",
-        "placeholder": "e.g. GST-18"
+        "placeholder": "e.g. GST_18"
       },
       "description": {
         "label": "Tax Name",
@@ -63,6 +63,7 @@
       "percentInvalid": "Tax percentage must be a valid number",
       "effectiveFromRequired": "Effective from date is required",
       "effectiveToInvalid": "Effective to date cannot be earlier than effective from date",
+      "mustBeActive": "New GST records must be active",
       "fixErrors": "Please fix validation errors",
       "mandatoryNotice": "Fields marked with <b>*</b> are mandatory"
     },

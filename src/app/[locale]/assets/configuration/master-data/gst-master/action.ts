@@ -66,6 +66,13 @@ export async function saveGstMaster(id: string, formData: FormData) {
     if (!Number.isFinite(taxPercentage)) return { ok: false, error: "invalid_taxPercentage" };
 
     const effectiveToDateRaw = String(formData.get("effectiveToDate") ?? "").trim();
+    if (effectiveToDateRaw) {
+      const from = new Date(effectiveFromDate);
+      const to = new Date(effectiveToDateRaw);
+      if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime()) || to < from) {
+        return { ok: false, error: "invalid_effectiveToDate" };
+      }
+    }
     const isActive = String(formData.get("isActive") ?? "true").toLowerCase() === "true";
 
     const payload: GstMasterFormModel = {

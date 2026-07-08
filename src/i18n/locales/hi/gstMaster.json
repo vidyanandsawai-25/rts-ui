@@ -29,7 +29,7 @@
     "fields": {
       "code": {
         "label": "टैक्स कोड",
-        "placeholder": "उदा. GST-18"
+        "placeholder": "उदा. GST_18"
       },
       "description": {
         "label": "टैक्स नाम",
@@ -63,6 +63,7 @@
       "percentInvalid": "टैक्स प्रतिशत एक मान्य संख्या होना चाहिए",
       "effectiveFromRequired": "प्रभावी प्रारंभ तिथि आवश्यक है",
       "effectiveToInvalid": "प्रभावी समाप्ति तिथि प्रभावी प्रारंभ तिथि से पहले नहीं हो सकती",
+      "mustBeActive": "नए जीएसटी रिकॉर्ड सक्रिय होने चाहिए",
       "fixErrors": "कृपया सत्यापन त्रुटियां ठीक करें",
       "mandatoryNotice": "<b>*</b> से चिह्नित फ़ील्ड अनिवार्य हैं"
     },

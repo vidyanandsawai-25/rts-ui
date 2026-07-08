@@ -112,7 +112,7 @@ export function getPenaltyRuleMasterColumns({
         return `₹${formatted}`;
       },
     },
-    { key: "gracePeriodDays", label: createSortableLabel(t("gracePeriodDays"), "gracePeriodDays"), width: "15%", render: (v) => (typeof v === "number" ? `${v} days` : "") },
+    { key: "gracePeriodDays", label: createSortableLabel(t("gracePeriodDays"), "gracePeriodDays"), width: "15%", render: (v) => (typeof v === "number" ? String(v) : "") },
     { key: "isActive", label: t("status"), width: "10%", isStatus: true },
   ];
 }
