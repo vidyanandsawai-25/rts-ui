@@ -59,7 +59,8 @@
     "body": "For large date ranges or ward-level reports, generation may take a few seconds. The PDF will download automatically once ready."
   },
   "loading": {
-    "message": "Loading report options…"
+    "message": "Loading report options…",
+    "description": "Please wait while we fetch the available reports."
   },
   "error": {
     "title": "Something went wrong",
@@ -67,5 +68,72 @@
     "errorId": "Error ID: {id}",
     "goHome": "Go Home",
     "tryAgain": "Try Again"
+  },
+  "workspace": {
+    "steps": {
+      "selectCategory": "Select Category",
+      "selectReport": "Select Report",
+      "setParameters": "Set Parameters"
+    },
+    "categories": {
+      "assessment": "Assessment",
+      "amc": "AMC",
+      "transaction": "Transaction",
+      "approval": "Approval",
+      "discount": "Discount",
+      "others": "Others"
+    },
+    "reportsCount": "{count} reports",
+    "emptyState": {
+      "title": "Select a category above",
+      "subtitle": "Choose a report type to view available reports"
+    },
+    "noReportsFound": "No reports found for this category.",
+    "reportsHeader": "{category} Reports",
+    "configureParameters": "Configure Parameters",
+    "generating": {
+      "title": "Generating Report",
+      "subtitle": "Please wait while the server builds your document preview...",
+      "cancel": "Cancel"
+    },
+    "preview": {
+      "title": "Report Preview",
+      "downloadPdf": "PDF"
+    }
+  },
+  "params": {
+    "emptyState": "Select a report from the list to configure parameters",
+    "financialYear": "Financial Year",
+    "zoneNo": "Zone No.",
+    "wardNo": "Ward No.",
+    "propertySelection": "Property Selection",
+    "propertyNo": "Property No",
+    "fromPropertyToProperty": "From Property To Property",
+    "fromProperty": "From Property",
+    "toProperty": "To Property",
+    "selectYear": "Select year",
+    "selectZone": "Select zone",
+    "selectWard": "Select ward",
+    "selectProperty": "Select property",
+    "selectStartProperty": "Select start property",
+    "selectEndProperty": "Select end property",
+    "loading": "Loading...",
+    "selectZoneFirst": "Select zone first",
+    "selectWardFirst": "Select ward first",
+    "validation": {
+      "financialYearRequired": "Financial year is required.",
+      "zoneRequired": "Zone is required.",
+      "wardRequired": "Ward is required.",
+      "fillAllRequired": "Please fill all required fields.",
+      "networkError": "Network error. Please try again.",
+      "failedToQueue": "Failed to queue report"
+    },
+    "queuedSuccess": "Report queued! It will appear in the jobs list when ready.",
+    "reportQueued": "Report \"{name}\" queued successfully!",
+    "buttons": {
+      "reset": "Reset",
+      "generate": "Generate Report",
+      "queuing": "Queuing..."
+    }
   }
 }

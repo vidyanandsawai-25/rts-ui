@@ -1,7 +1,7 @@
-﻿import { getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { getReportDefinitions, getZones } from '@/lib/api/report.service';
 import { ReportsWorkspace } from '@/components/modules/reports/ReportsWorkspace';
-import type { ReportFormCopy, ReportJobsCopy } from '@/types/report.types';
+import type { ReportFormCopy, ReportJobsCopy, ReportWorkspaceCopy, ReportParamsPanelCopy } from '@/types/report.types';
 import { PageContainer, TableHeader } from '@/components/common';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -80,6 +80,75 @@ export default async function ReportsPage({ params }: PageProps) {
     },
   };
 
+  const workspaceCopy: ReportWorkspaceCopy = {
+    steps: {
+      selectCategory: t('workspace.steps.selectCategory'),
+      selectReport: t('workspace.steps.selectReport'),
+      setParameters: t('workspace.steps.setParameters'),
+    },
+    categories: {
+      assessment: t('workspace.categories.assessment'),
+      amc: t('workspace.categories.amc'),
+      transaction: t('workspace.categories.transaction'),
+      approval: t('workspace.categories.approval'),
+      discount: t('workspace.categories.discount'),
+      others: t('workspace.categories.others'),
+    },
+    reportsCount: t.raw('workspace.reportsCount'),
+    emptyState: {
+      title: t('workspace.emptyState.title'),
+      subtitle: t('workspace.emptyState.subtitle'),
+    },
+    noReportsFound: t('workspace.noReportsFound'),
+    reportsHeader: t.raw('workspace.reportsHeader'),
+    configureParameters: t('workspace.configureParameters'),
+    generating: {
+      title: t('workspace.generating.title'),
+      subtitle: t('workspace.generating.subtitle'),
+      cancel: t('workspace.generating.cancel'),
+    },
+    preview: {
+      title: t('workspace.preview.title'),
+      downloadPdf: t('workspace.preview.downloadPdf'),
+    },
+  };
+
+  const paramsCopy: ReportParamsPanelCopy = {
+    emptyState: t('params.emptyState'),
+    financialYear: t('params.financialYear'),
+    zoneNo: t('params.zoneNo'),
+    wardNo: t('params.wardNo'),
+    propertySelection: t('params.propertySelection'),
+    propertyNo: t('params.propertyNo'),
+    fromPropertyToProperty: t('params.fromPropertyToProperty'),
+    fromProperty: t('params.fromProperty'),
+    toProperty: t('params.toProperty'),
+    selectYear: t('params.selectYear'),
+    selectZone: t('params.selectZone'),
+    selectWard: t('params.selectWard'),
+    selectProperty: t('params.selectProperty'),
+    selectStartProperty: t('params.selectStartProperty'),
+    selectEndProperty: t('params.selectEndProperty'),
+    loading: t('params.loading'),
+    selectZoneFirst: t('params.selectZoneFirst'),
+    selectWardFirst: t('params.selectWardFirst'),
+    validation: {
+      financialYearRequired: t('params.validation.financialYearRequired'),
+      zoneRequired: t('params.validation.zoneRequired'),
+      wardRequired: t('params.validation.wardRequired'),
+      fillAllRequired: t('params.validation.fillAllRequired'),
+      networkError: t('params.validation.networkError'),
+      failedToQueue: t('params.validation.failedToQueue'),
+    },
+    queuedSuccess: t('params.queuedSuccess'),
+    reportQueued: t.raw('params.reportQueued'),
+    buttons: {
+      reset: t('params.buttons.reset'),
+      generate: t('params.buttons.generate'),
+      queuing: t('params.buttons.queuing'),
+    },
+  };
+
   const goHomeAction = (
     <Link
       href={`/${locale}/home`}
@@ -103,11 +172,14 @@ export default async function ReportsPage({ params }: PageProps) {
       <ReportsWorkspace
         copy={copy}
         jobsCopy={jobsCopy}
+        workspaceCopy={workspaceCopy}
+        paramsCopy={paramsCopy}
         reportDefinitions={reportDefinitions}
         zones={zones}
       />
     </PageContainer>
   );
 }
+
 
 

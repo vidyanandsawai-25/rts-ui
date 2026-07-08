@@ -89,6 +89,75 @@ export interface ReportJobsCopy {
   statuses: Record<ReportJobStatus, string>;
 }
 
+export interface ReportWorkspaceCopy {
+  steps: {
+    selectCategory: string;
+    selectReport: string;
+    setParameters: string;
+  };
+  categories: {
+    assessment: string;
+    amc: string;
+    transaction: string;
+    approval: string;
+    discount: string;
+    others: string;
+  };
+  reportsCount: string;
+  emptyState: {
+    title: string;
+    subtitle: string;
+  };
+  noReportsFound: string;
+  reportsHeader: string;
+  configureParameters: string;
+  generating: {
+    title: string;
+    subtitle: string;
+    cancel: string;
+  };
+  preview: {
+    title: string;
+    downloadPdf: string;
+  };
+}
+
+export interface ReportParamsPanelCopy {
+  emptyState: string;
+  financialYear: string;
+  zoneNo: string;
+  wardNo: string;
+  propertySelection: string;
+  propertyNo: string;
+  fromPropertyToProperty: string;
+  fromProperty: string;
+  toProperty: string;
+  selectYear: string;
+  selectZone: string;
+  selectWard: string;
+  selectProperty: string;
+  selectStartProperty: string;
+  selectEndProperty: string;
+  loading: string;
+  selectZoneFirst: string;
+  selectWardFirst: string;
+  validation: {
+    financialYearRequired: string;
+    zoneRequired: string;
+    wardRequired: string;
+    fillAllRequired: string;
+    networkError: string;
+    failedToQueue: string;
+  };
+  queuedSuccess: string;
+  reportQueued: string;
+  buttons: {
+    reset: string;
+    generate: string;
+    queuing: string;
+  };
+}
+
 export interface ReportFormCopy {
   pageTitle: string;
   pageSubtitle: string;
@@ -141,6 +210,8 @@ export interface ReportGenerationFormProps {
 export interface ReportsWorkspaceProps {
   copy?: ReportFormCopy;
   jobsCopy: ReportJobsCopy;
+  workspaceCopy?: ReportWorkspaceCopy;
+  paramsCopy?: ReportParamsPanelCopy;
   reportDefinitions: ReportDefinition[];
   zones?: ZoneSummary[];
 }

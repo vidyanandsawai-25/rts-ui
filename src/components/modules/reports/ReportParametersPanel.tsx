@@ -12,13 +12,15 @@ import {
   getPropertiesByWardAction,
 } from '@/app/[locale]/reports/action';
 import type { FinancialYear } from '@/types/financialYear.types';
-import type { ZoneSummary, WardSummary, PropertySummary, ReportDefinition } from '@/types/report.types';
+import type { ZoneSummary, WardSummary, PropertySummary, ReportDefinition, ReportParamsPanelCopy } from '@/types/report.types';
 
 interface ReportParametersPanelProps {
   /** The selected report from the left tabs panel */
   report: ReportDefinition | null;
   /** Called when a report is successfully queued */
   onQueued?: (reportRequestId: string) => void;
+  /** Translated copy strings */
+  copy: ReportParamsPanelCopy;
 }
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
@@ -31,7 +33,7 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
   );
 }
 
-export function ReportParametersPanel({ report, onQueued }: ReportParametersPanelProps) {
+export function ReportParametersPanel({ report, onQueued, copy }: ReportParametersPanelProps) {
   const [financialYears, setFinancialYears] = useState<FinancialYear[]>([]);
   const [zones, setZones] = useState<ZoneSummary[]>([]);
   const [wards, setWards] = useState<WardSummary[]>([]);
@@ -156,14 +158,14 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
     setErrorMsg('');
 
     const nextFieldErrors: { financialYearId?: string; zoneId?: string; wardId?: string } = {};
-    if (!financialYearId) nextFieldErrors.financialYearId = 'Financial year is required.';
-    if (!zoneId) nextFieldErrors.zoneId = 'Zone is required.';
-    if (!wardId) nextFieldErrors.wardId = 'Ward is required.';
+    if (!financialYearId) nextFieldErrors.financialYearId = copy.validation.financialYearRequired;
+    if (!zoneId) nextFieldErrors.zoneId = copy.validation.zoneRequired;
+    if (!wardId) nextFieldErrors.wardId = copy.validation.wardRequired;
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setSubmitStatus('error');
-      setErrorMsg('Please fill all required fields.');
+      setErrorMsg(copy.validation.fillAllRequired);
       return;
     }
 
@@ -213,19 +215,19 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         });
 
         if (!response.ok) {
-          const err = await response.json().catch(() => ({ error: 'Failed to queue report' }));
+          const err = await response.json().catch(() => ({ error: copy.validation.failedToQueue }));
           setSubmitStatus('error');
-          setErrorMsg(err.error || 'Failed to queue report');
+          setErrorMsg(err.error || copy.validation.failedToQueue);
           return;
         }
 
         const result = await response.json().catch(() => ({}));
         setSubmitStatus('success');
-        toast.success(`Report "${report.reportName}" queued successfully!`);
+        toast.success(copy.reportQueued.replace('{name}', report.reportName));
         onQueued?.(result.reportRequestId || '');
       } catch {
         setSubmitStatus('error');
-        setErrorMsg('Network error. Please try again.');
+        setErrorMsg(copy.validation.networkError);
       }
     });
   };
@@ -268,7 +270,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
           <Send className="w-5 h-5 text-gray-300" />
         </div>
-        <p className="text-sm text-gray-400">Select a report from the list to configure parameters</p>
+        <p className="text-sm text-gray-400">{copy.emptyState}</p>
       </div>
     );
   }
@@ -276,7 +278,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
   return (
     <div className="flex flex-col gap-4 p-5">
       <div>
-        <FieldLabel required>Financial Year</FieldLabel>
+        <FieldLabel required>{copy.financialYear}</FieldLabel>
         <SearchSelect
           id="financialYear"
           name="financialYear"
@@ -285,7 +287,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
             setFinancialYearId(val);
             setFieldErrors((prev) => ({ ...prev, financialYearId: undefined }));
           }}
-          placeholder="Select year"
+          placeholder={copy.selectYear}
           options={yearOptions}
           isLoading={loadingYears}
           required
@@ -295,13 +297,13 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <FieldLabel required>Zone No.</FieldLabel>
+          <FieldLabel required>{copy.zoneNo}</FieldLabel>
           <SearchSelect
             id="zone"
             name="zone"
             value={zoneId}
             onChange={(_, val) => handleZoneChange(val)}
-            placeholder="Select zone"
+            placeholder={copy.selectZone}
             options={zoneOptions}
             isLoading={loadingZones}
             required
@@ -309,14 +311,14 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
           />
         </div>
         <div>
-          <FieldLabel required>Ward No.</FieldLabel>
+          <FieldLabel required>{copy.wardNo}</FieldLabel>
           <SearchSelect
             id="ward"
             name="ward"
             value={wardId}
             onChange={(_, val) => handleWardChange(val)}
             disabled={!zoneId || loadingWards}
-            placeholder={loadingWards ? 'Loading...' : !zoneId ? 'Select zone first' : 'Select ward'}
+            placeholder={loadingWards ? copy.loading : !zoneId ? copy.selectZoneFirst : copy.selectWard}
             options={wardOptions}
             isLoading={loadingWards}
             required
@@ -327,7 +329,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
 
       {/* Property Mode Toggle */}
       <div>
-        <FieldLabel>Property Selection</FieldLabel>
+        <FieldLabel>{copy.propertySelection}</FieldLabel>
         <Tabs
           value={propertyMode}
           onChange={(value) => {
@@ -346,10 +348,10 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         >
           <TabList className="flex w-full gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" scrollable={false}>
             <Tab value="single" className="flex-1 justify-center py-2 text-xs font-semibold">
-              Property No
+              {copy.propertyNo}
             </Tab>
             <Tab value="range" className="flex-1 justify-center py-2 text-xs font-semibold">
-              From Property To Property
+              {copy.fromPropertyToProperty}
             </Tab>
           </TabList>
         </Tabs>
@@ -357,14 +359,14 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         {/* Single Property Dropdown */}
         {propertyMode === 'single' && (
           <div>
-            <label className="block text-[12px] font-medium text-gray-400 mb-1">Property No</label>
+            <label className="block text-[12px] font-medium text-gray-400 mb-1">{copy.propertyNo}</label>
             <SearchSelect
               id="propertySelect"
               name="propertySelect"
               value={selectedPropertyId}
               onChange={(_, val) => setSelectedPropertyId(val)}
               disabled={!wardId || loadingProperties}
-              placeholder={loadingProperties ? 'Loading...' : !wardId ? 'Select ward first' : 'Select property'}
+              placeholder={loadingProperties ? copy.loading : !wardId ? copy.selectWardFirst : copy.selectProperty}
               options={propertyOptions}
               isLoading={loadingProperties}
             />
@@ -375,27 +377,27 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         {propertyMode === 'range' && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[12px] font-medium text-gray-400 mb-1">From Property</label>
+              <label className="block text-[12px] font-medium text-gray-400 mb-1">{copy.fromProperty}</label>
               <SearchSelect
                 id="fromPropertyNo"
                 name="fromPropertyNo"
                 value={fromPropertyNo}
                 onChange={(_, val) => setFromPropertyNo(val)}
                 disabled={!wardId || loadingProperties}
-                placeholder={loadingProperties ? 'Loading...' : !wardId ? 'Select ward first' : 'Select start property'}
+                placeholder={loadingProperties ? copy.loading : !wardId ? copy.selectWardFirst : copy.selectStartProperty}
                 options={propertyOptions}
                 isLoading={loadingProperties}
               />
             </div>
             <div>
-              <label className="block text-[12px] font-medium text-gray-400 mb-1">To Property</label>
+              <label className="block text-[12px] font-medium text-gray-400 mb-1">{copy.toProperty}</label>
               <SearchSelect
                 id="toPropertyNo"
                 name="toPropertyNo"
                 value={toPropertyNo}
                 onChange={(_, val) => setToPropertyNo(val)}
                 disabled={!wardId || loadingProperties}
-                placeholder={loadingProperties ? 'Loading...' : !wardId ? 'Select ward first' : 'Select end property'}
+                placeholder={loadingProperties ? copy.loading : !wardId ? copy.selectWardFirst : copy.selectEndProperty}
                 options={propertyOptions}
                 isLoading={loadingProperties}
               />
@@ -413,7 +415,7 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
       {submitStatus === 'success' && (
         <div className="flex items-start gap-2.5 bg-emerald-50/70 border border-emerald-100/80 rounded-xl px-4 py-3 text-xs font-semibold text-emerald-800">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-600" />
-          <span>Report queued! It will appear in the jobs list when ready.</span>
+          <span>{copy.queuedSuccess}</span>
         </div>
       )}
 
@@ -421,14 +423,14 @@ export function ReportParametersPanel({ report, onQueued }: ReportParametersPane
         <ClearButton
           type="button"
           size="md"
-          label="Reset"
+          label={copy.buttons.reset}
           onClick={handleReset}
           disabled={isPending}
         />
         <ApplyButton
           type="button"
           size="md"
-          label={isPending ? 'Queuing...' : 'Generate Report'}
+          label={isPending ? copy.buttons.queuing : copy.buttons.generate}
           isLoading={isPending}
           onClick={handleSubmit}
           disabled={isPending || !financialYearId || !zoneId || !wardId}

@@ -59,7 +59,8 @@
     "body": "मोठ्या तारखांच्या श्रेणी किंवा वॉर्ड-स्तरीय अहवालांसाठी, PDF तयार झाल्यावर आपोआप डाउनलोड होईल."
   },
   "loading": {
-    "message": "अहवाल पर्याय लोड होत आहेत…"
+    "message": "अहवाल पर्याय लोड होत आहेत…",
+    "description": "उपलब्ध अहवाल आणत असताना कृपया प्रतीक्षा करा."
   },
   "error": {
     "title": "काहीतरी चूक झाली",
@@ -67,5 +68,72 @@
     "errorId": "त्रुटी ID: {id}",
     "goHome": "मुख्यपृष्ठावर जा",
     "tryAgain": "पुन्हा प्रयत्न करा"
+  },
+  "workspace": {
+    "steps": {
+      "selectCategory": "श्रेणी निवडा",
+      "selectReport": "अहवाल निवडा",
+      "setParameters": "मापदंड सेट करा"
+    },
+    "categories": {
+      "assessment": "मूल्यांकन",
+      "amc": "एएमसी",
+      "transaction": "व्यवहार",
+      "approval": "मंजुरी",
+      "discount": "सूट",
+      "others": "इतर"
+    },
+    "reportsCount": "{count} अहवाल",
+    "emptyState": {
+      "title": "वरील श्रेणी निवडा",
+      "subtitle": "उपलब्ध अहवाल पाहण्यासाठी अहवाल प्रकार निवडा"
+    },
+    "noReportsFound": "या श्रेणीसाठी कोणताही अहवाल आढळला नाही.",
+    "reportsHeader": "{category} अहवाल",
+    "configureParameters": "मापदंड कॉन्फिगर करा",
+    "generating": {
+      "title": "अहवाल तयार होत आहे",
+      "subtitle": "कृपया प्रतीक्षा करा, सर्व्हर आपला दस्तऐवज तयार करत आहे...",
+      "cancel": "रद्द करा"
+    },
+    "preview": {
+      "title": "अहवाल पूर्वावलोकन",
+      "downloadPdf": "PDF"
+    }
+  },
+  "params": {
+    "emptyState": "मापदंड कॉन्फिगर करण्यासाठी यादीतून अहवाल निवडा",
+    "financialYear": "आर्थिक वर्ष",
+    "zoneNo": "क्षेत्र क्र.",
+    "wardNo": "वॉर्ड क्र.",
+    "propertySelection": "मालमत्ता निवड",
+    "propertyNo": "मालमत्ता क्र.",
+    "fromPropertyToProperty": "मालमत्ता क्र. पासून ते पर्यंत",
+    "fromProperty": "पासून मालमत्ता",
+    "toProperty": "पर्यंत मालमत्ता",
+    "selectYear": "वर्ष निवडा",
+    "selectZone": "क्षेत्र निवडा",
+    "selectWard": "वॉर्ड निवडा",
+    "selectProperty": "मालमत्ता निवडा",
+    "selectStartProperty": "प्रारंभ मालमत्ता निवडा",
+    "selectEndProperty": "समाप्ती मालमत्ता निवडा",
+    "loading": "लोड होत आहे...",
+    "selectZoneFirst": "आधी क्षेत्र निवडा",
+    "selectWardFirst": "आधी वॉर्ड निवडा",
+    "validation": {
+      "financialYearRequired": "आर्थिक वर्ष आवश्यक आहे.",
+      "zoneRequired": "क्षेत्र आवश्यक आहे.",
+      "wardRequired": "वॉर्ड आवश्यक आहे.",
+      "fillAllRequired": "कृपया सर्व आवश्यक फील्ड भरा.",
+      "networkError": "नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.",
+      "failedToQueue": "अहवाल रांगेत टाकण्यात अपयश"
+    },
+    "queuedSuccess": "अहवाल रांगेत आहे! तयार झाल्यावर तो कामांच्या यादीत दिसेल.",
+    "reportQueued": "अहवाल \"{name}\" यशस्वीरित्या रांगेत टाकला!",
+    "buttons": {
+      "reset": "रीसेट करा",
+      "generate": "अहवाल तयार करा",
+      "queuing": "रांगेत टाकत आहे..."
+    }
   }
 }

@@ -17,9 +17,9 @@ import {
 import { toast } from 'sonner';
 import { ReportParametersPanel } from '@/components/modules/reports/ReportParametersPanel';
 import { ReportJobsList } from '@/components/modules/reports/ReportJobsList';
-import { Card, Tabs, TabList, Tab } from '@/components/common';
+import { Card, Tabs, TabList, Tab, Button } from '@/components/common';
 import { useReportJobs } from '@/hooks/useReportJobs';
-import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
+import type { ReportsWorkspaceProps, ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 
 // Sirf non-assessment reports yahan specifically map karo.
 // Assessment DEFAULT hai — jo bhi yahan nahi hai woh automatically Assessment mein jayega.
@@ -35,8 +35,6 @@ type Step = 1 | 2 | 3;
 
 interface Category {
   key: string;
-  label: string;
-  labelHi: string;
   icon: React.ElementType;
   color: string;      // text class e.g. text-blue-600
   bgColor: string;    // background class e.g. bg-blue-50
@@ -46,25 +44,24 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { key: 'assessment', label: 'Assessment', labelHi: 'मूल्यांकन', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50/70', borderColor: 'border-blue-500', glowClass: 'shadow-blue-100/70', iconBg: 'bg-blue-100' },
-  { key: 'amc', label: 'AMC', labelHi: 'एएमसी', icon: BarChart2, color: 'text-amber-600', bgColor: 'bg-amber-50/70', borderColor: 'border-amber-500', glowClass: 'shadow-amber-100/70', iconBg: 'bg-amber-100' },
-  { key: 'transaction', label: 'Transaction', labelHi: 'व्यवहार', icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-50/70', borderColor: 'border-emerald-500', glowClass: 'shadow-emerald-100/70', iconBg: 'bg-emerald-100' },
-  { key: 'approval', label: 'Approval', labelHi: 'मंजुरी', icon: CheckCircle, color: 'text-indigo-600', bgColor: 'bg-indigo-50/70', borderColor: 'border-indigo-500', glowClass: 'shadow-indigo-100/70', iconBg: 'bg-indigo-100' },
-  { key: 'discount', label: 'Discount', labelHi: 'सूट', icon: Tag, color: 'text-rose-600', bgColor: 'bg-rose-50/70', borderColor: 'border-rose-500', glowClass: 'shadow-rose-100/70', iconBg: 'bg-rose-100' },
-  { key: 'others', label: 'Others', labelHi: 'इतर', icon: MoreHorizontal, color: 'text-slate-600', bgColor: 'bg-slate-50/70', borderColor: 'border-slate-500', glowClass: 'shadow-slate-100/70', iconBg: 'bg-slate-100' },
+  { key: 'assessment', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50/70', borderColor: 'border-blue-500', glowClass: 'shadow-blue-100/70', iconBg: 'bg-blue-100' },
+  { key: 'amc', icon: BarChart2, color: 'text-amber-600', bgColor: 'bg-amber-50/70', borderColor: 'border-amber-500', glowClass: 'shadow-amber-100/70', iconBg: 'bg-amber-100' },
+  { key: 'transaction', icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-50/70', borderColor: 'border-emerald-500', glowClass: 'shadow-emerald-100/70', iconBg: 'bg-emerald-100' },
+  { key: 'approval', icon: CheckCircle, color: 'text-indigo-600', bgColor: 'bg-indigo-50/70', borderColor: 'border-indigo-500', glowClass: 'shadow-indigo-100/70', iconBg: 'bg-indigo-100' },
+  { key: 'discount', icon: Tag, color: 'text-rose-600', bgColor: 'bg-rose-50/70', borderColor: 'border-rose-500', glowClass: 'shadow-rose-100/70', iconBg: 'bg-rose-100' },
+  { key: 'others', icon: MoreHorizontal, color: 'text-slate-600', bgColor: 'bg-slate-50/70', borderColor: 'border-slate-500', glowClass: 'shadow-slate-100/70', iconBg: 'bg-slate-100' },
 ];
 
-const STEPS = [
-  { label: 'Select Category', labelHi: 'श्रेणी निवडा' },
-  { label: 'Select Report', labelHi: 'अहवाल निवडा' },
-  { label: 'Set Parameters', labelHi: 'मापदंड सेट करा' },
-];
-
-function Stepper({ currentStep }: { currentStep: Step }) {
+function Stepper({ currentStep, copy }: { currentStep: Step; copy: ReportWorkspaceCopy }) {
+  const steps = [
+    { label: copy.steps.selectCategory },
+    { label: copy.steps.selectReport },
+    { label: copy.steps.setParameters },
+  ];
   return (
     <Card padding="none" className="rounded-xl px-6 py-4 shadow-sm border border-gray-100">
       <div className="flex items-center w-full">
-        {STEPS.map((step, idx) => {
+        {steps.map((step, idx) => {
           const stepNum = (idx + 1) as Step;
           const isDone = stepNum < currentStep;
           const isActive = stepNum === currentStep;
@@ -82,10 +79,9 @@ function Stepper({ currentStep }: { currentStep: Step }) {
                   <p className={`text-xs font-semibold leading-tight truncate ${isActive ? 'text-[#004c8c]' : isDone ? 'text-green-600' : 'text-gray-400'}`}>
                     {step.label}
                   </p>
-                  <p className="text-[10px] text-gray-400 leading-tight truncate">{step.labelHi}</p>
                 </div>
               </div>
-              {idx < STEPS.length - 1 && (
+              {idx < steps.length - 1 && (
                 <div className="flex-1 mx-3">
                   <div className={`h-0.5 rounded-full transition-all duration-500 ${isDone ? 'bg-green-400' : 'bg-gray-200'}`} />
                 </div>
@@ -98,8 +94,8 @@ function Stepper({ currentStep }: { currentStep: Step }) {
   );
 }
 
-function CategoryCard({ category, count, isSelected, onClick }: {
-  category: Category; count: number; isSelected: boolean; onClick: () => void;
+function CategoryCard({ category, label, count, isSelected, onClick }: {
+  category: Category; label: string; count: number; isSelected: boolean; onClick: () => void;
 }) {
   const Icon = category.icon;
   return (
@@ -116,8 +112,7 @@ function CategoryCard({ category, count, isSelected, onClick }: {
         <Icon className={`w-5 h-5 ${isSelected ? category.color : 'text-gray-500'}`} />
       </span>
       <div className="flex flex-col items-center">
-        <span className={`block text-xs font-bold leading-tight ${isSelected ? 'text-gray-900 font-extrabold' : 'text-gray-700'}`}>{category.label}</span>
-        <span className="block text-[10px] text-gray-400 leading-tight mt-0.5">{category.labelHi}</span>
+        <span className={`block text-xs font-bold leading-tight ${isSelected ? 'text-gray-900 font-extrabold' : 'text-gray-700'}`}>{label}</span>
       </div>
       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 transition-all duration-300
         ${isSelected 
@@ -131,15 +126,15 @@ function CategoryCard({ category, count, isSelected, onClick }: {
   );
 }
 
-function EmptyState() {
+function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center text-gray-400 gap-3">
       <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
         <FileText className="w-8 h-8 text-gray-300" />
       </div>
       <div>
-        <p className="font-semibold text-gray-500">Select a category above</p>
-        <p className="text-sm text-gray-400 mt-1">Choose a report type to view available reports</p>
+        <p className="font-semibold text-gray-500">{title}</p>
+        <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
       </div>
     </div>
   );
@@ -152,25 +147,21 @@ function resolveCategoryKey(report: ReportDefinition): string {
   ).trim();
   const normalizedReportCode = reportCode.toLowerCase().replace(/[_\s-]+/g, '');
 
-  // Specific category mapping check (non-assessment categories)
   const codeMatch = CATEGORIES.find((cat) =>
     cat.key !== 'others' &&
-    cat.key !== 'assessment' &&          // assessment is the default, skip here
+    cat.key !== 'assessment' &&
     REPORT_CODES_BY_CATEGORY[cat.key]?.some((code) =>
       normalizedReportCode === code.toLowerCase().replace(/[_\s-]+/g, '')
     )
   );
 
-  // If matched a specific non-assessment category, use it
   if (codeMatch) return codeMatch.key;
-
-  // Default: ALL reports go to Assessment unless specifically mapped elsewhere
   return 'assessment';
 }
 
 // --- Main Workspace ----------------------------------------------------------
 
-export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspaceProps) {
+export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDefinitions }: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs();
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -178,12 +169,10 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
   const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(null);
   const [showJobs, setShowJobs] = useState(false);
 
-  // States for instant generation preview
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const [previewReport, setPreviewReport] = useState<ReportDefinition | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Poll status of report request
   useEffect(() => {
     if (!activeRequestId || !isGenerating) return;
 
@@ -203,13 +192,12 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
         if (data.status === 'Completed') {
           setIsGenerating(false);
           toast.success('Report generated successfully!');
-          refresh(); // refresh the background jobs list
+          refresh();
         } else if (data.status === 'Failed' || data.status === 'Cancelled') {
           setIsGenerating(false);
           setActiveRequestId(null);
           toast.error('Report generation failed.');
         } else {
-          // Continue polling
           timer = setTimeout(checkStatus, 1500);
         }
       } catch (err: any) {
@@ -220,7 +208,6 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
       }
     };
 
-    // start immediately
     checkStatus();
 
     return () => {
@@ -234,7 +221,6 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
 
     for (const report of reportDefinitions) {
       const categoryKey = resolveCategoryKey(report);
-      console.log(`REPORTS_DEBUG: Report "${report.reportName}" (id: ${report.id}, code: "${report.reportCode}", category: "${report.category}") resolved to categoryKey: "${categoryKey}"`);
       map.get(categoryKey)?.push(report);
     }
 
@@ -273,17 +259,19 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
   const activeCategoryDef = CATEGORIES.find((c) => c.key === selectedCategory);
   const activeReports = selectedCategory ? (reportsByCategory.get(selectedCategory) ?? []) : [];
 
+  // Guard against stale module cache / hot-reload race where copy props haven't arrived yet
+  if (!workspaceCopy || !paramsCopy) return null;
+
   return (
     <div className="flex flex-col gap-5">
-      {/* 3-step Stepper */}
-      <Stepper currentStep={currentStep} />
+      <Stepper currentStep={currentStep} copy={workspaceCopy} />
 
-      {/* Category Cards */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {CATEGORIES.map((cat) => (
           <CategoryCard
             key={cat.key}
             category={cat}
+            label={workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories]}
             count={categoryCount(cat.key)}
             isSelected={selectedCategory === cat.key}
             onClick={() => handleCategoryClick(cat.key)}
@@ -291,17 +279,14 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
         ))}
       </div>
 
-      {/* Step 1: no category selected */}
-      {currentStep === 1 && <EmptyState />}
+      {currentStep === 1 && <EmptyState title={workspaceCopy.emptyState.title} subtitle={workspaceCopy.emptyState.subtitle} />}
 
-      {/* ── STEP 2: Category selected → show all reports as Tab grid (2 per row) ── */}
       {currentStep === 2 && activeCategoryDef && (
         <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
-          {/* Header */}
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-gray-400" />
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-              {activeCategoryDef.label}
+              {workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories]}
             </span>
             <span className="ml-1 text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
               {activeReports.length}
@@ -310,7 +295,7 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
 
           {activeReports.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">
-              No reports found for this category.
+              {workspaceCopy.noReportsFound}
             </div>
           ) : (
             <div className="flex flex-wrap gap-3 p-4">
@@ -339,24 +324,20 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
         </Card>
       )}
 
-      {/* ── STEP 3: Report selected → LEFT card grid + RIGHT form ── */}
       {currentStep === 3 && activeCategoryDef && selectedReport && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           
-          {/* LEFT: 2-column card grid list (6 cols) */}
           <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
-            {/* Header */}
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#004c8c]" />
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                {activeCategoryDef.label} Reports
+                {workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories]} Reports
               </span>
               <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">
                 {activeReports.length}
               </span>
             </div>
 
-            {/* 2-column card grid */}
             <div className="flex-1 overflow-y-auto p-4 max-h-[460px]">
               <Tabs
                 value={selectedReport.id}
@@ -381,7 +362,6 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
                           }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          {/* Icon wrapper */}
                           <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
                             ${isActive
                               ? 'bg-[#004c8c] text-white shadow-sm'
@@ -413,31 +393,21 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
             </div>
           </Card>
 
-          {/* RIGHT: parameters form (6 cols) */}
           <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                Configure Parameters
+                {workspaceCopy.configureParameters}
               </span>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <ReportParametersPanel report={selectedReport} onQueued={handleQueued} />
+              <ReportParametersPanel report={selectedReport} onQueued={handleQueued} copy={paramsCopy} />
             </div>
           </Card>
 
         </div>
       )}
 
-      {showJobs && (
-        <ReportJobsList
-          jobs={jobs}
-          loading={isLoading}
-          copy={jobsCopy}
-          reportDefinitions={reportDefinitions}
-        />
-      )}
 
-      {/* Instant Generating Loader Overlay */}
       {isGenerating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full flex flex-col items-center justify-center shadow-2xl border border-gray-100 text-center gap-4">
@@ -445,8 +415,8 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
               <Loader2 className="w-6 h-6 animate-spin" />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 leading-tight">Generating Report</h3>
-              <p className="text-xs text-gray-400 mt-1">Please wait while the server builds your document preview...</p>
+              <h3 className="text-sm font-bold text-gray-900 leading-tight">{workspaceCopy.generating.title}</h3>
+              <p className="text-xs text-gray-400 mt-1">{workspaceCopy.generating.subtitle}</p>
             </div>
             <button
               type="button"
@@ -456,18 +426,16 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
               }}
               className="w-full mt-2 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {workspaceCopy.generating.cancel}
             </button>
           </div>
         </div>
       )}
 
-      {/* Center PDF Preview Modal Overlay */}
       {activeRequestId && !isGenerating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-gray-100 w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col shadow-2xl border border-gray-200 overflow-hidden relative">
             
-            {/* Modal Header */}
             <div className="bg-white px-5 py-3.5 border-b border-gray-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <span className="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
@@ -475,19 +443,22 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
                 </span>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">
-                    {previewReport?.reportName || 'Report Preview'}
+                    {previewReport?.reportName || workspaceCopy.preview.title}
                   </h3>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <a
-                  href={`/api/report-download/${encodeURIComponent(activeRequestId)}`}
-                  download
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors shadow-sm"
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={Download}
+                  onClick={() => {
+                    window.location.href = `/api/report-download/${encodeURIComponent(activeRequestId)}`;
+                  }}
                 >
-                  <Download className="w-3.5 h-3.5" /> PDF
-                </a>
+                  {workspaceCopy.preview.downloadPdf}
+                </Button>
                 <button
                   type="button"
                   onClick={() => {
@@ -501,13 +472,19 @@ export function ReportsWorkspace({ jobsCopy, reportDefinitions }: ReportsWorkspa
               </div>
             </div>
 
-            {/* Modal Body: PDF Iframe */}
+            {/* Modal Body: PDF Preview Object */}
             <div className="flex-1 bg-gray-200/50 p-4 relative">
-              <iframe
-                src={`/api/report-download/${encodeURIComponent(activeRequestId)}?inline=true&view=pdf#toolbar=0`}
+              <object
+                data={`/api/report-download/${encodeURIComponent(activeRequestId)}?inline=true&view=pdf#toolbar=0`}
+                type="application/pdf"
                 className="w-full h-full rounded-xl border border-gray-200 shadow-inner bg-white"
-                title="Report Preview"
-              />
+              >
+                <iframe
+                  src={`/api/report-download/${encodeURIComponent(activeRequestId)}?inline=true&view=pdf#toolbar=0`}
+                  className="w-full h-full rounded-xl border border-gray-200 shadow-inner bg-white"
+                  title="Report Preview"
+                />
+              </object>
             </div>
           </div>
         </div>

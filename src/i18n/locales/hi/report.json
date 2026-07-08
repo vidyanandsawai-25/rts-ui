@@ -59,7 +59,8 @@
     "body": "बड़ी तिथि सीमाओं या वार्ड-स्तरीय रिपोर्ट के लिए, PDF तैयार होने पर स्वचालित रूप से डाउनलोड होगी।"
   },
   "loading": {
-    "message": "रिपोर्ट विकल्प लोड हो रहे हैं…"
+    "message": "रिपोर्ट विकल्प लोड हो रहे हैं…",
+    "description": "उपलब्ध रिपोर्ट लाते समय कृपया प्रतीक्षा करें।"
   },
   "error": {
     "title": "कुछ गलत हुआ",
@@ -67,5 +68,72 @@
     "errorId": "त्रुटि ID: {id}",
     "goHome": "होम पर जाएं",
     "tryAgain": "पुनः प्रयास करें"
+  },
+  "workspace": {
+    "steps": {
+      "selectCategory": "श्रेणी चुनें",
+      "selectReport": "रिपोर्ट चुनें",
+      "setParameters": "मापदंड सेट करें"
+    },
+    "categories": {
+      "assessment": "मूल्यांकन",
+      "amc": "एएमसी",
+      "transaction": "लेनदेन",
+      "approval": "अनुमोदन",
+      "discount": "छूट",
+      "others": "अन्य"
+    },
+    "reportsCount": "{count} रिपोर्ट्स",
+    "emptyState": {
+      "title": "ऊपर से कोई श्रेणी चुनें",
+      "subtitle": "उपलब्ध रिपोर्ट देखने के लिए रिपोर्ट प्रकार चुनें"
+    },
+    "noReportsFound": "इस श्रेणी के लिए कोई रिपोर्ट नहीं मिली।",
+    "reportsHeader": "{category} रिपोर्ट्स",
+    "configureParameters": "मापदंड कॉन्फ़िगर करें",
+    "generating": {
+      "title": "रिपोर्ट तैयार हो रही है",
+      "subtitle": "कृपया प्रतीक्षा करें, सर्वर आपका दस्तावेज़ तैयार कर रहा है...",
+      "cancel": "रद्द करें"
+    },
+    "preview": {
+      "title": "रिपोर्ट पूर्वावलोकन",
+      "downloadPdf": "PDF"
+    }
+  },
+  "params": {
+    "emptyState": "मापदंड कॉन्फ़िगर करने के लिए सूची से रिपोर्ट चुनें",
+    "financialYear": "वित्तीय वर्ष",
+    "zoneNo": "क्षेत्र संख्या",
+    "wardNo": "वार्ड संख्या",
+    "propertySelection": "संपत्ति चयन",
+    "propertyNo": "संपत्ति संख्या",
+    "fromPropertyToProperty": "संपत्ति से संपत्ति तक",
+    "fromProperty": "संपत्ति से",
+    "toProperty": "संपत्ति तक",
+    "selectYear": "वर्ष चुनें",
+    "selectZone": "क्षेत्र चुनें",
+    "selectWard": "वार्ड चुनें",
+    "selectProperty": "संपत्ति चुनें",
+    "selectStartProperty": "प्रारंभिक संपत्ति चुनें",
+    "selectEndProperty": "अंतिम संपत्ति चुनें",
+    "loading": "लोड हो रहा है...",
+    "selectZoneFirst": "पहले क्षेत्र चुनें",
+    "selectWardFirst": "पहले वार्ड चुनें",
+    "validation": {
+      "financialYearRequired": "वित्तीय वर्ष आवश्यक है।",
+      "zoneRequired": "क्षेत्र आवश्यक है।",
+      "wardRequired": "वार्ड आवश्यक है।",
+      "fillAllRequired": "कृपया सभी आवश्यक फ़ील्ड भरें।",
+      "networkError": "नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।",
+      "failedToQueue": "रिपोर्ट को कतार में डालने में विफल"
+    },
+    "queuedSuccess": "रिपोर्ट कतार में है! तैयार होने पर वह कार्य सूची में दिखाई देगी।",
+    "reportQueued": "रिपोर्ट \"{name}\" सफलतापूर्वक कतार में डाली गई!",
+    "buttons": {
+      "reset": "रीसेट करें",
+      "generate": "रिपोर्ट तैयार करें",
+      "queuing": "कतार में डाल रहा है..."
+    }
   }
 }
