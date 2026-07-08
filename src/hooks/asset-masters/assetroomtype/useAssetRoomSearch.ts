@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
@@ -23,12 +23,13 @@ export function useAssetRoomSearch({
   const currentSearchTerm = searchParams.get("q") || "";
   const [search, setSearch] = useState(currentSearchTerm);
   const debouncedSearch = useDebounce(search, 300);
+  const [, startTransition] = useTransition();
 
-  const [prevSearchTerm, setPrevSearchTerm] = useState(currentSearchTerm);
-  if (currentSearchTerm !== prevSearchTerm) {
-    setSearch(currentSearchTerm);
-    setPrevSearchTerm(currentSearchTerm);
-  }
+  useEffect(() => {
+    startTransition(() => {
+      setSearch(currentSearchTerm);
+    });
+  }, [currentSearchTerm]);
 
   const handleSearchChange = useCallback((value: string) => {
     let sanitized = value.replace(TEXT_SANITIZE, "");
