@@ -96,12 +96,12 @@ describe("useAssetRoomForm", () => {
     const { result } = renderHook(() => useAssetRoomForm(mockProps));
 
     act(() => {
-      result.current.handleToggleStatus();
+      result.current.handleToggleStatus(false);
     });
     expect(result.current.formData.isActive).toBe(false);
 
     act(() => {
-      result.current.handleToggleStatus();
+      result.current.handleToggleStatus(true);
     });
     expect(result.current.formData.isActive).toBe(true);
   });

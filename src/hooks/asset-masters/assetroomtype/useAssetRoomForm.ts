@@ -218,12 +218,9 @@ export function useAssetRoomForm({
     }
   };
 
-  const handleToggleStatus = useCallback((): void => {
-    setIsActive((prev) => {
-      const newValue = !prev;
-      setFormData((p) => ({ ...p, isActive: newValue }));
-      return newValue;
-    });
+  const handleToggleStatus = useCallback((checked: boolean): void => {
+    setIsActive(checked);
+    setFormData((p) => ({ ...p, isActive: checked }));
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string): void => {

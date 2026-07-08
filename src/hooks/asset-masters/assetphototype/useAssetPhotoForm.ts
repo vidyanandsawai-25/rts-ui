@@ -243,16 +243,13 @@ export function useAssetPhotoForm({
     }
   };
 
-  const handleToggleStatus = useCallback((): void => {
-    setIsActive((prev) => {
-      const newValue = !prev;
-      setFormData((p) => ({ ...p, isActive: newValue }));
-      return newValue;
-    });
+  const handleToggleStatus = useCallback((checked: boolean): void => {
+    setIsActive(checked);
+    setFormData((p) => ({ ...p, isActive: checked }));
   }, []);
 
-  const handleToggleRequired = useCallback((): void => {
-    setFormData((p) => ({ ...p, isRequired: !p.isRequired }));
+  const handleToggleRequired = useCallback((checked: boolean): void => {
+    setFormData((p) => ({ ...p, isRequired: checked }));
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string): void => {

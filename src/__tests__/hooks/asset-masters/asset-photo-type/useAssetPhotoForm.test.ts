@@ -101,12 +101,12 @@ describe("useAssetPhotoForm", () => {
     const { result } = renderHook(() => useAssetPhotoForm(mockProps));
 
     act(() => {
-      result.current.handleToggleStatus();
+      result.current.handleToggleStatus(false);
     });
     expect(result.current.formData.isActive).toBe(false);
 
     act(() => {
-      result.current.handleToggleStatus();
+      result.current.handleToggleStatus(true);
     });
     expect(result.current.formData.isActive).toBe(true);
   });
@@ -115,12 +115,12 @@ describe("useAssetPhotoForm", () => {
     const { result } = renderHook(() => useAssetPhotoForm(mockProps));
 
     act(() => {
-      result.current.handleToggleRequired();
+      result.current.handleToggleRequired(true);
     });
     expect(result.current.formData.isRequired).toBe(true);
 
     act(() => {
-      result.current.handleToggleRequired();
+      result.current.handleToggleRequired(false);
     });
     expect(result.current.formData.isRequired).toBe(false);
   });
