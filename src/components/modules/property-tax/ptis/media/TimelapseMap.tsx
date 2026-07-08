@@ -84,11 +84,22 @@ export const TimelapseMap = React.memo(function TimelapseMap({
       map.scrollWheelZoom.disable(); map.doubleClickZoom.disable(); map.touchZoom.disable();
       const tapMap = map as unknown as { tap?: { disable: () => void } };
       if (tapMap.tap) tapMap.tap.disable();
+
       cachedMapInstance = map;
 
       cachedLabelsLayer = L.tileLayer(LABELS_URL, {
         maxNativeZoom: 19, maxZoom: 21, opacity: 0.9, keepBuffer: 12, attribution: 'Labels © Esri',
       });
+      const layerWithCreateTile = cachedLabelsLayer as unknown as {
+        createTile: (coords: L.Coords, done: L.DoneCallback) => HTMLElement;
+      };
+      const originalCreateTile = layerWithCreateTile.createTile;
+      layerWithCreateTile.createTile = function (coords: L.Coords, done: L.DoneCallback) {
+        const tile = originalCreateTile.call(this, coords, done) as HTMLImageElement;
+        tile.setAttribute('fetchpriority', 'high');
+        tile.setAttribute('loading', 'eager');
+        return tile;
+      };
       if (initial.showLabels) cachedLabelsLayer.addTo(map);
 
       cachedMarker = L.circleMarker([initial.lat, initial.lng], { radius: 6, color: '#ff2200', fillColor: '#ff3300', fillOpacity: 1, weight: 2 }).addTo(map);

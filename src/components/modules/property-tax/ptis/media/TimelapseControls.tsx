@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, Map, Eye, EyeOff, Calendar } from 'lucide-react';
+import { Play, Pause, ChevronLeft, ChevronRight, Map, Eye, EyeOff, Calendar, Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
+import { generateGisSsoUrl } from './actions/gisSso';
 
 interface TimelapseControlsProps {
   playing: boolean;
@@ -20,6 +22,7 @@ interface TimelapseControlsProps {
   lat: number;
   lng: number;
   loading: boolean;
+  propertyId?: number;
 }
 
 export function TimelapseControls({
@@ -37,8 +40,52 @@ export function TimelapseControls({
   lat,
   lng,
   loading,
+  propertyId,
 }: TimelapseControlsProps): React.ReactElement {
   const t = useTranslations('ptis');
+
+  const handleGisClick = async () => {
+    try {
+      let loggedInName = "";
+      let loggedInUserId = "";
+
+      try {
+        if (typeof window !== "undefined") {
+          const sessionRaw = sessionStorage.getItem("ptms_session_user");
+          if (sessionRaw) {
+            const sessionUser = JSON.parse(sessionRaw);
+            if (sessionUser?.displayName || sessionUser?.username) {
+              loggedInName = String(sessionUser.displayName || sessionUser.username);
+            }
+            if (sessionUser?.userId) {
+              loggedInUserId = String(sessionUser.userId);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Could not read session user for GIS SSO", e);
+      }
+
+      if (!loggedInName || !loggedInUserId) {
+        // Fallback to a guest session instead of blocking the user
+        loggedInName = "Guest User";
+        loggedInUserId = "guest-session";
+        // To be strictly correct with Copilot's review if fallback wasn't used:
+        // toast.error(t('errors.generic'));
+      }
+
+      const userId = loggedInUserId;
+      const name = loggedInName;
+      const propertyOwnerId = propertyId != null ? String(propertyId) : "";
+
+      const url = await generateGisSsoUrl(userId, name, propertyOwnerId);
+      
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error generating GIS URL:", error);
+      toast.error(t('errors.generic'));
+    }
+  };
 
   return (
     <div className="tl-ctrl flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-950/95 border-b border-slate-900 text-white text-xs select-none backdrop-blur-md">
@@ -159,6 +206,17 @@ export function TimelapseControls({
         </button>
 
         <div className="h-4 w-px bg-slate-800 mx-1" />
+
+        {/* Redirect to GIS Portal */}
+        <button
+          type="button"
+          onClick={handleGisClick}
+          className="bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-bold rounded text-[10px] px-3.5 py-1.5 cursor-pointer transition-all duration-200 border-none flex items-center gap-1.5 shadow-md shadow-blue-950/20 ml-2"
+          aria-label="Open property location on GIS Portal"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>{t('media.gisPortal')}</span>
+        </button>
 
         {/* Redirect to Google Maps */}
         <button

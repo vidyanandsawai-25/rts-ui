@@ -14,7 +14,13 @@ export function TimelineTrack({
   activeIdx,
   onSelectYear,
 }: TimelineTrackProps): React.ReactElement | null {
-  if (releases.length === 0) return null;
+  if (releases.length === 0) {
+    return (
+      <div className="tl-bar relative bg-slate-950 border-b border-slate-900 px-6 py-2 flex items-center justify-center min-h-[56px]">
+        <div className="h-4 w-48 bg-slate-800 rounded-full animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="tl-bar relative bg-slate-950 border-b border-slate-900 px-6 py-2 flex items-center justify-between overflow-x-auto overflow-y-hidden min-h-[56px] gap-2 scrollbar-none">
