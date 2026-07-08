@@ -25,6 +25,9 @@ import { usePropertySearchNavigation } from "@/hooks/search-property";
  */
 export function PropertySearch({
   results,
+  totalCount,
+  pageNumber,
+  pageSize,
   mainCards,
   workflowCards,
   zoneOptions,
@@ -62,6 +65,7 @@ export function PropertySearch({
     updateStatus,
     updateZone,
     updateWard,
+    updatePage,
   } = usePropertySearchNavigation({ startTransition });
 
   const handleStatusFilter = useCallback(
@@ -166,6 +170,11 @@ export function PropertySearch({
               selectedStatus={displayedStatus}
               isSearchActive={isSearchActive}
               results={results}
+              totalCount={totalCount}
+              pageNumber={pageNumber}
+              pageSize={pageSize}
+              onPageChange={updatePage}
+              onPageSizeChange={(size) => updatePage(1, size)}
               loading={resultsLoading}
               searchError={searchError}
               zoneOptions={zoneOptions}

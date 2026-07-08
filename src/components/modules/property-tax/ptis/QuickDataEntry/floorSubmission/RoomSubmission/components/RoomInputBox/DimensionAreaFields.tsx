@@ -15,6 +15,7 @@ interface DimensionAreaFieldsProps {
   areaUnit: string;
   calculatedArea: number;
   adjustedArea: number;
+  isUtilityCategory?: boolean;
 }
 
 export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
@@ -26,6 +27,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
   areaUnit,
   calculatedArea,
   adjustedArea,
+  isUtilityCategory,
 }) => {
   const setRoomCountRef = (el: HTMLInputElement | null) => {
     if (focusRefs.current) {
@@ -82,7 +84,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           maxLength={2}
           onFocus={(e) => e.target.select()}
           onChange={(val) => handleInputChange('roomCount', val)}
-          disabled={!isEditMode}
+          disabled={!isEditMode || isUtilityCategory}
           className="text-center h-[40px] leading-[40px]"
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
         />

@@ -22,6 +22,7 @@ import { InlineError } from "./components/InlineError";
 import { calculateRoomArea, calculateRoomTotal, getDimensionsString, isOffsetValid } from "@/lib/utils/RoomSubmission/room-submission.utils";
 import { isRoomComplete } from "@/lib/utils/RoomSubmission/room-validation.utils";
 import { focusFieldOrFallback } from "@/lib/utils/floorSubmission/focus-helpers";
+import { checkIsUtilityCategory } from "@/lib/utils/floorSubmission/floor-utility-checks";
 
 export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   externalAreaUnit?: "sq.m" | "sq.ft";
@@ -29,8 +30,11 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
 }> = (props) => {
   const { isOpen, onClose, displayMode = 'modal' } = props;
 
+  const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+
   // --- State & Logic Hooks ---
-  const state = useRoomSubmissionState(props.maxRooms ?? undefined, props.externalAreaUnit);
+  const computedMaxRooms = Math.max(props.maxRooms || 0, props.existingRooms?.length || 0);
+  const state = useRoomSubmissionState(isUtilityCategory ? undefined : computedMaxRooms, props.externalAreaUnit);
   const roomActions = useRoomActions(state, props);
   const offsetActions = useOffsetActions(state, roomActions.handleEdit);
 
@@ -97,7 +101,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
     handleAddOffset: offsetActions.handleAddOffset,
     isOffsetDataValid: () => isOffsetValid(state.offsetData, state.selectedShape),
     handleOffsetOk: offsetActions.handleOffsetOk,
-    handleOffsetClose: () => state.setOffsetModalOpen(false),
+    handleOffsetClose: offsetActions.handleOffsetClose,
     areaUnit: state.areaUnit,
     shouldShake: state.shouldShake,
     deletingOffsetIndex: state.deletingOffsetIndex,
@@ -114,7 +118,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
             floorNumber={props.floorNumber}
             areaUnit={state.areaUnit}
             handleToggleUnit={handleToggleUnit}
-            maxRooms={props.maxRooms}
+            maxRooms={computedMaxRooms}
             availableRooms={state.availableRooms}
             displayMode={displayMode}
           />
@@ -129,6 +133,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
             InlineError={InlineError}
             calculateArea={() => calculateRoomArea(state.formData, state.shapeParameters)}
             calculateTotal={calculateRoomTotal}
+            isUtilityCategory={isUtilityCategory}
           />
 
           <RoomSubmissionFooter

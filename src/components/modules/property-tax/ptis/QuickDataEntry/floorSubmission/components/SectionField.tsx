@@ -27,6 +27,15 @@ export const FieldWrapper: React.FC<FieldWrapperProps> = ({
   </div>
 );
 
+const formatValue = (val: string | number | undefined | null): string => {
+  if (val === undefined || val === null) return '';
+  const num = typeof val === 'number' ? val : parseFloat(val);
+  if (!isNaN(num)) {
+    return num % 1 !== 0 ? num.toFixed(2) : String(val);
+  }
+  return String(val);
+};
+
 export const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({ label, value, badgeText, id }) => (
   <FieldWrapper
     label={label}
@@ -41,7 +50,7 @@ export const ReadOnlyField: React.FC<ReadOnlyFieldProps> = ({ label, value, badg
       id={id}
       type="text"
       placeholder="0.00"
-      value={value || ''}
+      value={formatValue(value)}
       className="h-9 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-semibold text-blue-700 bg-gray-50 border-blue-200"
       readOnly
     />

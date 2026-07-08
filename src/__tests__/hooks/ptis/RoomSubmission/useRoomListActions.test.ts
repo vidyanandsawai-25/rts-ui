@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoomListActions } from '@/hooks/ptis/RoomSubmission/useRoomListActions';
 import type { RoomSubmissionState } from '@/hooks/ptis/RoomSubmission/useRoomSubmissionState';
-import type { RoomWiseSubmissionProps } from '@/types/room-details.types';
+import type { RoomWiseSubmissionProps, FloorData } from '@/types/room-details.types';
 import * as roomSubmissionUtils from '@/lib/utils/RoomSubmission/room-submission.utils';
 import * as roomValidation from '@/lib/utils/RoomSubmission/room-validation.utils';
 import * as roomCalculation from '@/lib/utils/RoomSubmission/room-calculation.util';
@@ -529,6 +529,94 @@ describe('useRoomListActions', () => {
       });
 
       expect(mockState.setRooms).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Utility Category Behavior', () => {
+    let utilityProps: RoomWiseSubmissionProps;
+
+    beforeEach(() => {
+      utilityProps = {
+        ...mockProps,
+        floorData: {
+          typeOfUseCategoryId: 1, // Utility category
+        } as unknown as FloorData,
+      };
+    });
+
+    it('should add a utility room using Math.max nextRoomNo logic', () => {
+      const stateWithUtilityRooms = {
+        ...mockState,
+        rooms: [
+          { roomNo: '2', area: 50, total: 50, tempId: 'temp-2' },
+          { roomNo: '5', area: 60, total: 60, tempId: 'temp-5' },
+        ],
+      } as unknown as RoomSubmissionState;
+
+      vi.spyOn(roomSubmissionUtils, 'calculateRoomArea').mockReturnValue(100);
+      vi.spyOn(roomValidation, 'validateRoomDetails').mockReturnValue({
+        success: true,
+        errors: {},
+      });
+      vi.spyOn(roomCalculation, 'calculateNetOffsetArea').mockReturnValue(0);
+      vi.spyOn(roomCalculation, 'calculateRoomAreas').mockReturnValue({
+        mainArea: 100,
+        carpetArea: 100,
+        builtUpArea: 120,
+      });
+
+      const { result } = renderHook(() =>
+        useRoomListActions(stateWithUtilityRooms, utilityProps, mockHandleCancelEdit)
+      );
+
+      act(() => {
+        result.current.handleAddRoom();
+      });
+
+      expect(stateWithUtilityRooms.setRooms).toHaveBeenCalled();
+      const setRoomsCallback = vi.mocked(stateWithUtilityRooms.setRooms).mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updatedRooms = (setRoomsCallback as any)([
+        { roomNo: '2', area: 50, total: 50, tempId: 'temp-2' },
+        { roomNo: '5', area: 60, total: 60, tempId: 'temp-5' },
+      ]);
+      
+      expect(updatedRooms[updatedRooms.length - 1].roomNo).toBe('6');
+      expect(mockHandleCancelEdit).toHaveBeenCalled();
+    });
+
+    it('should update utility room and not add extra empty slot rooms', async () => {
+      const stateWithEditingIndex = {
+        ...mockState,
+        editingIndex: 0,
+        rooms: [
+          { roomNo: '1', area: 50, total: 50, tempId: 'temp-1' },
+        ],
+        pendingDeletions: { rooms: [], offsets: [] },
+      } as unknown as RoomSubmissionState;
+
+      vi.spyOn(roomSubmissionUtils, 'calculateRoomArea').mockReturnValue(150);
+      vi.spyOn(roomValidation, 'validateRoomDetails').mockReturnValue({
+        success: true,
+        errors: {},
+      });
+      vi.spyOn(roomCalculation, 'calculateNetOffsetArea').mockReturnValue(0);
+      vi.spyOn(roomCalculation, 'calculateRoomAreas').mockReturnValue({
+        mainArea: 150,
+        carpetArea: 150,
+        builtUpArea: 180,
+      });
+
+      const { result } = renderHook(() =>
+        useRoomListActions(stateWithEditingIndex, utilityProps, mockHandleCancelEdit)
+      );
+
+      await act(async () => {
+        result.current.handleUpdateRoom();
+      });
+
+      expect(stateWithEditingIndex.setRooms).toHaveBeenCalled();
+      expect(mockHandleCancelEdit).toHaveBeenCalled();
     });
   });
 });

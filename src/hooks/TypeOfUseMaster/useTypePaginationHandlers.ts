@@ -4,11 +4,8 @@
  */
 
 import { useCallback } from "react";
-import type { UseGroup } from "@/types/typeOfUse.types";
-import { getGroupApiId } from "@/components/modules/property-tax/typeofusemaster/typeOfUseMasterUtils";
 
 interface UseTypePaginationHandlersProps {
-  allGroups: UseGroup[];
   selectedGroupId: string | number | null;
   typePageSize: number;
   pushUrl: (params: Record<string, string | number>) => void;
@@ -19,39 +16,32 @@ interface UseTypePaginationHandlersProps {
  * Provides stable callback functions for page and page size changes
  */
 export function useTypePaginationHandlers({
-  allGroups,
   selectedGroupId,
   typePageSize,
   pushUrl,
 }: UseTypePaginationHandlersProps) {
   const handleTypePageChange = useCallback(
     (page: number) => {
-      const currentGroup = allGroups.find(
-        (g) => g.typeOfUseGroupId === selectedGroupId
-      );
-      const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
+      const currentGroupApiId = String(selectedGroupId);
       pushUrl({
         groupId: currentGroupApiId,
         typePn: page,
         typePs: typePageSize,
       });
     },
-    [allGroups, selectedGroupId, typePageSize, pushUrl]
+    [selectedGroupId, typePageSize, pushUrl]
   );
 
   const handleTypePageSizeChange = useCallback(
     (size: number) => {
-      const currentGroup = allGroups.find(
-        (g) => g.typeOfUseGroupId === selectedGroupId
-      );
-      const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
+      const currentGroupApiId = String(selectedGroupId);
       pushUrl({
         groupId: currentGroupApiId,
         typePn: 1,
         typePs: size,
       });
     },
-    [allGroups, selectedGroupId, pushUrl]
+    [selectedGroupId, pushUrl]
   );
 
   return {

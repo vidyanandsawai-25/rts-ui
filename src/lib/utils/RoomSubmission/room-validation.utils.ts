@@ -1,17 +1,17 @@
 import { RoomData } from "@/types/room-details.types";
 
 export const validateRoomDetails = (
-  roomData: Partial<RoomData>, 
+  roomData: Partial<RoomData>,
   availableRooms: number | null,
   baseArea: number
 ) => {
   const errors: Record<string, string> = {};
-  
+
   // 1. Room Number Validation
-  if (!roomData.roomNo) {
-    errors.roomNo = "roomSubmission.validation.enterRoomNumber";
-  }
-  
+  // if (!roomData.roomNo) {
+  //   errors.roomNo = "roomSubmission.validation.enterRoomNumber";
+  // }
+
   // 2. Capacity Validation
   const requestedCount = parseInt(String(roomData.roomCount || "1")) || 1;
   if (availableRooms !== null && requestedCount > availableRooms) {
@@ -30,7 +30,7 @@ export const validateRoomDetails = (
   } else if (roomData.shape && roomData.shape !== "-Select-" && baseArea <= 0) {
     errors.shape = "roomSubmission.validation.enterValidDimensions";
   }
-  
+
   return {
     success: Object.keys(errors).length === 0,
     errors

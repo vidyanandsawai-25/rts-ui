@@ -143,8 +143,8 @@ async function SidebarWithData({ locale }: { locale: string }) {
   return <Sidebar menuItems={menuItems} locale={locale} />;
 }
 async function HeaderWithRequestContext() {
-  const { ulbData, userDisplayName, clientIp } = await getLayoutChromeData();
-  return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} />;
+  const { ulbData, userDisplayName, clientIp, menuItems } = await getLayoutChromeData();
+  return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} menuItems={menuItems} />;
 }
 async function FooterWithUlb() {
   const { ulbData } = await getLayoutChromeData();

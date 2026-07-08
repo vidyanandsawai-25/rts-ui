@@ -8,6 +8,7 @@
  */
 
 import { z } from 'zod';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 /**
  * Returns keys that can be translated in the UI layer
@@ -15,45 +16,45 @@ import { z } from 'zod';
 
 export const offsetSchema = z.object({
     isActive: z.boolean().default(true),
-    lengthMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
-    widthMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
-    heightMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
-    areaSqMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    lengthMtr: z.coerce.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    widthMtr: z.coerce.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    heightMtr: z.coerce.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    areaSqMtr: z.coerce.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
     shape: z.string().min(1, { message: 'offset.validation.shapeRequired' }).default('Rectangle'),
-    base1Mtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
-    base2Mtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    base1Mtr: z.coerce.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    base2Mtr: z.coerce.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
     operation: z.string().min(1, { message: 'offset.validation.operationRequired' }).default('subtract'),
 });
 
 export const roomSchema = z.object({
     isActive: z.boolean().default(true),
-    propertyDetailsId: z.number().optional(),
-    propertyId: z.number().optional(),
+    propertyDetailsId: z.coerce.number().optional(),
+    propertyId: z.coerce.number().optional(),
     roomNo: z.string().min(1, { message: 'roomSubmission.validation.roomNoRequired' }),
     roomType: z.string().min(1, { message: 'roomSubmission.validation.roomTypeRequired' }),
-    lengthMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
-    widthMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
-    heightMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
-    areaSqMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    lengthMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    widthMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    heightMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    areaSqMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
     shape: z.string().min(1, { message: 'roomSubmission.validation.shapeRequired' }).default('Rectangle'),
-    base1Mtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
-    base2Mtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    base1Mtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    base2Mtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
     roomWiseMinusData: z.array(offsetSchema).optional().default([]),
     submissionType: z.string().default('Room'),
 });
 
 export const renterDetailItemSchema = z.object({
-    id: z.number().optional(),
+    id: z.coerce.number().optional(),
     agreementId: z.string().optional(),
     incrementFrequency: z.string().default('Yearly'),
     incrementType: z.string().default('Percentage'),
-    incrementValue: z.number().default(0),
+    incrementValue: z.coerce.number().default(0),
     incrementMethod: z.string().default('base'),
     durationFrom: z.string().nullable().optional(),
     durationTo: z.string().nullable().optional(),
-    rentAmount: z.number().default(0),
-    rentMonthly: z.number().default(0),
-    increment: z.number().default(0),
+    rentAmount: z.coerce.number().default(0),
+    rentMonthly: z.coerce.number().default(0),
+    increment: z.coerce.number().default(0),
     incrementStatus: z.boolean().default(true),
     isActive: z.boolean().default(true),
     // Custom-range marker fields (optional) — used to round-trip
@@ -61,13 +62,13 @@ export const renterDetailItemSchema = z.object({
     customFromDate: z.string().nullable().optional(),
     customToDate: z.string().nullable().optional(),
     customIncrementType: z.string().nullable().optional(),
-    customIncrementValue: z.number().nullable().optional(),
+    customIncrementValue: z.coerce.number().nullable().optional(),
     customMethod: z.string().nullable().optional(),
 });
 
 export const renterMastItemSchema = z.object({
-    id: z.number().optional(),
-    finalRent: z.number().default(0),
+    id: z.coerce.number().optional(),
+    finalRent: z.coerce.number().default(0),
     financialYear: z.string().default(''),
     durationFrom: z.string().nullable().optional(),
     durationTo: z.string().nullable().optional(),
@@ -77,14 +78,14 @@ export const renterMastItemSchema = z.object({
 });
 
 export const renterSubmissionSchema = z.object({
-    propertyId: z.number().positive('floor.errors.propertyIdRequired'),
-    propertyDetailsId: z.number().optional(),
-    updatedBy: z.number().optional(),
+    propertyId: z.coerce.number().positive('floor.errors.propertyIdRequired'),
+    propertyDetailsId: z.coerce.number().optional(),
+    updatedBy: z.coerce.number().optional(),
     renterYesNo: z.boolean().default(true),
     renterName: z.string().optional(),
     renterNameEnglish: z.string().optional(),
-    rentYearly: z.number().optional(),
-    rentMonthly: z.number().optional(),
+    rentYearly: z.coerce.number().optional(),
+    rentMonthly: z.coerce.number().optional(),
     agreementFromDate: z.string().optional().nullable(),
     agreementToDate: z.string().optional().nullable(),
     agreementDate: z.string().optional().nullable(),
@@ -96,27 +97,18 @@ export const renterSubmissionSchema = z.object({
 
 export const floorSubmissionSchema = z.object({
     isActive: z.boolean().default(true),
-    propertyId: z.number()
+    propertyId: z.coerce.number()
         .positive('floor.errors.propertyIdRequired'),
-    propertyDetailsId: z.number()
+    propertyDetailsId: z.coerce.number()
         .nonnegative().default(0),
-    floorId: z.number()
-        .positive('floor.errors.floorRequired'),
+    floorId: z.coerce.number().nullable().optional(),
     floorDescription: z.string()
-        .transform(val => val.trim())
-        .pipe(z.string().min(1, 'floor.errors.floorDescriptionRequired')),
-    subFloorId: z.number()
+        .transform(val => (val || '').trim())
+        .default(''),
+    subFloorId: z.coerce.number()
         .nonnegative().default(0),
     subFloorDescription: z.string().default(''),
-    constructionYear: z.string()
-        .length(4, 'floor.errors.constructionYearInvalid')
-        .regex(/^\d{4}$/, 'floor.errors.constructionYearInvalid')
-        .refine((val) => {
-            const year = parseInt(val, 10);
-            const today = new Date();
-            const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-            return year >= 1700 && year <= currentFinancialStartYear;
-        }, { message: 'floor.errors.constructionYearInvalid' }),
+    constructionYear: z.string().default(''),
     assessmentYear: z.string()
         .length(4, 'floor.errors.assessmentYearInvalid')
         .regex(/^\d{4}$/, 'floor.errors.assessmentYearInvalid')
@@ -126,60 +118,185 @@ export const floorSubmissionSchema = z.object({
             const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
             return year >= 1700 && year <= currentFinancialStartYear;
         }, { message: 'floor.errors.assessmentYearInvalid' }),
-    constructionTypeId: z.number()
-        .positive('floor.errors.constructionTypeRequired'),
+    constructionTypeId: z.coerce.number().nullable().optional(),
     constructionTypeDescription: z.string()
-        .transform(val => val.trim())
-        .pipe(z.string().min(1, 'floor.errors.constructionTypeRequired')),
-    typeOfUseId: z.number()
+        .transform(val => (val || '').trim())
+        .default(''),
+    typeOfUseId: z.coerce.number()
         .positive('floor.errors.typeOfUseRequired'),
+    typeOfUseCategoryId: z.coerce.number().nullable().optional(),
     typeOfUseDescription: z.string()
         .transform(val => val.trim())
         .pipe(z.string().min(1, 'floor.errors.typeOfUseRequired')),
-    subTypeOfUseId: z.number()
+    subTypeOfUseId: z.coerce.number()
         .nonnegative().default(0),
     subTypeOfUseDescription: z.string().default(''),
-    carpetAreaSqFeet: z.number()
+    carpetAreaSqFeet: z.coerce.number()
         .positive('floor.errors.carpetAreaRequired'),
-    carpetAreaSqMeter: z.number()
+    carpetAreaSqMeter: z.coerce.number()
         .nonnegative().default(0),
-    builtupAreaSqMeter: z.number()
+    builtupAreaSqMeter: z.coerce.number()
         .nonnegative().default(0),
-    builtupAreaSqFeet: z.number()
+    builtupAreaSqFeet: z.coerce.number()
         .nonnegative().default(0),
-    noOfRooms: z.number()
+    noOfRooms: z.coerce.number()
         .int()
-        .positive('floor.errors.roomCountRequired'),
+        .nonnegative().default(0),
     renterYesNo: z.boolean().default(false),
     renterName: z.string().default(''),
     renterNameEnglish: z.string().default(''),
-    rentYearly: z.number()
+    rentYearly: z.coerce.number()
         .nonnegative().default(0),
     agreementFromDate: z.string().optional().nullable(),
     agreementToDate: z.string().optional().nullable(),
     agreementDate: z.string().optional().nullable(),
-    rentMonthly: z.number()
+    rentMonthly: z.coerce.number()
         .nonnegative().default(0),
     isTaxable: z.boolean().default(true),
     taxLiability: z.string().default(''),
     occupancyDate: z.string().optional().nullable(),
     occupancyApplyOrNot: z.boolean().default(false),
     occupancyNumber: z.string().default(''),
-    nonCalculateRentMonthly: z.number()
+    nonCalculateRentMonthly: z.coerce.number()
         .nonnegative().default(0),
     renterDetails: z.array(renterDetailItemSchema).optional().default([]),
     renterMast: z.array(renterMastItemSchema).optional().default([]),
     roomWiseSubmissionDetails: z.array(roomSchema).optional().default([]),
-    createdBy: z.number().optional(),
-    updatedBy: z.number().optional(),
-}).refine((data) => {
-    const conYear = parseInt(data.constructionYear, 10);
-    const asstYear = parseInt(data.assessmentYear, 10);
-    if (isNaN(conYear) || isNaN(asstYear)) return true;
-    return asstYear >= conYear;
-}, {
-    message: 'floor.asstYrError',
-    path: ['assessmentYear'],
+    createdBy: z.coerce.number().optional(),
+    updatedBy: z.coerce.number().optional(),
+    selectedFloorType: z.enum(['Construction', 'OpenPlot']).optional(),
+    length: z.union([z.string(), z.number()]).optional().nullable(),
+    width: z.union([z.string(), z.number()]).optional().nullable(),
+    isOpenPlot: z.boolean().default(false),
+}).superRefine((data, ctx) => {
+    // If it's an OpenPlot or isOpenPlot is true, bypass construction/floor fields validation
+    if (data.selectedFloorType !== 'OpenPlot' && !data.isOpenPlot) {
+        // Enforce floorId
+        if (!data.floorId || data.floorId <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.floorRequired',
+                path: ['floorId']
+            });
+        }
+        
+        // Enforce floorDescription
+        if (!data.floorDescription || data.floorDescription.length === 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.floorDescriptionRequired',
+                path: ['floorDescription']
+            });
+        }
+
+        // Enforce constructionYear
+        const conYr = data.constructionYear;
+        if (!conYr || conYr.length !== 4 || !/^\d{4}$/.test(conYr)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.constructionYearInvalid',
+                path: ['constructionYear']
+            });
+        } else {
+            const year = parseInt(conYr, 10);
+            const today = new Date();
+            const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
+            if (year < 1700 || year > currentFinancialStartYear) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'floor.errors.constructionYearInvalid',
+                    path: ['constructionYear']
+                });
+            }
+        }
+
+        // Enforce constructionTypeId
+        if (!data.constructionTypeId || data.constructionTypeId <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.constructionTypeRequired',
+                path: ['constructionTypeId']
+            });
+        }
+
+        // Enforce constructionTypeDescription
+        if (!data.constructionTypeDescription || data.constructionTypeDescription.length === 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.constructionTypeRequired',
+                path: ['constructionTypeDescription']
+            });
+        }
+
+        // Enforce noOfRooms
+        const isUtility = checkIsUtilityCategory(data.typeOfUseCategoryId);
+        if (!isUtility && (data.noOfRooms === undefined || data.noOfRooms <= 0)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.roomCountRequired',
+                path: ['noOfRooms']
+            });
+        }
+    }
+
+    // Validate length and width based on whether it is an Open Space
+    if (data.selectedFloorType === 'OpenPlot' || data.isOpenPlot) {
+        const len = parseFloat(String(data.length));
+        const wid = parseFloat(String(data.width));
+        if (!data.length || isNaN(len) || len <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.lengthRequired',
+                path: ['length']
+            });
+        }
+        if (!data.width || isNaN(wid) || wid <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.widthRequired',
+                path: ['width']
+            });
+        }
+        if (!data.constructionTypeId || data.constructionTypeId <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.openPlotConstructionTypeNotFound',
+                path: ['constructionTypeId']
+            });
+        }
+    } else {
+        // If isOpenPlot = false, Open Space-specific fields should not contain unnecessary data
+        if (data.length !== undefined && data.length !== null && data.length !== "" && parseFloat(String(data.length)) !== 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.unnecessaryLength',
+                path: ['length']
+            });
+        }
+        if (data.width !== undefined && data.width !== null && data.width !== "" && parseFloat(String(data.width)) !== 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.unnecessaryWidth',
+                path: ['width']
+            });
+        }
+    }
+
+    // If it's an update, skip *cross-field* validation (e.g., constructionYear vs assessmentYear) to allow existing database values
+    const rawDetailsId = Number(data.propertyDetailsId || (data as Record<string, unknown>).id || 0);
+    if (rawDetailsId > 0) return;
+    // Only validate constructionYear vs assessmentYear if in Construction mode
+    if (data.selectedFloorType !== 'OpenPlot' && !data.isOpenPlot && data.constructionYear && data.assessmentYear) {
+        const conYear = parseInt(data.constructionYear, 10);
+        const asstYear = parseInt(data.assessmentYear, 10);
+        if (!isNaN(conYear) && !isNaN(asstYear) && asstYear < conYear) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.asstYrError',
+                path: ['assessmentYear'],
+            });
+        }
+    }
 }).transform(data => ({
     ...data,
     propertyDetailsId: data.propertyDetailsId ?? (data as Record<string, unknown>).id

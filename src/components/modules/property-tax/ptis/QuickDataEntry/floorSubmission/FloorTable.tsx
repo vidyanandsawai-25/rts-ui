@@ -8,13 +8,14 @@ import {
   FloorDetailsTableColumn,
   SearchInput,
 } from '@/components/common';
-import { FloorData, RoomAPIResponse } from '@/types/room-details.types';
+import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
 import {
   getTypeOfUseId,
   normalizeFloorFormData,
 } from '@/lib/utils/floorSubmission/floor-mappers';
 import { useFloorTableColumns, renderFloorActions } from './FloorTableColumns';
+import { ExpandedRoomsBreakdown } from './components/ExpandedRoomsBreakdown';
 
 interface FloorTableProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
@@ -36,13 +37,15 @@ interface FloorTableProps {
   constructionLookup: LookupData[];
   useLookup: LookupData[];
   subTypeData: LookupData[];
-  // State for Add Fresh setup
   setEditingFloorForm: (val: FloorData) => void;
+  selectedFloorType?: 'Construction' | 'OpenPlot';
+  isPlotCategory?: boolean;
 }
 
 const FloorTable: React.FC<FloorTableProps> = ({
   t,
   filteredFloors,
+  selectedFloorType,
   floorSearch,
   setFloorSearch,
   selectedFloor,
@@ -60,6 +63,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
   useLookup,
   subTypeData,
   setEditingFloorForm,
+  isPlotCategory = false,
 }) => {
   const columns = useFloorTableColumns({
     t,
@@ -77,6 +81,10 @@ const FloorTable: React.FC<FloorTableProps> = ({
       prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
     );
   }, []);
+
+  const deleteCellRenderer = React.useMemo(() => {
+    return renderFloorActions(t, handleDeleteFloor);
+  }, [t, handleDeleteFloor]);
 
   // Adapt the custom MasterTable columns to be compatible with FloorDetailsTable and style cells cleanly
   const adaptedColumns = React.useMemo<FloorDetailsTableColumn<FloorData>[]>(() => {
@@ -103,17 +111,16 @@ const FloorTable: React.FC<FloorTableProps> = ({
       label: t('floor.actions'),
       sortable: false,
       render: (row: FloorData) => {
-        const deleteFn = renderFloorActions(t, handleDeleteFloor);
         return (
           <div className="flex justify-center items-center h-full min-h-[28px]">
-            {deleteFn(row)}
+            {deleteCellRenderer(row)}
           </div>
         );
       },
     });
 
     return baseCols;
-  }, [columns, t, handleDeleteFloor]);
+  }, [columns, t, deleteCellRenderer]);
 
   /**
    * Handle row click to edit a floor
@@ -187,71 +194,9 @@ const FloorTable: React.FC<FloorTableProps> = ({
     ]
   );
 
-  // Render a beautiful detailed list of rooms inside this floor when row is expanded
+  // Render detailed list of rooms inside this floor when row is expanded (extracted to components/ExpandedRoomsBreakdown)
   const renderExpandedRooms = React.useCallback(
-    (floor: FloorData) => {
-      const rooms = (floor.roomWiseSubmissionDetails || []) as RoomAPIResponse[];
-      if (rooms.length === 0) {
-        return (
-          <div className="p-4 text-center text-xs text-gray-500 bg-blue-50/50 rounded-lg border border-dashed border-blue-200">
-            {t('floor.noRoomsFound', { defaultValue: 'No rooms added to this floor yet.' })}
-          </div>
-        );
-      }
-
-      return (
-        <div className="p-3 bg-gradient-to-r from-blue-50/70 to-indigo-50/50 rounded-xl border border-blue-100 shadow-inner">
-          <h4 className="text-[11px] font-bold text-blue-900 mb-2 uppercase tracking-wider flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-            {t('floor.roomBreakdown', { count: rooms.length, defaultValue: `Room Details Breakdown (${rooms.length} Rooms)` })}
-          </h4>
-          <div className="overflow-hidden rounded-lg border border-blue-100 shadow-sm">
-            <table className="w-full text-left border-collapse text-[11px]">
-              <thead>
-                <tr className="bg-blue-800 text-white font-bold uppercase tracking-wider">
-                  <th className="p-2 border-r border-blue-700/50 text-center w-16">{t('floor.roomNo', { defaultValue: 'Room No' })}</th>
-                  <th className="p-2 border-r border-blue-700/50">{t('floor.roomName', { defaultValue: 'Room Name' })}</th>
-                  <th className="p-2 border-r border-blue-700/50 w-28 text-center">{t('floor.roomShape', { defaultValue: 'Shape' })}</th>
-                  <th className="p-2 border-r border-blue-700/50 text-center w-40">{t('floor.dimensions', { defaultValue: 'Dimensions (L x B x H)' })}</th>
-                  <th className="p-2 text-right w-32">{t('floor.carpetArea', { defaultValue: 'Carpet Area' })}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rooms.map((room, idx) => {
-                  const dimStr = `${room.length || '-'} x ${room.breadth || '-'} x ${room.height || '-'}`;
-                  const formatArea = (val: unknown) => {
-                    if (val === undefined || val === null || val === '') return '0.00';
-                    const num = Number(val);
-                    return isNaN(num) ? '0.00' : num.toFixed(2);
-                  };
-                  const areaStr = `${formatArea(room.area)} Sq.Ft`;
-                  return (
-                    <tr
-                      key={room.id || idx}
-                      className="bg-white border-b border-gray-100 hover:bg-blue-50/30 transition-colors"
-                    >
-                      <td className="p-2 border-r border-gray-100 text-center font-semibold text-blue-900">
-                        {room.roomNo || idx + 1}
-                      </td>
-                      <td className="p-2 border-r border-gray-100 font-semibold text-gray-700">
-                        {room.roomName || 'N/A'}
-                      </td>
-                      <td className="p-2 border-r border-gray-100 text-center">
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[10px] border border-slate-200">
-                          {room.shape || 'Standard'}
-                        </span>
-                      </td>
-                      <td className="p-2 border-r border-gray-100 text-center text-gray-600 font-medium">{dimStr}</td>
-                      <td className="p-2 text-right font-bold text-blue-800">{areaStr}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      );
-    },
+    (floor: FloorData) => <ExpandedRoomsBreakdown floor={floor} t={t} />,
     [t]
   );
 
@@ -273,12 +218,14 @@ const FloorTable: React.FC<FloorTableProps> = ({
             className="w-32 md:w-36 mb-0 h-7 scale-90"
           />
 
-          <AddButton
-            label={t('floor.addFloor')}
-            size="sm"
-            className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
-            onClick={handleAddFloor}
-          />
+          {!isPlotCategory && (
+            <AddButton
+              label={selectedFloorType === 'OpenPlot' ? (t('floor.addSpace') || 'Add Space') : (t('floor.addFloor') || 'Add Floor')}
+              size="sm"
+              className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
+              onClick={handleAddFloor}
+            />
+          )}
         </div>
       </div>
 
@@ -295,7 +242,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           emptyMessage={t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}
-          containerClassName="border border-blue-200 shadow-md rounded-xl max-h-[235px] overflow-auto"
+          containerClassName="border border-blue-200 shadow-md rounded-xl max-h-[200px] overflow-auto"
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) =>
             `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`

@@ -1,8 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useWardFormLogic } from "@/hooks/zoneMaster/useWardFormLogic";
-import { getWardByIdAction } from "@/app/[locale]/property-tax/zone-master/actions";
-import { handleWardUpdate } from "@/components/modules/property-tax/zone-master/wards/wardHandlers";
+import { getWardByIdAction, updateWardAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { toast } from "sonner";
 import { WardItem } from "@/types/wardMaster.types";
 
@@ -17,10 +16,7 @@ vi.mock("sonner", () => ({
 
 vi.mock("@/app/[locale]/property-tax/zone-master/actions", () => ({
   getWardByIdAction: vi.fn(),
-}));
-
-vi.mock("@/components/modules/property-tax/zone-master/wards/wardHandlers", () => ({
-  handleWardUpdate: vi.fn(),
+  updateWardAction: vi.fn(),
 }));
 
 describe("useWardFormLogic", () => {
@@ -311,7 +307,7 @@ describe("useWardFormLogic", () => {
   });
 
   it("should handle successful save", async () => {
-    vi.mocked(handleWardUpdate).mockResolvedValueOnce({ success: true });
+    vi.mocked(updateWardAction).mockResolvedValueOnce({ success: true, data: null });
 
     const { result } = renderHook(() =>
       useWardFormLogic({
@@ -343,7 +339,7 @@ describe("useWardFormLogic", () => {
       await result.current.handleSave(mockRefresh);
     });
 
-    expect(handleWardUpdate).toHaveBeenCalled();
+    expect(updateWardAction).toHaveBeenCalled();
     expect(mockOnClose).toHaveBeenCalled();
     expect(mockRefresh).toHaveBeenCalled();
     expect(mockOnSuccess).toHaveBeenCalled();
@@ -389,7 +385,7 @@ describe("useWardFormLogic", () => {
 
     // Keep same wardNo and sequenceNo - should not be flagged as duplicate
     const mockRefresh = vi.fn();
-    vi.mocked(handleWardUpdate).mockResolvedValueOnce({ success: true });
+    vi.mocked(updateWardAction).mockResolvedValueOnce({ success: true, data: null });
 
     await act(async () => {
       await result.current.handleSave(mockRefresh);

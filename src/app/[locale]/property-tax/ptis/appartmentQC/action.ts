@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import type { PropertyPhotoDto } from "@/types/photoplan.types";
 import type { ApartmentQCDetail, ApartmentQCSearchParams } from "@/types/apartmentQC.types";
 import {
   getApartmentQCDetailsLocalized,
@@ -1156,7 +1157,7 @@ export async function fetchDualMethodTaxDetailsByTabAction(
 export async function fetchApartmentTaxDetailsByIdAction(
   propertyId: string | number,
   mainTab: string
-): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
     const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
@@ -1182,7 +1183,7 @@ export async function fetchApartmentTaxDetailsByIdAction(
 export async function fetchApartmentTaxDetailsCvByIdAction(
   propertyId: string | number,
   mainTab: string
-): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
     const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
@@ -1220,5 +1221,49 @@ export async function fetchDualMethodTaxDetailsByIdAction(
     };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch dual method tax details");
+  }
+}
+
+/* ============================================================
+   PROPERTY PHOTOS ACTION
+   Fetches all photos for a property by property ID
+ ============================================================ */
+
+/**
+ * Fetch property photos by property ID.
+ * 
+ * @param propertyId - The property ID
+ * @returns ActionResult with array of PropertyPhotoDto
+ */
+export async function fetchPropertyPhotosAction(
+  propertyId: number
+): Promise<ActionResult<PropertyPhotoDto[]>> {
+  try {
+    const { getPropertyPhotosLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const data = await getPropertyPhotosLocalized(propertyId);
+    return {
+      success: true,
+      data,
+      message: "Property photos fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch property photos");
+  }
+}
+
+/**
+ * Safe variant - Fetch property photos, returns empty array on failure.
+ * 
+ * @param propertyId - The property ID
+ * @returns Array of PropertyPhotoDto
+ */
+export async function fetchPropertyPhotosSafeAction(
+  propertyId: number
+): Promise<PropertyPhotoDto[]> {
+  try {
+    const { getPropertyPhotosSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    return await getPropertyPhotosSafe(propertyId);
+  } catch {
+    return [];
   }
 }

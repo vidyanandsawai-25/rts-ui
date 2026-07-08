@@ -2,7 +2,8 @@ import { useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { useConfirm } from "@/components/common";
-import { handleZoneDelete } from "@/components/modules/property-tax/zone-master/zones/zoneHandlers";
+import { toast } from "sonner";
+import { deleteZoneAction, fetchWardsPagedAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 interface UseZoneListHandlersProps {
   zones: ZoneItem[];
@@ -28,15 +29,44 @@ export function useZoneListHandlers({ zones, t }: UseZoneListHandlersProps) {
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-      onConfirm: () =>
-        handleZoneDelete({
-          zoneId,
-          zoneNo,
-          description,
-          zones,
-          router,
-          t: (key: string, values?: Record<string, unknown>) => t(key, values)
-        }),
+      onConfirm: async () => {
+        const zoneObj = zones.find((z) => z.id === zoneId);
+        const zoneNoFinal = zoneObj?.zoneNo ?? zoneNo ?? "";
+        const descriptionFinal = zoneObj?.description ?? description ?? "";
+        const formattedName = zoneNoFinal && descriptionFinal
+          ? `${zoneNoFinal} - ${descriptionFinal}`
+          : zoneNoFinal || descriptionFinal;
+
+        try {
+          const result = await deleteZoneAction(zoneId);
+
+          if (result.success) {
+            toast.success(t("messages.deleteSuccess", { name: formattedName }));
+            router.refresh();
+            return;
+          }
+
+          // Case 1: Zone has wards
+          const wardsRes = await fetchWardsPagedAction(1, 1, undefined, zoneId);
+          if (wardsRes && wardsRes.totalCount > 0) {
+            toast.error(t("messages.zoneHasWardsBriefError", {
+              zoneNo: zoneNoFinal,
+              description: descriptionFinal,
+            }));
+            return;
+          }
+
+          const errorMsg = result.error?.toLowerCase() || "";
+          if (errorMsg.includes("rate") || errorMsg.includes("section") || errorMsg.includes("foreign key") || errorMsg.includes("in use")) {
+            toast.error(t("messages.zoneInUseError"));
+            return;
+          }
+
+          toast.error(t("messages.zoneDeleteGenericError"));
+        } catch {
+          toast.error(t("messages.zoneDeleteGenericError"));
+        }
+      },
     });
   }, [confirm, zones, router, t]);
 

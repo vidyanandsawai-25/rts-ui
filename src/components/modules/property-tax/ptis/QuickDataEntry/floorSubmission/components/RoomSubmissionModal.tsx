@@ -163,7 +163,7 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                     {t('roomSubmission.table.property')}: <strong className="text-white">{props.propertyNo}</strong> •
                     {t('roomSubmission.table.partition')}: <strong className="text-white">{props.partitionNo}</strong> •
                     {t('roomSubmission.table.floor')}: <strong className="text-white">{props.floorNumber}</strong> •
-                    {t('roomSubmission.table.rooms')}: <strong className="text-white">{props.maxRooms}</strong>                </p>
+                    {t('roomSubmission.table.rooms')}: <strong className="text-white">{Math.max(props.maxRooms, props.existingRooms?.length || 0)}</strong>                </p>
             </div>
 
             {/* Unit Toggle Pill - Hidden on UI */}

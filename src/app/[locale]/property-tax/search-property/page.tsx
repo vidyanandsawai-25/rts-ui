@@ -21,7 +21,7 @@ import {
   filterPropertiesAction,
   listLookupOptionsAction,
   listPropertyAssessmentStatusesAction,
-  listPropertyTypeCategoriesAction,
+  listPropertyCategoriesAction,
   listPropertyWorkflowStagesAction,
   listWardsByZoneAction,
   listZonesAction,
@@ -170,6 +170,8 @@ export default async function PropertySearchPage({
   searchParams,
 }: PropertySearchPageProps): Promise<React.ReactElement> {
   const raw = await searchParams;
+  const pageNumber = toInt(raw.pageNumber as string | undefined) || 1;
+  const pageSize = toInt(raw.pageSize as string | undefined) || 10;
   const selectedStatus = sanitizeStatus(raw.status);
   const initialCriteria = buildCriteria(raw);
   const activeTab = sanitizeTab(raw.tab, raw);
@@ -207,11 +209,11 @@ export default async function PropertySearchPage({
   // Default property records load on every visit. Stat cards filter immediately.
   // Form filters apply only after Search (`isActive=1`). Draft zone/ward URL
   // params load dropdown options but do not filter the table until Search.
-  const [zones, propertyAssessmentStatuses, propertyTypeCategories, propertyWorkflowStages, wards, lookup, searchOutcome, allWards, mainCards, workflowCards] =
+  const [zones, propertyAssessmentStatuses, propertyCategories, propertyWorkflowStages, wards, lookup, searchOutcome, allWards, mainCards, workflowCards] =
     await Promise.all([
       listZonesAction(),
       listPropertyAssessmentStatusesAction(),
-      listPropertyTypeCategoriesAction(),
+      listPropertyCategoriesAction(),
       listPropertyWorkflowStagesAction(),
       hasZone
         ? listWardsByZoneAction(initialCriteria.zoneId)
@@ -223,7 +225,9 @@ export default async function PropertySearchPage({
         selectedStatus,
         searchCriteriaForFetch,
         isSearchActive,
-        activeTab
+        activeTab,
+        pageNumber,
+        pageSize
       ),
       listAllWardsAction(),
       getMainCardsAction(cardFilterParams),
@@ -234,9 +238,9 @@ export default async function PropertySearchPage({
     propertyAssessmentStatuses;
 
   const propertyDescriptionOptions: PropertyDescriptionOption[] =
-    propertyTypeCategories.map((category) => ({
+    propertyCategories.map((category) => ({
       id: category.id,
-      label: category.propertyTypeCategory,
+      label: category.propertyCategoryName,
     }));
 
   const zoneOptions: ZoneOption[] = zones.map((z) => {
@@ -281,7 +285,9 @@ export default async function PropertySearchPage({
   return (
     <PropertySearch
       results={searchOutcome.results}
-      totalCount={searchOutcome.results.length}
+      totalCount={searchOutcome.totalCount}
+      pageNumber={pageNumber}
+      pageSize={pageSize}
       mainCards={mainCards}
       workflowCards={workflowCards}
       zoneOptions={zoneOptions}

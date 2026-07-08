@@ -33,7 +33,7 @@
     "fields": {
       "propertyType": "मालमत्ता प्रकार",
       "typeFilter": "प्रकार फिल्टर",
-      "propertyDescription": "मालमत्ता वर्णन",
+      "propertyDescription": "श्रेणी प्रकार",
       "zone": "झोन",
       "ward": "वॉर्ड",
       "scanQR": "QR स्कॅन करा",
@@ -73,7 +73,7 @@
     "placeholders": {
       "propertyType": "मालमत्ता प्रकार निवडा",
       "typeFilter": "प्रकार फिल्टर निवडा",
-      "propertyDescription": "मालमत्ता वर्णन निवडा",
+      "propertyDescription": "श्रेणी प्रकार निवडा",
       "zone": "झोन निवडा",
       "ward": "वॉर्ड निवडा",
       "wardSelectZoneFirst": "प्रथम झोन निवडा",
@@ -195,6 +195,11 @@
     "noUnits": "कोणतीही अपार्टमेंट युनिट आढळली नाहीत.",
     "apartmentUnits": "अपार्टमेंट युनिट्स ({count})",
     "loadingUnits": "अपार्टमेंट युनिट्स लोड होत आहेत...",
+    "backToProperties": "मालमत्तांवर परत जा",
+    "viewingUnitsFor": "यासाठी युनिट्स पाहत आहात",
+    "apartment": "अपार्टमेंट",
+    "totalUnits": "एकूण {count} युनिट्स",
+    "unit": "युनिट",
     "format": {
       "currency": "₹{amount}"
     },

@@ -131,6 +131,8 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   renderHeader?: () => ReactNode;
   renderFooter?: () => ReactNode;
 
+  // Interaction
+  onRowClick?: (row: Row, index: number) => void;
   // Scroll toggle visibility
   showScrollButtons?: boolean;
 }
@@ -218,6 +220,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   colorGroups = DEFAULT_ROW_COLOR_GROUPS,
   renderHeader,
   renderFooter,
+  onRowClick,
   showScrollButtons = true,
 }: FloorDetailsTableProps<Row>) {
   const router = useRouter();
@@ -455,7 +458,32 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
               return (
                 <React.Fragment key={row.id}>
-                  <tr className={baseRowClass}>
+                  <tr
+                    className={cn(
+                      baseRowClass,
+                      onRowClick && 'cursor-pointer'
+                    )}
+                    tabIndex={onRowClick ? 0 : undefined}
+                    onKeyDown={(e) => {
+                      if (!onRowClick) return;
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRowClick(row, index);
+                      }
+                    }}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (
+                        target.closest('a') ||
+                        target.closest('button') ||
+                        target.closest('input') ||
+                        target.closest('select')
+                      ) {
+                        return;
+                      }
+                      onRowClick?.(row, index);
+                    }}
+                  >
                     {/* Optional Expand Control Cell */}
                     {showExpandColumn && (
                       <td

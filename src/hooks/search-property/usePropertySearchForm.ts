@@ -82,7 +82,7 @@ export function usePropertySearchForm({
       submitAttempted: false,
       touchedFields: new Set(),
     });
-  }, [criteriaKey, initialCriteria, activeTab]);
+  }, [criteriaKey, initialCriteria]);
 
   const isDraftSynced = draft.criteriaKey === criteriaKey;
   const formState = isDraftSynced ? draft.formState : initialCriteria;
@@ -173,11 +173,16 @@ export function usePropertySearchForm({
         setDraft((prev) => {
           const nextFormState = { ...getBaseFormState(prev), [field]: nextValue };
 
-          if (field === "rateableValueFilter" && !value) {
+          if (field === "valuationMethod") {
+            nextFormState.rateableValueFilter = "";
             nextFormState.rateableValueFrom = "";
             nextFormState.rateableValueTo = "";
           }
-          if (field === "capitalValueFilter" && !value) {
+          if (field === "rateableValueFilter") {
+            nextFormState.rateableValueFrom = "";
+            nextFormState.rateableValueTo = "";
+          }
+          if (field === "capitalValueFilter") {
             nextFormState.capitalValueFrom = "";
             nextFormState.capitalValueTo = "";
           }
@@ -307,6 +312,14 @@ export function usePropertySearchForm({
           capitalValueFilter: "",
           capitalValueFrom: "",
           capitalValueTo: "",
+        };
+      } else if (field === "valuationMethod") {
+        nextFormState = {
+          ...formState,
+          valuationMethod: "",
+          rateableValueFilter: "",
+          rateableValueFrom: "",
+          rateableValueTo: "",
         };
       } else {
         nextFormState = { ...formState, [field]: "" };
