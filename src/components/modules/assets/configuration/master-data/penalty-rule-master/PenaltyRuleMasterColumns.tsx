@@ -107,7 +107,7 @@ export function getPenaltyRuleMasterColumns({
           return `${formatted}%`;
         }
         if (row.calculationType === "PerDay") {
-          return `₹${formatted} / Day`;
+          return `₹${formatted} / ${t("form.fields.calculationType.options.perDay")}`;
         }
         return `₹${formatted}`;
       },

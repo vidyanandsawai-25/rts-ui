@@ -69,7 +69,7 @@ export async function savePenaltyRule(id: string, formData: FormData) {
     if (!Number.isFinite(penaltyValue) || penaltyValue < 0) return { ok: false, error: "invalid_penaltyValue" };
 
     const gracePeriodDays = Number(gracePeriodDaysRaw);
-    if (!Number.isFinite(gracePeriodDays) || gracePeriodDays < 0) return { ok: false, error: "invalid_gracePeriodDays" };
+    if (!Number.isFinite(gracePeriodDays) || gracePeriodDays < 0 || !Number.isInteger(gracePeriodDays)) return { ok: false, error: "invalid_gracePeriodDays" };
 
     const isActive = String(formData.get("isActive") ?? "true").toLowerCase() === "true";
 

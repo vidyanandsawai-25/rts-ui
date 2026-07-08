@@ -41,9 +41,9 @@
         "label": "गणना प्रकार",
         "placeholder": "-- निवडा --",
         "options": {
-          "percentage": "टक्केवारी (Percentage)",
-          "flatAmount": "फ्लॅट रक्कम (Flat Amount)",
-          "perDay": "दररोज (Per Day)"
+          "percentage": "टक्केवारी",
+          "flatAmount": "फ्लॅट रक्कम",
+          "perDay": "दररोज"
         }
       },
       "value": {

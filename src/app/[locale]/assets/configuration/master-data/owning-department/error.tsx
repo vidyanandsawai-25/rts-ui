@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import ErrorPage from "@/components/common/ErrorPage";
+import { ErrorPage } from "@/components/common";
 
 interface ErrorProps {
   error: Error & { digest?: string };

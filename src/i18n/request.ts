@@ -159,7 +159,7 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/gstMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
