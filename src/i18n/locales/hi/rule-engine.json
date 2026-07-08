@@ -23,7 +23,11 @@
     "priority": "प्राथमिकता",
     "priorityPlaceholder": "उदा. 1",
     "selectCategory": "श्रेणी चुनें",
-    "selectScope": "नियम क्षेत्र चुनें"
+    "selectScope": "नियम क्षेत्र चुनें",
+    "stopProcessing": "प्रसंस्करण रोकें",
+    "stopProcessingActive": "इंजन रोकें",
+    "stopProcessingInactive": "जारी रखें",
+    "stopProcessingHint": "सक्रिय होने पर, इस नियम सेट के मिलान होने पर लाइब्रेरी में आगे किसी भी नियम का मूल्यांकन नहीं किया जाएगा।"
   },
   "conditionRow": {
     "selectField": "फ़ील्ड चुनें",

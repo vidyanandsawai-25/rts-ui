@@ -23,7 +23,11 @@
     "priority": "Priority",
     "priorityPlaceholder": "e.g. 1",
     "selectCategory": "Select Category",
-    "selectScope": "Select Scope"
+    "selectScope": "Select Scope",
+    "stopProcessing": "Stop Processing",
+    "stopProcessingActive": "Stop Engine",
+    "stopProcessingInactive": "Continue",
+    "stopProcessingHint": "When enabled, no subsequent rules in the library will be evaluated once this rule set matches."
   },
   "conditionRow": {
     "selectField": "Select Field",
