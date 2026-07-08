@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { EyeIconButton, MasterTable } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';
+import { cn } from '@/lib/utils/cn';
 import type { MappedFloorDetail } from '@/types/reassessment.types';
 
 interface OldFloorDetailsProps {
@@ -88,6 +89,19 @@ export function OldFloorDetails({
       cellClassName: 'text-emerald-700 font-mono'
     },
     {
+      key: 'yearlyRate',
+      label: t('floorDetails.columns.yearlyRate'),
+      width: '96px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono'
+    },
+    {
+      key: 'financialYear',
+      label: t('floorDetails.columns.financialYear'),
+      width: '96px',
+      align: 'left'
+    },
+    {
       key: 'renter',
       label: t('floorDetails.columns.renter'),
       width: '144px',
@@ -146,6 +160,25 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
       render: (val: unknown) => formatNumberish(val)
+    },
+    {
+      key: 'status',
+      label: t('floorDetails.columns.status'),
+      width: '96px',
+      align: 'left',
+      render: (val: unknown) => (
+        <span className={cn(
+          "inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm",
+          val === 'Unchanged' && "bg-blue-100 text-blue-800 border-blue-200",
+          val === 'Added' && "bg-emerald-100 text-emerald-800 border-emerald-200",
+          val === 'Removed' && "bg-rose-100 text-rose-800 border-rose-200",
+          !val && "bg-gray-100 text-gray-800 border-gray-200"
+        )}>
+          {val === 'Unchanged' ? t('floorDetails.statuses.unchanged') : 
+           val === 'Added' ? t('floorDetails.statuses.added') : 
+           val === 'Removed' ? t('floorDetails.statuses.removed') : '-'}
+        </span>
+      )
     }
   ];
 
@@ -168,7 +201,12 @@ export function OldFloorDetails({
                     paginationConfig={{ enabled: false }}
                     tableClassName="w-max min-w-full text-xs font-medium border-collapse"
                     theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
-                    rowClassName={() => "[&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200"}
+                    rowClassName={(row) => cn(
+                        "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60",
+                        row.status === 'Unchanged' && "bg-blue-50/40 hover:bg-blue-50/70 text-blue-950",
+                        row.status === 'Added' && "bg-emerald-50/40 hover:bg-emerald-50/70 text-emerald-950",
+                        row.status === 'Removed' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
+                    )}
                     height="xs"
                     scrollContainerRef={scrollContainerRef}
                 />

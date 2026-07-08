@@ -89,6 +89,26 @@ export function NewFloorDetails({
       cellClassName: 'text-emerald-700 font-mono'
     },
     {
+      key: 'yearlyRate',
+      label: t('floorDetails.columns.yearlyRate'),
+      width: '96px',
+      align: 'left',
+      cellClassName: 'text-emerald-700 font-mono'
+    },
+    {
+      key: 'financialYear',
+      label: t('floorDetails.columns.financialYear'),
+      width: '96px',
+      align: 'left'
+    },
+    {
+      key: 'renter',
+      label: t('floorDetails.columns.renter'),
+      width: '144px',
+      align: 'left',
+      cellClassName: 'text-emerald-700'
+    },
+    {
       key: 'taxLiability',
       label: t('floorDetails.columns.taxLiability'),
       width: '128px',
@@ -149,13 +169,14 @@ export function NewFloorDetails({
       render: (val: unknown) => (
         <span className={cn(
           "inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm",
-          val === 'Same' && "bg-emerald-100 text-emerald-800 border-emerald-200",
-          val === 'Changed' && "bg-amber-100 text-amber-800 border-amber-200",
-          val === 'New' && "bg-rose-100 text-rose-800 border-rose-200"
+          val === 'Unchanged' && "bg-blue-100 text-blue-800 border-blue-200",
+          val === 'Added' && "bg-emerald-100 text-emerald-800 border-emerald-200",
+          val === 'Removed' && "bg-rose-100 text-rose-800 border-rose-200",
+          !val && "bg-gray-100 text-gray-800 border-gray-200"
         )}>
-          {val === 'Same' ? t('floorDetails.statuses.same') : 
-           val === 'Changed' ? t('floorDetails.statuses.changed') : 
-           t('floorDetails.statuses.new')}
+          {val === 'Unchanged' ? t('floorDetails.statuses.unchanged') : 
+           val === 'Added' ? t('floorDetails.statuses.added') : 
+           val === 'Removed' ? t('floorDetails.statuses.removed') : '-'}
         </span>
       )
     }
@@ -182,9 +203,9 @@ export function NewFloorDetails({
                     theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
                     rowClassName={(row) => cn(
                         "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60",
-                        row.status === 'Same' && "bg-emerald-50/40 hover:bg-emerald-50/70 text-emerald-950",
-                        row.status === 'Changed' && "bg-amber-50/40 hover:bg-amber-50/70 text-amber-950",
-                        row.status === 'New' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
+                        row.status === 'Unchanged' && "bg-blue-50/40 hover:bg-blue-50/70 text-blue-950",
+                        row.status === 'Added' && "bg-emerald-50/40 hover:bg-emerald-50/70 text-emerald-950",
+                        row.status === 'Removed' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
                     )}
                     height="xs"
                     scrollContainerRef={scrollContainerRef}

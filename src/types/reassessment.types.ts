@@ -16,6 +16,7 @@ export interface ReassessmentPhoto {
  */
 export interface ReassessmentFloorDetail {
   type: 'NEW' | 'OLD';
+  changeStatus?: string | null;
   floorCode: string;
   constructionCode: string;
   description: string;
@@ -34,6 +35,7 @@ export interface ReassessmentFloorDetail {
   rateableValue: number | null;
   annualRentalValue: number | null;
   depreciation: number | null;
+  maintenance?: number | null;
   monthlyRate: number | null;
   yearlyRate: number | null;
   yearlyRent: number | null;
@@ -87,6 +89,8 @@ export interface MappedFloorDetail extends Record<string, unknown> {
   builtUpAreaSqFt: number;
   builtUpAreaSqM: number;
   rate: number;
+  yearlyRate: number;
+  financialYear: string;
   renter: string;
   taxLiability: string;
   rentMy: number;
@@ -95,7 +99,7 @@ export interface MappedFloorDetail extends Record<string, unknown> {
   alv: number;
   mr: number;
   rv: number;
-  status?: 'Same' | 'Changed' | 'New';
+  status?: 'Unchanged' | 'Added' | 'Removed';
   bgClass?: string;
 }
 

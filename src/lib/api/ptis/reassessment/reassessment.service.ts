@@ -36,6 +36,7 @@ function normalizeFloorDetail(detail: ReassessmentFloorDetail): ReassessmentFloo
     rateableValue: detail.rateableValue != null ? Number(detail.rateableValue) : null,
     annualRentalValue: detail.annualRentalValue != null ? Number(detail.annualRentalValue) : null,
     depreciation: detail.depreciation != null ? Number(detail.depreciation) : null,
+    maintenance: detail.maintenance != null ? Number(detail.maintenance) : null,
     monthlyRate: detail.monthlyRate != null ? Number(detail.monthlyRate) : null,
     yearlyRate: detail.yearlyRate != null ? Number(detail.yearlyRate) : null,
     yearlyRent: detail.yearlyRent != null ? Number(detail.yearlyRent) : null,
@@ -70,29 +71,55 @@ export function mapFloorDetailsToDisplay(
   floorDetails: ReassessmentFloorDetail[],
   type: 'OLD' | 'NEW'
 ): MappedFloorDetail[] {
-  return floorDetails.map((detail) => ({
-    floor: detail.floorCode,
-    conYear: detail.constructionYear,
-    asstYear: detail.assessmentYear,
-    constType: detail.constructionCode,
-    use: detail.description,
-    carpetAreaSqFt: Math.round((detail.carpetAreaSqFeet ?? 0) * 100) / 100,
-    carpetAreaSqM: Math.round((detail.carpetAreaSqMeter ?? 0) * 100) / 100,
-    builtUpAreaSqFt: Math.round((detail.builtupAreaSqFeet ?? 0) * 100) / 100,
-    builtUpAreaSqM: Math.round((detail.builtupAreaSqMeter ?? 0) * 100) / 100,
-    rate: detail.monthlyRate ?? 0,
-    renter: detail.isRenter && detail.renterName ? detail.renterName : 'Self Occupied',
-    taxLiability: detail.taxLiability ?? '',
-    rentMy: detail.rentMonthly ?? 0,
-    rentalValue: detail.finalYearlyRent ?? detail.yearlyRent ?? 0,
-    depreciation: detail.depreciation ?? 0,
-    alv: detail.annualRentalValue ?? 0,
-    mr: 0, // M&R - Maintenance & Repairs (calculated if needed)
-    rv: detail.rateableValue ?? 0,
-    // Status is determined by comparison logic (to be implemented)
-    status: type === 'NEW' ? 'New' : undefined,
-    bgClass: type === 'NEW' ? 'bg-rose-50 text-rose-800 border-rose-200' : undefined,
-  }));
+  return floorDetails.map((detail) => {
+    let status: 'Unchanged' | 'Added' | 'Removed' | undefined = undefined;
+    if (detail.changeStatus) {
+      const lowerStatus = detail.changeStatus.toLowerCase();
+      if (lowerStatus === 'added' || lowerStatus === 'new') {
+        status = 'Added';
+      } else if (lowerStatus === 'removed' || lowerStatus === 'deleted') {
+        status = 'Removed';
+      } else if (lowerStatus === 'unchanged' || lowerStatus === 'same') {
+        status = 'Unchanged';
+      }
+    } else {
+      status = type === 'NEW' ? 'Added' : 'Unchanged';
+    }
+
+    const bgClass =
+      status === 'Added'
+        ? 'bg-emerald-50/40 text-emerald-950'
+        : status === 'Removed'
+        ? 'bg-rose-50/40 text-rose-950'
+        : status === 'Unchanged'
+        ? 'bg-blue-50/40 text-blue-950'
+        : undefined;
+
+    return {
+      floor: detail.floorCode,
+      conYear: detail.constructionYear,
+      asstYear: detail.assessmentYear,
+      constType: detail.constructionCode,
+      use: detail.description,
+      carpetAreaSqFt: Math.round((detail.carpetAreaSqFeet ?? 0) * 100) / 100,
+      carpetAreaSqM: Math.round((detail.carpetAreaSqMeter ?? 0) * 100) / 100,
+      builtUpAreaSqFt: Math.round((detail.builtupAreaSqFeet ?? 0) * 100) / 100,
+      builtUpAreaSqM: Math.round((detail.builtupAreaSqMeter ?? 0) * 100) / 100,
+      rate: detail.monthlyRate ?? 0,
+      yearlyRate: detail.yearlyRate ?? 0,
+      financialYear: detail.financialYear ?? '',
+      renter: detail.isRenter && detail.renterName ? detail.renterName : 'Self Occupied',
+      taxLiability: detail.taxLiability ?? '',
+      rentMy: detail.rentMonthly ?? 0,
+      rentalValue: detail.finalYearlyRent ?? detail.yearlyRent ?? 0,
+      depreciation: detail.depreciation ?? 0,
+      alv: detail.annualRentalValue ?? 0,
+      mr: detail.maintenance ?? 0,
+      rv: detail.rateableValue ?? 0,
+      status,
+      bgClass,
+    };
+  });
 }
 
 /**

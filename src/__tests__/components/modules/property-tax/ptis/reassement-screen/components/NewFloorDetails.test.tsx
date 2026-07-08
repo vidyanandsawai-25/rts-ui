@@ -27,9 +27,9 @@ const mockMessages = {
         status: "Status",
       },
       statuses: {
-        same: "Same",
-        changed: "Changed",
-        new: "New",
+        unchanged: "Unchanged",
+        added: "Added",
+        removed: "Removed",
       },
     },
     buttons: {
@@ -60,7 +60,7 @@ describe("NewFloorDetails", () => {
       alv: 129600,
       mr: 120,
       rv: 144000,
-      status: "Changed",
+      status: "Unchanged",
     },
   ];
 
@@ -90,7 +90,7 @@ describe("NewFloorDetails", () => {
 
   it("renders the status correctly", () => {
     setup();
-    expect(screen.getByText("Changed")).toBeInTheDocument();
+    expect(screen.getByText("Unchanged")).toBeInTheDocument();
   });
 
   it("calls onToggleAutoScroll when the button is clicked", () => {

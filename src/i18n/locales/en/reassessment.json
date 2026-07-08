@@ -28,6 +28,8 @@
       "carpetArea": "Carpet A",
       "builtUpArea": "Built-up A",
       "rate": "Rate",
+      "yearlyRate": "Yearly Rate",
+      "financialYear": "Fin Year",
       "renter": "Renter",
       "taxLiability": "Tax Liability",
       "rentMy": "Rent M/Y",
@@ -39,9 +41,9 @@
       "status": "Status"
     },
     "statuses": {
-      "same": "Same",
-      "changed": "Changed",
-      "new": "New"
+      "unchanged": "Unchanged",
+      "added": "Added",
+      "removed": "Removed"
     }
   },
   "buttons": {

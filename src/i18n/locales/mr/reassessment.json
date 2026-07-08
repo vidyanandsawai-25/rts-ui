@@ -28,6 +28,8 @@
       "carpetArea": "कार्पेट क्षेत्रफळ",
       "builtUpArea": "बिल्ट-अप क्षेत्रफळ",
       "rate": "दर",
+      "yearlyRate": "वार्षिक दर",
+      "financialYear": "आर्थिक वर्ष",
       "renter": "भाडेकर",
       "taxLiability": "कर जबाबदारी",
       "rentMy": "भाडे महिना/वर्ष",
@@ -39,9 +41,9 @@
       "status": "स्थिती"
     },
     "statuses": {
-      "same": "समान",
-      "changed": "बदललेले",
-      "new": "नवीन"
+      "unchanged": "बदल नाही",
+      "added": "जोडले",
+      "removed": "वगळले"
     }
   },
   "buttons": {
