@@ -104,6 +104,8 @@ describe("ReassesmentScreen", () => {
       builtUpAreaSqFt: 600,
       builtUpAreaSqM: 55.74,
       rate: 100,
+      yearlyRate: 1200,
+      financialYear: "2021-22",
       renter: "John Doe",
       taxLiability: "₹5000",
       rentMy: 10000,
@@ -127,6 +129,8 @@ describe("ReassesmentScreen", () => {
       builtUpAreaSqFt: 700,
       builtUpAreaSqM: 65.03,
       rate: 120,
+      yearlyRate: 1440,
+      financialYear: "2022-23",
       renter: "Jane Doe",
       taxLiability: "₹7000",
       rentMy: 12000,
@@ -135,7 +139,7 @@ describe("ReassesmentScreen", () => {
       alv: 129600,
       mr: 120,
       rv: 144000,
-      status: "Changed",
+      status: "Added",
     },
   ];
 

@@ -52,6 +52,8 @@ describe("NewFloorDetails", () => {
       builtUpAreaSqFt: 700,
       builtUpAreaSqM: 65.03,
       rate: 120,
+      yearlyRate: 1440,
+      financialYear: "2022-23",
       renter: "Jane Doe",
       taxLiability: "₹7000",
       rentMy: 12000,
