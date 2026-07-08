@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePropertyEditScreenSubmission } from '@/hooks/apartmentQc/usePropertyEditScreenSubmission';
 import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
-import type { DrawerFormData } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
+import type { DrawerFormData } from '@/types/propertyEditScreenDrawer.types';
 
 vi.mock('@/app/[locale]/property-tax/ptis/appartmentQC/action', () => ({
   updateBasicDetailsAction: vi.fn().mockResolvedValue({ success: true }),
@@ -37,11 +37,11 @@ describe('usePropertyEditScreenSubmission', () => {
 
   it('should handle basic details save success', async () => {
     const { result } = renderHook(() => usePropertyEditScreenSubmission(mockArgs));
-    
+
     await act(async () => {
       await result.current.handleSave();
     });
-    
+
     expect(mockArgs.onSaveOrClose).toHaveBeenCalled();
   });
 
@@ -50,11 +50,11 @@ describe('usePropertyEditScreenSubmission', () => {
       ...mockArgs,
       validateForm: vi.fn().mockReturnValue(false),
     }));
-    
+
     await act(async () => {
       await result.current.handleSave();
     });
-    
+
     expect(mockArgs.onSaveOrClose).not.toHaveBeenCalled();
   });
 });

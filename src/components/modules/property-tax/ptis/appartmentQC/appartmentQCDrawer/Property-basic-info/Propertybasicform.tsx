@@ -11,7 +11,7 @@ import { useTranslations } from "next-intl";
 import { UpdateButton } from "@/components/common/ActionButtons";
 import { EditableInputWithRefresh } from "@/components/modules/property-tax/ptis/appartmentQC/PropertyEditDrawerInputs";
 import {
-  NAME_ONLY_SANITIZE,
+  OWNERNAME_REGEX,
   limitTwoDigitNumber,
   MOBILE_10_REGEX,
   EMAIL_REGEX,
@@ -420,9 +420,9 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             <CompactField
               label={t('basicInfo.fields.ownerName.label', { fallback: "Owner Name *" })}
               value={formData.ownerName}
-              onChange={(v) => handleFieldChange("ownerName", v.replace(NAME_ONLY_SANITIZE, ""))}
+              onChange={(v) => handleFieldChange("ownerName", v.replace(OWNERNAME_REGEX, ""))}
               required
-              maxLength={100}
+            
               placeholder={t('basicInfo.fields.ownerName.placeholder', { fallback: "" })}
               error={errors.ownerName}
               showError={true}
@@ -430,9 +430,9 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             <CompactField
               label={t('basicInfo.fields.occupierName.label', { fallback: "Occupier Name *" })}
               value={formData.occupierName}
-              onChange={(v) => handleFieldChange("occupierName", v.replace(NAME_ONLY_SANITIZE, ""))}
+              onChange={(v) => handleFieldChange("occupierName", v.replace(OWNERNAME_REGEX, ""))}
               required
-              maxLength={100}
+            
               placeholder={t('basicInfo.fields.occupierName.placeholder', { fallback: "" })}
               error={errors.occupierName}
               showError={true}
@@ -440,8 +440,8 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             <CompactField
               label={t('basicInfo.fields.renterName.label', { fallback: "Renter Name" })}
               value={formData.renterName}
-              onChange={(v) => handleFieldChange("renterName", v.replace(NAME_ONLY_SANITIZE, ""))}
-              maxLength={100}
+              onChange={(v) => handleFieldChange("renterName", v.replace(OWNERNAME_REGEX, ""))}
+            
               placeholder={t('basicInfo.fields.renterName.placeholder', { fallback: "" })}
             />
             <CompactSelectField
@@ -481,8 +481,7 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             <CompactField
               label={t('basicInfo.fields.flatOrShopName.label', { fallback: "Shop Name" })}
               value={formData.flatOrShopName}
-              onChange={(v) => handleFieldChange("flatOrShopName", v.replace(NAME_ONLY_SANITIZE, ""))}
-              maxLength={100}
+              onChange={(v) => handleFieldChange("flatOrShopName", v.replace(OWNERNAME_REGEX, ""))}
               placeholder={t('basicInfo.fields.flatOrShopName.placeholder', { fallback: "" })}
             />
             <CompactField

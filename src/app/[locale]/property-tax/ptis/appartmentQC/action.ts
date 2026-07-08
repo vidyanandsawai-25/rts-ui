@@ -8,10 +8,41 @@ import {
   getApartmentQCDetailsLocalized,
   getApartmentQCDetailsSafe,
   updateApartmentQCDetailsLocalized,
+  getFloorQCByPropertyIdLocalized,
+  getFloorQCByPropertyIdSafe,
+  updateFloorQCDetailLocalized,
+  updateFloorQCDetailsBulkLocalized,
+  updateBasicDetailsLocalized,
+  getOldPropertyDataLocalized,
+  syncRoomsForPropertyDetailsLocalized,
+  getFilterOptionsLocalized,
+  getApartmentPropertyTaxDetailsLocalized,
+  getPartTypeFromMainTab,
+  getApartmentPropertyTaxDetailsCvLocalized,
+  getDualMethodTaxDetails,
+  getApartmentPropertyTaxDetailsByIdLocalized,
+  getApartmentPropertyTaxDetailsCvByIdLocalized,
+  getDualMethodTaxDetailsById,
+  getPropertyPhotosLocalized,
+  getPropertyPhotosSafe, 
 } from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
+import type { OldPropertyData } from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
 import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import { getAppConfig } from "@/config/app.config";
+import type {
+  ApartmentTaxDetailsItems,
+  ApartmentPartType,
+  DualMethodTaxDetails,
+} from "@/types/apartmentQC.types";
+import { getUseTypesPagedServer } from "@/lib/api/typeofuse.service";
+import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
+import { createRoomWiseMinusSafe, createRoomWiseSubmissionSafe, deleteRoomWiseMinusSafe, deleteRoomWiseSubmissionSafe, getRoomWiseSubmissionsSafe, updateRoomWiseMinusSafe, updateRoomWiseSubmissionSafe } from "@/lib/api/ptis/appartmentQC/appartmentQC-room.service";
+import { getSubTypesPagedServer } from "@/lib/api/typeofusesubtype.service";
+import { getPropertyTypesPaged } from "@/lib/api/property-type-crud.service";
+import { getRoomTypeData } from "@/lib/api/ptis/floorSubmission";
+import { getFloorPaged } from "@/lib/api/floor.service";
 
 /* ============================================================
    ACTION RESULT TYPE
@@ -39,7 +70,7 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
 
   // Check if it looks like a translation key (dotted notation with only lowercase/numbers)
   const looksLikeTranslationKey = /^[a-z0-9]+(?:\.[a-z0-9]+)+$/i.test(value);
-  
+
   if (!looksLikeTranslationKey) {
     // Already a plain message (including backend error messages), return as-is
     return value;
@@ -208,12 +239,11 @@ export async function revalidateApartmentQCAction(): Promise<ActionResult> {
  */
 export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
-    const { getFloorPaged } = await import("@/lib/api/floor.service");
     const res = await getFloorPaged(1, -1);
     const items = res.items ?? [];
-    const all = items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ 
-      value: String(f.id), 
-      label: f.description || f.floorCode || '' 
+    const all = items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({
+      value: String(f.id),
+      label: f.description || f.floorCode || ''
     }));
     return { success: true, data: all };
   } catch (error: unknown) {
@@ -226,12 +256,11 @@ export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value
  */
 export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
-    const { getConstructionPaged } = await import("@/lib/api/constructiontypemaster/construction-crud.service");
     const res = await getConstructionPaged(1, -1);
     const items = res.items ?? [];
-    const all = items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ 
-      value: String(c.id), 
-      label: c.description || c.constructionCode || '' 
+    const all = items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({
+      value: String(c.id),
+      label: c.description || c.constructionCode || ''
     }));
     return { success: true, data: all };
   } catch (error: unknown) {
@@ -244,12 +273,11 @@ export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Ar
  */
 export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
-    const { getUseTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
     const res = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
     const items = res.items ?? [];
-    const all = items.map(u => ({ 
-      value: String(u.typeOfUseId), 
-      label: u.description || u.typeOfUseCode || '' 
+    const all = items.map(u => ({
+      value: String(u.typeOfUseId),
+      label: u.description || u.typeOfUseCode || ''
     }));
     return { success: true, data: all };
   } catch (error: unknown) {
@@ -262,11 +290,10 @@ export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ val
  */
 export async function fetchAllSubTypesAction(): Promise<ActionResult<Array<{ value: string; label: string; typeOfUseId: string }>>> {
   try {
-    const { getSubTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
     const res = await getSubTypesPagedServer({ pageNumber: 1, pageSize: -1 });
     const items = res.items ?? [];
-    const all = items.map(s => ({ 
-      value: String(s.subTypeOfUseId), 
+    const all = items.map(s => ({
+      value: String(s.subTypeOfUseId),
       label: s.description || '',
       typeOfUseId: String(s.typeOfUseId)
     }));
@@ -296,7 +323,6 @@ export async function fetchFloorQCByPropertyIdAction(
   type: 'rateable' | 'capital' | 'dual' | string
 ): Promise<ActionResult<ApartmentQCDetail[]>> {
   try {
-    const { getFloorQCByPropertyIdLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getFloorQCByPropertyIdLocalized(propertyId, type);
     // data.items is PagedResponse<ApartmentQCDetail>; extract the flat items array
     return {
@@ -322,7 +348,6 @@ export async function fetchFloorQCByPropertyIdSafeAction(
   type: 'rateable' | 'capital' | 'dual' | string
 ): Promise<ApartmentQCDetail[]> {
   try {
-    const { getFloorQCByPropertyIdSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     return await getFloorQCByPropertyIdSafe(propertyId, type);
   } catch {
     return [];
@@ -363,7 +388,6 @@ export async function updateFloorQCDetailAction(
   payload: FloorQCUpdatePayload
 ): Promise<ActionResult> {
   try {
-    const { updateFloorQCDetailLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateFloorQCDetailLocalized(propertyId, detailId, payload);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -402,7 +426,6 @@ export async function updateFloorQCDetailsBulkAction(
   items: FloorQCBulkUpdateItem[]
 ): Promise<ActionResult> {
   try {
-    const { updateFloorQCDetailsBulkLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateFloorQCDetailsBulkLocalized(propertyId, items);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -452,7 +475,6 @@ export async function updateBasicDetailsAction(
   payload: BasicDetailsUpdatePayload
 ): Promise<ActionResult> {
   try {
-    const { updateBasicDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateBasicDetailsLocalized(propertyId, payload);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -470,23 +492,22 @@ export async function updateBasicDetailsAction(
  */
 export async function fetchAllPropertyTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
   try {
-    const { getPropertyTypesPaged } = await import("@/lib/api/property-type-crud.service");
     const pageSize = 1000;
     let page = 1;
     let all: Array<{ value: string; label: string }> = [];
     let hasMore = true;
-    
+
     while (hasMore) {
       const res = await getPropertyTypesPaged(page, pageSize);
       const items = res.items ?? [];
-      all = [...all, ...items.map((pt) => ({ 
-        value: String(pt.id), 
-        label: pt.propertyDescription || pt.type 
+      all = [...all, ...items.map((pt) => ({
+        value: String(pt.id),
+        label: pt.propertyDescription || pt.type
       }))];
       if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
       else page++;
     }
-    
+
     return { success: true, data: all };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to fetch property types");
@@ -503,7 +524,6 @@ export async function fetchAllPropertyTypesAction(): Promise<ActionResult<Array<
  */
 export async function fetchRoomTypesAction(): Promise<ActionResult<Array<{ id: number; code: string; name: string; description: string }>>> {
   try {
-    const { getRoomTypeData } = await import("@/lib/api/ptis/floorSubmission/floor-lookup.service");
     const data = await getRoomTypeData();
     return {
       success: true,
@@ -527,7 +547,6 @@ export async function fetchRoomWiseSubmissionsAction(params: {
   propertyDetailsId?: number;
 }): Promise<ActionResult<unknown[]>> {
   try {
-    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const data = await getRoomWiseSubmissionsSafe(params);
     return { success: true, data };
   } catch (error: unknown) {
@@ -544,12 +563,11 @@ export async function getRoomWiseSubmissionsAction(params: {
   propertyDetailsId: number;
 }): Promise<{ success: boolean; data?: import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service").RoomWiseSubmissionData[]; error?: string }> {
   try {
-    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const data = await getRoomWiseSubmissionsSafe({
       propertyId: params.propertyId,
       propertyDetailsId: params.propertyDetailsId,
     });
-    
+
     return {
       success: true,
       data,
@@ -601,7 +619,6 @@ export async function createRoomWiseSubmissionAction(payload: {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { createRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const resolveIsOffset = (offset: { isOffset?: boolean; operation?: string }) =>
       offset.isOffset !== undefined
         ? offset.isOffset
@@ -669,12 +686,7 @@ export async function updateRoomWithOffsetsAction(
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { 
-      updateRoomWiseSubmissionSafe,
-      createRoomWiseMinusSafe,
-      updateRoomWiseMinusSafe
-    } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
-
+   
     // Update main room (without roomWiseMinusData since we handle offsets separately)
     const { roomWiseMinusData, ...roomPayload } = payload;
     const roomResult = await updateRoomWiseSubmissionSafe(id, {
@@ -693,7 +705,7 @@ export async function updateRoomWithOffsetsAction(
     const processedOffsets = await Promise.all(
       (roomWiseMinusData || []).map(async (offset) => {
         const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
-        
+
         const resolveIsOffset = (offset: { isOffset?: boolean; operation?: string }) =>
           offset.isOffset !== undefined
             ? offset.isOffset
@@ -733,11 +745,11 @@ export async function updateRoomWithOffsetsAction(
     );
 
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
-    
-    return { 
-      success: true, 
-      data: { ...roomResult.data, roomWiseMinusData: processedOffsets }, 
-      message: "Room updated successfully" 
+
+    return {
+      success: true,
+      data: { ...roomResult.data, roomWiseMinusData: processedOffsets },
+      message: "Room updated successfully"
     };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to update room");
@@ -791,7 +803,6 @@ export async function updateRoomWiseSubmissionAction(
  */
 export async function deleteRoomWiseSubmissionAction(id: number): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseSubmissionSafe(id);
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete room" };
@@ -808,7 +819,6 @@ export async function deleteRoomWiseSubmissionAction(id: number): Promise<Action
  */
 export async function deleteRoomWiseMinusAction(id: number): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseMinusSafe(id);
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete offset" };
@@ -839,7 +849,6 @@ export async function createRoomWiseMinusAction(payload: {
   isOffset?: boolean;
 }): Promise<ActionResult<{ id: number }>> {
   try {
-    const { createRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await createRoomWiseMinusSafe({
       ...payload,
       isOffset: payload.isOffset !== undefined
@@ -860,7 +869,6 @@ export async function createRoomWiseMinusAction(payload: {
  */
 export async function deleteRoomSubmissionNoRedirectAction(roomId: number | string): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseSubmissionSafe(Number(roomId));
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete room" };
@@ -876,7 +884,6 @@ export async function deleteRoomSubmissionNoRedirectAction(roomId: number | stri
  */
 export async function deleteOffsetSubmissionNoRedirectAction(offsetId: number | string): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseMinusSafe(Number(offsetId));
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete offset" };
@@ -900,15 +907,14 @@ export async function deleteOffsetSubmissionNoRedirectAction(offsetId: number | 
  */
 export async function fetchOldPropertyDataAction(
   oldPropertyNo: string
-): Promise<ActionResult<import("@/lib/api/ptis/appartmentQC/appartmentQC.service").OldPropertyData>> {
+): Promise<ActionResult<OldPropertyData>> {
   try {
     if (!oldPropertyNo || oldPropertyNo.trim() === "") {
       return { success: false, error: "Old property number is required" };
     }
 
-    const { getOldPropertyDataLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getOldPropertyDataLocalized(oldPropertyNo.trim());
-    
+
     return {
       success: true,
       data,
@@ -930,7 +936,6 @@ export async function syncRoomsForPropertyDetailsAction(
   propertyDetailsId: number | string
 ): Promise<ActionResult<void>> {
   try {
-    const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await syncRoomsForPropertyDetailsLocalized(propertyId, propertyDetailsId);
     return { success: true, message: "Rooms synced successfully" };
   } catch (error) {
@@ -959,7 +964,6 @@ export async function fetchFilterOptionsAction(
   partType?: string
 ): Promise<ActionResult<FilterOptionsItems>> {
   try {
-    const { getFilterOptionsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const result = await getFilterOptionsLocalized(wardId, propertyNo, field, partType);
     return { success: true, data: result.items, message: result.message };
   } catch (error) {
@@ -987,13 +991,10 @@ export interface ExcelExportConfig {
  */
 export async function getExcelExportConfigAction(): Promise<ActionResult<ExcelExportConfig>> {
   try {
-    const { cookies } = await import("next/headers");
-    const { getAppConfig } = await import("@/config/app.config");
-    
     const store = await cookies();
     const authToken = store.get('auth_token')?.value || '';
     const config = getAppConfig();
-    
+
     return {
       success: true,
       data: {
@@ -1012,11 +1013,7 @@ export async function getExcelExportConfigAction(): Promise<ActionResult<ExcelEx
    Fetches tax details for apartment properties by PartType
  ============================================================ */
 
-import type {
-  ApartmentTaxDetailsItems,
-  ApartmentPartType,
-  DualMethodTaxDetails,
-} from "@/types/apartmentQC.types";
+
 
 /**
  * Fetch apartment property tax details for a specific PartType.
@@ -1032,7 +1029,6 @@ export async function fetchApartmentPropertyTaxDetailsAction(
   partType: ApartmentPartType
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
     return {
       success: true,
@@ -1060,7 +1056,6 @@ export async function fetchApartmentPropertyTaxDetailsByTabAction(
   partitionNo?: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType, partitionNo });
     return {
@@ -1094,7 +1089,6 @@ export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
   partitionNo?: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType, partitionNo });
     return {
@@ -1127,7 +1121,6 @@ export async function fetchDualMethodTaxDetailsByTabAction(
   partitionNo?: string
 ): Promise<ActionResult<DualMethodTaxDetails>> {
   try {
-    const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getDualMethodTaxDetails(wardId, propertyNo, partType, partitionNo);
     return {
@@ -1159,7 +1152,6 @@ export async function fetchApartmentTaxDetailsByIdAction(
   mainTab: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
-    const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsByIdLocalized({ propertyId, partType });
     return {
@@ -1185,7 +1177,6 @@ export async function fetchApartmentTaxDetailsCvByIdAction(
   mainTab: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems | null>> {
   try {
-    const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsCvByIdLocalized({ propertyId, partType });
     return {
@@ -1211,7 +1202,6 @@ export async function fetchDualMethodTaxDetailsByIdAction(
   mainTab: string
 ): Promise<ActionResult<DualMethodTaxDetails>> {
   try {
-    const { getDualMethodTaxDetailsById, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getDualMethodTaxDetailsById(propertyId, partType);
     return {
@@ -1239,7 +1229,6 @@ export async function fetchPropertyPhotosAction(
   propertyId: number
 ): Promise<ActionResult<PropertyPhotoDto[]>> {
   try {
-    const { getPropertyPhotosLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getPropertyPhotosLocalized(propertyId);
     return {
       success: true,
@@ -1261,9 +1250,80 @@ export async function fetchPropertyPhotosSafeAction(
   propertyId: number
 ): Promise<PropertyPhotoDto[]> {
   try {
-    const { getPropertyPhotosSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     return await getPropertyPhotosSafe(propertyId);
   } catch {
     return [];
+  }
+}
+
+/* ============================================================
+   EXCEL EXPORT ACTION
+ ============================================================ */
+
+/**
+ * Server action to fetch the Excel export from the backend API.
+ * Returns the file data as a Base64 string for the client to download.
+ */
+export async function exportExcelAction(
+  wardId: string,
+  propertyNo: string
+): Promise<ActionResult<{ base64Data: string; filename: string }>> {
+  try {
+    if (!wardId || !propertyNo) {
+      return { success: false, error: "Missing required parameters: WardId and PropertyNo" };
+    }
+
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
+
+    if (!authToken) {
+      return { success: false, error: "Unauthorized: No authentication token found" };
+    }
+
+    const config = getAppConfig();
+    const params = new URLSearchParams();
+    params.append('WardId', wardId);
+    params.append('PropertyNo', propertyNo);
+    const backendUrl = `${config.api.baseUrl}/ApartmentQC/export-excel?${params.toString()}`;
+
+    const response = await fetch(backendUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      logger.error('[exportExcelAction] Backend API error', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      return { success: false, error: `Backend API error: ${response.statusText}` };
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64Data = buffer.toString('base64');
+
+    // Extract filename from content-disposition header if present, or use default
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = `apartment-qc-${propertyNo}.xlsx`;
+    if (contentDisposition && contentDisposition.includes('filename=')) {
+      const match = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        base64Data,
+        filename
+      }
+    };
+  } catch (error: unknown) {
+    logger.error('[exportExcelAction] Unexpected error', { error: error instanceof Error ? error : new Error(String(error)) });
+    return handleActionError(error, "Failed to export Excel file");
   }
 }

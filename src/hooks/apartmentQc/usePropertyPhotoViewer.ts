@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import type { PropertyPhotoDto } from '@/types/photoplan.types';

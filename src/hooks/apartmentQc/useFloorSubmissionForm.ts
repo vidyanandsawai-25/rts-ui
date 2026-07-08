@@ -14,7 +14,8 @@ export function useFloorSubmissionForm(
   floorOptions: Floor[] = [],
   constructionTypeOptions: ConstructionType[] = [],
   useOptions: UseType[] = [],
-  subUseTypeOptions: UseSubType[] = []
+  subUseTypeOptions: UseSubType[] = [],
+  subFloorOptions: Array<{ id?: string | number; subFloorId?: string | number; subFloorCode?: string; description?: string }> = []
 ) {
   const [formData, setFormData] = useState<Partial<FloorSubmissionRow>>(initialRow || {});
 
@@ -29,7 +30,7 @@ export function useFloorSubmissionForm(
   const [isPending, startTransition] = useTransition();
 
   const handleOpenDropdown = useCallback(
-    (key: 'loadFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType', useTypeId?: string) => {
+    (key: 'loadFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType' | 'loadSubFloor', useTypeId?: string) => {
       if (searchParams.get(key) === 'true') {
         // If we're loading subtypes, we also need to check if the typeOfUseId matches
         if (key === 'loadSubType' && useTypeId && searchParams.get('typeOfUseId') === useTypeId) {
@@ -56,6 +57,7 @@ export function useFloorSubmissionForm(
   const isLoadingConTypes = isPending && searchParams.get('loadConstruction') !== 'true';
   const isLoadingUseTypes = isPending && searchParams.get('loadUsage') !== 'true';
   const isLoadingSubTypes = isPending && searchParams.get('loadSubType') !== 'true';
+  const isLoadingSubFloors = isPending && searchParams.get('loadSubFloor') !== 'true';
 
   const transformedFloorOptions = useMemo(() => {
     const opts = floorOptions.map(f => ({ value: String(f.id), label: String(f.description || f.floorCode || f.id) }));
@@ -94,6 +96,18 @@ export function useFloorSubmissionForm(
     }
     return opts;
   }, [subUseTypeOptions, initialRow]);
+
+  const transformedSubFloorOptions = useMemo(() => {
+    const opts = subFloorOptions.map(s => {
+      const id = s.subFloorCode || s.subFloorId || s.id;
+      const desc = s.description || '';
+      return { value: String(id), label: id && desc ? `${id} - ${desc}` : (desc || String(id)) };
+    });
+    if (initialRow?.subFloorId && !opts.find(o => String(o.value) === String(initialRow.subFloorId))) {
+      opts.push({ value: String(initialRow.subFloorId), label: String(initialRow.subFloorId) });
+    }
+    return opts;
+  }, [subFloorOptions, initialRow]);
 
   const handleFieldChange = (field: keyof FloorSubmissionRow, value: FloorSubmissionRow[keyof FloorSubmissionRow]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -182,6 +196,8 @@ export function useFloorSubmissionForm(
     isLoadingUseTypes,
     subTypes: transformedSubTypeOptions,
     isLoadingSubTypes,
-    isSubTypeDisabled
+    isSubTypeDisabled,
+    subFloors: transformedSubFloorOptions,
+    isLoadingSubFloors
   };
 }
