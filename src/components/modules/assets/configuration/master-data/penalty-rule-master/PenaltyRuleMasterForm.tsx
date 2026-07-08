@@ -37,15 +37,17 @@ export default function PenaltyRuleMasterForm({
   const formFieldsRef = useRef<FormFieldsSectionRef>(null);
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => {
-        if (isEdit && statusToggleRef.current) {
-          statusToggleRef.current.focus();
-        } else if (!isEdit && formFieldsRef.current?.penaltyCodeRef?.current) {
-          formFieldsRef.current.penaltyCodeRef.current.focus();
-        }
-      }, 150);
-    }
+    if (!open) return;
+
+    const timer = setTimeout(() => {
+      if (isEdit && statusToggleRef.current) {
+        statusToggleRef.current.focus();
+      } else if (!isEdit && formFieldsRef.current?.penaltyCodeRef?.current) {
+        formFieldsRef.current.penaltyCodeRef.current.focus();
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, [open, isEdit]);
 
   return (

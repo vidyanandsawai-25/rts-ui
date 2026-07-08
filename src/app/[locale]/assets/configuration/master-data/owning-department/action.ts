@@ -58,16 +58,27 @@ export async function saveOwningDepartment(id: string, formData: FormData) {
 
     const isActive = String(formData.get("isActive") ?? "true").toLowerCase() === "true";
 
+    let numericId: number | null = null;
+    let isUpdate = false;
+
+    if (id && id.trim() !== "") {
+      numericId = Number(id);
+      if (!Number.isFinite(numericId) || numericId <= 0) {
+        return { ok: false, error: "invalid_id" };
+      }
+      isUpdate = true;
+    }
+
     const payload: OwningDepartmentFormModel = {
-      id: id && id.trim() ? Number(id) : null,
+      id: numericId,
       owningDepartmentName,
       description,
       isActive,
-      createdBy: id && id.trim() ? undefined : userId,
-      updatedBy: id && id.trim() ? userId : undefined,
+      createdBy: isUpdate ? undefined : userId,
+      updatedBy: isUpdate ? userId : undefined,
     };
 
-    if (payload.id) {
+    if (isUpdate) {
       await updateOwningDepartment(payload);
       for (const loc of locales) revalidatePath(`/${loc}${PAGE_PATH}`, "page");
       return { ok: true, mode: "update" as const };
