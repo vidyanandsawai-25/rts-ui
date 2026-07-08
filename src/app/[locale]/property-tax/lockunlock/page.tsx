@@ -12,15 +12,15 @@ export default async function Page({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<React.ReactElement> {
 
-  let dropdownProperties: { label: string; value: string }[] = [];
+  let dropdownProperties: { label: string; value: string; propertyId?: number }[] = [];
   let properties: LockUnlockPropertyItem[] = [];
   let initialPagination:
     | {
-        pageNumber: number;
-        pageSize: number;
-        totalCount: number;
-        totalPages: number;
-      }
+      pageNumber: number;
+      pageSize: number;
+      totalCount: number;
+      totalPages: number;
+    }
     | undefined;
 
   const [wardsResult, screensResult] = await Promise.all([
@@ -56,9 +56,10 @@ export default async function Page({
         return {
           label: displayValue,
           value: displayValue,
+          propertyId: p.propertyId,
         };
       })
-      .filter((option: { label: string; value: string }) => {
+      .filter((option: { label: string; value: string; propertyId?: number }) => {
         if (seen.has(option.value)) {
           return false;
         }
@@ -78,7 +79,8 @@ export default async function Page({
         const partitions = range
           .map((p) => p.value.includes("-") ? p.value.substring(p.value.indexOf("-") + 1) : "0");
         if (partitions.length > 0) {
-          partitionNoStr = partitions.join(",");
+          const uniquePartitions = Array.from(new Set(partitions));
+          partitionNoStr = uniquePartitions.join(",");
         }
       }
     }
