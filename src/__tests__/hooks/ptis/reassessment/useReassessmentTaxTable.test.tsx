@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { useReassessmentTaxTable } from "@/hooks/ptis/reassessment/useReassessmentTaxTable";
 import { renderHook } from "@testing-library/react";
 import { ReassessmentTaxRow } from "@/types/reassessment.types";

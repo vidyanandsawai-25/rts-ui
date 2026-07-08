@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { useReassessmentSummaryCards } from "@/hooks/ptis/reassessment/useReassessmentSummaryCards";
 import { renderHook } from "@testing-library/react";
 import { MappedFloorDetail, ReassessmentTaxRow } from "@/types/reassessment.types";
@@ -84,6 +84,8 @@ describe("useReassessmentSummaryCards", () => {
       "summaryCards.units.sqM": "sq.m",
       "summaryCards.units.type": "Type",
       "summaryCards.units.rupees": "₹",
+      "summaryCards.changedStatus": "CHANGED",
+      "summaryCards.sameStatus": "-",
     };
     return translations[key] || key;
   };

@@ -86,7 +86,7 @@ export function Section129Modal({
       return <span className="text-emerald-700 font-medium">{t('section129Modal.remarks.regular')}</span>;
     }
     if (row.remark.includes('Municipal Tax Applied')) {
-      const pct = row.remark.replace(' Municipal Tax Applied', '');
+      const pct = row.remark.replace(' Municipal Tax Applied', '').replace('%', '');
       return <span className="text-amber-800 font-medium">{pct}{t('section129Modal.remarks.municipalTaxApplied')}</span>;
     }
     return <span className="text-amber-800 font-medium">{String(value)}</span>;

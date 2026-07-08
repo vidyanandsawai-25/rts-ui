@@ -8,8 +8,8 @@
     "oldPlanPhoto": "Old Plan Photo",
     "newPropertyPhoto": "New Property Photo",
     "newPlanPhoto": "New Plan Photo",
-    "photoAsPerOld": "Old Property Photo",
-    "photoAsPerNew": "New Property Photo"
+    "photoAsPerOld": "Photograph as per Municipal Registration",
+    "photoAsPerNew": "Photograph as per New Survey"
   },
   "sectionHeaders": {
     "municipalRegistration": "Details as per Municipal Corp. Registration",
@@ -69,7 +69,8 @@
       "type": "Type",
       "rupees": "₹"
     },
-    "changedStatus": "CHANGED"
+    "changedStatus": "CHANGED",
+    "sameStatus": "-"
   },
   "retrospectiveModal": {
     "title": "Retrospective Tax Details",

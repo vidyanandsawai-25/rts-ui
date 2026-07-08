@@ -139,7 +139,7 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
 
   // Build dynamic columns
   const columns = taxHeads.map((tax) => ({
-    key: tax.taxName.replace(/\s+/g, ''),
+    key: toTaxKey(tax.taxName),
     label: `${tax.taxName} (₹)`,
     displayOrder: tax.displayOrder,
   }));
@@ -149,7 +149,7 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
   const newTaxes: { [key: string]: number } = {};
 
   taxHeads.forEach((tax) => {
-    const key = tax.taxName.replace(/\s+/g, '');
+    const key = toTaxKey(tax.taxName);
     oldTaxes[key] = tax.oldAmount;
     newTaxes[key] = tax.newAmount;
   });
@@ -159,7 +159,7 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
   let additionalTotalTax = 0;
   
   taxHeads.forEach((tax) => {
-    const key = tax.taxName.replace(/\s+/g, '');
+    const key = toTaxKey(tax.taxName);
     const difference = tax.newAmount - tax.oldAmount;
     additionalTaxes[key] = difference;
     additionalTotalTax += difference;
