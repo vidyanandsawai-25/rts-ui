@@ -38,13 +38,15 @@ function HeaderCouncilLogo({
   logoFallbackText: string;
 }) {
   const [logoHasError, setLogoHasError] = useState(false);
-  if (!logoSrc || logoHasError) {
+
+  if (logoHasError || !logoSrc) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 text-center text-white font-bold text-xs leading-tight px-1">
         {logoFallbackText}
       </div>
     );
   }
+
   return (
     <Image
       src={logoSrc}

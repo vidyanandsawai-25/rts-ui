@@ -2,7 +2,7 @@
 
 import { Bell, Building2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/common/Badge';
+import { Badge } from '@/components/common';
 import type { ULBProgressHeaderProps } from '@/types/ulbconfig-master.types';
 
 export function ULBProgressHeader({

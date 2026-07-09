@@ -33,6 +33,7 @@ export default async function ULBConfigurationPage({ params }: PageProps) {
     ulb: null,
     departments: [],
     licences: [],
+    images: [],
   };
 
   return (
@@ -40,6 +41,7 @@ export default async function ULBConfigurationPage({ params }: PageProps) {
       initialUlbData={pageData.ulb}
       initialDeptData={pageData.departments}
       initialLicenceData={pageData.licences}
+      initialImagesData={pageData.images}
       fetchError={fetchError}
       statusCode={statusCode}
     />
