@@ -54,6 +54,19 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
         }
     };
 
+    const handleFileDeleteWithConfirm = () => {
+        if (onFileDelete && data) {
+            confirm({
+                title: t("building.confirmDeleteTitle") || "Delete Document",
+                description: t("building.confirmDeleteDesc") || "Are you sure you want to delete the attached document? This action cannot be undone.",
+                confirmText: t("building.confirmDeleteOk") || "Yes, Delete",
+                cancelText: t("building.confirmDeleteCancel") || "No, Cancel",
+                variant: "delete",
+                onConfirm: () => onFileDelete(data.certificateTypeId)
+            });
+        }
+    };
+
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
@@ -122,7 +135,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         isDocumentInvalid={isDocumentInvalid}
                         documentError={fieldErrors?.document || validationError}
                         onFileUpload={handleFileUploadWithConfirm}
-                        onFileDelete={onFileDelete ? () => onFileDelete(data.certificateTypeId) : undefined}
+                        onFileDelete={onFileDelete ? handleFileDeleteWithConfirm : undefined}
                         t={t}
                         label={displayName}
                         pendingFile={data.pendingFile}
