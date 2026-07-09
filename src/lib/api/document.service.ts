@@ -19,11 +19,11 @@ function getBaseUrl(): string {
   return baseUrl.replace(/\/+$/, "");
 }
 
-export async function uploadDocument(file: File, params: DocumentUploadParams): Promise<DocumentUploadResponse> {
+export async function uploadDocument(file: File, params?: DocumentUploadParams): Promise<DocumentUploadResponse> {
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/documents/upload`;
   const headers = await getAuthHeaders();
-  const formData = buildDocumentUploadFormData(file, params);
+  const formData = buildDocumentUploadFormData(file, params || {});
   const response = await serverFetch(url, { method: 'POST', headers, body: formData, cache: 'no-store' });
   const text = await response.text();
   let data;
