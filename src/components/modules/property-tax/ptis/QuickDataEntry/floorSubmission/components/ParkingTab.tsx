@@ -81,7 +81,7 @@ export const ParkingTab: React.FC<ParkingTabProps> = ({
           size="sm"
           label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyParkingButton')}
           onClick={onApply}
-          disabled={selectedIds.size === 0}
+          disabled={selectedIds.size <= disabledIds.size || isApplying}
           isLoading={isApplying}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />

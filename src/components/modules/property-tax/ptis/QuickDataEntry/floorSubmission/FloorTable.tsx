@@ -126,7 +126,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
     }
 
     return baseCols;
-  }, [columns, t, deleteCellRenderer]);
+  }, [columns, t, deleteCellRenderer, viewOnly]);
 
   /**
    * Handle row click to edit a floor

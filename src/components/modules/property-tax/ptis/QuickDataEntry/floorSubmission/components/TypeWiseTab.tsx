@@ -123,7 +123,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
           size="sm"
           label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
           onClick={onApply}
-          disabled={selectedIds.size === 0}
+          disabled={isChangeTypeDisabled || isApplying}
           isLoading={isApplying}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />
