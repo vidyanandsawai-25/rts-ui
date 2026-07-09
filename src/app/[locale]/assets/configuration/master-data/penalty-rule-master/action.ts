@@ -59,11 +59,11 @@ export async function savePenaltyRule(id: string, formData: FormData) {
     penaltyValueRaw = String(formData.get("penaltyValue") ?? "").trim();
     gracePeriodDaysRaw = String(formData.get("gracePeriodDays") ?? "").trim();
 
-    if (!penaltyCode) return { ok: false, error: "invalid_penaltyCode" };
-    if (!penaltyName) return { ok: false, error: "invalid_penaltyName" };
-    if (!calculationType) return { ok: false, error: "invalid_calculationType" };
-    if (!penaltyValueRaw) return { ok: false, error: "invalid_penaltyValue" };
-    if (!gracePeriodDaysRaw) return { ok: false, error: "invalid_gracePeriodDays" };
+    if (penaltyCode === "") return { ok: false, error: "invalid_penaltyCode" };
+    if (penaltyName === "") return { ok: false, error: "invalid_penaltyName" };
+    if (calculationType === "") return { ok: false, error: "invalid_calculationType" };
+    if (penaltyValueRaw === "") return { ok: false, error: "invalid_penaltyValue" };
+    if (gracePeriodDaysRaw === "") return { ok: false, error: "invalid_gracePeriodDays" };
 
     const penaltyValue = Number(penaltyValueRaw);
     if (!Number.isFinite(penaltyValue) || penaltyValue < 0) return { ok: false, error: "invalid_penaltyValue" };

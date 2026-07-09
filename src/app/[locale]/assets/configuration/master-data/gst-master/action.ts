@@ -57,10 +57,10 @@ export async function saveGstMaster(id: string, formData: FormData) {
     taxPercentageRaw = String(formData.get("taxPercentage") ?? "").trim();
     effectiveFromDate = String(formData.get("effectiveFromDate") ?? "").trim();
 
-    if (!taxCode) return { ok: false, error: "invalid_taxCode" };
-    if (!taxName) return { ok: false, error: "invalid_taxName" };
-    if (!taxPercentageRaw) return { ok: false, error: "invalid_taxPercentage" };
-    if (!effectiveFromDate) return { ok: false, error: "invalid_effectiveFromDate" };
+    if (taxCode === "") return { ok: false, error: "invalid_taxCode" };
+    if (taxName === "") return { ok: false, error: "invalid_taxName" };
+    if (taxPercentageRaw === "") return { ok: false, error: "invalid_taxPercentage" };
+    if (effectiveFromDate === "") return { ok: false, error: "invalid_effectiveFromDate" };
 
     const taxPercentage = Number(taxPercentageRaw);
     if (!Number.isFinite(taxPercentage)) return { ok: false, error: "invalid_taxPercentage" };

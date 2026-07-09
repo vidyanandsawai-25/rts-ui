@@ -24,15 +24,15 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
   }
 
   let penaltyData = null;
-    try {
+  try {
     penaltyData = await getPenaltyRuleByIdAction(penaltyId);
   } catch (error) {
-   if (error instanceof ApiError && error.statusCode === 404) {
+    if (error instanceof ApiError && error.statusCode === 404) {
       notFound();
     }
-  logger.error("Failed to load details for editing", { error });
-     throw error;
-   }
+    logger.error("Failed to load details for editing", { error });
+    throw error;
+  }
 
   return <PenaltyRuleMasterForm id={penaltyId} initialData={penaltyData} />;
 }
