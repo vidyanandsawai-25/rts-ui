@@ -1,22 +1,13 @@
 export interface RawOwningDepartment {
   id?: number;
-  Id?: number;
   owningDepartmentName?: string;
-  OwningDepartmentName?: string;
   description?: string;
-  Description?: string;
   isActive?: boolean;
-  IsActive?: boolean;
   markedForDeletion?: boolean;
-  MarkedForDeletion?: boolean;
   createdDate?: string | null;
-  CreatedDate?: string | null;
   updatedDate?: string | null;
-  UpdatedDate?: string | null;
   createdBy?: number | null;
-  CreatedBy?: number | null;
   updatedBy?: number | null;
-  UpdatedBy?: number | null;
 }
 
 export interface OwningDepartment {

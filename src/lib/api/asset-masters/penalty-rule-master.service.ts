@@ -4,17 +4,17 @@ import { PagedResponse } from "@/types/common.types";
 import { PenaltyRule, PenaltyRuleFormModel, RawPenaltyRule } from "@/types/asset-masters/penalty-rule-master.types";
 
 const normalize = (item: RawPenaltyRule): PenaltyRule => ({
-  id: item.id ?? item.Id ?? 0,
-  penaltyCode: item.penaltyCode ?? item.PenaltyCode ?? "",
-  penaltyName: item.penaltyName ?? item.PenaltyName ?? "",
-  calculationType: item.calculationType ?? item.CalculationType ?? "",
-  penaltyValue: item.penaltyValue ?? item.PenaltyValue ?? 0,
-  gracePeriodDays: item.gracePeriodDays ?? item.GracePeriodDays ?? 0,
-  isActive: item.isActive ?? item.IsActive ?? false,
-  createdDate: item.createdDate ?? item.CreatedDate ?? null,
-  updatedDate: item.updatedDate ?? item.UpdatedDate ?? null,
-  createdBy: item.createdBy ?? item.CreatedBy ?? null,
-  updatedBy: item.updatedBy ?? item.UpdatedBy ?? null,
+  id: item.id ?? 0,
+  penaltyCode: item.penaltyCode ?? "",
+  penaltyName: item.penaltyName ?? "",
+  calculationType: item.calculationType ?? "",
+  penaltyValue: item.penaltyValue ?? 0,
+  gracePeriodDays: item.gracePeriodDays ?? 0,
+  isActive: item.isActive ?? false,
+  createdDate: item.createdDate ?? null,
+  updatedDate: item.updatedDate ?? null,
+  createdBy: item.createdBy ?? null,
+  updatedBy: item.updatedBy ?? null,
 });
 
 export async function getPenaltyRulesPaged(

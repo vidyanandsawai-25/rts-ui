@@ -1,15 +1,15 @@
 export interface RawGstMaster {
-  id?: number; Id?: number;
-  taxCode?: string; TaxCode?: string;
-  taxName?: string; TaxName?: string;
-  taxPercentage?: number; TaxPercentage?: number;
-  effectiveFromDate?: string | null; EffectiveFromDate?: string | null;
-  effectiveToDate?: string | null; EffectiveToDate?: string | null;
-  isActive?: boolean; IsActive?: boolean;
-  createdDate?: string | null; CreatedDate?: string | null;
-  updatedDate?: string | null; UpdatedDate?: string | null;
-  createdBy?: number | null; CreatedBy?: number | null;
-  updatedBy?: number | null; UpdatedBy?: number | null;
+  id?: number;
+  taxCode?: string;
+  taxName?: string;
+  taxPercentage?: number;
+  effectiveFromDate?: string | null;
+  effectiveToDate?: string | null;
+  isActive?: boolean;
+  createdDate?: string | null;
+  updatedDate?: string | null;
+  createdBy?: number | null;
+  updatedBy?: number | null;
 }
 
 export interface GstMaster {
@@ -32,7 +32,7 @@ export interface GstMasterFormModel {
   taxCode: string;
   taxName: string;
   taxPercentage: number | string;
-  effectiveFromDate?: string;
+  effectiveFromDate: string;
   effectiveToDate?: string;
   isActive: boolean;
   createdBy?: number;

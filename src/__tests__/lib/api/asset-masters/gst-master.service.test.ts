@@ -31,13 +31,13 @@ describe("GstMaster API Service", () => {
         data: {
           items: [
             {
-              Id: 1,
-              TaxCode: "GST-18",
-              TaxName: "GST 18%",
-              TaxPercentage: 18,
-              IsActive: true,
-              EffectiveFromDate: "2017-07-01T00:00:00",
-              EffectiveToDate: null,
+              id: 1,
+              taxCode: "GST-18",
+              taxName: "GST 18%",
+              taxPercentage: 18,
+              isActive: true,
+              effectiveFromDate: "2017-07-01T00:00:00",
+              effectiveToDate: null,
             },
           ],
           totalCount: 1,
@@ -87,11 +87,11 @@ describe("GstMaster API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue({
         success: true,
         data: {
-          Id: 2,
-          TaxCode: "GST-12",
-          TaxName: "GST 12%",
-          TaxPercentage: 12,
-          IsActive: false,
+          id: 2,
+          taxCode: "GST-12",
+          taxName: "GST 12%",
+          taxPercentage: 12,
+          isActive: false,
         },
       });
 

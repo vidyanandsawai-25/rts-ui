@@ -31,13 +31,13 @@ describe("PenaltyRuleMaster API Service", () => {
         data: {
           items: [
             {
-              Id: 1,
-              PenaltyCode: "LATE_RENT",
-              PenaltyName: "Late Rent",
-              CalculationType: "Percentage",
-              PenaltyValue: 10,
-              GracePeriodDays: 5,
-              IsActive: true,
+              id: 1,
+              penaltyCode: "LATE_RENT",
+              penaltyName: "Late Rent",
+              calculationType: "Percentage",
+              penaltyValue: 10,
+              gracePeriodDays: 5,
+              isActive: true,
             },
           ],
           totalCount: 1,
@@ -87,13 +87,13 @@ describe("PenaltyRuleMaster API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue({
         success: true,
         data: {
-          Id: 2,
-          PenaltyCode: "FLAT_FEE",
-          PenaltyName: "Flat Fee",
-          CalculationType: "FlatAmount",
-          PenaltyValue: 100,
-          GracePeriodDays: 2,
-          IsActive: false,
+          id: 2,
+          penaltyCode: "FLAT_FEE",
+          penaltyName: "Flat Fee",
+          calculationType: "FlatAmount",
+          penaltyValue: 100,
+          gracePeriodDays: 2,
+          isActive: false,
         },
       });
 

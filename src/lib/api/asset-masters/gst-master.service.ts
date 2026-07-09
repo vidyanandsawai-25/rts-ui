@@ -4,17 +4,17 @@ import { PagedResponse } from "@/types/common.types";
 import { GstMaster, GstMasterFormModel, RawGstMaster } from "@/types/asset-masters/gst-master.types";
 
 const normalize = (item: RawGstMaster): GstMaster => ({
-  id: item.id ?? item.Id ?? 0,
-  taxCode: item.taxCode ?? item.TaxCode ?? "",
-  taxName: item.taxName ?? item.TaxName ?? "",
-  taxPercentage: item.taxPercentage ?? item.TaxPercentage ?? 0,
-  effectiveFromDate: item.effectiveFromDate ?? item.EffectiveFromDate ?? null,
-  effectiveToDate: item.effectiveToDate ?? item.EffectiveToDate ?? null,
-  isActive: item.isActive ?? item.IsActive ?? false,
-  createdDate: item.createdDate ?? item.CreatedDate ?? null,
-  updatedDate: item.updatedDate ?? item.UpdatedDate ?? null,
-  createdBy: item.createdBy ?? item.CreatedBy ?? null,
-  updatedBy: item.updatedBy ?? item.UpdatedBy ?? null,
+  id: item.id ?? 0,
+  taxCode: item.taxCode ?? "",
+  taxName: item.taxName ?? "",
+  taxPercentage: item.taxPercentage ?? 0,
+  effectiveFromDate: item.effectiveFromDate ?? null,
+  effectiveToDate: item.effectiveToDate ?? null,
+  isActive: item.isActive ?? false,
+  createdDate: item.createdDate ?? null,
+  updatedDate: item.updatedDate ?? null,
+  createdBy: item.createdBy ?? null,
+  updatedBy: item.updatedBy ?? null,
 });
 
 export async function getGstMastersPaged(

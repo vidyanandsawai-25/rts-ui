@@ -8,15 +8,15 @@ import {
 } from "@/types/asset-masters/owning-department.types";
 
 const normalize = (item: RawOwningDepartment): OwningDepartment => ({
-  id: item.id ?? item.Id ?? 0,
-  owningDepartmentName: item.owningDepartmentName ?? item.OwningDepartmentName ?? "",
-  description: item.description ?? item.Description ?? "",
-  isActive: item.isActive ?? item.IsActive ?? false,
-  markedForDeletion: item.markedForDeletion ?? item.MarkedForDeletion ?? false,
-  createdDate: item.createdDate ?? item.CreatedDate ?? null,
-  updatedDate: item.updatedDate ?? item.UpdatedDate ?? null,
-  createdBy: item.createdBy ?? item.CreatedBy ?? null,
-  updatedBy: item.updatedBy ?? item.UpdatedBy ?? null,
+  id: item.id ?? 0,
+  owningDepartmentName: item.owningDepartmentName ?? "",
+  description: item.description ?? "",
+  isActive: item.isActive ?? false,
+  markedForDeletion: item.markedForDeletion ?? false,
+  createdDate: item.createdDate ?? null,
+  updatedDate: item.updatedDate ?? null,
+  createdBy: item.createdBy ?? null,
+  updatedBy: item.updatedBy ?? null,
 });
 
 export async function getOwningDepartmentsPaged(

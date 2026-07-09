@@ -1,10 +1,5 @@
-import { LoadingPage } from '@/components/common/LoadingPage';
+import { LoadingPage } from "@/components/common";
 
-/**
- * Home page loading state using common LoadingPage component.
- * Uses the standard 'common.loading' translation namespace.
- */
 export default function Loading() {
-    return <LoadingPage
-      translationNamespace="common.loading" />;
+  return <LoadingPage translationNamespace="common.loading" />;
 }
