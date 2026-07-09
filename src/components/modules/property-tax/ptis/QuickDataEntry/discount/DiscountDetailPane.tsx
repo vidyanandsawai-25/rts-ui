@@ -8,7 +8,7 @@ import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { DiscountValueInput } from "./DiscountValueInput";
 import { getLocalizedName } from "@/lib/utils/social-details";
-import { checkDiscountRequiredFields } from "@/lib/validation/discount/checkDiscountRequiredFields";
+
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
@@ -31,6 +31,8 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     t,
 }) => {
     const { confirm } = useConfirm();
+    const isActiveDiscount = (item: DiscountAttributeState) =>
+        item.dataType.toUpperCase() === "BIT" ? item.bitValue === true : item.enabled;
 
     const handleFileUploadWithConfirm = (file: File) => {
         if (data && (data.documentGuid || data.documentBindingId)) {
@@ -70,26 +72,19 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         );
     }
 
-    const displayName = getLocalizedName(
-        data.socialAttributeCode,
-        data.socialAttributeName,
-        t as unknown as Parameters<typeof getLocalizedName>[2]
-    );
-
+    const displayName = getLocalizedName(data.socialAttributeCode, data.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
     const tWithHas = t as unknown as { has?: (key: string) => boolean };
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
     const hasRemarkPlaceholder = typeof tWithHas.has === "function" && tWithHas.has("discount.remarkPlaceholder");
 
+    const hasAnyData = !!(
+        data.intValue !== null && data.intValue !== undefined ||
+        data.decimalValue !== null && data.decimalValue !== undefined ||
+        data.textValue?.trim() || data.dateValue?.trim() ||
+        data.documentGuid?.trim() || data.documentBindingId || data.remark?.trim()
+    );
 
-    const hasAnyData = (data.intValue !== null && data.intValue !== undefined) ||
-        (data.decimalValue !== null && data.decimalValue !== undefined) ||
-        (data.textValue && data.textValue.trim() !== "") ||
-        (data.dateValue && data.dateValue.trim() !== "") ||
-        (data.documentGuid && data.documentGuid.trim() !== "") ||
-        (!!data.documentBindingId) ||
-        (data.remark && data.remark.trim() !== "");
-
-    if (!data.enabled && !hasAnyData) {
+    if (!isActiveDiscount(data) && !hasAnyData) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-blue-500 mb-3" />
@@ -101,16 +96,11 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         );
     }
 
-    const isDisabled = !data.enabled;
+    const isDisabled = !isActiveDiscount(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
     const isDocumentInvalid = !!validationError && validationError === docRequiredMsg;
     const isValueInvalid = !!validationError && !isDocumentInvalid;
-
-    const dataTypeUpper = (data.dataType || "").toUpperCase();
-    const showValueInput = dataTypeUpper !== "BIT";
-    const isRequiredFieldMissing = showValueInput && data
-        ? !!checkDiscountRequiredFields(data, (key, params) => t(key, params))
-        : false;
+    const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
         isDisabled
@@ -159,21 +149,20 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     </Label>
                     <DocumentAttachment
                         documentGuid={data.documentGuid || undefined}
+                        fileName={data.fileName || undefined}
                         documentUrl={data.documentUrl || undefined}
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
-                        isDisabled={isDisabled || isRequiredFieldMissing}
+                        isDeleting={data.isDeleting}
+                        isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
                         onFileDelete={handleFileDeleteWithConfirm}
                         t={t}
                         label={displayName}
+                        pendingFile={data.pendingFile}
                     />
-                    {isRequiredFieldMissing && !isDisabled && (
-                        <p className="text-xs font-semibold text-amber-600 mt-1">
-                            {t("discount.fillRequiredBeforeUploadHint") || "Please enter the required details above to enable document upload."}
-                        </p>
-                    )}
+
                 </div>
 
                 <div className="space-y-1.5 w-full">
