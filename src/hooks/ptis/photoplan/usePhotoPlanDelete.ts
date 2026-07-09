@@ -34,10 +34,20 @@ export function usePhotoPlanDelete({
   const handleDeletePhoto = useCallback(async (indexToDelete: number) => {
     if (!activeCategory) return;
     const imgToDelete = activeCategory.images[indexToDelete];
-    if (propertyId && imgToDelete?.propertyPhotoId) {
+    if (propertyId && imgToDelete) {
+      const documentGuid = imgToDelete.documentGuid || (() => {
+        const match = imgToDelete.src.match(/\/documents\/([a-fA-F0-9-]{36})/);
+        return match ? match[1] : '';
+      })();
+
+      if (!documentGuid) {
+        toast.error(t('media.failedToDelete') || 'Failed to delete photo: missing document GUID');
+        return;
+      }
+
       setIsDeleting(true);
       try {
-        const res = await deletePropertyPhotoAction(imgToDelete.propertyPhotoId, locale);
+        const res = await deletePropertyPhotoAction(documentGuid, locale);
         if (!res.success) {
           toast.error(res.error || t('media.failedToDelete') || 'Failed to delete photo');
           setIsDeleting(false);

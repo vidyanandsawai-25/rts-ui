@@ -6,9 +6,7 @@ import {
     PropertyCertificateBulkSaveDto, 
     PropertyCertificateBulkSaveResponseDto 
 } from "@/types/building-permission.types";
-import { cookies } from 'next/headers';
-import { getAppConfig } from '@/config/app.config';
-import { serverFetch } from '@/lib/utils/server-fetch';
+
 
 interface BackendApiResponseWrapper<T> {
     success: boolean;
@@ -44,127 +42,64 @@ export async function getCertificateTypesWithStatus(
     };
 }
 
-// Helper to build auth headers from cookies for server-side multipart uploads
-async function getAuthHeaders(): Promise<Record<string, string>> {
-    const cookieStore = await cookies();
-    const headers: Record<string, string> = {
-        'Accept': 'application/json, text/plain, */*',
-    };
-    
-    const token = cookieStore.get('auth_token')?.value;
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    
-    const csrf = cookieStore.get('csrf_token')?.value;
-    if (csrf) headers['X-CSRF-Token'] = csrf;
-    
-    const cookieStr = cookieStore.getAll()
-        .filter(c => /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name))
-        .map(c => `${c.name.replace(/[^\x00-\x7F]/g, '')}=${c.value.replace(/[^\x00-\x7F]/g, '')}`)
-        .join('; ');
-    if (cookieStr) headers['Cookie'] = cookieStr;
-    
-    return headers;
-}
+import { uploadDocument, deleteDocument } from "./document.service";
+import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "../constants/document.constants";
 
-// 2. POST - Upload a new certificate document
-export async function uploadCertificateDocument(
-    file: File,
-    propertyId: number,
-    certificateTypeId: number,
-    certificateNo?: string,
-    issueDate?: string
-): Promise<ApiResponse<PropertyCertificateUploadResponseDto>> {
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim();
-    if (!baseUrl) {
-        return { success: false, statusCode: 500, error: "API base URL is not configured" };
-    }
-    const url = `${baseUrl.replace(/\/$/, '')}/property-certificates/upload`;
-
-    const formData = new FormData();
-    formData.append("File", file, file.name);
-    formData.append("PropertyId", propertyId.toString());
-    formData.append("CertificateTypeId", certificateTypeId.toString());
-    if (certificateNo) formData.append("CertificateNo", certificateNo);
-    if (issueDate) formData.append("IssueDate", issueDate);
-
-    const headers = await getAuthHeaders();
-
-    const response = await serverFetch(url, {
-        method: 'POST',
-        headers,
-        body: formData,
-        cache: 'no-store'
-    });
-
-    const text = await response.text();
-    let data;
-    try {
-        data = text ? JSON.parse(text) : {};
-    } catch {
-        data = { message: text };
-    }
-
-    if (!response.ok) {
-        return { 
-            success: false, 
-            statusCode: response.status, 
-            error: data.message || data.error || `Upload failed with status ${response.status}` 
-        };
-    }
-
-    return { 
-        success: true, 
-        statusCode: response.status, 
-        data: data.items 
-    };
-}
-
-// 3. POST - Replace an existing certificate document
+// 3. POST - Upload/Replace document for an existing certificate using global API
 export async function replaceCertificateDocument(
     propertyCertificateId: number,
-    file: File
+    file: File,
+    propertyId: number,
+    certificateTypeId: number
 ): Promise<ApiResponse<PropertyCertificateUploadResponseDto>> {
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim();
-    if (!baseUrl) {
-        return { success: false, statusCode: 500, error: "API base URL is not configured" };
-    }
-    const url = `${baseUrl.replace(/\/$/, '')}/property-certificates/${propertyCertificateId}/replace-document`;
-
-    const formData = new FormData();
-    formData.append("File", file, file.name);
-
-    const headers = await getAuthHeaders();
-
-    const response = await serverFetch(url, {
-        method: 'POST',
-        headers,
-        body: formData,
-        cache: 'no-store'
-    });
-
-    const text = await response.text();
-    let data;
     try {
-        data = text ? JSON.parse(text) : {};
-    } catch {
-        data = { message: text };
-    }
+        const uploadResponse = await uploadDocument(file, {
+            departmentId: DEPARTMENT_ID.PTIS,
+            moduleId: MODULE_ID.PropertyCertificate,
+            referenceTableName: REFERENCE_TABLE.PropertyCertificate, // "PropertyCertificates"
+            referenceTableId: propertyCertificateId,
+            bindingPurpose: BINDING_PURPOSE.MainDocument,
+            documentType: DOCUMENT_TYPE.Certificate,
+            isPrimaryDocument: true
+        });
 
-    if (!response.ok) {
-        return { 
-            success: false, 
-            statusCode: response.status, 
-            error: data.message || data.error || `Replace document failed with status ${response.status}` 
+        return {
+            success: true,
+            data: {
+                propertyCertificateId: propertyCertificateId,
+                documentGuid: uploadResponse.documentGuid,
+                documentId: uploadResponse.documentId,
+                documentBindingId: uploadResponse.documentBindingId ?? 0,
+                propertyId: propertyId,
+                certificateTypeId: certificateTypeId,
+                certificateNo: null,
+                issueDate: null,
+                fileName: file.name,
+                fileSizeBytes: file.size,
+                storagePath: uploadResponse.storagePath ?? ""
+            }
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
         };
     }
+}
 
-    return { 
-        success: true, 
-        statusCode: response.status, 
-        data: data.items 
-    };
+// 4. DELETE - Delete a certificate document using global API
+export async function deleteCertificateDocument(
+    documentGuid: string
+): Promise<ApiResponse<void>> {
+    try {
+        const result = await deleteDocument(documentGuid);
+        return result;
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
 }
 
 // 4. POST - Save all certificate changes

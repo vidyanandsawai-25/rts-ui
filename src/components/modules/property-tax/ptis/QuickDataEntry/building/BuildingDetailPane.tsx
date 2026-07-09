@@ -91,8 +91,6 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     const isDateInvalid = fieldErrors ? !!fieldErrors.date : !!validationError && !data.date?.trim();
     const isDocumentInvalid = fieldErrors ? !!fieldErrors.document : !!validationError && !data.documentGuid?.trim();
 
-
-
     return (
         <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
@@ -113,12 +111,13 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                     <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
-                <div className="space-y-2 mb-6">
+                <div className="mt-4 space-y-2 mb-6">
                     <Label className="text-sm font-bold text-blue-800">{t("building.documentAttachment") || "Document Attachment"}<span className="text-red-500 ml-0.5">*</span></Label>
                     <DocumentAttachment
                         documentGuid={data.documentGuid}
                         fileName={data.fileName}
                         isUploading={data.isUploading}
+                        isDeleting={data.isDeleting}
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
                         documentError={fieldErrors?.document || validationError}

@@ -1,6 +1,7 @@
 'use server';
 
 import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
+import { deleteDocument } from '@/lib/api/document.service';
 import { revalidatePath } from 'next/cache';
 import { ActionResult } from '@/types/common.types';
 import type { 
@@ -65,8 +66,10 @@ export async function uploadPropertyPhotoAction(
     const file = formData.get('File') as File;
     const propertyId = Number(formData.get('PropertyId'));
     const photoTypeId = Number(formData.get('PhotoTypeId'));
-    const displayOrder = Number(formData.get('DisplayOrder') || '0');
+    const propertyPhotoId = Number(formData.get('PropertyPhotoId') || '0');
+    const referenceTableIdGuid = formData.get('ReferenceTableIdGuid') as string | null;
     const remarks = String(formData.get('Remarks') || '');
+    const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
 
     if (!file || file.size === 0) {
       return { success: false, error: t('media.fileRequired') || 'File is required' };
@@ -78,12 +81,14 @@ export async function uploadPropertyPhotoAction(
       return { success: false, error: t('media.photoTypeIdRequired') || 'Valid PhotoTypeId is required' };
     }
 
-    const result = await photoPlanService.uploadPropertyPhoto(
+    const result = await photoPlanService.uploadPhotoViaGlobalApi(
       file,
       propertyId,
       photoTypeId,
-      displayOrder,
-      remarks
+      propertyPhotoId,
+      referenceTableIdGuid || undefined,
+      remarks,
+      photoTypeCode || undefined
     );
 
     if (result.success && result.data) {
@@ -101,12 +106,16 @@ export async function uploadPropertyPhotoAction(
 
 export async function replacePropertyPhotoAction(
   propertyPhotoId: number,
+  oldDocumentGuid: string,
   formData: FormData,
   locale?: string
 ): Promise<ActionResult<PropertyPhotoUploadResponseDto>> {
   const t = await getTranslations({ locale: locale || 'en', namespace: 'ptis' });
   try {
     const file = formData.get('File') as File;
+    const propertyId = Number(formData.get('PropertyId'));
+    const photoTypeId = Number(formData.get('PhotoTypeId'));
+    const referenceTableIdGuid = formData.get('ReferenceTableIdGuid') as string | null;
     const remarks = String(formData.get('Remarks') || '');
 
     if (!propertyPhotoId || isNaN(propertyPhotoId)) {
@@ -116,9 +125,13 @@ export async function replacePropertyPhotoAction(
       return { success: false, error: t('media.fileRequired') || 'File is required' };
     }
 
-    const result = await photoPlanService.replacePropertyPhoto(
-      propertyPhotoId,
+    const result = await photoPlanService.replacePhotoViaGlobalApi(
       file,
+      oldDocumentGuid,
+      propertyId,
+      photoTypeId,
+      propertyPhotoId,
+      referenceTableIdGuid || undefined,
       remarks
     );
 
@@ -136,16 +149,16 @@ export async function replacePropertyPhotoAction(
 }
 
 export async function deletePropertyPhotoAction(
-  propertyPhotoId: number,
+  documentGuid: string,
   locale?: string
 ): Promise<ActionResult<object>> {
   const t = await getTranslations({ locale: locale || 'en', namespace: 'ptis' });
   try {
-    if (!propertyPhotoId || isNaN(propertyPhotoId)) {
-      return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
+    if (!documentGuid) {
+      return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid Document GUID is required' };
     }
 
-    const result = await photoPlanService.deletePropertyPhoto(propertyPhotoId);
+    const result = await deleteDocument(documentGuid);
 
     if (result.success) {
       revalidatePath('/[locale]/property-tax/ptis', 'page');
@@ -181,5 +194,3 @@ export async function updatePropertyPhotoTypeAction(
     };
   }
 }
-
-

@@ -295,6 +295,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
               title: 'Front View',
               alt: 'Front View',
               displayOrder: 1,
+              documentGuid: '123-guid',
             },
           ],
         },
@@ -414,7 +415,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
         await result.current.handleDeletePhoto(0);
       });
 
-      expect(mockDeletePropertyPhotoAction).toHaveBeenCalledWith(101, 'en');
+      expect(mockDeletePropertyPhotoAction).toHaveBeenCalledWith('123-guid', 'en');
       expect(setSelectedImageIndex).toHaveBeenCalledWith(null);
       expect(setViewMode).toHaveBeenCalledWith('grid');
       expect(onCategoriesChange).toHaveBeenCalled();
