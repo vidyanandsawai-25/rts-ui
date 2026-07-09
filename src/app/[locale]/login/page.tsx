@@ -42,6 +42,8 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
 
   const { ulbData } = await fetchLoginBrandingAction();
 
+  const backgroundSrc = ulbData?.ulbBackground || '';
+
   const copy: LoginFormCopy = {
     loginTitle: t('login.title'),
     username: t('login.username'),
@@ -53,8 +55,15 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
     hidePassword: t('login.hidePassword'),
   };
 
+  const backgroundStyle = backgroundSrc
+    ? { backgroundImage: `url(${backgroundSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100 transition-all duration-500"
+      style={backgroundStyle}
+    >
       <div className="flex min-h-full w-full flex-col items-center justify-center p-4 md:p-6">
         <LoginForm
           key={`${locale}-${username}`}
