@@ -62,11 +62,17 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
         <Input
           name="taxPercentage"
           type="number"
+          min={0}
           label={t("form.fields.percent.label")}
           required
           value={String(formData.taxPercentage)}
           onChange={onChange}
           onBlur={onBlur}
+          onKeyDown={(e) => {
+            if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
+              e.preventDefault();
+            }
+          }}
           placeholder={t("form.fields.percent.placeholder")}
           fullWidth
         />
@@ -88,7 +94,9 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           name="effectiveToDate"
           type="date"
           label={t("form.fields.effectiveTo.label")}
+          required
           value={formData.effectiveToDate || ""}
+          min={formData.effectiveFromDate || ""}
           onChange={onChange}
           onBlur={onBlur}
           fullWidth

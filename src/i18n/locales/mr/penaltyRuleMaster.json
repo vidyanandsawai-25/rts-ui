@@ -9,7 +9,7 @@
   "penaltyCode": "दंड कोड",
   "penaltyName": "दंड नाव",
   "calculationType": "गणना प्रकार",
-  "penaltyValue": "दंड मूल्य",
+  "penaltyValue": "दंड दर",
   "gracePeriodDays": "वाढीव कालावधी दिवस",
   "status": "स्थिती",
   "showing": "दर्शवित आहे",
@@ -47,7 +47,7 @@
         }
       },
       "value": {
-        "label": "दंड मूल्य",
+        "label": "दंड दर",
         "placeholder": "मूल्य प्रविष्ट करा"
       },
       "gracePeriod": {
@@ -69,8 +69,8 @@
       "descriptionFormat": "दंड नावामध्ये अवैध अक्षरे आहेत",
       "descriptionMaxLength": "दंड नाव {count} पेक्षा जास्त अक्षरांचे नसावे",
       "calculationTypeRequired": "गणना प्रकार आवश्यक आहे",
-      "valueRequired": "दंड मूल्य आवश्यक आहे",
-      "valueInvalid": "दंड मूल्य एक वैध गैर-ऋणात्मक संख्या असणे आवश्यक आहे",
+      "valueRequired": "दंड दर आवश्यक आहे",
+      "valueInvalid": "दंड दर एक वैध गैर-ऋणात्मक संख्या असणे आवश्यक आहे",
       "gracePeriodRequired": "वाढीव कालावधी दिवस आवश्यक आहे",
       "gracePeriodInvalid": "वाढीव कालावधी दिवस एक वैध गैर-ऋणात्मक पूर्णांक असणे आवश्यक आहे",
       "mustBeActive": "नवीन दंड नियम रेकॉर्ड सक्रिय असले पाहिजेत",

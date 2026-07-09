@@ -63,15 +63,15 @@ export async function saveGstMaster(id: string, formData: FormData) {
     if (effectiveFromDate === "") return { ok: false, error: "invalid_effectiveFromDate" };
 
     const taxPercentage = Number(taxPercentageRaw);
-    if (!Number.isFinite(taxPercentage)) return { ok: false, error: "invalid_taxPercentage" };
+    if (!Number.isFinite(taxPercentage) || taxPercentage < 0) return { ok: false, error: "invalid_taxPercentage" };
 
     const effectiveToDateRaw = String(formData.get("effectiveToDate") ?? "").trim();
-    if (effectiveToDateRaw) {
-      const from = new Date(effectiveFromDate);
-      const to = new Date(effectiveToDateRaw);
-      if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime()) || to < from) {
-        return { ok: false, error: "invalid_effectiveToDate" };
-      }
+    if (effectiveToDateRaw === "") return { ok: false, error: "invalid_effectiveToDate" };
+
+    const from = new Date(effectiveFromDate);
+    const to = new Date(effectiveToDateRaw);
+    if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime()) || to < from) {
+      return { ok: false, error: "invalid_effectiveToDate" };
     }
     const isActive = String(formData.get("isActive") ?? "true").toLowerCase() === "true";
 
@@ -92,7 +92,7 @@ export async function saveGstMaster(id: string, formData: FormData) {
       taxName,
       taxPercentage,
       effectiveFromDate,
-      effectiveToDate: effectiveToDateRaw || undefined,
+      effectiveToDate: effectiveToDateRaw,
       isActive,
       createdBy: isUpdate ? undefined : userId,
       updatedBy: isUpdate ? userId : undefined,

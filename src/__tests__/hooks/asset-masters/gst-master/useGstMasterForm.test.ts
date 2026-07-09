@@ -129,6 +129,9 @@ describe("useGstMasterForm", () => {
         result.current.handleChange({
           target: { name: "effectiveFromDate", value: "2017-07-01" },
         } as React.ChangeEvent<HTMLInputElement>);
+        result.current.handleChange({
+          target: { name: "effectiveToDate", value: "2026-12-31" },
+        } as React.ChangeEvent<HTMLInputElement>);
       });
 
       await act(async () => {

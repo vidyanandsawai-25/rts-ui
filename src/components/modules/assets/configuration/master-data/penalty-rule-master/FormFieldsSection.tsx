@@ -85,11 +85,17 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
         <Input
           name="penaltyValue"
           type="number"
+          min={0}
           label={t("form.fields.value.label")}
           required
           value={String(formData.penaltyValue)}
           onChange={onChange}
           onBlur={onBlur}
+          onKeyDown={(e) => {
+            if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
+              e.preventDefault();
+            }
+          }}
           placeholder={t("form.fields.value.placeholder")}
           fullWidth
         />
@@ -98,11 +104,17 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
         <Input
           name="gracePeriodDays"
           type="number"
+          min={0}
           label={t("form.fields.gracePeriod.label")}
           required
           value={String(formData.gracePeriodDays)}
           onChange={onChange}
           onBlur={onBlur}
+          onKeyDown={(e) => {
+            if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
+              e.preventDefault();
+            }
+          }}
           placeholder={t("form.fields.gracePeriod.placeholder")}
           fullWidth
         />

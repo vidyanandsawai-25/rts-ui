@@ -89,13 +89,20 @@ describe("GstMasterForm Component", () => {
       expect(screen.getByText("gstMaster.form.validation.codeRequired")).toBeInTheDocument();
       expect(screen.getByText("gstMaster.form.validation.descriptionRequired")).toBeInTheDocument();
       expect(screen.getByText("gstMaster.form.validation.percentRequired")).toBeInTheDocument();
+      expect(screen.getByText("gstMaster.form.validation.effectiveFromRequired")).toBeInTheDocument();
+      expect(screen.getByText("gstMaster.form.validation.effectiveToRequired")).toBeInTheDocument();
     });
   });
 
   test("successfully submits form and triggers saveGstMaster action", async () => {
+    // Make sure mockup data has valid effectiveToDate since it's now required
+    const mockDataWithToDate: GstMaster = {
+      ...mockInitialData,
+      effectiveToDate: "2027-12-31",
+    };
     vi.mocked(saveGstMaster).mockResolvedValue({ ok: true, mode: "update" });
 
-    const { container } = render(<GstMasterForm initialData={mockInitialData} />);
+    const { container } = render(<GstMasterForm initialData={mockDataWithToDate} />);
 
     const form = container.querySelector("form")!;
     fireEvent.submit(form);
@@ -109,7 +116,11 @@ describe("GstMasterForm Component", () => {
   });
 
   test("triggers onToggle, onChange, and onBlur handlers in form inputs", async () => {
-    const { container } = render(<GstMasterForm initialData={mockInitialData} />);
+    const mockDataWithToDate: GstMaster = {
+      ...mockInitialData,
+      effectiveToDate: "2027-12-31",
+    };
+    const { container } = render(<GstMasterForm initialData={mockDataWithToDate} />);
 
     // Toggle active switch
     const toggleCard = screen.getByText("gstMaster.form.status.label");
@@ -131,9 +142,13 @@ describe("GstMasterForm Component", () => {
   });
 
   test("shows error toast on duplicate tax code submission", async () => {
+    const mockDataWithToDate: GstMaster = {
+      ...mockInitialData,
+      effectiveToDate: "2027-12-31",
+    };
     vi.mocked(saveGstMaster).mockResolvedValue({ ok: false, error: "duplicate" });
 
-    const { container } = render(<GstMasterForm initialData={mockInitialData} />);
+    const { container } = render(<GstMasterForm initialData={mockDataWithToDate} />);
     const form = container.querySelector("form")!;
     fireEvent.submit(form);
 
@@ -143,9 +158,13 @@ describe("GstMasterForm Component", () => {
   });
 
   test("shows custom message error toast on unknown api failure", async () => {
+    const mockDataWithToDate: GstMaster = {
+      ...mockInitialData,
+      effectiveToDate: "2027-12-31",
+    };
     vi.mocked(saveGstMaster).mockResolvedValue({ ok: false, error: "unknown", message: "Network Timeout" });
 
-    const { container } = render(<GstMasterForm initialData={mockInitialData} />);
+    const { container } = render(<GstMasterForm initialData={mockDataWithToDate} />);
     const form = container.querySelector("form")!;
     fireEvent.submit(form);
 
@@ -155,9 +174,13 @@ describe("GstMasterForm Component", () => {
   });
 
   test("shows fallback message error toast on exception", async () => {
+    const mockDataWithToDate: GstMaster = {
+      ...mockInitialData,
+      effectiveToDate: "2027-12-31",
+    };
     vi.mocked(saveGstMaster).mockRejectedValue(new Error("Database offline"));
 
-    const { container } = render(<GstMasterForm initialData={mockInitialData} />);
+    const { container } = render(<GstMasterForm initialData={mockDataWithToDate} />);
     const form = container.querySelector("form")!;
     fireEvent.submit(form);
 
@@ -170,7 +193,7 @@ describe("GstMasterForm Component", () => {
     const { container } = render(<GstMasterForm initialData={mockInitialData} />);
 
     const fromInput = screen.getByLabelText("gstMaster.form.fields.effectiveFrom.label *");
-    const toInput = screen.getByLabelText("gstMaster.form.fields.effectiveTo.label");
+    const toInput = screen.getByLabelText("gstMaster.form.fields.effectiveTo.label *");
 
     fireEvent.change(fromInput, { target: { value: "2026-07-02" } });
     fireEvent.change(toInput, { target: { value: "2026-07-01" } });

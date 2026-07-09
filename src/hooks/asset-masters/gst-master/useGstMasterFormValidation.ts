@@ -46,7 +46,8 @@ export function useGstMasterFormValidation({
           if (value === "" || value === null || value === undefined) {
             return t("form.validation.percentRequired");
           }
-          if (!Number.isFinite(Number(value))) {
+          const num = Number(value);
+          if (!Number.isFinite(num) || num < 0) {
             return t("form.validation.percentInvalid");
           }
           return undefined;
@@ -58,10 +59,14 @@ export function useGstMasterFormValidation({
           }
           return undefined;
         },
-        effectiveToDate: (_value: unknown) => {
-          if (data.effectiveFromDate?.trim() && data.effectiveToDate?.trim()) {
+        effectiveToDate: (value: unknown) => {
+          const strVal = String(value ?? "").trim();
+          if (!strVal) {
+            return t("form.validation.effectiveToRequired");
+          }
+          if (data.effectiveFromDate?.trim()) {
             const from = new Date(data.effectiveFromDate);
-            const to = new Date(data.effectiveToDate);
+            const to = new Date(strVal);
             if (to < from) {
               return t("form.validation.effectiveToInvalid");
             }

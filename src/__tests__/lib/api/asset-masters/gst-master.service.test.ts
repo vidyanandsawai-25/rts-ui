@@ -133,6 +133,7 @@ describe("GstMaster API Service", () => {
         taxName: "GST 5%",
         taxPercentage: 5,
         effectiveFromDate: "2017-07-01",
+        effectiveToDate: "2026-12-05",
         isActive: true,
         createdBy: 99,
       };
@@ -144,7 +145,7 @@ describe("GstMaster API Service", () => {
         taxName: "GST 5%",
         taxPercentage: 5,
         effectiveFromDate: "2017-07-01",
-        effectiveToDate: null,
+        effectiveToDate: "2026-12-05",
         isActive: true,
         createdBy: 99,
       });
@@ -161,6 +162,7 @@ describe("GstMaster API Service", () => {
         taxName: "GST 5% Updated",
         taxPercentage: "5",
         effectiveFromDate: "2017-07-01",
+        effectiveToDate: "2026-12-05",
         isActive: false,
         updatedBy: 100,
       };
@@ -173,7 +175,7 @@ describe("GstMaster API Service", () => {
         taxName: "GST 5% Updated",
         taxPercentage: 5,
         effectiveFromDate: "2017-07-01",
-        effectiveToDate: null,
+        effectiveToDate: "2026-12-05",
         isActive: false,
         updatedBy: 100,
       });

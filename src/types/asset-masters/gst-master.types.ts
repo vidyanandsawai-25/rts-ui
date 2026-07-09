@@ -33,7 +33,7 @@ export interface GstMasterFormModel {
   taxName: string;
   taxPercentage: number | string;
   effectiveFromDate: string;
-  effectiveToDate?: string;
+  effectiveToDate: string;
   isActive: boolean;
   createdBy?: number;
   updatedBy?: number;
