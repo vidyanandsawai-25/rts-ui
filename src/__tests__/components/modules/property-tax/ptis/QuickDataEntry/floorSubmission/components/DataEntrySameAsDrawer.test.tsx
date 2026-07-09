@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DataEntrySameAsDrawer } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/DataEntrySameAsDrawer';
@@ -45,7 +44,7 @@ vi.mock('@/components/common', () => ({
     ) : null
   ),
   Tabs: Object.assign(
-    ({ value, onChange, children }: any) => {
+    ({ value, children }: any) => {
       return (
         <div data-testid="tabs" data-value={value}>
           {children}
