@@ -283,7 +283,7 @@ export default function ReassesmentScreen({
                 rowClassName={(row) =>
                   cn(
                     'divide-y divide-gray-200 text-gray-700 font-semibold [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200',
-                    row.isTotal ? 'bg-blue-50 [&_td]:border-blue-100' : 'hover:bg-slate-50/50'
+                    row.isTotal ? '[&_td]:border-blue-100' : 'hover:bg-slate-50/50'
                   )
                 }
               />

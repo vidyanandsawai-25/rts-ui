@@ -39,7 +39,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'font-bold',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -48,7 +48,7 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -57,7 +57,7 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -67,7 +67,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'font-bold text-sky-800',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -77,7 +77,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -87,7 +87,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (_, row: MappedFloorDetail) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">
           {row.carpetAreaSqFt} / {row.carpetAreaSqM}
         </div>
       )
@@ -99,7 +99,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (_, row: MappedFloorDetail) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">
           {row.builtUpAreaSqFt} / {row.builtUpAreaSqM}
         </div>
       )
@@ -111,7 +111,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -121,7 +121,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -130,7 +130,7 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -140,7 +140,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -150,7 +150,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'font-mono',
       render: (val: unknown) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatTaxLiability(val)}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatTaxLiability(val)}</div>
       )
     },
     {
@@ -160,7 +160,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'font-mono',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -170,7 +170,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
       render: (val: unknown) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
       )
     },
     {
@@ -180,7 +180,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -190,7 +190,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
       render: (val: unknown) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
       )
     },
     {
@@ -200,7 +200,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (val: any) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
       )
     },
     {
@@ -210,7 +210,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
       render: (val: unknown) => (
-        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
       )
     },
     {
