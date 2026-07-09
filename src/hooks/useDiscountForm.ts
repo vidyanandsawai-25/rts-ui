@@ -1,53 +1,51 @@
-import { useState, useCallback } from "react";
+"use client";
+
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import { 
     updateDiscountDetailsAction,
-    uploadDiscountDocumentAction,
-    replaceDiscountDocumentAction,
-    deleteDiscountDocumentAction
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
-import {
-    DiscountState,
-    PropertyDiscountInfoResponseDto
-} from "@/types/discount.types";
+import { DiscountState, PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { useTranslations } from "next-intl";
-
-import { mapApiToDiscountState, mapDiscountStateToApi } from "@/lib/utils/discount-helpers";
+import { mapApiToDiscountState, mapDiscountStateToApi, hasDiscountChangesComparedToInitial } from "@/lib/utils/discount-helpers";
 import { validateDiscountForm } from "@/lib/utils/validateDiscountForm";
-import { checkDiscountRequiredFields } from "@/lib/validation/discount/checkDiscountRequiredFields";
 
-export const useDiscountForm = (
-    initialDiscountData: PropertyDiscountInfoResponseDto | null,
-    propertyId: string
-) => {
+export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoResponseDto | null, propertyId: string) => {
     const t = useTranslations('quickDataEntry');
     const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
-    const [hasChanges, setHasChanges] = useState(false);
     const [validationErrors, setValidationErrors] = useState<Record<number, string>>({});
     const [incompleteDiscounts, setIncompleteDiscounts] = useState<{ id: number; name: string }[]>([]);
-    
     const params = useParams();
     const locale = params.locale as string;
+    const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData));
 
-    const [discountData, setDiscountData] = useState<DiscountState>(() =>
-        mapApiToDiscountState(initialDiscountData)
-    );
+    const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData), [initialDiscountData]);
 
-    const [prevInitialDiscountData, setPrevInitialDiscountData] = useState(initialDiscountData);
-
-    if (initialDiscountData !== prevInitialDiscountData) {
-        setPrevInitialDiscountData(initialDiscountData);
+    const [prevInitial, setPrevInitial] = useState(initialDiscountData);
+    if (initialDiscountData && initialDiscountData !== prevInitial) {
+        setPrevInitial(initialDiscountData);
         setDiscountData(mapApiToDiscountState(initialDiscountData));
     }
 
+    const hasChanges = useMemo(() => {
+        return hasDiscountChangesComparedToInitial(discountData, initialMappedState);
+    }, [discountData, initialMappedState]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            (window as unknown as { __discountFormHasChanges?: boolean }).__discountFormHasChanges = hasChanges;
+        }
+        return () => {
+            if (typeof window !== "undefined") {
+                (window as unknown as { __discountFormHasChanges?: boolean }).__discountFormHasChanges = false;
+            }
+        };
+    }, [hasChanges]);
+
     const clearError = useCallback((id: number) => {
-        setValidationErrors((prev) => {
-            const next = { ...prev };
-            delete next[id];
-            return next;
-        });
+        setValidationErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
         setIncompleteDiscounts((prev) => prev.filter((d) => d.id !== id));
     }, []);
 
@@ -55,183 +53,93 @@ export const useDiscountForm = (
         setDiscountData((prev) => {
             const item = prev[id];
             if (!item) return prev;
+            const isBitType = item.dataType?.toUpperCase() === "BIT";
             return {
                 ...prev,
-                [id]: { ...item, enabled: checked },
+                [id]: { 
+                    ...item, 
+                    enabled: checked, 
+                    bitValue: isBitType ? checked : item.bitValue 
+                }
             };
         });
         clearError(id);
-        setHasChanges(true);
     }, [clearError]);
 
-    const handleInputChange = useCallback((
-        id: number,
-        field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark",
-        value: string
-    ) => {
-        setDiscountData((prev) => {
-            const item = prev[id];
-            if (!item) return prev;
-
-            return {
-                ...prev,
-                [id]: { ...item, [field]: value },
-            };
-        });
+    const handleInputChange = useCallback((id: number, field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => {
+        setDiscountData((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
         clearError(id);
-        setHasChanges(true);
     }, [clearError]);
 
-    const handleFileUpload = useCallback(async (id: number, file: File) => {
+    const handleFileUpload = useCallback((id: number, file: File) => {
         if (file.size > 5 * 1024 * 1024 || !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) {
             toast.error(t("discount.uploadInvalidFile") || "Invalid file");
             return;
         }
+        setDiscountData(prev => {
+            const item = prev[id];
+            if (!item) return prev;
+            return { ...prev, [id]: { ...item, pendingFile: file, documentGuid: "pending", fileName: file.name, documentUrl: undefined } };
+        });
+        clearError(id);
+    }, [t, clearError]);
 
-        const item = discountData[id];
-        if (!item) return;
-
-        const validationError = checkDiscountRequiredFields(item, (key, params) => t(key, params));
-        if (validationError) {
-            toast.error(validationError);
-            return;
-        }
-
-        setDiscountData(prev => ({
-            ...prev,
-            [id]: { ...prev[id], isUploading: true }
-        }));
-
-        try {
-            const formData = new FormData();
-            formData.append("File", file);
-
-            const hasDetailId = !!item.propertySocialDetailId;
-            if (!hasDetailId) {
-                formData.append("PropertyId", String(propertyId));
-                formData.append("SocialAttributeId", String(id));
-            }
-
-            const result = hasDetailId
-                ? await replaceDiscountDocumentAction(item.propertySocialDetailId!, formData)
-                : await uploadDiscountDocumentAction(formData);
-
-            if (result.success && result.data) {
-                const docData = result.data;
-
-                setDiscountData(prev => ({
-                    ...prev,
-                    [id]: {
-                        ...prev[id],
-                        propertySocialDetailId: docData.propertySocialDetailId,
-                        documentBindingId: docData.documentBindingId,
-                        documentGuid: docData.documentGuid,
-                        documentUrl: `/api/documents/${encodeURIComponent(docData.documentGuid)}/view`,
-                        isUploading: false
-                    }
-                }));
-                clearError(id);
-                setHasChanges(true);
-                toast.success(t("discount.uploadSuccess") || "File uploaded successfully!");
-            } else {
-                throw new Error(result.error || t("discount.uploadError"));
-            }
-        } catch (error: unknown) {
-            setDiscountData(prev => ({
+    const handleFileDelete = useCallback((id: number) => {
+        setDiscountData(prev => {
+            const item = prev[id];
+            if (!item) return prev;
+            return {
                 ...prev,
-                [id]: { ...prev[id], isUploading: false }
-            }));
-            const message = error instanceof Error ? error.message : String(error);
-            toast.error(message || t("discount.uploadError"));
-        }
-    }, [discountData, propertyId, t, clearError]);
-
-    const handleFileDelete = useCallback(async (id: number) => {
-        const item = discountData[id];
-        if (!item || !item.propertySocialDetailId) return;
-
-        setDiscountData(prev => ({
-            ...prev,
-            [id]: { ...prev[id], isUploading: true }
-        }));
-
-        try {
-            const result = await deleteDiscountDocumentAction(item.propertySocialDetailId);
-
-            if (result.success) {
-                setDiscountData(prev => ({
-                    ...prev,
-                    [id]: {
-                        ...prev[id],
-                        documentBindingId: null,
-                        documentGuid: null,
-                        documentUrl: null,
-                        isUploading: false
-                    }
-                }));
-                clearError(id);
-                setHasChanges(true);
-                toast.success(t("discount.deleteSuccess") || "File deleted successfully!");
-            } else {
-                throw new Error(result.error || t("discount.deleteError"));
-            }
-        } catch (error: unknown) {
-            setDiscountData(prev => ({
-                ...prev,
-                [id]: { ...prev[id], isUploading: false }
-            }));
-            const message = error instanceof Error ? error.message : String(error);
-            toast.error(message || t("discount.deleteError") || "Failed to delete file");
-        }
-    }, [discountData, t, clearError]);
+                [id]: {
+                    ...item,
+                    pendingFile: undefined,
+                    documentGuid: null,
+                    documentBindingId: null,
+                    documentUrl: null,
+                    fileName: undefined,
+                }
+            };
+        });
+        clearError(id);
+        toast.success(t("discount.fileRemoved") || "File removed from form. Click Save Changes to apply.");
+    }, [clearError, t]);
 
     const handleSave = async () => {
         if (isSaving) return { success: false, isValid: true };
-
-        const { isValid, errors, incompleteDiscounts: invalidDiscounts } = validateDiscountForm(
-            discountData, (key, params) => t(key, params)
-        );
-
+        const { isValid, errors, incompleteDiscounts: invalidDiscounts } = validateDiscountForm(discountData, (key, params) => t(key, params));
         if (!isValid) {
             setValidationErrors(errors);
             setIncompleteDiscounts(invalidDiscounts);
             return { success: false, isValid: false, incompleteDiscounts: invalidDiscounts };
         }
-
         setValidationErrors({});
         setIncompleteDiscounts([]);
         startLoading();
-        try {
-            const mappedData = mapDiscountStateToApi(discountData);
 
-            const response = await updateDiscountDetailsAction(locale, propertyId, mappedData);
+        try {
+            const formData = new FormData();
+            const payload = mapDiscountStateToApi(discountData);
+            formData.append("discountAttributes", JSON.stringify(payload));
+
+            // Append pending files
+            Object.values(discountData).forEach(item => {
+                if (item.enabled && item.pendingFile) {
+                    formData.append(`file_${item.id}`, item.pendingFile);
+                }
+            });
+
+            const response = await updateDiscountDetailsAction(locale, propertyId, formData);
             if (response.success) {
-                setHasChanges(false);
                 toast.success(t("discount.saveSuccess") || "Discount details saved successfully!");
                 return { success: true, isValid: true };
-            } else {
-                toast.error(response.error || t("discount.saveError") || "Failed to save discount details");
-                return { success: false, isValid: true };
             }
-        } catch (_error) {
-            toast.error(t("discount.saveError") || "Error saving discount details");
+            toast.error(response.error || t("discount.saveError") || "Failed to save");
             return { success: false, isValid: true };
-        } finally {
-            stopLoading();
-        }
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : String(error));
+            return { success: false, isValid: true };
+        } finally { stopLoading(); }
     };
 
-    return {
-        discountData,
-        isSaving,
-        hasChanges,
-        validationErrors,
-        incompleteDiscounts,
-        handleToggleEnabled,
-        handleInputChange,
-        handleFileUpload,
-        handleFileDelete,
-        handleSave,
-        t
-    };
+    return { discountData, isSaving, hasChanges, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleSave, t };
 };

@@ -147,7 +147,9 @@ export function usePropertyMedia({
     };
   }, [gisCategory, t, hasCoords]);
 
-  const photoPlanPhoto = photoPlanCategory?.images[0];
+  const photoPlanPhoto = photoPlanCategory?.images && photoPlanCategory.images.length > 0
+    ? photoPlanCategory.images[photoPlanCategory.images.length - 1]
+    : undefined;
   const propertyPhoto = propertyPhotoCategory?.images[0];
 
   const remainingImages = useMemo(() => {

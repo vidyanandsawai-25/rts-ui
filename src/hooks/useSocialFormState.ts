@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { FlatSocialAttributeState, flattenAttributes } from "@/lib/utils/social-details";
+import { hasSocialChangesComparedToInitial } from "@/lib/utils/social-changes";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 
 export const useSocialFormState = (initialSocialData: PropertySocialInfoResponseDto | null) => {
@@ -16,23 +17,24 @@ export const useSocialFormState = (initialSocialData: PropertySocialInfoResponse
     }));
 
     const [prevInitialSocialData, setPrevInitialSocialData] = useState(initialSocialData);
-    const [hasChanges, setHasChanges] = useState(false);
 
-    if (initialSocialData !== prevInitialSocialData) {
+    if (initialSocialData && initialSocialData !== prevInitialSocialData) {
         setPrevInitialSocialData(initialSocialData);
         setFormState({
-            data: flattenAttributes(initialSocialData?.socialAttributes || []),
+            data: flattenAttributes(initialSocialData.socialAttributes || []),
             errors: {}
         });
-        setHasChanges(false);
     }
+
+    const hasChanges = useMemo(() => {
+        return hasSocialChangesComparedToInitial(formState.data, initialFlatData);
+    }, [formState.data, initialFlatData]);
 
     const handleInputChange = useCallback((
         attributeId: number,
         field: keyof FlatSocialAttributeState,
         value: string | number | boolean | null | undefined
     ) => {
-        setHasChanges(true);
         setFormState((prev) => {
             const nextData = { ...prev.data };
             const currentAttr = nextData[attributeId];
@@ -51,7 +53,6 @@ export const useSocialFormState = (initialSocialData: PropertySocialInfoResponse
     }, []);
 
     const handleToggleEnabled = useCallback((attributeId: number, checked: boolean) => {
-        setHasChanges(true);
         setFormState((prev) => {
             const nextData = { ...prev.data };
             const currentAttr = nextData[attributeId];
@@ -82,7 +83,6 @@ export const useSocialFormState = (initialSocialData: PropertySocialInfoResponse
         validationErrors: formState.errors,
         setFormState,
         hasChanges,
-        setHasChanges,
         initialFlatData,
         handleInputChange,
         handleToggleEnabled
