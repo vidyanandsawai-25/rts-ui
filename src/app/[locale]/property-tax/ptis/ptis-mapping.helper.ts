@@ -74,7 +74,7 @@ export async function mapPtisFetchResults({
   propertyDetailsResult: InitialDataResult;
   propertyListResult: ActionResult<PropertyListItem[]> | null;
   detailResults: unknown[];
-  valuationTab: 'rateable' | 'capital' | 'dual' | 'apartment' | undefined;
+  valuationTab: 'rateable' | 'capital' | 'dual' | 'apartment' | 'reassessment' | undefined;
   resolvedPropertyId: number | undefined;
   activeTab: string;
   criticalError: string | undefined;

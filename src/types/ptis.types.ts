@@ -11,7 +11,7 @@ export const PTIS_TABS = [
 export type PtisTabId = (typeof PTIS_TABS)[number];
 
 // Separate constant/type for valuation tabs
-export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'apartment'] as const;
+export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'reassessment', 'apartment'] as const;
 export type ValuationTabId = (typeof VALUATION_TABS)[number];
 
 /** Maximum number of properties to fetch for a single ward to prevent OOM / backend overload. */
