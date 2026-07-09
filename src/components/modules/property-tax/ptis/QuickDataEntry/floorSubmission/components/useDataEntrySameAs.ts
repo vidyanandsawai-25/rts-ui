@@ -52,9 +52,6 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     return match ? String(match.type ?? '') : '';
   }, [selectableProperties, partitionNo]);
 
-  React.useEffect(() => {
-    setChangeTypeInput(currentPropertyType);
-  }, [currentPropertyType]);
 
   const sanitizeWardNo = React.useCallback((val: string) => val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10), []);
   const sanitizePropertyNo = React.useCallback((val: string) => val.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 10), []);
@@ -101,11 +98,11 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
 
   React.useEffect(() => {
     if (!isOpen) return;
-    setSearchWardId(wardId ? String(wardId) : '');
-    setSearchPropertyNo(propertyNo || '');
-    setSelectableProperties([]);
-    setSelectedPropertyIds(new Set());
     const initData = async () => {
+      setSearchWardId(wardId ? String(wardId) : '');
+      setSearchPropertyNo(propertyNo || '');
+      setSelectableProperties([]);
+      setSelectedPropertyIds(new Set());
       setIsLoadingProperties(true);
       if (wardOptions.length === 0) await loadWards();
       if (Number(wardId) && propertyOptions.length === 0) await loadPropertiesForWard(Number(wardId));
@@ -141,9 +138,15 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
 
   const activeLockedPropertyIds = dataEntrySameAsTab === 'type-wise' ? typeWiseLockedPropertyIds : sourcePropertyIds;
 
-  React.useEffect(() => {
-    if (isOpen) setSelectedPropertyIds(new Set(activeLockedPropertyIds));
-  }, [activeLockedPropertyIds, isOpen]);
+  const effectiveSelectedPropertyIds = React.useMemo(() => {
+    return new Set<string | number>([...activeLockedPropertyIds, ...selectedPropertyIds]);
+  }, [activeLockedPropertyIds, selectedPropertyIds]);
+
+  const handleDataEntrySameAsTabChange = React.useCallback((tab: string) => {
+    const lockedIds = tab === 'type-wise' ? typeWiseLockedPropertyIds : sourcePropertyIds;
+    setDataEntrySameAsTab(tab);
+    setSelectedPropertyIds(new Set(lockedIds));
+  }, [sourcePropertyIds, typeWiseLockedPropertyIds]);
 
   const handleTogglePropertySelection = React.useCallback((id: string | number) => {
     if (activeLockedPropertyIds.has(id)) return;
@@ -180,7 +183,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
       toast.error(t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }));
       return;
     }
-    const destinationPropertyIds = Array.from(selectedPropertyIds).map(Number)
+    const destinationPropertyIds = Array.from(effectiveSelectedPropertyIds).map(Number)
       .filter((id) => (Number.isFinite(id) && id > 0 && id !== sourcePropertyId && id !== Number(sourceProperty?.id)));
     if (destinationPropertyIds.length === 0) {
       toast.error(t('floor.selectProperties.selectDestinationProperty'));
@@ -188,7 +191,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     }
     setIsApplyingSameAs(true);
     try {
-      const payload = { sourcePropertyId, destinationPropertyIds, filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(), type: dataEntrySameAsTab === 'property-wise' ? 0 : (getDataEntrySameAsType(changeTypeInput) ?? 0) };
+      const payload = { sourcePropertyId, destinationPropertyIds, filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(), type: dataEntrySameAsTab === 'property-wise' ? 0 : (getDataEntrySameAsType(changeTypeInput || currentPropertyType) ?? 0) };
       
       const originalProperties = [...selectableProperties];
 
@@ -197,7 +200,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
         const updatedIds = new Set(destinationPropertyIds);
         setSelectableProperties((prev) => prev.map((p) => {
           if (updatedIds.has(Number(p.id)) || Number(p.id) === sourcePropertyId) {
-            return { ...p, type: changeTypeInput, typeLabel: changeTypeInput };
+            return { ...p, type: changeTypeInput || currentPropertyType, typeLabel: changeTypeInput || currentPropertyType };
           }
           return p;
         }));
@@ -216,7 +219,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
     } finally { setIsApplyingSameAs(false); }
-  }, [partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType]);
 
   const handleApplyTypeSubmission = React.useCallback(async () => {
     const sourceProperty = selectableProperties.find((p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(partitionNo));
@@ -225,7 +228,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
       toast.error(t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }));
       return;
     }
-    const destinationPropertyIds = Array.from(selectedPropertyIds).map(Number)
+    const destinationPropertyIds = Array.from(effectiveSelectedPropertyIds).map(Number)
       .filter((id) => (Number.isFinite(id) && id > 0 && id !== sourcePropertyId && id !== Number(sourceProperty?.id)));
     if (destinationPropertyIds.length === 0) {
       toast.error(t('floor.selectProperties.selectDestinationProperty'));
@@ -272,17 +275,19 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     } finally {
       setIsApplyingTypeSubmission(false);
     }
-  }, [partitionNo, selectableProperties, selectedPropertyIds, t, router]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, router]);
 
   return {
-    dataEntrySameAsTab, setDataEntrySameAsTab, selectableProperties, selectedPropertyIds, isLoadingProperties, currentPropertyType,
+    dataEntrySameAsTab, setDataEntrySameAsTab: handleDataEntrySameAsTabChange, selectableProperties, selectedPropertyIds: effectiveSelectedPropertyIds, isLoadingProperties, currentPropertyType,
     searchWardId, searchPropertyNo, setSearchPropertyNo, wardOptions, isFetchingWards, propertyOptions, isFetchingProperties,
     sanitizeWardNo, sanitizePropertyNo, handleWardChange, handleSearchProperties, isApplyingSameAs, handleApplySameAsDetails,
     filterPropertiesForTable, sourcePropertyIds, typeWiseLockedPropertyIds, activeLockedPropertyIds, handleTogglePropertySelection,
     handleToggleMultipleProperties,
-    handleClearPropertySelection, changeTypeInput, setChangeTypeInput,
+    handleClearPropertySelection, changeTypeInput: changeTypeInput || currentPropertyType, setChangeTypeInput,
     isApplyingTypeSubmission, handleApplyTypeSubmission,
   };
 }
+
+
 
 

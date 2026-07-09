@@ -2,9 +2,35 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import SelectPropertiesTable from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/SelectPropertiesTable';
 import { SelectableProperty } from '@/types/floor-details.types';
+import type { ReactNode } from 'react';
+
+interface ClearButtonMockProps {
+  label: string;
+  onClick: () => void;
+}
+
+interface CheckboxMockProps {
+  checked?: boolean;
+  disabled?: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  'aria-label'?: string;
+}
+
+interface MasterTableColumn {
+  key: keyof SelectableProperty | string;
+  label: string;
+  render?: (value: unknown, row: SelectableProperty, rowIndex: number) => ReactNode;
+}
+
+interface MasterTableMockProps {
+  columns: MasterTableColumn[];
+  data: SelectableProperty[];
+  onRowClick?: (row: SelectableProperty) => void;
+  rowClassName?: string | ((row: SelectableProperty) => string);
+}
 
 vi.mock('@/components/common/ActionButtons', () => ({
-  ClearButton: ({ label, onClick }: any) => (
+  ClearButton: ({ label, onClick }: ClearButtonMockProps) => (
     <button onClick={onClick} data-testid="clear-button">
       {label}
     </button>
@@ -12,7 +38,7 @@ vi.mock('@/components/common/ActionButtons', () => ({
 }));
 
 vi.mock('@/components/common', () => ({
-  Checkbox: ({ checked, disabled, onCheckedChange, 'aria-label': ariaLabel }: any) => (
+  Checkbox: ({ checked, disabled, onCheckedChange, 'aria-label': ariaLabel }: CheckboxMockProps) => (
     <input
       type="checkbox"
       checked={!!checked}
@@ -22,17 +48,17 @@ vi.mock('@/components/common', () => ({
       data-testid="mock-checkbox"
     />
   ),
-  MasterTable: ({ columns, data, onRowClick, rowClassName }: any) => (
+  MasterTable: ({ columns, data, onRowClick, rowClassName }: MasterTableMockProps) => (
     <table>
       <thead>
         <tr>
-          {columns.map((col: any) => (
+          {columns.map((col) => (
             <th key={col.key}>{col.label}</th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {data.map((row: any, rowIndex: number) => {
+        {data.map((row, rowIndex: number) => {
           const className = typeof rowClassName === 'function' ? rowClassName(row) : rowClassName;
           return (
             <tr
@@ -41,7 +67,7 @@ vi.mock('@/components/common', () => ({
               className={className}
               data-testid={`row-${row.id}`}
             >
-              {columns.map((col: any) => (
+              {columns.map((col) => (
                 <td key={col.key}>
                   {col.render ? col.render(row[col.key], row, rowIndex) : String(row[col.key] ?? '')}
                 </td>
@@ -183,3 +209,5 @@ describe('SelectPropertiesTable', () => {
     expect(screen.queryByText('Type 2')).not.toBeInTheDocument();
   });
 });
+
+

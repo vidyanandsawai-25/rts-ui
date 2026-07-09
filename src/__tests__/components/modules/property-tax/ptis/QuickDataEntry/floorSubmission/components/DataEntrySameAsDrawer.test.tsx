@@ -2,13 +2,44 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DataEntrySameAsDrawer } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/DataEntrySameAsDrawer';
 import { useDataEntrySameAs } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/useDataEntrySameAs';
+import type { ReactNode } from 'react';
+
+type DataEntrySameAsHookReturn = ReturnType<typeof useDataEntrySameAs>;
+
+interface ApplyTabMockProps {
+  onApply: () => void;
+  onApplyTypeSubmission?: () => void;
+}
+
+interface DrawerMockProps {
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  headerExtra?: ReactNode;
+  children: ReactNode;
+}
+
+interface TabsMockProps {
+  value: string;
+  children: ReactNode;
+}
+
+interface TabListMockProps {
+  children: ReactNode;
+}
+
+interface TabMockProps {
+  value: string;
+  children: ReactNode;
+  onClick?: () => void;
+}
 
 vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/useDataEntrySameAs', () => ({
   useDataEntrySameAs: vi.fn(),
 }));
 
 vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/TypeWiseTab', () => ({
-  TypeWiseTab: ({ onApply, onApplyTypeSubmission }: any) => (
+  TypeWiseTab: ({ onApply, onApplyTypeSubmission }: ApplyTabMockProps) => (
     <div data-testid="type-wise-tab">
       <button data-testid="apply-types-btn" onClick={onApply}>Apply Types</button>
       <button data-testid="apply-type-submission-btn" onClick={onApplyTypeSubmission}>Apply Submission</button>
@@ -17,7 +48,7 @@ vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/c
 }));
 
 vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/PropertyWiseTab', () => ({
-  PropertyWiseTab: ({ onApply }: any) => (
+  PropertyWiseTab: ({ onApply }: ApplyTabMockProps) => (
     <div data-testid="property-wise-tab">
       <button data-testid="apply-property-btn" onClick={onApply}>Apply Property</button>
     </div>
@@ -25,7 +56,7 @@ vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/c
 }));
 
 vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/ParkingTab', () => ({
-  ParkingTab: ({ onApply }: any) => (
+  ParkingTab: ({ onApply }: ApplyTabMockProps) => (
     <div data-testid="parking-tab">
       <button data-testid="apply-parking-btn" onClick={onApply}>Apply Parking</button>
     </div>
@@ -33,7 +64,7 @@ vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/c
 }));
 
 vi.mock('@/components/common', () => ({
-  Drawer: ({ open, onClose, title, headerExtra, children }: any) => (
+  Drawer: ({ open, onClose, title, headerExtra, children }: DrawerMockProps) => (
     open ? (
       <div data-testid="drawer">
         <div data-testid="drawer-title">{title}</div>
@@ -44,7 +75,7 @@ vi.mock('@/components/common', () => ({
     ) : null
   ),
   Tabs: Object.assign(
-    ({ value, children }: any) => {
+    ({ value, children }: TabsMockProps) => {
       return (
         <div data-testid="tabs" data-value={value}>
           {children}
@@ -52,13 +83,13 @@ vi.mock('@/components/common', () => ({
       );
     },
     {
-      TabList: ({ children }: any) => <div data-testid="tab-list">{children}</div>,
-      Tab: ({ value, children, onClick }: any) => (
+      TabList: ({ children }: TabListMockProps) => <div data-testid="tab-list">{children}</div>,
+      Tab: ({ value, children, onClick }: TabMockProps) => (
         <button data-testid={`tab-btn-${value}`} onClick={onClick}>
           {children}
         </button>
       ),
-      TabPanel: ({ value, children }: any) => (
+      TabPanel: ({ value, children }: TabListMockProps & { value: string }) => (
         <div data-testid={`tab-panel-${value}`}>{children}</div>
       ),
     }
@@ -95,7 +126,7 @@ describe('DataEntrySameAsDrawer', () => {
     setEditingFloorForm: vi.fn(),
   };
 
-  const defaultHookReturn = {
+  const defaultHookReturn: DataEntrySameAsHookReturn = {
     dataEntrySameAsTab: 'type-wise',
     setDataEntrySameAsTab: vi.fn(),
     selectableProperties: [],
@@ -109,8 +140,8 @@ describe('DataEntrySameAsDrawer', () => {
     isFetchingWards: false,
     propertyOptions: [],
     isFetchingProperties: false,
-    sanitizeWardNo: vi.fn((v) => v),
-    sanitizePropertyNo: vi.fn((v) => v),
+    sanitizeWardNo: vi.fn((v: string) => v),
+    sanitizePropertyNo: vi.fn((v: string) => v),
     handleWardChange: vi.fn(),
     handleSearchProperties: vi.fn(),
     isApplyingSameAs: false,
@@ -130,7 +161,7 @@ describe('DataEntrySameAsDrawer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useDataEntrySameAs).mockReturnValue(defaultHookReturn as any);
+    vi.mocked(useDataEntrySameAs).mockReturnValue(defaultHookReturn);
   });
 
   it('renders title and tabs list when open', () => {
@@ -162,7 +193,7 @@ describe('DataEntrySameAsDrawer', () => {
       dataEntrySameAsTab: 'type-wise',
       handleApplySameAsDetails: applyMock,
       handleApplyTypeSubmission: applySubmissionMock,
-    } as any);
+    });
 
     render(<DataEntrySameAsDrawer {...mockProps} />);
 
@@ -181,7 +212,7 @@ describe('DataEntrySameAsDrawer', () => {
       ...defaultHookReturn,
       dataEntrySameAsTab: 'property-wise',
       handleApplySameAsDetails: applyMock,
-    } as any);
+    });
 
     render(<DataEntrySameAsDrawer {...mockProps} />);
 
@@ -197,7 +228,7 @@ describe('DataEntrySameAsDrawer', () => {
       ...defaultHookReturn,
       dataEntrySameAsTab: 'parking',
       handleApplySameAsDetails: applyMock,
-    } as any);
+    });
 
     render(<DataEntrySameAsDrawer {...mockProps} />);
 
@@ -207,3 +238,8 @@ describe('DataEntrySameAsDrawer', () => {
     expect(applyMock).toHaveBeenCalledTimes(1);
   });
 });
+
+
+
+
+
