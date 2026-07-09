@@ -2,15 +2,15 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { Input } from "@/components/common/Input";
-import { Info } from "lucide-react";
+import { FileText, Upload, X } from "lucide-react";
 import type {
+  CheckboxField,
   FieldConfig,
   LangLabel,
   LocationPickerField,
   NormalizeRule,
-  InputMode,
   PickedLocation,
+  RadioField,
   SelectField,
   TextField,
 } from "@/data/Dept/formTypes";
@@ -24,61 +24,6 @@ function t(label: LangLabel | undefined, lang: "en" | "hi" | "mr") {
   if (!label) return "";
   return (label as any)?.[lang] ?? (label as any)?.en ?? "";
 }
-
-const getLabelText = (label?: LangLabel | string) => {
-  if (!label) return "";
-  if (typeof label === "string") return label.toLowerCase();
-  return Object.values(label)
-    .filter((val) => typeof val === "string")
-    .join(" ")
-    .toLowerCase();
-};
-
-const PERSON_NAME_BLOCKLIST = [
-  "building",
-  "society",
-  "colony",
-  "property",
-  "road",
-  "street",
-  "landmark",
-  "ward",
-  "zone",
-  "city",
-  "state",
-  "district",
-  "bank",
-  "branch",
-  "company",
-  "firm",
-  "business",
-  "trade",
-  "shop",
-  "office",
-  "organization",
-  "organisation",
-  "agency",
-  "mandal",
-  "hospital",
-  "school",
-  "college",
-  "institute",
-  "police",
-  "fire",
-  "station",
-  "department",
-  "authority",
-  "developer",
-  "association",
-  "project",
-];
-
-const isPersonNameField = (fieldId: string, labelText: string) => {
-  const haystack = `${fieldId} ${labelText}`.toLowerCase();
-  if (!haystack.includes("name")) return false;
-  if (PERSON_NAME_BLOCKLIST.some((token) => haystack.includes(token))) return false;
-  return true;
-};
 
 const normalizeRuleList = (rules?: NormalizeRule | NormalizeRule[]) => {
   if (!rules) return [];
@@ -138,91 +83,38 @@ const resolveAllowRule = (allow?: string) => {
   }
 };
 
-const getInputDefaults = (field: FieldConfig) => {
-  const fieldType = String((field as any).type ?? "");
-  const fieldId = String((field as any).id ?? "").toLowerCase();
-  const labelText = getLabelText((field as any).label);
-  const normalize: NormalizeRule[] = [];
-  let inputMode: InputMode | undefined;
-  let allow: string | undefined;
-  let maxLength: number | undefined;
-  const hasValidationKey = Object.prototype.hasOwnProperty.call(field as any, "validationKey");
-  if (hasValidationKey) return { inputMode, allow, maxLength, normalize };
-  const isNameLabel = isPersonNameField(fieldId, labelText);
-
-  if (isNameLabel) {
-    inputMode = "text";
-    allow = "letters";
-    normalize.push("trim");
-  }
-
-  if (
-    fieldType === "tel" ||
-    /mobile|mobileno|mobilenumber|contactno|contactnumber|phone/.test(fieldId)
-  ) {
-    inputMode = "numeric";
-    allow = "numeric";
-    maxLength = 10;
-    normalize.push("trim", "removeSpaces");
-  }
-
-  if (/aadhaar|aadhar/.test(fieldId)) {
-    inputMode = inputMode ?? "numeric";
-    allow = allow ?? "numeric";
-    maxLength = maxLength ?? 12;
-    normalize.push("trim", "removeSpaces");
-  }
-
-  if (/pincode|pin_code|pin-code/.test(fieldId)) {
-    inputMode = inputMode ?? "numeric";
-    allow = allow ?? "numeric";
-    maxLength = maxLength ?? 6;
-    normalize.push("trim", "removeSpaces");
-  }
-
-  if (/pancard|pan(card)?(number|no)|pan_no|pan_number/.test(fieldId)) {
-    inputMode = inputMode ?? "text";
-    allow = allow ?? "alphanumeric";
-    maxLength = maxLength ?? 10;
-    normalize.push("trim", "removeSpaces", "uppercase");
-  }
-
-  if (fieldType === "number") {
-    inputMode = inputMode ?? "numeric";
-    allow = allow ?? "numeric";
-    normalize.push("trim", "removeSpaces");
-  }
-
-  if (fieldType === "email" || fieldId.includes("email")) {
-    inputMode = inputMode ?? "email";
-  }
-
-  return { inputMode, allow, maxLength, normalize };
-};
-
 const getFieldRules = (field: FieldConfig) => {
   const validation = (field as any).validation || {};
   const key = (field as any).validationKey;
   const rule = key ? VALIDATION_RULES[key] : undefined;
-  const defaults = getInputDefaults(field);
-
   const normalize = mergeNormalizeRules(
-    (field as any).normalize ?? validation.normalize ?? rule?.normalize,
-    defaults.normalize
+    validation.normalize ?? (field as any).normalize ?? rule?.normalize
   );
-  const allow = (field as any).allow ?? validation.allow ?? rule?.allow ?? defaults.allow;
+  const allow = validation.allow ?? (field as any).allow ?? rule?.allow;
   const inputMode =
-    (field as any).inputMode ?? validation.inputMode ?? rule?.inputMode ?? defaults.inputMode;
+    validation.inputMode ?? (field as any).inputMode ?? rule?.inputMode;
   const maxLength =
-    (field as any).exactLength ??
-    (field as any).maxLength ??
     validation.exactLength ??
     validation.maxLength ??
+    (field as any).exactLength ??
+    (field as any).maxLength ??
     rule?.exactLength ??
-    rule?.maxLength ??
-    defaults.maxLength;
+    rule?.maxLength;
+  const min =
+    validation.min ??
+    (field as any).min ??
+    rule?.min;
+  const max =
+    validation.max ??
+    (field as any).max ??
+    rule?.max;
+  const minDate = validation.minDate;
+  const maxDate = validation.maxDate;
+  const minTime = validation.minTime;
+  const maxTime = validation.maxTime;
+  const accept = validation.accept;
 
-  return { inputMode, allow, normalize, maxLength };
+  return { inputMode, allow, normalize, maxLength, min, max, minDate, maxDate, minTime, maxTime, accept };
 };
 
 const sanitizeValue = (rawValue: string, field: FieldConfig) => {
@@ -275,31 +167,87 @@ function computeProofStatus(oc: boolean, cc: boolean, eb: boolean) {
   return "Weak";
 }
 
+function getChoiceOptions(field: FieldConfig): Array<{ value: string; label: LangLabel }> {
+  if (field.type !== "radio" && field.type !== "checkbox") return [];
+  const options = (field as RadioField | CheckboxField).options;
+  return Array.isArray(options) ? options : [];
+}
+
+function getCheckboxSpan(optionsCount: number): 1 | 2 | 3 | 4 {
+  if (optionsCount === 0) return 4;
+  if (optionsCount <= 2) return 1;
+  if (optionsCount <= 6) return 2;
+  if (optionsCount <= 10) return 3;
+  return 4;
+}
+
+function getControlClass(hasError: boolean, extraClass = "") {
+  return [
+    "w-full rounded-[4px] border bg-white px-3 text-[14px] text-slate-900 outline-none transition-colors",
+    "placeholder:text-slate-400",
+    hasError
+      ? "border-2 border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-200"
+      : "border-slate-300 focus:border-[#22cfc3] focus:ring-1 focus:ring-[#bff5ef]",
+    extraClass,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+const FIELD_ERROR_CLASS = "mt-1 text-[10px] font-medium text-red-500";
+const getLabelColorClass = (hasError: boolean) => (hasError ? "text-red-500" : "text-slate-800");
+
 export default function DynamicFieldRenderer(props: {
   field: FieldConfig;
   lang: "en" | "hi" | "mr";
   values: Record<string, any>;
-  setValue: (id: string, value: any) => void;
+  setValue?: (id: string, value: any, field?: FieldConfig) => void;
+  onChange?: (id: string, value: any, field?: FieldConfig) => void;
   error?: string;
+  showError?: boolean;
 }) {
-  const { field, lang, values, setValue, error } = props;
+  const { field, lang, values, setValue, onChange, error, showError } = props;
+  const updateValue: (id: string, value: any, field?: FieldConfig) => void =
+    setValue ??
+    onChange ??
+    ((_: string, __: any) => {
+      throw new Error("DynamicFieldRenderer requires setValue or onChange");
+    });
 
-  const span = toSpan4((field as any).colSpan);
+  const choiceOptions = getChoiceOptions(field);
+  const hasError = Boolean(showError && error);
+  const rawFieldType = String((field as any)?.type ?? "").toLowerCase();
+  const rawInputMode = String((field as any)?.inputMode ?? "").toLowerCase();
+  const shouldUseCompactSingleSpan =
+    field.type === "text" ||
+    field.type === "email" ||
+    field.type === "number" ||
+    field.type === "tel" ||
+    field.type === "select" ||
+    field.type === "textarea" ||
+    field.type === "file" ||
+    field.type === "date" ||
+    rawFieldType === "time" ||
+    rawFieldType === "datetime-local" ||
+    rawFieldType === "month" ||
+    rawFieldType === "url" ||
+    rawInputMode === "url";
+  const span =
+    field.type === "checkbox"
+      ? getCheckboxSpan(choiceOptions.length)
+      : field.type === "radio" && choiceOptions.length > 0
+        ? choiceOptions.length > 4
+          ? 2
+          : 1
+        : shouldUseCompactSingleSpan
+          ? 1
+          : toSpan4((field as any).colSpan);
   const wrapClass = SPAN_CLASS[span];
   const placeholderValue = (field as any)?.placeholder;
   const placeholderText =
     typeof placeholderValue === "string" ? placeholderValue : t(placeholderValue as any, lang);
-  const helpText =
-    (field as any)?.helperText?.[lang] ||
-    (field as any)?.helperText?.en ||
-    (field as any)?.description?.[lang] ||
-    (field as any)?.description?.en ||
-    placeholderText ||
-    "";
-  const helpIcon = helpText ? (
-    <span title={helpText} aria-label={helpText} className="inline-flex cursor-help">
-      <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
-    </span>
+  const requiredIndicator = (field as any)?.required ? (
+    <span className="text-red-500 text-[13px]">*</span>
   ) : null;
 
   // ---------------------------
@@ -309,16 +257,13 @@ export default function DynamicFieldRenderer(props: {
     const f = field as LocationPickerField;
     return (
       <div className={wrapClass}>
-        <div
-          title={helpText || undefined}
-          className="flex items-center gap-1 min-w-0 text-sm font-medium mb-2"
-        >
-          <span className="truncate">{t(f.label, lang)}</span>
-          {helpIcon}
+        <div className={`mb-2 flex min-w-0 items-start gap-1 text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+          <span className="min-w-0 whitespace-normal break-words">{t(f.label, lang)}</span>
+          {requiredIndicator}
         </div>
         <LocationPicker
           value={(values[f.id] as PickedLocation) ?? null}
-          onChange={(v: PickedLocation | null) => setValue(f.id, v)}
+          onChange={(v: PickedLocation | null) => updateValue(f.id, v, f)}
           persistKey={f.persistKey}
           placeholder={(() => {
             if (!f.placeholder) return undefined;
@@ -327,7 +272,7 @@ export default function DynamicFieldRenderer(props: {
           })()}
           lang={lang}
         />
-        {error ? <div className="mt-1 text-xs text-red-600">{error}</div> : null}
+        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
       </div>
     );
   }
@@ -364,10 +309,10 @@ export default function DynamicFieldRenderer(props: {
         oc ? "OC Date" : eb ? "Electricity Bill Date" : cc ? "CC Date" : other ? "Other" : placeholder;
 
       const setAll = (nextOC: boolean, nextCC: boolean, nextEB: boolean, nextOther: boolean) => {
-        setValue("certOC", nextOC);
-        setValue("certCC", nextCC);
-        setValue("certElectricityBill", nextEB);
-        setValue("certOther", nextOther);
+        updateValue("certOC", nextOC, f);
+        updateValue("certCC", nextCC, f);
+        updateValue("certElectricityBill", nextEB, f);
+        updateValue("certOther", nextOther, f);
 
         // keep dropdown field value in sync (optional, but good for backend)
         const typeVal = nextOC
@@ -380,10 +325,10 @@ export default function DynamicFieldRenderer(props: {
           ? "Other"
           : "";
 
-        setValue("occupancyCertDateType", typeVal);
+        updateValue("occupancyCertDateType", typeVal, f);
 
         // update status
-        setValue("propertyProofStatus", computeProofStatus(nextOC, nextCC, nextEB));
+        updateValue("propertyProofStatus", computeProofStatus(nextOC, nextCC, nextEB), f);
       };
 
       const onToggle = (type: "OC Date" | "CC Date" | "Electricity Bill Date" | "Other") => {
@@ -454,11 +399,16 @@ export default function DynamicFieldRenderer(props: {
 
       return (
         <div className={wrapClass} ref={rootRef}>
-          <label className="text-sm font-medium block mb-1">{t(f.label, lang)}</label>
+          <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+            <span className="inline-flex items-center gap-1">
+              <span>{t(f.label, lang)}</span>
+              {requiredIndicator}
+            </span>
+          </label>
 
           <button
             type="button"
-            className="w-full rounded-xl border px-3 py-2 flex items-center justify-between bg-white"
+            className={getControlClass(hasError, "flex h-[40px] items-center justify-between py-2")}
             onClick={() => setOpen((p) => !p)}
           >
             <span className="truncate">{currentText}</span>
@@ -480,8 +430,7 @@ export default function DynamicFieldRenderer(props: {
               </div>
             </div>
           )}
-
-          {error ? <div className="mt-1 text-xs text-red-600">{error}</div> : null}
+          {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
         </div>
       );
     }
@@ -489,11 +438,16 @@ export default function DynamicFieldRenderer(props: {
     // ✅ Normal select for all other fields
     return (
       <div className={wrapClass}>
-        <label className="text-sm font-medium block mb-1">{t(f.label, lang)}</label>
+        <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+          <span className="inline-flex items-center gap-1">
+            <span>{t(f.label, lang)}</span>
+            {requiredIndicator}
+          </span>
+        </label>
         <select
-          className="w-full rounded-xl border px-3 py-2"
+          className={getControlClass(hasError, "h-[40px] py-2")}
           value={values[f.id] ?? ""}
-          onChange={(e) => setValue(f.id, sanitizeValue(e.target.value, f))}
+          onChange={(e) => updateValue(f.id, sanitizeValue(e.target.value, f), f)}
         >
           <option value="">{lang === "hi" ? "चयन करें" : lang === "mr" ? "निवडा" : "Select"}</option>
           {f.options.map((o) => (
@@ -502,7 +456,222 @@ export default function DynamicFieldRenderer(props: {
             </option>
           ))}
         </select>
-        {error ? <div className="mt-1 text-xs text-red-600">{error}</div> : null}
+        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+      </div>
+    );
+  }
+
+  if (field.type === "radio") {
+    const f = field as RadioField;
+
+    return (
+      <div className={wrapClass}>
+        <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+          <span className="inline-flex items-center gap-1">
+            <span>{t(f.label, lang)}</span>
+            {requiredIndicator}
+          </span>
+        </label>
+        <div className={getControlClass(hasError, "flex min-h-[40px] flex-wrap gap-x-5 gap-y-2 py-2")}>
+          {f.options.map((option) => {
+            const checked = values[f.id] === option.value;
+            return (
+              <label key={option.value} className="inline-flex items-center gap-2 text-[14px] text-slate-700">
+                <input
+                  type="radio"
+                  name={f.id}
+                  value={option.value}
+                  checked={checked}
+                  onChange={() => updateValue(f.id, option.value, f)}
+                  className="h-4 w-4"
+                />
+                <span>{t(option.label, lang)}</span>
+              </label>
+            );
+          })}
+        </div>
+        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+      </div>
+    );
+  }
+
+  if (field.type === "checkbox") {
+    const f = field as CheckboxField;
+    const options = choiceOptions;
+
+    if (options.length === 0) {
+      const checked =
+        values[f.id] === true ||
+        values[f.id] === "true" ||
+        values[f.id] === "Yes" ||
+        values[f.id] === "Agree";
+
+      return (
+        <div className={wrapClass}>
+          <label
+            className={getControlClass(
+              hasError,
+              "inline-flex min-h-[40px] items-start gap-3 rounded-[12px] py-3 text-[14px] text-slate-700"
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={(e) => updateValue(f.id, e.target.checked, f)}
+              className="mt-0.5 h-4 w-4 shrink-0"
+            />
+            <span className="min-w-0 whitespace-normal break-words">
+              {t(f.label, lang)}
+              {requiredIndicator ? <span className="ml-1 inline text-red-500">*</span> : null}
+            </span>
+          </label>
+          {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+        </div>
+      );
+    }
+
+    if (options.length > 1) {
+      const selected = Array.isArray(values[f.id]) ? values[f.id].map(String) : [];
+
+      const toggleOption = (optionValue: string) => {
+        const next = selected.includes(optionValue)
+          ? selected.filter((value: string) => value !== optionValue)
+          : [...selected, optionValue];
+        updateValue(f.id, next, f);
+      };
+
+      return (
+        <div className={wrapClass}>
+          <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+            <span className="inline-flex items-center gap-1">
+              <span>{t(f.label, lang)}</span>
+              {requiredIndicator}
+            </span>
+          </label>
+          <div className={getControlClass(hasError, "flex min-h-[40px] flex-wrap gap-x-5 gap-y-2 py-2")}>
+            {options.map((option) => (
+              <label key={option.value} className="inline-flex items-center gap-2 text-[14px] text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(option.value)}
+                  onChange={() => toggleOption(option.value)}
+                  className="h-4 w-4"
+                />
+                <span>{t(option.label, lang)}</span>
+              </label>
+            ))}
+          </div>
+          {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+        </div>
+      );
+    }
+
+    const singleOption = options[0];
+    const checked =
+      values[f.id] === true ||
+      values[f.id] === "true" ||
+      values[f.id] === "Yes" ||
+      values[f.id] === "Agree" ||
+      (singleOption ? values[f.id] === singleOption.value : false);
+
+    return (
+      <div className={wrapClass}>
+        <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+          <span className="inline-flex items-center gap-1">
+            <span>{t(f.label, lang)}</span>
+            {requiredIndicator}
+          </span>
+        </label>
+        <label className={getControlClass(hasError, "inline-flex min-h-[40px] items-center gap-2 py-2 text-[14px] text-slate-700")}>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => updateValue(f.id, e.target.checked, f)}
+            className="h-4 w-4"
+          />
+          <span>{singleOption ? t(singleOption.label, lang) : t(f.label, lang)}</span>
+        </label>
+        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+      </div>
+    );
+  }
+
+  if (field.type === "file") {
+    const f = field as TextField;
+    const currentValue = values[f.id];
+    const isUploaded = currentValue instanceof File || (typeof currentValue === "string" && currentValue.trim() !== "");
+    const selectedFileName =
+      currentValue instanceof File
+        ? currentValue.name
+        : typeof currentValue === "string"
+          ? currentValue
+          : "";
+    const fileHint = selectedFileName || placeholderText || "Upload required document";
+
+    return (
+      <div className={wrapClass}>
+        <label
+          htmlFor={`file-input-${f.id}`}
+          className={`group flex cursor-pointer items-center gap-3 rounded-[8px] border bg-[#f9fafb] px-3 py-2 transition-colors ${
+            hasError
+              ? "border-red-400 bg-red-50/40"
+              : isUploaded
+                ? "border-[#27d3cf] bg-[#f8fffe]"
+                : "border-[#d8e1ec] hover:border-[#27d3cf]"
+          }`}
+        >
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border transition-colors ${
+              hasError
+                ? "border-red-200 bg-white text-red-500"
+                : isUploaded
+                  ? "border-[#b9f0ec] bg-[#efffff] text-[#10b981]"
+                  : "border-[#dfe6ef] bg-[#f8fbff] text-[#98a7ba] group-hover:border-[#b9f0ec] group-hover:bg-[#efffff] group-hover:text-[#11b8b2]"
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className={`flex items-start gap-1 text-[12px] font-semibold ${hasError ? "text-red-500" : "text-[#1d3557]"}`}>
+              <span className="min-w-0 whitespace-normal break-words leading-4">{t(f.label, lang)}</span>
+              {requiredIndicator}
+            </div>
+            <p className="whitespace-normal break-words text-[11px] leading-4 text-[#93a4b8]">{fileHint}</p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="rounded-[6px] border border-[#8be9e2] bg-[#efffff] px-3 py-1 text-[11px] font-semibold text-[#11b8b2] transition-colors group-hover:border-[#63e1d7] group-hover:bg-[#e6fffd]">
+              <span className="inline-flex items-center justify-center gap-1">
+                <Upload className="h-3.5 w-3.5" />
+                {selectedFileName ? "Change" : "Upload"}
+              </span>
+            </div>
+            {isUploaded ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  updateValue(f.id, null, f);
+                }}
+                className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-[#fecaca] bg-[#fff1f2] text-[#ef4444] transition-colors hover:bg-[#ffe4e6]"
+                aria-label={`Remove ${t(f.label, lang)}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
+          </div>
+
+          <input
+            id={`file-input-${f.id}`}
+            type="file"
+            accept={(f as any)?.validation?.accept}
+            className="sr-only"
+            onChange={(e) => updateValue(f.id, e.target.files?.[0] ?? null, f)}
+          />
+        </label>
+        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
       </div>
     );
   }
@@ -512,34 +681,57 @@ export default function DynamicFieldRenderer(props: {
   // ---------------------------
   const f = field as TextField;
   const isTextarea = f.type === "textarea";
-  const { inputMode, maxLength } = getFieldRules(f);
+  const { inputMode, maxLength, min, max, minDate, maxDate, minTime, maxTime } = getFieldRules(f);
+  const htmlType = f.type === "text" ? "text" : (f.type as any);
+  const minProp =
+    htmlType === "date" || htmlType === "datetime-local" || htmlType === "month"
+      ? minDate
+      : htmlType === "time"
+        ? minTime
+        : typeof min === "number"
+          ? min
+          : typeof (f as any)?.min === "string"
+            ? (f as any).min
+            : undefined;
+  const maxProp =
+    htmlType === "date" || htmlType === "datetime-local" || htmlType === "month"
+      ? maxDate
+      : htmlType === "time"
+        ? maxTime
+        : typeof max === "number"
+          ? max
+          : typeof (f as any)?.max === "string"
+            ? (f as any).max
+            : undefined;
 
   return (
     <div className={wrapClass}>
-      <label
-        title={helpText || undefined}
-        className="flex items-center gap-1 min-w-0 text-sm font-medium block mb-1"
-      >
-        <span className="truncate">{t((f as any).label, lang)}</span>
-        {helpIcon}
+      <label className={`mb-1 flex min-w-0 items-start gap-1 text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+        <span className="min-w-0 whitespace-normal break-words">{t((f as any).label, lang)}</span>
+        {requiredIndicator}
       </label>
       {isTextarea ? (
         <textarea
-          className="w-full rounded-xl border px-3 py-2 min-h-[90px]"
+          className={getControlClass(hasError, "min-h-[58px] py-2.5")}
           value={values[f.id] ?? ""}
           maxLength={typeof maxLength === "number" ? maxLength : undefined}
-          onChange={(e) => setValue(f.id, sanitizeValue(e.target.value, f))}
+          onChange={(e) => updateValue(f.id, sanitizeValue(e.target.value, f), f)}
         />
       ) : (
-        <Input
-          type={f.type === "text" ? "text" : (f.type as any)}
+        <input
+          type={htmlType}
           value={values[f.id] ?? ""}
           inputMode={inputMode}
           maxLength={typeof maxLength === "number" ? maxLength : undefined}
-          onChange={(e: any) => setValue(f.id, sanitizeValue(e.target.value, f))}
+          min={minProp}
+          max={maxProp}
+          pattern={(f as any)?.validation?.pattern}
+          placeholder={placeholderText}
+          className={getControlClass(hasError, "h-[40px] py-2")}
+          onChange={(e: any) => updateValue(f.id, sanitizeValue(e.target.value, f), f)}
         />
       )}
-      {error ? <div className="mt-1 text-xs text-red-600">{error}</div> : null}
+      {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
     </div>
   );
 }

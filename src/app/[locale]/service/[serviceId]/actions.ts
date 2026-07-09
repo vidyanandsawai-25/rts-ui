@@ -1,92 +1,85 @@
 'use server';
 
-/**
- * actions.ts — Server Actions for citizen service form pages.
- *
- * ─── DB Integration Guide (for dev team) ────────────────────────────────────
- * All data fetching is done via `lib/api/rts-citizen.api.ts`.
- * Set env vars to switch from mock → real API:
- *
- *   NEXT_PUBLIC_USE_REAL_API=true
- *   NEXT_PUBLIC_API_BASE_URL=https://your-api.domain.com
- *
- * Draft / Submit actions still use local mock (in-memory) —
- * replace the `createDraftLocal`, `saveDraftValuesLocal`, `submitApplicationLocal`
- * calls below with real API calls when backend is ready.
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
-import type {
-  CreateDraftRequest,
-  SaveDraftValuesRequest,
-  SubmitRequest,
-} from '@/types/rts.types';
-
 import {
-  createDraftLocal,
-  getApplicationLocal,
-  saveDraftValuesLocal,
-  submitApplicationLocal,
-} from '@/lib/mock/ui-only';
+  createRtsApplication,
+  uploadRtsDocument,
+  type CreateRtsApplicationPayload,
+  type CreateRtsApplicationResponse,
+} from "@/lib/api/rts/rtsapplication.service";
+import { getRtsServiceById } from "@/lib/api/rts/rtsservices.service";
+import { buildRtsApplicationPayload } from "@/lib/utils/rts/rts-application-payload";
+import type { RtsServiceApiItem } from "@/types/rts/service.types";
 
-import {
-  fetchServiceMeta,
-  fetchServiceFormFields,
-} from '@/lib/api/rts-citizen.api';
-
-import type { ServiceMetaDTO, ServiceFieldGroupDTO } from '@/types/rts-citizen.types';
-
-// ── Service Metadata ─────────────────────────────────────────────────────────
-
-/**
- * Returns service metadata (name, department, SLA, fee).
- * TODO: Backed by rts-citizen.api.ts → switch NEXT_PUBLIC_USE_REAL_API=true
- */
-export async function getServiceMapSSR(serviceId: string): Promise<ServiceMetaDTO> {
-  return fetchServiceMeta(serviceId);
+interface SubmitRtsFileFieldMeta {
+  fileKey: string;
+  fieldId: string;
+  fieldDefinitionId: number;
+  fieldName: string;
+  fieldLabel: string;
 }
 
-// ── Dynamic Form Fields ──────────────────────────────────────────────────────
-
-/**
- * Returns dynamic form field groups for a service.
- * Field labels, placeholders, options — all i18n (en/hi/mr).
- * TODO: Backed by rts-citizen.api.ts → switch NEXT_PUBLIC_USE_REAL_API=true
- */
-export async function getServiceFieldsSSR(serviceId: string): Promise<ServiceFieldGroupDTO[]> {
-  return fetchServiceFormFields(serviceId);
+interface SubmitRtsApplicationActionInput {
+  formValues: Record<string, unknown>;
+  steps: Array<{ fields?: Array<Record<string, unknown>> }>;
+  departmentId?: number | string | null;
+  serviceId?: number | string | null;
+  ownerId?: number;
+  createdBy?: number;
+  applicationStatus?: string;
+  fileFields?: SubmitRtsFileFieldMeta[];
 }
 
-// ── Draft & Submit (replace with real API when backend ready) ────────────────
-
-/**
- * Creates a new draft application.
- * TODO: Replace with → POST /api/rts/applications/draft
- */
-export async function createDraftSSR(payload: CreateDraftRequest) {
-  return createDraftLocal(payload);
+export async function getRtsServiceByIdSSR(serviceId: number): Promise<RtsServiceApiItem> {
+  return getRtsServiceById(serviceId);
 }
 
-/**
- * Saves draft field values.
- * TODO: Replace with → PATCH /api/rts/applications/{applicationId}/draft-values
- */
-export async function saveDraftValuesSSR(applicationId: number, payload: SaveDraftValuesRequest) {
-  return saveDraftValuesLocal(applicationId, payload);
-}
+export async function submitRtsApplicationAction(
+  formData: FormData
+): Promise<CreateRtsApplicationResponse> {
+  const serializedInput = formData.get("submitInput");
+  if (typeof serializedInput !== "string" || !serializedInput.trim()) {
+    throw new Error("Missing RTS submit input");
+  }
 
-/**
- * Fetches an existing application.
- * TODO: Replace with → GET /api/rts/applications/{applicationId}
- */
-export async function getApplicationSSR(applicationId: number) {
-  return getApplicationLocal(applicationId);
-}
+  const input = JSON.parse(serializedInput) as SubmitRtsApplicationActionInput;
+  const fileFields = Array.isArray(input.fileFields) ? input.fileFields : [];
+  const documentGuidByFieldDefinitionId: Record<string, string> = {};
 
-/**
- * Final submission.
- * TODO: Replace with → POST /api/rts/applications/{applicationId}/submit
- */
-export async function submitApplicationSSR(applicationId: number, payload: SubmitRequest) {
-  return submitApplicationLocal(applicationId, payload);
+  for (const fileField of fileFields) {
+    const file = formData.get(fileField.fileKey);
+
+    if (!(file instanceof File) || file.size <= 0) {
+      continue;
+    }
+
+    const uploadResult = await uploadRtsDocument({
+      file,
+      ownerUserId: input.ownerId,
+      documentType: fileField.fieldLabel || fileField.fieldName,
+      departmentId:
+        input.departmentId == null || input.departmentId === ""
+          ? undefined
+          : Number(input.departmentId),
+      moduleId:
+        input.serviceId == null || input.serviceId === ""
+          ? undefined
+          : Number(input.serviceId),
+      isPrimaryDocument: true,
+    });
+
+    documentGuidByFieldDefinitionId[String(fileField.fieldDefinitionId)] = uploadResult.documentGuid;
+  }
+
+  const payload: CreateRtsApplicationPayload = buildRtsApplicationPayload({
+    formData: input.formValues,
+    steps: input.steps,
+    departmentId: input.departmentId,
+    serviceId: input.serviceId,
+    ownerId: input.ownerId,
+    createdBy: input.createdBy,
+    applicationStatus: input.applicationStatus,
+    documentGuidByFieldDefinitionId,
+  });
+
+  return createRtsApplication(payload);
 }

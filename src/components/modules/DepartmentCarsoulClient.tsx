@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-
 import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
-
 import { useLanguage } from "@/components/Providers/LanguageProvider";
 import type { Language } from "@/types/language.type";
 
-/** ─── Types ─────────────────────────────────────────────── */
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
 
 type Service = {
@@ -38,16 +35,13 @@ type DepartmentCarsoulClientProps = {
   departments: Department[];
 };
 
-/** ─── i18n UI labels ─────────────────────────────────────── */
 const UI = {
-  available:     { en: "Available Services", hi: "उपलब्ध सेवाएँ",  mr: "उपलब्ध सेवा" },
-  found:         { en: "Services Found",     hi: "सेवाएँ मिलीं",   mr: "सेवा सापडल्या" },
-  clear:         { en: "Clear",             hi: "हटाएँ",           mr: "काढा" },
-  searchResults: { en: "Search Results",    hi: "खोज परिणाम",     mr: "शोध निकाल" },
-  departments:   { en: "Departments",       hi: "विभाग",           mr: "विभाग" },
+  available: { en: "Available Services", hi: "Available Services", mr: "Available Services" },
+  found: { en: "Services Found", hi: "Services Found", mr: "Services Found" },
+  clear: { en: "Clear", hi: "Clear", mr: "Clear" },
+  searchResults: { en: "Search Results", hi: "Search Results", mr: "Search Results" },
 } as const;
 
-/** ─── Helpers ───────────────────────────────────────────── */
 const normalize = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
 
 function safeLang(v: unknown): Language {
@@ -60,106 +54,88 @@ function pickLangText(v: LangText | string | undefined, lang: Language): string 
   return v[lang] || v.en || v.hi || v.mr;
 }
 
-/** Search across all available langs so search works even after switching language */
 function allLabels(v: LangText | string | undefined): string[] {
   if (!v) return [];
   if (typeof v === "string") return [v];
   return [v.en, v.hi, v.mr].filter(Boolean) as string[];
 }
 
-/** ─── Component ─────────────────────────────────────────── */
 export default function DepartmentCarsoulClient({ departments }: DepartmentCarsoulClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const DEFAULT_DEPT = "property-tax";
   const deptFromUrl = (searchParams.get("deptId") ?? "").trim();
-  const [activeDept, setActiveDept] = useState<string>(deptFromUrl || DEFAULT_DEPT);
 
   const { language } = useLanguage();
   const lang = safeLang(language);
   const localePrefix = `/${lang}`;
 
-  const qRaw  = (searchParams.get("q") ?? "").trim();
+  const qRaw = (searchParams.get("q") ?? "").trim();
   const qNorm = normalize(qRaw);
 
-  // ── Search logic ──────────────────────────────────────────
-  const matchedDepts = useMemo<Department[]>(() => {
-    if (!qNorm) return [];
-    return departments.filter((d) => {
-      const labels = allLabels(d?.name);
-      return labels.some((lbl) => normalize(lbl).includes(qNorm) || qNorm.includes(normalize(lbl)));
-    });
+  const matchedDepts = useMemo(() => {
+    if (!qNorm) return [] as Department[];
+    return departments.filter((department) =>
+      allLabels(department.name).some((label) => normalize(label).includes(qNorm) || qNorm.includes(normalize(label))),
+    );
   }, [departments, qNorm]);
 
-  const exactDeptMatches = useMemo<Department[]>(() => {
-    if (!qNorm) return [];
-    return matchedDepts.filter((d) =>
-      allLabels(d?.name).some((lbl) => normalize(lbl) === qNorm)
-    );
-  }, [qNorm, matchedDepts]);
+  const exactDeptMatches = useMemo(() => {
+    if (!qNorm) return [] as Department[];
+    return matchedDepts.filter((department) => allLabels(department.name).some((label) => normalize(label) === qNorm));
+  }, [matchedDepts, qNorm]);
 
-  const results = useMemo<SearchService[]>(() => {
-    if (!qNorm) return [];
+  const results = useMemo(() => {
+    if (!qNorm) return [] as SearchService[];
 
-    const addMeta = (d: Department, s: Service): SearchService => ({
-      ...s,
-      __deptId: d.id,
-      __deptName: pickLangText(d.name, lang) ?? d.id,
+    const addMeta = (department: Department, service: Service): SearchService => ({
+      ...service,
+      __deptId: department.id,
+      __deptName: pickLangText(department.name, lang) ?? department.id,
     });
 
-    // Exact dept match → all services in that dept
     if (exactDeptMatches.length > 0) {
-      return exactDeptMatches.flatMap((d) => d.services.map((s) => addMeta(d, s)));
+      return exactDeptMatches.flatMap((department) => department.services.map((service) => addMeta(department, service)));
     }
 
-    // Partial dept match → all services in matched depts
-    const deptServices = matchedDepts.flatMap((d) => d.services.map((s) => addMeta(d, s)));
-
-    // Service-name match across all depts
-    const serviceMatches = departments.flatMap((d) =>
-      d.services
-        .filter((s) => {
+    const deptServices = matchedDepts.flatMap((department) => department.services.map((service) => addMeta(department, service)));
+    const serviceMatches = departments.flatMap((department) =>
+      department.services
+        .filter((service) => {
           const labels = [
-            ...allLabels(s.name as LangText),
-            ...allLabels(s.title as LangText),
-            typeof s.serviceName === "string" ? s.serviceName : "",
+            ...allLabels(service.name as LangText),
+            ...allLabels(service.title as LangText),
+            typeof service.serviceName === "string" ? service.serviceName : "",
           ].filter(Boolean);
-          return labels.some((lbl) => normalize(String(lbl)).includes(qNorm));
+          return labels.some((label) => normalize(String(label)).includes(qNorm));
         })
-        .map((s) => addMeta(d, s))
+        .map((service) => addMeta(department, service)),
     );
 
-    const combined = [...deptServices, ...serviceMatches];
-    return Array.from(new Map(combined.map((s) => [s.id, s])).values());
-  }, [departments, qNorm, matchedDepts, exactDeptMatches, lang]);
+    return Array.from(new Map([...deptServices, ...serviceMatches].map((service) => [service.id, service])).values());
+  }, [departments, exactDeptMatches, lang, matchedDepts, qNorm]);
+
+  const selectedDeptId = useMemo(() => {
+    if (deptFromUrl) return deptFromUrl;
+    return departments[0]?.id || "";
+  }, [deptFromUrl, departments]);
 
   const carouselDeptId = useMemo(() => {
-    if (!qNorm) return activeDept;
+    if (!qNorm) return selectedDeptId;
     if (exactDeptMatches.length === 1) return exactDeptMatches[0].id;
     if (matchedDepts.length === 1) return matchedDepts[0].id;
-    return activeDept;
-  }, [activeDept, qNorm, exactDeptMatches, matchedDepts]);
+    return selectedDeptId;
+  }, [exactDeptMatches, matchedDepts, qNorm, selectedDeptId]);
 
-  const activeDeptObj   = departments.find((d) => d.id === carouselDeptId);
+  const activeDeptObj = departments.find((department) => department.id === carouselDeptId);
   const activeDeptLabel = activeDeptObj ? pickLangText(activeDeptObj.name, lang) : "";
 
-  // Restore active dept from URL on browser back navigation
   useEffect(() => {
-    const d = (searchParams.get("deptId") ?? "").trim();
-    if (d && d !== activeDept) setActiveDept(d);
-    if (!d && activeDept !== DEFAULT_DEPT) {
-      router.replace(
-        `${localePrefix}/service/dashboard?deptId=${encodeURIComponent(activeDept)}`,
-        { scroll: false }
-      );
+    if (!deptFromUrl && departments[0]) {
+      router.replace(`${localePrefix}/service/dashboard?deptId=${encodeURIComponent(departments[0].id)}`, { scroll: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [deptFromUrl, departments, localePrefix, router]);
 
-  // ── Shared onChange handler ───────────────────────────────
   const handleDeptChange = (deptId: string) => {
-    setActiveDept(deptId);
     const params = new URLSearchParams();
     params.set("deptId", deptId);
     const q = (searchParams.get("q") ?? "").trim();
@@ -167,30 +143,27 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
     router.replace(`${localePrefix}/service/dashboard?${params.toString()}`, { scroll: false });
   };
 
-  // ── Render ────────────────────────────────────────────────
   return (
-    <div className="flex flex-col gap-3 mt-3 md:mt-4">
-
-      {/* ── MOBILE: Horizontal scrollable department tabs (< lg) ── */}
-      <div className="lg:hidden w-full">
-        <div className="flex gap-2 overflow-x-auto pb-2 pt-1 -mx-3 px-3 sm:-mx-4 sm:px-4"
+    <div className="mt-3 flex flex-col gap-3 md:mt-4">
+      <div className="w-full lg:hidden">
+        <div
+          className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-2 pt-1 sm:-mx-4 sm:px-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {departments.map((dept) => {
-            const isActive = dept.id === carouselDeptId && !qNorm;
-            const label = pickLangText(dept.name, lang) ?? dept.id;
+          {departments.map((department) => {
+            const isActive = department.id === carouselDeptId && !qNorm;
+            const label = pickLangText(department.name, lang) ?? department.id;
             return (
               <button
-                key={dept.id}
+                key={department.id}
                 type="button"
-                onClick={() => !qNorm && handleDeptChange(dept.id)}
+                onClick={() => !qNorm && handleDeptChange(department.id)}
                 disabled={!!qNorm}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all
-                  ${isActive
-                    ? "bg-teal-600 text-white border-teal-600 shadow-md"
-                    : "bg-white text-gray-700 border-gray-200 hover:border-teal-300 hover:bg-teal-50"
-                  }
-                  ${qNorm ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+                  isActive
+                    ? 'border-teal-600 bg-teal-600 text-white shadow-md'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50'
+                } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
                 <span className="whitespace-nowrap">{label}</span>
               </button>
@@ -199,11 +172,8 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
         </div>
       </div>
 
-      {/* ── DESKTOP: Left carousel + Right content (≥ lg) ── */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-10 xl:gap-14">
-
-        {/* Vertical Carousel Sidebar — hidden on mobile, shown on lg+ */}
-        <div className="hidden lg:flex lg:w-[300px] xl:w-[340px] justify-center flex-shrink-0">
+      <div className="flex flex-col gap-4 lg:flex-row lg:gap-10 xl:gap-14">
+        <div className="hidden flex-shrink-0 justify-center lg:flex lg:w-[300px] xl:w-[340px]">
           <DepartmentCarousel
             departments={departments}
             activeDept={carouselDeptId}
@@ -212,31 +182,24 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
           />
         </div>
 
-        {/* Right — Service header + grid */}
-        <div className="flex-1 w-full min-w-0">
-          {/* Status bar */}
-          <div
-            className="w-full py-2 px-3 sm:px-4 rounded-xl shadow-sm mb-3 md:mb-4
-              flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2
-              bg-gradient-to-r from-[#fff5f7] via-[#f8f9fe] to-[#fff6ef]
-              border border-[#f0e8ff]"
-          >
-            <div className="flex-1 flex justify-center text-center">
+        <div className="min-w-0 flex-1 w-full">
+          <div className="mb-3 flex w-full flex-col gap-2 rounded-xl border border-[#f0e8ff] bg-gradient-to-r from-[#fff5f7] via-[#f8f9fe] to-[#fff6ef] px-3 py-2 shadow-sm sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+            <div className="flex flex-1 justify-center text-center">
               {qNorm ? (
-                <h2 className="text-sm sm:text-base md:text-lg font-semibold text-gray-700 truncate px-2">
+                <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
                   {exactDeptMatches.length === 1
-                    ? `—— ${pickLangText(exactDeptMatches[0].name, lang)} ——`
-                    : `${UI.searchResults[lang]} — "${qRaw}"`}
+                    ? `---- ${pickLangText(exactDeptMatches[0].name, lang)} ----`
+                    : `${UI.searchResults[lang]} - \"${qRaw}\"`}
                 </h2>
               ) : (
-                <h2 className="text-sm sm:text-base md:text-lg font-semibold text-gray-700 truncate px-2">
-                  —— {activeDeptLabel} ——
+                <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
+                  ---- {activeDeptLabel} ----
                 </h2>
               )}
             </div>
 
-            <div className="flex items-center justify-center gap-2 bg-white px-3 py-1 rounded-full shadow text-gray-700 text-xs border border-gray-100 shrink-0">
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <div className="flex shrink-0 items-center justify-center gap-2 rounded-full border border-gray-100 bg-white px-3 py-1 text-xs text-gray-700 shadow">
+              <div className="h-2 w-2 rounded-full bg-green-500" />
               <span>
                 {qNorm
                   ? `${results.length} ${UI.found[lang]}`
@@ -244,21 +207,20 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
               </span>
             </div>
 
-            {qNorm && (
+            {qNorm ? (
               <button
                 onClick={() => router.replace(`${localePrefix}/service/dashboard`, { scroll: false })}
-                className="text-xs px-3 py-1.5 rounded-lg border bg-white hover:bg-gray-50 shrink-0 self-center sm:self-auto"
+                className="shrink-0 self-center rounded-lg border bg-white px-3 py-1.5 text-xs hover:bg-gray-50 sm:self-auto"
               >
                 {UI.clear[lang]}
               </button>
-            )}
+            ) : null}
           </div>
 
-          {/* Service grid */}
           {qNorm ? (
             <ServiceGrid departments={departments} services={results} />
           ) : (
-            <ServiceGrid departments={departments} deptId={activeDept} />
+            <ServiceGrid departments={departments} deptId={selectedDeptId} />
           )}
         </div>
       </div>
