@@ -238,7 +238,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
             />
           )}
 
-          {!isPlotCategory && (
+          {!viewOnly && !isPlotCategory && (
             <AddButton
               label={selectedFloorType === 'OpenPlot' ? (t('floor.addSpace') || 'Add Space') : (t('floor.addFloor') || 'Add Floor')}
               size="sm"

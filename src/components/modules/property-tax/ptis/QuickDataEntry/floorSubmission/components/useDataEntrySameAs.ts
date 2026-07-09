@@ -213,28 +213,39 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     }
     setIsApplyingTypeSubmission(true);
     try {
-      const payload = {
-        sourcePropertyId,
-        destinationPropertyIds,
-        filterType: "PARKING,PROPERTYWISE",
-        type: 1
-      };
-      
       // Optimistic UI update based on user requirement to see changes immediately
       const updatedIds = new Set(destinationPropertyIds);
       setSelectableProperties((prev) => prev.map((p) => {
-        if (updatedIds.has(Number(p.id)) || Number(p.id) === sourcePropertyId) {
-          return { ...p, type: '1', typeLabel: '1' };
+        if (updatedIds.has(Number(p.id))) {
+          return {
+            ...p,
+            carpetAreaSqFeet: sourceProperty?.carpetAreaSqFeet ?? p.carpetAreaSqFeet,
+            carpetAreaSqMeter: sourceProperty?.carpetAreaSqMeter ?? p.carpetAreaSqMeter,
+          };
         }
         return p;
       }));
+
+      const [resParking, resPropertywise] = await Promise.all([
+        applyDataEntrySameAsAction({
+          sourcePropertyId,
+          destinationPropertyIds,
+          filterType: "PARKING",
+          type: 1
+        }),
+        applyDataEntrySameAsAction({
+          sourcePropertyId,
+          destinationPropertyIds,
+          filterType: "PROPERTYWISE",
+          type: 1
+        })
+      ]);
       
-      const res = await applyDataEntrySameAsAction(payload);
-      if (res.success) {
+      if (resParking.success && resPropertywise.success) {
         toast.success(t('floor.selectProperties.applySuccess'));
         router.refresh();
       } else {
-        toast.error(res.error || t('floor.selectProperties.unknownError'));
+        toast.error(resParking.error || resPropertywise.error || t('floor.selectProperties.unknownError'));
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));

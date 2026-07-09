@@ -6,7 +6,8 @@ import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmiss
 import { EditSidebarProps } from '@/types/floor-details.types';
 import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
-import { RoomSubmissionModal, PlotAreaCalculator, FloorTypeToggle, SubmissionOverlayLoader, SubmissionApiErrors } from './components';
+import { RoomSubmissionModal, PlotAreaCalculator, FloorTypeToggle, SubmissionOverlayLoader, SubmissionApiErrors, DataEntrySameAsDrawer } from './components';
+import { LoadingPage } from '@/components/common';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { RoomAPIResponse, FloorData } from '@/types/room-details.types';
 import { updatePlotAreaAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
@@ -269,35 +270,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
           {/* Edit Floor Form Section */}
           {(selectedFloor || isAddingNewFloor) && !showDataEntrySameAsDrawer && (
-            <FloorForm
-              t={t}
-              isAddingNewFloor={isAddingNewFloor}
-              editingFloorForm={editingFloorForm}
-              setEditingFloorForm={setEditingFloorForm}
-              formErrors={formErrors}
-              setFormErrors={setFormErrors}
-              resetForm={resetForm}
-              handleOpenDropdown={handleOpenDropdown}
-              handleOpenRenterManagement={handleOpenRenterManagement}
-              updateUrlParams={updateUrlParams}
-              isOperationLoading={isOperationLoading}
-              startTransition={startTransition}
-              roomsInputRef={roomsInputRef}
-              areaInputRef={areaInputRef}
-              floorOptions={floorOptions}
-              floorLookup={floorLookup}
-              subFloorOptions={subFloorOptions}
-              subFloorLookup={subFloorLookup}
-              constructionTypeOptions={constructionTypeOptions}
-              constructionLookup={constructionLookup}
-              useOptions={useOptions}
-              useLookup={useLookup}
-              subTypeOptionsFromData={subTypeOptionsFromData}
-              subTypeData={subTypeData || []}
-              setShowRoomSubmission={setShowRoomSubmission}
-              onSave={handleSave}
-            />
-          {(selectedFloor || isAddingNewFloor) && (
             <div className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
