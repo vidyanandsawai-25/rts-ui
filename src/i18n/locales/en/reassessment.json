@@ -60,10 +60,10 @@
   "summaryCards": {
     "oldLabel": "Old",
     "newLabel": "New",
-    "carpetAreaLabel": "Carpet Area",
-    "typeOfUseLabel": "Use",
-    "rateableValueLabel": "Rateable Value",
-    "totalTaxLabel": "Total Tax",
+    "carpetAreaLabel": "Area",
+    "typeOfUseLabel": "Change of Use",
+    "rateableValueLabel": "RV",
+    "totalTaxLabel": "Tax",
     "units": {
       "sqM": "m²",
       "type": "Type",

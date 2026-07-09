@@ -60,10 +60,10 @@
   "summaryCards": {
     "oldLabel": "पुराना",
     "newLabel": "नया",
-    "carpetAreaLabel": "कार्पेट क्षेत्रफल",
-    "typeOfUseLabel": "उपयोग प्रकार",
-    "rateableValueLabel": "मूल्यांकन मूल्य",
-    "totalTaxLabel": "कुल टैक्स",
+    "carpetAreaLabel": "क्षेत्रफल",
+    "typeOfUseLabel": "उपयोग में बदलाव ",
+    "rateableValueLabel": "आर वी",
+    "totalTaxLabel": "टैक्स",
     "units": {
       "sqM": "मी²",
       "type": "प्रकार",

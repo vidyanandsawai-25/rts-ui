@@ -37,33 +37,48 @@ export function OldFloorDetails({
       label: t('floorDetails.columns.floor'),
       width: '64px',
       align: 'left',
-      cellClassName: 'font-bold'
+      cellClassName: 'font-bold',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'conYear',
       label: t('floorDetails.columns.conYear'),
       width: '96px',
-      align: 'left'
+      align: 'left',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'asstYear',
       label: t('floorDetails.columns.asstYear'),
       width: '96px',
-      align: 'left'
+      align: 'left',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'constType',
       label: t('floorDetails.columns.constType'),
       width: '96px',
       align: 'left',
-      cellClassName: 'font-bold text-sky-800'
+      cellClassName: 'font-bold text-sky-800',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'use',
       label: t('floorDetails.columns.use'),
       width: '128px',
       align: 'left',
-      cellClassName: 'text-emerald-700'
+      cellClassName: 'text-emerald-700',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'carpetAreaSqFt',
@@ -71,7 +86,11 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: MappedFloorDetail) => `${row.carpetAreaSqFt} / ${row.carpetAreaSqM}`
+      render: (_, row: MappedFloorDetail) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">
+          {row.carpetAreaSqFt} / {row.carpetAreaSqM}
+        </div>
+      )
     },
     {
       key: 'builtUpAreaSqFt',
@@ -79,34 +98,50 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: MappedFloorDetail) => `${row.builtUpAreaSqFt} / ${row.builtUpAreaSqM}`
+      render: (_, row: MappedFloorDetail) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">
+          {row.builtUpAreaSqFt} / {row.builtUpAreaSqM}
+        </div>
+      )
     },
     {
       key: 'rate',
       label: t('floorDetails.columns.rate'),
       width: '96px',
       align: 'left',
-      cellClassName: 'text-emerald-700 font-mono'
+      cellClassName: 'text-emerald-700 font-mono',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'yearlyRate',
       label: t('floorDetails.columns.yearlyRate'),
       width: '96px',
       align: 'left',
-      cellClassName: 'text-emerald-700 font-mono'
+      cellClassName: 'text-emerald-700 font-mono',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'financialYear',
       label: t('floorDetails.columns.financialYear'),
       width: '96px',
-      align: 'left'
+      align: 'left',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'renter',
       label: t('floorDetails.columns.renter'),
       width: '144px',
       align: 'left',
-      cellClassName: 'text-emerald-700'
+      cellClassName: 'text-emerald-700',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'taxLiability',
@@ -114,14 +149,19 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-mono',
-      render: (val: unknown) => formatTaxLiability(val)
+      render: (val: unknown) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatTaxLiability(val)}</div>
+      )
     },
     {
       key: 'rentMy',
       label: t('floorDetails.columns.rentMy'),
       width: '112px',
       align: 'left',
-      cellClassName: 'font-mono'
+      cellClassName: 'font-mono',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'rentalValue',
@@ -129,14 +169,19 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: unknown) => formatNumberish(val)
+      render: (val: unknown) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+      )
     },
     {
       key: 'depreciation',
       label: t('floorDetails.columns.depreciation'),
       width: '112px',
       align: 'left',
-      cellClassName: 'text-emerald-700 font-mono'
+      cellClassName: 'text-emerald-700 font-mono',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'alv',
@@ -144,14 +189,19 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: unknown) => formatNumberish(val)
+      render: (val: unknown) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+      )
     },
     {
       key: 'mr',
       label: t('floorDetails.columns.mr'),
       width: '96px',
       align: 'left',
-      cellClassName: 'text-emerald-700 font-mono'
+      cellClassName: 'text-emerald-700 font-mono',
+      render: (val: any) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      )
     },
     {
       key: 'rv',
@@ -159,7 +209,9 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: unknown) => formatNumberish(val)
+      render: (val: unknown) => (
+        <div className="border border-gray-300 rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+      )
     },
     {
       key: 'status',
@@ -185,7 +237,7 @@ export function OldFloorDetails({
   return (
     <div className="flex-grow flex flex-col min-w-0">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="text-xs font-bold text-sky-950">{t('floorDetails.oldTitle')}</h4>
+        <h4 className="text-sm font-bold text-[#2f5597]">{t('floorDetails.oldTitle')}</h4>
         <EyeIconButton
           onClick={onToggleAutoScroll}
           isAutoScrolling={isAutoScrolling}
@@ -194,23 +246,23 @@ export function OldFloorDetails({
         />
       </div>
 
-            <div id="old-table-container" className="min-w-0">
-                <MasterTable
-                    columns={oldColumns}
-                    data={data}
-                    paginationConfig={{ enabled: false }}
-                    tableClassName="w-max min-w-full text-xs font-medium border-collapse"
-                    theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
-                    rowClassName={(row) => cn(
-                        "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60",
-                        row.status === 'Unchanged' && "bg-blue-50/40 hover:bg-blue-50/70 text-blue-950",
-                        row.status === 'Added' && "bg-emerald-50/40 hover:bg-emerald-50/70 text-emerald-950",
-                        row.status === 'Removed' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
-                    )}
-                    height="xs"
-                    scrollContainerRef={scrollContainerRef}
-                />
-            </div>
-        </div>
-    );
+      <div id="old-table-container" className="min-w-0">
+        <MasterTable
+          columns={oldColumns}
+          data={data}
+          paginationConfig={{ enabled: false }}
+          tableClassName="w-max min-w-full text-xs font-medium border-collapse"
+          theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
+          rowClassName={(row) => cn(
+            "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60",
+            row.status === 'Unchanged' && "bg-blue-50/40 hover:bg-blue-50/70 text-blue-950",
+            row.status === 'Added' && "bg-emerald-50/40 hover:bg-emerald-50/70 text-emerald-950",
+            row.status === 'Removed' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
+          )}
+          height="xs"
+          scrollContainerRef={scrollContainerRef}
+        />
+      </div>
+    </div>
+  );
 }
