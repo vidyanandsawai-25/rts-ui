@@ -82,6 +82,12 @@ describe("GstMasterForm Component", () => {
   test("shows validation errors on empty submission", async () => {
     const { container } = render(<GstMasterForm initialData={null} />);
 
+    // Clear pre-filled default dates to trigger required validations
+    const fromInput = screen.getByLabelText("gstMaster.form.fields.effectiveFrom.label *");
+    const toInput = screen.getByLabelText("gstMaster.form.fields.effectiveTo.label *");
+    fireEvent.change(fromInput, { target: { value: "" } });
+    fireEvent.change(toInput, { target: { value: "" } });
+
     const form = container.querySelector("form")!;
     fireEvent.submit(form);
 
