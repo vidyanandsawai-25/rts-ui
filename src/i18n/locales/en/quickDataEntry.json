@@ -768,6 +768,7 @@
             "search": "Search",
             "applyButton": "Apply Details",
             "applyPropertyButton": "Apply Property",
+            "applyParkingButton": "Apply Parking",
             "applyTypeSubmission": "Apply Submission",
             "applying": "Applying...",
             "applySuccess": "Details applied successfully.",
