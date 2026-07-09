@@ -5,7 +5,7 @@ import { MapPin, Hash, Layers } from 'lucide-react';
 import { Drawer, Tabs } from '@/components/common';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
-import { useDataEntrySameAs } from './useDataEntrySameAs';
+import { useDataEntrySameAs } from '../hooks/useDataEntrySameAs';
 import { TypeWiseTab } from './TypeWiseTab';
 import { PropertyWiseTab } from './PropertyWiseTab';
 import { ParkingTab } from './ParkingTab';

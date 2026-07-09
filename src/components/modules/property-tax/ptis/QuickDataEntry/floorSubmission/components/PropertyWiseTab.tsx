@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { SearchSelect, type SearchSelectOption } from '@/components/common';
-import { UpdateButton } from '@/components/common/ActionButtons';
+import { UpdateButton, SearchButton } from '@/components/common/ActionButtons';
 import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
 import { FloorData } from '@/types/room-details.types';
@@ -89,51 +89,43 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
       />
 
       <div className="flex items-end gap-3 mt-3 px-1 mb-3">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="property-wise-search-ward-id" className="text-[11px] font-semibold text-slate-600">
-            {t('floor.selectProperties.wardNo')}
-          </label>
-          <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
-            <SearchSelect
-              id="property-wise-search-ward-id"
-              options={wardOptions}
-              value={searchWardId}
-              onChange={handleWardChange}
-              sanitizeInput={sanitizeWardNo}
-              className="h-8 text-xs"
-              isLoading={isFetchingWards}
-              loadingPlaceholder={t('search.loading')}
-              noOptionsPlaceholder={t('search.noOptionsAvailable')}
-            />
-          </div>
+        <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
+          <SearchSelect
+            id="property-wise-search-ward-id"
+            label={t('floor.selectProperties.wardNo')}
+            options={wardOptions}
+            value={searchWardId}
+            onChange={handleWardChange}
+            sanitizeInput={sanitizeWardNo}
+            className="h-8 text-xs"
+            isLoading={isFetchingWards}
+            loadingPlaceholder={t('search.loading')}
+            noOptionsPlaceholder={t('search.noOptionsAvailable')}
+          />
         </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="property-wise-search-property-no" className="text-[11px] font-semibold text-slate-600">
-            {t('floor.selectProperties.propertyNo')}
-          </label>
-          <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
-            <SearchSelect
-              id="property-wise-search-property-no"
-              options={propertyOptions}
-              value={searchPropertyNo}
-              onChange={(_name, val) => setSearchPropertyNo(val)}
-              sanitizeInput={sanitizePropertyNo}
-              className="h-8 text-xs"
-              disabled={!searchWardId || isFetchingProperties}
-              isLoading={isFetchingProperties}
-              loadingPlaceholder={t('search.loading')}
-              noOptionsPlaceholder={t('search.noOptionsAvailable')}
-            />
-          </div>
+        <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
+          <SearchSelect
+            id="property-wise-search-property-no"
+            label={t('floor.selectProperties.propertyNo')}
+            options={propertyOptions}
+            value={searchPropertyNo}
+            onChange={(_name, val) => setSearchPropertyNo(val)}
+            sanitizeInput={sanitizePropertyNo}
+            className="h-8 text-xs"
+            disabled={!searchWardId || isFetchingProperties}
+            isLoading={isFetchingProperties}
+            loadingPlaceholder={t('search.loading')}
+            noOptionsPlaceholder={t('search.noOptionsAvailable')}
+          />
         </div>
-        <button
+        <SearchButton
           type="button"
           onClick={handleSearchProperties}
           disabled={!searchWardId || !searchPropertyNo.trim() || isLoading}
-          className="h-8 px-4 rounded-md bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {t('floor.selectProperties.search')}
-        </button>
+          label={t('floor.selectProperties.search')}
+          size="sm"
+          className="h-8 px-4 text-xs font-semibold rounded-md"
+        />
       </div>
 
       <SelectPropertiesTable

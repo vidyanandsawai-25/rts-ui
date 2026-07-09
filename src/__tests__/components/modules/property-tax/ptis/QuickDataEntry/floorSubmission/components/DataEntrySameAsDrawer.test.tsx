@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DataEntrySameAsDrawer } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/DataEntrySameAsDrawer';
-import { useDataEntrySameAs } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/useDataEntrySameAs';
+import { useDataEntrySameAs } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/hooks/useDataEntrySameAs';
 import type { ReactNode } from 'react';
 
 type DataEntrySameAsHookReturn = ReturnType<typeof useDataEntrySameAs>;
@@ -34,7 +34,7 @@ interface TabMockProps {
   onClick?: () => void;
 }
 
-vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components/useDataEntrySameAs', () => ({
+vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/hooks/useDataEntrySameAs', () => ({
   useDataEntrySameAs: vi.fn(),
 }));
 

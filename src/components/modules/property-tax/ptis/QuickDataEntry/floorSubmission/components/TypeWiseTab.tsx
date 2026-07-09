@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Input } from '@/components/common';
+import { Input, Badge } from '@/components/common';
 import { UpdateButton } from '@/components/common/ActionButtons';
 import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
@@ -83,9 +83,9 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
 
       <div className="flex items-center gap-3 mt-3 px-1 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+          <Badge variant="secondary" className="uppercase tracking-wide">
             {t('floor.selectProperties.type')}
-          </span>
+          </Badge>
           <Input
             type="text"
             readOnly
@@ -97,9 +97,9 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+          <Badge variant="secondary" className="uppercase tracking-wide">
             {t('floor.selectProperties.changeType')}
-          </span>
+          </Badge>
           <Input
             type="text"
             value={changeTypeInput}

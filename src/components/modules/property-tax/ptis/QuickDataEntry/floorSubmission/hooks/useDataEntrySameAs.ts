@@ -13,7 +13,7 @@ import {
   normalizePartitionNo,
   getDataEntrySameAsType,
   getNumericDataEntrySameAsId,
-} from './sameAsUtils';
+} from '../components/sameAsUtils';
 
 interface UseDataEntrySameAsProps {
   isOpen: boolean;
