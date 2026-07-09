@@ -18,6 +18,7 @@ import { fetchPtisPageData } from './ptis-fetch.service';
 import { PtisNavigationProvider } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
 import { getWorkflowStagesAction, getCurrentWorkflowDetailAction } from './workflowStageActions';
 import { PtisInitialData } from '@/types/ptis.types';
+import ReassessmentPage from './reassesment/page';
 import { PtisValuationSections } from './PtisValuationSections';
 import { buildFooterActions } from './buildFooterActions';
 
@@ -152,6 +153,14 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               capitalSection={valuationSections.capitalSection}
               dualRateableSection={valuationSections.dualRateableSection}
               dualCapitalSection={valuationSections.dualCapitalSection}
+              reassessmentSection={
+                <ReassessmentPage 
+                  params={params}
+                  wardId={resolvedWardId} 
+                  propertyNo={propertyNo} 
+                  partitionNo={partitionNo} 
+                />
+              }
             />
           </div>
         </PtisLayoutWrapper>

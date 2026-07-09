@@ -29,6 +29,8 @@ import {
   Lock,
   Unlock,
   Search,
+  Clock,
+  ArrowUpRight,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -280,6 +282,50 @@ export function ShowHistoryButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={History} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function RetrospectiveDetailsButton({
+  label = "Retrospective Details",
+  size = "xs",
+  className = "",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button
+      variant="secondary"
+      icon={Clock}
+      size={size}
+      className={cn(
+        "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
+        className
+      )}
+      {...props}
+    >
+      {label}
+    </Button>
+  );
+}
+
+export function Section129Button({
+  label = "Section 129",
+  size = "xs",
+  className = "",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button
+      variant="secondary"
+      icon={ArrowUpRight}
+      size={size}
+      className={cn(
+        "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+        className
+      )}
+      {...props}
+    >
       {label}
     </Button>
   );
