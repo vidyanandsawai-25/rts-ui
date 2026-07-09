@@ -124,8 +124,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
       .filter(p => p.partitionNo && p.partitionNo !== '-')
       .filter(p => includeCurrentPartition || normalizePartitionNo(p.partitionNo) !== normalizePartitionNo(partitionNo))
       .map(p => {
-        const wardOpt = wardOptions.find(o => o.value === String(p.wardNo));
-        return { ...p, wardNo: wardOpt ? wardOpt.label : p.wardNo };
+        const wardOpt = wardOptions.find(o => o.value === String(p.wardId));
+        return { ...p, wardNo: wardOpt ? wardOpt.label : '-' };
       })
       .sort(comparePartitionNo);
   }, [partitionNo, wardOptions]);

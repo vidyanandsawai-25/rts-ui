@@ -629,6 +629,7 @@ export interface SelectableProperty {
     id: string | number;
     propertyFloorId?: string | number | null;
     propertyDetailsId?: string | number | null;
+    wardId?: string | number;
     wardNo: string;
     propertyNo: string;
     partitionNo: string;
