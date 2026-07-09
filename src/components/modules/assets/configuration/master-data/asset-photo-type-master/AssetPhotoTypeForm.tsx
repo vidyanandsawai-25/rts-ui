@@ -149,6 +149,7 @@ export default function AssetPhotoTypeForm({
             options={typeOptions}
             value={formData.assetTypeId ? String(formData.assetTypeId) : ""}
             onChange={handleSelectChange}
+            disabled={!formData.assetCategoryId || typeOptions.length === 0}
             error={showError("assetTypeId") ? errors.assetTypeId : undefined}
           />
 
@@ -220,3 +221,4 @@ export default function AssetPhotoTypeForm({
     </Drawer>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -15,10 +15,7 @@ import {
   validateForm,
   commonValidations
 } from "@/lib/utils/validation";
-import {
-  ALPHANUMERIC_WITH_SPACES_REGEX,
-  ALPHANUMERIC_WITH_SPACES_SANITIZE
-} from "@/lib/utils/validation-rules";
+
 
 const CODE_MAX = 50;
 const NAME_MAX = 100;
@@ -39,7 +36,7 @@ const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "photoTypeName") {
-    sanitizedValue = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -59,6 +56,8 @@ export function useAssetPhotoForm({
   onCancel = () => { },
 }: UseAssetPhotoFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("assetPhotoType");
   const tCommon = useTranslations("common");
@@ -98,7 +97,7 @@ export function useAssetPhotoForm({
           const str = String(val ?? '').trim();
           if (!str) return t('form.validation.photoTypeNameRequired');
           if (str.length > NAME_MAX) return t('form.validation.photoTypeNameMaxLength', { count: NAME_MAX });
-          if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(str)) return t('form.validation.photoTypeNameFormat');
+          if (!/^[\p{L}\p{M}\p{N}]+(?:[\s][\p{L}\p{M}\p{N}]+)*$/u.test(str)) return t('form.validation.photoTypeNameFormat');
           return undefined;
         },
         description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
@@ -120,6 +119,17 @@ export function useAssetPhotoForm({
     (submittedOnce || touched[field]) && !!errors[field],
     [submittedOnce, touched, errors]
   );
+
+  const pushCategoryQuery = useCallback((assetCategoryId: number | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (assetCategoryId && assetCategoryId > 0) {
+      params.set("assetCategoryId", String(assetCategoryId));
+    } else {
+      params.delete("assetCategoryId");
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
@@ -255,6 +265,26 @@ export function useAssetPhotoForm({
   const handleSelectChange = useCallback((name: string, value: string): void => {
     const parsed = Number(value);
     const numericValue = value && Number.isFinite(parsed) ? parsed : null;
+
+    if (name === "assetCategoryId") {
+      setFormData((p) => {
+        const updated = {
+          ...p,
+          assetCategoryId: numericValue,
+          assetTypeId: null,
+        };
+        const fieldErrors = validate(updated);
+        setErrors((prev) => ({
+          ...prev,
+          assetCategoryId: fieldErrors.assetCategoryId,
+          assetTypeId: fieldErrors.assetTypeId,
+        }));
+        return updated;
+      });
+      pushCategoryQuery(numericValue);
+      return;
+    }
+
     setFormData((p) => {
       const updated = {
         ...p,
@@ -277,7 +307,7 @@ export function useAssetPhotoForm({
 
       return updated;
     });
-  }, [validate]);
+  }, [pushCategoryQuery, validate]);
 
   return {
     formData,

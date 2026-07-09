@@ -182,7 +182,6 @@ export async function getAssetCategoriesAction() {
 
 export async function getAssetTypesAction() {
     try {
-
         return await getAssetTypes();
     } catch (error) {
         logger.error("Failed to fetch asset types", {}, error);
@@ -190,3 +189,11 @@ export async function getAssetTypesAction() {
     }
 }
 
+export async function getAssetTypesByCategoryAction(assetCategoryId?: number) {
+    try {
+        return await getAssetTypes(assetCategoryId);
+    } catch (error) {
+        logger.error("Failed to fetch asset types by category", { assetCategoryId }, error);
+        return [];
+    }
+}

@@ -1,5 +1,5 @@
 import AssetPhotoTypeForm from "@/components/modules/assets/configuration/master-data/asset-photo-type-master/AssetPhotoTypeForm";
-import { getAssetPhotoTypeByIdAction, getAssetCategoriesAction, getAssetTypesAction } from "../../action";
+import { getAssetPhotoTypeByIdAction, getAssetCategoriesAction, getAssetTypesByCategoryAction } from "../../action";
 import { notFound } from "next/navigation";
 import type { AssetPhotoType } from "@/types/asset-masters/asset-photo-type.types";
 import { ApiError } from "@/lib/utils/api";
@@ -11,11 +11,14 @@ interface PageProps {
   params: Promise<{
     photoTypeId: string;
   }>;
+  searchParams: Promise<{
+    assetCategoryId?: string;
+  }>;
 }
 
-
-export default async function EditPage({ params }: PageProps): Promise<React.ReactElement> {
+export default async function EditPage({ params, searchParams }: PageProps): Promise<React.ReactElement> {
   const { photoTypeId: photoTypeIdParam } = await params;
+  const resolvedSearchParams = await searchParams;
 
   const photoTypeId = Number(photoTypeIdParam);
   if (!Number.isFinite(photoTypeId) || photoTypeId <= 0) {
@@ -33,9 +36,14 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
     throw error;
   }
 
+  const categoryIdFromQuery = Number(resolvedSearchParams.assetCategoryId);
+  const selectedCategoryId = Number.isFinite(categoryIdFromQuery) && categoryIdFromQuery > 0
+    ? categoryIdFromQuery
+    : photoTypeData.assetCategoryId ?? undefined;
+
   const [categories, types] = await Promise.all([
     getAssetCategoriesAction(),
-    getAssetTypesAction(),
+    getAssetTypesByCategoryAction(selectedCategoryId),
   ]);
 
   return (

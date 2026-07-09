@@ -10,8 +10,11 @@ import { ChangeEvent, FormEvent } from "react";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
+    replace: vi.fn(),
     refresh: vi.fn(),
   }),
+  usePathname: () => "/en/assets/configuration/master-data/asset-photo-type",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("next-intl", () => ({

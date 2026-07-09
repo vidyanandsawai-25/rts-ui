@@ -54,7 +54,7 @@
         "placeholder": "Select Asset Type"
       },
       "isRequired": {
-        "label": "Is Required",
+        "label": "Is Document Required",
         "description": "Mark if this photo type is mandatory for assets"
       }
     },

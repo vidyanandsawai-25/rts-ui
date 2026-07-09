@@ -1,12 +1,20 @@
 import React from "react";
 import { AssetPhotoTypeForm } from "@/components/modules/assets/configuration/master-data/asset-photo-type-master";
-import { getAssetCategoriesAction, getAssetTypesAction } from "../action";
+import { getAssetCategoriesAction, getAssetTypesByCategoryAction } from "../action";
 
-export default async function AddPage(): Promise<React.ReactElement> {
-  const [categories, types] = await Promise.all([
-    getAssetCategoriesAction(),
-    getAssetTypesAction(),
-  ]);
+interface AddPageProps {
+  searchParams: Promise<{
+    assetCategoryId?: string;
+  }>;
+}
+
+export default async function AddPage({ searchParams }: AddPageProps): Promise<React.ReactElement> {
+  const params = await searchParams;
+  const assetCategoryId = Number(params.assetCategoryId);
+  const selectedCategoryId = Number.isFinite(assetCategoryId) && assetCategoryId > 0 ? assetCategoryId : undefined;
+
+  const categories = await getAssetCategoriesAction();
+  const types = selectedCategoryId ? await getAssetTypesByCategoryAction(selectedCategoryId) : [];
 
   return (
     <AssetPhotoTypeForm

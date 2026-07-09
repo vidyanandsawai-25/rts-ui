@@ -194,12 +194,15 @@ export async function getAssetCategories(): Promise<AssetCategory[]> {
 }
 
 /** Fetches active asset types from the API */
-export async function getAssetTypes(): Promise<AssetType[]> {
+export async function getAssetTypes(assetCategoryId?: number): Promise<AssetType[]> {
   try {
     const qs = new URLSearchParams();
     qs.set("PageNumber", "1");
     qs.set("PageSize", "-1");
     qs.set("IsActive", "true");
+    if (Number.isFinite(assetCategoryId ?? NaN) && (assetCategoryId ?? 0) > 0) {
+      qs.set("AssetCategoryId", String(assetCategoryId));
+    }
     const response = await apiClient.get<PagedResponse<AssetType>>(`/AssetType?${qs.toString()}`);
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset types", "Get asset types failed");
@@ -213,3 +216,4 @@ export async function getAssetTypes(): Promise<AssetType[]> {
     throw error;
   }
 }
+
