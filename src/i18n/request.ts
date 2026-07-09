@@ -65,6 +65,7 @@ export default getRequestConfig(async ({ locale }) => {
     lockUnlockMessages,
     socialAttributeMessages,
     applicableTaxesMessages,
+    reassessmentMessages,
     modulesMessages,
     assetPhotoTypeMessages,
     assetRoomTypeMessages,
@@ -157,6 +158,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+      import(`./locales/${validatedLocale}/reassessment.json`)
+        .catch(() => ({}))
+        .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
@@ -215,6 +219,7 @@ export default getRequestConfig(async ({ locale }) => {
       lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
       applicableTaxes: applicableTaxesMessages,
+      reassessment: reassessmentMessages,
       modules: modulesMessages,
       assetPhotoType: assetPhotoTypeMessages,
       assetRoomType: assetRoomTypeMessages,
