@@ -79,13 +79,33 @@ function QuickDataEntryContent({
             router.push(`/${locale}/property-tax/ptis?${params}`);
         };
 
-        if (typeof window !== 'undefined' && (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges) {
+        const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
+        const hasBuildingChanges = !!win.__buildingFormHasChanges;
+        const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
+
+        if (hasBuildingChanges || hasDiscountChanges) {
+            const title = hasBuildingChanges 
+                ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
+                : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
+
+            const description = hasBuildingChanges
+                ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
+                : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+
+            const continueButton = hasBuildingChanges
+                ? (t('building.continueButton') || 'Continue Editing')
+                : (t('discount.continueButton') || 'Continue Editing');
+
+            const discardButton = hasBuildingChanges
+                ? (t('building.discardConfirmButton') || 'Discard Changes')
+                : (t('discount.discardConfirmButton') || 'Discard Changes');
+
             confirm({
                 variant: 'warning',
-                title: t('building.unsavedChangesTitle') || 'Unsaved Changes',
-                description: t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?',
-                confirmText: t('building.continueButton') || 'Continue Editing',
-                cancelText: t('building.discardConfirmButton') || 'Discard Changes',
+                title,
+                description,
+                confirmText: continueButton,
+                cancelText: discardButton,
                 onConfirm: () => {
                     // Do nothing, stays on screen
                 },
@@ -102,7 +122,9 @@ function QuickDataEntryContent({
                         return;
                     }
 
-                    (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = false;
+                    win.__buildingFormHasChanges = false;
+                    win.__discountFormHasChanges = false;
+                    win.__socialFormHasChanges = false;
                     doClose();
                 }
             });

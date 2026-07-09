@@ -139,6 +139,8 @@ export const hasAnyError = (
     return null;
 };
 
+
+
 /**
  * Maps the flat state of social attributes back to the API request payload format.
  */
@@ -153,30 +155,48 @@ export function mapSocialStateToApi(
     const socialAttributeIdsToRemove: number[] = [];
 
     Object.values(socialData).forEach((attr) => {
-        const isBitType = attr.dataType.toUpperCase() === "BIT";
         const isEnabled = isAttributeEnabled(attr, socialData);
+        const init = initialFlatData[attr.socialAttributeId];
+        const existingId = attr.id ?? init?.id ?? null;
+        const isBitType = attr.dataType.toUpperCase() === "BIT";
 
-        const apiBitValue = isBitType ? (isEnabled ? (attr.bitValue ?? false) : false) : null;
-        const apiIntValue = isEnabled && attr.intValue !== null && attr.intValue !== undefined && String(attr.intValue) !== "" ? Number(attr.intValue) : null;
-        const apiDecimalValue = isEnabled && attr.decimalValue !== null && attr.decimalValue !== undefined && String(attr.decimalValue) !== "" ? Number(attr.decimalValue) : null;
+        // If not enabled and never saved in the database, do nothing
+        if (!isEnabled && !existingId) {
+            return;
+        }
+
+        const apiBitValue = isBitType
+            ? (isEnabled ? (attr.bitValue ?? false) : false)
+            : null;
+
+        const apiIntValue = isEnabled && attr.intValue !== null && attr.intValue !== undefined && String(attr.intValue) !== "" 
+            ? Number(attr.intValue) 
+            : null;
+
+        const apiDecimalValue = isEnabled && attr.decimalValue !== null && attr.decimalValue !== undefined && String(attr.decimalValue) !== "" 
+            ? Number(attr.decimalValue) 
+            : null;
+
         const apiTextValue = isEnabled ? attr.textValue : null;
         const apiDateValue = isEnabled ? attr.dateValue : null;
-        const apiDocumentBindingId = isEnabled ? (attr.documentBindingId ?? null) : null;
+        const apiDocumentBindingId = isEnabled
+            ? (typeof attr.documentBindingId === "number" && attr.documentBindingId > 0 ? attr.documentBindingId : null)
+            : null;
         const apiRemark = isEnabled ? attr.remark : null;
 
-        const init = initialFlatData[attr.socialAttributeId];
         const isDirty = !init ||
-            apiBitValue !== init.bitValue ||
+            (isBitType ? apiBitValue !== init.bitValue : false) ||
             apiIntValue !== init.intValue ||
             apiDecimalValue !== init.decimalValue ||
             apiTextValue !== init.textValue ||
             apiDateValue !== init.dateValue ||
             apiDocumentBindingId !== init.documentBindingId ||
-            apiRemark !== init.remark;
+            apiRemark !== init.remark ||
+            attr.pendingFile !== undefined ||
+            attr.documentGuid === "pending";
 
         if (isDirty) {
-            socialAttributes.push({
-                id: attr.id,
+            const payloadItem: PropertySocialInfoItemDto = {
                 socialAttributeId: attr.socialAttributeId,
                 bitValue: apiBitValue,
                 intValue: apiIntValue,
@@ -186,7 +206,13 @@ export function mapSocialStateToApi(
                 documentBindingId: apiDocumentBindingId,
                 remark: apiRemark,
                 isActive: true
-            });
+            };
+
+            if (existingId != null && existingId > 0) {
+                payloadItem.id = existingId;
+            }
+
+            socialAttributes.push(payloadItem);
         }
     });
 

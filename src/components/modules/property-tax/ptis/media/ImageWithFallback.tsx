@@ -22,6 +22,7 @@ interface ImageWithFallbackProps {
 function isBlobOrDataUrl(src: string): boolean {
   return src.startsWith('blob:') || src.startsWith('data:');
 }
+
 export const documentCache = new Map<string, string | Promise<string>>();
 export function clearDocumentCacheEntry(src: string): void {
   if (!src || !src.startsWith('/api/documents/')) return;
@@ -53,9 +54,7 @@ export function ImageWithFallback({
     const guid = parts[3];
     if (guid && documentCache.has(guid)) {
       const cached = documentCache.get(guid)!;
-      if (typeof cached === 'string') {
-        return { resolved: cached, loading: false };
-      }
+      if (typeof cached === 'string') return { resolved: cached, loading: false };
     }
     return { resolved: '', loading: true };
   }, []);
@@ -74,9 +73,7 @@ export function ImageWithFallback({
   }
 
   useEffect(() => {
-    if (!src || !src.startsWith('/api/documents/')) {
-      return;
-    }
+    if (!src || !src.startsWith('/api/documents/')) return;
     const parts = src.split('/');
     const guid = parts[3];
     if (!guid) return;
@@ -85,9 +82,7 @@ export function ImageWithFallback({
 
     if (documentCache.has(guid)) {
       const cached = documentCache.get(guid)!;
-      if (typeof cached === 'string') {
-        return;
-      }
+      if (typeof cached === 'string') return;
       cached.then((dataUrl) => {
         if (active) {
           setResolvedSrc(dataUrl);
@@ -95,16 +90,13 @@ export function ImageWithFallback({
           setIsLoading(false);
         }
       }).catch(() => {
-        // Evict failed promise so a future render can retry.
         documentCache.delete(guid);
         if (active) {
           setHasError(true);
           setIsLoading(false);
         }
       });
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }
 
     const promise = getDocumentAction(decodeURIComponent(guid), 'view')
@@ -126,7 +118,6 @@ export function ImageWithFallback({
         setIsLoading(false);
       }
     }).catch(() => {
-      // Evict failed promise so a future render can retry.
       documentCache.delete(guid);
       if (active) {
         setHasError(true);
@@ -134,9 +125,7 @@ export function ImageWithFallback({
       }
     });
 
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [src]);
 
   const handleError = useCallback(() => {

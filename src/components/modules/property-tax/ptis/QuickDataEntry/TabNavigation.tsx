@@ -2,32 +2,8 @@
 
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Building2, Home, UserCheck, Percent } from 'lucide-react';
-import { Tab } from '@/types/property-basic-details.types';
+import { TABS, RETURN_TAB_BY_QDE_HREF, TAB_GRADIENT_CLASSES } from './navigation-constants';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-
-const TABS: Tab[] = [
-  { label: 'Property', href: 'Property', icon: Home },
-  { label: 'Kyc', href: 'Kyc', icon: UserCheck },
-  { label: 'Society', href: 'Society', icon: Building2 },
-  { label: 'BuildingPermission', href: 'Building', icon: Building2 },
-  { label: 'Discount', href: 'Discount', icon: Percent },
-  { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },
-  { label: 'OldDetails', href: 'OldDetails/old-taxation', icon: Building2 },
-];
-
-const TAB_GRADIENT_CLASSES = {
-  activeClass: 'from-blue-500 to-blue-600 border-blue-700',
-};
-
-const RETURN_TAB_BY_QDE_HREF: Record<string, string> = {
-  Property: 'propertydetails',
-  Kyc: 'kycdetails',
-  Society: 'societydetails',
-  Building: 'buildingpermission',
-  Discount: 'discountdetails',
-  'OldDetails/old-taxation': 'olddetails',
-};
 
 export function TabNavigation() {
   const router = useRouter();
@@ -73,13 +49,33 @@ export function TabNavigation() {
   const { confirm } = useConfirm();
 
   const handleTabClick = (tabHref: string) => {
-    if (typeof window !== 'undefined' && (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges) {
+    const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
+    const hasBuildingChanges = !!win.__buildingFormHasChanges;
+    const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
+
+    if (hasBuildingChanges || hasDiscountChanges) {
+      const title = hasBuildingChanges 
+          ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
+          : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
+
+      const description = hasBuildingChanges
+          ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
+          : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+
+      const continueButton = hasBuildingChanges
+          ? (t('building.continueButton') || 'Continue Editing')
+          : (t('discount.continueButton') || 'Continue Editing');
+
+      const discardButton = hasBuildingChanges
+          ? (t('building.discardConfirmButton') || 'Discard Changes')
+          : (t('discount.discardConfirmButton') || 'Discard Changes');
+
       confirm({
         variant: 'warning',
-        title: t('building.unsavedChangesTitle') || 'Unsaved Changes',
-        description: t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?',
-        confirmText: t('building.continueButton') || 'Continue Editing',
-        cancelText: t('building.discardConfirmButton') || 'Discard Changes',
+        title,
+        description,
+        confirmText: continueButton,
+        cancelText: discardButton,
         onConfirm: () => {
           // Do nothing, stays on screen
         },
@@ -94,7 +90,9 @@ export function TabNavigation() {
 
           if (isSafeDismiss) return;
 
-          (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = false;
+          win.__buildingFormHasChanges = false;
+          win.__discountFormHasChanges = false;
+          win.__socialFormHasChanges = false;
           router.push(tabHref);
         }
       });
