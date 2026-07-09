@@ -227,3 +227,36 @@ afterEach(() => {
   cleanup();
 });
 
+// Mock window.matchMedia for Radix UI / Vaul Drawer
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// Mock ResizeObserver for Radix UI / Vaul Drawer
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+global.PointerEvent = class PointerEvent extends Event {
+  button: number;
+  ctrlKey: boolean;
+  pointerType: string;
+  constructor(type: string, props: PointerEventInit) {
+    super(type, props);
+    this.button = props.button ?? 0;
+    this.ctrlKey = props.ctrlKey ?? false;
+    this.pointerType = props.pointerType ?? 'mouse';
+  }
+};
