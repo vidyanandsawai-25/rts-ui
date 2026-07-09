@@ -84,8 +84,12 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           maxLength={2}
           onFocus={(e) => e.target.select()}
           onChange={(val) => handleInputChange('roomCount', val)}
-          disabled={!isEditMode || isUtilityCategory}
-          className="text-center h-[40px] leading-[40px]"
+          disabled={!isEditMode}
+          readOnly={isUtilityCategory}
+          className={cn(
+            "text-center h-[40px] leading-[40px]",
+            isUtilityCategory && "bg-gray-50 text-gray-500 cursor-not-allowed"
+          )}
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
         />
       </div>

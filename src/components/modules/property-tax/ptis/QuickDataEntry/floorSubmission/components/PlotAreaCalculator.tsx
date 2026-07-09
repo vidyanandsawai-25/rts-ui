@@ -16,14 +16,20 @@ interface PlotAreaCalculatorProps {
     width?: number | string | null;
     totalPlotArea?: number | string | null;
   } | null;
+  onChange?: (sqFt: string, sqM: string, len?: string, wid?: string) => void;
+  isLoading?: boolean;
+  buttonText?: string;
 }
 
 export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
   t,
   onApply,
   onLoad,
+  onChange,
   layout = 'single-row',
   initialPlotArea,
+  isLoading = false,
+  buttonText,
 }) => {
   const [length, setLength] = React.useState<string>(() => {
     if (initialPlotArea?.length !== null && initialPlotArea?.length !== undefined) {
@@ -37,13 +43,18 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
     }
     return '';
   });
-  const isLoading = false;
 
   // Store onLoad in a ref to avoid dependency changes triggering useEffect multiple times
   const onLoadRef = React.useRef(onLoad);
   React.useEffect(() => {
     onLoadRef.current = onLoad;
   }, [onLoad]);
+
+  // Store onChange in a ref to avoid dependency changes triggering useEffect multiple times
+  const onChangeRef = React.useRef(onChange);
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   // Store t in a ref to avoid translation function reference changes triggering useEffect multiple times
   const tRef = React.useRef(t);
@@ -91,6 +102,12 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
       numericSqM: sqM,
     };
   }, [length, width]);
+
+  React.useEffect(() => {
+    if (onChangeRef.current) {
+      onChangeRef.current(totalSqFt, totalSqM, length, width);
+    }
+  }, [totalSqFt, totalSqM, length, width]);
 
   const handleApply = React.useCallback(() => {
     if (onApply && numericSqM > 0) {
@@ -187,10 +204,10 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
           <button
             type="button"
             onClick={handleApply}
-            disabled={numericSqM <= 0 || isLoading}
+            disabled={!length || !width || parseFloat(length) <= 0 || parseFloat(width) <= 0 || isLoading}
             className="h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.98]"
           >
-            {t('floor.applyArea') || 'Add Area'}
+            {buttonText || t('floor.applyArea') || 'Add Area'}
           </button>
         </div>
       </div>
@@ -273,10 +290,10 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
         <button
           type="button"
           onClick={handleApply}
-          disabled={numericSqM <= 0 || isLoading}
+          disabled={!length || !width || parseFloat(length) <= 0 || parseFloat(width) <= 0 || isLoading}
           className="h-8.5 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.97]"
         >
-          {t('floor.applyArea') || 'Add Area'}
+          {buttonText || t('floor.applyArea') || 'Add Area'}
         </button>
       </div>
     </div>
