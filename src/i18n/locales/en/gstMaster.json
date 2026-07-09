@@ -72,7 +72,8 @@
       "createSuccess": "GST created successfully",
       "updateSuccess": "GST updated successfully",
       "deleteSuccess": "GST deleted successfully",
-      "error": "Unable to save GST"
+      "error": "Unable to save GST",
+      "duplicate": "This record already exists"
     }
   },
   "deleteConfirm": "Are you sure you want to delete this GST record?",

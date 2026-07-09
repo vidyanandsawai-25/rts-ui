@@ -124,7 +124,7 @@ export function useGstMasterFormHandlers({
       }
 
       if (res?.error === "duplicate") {
-        toast.error(t("form.messages.error") + " (Duplicate record)");
+        toast.error(t("form.messages.duplicate"));
         return;
       }
       toast.error(res?.message || res?.error || t("form.messages.error"));

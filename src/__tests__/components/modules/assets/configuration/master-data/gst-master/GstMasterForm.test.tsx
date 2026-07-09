@@ -153,7 +153,7 @@ describe("GstMasterForm Component", () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("gstMaster.form.messages.error (Duplicate record)");
+      expect(toast.error).toHaveBeenCalledWith("gstMaster.form.messages.duplicate");
     });
   });
 

@@ -1,6 +1,5 @@
-import { LoadingPage } from "@/components/common/LoadingPage";
+import { LoadingPage } from "@/components/common";
 
 export default function Loading() {
-  return <LoadingPage
-  translationNamespace="common.loading" />;
+  return <LoadingPage translationNamespace="common.loading" />;
 }

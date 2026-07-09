@@ -81,7 +81,8 @@
       "createSuccess": "Penalty rule created successfully",
       "updateSuccess": "Penalty rule updated successfully",
       "deleteSuccess": "Penalty rule deleted successfully",
-      "error": "Unable to save penalty rule"
+      "error": "Unable to save penalty rule",
+      "duplicate": "This record already exists"
     }
   },
   "deleteConfirm": "Are you sure you want to delete this penalty rule record?",

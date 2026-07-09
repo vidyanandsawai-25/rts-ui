@@ -109,7 +109,7 @@ describe("OwningDepartmentForm Component", () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("owningDepartment.form.messages.error (Duplicate record)");
+      expect(toast.error).toHaveBeenCalledWith("owningDepartment.form.messages.duplicate");
     });
   });
 });

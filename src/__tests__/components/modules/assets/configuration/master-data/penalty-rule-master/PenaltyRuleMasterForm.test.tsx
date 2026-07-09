@@ -142,7 +142,7 @@ describe("PenaltyRuleMasterForm Component", () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("penaltyRuleMaster.form.messages.error (Duplicate record)");
+      expect(toast.error).toHaveBeenCalledWith("penaltyRuleMaster.form.messages.duplicate");
     });
   });
 
