@@ -190,6 +190,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     try {
       const payload = { sourcePropertyId, destinationPropertyIds, filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(), type: dataEntrySameAsTab === 'property-wise' ? 0 : (getDataEntrySameAsType(changeTypeInput) ?? 0) };
       
+      const originalProperties = [...selectableProperties];
+
       // Optimistic UI update based on user requirement to see changes immediately
       if (dataEntrySameAsTab === 'type-wise') {
         const updatedIds = new Set(destinationPropertyIds);
@@ -201,16 +203,18 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
         }));
       } else setSelectedPropertyIds(new Set());
       
-      toast.success(t('floor.selectProperties.applySuccess'));
-
       const res = await applyDataEntrySameAsAction(payload);
       if (res.success && res.data) {
+        toast.success(t('floor.selectProperties.applySuccess'));
         router.refresh();
+      } else {
+        if (dataEntrySameAsTab === 'type-wise') {
+          setSelectableProperties(originalProperties);
+        }
+        toast.error(res.error || t('floor.selectProperties.unknownError'));
       }
     } catch (error) {
-      if (dataEntrySameAsTab !== 'type-wise') {
-        toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
-      }
+      toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
     } finally { setIsApplyingSameAs(false); }
   }, [partitionNo, selectableProperties, selectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput]);
 

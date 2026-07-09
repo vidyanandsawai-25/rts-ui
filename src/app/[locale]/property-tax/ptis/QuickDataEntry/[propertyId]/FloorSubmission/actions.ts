@@ -52,24 +52,29 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
         if (!response.success || !response.data?.items) {
             return [];
         }
-        return response.data.items.map(item => {
-            const rawItem = item as any;
-            const typeLabel = (rawItem.typeLabel || rawItem.typeName || undefined) as string | undefined;
+        return response.data.items.map((item) => {
+            const extended = item as typeof item & {
+                totalCarpetAreaSqFeet?: number | null;
+                totalCarpetAreaSqMeter?: number | null;
+                carpetAreaSqFeet?: number | null;
+                carpetAreaSqMeter?: number | null;
+            };
+            const typeLabel = (item.typeLabel || item.typeName || undefined) as string | undefined;
 
             return {
                 id: item.propertyId,
-                propertyFloorId: rawItem.propertyFloorId ?? null,
-                propertyDetailsId: rawItem.propertyDetailsId ?? null,
+                propertyFloorId: item.propertyFloorId ?? null,
+                propertyDetailsId: item.propertyDetailsId ?? null,
                 wardId: item.wardId,
                 wardNo: '-',
                 propertyNo: item.propertyNo || '-',
                 partitionNo: item.partitionNo || '-',
                 type: item.type ?? '-',
-                typeLabel: typeLabel,
+                typeLabel,
                 wing: item.wingName || '-',
                 flatNo: item.flatOrShopNo || '-',
-                carpetAreaSqFeet: rawItem.totalCarpetAreaSqFeet ?? rawItem.carpetAreaSqFeet ?? null,
-                carpetAreaSqMeter: rawItem.totalCarpetAreaSqMeter ?? rawItem.carpetAreaSqMeter ?? null,
+                carpetAreaSqFeet: extended.totalCarpetAreaSqFeet ?? extended.carpetAreaSqFeet ?? null,
+                carpetAreaSqMeter: extended.totalCarpetAreaSqMeter ?? extended.carpetAreaSqMeter ?? null,
             };
         });
     } catch {

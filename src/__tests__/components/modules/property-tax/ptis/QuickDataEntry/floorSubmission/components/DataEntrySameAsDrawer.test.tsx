@@ -34,8 +34,8 @@ vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/c
 }));
 
 vi.mock('@/components/common', () => ({
-  Drawer: ({ isOpen, onClose, title, headerExtra, children }: any) => (
-    isOpen ? (
+  Drawer: ({ open, onClose, title, headerExtra, children }: any) => (
+    open ? (
       <div data-testid="drawer">
         <div data-testid="drawer-title">{title}</div>
         <div data-testid="drawer-header-extra">{headerExtra}</div>

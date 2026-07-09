@@ -760,6 +760,7 @@
             "noProperties": "या वार्डमध्ये कोणतीही मालमत्ता आढळली नाही.",
             "loading": "मालमत्ता लोड होत आहे...",
             "selectAll": "सर्व मालमत्ता निवडा",
+            "selectProperty": "मालमत्ता {propertyNo} निवडा",
             "search": "शोधा",
             "applyButton": "तपशील लागू करा",
             "applyPropertyButton": "मालमत्ता लागू करा",
