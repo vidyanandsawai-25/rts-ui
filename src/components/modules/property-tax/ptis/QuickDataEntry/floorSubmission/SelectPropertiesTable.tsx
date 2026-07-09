@@ -202,7 +202,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         }}
         rowClassName={(row) => {
           if (row.disabled) {
-            return 'bg-green-50 hover:!bg-green-100';
+            return '!bg-green-50 hover:!bg-green-100';
           }
           if (row.selected) {
             return '!bg-blue-50 hover:!bg-blue-100';
