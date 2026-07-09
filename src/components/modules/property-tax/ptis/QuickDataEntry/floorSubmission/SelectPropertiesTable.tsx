@@ -4,7 +4,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { Checkbox, MasterTable, type Column } from '@/components/common';
 import { ClearButton } from '@/components/common/ActionButtons';
-import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import type { SelectableProperty } from '@/types/floor-details.types';
 
 interface SelectPropertiesTableProps {
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -12,6 +12,7 @@ interface SelectPropertiesTableProps {
   selectedIds: Set<string | number>;
   onToggle: (id: string | number) => void;
   onClearSelection: () => void;
+  onToggleMultiple?: (ids: Array<string | number>, select: boolean) => void;
   isLoading?: boolean;
   disabledIds?: Set<string | number>;
   hideTypeColumn?: boolean;
@@ -62,6 +63,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   selectedIds,
   onToggle,
   onClearSelection,
+  onToggleMultiple,
   isLoading = false,
   disabledIds = new Set(),
   hideTypeColumn = false,
@@ -95,10 +97,17 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       return;
     }
 
-    selectableProperties.forEach((property) => {
-      if (!selectedIds.has(property.id)) onToggle(property.id);
-    });
-  }, [allSelected, onClearSelection, onToggle, selectableProperties, selectedIds]);
+    if (onToggleMultiple) {
+      const idsToSelect = selectableProperties
+        .filter((property) => !selectedIds.has(property.id))
+        .map((property) => property.id);
+      onToggleMultiple(idsToSelect, true);
+    } else {
+      selectableProperties.forEach((property) => {
+        if (!selectedIds.has(property.id)) onToggle(property.id);
+      });
+    }
+  }, [allSelected, onClearSelection, onToggle, onToggleMultiple, selectableProperties, selectedIds]);
 
   const checkboxClassName =
     'h-4 w-4 border-slate-400 bg-white text-white data-[state=checked]:border-slate-800 data-[state=checked]:bg-slate-800 data-[state=indeterminate]:border-slate-800 data-[state=indeterminate]:bg-slate-800 [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:stroke-[3.5] disabled:opacity-100 disabled:border-slate-700 disabled:data-[state=checked]:bg-slate-700';

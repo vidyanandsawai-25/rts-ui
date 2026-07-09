@@ -739,7 +739,7 @@
         "width": "रुंदी",
         "select": "निवडा",
         "allFloors": "सर्व मजले",
-        "dataEntry": "डेटा एंट्री ",
+        "dataEntry": "डेटा एंट्री",
         "dataEntryTabs": {
             "typeWise": "प्रकारनिहाय",
             "propertyWise": "मालमत्तानिहाय",
@@ -759,8 +759,7 @@
             "clearSelection": "निवड साफ करा",
             "noProperties": "या वार्डमध्ये कोणतीही मालमत्ता आढळली नाही.",
             "loading": "मालमत्ता लोड होत आहे...",
-            "selectAll": "Select all properties",
-            "selectProperty": "???????? {propertyNo} ?????",
+            "selectAll": "सर्व मालमत्ता निवडा",
             "search": "शोधा",
             "applyButton": "तपशील लागू करा",
             "applyPropertyButton": "मालमत्ता लागू करा",

@@ -1,4 +1,4 @@
-import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import type { SelectableProperty } from '@/types/floor-details.types';
 
 export const DATA_ENTRY_SAME_AS_FILTER_TYPES: Record<string, string> = {
   'type-wise': 'TYPEWISE',

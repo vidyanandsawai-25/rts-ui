@@ -7,7 +7,7 @@ import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
-import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import type { SelectableProperty } from '@/types/floor-details.types';
 import { ONE_TO_NINETY_NINE_REGEX } from '@/lib/utils/validation-rules';
 
 interface TypeWiseTabProps {
@@ -17,6 +17,7 @@ interface TypeWiseTabProps {
   selectedIds: Set<string | number>;
   onToggle: (id: string | number) => void;
   onClearSelection: () => void;
+  onToggleMultiple?: (ids: Array<string | number>, select: boolean) => void;
   isLoading: boolean;
   disabledIds: Set<string | number>;
   isApplying: boolean;
@@ -54,6 +55,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   selectedIds,
   onToggle,
   onClearSelection,
+  onToggleMultiple,
   isLoading,
   disabledIds,
   isApplying,
@@ -133,6 +135,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
         selectedIds={selectedIds}
         onToggle={onToggle}
         onClearSelection={onClearSelection}
+        onToggleMultiple={onToggleMultiple}
         isLoading={isLoading}
         disabledIds={disabledIds}
       />

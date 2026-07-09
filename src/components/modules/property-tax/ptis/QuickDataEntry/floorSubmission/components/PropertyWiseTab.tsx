@@ -7,7 +7,7 @@ import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
-import { SelectableProperty } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import type { SelectableProperty } from '@/types/floor-details.types';
 
 interface PropertyWiseTabProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
@@ -15,6 +15,7 @@ interface PropertyWiseTabProps {
   selectedIds: Set<string | number>;
   onToggle: (id: string | number) => void;
   onClearSelection: () => void;
+  onToggleMultiple?: (ids: Array<string | number>, select: boolean) => void;
   isLoading: boolean;
   disabledIds: Set<string | number>;
   isApplying: boolean;
@@ -60,6 +61,7 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
   selectedIds,
   onToggle,
   onClearSelection,
+  onToggleMultiple,
   isLoading,
   disabledIds,
   isApplying,
@@ -140,6 +142,7 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
         selectedIds={selectedIds}
         onToggle={onToggle}
         onClearSelection={onClearSelection}
+        onToggleMultiple={onToggleMultiple}
         isLoading={isLoading}
         disabledIds={disabledIds}
         hideTypeColumn={true}

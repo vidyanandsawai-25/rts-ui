@@ -5,8 +5,8 @@ import { type SearchSelectOption } from '@/components/common';
 import {
   fetchDataEntrySameAsAction,
   applyDataEntrySameAsAction,
-  type SelectableProperty,
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import type { SelectableProperty } from '@/types/floor-details.types';
 import { getWardListAction, getPropertyListByWardAction } from '@/app/[locale]/property-tax/ptis/actions';
 import {
   DATA_ENTRY_SAME_AS_FILTER_TYPES,
@@ -155,6 +155,22 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     });
   }, [activeLockedPropertyIds]);
 
+  const handleToggleMultipleProperties = React.useCallback((ids: Array<string | number>, select: boolean) => {
+    setSelectedPropertyIds(prev => {
+      const next = new Set(prev);
+      ids.forEach((id) => {
+        if (!activeLockedPropertyIds.has(id)) {
+          if (select) {
+            next.add(id);
+          } else {
+            next.delete(id);
+          }
+        }
+      });
+      return next;
+    });
+  }, [activeLockedPropertyIds]);
+
   const handleClearPropertySelection = React.useCallback(() => setSelectedPropertyIds(new Set(activeLockedPropertyIds)), [activeLockedPropertyIds]);
 
   const handleApplySameAsDetails = React.useCallback(async () => {
@@ -259,6 +275,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t 
     searchWardId, searchPropertyNo, setSearchPropertyNo, wardOptions, isFetchingWards, propertyOptions, isFetchingProperties,
     sanitizeWardNo, sanitizePropertyNo, handleWardChange, handleSearchProperties, isApplyingSameAs, handleApplySameAsDetails,
     filterPropertiesForTable, sourcePropertyIds, typeWiseLockedPropertyIds, activeLockedPropertyIds, handleTogglePropertySelection,
+    handleToggleMultipleProperties,
     handleClearPropertySelection, changeTypeInput, setChangeTypeInput,
     isApplyingTypeSubmission, handleApplyTypeSubmission,
   };
