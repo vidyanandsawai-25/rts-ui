@@ -63,7 +63,7 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
         <FieldShell
           id="occupierNameEnglish"
           icon={UserCheck}
-          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2"
+          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-1"
           label={t('fields.occupierName')}
         >
           <ValueDisplay value={data.occupierNameEnglish} />
@@ -73,7 +73,7 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
         <FieldShell
           id="shopName"
           label={`${t('fields.shopName')}${t('fields.localeSuffix')}`}
-          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-1"
+          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2"
         >
           <ValueDisplay value={data.shopName} />
         </FieldShell>
