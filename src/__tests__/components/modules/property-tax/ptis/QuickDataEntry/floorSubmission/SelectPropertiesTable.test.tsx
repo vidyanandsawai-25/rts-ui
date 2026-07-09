@@ -69,7 +69,7 @@ vi.mock('@/components/common', () => ({
             >
               {columns.map((col) => (
                 <td key={col.key}>
-                  {col.render ? col.render(row[col.key], row, rowIndex) : String(row[col.key] ?? '')}
+                  {col.render ? col.render(row[col.key as keyof SelectableProperty], row, rowIndex) : String(row[col.key as keyof SelectableProperty] ?? '')}
                 </td>
               ))}
             </tr>
