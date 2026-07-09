@@ -30,6 +30,15 @@ export function OldFloorDetails({
     return typeof val === 'string' || typeof val === 'number' ? String(val) : '-';
   };
 
+  const getCellClasses = (status: string | undefined) => {
+    return cn(
+      "h-[24px] rounded px-1.5 py-0.5 border border-gray-300 shadow-sm hover:border-blue-500 hover:shadow transition-all duration-150 cursor-pointer text-xs text-center text-gray-900",
+      status === 'Unchanged' && "bg-green-200",
+      status === 'Added' && "bg-red-300",
+      status === 'Removed' && "bg-yellow-200"
+    );
+  };
+
   // Column definitions for Old Floor Details
   const oldColumns: Column<MappedFloorDetail>[] = [
     {
@@ -38,8 +47,8 @@ export function OldFloorDetails({
       width: '64px',
       align: 'left',
       cellClassName: 'font-bold',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -47,8 +56,8 @@ export function OldFloorDetails({
       label: t('floorDetails.columns.conYear'),
       width: '96px',
       align: 'left',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -56,8 +65,8 @@ export function OldFloorDetails({
       label: t('floorDetails.columns.asstYear'),
       width: '96px',
       align: 'left',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -66,8 +75,8 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       cellClassName: 'font-bold text-sky-800',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -76,8 +85,8 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -87,7 +96,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (_, row: MappedFloorDetail) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">
+        <div className={getCellClasses(row.status)}>
           {row.carpetAreaSqFt} / {row.carpetAreaSqM}
         </div>
       )
@@ -99,7 +108,7 @@ export function OldFloorDetails({
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
       render: (_, row: MappedFloorDetail) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">
+        <div className={getCellClasses(row.status)}>
           {row.builtUpAreaSqFt} / {row.builtUpAreaSqM}
         </div>
       )
@@ -110,8 +119,8 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -120,8 +129,8 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -129,8 +138,8 @@ export function OldFloorDetails({
       label: t('floorDetails.columns.financialYear'),
       width: '96px',
       align: 'left',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -139,8 +148,8 @@ export function OldFloorDetails({
       width: '144px',
       align: 'left',
       cellClassName: 'text-emerald-700',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -149,8 +158,8 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'font-mono',
-      render: (val: unknown) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatTaxLiability(val)}</div>
+      render: (val: unknown, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{formatTaxLiability(val)}</div>
       )
     },
     {
@@ -159,8 +168,8 @@ export function OldFloorDetails({
       width: '112px',
       align: 'left',
       cellClassName: 'font-mono',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -169,8 +178,8 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: unknown) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+      render: (val: unknown, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{formatNumberish(val)}</div>
       )
     },
     {
@@ -179,8 +188,8 @@ export function OldFloorDetails({
       width: '112px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -189,8 +198,8 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: unknown) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+      render: (val: unknown, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{formatNumberish(val)}</div>
       )
     },
     {
@@ -199,8 +208,8 @@ export function OldFloorDetails({
       width: '96px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (val: any) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{val}</div>
+      render: (val: any, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{val}</div>
       )
     },
     {
@@ -209,8 +218,8 @@ export function OldFloorDetails({
       width: '128px',
       align: 'left',
       cellClassName: 'text-emerald-700 font-bold font-mono',
-      render: (val: unknown) => (
-        <div className="border border-gray-300 h-[24px] rounded bg-white py-0.5 px-1.5 text-left">{formatNumberish(val)}</div>
+      render: (val: unknown, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>{formatNumberish(val)}</div>
       )
     },
     {
@@ -218,18 +227,12 @@ export function OldFloorDetails({
       label: t('floorDetails.columns.status'),
       width: '96px',
       align: 'left',
-      render: (val: unknown) => (
-        <span className={cn(
-          "inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm",
-          val === 'Unchanged' && "bg-blue-100 text-blue-800 border-blue-200",
-          val === 'Added' && "bg-emerald-100 text-emerald-800 border-emerald-200",
-          val === 'Removed' && "bg-rose-100 text-rose-800 border-rose-200",
-          !val && "bg-gray-100 text-gray-800 border-gray-200"
-        )}>
+      render: (val: unknown, row: MappedFloorDetail) => (
+        <div className={getCellClasses(row.status)}>
           {val === 'Unchanged' ? t('floorDetails.statuses.unchanged') : 
            val === 'Added' ? t('floorDetails.statuses.added') : 
            val === 'Removed' ? t('floorDetails.statuses.removed') : '-'}
-        </span>
+        </div>
       )
     }
   ];
@@ -254,10 +257,7 @@ export function OldFloorDetails({
           tableClassName="w-max min-w-full text-xs font-medium border-collapse"
           theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
           rowClassName={(row) => cn(
-            "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60",
-            row.status === 'Unchanged' && "bg-blue-50/40 hover:bg-blue-50/70 text-blue-950",
-            row.status === 'Added' && "bg-emerald-50/40 hover:bg-emerald-50/70 text-emerald-950",
-            row.status === 'Removed' && "bg-rose-50/40 hover:bg-rose-50/70 text-rose-950"
+            "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60"
           )}
           height="xs"
           scrollContainerRef={scrollContainerRef}
