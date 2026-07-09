@@ -6,6 +6,7 @@ export interface PropertyPhotoDto {
   photoTypeName: string;
   displayOrder?: number;
   remarks?: string;
+  documentBindingId?: number;
   documentGuid?: string;
   fileName?: string;
   mimeType?: string;
