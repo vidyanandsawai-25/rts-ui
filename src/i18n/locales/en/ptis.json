@@ -261,7 +261,7 @@
     }
   },
   "fields": {
-    "localeSuffix": "(Locale)",
+    "localeSuffix": "(Regional)",
     "upicId": "UPIC ID",
     "propertyHolder": "Property Holder",
     "assessmentStatus": "Assessment status",
