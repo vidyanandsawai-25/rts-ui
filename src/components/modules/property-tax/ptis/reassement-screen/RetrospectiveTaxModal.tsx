@@ -124,13 +124,6 @@ export function RetrospectiveTaxModal({
       footer={modalFooter}
     >
       <div className="border-2 border-[#2f5597] rounded-lg overflow-hidden shadow-sm bg-[#eef4fa]">
-        {/* Sub-header banner */}
-        <div className="bg-[#d9e7f5] border-b border-sky-200 px-3 py-1.5 text-center">
-          <span className="bg-[#d9eaf7] px-3 py-2.5 text-center font-bold text-[#17365d]">
-            {t('retrospectiveModal.title')}
-          </span>
-        </div>
-
         <div className="min-w-0 p-2">
           {error ? (
             <div className="px-4 py-8 text-center text-sm text-red-600">{error}</div>
