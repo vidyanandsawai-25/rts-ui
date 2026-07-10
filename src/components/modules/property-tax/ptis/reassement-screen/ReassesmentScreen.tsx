@@ -88,7 +88,7 @@ export default function ReassesmentScreen({
   });
 
   const { oldTableRef, newTableRef } = useSynchronizedScrolling();
-  const autoScrollController = useSharedAutoScroll(); // ← ADD
+  const autoScrollController = useSharedAutoScroll();
 
   // ============================================
   // RENDER
