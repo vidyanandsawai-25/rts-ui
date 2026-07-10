@@ -22,7 +22,7 @@
     },
     "list": {
       "title": "Water Connections",
-      "subtitle": "Manage all connections for {propertyNo}",
+      "subtitle": "Review and maintain water connections for property {propertyNo}",
       "buttons": {
         "add": "Add New"
       },
