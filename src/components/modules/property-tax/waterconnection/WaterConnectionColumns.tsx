@@ -1,6 +1,7 @@
 import type { Column } from "@/components/common/MasterTable";
 import type { WaterConnection } from "@/types/waterconnection.types";
 import { cn } from "@/lib/utils/cn";
+import { DateUtils } from "@/lib/utils/date-helpers";
 
 function formatINR(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -12,8 +13,7 @@ function formatINR(amount: number): string {
 }
 
 export function getWaterConnectionColumns(
-  t: (key: string) => string,
-  locale: string
+  t: (key: string) => string
 ): Column<WaterConnection>[] {
   return [
     {
@@ -22,15 +22,16 @@ export function getWaterConnectionColumns(
       width: "14%",
       render: (value, row) => {
         const dateStr = row.installDate ?? row.connectionStartDate;
+        const formattedDate = DateUtils.formatToDDMMYYYY(dateStr);
         return (
           <div>
             <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 font-mono border border-blue-300 rounded-md">
               {String(value)}
             </span>
-            {dateStr && (
+            {formattedDate && (
               <div className="text-xs text-gray-400 mt-0.5">
                 {t("list.table.installedOn")}:{" "}
-                {new Date(String(dateStr)).toLocaleDateString(locale)}
+                {formattedDate}
               </div>
             )}
           </div>
