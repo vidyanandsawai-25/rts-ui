@@ -19,19 +19,65 @@ import {
     saveRenterDetails,
     updateRenterDetails,
     deleteRenterDetails,
-    updatePlotArea,
-    getPlotArea,
+    applyDataEntrySameAs,
+    type ApplyDataEntrySameAsPayload,
+    type ApplyDataEntrySameAsResponse,
 } from '@/lib/api/ptis/floorSubmission';
-import type { PlotAreaPayload, PlotAreaResponse } from '@/lib/api/ptis/floorSubmission/plot-area.service';
 
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 
 import { validateFloorSubmissionPayload, validateRenterFormData } from '@/lib/validations/validateFloorSubmission';
 import { type ActionResult } from '@/types/common.types';
-import { FloorSubmissionPayload } from '@/types/floor-details.types';
+import {
+    FloorSubmissionPayload,
+    type SelectableProperty,
+    type DataEntrySameAsResponse
+} from '@/types/floor-details.types';
+import { apiClient } from '@/services/api.service';
+
+export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
+
+export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string): Promise<SelectableProperty[]> {
+    try {
+        const params = new URLSearchParams();
+        params.set('WardId', String(wardId));
+        params.set('PropertyNo', propertyNo);
+        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs?${params.toString()}`);
+        if (!response.success || !response.data?.items) {
+            return [];
+        }
+        return response.data.items.map((item) => {
+            const extended = item as typeof item & {
+                totalCarpetAreaSqFeet?: number | null;
+                totalCarpetAreaSqMeter?: number | null;
+                carpetAreaSqFeet?: number | null;
+                carpetAreaSqMeter?: number | null;
+            };
+            const typeLabel = (item.typeLabel || item.typeName || undefined) as string | undefined;
+
+            return {
+                id: item.propertyId,
+                propertyFloorId: item.propertyFloorId ?? null,
+                propertyDetailsId: item.propertyDetailsId ?? null,
+                wardId: item.wardId,
+                wardNo: '-',
+                propertyNo: item.propertyNo || '-',
+                partitionNo: item.partitionNo || '-',
+                type: item.type ?? '-',
+                typeLabel,
+                wing: item.wingName || '-',
+                flatNo: item.flatOrShopNo || '-',
+                carpetAreaSqFeet: extended.totalCarpetAreaSqFeet ?? extended.carpetAreaSqFeet ?? null,
+                carpetAreaSqMeter: extended.totalCarpetAreaSqMeter ?? extended.carpetAreaSqMeter ?? null,
+            };
+        });
+    } catch {
+        return [];
+    }
+}
 
 /**
  * Fetch property basic details including category information
@@ -257,46 +303,15 @@ export const deleteFloorRenterDetailsAction = async (renterId: string | number, 
     }
 };
 
+export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
+    try {
+        const data = await applyDataEntrySameAs(payload);
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+}
 // ----------------------------------------------------------------------
 // PLOT AREA ACTIONS
 // ----------------------------------------------------------------------
 
-/**
- * Updates plot area data for a property.
- * PUT /api/DataEntry/UpdateProperty/{propertyId}
- */
-export const updatePlotAreaAction = async (
-    propertyId: string | number,
-    payload: PlotAreaPayload,
-    locale: string = "en",
-    propertyIdForRevalidation?: string | number
-): Promise<ActionResult<unknown>> => {
-    try {
-        const data = await updatePlotArea(propertyId, payload);
-        revalidatePath(getRevalidatePath(locale, propertyIdForRevalidation || propertyId), "page");
-        return { success: true, data };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to update plot area",
-        };
-    }
-};
-
-/**
- * Fetches plot area data for a property.
- * GET /api/DataEntry/GetByPropertyId/{propertyId}
- */
-export const getPlotAreaAction = async (
-    propertyId: string | number
-): Promise<ActionResult<PlotAreaResponse>> => {
-    try {
-        const data = await getPlotArea(propertyId);
-        return { success: true, data };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to fetch plot area data",
-        };
-    }
-};

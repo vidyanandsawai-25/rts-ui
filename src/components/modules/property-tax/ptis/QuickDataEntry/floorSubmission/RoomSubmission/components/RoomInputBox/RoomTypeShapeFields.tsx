@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Select } from '@/components/common';
+import { Input, SearchSelect } from '@/components/common';
 import { COLUMN_WIDTHS } from '../../RoomTableConfig';
 import { RoomFormData } from '@/types/common-details.types';
 import { RoomTypeResponse } from '@/types/room-details.types';
@@ -13,6 +13,7 @@ interface RoomTypeShapeFieldsProps {
   focusRefs: React.MutableRefObject<Record<string, HTMLElement | null>>;
   t: (key: string) => string;
   roomTypeData?: RoomTypeResponse[];
+  isUtilityCategory?: boolean;
 }
 
 export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
@@ -22,6 +23,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
   focusRefs,
   t,
   roomTypeData,
+  isUtilityCategory: _isUtilityCategory,
 }) => {
   const setRoomNoRef = (el: HTMLElement | null) => {
     if (focusRefs.current) {
@@ -80,21 +82,27 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
         style={{ width: COLUMN_WIDTHS.shape }}
         onKeyDownCapture={(e) => {
           if (e.key === 'Tab' && !e.shiftKey) {
-            const selectBtn = e.currentTarget.querySelector('button[role="combobox"]');
+            const selectBtn = e.currentTarget.querySelector('input[role="combobox"]');
             if (document.activeElement === selectBtn) {
-              e.preventDefault();
-              setTimeout(() => {
-                const roomCountInput = focusRefs?.current?.['roomCount'] as HTMLInputElement | null;
-                if (roomCountInput) {
-                  roomCountInput.focus();
-                  roomCountInput.select();
-                }
-              }, 100);
+              const hasShape = formData.shape && formData.shape !== '-Select-';
+              if (hasShape) {
+                e.preventDefault();
+                setTimeout(() => {
+                  const targetInput = (document.querySelector('[id^="param-"]') as HTMLInputElement | null)
+                    || (focusRefs?.current?.['roomCount'] as HTMLInputElement | null);
+                  if (targetInput) {
+                    targetInput.focus();
+                    if (typeof targetInput.select === 'function') targetInput.select();
+                  }
+                }, 100);
+              }
             }
           }
         }}
       >
-        <Select
+        <SearchSelect
+          id="room-shape-select"
+          name="shape"
           options={[
             { label: t('roomSubmission.input.shapes.select'), value: '-Select-' },
             { label: t('roomSubmission.input.shapes.rectangle'), value: 'Rectangle' },
@@ -108,18 +116,31 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           value={formData.shape || '-Select-'}
           onChange={(_, value) => {
             handleInputChange('shape', value);
-            setTimeout(() => {
-              const roomCountInput = focusRefs?.current?.['roomCount'] as HTMLInputElement | null;
-              if (roomCountInput) {
-                roomCountInput.focus();
-                roomCountInput.select();
-              }
-            }, 100);
+            const hasNewShape = value && value !== '-Select-';
+            if (hasNewShape) {
+              setTimeout(() => {
+                const targetInput = (document.querySelector('[id^="param-"]') as HTMLInputElement | null)
+                  || (focusRefs?.current?.['roomCount'] as HTMLInputElement | null);
+                if (targetInput) {
+                  targetInput.focus();
+                  if (typeof targetInput.select === 'function') targetInput.select();
+                }
+              }, 100);
+            } else {
+              setTimeout(() => {
+                const roomCountInput = focusRefs?.current?.['roomCount'] as HTMLInputElement | null;
+                if (roomCountInput) {
+                  roomCountInput.focus();
+                  roomCountInput.select();
+                }
+              }, 100);
+            }
           }}
           disabled={!isEditMode}
           required={isEditMode}
           error={undefined}
           className="w-full h-[40px]"
+          disableSearch={true}
         />
       </div>
     </>

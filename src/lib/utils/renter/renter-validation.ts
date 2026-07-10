@@ -189,7 +189,7 @@ export const validateRenterForm = (
   if (!details.agreementDate) {
     errors.push({ field: 'agreementDate', message: 'Agreement Date is required.' });
   } else if (!isValidCalendarDate(details.agreementDate)) {
-    errors.push({ field: 'agreementDate', message: 'Agreement Date is required.' });
+    errors.push({ field: 'agreementDate', message: 'Enter a valid Agreement Date (DD-MM-YYYY).' });
   }
 
   // ─── Renter Name ──────────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ export const validateRenterForm = (
   if (!details.agreementDateFrom) {
     errors.push({ field: 'agreementDateFrom', message: 'From Date is required.' });
   } else if (!isValidCalendarDate(details.agreementDateFrom)) {
-    errors.push({ field: 'agreementDateFrom', message: 'Enter a valid From Date.' });
+    errors.push({ field: 'agreementDateFrom', message: 'Enter a valid From Date (DD-MM-YYYY).' });
   } else if (details.agreementDate && isValidCalendarDate(details.agreementDate)) {
     const fromDateObj = new Date(details.agreementDateFrom);
     const agreementDateObj = new Date(details.agreementDate);
@@ -263,7 +263,7 @@ export const validateRenterForm = (
   if (!details.agreementDateTo) {
     errors.push({ field: 'agreementDateTo', message: 'To Date is required.' });
   } else if (!isValidCalendarDate(details.agreementDateTo)) {
-    errors.push({ field: 'agreementDateTo', message: 'Enter a valid To Date.' });
+    errors.push({ field: 'agreementDateTo', message: 'Enter a valid To Date (DD-MM-YYYY).' });
   }
 
   if (

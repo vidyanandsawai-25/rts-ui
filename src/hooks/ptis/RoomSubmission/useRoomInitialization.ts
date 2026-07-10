@@ -166,7 +166,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
     const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
     if (isUtility || !isOpen || !maxRooms || maxRooms < 2 || isEditMode || editingIndex !== null || rooms.length === 0 || hasAutoActivatedRef.current) return;
 
-    const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.remark && r.remark !== "-Select-" && r.shape && r.shape !== "-Select-";
+    const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-";
     const lastFilled = [...rooms].reverse().findIndex(isRoomFilled);
     if (lastFilled === -1) return;
 
