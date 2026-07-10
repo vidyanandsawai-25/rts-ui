@@ -222,6 +222,8 @@
       "plotNo": "Plot No",
       "wingFlatNo": "Wing/Flat No",
       "wingFlatNoShort": "WNG/FLT NO",
+      "wing": "Wing: {wing}",
+      "flatNo": "Flat No: {flatNo}",
       "propertyCount": "Property Count",
       "category": "Category",
       "categoryShort": "CATG",

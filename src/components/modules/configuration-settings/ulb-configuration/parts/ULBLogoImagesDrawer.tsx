@@ -92,7 +92,6 @@ export function ULBLogoImagesDrawer({
           >
             <option value="Logo">{t('messages.ulbLogoSection')}</option>
             <option value="Background">{t('messages.backgroundImageSection')}</option>
-            <option value="Gallery">{t('messages.gallerySection')}</option>
           </select>
           <p className="text-[10px] text-slate-400">{t('messages.categoryHint')}</p>
         </div>

@@ -43,7 +43,7 @@ function FormSubmitButton({
 }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" isLoading={pending} disabled={disabled || pending} className={className}>
+    <Button type="submit" disabled={disabled || pending} className={className}>
       {children}
     </Button>
   );
