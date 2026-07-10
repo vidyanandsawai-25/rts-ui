@@ -41,6 +41,12 @@ export function useSubTypeFormValidation({
         return undefined;
       },
 
+      typeOfUseCategoryId: (value: unknown) => {
+        const categoryId = Number(value);
+        if (!categoryId) return t('messages.categoryRequired');
+        return undefined;
+      },
+
       description: (value: unknown) => {
         const desc = String(value ?? '').trim();
 

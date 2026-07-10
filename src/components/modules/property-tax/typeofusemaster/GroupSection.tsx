@@ -2,8 +2,8 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { LayoutGrid } from "lucide-react";
 import { AddButton, DeleteButton, EditButton } from "@/components/common";
-import { StatusBadge } from "@/components/common/StatusBadge";
 import { Tooltip } from "@/components/common/Tooltip";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import {
   clsx,
@@ -48,16 +48,25 @@ export function GroupSection({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col gap-3">
-      {/* Header section with Title and Add Button */}
+      {/* Header section with Title and Add Buttons */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
         <div className="font-semibold text-slate-900 text-base">{t('group.title')}</div>
-        <AddButton
-          size="sm"
-          label={t('group.add')}
-          onClick={() =>
-            router.push(`/${locale}/property-tax/typeofusemaster/group/add`)
-          }
-        />
+        <div className="flex items-center gap-2">
+          <AddButton
+            size="sm"
+            label={t('group.add')}
+            onClick={() =>
+              router.push(`/${locale}/property-tax/typeofusemaster/group/add`)
+            }
+          />
+          <AddButton
+            size="sm"
+            label={t('category.add') || "Add Category"}
+            onClick={() =>
+              router.push(`/${locale}/property-tax/typeofusemaster/category`)
+            }
+          />
+        </div>
       </div>
 
       {/* Cards list section scrollable */}

@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import UseTypeForm from "@/components/modules/property-tax/typeofusemaster/UseTypeForm";
-import type { UseGroup, UseType } from "@/types/typeOfUse.types";
+import type { UseGroup, UseType, TypeOfUseCategory } from "@/types/typeOfUse.types";
 import { toast } from "sonner";
 
 // Mock next/navigation
@@ -159,6 +159,10 @@ const allTypes: UseType[] = [
   },
 ];
 
+const allCategories: TypeOfUseCategory[] = [
+  { id: 1, typeOfUseCategoryCode: 'C01', typeOfUseCategoryName: 'Residential', isActive: true } as TypeOfUseCategory,
+];
+
 const renderWithIntl = (component: React.ReactElement) => {
   return render(
     <NextIntlClientProvider locale="en" messages={mockMessages}>
@@ -175,7 +179,7 @@ describe("UseTypeForm", () => {
   describe("Add Mode", () => {
     it("should render form in add mode", () => {
       renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       expect(screen.getByText("Add Type of Use")).toBeInTheDocument();
@@ -185,7 +189,7 @@ describe("UseTypeForm", () => {
 
     it("should validate required fields", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const form = container.querySelector("#use-type-form");
@@ -198,7 +202,7 @@ describe("UseTypeForm", () => {
 
     it("should validate code format (alphanumeric only)", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
@@ -215,7 +219,7 @@ describe("UseTypeForm", () => {
 
     it("should reject code with only zeros", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
@@ -231,7 +235,7 @@ describe("UseTypeForm", () => {
 
     it("should validate description format", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Enter description");
@@ -248,7 +252,7 @@ describe("UseTypeForm", () => {
 
     it("should detect duplicate type code", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
@@ -264,7 +268,7 @@ describe("UseTypeForm", () => {
 
     it("should detect duplicate description", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Enter description");
@@ -280,7 +284,7 @@ describe("UseTypeForm", () => {
 
     it("should validate sequence is non-negative", async () => {
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       // Fill required fields to bypass HTML5 validation
@@ -288,6 +292,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
       fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
       fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /categoryName/i }), { target: { value: "1" } });
 
       // Now test the sequence field
       const seqInput = screen.getByPlaceholderText("0");
@@ -305,7 +310,7 @@ describe("UseTypeForm", () => {
       mockCreateUseType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       // Fill required fields
@@ -313,6 +318,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Industrial Max Sequence" } });
       fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
       fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /categoryName/i }), { target: { value: "1" } });
 
       // Test with sequence = 999 (maximum valid)
       const seqInput = screen.getByPlaceholderText("0");
@@ -329,6 +335,7 @@ describe("UseTypeForm", () => {
           type: "I",
           searchSequence: 999,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
         expect(toast.success).toHaveBeenCalledWith("Type Created");
       });
@@ -338,7 +345,7 @@ describe("UseTypeForm", () => {
       mockCreateUseType.mockResolvedValue({ success: true });
       
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       // Fill required fields
@@ -346,6 +353,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
       fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
       fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /categoryName/i }), { target: { value: "1" } });
 
       // Try to set value to 1000 (4 digits) - should be rejected by input restriction
       const seqInput = screen.getByPlaceholderText("0") as HTMLInputElement;
@@ -366,6 +374,7 @@ describe("UseTypeForm", () => {
           type: "I",
           searchSequence: 0,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
       });
     });
@@ -374,7 +383,7 @@ describe("UseTypeForm", () => {
       mockCreateUseType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       // Select group
@@ -393,6 +402,10 @@ describe("UseTypeForm", () => {
       const typeSelect = screen.getByRole("combobox", { name: /^type\s+required$/i });
       fireEvent.change(typeSelect, { target: { value: "I" } });
 
+      // Select category
+      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      fireEvent.change(categorySelect, { target: { value: "1" } });
+
       // Fill in sequence
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "1" } });
@@ -408,6 +421,7 @@ describe("UseTypeForm", () => {
           type: "I",
           searchSequence: 1,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
         expect(toast.success).toHaveBeenCalledWith("Type Created");
         expect(mockRouterBack).toHaveBeenCalled();
@@ -418,7 +432,7 @@ describe("UseTypeForm", () => {
       mockCreateUseType.mockResolvedValue({ success: false, message: "Create failed" });
 
       const { container } = renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       // Fill form with valid data
@@ -434,6 +448,9 @@ describe("UseTypeForm", () => {
       const typeSelect = screen.getByRole("combobox", { name: /^type\s+required$/i });
       fireEvent.change(typeSelect, { target: { value: "I" } });
 
+      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      fireEvent.change(categorySelect, { target: { value: "1" } });
+
       const form = container.querySelector("#use-type-form");
       fireEvent.submit(form!);
 
@@ -444,7 +461,7 @@ describe("UseTypeForm", () => {
 
     it("should cancel and go back", () => {
       renderWithIntl(
-        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
       );
 
       const cancelButton = screen.getByRole("button", { name: /cancel/i });
@@ -464,6 +481,7 @@ describe("UseTypeForm", () => {
       searchSequence: 1,
       isActive: true,
       status: "Active",
+      typeOfUseCategoryId: 1,
     };
 
     it("should render form in edit mode with initial data", () => {
@@ -473,6 +491,7 @@ describe("UseTypeForm", () => {
           initialData={initialData}
           allGroups={allGroups}
           allTypes={allTypes}
+          allCategories={allCategories}
         />
       );
 
@@ -508,6 +527,7 @@ describe("UseTypeForm", () => {
           type: "R",
           searchSequence: 1,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
         expect(toast.success).toHaveBeenCalledWith("Type Updated");
         expect(mockRouterBack).toHaveBeenCalled();
@@ -521,6 +541,7 @@ describe("UseTypeForm", () => {
           initialData={initialData}
           allGroups={allGroups}
           allTypes={allTypes}
+          allCategories={allCategories}
         />
       );
 

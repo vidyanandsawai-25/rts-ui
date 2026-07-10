@@ -5,7 +5,7 @@
  * Includes type selector, group selector, and input fields
  */
 
-import type { UseGroup, TranslatorFunction } from '@/types/typeOfUse.types';
+import type { UseGroup, TypeOfUseCategory, TranslatorFunction } from '@/types/typeOfUse.types';
 import { Input } from '@/components/common/Input';
 import { ValidationMessage } from '@/components/common';
 import { Label } from '@/components/common/label';
@@ -164,23 +164,23 @@ export function SearchSequenceInput({
             onChange(0);
             return;
           }
-          
+
           // Restrict to 3 digits maximum
           if (rawValue.length > 3) {
             return; // Don't update if more than 3 digits
           }
-          
+
           const parsedValue = parseInt(rawValue, 10);
           if (Number.isNaN(parsedValue)) {
             return; // Don't update on invalid input
           }
-          
+
           // Ensure value doesn't exceed 999
           if (parsedValue > 999) {
             onChange(999);
             return;
           }
-          
+
           onChange(parsedValue);
         }}
         onKeyDown={(e) => {
@@ -190,7 +190,7 @@ export function SearchSequenceInput({
           const selectionStart = e.currentTarget.selectionStart ?? currentValue.length;
           const selectionEnd = e.currentTarget.selectionEnd ?? currentValue.length;
           const selectedLength = selectionEnd - selectionStart;
-          
+
           if (isNumber && currentValue.length - selectedLength + 1 > 3) {
             e.preventDefault();
           }
@@ -234,6 +234,50 @@ export function DescriptionInput({
         maxLength={80}
         required
       />
+      <ValidationMessage message={error} visible={showError ?? false} />
+    </div>
+  );
+}
+
+interface CategorySelectorProps {
+  allCategories: TypeOfUseCategory[];
+  selectedCategoryId: number | null | undefined;
+  onChange: (categoryId: number | null) => void;
+  error?: string;
+  showError?: boolean;
+  t: TranslatorFunction;
+}
+
+export function CategorySelector({
+  allCategories,
+  selectedCategoryId,
+  onChange,
+  error,
+  showError,
+  t,
+}: CategorySelectorProps) {
+  return (
+    <div className="flex flex-col">
+      <Label htmlFor="category-select" required>
+        {t('category.fields.categoryName')}
+      </Label>
+      <select
+        id="category-select"
+        value={selectedCategoryId || ""}
+        onChange={(e) => {
+          onChange(e.target.value ? Number(e.target.value) : null);
+        }}
+        className="w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+      >
+        <option value="" disabled>
+          {t('type.selectCategory')}
+        </option>
+        {allCategories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.typeOfUseCategoryCode} - {c.typeOfUseCategoryName}
+          </option>
+        ))}
+      </select>
       <ValidationMessage message={error} visible={showError ?? false} />
     </div>
   );
