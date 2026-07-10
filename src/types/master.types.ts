@@ -19,6 +19,8 @@ export interface UlbMaster {
   ulbTypeId: number;
   /** URL to the ULB's logo image. If not present, a default placeholder/text will be shown */
   ulbLogo?: string;
+  /** URL to the ULB's background wallpaper image, optional */
+  ulbBackground?: string;
   /** Official contact email, optional */
   email?: string;
   /** Contact phone number, optional */

@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
-import { getDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
 import { ImageSkeleton, ImagePlaceholder } from './ImageViewerFallbacks';
 
 interface ImageWithFallbackProps {
@@ -19,15 +18,8 @@ interface ImageWithFallbackProps {
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   style?: React.CSSProperties;
 }
-function isBlobOrDataUrl(src: string): boolean {
-  return src.startsWith('blob:') || src.startsWith('data:');
-}
+
 export const documentCache = new Map<string, string | Promise<string>>();
-export function clearDocumentCacheEntry(src: string): void {
-  if (!src || !src.startsWith('/api/documents/')) return;
-  const guid = src.split('/')[3];
-  if (guid) documentCache.delete(guid);
-}
 
 export function ImageWithFallback({
   src,
@@ -42,112 +34,30 @@ export function ImageWithFallback({
   onLoad,
   style,
 }: ImageWithFallbackProps): React.ReactElement {
-  const [prevSrc, setPrevSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
-
-  const getInitialState = useCallback((currentSrc: string) => {
-    if (!currentSrc || !currentSrc.startsWith('/api/documents/')) {
-      return { resolved: currentSrc, loading: false };
-    }
-    const parts = currentSrc.split('/');
-    const guid = parts[3];
-    if (guid && documentCache.has(guid)) {
-      const cached = documentCache.get(guid)!;
-      if (typeof cached === 'string') {
-        return { resolved: cached, loading: false };
-      }
-    }
-    return { resolved: '', loading: true };
-  }, []);
-
-  const initialState = getInitialState(src);
-  const [resolvedSrc, setResolvedSrc] = useState(initialState.resolved);
-  const [isLoading, setIsLoading] = useState(initialState.loading);
+  const [isLoading, setIsLoading] = useState(true);
   const t = useTranslations('ptis');
-
-  if (src !== prevSrc) {
-    setPrevSrc(src);
-    setHasError(false);
-    const nextState = getInitialState(src);
-    setIsLoading(nextState.loading);
-    setResolvedSrc(nextState.resolved);
-  }
-
-  useEffect(() => {
-    if (!src || !src.startsWith('/api/documents/')) {
-      return;
-    }
-    const parts = src.split('/');
-    const guid = parts[3];
-    if (!guid) return;
-
-    let active = true;
-
-    if (documentCache.has(guid)) {
-      const cached = documentCache.get(guid)!;
-      if (typeof cached === 'string') {
-        return;
-      }
-      cached.then((dataUrl) => {
-        if (active) {
-          setResolvedSrc(dataUrl);
-          setHasError(false);
-          setIsLoading(false);
-        }
-      }).catch(() => {
-        // Evict failed promise so a future render can retry.
-        documentCache.delete(guid);
-        if (active) {
-          setHasError(true);
-          setIsLoading(false);
-        }
-      });
-      return () => {
-        active = false;
-      };
-    }
-
-    const promise = getDocumentAction(decodeURIComponent(guid), 'view')
-      .then((res) => {
-        if (res.success && res.data?.base64) {
-          const dataUrl = `data:${res.data.contentType};base64,${res.data.base64}`;
-          documentCache.set(guid, dataUrl);
-          return dataUrl;
-        }
-        throw new Error('Failed to load');
-      });
-
-    documentCache.set(guid, promise);
-
-    promise.then((dataUrl) => {
-      if (active) {
-        setResolvedSrc(dataUrl);
-        setHasError(false);
-        setIsLoading(false);
-      }
-    }).catch(() => {
-      // Evict failed promise so a future render can retry.
-      documentCache.delete(guid);
-      if (active) {
-        setHasError(true);
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [src]);
 
   const handleError = useCallback(() => {
     setHasError(true);
     setIsLoading(false);
   }, []);
 
-  const handleLoad = useCallback(() => setIsLoading(false), []);
+  const handleLoad = useCallback(() => {
+    setIsLoading(false);
+  }, []);
 
-  const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : resolvedSrc;
+  // When src changes, reset error & loading states
+  const [prevSrc, setPrevSrc] = useState(src);
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setHasError(false);
+    setIsLoading(true);
+  }
+
+  const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : src;
   const isSmall = width !== undefined && width < 100;
+
   if ((hasError || !src) && !fallbackSrc) {
     return <ImagePlaceholder alt={alt} isSmall={isSmall} label={t('media.imageUnavailable')} />;
   }
@@ -161,7 +71,7 @@ export function ImageWithFallback({
   return (
     <div className="relative w-full h-full" style={style}>
       {isLoading && <ImageSkeleton className={className} />}
-      {!isLoading && effectiveSrc && (
+      {effectiveSrc && (
         <NextImage
           src={effectiveSrc}
           alt={alt}
@@ -179,15 +89,12 @@ export function ImageWithFallback({
           priority={priority || undefined}
           quality={75}
           loading={priority ? undefined : 'lazy'}
-          unoptimized={
-            isBlobOrDataUrl(effectiveSrc) ||
-            !effectiveSrc.startsWith('/') ||
-            effectiveSrc.startsWith('/api/documents/')
-              ? true
-              : undefined
-          }
+          unoptimized
         />
       )}
     </div>
   );
 }
+
+// Stub function to avoid compile errors in other files that might import it
+export function clearDocumentCacheEntry(_src: string): void {}

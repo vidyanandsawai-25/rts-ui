@@ -2,9 +2,12 @@ import { vi } from 'vitest';
 
 // HOISTED MOCKS
 vi.mock('server-only', () => ({}));
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
 vi.mock('@/services/api.service', () => ({ apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() } }));
 vi.mock('@/lib/api/document.service', () => ({ uploadDocument: vi.fn(), getViewDocumentUrl: vi.fn(() => 'mock-url') }));
-vi.mock('@/lib/api/building.service', () => ({ getCertificateTypesWithStatus: vi.fn(), uploadCertificateDocument: vi.fn(), replaceCertificateDocument: vi.fn(), bulkSaveCertificates: vi.fn() }));
+vi.mock('@/lib/api/building.service', () => ({ getCertificateTypesWithStatus: vi.fn(), replaceCertificateDocument: vi.fn(), bulkSaveCertificates: vi.fn() }));
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, Mock } from 'vitest';
@@ -37,6 +40,7 @@ vi.mock('next-intl', () => ({
     'building.errors.invalidCharacters': 'Document number contains invalid characters.',
     'building.errors.futureDate': 'Issue date cannot be in the future.',
     'building.pendingSave': 'Pending Save',
+    'building.activeAttachment': 'Active Attachment',
   }[key] || key),
   useLocale: () => 'en',
 }));
@@ -46,20 +50,15 @@ vi.mock('@/components/common/ConfirmProvider', () => ({
   useConfirm: () => ({ confirm: vi.fn(({ onConfirm }) => onConfirm()) }),
 }));
 
-// Mock sonner
-vi.mock('sonner', () => ({
-  toast: { success: vi.fn(), error: vi.fn() },
-}));
-
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action', () => ({
   getBuildingPermissionsAction: vi.fn(),
-  uploadCertificateDocumentAction: vi.fn(),
   replaceCertificateDocumentAction: vi.fn(),
   saveBuildingPermissionsAction: vi.fn(),
 }));
 
 import {
-  saveBuildingPermissionsAction
+  saveBuildingPermissionsAction,
+  replaceCertificateDocumentAction
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action';
 
 const mockInitialData: PropertyCertificateWithStatusDto[] = [
@@ -116,9 +115,15 @@ describe('BuildingForm', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(saveBuildingPermissionsAction).toHaveBeenCalledWith(
-        'en',
-        '123',
+      expect(saveBuildingPermissionsAction).toHaveBeenCalled();
+      const call = (saveBuildingPermissionsAction as Mock).mock.calls[0];
+      expect(call[0]).toBe('en');
+      expect(call[1]).toBe('123');
+      const formData = call[2] as FormData;
+      expect(formData).toBeInstanceOf(FormData);
+      
+      const payload = JSON.parse(formData.get("certificates") as string);
+      expect(payload).toEqual(
         expect.objectContaining({
           propertyId: 123,
           certificates: expect.arrayContaining([
@@ -390,11 +395,26 @@ describe('BuildingForm', () => {
     });
   });
 
-  it('updates form state locally when a file is selected and uploads on save', async () => {
-    (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: true });
+  it('holds a file in drop zone when selected and uploads on save changes', async () => {
+    (saveBuildingPermissionsAction as Mock).mockResolvedValue({
+      success: true,
+      data: {
+        updatedCertificates: [
+          { certificateTypeId: 1, propertyCertificateId: 1001, isActive: true, certificateNo: "BP-12345", issueDate: "2023-01-01T00:00:00", documentGuid: "new-guid-123", fileName: "test-cc.pdf" }
+        ]
+      }
+    });
+    (replaceCertificateDocumentAction as Mock).mockResolvedValue({
+      success: true,
+      data: {
+        documentGuid: "new-guid-123",
+        propertyCertificateId: 1001,
+        fileName: "test-cc.pdf"
+      }
+    });
     
     const customData = [
-      { certificateTypeId: 1, certificateTypeName: "Building Permission Certificate", displayOrder: 10, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: null, documentGuid: null, fileName: null }
+      { certificateTypeId: 1, certificateTypeName: "Building Permission Certificate", displayOrder: 10, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: "BP-12345", issueDate: "2023-01-01T00:00:00", documentGuid: null, fileName: null }
     ];
     
     const { container } = render(<BuildingForm initialBuildingPermission={customData} propertyId="123" />);
@@ -405,9 +425,56 @@ describe('BuildingForm', () => {
     const file = new File(['dummy pdf'], 'test-cc.pdf', { type: 'application/pdf' });
     fireEvent.change(fileInput, { target: { files: [file] } });
     
+    // Should show as pending save and not call API yet
     await waitFor(() => {
       expect(screen.getByText("test-cc.pdf")).toBeInTheDocument();
       expect(screen.getByText("Pending Save")).toBeInTheDocument();
+      expect(replaceCertificateDocumentAction).not.toHaveBeenCalled();
+    });
+
+    // Save changes
+    const saveButton = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(saveBuildingPermissionsAction).toHaveBeenCalled();
+    });
+  });
+
+  it('allows file upload when document number and date are empty and holds in drop zone', async () => {
+    (saveBuildingPermissionsAction as Mock).mockResolvedValue({
+      success: true,
+      data: {
+        updatedCertificates: [
+          { certificateTypeId: 1, propertyCertificateId: 1001, isActive: true, certificateNo: null, issueDate: null, documentGuid: "new-guid-123", fileName: "test-cc.pdf" }
+        ]
+      }
+    });
+    (replaceCertificateDocumentAction as Mock).mockResolvedValue({
+      success: true,
+      data: {
+        documentGuid: "new-guid-123",
+        propertyCertificateId: 1001,
+        fileName: "test-cc.pdf"
+      }
+    });
+    
+    const emptyData = [
+      { certificateTypeId: 1, certificateTypeName: "Building Permission Certificate", displayOrder: 10, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: null, documentGuid: null, fileName: null }
+    ];
+    
+    const { container } = render(<BuildingForm initialBuildingPermission={emptyData} propertyId="123" />);
+    
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeInTheDocument();
+    
+    const file = new File(['dummy pdf'], 'test-cc.pdf', { type: 'application/pdf' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText("test-cc.pdf")).toBeInTheDocument();
+      expect(screen.getByText("Pending Save")).toBeInTheDocument();
+      expect(replaceCertificateDocumentAction).not.toHaveBeenCalled();
     });
   });
 });

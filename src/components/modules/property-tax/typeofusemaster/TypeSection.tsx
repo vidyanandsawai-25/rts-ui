@@ -95,6 +95,13 @@ export function TypeSection({
                   onClick={() => {
                     onTypeSelect(String(typeItem.typeOfUseGroupId), getTypeApiId(typeItem));
                   }}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      (e.currentTarget as HTMLElement).click();
+                    }
+                  }}
                   className={clsx(
                     "cursor-pointer select-none rounded-xl border px-4 py-3 text-left shadow-sm transition",
                     selected

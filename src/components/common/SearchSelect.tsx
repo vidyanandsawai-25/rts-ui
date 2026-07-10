@@ -104,9 +104,9 @@ export interface SearchSelectProps {
    * Optional validation error message.
    */
   error?: string;
-    /**
-   * Optional autoFocus prop to focus the input on mount.
-   */
+  /**
+ * Optional autoFocus prop to focus the input on mount.
+ */
   autoFocus?: boolean;
 }
 
@@ -351,7 +351,7 @@ export function SearchSelect({
           type="text"
           name={fallbackName}
           value={displayValue}
-          autoFocus={autoFocus}   
+          autoFocus={autoFocus}
           placeholder={
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'

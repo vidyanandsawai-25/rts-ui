@@ -5,8 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { Eye, EyeOff, User, Lock, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Input, Button } from '@/components/common';
-import { Label } from '@/components/common/label';
+import { Input, Button, Label } from '@/components/common';
 
 import type { UseLoginFormReturn } from '@/hooks/useLoginForm';
 import type { LoginFormCopy } from '@/types/login.types';
@@ -62,7 +61,7 @@ export function FormLoadingOverlay() {
 
   return (
     <div
-      className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-[2px]"
+      className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-transparent"
       role="status"
       aria-live="polite"
       aria-busy="true"

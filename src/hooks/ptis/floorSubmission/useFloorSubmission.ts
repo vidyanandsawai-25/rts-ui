@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useTransition, useMemo, useEffect, useRef } from 'react';
@@ -71,15 +71,36 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
       ? (isRecordOpenPlot(selectedFloor) ? 'OpenPlot' : 'Construction')
       : selectedFloorTypeState;
 
-  const [plotAreaSqM, setPlotAreaSqM] = useState<number>(
-    props.initialPlotArea?.totalPlotArea ? Number(props.initialPlotArea.totalPlotArea) : 0
-  );
+  const openPlotRecord = useMemo(() => {
+    const floors = ((localFloors && localFloors.length > 0) ? localFloors : (props.initialFloors || [])) as FloorData[];
+    return floors.find(
+      (f: FloorData) =>
+        f.isOpenPlot === true ||
+        String(f.floorId) === '77' ||
+        String(f.floor) === '77'
+    );
+  }, [localFloors, props.initialFloors]);
+
+  const [plotAreaSqM, setPlotAreaSqM] = useState<number>(() => {
+    if (openPlotRecord) {
+      const area = Number((openPlotRecord as any).carpetAreaSqMeter || (openPlotRecord as any).builtupAreaSqMeter || 0);
+      if (area > 0) return area;
+    }
+    return props.initialPlotArea?.totalPlotArea ? Number(props.initialPlotArea.totalPlotArea) : 0;
+  });
 
   useEffect(() => {
+    if (openPlotRecord) {
+      const area = Number((openPlotRecord as any).carpetAreaSqMeter || (openPlotRecord as any).builtupAreaSqMeter || 0);
+      if (area > 0) {
+        setPlotAreaSqM(area);
+        return;
+      }
+    }
     if (props.initialPlotArea?.totalPlotArea) {
       setPlotAreaSqM(Number(props.initialPlotArea.totalPlotArea));
     }
-  }, [props.initialPlotArea]);
+  }, [openPlotRecord, props.initialPlotArea]);
 
   // 2. URL and Navigation
   const urlSync = useFloorUrlSync();
@@ -164,26 +185,6 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
             constructionTypeDescription: conDesc,
           }));
         }
-      }
-    } else if (selectedFloorType === 'Construction') {
-      const openPlotCon = props.constructionTypeData?.find(
-        (c: ConstructionTypeResponse) =>
-          String(c.constructionCode || '').toLowerCase() === 'op' ||
-          String(c.description || '').toLowerCase() === 'open plot'
-      );
-      const openPlotConId = openPlotCon ? String(openPlotCon.constructionTypeId || openPlotCon.id || '') : '';
-      if (
-        openPlotConId &&
-        (editingFloorForm.constructionTypeId === openPlotConId ||
-          String(editingFloorForm.conTyp).toLowerCase() === 'open plot' ||
-          String(editingFloorForm.conTyp).toLowerCase() === 'op')
-      ) {
-        setEditingFloorForm(prev => ({
-          ...prev,
-          constructionTypeId: '',
-          conTyp: '',
-          constructionTypeDescription: '',
-        }));
       }
     }
   }, [selectedFloorType, props.constructionTypeData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);
@@ -280,14 +281,36 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
 
   const filteredFloors = useMemo(() => {
     const search = floorSearch.toLowerCase();
-    return localFloors.filter(
-      (f) =>
+    return localFloors.filter((f) => {
+      // Hide Open Plot record from the table if all conditions are met
+      // if (
+      //   (f.isOpenPlot === true || String(f.isOpenPlot) === 'true') &&
+      //   (f.typeOfUseId === 10 || Number(f.typeOfUseId) === 10 || String(f.typeOfUseId) === '10') &&
+      //   f.typeOfUseDescription === "खुला भूखंड"
+      // ) {
+      //   return false;
+      // }
+
+      const isActualOpenPlot =
+        f.isOpenPlot === true ||
+        String(f.isOpenPlot) === 'true' ||
+        String(f.floorId) === '77' ||
+        String(f.floor).toLowerCase() === 'open plot' ||
+        String(f.floorDescription).toLowerCase() === 'open plot';
+
+      if (isPlotCategory) {
+        if (!isActualOpenPlot) return false;
+      } else {
+        if (isActualOpenPlot) return false;
+      }
+      return (
         !search ||
         (f.floor || '').toLowerCase().includes(search) ||
         (f.conTyp || '').toLowerCase().includes(search) ||
         (f.use || '').toLowerCase().includes(search)
-    );
-  }, [localFloors, floorSearch]);
+      );
+    });
+  }, [localFloors, floorSearch, isPlotCategory]);
 
   const subTypeOptionsFromData = useMemo(() =>
     (props.subTypeData || []).map(st => st.searchKey ? `${st.searchKey} - ${st.description}` : st.description),
@@ -363,5 +386,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     enteredOpenSpaceAreaSqM,
     totalUtilizedOpenSpaceAreaSqM: totalOpenSpaceAreaSqM,
     locale,
+    router,
+    localFloors,
   };
 };

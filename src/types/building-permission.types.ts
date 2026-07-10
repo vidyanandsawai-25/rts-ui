@@ -4,6 +4,7 @@ export type CertificateData = {
     date: string;
     documentGuid?: string;
     isUploading?: boolean;
+    isDeleting?: boolean;
     certificateTypeId: number;
     propertyCertificateId?: number | null;
     fileName?: string;
@@ -81,6 +82,7 @@ export interface PropertyCertificateItemDto {
     propertyCertificateId?: number | null;
     existingDocumentGuid?: string | null;
     hasNewDocument: boolean;
+    markedForDeletion?: boolean | null;
 }
 
 export interface PropertyCertificateBulkSaveDto {

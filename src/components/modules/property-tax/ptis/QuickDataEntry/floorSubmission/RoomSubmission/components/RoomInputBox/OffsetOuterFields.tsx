@@ -1,5 +1,5 @@
 import React from 'react';
-import { Select } from '@/components/common';
+import { SearchSelect } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import { COLUMN_WIDTHS } from '../../RoomTableConfig';
 import { useConfirm } from '@/components/common';
@@ -48,7 +48,7 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
       <div 
         ref={(el) => {
           if (focusRefs?.current && el) {
-            const btn = el.querySelector('button[role="combobox"]') as HTMLElement | null;
+            const btn = el.querySelector('input[role="combobox"]') as HTMLElement | null;
             // eslint-disable-next-line react-hooks/immutability
             focusRefs.current['offset'] = btn;
           }
@@ -63,7 +63,9 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
           }
         }}
       >
-        <Select
+        <SearchSelect
+          id="room-offset-select"
+          name="offsetMinus"
           options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
           value={formData.offsetMinus}
           onChange={(_, value) => {
@@ -77,18 +79,26 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
               }, 100);
             } else {
               setCurrentRoomOffsets([]); handleInputChange('offsetMinus', value);
-              setTimeout(() => { focusRefs?.current['outer']?.focus(); (focusRefs?.current['outer'] as HTMLElement)?.click(); }, 100);
+              setTimeout(() => { 
+                const outerInput = focusRefs?.current['outer'] as HTMLElement | null;
+                if (outerInput) {
+                  outerInput.focus();
+                  const outerClickable = outerInput.querySelector('input[role="combobox"]') as HTMLElement | null;
+                  if (outerClickable) outerClickable.click();
+                }
+              }, 100);
             }
           }}
           disabled={!isEditMode || offsetModalOpen}
           className="w-full h-[40px]"
+          disableSearch={true}
         />
       </div>
 
       <div 
         ref={(el) => {
           if (focusRefs?.current && el) {
-            const btn = el.querySelector('button[role="combobox"]') as HTMLElement | null;
+            const btn = el.querySelector('input[role="combobox"]') as HTMLElement | null;
             // eslint-disable-next-line react-hooks/immutability
             focusRefs.current['outer'] = btn;
           }
@@ -96,12 +106,15 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
         className="flex flex-col justify-center flex-shrink-0 px-1" 
         style={{ width: COLUMN_WIDTHS.outer }}
       >
-        <Select
+        <SearchSelect
+          id="room-outer-select"
+          name="outer"
           options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
           value={formData.outer}
           onChange={(_, value) => { handleInputChange('outer', value); setTimeout(() => { focusRefs?.current['submit']?.focus(); }, 100); }}
           disabled={!isEditMode || offsetModalOpen}
           className="w-full h-[40px]"
+          disableSearch={true}
         />
       </div>
     </>

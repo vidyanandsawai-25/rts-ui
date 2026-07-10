@@ -45,6 +45,7 @@ export const mapFormToPayload = (params: {
   isAddingNew: boolean;
   existingFloorId?: number | string;
   selectedFloorType?: 'Construction' | 'OpenPlot';
+  isPlotCategory?: boolean;
 }): FloorSubmissionPayload => {
   const {
     formData,
@@ -56,10 +57,16 @@ export const mapFormToPayload = (params: {
     propertyId,
     isAddingNew,
     existingFloorId,
-    selectedFloorType
+    selectedFloorType,
+    isPlotCategory,
   } = params;
 
-  const isOpenSpace = selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot';
+  const isOpenSpace = selectedFloorType === 'OpenPlot' ||
+    formData.selectedFloorType === 'OpenPlot' ||
+    Number(formData.typeOfUseId) === 10 ||
+    Number(formData.use) === 10 ||
+    Number(formData.typeOfUseCategoryId) === 2 ||
+    Number(formData.typeOfUseCategoryId) === 3;
   const isUtility = checkIsUtilityCategory(formData.typeOfUseCategoryId);
 
   // Resolve IDs primarily from explicit ID fields, fallback to resolving from descriptions
@@ -142,23 +149,21 @@ export const mapFormToPayload = (params: {
     occupancyApplyOrNot: formData.occupancyApplyOrNot === 'Yes' || formData.occupancyApplyOrNot === true,
     occupancyNumber: String(formData.occupancyNumber || ''),
     ...mapRenterPayloadFields(formData),
-    roomWiseSubmissionDetails: isOpenSpace
-      ? []
-      : ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
-        .filter((r, index, self) => {
-          // Calculate effective area from any possible field
-          const area = Number(r.area || 0) || Number(r.areaSqMtr || 0) || Number(r.totalAreaSqMtr || 0) || Number(r.total || 0);
-          if (area <= 0) return false;
+    roomWiseSubmissionDetails: ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
+      .filter((r, index, self) => {
+        // Calculate effective area from any possible field
+        const area = Number(r.area || 0) || Number(r.areaSqMtr || 0) || Number(r.totalAreaSqMtr || 0) || Number(r.total || 0);
+        if (area <= 0) return false;
 
-          // Deduplicate: if ID exists, match by ID; otherwise match by roomNo if it exists
-          const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
-          return matchIndex === index;
-        })
-        .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId, isUtility)),
+        // Deduplicate: if ID exists, match by ID; otherwise match by roomNo if it exists
+        const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
+        return matchIndex === index;
+      })
+      .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId, isUtility)),
     roomWiseMinusData: isOpenSpace ? [] : undefined,
     typeOfUseCategoryId: formData.typeOfUseCategoryId,
     selectedFloorType: (selectedFloorType || formData.selectedFloorType) as "Construction" | "OpenPlot" | undefined,
-    isOpenPlot: isOpenSpace,
+    isOpenPlot: (isPlotCategory && isOpenSpace) ? true : false,
     length: isOpenSpace
       ? (formData.length ? Number(formData.length) : null)
       : null,

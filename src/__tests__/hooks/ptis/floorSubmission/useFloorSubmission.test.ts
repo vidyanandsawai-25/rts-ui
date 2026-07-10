@@ -235,7 +235,7 @@ describe('useFloorSubmission', () => {
       expect(mockSetEditingFloorForm).toHaveBeenCalled();
       const calls = mockSetEditingFloorForm.mock.calls;
       const lastCall = calls[calls.length - 1][0];
-      
+
       // Should either be a function or an object with floor set
       if (typeof lastCall === 'function') {
         const res = lastCall({});

@@ -169,14 +169,26 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                                 <EditButton
                                     size="xs"
                                     onClick={(e) => { e.stopPropagation(); handleEdit(idx); }}
-                                    className="shadow-sm hover:scale-110 active:scale-95"
+                                    className="room-edit-btn shadow-sm hover:scale-110 active:scale-95"
                                 />
                             </Tooltip>
                             <Tooltip placement="top" content={t("roomSubmission.table.delete")}>
                                 <DeleteButton
                                     size="xs"
                                     onClick={(e) => { e.stopPropagation(); handleDelete(idx); }}
-                                    className="shadow-sm hover:scale-110 active:scale-95"
+                                    className="room-delete-btn shadow-sm hover:scale-110 active:scale-95"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab' && !e.shiftKey) {
+                                            const allDeleteBtns = document.querySelectorAll('.room-delete-btn');
+                                            if (allDeleteBtns[allDeleteBtns.length - 1] === e.currentTarget) {
+                                                e.preventDefault();
+                                                const saveBtn = document.getElementById('btn-room-save-data');
+                                                if (saveBtn) {
+                                                    saveBtn.focus();
+                                                }
+                                            }
+                                        }
+                                    }}
                                 />
                             </Tooltip>
                         </>

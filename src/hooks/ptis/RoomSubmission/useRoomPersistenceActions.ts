@@ -93,7 +93,15 @@ export const useRoomPersistenceActions = (state: RoomSubmissionState, props: Roo
         variant: 'info',
         title: t('roomSubmission.success.title') || 'Success',
         description: t('roomSubmission.success.message') || 'Room data updated in the form.',
-        onConfirm: onClose
+        onConfirm: () => {
+          if (onClose) onClose();
+          setTimeout(() => {
+            const saveBtn = document.getElementById('floor-save-btn');
+            if (saveBtn) {
+              saveBtn.focus();
+            }
+          }, 150);
+        }
       });
     } catch {
       warning(t("roomSubmission.validation.updateFailed") || "An error occurred while updating rooms.");
