@@ -209,6 +209,7 @@ const FloorForm: React.FC<FloorFormProps & {
 
           <div className="mt-4 flex justify-end md:col-span-3">
             <Button
+              id="floor-save-btn"
               onClick={onSave}
               isLoading={isOperationLoading}
               disabled={isOperationLoading || !isFormValid || isAreaExceeded}

@@ -44,11 +44,12 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   React.useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
+        if (document.querySelector('.z-\\[9999\\]')) return;
         focusFieldOrFallback('room-no-input', 'form');
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, state.isEditMode, state.editingIndex, state.rooms.length]);
+  }, [isOpen]);
 
   // --- Actions ---
   const handleToggleUnit = () => {

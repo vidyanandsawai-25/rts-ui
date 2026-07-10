@@ -32,6 +32,15 @@ export const OffsetFormFooter: React.FC<OffsetFormFooterProps> = ({
                 onClick={onClose}
                 variant="secondary"
                 className="border border-gray-400 text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200 px-6 py-2 text-xs font-bold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 min-w-[100px]"
+                onKeyDown={(e) => {
+                    if (e.key === 'Tab' && !e.shiftKey) {
+                        e.preventDefault();
+                        const selectBtn = document.querySelector('#offset-shape-select-container button[role="combobox"]') as HTMLButtonElement | null;
+                        if (selectBtn) {
+                            selectBtn.focus();
+                        }
+                    }
+                }}
             >
                 {t("offset.actions.close")}
             </Button>

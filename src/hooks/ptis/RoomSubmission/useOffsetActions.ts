@@ -18,7 +18,7 @@ import {
   calculateRoomAreas
 } from "@/lib/utils/RoomSubmission/room-calculation.util";
 import { RoomSubmissionState } from "./useRoomSubmissionState";
-import { focusAndOpenOuterField } from "@/lib/utils/floorSubmission/focus-helpers";
+import { focusAndOpenOuterField, focusOffsetShapeSelect } from "@/lib/utils/floorSubmission/focus-helpers";
 
 const isPersistedId = (id?: string | number): id is string | number => {
   if (!id) return false;
@@ -102,6 +102,9 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
     setOffsetList((prev) => [...prev, { ...offsetData, shapeType: selectedShape, operation: selectedOperation }]);
     setOffsetData({ ...INITIAL_OFFSET_DATA, shapeType: selectedShape, shape: selectedShape, operation: selectedOperation });
     setOffsetValidationError("");
+    setTimeout(() => {
+      focusOffsetShapeSelect(true);
+    }, 50);
   };
 
   const handleOffsetOk = () => {

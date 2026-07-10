@@ -25,7 +25,6 @@ import {
     updatePlotArea,
     getPlotArea,
 } from '@/lib/api/ptis/floorSubmission';
-import type { PlotAreaPayload, PlotAreaResponse } from '@/lib/api/ptis/floorSubmission/plot-area.service';
 
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
@@ -318,42 +317,3 @@ export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPa
 // PLOT AREA ACTIONS
 // ----------------------------------------------------------------------
 
-/**
- * Updates plot area data for a property.
- * PUT /api/DataEntry/UpdateProperty/{propertyId}
- */
-export const updatePlotAreaAction = async (
-    propertyId: string | number,
-    payload: PlotAreaPayload,
-    locale: string = "en",
-    propertyIdForRevalidation?: string | number
-): Promise<ActionResult<unknown>> => {
-    try {
-        const data = await updatePlotArea(propertyId, payload);
-        revalidatePath(getRevalidatePath(locale, propertyIdForRevalidation || propertyId), "page");
-        return { success: true, data };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to update plot area",
-        };
-    }
-};
-
-/**
- * Fetches plot area data for a property.
- * GET /api/DataEntry/GetByPropertyId/{propertyId}
- */
-export const getPlotAreaAction = async (
-    propertyId: string | number
-): Promise<ActionResult<PlotAreaResponse>> => {
-    try {
-        const data = await getPlotArea(propertyId);
-        return { success: true, data };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to fetch plot area data",
-        };
-    }
-};

@@ -94,6 +94,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
               focusRefs={focusRefs!} 
               t={t} 
               roomTypeData={roomTypeData}
+              isUtilityCategory={isUtilityCategory}
             />
 
             <DimensionAreaFields 

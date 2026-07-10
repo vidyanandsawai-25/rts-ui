@@ -22,7 +22,7 @@ export const useRoomActions = (
   const { handleEdit, handleCancelEdit } = useRoomEditActions(state);
 
   // 3. Room List Operations (Add, Update, Delete)
-  const { handleAddRoom, handleUpdateRoom, handleDelete } = useRoomListActions(state, props, handleCancelEdit);
+  const { handleAddRoom, handleUpdateRoom, handleDelete } = useRoomListActions(state, props, handleCancelEdit, handleEdit);
 
   // 4. Final Submission & Persistence
   const { handleUpdate } = useRoomPersistenceActions(state, props);
