@@ -99,6 +99,12 @@
     "preview": {
       "title": "Report Preview",
       "downloadPdf": "PDF"
+    },
+    "confirm": {
+      "title": "Report Creation",
+      "description": "Your report is being created. You can download it by going to the 'My Reports' tab.",
+      "btnGo": "Go to My Reports",
+      "btnClose": "Close"
     }
   },
   "params": {

@@ -111,6 +111,12 @@ export default async function ReportsPage({ params }: PageProps) {
       title: t('workspace.preview.title'),
       downloadPdf: t('workspace.preview.downloadPdf'),
     },
+    confirm: {
+      title: t('workspace.confirm.title'),
+      description: t('workspace.confirm.description'),
+      btnGo: t('workspace.confirm.btnGo'),
+      btnClose: t('workspace.confirm.btnClose'),
+    },
   };
 
   const paramsCopy: ReportParamsPanelCopy = {

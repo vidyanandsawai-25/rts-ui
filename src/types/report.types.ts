@@ -120,6 +120,12 @@ export interface ReportWorkspaceCopy {
     title: string;
     downloadPdf: string;
   };
+  confirm: {
+    title: string;
+    description: string;
+    btnGo: string;
+    btnClose: string;
+  };
 }
 
 export interface ReportParamsPanelCopy {

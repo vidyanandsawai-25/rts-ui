@@ -88,7 +88,12 @@ export function useReportJobs() {
       // Server sent a status change — reload the list immediately.
       // The event payload only contains { requestId, status } — no tokens.
       try {
-        JSON.parse(event.data as string); // validate it's our event, not a keepalive
+        const payload = JSON.parse(event.data as string); // validate it's our event, not a keepalive
+        if (payload && typeof payload === 'object' && 'requestId' in payload) {
+          window.dispatchEvent(
+            new CustomEvent('report-status-change', { detail: payload })
+          );
+        }
         clearTimer();
         void load();
       } catch {
