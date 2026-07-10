@@ -15,7 +15,7 @@ function computeStats(connections: WaterConnection[]) {
     totalConnections: connections.length,
     activeConnections: active.length,
     stoppedConnections: connections.length - active.length,
-    yearlyRevenue: active.reduce((sum, c) => sum + (c.applicableCharges ?? 0), 0),
+    yearlyRevenue: connections.reduce((sum, c) => sum + (c.applicableCharges ?? 0), 0),
   };
 }
 
