@@ -194,16 +194,24 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
           parameters.PropertyNo = currentPropertyNo;
         }
         if (propertyMode === 'range') {
-          if (fromPropertyNo.trim()) {
-            parameters.fromPropertyNo = fromPropertyNo.trim();
-            parameters.FromPropertyNo = fromPropertyNo.trim();
+          const fromIndex = properties.findIndex((p) => String(p.propertyId) === fromPropertyNo);
+          const toIndex = properties.findIndex((p) => String(p.propertyId) === toPropertyNo);
+
+          if (fromIndex !== -1 && toIndex !== -1) {
+            const start = Math.min(fromIndex, toIndex);
+            const end = Math.max(fromIndex, toIndex);
+            const rangeProperties = properties.slice(start, end + 1);
+            const bulkIds = rangeProperties.map((p) => p.propertyId).join(',');
+            parameters.propertyId = bulkIds;
+            parameters.PropertyId = bulkIds;
+          } else if (fromIndex !== -1) {
+            parameters.propertyId = String(properties[fromIndex].propertyId);
+            parameters.PropertyId = String(properties[fromIndex].propertyId);
+          } else if (toIndex !== -1) {
+            parameters.propertyId = String(properties[toIndex].propertyId);
+            parameters.PropertyId = String(properties[toIndex].propertyId);
           }
-          if (toPropertyNo.trim()) {
-            parameters.toPropertyNo = toPropertyNo.trim();
-            parameters.ToPropertyNo = toPropertyNo.trim();
-          }
-        }
-        if (propertyId !== null) {
+        } else if (propertyId !== null) {
           parameters.propertyId = String(propertyId);
           parameters.PropertyId = String(propertyId);
         }
