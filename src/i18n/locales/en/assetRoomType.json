@@ -48,13 +48,13 @@
     },
     "validation": {
       "roomTypeCodeRequired": "Room type code is required",
-      "roomTypeCodeMaxLength": "Maximum length is 50 characters",
+      "roomTypeCodeMaxLength": "Maximum length is {count} characters",
       "roomTypeCodeFormat": "Only alphanumeric uppercase characters and underscores are allowed",
       "roomTypeNameRequired": "Room type name is required",
-      "roomTypeNameMaxLength": "Maximum length is 100 characters",
+      "roomTypeNameMaxLength": "Maximum length is {count} characters",
       "roomTypeNameFormat": "Invalid name format",
       "descriptionRequired": "Description is required",
-      "descriptionMaxLength": "Maximum length is 200 characters",
+      "descriptionMaxLength": "Maximum length is {count} characters",
       "descriptionFormat": "Invalid description format",
       "mustBeActive": "Asset Room Type must be active to save",
       "assetTypeRequired": "Asset Type is required"

@@ -48,13 +48,13 @@
     },
     "validation": {
       "roomTypeCodeRequired": "कमरे का प्रकार कोड आवश्यक है",
-      "roomTypeCodeMaxLength": "अधिकतम लंबाई 50 वर्ण है",
+      "roomTypeCodeMaxLength": "अधिकतम लंबाई {count} वर्ण है",
       "roomTypeCodeFormat": "केवल अक्षरांकीय बड़े अक्षर और अंडरस्कोर की अनुमति है",
       "roomTypeNameRequired": "कमरे का प्रकार नाम आवश्यक है",
-      "roomTypeNameMaxLength": "अधिकतम लंबाई 100 वर्ण है",
+      "roomTypeNameMaxLength": "अधिकतम लंबाई {count} वर्ण है",
       "roomTypeNameFormat": "अमान्य नाम प्रारूप",
       "descriptionRequired": "विवरण आवश्यक है",
-      "descriptionMaxLength": "अधिकतम लंबाई 200 वर्ण है",
+      "descriptionMaxLength": "अधिकतम लंबाई {count} वर्ण है",
       "descriptionFormat": "अमान्य विवरण प्रारूप",
       "mustBeActive": "सहेजने के लिए एसेट कमरे का प्रकार सक्रिय होना चाहिए",
       "assetTypeRequired": "एसेट प्रकार आवश्यक है"

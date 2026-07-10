@@ -48,13 +48,13 @@
     },
     "validation": {
       "roomTypeCodeRequired": "खोली प्रकार कोड आवश्यक आहे",
-      "roomTypeCodeMaxLength": "जास्तीत जास्त लांबी ५० अक्षरे असावी",
+      "roomTypeCodeMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "roomTypeCodeFormat": "केवळ अक्षरे, अंक आणि अंडरस्कोरची परवानगी आहे",
       "roomTypeNameRequired": "खोली प्रकार नाव आवश्यक आहे",
-      "roomTypeNameMaxLength": "जास्तीत जास्त लांबी १०० अक्षरे असावी",
+      "roomTypeNameMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "roomTypeNameFormat": "अवैध नाव स्वरूप",
       "descriptionRequired": "वर्णन आवश्यक आहे",
-      "descriptionMaxLength": "जास्तीत जास्त लांबी २०० अक्षरे असावी",
+      "descriptionMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "descriptionFormat": "अवैध वर्णन स्वरूप",
       "mustBeActive": "जतन करण्यासाठी मालमत्ता खोली प्रकार सक्रिय असणे आवश्यक आहे",
       "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे"
