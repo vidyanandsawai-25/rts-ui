@@ -48,6 +48,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           onChange={onChange}
           onBlur={onBlur}
           placeholder={t("form.fields.description.placeholder")}
+          maxLength={500}
           fullWidth
         />
         <ValidationMessage message={errors.description} visible={showError("description")} />

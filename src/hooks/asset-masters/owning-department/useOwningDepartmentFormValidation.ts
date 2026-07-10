@@ -45,7 +45,7 @@ export function useOwningDepartmentFormValidation({
           if (isAllZeros(strVal)) {
             return t("form.validation.descriptionFormat");
           }
-          const stdErr = commonValidations.masterDescription(t, 250, {
+          const stdErr = commonValidations.masterDescription(t, 500, {
             required: "form.validation.descriptionRequired",
             format: "form.validation.descriptionFormat",
             maxLength: "form.validation.descriptionMaxLength",

@@ -63,6 +63,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           name="taxPercentage"
           type="number"
           min={0}
+          max={100}
           label={t("form.fields.percent.label")}
           required
           value={String(formData.taxPercentage)}

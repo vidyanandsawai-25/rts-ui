@@ -47,7 +47,7 @@ export function useGstMasterFormValidation({
             return t("form.validation.percentRequired");
           }
           const num = Number(value);
-          if (!Number.isFinite(num) || num < 0) {
+          if (!Number.isFinite(num) || num < 0 || num > 100) {
             return t("form.validation.percentInvalid");
           }
           return undefined;

@@ -60,7 +60,7 @@
       "descriptionFormat": "Tax name contains invalid characters",
       "descriptionMaxLength": "Tax name cannot exceed {count} characters",
       "percentRequired": "Tax percentage is required",
-      "percentInvalid": "Tax percentage must be a valid non-negative number",
+      "percentInvalid": "Tax percentage must be a valid non-negative number and cannot exceed 100",
       "effectiveFromRequired": "Effective from date is required",
       "effectiveToRequired": "Effective to date is required",
       "effectiveToInvalid": "Effective to date cannot be earlier than effective from date",
