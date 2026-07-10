@@ -5,7 +5,7 @@ import { TapStatusForm } from "@/components/modules/property-tax/WaterConnection
 describe("TapStatusForm", () => {
   it("renders without crashing", () => {
     render(
-      <IntlProvider locale="en" messages={{}} onError={() => {}}>
+      <IntlProvider locale="en" messages={{}} onError={() => { }}>
         <TapStatusForm id={null} />
       </IntlProvider>
     );

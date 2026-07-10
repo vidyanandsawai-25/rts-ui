@@ -6,7 +6,12 @@ import { FloorData } from '@/types/room-details.types';
 
 vi.mock('@/components/common', () => ({
   AddButton: ({ label, onClick }: { label: string; onClick: () => void }) => (
-    <button onClick={onClick} data-testid="add-floor-button">{label}</button>
+    <button
+      onClick={onClick}
+      data-testid={label === 'floor.dataEntry' ? 'data-entry-button' : 'add-floor-button'}
+    >
+      {label}
+    </button>
   ),
   FloorDetailsTable: ({ data, columns, emptyMessage, rowClassName }: { data: FloorData[]; columns: { key: string; render?: (row: FloorData, idx: number) => React.ReactNode }[]; emptyMessage?: React.ReactNode; rowClassName?: string | ((row: FloorData, idx: number) => string) }) => (
     <div data-testid="master-table">
@@ -119,6 +124,7 @@ describe('FloorTable', () => {
     isAddingNewFloor: false,
     setIsAddingNewFloor: vi.fn(),
     handleAddFloor: vi.fn(),
+    handleOpenDataEntrySameAs: vi.fn(),
     updateUrlParams: vi.fn(),
     handleDeleteFloor: vi.fn(),
     startTransition: vi.fn((fn: () => void) => fn()),
@@ -173,12 +179,21 @@ describe('FloorTable', () => {
     expect(addButton).toHaveTextContent('floor.addFloor');
   });
 
-  it('renders add plot button when selectedFloorType is OpenPlot', () => {
-    render(<FloorTable {...mockProps} selectedFloorType="OpenPlot" />);
+  it('renders data entry same as button', () => {
+    render(<FloorTable {...mockProps} />);
     
-    const addButton = screen.getByTestId('add-floor-button');
-    expect(addButton).toBeInTheDocument();
-    expect(addButton).toHaveTextContent('floor.addSpace');
+    const dataEntryButton = screen.getByTestId('data-entry-button');
+    expect(dataEntryButton).toBeInTheDocument();
+    expect(dataEntryButton).toHaveTextContent('floor.dataEntry');
+  });
+
+  it('opens the data entry same as drawer when data entry same as button is clicked', () => {
+    render(<FloorTable {...mockProps} />);
+    
+    const dataEntryButton = screen.getByTestId('data-entry-button');
+    fireEvent.click(dataEntryButton);
+    
+    expect(mockProps.handleOpenDataEntrySameAs).toHaveBeenCalled();
   });
 
   it('calls handleAddFloor when add button is clicked', () => {

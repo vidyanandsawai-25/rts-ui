@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/home/Navbar";
 import { listServices, getUserProfileSSR } from "./action";
 import { cookies, headers } from 'next/headers';
 import { decodeCookieValue } from '@/lib/utils/cookie';
+import { getUlbConfigForLogin } from '@/lib/api/ulb-config.service';
 
 function clientIpFromHeaders(h: Headers): string | undefined {
   const forwarded = h.get('x-forwarded-for');
@@ -25,9 +26,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
      * (using try/catch or returning error objects) to prevent a single API failure 
      * from crashing the entire dashboard page.
      */
-    const [{ services, error: servicesError }, { data: userProfile, error: profileError }] = await Promise.all([
+    const [
+      { services, error: servicesError },
+      { data: userProfile, error: profileError },
+      ulbData
+    ] = await Promise.all([
         listServices(locale),
-        getUserProfileSSR()
+        getUserProfileSSR(),
+        getUlbConfigForLogin()
     ]);
     const cookieStore = await cookies();
     const headerList = await headers();
@@ -42,9 +48,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     // Decide which name to show based on locale
     const displayUlbName = (locale === 'en' || !ulbNameLocal) ? ulbName : ulbNameLocal;
 
+    const backgroundSrc = ulbData?.ulbBackground || '';
+
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
-            <Banner ulbName={displayUlbName} />
+            <Banner ulbName={displayUlbName} backgroundSrc={backgroundSrc} />
             <Navbar 
                 username={userName} 
                 ulbName={displayUlbName} 

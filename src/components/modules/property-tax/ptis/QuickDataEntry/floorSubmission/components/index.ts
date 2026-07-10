@@ -8,3 +8,4 @@ export { PropertyCategoryDisplay } from './PropertyCategoryDisplay';
 export { FloorTypeToggle } from './FloorTypeToggle';
 export { SubmissionOverlayLoader } from './SubmissionOverlayLoader';
 export { SubmissionApiErrors } from './SubmissionApiErrors';
+export { DataEntrySameAsDrawer } from './DataEntrySameAsDrawer';

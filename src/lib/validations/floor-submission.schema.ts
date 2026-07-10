@@ -122,12 +122,11 @@ export const floorSubmissionSchema = z.object({
     constructionTypeDescription: z.string()
         .transform(val => (val || '').trim())
         .default(''),
-    typeOfUseId: z.coerce.number()
-        .positive('floor.errors.typeOfUseRequired'),
+    typeOfUseId: z.coerce.number().nullable().optional(),
     typeOfUseCategoryId: z.coerce.number().nullable().optional(),
     typeOfUseDescription: z.string()
-        .transform(val => val.trim())
-        .pipe(z.string().min(1, 'floor.errors.typeOfUseRequired')),
+        .transform(val => (val || '').trim())
+        .default(''),
     subTypeOfUseId: z.coerce.number()
         .nonnegative().default(0),
     subTypeOfUseDescription: z.string().default(''),
@@ -228,6 +227,24 @@ export const floorSubmissionSchema = z.object({
             });
         }
 
+        // Enforce typeOfUseId
+        if (!data.typeOfUseId || data.typeOfUseId <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.typeOfUseRequired',
+                path: ['typeOfUseId']
+            });
+        }
+
+        // Enforce typeOfUseDescription
+        if (!data.typeOfUseDescription || data.typeOfUseDescription.length === 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'floor.errors.typeOfUseRequired',
+                path: ['typeOfUseDescription']
+            });
+        }
+
         // Enforce noOfRooms
         const isUtility = checkIsUtilityCategory(data.typeOfUseCategoryId);
         if (!isUtility && (data.noOfRooms === undefined || data.noOfRooms <= 0)) {
@@ -239,23 +256,26 @@ export const floorSubmissionSchema = z.object({
         }
     }
 
-    // Validate length and width based on whether it is an Open Space
     if (data.selectedFloorType === 'OpenPlot' || data.isOpenPlot) {
         const len = parseFloat(String(data.length));
         const wid = parseFloat(String(data.width));
-        if (!data.length || isNaN(len) || len <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'floor.errors.lengthRequired',
-                path: ['length']
-            });
+        if (data.length !== undefined && data.length !== null && data.length !== '') {
+            if (isNaN(len) || len <= 0) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'floor.errors.lengthRequired',
+                    path: ['length']
+                });
+            }
         }
-        if (!data.width || isNaN(wid) || wid <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'floor.errors.widthRequired',
-                path: ['width']
-            });
+        if (data.width !== undefined && data.width !== null && data.width !== '') {
+            if (isNaN(wid) || wid <= 0) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'floor.errors.widthRequired',
+                    path: ['width']
+                });
+            }
         }
         if (!data.constructionTypeId || data.constructionTypeId <= 0) {
             ctx.addIssue({

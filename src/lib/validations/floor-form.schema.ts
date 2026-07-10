@@ -192,20 +192,6 @@ export const floorFormSchema = z.object({
   width: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 }).superRefine((data, ctx) => {
   if (data.selectedFloorType === 'OpenPlot') {
-    if (!data.length || isNaN(parseFloat(String(data.length))) || parseFloat(String(data.length)) <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'floor.errors.lengthRequired',
-        path: ['length'],
-      });
-    }
-    if (!data.width || isNaN(parseFloat(String(data.width))) || parseFloat(String(data.width)) <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'floor.errors.widthRequired',
-        path: ['width'],
-      });
-    }
     if (!data.constructionTypeId || String(data.constructionTypeId).trim().length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

@@ -8,6 +8,8 @@ import type {
   ULBConfigurationFormData,
   UlbConfigurationMaster,
   UlbConfigurationPageData,
+  UlbImageMasterDto,
+  UlbImageMasterUploadResponseDto,
   UlbSectionKey,
 } from '@/types/ulbconfig-master.types';
 import { ApiError } from '@/lib/utils/api';
@@ -16,7 +18,13 @@ import {
   getUlbMaster,
   getUlbMasterById,
   updateUlbMaster,
+  getUlbImages,
+  deleteUlbImage,
+  updateUlbImageType,
+  getUlbImageView,
+  createUlbImageMaster,
 } from '@/lib/api/configuration-settings/ulb-configuration/ulb-master.services';
+import { uploadDocument } from '@/lib/api/document.service';
 import {
   createDepartmentLicence,
   getAllDepartmentLicences,
@@ -60,21 +68,28 @@ function isLicenseExpiredServer(endDateStr: string): boolean {
 export async function getUlbConfigurationPageDataAction(): Promise<
   ApiResponse<UlbConfigurationPageData>
 > {
-  const [ulbResult, licencesResult] = await Promise.allSettled([
+  const [ulbResult, licencesResult, deptsResult, imagesResult] = await Promise.allSettled([
     getUlbMaster(),
     getAllDepartmentLicences(),
+    getAllDepartments(),
+    getUlbImages(1, 50),
   ]);
 
   const ulb = ulbResult.status === 'fulfilled' ? ulbResult.value : null;
   const licences = licencesResult.status === 'fulfilled' ? licencesResult.value : [];
+  const departments = deptsResult.status === 'fulfilled' ? deptsResult.value : [];
+  const imagesRes = imagesResult.status === 'fulfilled' ? imagesResult.value : { items: [] };
+  const images = imagesRes.items || [];
 
   const allRejected =
     ulbResult.status === 'rejected' &&
-    licencesResult.status === 'rejected';
+    licencesResult.status === 'rejected' &&
+    deptsResult.status === 'rejected' &&
+    imagesResult.status === 'rejected';
 
   if (allRejected) {
     return handleActionError<UlbConfigurationPageData>(
-      ulbResult.reason,
+      ulbResult.status === 'rejected' ? ulbResult.reason : undefined,
       'messages.fetchError'
     );
   }
@@ -123,7 +138,7 @@ export async function getUlbConfigurationPageDataAction(): Promise<
 
   return {
     success: true,
-    data: { ulb, departments: [], licences },
+    data: { ulb, departments, licences, images },
   };
 }
 
@@ -365,3 +380,167 @@ export async function saveDepartmentLicencesAction(
     return handleActionError<DepartmentLicenceDetails[]>(error, 'messages.error');
   }
 }
+
+/** Server Action to upload a logo/gallery image */
+export async function uploadUlbImageAction(
+  formData: FormData
+): Promise<ApiResponse<UlbImageMasterUploadResponseDto>> {
+  try {
+    const fileRaw = formData.get("File");
+    const file = fileRaw instanceof File ? fileRaw : null;
+    const imageType = formData.get("ImageType") as string | null;
+
+    if (!file) {
+      return { success: false, error: "No file provided" };
+    }
+    if (!imageType) {
+      return { success: false, error: "No image type provided" };
+    }
+
+    const userId = await resolveUserId();
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    // Step 1: Upload via generic document service
+    const uploadResult = await uploadDocument(file);
+    if (!uploadResult || !uploadResult.documentId) {
+      throw new Error("Failed to upload document to service");
+    }
+
+    // Step 2: Link via UlbImageMaster
+    const masterEntity = await createUlbImageMaster(imageType, uploadResult.documentId);
+
+    // Map result to match UlbImageMasterUploadResponseDto structure
+    const responseDto: UlbImageMasterUploadResponseDto = {
+      ulbImageMasterId: masterEntity.id,
+      documentGuid: uploadResult.documentGuid,
+      documentId: uploadResult.documentId,
+      documentBindingId: uploadResult.documentBindingId || null,
+      imageType: masterEntity.imageType || imageType,
+      fileName: uploadResult.fileName || file.name,
+      fileSizeBytes: uploadResult.fileSizeBytes || file.size,
+      storagePath: uploadResult.storagePath || "",
+    };
+
+    return { success: true, data: responseDto };
+  } catch (error: unknown) {
+    return handleActionError<UlbImageMasterUploadResponseDto>(error, 'messages.uploadFailed');
+  }
+}
+
+/** Server Action to get all ULB images */
+export async function getUlbImagesAction(
+  pageNumber = 1,
+  pageSize = 50
+): Promise<ApiResponse<UlbImageMasterDto[]>> {
+  try {
+    const response = await getUlbImages(pageNumber, pageSize);
+    return {
+      success: true,
+      data: response.items || [],
+    };
+  } catch (error: unknown) {
+    return handleActionError<UlbImageMasterDto[]>(error, 'messages.fetchError');
+  }
+}
+
+/** Server Action to delete a ULB image */
+export async function deleteUlbImageAction(
+  id: number
+): Promise<ApiResponse<void>> {
+  try {
+    const userId = await resolveUserId();
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    await deleteUlbImage(id);
+    return { success: true };
+  } catch (error: unknown) {
+    return handleActionError<void>(error, 'messages.deleteFailed');
+  }
+}
+
+/** Server Action to update ULB image type */
+export async function updateUlbImageTypeAction(
+  id: number,
+  imageType: string,
+  imageId: number
+): Promise<ApiResponse<void>> {
+  try {
+    const userId = await resolveUserId();
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    await updateUlbImageType(id, imageType, imageId);
+    return { success: true };
+  } catch (error: unknown) {
+    return handleActionError<void>(error, 'messages.updateFailed');
+  }
+}
+
+/** Server Action to replace an existing logo/gallery image */
+export async function replaceUlbImageAction(
+  id: number,
+  formData: FormData
+): Promise<ApiResponse<UlbImageMasterUploadResponseDto>> {
+  try {
+    const fileRaw = formData.get("File");
+    const file = fileRaw instanceof File ? fileRaw : null;
+
+    if (!file) {
+      return { success: false, error: "No file provided" };
+    }
+
+    const userId = await resolveUserId();
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    // Step 1: Upload the new file via generic document service
+    const uploadResult = await uploadDocument(file);
+    if (!uploadResult || !uploadResult.documentId) {
+      throw new Error("Failed to upload document to service");
+    }
+
+    // Step 2: Get the existing master record to keep the same ImageType
+    const existingImages = await getUlbImages(1, 100);
+    const existing = existingImages.items?.find((img) => img.id === id);
+    const imageType = existing?.imageType || "Gallery";
+
+    // Step 3: Update the existing master record to point to the new imageId
+    await updateUlbImageType(id, imageType, uploadResult.documentId);
+
+    // Map result to match UlbImageMasterUploadResponseDto structure
+    const responseDto: UlbImageMasterUploadResponseDto = {
+      ulbImageMasterId: id,
+      documentGuid: uploadResult.documentGuid,
+      documentId: uploadResult.documentId,
+      documentBindingId: uploadResult.documentBindingId || null,
+      imageType: imageType,
+      fileName: uploadResult.fileName || file.name,
+      fileSizeBytes: uploadResult.fileSizeBytes || file.size,
+      storagePath: uploadResult.storagePath || "",
+    };
+
+    return { success: true, data: responseDto };
+  } catch (error: unknown) {
+    return handleActionError<UlbImageMasterUploadResponseDto>(error, 'messages.replaceFailed');
+  }
+}
+
+/** Server Action to get ULB Image view stream (as base64) */
+export async function getUlbImageViewAction(
+  documentGuid: string
+): Promise<ApiResponse<{ base64: string; contentType: string }>> {
+  try {
+    const result = await getUlbImageView(documentGuid);
+    return { success: true, data: result };
+  } catch (error: unknown) {
+    return handleActionError<{ base64: string; contentType: string }>(error, 'messages.fetchError');
+  }
+}
+
+

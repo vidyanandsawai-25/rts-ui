@@ -167,6 +167,7 @@ function parseUlbConfigPayload(data: unknown): UlbConfigApiBody | null {
     ulbName: ulbStr(readUlbField(o, 'ulbName', 'UlbName')),
     ulbNameLocal: ulbOptionalStr(readUlbField(o, 'ulbNameLocal', 'UlbNameLocal')),
     ulbLogo: ulbOptionalStr(readUlbField(o, 'ulbLogo', 'UlbLogo')),
+    ulbBackground: ulbOptionalStr(readUlbField(o, 'ulbBackground', 'UlbBackground')),
     emailId: ulbOptionalStr(readUlbField(o, 'emailId', 'EmailId')),
     mobileNo: ulbOptionalStr(readUlbField(o, 'mobileNo', 'MobileNo')),
     websiteUrl: ulbOptionalStr(readUlbField(o, 'websiteUrl', 'WebsiteUrl')),
