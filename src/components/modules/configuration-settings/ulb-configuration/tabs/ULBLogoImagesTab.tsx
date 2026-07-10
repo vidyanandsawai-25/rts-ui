@@ -101,6 +101,7 @@ export function ULBLogoImagesTab({
               icon={ImageIcon}
               iconBgColor="bg-amber-50"
               iconTextColor="text-amber-600"
+              isLandscape={true}
               onTriggerUploadOrReplace={() => {
                 setDrawerMode(backgroundImg ? 'replace' : 'upload');
                 setDrawerCategory('Background');
@@ -122,7 +123,7 @@ export function ULBLogoImagesTab({
             isUploading={isUploading}
             onTriggerUpload={() => {
               setDrawerMode('upload');
-              setDrawerCategory('Gallery');
+              setDrawerCategory('Logo');
               setReplaceImageId(null);
               setSelectedFile(null);
               setDrawerOpen(true);

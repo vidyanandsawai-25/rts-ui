@@ -113,6 +113,8 @@ function normalizePropertySearchApiItem(
       null,
     plotNo: readApiText(raw, "plotNo", "PlotNo") || null,
     wingFlatNo: readApiText(raw, "wingFlatNo", "WingFlatNo") || null,
+    wing: readApiText(raw, "wing", "Wing") || null,
+    flatNo: readApiText(raw, "flatNo", "FlatNo") || null,
     propertyCount:
       toOptionalNumber(readField(raw, "propertyCount", "PropertyCount")) ?? null,
     childUnitCount:
@@ -184,6 +186,8 @@ export function normalizePropertySearchItem(
     citySurveyNo: toRawText(item.citySurveyNo ?? item.cityServeyNo),
     plotNo: toRawText(item.plotNo),
     wingFlatNo: toRawText(item.wingFlatNo),
+    wing: toRawText(item.wing),
+    flatNo: toRawText(item.flatNo),
     propertyCount: item.propertyCount ?? 0,
     childUnitCount: item.childUnitCount ?? undefined,
     category: toRawText(item.categoryName),
