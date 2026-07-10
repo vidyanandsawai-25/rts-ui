@@ -12,18 +12,20 @@ import { AddConnectionDrawer } from "./AddConnectionDrawer";
 import { WaterConnectionStats } from "./WaterConnectionStats";
 import { WaterConnectionDrawerTitle } from "./WaterConnectionDrawerTitle";
 import { useWaterConnectionData } from "./hooks/useWaterConnectionData";
-import type { WaterConnection } from "@/types/waterconnection.types";
+import type { WaterConnection, WaterConnectionFormModel } from "@/types/waterconnection.types";
 
 interface WaterConnectionPageDrawerProps {
   open: boolean;
   propertyId: number | null;
   onClose: () => void;
+  saveWaterConnectionAction: (data: WaterConnectionFormModel) => Promise<{ ok: boolean; error?: string }>;
 }
 
 export function WaterConnectionPageDrawer({
   open,
   propertyId,
   onClose,
+  saveWaterConnectionAction,
 }: WaterConnectionPageDrawerProps) {
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
@@ -179,6 +181,7 @@ export function WaterConnectionPageDrawer({
           sizeOptions={pageData.sizeOptions}
           statusOptions={pageData.statusOptions}
           rateMasters={pageData.rateMasters}
+          saveWaterConnectionAction={saveWaterConnectionAction}
           onClose={handleAddDrawerClose}
           onSaved={handleSaved}
         />
