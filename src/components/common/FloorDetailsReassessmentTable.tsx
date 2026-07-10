@@ -134,7 +134,12 @@ export function FloorDetailsReassessmentTable({
     }
     scrollAccumulatorRef.current = 0;
     setIsAutoScrolling(false);
-  }, []);
+
+    // If we were the shared "owner", release it.
+    if (autoScrollController && instanceId && autoScrollController.activeScrollerId === instanceId) {
+      autoScrollController.setActive(null);
+    }
+  }, [autoScrollController, instanceId]);
 
   // Register with shared controller
   useEffect(() => {
