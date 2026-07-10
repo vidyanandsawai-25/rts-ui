@@ -163,14 +163,13 @@ export function FloorDetailsReassessmentTable({
       const step = () => {
         const container = containerRef.current;
         if (!container) {
-          setIsAutoScrolling(false);
+          stopScrollLocal();
           return;
         }
 
         const maxScroll = container.scrollWidth - container.clientWidth;
         if (maxScroll <= 0) {
-          animationFrameRef.current = null;
-          setIsAutoScrolling(false);
+          stopScrollLocal();
           return;
         }
 
