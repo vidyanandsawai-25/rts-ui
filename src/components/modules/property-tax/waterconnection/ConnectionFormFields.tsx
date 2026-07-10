@@ -36,6 +36,14 @@ export function ConnectionFormFields({
   rateError,
   t,
 }: ConnectionFormFieldsProps) {
+  const todayStr = React.useMemo(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
   const typeSelectOptions = typeOptions.map((opt) => ({
     value: String(opt.id),
     label: opt.connectionTypeName,
@@ -114,6 +122,7 @@ export function ConnectionFormFields({
             value={formData.installDate}
             onChange={onChange}
             onBlur={onBlur}
+            max={todayStr}
             fullWidth
           />
           <ValidationMessage
