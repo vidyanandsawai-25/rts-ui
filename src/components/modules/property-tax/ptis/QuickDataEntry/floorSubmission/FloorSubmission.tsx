@@ -7,7 +7,8 @@ import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmiss
 import { EditSidebarProps, FloorSubmissionPayload } from '@/types/floor-details.types';
 import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
-import { RoomSubmissionModal, PlotAreaCalculator, FloorTypeToggle, SubmissionOverlayLoader, SubmissionApiErrors } from './components';
+import { RoomSubmissionModal, PlotAreaCalculator, FloorTypeToggle, SubmissionOverlayLoader, SubmissionApiErrors, DataEntrySameAsDrawer } from './components';
+import { LoadingPage } from '@/components/common';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { RoomAPIResponse, FloorData } from '@/types/room-details.types';
 import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
@@ -98,6 +99,27 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     constructionTypeOptions,
     useOptions,
   } = props;
+
+  const [showDataEntrySameAsDrawer, setShowDataEntrySameAsDrawer] = React.useState(false);
+
+  const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
+    setShowDataEntrySameAsDrawer(true);
+  }, []);
+
+  const handleCloseDataEntrySameAsDrawer = React.useCallback(() => {
+    setShowDataEntrySameAsDrawer(false);
+  }, []);
+
+  // Show full-screen loader during save/update/delete operations
+  if (isOperationLoading) {
+    return (
+      <LoadingPage
+        translationNamespace="quickDataEntry"
+        messageKey={isAddingNewFloor ? 'floor.addingFloor' : 'floor.updatingFloor'}
+        descriptionKey="floor.pleaseWait"
+      />
+    );
+  }
 
   return (
     <>
@@ -298,6 +320,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             isAddingNewFloor={isAddingNewFloor}
             setIsAddingNewFloor={setIsAddingNewFloor}
             handleAddFloor={handleAddFloor}
+            handleOpenDataEntrySameAs={handleOpenDataEntrySameAsDrawer}
             updateUrlParams={updateUrlParams}
             handleDeleteFloor={handleDeleteFloor}
             startTransition={startTransition}
@@ -312,7 +335,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           />
 
           {/* Edit Floor Form Section */}
-          {(selectedFloor || isAddingNewFloor) && (
+          {(selectedFloor || isAddingNewFloor) && !showDataEntrySameAsDrawer && (
             <div className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
@@ -361,6 +384,37 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         </div>
       </div>
 
+      <DataEntrySameAsDrawer
+        isOpen={showDataEntrySameAsDrawer}
+        onClose={handleCloseDataEntrySameAsDrawer}
+        t={t}
+        wardId={props.wardId}
+        wardNo={props.wardNo}
+        propertyNo={props.propertyNo}
+        partitionNo={props.partitionNo}
+        initialPropertyID={props.initialPropertyID}
+        
+        // Pass FloorTable related props to render view-only floor table inside the drawer
+        filteredFloors={filteredFloors}
+        floorSearch={floorSearch}
+        setFloorSearch={setFloorSearch}
+        selectedFloor={selectedFloor}
+        setSelectedFloor={setSelectedFloor}
+        isAddingNewFloor={isAddingNewFloor}
+        setIsAddingNewFloor={setIsAddingNewFloor}
+        handleAddFloor={handleAddFloor}
+        updateUrlParams={updateUrlParams}
+        handleDeleteFloor={handleDeleteFloor}
+        startTransition={startTransition}
+        setFormErrors={setFormErrors}
+        floorLookup={floorLookup}
+        subFloorLookup={subFloorLookup}
+        constructionLookup={constructionLookup}
+        useLookup={useLookup}
+        subTypeData={subTypeData || []}
+        setEditingFloorForm={setEditingFloorForm}
+      />
+
       <RoomSubmissionModal
         key={`${editingFloorForm.floorId || editingFloorForm.id || ''}-${editingFloorForm.noOfRooms || editingFloorForm.rooms || 0}`}
         isOpen={showRoomSubmission}
@@ -404,6 +458,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           });
         }}
       />
+      
     </>
   );
 };
