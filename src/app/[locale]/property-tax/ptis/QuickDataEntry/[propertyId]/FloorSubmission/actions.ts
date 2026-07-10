@@ -22,8 +22,6 @@ import {
     applyDataEntrySameAs,
     type ApplyDataEntrySameAsPayload,
     type ApplyDataEntrySameAsResponse,
-    updatePlotArea,
-    getPlotArea,
 } from '@/lib/api/ptis/floorSubmission';
 
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
