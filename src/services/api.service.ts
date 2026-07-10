@@ -31,7 +31,6 @@ async function serverFetch(url: string, init: RequestInit): Promise<Response> {
 }
 
 class ApiClient {
-  private baseUrl: string;
   private timeout: number;
   private publicEndpoints = [
     '/Auth/login',
@@ -48,9 +47,17 @@ class ApiClient {
   ];
 
   constructor() {
+    this.timeout = 30000;
+  }
+
+  private getBaseUrl(): string {
     const config = getAppConfig();
-    this.baseUrl = config.api.baseUrl;
-    this.timeout = config.api.timeout;
+    return config.api.baseUrl;
+  }
+
+  private getTimeout(): number {
+    const config = getAppConfig();
+    return config.api.timeout || this.timeout;
   }
 
   private isPublicEndpoint(endpoint: string): boolean {
@@ -162,13 +169,15 @@ class ApiClient {
     options: RequestInit = {},
     requireAuth = true
   ): Promise<ApiResponse<T>> {
+    const baseUrl = this.getBaseUrl();
+    const timeout = this.getTimeout();
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
     const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
 
     try {
       const headers = await this.getAuthHeaders(options, skipAuth);
-      const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+      const url = `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
       const cleanHeaders: Record<string, string> = {};
       Object.entries(headers).forEach(
@@ -181,6 +190,7 @@ class ApiClient {
         signal: controller.signal,
         headers: cleanHeaders,
       });
+
       clearTimeout(timeoutId);
 
       const data = await this.parseResponseBody<T>(response);

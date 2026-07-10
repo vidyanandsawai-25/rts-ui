@@ -15,6 +15,9 @@ interface ServicePageProps {
   }>;
   searchParams?: Promise<{
     deptId?: string;
+    submit?: string;
+    applicationNo?: string;
+    status?: string;
   }>;
 }
 
@@ -91,6 +94,9 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
 
   const departmentId = pickNumber(rtsService?.departmentId, resolvedSearchParams?.deptId);
   const fieldDefinitions = await getRtsFieldDefinitionsByServiceId(canonicalServiceId, departmentId);
+  const submitState = resolvedSearchParams?.submit === "success" ? "success" : "form";
+  const successTrackingId = resolvedSearchParams?.applicationNo?.trim() || "";
+  const successApplicationStatus = resolvedSearchParams?.status?.trim() || "";
 
   const serviceTitle = getLocalizedText(rtsService?.serviceName, locale, `Service ${serviceId}`);
   const departmentTitle = getLocalizedText(rtsService?.departmentName, locale, "RTS Department");
@@ -100,12 +106,16 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
     <CitizenLayout>
       {hasFieldDefinitions ? (
         <DynamicServiceFormClient
+          locale={locale}
           serviceId={serviceId}
           rtsServiceId={canonicalServiceId}
           departmentId={departmentId}
           serviceTitle={serviceTitle}
           initialGroups={fieldDefinitions}
           submitApplicationAction={submitRtsApplicationAction}
+          submitState={submitState}
+          successTrackingId={successTrackingId}
+          successApplicationStatus={successApplicationStatus}
         />
       ) : (
         <div className="mx-auto flex w-full max-w-[960px] flex-1 items-center justify-center px-4 py-10">

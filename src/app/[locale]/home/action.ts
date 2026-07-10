@@ -124,6 +124,25 @@ export async function listServices(locale: string): Promise<ListServicesResponse
                 return mapDepartmentToService(dept, iconName, locale);
             });
 
+        // Ensure "RTS" card points to the CMS portal and has the right title/icon
+        const rtsCard = services.find(s => s.name?.toLowerCase() === 'rts' || s.title?.toLowerCase() === 'rts');
+        if (rtsCard) {
+            rtsCard.title = "RTS CMS";
+            rtsCard.subtext = "Complaint & Application Management System";
+            rtsCard.icon = "Timer";
+            rtsCard.link = `/${locale}/cms/inbox`;
+        } else {
+            // Append RTS CMS card for municipal staff access
+            services.push({
+                id: 9999,
+                name: "RTS CMS",
+                title: "RTS CMS",
+                subtext: "Complaint & Application Management System",
+                icon: "Timer",
+                link: `/${locale}/cms/inbox`,
+            });
+        }
+
         return { services };
     } catch (_error) {
         return {

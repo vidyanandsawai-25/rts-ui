@@ -51,12 +51,16 @@ const Button = ({ children, className, variant, onClick }: any) => (
 );
 
 interface ServiceFormProps {
+  locale: string;
   serviceId: string;
   rtsServiceId?: number;
   departmentId?: number;
   serviceTitle?: string;
   initialGroups?: any[] | { items?: any[] };
   submitApplicationAction?: (payload: FormData) => Promise<CreateRtsApplicationResponse>;
+  submitState?: "form" | "success";
+  successTrackingId?: string;
+  successApplicationStatus?: string;
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -98,12 +102,16 @@ function getLocalizedLabelText(label: any, language: string): string {
 }
 
 export default function DynamicServiceFormClient({
+  locale,
   serviceId,
   rtsServiceId,
   departmentId,
   serviceTitle: serviceTitleFromServer,
   initialGroups,
   submitApplicationAction,
+  submitState = "form",
+  successTrackingId = "",
+  successApplicationStatus = "",
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
@@ -112,16 +120,11 @@ export default function DynamicServiceFormClient({
   const [darkMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [trackingId, setTrackingId] = useState("");
-  const [successApplicationStatus, setSuccessApplicationStatus] = useState("");
-
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
   const [currentApplicationId, setCurrentApplicationId] = useState<number | null>(null);
-  const [currentOwnerId, setCurrentOwnerId] = useState<number | null>(null);
 
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -851,7 +854,7 @@ export default function DynamicServiceFormClient({
     return { currentStep: "Step1", values };
   };
 
-  const buildSubmitFormData = (ownerId: number) => {
+  const buildSubmitFormData = () => {
     const submitBundle = new FormData();
     const fileFields: Array<{
       fileKey: string;
@@ -899,7 +902,6 @@ export default function DynamicServiceFormClient({
         steps,
         departmentId,
         serviceId,
-        ownerId,
         createdBy: 0,
         applicationStatus: "pending",
         fileFields,
@@ -931,24 +933,12 @@ export default function DynamicServiceFormClient({
     return applicationId;
   };
 
-  const ensureOwnerId = (): number => {
-    let ownerId = currentOwnerId;
-
-    if (!ownerId) {
-      ownerId = Math.floor(100 + Math.random() * 900);
-      setCurrentOwnerId(ownerId);
-    }
-
-    return ownerId;
-  };
-
   const handleSaveProgress = () => {
     try {
       logRequiredMissing();
 
       const payload = collectFormData();
       const applicationId = ensureApplicationId();
-      const ownerId = ensureOwnerId();
 
       localStorage.setItem(
         `rtsDraft:${applicationId}:${serviceId}`,
@@ -1030,16 +1020,12 @@ export default function DynamicServiceFormClient({
       const payload = collectFormData();
       const step = payload.currentStep || "Step1";
       const applicationId = ensureApplicationId();
-      const ownerId = ensureOwnerId();
-      const submitBundle = buildSubmitFormData(ownerId);
+      const submitBundle = buildSubmitFormData();
 
-      const response = await submitApplicationAction(submitBundle)
-        
+      const response = await submitApplicationAction(submitBundle);
+
       const newId = response?.items?.applicationNo?.trim();
       const newStatus = response?.items?.applicationStatus?.trim();
-      setTrackingId(newId);
-      setSuccessApplicationStatus(newStatus);
-
       const submissionDate = new Date().toLocaleString();
 
       const applicantName =
@@ -1095,7 +1081,16 @@ export default function DynamicServiceFormClient({
       existingData[newId] = newApplication;
       localStorage.setItem("rtsApplications", JSON.stringify(existingData));
 
-      setIsSuccess(true);
+      const nextParams = new URLSearchParams();
+      if (departmentId != null && Number.isFinite(Number(departmentId))) {
+        nextParams.set("deptId", String(departmentId));
+      }
+      nextParams.set("submit", "success");
+      if (newId) nextParams.set("applicationNo", newId);
+      if (newStatus) nextParams.set("status", newStatus);
+
+      router.replace(`/${locale}/service/${serviceId}?${nextParams.toString()}`);
+      return;
 
       MySwal.fire({
         icon: "success",
@@ -1110,8 +1105,6 @@ export default function DynamicServiceFormClient({
         color: darkMode ? "#ffffff" : "#000000",
       });
     } catch (err: any) {
-      setIsSuccess(false);
-
       const apiErr = parseBackendError(err);
 
       MySwal.fire({
@@ -1139,7 +1132,7 @@ export default function DynamicServiceFormClient({
   const getStepIcon = (step: any): LucideIcon =>
     step?.icon && iconMap[step.icon] ? iconMap[step.icon] : getServiceIcon(step?.title?.en || "");
 
-  if (isSuccess) {
+  if (submitState === "success") {
     return (
       <div
         className={`fixed inset-0 flex items-center justify-center p-4 ${darkMode ? "bg-gray-900" : "bg-gray-50"
@@ -1193,12 +1186,17 @@ export default function DynamicServiceFormClient({
                   className={`text-4xl font-mono font-bold tracking-wider ${darkMode ? "text-teal-400" : "text-teal-600"
                     }`}
                 >
-                  {trackingId}
+                  {successTrackingId}
                 </div>
 
                 <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                   {language === "en" ? "Save this ID to track status" : "स्थिति ट्रैक करने के लिए सहेजें"}
                 </p>
+                {successApplicationStatus ? (
+                  <p className={`text-sm font-semibold ${darkMode ? "text-teal-300" : "text-teal-700"}`}>
+                    {successApplicationStatus}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -1222,7 +1220,7 @@ export default function DynamicServiceFormClient({
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
               <Button
-                onClick={() => copyToClipboard(trackingId)}
+                onClick={() => copyToClipboard(successTrackingId)}
                 className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-lg py-3"
               >
                 <Download className="w-4 h-4 mr-2" />
@@ -1230,7 +1228,7 @@ export default function DynamicServiceFormClient({
               </Button>
 
               <Button
-                onClick={() => router.push(`/${language}/services/documents`)}
+                onClick={() => router.push(`/${locale}/service/dashboard`)}
                 variant="outline"
                 className={`${darkMode
                   ? "border-gray-600 hover:bg-gray-700 text-white"

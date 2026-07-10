@@ -34,6 +34,7 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
   const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
 
   const t = useTranslations('common');
+  const isCmsRoute = /\/(cms)(\/|$)/.test(pathname);
 
   // Collect all paths defined in the sidebar menu items to determine most specific match
   const allPaths: string[] = [];
@@ -79,9 +80,19 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
         </div>
         <div className="sidebar-expandable-label flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
           <span className="text-[17px] font-bold text-gray-800 leading-tight whitespace-nowrap">
-            {t('sidebar.brandTitle')}
+            {isCmsRoute ? (() => {
+              if (locale === 'mr') return 'सेवा हक्क (RTS)';
+              if (locale === 'hi') return 'सेवा का अधिकार (RTS)';
+              return 'Right to Service';
+            })() : t('sidebar.brandTitle')}
           </span>
-          <span className="text-[12px] font-medium text-gray-500 whitespace-nowrap">{t('sidebar.brandSubtitle')}</span>
+          <span className="text-[12px] font-medium text-gray-500 whitespace-nowrap">
+            {isCmsRoute ? (() => {
+              if (locale === 'mr') return 'तक्रार व अर्ज प्रणाली (CMS)';
+              if (locale === 'hi') return 'शिकायत एवं आवेदन प्रणाली (CMS)';
+              return 'CMS Staff Portal';
+            })() : t('sidebar.brandSubtitle')}
+          </span>
         </div>
       </div>
 

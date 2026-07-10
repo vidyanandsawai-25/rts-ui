@@ -22,7 +22,7 @@ export interface CreateRtsApplicationPayload {
   createdBy?: number;
   departmentId?: number;
   serviceId?: number;
-  ownerId: number;
+  sessionId: string;
   applicationStatus?: string;
   fieldValues: RtsApplicationFieldValuePayload[];
 }
@@ -45,7 +45,7 @@ export interface CreateRtsApplicationFieldValueResponse {
 export interface CreateRtsApplicationResponseItem {
   departmentId: number;
   serviceId: number;
-  ownerId: number;
+  sessionId?: string;
   applicationNo: string;
   applicationStatus: string;
   fieldValues: CreateRtsApplicationFieldValueResponse[];

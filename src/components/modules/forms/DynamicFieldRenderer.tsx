@@ -609,10 +609,10 @@ export default function DynamicFieldRenderer(props: {
     const fileHint = selectedFileName || placeholderText || "Upload required document";
 
     return (
-      <div className={wrapClass}>
+      <div className={`${wrapClass} h-full`}>
         <label
           htmlFor={`file-input-${f.id}`}
-          className={`group flex cursor-pointer items-center gap-3 rounded-[8px] border bg-[#f9fafb] px-3 py-2 transition-colors ${
+          className={`group flex h-full min-h-[72px] cursor-pointer items-center gap-3 rounded-[8px] border bg-[#f9fafb] px-3 py-2 transition-colors ${
             hasError
               ? "border-red-400 bg-red-50/40"
               : isUploaded

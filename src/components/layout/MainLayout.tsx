@@ -22,8 +22,6 @@ import {
   filterScreensByAllocatedRoles,
 } from '@/lib/utils/module-access-guard';
 
-
-
 export interface MainLayoutProps {
   children: React.ReactNode;
   /** Locale segment for sidebar links; optional. */
@@ -99,7 +97,6 @@ const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
           ? applyModuleActivationGate(mergedScreens, activeModuleIds)
           : mergedScreens;
 
-
       const userMenuItems = buildSidebarTreeFromUserScreens(effectiveScreens);
       if (userMenuItems.length > 0) {
         return { menuItems: userMenuItems, rawScreens: effectiveScreens };
@@ -141,32 +138,91 @@ const getLayoutChromeData = cache(async () => {
     ...getLayoutShellContextFromCookies(cookieStore),
   };
 });
-
 async function SidebarWithData({ locale }: { locale: string }) {
+  const headerList = await headers();
+  const pathname = headerList.get('x-pathname') || '';
   const { menuItems } = await getLayoutChromeData();
+
+  const isCmsRoute = /\/(cms|rts\/admin)(\/|$)/.test(pathname);
+  if (isCmsRoute) {
+    const cmsMenuItems: MenuItem[] = [
+      {
+        name: 'Dashboard',
+        nameHi: 'डैशबोर्ड',
+        iconName: 'LayoutDashboard',
+        href: '/cms/dashboard',
+      },
+      {
+        name: 'Inbox',
+        nameHi: 'इनबॉक्स',
+        iconName: 'ClipboardList',
+        href: '/cms/inbox',
+      },
+      {
+        name: 'SLA Evaluation',
+        nameHi: 'मूल्यांकन (SLA)',
+        iconName: 'Hourglass',
+        href: '/cms/mulyamapan',
+      },
+      {
+        name: 'Masters',
+        nameHi: 'मास्टर्स',
+        iconName: 'Database',
+        href: '/cms/masters',
+        subItems: [
+          {
+            name: 'Dept / Services',
+            href: '/cms/masters',
+          },
+          {
+            name: 'Form Field Definition',
+            href: '/cms/masters/fields',
+          }
+        ]
+      },
+      {
+        name: 'User Access Control',
+        nameHi: 'प्रवेश नियंत्रण',
+        iconName: 'Users',
+        href: '/cms/users',
+        subItems: [
+          {
+            name: 'Users Registry',
+            href: '/cms/users',
+          },
+          {
+            name: 'Roles & Access',
+            href: '/cms/users/roles',
+          },
+          {
+            name: 'Modules Manager',
+            href: '/cms/users/modules',
+          }
+        ]
+      },
+      {
+        name: 'Reports',
+        nameHi: 'रिपोर्ट',
+        iconName: 'FileBarChart',
+        href: '/cms/reports',
+      },
+    ];
+    return <Sidebar menuItems={cmsMenuItems} locale={locale} />;
+  }
+
   return <Sidebar menuItems={menuItems} locale={locale} />;
 }
-
 async function HeaderWithRequestContext() {
   const { ulbData, userDisplayName, clientIp } = await getLayoutChromeData();
   return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} />;
 }
-
 async function FooterWithUlb() {
   const { ulbData } = await getLayoutChromeData();
   return <Footer ulbData={ulbData} />;
 }
-
 function HeaderSkeleton() {
-  return (
-    <div
-      className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl"
-      style={{ backgroundColor: '#4b70a6' }}
-      aria-hidden
-    />
-  );
+  return <div className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl" style={{ backgroundColor: '#4b70a6' }} aria-hidden />;
 }
-
 function FooterSkeleton() {
   return <div className="mt-auto h-16 w-full shrink-0 bg-slate-100" aria-hidden />;
 }
@@ -189,13 +245,13 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
         <Suspense fallback={null}>
           <SidebarWithData locale={locale} />
         </Suspense>
-
         <Suspense fallback={<HeaderSkeleton />}>
           <HeaderWithRequestContext />
         </Suspense>
-
         <main className="flex-1 transition-all duration-300 pt-20 flex flex-col layout-content-shifted">
-          <div className="flex-1 w-full px-3 py-3 md:px-4">{children}</div>
+          <div className={`flex-1 w-full py-3 ${isPtisRoute ? 'px-1 md:px-2' : 'px-3 md:px-4'}`}>
+            {children}
+          </div>
         </main>
 
         {!isPtisRoute && (

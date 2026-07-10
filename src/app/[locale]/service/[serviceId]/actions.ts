@@ -1,5 +1,6 @@
 'use server';
 
+import { cookies } from "next/headers";
 import {
   createRtsApplication,
   uploadRtsDocument,
@@ -23,10 +24,21 @@ interface SubmitRtsApplicationActionInput {
   steps: Array<{ fields?: Array<Record<string, unknown>> }>;
   departmentId?: number | string | null;
   serviceId?: number | string | null;
-  ownerId?: number;
   createdBy?: number;
   applicationStatus?: string;
   fileFields?: SubmitRtsFileFieldMeta[];
+}
+
+function readCitizenOwnerIdFromCookieValue(profileCookie?: string): number | undefined {
+  if (!profileCookie) return undefined;
+
+  try {
+    const profile = JSON.parse(profileCookie) as { ownerId?: unknown };
+    const ownerId = Number(profile?.ownerId);
+    return Number.isFinite(ownerId) && ownerId > 0 ? ownerId : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function getRtsServiceByIdSSR(serviceId: number): Promise<RtsServiceApiItem> {
@@ -36,6 +48,7 @@ export async function getRtsServiceByIdSSR(serviceId: number): Promise<RtsServic
 export async function submitRtsApplicationAction(
   formData: FormData
 ): Promise<CreateRtsApplicationResponse> {
+  const cookieStore = await cookies();
   const serializedInput = formData.get("submitInput");
   if (typeof serializedInput !== "string" || !serializedInput.trim()) {
     throw new Error("Missing RTS submit input");
@@ -44,6 +57,14 @@ export async function submitRtsApplicationAction(
   const input = JSON.parse(serializedInput) as SubmitRtsApplicationActionInput;
   const fileFields = Array.isArray(input.fileFields) ? input.fileFields : [];
   const documentGuidByFieldDefinitionId: Record<string, string> = {};
+  const ownerId = readCitizenOwnerIdFromCookieValue(
+    cookieStore.get("rts_citizen_profile")?.value
+  );
+  const sessionId = cookieStore.get("rts_session")?.value?.trim();
+
+  if (!sessionId) {
+    throw new Error("Missing RTS citizen session");
+  }
 
   for (const fileField of fileFields) {
     const file = formData.get(fileField.fileKey);
@@ -54,7 +75,7 @@ export async function submitRtsApplicationAction(
 
     const uploadResult = await uploadRtsDocument({
       file,
-      ownerUserId: input.ownerId,
+      ownerUserId: ownerId,
       documentType: fileField.fieldLabel || fileField.fieldName,
       departmentId:
         input.departmentId == null || input.departmentId === ""
@@ -75,7 +96,7 @@ export async function submitRtsApplicationAction(
     steps: input.steps,
     departmentId: input.departmentId,
     serviceId: input.serviceId,
-    ownerId: input.ownerId,
+    sessionId,
     createdBy: input.createdBy,
     applicationStatus: input.applicationStatus,
     documentGuidByFieldDefinitionId,

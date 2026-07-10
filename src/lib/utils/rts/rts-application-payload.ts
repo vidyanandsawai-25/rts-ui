@@ -5,14 +5,10 @@ export interface BuildRtsApplicationPayloadParams {
   steps: Array<{ fields?: Array<Record<string, unknown>> }>;
   departmentId?: number | string | null;
   serviceId?: number | string | null;
-  ownerId?: number;
+  sessionId: string;
   createdBy?: number;
   applicationStatus?: string;
   documentGuidByFieldDefinitionId?: Record<string, string>;
-}
-
-function generateOwnerId(): number {
-  return Math.floor(100 + Math.random() * 900);
 }
 
 function isEmptyValue(value: unknown): boolean {
@@ -115,7 +111,7 @@ export function buildRtsApplicationPayload({
   steps,
   departmentId,
   serviceId,
-  ownerId,
+  sessionId,
   createdBy = 0,
   applicationStatus = "pending",
   documentGuidByFieldDefinitionId = {},
@@ -179,7 +175,7 @@ export function buildRtsApplicationPayload({
     createdBy,
     departmentId: departmentId == null || departmentId === "" ? undefined : Number(departmentId),
     serviceId: serviceId == null || serviceId === "" ? undefined : Number(serviceId),
-    ownerId: Number.isFinite(Number(ownerId)) && Number(ownerId) > 0 ? Number(ownerId) : generateOwnerId(),
+    sessionId,
     applicationStatus,
     fieldValues,
   };

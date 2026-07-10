@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { requestOtp, fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/services';
+import { createRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
 
 const OTP_TTL_MS = 2 * 60 * 1000;
 
@@ -127,7 +128,23 @@ export async function verifyCitizenOtpAction(otp: string) {
     console.error("Failed to fetch citizen profile during login:", err);
   }
 
-  c.set('rts_session', `local_${mobile}_${Date.now()}`, {
+  const sessionId = crypto.randomUUID();
+
+  try {
+    await createRtsCitizenSession({
+      isActive: true,
+      createdBy: 0,
+      sessionId,
+      citizenName: citizenProfile.name,
+      mobileNo: citizenProfile.mobile,
+      upic: citizenProfile.upicId,
+      propertyNo: citizenProfile.propertyNo,
+    });
+  } catch (err) {
+    console.error("Failed to create RTS citizen session in backend:", err);
+  }
+
+  c.set('rts_session', sessionId, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
