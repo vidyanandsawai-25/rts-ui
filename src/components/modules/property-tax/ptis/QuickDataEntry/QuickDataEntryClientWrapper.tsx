@@ -136,6 +136,7 @@ function QuickDataEntryContent({
     const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
 
     const drawerClassName = cn(
+        "quick-data-entry-wrapper",
         "[&_div.fixed.right-0]:!w-[97vw]",
         "md:[&_div.fixed.right-0]:!w-[1000px]",
         "lg:[&_div.fixed.right-0]:!w-[1100px]",

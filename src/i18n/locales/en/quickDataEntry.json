@@ -740,6 +740,7 @@
         "unitMeters": "Meters (M)",
         "areaColon": "Area:",
         "applyArea": "Add Area",
+        "updateArea": "Update Area",
         "totalPlotArea": "Total Plot Area",
         "length": "Length",
         "width": "Width",
@@ -932,7 +933,11 @@
             "lengthRequired": "Length is required and must be greater than zero",
             "widthRequired": "Width is required and must be greater than zero",
             "unnecessaryLength": "Length should be empty for non-open plot submissions",
-            "unnecessaryWidth": "Width should be empty for non-open plot submissions"
+            "unnecessaryWidth": "Width should be empty for non-open plot submissions",
+            "invalidDimensions": "Length and Width must be greater than 0.",
+            "areaUpdatedSuccess": "Area updated successfully.",
+            "areaAddedSuccess": "Area added successfully.",
+            "failedToSaveArea": "Failed to save area."
         },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",

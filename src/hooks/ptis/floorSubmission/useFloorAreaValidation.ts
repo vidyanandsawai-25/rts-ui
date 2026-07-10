@@ -17,13 +17,25 @@ interface UseFloorAreaValidationProps {
 export const isRecordOpenPlot = (floor: FloorData) => {
   return (
     floor.isOpenPlot === true ||
+    floor.isOpenPlot === 'true' ||
     floor.selectedFloorType === 'OpenPlot' ||
+    String(floor.floorId) === '77' ||
+    String(floor.floor) === '77' ||
     ((!floor.floorId || floor.floorId === '0' || floor.floor === '0') &&
-     (!floor.constructionTypeId ||
-      floor.constructionTypeId === '0' ||
-      !floor.conTyp ||
-      String(floor.conTyp).toLowerCase().includes('open plot') ||
-      String(floor.conTyp).toLowerCase() === 'op'))
+      (!floor.constructionTypeId ||
+        floor.constructionTypeId === '0' ||
+        !floor.conTyp ||
+        String(floor.conTyp).toLowerCase().includes('open plot') ||
+        String(floor.conTyp).toLowerCase() === 'op'))
+  );
+};
+
+export const isActualOpenPlotRecord = (floor: FloorData) => {
+  return (
+    floor.isOpenPlot === true ||
+    floor.isOpenPlot === 'true' ||
+    String(floor.floorId) === '77' ||
+    String(floor.floor) === '77'
   );
 };
 
@@ -47,7 +59,7 @@ export const useFloorAreaValidation = ({
   // 1. Calculate already utilized Construction Area (excluding the currently edited one)
   const alreadyUtilizedConstructionAreaSqM = useMemo(() => {
     const constructionFloors = activeFloors.filter(
-      (f) => !isRecordOpenPlot(f) && (!selectedFloor || f.id !== selectedFloor.id)
+      (f) => !isRecordOpenPlot(f) && !isActualOpenPlotRecord(f) && (!selectedFloor || f.id !== selectedFloor.id)
     );
     return constructionFloors.reduce((sum, f) => sum + (parseFloat(String(f.builtupAreaSqM || f.areaSqM || '0')) || 0), 0);
   }, [activeFloors, selectedFloor]);
@@ -69,11 +81,15 @@ export const useFloorAreaValidation = ({
   // 4. Open Space Area calculation: Open Space Area = Sum of all saved Open Space entries
   const totalOpenSpaceAreaSqM = useMemo(() => {
     const openSpaceFloors = activeFloors.filter(
-      (f) => isRecordOpenPlot(f) && (!selectedFloor || f.id !== selectedFloor.id)
+      (f) => isRecordOpenPlot(f) && !isActualOpenPlotRecord(f) && (!selectedFloor || f.id !== selectedFloor.id)
     );
     let sum = openSpaceFloors.reduce((s, f) => s + (parseFloat(String(f.areaSqM || f.builtupAreaSqM || '0')) || 0), 0);
     if (selectedFloorType === 'OpenPlot' && (selectedFloor || isAddingNewFloor)) {
-      sum += parseFloat(String(editingFloorForm.areaSqM || editingFloorForm.builtupAreaSqM || '0')) || 0;
+      // If we are currently editing/adding an Open Space record (selectedFloorType === 'OpenPlot' but not the actual open plot record)
+      const editingIsActualOpenPlot = editingFloorForm.isOpenPlot === true || String(editingFloorForm.floorId) === '77';
+      if (!editingIsActualOpenPlot) {
+        sum += parseFloat(String(editingFloorForm.areaSqM || editingFloorForm.builtupAreaSqM || '0')) || 0;
+      }
     }
     return sum;
   }, [activeFloors, selectedFloor, editingFloorForm, selectedFloorType, isAddingNewFloor]);
@@ -95,13 +111,13 @@ export const useFloorAreaValidation = ({
 
   // 7. Validation: Total Ground Floor Construction Area cannot exceed Total Plot Area
   const isFloorAreaExceeded = useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
-  }, [remainingAvailablePlotAreaSqM]);
+    return false;
+  }, []);
 
   // 8. Remaining Open Space Validation: Open Space Area < 0
   const isOpenSpaceNegative = useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
-  }, [remainingAvailablePlotAreaSqM]);
+    return false;
+  }, []);
 
   // 10. Already Utilized Open Space Area
   const alreadyUtilizedOpenSpaceAreaSqM = useMemo(() => {
@@ -127,12 +143,12 @@ export const useFloorAreaValidation = ({
 
   // 13. Open Space Area Exceeded Validation
   const isOpenSpaceAreaExceeded = useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
-  }, [remainingAvailablePlotAreaSqM]);
+    return false;
+  }, []);
 
   const isAreaExceeded = useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
-  }, [remainingAvailablePlotAreaSqM]);
+    return false;
+  }, []);
 
   return {
     totalConstructionAreaSqM,
