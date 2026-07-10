@@ -68,6 +68,7 @@ export default async function FloorSubmissionPage({
 
     // ── URL params ──────────────────────────────────────────────────────────
     const wardNo = asString(sp.wardNo);
+    const wardId = sp.wardId ? Number(asString(sp.wardId)) : undefined;
     const propertyNo = asString(sp.propertyNo);
     const partitionNo = asString(sp.partitionNo);
     const propertyIdSp = asString(sp.propertyId);   // from URL (may be pre-set)
@@ -270,6 +271,7 @@ export default async function FloorSubmissionPage({
                 subFloorData={subFloorData}
                 subTypeData={subTypeData}
                 wardNo={wardNo}
+                wardId={wardId && !isNaN(wardId) ? wardId : undefined}
                 propertyNo={propertyNo}
                 partitionNo={partitionNo}
                 initialPropertyData={initialPropertyData}
