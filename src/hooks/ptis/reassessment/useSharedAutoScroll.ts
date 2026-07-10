@@ -8,14 +8,14 @@ import { useCallback, useRef, useState } from 'react';
  */
 export function useSharedAutoScroll() {
   // Store stop callbacks from each registered table
-  const stopCallbacksRef = useRef<Set<() => void>>(new Set());
+  const stopCallbacksRef = useRef<Map<string, () => void>>(new Map());
   const [activeScrollerId, setActiveScrollerId] = useState<string | null>(null);
 
   /** Register a table's stop function */
   const register = useCallback((id: string, stopFn: () => void) => {
-    stopCallbacksRef.current.add(stopFn);
+    stopCallbacksRef.current.set(id, stopFn);
     return () => {
-      stopCallbacksRef.current.delete(stopFn);
+      stopCallbacksRef.current.delete(id);
     };
   }, []);
 
