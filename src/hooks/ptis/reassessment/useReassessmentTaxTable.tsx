@@ -25,19 +25,21 @@ export function useReassessmentTaxTable({
   taxColumns: TaxColumn[];
   taxRows: ReassessmentTaxRow[];
 }) {
-  // Helper renderers for Detailed Taxes Table Grid with bordered cells
+  // Compact numeric cell renderer
   const numericTaxRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
     const numVal = typeof val === 'number' ? val : 0;
     return (
-      <div className={cn(
-        "border border-gray-300 shadow-sm rounded h-6 flex items-center justify-center transition-all duration-150 hover:border-blue-500 hover:shadow",
-        row.isTotal && "bg-green-50",
-        row.isAdditional && "bg-yellow-50",
-        !row.isTotal && !row.isAdditional && "bg-blue-50"
-      )}>
+      <div
+        className={cn(
+          'border border-gray-300 shadow-sm rounded h-[20px] flex items-center justify-center transition-all duration-150 hover:border-blue-500 hover:shadow px-1',
+          row.isTotal && 'bg-green-50',
+          row.isAdditional && 'bg-yellow-50',
+          !row.isTotal && !row.isAdditional && 'bg-blue-50'
+        )}
+      >
         <span
           className={cn(
-            'font-mono text-xs text-gray-900',
+            'font-mono text-[11px] leading-[18px] text-gray-900',
             row.isTotal ? 'font-bold' : ''
           )}
         >
@@ -47,6 +49,7 @@ export function useReassessmentTaxTable({
     );
   };
 
+  // Compact total-tax cell renderer (right aligned currency)
   const totalTaxRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
     let displayVal;
     if (typeof val === 'number') {
@@ -57,15 +60,17 @@ export function useReassessmentTaxTable({
       displayVal = '';
     }
     return (
-      <div className={cn(
-        "border border-gray-300 shadow-sm rounded h-6 flex items-center justify-end px-2 transition-all duration-150 hover:border-blue-500 hover:shadow",
-        row.isTotal && "bg-green-50",
-        row.isAdditional && "bg-yellow-50",
-        !row.isTotal && !row.isAdditional && "bg-blue-50"
-      )}>
+      <div
+        className={cn(
+          'border border-gray-300 shadow-sm rounded h-[20px] flex items-center justify-end px-1.5 transition-all duration-150 hover:border-blue-500 hover:shadow',
+          row.isTotal && 'bg-green-50',
+          row.isAdditional && 'bg-yellow-50',
+          !row.isTotal && !row.isAdditional && 'bg-blue-50'
+        )}
+      >
         <span
           className={cn(
-            'font-mono text-xs text-gray-900',
+            'font-mono text-[11px] leading-[18px] text-gray-900',
             row.isTotal ? 'font-bold' : ''
           )}
         >
@@ -75,18 +80,21 @@ export function useReassessmentTaxTable({
     );
   };
 
+  // Compact taxes-label cell renderer
   const taxesLabelRender = (val: unknown, row: DynamicTaxRow): React.ReactNode => {
     const displayVal = typeof val === 'string' || typeof val === 'number' ? val : '';
     return (
-      <div className={cn(
-        "border border-gray-300 shadow-sm rounded h-6 flex items-center px-1.5 py-0.5 transition-all duration-150 hover:border-blue-500 hover:shadow",
-        row.isTotal && "bg-green-50",
-        row.isAdditional && "bg-yellow-50",
-        !row.isTotal && !row.isAdditional && "bg-blue-50"
-      )}>
+      <div
+        className={cn(
+          'border border-gray-300 shadow-sm rounded h-[20px] flex items-center px-1.5 transition-all duration-150 hover:border-blue-500 hover:shadow',
+          row.isTotal && 'bg-green-50',
+          row.isAdditional && 'bg-yellow-50',
+          !row.isTotal && !row.isAdditional && 'bg-blue-50'
+        )}
+      >
         <span
           className={cn(
-            'font-sans text-xs text-left text-gray-900',
+            'font-sans text-[11px] leading-[18px] text-left text-gray-900',
             row.isTotal ? 'font-bold' : 'font-semibold'
           )}
         >
@@ -96,13 +104,13 @@ export function useReassessmentTaxTable({
     );
   };
 
-  // Generate dynamic columns from tax data
+  // Dynamic columns — compact widths
   const detailedTaxesColumns: Column<DynamicTaxRow>[] = [
-    { 
-      key: 'taxes', 
-      label: 'Taxes', 
-      width: '140px', 
-      align: 'left', 
+    {
+      key: 'taxes',
+      label: 'Taxes',
+      width: '110px',
+      align: 'left',
       render: taxesLabelRender,
       headerClassName: 'whitespace-nowrap',
       cellClassName: 'whitespace-nowrap',
@@ -110,7 +118,7 @@ export function useReassessmentTaxTable({
     ...taxColumns.map((col) => ({
       key: col.key,
       label: col.label,
-      width: '120px',
+      width: '95px',
       align: 'center' as const,
       render: numericTaxRender,
       headerClassName: 'whitespace-nowrap',
@@ -119,9 +127,9 @@ export function useReassessmentTaxTable({
     {
       key: 'totalTax',
       label: 'Total Tax (₹)',
-      width: '140px',
+      width: '110px',
       align: 'right' as const,
-      headerClassName: 'bg-slate-100 font-black text-right pr-3 whitespace-nowrap',
+      headerClassName: 'bg-slate-100 font-black text-right pr-2 whitespace-nowrap',
       cellClassName: 'whitespace-nowrap',
       render: totalTaxRender,
     },
@@ -136,7 +144,6 @@ export function useReassessmentTaxTable({
       isAdditional: row.rowType === 'additional',
     };
 
-    // Add each tax column value
     Object.entries(row.taxes).forEach(([key, value]) => {
       rowData[key] = value;
     });

@@ -19,51 +19,89 @@ interface RetrospectiveTaxModalProps {
 }
 
 const formatAmount = (value: unknown): string => {
-    const numberValue = typeof value === 'number' ? value : Number(value ?? 0);
-    return numberValue.toLocaleString('en-IN');
+  const numberValue = typeof value === 'number' ? value : Number(value ?? 0);
+  return numberValue.toLocaleString('en-IN');
 };
 
-export function RetrospectiveTaxModal({ 
-  open, 
-  onClose, 
+/**
+ * Reusable compact bordered pill wrapper for cells
+ */
+const cellPill = (
+  content: React.ReactNode,
+  opts?: {
+    align?: 'left' | 'center' | 'right';
+    bold?: boolean;
+    highlight?: boolean;
+  }
+) => {
+  const { align = 'center', bold = false, highlight = false } = opts ?? {};
+  return (
+    <div
+      className={cn(
+        'border border-gray-300 shadow-sm rounded h-[20px] flex items-center transition-all duration-150 hover:border-blue-500 hover:shadow px-1.5',
+        align === 'left' && 'justify-start',
+        align === 'center' && 'justify-center',
+        align === 'right' && 'justify-end',
+        highlight ? 'bg-sky-50' : 'bg-blue-50'
+      )}
+    >
+      <span
+        className={cn(
+          'font-mono text-[11px] leading-[18px] text-gray-900',
+          bold && 'font-bold text-sky-900'
+        )}
+      >
+        {content}
+      </span>
+    </div>
+  );
+};
+
+export function RetrospectiveTaxModal({
+  open,
+  onClose,
   columns = [],
   rows = [],
   error,
 }: RetrospectiveTaxModalProps) {
-  // Translations
   const t = useTranslations('reassessment');
-  
+
   const dynamicTaxColumns: Column<MappedRetrospectiveRow>[] = columns.map((column) => ({
     key: column.key,
     label: column.label,
-    width: '110px',
+    width: '90px',
     align: 'center',
-    render: (value) => formatAmount(value),
+    render: (value) => cellPill(formatAmount(value)),
   }));
 
   const retroTaxColumns: Column<MappedRetrospectiveRow>[] = [
     {
       key: 'financeYear',
       label: t('retrospectiveModal.columns.financeYear'),
-      width: '110px',
+      width: '95px',
       align: 'center',
-      cellClassName: 'font-bold text-slate-800',
+      render: (value) =>
+        cellPill(
+          typeof value === 'string' || typeof value === 'number' ? value : '-',
+          { bold: true }
+        ),
     },
     {
       key: 'days',
       label: t('retrospectiveModal.columns.days'),
-      width: '70px',
+      width: '60px',
       align: 'center',
+      render: (value) =>
+        cellPill(typeof value === 'string' || typeof value === 'number' ? value : '-'),
     },
     ...dynamicTaxColumns,
     {
       key: 'total',
       label: t('retrospectiveModal.columns.total'),
-      width: '100px',
+      width: '90px',
       align: 'right',
-      headerClassName: 'bg-sky-50/50 font-extrabold text-sky-950 pr-3',
-      cellClassName: 'bg-sky-50/20 font-black text-sky-900 pr-3',
-      render: (value) => formatAmount(value),
+      headerClassName: 'whitespace-nowrap',
+      render: (value) => cellPill(formatAmount(value), { align: 'right', bold: true, highlight: true }),
     },
   ];
 
@@ -85,12 +123,17 @@ export function RetrospectiveTaxModal({
       maxWidth="2xl"
       footer={modalFooter}
     >
-      <div className="border border-sky-100 rounded-xl overflow-hidden shadow-sm">
-        <div className="min-w-0">
+      <div className="border-2 border-[#2f5597] rounded-lg overflow-hidden shadow-sm bg-[#eef4fa]">
+        {/* Sub-header banner */}
+        <div className="bg-[#d9e7f5] border-b border-sky-200 px-3 py-1.5 text-center">
+          <span className="bg-[#d9eaf7] px-3 py-2.5 text-center font-bold text-[#17365d]">
+            {t('retrospectiveModal.title')}
+          </span>
+        </div>
+
+        <div className="min-w-0 p-2">
           {error ? (
-            <div className="px-4 py-8 text-center text-sm text-red-600">
-              {error}
-            </div>
+            <div className="px-4 py-8 text-center text-sm text-red-600">{error}</div>
           ) : rows.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-slate-500">
               {t('retrospectiveModal.noData')}
@@ -100,12 +143,19 @@ export function RetrospectiveTaxModal({
               columns={retroTaxColumns}
               data={rows}
               paginationConfig={{ enabled: false }}
-              tableClassName="w-full border-collapse text-xs text-center font-mono"
-              theadClassName="bg-slate-50 font-bold text-slate-800 border-b border-sky-100 [&_th]:p-2 [&_th]:border-r [&_th]:border-sky-100"
-              rowClassName={(row) => cn(
-                'hover:bg-slate-50/50 [&_td]:p-2 [&_td]:border-r [&_td]:border-sky-100',
-                Number(row.total ?? 0) > 0 ? 'text-slate-800' : 'text-slate-500'
+              tableClassName="w-full text-[11px] font-medium border-separate border-spacing-x-[3px] border-spacing-y-[2px]"
+              theadClassName={cn(
+                'bg-[#e8eef5] text-black font-bold',
+                '[&_th]:bg-[#dbe5f0] [&_th]:border [&_th]:border-[#a9b8cc] [&_th]:rounded [&_th]:shadow-sm',
+                '[&_th]:px-1.5 [&_th]:py-[3px] [&_th]:whitespace-nowrap [&_th]:text-[11px]',
+                '[&_th]:text-[#2f4256] [&_th]:font-bold'
               )}
+              rowClassName={() =>
+                cn(
+                  'text-gray-700 font-semibold transition-colors',
+                  '[&_td]:px-0.5 [&_td]:py-[2px]'
+                )
+              }
               height="xl"
             />
           )}

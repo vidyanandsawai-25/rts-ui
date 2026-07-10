@@ -1,266 +1,253 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { EyeIconButton, MasterTable } from '@/components/common';
-import type { Column } from '@/components/common/MasterTable';
-import { cn } from '@/lib/utils/cn';
+import {
+  FloorDetailsReassessmentTable,
+  type FloorDetailsReassessmentTableColumn,
+  getFloorDetailCellClasses,
+} from '@/components/common/FloorDetailsReassessmentTable';
 import type { MappedFloorDetail } from '@/types/reassessment.types';
+import type { SharedAutoScrollController } from '@/hooks/ptis/reassessment/useSharedAutoScroll';
 
 interface NewFloorDetailsProps {
   data: MappedFloorDetail[];
-  isAutoScrolling: boolean;
-  onToggleAutoScroll: () => void;
   scrollContainerRef?: React.Ref<HTMLDivElement>;
+  autoScrollController?: SharedAutoScrollController; // ← ADD
 }
 
-export function NewFloorDetails({ 
-  data, 
-  isAutoScrolling, 
-  onToggleAutoScroll,
-  scrollContainerRef 
-}: NewFloorDetailsProps) {
-  // Translations
+export function NewFloorDetails({ data, scrollContainerRef, autoScrollController }: NewFloorDetailsProps) {
   const t = useTranslations('reassessment');
 
-  const formatNumberish = (val: unknown): string => {
-    return typeof val === 'number' ? val.toLocaleString() : '-';
-  };
+  const formatNumberish = (val: unknown): string =>
+    typeof val === 'number' ? val.toLocaleString() : '-';
 
-  const formatTaxLiability = (val: unknown): string => {
-    return typeof val === 'string' || typeof val === 'number' ? String(val) : '-';
-  };
+  const formatTaxLiability = (val: unknown): string =>
+    typeof val === 'string' || typeof val === 'number' ? String(val) : '-';
 
-  const getCellClasses = (status: string | undefined) => {
-    return cn(
-      "h-[24px] rounded px-1.5 py-0.5 border border-gray-300 shadow-sm hover:border-blue-500 hover:shadow transition-all duration-150 cursor-pointer text-xs text-center text-gray-900",
-      status === 'Unchanged' && "bg-green-200",
-      status === 'Added' && "bg-red-300",
-      status === 'Removed' && "bg-yellow-200"
-    );
-  };
-  
-  // Column definitions for New Floor Details
-  const newColumns: Column<MappedFloorDetail>[] = [
+  const newColumns: FloorDetailsReassessmentTableColumn[] = [
     {
       key: 'floor',
       label: t('floorDetails.columns.floor'),
       width: '64px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-bold',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.floor}</div>
+      ),
     },
     {
       key: 'conYear',
       label: t('floorDetails.columns.conYear'),
       width: '96px',
-      align: 'left',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.conYear}</div>
+      ),
     },
     {
       key: 'asstYear',
       label: t('floorDetails.columns.asstYear'),
       width: '96px',
-      align: 'left',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.asstYear}</div>
+      ),
     },
     {
       key: 'constType',
       label: t('floorDetails.columns.constType'),
       width: '96px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-bold text-sky-800',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.constType}</div>
+      ),
     },
     {
       key: 'use',
       label: t('floorDetails.columns.use'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'text-emerald-700',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.use}</div>
+      ),
     },
     {
       key: 'carpetAreaSqFt',
       label: t('floorDetails.columns.carpetArea'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
           {row.carpetAreaSqFt} / {row.carpetAreaSqM}
         </div>
-      )
+      ),
     },
     {
       key: 'builtUpAreaSqFt',
       label: t('floorDetails.columns.builtUpArea'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
           {row.builtUpAreaSqFt} / {row.builtUpAreaSqM}
         </div>
-      )
+      ),
     },
     {
       key: 'rate',
       label: t('floorDetails.columns.rate'),
       width: '96px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.rate}</div>
+      ),
     },
     {
       key: 'yearlyRate',
       label: t('floorDetails.columns.yearlyRate'),
       width: '96px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.yearlyRate}</div>
+      ),
     },
     {
       key: 'financialYear',
       label: t('floorDetails.columns.financialYear'),
       width: '96px',
-      align: 'left',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.financialYear}</div>
+      ),
     },
     {
       key: 'renter',
       label: t('floorDetails.columns.renter'),
       width: '144px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'text-emerald-700',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.renter}</div>
+      ),
     },
     {
       key: 'taxLiability',
       label: t('floorDetails.columns.taxLiability'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-mono',
-      render: (val: unknown, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{formatTaxLiability(val)}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
+          {formatTaxLiability(row.taxLiability)}
+        </div>
+      ),
     },
     {
       key: 'rentMy',
       label: t('floorDetails.columns.rentMy'),
       width: '112px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-mono',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.rentMy}</div>
+      ),
     },
     {
       key: 'rentalValue',
       label: t('floorDetails.columns.rentalValue'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-bold font-mono',
-      render: (val: unknown, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{formatNumberish(val)}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
+          {formatNumberish(row.rentalValue)}
+        </div>
+      ),
     },
     {
       key: 'depreciation',
       label: t('floorDetails.columns.depreciation'),
       width: '112px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-mono',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.depreciation}</div>
+      ),
     },
     {
       key: 'alv',
       label: t('floorDetails.columns.alv'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-bold font-mono',
-      render: (val: unknown, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{formatNumberish(val)}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
+          {formatNumberish(row.alv)}
+        </div>
+      ),
     },
     {
       key: 'mr',
       label: t('floorDetails.columns.mr'),
       width: '96px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-mono',
-      render: (val: any, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{val}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.mr}</div>
+      ),
     },
     {
       key: 'rv',
       label: t('floorDetails.columns.rv'),
       width: '128px',
-      align: 'left',
+      align: 'center',
       cellClassName: 'font-bold font-mono',
-      render: (val: unknown, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>{formatNumberish(val)}</div>
-      )
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
+          {formatNumberish(row.rv)}
+        </div>
+      ),
     },
     {
       key: 'status',
       label: t('floorDetails.columns.status'),
       width: '96px',
-      align: 'left',
-      render: (val: unknown, row: MappedFloorDetail) => (
-        <div className={getCellClasses(row.status)}>
-          {val === 'Unchanged' ? t('floorDetails.statuses.unchanged') : 
-           val === 'Added' ? t('floorDetails.statuses.added') : 
-           val === 'Removed' ? t('floorDetails.statuses.removed') : '-'}
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>
+          {row.status === 'Unchanged'
+            ? t('floorDetails.statuses.unchanged')
+            : row.status === 'Added'
+            ? t('floorDetails.statuses.added')
+            : row.status === 'Removed'
+            ? t('floorDetails.statuses.removed')
+            : '-'}
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="flex-grow flex flex-col min-w-0">
       <div className="flex justify-between items-center mb-2">
         <h4 className="text-sm font-bold text-[#2f5597]">{t('floorDetails.newTitle')}</h4>
-        <EyeIconButton
-          onClick={onToggleAutoScroll}
-          isAutoScrolling={isAutoScrolling}
-          startTitle={t('buttons.startAutoScroll')}
-          stopTitle={t('buttons.stopAutoScroll')}
-        />
       </div>
 
-      <div id="new-table-container" className="min-w-0">
-        <MasterTable
+      <div className="min-w-0">
+        <FloorDetailsReassessmentTable
           columns={newColumns}
           data={data}
-          paginationConfig={{ enabled: false }}
-          tableClassName="w-max min-w-full text-xs font-medium border-collapse"
-          theadClassName="bg-[#d9e3ec] text-black font-bold border-b border-gray-300 [&_th]:whitespace-nowrap [&_th]:px-2 [&_th]:py-1.5 [&_th]:border-r [&_th]:border-gray-300/60 text-center font-sans"
-          rowClassName={(row) => cn(
-            "transition-colors [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200/60"
-          )}
-          height="xs"
+          showScrollButtons={true}
           scrollContainerRef={scrollContainerRef}
+          containerId="new-table-container"
+          autoScrollController={autoScrollController}  // ← ADD
+          instanceId="new"
         />
       </div>
     </div>
