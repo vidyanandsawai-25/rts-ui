@@ -60,10 +60,10 @@
   "summaryCards": {
     "oldLabel": "जुने",
     "newLabel": "नवीन",
-    "carpetAreaLabel": "कार्पेट क्षेत्रफळ",
-    "typeOfUseLabel": "वापर प्रकार",
-    "rateableValueLabel": "मूल्यांकन मूल्य",
-    "totalTaxLabel": "एकूण कर",
+    "carpetAreaLabel": "क्षेत्रफळ",
+    "typeOfUseLabel": "वापरामध्ये बदल",
+    "rateableValueLabel": "आर वी",
+    "totalTaxLabel": "कर",
     "units": {
       "sqM": "मी²",
       "type": "प्रकार",

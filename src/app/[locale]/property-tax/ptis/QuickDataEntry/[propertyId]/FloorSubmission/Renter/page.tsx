@@ -106,7 +106,6 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
 
     return (
         <PageContainer>
-            { }
             <Suspense fallback={<div className="p-8 flex items-center justify-center">Loading Renter Screen...</div>}>
                 <div className="flex flex-col flex-1 w-full">
                     <RenterDetailsForm 

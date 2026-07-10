@@ -289,7 +289,7 @@ export function ShowHistoryButton({
 
 export function RetrospectiveDetailsButton({
   label = "Retrospective Details",
-  size = "xs",
+  size = "md",
   className = "",
   ...props
 }: LabeledActionButtonProps): React.ReactElement {
@@ -299,7 +299,7 @@ export function RetrospectiveDetailsButton({
       icon={Clock}
       size={size}
       className={cn(
-        "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
+        "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-indigo-200 hover:bg-indigo-100",
         className
       )}
       {...props}

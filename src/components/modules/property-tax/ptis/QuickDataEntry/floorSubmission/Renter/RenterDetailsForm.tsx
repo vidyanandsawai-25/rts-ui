@@ -27,7 +27,6 @@ const RentManagementCard = dynamic(
       <div className="flex h-32 w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-100 bg-white/50">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
-          { }
           <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">
             Loading rent engine...
           </span>

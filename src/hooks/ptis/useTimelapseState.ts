@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
 
 interface UseTimelapseStateOptions {
@@ -49,6 +49,11 @@ export function useTimelapseState({
   const [failedReleases, setFailedReleases] = useState<Set<number>>(() => new Set());
   const [speed, setSpeed] = useState(6000);
 
+  const releasesCountRef = useRef(waybackReleases.length);
+  useEffect(() => {
+    releasesCountRef.current = waybackReleases.length;
+  }, [waybackReleases]);
+
   useEffect(() => {
     setLat(initialLat ?? 0);
     setLng(initialLng ?? 0);
@@ -74,7 +79,9 @@ export function useTimelapseState({
 
     let isMounted = true;
     const loadLocalChanges = async () => {
-      setLoading(true);
+      if (releasesCountRef.current === 0) {
+        setLoading(true);
+      }
       try {
         const { fetchLocalChanges } = await import('@/lib/api/wayback.service');
         const localReleases = await fetchLocalChanges(lat, lng);
@@ -84,8 +91,8 @@ export function useTimelapseState({
           // If the currently active index is out of bounds, reset to 0
           setActiveIdx((current) => current >= localReleases.length ? 0 : current);
         }
-      } catch (error) {
-        console.error("Failed to load local changes", error);
+      } catch {
+        // Ignored
       } finally {
         if (isMounted) setLoading(false);
       }
