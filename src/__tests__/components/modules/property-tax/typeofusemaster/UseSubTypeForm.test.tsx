@@ -261,7 +261,7 @@ describe("UseSubTypeForm", () => {
       fireEvent.change(seqInput, { target: { value: "999" } });
 
       const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
-      fireEvent.change(categorySelect, { target: { value: "1" } });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);
@@ -293,7 +293,7 @@ describe("UseSubTypeForm", () => {
       fireEvent.change(seqInput, { target: { value: "1000" } });
       
       const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
-      fireEvent.change(categorySelect, { target: { value: "1" } });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
       
       // The input should reject values with more than 3 digits, keeping the original value (0)
       expect(seqInput.value).toBe("0");
@@ -327,7 +327,7 @@ describe("UseSubTypeForm", () => {
       fireEvent.change(seqInput, { target: { value: "3" } });
 
       const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
-      fireEvent.change(categorySelect, { target: { value: "1" } });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);
@@ -356,7 +356,7 @@ describe("UseSubTypeForm", () => {
       fireEvent.change(descInput, { target: { value: "Second Floor" } });
 
       const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
-      fireEvent.change(categorySelect, { target: { value: "1" } });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);

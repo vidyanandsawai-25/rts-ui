@@ -7,6 +7,7 @@
 
 import type { UseGroup, TypeOfUseCategory, TranslatorFunction } from '@/types/typeOfUse.types';
 import { Input } from '@/components/common/Input';
+import { SearchSelect } from '@/components/common/SearchSelect';
 import { ValidationMessage } from '@/components/common';
 import { Label } from '@/components/common/label';
 
@@ -32,23 +33,21 @@ export function TypeSelector({
       <Label htmlFor="type-select" required>
         {t('type.fields.type')}
       </Label>
-      <select
-        id="type-select"
+      <SearchSelect
+        name="type-select"
         value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
+        onChange={(_, val) => {
+          onChange(val);
           onClearError?.();
         }}
-        className="w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-      >
-        <option value="" disabled>
-          {t('type.selectType')}
-        </option>
-        <option value="R">{t('type.options.residential')}</option>
-        <option value="C">{t('type.options.commercial')}</option>
-        <option value="I">{t('type.options.industrial')}</option>
-        <option value="N">{t('type.options.nontaxable')}</option>
-      </select>
+        placeholder={t('type.selectType')}
+        options={[
+          { value: "R", label: t('type.options.residential') },
+          { value: "C", label: t('type.options.commercial') },
+          { value: "I", label: t('type.options.industrial') },
+          { value: "N", label: t('type.options.nontaxable') },
+        ]}
+      />
       <ValidationMessage message={error} visible={showError ?? false} />
     </div>
   );
@@ -79,24 +78,19 @@ export function GroupSelector({
         {t('type.fields.useTypeGroup')}
       </Label>
 
-      <select
-        id="use-type-group-select"
-        value={selectedGroupId || ""}
-        onChange={(e) => {
-          onChange(Number(e.target.value) || 0);
+      <SearchSelect
+        name="use-type-group-select"
+        value={selectedGroupId ? String(selectedGroupId) : ""}
+        onChange={(_, val) => {
+          onChange(Number(val) || 0);
           onClearError?.();
         }}
-        className="w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-      >
-        <option value="" disabled>
-          {t('type.selectUseTypeGroup')}
-        </option>
-        {allGroups.map((g) => (
-          <option key={g.typeOfUseGroupId} value={g.typeOfUseGroupId}>
-            {g.groupName}
-          </option>
-        ))}
-      </select>
+        placeholder={t('type.selectUseTypeGroup')}
+        options={allGroups.map((g) => ({
+          value: String(g.typeOfUseGroupId),
+          label: g.groupName || '',
+        }))}
+      />
 
       <ValidationMessage message={error} visible={showError ?? false} />
     </div>
@@ -261,23 +255,18 @@ export function CategorySelector({
       <Label htmlFor="category-select" required>
         {t('category.fields.categoryName')}
       </Label>
-      <select
-        id="category-select"
-        value={selectedCategoryId || ""}
-        onChange={(e) => {
-          onChange(e.target.value ? Number(e.target.value) : null);
+      <SearchSelect
+        name="category-select"
+        value={selectedCategoryId ? String(selectedCategoryId) : ""}
+        onChange={(_, val) => {
+          onChange(val ? Number(val) : null);
         }}
-        className="w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-      >
-        <option value="" disabled>
-          {t('type.selectCategory')}
-        </option>
-        {allCategories.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.typeOfUseCategoryCode} - {c.typeOfUseCategoryName}
-          </option>
-        ))}
-      </select>
+        placeholder={t('type.selectCategory')}
+        options={allCategories.map((c) => ({
+          value: String(c.id),
+          label: `${c.typeOfUseCategoryCode} - ${c.typeOfUseCategoryName}`,
+        }))}
+      />
       <ValidationMessage message={error} visible={showError ?? false} />
     </div>
   );

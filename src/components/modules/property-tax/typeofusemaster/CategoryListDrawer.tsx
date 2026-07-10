@@ -2,7 +2,7 @@
 import { useState, useMemo, useTransition } from "react";
 import { AddButton, EditButton, DeleteButton } from "@/components/common";
 import { Drawer } from "@/components/common/Drawer";
-import { Table } from "@/components/common/Table";
+import { MasterTable, type Column } from "@/components/common/MasterTable";
 import { SearchInput } from "@/components/common/SearchInput";
 import type { TypeOfUseCategory } from "@/types/typeOfUse.types";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -11,15 +11,22 @@ import { deleteTypeOfUseCategory } from "@/app/[locale]/property-tax/typeofusema
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FolderHeart } from "lucide-react";
-import type { TableColumn } from "@/types/common.types";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 
 interface CategoryListDrawerProps {
   categories: TypeOfUseCategory[];
+  totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
 }
 
-export default function CategoryListDrawer({ categories }: CategoryListDrawerProps) {
+export default function CategoryListDrawer({ 
+  categories, 
+  totalCount = 0, 
+  pageNumber = 1, 
+  pageSize = 10 
+}: CategoryListDrawerProps) {
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,13 +41,29 @@ export default function CategoryListDrawer({ categories }: CategoryListDrawerPro
   useSearchNavigation({
     search: searchTerm,
     currentSearchTerm: initialSearchTerm,
-    pageSize: 10,
+    pageSize,
     locale,
     basePath: "/property-tax/typeofusemaster/category",
     startTransition,
     debounceMs: 500,
-    extraParams: {},
   });
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(newPage));
+    startTransition(() => {
+      router.push(`/${locale}/property-tax/typeofusemaster/category?${params.toString()}`);
+    });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("pageSize", String(newSize));
+    params.set("page", "1");
+    startTransition(() => {
+      router.push(`/${locale}/property-tax/typeofusemaster/category?${params.toString()}`);
+    });
+  };
 
   const handleDelete = (category: TypeOfUseCategory) => {
     confirm({
@@ -66,7 +89,7 @@ export default function CategoryListDrawer({ categories }: CategoryListDrawerPro
     });
   };
 
-  const columns = useMemo<TableColumn<TypeOfUseCategory>[]>(
+  const columns = useMemo<Column<TypeOfUseCategory>[]>(
     () => [
       {
         key: "typeOfUseCategoryCode",
@@ -77,34 +100,31 @@ export default function CategoryListDrawer({ categories }: CategoryListDrawerPro
         label: t("category.fields.categoryName"),
       },
       {
-        key: "isActive",
+        key: "isActive" as keyof TypeOfUseCategory,
         label: t("category.fields.status"),
         render: (value) => (
           <StatusBadge value={value ? "Active" : "Inactive"} />
         ),
       },
-      {
-        key: "actions",
-        label: t("table.columns.actions"),
-        render: (_, row) => (
-          <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
-            <EditButton
-              size="sm"
-              title={t("buttons.edit") + " " + t("category.title")}
-              onClick={() => router.push(`/property-tax/typeofusemaster/category/edit/${row.id}`)}
-            />
-            <DeleteButton
-              size="sm"
-              title={t("buttons.delete") + " " + t("category.title")}
-              onClick={() => handleDelete(row)}
-              disabled={isDeleting}
-            />
-          </div>
-        ),
-      },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, isDeleting]
+  );
+
+  const renderActions = (row: TypeOfUseCategory) => (
+    <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+      <EditButton
+        size="sm"
+        title={t("buttons.edit") + " " + t("category.title")}
+        onClick={() => router.push(`/${locale}/property-tax/typeofusemaster/category/edit/${row.id}`)}
+      />
+      <DeleteButton
+        size="sm"
+        title={t("buttons.delete") + " " + t("category.title")}
+        onClick={() => handleDelete(row)}
+        disabled={isDeleting}
+      />
+    </div>
   );
 
   return (
@@ -147,10 +167,19 @@ export default function CategoryListDrawer({ categories }: CategoryListDrawerPro
         </div>
 
         <div className="rounded-xl border border-[#DCEAFF] bg-white shadow-sm overflow-hidden">
-          <Table
+          <MasterTable
             data={categories}
             columns={columns}
-            emptyMessage={t("category.noCategories")}
+            emptyText={t("category.noCategories")}
+            pageNumber={pageNumber}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            totalPages={Math.ceil(totalCount / pageSize)}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+            renderActions={renderActions}
+            height="md"
           />
         </div>
       </div>
