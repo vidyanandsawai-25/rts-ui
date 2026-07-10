@@ -226,8 +226,42 @@ export const FloorSubmissionForm = ({
         capitalValue: String(initialRow.capitalValue || ''),
     }), [formData, initialRow]);
 
+    const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter') {
+            const activeElement = document.activeElement as HTMLElement;
+            const activeTag = activeElement?.tagName.toLowerCase();
+            
+            // Allow default behavior for textareas
+            if (activeTag === 'textarea') return;
+            
+            const isNavigableButton = activeTag === 'button' && activeElement?.getAttribute('data-enter-navigable') === 'true';
+
+            // For normal buttons, do not intercept Enter
+            if (activeTag === 'button' && !isNavigableButton) return;
+            
+            // Prevent form submission on inputs
+            if (activeTag !== 'button') {
+                e.preventDefault();
+            }
+            
+            const form = e.currentTarget;
+            // Find all focusable inputs, selects, and specific navigable buttons
+            const focusableElements = Array.from(
+                form.querySelectorAll('input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), [data-enter-navigable="true"]:not([disabled])')
+            ) as HTMLElement[];
+            
+            const currentIndex = focusableElements.indexOf(activeElement);
+            
+            if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
+                setTimeout(() => {
+                    focusableElements[currentIndex + 1].focus();
+                }, 0);
+            }
+        }
+    }, []);
+
     return (
-        <div className="p-4 bg-white border-t-2 border-blue-200 transition-all duration-300">
+        <div className="p-4 bg-white border-t-2 border-blue-200 transition-all duration-300" onKeyDown={handleKeyDown}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* 1. Dropdown: Taxable */}
                 <div className="flex flex-col gap-1">
@@ -254,6 +288,7 @@ export const FloorSubmissionForm = ({
                             onChange={(_, val) => handleFieldChange('floorId', val)}
                             placeholder={isLoadingFloors ? t('floorQC.form.loading') : t('floorQC.form.selectFloor')}
                             className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                            autoFocus={true}
                         />
                     </div>
                     {errors.floorId && <ValidationMessage message={t(errors.floorId)} />}
@@ -320,7 +355,7 @@ export const FloorSubmissionForm = ({
                 </div>
 
                 {/* 7. Dropdown: Use */}
-                <div className="flex flex-col gap-1 [&_ul[role='listbox']]:!max-h-30">
+                <div className="flex flex-col gap-1 [&_ul[role='listbox']]:!max-h-45">
                     <Label required>{t('floorQC.columns.use')}</Label>
                     <div onFocusCapture={() => handleOpenDropdown('loadUsage')}>
                         <SearchSelect
@@ -342,7 +377,7 @@ export const FloorSubmissionForm = ({
                 </div>
 
                 {/* 8. Dropdown: Sub Type of Use */}
-                <div className="flex flex-col gap-1 [&_ul[role='listbox']]:!max-h-30">
+                <div className="flex flex-col gap-1 [&_ul[role='listbox']]:!max-h-45">
                     <Label>{t('floorQC.columns.subTypeOfUse')}</Label>
                     <div onFocusCapture={() => {
                         if (formData.typeOfUseId) {
@@ -418,7 +453,8 @@ export const FloorSubmissionForm = ({
                                 <button type="button" onClick={handleToggleUnit}>{t('drawer.units.sqFt')}</button>
                             </span>
                             <div className="w-[1px] h-3.5 bg-slate-400 mx-0.5 opacity-60" />
-                            <button type="button" onClick={handleOpenRoomDrawer} className="flex items-center justify-center p-1 rounded hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-90">
+                            <button type="button" onClick={handleOpenRoomDrawer} data-enter-navigable="true"
+                             className="flex items-center justify-center p-1 rounded hover:bg-blue-600 hover:text-white focus:outline-none focus:bg-blue-600 focus:text-white text-blue-600 transition-all active:scale-90">
                                 <LayoutGrid className="w-3.5 h-3.5" />
                             </button>
                         </div>

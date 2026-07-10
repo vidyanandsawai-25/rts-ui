@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import CommonPropertyTable from './CommonPropertyTable';
 import ApartmentTaxDetailsTable from './ApartmentTaxDetailsTable';
 import { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
-import { LoadingPage } from '@/components/common/LoadingPage';
+import { LoadingPage } from '@/components/common';
 import { getApartmentQCColumns } from './apartmentQC.columns';
 import { emptyPagedResponse, transformApartmentData, getTabTitle } from './apartmentQC.utils';
 import { useAppartmentQCSectionData } from '@/hooks/apartmentQc/useAppartmentQCSectionData';
@@ -21,6 +21,8 @@ interface AppartmentQCSectionProps {
   wardId?: string;
   propertyNo?: string;
   partitionNo?: string;
+  activeMainTab: string;
+  activeSubTab: string;
 }
 
 
@@ -34,19 +36,31 @@ const AppartmentQCSection = ({
   wardId = "",
   propertyNo = "",
   partitionNo,
+  activeMainTab,
+  activeSubTab,
 }: AppartmentQCSectionProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
-  const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
-  const activeSubTab = searchParams.get('subTab') || 'rateable';
+
   const sortBy = searchParams.get('sortBy') || '';
   const sortOrder = searchParams.get('sortOrder') || '';
   const [searchQuery, setSearchQuery] = useState(searchParams.get('searchTerm') || '');
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const isUpdatingFromUrl = useRef(false);
+  const [isTabChanging, setIsTabChanging] = useState(false);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setIsTabChanging(true), 0);
+    const endTimer = setTimeout(() => setIsTabChanging(false), 300);
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(endTimer);
+      setIsTabChanging(false);
+    };
+  }, [activeMainTab]);
 
   // Column filters
   const { activeFilters, handleFilterChange, fetchFilterOptions, isFilterPending } = useColumnFilters({
@@ -118,13 +132,13 @@ const AppartmentQCSection = ({
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
     const basePath = pathname.endsWith('/appartmentQC') ? pathname : pathname + '/appartmentQC';
     const params = new URLSearchParams(searchParams.toString());
-    
+
     const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
     if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
-    
+
     params.delete('parentPropertyId');
     params.delete('parentPropertyNo');
-    
+
     params.set('returnTab', 'propertydetails');
     params.set('valuationTab', 'apartment');
     params.set('appartmentTab', activeMainTab);
@@ -148,7 +162,7 @@ const AppartmentQCSection = ({
             columns={columns} data={convertedData} title={getTabTitle(activeMainTab, tAqc)} activeTab={activeSubTab}
             searchQuery={searchQuery} onSearchChange={(q) => { isUpdatingFromUrl.current = true; setSearchQuery(q); updateUrl({ searchTerm: q, pageNumber: 1 }); setTimeout(() => { isUpdatingFromUrl.current = false; }, 0); }}
             onRowClick={handleRowClick}
-            loading={isPending || isFilterPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
+            loading={isPending || isFilterPending || isTabChanging} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
             pageNumber={activePagedData.pageNumber} pageSize={activePagedData.pageSize} totalCount={activePagedData.totalCount} totalPages={activePagedData.totalPages}
             onPageChange={(p) => updateUrl({ pageNumber: p })} onPageSizeChange={(s) => updateUrl({ pageSize: s, pageNumber: 1 })}
             _applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}

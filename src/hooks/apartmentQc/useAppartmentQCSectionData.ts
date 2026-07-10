@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ApartmentTaxDetailsItems, DualMethodTaxDetails, ApartmentQCDetail } from '@/types/apartmentQC.types';
 import {
   fetchApartmentQCDetailsSafeAction,
@@ -41,11 +41,19 @@ export const useAppartmentQCSectionData = ({
 
   const [drawerLocalData, setDrawerLocalData] = useState<DrawerLocalData | null>(null);
 
+  const requestCounter = useRef(0);
+
   const refetchTaxDetails = useCallback(async () => {
+    // Increment immediately to invalidate ANY pending background requests
+    const currentReq = ++requestCounter.current;
+
     if (!wardId || !propertyNo) {
+      setTaxDetails(null);
+      setDualMethodDetails(null);
+      setTimeout(() => setTaxDetailsLoading(false), 0);
       return;
     }
-
+    
     try {
       setTaxDetails(null);
       setDualMethodDetails(null);
@@ -53,16 +61,19 @@ export const useAppartmentQCSectionData = ({
 
       if (activeSubTab === 'rateable') {
         const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
+        if (currentReq !== requestCounter.current) return;
         if (result.success && result.data) {
           setTaxDetails(result.data);
         }
       } else if (activeSubTab === 'capital') {
         const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
+        if (currentReq !== requestCounter.current) return;
         if (result.success && result.data) {
           setTaxDetails(result.data);
         }
       } else if (activeSubTab === 'dual-method') {
         const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab, partitionNo);
+        if (currentReq !== requestCounter.current) return;
         if (result.success && result.data) {
           setDualMethodDetails(result.data);
         }
@@ -70,34 +81,21 @@ export const useAppartmentQCSectionData = ({
     } catch {
       // Error handled silently
     } finally {
-      setTaxDetailsLoading(false);
+      // Always turn off spinner if this was the latest request, no matter what
+      if (currentReq === requestCounter.current) {
+        setTaxDetailsLoading(false);
+      }
     }
   }, [activeSubTab, activeMainTab, wardId, propertyNo, partitionNo]);
 
   // Fetch tax details effect
   useEffect(() => {
-    if (!wardId || !propertyNo) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const fetchData = async () => {
-      try {
-        if (!cancelled) {
-          await refetchTaxDetails();
-        }
-      } catch {
-        // Error handled silently
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeSubTab, activeMainTab, wardId, propertyNo, refetchTaxDetails]);
+    // We do not early return here anymore so we guarantee refetchTaxDetails is called.
+    // If wardId or propertyNo is missing, refetchTaxDetails handles it and sets loading false.
+    setTimeout(() => {
+      refetchTaxDetails();
+    }, 0);
+  }, [refetchTaxDetails]);
 
   // Fetch drawer local data effect
   useEffect(() => {

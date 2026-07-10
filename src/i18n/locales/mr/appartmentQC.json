@@ -133,7 +133,9 @@
     "floorQC": "फ्लोअर QC",
     "basicProperty": "मूलभूत मालमत्ता",
     "taxDetails": "कर तपशील",
+    "oldpropertydetails": "जुने मालमत्ता तपशील",
     "photoPlan": "फोटो आराखडा",
+    "apartmentQCloading": "लोड होत आहे...",
     "roomWiseSubmission": "खोलीनिहाय सादरीकरण",
     "loadingRoomData": "खोली डेटा लोड होत आहे...",
     "viewImage": "प्रतिकारन",
@@ -192,7 +194,9 @@
     "cv": "भांडवली मूल्य",
     "kyc": "तुमच्या ग्राहकाची ओळख",
     "viewKycDetails": "केवाईसी तपशील पहा",
-    "hideKycDetails": "केवाईसी तपशील लपवा"
+    "hideKycDetails": "केवाईसी तपशील लपवा",
+    "expandTable": "टेबल विस्तृत करा",
+    "collapseTable": "टेबल संकुचित करा"
   },
   "pageTitle": "मालमत्ता तपशील संपादित करा",
   "badges": {

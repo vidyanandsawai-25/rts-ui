@@ -114,6 +114,59 @@ export const RoomWiseSubmission: React.FC<
     onClose();
   };
 
+  // ── Auto-Focus First Element ──────────────────────────────────────────────
+  React.useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        const form = document.getElementById('room-wise-submission-form');
+        if (form) {
+          // Find the first editable input, select, or button (combobox for Select)
+          const firstFocusable = form.querySelector(
+            'input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), button:not([disabled])'
+          ) as HTMLElement;
+          if (firstFocusable) {
+            firstFocusable.focus();
+          }
+        }
+      }, 300); // Wait for drawer animation to finish
+    }
+  }, [isOpen]);
+
+  // ── Enter Key Navigation ──────────────────────────────────────────────────
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      const activeElement = document.activeElement as HTMLElement;
+      const activeTag = activeElement?.tagName.toLowerCase();
+      const isCombobox = activeElement?.getAttribute('role') === 'combobox';
+      
+      if (activeTag === 'textarea') return;
+      
+      const isNavigableButton = activeTag === 'button' && (activeElement?.getAttribute('data-enter-navigable') === 'true' || isCombobox);
+
+      // For normal buttons (not navigable, not combobox), do not intercept Enter
+      if (activeTag === 'button' && !isNavigableButton) return;
+      
+      // Prevent default for inputs, selects, AND comboboxes (so Enter doesn't toggle them, only Space/ArrowDown does)
+      if (activeTag !== 'button' || isCombobox) {
+        e.preventDefault();
+      }
+      
+      const form = e.currentTarget;
+      // Find all focusable elements
+      const focusableElements = Array.from(
+        form.querySelectorAll('input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), button[role="combobox"]:not([disabled]), [data-enter-navigable="true"]:not([disabled])')
+      ) as HTMLElement[];
+      
+      const currentIndex = focusableElements.indexOf(activeElement);
+      
+      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
+        setTimeout(() => {
+          focusableElements[currentIndex + 1].focus();
+        }, 10);
+      }
+    }
+  }, []);
+
   // ── Offset sidebar props (unchanged) ──────────────────────────────────────
   const fullOffSetProps: FullOffSetFormProps = {
     offsetModalOpen: state.offsetModalOpen,
@@ -149,7 +202,7 @@ export const RoomWiseSubmission: React.FC<
       className={`w-full p-0 flex flex-col bg-white overflow-visible z-[112] ${displayMode === "modal" ? "" : "mb-6"
         }`}
     >
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form id="room-wise-submission-form" onSubmit={(e) => e.preventDefault()} onKeyDown={handleKeyDown}>
         <div className="bg-white flex flex-col rounded-lg shadow-md border border-gray-200 overflow-visible">
 
           {/* Selected floor row from Floor QC table */}

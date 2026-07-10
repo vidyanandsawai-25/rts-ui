@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { Tooltip } from '@/components/common/Tooltip';
 import {
   FirstPageButton,
@@ -110,6 +110,8 @@ export interface ApartmentQCMasterTableProps<T extends Record<string, unknown>> 
   theadClassName?: string;
   height?: string | number;
   pageSizeOptions?: number[];
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
@@ -137,6 +139,8 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
   theadClassName,
   height,
   pageSizeOptions = [5, 10, 20, 50],
+  isExpanded,
+  onToggleExpand,
 }: ApartmentQCMasterTableProps<T>) {
   const t = useTranslations('common');
   const tQc = useTranslations('appartmentQC');
@@ -341,7 +345,7 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                         <tr
                           className={cn(
                             'cursor-pointer border-r-2 transition-colors duration-150 ',
-                            isGroupHovered ? 'bg-emerald-50/70 ' : 'bg-white',
+                            isGroupHovered ? 'bg-emerald-100' : 'bg-white',
                             !hasOldRow && 'border-b-2 border-blue-200'
                           )}
                           onMouseEnter={() => setHoveredGroupIndex(groupIndex)}
@@ -354,13 +358,13 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                                 key={String(col.key)}
                                 rowSpan={col.groupRowSpan && hasOldRow ? 2 : undefined}
                                 onClick={col.onCellClick}
-                              className={cn(
+                                className={cn(
                                   'px-3 text-slate-700 border-l  border-r border-blue-200',
                                   col.groupRowSpan && [
                                     'font-semibold text-center  align-middle border-l',
-                                    isGroupHovered 
-                                      ? 'bg-emerald-100/50 border-emerald-500' 
-                                      : 'bg-emerald-50/30 border-emerald-400',
+                                    isGroupHovered
+                                      ? 'bg-emerald-100 border-emerald-500'
+                                      : 'bg-emerald-50 border-emerald-400',
                                   ],
                                   col.key === 'Type(Old/New)' && [
                                     'border-l border-l-emerald-400',
@@ -381,12 +385,12 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                           })}
                         </tr>
 
-                        {/* OLD ROW - Soft Blue Theme */}
+                        {/* OLD ROW - Soft Amber Theme */}
                         {hasOldRow && (
                           <tr
                             className={cn(
                               'cursor-pointer border-r transition-colors duration-150 border-b-2 border-blue-200',
-                              isGroupHovered ? 'bg-blue-50/70' : 'bg-slate-50/50'
+                              isGroupHovered ? 'bg-amber-100' : 'bg-white'
                             )}
                             onMouseEnter={() => setHoveredGroupIndex(groupIndex)}
                             onMouseLeave={() => setHoveredGroupIndex(null)}
@@ -397,8 +401,8 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                                 <td
                                   key={String(col.key)}
                                   onClick={col.onCellClick}
-                                    className={cn(
-                                  'px-3  text-slate-600 border-l border-blue-200 border-r',
+                                  className={cn(
+                                    'px-3 text-slate-600 border-l border-blue-200 border-r',
                                     col.key === 'Type(Old/New)' && [
                                       'border-l border-l-blue-400',
                                       'border-r border-r-blue-400',
@@ -428,8 +432,8 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                     key={getRowKey?.(row, rowIndex) ?? rowIndex}
                     className={cn(
                       'transition-colors duration-150 cursor-pointer border-b border-slate-200',
-                      rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50',
-                      'hover:bg-blue-50/50'
+                      rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50',
+                      'hover:bg-blue-100'
                     )}
                     onClick={() => onRowClick?.(row, rowIndex)}
                   >
@@ -504,6 +508,21 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                   onClick={() => onPageChange(pageNumber + 1)}
                 />
               </div>
+            )}
+
+            {onToggleExpand && (
+              <Tooltip
+                content={isExpanded ? tQc('tooltips.collapseTable') : tQc('tooltips.expandTable')}
+                placement="top"
+              >
+                <button
+                  type="button"
+                  onClick={onToggleExpand}
+                  className="ml-2 flex items-center justify-center p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 rounded-md transition-colors"
+                >
+                  {isExpanded ? <ChevronsUp size={16} /> : <ChevronsDown size={16} />}
+                </button>
+              </Tooltip>
             )}
           </div>
         </div>

@@ -105,6 +105,7 @@ export const FloorSubmissionScreen = ({
                         floorColumns={floorColumns}
                         tableStyle={tableStyle}
                         onRowClick={(row) => setEditingRow(row)}
+                        editRowId={editRowId}
                     />
                 </div>
             </div>

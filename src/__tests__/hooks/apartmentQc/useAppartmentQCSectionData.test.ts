@@ -45,13 +45,12 @@ describe('useAppartmentQCSectionData', () => {
     const { result } = renderHook(() => useAppartmentQCSectionData(defaultProps));
 
     await waitFor(() => {
-      expect(result.current.taxDetailsLoading).toBe(false);
+      expect(result.current.taxDetails).toEqual(mockData);
     });
 
     expect(fetchApartmentPropertyTaxDetailsByTabAction).toHaveBeenCalledWith(
       '1', 'PROP1', 'residential', '0'
     );
-    expect(result.current.taxDetails).toEqual(mockData);
   });
 
   it('should fetch tax details for capital tab', async () => {
@@ -68,13 +67,12 @@ describe('useAppartmentQCSectionData', () => {
     }));
 
     await waitFor(() => {
-      expect(result.current.taxDetailsLoading).toBe(false);
+      expect(result.current.taxDetails).toEqual(mockData);
     });
 
     expect(fetchApartmentPropertyTaxDetailsCvByTabAction).toHaveBeenCalledWith(
       '1', 'PROP1', 'residential', '0'
     );
-    expect(result.current.taxDetails).toEqual(mockData);
   });
 
   it('should fetch drawer local data when drawer is open', async () => {
@@ -109,9 +107,10 @@ describe('useAppartmentQCSectionData', () => {
     const { result } = renderHook(() => useAppartmentQCSectionData(defaultProps));
 
     await waitFor(() => {
-      expect(result.current.taxDetailsLoading).toBe(false);
+      expect(fetchApartmentPropertyTaxDetailsByTabAction).toHaveBeenCalled();
     });
 
     expect(result.current.taxDetails).toBeNull();
+    expect(result.current.taxDetailsLoading).toBe(false);
   });
 });

@@ -90,11 +90,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
       ? 'rateable'
       : requestedTab;
 
-  const activeMainTab =
-    searchParams.get('appartmentTab') || 'amenities';
-
-  const activeSubTab =
-    searchParams.get('subTab') || 'rateable';
+  const [activeMainTab, setActiveMainTab] = useState(searchParams.get('appartmentTab') || 'amenities');
+  const [activeSubTab, setActiveSubTab] = useState(searchParams.get('subTab') || 'rateable');
 
   const ptisNav = useOptionalPtisNavigation();
   const isNavigating = ptisNav?.isPending ?? false;
@@ -118,23 +115,35 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     }
   };
 
-  const handleTabChange = (value: string | number) =>
-    updateParams({ valuationTab: value.toString() });
+  const handleTabChange = (value: string | number) => {
+    if (value.toString() === 'apartment') {
+      updateParams({ 
+        valuationTab: 'apartment',
+        appartmentTab: 'amenities',
+        subTab: 'rateable',
+        pageNumber: '1'
+      });
+      setActiveMainTab('amenities');
+      setActiveSubTab('rateable');
+    } else {
+      updateParams({ valuationTab: value.toString() });
+    }
+  };
 
   const updateApartmentParams = (
     appTab: string,
     subTab: string
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    setActiveMainTab(appTab);
+    setActiveSubTab(subTab);
 
+    const params = new URLSearchParams(searchParams.toString());
     params.set('valuationTab', 'apartment');
     params.set('appartmentTab', appTab);
     params.set('subTab', subTab);
     params.set('pageNumber', '1');
 
-    router.replace(`?${params.toString()}`, {
-      scroll: false
-    });
+    window.history.replaceState(null, '', `?${params.toString()}`);
   };
 
   const handleApartmentMainTabChange = (v: string | number) =>
@@ -286,6 +295,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   wardId={wardId?.toString() || ''}
                   propertyNo={propertyNo || ''}
                   partitionNo={partitionNo}
+                  activeMainTab={activeMainTab}
+                  activeSubTab={activeSubTab}
                 />
               )}
 
