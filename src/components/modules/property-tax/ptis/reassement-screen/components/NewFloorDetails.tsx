@@ -246,7 +246,7 @@ export function NewFloorDetails({ data, scrollContainerRef, autoScrollController
           showScrollButtons={true}
           scrollContainerRef={scrollContainerRef}
           containerId="new-table-container"
-          autoScrollController={autoScrollController}  // ← ADD
+          autoScrollController={autoScrollController}
           instanceId="new"
         />
       </div>
