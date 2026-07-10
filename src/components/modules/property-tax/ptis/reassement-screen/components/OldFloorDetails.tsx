@@ -12,7 +12,7 @@ import type { SharedAutoScrollController } from '@/hooks/ptis/reassessment/useSh
 interface OldFloorDetailsProps {
   data: MappedFloorDetail[];
   scrollContainerRef?: React.Ref<HTMLDivElement>;
-   autoScrollController?: SharedAutoScrollController; // ← ADD
+  autoScrollController?: SharedAutoScrollController;
 }
 
 export function OldFloorDetails({ data, scrollContainerRef,  autoScrollController, }: OldFloorDetailsProps) {
@@ -246,7 +246,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
           showScrollButtons={true}
           scrollContainerRef={scrollContainerRef}
           containerId="old-table-container"
-           autoScrollController={autoScrollController}  // ← ADD
+          autoScrollController={autoScrollController}
           instanceId="old"
         />
       </div>

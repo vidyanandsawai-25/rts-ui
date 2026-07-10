@@ -19,7 +19,7 @@ import type { SharedAutoScrollController } from '@/hooks/ptis/reassessment/useSh
  */
 export function getFloorDetailCellClasses(status: string | undefined): string {
   return cn(
-    'h-[20px] rounded px-1 py-0 border border-gray-300 shadow-sm hover:border-blue-500 hover:shadow transition-all duration-150 cursor-pointer text-[11px] leading-[18px] text-center text-gray-900',
+    'h-[20px] rounded px-1 py-0 border border-gray-300 shadow-sm hover:border-blue-500 hover:shadow transition-all duration-150 cursor-default text-[11px] leading-[18px] text-center text-gray-900',
     status === 'Unchanged' && 'bg-green-200',
     status === 'Added' && 'bg-red-300',
     status === 'Removed' && 'bg-yellow-200'
@@ -134,7 +134,12 @@ export function FloorDetailsReassessmentTable({
     }
     scrollAccumulatorRef.current = 0;
     setIsAutoScrolling(false);
-  }, []);
+
+    // If we were the shared "owner", release it.
+    if (autoScrollController && instanceId && autoScrollController.activeScrollerId === instanceId) {
+      autoScrollController.setActive(null);
+    }
+  }, [autoScrollController, instanceId]);
 
   // Register with shared controller
   useEffect(() => {
@@ -158,14 +163,13 @@ export function FloorDetailsReassessmentTable({
       const step = () => {
         const container = containerRef.current;
         if (!container) {
-          setIsAutoScrolling(false);
+          stopScrollLocal();
           return;
         }
 
         const maxScroll = container.scrollWidth - container.clientWidth;
         if (maxScroll <= 0) {
-          animationFrameRef.current = null;
-          setIsAutoScrolling(false);
+          stopScrollLocal();
           return;
         }
 
