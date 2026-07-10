@@ -12,7 +12,7 @@ export function useSharedAutoScroll() {
   const [activeScrollerId, setActiveScrollerId] = useState<string | null>(null);
 
   /** Register a table's stop function */
-  const register = useCallback((id: string, stopFn: () => void) => {
+  const register = useCallback((_id: string, stopFn: () => void) => {
     stopCallbacksRef.current.add(stopFn);
     return () => {
       stopCallbacksRef.current.delete(stopFn);
