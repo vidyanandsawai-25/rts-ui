@@ -11,6 +11,7 @@ import {
   NextPageButton,
   PageNumberButton,
   PrevPageButton,
+  IconOnlyActionButton,
 } from '@/components/common/ActionButtons';
 
 interface PageSizeSelectorProps {
@@ -515,13 +516,13 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                 content={isExpanded ? tQc('tooltips.collapseTable') : tQc('tooltips.expandTable')}
                 placement="top"
               >
-                <button
-                  type="button"
+                <IconOnlyActionButton
+                  icon={isExpanded ? ChevronsUp : ChevronsDown}
                   onClick={onToggleExpand}
-                  className="ml-2 flex items-center justify-center p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 rounded-md transition-colors"
-                >
-                  {isExpanded ? <ChevronsUp size={16} /> : <ChevronsDown size={16} />}
-                </button>
+                  variant="secondary"
+                  className="ml-2 !p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 rounded-md transition-colors"
+                  aria-label={isExpanded ? tQc('tooltips.collapseTable') : tQc('tooltips.expandTable')}
+                />
               </Tooltip>
             )}
           </div>
