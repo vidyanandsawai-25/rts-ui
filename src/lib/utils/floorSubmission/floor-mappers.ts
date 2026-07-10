@@ -122,7 +122,7 @@ export const mapFormToPayload = (params: {
     createdBy: 0,
     propertyId: Number(propertyId || 0),
     propertyDetailsId: propDetailsId,
-    ...(!isOpenSpace && floorId ? { floorId } : {}),
+    ...(selectedFloorType !== 'OpenPlot' && floorId ? { floorId } : {}),
     floorDescription,
     subFloorId,
     subFloorDescription,

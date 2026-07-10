@@ -30,10 +30,28 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
 }> = (props) => {
   const { isOpen, onClose, displayMode = 'modal' } = props;
 
-  const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+  const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
+    props.floorData?.isOpenPlot === true || 
+    props.floorData?.selectedFloorType === 'OpenPlot' ||
+    String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+    String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+    String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+    String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
 
-  // --- State & Logic Hooks ---
-  const computedMaxRooms = Math.max(props.maxRooms || 0, props.existingRooms?.length || 0);
+  let lastFilledRoomIndex = -1;
+  if (Array.isArray(props.existingRooms)) {
+    for (let i = props.existingRooms.length - 1; i >= 0; i--) {
+      const r = props.existingRooms[i];
+      const hasArea = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0) > 0;
+      const hasUseOrShape = (r.utilities && r.utilities !== "-Select-") || (r.shape && r.shape !== "-Select-");
+      if (hasArea || hasUseOrShape) {
+        lastFilledRoomIndex = i;
+        break;
+      }
+    }
+  }
+  const requiredRoomsCount = lastFilledRoomIndex !== -1 ? lastFilledRoomIndex + 1 : 0;
+  const computedMaxRooms = isUtilityCategory ? (props.existingRooms?.length || 0) : Math.max(props.maxRooms || 0, requiredRoomsCount);
   const state = useRoomSubmissionState(isUtilityCategory ? undefined : computedMaxRooms, props.externalAreaUnit);
   const roomActions = useRoomActions(state, props);
   const offsetActions = useOffsetActions(state, roomActions.handleEdit);

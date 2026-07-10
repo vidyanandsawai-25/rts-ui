@@ -31,7 +31,7 @@ export const roomSchema = z.object({
     propertyDetailsId: z.coerce.number().optional(),
     propertyId: z.coerce.number().optional(),
     roomNo: z.string().min(1, { message: 'roomSubmission.validation.roomNoRequired' }),
-    roomType: z.string().min(1, { message: 'roomSubmission.validation.roomTypeRequired' }),
+    roomType: z.string().optional().default(''),
     lengthMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
     widthMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
     heightMtr: z.coerce.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
@@ -171,14 +171,14 @@ export const floorSubmissionSchema = z.object({
     // If it's an OpenPlot or isOpenPlot is true, bypass construction/floor fields validation
     if (data.selectedFloorType !== 'OpenPlot' && !data.isOpenPlot) {
         // Enforce floorId
-        if (!data.floorId || data.floorId <= 0) {
+        if (data.floorId === undefined || data.floorId === null || isNaN(Number(data.floorId)) || Number(data.floorId) < 0) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'floor.errors.floorRequired',
                 path: ['floorId']
             });
         }
-        
+
         // Enforce floorDescription
         if (!data.floorDescription || data.floorDescription.length === 0) {
             ctx.addIssue({

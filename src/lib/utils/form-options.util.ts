@@ -51,7 +51,7 @@ export const getSelectOptions = (
     const desc = String(item[descKey] || '').trim();
     const code = codeKey ? String(item[codeKey] || '').trim() : '';
     const id = String(item[idKey as keyof LookupData] || item.id || item.ID || '').trim();
-    
+
     // Index by description
     if (desc) lookupMap.set(desc, item);
     // Index by code - description
@@ -63,24 +63,24 @@ export const getSelectOptions = (
   // 2. Map existing lookup items that are present in the 'items' array
   items.forEach((opt) => {
     const found = lookupMap.get(opt.trim());
-    
-    const value = found 
-      ? String(found[idKey as keyof LookupData] || found.id || found.ID || '') 
+
+    const value = found
+      ? String(found[idKey as keyof LookupData] || found.id || found.ID || '')
       : opt;
-      
+
     optionsMap.set(String(value), { label: opt, value: String(value) });
   });
 
   // 3. Ensure current value is in the map
   const currentStr = String(currentValue || '');
   if (currentStr && currentStr !== '0' && !optionsMap.has(currentStr)) {
-    const label = descriptionMapper 
-        ? descriptionMapper(currentStr, lookup) 
-        : currentStr;
-        
-    optionsMap.set(currentStr, { 
-        label: label || currentStr, 
-        value: currentStr 
+    const label = descriptionMapper
+      ? descriptionMapper(currentStr, lookup)
+      : currentStr;
+
+    optionsMap.set(currentStr, {
+      label: label || currentStr,
+      value: currentStr
     });
   }
 

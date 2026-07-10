@@ -15,5 +15,5 @@ export const checkIsUtilityCategory = (
     return false;
   }
   const categoryId = Number(typeOfUseCategoryId);
-  return categoryId === 1 || categoryId === 2 || categoryId === 3;
+  return categoryId === 1;
 };
