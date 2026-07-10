@@ -186,7 +186,6 @@ export default function AssetPhotoTypeForm({
           <Input
             name="description"
             label={t("form.fields.description.label")}
-            required
             placeholder={t("form.fields.description.placeholder")}
             value={formData.description}
             onChange={handleChange}

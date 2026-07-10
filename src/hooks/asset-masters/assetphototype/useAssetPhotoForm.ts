@@ -13,7 +13,8 @@ import {
   CODE_SANITIZE,
   DESCRIPTION_SANITIZE,
   validateForm,
-  commonValidations
+  commonValidations,
+  DESCRIPTION_REGEX
 } from "@/lib/utils/validation";
 
 
@@ -100,11 +101,13 @@ export function useAssetPhotoForm({
           if (!/^[\p{L}\p{M}\p{N}]+(?:[\s][\p{L}\p{M}\p{N}]+)*$/u.test(str)) return t('form.validation.photoTypeNameFormat');
           return undefined;
         },
-        description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
-          required: 'form.validation.descriptionRequired',
-          format: 'form.validation.descriptionFormat',
-          maxLength: 'form.validation.descriptionMaxLength',
-        }),
+        description: (val: unknown) => {
+          const str = String(val ?? '').trim();
+          if (!str) return undefined;
+          if (str.length > DESCRIPTION_MAX) return t('form.validation.descriptionMaxLength', { count: DESCRIPTION_MAX });
+          if (!DESCRIPTION_REGEX.test(str)) return t('form.validation.descriptionFormat');
+          return undefined;
+        },
         displayOrder: commonValidations.masterSearchSequence(t, 'form.validation.displayOrderInvalid'),
         isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
         assetCategoryId: (val: unknown) => !val ? t('form.validation.assetCategoryRequired') : undefined,

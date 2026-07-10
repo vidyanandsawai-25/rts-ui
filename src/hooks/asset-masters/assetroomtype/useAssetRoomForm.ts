@@ -13,14 +13,15 @@ import {
   CODE_SANITIZE,
   DESCRIPTION_SANITIZE,
   validateForm,
-  commonValidations
+  commonValidations,
+  DESCRIPTION_REGEX
 } from "@/lib/utils/validation";
 import {
   ALPHANUMERIC_WITH_SPACES_REGEX,
   ALPHANUMERIC_WITH_SPACES_SANITIZE
 } from "@/lib/utils/validation-rules";
 
-const CODE_MAX = 50;
+const CODE_MAX = 20;
 const NAME_MAX = 100;
 const DESCRIPTION_MAX = 200;
 
@@ -94,11 +95,13 @@ export function useAssetRoomForm({
           if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(str)) return t('form.validation.roomTypeNameFormat');
           return undefined;
         },
-        description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
-          required: 'form.validation.descriptionRequired',
-          format: 'form.validation.descriptionFormat',
-          maxLength: 'form.validation.descriptionMaxLength',
-        }),
+        description: (val: unknown) => {
+          const str = String(val ?? '').trim();
+          if (!str) return undefined;
+          if (str.length > DESCRIPTION_MAX) return t('form.validation.descriptionMaxLength', { count: DESCRIPTION_MAX });
+          if (!DESCRIPTION_REGEX.test(str)) return t('form.validation.descriptionFormat');
+          return undefined;
+        },
         isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
         assetTypeId: (val: unknown) => !val ? t('form.validation.assetTypeRequired') : undefined,
       };
