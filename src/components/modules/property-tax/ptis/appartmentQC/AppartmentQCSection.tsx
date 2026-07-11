@@ -58,7 +58,6 @@ const AppartmentQCSection = ({
     return () => {
       clearTimeout(startTimer);
       clearTimeout(endTimer);
-      setIsTabChanging(false);
     };
   }, [activeMainTab]);
 

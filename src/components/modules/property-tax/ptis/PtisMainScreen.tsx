@@ -143,7 +143,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     params.set('subTab', subTab);
     params.set('pageNumber', '1');
 
-    window.history.replaceState(null, '', `?${params.toString()}`);
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   const handleApartmentMainTabChange = (v: string | number) =>

@@ -215,7 +215,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
         const isOldPropertyNo = col.key === 'oldPropertyNo';
         
         // Allow sorting for all columns defined in SORT_COLUMN_KEYS
-        const disableSort = !(col.key as string in SORT_COLUMN_KEYS);
+        const disableSort = !Object.prototype.hasOwnProperty.call(SORT_COLUMN_KEYS, col.key as string);
 
 
         const sortButton = disableSort ? (

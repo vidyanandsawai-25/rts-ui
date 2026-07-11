@@ -28,7 +28,7 @@ interface SortParams {
 export async function getApartmentQCDataAction(
   wardId: number,
   propertyNo: string,
-  _appartmentTab: string = 'amenities',
+  appartmentTab: string = 'amenities',
   pageNumber: number = 1,
   pageSize: number = 10,
   searchTerm: string = '',

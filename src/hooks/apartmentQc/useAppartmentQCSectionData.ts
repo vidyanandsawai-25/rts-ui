@@ -50,7 +50,7 @@ export const useAppartmentQCSectionData = ({
     if (!wardId || !propertyNo) {
       setTaxDetails(null);
       setDualMethodDetails(null);
-      setTimeout(() => setTaxDetailsLoading(false), 0);
+      setTaxDetailsLoading(false);
       return;
     }
     
@@ -92,9 +92,7 @@ export const useAppartmentQCSectionData = ({
   useEffect(() => {
     // We do not early return here anymore so we guarantee refetchTaxDetails is called.
     // If wardId or propertyNo is missing, refetchTaxDetails handles it and sets loading false.
-    setTimeout(() => {
-      refetchTaxDetails();
-    }, 0);
+    refetchTaxDetails();
   }, [refetchTaxDetails]);
 
   // Fetch drawer local data effect

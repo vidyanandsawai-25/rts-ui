@@ -116,8 +116,9 @@ export const RoomWiseSubmission: React.FC<
 
   // ── Auto-Focus First Element ──────────────────────────────────────────────
   React.useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (isOpen) {
-      setTimeout(() => {
+      timer = setTimeout(() => {
         const form = document.getElementById('room-wise-submission-form');
         if (form) {
           // Find the first editable input, select, or button (combobox for Select)
@@ -130,6 +131,9 @@ export const RoomWiseSubmission: React.FC<
         }
       }, 300); // Wait for drawer animation to finish
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isOpen]);
 
   // ── Enter Key Navigation ──────────────────────────────────────────────────
