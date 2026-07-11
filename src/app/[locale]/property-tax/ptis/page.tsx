@@ -181,6 +181,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}
           societyDetailId={societyDetails.societyDetailId}
+          isCombined={!!tabHeaderInfo?.isCombined}
         />
       </div>
     </PtisNavigationProvider>

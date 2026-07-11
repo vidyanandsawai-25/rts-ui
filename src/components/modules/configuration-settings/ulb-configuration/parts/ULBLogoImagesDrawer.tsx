@@ -88,11 +88,14 @@ export function ULBLogoImagesDrawer({
           <select
             value={drawerCategory}
             onChange={(e) => setDrawerCategory(e.target.value as 'Logo' | 'Background' | 'Gallery')}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-slate-900"
           >
-            <option value="Logo">{t('messages.ulbLogoSection')}</option>
-            <option value="Background">{t('messages.backgroundImageSection')}</option>
-            <option value="Gallery">{t('messages.gallerySection')}</option>
+            <option value="Logo" className="bg-white text-slate-900">
+              {t('messages.ulbLogoSection')}
+            </option>
+            <option value="Background" className="bg-white text-slate-900">
+              {t('messages.backgroundImageSection')}
+            </option>
           </select>
           <p className="text-[10px] text-slate-400">{t('messages.categoryHint')}</p>
         </div>

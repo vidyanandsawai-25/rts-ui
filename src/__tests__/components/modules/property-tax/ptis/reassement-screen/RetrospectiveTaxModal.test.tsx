@@ -5,6 +5,22 @@ import { NextIntlClientProvider } from "next-intl";
 import { MappedRetrospectiveColumn, MappedRetrospectiveRow } from "@/types/reassessment.types";
 
 const mockMessages = {
+  common: {
+    buttons: {
+      close: "Close",
+    },
+    table: {
+      columns: { actions: "Actions" },
+      showingEntries: "Showing {start}-{end} of {total}",
+    },
+    messages: {
+      noData: "No data available",
+      total: "Total: {count}",
+    },
+    actions: {
+      loading: "Loading...",
+    },
+  },
   reassessment: {
     retrospectiveModal: {
       title: "Retrospective Tax Details",
@@ -61,7 +77,9 @@ describe("RetrospectiveTaxModal", () => {
 
   it("renders the modal when open is true", () => {
     setup();
-    expect(screen.getByText("Retrospective Tax Details")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Retrospective Tax Details" })
+    ).toBeInTheDocument();
   });
 
   it("renders the data rows", () => {

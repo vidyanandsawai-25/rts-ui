@@ -1,8 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { OldFloorDetails } from "@/components/modules/property-tax/ptis/reassement-screen/components/OldFloorDetails";
 import { NextIntlClientProvider } from "next-intl";
 import { MappedFloorDetail } from "@/types/reassessment.types";
+import type { SharedAutoScrollController } from "@/hooks/ptis/reassessment/useSharedAutoScroll";
 
 const mockMessages = {
   reassessment: {
@@ -17,6 +18,8 @@ const mockMessages = {
         carpetArea: "Carpet Area",
         builtUpArea: "Built Up Area",
         rate: "Rate",
+        yearlyRate: "Yearly Rate",
+        financialYear: "Fin Year",
         renter: "Renter",
         taxLiability: "Tax Liability",
         rentMy: "Rent My",
@@ -25,6 +28,7 @@ const mockMessages = {
         alv: "ALV",
         mr: "MR",
         rv: "RV",
+        status: "Status",
       },
     },
     buttons: {
@@ -60,16 +64,27 @@ describe("OldFloorDetails", () => {
     },
   ];
 
-  function setup(data = mockData, isAutoScrolling = false, onToggleAutoScroll = vi.fn()) {
-    return render(
-      <NextIntlClientProvider locale="en" messages={mockMessages}>
-        <OldFloorDetails
-          data={data}
-          isAutoScrolling={isAutoScrolling}
-          onToggleAutoScroll={onToggleAutoScroll}
-        />
-      </NextIntlClientProvider>
-    );
+  function createMockAutoScrollController(): SharedAutoScrollController {
+    return {
+      register: vi.fn(() => vi.fn()),
+      stopAll: vi.fn(),
+      setActive: vi.fn(),
+      activeScrollerId: null,
+    };
+  }
+
+  function setup(
+    data = mockData,
+    autoScrollController = createMockAutoScrollController()
+  ) {
+    return {
+      autoScrollController,
+      ...render(
+        <NextIntlClientProvider locale="en" messages={mockMessages}>
+          <OldFloorDetails data={data} autoScrollController={autoScrollController} />
+        </NextIntlClientProvider>
+      ),
+    };
   }
 
   it("renders the component title", () => {
@@ -84,11 +99,12 @@ describe("OldFloorDetails", () => {
     expect(screen.getByText("Residential")).toBeInTheDocument();
   });
 
-  it("calls onToggleAutoScroll when the button is clicked", () => {
-    const onToggleAutoScroll = vi.fn();
-    setup(mockData, false, onToggleAutoScroll);
-    const button = screen.getByRole("button");
-    fireEvent.click(button);
-    expect(onToggleAutoScroll).toHaveBeenCalledTimes(1);
+  it("registers with the shared auto scroll controller", () => {
+    const autoScrollController = createMockAutoScrollController();
+    setup(mockData, autoScrollController);
+    expect(autoScrollController.register).toHaveBeenCalledWith(
+      "old",
+      expect.any(Function)
+    );
   });
 });

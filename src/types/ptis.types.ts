@@ -319,6 +319,8 @@ export interface PropertyBasicDetailsApiResponse {
   plotAreaFtWidth: number;
   plotAreaMtrLength: number;
   plotAreaMtrWidth: number;
+  plotAreaSqFeet?: number | null;
+  plotAreaSqMeter?: number | null;
   wingId: number;
   wingName: string;
   ownerName?: string;
@@ -432,6 +434,7 @@ export interface TabHeaderInfoData {
   ownerName: string | null;
   address: string | null;
   typeOfUse: string | null;
+  isCombined?: boolean;
 }
 
 export interface PtisInitialData {

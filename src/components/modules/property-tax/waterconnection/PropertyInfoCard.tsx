@@ -1,5 +1,6 @@
 import { Mail, MapPin, Phone, User } from "lucide-react";
 import type { PropertyInfo } from "@/types/waterconnection.types";
+import { Badge } from "@/components/common/Badge";
 
 interface PropertyInfoCardProps {
   property: PropertyInfo;
@@ -21,7 +22,7 @@ export function PropertyInfoCard({ property, labels }: PropertyInfoCardProps) {
   return (
     <div className="bg-[#F2F6FC] rounded-xl border border-blue-100/70 p-2.5 shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5 items-stretch">
-        
+
         {/* Owner Info Box */}
         <div className="flex gap-2.5 items-start bg-white p-2.5 rounded-lg border border-slate-100/80">
           <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -37,9 +38,9 @@ export function PropertyInfoCard({ property, labels }: PropertyInfoCardProps) {
             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
               <span className="text-[10px] font-mono font-medium text-slate-500">{property.customerId}</span>
               {property.customerType && (
-                <span className="inline-flex px-1.5 py-0.5 text-[9px] font-semibold rounded bg-blue-50 text-blue-600 border border-blue-100/60">
+                <Badge className="inline-flex px-1.5 py-0.5 text-[9px] font-semibold rounded bg-blue-50 text-blue-600 border border-blue-100/60">
                   {property.customerType}
-                </span>
+                </Badge>
               )}
             </div>
           </div>
@@ -69,29 +70,45 @@ export function PropertyInfoCard({ property, labels }: PropertyInfoCardProps) {
         <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 bg-white p-2.5 rounded-lg border border-slate-100/80">
           <div>
             <div className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-0.5">
-              {labels.propertyNo}
-            </div>
-            <div className="text-xs font-bold text-blue-600 truncate">{property.propertyNo}</div>
-          </div>
-          <div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-0.5">
               {labels.buildingType}
             </div>
-            <div className="text-[10px] font-bold text-slate-700 truncate" title={property.buildingType}>
+            <div
+              className="text-[10px] font-bold text-slate-700 truncate"
+              title={property.buildingType}
+            >
               {property.buildingType}
             </div>
           </div>
-          <div className="border-t border-slate-50 pt-1">
+
+          <div>
             <div className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-0.5">
               {labels.zone}
             </div>
-            <div className="text-xs font-semibold text-slate-700 truncate" title={property.zone}>{property.zone}</div>
-          </div>
-          <div className="border-t border-slate-50 pt-1">
-            <div className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-0.5">
-              {labels.ward}
+            <div
+              className="text-xs font-semibold text-slate-700 truncate"
+              title={property.zone}
+            >
+              {property.zone}
             </div>
-            <div className="text-xs font-semibold text-slate-700 truncate" title={property.ward}>{property.ward}</div>
+          </div>
+
+          <div className="col-span-2 bg-purple-50/50 border border-purple-100/70 rounded-lg p-2 mt-1 flex items-center justify-between">
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider leading-none">
+              {labels.propertyNo}
+              <span className="sr-only">{labels.ward}</span>
+            </span>
+            <span
+              className="text-xs font-bold text-purple-700 font-mono normal-case tracking-wide bg-white px-2.5 py-0.5 rounded-md border border-purple-200/60 shadow-sm"
+              title={`${property.ward}${property.propertyNo}`}
+            >
+              {property.ward && (
+                <>
+                  <span>{property.ward}</span>
+                  <span>-</span>
+                </>
+              )}
+              <span>{property.propertyNo}</span>
+            </span>
           </div>
         </div>
 

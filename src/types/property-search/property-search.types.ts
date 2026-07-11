@@ -92,6 +92,8 @@ export interface SearchResult {
   citySurveyNo: string;
   plotNo: string;
   wingFlatNo: string;
+  wing?: string;
+  flatNo?: string;
   propertyCount: number;
   childUnitCount?: number;
   category: string;

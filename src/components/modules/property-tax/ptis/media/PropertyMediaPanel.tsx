@@ -72,6 +72,7 @@ function PropertyMediaPanel({
     propertyId,
     initialLatitude,
     initialLongitude,
+    initialWaybackReleases: initialWaybackReleases,
     onPhotosChange,
     onPhotoSlotsChange,
   });

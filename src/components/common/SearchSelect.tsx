@@ -334,7 +334,7 @@ export function SearchSelect({
   const t = useTranslations("common");
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
+    <div ref={wrapperRef} className={`relative w-full ${isOpen ? 'z-50' : ''}`}>
       {label && (
         <label
           htmlFor={fallbackId}
@@ -454,16 +454,16 @@ export function SearchSelect({
                     relative flex items-center justify-between
                     px-3 py-2 text-sm cursor-pointer
                     transition-colors duration-100
-                    ${isHighlighted ? 'bg-blue-50' : ''}
-                    ${isSelected && !isHighlighted ? 'bg-slate-50' : ''}
-                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-50' : ''}
+                    ${isHighlighted ? 'bg-blue-600 text-white' : ''}
+                    ${isSelected && !isHighlighted ? 'bg-blue-50 text-blue-600' : ''}
+                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-100 text-slate-700' : ''}
                   `}
                 >
-                  <span className={`truncate ${isSelected ? 'font-medium text-blue-600' : 'text-slate-700'}`}>
+                  <span className={`truncate ${isSelected && !isHighlighted ? 'font-semibold text-blue-600' : isHighlighted ? 'text-white font-medium' : 'text-slate-700'}`}>
                     {opt.label}
                   </span>
                   {isSelected && (
-                    <Check className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                    <Check className={`h-4 w-4 flex-shrink-0 ml-2 ${isHighlighted ? 'text-white' : 'text-blue-600'}`} />
                   )}
                 </li>
               );

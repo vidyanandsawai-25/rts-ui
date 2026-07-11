@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Input, Select, ValidationMessage, TextArea } from "@/components/common";
+import { Input, Select, ValidationMessage, TextArea, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { Checkbox } from "@/components/common/checkbox";
 import { BulkUpdateFieldConfig, SelectOption } from "@/types/common-details-update/common-details-update.types";
@@ -64,6 +64,17 @@ export const DynamicFormField = ({
           />
         );
 
+      case "searchselect":
+        return (
+          <SearchSelect
+            value={String(value ?? "")}
+            onChange={(_, val) => onChange(config.fieldName, val)}
+            options={dropdownOptions}
+            placeholder={placeholder || `Select ${displayName}`}
+            disabled={config.isReadonly}
+          />
+        );
+
       case "checkbox":
         return (
           <div className="flex items-center gap-2 py-1">
@@ -81,7 +92,13 @@ export const DynamicFormField = ({
           <Input
             type="number"
             value={String(value ?? "")}
-            onChange={(e) => onChange(config.fieldName, e.target.value)}
+            onChange={(e) => {
+              let val = e.target.value;
+              if (config.maxLength && val.length > config.maxLength) {
+                val = val.slice(0, config.maxLength);
+              }
+              onChange(config.fieldName, val);
+            }}
             placeholder={placeholder}
             maxLength={config.maxLength ?? undefined}
             readOnly={config.isReadonly}
