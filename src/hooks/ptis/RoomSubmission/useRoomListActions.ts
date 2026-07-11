@@ -33,9 +33,15 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
   };
 
   const handleAddRoom = () => {
-    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
+      props.floorData?.isOpenPlot === true || 
+      props.floorData?.selectedFloorType === 'OpenPlot' ||
+      String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
     const baseArea = calculateRoomArea(formData, shapeParameters);
-    
+
     const emptySlots: number[] = [];
     if (!isUtility) {
       rooms.forEach((room, idx) => {
@@ -144,7 +150,13 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
 
   const handleUpdateRoom = () => {
     if (editingIndex === null) return;
-    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
+      props.floorData?.isOpenPlot === true || 
+      props.floorData?.selectedFloorType === 'OpenPlot' ||
+      String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
     const baseArea = calculateRoomArea(formData, shapeParameters);
 
     const emptySlots: number[] = [];

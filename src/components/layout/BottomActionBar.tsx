@@ -23,6 +23,7 @@ interface BottomActionBarProps {
   properties?: PropertyListItem[];
   categoryId?: number;
   societyDetailId?: number;
+  isCombined?: boolean;
 }
 
 export function BottomActionBar({
@@ -38,6 +39,7 @@ export function BottomActionBar({
   properties = [],
   categoryId,
   societyDetailId,
+  isCombined = false,
 }: BottomActionBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -129,8 +131,7 @@ export function BottomActionBar({
                 actions={groupedActions.utility}
                 onActionClick={handleActionClick}
                 isLoading={isLoading}
-                isActionPending={isActionPending}
-                clickedCommand={clickedCommand}
+                isCombined={isCombined}
               />
               {centerContent}
             </div>

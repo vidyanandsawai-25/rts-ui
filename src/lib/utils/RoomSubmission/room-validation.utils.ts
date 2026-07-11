@@ -18,11 +18,7 @@ export const validateRoomDetails = (
     errors.roomCount = "roomSubmission.validation.insufficientEmptySlots";
   }
 
-  // 3. Room Type Validation
-  const roomTypeVal = roomData.roomType || roomData.utilities;
-  if (!roomTypeVal || roomTypeVal === "-Select-" || String(roomTypeVal).trim() === "") {
-    errors.utilities = "roomSubmission.validation.roomTypeRequired";
-  }
+  // 3. Room Type Validation (Optional)
 
   // 4. Dimension/Area Validation
   if ((!roomData.shape || roomData.shape === "-Select-") && baseArea <= 0) {
@@ -38,19 +34,15 @@ export const validateRoomDetails = (
 };
 
 /**
- * Checks if a room's mandatory fields (Room Type, Shape, Area, and Total) are fully filled out.
+ * Checks if a room's mandatory fields (Shape, Area, and Total) are fully filled out.
  * Returns true if valid/complete, and false if blank, default, or partially configured.
  */
 export const isRoomComplete = (room: RoomData): boolean => {
-  const roomTypeVal = room.utilities || room.roomType || room.remark;
   const shapeVal = room.shape;
   const areaVal = Number(room.area || 0);
   const totalVal = Number(room.total || 0);
 
   return !!(
-    roomTypeVal &&
-    roomTypeVal !== "-Select-" &&
-    roomTypeVal.trim() !== "" &&
     shapeVal &&
     shapeVal !== "-Select-" &&
     shapeVal.trim() !== "" &&
