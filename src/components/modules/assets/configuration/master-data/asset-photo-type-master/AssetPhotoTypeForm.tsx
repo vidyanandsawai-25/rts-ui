@@ -202,7 +202,8 @@ export default function AssetPhotoTypeForm({
             name="displayOrder"
             label={t("form.fields.displayOrder.label")}
             type="number"
-            min={0}
+            required
+            min={1}
             value={displayOrderValue}
             onChange={handleChange}
             onBlur={handleBlur}

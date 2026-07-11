@@ -14,6 +14,7 @@
     "table": {
       "photoTypeCode": "फोटो प्रकार कोड",
       "photoTypeName": "फोटो प्रकार नाव",
+      "assetCategoryAndType": "मालमत्ता श्रेणी / प्रकार",
       "description": "वर्णन",
       "displayOrder": "प्रदर्शन क्रम",
       "status": "स्थिती",
@@ -68,7 +69,8 @@
       "descriptionRequired": "वर्णन आवश्यक आहे",
       "descriptionMaxLength": "जास्तीत जास्त लांबी २०० अक्षरे असावी",
       "descriptionFormat": "अवैध वर्णन स्वरूप",
-      "displayOrderInvalid": "प्रदर्शन क्रम ० किंवा त्याहून अधिक असावा",
+      "displayOrderInvalid": "प्रदर्शन क्रम 0 पेक्षा जास्त असावा",
+      "displayOrderRequired": "प्रदर्शन क्रम आवश्यक आहे",
       "mustBeActive": "जतन करण्यासाठी मालमत्ता फोटो प्रकार सक्रिय असणे आवश्यक आहे",
       "assetCategoryRequired": "मालमत्ता श्रेणी आवश्यक आहे",
       "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे"

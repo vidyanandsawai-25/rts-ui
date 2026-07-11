@@ -57,11 +57,13 @@ describe("AssetRoomTypeForm Component", () => {
   });
 
   const mockTypes = [{ id: 2, name: "Type 2" }];
+  const mockCategories = [{ id: 1, name: "Category 1" }];
 
   test("renders form inputs and selectors correctly", () => {
     render(
       <AssetRoomTypeForm
         id={null}
+        categories={mockCategories}
         types={mockTypes}
       />
     );

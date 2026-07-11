@@ -11,6 +11,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn(),
+    replace: vi.fn(),
+  }),
+  usePathname: () => "/en/assets/configuration/master-data/asset-room-type",
+  useSearchParams: () => ({
+    toString: () => "",
   }),
 }));
 
@@ -122,6 +127,7 @@ describe("useAssetRoomForm", () => {
       result.current.handleChange({
         target: { name: "description", value: "Test description" },
       } as ChangeEvent<HTMLInputElement>);
+      result.current.handleSelectChange("assetCategoryId", "1");
       result.current.handleSelectChange("assetTypeId", "2");
     });
 

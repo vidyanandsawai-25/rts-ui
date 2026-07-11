@@ -90,23 +90,35 @@ export function getAssetRoomTypeColumns(
     {
       key: "roomTypeCode",
       label: createSortableLabel(t("list.table.roomTypeCode"), "roomTypeCode"),
-      width: "30%",
+      width: "20%",
       align: "center",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "roomTypeName",
       label: createSortableLabel(t("list.table.roomTypeName"), "roomTypeName"),
-      width: "30%",
+      width: "20%",
       align: "center",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "description",
       label: createSortableLabel(t("list.table.description"), "description"),
-      width: "30%",
+      width: "20%",
       align: "center",
       render: (value) => (typeof value === "string" ? value : "-"),
+    },
+    {
+      key: "assetCategoryName",
+      label: t("list.table.assetCategoryAndType"),
+      width: "30%",
+      align: "center",
+      render: (_, row) => {
+        const parts = [];
+        if (row.assetCategoryName) parts.push(row.assetCategoryName);
+        if (row.assetTypeName) parts.push(row.assetTypeName);
+        return parts.length > 0 ? parts.join(" / ") : "-";
+      },
     },
     {
       key: "isActive",

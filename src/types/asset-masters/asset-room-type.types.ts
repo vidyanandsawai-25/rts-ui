@@ -11,6 +11,7 @@ export interface AssetRoomTypeFormModel {
   isActive: boolean;
   createdBy?: number;
   updatedBy?: number;
+  assetCategoryId: number | null;
   assetTypeId: number | null;
 }
 
@@ -26,7 +27,9 @@ export interface AssetRoomType {
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
+  assetCategoryId: number | null;
   assetTypeId: number | null;
+  assetCategoryName?: string;
   assetTypeName?: string;
 }
 
@@ -37,6 +40,12 @@ export interface AssetRoomTypeProps extends Omit<PagedResponse<AssetRoomType>, '
   data: AssetRoomType[];
   sortBy?: string;
   sortOrder?: string;
+}
+
+export interface AssetCategory {
+  id: number;
+  categoryName: string;
+  isActive: boolean;
 }
 
 export interface AssetType {

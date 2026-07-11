@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -60,6 +60,8 @@ export function useAssetRoomForm({
   onCancel = () => { },
 }: UseAssetRoomFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("assetRoomType");
   const tCommon = useTranslations("common");
@@ -74,11 +76,23 @@ export function useAssetRoomForm({
     roomTypeName: initialData?.roomTypeName ?? "",
     description: initialData?.description ?? "",
     isActive: initialData?.isActive ?? true,
+    assetCategoryId: initialData?.assetCategoryId ?? null,
     assetTypeId: initialData?.assetTypeId ?? null,
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof AssetRoomTypeFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const pushCategoryQuery = useCallback((assetCategoryId: number | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (assetCategoryId && assetCategoryId > 0) {
+      params.set("assetCategoryId", String(assetCategoryId));
+    } else {
+      params.delete("assetCategoryId");
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   const validate = useCallback(
     (data: AssetRoomTypeFormModel): Partial<Record<keyof AssetRoomTypeFormModel, string>> => {
@@ -103,6 +117,7 @@ export function useAssetRoomForm({
           return undefined;
         },
         isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+        assetCategoryId: (val: unknown) => !val ? t('form.validation.assetCategoryRequired') : undefined,
         assetTypeId: (val: unknown) => !val ? t('form.validation.assetTypeRequired') : undefined,
       };
       return validateForm(data, schema);
@@ -229,6 +244,26 @@ export function useAssetRoomForm({
   const handleSelectChange = useCallback((name: string, value: string): void => {
     const parsed = Number(value);
     const numericValue = value && Number.isFinite(parsed) ? parsed : null;
+
+    if (name === "assetCategoryId") {
+      setFormData((p) => {
+        const updated = {
+          ...p,
+          assetCategoryId: numericValue,
+          assetTypeId: null,
+        };
+        const fieldErrors = validate(updated);
+        setErrors((prev) => ({
+          ...prev,
+          assetCategoryId: fieldErrors.assetCategoryId,
+          assetTypeId: fieldErrors.assetTypeId,
+        }));
+        return updated;
+      });
+      pushCategoryQuery(numericValue);
+      return;
+    }
+
     setFormData((p) => {
       const updated = {
         ...p,
@@ -251,7 +286,7 @@ export function useAssetRoomForm({
 
       return updated;
     });
-  }, [validate]);
+  }, [validate, pushCategoryQuery]);
 
   return {
     formData,

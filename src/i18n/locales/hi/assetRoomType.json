@@ -14,6 +14,7 @@
     "table": {
       "roomTypeCode": "कमरे का प्रकार कोड",
       "roomTypeName": "कमरे का प्रकार नाम",
+      "assetCategoryAndType": "संपत्ति श्रेणी / प्रकार",
       "description": "विवरण",
       "status": "स्थिति",
       "actions": "कार्रवाई"
@@ -41,6 +42,10 @@
         "label": "विवरण",
         "placeholder": "उदा. बेडरूम या सोने की जगह"
       },
+      "assetCategoryId": {
+        "label": "संपत्ति श्रेणी",
+        "placeholder": "संपत्ति श्रेणी चुनें"
+      },
       "assetTypeId": {
         "label": "एसेट प्रकार",
         "placeholder": "एसेट प्रकार चुनें"
@@ -57,6 +62,7 @@
       "descriptionMaxLength": "अधिकतम लंबाई {count} वर्ण है",
       "descriptionFormat": "अमान्य विवरण प्रारूप",
       "mustBeActive": "सहेजने के लिए एसेट कमरे का प्रकार सक्रिय होना चाहिए",
+      "assetCategoryRequired": "संपत्ति श्रेणी आवश्यक है",
       "assetTypeRequired": "एसेट प्रकार आवश्यक है"
     },
     "status": {

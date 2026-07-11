@@ -14,6 +14,7 @@
     "table": {
       "roomTypeCode": "खोली प्रकार कोड",
       "roomTypeName": "खोली प्रकार नाव",
+      "assetCategoryAndType": "मालमत्ता श्रेणी / प्रकार",
       "description": "वर्णन",
       "status": "स्थिती",
       "actions": "कृती"
@@ -41,6 +42,10 @@
         "label": "वर्णन",
         "placeholder": "उदा. बेडरूम किंवा झोपण्याची जागा"
       },
+      "assetCategoryId": {
+        "label": "मालमत्ता श्रेणी",
+        "placeholder": "मालमत्ता श्रेणी निवडा"
+      },
       "assetTypeId": {
         "label": "मालमत्ता प्रकार",
         "placeholder": "मालमत्ता प्रकार निवडा"
@@ -57,6 +62,7 @@
       "descriptionMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "descriptionFormat": "अवैध वर्णन स्वरूप",
       "mustBeActive": "जतन करण्यासाठी मालमत्ता खोली प्रकार सक्रिय असणे आवश्यक आहे",
+      "assetCategoryRequired": "मालमत्ता श्रेणी आवश्यक आहे",
       "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे"
     },
     "status": {

@@ -80,7 +80,7 @@ export function useAssetPhotoForm({
   });
 
   const [displayOrderValue, setDisplayOrderValue] = useState<string>(
-    initialData?.displayOrder?.toString() ?? "0"
+    initialData?.displayOrder?.toString() ?? ""
   );
 
   const [errors, setErrors] = useState<Partial<Record<keyof AssetPhotoTypeFormModel, string>>>({});
@@ -108,7 +108,19 @@ export function useAssetPhotoForm({
           if (!DESCRIPTION_REGEX.test(str)) return t('form.validation.descriptionFormat');
           return undefined;
         },
-        displayOrder: commonValidations.masterSearchSequence(t, 'form.validation.displayOrderInvalid'),
+        displayOrder: (val: unknown) => {
+          if (val === null || val === undefined || val === "") {
+            return t('form.validation.displayOrderRequired');
+          }
+          const numVal = Number(val);
+          if (isNaN(numVal) || numVal === 0) {
+            return t('form.validation.displayOrderRequired');
+          }
+          if (numVal < 0) {
+            return t('form.validation.displayOrderInvalid');
+          }
+          return undefined;
+        },
         isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
         assetCategoryId: (val: unknown) => !val ? t('form.validation.assetCategoryRequired') : undefined,
         assetTypeId: (val: unknown) => !val ? t('form.validation.assetTypeRequired') : undefined,
@@ -138,11 +150,12 @@ export function useAssetPhotoForm({
     const { name, value } = e.target;
 
     if (name === "displayOrder") {
-      const digits = value.replace(/[^0-9]/g, "").substring(0, 4);
-      setDisplayOrderValue(digits);
+      const digits = value.replace(/[^0-9]/g, "");
+      const nonZeroDigits = digits.replace(/^0+/, "").substring(0, 4);
+      setDisplayOrderValue(nonZeroDigits);
       setFormData((p) => ({
         ...p,
-        displayOrder: digits === "" ? 0 : Number(digits),
+        displayOrder: nonZeroDigits === "" ? 0 : Number(nonZeroDigits),
       }));
       return;
     }
@@ -160,13 +173,13 @@ export function useAssetPhotoForm({
 
     let sanitizedValue = sanitizeFieldValue(name, value);
     if (name === "displayOrder" && value === "") {
-      sanitizedValue = "0";
-      setDisplayOrderValue("0");
+      sanitizedValue = "";
+      setDisplayOrderValue("");
     }
 
     const updatedFormData = {
       ...formData,
-      [name]: name === "displayOrder" ? Number(sanitizedValue || 0) : sanitizedValue,
+      [name]: name === "displayOrder" ? (sanitizedValue === "" ? 0 : Number(sanitizedValue)) : sanitizedValue,
     };
 
     setFormData(updatedFormData);

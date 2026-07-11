@@ -8,7 +8,8 @@ import {
     getAssetRoomPaged,
     getAssetRoomTypeById,
     updateAssetRoomType,
-    getAssetTypes
+    getAssetTypes,
+    getAssetCategories
 } from "@/lib/api/asset-masters/asset-room-crud.service";
 import { ApiError } from "@/lib/utils/api";
 import { AssetRoomType, AssetRoomTypeFormModel } from "@/types/asset-masters/asset-room-type.types";
@@ -176,5 +177,23 @@ export async function getAssetTypesAction() {
     } catch (error) {
         logger.error("Failed to fetch asset types", {}, error);
         return [];
+    }
+}
+
+export async function getAssetCategoriesAction() {
+    try {
+        return await getAssetCategories();
+    } catch (error) {
+        logger.error("Failed to fetch asset categories", {}, error);
+        throw error;
+    }
+}
+
+export async function getAssetTypesByCategoryAction(assetCategoryId?: number) {
+    try {
+        return await getAssetTypes(assetCategoryId);
+    } catch (error) {
+        logger.error("Failed to fetch asset types by category", { assetCategoryId }, error);
+        throw error;
     }
 }

@@ -14,6 +14,7 @@
     "table": {
       "photoTypeCode": "Photo Type Code",
       "photoTypeName": "Photo Type Name",
+      "assetCategoryAndType": "Category / Type",
       "description": "Description",
       "displayOrder": "Display Order",
       "status": "Status",
@@ -68,7 +69,8 @@
       "descriptionRequired": "Description is required",
       "descriptionMaxLength": "Maximum length is 200 characters",
       "descriptionFormat": "Invalid description format",
-      "displayOrderInvalid": "Display order must be 0 or greater",
+      "displayOrderInvalid": "Display order must be greater than 0",
+      "displayOrderRequired": "Display order is required",
       "mustBeActive": "Asset Photo Type must be active to save",
       "assetCategoryRequired": "Asset Category is required",
       "assetTypeRequired": "Asset Type is required"

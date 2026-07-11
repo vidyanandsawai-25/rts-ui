@@ -11,12 +11,14 @@ import { useAssetRoomForm } from "@/hooks/asset-masters/assetroomtype/useAssetRo
 export interface AssetRoomTypeFormProps {
   id: number | null;
   initialData?: AssetRoomType;
+  categories: { id: number; name: string }[];
   types: { id: number; name: string }[];
 }
 
 export default function AssetRoomTypeForm({
   id,
   initialData,
+  categories,
   types,
 }: AssetRoomTypeFormProps) {
   const {
@@ -43,6 +45,7 @@ export default function AssetRoomTypeForm({
   const statusToggleRef = useRef<HTMLButtonElement>(null);
   const roomTypeCodeRef = useRef<HTMLInputElement>(null);
 
+  const categoryOptions = categories.map((cat) => ({ label: cat.name, value: String(cat.id) }));
   const typeOptions = types.map((type) => ({ label: type.name, value: String(type.id) }));
 
   useEffect(() => {
@@ -126,6 +129,17 @@ export default function AssetRoomTypeForm({
           />
 
           <SearchSelect
+            name="assetCategoryId"
+            label={t("form.fields.assetCategoryId.label")}
+            required
+            placeholder={t("form.fields.assetCategoryId.placeholder")}
+            options={categoryOptions}
+            value={formData.assetCategoryId ? String(formData.assetCategoryId) : ""}
+            onChange={handleSelectChange}
+            error={showError("assetCategoryId") ? errors.assetCategoryId : undefined}
+          />
+
+          <SearchSelect
             name="assetTypeId"
             label={t("form.fields.assetTypeId.label")}
             required
@@ -133,6 +147,7 @@ export default function AssetRoomTypeForm({
             options={typeOptions}
             value={formData.assetTypeId ? String(formData.assetTypeId) : ""}
             onChange={handleSelectChange}
+            disabled={!formData.assetCategoryId || typeOptions.length === 0}
             error={showError("assetTypeId") ? errors.assetTypeId : undefined}
           />
 

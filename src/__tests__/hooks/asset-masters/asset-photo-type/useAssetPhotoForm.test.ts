@@ -144,6 +144,9 @@ describe("useAssetPhotoForm", () => {
       result.current.handleChange({
         target: { name: "description", value: "Test description" },
       } as ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "displayOrder", value: "1" },
+      } as ChangeEvent<HTMLInputElement>);
       result.current.handleSelectChange("assetCategoryId", "1");
       result.current.handleSelectChange("assetTypeId", "2");
     });

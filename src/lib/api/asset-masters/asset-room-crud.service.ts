@@ -1,5 +1,5 @@
 import { apiClient } from "@/services/api.service";
-import { AssetRoomType, AssetRoomTypeFormModel, AssetType } from "@/types/asset-masters/asset-room-type.types";
+import { AssetRoomType, AssetRoomTypeFormModel, AssetType, AssetCategory } from "@/types/asset-masters/asset-room-type.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
@@ -75,12 +75,13 @@ export async function createAssetRoomType(data: AssetRoomTypeFormModel): Promise
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
+      isActive: data.isActive,
+      createdBy: data.createdBy ?? 1,
+      assetCategoryId: data.assetCategoryId,
+      assetTypeId: data.assetTypeId,
       roomTypeCode: data.roomTypeCode.trim(),
       roomTypeName: data.roomTypeName.trim(),
       description: data.description?.trim() || null,
-      isActive: data.isActive,
-      createdBy: data.createdBy ?? 1,
-      assetTypeId: data.assetTypeId,
     };
     const response = await apiClient.post<unknown>("/asset-management/asset-room-type", payload);
     if (!response.success) {
@@ -108,6 +109,7 @@ export async function updateAssetRoomType(data: AssetRoomTypeFormModel): Promise
     const payload = {
       isActive: data.isActive,
       updatedBy: data.updatedBy ?? 1,
+      assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       roomTypeCode: data.roomTypeCode.trim(),
       roomTypeName: data.roomTypeName.trim(),
@@ -164,13 +166,37 @@ export async function deleteAssetRoomType(id: number): Promise<void> {
   }
 }
 
-/** Fetches active asset types from the API */
-export async function getAssetTypes(): Promise<AssetType[]> {
+/** Fetches active asset categories from the API */
+export async function getAssetCategories(): Promise<AssetCategory[]> {
   try {
     const qs = new URLSearchParams();
     qs.set("PageNumber", "1");
     qs.set("PageSize", "-1");
     qs.set("IsActive", "true");
+    const response = await apiClient.get<PagedResponse<AssetCategory>>(`/AssetCategory?${qs.toString()}`);
+    if (!response.success) {
+      throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset categories", "Get asset categories failed");
+    }
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data.items ?? [];
+  } catch (error) {
+    logger.error("Error fetching asset categories", { error: error as Error });
+    throw error;
+  }
+}
+
+/** Fetches active asset types from the API */
+export async function getAssetTypes(assetCategoryId?: number): Promise<AssetType[]> {
+  try {
+    const qs = new URLSearchParams();
+    qs.set("PageNumber", "1");
+    qs.set("PageSize", "-1");
+    qs.set("IsActive", "true");
+    if (Number.isFinite(assetCategoryId ?? NaN) && (assetCategoryId ?? 0) > 0) {
+      qs.set("AssetCategoryId", String(assetCategoryId));
+    }
     const response = await apiClient.get<PagedResponse<AssetType>>(`/AssetType?${qs.toString()}`);
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset types", "Get asset types failed");
