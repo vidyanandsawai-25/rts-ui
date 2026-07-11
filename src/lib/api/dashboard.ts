@@ -28,8 +28,9 @@ import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
 import type { DepartmentDTO } from '@/types/rts-citizen.types';
 
-function toI18nLabel(value: string) {
-  return { en: value, hi: value, mr: value };
+function toI18nLabelWithLocal(value: string, localValue?: string | null) {
+  const localVal = localValue?.trim() || value;
+  return { en: value, hi: localVal, mr: localVal };
 }
 
 function slugify(value: string) {
@@ -99,13 +100,13 @@ export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
         .filter((service) => service.isActive && service.departmentId === department.id)
         .map((service) => ({
           id: String(service.id),
-          name: toI18nLabel(service.serviceName),
+          name: toI18nLabelWithLocal(service.serviceName, service.serviceNameLocal),
           icon: resolveServiceIcon(service.serviceName),
         }));
 
       return {
         id: String(department.id),
-        name: toI18nLabel(department.departmentName),
+        name: toI18nLabelWithLocal(department.departmentName, department.departmentNameLocal),
         icon: resolveDepartmentIcon(department.departmentName, department.deptIcon),
         image: resolveDepartmentImage(department.departmentName),
         services: departmentServices,

@@ -11,7 +11,7 @@ import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserProfileDropdown, Drawer } from '@/components/common';
 import { TrackingPanel } from '@/components/modules/dashboard/TrackingPanel';
 import { logoutCitizenAction, switchCitizenPropertyAction } from '@/app/[locale]/service/login/actions';
-import { type CitizenProfile } from '@/lib/mock/rts-citizen.mock';
+import { type CitizenProfile } from '@/types/rts-citizen.types';
 
 /** Matching landing page theme deep navy (#0a3275) */
 const HEADER_BG = '#0a3275';

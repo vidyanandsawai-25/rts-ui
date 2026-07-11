@@ -10,6 +10,7 @@ export interface CreateRtsCitizenSessionPayload {
   mobileNo: string;
   upic: string;
   propertyNo: string;
+  ownerId?: number;
 }
 
 export interface RtsCitizenSessionApiItem {
@@ -18,6 +19,7 @@ export interface RtsCitizenSessionApiItem {
   mobileNo: string;
   upic: string;
   propertyNo: string;
+  ownerId?: number;
   loginTime: string;
   lastActivityTime: string | null;
   logoutTime: string | null;
@@ -49,4 +51,21 @@ export async function createRtsCitizenSession(
   }
 
   return response.data;
+}
+
+export async function validateRtsCitizenSession(
+  sessionId: string
+): Promise<{ success: boolean; message: string; session?: RtsCitizenSessionApiItem }> {
+  try {
+    const response = await apiClient.get<{ success: boolean; message: string; session?: RtsCitizenSessionApiItem }>(
+      `/RTSCitizenSession/validate/${sessionId}`,
+      { cache: "no-store" }
+    );
+    if (!response.success || !response.data) {
+      return { success: false, message: response.error || "Failed to validate session" };
+    }
+    return response.data;
+  } catch (err: any) {
+    return { success: false, message: err.message || "Network error" };
+  }
 }

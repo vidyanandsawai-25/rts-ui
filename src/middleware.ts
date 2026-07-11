@@ -80,6 +80,18 @@ export default function middleware(request: NextRequest) {
 
   // 1. Citizen route redirection logic
   if (isCitizenRoute) {
+    if (isCitizenLogin && request.nextUrl.searchParams.get('error') === 'session_expired') {
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-pathname', pathname);
+      requestHeaders.set('x-is-auth-or-home', 'true');
+      const modifiedRequest = new NextRequest(request, { headers: requestHeaders });
+      const response = intlMiddleware(modifiedRequest);
+      response.cookies.delete('rts_session');
+      response.cookies.delete('rts_citizen_profile');
+      response.cookies.delete('rts_logged_in');
+      return response;
+    }
+
     const hasCitizenSession = request.cookies.has('rts_session');
     if (isCitizenLogin) {
       if (hasCitizenSession) {

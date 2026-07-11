@@ -23,6 +23,7 @@ export interface CreateRtsApplicationPayload {
   departmentId?: number;
   serviceId?: number;
   sessionId: string;
+  ownerId?: number;
   applicationStatus?: string;
   fieldValues: RtsApplicationFieldValuePayload[];
 }
@@ -46,6 +47,7 @@ export interface CreateRtsApplicationResponseItem {
   departmentId: number;
   serviceId: number;
   sessionId?: string;
+  ownerId?: number;
   applicationNo: string;
   applicationStatus: string;
   fieldValues: CreateRtsApplicationFieldValueResponse[];
@@ -163,13 +165,13 @@ export async function uploadRtsDocument(
 
   if (!response.ok) {
     throw new Error(
-      data.message || data.error || `RTS document upload failed with status ${response.status}`
+      (data as any).message || (data as any).error || `RTS document upload failed with status ${response.status}`
     );
   }
 
-  if (!("items" in data) || !data.items) {
-    throw new Error(data.message || "RTS document upload response did not include document data");
+  if (!("items" in data) || !(data as any).items) {
+    throw new Error((data as any).message || "RTS document upload response did not include document data");
   }
 
-  return data.items;
+  return (data as any).items;
 }

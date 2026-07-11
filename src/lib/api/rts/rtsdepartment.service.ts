@@ -21,7 +21,7 @@ export async function getRtsDepartments(
 ): Promise<PagedResponse<RtsDepartmentApiItem>> {
   const response = await apiClient.get<PagedResponse<RtsDepartmentApiItem>>(buildUrl(params), {
     cache: "no-store",
-  });
+  }, false);
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to fetch RTS departments");

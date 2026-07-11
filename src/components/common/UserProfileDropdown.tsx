@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { User, ClipboardList, LogOut, ChevronDown, Landmark, Hash, Phone } from 'lucide-react';
-import { type CitizenProfile } from '@/lib/mock/rts-citizen.mock';
+import { type CitizenProfile } from '@/types/rts-citizen.types';
 
 interface UserProfileDropdownProps {
   profile: CitizenProfile;

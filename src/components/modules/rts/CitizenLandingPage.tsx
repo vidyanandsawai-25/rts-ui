@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 import { getServiceFormConfig } from '@/data/serviceFormConfig';
 import { rtsServiceDetails } from '@/data/rtsServiceDetails';
-import { getMockDepartments } from '@/lib/mock/rts-citizen.mock';
 import { Modal, Button } from '@/components/common';
 
 interface CitizenLandingPageProps {
@@ -802,15 +801,15 @@ export function CitizenLandingPage({ isLoggedIn }: CitizenLandingPageProps) {
       {/* Service Details Modal */}
       {isDetailsOpen && selectedServiceId && (() => {
         const details = rtsServiceDetails[selectedServiceId];
-        const depts = getMockDepartments();
+        const depts = deptCards;
         // Find service name dynamically
         let serviceName = '';
         let deptName = '';
         for (const dept of depts) {
-          const svc = dept.services.find((s) => s.id === selectedServiceId);
+          const svc = dept.services.find((s: any) => s.id === selectedServiceId);
           if (svc) {
-            serviceName = getTransText(svc.name.mr || '', svc.name.hi || '', svc.name.en || '');
-            deptName = getTransText(dept.name.mr || '', dept.name.hi || '', dept.name.en || '');
+            serviceName = svc.name;
+            deptName = dept.title;
             break;
           }
         }

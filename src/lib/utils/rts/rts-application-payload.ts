@@ -6,6 +6,7 @@ export interface BuildRtsApplicationPayloadParams {
   departmentId?: number | string | null;
   serviceId?: number | string | null;
   sessionId: string;
+  ownerId?: number;
   createdBy?: number;
   applicationStatus?: string;
   documentGuidByFieldDefinitionId?: Record<string, string>;
@@ -112,6 +113,7 @@ export function buildRtsApplicationPayload({
   departmentId,
   serviceId,
   sessionId,
+  ownerId,
   createdBy = 0,
   applicationStatus = "pending",
   documentGuidByFieldDefinitionId = {},
@@ -176,6 +178,7 @@ export function buildRtsApplicationPayload({
     departmentId: departmentId == null || departmentId === "" ? undefined : Number(departmentId),
     serviceId: serviceId == null || serviceId === "" ? undefined : Number(serviceId),
     sessionId,
+    ownerId,
     applicationStatus,
     fieldValues,
   };

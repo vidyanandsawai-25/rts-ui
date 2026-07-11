@@ -29,6 +29,7 @@ export type Department = {
 export interface RtsDepartmentApiItem {
   departmentServiceId: number | null;
   departmentName: string;
+  departmentNameLocal?: string | null;
   deptIcon: string | null;
   id: number;
   isActive: boolean;

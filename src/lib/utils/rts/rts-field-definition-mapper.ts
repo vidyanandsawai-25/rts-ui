@@ -27,11 +27,12 @@ type ParsedValidationRules = {
   message?: string;
 };
 
-function langLabel(value: string) {
+function langLabel(value: string, localValue?: string | null) {
+  const localVal = localValue?.trim() || value;
   return {
     en: value,
-    hi: value,
-    mr: value,
+    hi: localVal,
+    mr: localVal,
   };
 }
 
@@ -732,7 +733,7 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
   return {
     id: String(item?.fieldCode || item?.fieldName || item?.id),
     type: oldType,
-    label: langLabel(String(item?.fieldLabel || item?.fieldName || item?.fieldCode || "")),
+    label: langLabel(String(item?.fieldLabel || item?.fieldName || item?.fieldCode || ""), item?.fieldLabelLocal),
     required: Boolean(item?.isRequired) || hasRule(item?.validationRules, "required"),
     colSpan: getApiFieldColSpan(oldType, options.length),
     placeholder:

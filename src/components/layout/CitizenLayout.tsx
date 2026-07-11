@@ -1,11 +1,12 @@
 import React from 'react';
 import { cookies } from 'next/headers';
 import { getLocale } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 
 import { CitizenHeader } from './CitizenHeader';
 import { CitizenFooter } from './CitizenFooter';
-import { getMockCitizenProfile } from '@/lib/mock/rts-citizen.mock';
+import { validateRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
 
 interface CitizenLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,13 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
   const locale = await getLocale();
   const sessionCookie = cookieStore.get('rts_session')?.value || '';
   const isLoggedIn = !!sessionCookie;
+
+  if (isLoggedIn) {
+    const validation = await validateRtsCitizenSession(sessionCookie);
+    if (!validation.success) {
+      redirect(`/${locale}/service/login?error=session_expired`);
+    }
+  }
   
   // Extract mobile number from the cookie: local_mobile_timestamp
   const mobile = isLoggedIn ? (sessionCookie.split('_')[1] || '') : '';
@@ -26,10 +34,22 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
     try {
       profile = JSON.parse(profileCookie);
     } catch {
-      profile = isLoggedIn ? getMockCitizenProfile(mobile) : undefined;
+      profile = isLoggedIn ? {
+        name: 'धारक . .',
+        upicId: 'AKLMC089194',
+        propertyNo: 'B3-434',
+        mobile: mobile,
+        ownerId: 1,
+      } : undefined;
     }
   } else if (isLoggedIn) {
-    profile = getMockCitizenProfile(mobile);
+    profile = {
+      name: 'धारक . .',
+      upicId: 'AKLMC089194',
+      propertyNo: 'B3-434',
+      mobile: mobile,
+      ownerId: 1,
+    };
   }
 
   const propertiesCookie = cookieStore.get('rts_citizen_properties')?.value;

@@ -13,6 +13,7 @@ export interface RtsFieldDefinitionApiItem {
   fieldCode: string;
   fieldName: string;
   fieldLabel: string;
+  fieldLabelLocal: string | null;
   fieldType: string;
   fieldGroup: string | null;
   isRequired: boolean;

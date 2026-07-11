@@ -18,6 +18,7 @@ export interface RtsServiceApiItem {
   departmentId: number;
   rtsServiceId?: number;
   serviceName: string;
+  serviceNameLocal?: string | null;
   departmentName: string | null;
   id: number;
   description?: string | null;

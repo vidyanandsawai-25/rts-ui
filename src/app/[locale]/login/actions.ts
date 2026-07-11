@@ -264,7 +264,13 @@ export async function validateCredentialsAction(formData: FormData) {
  *
  * @param locale - User's locale for redirect
  */
-export async function logoutAction(locale: string = 'en') {
+export async function logoutAction(localeOrFormData: string | FormData = 'en') {
+  let locale = 'en';
+  if (typeof localeOrFormData === 'string') {
+    locale = localeOrFormData;
+  } else if (localeOrFormData && typeof (localeOrFormData as any).get === 'function') {
+    locale = (localeOrFormData as any).get('locale')?.toString() || 'en';
+  }
   const safeLocale = sanitizeLocale(locale);
   const cookieStore = await cookies();
 

@@ -26,7 +26,7 @@ export async function getRtsFieldDefinitions(
 ): Promise<PagedResponse<RtsFieldDefinitionApiItem>> {
   const response = await apiClient.get<PagedResponse<RtsFieldDefinitionApiItem>>(buildUrl(params), {
     cache: "no-store",
-  });
+  }, false);
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to fetch RTS field definitions");

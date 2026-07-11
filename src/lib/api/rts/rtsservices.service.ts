@@ -22,7 +22,7 @@ export async function getRtsServices(
 ): Promise<PagedResponse<RtsServiceApiItem>> {
   const response = await apiClient.get<PagedResponse<RtsServiceApiItem>>(buildUrl(params), {
     cache: "no-store",
-  });
+  }, false);
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to fetch RTS services");
@@ -53,7 +53,7 @@ export async function getServicesByDepartment(departmentId: number): Promise<Rts
 export async function getRtsServiceById(id: number): Promise<RtsServiceApiItem> {
   const response = await apiClient.get<RtsServiceApiItem>(`/RTSService/${id}`, {
     cache: "no-store",
-  });
+  }, false);
 
   if (!response.success || !response.data) {
     throw new Error(response.error || `Failed to fetch RTS service ${id}`);

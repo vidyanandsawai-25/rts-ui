@@ -18,7 +18,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { adminLogoutAction } from "@/app/[locale]/login/admin/actions";
+import { logoutAction } from "@/app/[locale]/login/actions";
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -218,7 +218,7 @@ export default function AdminShell({ children, locale }: AdminShellProps) {
                 <p className="text-[10px] text-white/90">RTS2024001234</p>
               </div>
             </div>
-            <form action={adminLogoutAction}>
+            <form action={logoutAction}>
               <input type="hidden" name="locale" value={locale} />
               <button
                 type="submit"

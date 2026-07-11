@@ -139,6 +139,7 @@ export async function verifyCitizenOtpAction(otp: string) {
       mobileNo: citizenProfile.mobile,
       upic: citizenProfile.upicId,
       propertyNo: citizenProfile.propertyNo,
+      ownerId: citizenProfile.ownerId,
     });
   } catch (err) {
     console.error("Failed to create RTS citizen session in backend:", err);

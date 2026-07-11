@@ -151,3 +151,11 @@ export type DocumentDTO = {
   maxSizeMB?: number;
   description?: I18nLabel;
 };
+
+export interface CitizenProfile {
+  name: string;
+  upicId: string;
+  propertyNo: string;
+  mobile: string;
+  ownerId?: number;
+}

@@ -97,6 +97,7 @@ export async function submitRtsApplicationAction(
     departmentId: input.departmentId,
     serviceId: input.serviceId,
     sessionId,
+    ownerId,
     createdBy: input.createdBy,
     applicationStatus: input.applicationStatus,
     documentGuidByFieldDefinitionId,

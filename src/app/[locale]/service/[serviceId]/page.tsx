@@ -6,6 +6,7 @@ import { fetchLoginBrandingAction } from "@/app/[locale]/login/actions";
 import { CitizenLayout } from "@/components/layout";
 import DynamicServiceFormClient from "@/components/modules/forms/DynamicServiceFormClient";
 import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
+import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
 import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";
 
 interface ServicePageProps {
@@ -33,20 +34,6 @@ function pickNumber(...values: unknown[]): number | undefined {
   return undefined;
 }
 
-function getLocalizedText(value: unknown, locale: string, fallback: string): string {
-  if (typeof value === "string" && value.trim()) return value.trim();
-  if (!value || typeof value !== "object") return fallback;
-
-  const record = value as Record<string, unknown>;
-  const localized = record[locale];
-  if (typeof localized === "string" && localized.trim()) return localized;
-
-  const english = record.en;
-  if (typeof english === "string" && english.trim()) return english;
-
-  return fallback;
-}
-
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { locale, serviceId } = await params;
   const { ulbData } = await fetchLoginBrandingAction();
@@ -58,7 +45,10 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       ? ulbData?.ulbNameLocal || ulbData?.ulbName || "महानगरपालिका"
       : ulbData?.ulbName || "Municipal Corporation";
 
-  const serviceName = getLocalizedText(rtsService?.serviceName, locale, `Service ${serviceId}`);
+  const serviceName =
+    locale !== "en" && rtsService?.serviceNameLocal?.trim()
+      ? rtsService.serviceNameLocal.trim()
+      : rtsService?.serviceName || `Service ${serviceId}`;
 
   return {
     title: `${serviceName} - ${ulbName}`,
@@ -98,8 +88,27 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   const successTrackingId = resolvedSearchParams?.applicationNo?.trim() || "";
   const successApplicationStatus = resolvedSearchParams?.status?.trim() || "";
 
-  const serviceTitle = getLocalizedText(rtsService?.serviceName, locale, `Service ${serviceId}`);
-  const departmentTitle = getLocalizedText(rtsService?.departmentName, locale, "RTS Department");
+  const serviceTitle =
+    locale !== "en" && rtsService?.serviceNameLocal?.trim()
+      ? rtsService.serviceNameLocal.trim()
+      : rtsService?.serviceName || `Service ${serviceId}`;
+
+  let departmentTitle = "RTS Department";
+  if (departmentId) {
+    try {
+      const departments = await getAllRtsDepartments();
+      const dept = departments.find((d) => d.id === departmentId);
+      if (dept) {
+        departmentTitle =
+          locale !== "en" && dept.departmentNameLocal?.trim()
+            ? dept.departmentNameLocal.trim()
+            : dept.departmentName;
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
   const hasFieldDefinitions = Array.isArray(fieldDefinitions) && fieldDefinitions.length > 0;
 
   return (
