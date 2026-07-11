@@ -222,6 +222,8 @@
       "plotNo": "प्लॉट क्रमांक",
       "wingFlatNo": "विंग/फ़्लैट क्रमांक",
       "wingFlatNoShort": "विंग/फ्लैट क्र.",
+      "wing": "विंग: {wing}",
+      "flatNo": "फ्लैट क्र.: {flatNo}",
       "propertyCount": "संपत्ति गणना",
       "category": "श्रेणी",
       "categoryShort": "श्रेणी",

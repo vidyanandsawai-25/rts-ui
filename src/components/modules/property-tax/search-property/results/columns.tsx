@@ -228,19 +228,63 @@ export function buildPropertySearchColumns(
         align: "center",
         render: (value, row) => {
           const displayVal = formatDisplayText(String(value ?? ""));
-          if (displayVal.toLowerCase() === "apartment") {
+          if (displayVal.toLowerCase() === "apartment" && viewMode !== "units") {
             const unitCount = row.childUnitCount ?? row.propertyCount ?? 0;
-            if (viewMode !== "units") {
-              return (
-                <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5" title={t("apartmentUnits", { count: unitCount })}>
-                  <span className="font-semibold text-gray-800 text-xs">{displayVal}</span>
-                  <span className="text-[11px] text-gray-700 font-semibold block">
-                    {t("unit")}: {unitCount}
-                  </span>
-                </div>
-              );
+            return (
+              <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5" title={t("apartmentUnits", { count: unitCount })}>
+                <span className="font-semibold text-gray-800 text-xs">{displayVal}</span>
+                <span className="text-[11px] text-gray-700 font-semibold block">
+                  {t("unit")}: {unitCount}
+                </span>
+              </div>
+            );
+          }
+
+          let wing = row.wing ? String(row.wing).trim() : "";
+          let flatNo = row.flatNo ? String(row.flatNo).trim() : "";
+          const wingFlatNo = row.wingFlatNo ? String(row.wingFlatNo).trim() : "";
+
+          // If individual fields are empty but we have a combined string, try to parse it
+          if (!wing && !flatNo && wingFlatNo) {
+            if (wingFlatNo.includes("-")) {
+              const parts = wingFlatNo.split("-");
+              if (parts.length === 2) {
+                wing = parts[0].trim();
+                flatNo = parts[1].trim();
+              } else {
+                flatNo = wingFlatNo;
+              }
+            } else if (wingFlatNo.includes("/")) {
+              const parts = wingFlatNo.split("/");
+              if (parts.length === 2) {
+                wing = parts[0].trim();
+                flatNo = parts[1].trim();
+              } else {
+                flatNo = wingFlatNo;
+              }
+            } else {
+              flatNo = wingFlatNo;
             }
           }
+
+          if (wing || flatNo) {
+            return (
+              <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5">
+                <span className="text-gray-800 text-xs font-semibold">{displayVal}</span>
+                {wing && (
+                  <span className="text-[11px] text-[#004c8c] font-semibold block">
+                    {t("columns.wing", { wing })}
+                  </span>
+                )}
+                {flatNo && (
+                  <span className="text-[11px] text-[#047857] font-semibold block">
+                    {t("columns.flatNo", { flatNo })}
+                  </span>
+                )}
+              </div>
+            );
+          }
+
           return <span>{displayVal}</span>;
         },
       },

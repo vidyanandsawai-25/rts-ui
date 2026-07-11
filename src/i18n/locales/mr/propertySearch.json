@@ -222,6 +222,8 @@
       "plotNo": "प्लॉट क्र.",
       "wingFlatNo": "विंग/फ्लॅट क्र.",
       "wingFlatNoShort": "विंग/फ्लॅट क्र.",
+      "wing": "विंग: {wing}",
+      "flatNo": "फ्लॅट क्र.: {flatNo}",
       "propertyCount": "मालमत्ता गणना",
       "category": "श्रेणी",
       "categoryShort": "श्रेणी",

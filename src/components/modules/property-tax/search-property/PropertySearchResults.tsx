@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import { toast } from "sonner";
 import { ValidationMessage } from "@/components/common";
 import type {
@@ -165,6 +165,41 @@ export function PropertySearchResults({
     });
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Format headers with custom style (TMC Brand Blue background and dark text)
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "");
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (worksheet[cellRef]) {
+        worksheet[cellRef].s = {
+          fill: {
+            patternType: "solid",
+            fgColor: { rgb: "D6E8FF" }, // Light blue background
+          },
+          font: {
+            name: "Arial",
+            sz: 10,
+            bold: true,
+            color: { rgb: "1E3A8A" }, // Dark blue text
+          },
+          alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true,
+          },
+          border: {
+            top: { style: "thin", color: { rgb: "B2CFFF" } },
+            bottom: { style: "medium", color: { rgb: "1E3A8A" } },
+            left: { style: "thin", color: { rgb: "B2CFFF" } },
+            right: { style: "thin", color: { rgb: "B2CFFF" } },
+          },
+        };
+      }
+    }
+
+    // Set header row height to 28 pt to provide a spacious feel
+    worksheet["!rows"] = [{ hpt: 28 }];
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Property Data");
 

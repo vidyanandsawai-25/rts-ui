@@ -10,9 +10,10 @@ export default async function Layout({ children, params }: Props) {
     const { propertyId } = await params;
     const basicDetails = propertyId ? await getPropertyBasicDetailsAction(propertyId) : null;
     const categoryName = basicDetails?.categoryName || "";
+    const propertyDescription = basicDetails?.propertyDescription || "";
 
     return (
-        <QuickDataEntryClientWrapper categoryName={categoryName}>
+        <QuickDataEntryClientWrapper categoryName={categoryName} propertyDescription={propertyDescription}>
             {children}
         </QuickDataEntryClientWrapper>
     );

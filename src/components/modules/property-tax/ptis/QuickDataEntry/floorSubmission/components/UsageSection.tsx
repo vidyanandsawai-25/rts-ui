@@ -39,20 +39,21 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
 
     return rawOptions.filter(opt => {
       const item = lookup.find(u => {
-        const desc = String(u.description || '').trim();
-        const code = u.typeOfUseCode ? String(u.typeOfUseCode).trim() : '';
-        const id = String(u.typeOfUseId || u.id || u.ID || '').trim();
-        return opt === desc || (code && opt === `${code} - ${desc}`) || (id && opt === `${id} - ${desc}`);
+        const desc = String(u.description || '').trim().replace(/\s+/g, ' ');
+        const code = u.typeOfUseCode ? String(u.typeOfUseCode).trim().replace(/\s+/g, ' ') : '';
+        const id = String(u.typeOfUseId || u.id || u.ID || '').trim().replace(/\s+/g, ' ');
+        const cleanOpt = String(opt || '').trim().replace(/\s+/g, ' ');
+        return cleanOpt === desc || (code && cleanOpt === `${code} - ${desc}`) || (id && cleanOpt === `${id} - ${desc}`);
       });
       if (!item) return false;
-      const itemCategoryId = item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null
-        ? Number(item.typeOfUseCategoryId)
-        : null;
+      // Only filter by category for OpenPlot; Construction shows all
       if (selectedFloorType === 'OpenPlot') {
+        const itemCategoryId = item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null
+          ? Number(item.typeOfUseCategoryId)
+          : null;
         return itemCategoryId === 2 || itemCategoryId === 3;
-      } else {
-        return itemCategoryId !== 2 && itemCategoryId !== 3;
       }
+      return true;
     });
   }, [useOptions, useLookup, selectedFloorType]);
 

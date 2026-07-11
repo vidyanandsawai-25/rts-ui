@@ -18,7 +18,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
       url: `/api/UlbImageMaster/${img.documentGuid}/view`,
       name: img.imageType || `Image-${img.id}`,
       size: 0,
-      isBackgroundImage: img.imageType?.toLowerCase().includes('background') || false,
+      isBackgroundImage: img.imageType === 'Background',
       uploadedDate: img.createdDate || new Date().toISOString(),
       documentId: img.imageId || undefined,
     }))
