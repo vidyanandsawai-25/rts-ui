@@ -33,6 +33,7 @@ import {
   AlertCircle,
   Eye,
   Send,
+  Database,
 } from 'lucide-react';
 
 export interface IconProps {
@@ -76,6 +77,7 @@ export const ICON_MAP: Record<string, React.ComponentType<IconProps>> = {
   Eye,
   Send,
   Info,
+  Database,
   save: Save,
   printer: Printer,
   plus: Plus,

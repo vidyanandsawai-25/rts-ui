@@ -334,7 +334,7 @@ export function SearchSelect({
   const t = useTranslations("common");
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
+    <div ref={wrapperRef} className={`relative w-full ${isOpen ? 'z-50' : ''}`}>
       {label && (
         <label
           htmlFor={fallbackId}

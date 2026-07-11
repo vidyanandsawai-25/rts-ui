@@ -11,6 +11,7 @@ export interface BulkUpdateMaster {
   displaySequence: number;
   apiRoute: string;
   description?: string;
+  category?: string | null;
 }
 
 export interface BulkUpdateFieldConfig {
@@ -19,7 +20,7 @@ export interface BulkUpdateFieldConfig {
   fieldName: string;
   displayName: string;
   displayNameMarathi: string;
-  controlType: 'textbox' | 'textarea' | 'dropdown' | 'checkbox' | 'number' | 'year' | 'date' | 'file';
+  controlType: 'textbox' | 'textarea' | 'dropdown' | 'searchselect' | 'checkbox' | 'number' | 'year' | 'date' | 'file';
   dataType: string;
   placeholder?: string | null;
   isRequired: boolean;
@@ -41,10 +42,12 @@ export interface PropertyPreviewRow {
 }
 
 export interface PropertyFilterParams {
-  wardId: string;
-  fromPropertyNo: string;
-  toPropertyNo: string;
+  zoneId?: string;
+  wardId?: string;
+  fromPropertyNo?: string;
+  toPropertyNo?: string;
   wingId?: string;
+  propertyTypeId?: string;
   updateCode?: string;
   page?: number;
   pageSize?: number;
@@ -69,6 +72,12 @@ export interface BulkUpdateResponse {
   correlationId: string | null;
 }
 
+export interface ExcelImportResponse {
+  success: boolean;
+  message: string;
+  errors?: string[] | null;
+}
+
 export type SelectOption = {
   label: string;
   value: string;
@@ -87,10 +96,12 @@ export interface WingOption {
 }
 
 export interface PropertyFilterFormValues {
+  zoneId: string;
   wardId: string;
   fromPropertyNo: string;
   toPropertyNo: string;
   wingId: string;
+  propertyTypeId: string;
 }
 
 export interface CommonDetailsUpdatePageProps {
@@ -106,8 +117,67 @@ export interface CommonDetailsUpdatePageProps {
   initialPageSize?: number;
   initialSearchTerm?: string;
   initialTab?: string;
+  initialScopeId?: string;
+  initialZoneId?: string;
 }
 
 export type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; statusCode?: number };
+
+export interface FieldRegistrySchema {
+  schemaName: string;
+}
+
+export interface FieldRegistryTable {
+  schemaName: string;
+  tableName: string;
+}
+
+export interface FieldRegistryColumn {
+  columnName: string;
+  fieldName?: string;
+  displayName?: string;
+  displayNameMarathi?: string;
+  controlType?: string;
+  dataType?: string;
+  placeholder?: string | null;
+  isRequired?: boolean;
+  maxLength?: number | null;
+  validationRegex?: string | null;
+  defaultValue?: string | null;
+  bindApi?: string | null;
+  isActive?: boolean;
+}
+
+export interface CreateFieldRegistryDto {
+  updateCode: string;
+  updateName: string;
+  updateNameMarathi: string;
+  iconName?: string;
+  referenceTableName: string;
+  displaySequence: number;
+  apiRoute: string;
+  description?: string | null;
+  category?: string | null;
+  isApprovalRequired: boolean;
+  isActive: boolean;
+  createdBy?: number | null;
+  fieldConfigs: FieldRegistryFieldConfigDto[];
+}
+
+export interface FieldRegistryFieldConfigDto {
+  fieldName: string;
+  displayName: string;
+  displayNameMarathi: string;
+  controlType: string;
+  dataType: string;
+  placeholder?: string | null;
+  isRequired: boolean;
+  maxLength?: number | null;
+  validationRegex?: string | null;
+  defaultValue?: string | null;
+  bindApi?: string | null;
+  sequenceNo?: number;
+}
+
