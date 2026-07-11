@@ -133,7 +133,9 @@
     "floorQC": "फ़्लोर QC",
     "basicProperty": "मूल संपत्ति",
     "taxDetails": "कर विवरण",
+    "oldPropertyDetails": "पुराना संपत्ति विवरण",
     "photoPlan": "फोटो प्लान",
+    "apartmentQCLoading": "लोड हो रहा है...",
     "roomWiseSubmission": "कक्षवार प्रविष्टि",
     "loadingRoomData": "कक्ष डेटा लोड हो रहा है...",
     "viewImage": "प्रतिकारन",
@@ -192,7 +194,9 @@
     "cv": "पूंजी मूल्य",
     "kyc": "अपने ग्राहक को जानें",
     "viewKycDetails": "केवाईसी विवरण देखें",
-    "hideKycDetails": "केवाईसी विवरण छुपाएं"
+    "hideKycDetails": "केवाईसी विवरण छुपाएं",
+    "expandTable": "टेबल विस्तृत करें",
+    "collapseTable": "टेबल संकुचित करें"
   },
   "pageTitle": "संपत्ति विवरण संपादित करें",
   "badges": {

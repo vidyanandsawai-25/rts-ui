@@ -30,35 +30,29 @@ const FILTERABLE_COLUMNS: Record<string, FilterField> = {
 };
 
 const SORT_COLUMN_KEYS: Record<string, string> = {
+  id: 'Id',
+  taxZoneId: 'TaxZoneId',
+  wardId: 'WardId',
   propertyNo: 'PropertyNo',
-  flatOrShopNo: 'FlatOrShopNo',
-  constructionYear: 'ConstructionYear',
-  assessmentYear: 'AssessmentYear',
-  ocDate: 'OcDate',
-  ownerName: 'OwnerName',
-  occupierName: 'OccupierName',
-  bhk: 'Bhk',
-  carpetArea: 'CarpetASqFt',
-  builtupArea: 'BuiltupASqFt',
-  oldConstArea: 'OldConstructionArea',
-  typeOfUse: 'TypeOfUse',
-  constructionType: 'ConstructionType',
-  rateableValue: 'RateableValue',
-  oldRV: 'OldRV',
-  capitalValue: 'CapitalValue',
-  totalTax: 'NewTaxTotal',
-  newTaxTotalCV: 'NewTaxTotalCV',
-  wing: 'Wing',
-  flatOrShopName: 'FlatOrShopName',
-  rentMonthly: 'RentMonthly',
-  renterName: 'RenterName',
-  propertyTypeName: 'PropertyTypeName',
-  apartmentType: 'ApartmentType',
-  floor: 'Floor',
-  toiletCount: 'ToiletCount',
+  partitionNo: 'PartitionNo',
   mobileNo: 'MobileNo',
   emailId: 'EmailId',
+  flatOrShopNo: 'FlatOrShopNo',
+  flatOrShopName: 'FlatOrShopName',
+  flatOrShopNoEnglish: 'FlatOrShopNoEnglish',
+  flatOrShopNameEnglish: 'FlatOrShopNameEnglish',
+  ownerName: 'OwnerName',
+  ownerNameEnglish: 'OwnerNameEnglish',
+  occupierName: 'OccupierName',
+  occupierNameEnglish: 'OccupierNameEnglish',
+  partType: 'PartType',
+  propertyType: 'PropertyType',
+  propertyTypeName: 'PropertyTypeName',
+  bhk: 'BHK',
+  wing: 'Wing',
+  apartmentType: 'ApartmentType',
 };
+
 
 interface FilterOption {
   value: string;
@@ -156,6 +150,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   useTableAutoScroll(isAutoScrolling);
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [isTableExpanded, setIsTableExpanded] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { isExporting, handleExcelExport } = useExcelExport({ wardId, propertyNo });
@@ -218,15 +213,9 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 
         const isPropertyNo = col.key === 'propertyNo';
         const isOldPropertyNo = col.key === 'oldPropertyNo';
-        const sortableColumns = [
-          'propertyNo',
-          'flatOrShopNo',
-          'ownerName',
-          'occupierName',
-          'mobileNo',
-          'emailId',
-        ];
-        const disableSort = !sortableColumns.includes(col.key as string);
+        
+        // Allow sorting for all columns defined in SORT_COLUMN_KEYS
+        const disableSort = !Object.prototype.hasOwnProperty.call(SORT_COLUMN_KEYS, col.key as string);
 
 
         const sortButton = disableSort ? (
@@ -357,7 +346,9 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
         columns={styledColumns}
         data={groupedData}
         loading={loading}
-        height={250}
+        height={isTableExpanded ? 600 : 250}
+        isExpanded={isTableExpanded}
+        onToggleExpand={() => setIsTableExpanded(!isTableExpanded)}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={

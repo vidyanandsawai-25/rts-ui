@@ -133,7 +133,9 @@
     "floorQC": "Floor QC",
     "basicProperty": "Basic Property",
     "taxDetails": "Tax Details",
+    "oldPropertyDetails": "Old Property Details",
     "photoPlan": "Photo Plan",
+    "apartmentQCLoading": "Loading...",
     "roomWiseSubmission": "Room Wise Submission",
     "loadingRoomData": "Loading room data...",
     "viewImage": "View Image",
@@ -192,7 +194,9 @@
     "cv": "Capital Value",
     "kyc": "Know Your Customer",
     "viewKycDetails": "View KYC Details",
-    "hideKycDetails": "Hide KYC Details"
+    "hideKycDetails": "Hide KYC Details",
+    "expandTable": "Expand Table",
+    "collapseTable": "Collapse Table"
   },
   "pageTitle": "Edit Property Details",
   "badges": {

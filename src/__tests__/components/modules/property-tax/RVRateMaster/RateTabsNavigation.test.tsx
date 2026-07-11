@@ -22,6 +22,9 @@ const mockMessages = {
       rateableDescription: "Manage rateable value rates",
       capitalTitle: "Capital Value Rate Master",
       capitalDescription: "Manage capital value rates",
+      moujaTab: "Mouja Master",
+      moujaTitle: "Mouja Rate Master",
+      moujaDescription: "Manage mouja rates",
     },
   },
 };

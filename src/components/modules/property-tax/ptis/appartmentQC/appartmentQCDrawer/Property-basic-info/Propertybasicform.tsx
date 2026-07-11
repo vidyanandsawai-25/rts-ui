@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useTransition, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Input, Select, ValidationMessage } from "@/components/common";
+import { Input, SearchSelect, ValidationMessage } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
 import { updateBasicDetailsAction } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
 import { useToast } from "@/components/common";
@@ -32,6 +32,7 @@ interface CompactFieldProps {
   type?: string;
   maxLength?: number;
   readOnly?: boolean;
+  autoFocus?: boolean;
 }
 // ─── Compact Select Field Component ───────────────────────────────────────────
 interface CompactSelectFieldProps {
@@ -128,6 +129,7 @@ const CompactField = ({
   type = "text",
   maxLength,
   readOnly = false,
+  autoFocus = false,
 }: CompactFieldProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
@@ -145,6 +147,7 @@ const CompactField = ({
         required={required}
         type={type}
         value={value}
+        autoFocus={autoFocus}
         onChange={handleChange}
         onBlur={onBlur}
         placeholder={placeholder}
@@ -169,11 +172,11 @@ const CompactSelectField = ({
   placeholder = "Select",
   required = false,
 }: CompactSelectFieldProps) => (
-  <Select
+  <SearchSelect
     label={label}
     required={required}
     value={value}
-    onChange={(_e, val) => onChange(val)}
+    onChange={(_, val) => onChange(val)}
     options={options}
     placeholder={placeholder}
   />
@@ -403,12 +406,51 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
             toastError(result.error || "Failed to update");
           }
         });
+      },
+      onCancel: () => {
+        // Restore focus to the Update Changes button if cancelled
+        const updateBtn = document.getElementById('update-basic-info-btn');
+        if (updateBtn) {
+          updateBtn.focus();
+        }
       }
     });
   };
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      const activeElement = document.activeElement as HTMLElement;
+      const activeTag = activeElement?.tagName.toLowerCase();
+      
+      if (activeTag === 'textarea') return;
+      
+      const isNavigableButton = activeTag === 'button' && activeElement?.getAttribute('data-enter-navigable') === 'true';
+
+      // For normal buttons, do not intercept Enter (let them click normally)
+      if (activeTag === 'button' && !isNavigableButton) return;
+      
+      // Prevent form submission when pressing Enter on inputs
+      if (activeTag !== 'button') {
+        e.preventDefault();
+      }
+      
+      const form = e.currentTarget;
+      // Find all focusable inputs, selects, and specific navigable buttons
+      const focusableElements = Array.from(
+        form.querySelectorAll('input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), [data-enter-navigable="true"]:not([disabled])')
+      ) as HTMLElement[];
+      
+      const currentIndex = focusableElements.indexOf(activeElement);
+      
+      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
+        setTimeout(() => {
+          focusableElements[currentIndex + 1].focus();
+        }, 0);
+      }
+    }
+  }, []);
 
   return (
-    <form noValidate onSubmit={handleUpdate} className="flex flex-col gap-4 p-4">
+    <form noValidate onSubmit={handleUpdate} className="flex flex-col gap-4 p-4" onKeyDown={handleKeyDown}>
       <div className="border border-blue-200 rounded-lg overflow-hidden shadow-sm bg-white">
         <div className="bg-blue-600 text-white px-4 py-2 flex items-center gap-2 text-sm font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -422,17 +464,18 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
               value={formData.ownerName}
               onChange={(v) => handleFieldChange("ownerName", v.replace(OWNERNAME_REGEX, ""))}
               required
-            
+              maxLength={1000}
               placeholder={t('basicInfo.fields.ownerName.placeholder', { fallback: "" })}
               error={errors.ownerName}
               showError={true}
+              autoFocus={true}
             />
             <CompactField
               label={t('basicInfo.fields.occupierName.label', { fallback: "Occupier Name *" })}
               value={formData.occupierName}
               onChange={(v) => handleFieldChange("occupierName", v.replace(OWNERNAME_REGEX, ""))}
               required
-            
+              maxLength={1000}
               placeholder={t('basicInfo.fields.occupierName.placeholder', { fallback: "" })}
               error={errors.occupierName}
               showError={true}
@@ -441,7 +484,7 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
               label={t('basicInfo.fields.renterName.label', { fallback: "Renter Name" })}
               value={formData.renterName}
               onChange={(v) => handleFieldChange("renterName", v.replace(OWNERNAME_REGEX, ""))}
-            
+              maxLength={1000}
               placeholder={t('basicInfo.fields.renterName.placeholder', { fallback: "" })}
             />
             <CompactSelectField
@@ -525,10 +568,13 @@ export default function Propertybasicform({ propertyData, propertyTypes, oldProp
 
           <div className="flex justify-end space-x-2 mt-4">
             <UpdateButton
+              id="update-basic-info-btn"
               label={isPending ? tQ('footer.saving', { fallback: "Saving..." }) : tQ('commonbuttonmessages.UpdateChanges', { fallback: "Update Changes" })}
               type="submit"
               isLoading={isPending}
               disabled={isPending || !hasChanges}
+              data-enter-navigable="true"
+              className="focus:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
             />
           </div>
         </div>
