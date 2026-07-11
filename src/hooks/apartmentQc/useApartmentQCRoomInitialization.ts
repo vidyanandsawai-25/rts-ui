@@ -45,6 +45,7 @@ export const useApartmentQCRoomInitialization = (
 
   // 2. Load existing rooms (no empty-row padding)
   const isInitialized = useRef(false);
+  const prevExistingRoomsLength = useRef(0);
 
   useEffect(() => {
     if (!isOpen) {
@@ -52,13 +53,18 @@ export const useApartmentQCRoomInitialization = (
       setEditingIndex(null);
       setIsEditMode(false);
       isInitialized.current = false;
+      prevExistingRoomsLength.current = 0;
       return;
     }
 
-    if (isInitialized.current) return;
-    isInitialized.current = true;
-
     const source: RoomAPIResponse[] = existingRooms || [];
+    const sourceLength = source.length;
+    
+    // Guard against running multiple times unless the source length changes
+    if (isInitialized.current && prevExistingRoomsLength.current === sourceLength) return;
+    isInitialized.current = true;
+    prevExistingRoomsLength.current = sourceLength;
+
     const targetCount = Number(noOfRooms) || 0;
 
     const loaded = Array.from({ length: targetCount }).map((_, i) => {
