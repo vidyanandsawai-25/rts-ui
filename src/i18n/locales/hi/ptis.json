@@ -266,6 +266,7 @@
     "division": "प्रभाग",
     "plotNo": "प्लॉट नं",
     "plotArea": "प्लॉट क्षेत्रफल",
+    "plotAreaWithUnit": "प्लॉट क्षेत्रफल (ft/mtr)",
     "wardNo": "वार्ड नं",
     "blockNo": "ब्लॉक नं",
     "propertyNo": "संपत्ति नं",
