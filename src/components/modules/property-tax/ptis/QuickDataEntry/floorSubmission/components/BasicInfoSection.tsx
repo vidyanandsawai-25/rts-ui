@@ -173,11 +173,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
               value={String(editingFloorForm.floorId ?? '')}
               onChange={(_name, value) => {
                 const desc = getFloorDescription(value, floorLookup);
-                setEditingFloorForm((prev: FloorData) => ({ 
-                  ...prev, 
+                setEditingFloorForm((prev: FloorData) => ({
+                  ...prev,
                   floorId: value,
                   floor: desc || value,
-                  floorDescription: desc || value 
+                  floorDescription: desc || value
                 }));
                 // Simple required validation: if value is empty, show error
                 if (!value) {
@@ -200,7 +200,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
             <SearchSelect
               id="floor-sub-floor"
               name="subFloorId"
-              options={[ 
+              options={[
                 { label: t('floor.selectSubFloor'), value: "" },
                 ...getSelectOptions(
                   normalizeToStringArray(subFloorOptions),
@@ -215,8 +215,8 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
               value={String(editingFloorForm.subFloorId ?? '')}
               onChange={(_name, value) => {
                 const desc = getSubFloorDescription(value, subFloorLookup);
-                setEditingFloorForm((prev: FloorData) => ({ 
-                  ...prev, 
+                setEditingFloorForm((prev: FloorData) => ({
+                  ...prev,
                   subFloorId: value === "" ? undefined : value,
                   subFloor: value === "" ? "" : (desc || value),
                   subFloorDescription: value === "" ? "" : (desc || value)
