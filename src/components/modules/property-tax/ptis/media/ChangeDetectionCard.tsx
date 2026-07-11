@@ -1,24 +1,28 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { ImageWithFallback } from './ImageWithFallback';
 
 interface ChangeDetectionCardProps {
   beforeImageSrc?: string;
   afterImageSrc?: string;
   beforeLabel?: string;
   afterLabel?: string;
+  fallbackBeforeSrc?: string;
+  fallbackAfterSrc?: string;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }
 
 export function ChangeDetectionCard({
-  beforeImageSrc = '/images/thane-earth-2018.jpg',
-  afterImageSrc = '/images/thane-earth-2026.jpg',
-  beforeLabel = '2018',
-  afterLabel = '2026',
+  beforeImageSrc = '',
+  afterImageSrc = '',
+  beforeLabel = 'Before (Old)',
+  afterLabel = 'After (New)',
+  fallbackBeforeSrc,
+  fallbackAfterSrc,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -31,7 +35,7 @@ export function ChangeDetectionCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={`
-        relative h-[200px] lg:h-[220px] w-full rounded-lg overflow-hidden
+        relative flex-1 min-h-[150px] lg:min-h-0 w-full rounded-lg overflow-hidden
         border border-slate-200/80 shadow-md transition-all duration-300
         hover:shadow-lg hover:border-blue-400 bg-white
         ${onClick ? 'cursor-pointer hover:scale-[1.01]' : ''}
@@ -41,28 +45,28 @@ export function ChangeDetectionCard({
       <div className="grid grid-cols-2 h-full w-full relative">
         {/* Left Side: Before */}
         <div className="relative h-full w-full overflow-hidden group/before border-r border-slate-200">
-          <Image
+          <ImageWithFallback
             src={beforeImageSrc}
+            fallbackSrc={fallbackBeforeSrc}
             alt={`${beforeLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
-            priority
             className="object-cover transition-transform duration-500 group-hover/before:scale-110"
           />
           {/* Year Badge */}
-          <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[1px]">
+          <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[2px]">
             {beforeLabel}
           </div>
         </div>
 
         {/* Right Side: After */}
         <div className="relative h-full w-full overflow-hidden group/after">
-          <Image
+          <ImageWithFallback
             src={afterImageSrc}
+            fallbackSrc={fallbackAfterSrc}
             alt={`${afterLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
-            priority
             className="object-cover transition-transform duration-500 group-hover/after:scale-110"
           />
           {/* Year Badge (Emerald highlight to indicate new/updated) */}

@@ -110,7 +110,7 @@ export const ApartmentQCRoomLayout: React.FC<ApartmentQCRoomLayoutProps> = ({
             focusRefs={focusRefs}
           />
 
-          {/* Rooms list: only actual fetched rooms (no empty slots) */}
+          {/* Rooms list */}
           {rooms.length > 0 ? (
             <RoomDataTable
               rooms={rooms}

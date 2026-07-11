@@ -149,9 +149,11 @@
       "validation": {
         "sizeCodeRequired": "आकार कोड आवश्यक है",
         "sizeNameRequired": "आकार नाम आवश्यक है",
+        "sizeNameInvalid": "आकार नाम में विशेष वर्ण नहीं होने चाहिए",
+        "unitRequired": "इकाई आवश्यक है",
+        "unitInvalid": "इकाई में विशेष वर्ण नहीं होने चाहिए",
         "sizeCodeLength": "आकार कोड {count} वर्णों से अधिक नहीं हो सकता",
         "sizeNameLength": "आकार नाम {count} वर्णों से अधिक नहीं हो सकता",
-        "unitRequired": "इकाई आवश्यक है",
         "unitLength": "इकाई {count} वर्णों से अधिक नहीं हो सकती"
       },
       "messages": {

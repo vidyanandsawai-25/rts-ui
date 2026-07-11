@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { fetchFilterOptionsAction, type FilterField } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import { getPropertyTypeByIdAction } from '@/app/[locale]/property-tax/propertytype/action';
@@ -12,16 +12,35 @@ interface FilterOption {
 interface UseColumnFiltersProps {
   wardId: number | string;
   propertyNo: string;
+  activeMainTab?: string;
+}
+
+/**
+ * Convert main tab value to PartType for API call.
+ */
+function getPartTypeFromMainTab(mainTab: string): string | undefined {
+  switch (mainTab) {
+    case 'commercial':
+      return 'C';
+    case 'residential':
+      return 'R';
+    case 'amenities':
+      return 'Amenity';
+    default:
+      return undefined;
+  }
 }
 
 /**
  * Hook for managing column filters in Apartment QC tables.
  * Handles filter state from URL params and provides methods for fetching options and updating filters.
  */
-export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) {
+export function useColumnFilters({ wardId, propertyNo, activeMainTab }: UseColumnFiltersProps) {
+  const partType = useMemo(() => getPartTypeFromMainTab(activeMainTab || ''), [activeMainTab]);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isFilterPending, startTransition] = useTransition();
 
   // Parse active filters from URL params
   const activeFilters = useMemo(() => {
@@ -68,7 +87,9 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
     // Reset to page 1 when filters change
     params.set('pageNumber', '1');
 
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
   }, [pathname, router, searchParams]);
 
   // Fetch filter options for a specific field
@@ -78,7 +99,7 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
     }
 
     try {
-      const result = await fetchFilterOptionsAction(wardId, propertyNo, field);
+      const result = await fetchFilterOptionsAction(wardId, propertyNo, field, partType);
       
       if (!result.success || !result.data) {
         return [];
@@ -128,12 +149,13 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
       logger.error(`[useColumnFilters] Failed to fetch filter options for ${field}`, { error: error as Error });
       return [];
     }
-  }, [wardId, propertyNo]);
+  }, [wardId, propertyNo, partType]);
 
   return {
     activeFilters,
     handleFilterChange,
     fetchFilterOptions,
+    isFilterPending,
   };
 }
 

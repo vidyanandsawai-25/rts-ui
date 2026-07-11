@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { CancelButton, SaveButton } from "@/components/common";
 import { MandatoryFieldsNotice } from "./components/MandatoryFieldsNotice";
 import type { PolicyConfigurationFormModel } from "@/types/policy-configuration.types";
-import { CODE_SANITIZE, DESCRIPTION_SANITIZE, TEXT_SANITIZE } from "@/lib/utils/validation-rules";
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE, TEXT_SANITIZE,DISPLAY_NAME_SANITIZE ,UNIT_SANITIZE} from "@/lib/utils/validation-rules";
 import { savePolicyConfiguration } from "@/app/[locale]/property-tax/policy-configuration/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
@@ -22,14 +22,6 @@ import {
 export interface PolicyConfigurationFormProps {
   initialData: PolicyConfigurationFormModel | null;
 }
-
-/**
- * Agar stored value (e.g. "1" ya "0") allowedValues list mein nahi hai,
- * toh BIT legacy mapping lagao:
- *   "1" → pehla option (e.g. "Enable")
- *   "0" → doosra option (e.g. "Disable")
- * Agar value already list mein hai toh as-is return karo.
- */
 function resolveValueFromAllowedList(value: string, allowedValues: string | null): string {
   if (!allowedValues || !allowedValues.trim()) return value;
 
@@ -48,11 +40,6 @@ function resolveValueFromAllowedList(value: string, allowedValues: string | null
   // Fallback: first option
   return options[0] ?? value;
 }
-
-/**
- * initialData ko process karke form ke liye ready karo.
- * policyValue aur defaultValue ko allowedValues se match karo.
- */
 function prepareInitialData(
   data: PolicyConfigurationFormModel | null
 ): PolicyConfigurationFormModel {
@@ -114,14 +101,8 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       if (!data.category.trim()) e.category = t("form.validation.categoryRequired");
       if (!data.displayName.trim()) e.displayName = t("form.validation.displayNameRequired");
       if (!data.description.trim()) e.description = t("form.validation.descriptionRequired");
-      if (!data.dataType.trim()) e.dataType = t("form.validation.dataTypeRequired");
       if (!data.policyValue.trim()) e.policyValue = t("form.validation.policyValueRequired");
       if (!data.defaultValue.trim()) e.defaultValue = t("form.validation.defaultValueRequired");
-      // unit is optional for all data types
-      if (!data.effectiveFrom?.trim()) e.effectiveFrom = t("form.validation.effectiveFromRequired");
-
-      // Skip dataType-based validation when allowedValues present
-      // (values come from dropdown, already constrained to valid list)
       const hasAllowedValues = !!(data.allowedValues && data.allowedValues.trim());
 
       if (!hasAllowedValues && data.policyValue.trim() && data.dataType.trim()) {
@@ -150,7 +131,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
     if (name === "policyCode") {
       sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase().substring(0, 40);
     } else if (name === "displayName") {
-      sanitizedValue = value.replace(TEXT_SANITIZE, "").substring(0, 40);
+       sanitizedValue = value.replace(DISPLAY_NAME_SANITIZE, "").substring(0, 40);
     } else if (name === "description") {
       sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").substring(0, 100);
     } else if (name === "policyValue" || name === "defaultValue") {
@@ -160,7 +141,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
         sanitizedValue = value.replace(TEXT_SANITIZE, "").substring(0, 40);
       }
     } else if (name === "unit") {
-      sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s,.\-\/&%]/gu, "").substring(0, 10);
+      sanitizedValue = value.replace(UNIT_SANITIZE, "").substring(0, 10);
     }
 
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
@@ -220,11 +201,9 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       category: true,
       displayName: true,
       description: true,
-      dataType: true,
       policyValue: true,
       defaultValue: true,
       unit: true,
-      effectiveFrom: true,
     });
 
     const v = validate(formData);
@@ -244,11 +223,11 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       fd.append("category", formData.category);
       fd.append("displayName", formData.displayName);
       fd.append("description", formData.description);
-      fd.append("dataType", formData.dataType);
+       fd.append("dataType", formData.dataType || "VARCHAR");
       fd.append("policyValue", formData.policyValue);
       fd.append("defaultValue", formData.defaultValue);
       fd.append("unit", formData.unit ?? "");
-      fd.append("effectiveFrom", formData.effectiveFrom);
+      fd.append("effectiveFrom", formData.effectiveFrom || new Date().toISOString().split("T")[0]);
       fd.append("effectiveTo", formData.effectiveTo ?? "");
       fd.append("allowedValues", formData.allowedValues ?? "");
       fd.append("isActive", String(formData.isActive));
@@ -337,6 +316,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
           onBlur={handleBlur}
           onSelectBlur={handleSelectBlur}
           t={t}
+          isEdit={isEdit}
         />
 
         <MandatoryFieldsNotice message={tCommon("note.mandatory")} />

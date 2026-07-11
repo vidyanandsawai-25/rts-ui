@@ -108,17 +108,12 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
           onUpdate({ ...rate, isActive: newStatus } as RateItem);
         }
       } else {
-        // Show error with status code if available
-        const errorMsg = result.statusCode 
-          ? `${result.message || result.error || t('messages.updateError')} (Status: ${result.statusCode})`
-          : result.message || result.error || t('messages.updateError');
+        const errorMsg = result.message || result.error || t('messages.updateError');
         toast.error(errorMsg);
       }
     } catch (error: unknown) {
-      const err = error as { message?: string; statusCode?: number };
-      const errorMsg = err.statusCode
-        ? `${err.message || t('messages.updateError')} (Status: ${err.statusCode})`
-        : err.message || t('messages.updateError');
+      const err = error as { message?: string };
+      const errorMsg = err.message || t('messages.updateError');
       toast.error(errorMsg);
     } finally {
       setLoading(false);

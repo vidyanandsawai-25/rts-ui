@@ -20,6 +20,8 @@ import {
 } from "./floor-descriptions";
 import { resolveIdFromDescription } from "./floor-resolvers";
 import { mapRoomDataToApi } from "./room-mappers";
+import { mapRenterPayloadFields } from "@/lib/utils/renter/renter-payload-mapper";
+import { checkIsUtilityCategory } from "./floor-utility-checks";
 
 // Re-export children utilities for consistent access
 export * from "./floor-descriptions";
@@ -42,6 +44,8 @@ export const mapFormToPayload = (params: {
   propertyId: number | string;
   isAddingNew: boolean;
   existingFloorId?: number | string;
+  selectedFloorType?: 'Construction' | 'OpenPlot';
+  isPlotCategory?: boolean;
 }): FloorSubmissionPayload => {
   const {
     formData,
@@ -52,8 +56,18 @@ export const mapFormToPayload = (params: {
     subTypeLookup,
     propertyId,
     isAddingNew,
-    existingFloorId
+    existingFloorId,
+    selectedFloorType,
+    isPlotCategory,
   } = params;
+
+  const isOpenSpace = selectedFloorType === 'OpenPlot' ||
+    formData.selectedFloorType === 'OpenPlot' ||
+    Number(formData.typeOfUseId) === 10 ||
+    Number(formData.use) === 10 ||
+    Number(formData.typeOfUseCategoryId) === 2 ||
+    Number(formData.typeOfUseCategoryId) === 3;
+  const isUtility = checkIsUtilityCategory(formData.typeOfUseCategoryId);
 
   // Resolve IDs primarily from explicit ID fields, fallback to resolving from descriptions
   const floorId = Number(formData.floorId) || resolveIdFromDescription(
@@ -108,13 +122,13 @@ export const mapFormToPayload = (params: {
     createdBy: 0,
     propertyId: Number(propertyId || 0),
     propertyDetailsId: propDetailsId,
-    floorId,
+    ...(selectedFloorType !== 'OpenPlot' && floorId ? { floorId } : {}),
     floorDescription,
     subFloorId,
     subFloorDescription,
-    constructionYear: String(formData.conYr || ''),
+    constructionYear: isOpenSpace ? String(formData.asstYr || '') : String(formData.conYr || ''),
     assessmentYear: String(formData.asstYr || ''),
-    constructionTypeId: conTypId,
+    ...(conTypId ? { constructionTypeId: conTypId } : {}),
     constructionTypeDescription,
     typeOfUseId: useId,
     typeOfUseDescription,
@@ -122,27 +136,19 @@ export const mapFormToPayload = (params: {
     subTypeOfUseDescription,
     carpetAreaSqMeter: parseFloat(String(formData.areaSqM || 0)),
     carpetAreaSqFeet: parseFloat(String(formData.areaSqFt || 0)),
-    builtupAreaSqMeter: parseFloat(String(formData.builtupAreaSqM || 0)),
-    builtupAreaSqFeet: parseFloat(String(formData.builtupAreaSqFt || 0)),
-    noOfRooms: parseInt(String(formData.rooms)) || 0,
-    renterYesNo: formData.renter === 'Yes' || formData.renter === true,
-    isRenter: formData.renter === 'Yes' || formData.renter === true,
+    builtupAreaSqMeter: isOpenSpace
+      ? parseFloat(String(formData.areaSqM || 0))
+      : parseFloat(String(formData.builtupAreaSqM || 0)),
+    builtupAreaSqFeet: isOpenSpace
+      ? parseFloat(String(formData.areaSqFt || 0))
+      : parseFloat(String(formData.builtupAreaSqFt || 0)),
+    noOfRooms: isUtility ? 0 : (parseInt(String(formData.rooms)) || 0),
     isTaxable: formData.isTaxable === 'Yes' || formData.isTaxable === true,
-    renterDetails: formData.renter === 'Yes' && Array.isArray(formData.renterDetails) ? formData.renterDetails : [],
-    renterMast: formData.renter === 'Yes' && Array.isArray(formData.renterMast) ? formData.renterMast : [],
-    renters: formData.renter === 'Yes' && Array.isArray(formData.renterMast) ? formData.renterMast : [],
-    renterName: formData.renter === 'Yes' || formData.renter === true ? String(formData.renterName || '') : '',
-    renterNameEnglish: formData.renter === 'Yes' || formData.renter === true ? String(formData.renterNameEnglish || formData.renterName || '') : '',
-    rentMonthly: formData.renter === 'Yes' || formData.renter === true ? Number(formData.rentMonthly || formData.renterMonthly || 0) : 0,
-    rentYearly: formData.renter === 'Yes' || formData.renter === true ? (Number(formData.rentMonthly || formData.renterMonthly || 0) * 12) : 0,
-    agreementFromDate: formData.renter === 'Yes' || formData.renter === true ? (formData.agreementFromDate ? String(formData.agreementFromDate) : undefined) : undefined,
-    agreementToDate: formData.renter === 'Yes' || formData.renter === true ? (formData.agreementToDate ? String(formData.agreementToDate) : undefined) : undefined,
-    agreementDate: formData.renter === 'Yes' || formData.renter === true ? (formData.agreementDate ? String(formData.agreementDate) : undefined) : undefined,
     taxLiability: String(formData.taxLiability || ''),
-    nonCalculateRentMonthly: formData.renter === 'Yes' || formData.renter === true ? Number(formData.nonCalculateRentMonthly || formData.rentMonthly || formData.renterMonthly || 0) : 0,
     occupancyDate: formData.occupancyDate || null,
     occupancyApplyOrNot: formData.occupancyApplyOrNot === 'Yes' || formData.occupancyApplyOrNot === true,
     occupancyNumber: String(formData.occupancyNumber || ''),
+    ...mapRenterPayloadFields(formData),
     roomWiseSubmissionDetails: ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
       .filter((r, index, self) => {
         // Calculate effective area from any possible field
@@ -153,6 +159,22 @@ export const mapFormToPayload = (params: {
         const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
         return matchIndex === index;
       })
-      .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId)),
+      .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId, isUtility)),
+    roomWiseMinusData: isOpenSpace ? [] : undefined,
+    typeOfUseCategoryId: formData.typeOfUseCategoryId,
+    selectedFloorType: (selectedFloorType || formData.selectedFloorType) as "Construction" | "OpenPlot" | undefined,
+    isOpenPlot: (isPlotCategory && isOpenSpace) ? true : false,
+    length: isOpenSpace
+      ? (formData.length ? Number(formData.length) : null)
+      : null,
+    width: isOpenSpace
+      ? (formData.width ? Number(formData.width) : null)
+      : null,
+    lengthMtr: isOpenSpace
+      ? (formData.length ? Number(formData.length) : null)
+      : null,
+    widthMtr: isOpenSpace
+      ? (formData.width ? Number(formData.width) : null)
+      : null,
   };
 };

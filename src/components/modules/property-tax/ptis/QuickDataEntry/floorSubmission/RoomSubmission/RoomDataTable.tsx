@@ -9,7 +9,7 @@ import { RoomDataTableProps, RoomData } from "@/types/room-details.types";
 import { OffsetData } from "@/types/offset-details.types";
 import { COLUMN_WIDTHS } from "./RoomTableConfig";
 import { cn } from "@/lib/utils/cn";
-import { RoomTypeSelect } from "./components/RoomTypeSelect";
+
 
 export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
     const {
@@ -17,16 +17,12 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
         grandTotal,
         builtupGrandTotal,
         areaUnit,
-        setRooms,
-        inlineEditingCell,
-        setInlineEditingCell,
         handleEdit,
         handleDelete,
         handleCancelEdit,
         editingIndex,
         selectedRoomForPlan,
         onOpenOffset,
-        roomTypeData,
     } = props;
 
     const t = useTranslations("quickDataEntry");
@@ -44,36 +40,9 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
             label: t("roomSubmission.table.roomType"),
             width: COLUMN_WIDTHS.roomType,
             align: "center",
-            render: (_val: unknown, row: RoomData, idx: number) => (
-                <div className="flex justify-center">
-                    {inlineEditingCell?.rowIndex === idx && inlineEditingCell?.field === 'utilities' ? (
-                        <RoomTypeSelect
-                            value={row.utilities}
-                            roomTypeData={roomTypeData}
-                            onChange={(newVal, id) => {
-                                const updatedRooms = [...rooms];
-                                updatedRooms[idx] = { 
-                                    ...updatedRooms[idx], 
-                                    utilities: newVal,
-                                    roomType: newVal,
-                                    roomTypeId: id
-                                };
-                                setRooms(updatedRooms);
-                                setInlineEditingCell(null);
-                            }}
-                        />
-                    ) : (
-                        <div
-                            className="cursor-pointer hover:bg-blue-100/50 px-2 py-1 rounded transition-colors truncate text-gray-900"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(idx);
-                                setInlineEditingCell({ rowIndex: idx, field: 'utilities' });
-                            }}
-                        >
-                            {row.utilities || "-"}
-                        </div>
-                    )}
+            render: (_val: unknown, row: RoomData) => (
+                <div className="px-2 text-gray-900 font-medium truncate text-center">
+                    {row.utilities || "-"}
                 </div>
             )
         },
@@ -112,11 +81,11 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                     <Tooltip placement="top" content={row.offsets && row.offsets.length > 0
                         ? t("offsetTooltip", {
                             details: row.offsets.map((off: OffsetData) => {
-                                                                 // Normalize shape to match translation keys (remove spaces, lowercase first char only)
-                                                                 const normalizedShape = off.shape
-                                                                     ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
-                                                                     : "";
-                                                                 return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
+                                // Normalize shape to match translation keys (remove spaces, lowercase first char only)
+                                const normalizedShape = off.shape
+                                    ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
+                                    : "";
+                                return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
                             }).join(", ")
                         })
                         : t("offsetTooltipEmpty")}
@@ -126,7 +95,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onOpenOffset) onOpenOffset(idx);
-                             }}
+                            }}
                         >
                             {val === "Yes" ? (
                                 <div className="flex items-center text-red-500 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 font-bold">
@@ -164,7 +133,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
             align: "center",
             render: (val: unknown) => <div className="text-center"><span className="font-bold text-indigo-700">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
         }
-    ], [rooms, areaUnit, inlineEditingCell, t, handleEdit, onOpenOffset, setInlineEditingCell, setRooms, roomTypeData]);
+    ], [areaUnit, t, onOpenOffset]);
 
     const finalColumns = columns;
 
@@ -186,7 +155,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                     return (
                         <>
                             {editingIndex === idx && (
-                                <Tooltip placement="top" content={t("roomSubmission.table.cancel")}> 
+                                <Tooltip placement="top" content={t("roomSubmission.table.cancel")}>
                                     <Button
                                         variant="ghost"
                                         size="xs"
@@ -196,18 +165,30 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                                     />
                                 </Tooltip>
                             )}
-                            <Tooltip placement="top" content={t("roomSubmission.table.edit")}> 
+                            <Tooltip placement="top" content={t("roomSubmission.table.edit")}>
                                 <EditButton
                                     size="xs"
                                     onClick={(e) => { e.stopPropagation(); handleEdit(idx); }}
-                                    className="shadow-sm hover:scale-110 active:scale-95"
+                                    className="room-edit-btn shadow-sm hover:scale-110 active:scale-95"
                                 />
                             </Tooltip>
-                            <Tooltip placement="top" content={t("roomSubmission.table.delete")}> 
+                            <Tooltip placement="top" content={t("roomSubmission.table.delete")}>
                                 <DeleteButton
                                     size="xs"
                                     onClick={(e) => { e.stopPropagation(); handleDelete(idx); }}
-                                    className="shadow-sm hover:scale-110 active:scale-95"
+                                    className="room-delete-btn shadow-sm hover:scale-110 active:scale-95"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab' && !e.shiftKey) {
+                                            const allDeleteBtns = document.querySelectorAll('.room-delete-btn');
+                                            if (allDeleteBtns[allDeleteBtns.length - 1] === e.currentTarget) {
+                                                e.preventDefault();
+                                                const saveBtn = document.getElementById('btn-room-save-data');
+                                                if (saveBtn) {
+                                                    saveBtn.focus();
+                                                }
+                                            }
+                                        }
+                                    }}
                                 />
                             </Tooltip>
                         </>

@@ -1,6 +1,6 @@
 import type { Column } from "@/components/common/MasterTable";
 import type { PolicyConfiguration } from "@/types/policy-configuration.types";
-
+import { Tooltip } from "@/components/common/Tooltip";
 /**
  * Returns the table column configuration for Policy Configuration Master
  * @param t - Translation function from useTranslations("policyConfiguration")
@@ -39,19 +39,11 @@ export function getPolicyConfigurationColumns(
       label: t("list.table.description"),
       width: "20%",
       render: (value) => (
-        <span className="text-gray-600 line-clamp-2" title={value ? String(value) : undefined}>
+        <Tooltip content={value ? String(value) : undefined}>
+        <span className="text-gray-600 line-clamp-2">
           {value ? String(value) : "-"}
         </span>
-      ),
-    },
-    {
-      key: "dataType",
-      label: t("list.table.dataType"),
-      width: "10%",
-      render: (value) => (
-        <span className="inline-flex items-center px-2 py-0.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded">
-          {String(value)}
-        </span>
+        </Tooltip>
       ),
     },
     {

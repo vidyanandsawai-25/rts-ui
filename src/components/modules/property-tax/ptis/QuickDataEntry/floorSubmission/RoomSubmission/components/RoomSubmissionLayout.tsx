@@ -17,11 +17,12 @@ interface RoomSubmissionLayoutProps {
   props: RoomWiseSubmissionProps & { floorData?: FloorData };
   InlineError: React.FC<{ message: string }>;
   calculateArea: () => number;
-  calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[]) => number;
+  calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[], outer?: string | boolean) => number;
+  isUtilityCategory?: boolean;
 }
 
 export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
-  displayMode, state, actions, roomActions, offsetActions, props, InlineError, calculateArea, calculateTotal
+  displayMode, state, actions, roomActions, offsetActions, props, InlineError, calculateArea, calculateTotal, isUtilityCategory
 }) => {
   const t = useTranslations("quickDataEntry");
   const {
@@ -59,7 +60,7 @@ export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
             handleUpdateRoom={roomActions.handleUpdateRoom}
             handleAddRoom={roomActions.handleAddRoom}
             calculateTotal={calculateTotal}
-            maxRooms={props.maxRooms ?? null}
+            maxRooms={isUtilityCategory ? (props.existingRooms?.length ?? 0) : rooms.length}
             availableRooms={state.availableRooms}
             setSelectedShape={setSelectedShape}
             offsetModalOpen={offsetModalOpen}
@@ -68,6 +69,7 @@ export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
             floorData={props.floorData}
             focusRefs={state.focusRefs}
             roomTypeData={props.roomTypeData}
+            isUtilityCategory={isUtilityCategory}
           />
 
           {rooms.length > 0 ? (

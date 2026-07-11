@@ -27,7 +27,6 @@ export interface UsePhotoPlanMutationsProps {
   setViewMode?: (mode: 'grid' | 'viewer' | 'compare') => void;
   setViewerIndexAndMode?: (index: number | null, mode: 'grid' | 'viewer' | 'compare') => void;
 }
-
 export function usePhotoPlanMutations({
   propertyId, categories, onCategoriesChange,
   selectedCategoryIndex, selectedImageIndex, viewMode,
@@ -44,32 +43,20 @@ export function usePhotoPlanMutations({
 
   const setViewerIndexAndModeValue = useCallback((idx: number | null, mode: 'grid' | 'viewer' | 'compare') => {
     if (setViewerIndexAndMode) setViewerIndexAndMode(idx, mode);
-    else {
-      setSelectedImageIndex?.(idx);
-      setViewMode?.(mode);
-    }
+    else { setSelectedImageIndex?.(idx); setViewMode?.(mode); }
   }, [setViewerIndexAndMode, setSelectedImageIndex, setViewMode]);
 
   const activeCategory = categories[selectedCategoryIndex];
 
   const { isDeleting, handleDeletePhoto } = usePhotoPlanDelete({
-    propertyId,
-    categories,
-    onCategoriesChange,
-    selectedCategoryIndex,
-    selectedImageIndex,
-    viewMode,
-    setViewerIndexAndModeValue,
-    locale,
-    t,
+    propertyId, categories, onCategoriesChange,
+    selectedCategoryIndex, selectedImageIndex, viewMode,
+    setViewerIndexAndModeValue, locale, t,
   });
 
   const isUploading = isAdding || isReplacing || isDeleting;
 
-  const handleAddPhoto = useCallback(() => {
-    setIsReplacement(false);
-    setIsNamingOpen(true);
-  }, []);
+  const handleAddPhoto = useCallback(() => { setIsReplacement(false); setIsNamingOpen(true); }, []);
 
   const handleReplacePhoto = useCallback((index: number) => {
     setActiveIndexToReplace(index);
@@ -86,39 +73,47 @@ export function usePhotoPlanMutations({
     setIsReplacing(true);
     const formData = new FormData();
     formData.append('File', file);
+    if (propertyId) formData.append('PropertyId', propertyId.toString());
+    if (activeCategory?.photoTypeId) formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
+    formData.append('PropertyPhotoId', propertyPhotoId.toString());
     const isDefaultName = targetImg.title === activeCategory?.photoTypeName;
     const englishTitle = isDefaultName ? getEnglishCategoryName(activeCategory.photoTypeCode, targetImg.title) : targetImg.title;
     const replaceRemarks = targetImg.remarks ? `${englishTitle} | ${targetImg.remarks}` : englishTitle;
     formData.append('Remarks', replaceRemarks);
+    
+    const oldDocumentGuid = targetImg.documentGuid || (() => {
+      const match = targetImg.src.match(/\/documents\/([a-fA-F0-9-]{36})/);
+      return match ? match[1] : '';
+    })();
+
     try {
-      const res = await replacePropertyPhotoAction(propertyPhotoId, formData, locale);
+      const res = await replacePropertyPhotoAction(propertyPhotoId, oldDocumentGuid, formData, locale);
       if (res.success && res.data) {
         clearDocumentCacheEntry(targetImg.src);
-        const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
-        const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url } : img);
+        const data = res.data;
+        const url = (data.documentGuid ? getViewDocumentUrl(data.documentGuid) : data.viewUrl) || '';
+        const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
         setViewerIndexAndModeValue(index, 'viewer');
         return true;
-      } else {
-        toast.error(res.error || t('media.failedToReplace') || 'Failed to replace photo');
-        return false;
       }
+      toast.error(res.error || t('media.failedToReplace') || 'Failed to replace photo');
+      return false;
     } catch {
       toast.error(t('media.unexpectedError') || 'An unexpected error occurred.');
       return false;
     } finally {
       setIsReplacing(false);
     }
-  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, locale, t, setViewerIndexAndModeValue]);
+  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, locale, t, setViewerIndexAndModeValue, propertyId]);
 
   const handleSaveEditedPhoto = useCallback(async (index: number, file: File): Promise<boolean> => {
     if (isUploading || !activeCategory) return false;
     const targetImg = activeCategory.images[index];
     const propertyPhotoId = targetImg?.propertyPhotoId;
-    if (!propertyPhotoId) return false;
-    if (!propertyId) {
-      toast.error(t('media.propertyIdRequired') || 'PropertyId is required.');
+    if (!propertyPhotoId || !propertyId) {
+      if (!propertyId) toast.error(t('media.propertyIdRequired') || 'PropertyId is required.');
       return false;
     }
     return executeReplaceApi(propertyPhotoId, file, targetImg, index);
@@ -140,13 +135,9 @@ export function usePhotoPlanMutations({
       const propertyPhotoId = targetImg?.propertyPhotoId;
       if (!propertyPhotoId) return;
       const success = await executeReplaceApi(propertyPhotoId, file, {
-        ...targetImg,
-        title: name,
-        remarks: remarks || '',
+        ...targetImg, title: name, remarks: remarks || '',
       }, activeIndexToReplace);
-      if (success) {
-        setIsNamingOpen(false);
-      }
+      if (success) setIsNamingOpen(false);
       return;
     }
 
@@ -158,17 +149,20 @@ export function usePhotoPlanMutations({
     formData.append('File', file);
     formData.append('PropertyId', propertyId.toString());
     formData.append('PhotoTypeId', photoTypeId.toString());
+    formData.append('PhotoTypeCode', activeCategory.photoTypeCode);
     formData.append('DisplayOrder', displayOrder.toString());
     formData.append('Remarks', combinedRemarks);
+    formData.append('ReferenceTableIdGuid', crypto.randomUUID());
     try {
       const res = await uploadPropertyPhotoAction(formData, locale);
       if (res.success && res.data) {
-        const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
+        const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
         const newImg: AdditionalImage = {
           src: url, fullSrc: url, alt: name, title: name,
           photoTypeId, propertyPhotoId: res.data.propertyPhotoId,
           photoTypeCode: activeCategory.photoTypeCode,
           hasPhoto: true, remarks: remarks || '', displayOrder,
+          documentGuid: res.data.documentGuid,
         };
         const updatedImages = sortByOrder([...activeCategory.images, newImg]);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updatedImages));
@@ -188,12 +182,10 @@ export function usePhotoPlanMutations({
   const replaceImage = activeIndexToReplace !== null ? activeCategory?.images[activeIndexToReplace] : null;
 
   return {
-    isNamingOpen, setIsNamingOpen, isUploading,
-    isReplacement,
+    isNamingOpen, setIsNamingOpen, isUploading, isReplacement,
     isAdding, isReplacing, isDeleting,
     handleAddPhoto, handleReplacePhoto,
     handleNamingSubmit, handleDeletePhoto,
-    handleSaveEditedPhoto,
-    replaceImage,
+    handleSaveEditedPhoto, replaceImage,
   };
 }

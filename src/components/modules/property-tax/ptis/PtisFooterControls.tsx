@@ -1,12 +1,17 @@
+/* eslint-disable i18next/no-literal-string */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { FooterSelect } from './FooterSelect';
 import { useTranslations } from 'next-intl';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CircleArrowLeft } from 'lucide-react';
-import { Tooltip } from '@/components/common';
+import { CircleArrowLeft, Route } from 'lucide-react';
+import { Tooltip, useConfirm } from '@/components/common';
+import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
+import { toast } from 'sonner';
+import { savePropertyWorkflowStageAction } from '@/app/[locale]/property-tax/ptis/workflowStageActions';
+import { PropertyTrackingModal } from './PropertyTrackingModal';
 
 export function PtisBackButton() {
   const t = useTranslations('ptis');
@@ -45,15 +50,13 @@ export function PtisBackButton() {
         console.error('Failed to read ptis_search_state from sessionStorage:', err);
       }
     }
-    const target = `/${locale}/property-tax/search-property${
-      cached ? `?${cached}` : ''
-    }`;
+    const target = `/${locale}/property-tax/search-property${cached ? `?${cached}` : ''
+      }`;
     router.push(target);
   };
 
-  const targetUrl = `/${locale}/property-tax/search-property${
-    resolvedSearchState ? `?${resolvedSearchState}` : ''
-  }`;
+  const targetUrl = `/${locale}/property-tax/search-property${resolvedSearchState ? `?${resolvedSearchState}` : ''
+    }`;
 
   return (
     <Tooltip content={t('buttons.backToSearch') || 'Back to Search Property'} placement="top">
@@ -69,10 +72,54 @@ export function PtisBackButton() {
   );
 }
 
-export function PtisFooterDropdowns() {
+export function PtisFooterDropdowns({
+  workflowStages = [],
+  propertyId,
+  currentWorkflowStageId,
+  propertyNo,
+  ownerName,
+}: {
+  workflowStages?: PropertyWorkflowStage[];
+  propertyId?: number | string;
+  currentWorkflowStageId?: number;
+  propertyNo?: string;
+  ownerName?: string;
+}) {
   const t = useTranslations('ptis');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedPolicy, setSelectedPolicy] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
+  const [qcStatus, setQcStatus] = useState(() => {
+    if (currentWorkflowStageId && workflowStages.length > 0) {
+      const activeStage = workflowStages.find((s) => s.id === currentWorkflowStageId);
+      return activeStage ? activeStage.stageName : '';
+    }
+    return '';
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const { confirm } = useConfirm();
+  const [isPending, startTransition] = useTransition();
+
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
+
+  const [prevStageId, setPrevStageId] = useState(currentWorkflowStageId);
+  const [prevStages, setPrevStages] = useState(workflowStages);
+
+  if (currentWorkflowStageId !== prevStageId || workflowStages !== prevStages) {
+    setPrevStageId(currentWorkflowStageId);
+    setPrevStages(workflowStages);
+    if (currentWorkflowStageId && workflowStages && workflowStages.length > 0) {
+      const activeStage = workflowStages.find((s) => s.id === currentWorkflowStageId);
+      if (activeStage) {
+        setQcStatus(activeStage.stageName);
+      }
+    }
+  }
+
+  const segments = pathname.split('/').filter(Boolean);
+  const locale = segments[0] || 'en';
 
   const POLICY_OPTIONS = [
     { label: t('footerControls.policy.options.old'), value: 'old' },
@@ -88,6 +135,110 @@ export function PtisFooterDropdowns() {
     { label: t('footerControls.action.options.remove_remission'), value: 'remove_remission' },
     { label: t('footerControls.action.options.remove_all_appeals'), value: 'remove_all_appeals' },
   ];
+
+  const handleOpenStages = () => {
+    if (searchParams.get('openStages') === 'true' || isPending) return;
+    startTransition(() => {
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.set('openStages', 'true');
+      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+    });
+  };
+
+  // Resolve mapping from workflow stages fetched via API
+  const isCurrentlyLoading = isPending && workflowStages.length === 0;
+
+  const QC_STATUS_OPTIONS = isCurrentlyLoading
+    ? [{ label: 'Loading...', value: '', disabled: true }]
+    : (workflowStages || [])
+      .filter((s) => s.isActive)
+      .map((stage) => ({
+        label: stage.stageName,
+        value: stage.stageName,
+      }));
+
+  const handleSaveWorkflowDetail = async (stageName: string, stageId: number) => {
+    if (!propertyId) {
+      toast.error('Property ID is missing');
+      return;
+    }
+
+    setIsSaving(true);
+    const toastId = toast.loading('Updating workflow status...');
+
+    try {
+      const result = await savePropertyWorkflowStageAction(propertyId, stageId, locale);
+      if (result.success) {
+        setQcStatus(stageName);
+        toast.success('Workflow status updated successfully', { id: toastId });
+      } else {
+        toast.error(result.error || 'Failed to update workflow status', { id: toastId });
+      }
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred';
+      toast.error(errorMsg, { id: toastId });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleQcStatusChange = (val: string) => {
+    if (!val) {
+      setQcStatus('');
+      return;
+    }
+
+    const selectedStage = workflowStages.find((s) => s.stageName === val);
+    const workflowStageId = selectedStage?.id;
+
+    if (val === 'QC Revert') {
+      confirm({
+        variant: 'warning',
+        title: 'Confirm QC Revert',
+        description: 'Are you sure you want to revert the QC status?',
+        confirmText: 'Yes',
+        cancelText: 'No',
+        onConfirm: () => {
+          if (workflowStageId) {
+            handleSaveWorkflowDetail(val, workflowStageId);
+          } else {
+            setQcStatus('');
+          }
+        },
+      });
+      return;
+    }
+
+    confirm({
+      variant: 'info',
+      title: 'Confirm Status Change',
+      description: `Are you sure you want to set the status to "${val}"?`,
+      confirmText: 'Yes',
+      cancelText: 'No',
+      onConfirm: () => {
+        if (workflowStageId) {
+          if (val === 'Assessment' || val === 'QC Done') {
+            setTimeout(() => {
+              confirm({
+                variant: 'info',
+                title: t('footerControls.billDistribution.title') || 'Confirm Bill Distribution',
+                description: t('footerControls.billDistribution.description') || 'Are you sure you want to distribute the bill?',
+                confirmText: t('footerControls.billDistribution.confirmText') || 'Yes',
+                cancelText: t('footerControls.billDistribution.cancelText') || 'No',
+                onConfirm: () => {
+                  handleSaveWorkflowDetail(val, workflowStageId);
+                },
+              });
+            }, 100);
+          } else {
+            handleSaveWorkflowDetail(val, workflowStageId);
+          }
+        } else {
+          setQcStatus(val);
+        }
+      },
+    });
+  };
 
   return (
     <>
@@ -107,6 +258,43 @@ export function PtisFooterDropdowns() {
         onChange={setSelectedAction}
         options={ACTION_OPTIONS}
         className="w-[115px] sm:w-[150px] md:w-[165px] shrink-0"
+      />
+
+      <FooterSelect
+        label="QC Status"
+        placeholder="QC Status"
+        value={qcStatus}
+        onChange={handleQcStatusChange}
+        options={QC_STATUS_OPTIONS}
+        onOpen={handleOpenStages}
+        className="w-[105px] sm:w-[130px] md:w-[145px] shrink-0"
+        disabled={isSaving}
+      />
+
+      {(qcStatus === 'Assessment' || qcStatus === 'QC Done') && (
+        <div className="flex items-center gap-1 px-2.5 h-8.5 md:h-9 bg-emerald-600 border border-emerald-700 text-white text-[10px] font-bold rounded-lg shrink-0 shadow-sm transition-all duration-300 animate-in fade-in slide-in-from-right-4">
+          <span>✅ {t('footerControls.qcDoneLabel') || 'QC Done'}</span>
+        </div>
+      )}
+
+      <button type="button"
+        onClick={() => {
+          setIsTrackingModalOpen(true);
+        }}
+        className="h-8.5 md:h-9 px-3 inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 text-blue-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-100 hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-100/50 text-xs font-semibold"
+      >
+        <Route className="w-4 h-4" />
+        Track Status
+      </button>
+
+      <PropertyTrackingModal
+        isOpen={isTrackingModalOpen}
+        onClose={() => setIsTrackingModalOpen(false)}
+        propertyId={propertyId}
+        propertyNo={propertyNo}
+        ownerName={ownerName}
+        workflowStages={workflowStages}
+        currentWorkflowStageId={currentWorkflowStageId}
       />
     </>
   );

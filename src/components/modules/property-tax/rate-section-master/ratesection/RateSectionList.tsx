@@ -46,8 +46,8 @@ export default function RateSectionList({
     pageSize
   });
 
-  const handleDeleteClick = (rateId: string, rateName: string, rateNo?: string) => {
-    const displayName = rateNo ? `${rateNo} - ${rateName}` : rateName;
+  const handleDeleteClick = (rateId: string, rateName: string) => {
+    const displayName = rateName;
 
     confirm({
       variant: "delete",
@@ -58,7 +58,6 @@ export default function RateSectionList({
       onConfirm: () => handleRateSectionDelete({
         rateId,
         rateName,
-        rateNo,
         wardCounts,
         searchParams,
         pathname,
@@ -86,40 +85,42 @@ export default function RateSectionList({
         }}
       />
 
-    <CardList<RateItem>
-      data={rates}
-      pageNumber={pageNumber}
-      pageSize={effectivePageSize}
-      totalCount={totalCount}
-      totalPages={totalPages}
-      onPageChange={handlePageChange}
-      onPageSizeChange={changePageSize}
-      emptyText={searchValue ? t('list.noRateSectionsFound') : t('list.noRateSectionsAvailable')}
-      emptyIcon={<Layers className="w-12 h-12 mx-auto mb-2 text-gray-300" />}
-      renderCard={(rate, index) => {
-        const rateId = String(rate.id);
-        const isSelected = selectedRateSection === rateId;
-        const isNewlyCreated = newlyCreatedRateNo === rateId;
+      <CardList<RateItem>
+        data={rates}
+        pageNumber={pageNumber}
+        pageSize={effectivePageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        onPageSizeChange={changePageSize}
+        emptyText={searchValue ? t('list.noRateSectionsFound') : t('list.noRateSectionsAvailable')}
+        emptyIcon={<Layers className="w-12 h-12 mx-auto mb-2 text-gray-300" />}
+        renderCard={(rate, index) => {
+          const rateId = String(rate.id);
+          const isSelected = selectedRateSection === rateId;
+          const isNewlyCreated = newlyCreatedRateNo === rateId;
+          const serialNo = (pageNumber - 1) * effectivePageSize + index + 1;
 
-        return (
-          <RateSectionCard
-            key={rate.id || index}
-            rate={rate}
-            index={index}
-            isSelected={isSelected}
-            isNewlyCreated={isNewlyCreated}
-            onDelete={handleDeleteClick}
-            deletingId={deletingId}
-            searchParams={searchParams}
-            pathname={pathname}
-            t={t}
-          />
-        );
-      }}
-    />
+          return (
+            <RateSectionCard
+              key={rate.id || index}
+              rate={rate}
+              index={index}
+              serialNo={serialNo}
+              isSelected={isSelected}
+              isNewlyCreated={isNewlyCreated}
+              onDelete={handleDeleteClick}
+              deletingId={deletingId}
+              searchParams={searchParams}
+              pathname={pathname}
+              t={t}
+            />
+          );
+        }}
+      />
 
-  </div>
-);
+    </div>
+  );
 }
 
 

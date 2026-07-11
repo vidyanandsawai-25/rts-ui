@@ -4,7 +4,7 @@ import React from "react";
 
 import { RoomWiseSubmissionProps } from "@/types/room-details.types";
 import { FullOffSetFormProps } from "@/types/offset-details.types";
-import type { DrawerFloorDataRow } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
+import type { DrawerFloorDataRow } from "@/types/propertyEditScreenDrawer.types";
 import { OffSetSidebar } from "../floorSubmission/offset/OffSetSidebar";
 
 // ── Reused state & pure-logic hooks (no Quick Data Entry–specific API calls) ──
@@ -19,7 +19,6 @@ import { useApartmentQCRoomListActions } from "@/hooks/apartmentQc/useApartmentQ
 import { useApartmentQCRoomPersistenceActions } from "@/hooks/apartmentQc/useApartmentQCRoomPersistenceActions";
 
 // ── Shared UI components (unchanged) ─────────────────────────────────────────
-import { RoomSubmissionHeader } from "./components/RoomSubmissionHeader";
 import { ApartmentQCRoomLayout } from "./ApartmentQCRoomLayout";
 import { RoomSubmissionFooter } from "../../QuickDataEntry/floorSubmission/RoomSubmission/components/RoomSubmissionFooter";
 import { InlineError } from "../../QuickDataEntry/floorSubmission/RoomSubmission/components/InlineError";
@@ -31,7 +30,9 @@ import {
   getDimensionsString,
   isOffsetValid,
 } from "@/lib/utils/RoomSubmission/room-submission.utils";
-import { MasterTable } from "@/components/common";
+import { MasterTable, Tooltip, Drawer, Button } from "@/components/common";
+import { createPortal } from "react-dom";
+import { Layers } from "lucide-react";
 
 
 export const RoomWiseSubmission: React.FC<
@@ -72,6 +73,26 @@ export const RoomWiseSubmission: React.FC<
     handleUpdate: handleSaveData, // "SAVE DATA" button
   };
 
+  // ── Track if there are changes ─────────────────────────────────────────────
+  const initialRoomsString = React.useRef<string | null>(null);
+  const [isDirty, setIsDirty] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      initialRoomsString.current = null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsDirty(false);
+    } else {
+      if (state.rooms.length > 0 && initialRoomsString.current === null && state.mounted) {
+        initialRoomsString.current = JSON.stringify(state.rooms);
+      }
+      setIsDirty(
+        initialRoomsString.current !== null &&
+        JSON.stringify(state.rooms) !== initialRoomsString.current
+      );
+    }
+  }, [isOpen, state.rooms, state.mounted]);
+
   // ── Unit-toggle handler ────────────────────────────────────────────────────
   const handleToggleUnit = () => {
     if (props.onExternalToggleUnit) {
@@ -92,6 +113,63 @@ export const RoomWiseSubmission: React.FC<
     state.setOffsetModalOpen(false);
     onClose();
   };
+
+  // ── Auto-Focus First Element ──────────────────────────────────────────────
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isOpen) {
+      timer = setTimeout(() => {
+        const form = document.getElementById('room-wise-submission-form');
+        if (form) {
+          // Find the first editable input, select, or button (combobox for Select)
+          const firstFocusable = form.querySelector(
+            'input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), button:not([disabled])'
+          ) as HTMLElement;
+          if (firstFocusable) {
+            firstFocusable.focus();
+          }
+        }
+      }, 300); // Wait for drawer animation to finish
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isOpen]);
+
+  // ── Enter Key Navigation ──────────────────────────────────────────────────
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      const activeElement = document.activeElement as HTMLElement;
+      const activeTag = activeElement?.tagName.toLowerCase();
+      const isCombobox = activeElement?.getAttribute('role') === 'combobox';
+      
+      if (activeTag === 'textarea') return;
+      
+      const isNavigableButton = activeTag === 'button' && (activeElement?.getAttribute('data-enter-navigable') === 'true' || isCombobox);
+
+      // For normal buttons (not navigable, not combobox), do not intercept Enter
+      if (activeTag === 'button' && !isNavigableButton) return;
+      
+      // Prevent default for inputs, selects, AND comboboxes (so Enter doesn't toggle them, only Space/ArrowDown does)
+      if (activeTag !== 'button' || isCombobox) {
+        e.preventDefault();
+      }
+      
+      const form = e.currentTarget;
+      // Find all focusable elements
+      const focusableElements = Array.from(
+        form.querySelectorAll('input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), button[role="combobox"]:not([disabled]), [data-enter-navigable="true"]:not([disabled])')
+      ) as HTMLElement[];
+      
+      const currentIndex = focusableElements.indexOf(activeElement);
+      
+      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
+        setTimeout(() => {
+          focusableElements[currentIndex + 1].focus();
+        }, 10);
+      }
+    }
+  }, []);
 
   // ── Offset sidebar props (unchanged) ──────────────────────────────────────
   const fullOffSetProps: FullOffSetFormProps = {
@@ -123,32 +201,31 @@ export const RoomWiseSubmission: React.FC<
 
   if (!state.mounted || !isOpen) return null;
 
-  return (
+  const content = (
     <div
-      className={`w-full p-0 flex flex-col bg-white overflow-visible ${
-        displayMode === "modal" ? "" : "mb-6"
-      }`}
+      className={`w-full p-0 flex flex-col bg-white overflow-visible z-[112] ${displayMode === "modal" ? "" : "mb-6"
+        }`}
     >
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form id="room-wise-submission-form" onSubmit={(e) => e.preventDefault()} onKeyDown={handleKeyDown}>
         <div className="bg-white flex flex-col rounded-lg shadow-md border border-gray-200 overflow-visible">
-
-          <RoomSubmissionHeader
-            floorNumber={props.floorNumber}
-            areaUnit={state.areaUnit}
-            handleToggleUnit={handleToggleUnit}
-            maxRooms={props.maxRooms}
-            availableRooms={state.availableRooms}
-            displayMode={displayMode}
-          />
 
           {/* Selected floor row from Floor QC table */}
           {props.selectedFloorRow && (
-            <div className="mb-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="mb-4 p-1 animate-in fade-in slide-in-from-top-4 duration-500">
               <MasterTable<DrawerFloorDataRow>
                 columns={[
                   {
                     key: "floorId",
-                    label: "Floor",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.floor`) || "Floor"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.floor") || "Floor"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.floorId;
                       const lookup = props.floorLookup || [];
@@ -160,21 +237,48 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "conYear",
-                    label: "Con. Year",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.conYear`) || "Construction Year"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.conYear") || "Con. Year"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) || "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-semibold"
                   },
                   {
                     key: "asstYear",
-                    label: "Asst. Year",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.asstYear`) || "Assessment Year"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.asstYear") || "Asst. Year"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) || "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-semibold"
                   },
                   {
                     key: "constructionTypeId",
-                    label: "Construction Type",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.conType`) || "Construction Type"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.conType") || "Construction Type"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.constructionTypeId;
                       const lookup = props.constructionLookup || [];
@@ -186,7 +290,16 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "typeOfUseId",
-                    label: "Type of Use",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.use`) || "Type of Use"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.use") || "Type of Use"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.typeOfUseId;
                       const lookup = props.useLookup || [];
@@ -198,7 +311,16 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "subTypeOfUseId",
-                    label: "Sub Type",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.subTypeOfUse`) || "Sub Type of Use"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.subTypeOfUse") || "Sub Type"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.subTypeOfUseId;
                       const lookup = props.subTypeLookup || [];
@@ -210,21 +332,38 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "noOfRooms",
-                    label: "Rooms",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.noOfRooms`) || "Number of Rooms"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.noOfRooms") || "Rooms"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) ?? "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-semibold"
                   },
                   {
                     key: "area",
-                    label: "Area",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.area`) || "Floor Area"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.area") || "Area"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) ?? "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-bold text-slate-800"
                   }
                 ]}
                 data={[props.selectedFloorRow]}
-                headerTitle={props.t?.('floorQC.selectedFloorDetails') || 'Selected Floor Row'}
                 containerClassName="rounded-xl overflow-hidden shadow-sm pt-0"
                 tableClassName="text-xs"
               />
@@ -235,7 +374,7 @@ export const RoomWiseSubmission: React.FC<
           <ApartmentQCRoomLayout
             displayMode={displayMode}
             state={state}
-            actions={{ addNewRow: () => {} }}
+            actions={{ addNewRow: () => { } }}
             roomActions={roomActions}
             offsetActions={offsetActions}
             props={props}
@@ -248,7 +387,13 @@ export const RoomWiseSubmission: React.FC<
             onSave={handleSaveData}
             onClose={handleClose}
             isSaving={state.isUpdating}
-            canSave={state.grandTotal > 0}
+            canSave={
+              state.grandTotal > 0 &&
+              isDirty &&
+              !state.rooms.some(
+                (r) => r.isAutoGenerated || !r.roomTypeId || Number(r.area) === 0
+              )
+            }
           />
 
         </div>
@@ -256,6 +401,59 @@ export const RoomWiseSubmission: React.FC<
       <OffSetSidebar {...fullOffSetProps} />
     </div>
   );
+
+  if (displayMode === "modal") {
+    if (typeof window === "undefined") return null;
+    return createPortal(
+      <Drawer open={isOpen}
+        onClose={onClose} width="xl" hideHeader={false}
+        title={
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-4">
+              <h2 className="text-base font-bold flex items-center gap-2 text-blue-900">
+                <Layers className="w-4 h-4 text-blue-600" />
+                {props.t?.('drawer.roomWiseSubmission') || 'Room Wise Submission'}
+                ({state.areaUnit === 'sq.m' ? (props.t?.('drawer.units.sqM') || 'Sq.m') : (props.t?.('drawer.units.sqFt') || 'Sq.ft')})
+              </h2>
+
+              <div className="flex items-center bg-blue-50/50 rounded-full p-0.5 border border-blue-100 shadow-inner ml-2">
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => state.areaUnit === 'sq.ft' && handleToggleUnit()}
+                  className={`px-4 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${state.areaUnit === 'sq.m'
+                    ? 'bg-white text-blue-600 shadow-sm scale-105'
+                    : 'text-blue-400/70 hover:text-blue-600'
+                    }`}
+                >
+                  {props.t?.('drawer.units.sqM') || 'Sq.m'}
+                </Button>
+
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => state.areaUnit === 'sq.m' && handleToggleUnit()}
+                  className={`px-4 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${state.areaUnit === 'sq.ft'
+                    ? 'bg-white text-blue-600 shadow-sm scale-105'
+                    : 'text-blue-400/70 hover:text-blue-600'
+                    }`}
+                >
+                  {props.t?.('drawer.units.sqFt') || 'Sq.ft'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {content}
+      </Drawer>,
+      document.body
+    );
+  }
+
+  return content;
 };
 
 export default RoomWiseSubmission;

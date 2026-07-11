@@ -84,6 +84,8 @@ describe("DateUtils.formatToDDMMYYYY", () => {
   });
 });
 
+
+
 describe("DateUtils.parseToISO", () => {
   it("should parse DD-MM-YYYY dates to ISO structure", () => {
     expect(DateUtils.parseToISO("10-02-2026")).toBe("2026-02-10T00:00:00");
@@ -94,3 +96,41 @@ describe("DateUtils.parseToISO", () => {
     expect(DateUtils.parseToISO("")).toBeNull();
   });
 });
+
+describe("DateUtils.calculateDurationYearsMonths", () => {
+  it("should return N/A if either date is missing or toDate is before fromDate", () => {
+    expect(DateUtils.calculateDurationYearsMonths(null, "2026-08-22")).toBe("N/A");
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", undefined)).toBe("N/A");
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", "2025-06-22")).toBe("N/A");
+  });
+
+  it("should calculate exact year differences", () => {
+    // 22-06-2026 to 21-06-2027 (inclusive, exactly 1 year)
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", "2027-06-21")).toBe("1Y 0M");
+    // 22-06-2026 to 22-06-2027
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", "2027-06-22")).toBe("1Y 0M");
+  });
+
+  it("should calculate the user's specific case correctly", () => {
+    // 22-06-2026 to 22-08-2027
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", "2027-08-22")).toBe("1Y 2M");
+    // 22-06-2026 to 21-08-2027
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", "2027-08-21")).toBe("1Y 2M");
+  });
+
+  it("should handle partial months correctly", () => {
+    // 22-06-2026 to 20-08-2027 (1Y 1M)
+    expect(DateUtils.calculateDurationYearsMonths("2026-06-22", "2027-08-20")).toBe("1Y 1M");
+  });
+
+  it("should handle standard 11 months agreements correctly", () => {
+    // 01-04-2026 to 28-02-2027
+    expect(DateUtils.calculateDurationYearsMonths("2026-04-01", "2027-02-28")).toBe("0Y 11M");
+  });
+
+  it("should support other date string formats", () => {
+    expect(DateUtils.calculateDurationYearsMonths("22-06-2026", "22-08-2027")).toBe("1Y 2M");
+    expect(DateUtils.calculateDurationYearsMonths("22/06/2026", "22/08/2027")).toBe("1Y 2M");
+  });
+});
+

@@ -377,4 +377,37 @@ describe('FloorDetailsTable', () => {
     expect(cells[3]).toHaveTextContent('Bravo');
     expect(cells[6]).toHaveTextContent('Alpha');
   });
+
+  it('renders edit button when onEditClick is provided', () => {
+    const onEditMock = vi.fn();
+    render(
+      <FloorDetailsTable
+        data={data}
+        columns={columns}
+        onEditClick={onEditMock}
+      />
+    );
+
+    const editButtons = screen.getAllByLabelText('Edit row');
+    expect(editButtons).toHaveLength(data.length);
+
+    fireEvent.click(editButtons[0]);
+    expect(onEditMock).toHaveBeenCalledTimes(1);
+    expect(onEditMock).toHaveBeenCalledWith(data[0], 0);
+  });
+
+  it('renders edit button with custom editTooltip when provided', () => {
+    render(
+      <FloorDetailsTable
+        data={data}
+        columns={columns}
+        onEditClick={() => {}}
+        editTooltip="Modify Item"
+      />
+    );
+
+    const editButtons = screen.getAllByLabelText('Modify Item');
+    expect(editButtons).toHaveLength(data.length);
+    expect(editButtons[0]).toHaveAttribute('title', 'Modify Item');
+  });
 });

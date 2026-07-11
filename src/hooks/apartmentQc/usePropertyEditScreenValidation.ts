@@ -12,7 +12,7 @@ import {
   DrawerFormData,
   DrawerFormErrors,
   DrawerFloorDataRow,
-} from './propertyEditScreenDrawer.types';
+} from '../../types/propertyEditScreenDrawer.types';
 
 interface UsePropertyEditScreenValidationArgs {
   formData: DrawerFormData;

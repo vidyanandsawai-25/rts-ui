@@ -5,12 +5,11 @@ import { useTranslations } from "next-intl";
 import type {
   PropertySearchFormProps,
   SearchValidationKey,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import {
-  usePropertySearchDependentOptions,
   usePropertySearchFilters,
   usePropertySearchForm,
-} from "@/hooks/property-search";
+} from "@/hooks/search-property";
 import { TopFilterRow } from "./form/TopFilterRow";
 import { QuickSearchPanel } from "./form/QuickSearchPanel";
 import { KycSearchPanel } from "./form/KycSearchPanel";
@@ -23,8 +22,7 @@ import { ActiveFiltersTags } from "./form/ActiveFiltersTags";
  *
  * - All option lists (`zoneOptions`, `wardOptions`, `propertyDescriptionOptions`,
  *   `lookupOptions`) are fetched server-side and passed as props.
- * - Zone/ward changes stay in local form state; dependent options load via
- *   `usePropertySearchDependentOptions` without refetching the results table.
+ * - Zone/ward changes trigger URL updates instantly; Next.js re-runs the page queries.
  * - Local draft state lives in `usePropertySearchForm`; URL → SSR → props
  *   keeps the draft in sync.
  */
@@ -35,11 +33,14 @@ export function PropertySearchForm({
   zoneOptions,
   wardOptions,
   propertyTypeOptions,
+  workflowStageOptions,
   propertyDescriptionOptions,
   lookupOptions,
   onSearch,
   onReset,
   onTabChange,
+  onZoneChange,
+  onWardChange,
   disabled = false,
   searchPending = false,
 }: PropertySearchFormProps): React.ReactElement {
@@ -64,23 +65,20 @@ export function PropertySearchForm({
     handleWardChange,
     handleSubmit,
     handleReset,
-    handleClearFilterTag,
+    handleClearField,
   } = usePropertySearchForm({
     initialCriteria,
     activeTab,
     selectedStatus,
     onSearch,
     onReset,
+    onZoneChange,
+    onWardChange,
     validationT,
   });
 
-  const { wardOptions: liveWardOptions, lookupOptions: liveLookupOptions } =
-    usePropertySearchDependentOptions({
-      zoneId: formState.zoneId,
-      wardId: formState.wardId,
-      initialWardOptions: wardOptions,
-      initialLookupOptions: lookupOptions,
-    });
+  const liveWardOptions = wardOptions;
+  const liveLookupOptions = lookupOptions;
 
   const { propertyNoToOptions } = usePropertySearchFilters({
     lookupOptions: liveLookupOptions,
@@ -91,20 +89,22 @@ export function PropertySearchForm({
     <ActiveFiltersTags
       formState={formState}
       propertyTypeOptions={propertyTypeOptions}
+      workflowStageOptions={workflowStageOptions}
       zoneOptions={zoneOptions}
       wardOptions={liveWardOptions}
       propertyDescriptionOptions={propertyDescriptionOptions}
-      onClearField={handleClearFilterTag}
+      onClearField={handleClearField}
     />
   );
 
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-1.5">
+    <form onSubmit={handleSubmit} className="space-y-1">
       <div data-filter-field>
         <TopFilterRow
           formState={formState}
           propertyTypeOptions={propertyTypeOptions}
+          workflowStageOptions={workflowStageOptions}
           zoneOptions={zoneOptions}
           wardOptions={liveWardOptions}
           propertyDescriptionOptions={propertyDescriptionOptions}
@@ -112,6 +112,7 @@ export function PropertySearchForm({
           onSelectChange={handleSelectChange}
           onZoneChange={handleZoneChange}
           onWardChange={handleWardChange}
+          onClearField={handleClearField}
         />
       </div>
 
@@ -134,6 +135,7 @@ export function PropertySearchForm({
               searchPending={searchPending}
               isSubmitDisabled={isSubmitDisabled}
               onReset={handleReset}
+              onClearField={handleClearField}
             />
           </div>
         }
@@ -148,6 +150,7 @@ export function PropertySearchForm({
               searchPending={searchPending}
               isSubmitDisabled={isSubmitDisabled}
               onReset={handleReset}
+              onClearField={handleClearField}
             />
           </div>
         }
@@ -163,6 +166,7 @@ export function PropertySearchForm({
               searchPending={searchPending}
               isSubmitDisabled={isSubmitDisabled}
               onReset={handleReset}
+              onClearField={handleClearField}
             />
           </div>
         }

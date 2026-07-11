@@ -6,8 +6,8 @@ import { Button } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { useTranslations } from "next-intl";
 
-import { calculateRentProgression, RentPeriod } from "@/lib/utils/renter-calculations";
-import { RenterFormData } from "@/types/renter.types";
+import { calculateRentProgression, RentPeriod } from "@/lib/utils/renter/renter-calculations";
+import { RenterFormData } from "@/types/renter/renter.types";
 import { RentCalculationErrorBoundary } from "./RentCalculationErrorBoundary";
 import { ProgressionTable } from "./ProgressionTable";
 import { SummaryCards } from "./SummaryCards";

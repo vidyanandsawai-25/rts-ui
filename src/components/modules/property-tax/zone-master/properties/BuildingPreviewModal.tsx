@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, X } from "lucide-react";
-import { toast } from "sonner";
+import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, X, ArrowUp, Hash } from "lucide-react";
 import { Modal } from "@/components/common/Modal";
 import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
-import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
-import { createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { Button } from "@/components/common";
-import { parseBulkPropertyErrors } from "@/lib/utils/bulk-property-errors";
+import { useBuildingGeneration } from "@/hooks/zoneMaster/useBuildingGeneration";
 
 interface BuildingPreviewProps {
   open: boolean;
@@ -46,8 +43,17 @@ export function BuildingPreviewModal({
 }: BuildingPreviewProps) {
   const t = useTranslations("zoneMaster");
 
-  // Generation state
-  const [generating, setGenerating] = useState(false);
+  const { generating, handleGenerate, canGenerate } = useBuildingGeneration({
+    buildingData,
+    propertyNo,
+    taxZoneId,
+    wardId,
+    propertyTypeId,
+    categoryId,
+    societyDetailId,
+    onGenerateSuccess,
+    t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
+  });
 
   // Generation type mapping
   const generationTypeLabels: Record<string, string> = {
@@ -149,98 +155,6 @@ export function BuildingPreviewModal({
   }, [buildingData, incrementedBy]);
 
   const totalFloors = organizedData.toFloor - organizedData.fromFloor + 1;
-
-  // Handle generate properties
-  const handleGenerate = async () => {
-    // Validate required configuration
-    if (!taxZoneId || !wardId || !societyDetailId) {
-      toast.error("Missing required configuration: taxZoneId, wardId, or societyDetailId");
-      return;
-    }
-
-    // Validate property type and category from selected property
-    if (!propertyTypeId) {
-      toast.error(t("partitionForm.wing.generate.propertyTypeRequired"));
-      return;
-    }
-    if (!categoryId) {
-      toast.error(t("partitionForm.wing.generate.categoryRequired"));
-      return;
-    }
-
-    // Build payload from building data using selected property's type and category
-    const payload: BulkPropertyItem[] = buildingData.map((item) => ({
-      taxZoneId,
-      wardId,
-      propertyNo: propertyNo || "",
-      propertyTypeId,
-      categoryId,
-      partitionNo: item.partitionNo || item.flatNo,
-      flatOrShopNo: item.flatNo,
-      flatOrShopNoEnglish: null,
-      address: null,
-      addressEnglish: null,
-      location: null,
-      locationEnglish: null,
-      societyDetailId,
-      propertyFloorId: item.propertyFloorId,
-      createdBy: 0, // Will be set by server action from authenticated user
-      createdDate: new Date().toISOString(),
-    }));
-
-    setGenerating(true);
-
-    try {
-      const result = await createBulkBuildingPropertiesAction(payload);
-
-      // Check if we have data (could be success or partial failure)
-      if (result.data) {
-        if (result.data.allSucceeded) {
-          toast.success(t("partitionForm.wing.generate.success", { count: result.data.successCount }));
-          onGenerateSuccess?.();
-        } else {
-          // Parse and display errors as toast alert
-          // Use result.data.errors from the API response
-          const errorMessages = result.data.errors || [];
-          const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
-
-          // Show toast with title and description based on severity
-          const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
-          toastFn(parsedErrors.title, {
-            description: parsedErrors.messages.join("\n"),
-            duration: 8000,
-          });
-        }
-      } else {
-        // Handle complete failure - no data returned
-        const errorMessages = result.error ? [result.error] : [];
-        const parsedErrors = parseBulkPropertyErrors(errorMessages, t);
-
-        const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
-        toastFn(parsedErrors.title, {
-          description: parsedErrors.messages.join("\n"),
-          duration: 8000,
-        });
-      }
-    } catch (_error) {
-      toast.error(t("partitionForm.wing.generate.errors.title"), {
-        description: t("partitionForm.wing.generate.errors.genericError"),
-        duration: 6000,
-      });
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  // Check if generate is possible (all required data from selected property)
-  const canGenerate = !!(
-    taxZoneId &&
-    wardId &&
-    societyDetailId &&
-    propertyTypeId &&
-    categoryId &&
-    buildingData.length > 0
-  );
 
   if (!open) return null;
 
@@ -449,7 +363,7 @@ export function BuildingPreviewModal({
                                 }`}
                             >
                               <span>
-                                {isGround ? `${t("partitionForm.wing.preview.groundFloorLabel")} (${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo})` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
+                                {isGround ? `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
                               </span>
                               {isTop && (
                                 <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
@@ -541,37 +455,52 @@ export function BuildingPreviewModal({
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.flatRange")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
-                    {organizedData.flatStart} – {organizedData.flatEnd}
-                  </span>
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <Grid3x3 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.flatRange")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
+                      {organizedData.flatStart} – {organizedData.flatEnd}
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.increment")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
-                    +{organizedData.incrementedBy}
-                  </span>
+
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <ArrowUp className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.increment")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
+                      +{organizedData.incrementedBy}
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.prefix")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
-                    {organizedData.prefix || "—"}
-                  </span>
+
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <Hash className="w-4 h-4 text-purple-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.prefix")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
+                      {organizedData.prefix || "—"}
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.type")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block uppercase">
-                    {generationTypeLabels[organizedData.generationType] || organizedData.generationType}
-                  </span>
+
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <Layers className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.type")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block uppercase">
+                      {generationTypeLabels[organizedData.generationType] || organizedData.generationType}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

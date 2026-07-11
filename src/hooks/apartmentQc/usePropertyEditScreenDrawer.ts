@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import type { Floor } from "@/types/floor.types";
@@ -10,7 +10,7 @@ import { usePropertyEditScreenDropdowns } from "./usePropertyEditScreenDropdowns
 import { usePropertyEditScreenFloorQC } from "./usePropertyEditScreenFloorQC";
 import { usePropertyEditScreenValidation } from "./usePropertyEditScreenValidation";
 import { usePropertyEditScreenSubmission } from "./usePropertyEditScreenSubmission";
-import type { DrawerFloorDataRow } from "./propertyEditScreenDrawer.types";
+import type { DrawerFloorDataRow } from "../../types/propertyEditScreenDrawer.types";
 
 interface UsePropertyEditScreenDrawerArgs {
   open: boolean;
@@ -107,14 +107,8 @@ export function usePropertyEditScreenDrawer({
   const submissionHook = usePropertyEditScreenSubmission({
     propertyData,
     formData: stateHook.formData,
-    floorData: stateHook.floorData,
-    floorOptions: dropdownsHook.mergedFloorOptions,
-    conTypeOptions: dropdownsHook.mergedConTypeOptions,
-    useTypeOptions: dropdownsHook.mergedUseTypeOptions,
-    subTypeOptions: dropdownsHook.mergedSubTypeOptions,
     validateForm: validationHook.validateForm,
     validateFloorYears: validationHook.validateFloorYears,
-    setIsSavingFloorQC: stateHook.setIsSavingFloorQC,
     onSaveOrClose,
   });
 
@@ -152,12 +146,29 @@ export function usePropertyEditScreenDrawer({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [searchParams, pathname, router]);
 
+  // ── Photo Viewer State ──────────────────────────────────────────────────────
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
+  
+  const handleOpenPhotoViewer = useCallback(() => {
+    setPhotoViewerOpen(true);
+  }, []);
+
+  const handleClosePhotoViewer = useCallback(() => {
+    setPhotoViewerOpen(false);
+  }, []);
+
+
   // ── Close handler ───────────────────────────────────────────────────────────
   const handleClose = () => {
+    setPhotoViewerOpen(false);
     onClose?.();
   };
 
   return {
+    // Photo Viewer
+    photoViewerOpen,
+    handleOpenPhotoViewer,
+    handleClosePhotoViewer,
     // State
     isBasicInfoOpen: stateHook.isBasicInfoOpen,
     setIsBasicInfoOpen: stateHook.setIsBasicInfoOpen,

@@ -72,5 +72,6 @@
   "showHistory": "Show History",
   "hideHistory": "Hide History",
   "basePropertyTooltip": "This is the base property",
-  "combinePropertyTooltip": "This property we are combining in base property"
+  "combinePropertyTooltip": "This property we are combining in base property",
+  "noCombinePropertyHistoryFound": "No combine property history found"
 }

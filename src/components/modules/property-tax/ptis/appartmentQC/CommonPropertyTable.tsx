@@ -2,21 +2,23 @@
 
 import { useMemo, useCallback, useState, useRef } from 'react';
 import type { MouseEventHandler } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { toast } from 'sonner';
-import { MasterTable, Column } from '@/components/common/MasterTable';
+import { useTranslations } from 'next-intl';
+import { ApartmentQCMasterTable, type Column } from './ApartmentQCMasterTable';
 import { SearchInput } from '@/components/common';
 import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink } from 'lucide-react';
 import { useTableAutoScroll } from '@/hooks/apartmentQc/useTableAutoScroll';
 import { ColumnFilterDropdown, type FilterField } from './ColumnFilterDropdown';
 import { Tooltip } from '@/components/common/Tooltip';
-import { logger } from '@/lib/utils/logger';
-import { TEXT_SANITIZE } from '@/lib/utils/validation';
-import { ExportIconButton, EyeIconButton } from '@/components/common/ActionButtons';
-import { Button } from '@/components/common/ActionButton';
+import { groupApartmentData } from './apartmentQC.utils';
+import { useExcelExport } from '@/hooks/apartmentQc/useExcelExport';
 
-type ColumnWithTooltip<T extends Record<string, unknown>> = Column<T> & {
+import { ExportIconButton, EyeIconButton } from '@/components/common/ActionButtons';
+import { SEARCH_ALPHANUMERIC_SANITIZE } from '@/lib/utils/validation-rules';
+import { cn } from '@/lib/utils/cn';
+
+type ColumnWithTooltip<T extends Record<string, unknown>> = Omit<Column<T>, 'key'> & {
   headerTooltip?: boolean | string;
+  key?: string;
 };
 
 // Map column keys to filter fields
@@ -28,9 +30,29 @@ const FILTERABLE_COLUMNS: Record<string, FilterField> = {
 };
 
 const SORT_COLUMN_KEYS: Record<string, string> = {
-  propertyNo: 'PartitionNo',
+  id: 'Id',
+  taxZoneId: 'TaxZoneId',
+  wardId: 'WardId',
+  propertyNo: 'PropertyNo',
+  partitionNo: 'PartitionNo',
+  mobileNo: 'MobileNo',
+  emailId: 'EmailId',
   flatOrShopNo: 'FlatOrShopNo',
+  flatOrShopName: 'FlatOrShopName',
+  flatOrShopNoEnglish: 'FlatOrShopNoEnglish',
+  flatOrShopNameEnglish: 'FlatOrShopNameEnglish',
+  ownerName: 'OwnerName',
+  ownerNameEnglish: 'OwnerNameEnglish',
+  occupierName: 'OccupierName',
+  occupierNameEnglish: 'OccupierNameEnglish',
+  partType: 'PartType',
+  propertyType: 'PropertyType',
+  propertyTypeName: 'PropertyTypeName',
+  bhk: 'BHK',
+  wing: 'Wing',
+  apartmentType: 'ApartmentType',
 };
+
 
 interface FilterOption {
   value: string;
@@ -53,19 +75,17 @@ function ApartmentSortButton({
   const Icon =
     sortDirection === 'asc' ? ArrowUp : sortDirection === 'desc' ? ArrowDown : ArrowUpDown;
 
+  const IconSize = 12;
   return (
-    <Button
+    <button
       type="button"
-      variant="secondary"
-      size="xs"
-      icon={Icon}
-      iconPosition="right"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="h-6 flex items-center justify-center gap-1 rounded-md border border-gray-300 bg-gray-100 text-[11px] font-semibold text-gray-900 hover:bg-gray-200 pr-1.5"
+      className="inline-flex items-center justify-center p-1 gap-1 w-full h-full  text-[11px] font-semibold text-white bg-transparent hover:bg-transparent"
     >
-      <span className="truncate">{label}</span>
-    </Button>
+      <span className="truncate ">{label}</span>
+      {Icon && <Icon size={IconSize} />}
+    </button>
   );
 }
 
@@ -111,7 +131,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   isAutoScrolling,
   onToggleAutoScroll,
   pageNumber = 1,
-  pageSize = 10,
+  pageSize = 5,
   totalCount,
   totalPages,
   onPageChange,
@@ -127,98 +147,88 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 }: CommonPropertyTableProps<T>) {
   const t = useTranslations('appartmentQC');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
   useTableAutoScroll(isAutoScrolling);
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [isTableExpanded, setIsTableExpanded] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Excel export state
-  const [isExporting, setIsExporting] = useState(false);
+  const { isExporting, handleExcelExport } = useExcelExport({ wardId, propertyNo });
 
-  // Excel export handler - uses secure server-side API route
-  const handleExcelExport = useCallback(async () => {
-    if (!wardId || !propertyNo) {
-      logger.warn('[CommonPropertyTable] Cannot export: missing wardId or propertyNo');
-      toast.error(t('export.missingParams') || 'Missing ward ID or property number');
-      return;
-    }
+  // Derive filter options from the current data (only values actually appearing in the columns)
+  const localFilterOptions = useMemo(() => {
+    const optionsMap: Record<string, FilterOption[]> = {};
 
-    setIsExporting(true);
-
-    // Show loading toast
-    const loadingToastId = toast.loading(t('export.downloading') || 'Downloading Excel file...');
-
-    try {
-      // Build the secure API route URL (auth is handled server-side via cookies)
-      const params = new URLSearchParams();
-      params.append('WardId', String(wardId));
-      params.append('PropertyNo', propertyNo);
-      const exportUrl = `/${locale}/property-tax/ptis/appartmentQC/export-excel?${params.toString()}`;
-
-      // Fetch the Excel file from secure API route
-      const response = await fetch(exportUrl, {
-        method: 'GET',
-        credentials: 'include', // Include cookies for authentication
+    for (const [colKey, field] of Object.entries(FILTERABLE_COLUMNS)) {
+      const values = new Set<string>();
+      data.forEach((row) => {
+        const rawVal = row[colKey] as string | number | null | undefined;
+        if (rawVal !== null && rawVal !== undefined && rawVal !== '') {
+          values.add(String(rawVal));
+        }
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(errorData.error || `Failed to export Excel: ${response.statusText}`);
-      }
-
-      const blob = await response.blob();
-
-      // Create download link and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `apartment-qc-${propertyNo}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      // Dismiss loading toast and show success
-      toast.dismiss(loadingToastId);
-      toast.success(t('export.success') || 'Excel file downloaded successfully!');
-    } catch (error) {
-      logger.error('[CommonPropertyTable] Excel export failed', { error: error as Error });
-      // Dismiss loading toast and show error
-      toast.dismiss(loadingToastId);
-      toast.error(t('export.error') || 'Failed to download Excel file');
-    } finally {
-      setIsExporting(false);
+      optionsMap[field] = Array.from(values)
+        .sort((a, b) => a.localeCompare(b))
+        .map((v) => ({ value: v, label: v }));
     }
-  }, [wardId, propertyNo, t, locale]);
+    return optionsMap;
+  }, [data]);
+
+  // Local fetch function that returns only values present in the current column data
+  const handleLocalFetchFilterOptions = useCallback(
+    async (field: FilterField): Promise<FilterOption[]> => {
+      if (onFetchFilterOptions) {
+        return onFetchFilterOptions(field);
+      }
+      return localFilterOptions[field] || [];
+    },
+    [localFilterOptions, onFetchFilterOptions]
+  );
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return data;
+    const query = searchQuery.toLowerCase();
+    return data.filter((row) =>
+      Object.values(row).some((val) => val?.toString().toLowerCase().includes(query))
+    );
+  }, [data, searchQuery]);
+
+  const groupedData = useMemo(
+    () => groupApartmentData(filteredData, pageNumber, pageSize),
+    [filteredData, pageNumber, pageSize]
+  );
 
   const styledColumns: Column<T>[] = useMemo(
     () =>
       columns.map((col) => {
         const filterField = FILTERABLE_COLUMNS[col.key as string];
         const columnLabel = String(col.label);
-        const isSortable = col.key in SORT_COLUMN_KEYS;
-        const sortColumnKey = isSortable ? SORT_COLUMN_KEYS[col.key as string] : String(col.key);
-        const sortDirection: SortDirection = isSortable
-          ? sortBy === sortColumnKey && (sortOrder === 'asc' || sortOrder === 'desc')
+        const sortColumnKey = SORT_COLUMN_KEYS[col.key as string] || String(col.key);
+        const sortDirection: SortDirection =
+          sortBy === sortColumnKey && (sortOrder === 'asc' || sortOrder === 'desc')
             ? sortOrder
-            : null
-          : null;
-        const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
+            : null;
+        const isFilterable = !!filterField && !!onFilterChange;
         const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
 
- const isPropertyNo = col.key === 'propertyNo';
-      const isOldPropertyNo = col.key === 'oldPropertyNo';
-        // Create the sort button element only for sortable columns
-        const sortButton = isSortable ? (
+        const isPropertyNo = col.key === 'propertyNo';
+        const isOldPropertyNo = col.key === 'oldPropertyNo';
+        
+        // Allow sorting for all columns defined in SORT_COLUMN_KEYS
+        const disableSort = !Object.prototype.hasOwnProperty.call(SORT_COLUMN_KEYS, col.key as string);
+
+
+        const sortButton = disableSort ? (
+          <span className="inline-flex items-center justify-center p-1 gap-1 w-full h-full text-[11px] font-semibold text-white">
+            <span className="truncate">{columnLabel}</span>
+          </span>
+        ) : (
           <ApartmentSortButton
             label={columnLabel}
             sortDirection={sortDirection}
             onClick={onSort ? () => onSort(sortColumnKey) : undefined}
             ariaLabel={`${tCommon('table.sort.by')} ${columnLabel}`}
           />
-        ) : (
-          <span className="text-[11px] font-semibold text-gray-900">{columnLabel}</span>
         );
 
         // Wrap with tooltip if headerTooltip is provided
@@ -234,7 +244,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             }
             placement="top"
           >
-            <span className="cursor-help">{sortButton}</span>
+            <span>{sortButton}</span>
           </Tooltip>
         ) : (
           sortButton
@@ -247,41 +257,50 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
               {/* Column name with sort icon and filter icon integrated */}
               <div className="relative inline-flex items-center gap-1">
                 {headerContent}
+
                 {/* Funnel icon positioned to the right of the button */}
                 {isFilterable && (
-                  <ColumnFilterDropdown
-                    field={filterField}
-                    selectedValues={activeFilters[filterField] || []}
-                    onFilterChange={onFilterChange}
-                    onFetchOptions={onFetchFilterOptions}
-                    isActive={hasActiveFilter}
-                  />
+                  <div
+                    className={cn(
+                      'flex items-center transition-colors',
+                      hasActiveFilter
+                        ? '[&_button]:!text-amber-400 hover:[&_button]:!text-amber-300'
+                        : '[&_button]:!text-white hover:[&_button]:!text-cyan-300'
+                    )}
+                  >
+                    <ColumnFilterDropdown
+                      field={filterField}
+                      selectedValues={activeFilters[filterField] || []}
+                      onFilterChange={onFilterChange}
+                      onFetchOptions={handleLocalFetchFilterOptions}
+                      isActive={hasActiveFilter}
+                    />
+                  </div>
                 )}
               </div>
             </div>
           ) as unknown as string,
-        cellClassName: `px-1 py-1 whitespace-nowrap ${col.cellClassName || ''}`,
-        headerClassName: `!px-1.5 !py-1 border-l !border-gray-400/50 ${col.headerClassName || ''}`,
-        render: (value: unknown, row: T, rowIndex: number) => {
-          // Enhanced cell design with improved font and border colors
-          if (col.render) {
+          cellClassName: `px-1 py-1 whitespace-nowrap ${col.cellClassName || ''}`,
+          headerClassName: `!px-1.5 !py-1 border-l !border-gray-400/50 border-r !border-gray-400/50 ${col.headerClassName || ''}`,
+          render: (value: unknown, row: T, rowIndex: number) => {
+            // Enhanced cell design with improved font and border colors
+            if (col.render) {
+              return (
+                <div className="text-xs text-center">
+                  <span>{col.render(value as T[keyof T], row, rowIndex)}</span>
+                </div>
+              );
+            }
+            const displayValue =
+              value === null || value === undefined || value === '' ? '-' : String(value);
             return (
-              <div className={`group relative border hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200 ${isPropertyNo ? 'bg-blue-50 border-blue-300' : isOldPropertyNo ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-300'}`}>
-                <span className={isPropertyNo ? 'text-blue-700 font-semibold' : isOldPropertyNo ? 'text-amber-700 font-semibold' : ''}>
-                  {col.render(value as T[keyof T] | undefined, row, rowIndex)}
-                </span>
+              <div className="text-xs text-center">
+                <span>{displayValue}</span>
+                <ExternalLink
+                  className={`inline-block w-3 h-3 ml-1 text-gray-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isPropertyNo ? '!text-blue-500' : isOldPropertyNo ? '!text-amber-500' : ''}`}
+                />
               </div>
             );
-          }
-           const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
-          return (
-            <div className={`group relative border hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200 ${isPropertyNo ? 'bg-blue-50 border-blue-300' : isOldPropertyNo ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-300'}`}>
-              <span className={`text-gray-800 font-medium group-hover:text-blue-700 group-hover:underline transition-colors duration-200 ${isPropertyNo ? 'text-blue-700 font-semibold' : isOldPropertyNo ? 'text-amber-700 font-semibold' : ''}`}>
-                {displayValue}
-              </span>
-              <ExternalLink className={`inline-block w-3 h-3 ml-1 text-gray-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isPropertyNo ? '!text-blue-500' : isOldPropertyNo ? '!text-amber-500' : ''}`} />
-            </div>
-          );
           },
         };
       }),
@@ -289,27 +308,18 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       columns,
       activeFilters,
       onFilterChange,
-      onFetchFilterOptions,
       onSort,
       sortBy,
       sortOrder,
       tCommon,
+      handleLocalFetchFilterOptions,
     ]
   );
 
-  const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
-    const query = searchQuery.toLowerCase();
-    return data.filter((row) =>
-      Object.values(row).some((val) => val?.toString().toLowerCase().includes(query))
-    );
-  }, [data, searchQuery]);
-
   const handleSearchInputChange = useCallback(
     (value: string) => {
-      setLocalSearch(value);
-
-      const sanitized = value.replace(TEXT_SANITIZE, '');
+      const sanitized = value.replace(SEARCH_ALPHANUMERIC_SANITIZE, '');
+      setLocalSearch(sanitized);
 
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -330,22 +340,28 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   }, [activeTab, t]);
 
   return (
-    <div className="mb-2">
-      <MasterTable
+    <div className="flex flex-col  border-blue-200 rounded">
+      <ApartmentQCMasterTable<T>
+        dataMode="grouped"
         columns={styledColumns}
-        data={filteredData}
+        data={groupedData}
         loading={loading}
-        height="xs"
-        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+        height={isTableExpanded ? 600 : 250}
+        isExpanded={isTableExpanded}
+        onToggleExpand={() => setIsTableExpanded(!isTableExpanded)}
         pageNumber={pageNumber}
         pageSize={pageSize}
-        totalCount={totalCount ?? filteredData.length}
+        totalCount={
+          (totalCount ?? Math.ceil(filteredData.length / pageSize) * pageSize > filteredData.length)
+            ? (totalCount ?? filteredData.length)
+            : filteredData.length
+        }
         totalPages={totalPages ?? Math.ceil(filteredData.length / pageSize)}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
         onRowClick={(row, _index) => onRowClick(row)}
         headerExtra={
-          <div className="flex items-center justify-between w-full gap-4">
+          <div className="flex items-center px-3 py-2 border-b border-blue-200 justify-between w-full">
             <div className="flex gap-2 items-center">
               <h3 className="text-sm font-semibold text-[#1E3A8A]">{title}</h3>
               <span className="text-[#6B7280]">-</span>
@@ -375,7 +391,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             </div>
           </div>
         }
-        tableClassName="text-xs w-max min-w-full"
+        tableClassName="w-max min-w-full"
         theadClassName="bg-[#d9e3ec] text-black h-0 sticky top-0 z-20 [&_th]:whitespace-nowrap"
       />
     </div>

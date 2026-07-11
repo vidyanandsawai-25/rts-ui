@@ -20,7 +20,7 @@ describe('Payload Sanitization Tests', () => {
         renter: 'Yes',
         isTaxable: 'Yes',
         renterName: 'Alice Renter',
-        
+
         // Renter Details
         renterDetails: [
           {
@@ -103,8 +103,8 @@ describe('Payload Sanitization Tests', () => {
       const room = (result.roomWiseSubmissionDetails as any[])[0];
       expect(room.id).toBe(601);
       expect(room.propertyDetailsId).toBe(206094);
-      expect(room.lengthMtr).toBe(5);
-      expect(room.widthMtr).toBe(4);
+      expect(room.lengthMtr).toBeUndefined();
+      expect(room.widthMtr).toBeUndefined();
       expect(room.heightMtr).toBe(3);
       expect(room.areaSqMtr).toBe(20);
       expect(room.roomType).toBe('Bedroom');
@@ -162,7 +162,7 @@ describe('Payload Sanitization Tests', () => {
         renterYesNo: true,
         isTaxable: false,
         renterNameEnglish: 'Bob Renter',
-        
+
         roomWiseSubmissionDetails: [
           {
             id: 701,
@@ -195,8 +195,8 @@ describe('Payload Sanitization Tests', () => {
       expect(result.roomWiseSubmissionDetails).toHaveLength(1);
       const room = (result.roomWiseSubmissionDetails as any[])[0];
       expect(room.id).toBe(701);
-      expect(room.lengthMtr).toBe(6);
-      expect(room.widthMtr).toBe(5);
+      expect(room.lengthMtr).toBeUndefined();
+      expect(room.widthMtr).toBeUndefined();
       expect(room.areaSqMtr).toBe(30);
       expect(room.roomType).toBe('Hall');
       expect(room.minusYesNo).toBe(true);
@@ -284,12 +284,59 @@ describe('Payload Sanitization Tests', () => {
       expect(result.roomWiseSubmissionDetails).toHaveLength(1);
       const room = (result.roomWiseSubmissionDetails as any[])[0];
       expect(room.roomWiseMinusData).toHaveLength(2);
-      
+
       const firstMinus = room.roomWiseMinusData[0];
       expect(firstMinus.isOffset).toBe(true);
 
       const secondMinus = room.roomWiseMinusData[1];
       expect(secondMinus.isOffset).toBe(false);
+    });
+  });
+
+  describe('Open Space Mapping Requirements', () => {
+    it('should map Open Space fields correctly when isOpenPlot is true or selectedFloorType is OpenPlot', () => {
+      const openSpacePayload = {
+        propertyDetailsId: 206094,
+        propertyId: 1024,
+        isOpenPlot: true,
+        length: 12.5,
+        width: 10,
+        roomWiseSubmissionDetails: [
+          { id: 1, roomNo: 'Room 1', lengthMtr: 5 }
+        ]
+      };
+
+      const result = sanitizeRenterPayload(openSpacePayload);
+
+      expect(result.isOpenPlot).toBe(true);
+      expect(result.length).toBeUndefined();
+      expect(result.width).toBeUndefined();
+      expect(result.lengthMtr).toBeUndefined();
+      expect(result.widthMtr).toBeUndefined();
+      expect(result.roomWiseSubmissionDetails).toEqual([]);
+      expect(result.roomWiseMinusData).toEqual([]);
+    });
+
+    it('should set isOpenPlot to false and length/width to null for non-Open Space submissions', () => {
+      const constructionPayload = {
+        propertyDetailsId: 206094,
+        propertyId: 1024,
+        selectedFloorType: 'Construction',
+        length: 12.5,
+        width: 10,
+        roomWiseSubmissionDetails: [
+          { id: 1, roomNo: 'Room 1', lengthMtr: 5 }
+        ]
+      };
+
+      const result = sanitizeRenterPayload(constructionPayload);
+
+      expect(result.isOpenPlot).toBe(false);
+      expect(result.length).toBeUndefined();
+      expect(result.width).toBeUndefined();
+      expect(result.lengthMtr).toBeUndefined();
+      expect(result.widthMtr).toBeUndefined();
+      expect(result.roomWiseSubmissionDetails).toHaveLength(1);
     });
   });
 });

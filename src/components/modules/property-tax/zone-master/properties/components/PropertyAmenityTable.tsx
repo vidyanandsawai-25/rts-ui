@@ -63,8 +63,10 @@ export function PropertyAmenityTable({
         const item = row as SocietyAmenityDetailItem;
         return (
           <span className="font-medium text-gray-800">
-            {item.wardNo || "-"} - {item.propertyNo || "-"} - {item.partitionNo || "-"}
-          </span>
+  {[item.wardNo, item.propertyNo, item.partitionNo]
+    .filter(Boolean)
+    .join(" - ")}
+</span>
         );
       },
     },

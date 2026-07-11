@@ -65,8 +65,20 @@ export async function getConstructionTypeOptions(): Promise<string[]> {
 /**
  * Fetches type of use data from API
  */
-export async function getTypeOfUseData(): Promise<TypeOfUseApiItem[]> {
-    return fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
+export async function getTypeOfUseData(propertyTypeId?: string | number): Promise<TypeOfUseApiItem[]> {
+    if (propertyTypeId && propertyTypeId !== 'undefined' && propertyTypeId !== 'null' && Number(propertyTypeId) > 0) {
+        const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(`/TypeOfUseByPropertyType/${propertyTypeId}`, "Failed to fetch types of use by property type");
+        return rawItems.map(item => ({
+            ...item,
+            typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
+            typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
+        }));
+    }
+    const rawItems = await fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
+    return rawItems.map(item => ({
+        ...item,
+        typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
+    }));
 }
 
 /**

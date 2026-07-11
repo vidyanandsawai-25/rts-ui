@@ -29,7 +29,7 @@ interface SocietyFormFieldsProps {
     handleWingChange: (name: string | undefined, value: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
+            'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
     onFocusField: (field: string) => void;
@@ -66,7 +66,7 @@ export const SocietyFormFields = ({
     onBlurField,
 }: SocietyFormFieldsProps & { onFocusField: (field: string) => void; onBlurField: () => void; }) => {
     return (
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
             <SocietyGeneralFields
                 societyEmail={societyEmail}
                 setSocietyEmail={setSocietyEmail}
@@ -76,11 +76,11 @@ export const SocietyFormFields = ({
                 setBuilderName={setBuilderName}
                 societyName={societyName}
                 setSocietyName={setSocietyName}
-                societyAddress={societyAddress}
-                setSocietyAddress={setSocietyAddress}
                 wingId={wingId}
                 wingOptions={wingOptions}
                 handleWingChange={handleWingChange}
+                secretaryName={secretaryName}
+                setSecretaryName={setSecretaryName}
                 showError={showError}
                 onFocusField={onFocusField}
                 onBlurField={onBlurField}
@@ -95,8 +95,8 @@ export const SocietyFormFields = ({
                 setSecretaryEmail={setSecretaryEmail}
                 managerName={managerName}
                 setManagerName={setManagerName}
-                secretaryName={secretaryName}
-                setSecretaryName={setSecretaryName}
+                societyAddress={societyAddress}
+                setSocietyAddress={setSocietyAddress}
                 showError={showError}
                 onFocusField={onFocusField}
                 onBlurField={onBlurField}

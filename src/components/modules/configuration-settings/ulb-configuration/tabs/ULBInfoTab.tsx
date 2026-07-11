@@ -1,9 +1,7 @@
 'use client';
 
 import { Building2, ChevronRight, MapPin, User } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card';
-import { Button } from '@/components/common/ActionButton';
-import { SaveButton } from '@/components/common/ActionButtons';
+import { Card, CardContent, CardHeader, CardTitle, Button, SaveButton } from '@/components/common';
 import {
   INDIAN_STATES,
   ULB_TYPES,

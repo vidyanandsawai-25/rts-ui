@@ -1,8 +1,6 @@
 import { ApiError } from '@/lib/utils/api';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { getPropertySocietyDetails } from '@/lib/api/property-society.service';
-
 import {
     PropertyBasicDetailsApiItem,
     PropertyCategoryApiItem,
@@ -10,8 +8,6 @@ import {
     MoujaItem,
     TaxZoneItem
 } from "@/types/property-basic-details.types";
-
-import { PropertySocietyDetailsApiItem } from "@/types/property-society-details.types";
 
 import PropertyFormView from '@/components/modules/property-tax/ptis/QuickDataEntry/property/PropertyForm';
 import { getMoujaMasterAction, getPropertyBasicDetailsAction, getPropertyCategoriesAction, getPropertyTypesAction, getTaxZonesAction } from './action';
@@ -38,7 +34,6 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
     let propertyDescriptionList: PropertyTypeApiItem[] = [];
     let propertyCategoryList: PropertyCategoryApiItem[] = [];
     let propertyBasicDetails: PropertyBasicDetailsApiItem | null = null;
-    let propertySocietyDetails: PropertySocietyDetailsApiItem | null = null;
     let taxZonesList: TaxZoneItem[] = [];
 
     try {
@@ -47,14 +42,12 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
             propertyTypesRes,
             propertyCategoriesRes,
             propertyBasicDetailsRes,
-            propertySocietyRes,
             taxZonesRes
         ] = await Promise.all([
             getMoujaMasterAction(1, -1),
             getPropertyTypesAction(1, -1),
             getPropertyCategoriesAction(1, -1),
             getPropertyBasicDetailsAction(pid),
-            getPropertySocietyDetails(pid),
             getTaxZonesAction(1, -1)
         ]);
 
@@ -82,7 +75,6 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
             throw new Error(propertyBasicDetailsRes.error || "Failed to fetch Property Basic Details");
         }
 
-        propertySocietyDetails = propertySocietyRes;
         if (taxZonesRes.success && taxZonesRes.data) {
             taxZonesList = taxZonesRes.data;
         }
@@ -114,14 +106,13 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
         const t = await getTranslations("quickDataEntry");
         throw new Error(t('property.errors.fetchPropertyBasicDetails'));
     }
-
+    
     return (
         <PropertyFormView
             MoujaMaster={MoujaMasterList}
             propertyCategories={propertyCategoryList}
             propertyDescriptions={propertyDescriptionList}
             propertyData={propertyBasicDetails}
-            propertySocietyDetails={propertySocietyDetails}
             taxZones={taxZonesList}
             locale={locale}
         />

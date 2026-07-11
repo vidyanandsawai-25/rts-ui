@@ -20,6 +20,8 @@ export interface FooterSelectProps {
   className?: string;
   disabled?: boolean;
   label?: string;
+  selectedLabelOverride?: string;
+  onOpen?: () => void;
 }
 
 export function FooterSelect({
@@ -30,24 +32,31 @@ export function FooterSelect({
   className = '',
   disabled = false,
   label,
+  selectedLabelOverride,
+  onOpen,
 }: FooterSelectProps) {
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number } | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
 
+  const updateCoords = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  };
+
   const toggleOpen = () => {
     if (disabled) return;
     if (!open) {
-      if (triggerRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        setCoords({
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-        });
-      }
+      updateCoords();
+      if (onOpen) onOpen();
       const activeIdx = options.findIndex((opt) => opt.value === value);
       setFocusedIndex(activeIdx >= 0 ? activeIdx : 0);
       setOpen(true);
@@ -56,6 +65,17 @@ export function FooterSelect({
       setFocusedIndex(-1);
     }
   };
+
+  // Keep coordinates updated when open
+  useEffect(() => {
+    if (!open) return;
+    window.addEventListener('resize', updateCoords);
+    window.addEventListener('scroll', updateCoords, { capture: true });
+    return () => {
+      window.removeEventListener('resize', updateCoords);
+      window.removeEventListener('scroll', updateCoords, { capture: true });
+    };
+  }, [open]);
 
   const handleSelect = (val: string) => {
     setOpen(false);
@@ -124,7 +144,7 @@ export function FooterSelect({
     }
   };
 
-  const selectedLabel = options.find((opt) => opt.value === value)?.label;
+  const selectedLabel = selectedLabelOverride || options.find((opt) => opt.value === value)?.label;
 
   return (
     <div className={cn("relative group", className)}>

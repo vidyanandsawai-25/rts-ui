@@ -1,11 +1,29 @@
 {
+  "floor": {
+    "editFloor": "मंजिल संपादित करें"
+  },
   "title": "संपत्ति कर मूल्यांकन",
   "subtitle": "संपत्ति की जानकारी का व्यापक प्रबंधन करें",
   "media": {
     "title": "मीडिया / छवियां",
+    "historicalSatellite": "ऐतिहासिक सैटेलाइट",
+    "pause": "विराम",
+    "play": "चलाएं",
+    "speed": "गति:",
+    "speedSlow": "0.5x (धीमी)",
+    "speedNormal": "1x (सामान्य)",
+    "speedMedium": "1.5x (मध्यम)",
+    "speedFast": "2x (तेज)",
+    "labels": "लेबल",
+    "googleMap": "गूगल मैप पर देखने के लिए क्लिक करें",
+    "gisPortal": "जीआईएस पोर्टल पर देखने के लिए क्लिक करें",
+    "fetchingCatalog": "सैटेलाइट इतिहास कैटलॉग प्राप्त किया जा रहा है...",
+    "interactionGuide": "पैन करने के लिए खींचें · वर्ष पर जाने के लिए क्लिक करें",
+    "attribution": "© एसर, वेबैक, मैक्सार",
     "backToGrid": "ग्रिड पर वापस जाएं",
     "compareModeSlider": "स्लाइडर",
     "compareModeSideBySide": "अगल-बगल",
+    "compareModeWayback": "वेबैक मानचित्र",
     "beforeSatelliteLabel": "2018 सैटेलाइट",
     "afterSatelliteLabel": "2026 सैटेलाइट",
     "uploadBefore": "पहले की छवि अपलोड करें (पुरानी)",
@@ -20,6 +38,8 @@
     "changeDetection": "परिवर्तन का पता लगाना",
     "changeDetectionComingSoon": "परिवर्तन का पता लगाने की जानकारी जल्द ही आ रही है।",
     "photoPlan": "फोटो प्लान",
+    "showPhotoPlan": "फोटो प्लान दिखाएं",
+    "hidePhotoPlan": "फोटो प्लान छुपाएं",
     "propertyPhoto": "संपत्ति फोटो",
     "buildingPhoto": "इमारत फोटो",
     "rearElevation": "पिछला मुखभाग",
@@ -120,7 +140,6 @@
     "imageOf": "{total} में से {current}",
     "fullView": "{title} - पूर्ण दृश्य",
     "photoFile": "फोटो फ़ाइल",
-    "backToGrid": "ग्रिड पर वापस जाएं",
     "retry": "पुनः प्रयास करें",
     "uploadInstructions": "अपलोड निर्देश",
     "allowedFormats": "अनुमत प्रारूप: JPEG, JPG, PNG",
@@ -175,10 +194,13 @@
     "societyDetails": "सोसायटी विवरण",
     "buildingPermission": "भवन अनुमति",
     "discountData": "छूट और सामाजिक डेटा",
+    "discount": "सवलत डेटा",
+    "social": "सामाजिक डेटा",
     "oldDetails": "पुराने विवरण",
     "rateable": "कर निर्धार्य मूल्य",
     "capital": "पूंजीगत मूल्य",
     "dual": "दोहरी पद्धति",
+    "reassessment": "पुनर्मूल्यांकन",
     "apartment": "अपार्टमेंट"
   },
   "apartmentTabs": {
@@ -236,8 +258,11 @@
     }
   },
   "fields": {
+    "localeSuffix": "(क्षेत्रीय)",
     "upicId": "यूपीआईसी आईडी",
     "propertyHolder": "संपत्ति धारक",
+    "assessmentStatus": "करनिर्धारण स्थिति",
+    "oldNo": "पुराना नंबर",
     "division": "प्रभाग",
     "plotNo": "प्लॉट नं",
     "plotArea": "प्लॉट क्षेत्रफल",
@@ -399,7 +424,8 @@
     "lightTax": "प्रकाश कर",
     "cleaningTax": "सफाई कर",
     "sewerageTax": "सीवरेज कर",
-    "treeTax": "वृक्ष कर"
+    "treeTax": "वृक्ष कर",
+    "taxTotal": "कुल कर"
   },
   "actions": {
     "save": "सहेजें",
@@ -513,6 +539,16 @@
   "modules": {
     "PtisTaxDetails": {
       "title": "कर विवरण",
+      "area": "क्षेत्रफल",
+      "changeOfUse": "उपयोग में बदलाव",
+      "oldLabel": "पुराना:",
+      "newLabel": "नया:",
+      "tax": "कर",
+      "yes": "हाँ",
+      "no": "नहीं",
+      "cv": "सीवी",
+      "rv": "आरवी",
+      "m2Unit": "वर्ग मीटर",
       "oldTotalRv": "[पुराना] कुल आर.वी.",
       "oldTotalAlv": "[पुराना] कुल ए.एल.वी.",
       "oldTotalCv": "[पुराना] कुल सी.वी.",
@@ -590,6 +626,12 @@
         "remove_remission": "छूट हटाएँ",
         "remove_all_appeals": "सभी अपीलें हटाएँ"
       }
+    },
+    "billDistribution": {
+      "title": "बिल वितरण की पुष्टि करें",
+      "description": "क्या आप निश्चित रूप से बिल वितरित करना चाहते हैं?",
+      "confirmText": "हाँ",
+      "cancelText": "नहीं"
     }
   },
   "footerActions": {
@@ -642,7 +684,11 @@
     "goHome": "होम पर वापस जाएं",
     "tryAgain": "पुनः प्रयास करें",
     "errorId": "त्रुटि आईडी: {id}",
+    "propertyDetailsNotFound": "दिए गए संपत्ति आईडी के लिए सक्रिय संपत्ति विवरण नहीं मिले।",
+    "invalidPropertyData": "अवैध संपत्ति डेटा पाया गया। कृपया संपत्ति के उपयोग के विवरण की जाँच करें।",
+    "typeOfUseGroupNotFound": "संपत्ति के लिए उपयोग समूह कॉन्फ़िगरेशन का प्रकार नहीं मिला।",
     "propertyNotSearched": "कृपया संयोजन करने से पहले पहले एक संपत्ति खोजें।",
+    "propertyNotSearchedCommonUpdate": "कृपया सामान्य विवरण अपडेट करने से पहले पहले एक संपत्ति खोजें।",
     "selectPropertyFirst": "कृपया पहले एक संपत्ति चुनें।",
     "networkError": {
       "title": "सर्वर से कनेक्ट करने में असमर्थ",
@@ -665,6 +711,7 @@
     "networkError": "सर्वर से कनेक्ट नहीं हो सका। कृपया अपना इंटरनेट कनेक्शन जांचें।",
     "generic": "आपके अनुरोध को संसाधित करते समय कुछ गलत हो गया।",
     "propertyNotSearched": "कृपया संयोजन करने से पहले पहले एक संपत्ति खोजें।",
+    "propertyNotSearchedCommonUpdate": "कृपया सामान्य विवरण अपडेट करने से पहले पहले एक संपत्ति खोजें।",
     "noValuationData": "चुनी गई पद्धति के लिए कोई मूल्यांकन डेटा उपलब्ध नहीं है।",
     "ratesNotFound": "चुने गए मूल्यांकन वर्ष के लिए दरें नहीं मिलीं। कृपया दर मास्टर कॉन्फ़िगर करें।",
     "invalidAssessmentYear": "एक या अधिक मंजिल अभिलेखों के लिए मूल्यांकन वर्ष अमान्य या गायब है।",
@@ -697,5 +744,32 @@
     "residential": "अनिवासी",
     "nonResidential": "गैर-करयोग्य",
     "industrial": "औद्योगिक"
+  },
+  "appliedRules": {
+    "buttonLabel": "लागू नियम",
+    "drawerTitle": "लागू नियम",
+    "propertyId": "संपत्ति आईडी",
+    "propertyNo": "संपत्ति संख्या",
+    "columns": {
+      "applyOrder": "क्रम",
+      "ruleCategory": "श्रेणी",
+      "ruleScopeName": "दायरा",
+      "ruleName": "नियम का नाम",
+      "effectType": "प्रभाव प्रकार",
+      "effectValue": "प्रभाव दर",
+      "applyRate": "लागू दर %",
+      "baseValue": "आधार दर",
+      "computedValue": "परिकलित दर",
+      "appliedAt": "लागू होने का समय"
+    },
+    "noAppliedRules": "इस संपत्ति पर कोई नियम लागू नहीं किया गया है।",
+    "loading": "लागू नियमों को लोड किया जा रहा है...",
+    "errorFetching": "लागू नियमों को प्राप्त करने में विफल।"
+  },
+  "capitalPlaceholder": {
+    "title": "पूंजीगत मूल्य गणना आवश्यक है",
+    "description": "इस संपत्ति के लिए पूंजीगत मूल्य कर लोड नहीं किए गए हैं। मांग पर पूंजीगत मूल्य प्राप्त करने और गणना करने के लिए नीचे क्लिक करें।",
+    "button": "पूंजीगत मूल्य की गणना करें",
+    "calculating": "गणना हो रही है..."
   }
 }

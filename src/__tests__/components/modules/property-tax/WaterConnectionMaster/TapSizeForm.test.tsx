@@ -11,7 +11,7 @@ vi.mock("@/app/[locale]/property-tax/water-connection-master/actions", () => ({
 describe("TapSizeForm", () => {
   it("renders without crashing", () => {
     render(
-      <IntlProvider locale="en" messages={{}}>
+      <IntlProvider locale="en" messages={{}} onError={() => {}}>
         <TapSizeForm id={null} />
       </IntlProvider>
     );

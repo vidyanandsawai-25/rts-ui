@@ -8,7 +8,7 @@ import type { Option } from "@/components/common";
 import type {
   SearchCriteria,
   SearchFieldErrorMap,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import { COMPACT_INPUT_CLASS, COMPACT_LABEL_CLASS } from "../form-field-styles";
 import { cn } from "@/lib/utils/cn";
 
@@ -30,6 +30,7 @@ interface ValueFilterGroupProps {
   onInputBlur: (
     field: keyof SearchCriteria
   ) => (e: React.FocusEvent<HTMLInputElement>) => void;
+  onClearField: (field: keyof SearchCriteria) => void;
 }
 
 export function ValueFilterGroup({
@@ -44,6 +45,7 @@ export function ValueFilterGroup({
   onSelectChange,
   onInputChange,
   onInputBlur,
+  onClearField,
 }: ValueFilterGroupProps) {
   const t = useTranslations("propertySearch.form");
 
@@ -64,38 +66,22 @@ export function ValueFilterGroup({
       : t("placeholders.amount");
 
   const handleClearFilter = () => {
-    onSelectChange(filterField)(String(filterField), "");
-    
-    const fromEvent = {
-      target: { name: String(fromField), value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(fromField)(fromEvent);
-
-    const toEvent = {
-      target: { name: String(toField), value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(toField)(toEvent);
+    onClearField(filterField);
   };
 
   const handleClearFrom = () => {
-    const event = {
-      target: { name: String(fromField), value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(fromField)(event);
+    onClearField(fromField);
   };
 
   const handleClearTo = () => {
-    const event = {
-      target: { name: String(toField), value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(toField)(event);
+    onClearField(toField);
   };
 
   return (
-    <div className="flex items-start gap-x-1.5">
+    <div className="flex items-start gap-x-1">
       {/* Filter Type dropdown */}
       <div className="flex min-w-0 flex-col w-44 shrink-0">
-        <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+        <div className="mb-0.5 h-4 flex items-center justify-between gap-1">
           <Label htmlFor={String(filterField)} className={COMPACT_LABEL_CLASS}>
             {title}
           </Label>
@@ -124,7 +110,7 @@ export function ValueFilterGroup({
 
       {/* Amount / Top Count */}
       <div className="flex min-w-0 flex-col w-36 shrink-0">
-        <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+        <div className="mb-0.5 h-4 flex items-center justify-between gap-1">
           <Label htmlFor={String(fromField)} className={COMPACT_LABEL_CLASS}>
             {amountLabel}
           </Label>
@@ -168,7 +154,7 @@ export function ValueFilterGroup({
       {/* To Amount — only when "between" */}
       {isBetween && (
         <div className="flex min-w-0 flex-col w-36 shrink-0">
-          <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+          <div className="mb-0.5 h-4 flex items-center justify-between gap-1">
             <Label htmlFor={String(toField)} className={COMPACT_LABEL_CLASS}>
               {t("placeholders.toAmount")}
             </Label>

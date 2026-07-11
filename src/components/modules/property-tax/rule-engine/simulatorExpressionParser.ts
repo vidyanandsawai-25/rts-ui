@@ -4,7 +4,7 @@
  *
  * Keeps useSimulatorPayload.ts under the 200-line component limit.
  */
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

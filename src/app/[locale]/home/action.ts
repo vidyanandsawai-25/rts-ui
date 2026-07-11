@@ -7,6 +7,7 @@ import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user-profile.types";
 import type { Department } from "@/types/departmentActivation.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
+import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
 
 /**
  * Response type for listServices
@@ -42,7 +43,9 @@ function getIconByDepartmentName(departmentName: string): string {
 function mapDepartmentToService(
     department: UserDepartment,
     iconName: string,
-    locale: string
+    locale: string,
+    moduleId?: number,
+    moduleName?: string
 ): Service {
     const name = department.departmentName;
     const lowerName = name.toLowerCase().trim();
@@ -57,6 +60,8 @@ function mapDepartmentToService(
         subtext: `Access ${department.departmentName} services`,
         icon: iconName || getIconByDepartmentName(department.departmentName),
         link: `/${locale}/${routeSegment}`,
+        moduleId,
+        moduleName,
     };
 }
 
@@ -116,12 +121,31 @@ export async function listServices(locale: string): Promise<ListServicesResponse
             return acc;
         }, [] as UserDepartment[]);
 
+        // Build a map: departmentId -> first active module for that department
+        const modulesByDept = new Map<number, { moduleId: number; moduleName: string }>();
+        const activeModules = profileResponse.data.moduleAccess?.filter(m => m.isActive) ?? [];
+        for (const mod of activeModules) {
+            if (!modulesByDept.has(mod.departmentId)) {
+                modulesByDept.set(mod.departmentId, {
+                    moduleId: mod.moduleId,
+                    moduleName: mod.moduleName,
+                });
+            }
+        }
+
         // Map departments to services using dynamic icon resolved from global list
         const services = uniqueDepartments
             .map(dept => {
                 const globalDept = activeDeptsMap.get(dept.departmentId);
                 const iconName = globalDept?.departmentIcon || '';
-                return mapDepartmentToService(dept, iconName, locale);
+                const moduleInfo = modulesByDept.get(dept.departmentId);
+                return mapDepartmentToService(
+                    dept,
+                    iconName,
+                    locale,
+                    moduleInfo?.moduleId,
+                    moduleInfo?.moduleName
+                );
             });
 
         return { services };
@@ -288,5 +312,45 @@ export async function getUserProfileSSR(): Promise<{
             data: null,
             error: error instanceof Error ? error.message : "Failed to synchronize profile details"
         };
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Department Context Cookie Action
+// ---------------------------------------------------------------------------
+
+/**
+ * Sets department and module context cookies when the user clicks a department card.
+ * Uses the same client-readable cookie pattern as ULB cookies set at login.
+ *
+ * @param departmentId - The selected department ID
+ * @param departmentName - The selected department name
+ * @param moduleId - (Optional) The module ID associated with this department
+ * @param moduleName - (Optional) The module name associated with this department
+ */
+export async function setDepartmentContextAction(
+    departmentId: number,
+    departmentName: string,
+    moduleId?: number,
+    moduleName?: string
+): Promise<{ success: boolean }> {
+    try {
+        const cookieStore = await cookies();
+        // No maxAge — session cookie: removed when browser closes or session expires
+        const cookieOpts = { ...CLIENT_COOKIE_OPTIONS };
+
+        cookieStore.set(DEPARTMENT_COOKIES.DEPARTMENT_ID, String(departmentId), cookieOpts);
+        cookieStore.set(DEPARTMENT_COOKIES.DEPARTMENT_NAME, encodeURIComponent(departmentName), cookieOpts);
+
+        if (moduleId && moduleId > 0) {
+            cookieStore.set(DEPARTMENT_COOKIES.MODULE_ID, String(moduleId), cookieOpts);
+        }
+        if (moduleName) {
+            cookieStore.set(DEPARTMENT_COOKIES.MODULE_NAME, encodeURIComponent(moduleName), cookieOpts);
+        }
+
+        return { success: true };
+    } catch {
+        return { success: false };
     }
 }

@@ -18,6 +18,7 @@ import {
   calculateRoomAreas
 } from "@/lib/utils/RoomSubmission/room-calculation.util";
 import { RoomSubmissionState } from "./useRoomSubmissionState";
+import { focusAndOpenOuterField, focusOffsetShapeSelect } from "@/lib/utils/floorSubmission/focus-helpers";
 
 const isPersistedId = (id?: string | number): id is string | number => {
   if (!id) return false;
@@ -40,6 +41,7 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
     setOffsetValidationError, selectedShape, setSelectedShape,
     setOffsetModalOpen, setCurrentRoomOffsets, setFormData,
     rooms, setRooms, editingIndex, pendingOffsetModalOpenRef, formData, shapeParameters,
+    focusRefs
   } = state;
 
   const calculateAdjustedRoomTotal = useCallback((): number => {
@@ -100,6 +102,9 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
     setOffsetList((prev) => [...prev, { ...offsetData, shapeType: selectedShape, operation: selectedOperation }]);
     setOffsetData({ ...INITIAL_OFFSET_DATA, shapeType: selectedShape, shape: selectedShape, operation: selectedOperation });
     setOffsetValidationError("");
+    setTimeout(() => {
+      focusOffsetShapeSelect(true);
+    }, 50);
   };
 
   const handleOffsetOk = () => {
@@ -139,6 +144,10 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
         return updated;
       });
     }
+
+    setTimeout(() => {
+      focusAndOpenOuterField(focusRefs);
+    }, 150);
   };
 
   const handleDeleteOffset = (idx: number) => {
@@ -200,7 +209,11 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
     setOffsetModalOpen(false);
     setOffsetList([]);
     setOffsetData(INITIAL_OFFSET_DATA);
-  }, [state.currentRoomOffsets, setFormData, setOffsetModalOpen, setOffsetList, setOffsetData]);
+
+    setTimeout(() => {
+      focusAndOpenOuterField(focusRefs);
+    }, 150);
+  }, [state.currentRoomOffsets, setFormData, setOffsetModalOpen, setOffsetList, setOffsetData, focusRefs]);
 
   return {
     handleOpenOffset, handleSubtractClick, handleAddClick, handleOffsetInputChange,

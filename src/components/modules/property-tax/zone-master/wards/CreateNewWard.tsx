@@ -1,35 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Map } from "lucide-react";
-import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
-import { WardFormFields, WardFormState, WardFormErrors } from "./WardFormFields";
+import { WardFormFields } from "./WardFormFields";
 import { CancelButton, SaveButton, ToggleSwitch, Input, ValidationMessage } from "@/components/common";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
-import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "../constants";
-import { handleWardCreate, handleWardBulkCreate } from "./wardHandlers";
-import { isAllZeros, POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
-
-// Max length for bulk fields
-const BULK_PREFIX_MAX_LENGTH = 10;
-const BULK_RANGE_MAX_LENGTH = 10;
-
-const INITIAL: WardFormState = {
-  wardNo: "",
-  description: "",
-  sequenceNo: "",
-  isActive: true,
-};
-
-interface BulkFormErrors {
-  prefix?: string;
-  rangeFrom?: string;
-  rangeTo?: string;
-}
+import { useCreateWard } from "@/hooks/zoneMaster/useCreateWard";
 
 interface Props {
   open: boolean;
@@ -41,227 +19,31 @@ interface Props {
 
 export default function CreateNewWard({ open, onClose, onSuccess, currentZone, existingWards = [] }: Props) {
   const t = useTranslations("zoneMaster");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  // Initialize bulk mode from URL
-  const bulkMode = searchParams.get("createWardMode") === "bulk";
-
-  const [form, setForm] = useState(INITIAL);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<WardFormErrors>({});
-  const [bulkErrors, setBulkErrors] = useState<BulkFormErrors>({});
-  const [bulkFrom, setBulkFrom] = useState("");
-  const [bulkTo, setBulkTo] = useState("");
-  const [bulkPrefix, setBulkPrefix] = useState("");
-
-  const handleBulkToggle = (checked: boolean) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (checked) {
-      params.set("createWardMode", "bulk");
-    } else {
-      params.delete("createWardMode");
-    }
-    router.replace(`${pathname}?${params.toString()}`);
-  };
-
-  // Validate single ward form
-  const validate = (data: WardFormState) => {
-    const newErrors: WardFormErrors = {};
-    if (!data.wardNo?.trim()) newErrors.wardNo = t("validation.wardNoRequired");
-    else if (data.wardNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.wardNo = t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH });
-    else if (isAllZeros(data.wardNo)) newErrors.wardNo = t("validation.wardNoAllZeros");
-    if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired");
-    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
-    else if (isAllZeros(data.description)) newErrors.description = t("validation.wardNameAllZeros");
-    
-    // Validate sequence number (optional field)
-    if (data.sequenceNo) {
-      if (!POSITIVE_INTEGER_REGEX.test(data.sequenceNo)) {
-        newErrors.sequenceNo = t("validation.sequenceNoNumber");
-      } else {
-        const seqNum = parseInt(data.sequenceNo, 10);
-        if (seqNum < 1 || seqNum > 999) {
-          newErrors.sequenceNo = t("validation.sequenceNoRange");
-        }
-      }
-    }
-    
-    return newErrors;
-  };
-
-  // Validate bulk ward form
-  const validateBulk = (prefix: string, rangeFrom: string, rangeTo: string) => {
-    const newErrors: BulkFormErrors = {};
-    
-    // Prefix validation
-    if (!prefix?.trim()) {
-      newErrors.prefix = t("wardBulk.errorPrefixRequired");
-    } else if (prefix.length > BULK_PREFIX_MAX_LENGTH) {
-      newErrors.prefix = t("wardBulk.errorPrefixMaxLength", { count: BULK_PREFIX_MAX_LENGTH });
-    }
-    
-    // Range From validation
-    if (!rangeFrom?.trim()) {
-      newErrors.rangeFrom = t("wardBulk.errorRangeFromRequired");
-    } else if (rangeFrom.length > BULK_RANGE_MAX_LENGTH) {
-      newErrors.rangeFrom = t("wardBulk.errorRangeFromMaxLength", { count: BULK_RANGE_MAX_LENGTH });
-    }
-    
-    // Range To validation
-    if (!rangeTo?.trim()) {
-      newErrors.rangeTo = t("wardBulk.errorRangeToRequired");
-    } else if (rangeTo.length > BULK_RANGE_MAX_LENGTH) {
-      newErrors.rangeTo = t("wardBulk.errorRangeToMaxLength", { count: BULK_RANGE_MAX_LENGTH });
-    }
-    
-    // Check order (from <= to) if both are numeric
-    if (rangeFrom?.trim() && rangeTo?.trim() && !newErrors.rangeFrom && !newErrors.rangeTo) {
-      const fromNum = parseInt(rangeFrom, 10);
-      const toNum = parseInt(rangeTo, 10);
-      if (!isNaN(fromNum) && !isNaN(toNum) && fromNum > toNum) {
-        newErrors.rangeTo = t("wardBulk.errorOrder");
-      }
-    }
-    
-    return newErrors;
-  };
-
-  // Check if any ward in bulk range already exists
-  const checkBulkDuplicates = (prefix: string, from: string, to: string): string | null => {
-    const fromNum = parseInt(from, 10);
-    const toNum = parseInt(to, 10);
-    
-    if (isNaN(fromNum) || isNaN(toNum)) return null;
-    
-    const existingWardNos = new Set(
-      existingWards.map((w) => w.wardNo?.trim().toUpperCase())
-    );
-    
-    for (let i = fromNum; i <= toNum; i++) {
-      const generatedWardNo = `${prefix}${i}`.toUpperCase();
-      if (existingWardNos.has(generatedWardNo)) {
-        return generatedWardNo;
-      }
-    }
-    
-    return null;
-  };
-
-  const checkDuplicateWard = (wardNo: string) => {
-    const wardNoValue = wardNo.trim().toUpperCase();
-
-    const duplicate = existingWards.find((ward) => {
-      return ward.wardNo?.trim().toUpperCase() === wardNoValue;
-    });
-
-    if (duplicate) {
-      toast.error(
-        t("createWardMessages.duplicateWard", { wardNo: duplicate.wardNo })
-      );
-      return true;
-    }
-
-    return false;
-  };
-
-  const handleClose = () => {
-    setForm(INITIAL);
-    setErrors({});
-    setBulkErrors({});
-    setBulkFrom("");
-    setBulkTo("");
-    setBulkPrefix("");
-    onClose();
-  };
-
-  const handleSave = async () => {
-    if (!currentZone || !currentZone.id) {
-      toast.warning(t("createWardMessages.selectZoneBeforeCreate"));
-      return;
-    }
-
-    if (bulkMode) {
-      const prefix = bulkPrefix.trim();
-      const from = bulkFrom.trim();
-      const to = bulkTo.trim();
-
-      // Validate bulk fields
-      const bulkValidationErrors = validateBulk(prefix, from, to);
-      if (Object.keys(bulkValidationErrors).length > 0) {
-        setBulkErrors(bulkValidationErrors);
-        return;
-      }
-
-      // Check for duplicate ward numbers before creating
-      const duplicateWardNo = checkBulkDuplicates(prefix, from, to);
-      if (duplicateWardNo) {
-        toast.error(t("createWardMessages.duplicateWard", { wardNo: duplicateWardNo }));
-        return;
-      }
-
-      setBulkErrors({});
-      setLoading(true);
-
-      try {
-        const result = await handleWardBulkCreate({
-          prefix,
-          from,
-          to,
-          zoneId: currentZone.id,
-          isActive: form.isActive,
-          t: (key: string, values?: Record<string, unknown>) => t(key, values as never)
-        });
-
-        if (result.success) {
-          handleClose();
-          if (onSuccess) {
-            onSuccess(prefix + to);
-          }
-        }
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : t("createWardMessages.unexpectedError"));
-      } finally {
-        setLoading(false);
-      }
-
-      return;
-    }
-
-    const validationErrors = validate(form);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    if (checkDuplicateWard(form.wardNo)) return;
-
-    setLoading(true);
-    setErrors({});
-
-    try {
-      const result = await handleWardCreate({
-        wardNo: form.wardNo,
-        description: form.description,
-        sequenceNo: form.sequenceNo ? Number(form.sequenceNo) : undefined,
-        isActive: form.isActive,
-        zoneId: currentZone.id,
-        t: (key: string, values?: Record<string, unknown>) => t(key, values as never)
-      });
-
-      if (result.success) {
-        handleClose();
-        if (onSuccess) onSuccess(form.wardNo);
-      } else if (result.isDuplicate) {
-        setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo }) });
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("createWardMessages.unexpectedError"));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    bulkMode,
+    form,
+    setForm,
+    loading,
+    errors,
+    bulkErrors,
+    setBulkErrors,
+    bulkFrom,
+    setBulkFrom,
+    bulkTo,
+    setBulkTo,
+    bulkPrefix,
+    setBulkPrefix,
+    handleBulkToggle,
+    handleClose,
+    handleSave,
+  } = useCreateWard({
+    currentZone,
+    existingWards,
+    onClose,
+    onSuccess,
+    t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
+  });
 
   return (
     <Drawer

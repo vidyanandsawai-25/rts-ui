@@ -17,6 +17,7 @@ export interface FlatSocialAttributeState {
     uploadedGuid?: string;
     remark: string | null;
     isUploading: boolean;
+    isDeleting?: boolean;
     isPhotoRequired?: boolean;
     isDocumentRequired?: boolean;
     documentGuid?: string | null;
@@ -25,6 +26,10 @@ export interface FlatSocialAttributeState {
     photoGuid?: string | null;
     pendingFile?: File;
 }
+
+const normalizePositiveId = (value: number | null | undefined): number | null => {
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
+};
 
 /**
  * Flattens the nested social attributes tree into a flat map keyed by socialAttributeId.
@@ -48,7 +53,7 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
             }
 
             map[attr.id] = {
-                id: attr.propertySocialDetailId || null,
+                id: attr.propertySocialDetailId ?? null,
                 socialAttributeId: attr.id,
                 socialAttributeCode: attr.socialAttributeCode,
                 socialAttributeName: attr.socialAttributeName,
@@ -60,14 +65,14 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 decimalValue: attr.decimalValue ?? null,
                 textValue: attr.textValue ?? null,
                 dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
-                documentBindingId: attr.documentBindingId ?? attr.photoBindingId ?? null,
+                documentBindingId: normalizePositiveId(attr.documentBindingId ?? attr.photoBindingId),
                 remark: attr.remark ?? null,
                 isUploading: false,
                 isPhotoRequired: attr.isPhotoRequired,
                 isDocumentRequired: attr.isDocumentRequired,
                 documentGuid: attr.documentGuid ?? attr.photoGuid ?? null,
                 documentUrl: (attr.documentGuid ?? attr.photoGuid) ? `/api/documents/${encodeURIComponent(attr.documentGuid ?? attr.photoGuid ?? "")}/view` : null,
-                photoBindingId: attr.photoBindingId ?? null,
+                photoBindingId: normalizePositiveId(attr.photoBindingId),
                 photoGuid: attr.photoGuid ?? null
             };
             if (attr.children && attr.children.length > 0) {
@@ -175,3 +180,4 @@ export function getLocalizedName(
 
     return rawName;
 }
+

@@ -2,9 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { CheckCircle, Package, RefreshCw, Shield } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
-import { Label } from '@/components/common/label';
-import { ToggleSwitch } from '@/components/common/ToggleSwitch';
+import { Button, Label, ToggleSwitch } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import { formatExpiryDate } from '@/lib/utils/ulb-configuration.utils';
 import { DEPARTMENT_DURATION_OPTIONS } from '@/config/ulb-configuration.config';

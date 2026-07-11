@@ -8,7 +8,7 @@ interface FooterSelectListboxProps {
   options: Option[];
   value?: string;
   focusedIndex: number;
-  coords: { top: number; left: number; width: number };
+  coords: { top: number; left: number; width: number } | null;
   label?: string;
   listboxRef: React.RefObject<HTMLDivElement | null>;
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
@@ -25,7 +25,7 @@ export function FooterSelectListbox({
   onKeyDown,
   onSelect,
 }: FooterSelectListboxProps) {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || !coords) return null;
 
   return createPortal(
     <div

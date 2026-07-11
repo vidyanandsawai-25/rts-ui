@@ -47,6 +47,8 @@ export {
   LockButton,
   UnlockButton,
   SearchButton,
+  RetrospectiveDetailsButton,
+  Section129Button,
 } from './ActionButtons';
 export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
@@ -54,6 +56,9 @@ export type { CardProps } from './Card';
 
 export { Input } from './Input';
 export type { InputProps } from './Input';
+
+export { AnimatedDigitInput } from './AnimatedDigitInput';
+export type { AnimatedDigitInputProps } from './AnimatedDigitInput';
 
 export { TextArea } from './Textarea';
 export type { TextAreaProps } from './Textarea';

@@ -38,6 +38,7 @@ export function getLocalizedCategoryName(code: string, fallbackName: string, t: 
     'SIGNATURE': 'media.ownerSignaturePhoto',
     'OTHER': 'media.otherPhoto',
     'OTHER_PHOTO': 'media.otherPhoto',
+    'CHANGE_DETECTION': 'media.changeDetection',
   };
 
   const key = mapping[codeUpper];
@@ -97,6 +98,7 @@ export function getEnglishCategoryName(code: string, fallbackName: string): stri
     'SIGNATURE': 'Owner Signature Photo',
     'OTHER': 'Other Photo',
     'OTHER_PHOTO': 'Other Photo',
+    'CHANGE_DETECTION': 'Change Detection',
   };
   return mapping[codeUpper] || fallbackName;
 }
@@ -126,6 +128,38 @@ export function mergeCategories(prev: PhotoCategory[], incoming: PhotoCategory[]
     const existing = prev.find((p) => p.photoTypeId === inc.photoTypeId);
     if (!existing || hasCategoryChanged(existing, inc)) return { ...inc, images: inc.images || [] };
     return existing;
+  });
+}
+
+export function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+
+  return a.every((cat, i) => {
+    const other = b[i];
+    if (!other) return false;
+
+    if (cat.photoTypeId !== other.photoTypeId) return false;
+    if (cat.photoTypeCode !== other.photoTypeCode) return false;
+    if (cat.photoTypeName !== other.photoTypeName) return false;
+
+    if (cat.images.length !== other.images.length) return false;
+
+    return cat.images.every((img, j) => {
+      const oImg = other.images[j];
+      return (
+        img.propertyPhotoId === oImg?.propertyPhotoId &&
+        img.src === oImg?.src &&
+        img.fullSrc === oImg?.fullSrc &&
+        img.hasPhoto === oImg?.hasPhoto &&
+        img.displayOrder === oImg?.displayOrder &&
+        img.title === oImg?.title &&
+        img.alt === oImg?.alt &&
+        img.remarks === oImg?.remarks &&
+        img.documentGuid === oImg?.documentGuid &&
+        img.downloadUrl === oImg?.downloadUrl
+      );
+    });
   });
 }
 

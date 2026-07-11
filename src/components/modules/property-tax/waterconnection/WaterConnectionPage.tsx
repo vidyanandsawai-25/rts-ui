@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Drawer } from "@/components/common/Drawer";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { Select } from "@/components/common";
-import type { WaterConnection, WaterConnectionPageData } from "@/types/waterconnection.types";
+import type { WaterConnection, WaterConnectionPageData, WaterConnectionFormModel } from "@/types/waterconnection.types";
 import { PropertyInfoCard } from "./PropertyInfoCard";
 import { ConnectionsTable } from "./ConnectionsTable";
 import { AddConnectionDrawer } from "./AddConnectionDrawer";
@@ -18,6 +18,7 @@ interface WaterConnectionPageProps {
   propertyId: number;
   initialPage: number;
   initialPageSize: number;
+  saveWaterConnectionAction: (data: WaterConnectionFormModel) => Promise<{ ok: boolean; error?: string }>;
 }
 
 export default function WaterConnectionPage({
@@ -25,6 +26,7 @@ export default function WaterConnectionPage({
   propertyId,
   initialPage,
   initialPageSize,
+  saveWaterConnectionAction,
 }: WaterConnectionPageProps) {
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
@@ -172,6 +174,7 @@ export default function WaterConnectionPage({
         rateMasters={pageData.rateMasters}
         onClose={handleClose}
         onSaved={handleSaved}
+        saveWaterConnectionAction={saveWaterConnectionAction}
       />
     </Drawer>
   );
