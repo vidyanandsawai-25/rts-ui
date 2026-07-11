@@ -88,7 +88,7 @@ export interface ApartmentQCDetail {
   /** Old construction carpet area in sq ft */
   oldConstructionCarpetAreaSqFt?: number | null;
   /** Old construction carpet area in sq mtr */
-  oldConstructionCarpetAreaMtr?: number | null;
+  oldConstructionCarpetAreaSqMtr?: number | null;
   /** Old construction built up area in sq ft */
   oldConstructionBuiltUpSqFt?: number | null;
   /** Old construction built up area in sq mtr */

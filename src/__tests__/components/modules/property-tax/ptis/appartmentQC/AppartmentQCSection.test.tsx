@@ -37,7 +37,13 @@ vi.mock('next-intl', () => ({
 
 // Mock sub-components
 vi.mock('@/components/modules/property-tax/ptis/appartmentQC/CommonPropertyTable', () => ({ default: () => <div data-testid="common-table">Common Table</div> }));
-vi.mock('@/components/common/LoadingPage', () => ({ LoadingPage: () => <div data-testid="loading-page">Loading...</div>, default: () => <div data-testid="loading-page">Loading...</div> }));
+vi.mock('@/components/common', async () => {
+  const actual = await vi.importActual('@/components/common');
+  return {
+    ...actual,
+    LoadingPage: () => <div data-testid="loading-page">Loading...</div>,
+  };
+});
 
 describe('AppartmentQCSection', () => {
   const mockProps = {

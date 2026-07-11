@@ -93,6 +93,13 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   const [activeMainTab, setActiveMainTab] = useState(searchParams.get('appartmentTab') || 'amenities');
   const [activeSubTab, setActiveSubTab] = useState(searchParams.get('subTab') || 'rateable');
 
+  React.useEffect(() => {
+    const nextMain = searchParams.get('appartmentTab') || 'amenities';
+    const nextSub = searchParams.get('subTab') || 'rateable';
+    setActiveMainTab((prev) => (prev === nextMain ? prev : nextMain));
+    setActiveSubTab((prev) => (prev === nextSub ? prev : nextSub));
+  }, [searchParams]);
+
   const ptisNav = useOptionalPtisNavigation();
   const isNavigating = ptisNav?.isPending ?? false;
 

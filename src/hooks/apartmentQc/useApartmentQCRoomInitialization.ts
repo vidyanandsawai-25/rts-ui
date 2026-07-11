@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { RoomWiseSubmissionProps, RoomAPIResponse } from "@/types/room-details.types";
 import { ShapeParameters } from "@/types/common-details.types";
 import {
@@ -43,13 +43,19 @@ export const useApartmentQCRoomInitialization = (
   }, [setMounted]);
 
   // 2. Load existing rooms (no empty-row padding)
+  const isInitialized = useRef(false);
+
   useEffect(() => {
     if (!isOpen) {
       setRooms([]);
       setEditingIndex(null);
       setIsEditMode(false);
+      isInitialized.current = false;
       return;
     }
+
+    if (isInitialized.current) return;
+    isInitialized.current = true;
 
     const source: RoomAPIResponse[] = existingRooms || [];
 
