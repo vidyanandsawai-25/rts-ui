@@ -2,33 +2,66 @@
   "commonDetailsUpdate": {
     "title": "सामान्य विवरण अपडेट करें",
     "subtitle": "एक साथ हजारों संपत्तियों को सुरक्षित रूप से अपडेट करें",
+    "screenObjective": {
+      "title": "स्क्रीन का उद्देश्य",
+      "description": "पहले फ़ील्ड रजिस्ट्री और सक्रियण में अपडेट करने योग्य फ़ील्ड कॉन्फ़िगर करें। फिर चयनित संपत्तियों के लिए केवल उन फ़ील्ड को बल्क अपडेट करने के लिए सक्षम फ़ील्ड अपडेट करें का उपयोग करें।"
+    },
+    "tabs": {
+      "updateFields": "फ़ील्ड अपडेट करें",
+      "fieldRegistry": "फ़ील्ड रजिस्ट्री",
+      "excelUpload": "एक्सेल अपलोड",
+      "jobsAudit": "जॉब्स और ऑडिट"
+    },
+    "propertyCriteria": {
+      "title": "प्रॉपर्टी मानदंड चुनें",
+      "subtitle": "पहले मानदंड चुनें। चयनित मानदंड के लिए केवल आवश्यक पैरामीटर ही दिखाए जाएंगे।",
+      "selectionCriteria": "प्रॉपर्टी चयन मानदंड",
+      "matchedProperties": "मेल खाने वाली संपत्तियां",
+      "inputParameters": "इनपुट पैरामीटर",
+      "allPropertiesNote": "चयनित जोन / नोड के अंतर्गत सभी संपत्तियों पर विचार किया जाएगा।",
+      "generalUserAllowed": "सामान्य उपयोगकर्ता की अनुमति है",
+      "wardPropertyRange": "वार्ड / प्रॉपर्टी रेंज",
+      "selectCriteria": "मानदंड चुनें",
+      "scopes": {
+        "WardSector": "वार्ड / सेक्टर",
+        "BuildingWise": "इमारत वार",
+        "PropertyRange": "संपत्ति सीमा"
+      }
+    },
+    "newValues": {
+      "title": "नए मान",
+      "updateReason": "अपडेट का कारण",
+      "updateReasonPlaceholder": "अपडेट का कारण दर्ज करें",
+      "validationReady": "सत्यापन तैयार",
+      "fieldsSelected": "फ़ील्ड चयनित",
+      "matchedProperties": "मेल खाने वाली संपत्तियां",
+      "validationSummary": "{fields} फ़ील्ड चयनित और {properties} मेल खाने वाली संपत्तियां।"
+    },
     "menu": {
       "title": "अपडेट के लिए फ़ील्ड चुनें",
       "searchPlaceholder": "अपडेट प्रकार खोजें..."
     },
     "filter": {
-      "title": "संपत्ति फ़िल्टर",
+      "title": "प्रॉपर्टी फ़िल्टर",
+      "zoneNumber": "Zone Number",
+      "selectZone": "Select Zone",
       "wardNumber": "वार्ड नंबर",
       "selectWard": "वार्ड चुनें",
-      "fromPropertyNo": "संपत्ति क्र. से",
-      "selectFromPropertyNo": "संपत्ति क्र. से चुनें",
-      "toPropertyNo": "संपत्ति क्र. तक",
-      "selectToPropertyNo": "संपत्ति क्र. तक चुनें",
+      "propertyType": "Property Type",
+      "selectPropertyType": "Select Property Type",
+      "propertyNo": "Property No",
+      "selectPropertyNo": "Select Property No",
+      "fromPropertyNo": "से प्रॉपर्टी नंबर",
+      "selectFromPropertyNo": "से प्रॉपर्टी नंबर चुनें",
+      "toPropertyNo": "तक प्रॉपर्टी नंबर",
+      "selectToPropertyNo": "तक प्रॉपर्टी नंबर चुनें",
       "wing": "विंग",
       "selectWing": "विंग चुनें",
       "show": "दिखाएं",
-      "back": "वापस",
-      "clear": "साफ करें"
-    },
-    "propertyCriteria": {
-      "title": "1. संपत्ति मानदंड चुनें",
-      "subtitle": "पहले मानदंड चुनें। चयनित मानदंड के लिए केवल आवश्यक पैरामीटर दिखाए जाएंगे।",
-      "selectionCriteria": "संपत्ति चयन मानदंड",
-      "matchedProperties": "मेल खाने वाली संपत्तियां",
-      "inputParameters": "इनपुट पैरामीटर",
-      "allPropertiesNote": "चयनित ज़ोन / नोड के अंतर्गत सभी संपत्तियों पर विचार किया जाएगा।",
-      "generalUserAllowed": "सामान्य उपयोगकर्ता की अनुमति है",
-      "wardPropertyRange": "वार्ड / संपत्ति रेंज"
+      "back": "पीछे",
+      "clear": "साफ़ करें",
+      "zoneNode": "झोन / नोड",
+      "selectZoneNode": "झोन / नोड चुनें"
     },
     "fieldList": {
       "title": "2. अपडेट करने के लिए फ़ील्ड चुनें",
@@ -70,9 +103,77 @@
       "selectMenuPrompt": "बाएं पैनल से अपडेट करने के लिए फ़ील्ड चुनें",
       "noFields": "इस अपडेट प्रकार के लिए कोई फ़ील्ड कॉन्फ़िगर नहीं की गई"
     },
+    "fieldRegistry": {
+      "title": "अधिकृत उपयोगकर्ता कार्यप्रवाह",
+      "subtitle": "इस अनुभाग का उपयोग यह तय करने के लिए करें कि कौन से फ़ील्ड अपडेट किए जा सकते हैं, उन्हें कौन अपडेट कर सकता है, और क्या अनुमोदन आवश्यक है।",
+      "authenticatedUserOnly": "केवल प्रमाणित उपयोगकर्ता",
+      "addFieldFromDb": {
+        "title": "डेटाबेस से फ़ील्ड जोड़ें",
+        "subtitle": "प्रमाणित उपयोगकर्ता डेटाबेस फ़ील्ड को रजिस्ट्री में जोड़ सकता है, उपयोगकर्ता-सामना करने वाला नाम परिभाषित कर सकता है और फिर इसे सक्रिय कर सकता है।",
+        "sourceModule": "स्रोत मॉड्यूल",
+        "sourceTable": "स्रोत तालिका",
+        "databaseColumn": "डेटाबेस कॉलम",
+        "userFacingName": "उपयोगकर्ता-सामना करने वाला फ़ील्ड नाम",
+        "fieldType": "फ़ील्ड प्रकार",
+        "validationRule": "सत्यापन नियम",
+        "allowGeneralUserUpdate": "सामान्य उपयोगकर्ता अपडेट की अनुमति दें",
+        "approvalRequired": "अनुमोदन आवश्यक है",
+        "addToRegistry": "रजिस्ट्री में फ़ील्ड जोड़ें",
+        "addFromDb": "DB से फ़ील्ड जोड़ें",
+        "preview": "पूर्वावलोकन",
+        "saveFields": "फ़ील्ड सहेजें",
+        "selectSchema": "स्कीमा चुनें",
+        "selectTable": "टेबल चुनें",
+        "updateCode": "अपडेट कोड",
+        "updateNameEnglish": "अपडेट नाम (अंग्रेजी)",
+        "updateNameMarathi": "अपडेट नाम (मराठी)",
+        "referenceTableName": "संदर्भ टेबल नाम",
+        "sequenceNo": "अनुक्रम संख्या",
+        "description": "विवरण",
+        "category": "श्रेणी",
+        "selectCategory": "श्रेणी चुनें",
+        "fieldConfiguration": "फ़ील्ड कॉन्फ़िगरेशन",
+        "fieldName": "फ़ील्ड नाम",
+        "displayName": "प्रदर्शित नाम",
+        "displayNameMarathi": "प्रदर्शित नाम (मराठी)",
+        "controlType": "नियंत्रण प्रकार",
+        "selectControlType": "नियंत्रण प्रकार चुनें",
+        "dataType": "डेटा प्रकार",
+        "selectDataType": "डेटा प्रकार चुनें",
+        "placeholder": "प्लेसहोल्डर",
+        "maxLength": "अधिकतम लंबाई",
+        "isApprovalRequired": "क्या अनुमोदन आवश्यक है"
+      },
+      "filters": {
+        "category": "श्रेणी",
+        "status": "स्थिति",
+        "searchPlaceholder": "फ़ील्ड / डेटाबेस नाम खोजें",
+        "allCategories": "सभी श्रेणियां",
+        "active": "सक्रिय",
+        "inactive": "निष्क्रिय",
+        "all": "सभी"
+      },
+      "stats": {
+        "totalEligible": "कुल पात्र फ़ील्ड",
+        "activeFields": "सक्रिय फ़ील्ड",
+        "generalUserAllowed": "सामान्य उपयोगकर्ता अनुमत",
+        "approvalRequired": "अनुमोदन आवश्यक है"
+      },
+      "table": {
+        "fieldName": "फ़ील्ड का नाम",
+        "active": "सक्रिय"
+      },
+      "emptyState": {
+        "title": "अभी तक कोई फ़ील्ड पंजीकृत नहीं है",
+        "description": "डेटाबेस से फ़ील्ड जोड़ने के लिए ऊपर दिए गए फॉर्म का उपयोग करें"
+      }
+    },
     "buttons": {
       "import": "आयात करें",
-      "export": "निर्यात करें"
+      "export": "निर्यात करें",
+      "backToPTIS": "पीटीआईएस पर वापस जाएं",
+      "uploadExcel": "एक्सेल अपलोड करें",
+      "downloadExcel": "एक्सेल डाउनलोड करें"
     },
     "messages": {
       "fetchMenuFailed": "अपडेट विकल्प लोड करने में विफल",
@@ -80,9 +181,12 @@
       "fetchPropertiesFailed": "संपत्तियां लोड करने में विफल",
       "fetchWardsFailed": "वार्ड लोड करने में विफल",
       "fetchWingsFailed": "विंग लोड करने में विफल",
+      "zoneRequired": "Zone is required",
+      "propertyTypeRequired": "Property Type is required",
+      "propertyNoRequired": "Property No is required",
       "wardRequired": "वार्ड आवश्यक है",
-      "fromPropertyRequired": "संपत्ति क्र. से आवश्यक है",
-      "toPropertyRequired": "संपत्ति क्र. तक आवश्यक है",
+      "fromPropertyRequired": "से प्रॉपर्टी नंबर आवश्यक है",
+      "toPropertyRequired": "तक प्रॉपर्टी नंबर आवश्यक है",
       "wingRequired": "विंग आवश्यक है",
       "updateCodeRequired": "अपडेट प्रकार आवश्यक है",
       "propertiesRequired": "कृपया कम से कम एक संपत्ति चुनें",

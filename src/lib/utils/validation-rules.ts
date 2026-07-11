@@ -114,7 +114,8 @@ export const limitOldPropertyNo = (v: string) => {
   return result;
 };
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
-export const PINCODE_6_REGEX = /^[0-9]{6}$/;
+export const PINCODE_6_REGEX = /^[1-9][0-9]{5}$/;
+export const PINCODE_SANITIZE = /[^0-9]/g;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;
 export const YEAR_REGEX = /^[0-9०-९]{4}$/;
 // Positive integer (one or more digits, no decimal/sign). Generic — usable
