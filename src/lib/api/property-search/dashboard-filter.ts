@@ -2,7 +2,7 @@ import {
   TYPE_FILTER_OPTIONS,
   type TypeFilterOption,
 } from "@/components/modules/property-tax/search-property/constants";
-import type { PropertyStatus } from "@/types/property-search.types";
+import type { PropertyStatus } from "@/types/property-search";
 
 /** Maps stat-card labels to `/Property/search` DashboardFilter query values. */
 export const DASHBOARD_FILTER_BY_STATUS: Record<PropertyStatus, number> = {
@@ -24,16 +24,25 @@ export function getDashboardFilterForStatus(
 }
 
 const TYPE_FILTER_DASHBOARD_MAP: Record<TypeFilterOption, number> = {
-  surveyCompleted: DASHBOARD_FILTER_BY_STATUS.Survey,
-  dataEntryCompleted: DASHBOARD_FILTER_BY_STATUS["Data Processing"],
-  qcCompleted: DASHBOARD_FILTER_BY_STATUS["Quality Analysis"],
-  noticeDistributed: DASHBOARD_FILTER_BY_STATUS["Assessment Completed"],
+  geoSequencing: 1,
+  internalSurvey: 2,
+  dataEntry: 3,
+  assessment: 4,
+  approvalByUlb: 5,
+  noticeDistribution: 6,
+  hearingAndAppeal: 7,
+  billDistribution: 8,
+  billGeneration: 9,
 };
 
 /** Maps the Type Filter dropdown to `/Property/search` DashboardFilter values. */
 export function getDashboardFilterForTypeFilter(typeFilter: string): number {
+  if (!typeFilter) return 0;
+  const parsed = parseInt(typeFilter, 10);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
   if (
-    typeFilter &&
     (TYPE_FILTER_OPTIONS as readonly string[]).includes(typeFilter)
   ) {
     return TYPE_FILTER_DASHBOARD_MAP[typeFilter as TypeFilterOption];

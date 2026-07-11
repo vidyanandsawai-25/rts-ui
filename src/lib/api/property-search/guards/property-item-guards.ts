@@ -6,12 +6,12 @@ import { ApiError } from "@/lib/utils/api";
 import type {
   PropertySearchApiItem,
   PropertySearchApiResponse,
-} from "@/types/property-search-api.types";
+} from "@/types/property-search";
 import {
   PROPERTY_STATUSES,
   type PropertyStatus,
   type SearchResult,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import type { PagedResponse } from "@/types/common.types";
 
 function readField(obj: Record<string, unknown>, camel: string, pascal: string): unknown {
@@ -113,8 +113,12 @@ function normalizePropertySearchApiItem(
       null,
     plotNo: readApiText(raw, "plotNo", "PlotNo") || null,
     wingFlatNo: readApiText(raw, "wingFlatNo", "WingFlatNo") || null,
+    wing: readApiText(raw, "wing", "Wing") || null,
+    flatNo: readApiText(raw, "flatNo", "FlatNo") || null,
     propertyCount:
       toOptionalNumber(readField(raw, "propertyCount", "PropertyCount")) ?? null,
+    childUnitCount:
+      toOptionalNumber(readField(raw, "childUnitCount", "ChildUnitCount")) ?? null,
     categoryName: readApiText(raw, "categoryName", "CategoryName") || null,
     propertyDescription:
       readApiText(raw, "propertyDescription", "PropertyDescription") || null,
@@ -182,7 +186,10 @@ export function normalizePropertySearchItem(
     citySurveyNo: toRawText(item.citySurveyNo ?? item.cityServeyNo),
     plotNo: toRawText(item.plotNo),
     wingFlatNo: toRawText(item.wingFlatNo),
+    wing: toRawText(item.wing),
+    flatNo: toRawText(item.flatNo),
     propertyCount: item.propertyCount ?? 0,
+    childUnitCount: item.childUnitCount ?? undefined,
     category: toRawText(item.categoryName),
     description: toRawText(item.propertyDescription),
     mobile: formatMobileNumber(toRawText(item.mobile)),
@@ -227,7 +234,7 @@ function isDirectPagedPropertySearch(
   return Array.isArray(obj.items);
 }
 
-function extractPropertySearchRawItems(data: unknown): unknown[] {
+export function extractPropertySearchRawItems(data: unknown): unknown[] {
   if (!data || typeof data !== "object") {
     return [];
   }
@@ -246,6 +253,12 @@ function extractPropertySearchRawItems(data: unknown): unknown[] {
     }
     if (Array.isArray(nested.Items)) {
       return nested.Items;
+    }
+    
+    // Handle the new /PropertySearch/search/grid structure: items.results.items
+    const nestedResults = nested.results as Record<string, unknown> | undefined;
+    if (nestedResults && Array.isArray(nestedResults.items)) {
+      return nestedResults.items;
     }
   }
 
@@ -319,12 +332,16 @@ export function normalizePropertySearchResponse(
     }
 
     const items = mapPropertySearchItems(rawItems);
-    const envelopeItems =
+    const itemsObject =
       typeof data === "object" && data !== null
         ? ((data as Record<string, unknown>).items as
             | Record<string, unknown>
             | undefined)
         : undefined;
+
+    const envelopeItems = itemsObject?.results
+      ? (itemsObject.results as Record<string, unknown>)
+      : itemsObject;
 
     return {
       items,

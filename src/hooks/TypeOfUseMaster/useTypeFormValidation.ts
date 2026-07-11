@@ -76,12 +76,18 @@ export function useTypeFormValidation({
         return undefined;
       },
       
+      typeOfUseCategoryId: (value: unknown) => {
+        const categoryId = Number(value);
+        if (!categoryId) return t('messages.categoryRequired');
+        return undefined;
+      },
+      
       description: (value: unknown) => {
         const desc = String(value ?? '').trim();
         
         if (!desc) return t('messages.descriptionRequired');
         if (isAllZeros(desc)) return t('type.fields.description') + ' ' + t('messages.cannotBeAllZeros');
-        if (desc.length > 100) return t('type.fields.description') + ' ' + t('messages.maxLength', { count: 100 });
+        if (desc.length > 80) return t('type.fields.description') + ' ' + t('messages.maxLength', { count: 80 });
         if (!DESCRIPTION_REGEX.test(desc)) return t('type.fields.description') + ' ' + t('messages.allowedChars');
         if (isDuplicateDescription(desc)) return t('messages.duplicateDescription');
         

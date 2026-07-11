@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils/cn";
 interface UseLockUnlockColumnsParams {
   screens: LockedScreen[];
   selectedPropertyIds: number[];
+  excludedPropertyIds: number[];
+  isAllPropertiesSelected: boolean;
   properties: LockUnlockPropertyItem[];
   isPending: boolean;
   onSelectProperty: (propertyId: number) => void;
@@ -19,6 +21,8 @@ interface UseLockUnlockColumnsParams {
 export function useLockUnlockColumns({
   screens,
   selectedPropertyIds,
+  excludedPropertyIds,
+  isAllPropertiesSelected,
   properties,
   isPending,
   onSelectProperty,
@@ -28,14 +32,45 @@ export function useLockUnlockColumns({
 }: UseLockUnlockColumnsParams): Column<LockUnlockPropertyItem>[] {
   const t = useTranslations("lockUnlock");
 
+  const isRowChecked = (propertyId: number): boolean => {
+    if (isAllPropertiesSelected) {
+      return !excludedPropertyIds.includes(propertyId);
+    }
+    return selectedPropertyIds.includes(propertyId);
+  };
+
+  const isHeaderChecked = (): boolean => {
+    if (properties.length === 0) return false;
+    if (isAllPropertiesSelected) return true;
+    return selectedPropertyIds.length === properties.length;
+  };
+
+  const isHeaderIndeterminate = (): boolean => {
+    if (isAllPropertiesSelected) return excludedPropertyIds.length > 0;
+    const checkedCount = selectedPropertyIds.length;
+    return checkedCount > 0 && checkedCount < properties.length;
+  };
+
   return [
     {
       key: "checkbox",
       label: (
         <input
           type="checkbox"
-          checked={properties.length > 0 && selectedPropertyIds.length === properties.length}
+          checked={isHeaderChecked()}
+          disabled={isPending}
+          ref={(el) => {
+            if (el) {
+              el.indeterminate = isHeaderIndeterminate();
+            }
+          }}
           onChange={() => onSelectAllProperties()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isPending) {
+              e.preventDefault();
+              onSelectAllProperties();
+            }
+          }}
           aria-label="Select all properties"
           className="ml-2"
         />
@@ -45,33 +80,31 @@ export function useLockUnlockColumns({
       render: (_: unknown, row: LockUnlockPropertyItem) => (
         <input
           type="checkbox"
-          checked={selectedPropertyIds.includes(row.propertyId)}
+          checked={isRowChecked(row.propertyId)}
+          disabled={isPending}
           onChange={() => onSelectProperty(row.propertyId)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isPending) {
+              e.preventDefault();
+              onSelectProperty(row.propertyId);
+            }
+          }}
           aria-label={`Select property ${row.propertyNo}`}
           className="ml-2"
         />
       ),
     },
     {
-      key: "wardNo",
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.wardNo")}</span>,
-      width: "12%",
+      key: "propertyDetail",
+      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.propertyDetail")}</span>,
+      width: "40%",
       align: "center",
-      render: (val: unknown) => <span className="text-gray-700 px-2">{String(val)}</span>,
-    },
-    {
-      key: "propertyNo",
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.propertyNo")}</span>,
-      width: "15%",
-      align: "center",
-      render: (val: unknown) => <span className="font-bold text-gray-900 px-2">{String(val)}</span>,
-    },
-    {
-      key: "partitionNo",
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.partitionNo")}</span>,
-      width: "13%",
-      align: "center",
-      render: (val: unknown) => <span className="text-gray-700 px-2">{String(val ?? "-")}</span>,
+      render: (_: unknown, row: LockUnlockPropertyItem) => (
+        <span className="text-gray-700 px-2">
+          {row.wardNo} - {row.propertyNo}
+          {row.partitionNo ? ` - ${row.partitionNo}` : ""}
+        </span>
+      ),
     },
     {
       key: "lockedScreens",
@@ -117,28 +150,28 @@ export function useLockUnlockColumns({
         return (
           <div className="flex items-center justify-center w-full">
             <Badge
-                 className={cn(
-    "inline-flex items-center gap-1 whitespace-nowrap px-3 py-1 rounded-full text-xs font-semibold border shadow-sm transition-all duration-300",
-    isLocked
-      ? "bg-red-50 text-red-700 border-red-200"
-      : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                 )}
+              className={cn(
+                "inline-flex items-center gap-1 whitespace-nowrap px-3 py-1 rounded-full text-xs font-semibold border shadow-sm transition-all duration-300",
+                isLocked
+                  ? "bg-red-50 text-red-700 border-red-200"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+              )}
             >
-               <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                 {isLocked ? (
-                    <>
-                     <Lock className="w-3 h-3 shrink-0 text-red-500" />
-                      <span>{t("resultsTable.status.locked")}</span>
-                    </>
-                     ) : (
-                      <>
-                       <Unlock className="w-3 h-3 shrink-0 text-emerald-500" />
-                       <span>{t("resultsTable.status.unlocked")}</span>
-                      </>
-                   )}
-               </span>
-          </Badge>
-          </div>             
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                {isLocked ? (
+                  <>
+                    <Lock className="w-3 h-3 shrink-0 text-red-500" />
+                    <span>{t("resultsTable.status.locked")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="w-3 h-3 shrink-0 text-emerald-500" />
+                    <span>{t("resultsTable.status.unlocked")}</span>
+                  </>
+                )}
+              </span>
+            </Badge>
+          </div>
         );
       },
     },
@@ -155,7 +188,7 @@ export function useLockUnlockColumns({
             activeLabel={t("resultsTable.status.locked")}
             inactiveLabel={t("resultsTable.status.unlocked")}
             showPopup={false}
-            disabled={!selectedPropertyIds.includes(row.propertyId) || isPending}
+            disabled={!isRowChecked(row.propertyId) || isPending}
           />
         </div>
       ),

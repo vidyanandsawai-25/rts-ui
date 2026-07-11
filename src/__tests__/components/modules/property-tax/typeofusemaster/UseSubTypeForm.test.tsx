@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import UseSubTypeForm from "@/components/modules/property-tax/typeofusemaster/UseSubTypeForm";
-import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import type { UseType, UseSubType, TypeOfUseCategory } from "@/types/typeOfUse.types";
 import { toast } from "sonner";
 
 // Mock next/navigation
@@ -130,6 +130,10 @@ const allSubTypes: UseSubType[] = [
   },
 ];
 
+const allCategories: TypeOfUseCategory[] = [
+  { id: 1, typeOfUseCategoryCode: 'C01', typeOfUseCategoryName: 'Residential', isActive: true } as TypeOfUseCategory,
+];
+
 const renderWithIntl = (component: React.ReactElement) => {
   return render(
     <NextIntlClientProvider locale="en" messages={mockMessages}>
@@ -146,7 +150,7 @@ describe("UseSubTypeForm", () => {
   describe("Add Mode", () => {
     it("should render form in add mode", () => {
       renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       expect(screen.getByText("Add Sub-Type of Use")).toBeInTheDocument();
@@ -156,7 +160,7 @@ describe("UseSubTypeForm", () => {
 
     it("should render add mode without type details when type info is missing", () => {
       renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={null} allSubTypes={[]} />
+        <UseSubTypeForm id={null} typeInfo={null} allSubTypes={[]} allCategories={allCategories} />
       );
 
       expect(screen.getByText("Add Sub-Type of Use")).toBeInTheDocument();
@@ -166,7 +170,7 @@ describe("UseSubTypeForm", () => {
 
     it("should validate required fields", async () => {
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const form = container.querySelector("#use-subtype-form");
@@ -180,7 +184,7 @@ describe("UseSubTypeForm", () => {
 
     it("should validate description format", async () => {
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
@@ -197,7 +201,7 @@ describe("UseSubTypeForm", () => {
 
     it("should reject description with only zeros", async () => {
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
@@ -213,7 +217,7 @@ describe("UseSubTypeForm", () => {
 
     it("should detect duplicate sub-type description", async () => {
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
@@ -229,7 +233,7 @@ describe("UseSubTypeForm", () => {
 
     it("should validate sequence is non-negative", async () => {
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const seqInput = screen.getByPlaceholderText("0");
@@ -247,7 +251,7 @@ describe("UseSubTypeForm", () => {
       mockCreateSubType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
@@ -255,6 +259,9 @@ describe("UseSubTypeForm", () => {
 
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "999" } });
+
+      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);
@@ -265,6 +272,7 @@ describe("UseSubTypeForm", () => {
           description: "Max Sequence Floor",
           searchSequence: 999,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
         expect(toast.success).toHaveBeenCalledWith("Sub-Type Created");
       });
@@ -274,7 +282,7 @@ describe("UseSubTypeForm", () => {
       mockCreateSubType.mockResolvedValue({ success: true });
       
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
@@ -283,6 +291,9 @@ describe("UseSubTypeForm", () => {
       const seqInput = screen.getByPlaceholderText("0") as HTMLInputElement;
       // Try to set value to 1000 (4 digits) - should be rejected by input restriction
       fireEvent.change(seqInput, { target: { value: "1000" } });
+      
+      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
       
       // The input should reject values with more than 3 digits, keeping the original value (0)
       expect(seqInput.value).toBe("0");
@@ -297,6 +308,7 @@ describe("UseSubTypeForm", () => {
           description: "Test Floor",
           searchSequence: 0,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
       });
     });
@@ -305,7 +317,7 @@ describe("UseSubTypeForm", () => {
       mockCreateSubType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
@@ -313,6 +325,9 @@ describe("UseSubTypeForm", () => {
 
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "3" } });
+
+      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);
@@ -323,6 +338,7 @@ describe("UseSubTypeForm", () => {
           description: "Second Floor",
           searchSequence: 3,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
         expect(toast.success).toHaveBeenCalledWith("Sub-Type Created");
         expect(mockRouterBack).toHaveBeenCalled();
@@ -333,11 +349,14 @@ describe("UseSubTypeForm", () => {
       mockCreateSubType.mockResolvedValue({ success: false, message: "Create failed" });
 
       const { container } = renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
       fireEvent.change(descInput, { target: { value: "Second Floor" } });
+
+      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);
@@ -349,7 +368,7 @@ describe("UseSubTypeForm", () => {
 
     it("should cancel and go back", () => {
       renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const cancelButton = screen.getByText("Cancel");
@@ -367,6 +386,7 @@ describe("UseSubTypeForm", () => {
       searchSequence: 1,
       isActive: true,
       status: "Active",
+      typeOfUseCategoryId: 1,
     };
 
     it("should render form in edit mode with initial data", () => {
@@ -376,6 +396,7 @@ describe("UseSubTypeForm", () => {
           initialData={initialData}
           typeInfo={typeInfo}
           allSubTypes={allSubTypes}
+          allCategories={allCategories}
         />
       );
 
@@ -394,6 +415,7 @@ describe("UseSubTypeForm", () => {
           initialData={initialData}
           typeInfo={typeInfo}
           allSubTypes={allSubTypes}
+          allCategories={allCategories}
         />
       );
 
@@ -410,6 +432,7 @@ describe("UseSubTypeForm", () => {
           description: "Ground Floor Updated",
           searchSequence: 1,
           status: "Active",
+          typeOfUseCategoryId: 1,
         });
         expect(toast.success).toHaveBeenCalledWith("Sub-Type Updated");
         expect(mockRouterBack).toHaveBeenCalled();
@@ -423,6 +446,7 @@ describe("UseSubTypeForm", () => {
           initialData={initialData}
           typeInfo={typeInfo}
           allSubTypes={allSubTypes}
+          allCategories={allCategories}
         />
       );
 
@@ -440,6 +464,7 @@ describe("UseSubTypeForm", () => {
           initialData={initialData}
           typeInfo={typeInfo}
           allSubTypes={allSubTypes}
+          allCategories={allCategories}
         />
       );
 
@@ -458,7 +483,7 @@ describe("UseSubTypeForm", () => {
   describe("Validation", () => {
     it("should sanitize description input", async () => {
       renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name") as HTMLInputElement;
@@ -474,7 +499,7 @@ describe("UseSubTypeForm", () => {
 
     it("should enforce max length on description", async () => {
       renderWithIntl(
-        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");

@@ -14,6 +14,16 @@ export const getTypeOfUseId = (floor: FloorData): string => {
   );
 };
 
+const safeStr = (...values: (string | number | null | undefined)[]): string => {
+  for (const val of values) {
+    if (val === undefined || val === null) continue;
+    if (val === 0 || val === '0') continue;
+    if (val === '') continue;
+    return String(val);
+  }
+  return '';
+};
+
 /**
  * Normalize floor field IDs to string format for form inputs
  * @param floor - Raw floor data from API
@@ -21,11 +31,11 @@ export const getTypeOfUseId = (floor: FloorData): string => {
  */
 export const normalizeFloorFormData = (floor: FloorData): Partial<FloorData> => ({
   ...floor,
-  floorId: String(floor.floorId || floor.floorID || floor.FloorID || ''),
-  subFloorId: String(floor.subFloorId || floor.subFloorID || floor.SubFloorID || ''),
-  constructionTypeId: String(floor.constructionTypeId || floor.constructionId || floor.ConstructionTypeId || ''),
-  typeOfUseId: String(floor.typeOfUseId || floor.TypeOfUseId || floor.useId || ''),
-  subTypeOfUseId: String(floor.subTypeOfUseId || floor.subTypId || floor.SubTypeOfUseId || ''),
+  floorId: safeStr(floor.floorId, floor.floorID, floor.FloorID),
+  subFloorId: safeStr(floor.subFloorId, floor.subFloorID, floor.SubFloorID),
+  constructionTypeId: safeStr(floor.constructionTypeId, floor.constructionId, floor.ConstructionTypeId),
+  typeOfUseId: safeStr(floor.typeOfUseId, floor.TypeOfUseId, floor.useId),
+  subTypeOfUseId: safeStr(floor.subTypeOfUseId, floor.subTypId, floor.SubTypeOfUseId),
   // Preserve display fields for table context if needed
   floor: String(floor.floor || ''),
   subFloor: String(floor.subFloor || ''),

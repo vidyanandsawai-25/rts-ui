@@ -41,11 +41,11 @@ export const ValidationErrorBanner: React.FC<ValidationErrorBannerProps> = ({
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-red-800 mb-1">
                         {t("building.incompleteCertificates") ||
-                            "The following certificates have incomplete required fields"}
+                            "The following documents have incomplete required fields"}
                     </p>
                     <p className="text-xs text-red-700/90 font-semibold mb-2 flex items-center gap-1">
                         {t("building.bannerNavigationHint") ||
-                            "Click a certificate tag to navigate directly to its fields."}
+                            "Click a document tag to navigate directly to its fields."}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                         {incompleteCertificates.map((cert) => {

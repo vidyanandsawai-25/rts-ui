@@ -163,6 +163,9 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
 
   /** Callback when a row is clicked */
   onRowClick?: (row: T, index: number) => void;
+  
+  /** Ref to attach to the inner scrollable container */
+  scrollContainerRef?: React.Ref<HTMLDivElement>;
 }
 
 function PageSizeSelector({
@@ -291,6 +294,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
 
   paginationConfig,
   onRowClick,
+  scrollContainerRef,
 }: MasterTableProps<T>): React.ReactElement {
   const t = useTranslations('common');
 
@@ -340,7 +344,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   ========================= */
 
   const TableContent = (
-    <div className={cn('overflow-auto', bodyHeightClass)}>
+    <div ref={scrollContainerRef} className={cn('overflow-auto', bodyHeightClass)}>
       <table className={cn('w-full text-sm', tableClassName)}>
         <thead
           className={cn(

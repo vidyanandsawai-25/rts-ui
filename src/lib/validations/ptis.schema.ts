@@ -125,4 +125,12 @@ export const wardIdActionSchema = defaultSchemas.wardIdActionSchema;
  */
 export const searchSuggestionsSchema = defaultSchemas.searchSuggestionsSchema;
 
+export const workflowStageActionSchema = z.object({
+  propertyId: z.union([z.number(), z.string()]).refine((val) => {
+    const num = Number(val);
+    return !isNaN(num) && num > 0;
+  }, { message: 'Property ID must be a positive number' }),
+  workflowStageId: z.number().positive('Workflow stage ID must be a positive number'),
+});
+
 export type PropertySearchSchema = z.infer<typeof propertySearchSchema>;

@@ -14,6 +14,7 @@ interface TotalActionFieldsProps {
   maxRooms: number | null;
   availableRooms: number | null;
   rooms: unknown[];
+  isUtilityCategory?: boolean;
 }
 
 export const TotalActionFields: React.FC<TotalActionFieldsProps> = ({
@@ -27,6 +28,7 @@ export const TotalActionFields: React.FC<TotalActionFieldsProps> = ({
   maxRooms,
   availableRooms,
   rooms,
+  isUtilityCategory,
 }) => {
 
   return (
@@ -47,18 +49,20 @@ export const TotalActionFields: React.FC<TotalActionFieldsProps> = ({
 
       {/* Action */}
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.action }}>
-        <Tooltip content={ (isEditMode && totalAreaValue <= 0) || (!isEditMode && maxRooms && availableRooms !== null && availableRooms <= 0) ? 
-          <p>{isActualUpdate ? t('roomSubmission.input.tooltips.minArea') : maxRooms && rooms.length >= maxRooms ? t('roomSubmission.input.tooltips.maxRooms', { maxRooms }) : t('roomSubmission.input.tooltips.noRooms')}</p> : '' }>
-          <Button
-            id="add-update-room-button"
-            onClick={isActualUpdate ? handleUpdateRoom : handleAddRoom}
-            disabled={!!(maxRooms && availableRooms !== null && availableRooms <= 0 && !isEditMode)}
-            variant="primary"
-            className="w-full h-[40px] font-bold shadow-md"
-          >
-            {isActualUpdate ? t('roomSubmission.input.buttons.update') : t('roomSubmission.input.buttons.add')}
-          </Button>
-        </Tooltip>
+        <div className="flex gap-1 w-full">
+          <Tooltip content={ !isUtilityCategory && ((isEditMode && totalAreaValue <= 0) || (!isEditMode && maxRooms && availableRooms !== null && availableRooms <= 0)) ? 
+            <p>{isActualUpdate ? t('roomSubmission.input.tooltips.minArea') : maxRooms && rooms.length >= maxRooms ? t('roomSubmission.input.tooltips.maxRooms', { maxRooms }) : t('roomSubmission.input.tooltips.noRooms')}</p> : '' }>
+            <Button
+              id="add-update-room-button"
+              onClick={isActualUpdate ? handleUpdateRoom : handleAddRoom}
+              disabled={!isUtilityCategory && !!(maxRooms && availableRooms !== null && availableRooms <= 0 && !isEditMode)}
+              variant="primary"
+              className="flex-grow h-[40px] font-bold shadow-md"
+            >
+              {isActualUpdate ? t('roomSubmission.input.buttons.update') : t('roomSubmission.input.buttons.add')}
+            </Button>
+          </Tooltip>
+        </div>
       </div>
     </>
   );

@@ -3,9 +3,9 @@
  * Consolidated interfaces for all system configuration modules
  */
 
-import type { ComponentType } from 'react';
-import type { SelectProps } from '@/components/common/select';
-import type { TextAreaProps } from '@/components/common/Textarea';
+import type { ComponentType, ChangeEvent, FocusEvent } from 'react';
+import type { SelectProps, TextAreaProps, InputProps } from '@/components/common';
+import type { LucideIcon } from 'lucide-react';
 
 /**
  * --- Common Interfaces ---
@@ -80,6 +80,7 @@ export interface UlbConfigurationPageData {
   ulb: UlbConfigurationMaster | null;
   departments: Department[];
   licences: DepartmentLicenceDetails[];
+  images: UlbImageMasterDto[];
 }
 
 /**
@@ -161,6 +162,7 @@ export interface ULBImage {
   size: number;
   isBackgroundImage: boolean;
   uploadedDate: string;
+  documentId?: number;
 }
 
 export interface ULBImagesManagerProps {
@@ -372,6 +374,7 @@ export interface ULBConfigurationModuleProps {
   initialUlbData: UlbConfigurationMaster | null;
   initialDeptData: Department[];
   initialLicenceData: DepartmentLicenceDetails[];
+  initialImagesData: UlbImageMasterDto[];
   fetchError?: string;
   statusCode?: number;
 }
@@ -423,6 +426,7 @@ export interface ULBLogoImagesTabProps {
   onNext: () => void;
   isSaving?: boolean;
   footerClassName: string;
+  initialImages: UlbImageMasterDto[];
 }
 
 export interface ULBProjectLicenseTabProps extends UlbValidatedFieldProps {
@@ -488,5 +492,71 @@ export interface ULBDepartmentCardProps {
 export interface ULBLogoUploadProps {
   logoUrl: string | null;
   onLogoChange: (url: string | null) => void;
+}
+
+export interface UlbImageMasterUploadResponseDto {
+  ulbImageMasterId: number;
+  documentGuid: string;
+  documentId: number;
+  documentBindingId?: number | null;
+  imageType: string;
+  fileName: string;
+  fileSizeBytes: number;
+  storagePath: string;
+}
+
+export interface UlbImageMasterDto {
+  id: number;
+  imageType?: string | null;
+  imageId?: number | null;
+  createdBy?: number | null;
+  updatedBy?: number | null;
+  documentGuid?: string | null;
+  createdDate?: string | null;
+  updatedDate?: string | null;
+}
+
+export interface UlbFormFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  required?: boolean;
+  maxLength?: number;
+  placeholder?: string;
+  error?: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  className?: string;
+  type?: string;
+  inputMode?: InputProps['inputMode'];
+}
+
+export interface ULBImageCardProps {
+  title: string;
+  imageUrl?: string | null;
+  imageId?: number | null;
+  isUploading: boolean;
+  required?: boolean;
+  onTriggerUploadOrReplace: () => void;
+  onTriggerDelete: () => void;
+  helpText?: string;
+  icon: LucideIcon;
+  iconBgColor?: string;
+  iconTextColor?: string;
+  isLandscape?: boolean;
+}
+
+export interface ULBImageGalleryProps {
+  images: ULBImage[];
+  unselectedLogos: ULBImage[];
+  unselectedBackgrounds: ULBImage[];
+  isUploading: boolean;
+  isLoading: boolean;
+  onTriggerUpload: () => void;
+  onTriggerReplace: (id: string) => void;
+  onSetAsBackground: (id: string) => void;
+  onDeleteImage: (id: string) => void;
+  onLogoChange: (url: string | null) => void;
+  onDeleteLogoOrBackground: (id: string, category: 'Logo' | 'Background') => void;
 }
 

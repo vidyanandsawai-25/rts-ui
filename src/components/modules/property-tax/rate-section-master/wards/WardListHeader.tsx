@@ -1,5 +1,5 @@
 import { Map as MapIcon } from "lucide-react";
-import { AddButton, SearchInput } from "@/components/common";
+import { AddButton, SearchInput, Tooltip } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { WardListHeaderProps } from "@/types/rateSectionMaster.types";
 
@@ -22,10 +22,19 @@ export default function WardListHeader({
         <MapIcon className="w-5 h-5 text-[#1A86E8]" />
         <h3 className="text-lg font-semibold text-[#1A86E8]">{title}</h3>
 
-        <StatusBadge
-          label={effectiveSelectedRateSection && rateSectionLabel ? rateSectionLabel : selectRateSectionText}
-          variant="info"
-        />
+        <Tooltip
+          content={effectiveSelectedRateSection && rateSectionLabel ? rateSectionLabel : selectRateSectionText}
+          placement="top"
+        >
+          <div className="flex-shrink-0 cursor-default">
+            <StatusBadge
+              label={effectiveSelectedRateSection && rateSectionLabel ? 
+                (rateSectionLabel.length > 30 ? `${rateSectionLabel.substring(0, 30)}...` : rateSectionLabel) : 
+                selectRateSectionText}
+              variant="info"
+            />
+          </div>
+        </Tooltip>
 
         {effectiveSelectedRateSection && (
           <div className="flex items-center gap-1">

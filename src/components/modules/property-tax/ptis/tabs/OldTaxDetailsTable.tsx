@@ -71,7 +71,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
               ))}
 
             {/* Tax Total */}
-            {Number(yearData.taxTotal) !== 0 && (
+            {/* {Number(yearData.taxTotal) !== 0 && (
               <div className="relative">
                 <div
                   id={`tax-total-${yearIdx}-label`}
@@ -86,10 +86,10 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
                   />
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Interest */}
-            {Number(yearData.interest) !== 0 && (
+            {/* {Number(yearData.interest) !== 0 && (
               <div className="relative">
                 <div
                   id={`tax-interest-${yearIdx}-label`}
@@ -104,10 +104,10 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
                   />
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Net Total */}
-            {Number(yearData.netTotal) !== 0 && (
+            {/* {Number(yearData.netTotal) !== 0 && (
               <div className="relative">
                 <div
                   id={`tax-net-total-${yearIdx}-label`}
@@ -122,7 +122,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
                   />
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       ))}

@@ -7,12 +7,14 @@ import type {
   ZoneOption,
   WardOption,
   PropertyDescriptionOption,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import type { PropertyAssessmentStatusOption } from "@/types/property-assessment-status.types";
+import type { PropertyWorkflowStageOption } from "@/types/property-workflow-stage-master.types";
 
 interface ActiveFiltersTagsProps {
   formState: SearchCriteria;
   propertyTypeOptions: PropertyAssessmentStatusOption[];
+  workflowStageOptions: PropertyWorkflowStageOption[];
   zoneOptions: ZoneOption[];
   wardOptions: WardOption[];
   propertyDescriptionOptions: PropertyDescriptionOption[];
@@ -30,6 +32,7 @@ const formatTagValue = (label: string): string => {
 export function ActiveFiltersTags({
   formState,
   propertyTypeOptions,
+  workflowStageOptions,
   zoneOptions,
   wardOptions,
   propertyDescriptionOptions,
@@ -59,12 +62,41 @@ export function ActiveFiltersTags({
   }
 
   if (formState.typeFilter) {
-    activeTags.push({
-      key: "typeFilter",
-      label: t("fields.typeFilter"),
-      value: formatTagValue(t(`options.typeFilter.${formState.typeFilter}`)),
-      onClear: () => onClearField("typeFilter"),
-    });
+    const stageOpt = workflowStageOptions.find(
+      (opt) => String(opt.id) === formState.typeFilter
+    );
+    if (stageOpt) {
+      const getTranslationKey = (stageName: string): string => {
+        if (stageName === "ApprovalByULB") return "approvalByUlb";
+        const words = stageName.split(/[^a-zA-Z0-9]/).filter(Boolean);
+        if (words.length === 0) return "";
+        return words
+          .map((word, index) => {
+            if (index === 0) {
+              if (word === word.toUpperCase()) {
+                return word.toLowerCase();
+              }
+              return word.charAt(0).toLowerCase() + word.slice(1);
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join("");
+      };
+      const key = getTranslationKey(stageOpt.stageName);
+      let label = stageOpt.description || stageOpt.stageName;
+      try {
+        const translated = t(`options.typeFilter.${key}`);
+        if (translated && !translated.startsWith("options.typeFilter.")) {
+          label = translated;
+        }
+      } catch {}
+      activeTags.push({
+        key: "typeFilter",
+        label: t("fields.typeFilter"),
+        value: formatTagValue(label),
+        onClear: () => onClearField("typeFilter"),
+      });
+    }
   }
 
   if (formState.propertyDescription) {
@@ -111,7 +143,7 @@ export function ActiveFiltersTags({
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5 mt-2 px-1.5 animate-in fade-in duration-200">
+    <div className="flex flex-wrap gap-1.5 mt-1 px-1 animate-in fade-in duration-200">
       {activeTags.map((tag) => (
         <div
           key={tag.key}

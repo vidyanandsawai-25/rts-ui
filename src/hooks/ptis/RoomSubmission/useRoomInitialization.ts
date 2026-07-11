@@ -1,21 +1,26 @@
-import { useEffect } from "react";
-import { RoomData, RoomWiseSubmissionProps } from "@/types/room-details.types";
+import { useEffect, useRef } from "react";
+import { RoomData, RoomWiseSubmissionProps, RoomAPIResponse } from "@/types/room-details.types";
 import { ShapeParameters } from "@/types/common-details.types";
-import { 
-  convertAreaUnit, 
-  convertDimension 
+import {
+  convertAreaUnit,
+  convertDimension
 } from "@/lib/utils/RoomSubmission/room-calculation.util";
 import { RoomSubmissionState } from "./useRoomSubmissionState";
 
+import { checkIsUtilityCategory } from "@/lib/utils/floorSubmission/floor-utility-checks";
+
 export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWiseSubmissionProps, actions: { handleEdit: (idx: number, room?: RoomData) => void }) => {
-  const { 
-    isOpen, floorNumber, existingRooms, maxRooms 
+  const {
+    isOpen, floorNumber, existingRooms, maxRooms
   } = props;
-  const { 
-    setMounted, lastInitializedFloorRef, setRooms, 
+  const {
+    setMounted, lastInitializedFloorRef, setRooms,
     rooms, isEditMode, editingIndex, hasAutoActivatedRef,
     setPrevAreaUnit, prevAreaUnit, areaUnit, setShapeParameters, setFormData
   } = state;
+
+  const lastInitializedMaxRoomsRef = useRef<number | null>(null);
+  const lastInitializedExistingRoomsRef = useRef<RoomAPIResponse[] | null>(null);
 
   // 1. Mount Status
   useEffect(() => { setMounted(true); }, [setMounted]);
@@ -24,34 +29,65 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
   useEffect(() => {
     if (!isOpen) {
       lastInitializedFloorRef.current = null;
+      lastInitializedMaxRoomsRef.current = null;
+      lastInitializedExistingRoomsRef.current = null;
       return;
     }
 
-    // Always re-initialize if maxRooms changes, floor changes, or database IDs mismatch
-    const safeMaxRooms = Math.min(maxRooms || 0, 100);
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) ||
+      props.floorData?.isOpenPlot === true ||
+      props.floorData?.selectedFloorType === 'OpenPlot' ||
+      String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
+    let lastFilledRoomIndex = -1;
+    if (Array.isArray(existingRooms)) {
+      for (let i = existingRooms.length - 1; i >= 0; i--) {
+        const r = existingRooms[i];
+        const hasArea = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0) > 0;
+        const hasUseOrShape = (r.utilities && r.utilities !== "-Select-") || (r.shape && r.shape !== "-Select-");
+        if (hasArea || hasUseOrShape) {
+          lastFilledRoomIndex = i;
+          break;
+        }
+      }
+    }
+    const requiredRoomsCount = lastFilledRoomIndex !== -1 ? lastFilledRoomIndex + 1 : 0;
+    const computedRooms = isUtility ? (existingRooms?.length || 0) : Math.max(maxRooms || 0, requiredRoomsCount);
+    const safeMaxRooms = isUtility ? computedRooms : Math.min(computedRooms, 100);
     const floorChanged = lastInitializedFloorRef.current !== (floorNumber || null);
-    const idsMismatch = existingRooms && existingRooms.some((r, i) => {
-      const currentRoom = rooms[i];
-      if (!currentRoom) return true;
-      const apiId = r.roomWiseSubmissionId ?? r.id;
-      const stateId = currentRoom.roomWiseSubmissionId ?? currentRoom.id;
-      return apiId !== stateId;
-    });
+    const maxRoomsChanged = lastInitializedMaxRoomsRef.current !== safeMaxRooms;
+    const existingRoomsChanged = lastInitializedExistingRoomsRef.current !== (existingRooms || null);
 
-    if (rooms.length !== safeMaxRooms || floorChanged || idsMismatch || rooms.length === 0) {
+    // Calculate idsMismatch only if references haven't changed but we need verification
+    let idsMismatch = false;
+    if (!floorChanged && !maxRoomsChanged && !existingRoomsChanged) {
+      // Core inputs haven't changed; avoid checking further to optimize performance.
+      return;
+    } else {
+      idsMismatch = !!(existingRooms && existingRooms.slice(0, safeMaxRooms).some((r, i) => {
+        const currentRoom = rooms[i];
+        if (!currentRoom) return true;
+        const apiId = r.roomWiseSubmissionId ?? r.id;
+        const stateId = currentRoom.roomWiseSubmissionId ?? currentRoom.id;
+        return apiId !== stateId;
+      }));
+    }
+
+    if (rooms.length !== safeMaxRooms || floorChanged || maxRoomsChanged || idsMismatch) {
       const initializedRooms = Array.from({ length: safeMaxRooms }, (_, i) => {
-        if (existingRooms && existingRooms[i]) {
+        if (Array.isArray(existingRooms) && existingRooms[i]) {
           const r = existingRooms[i];
-          // Merge offsets from all possible sources
           const offsetsRaw = [
             ...(Array.isArray(r.offsets) ? r.offsets : []),
             ...(Array.isArray(r.roomWiseMinusData) ? r.roomWiseMinusData : []),
             ...(Array.isArray(r.minusRooms) ? r.minusRooms : [])
           ];
-          // Deduplicate by id/roomWiseMinusId and filter out marked for deletion
           const seen = new Set();
           const offsets = offsetsRaw
             .filter(o => {
+              if (!o) return false;
               const markedForDeletion = o.MarkedForDeletion ?? o.markedForDeletion;
               return markedForDeletion !== 1 && markedForDeletion !== true;
             })
@@ -59,7 +95,6 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
               ...o,
               id: o.roomWiseMinusId ?? o.id,
               operation: o.isOffset === true ? 'add' : (o.isOffset === false ? 'subtract' : (o.type || o.operation || 'subtract')),
-              // Prefer o.area, fallback to o.areaSqMtr, then 0
               area: o.area ?? o.areaSqMtr ?? 0,
               shape: o.shapeType || o.shape || 'Rectangle'
             }))
@@ -74,8 +109,8 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
             tempId: r.tempId || `init-${Date.now()}-${i}`,
             roomNo: (i + 1).toString(),
             id: r.roomWiseSubmissionId ?? r.id,
-            area: Number(r.area || 0),
-            total: Number(r.total || 0),
+            area: Number(r.area || r.areaSqMtr || 0),
+            total: Number(r.total || r.totalAreaSqMtr || 0),
             offsets
           };
         }
@@ -88,14 +123,36 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
         };
       });
       setRooms(initializedRooms);
-      if (initializedRooms.length > 0) actions.handleEdit(0, initializedRooms[0]);
-      lastInitializedFloorRef.current = floorNumber || null;
-      return;
+      if (initializedRooms.length > 0 && !isUtility) {
+        const firstEmptyIdx = initializedRooms.findIndex((r) => {
+          return !(Number(r.area || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-");
+        });
+        if (firstEmptyIdx !== -1) {
+          actions.handleEdit(firstEmptyIdx, initializedRooms[firstEmptyIdx]);
+        }
+      }
     }
 
-    // If already initialized and count matches, do nothing
     lastInitializedFloorRef.current = floorNumber || null;
-  }, [isOpen, maxRooms, existingRooms, floorNumber, setRooms, actions, rooms, lastInitializedFloorRef]);
+    lastInitializedMaxRoomsRef.current = safeMaxRooms;
+    lastInitializedExistingRoomsRef.current = existingRooms || null;
+  }, [
+    isOpen,
+    maxRooms,
+    existingRooms,
+    floorNumber,
+    setRooms,
+    actions,
+    rooms,
+    lastInitializedFloorRef,
+    props.floorData?.typeOfUseCategoryId,
+    props.floorData?.conTyp,
+    props.floorData?.constructionType,
+    props.floorData?.floor,
+    props.floorData?.floorDescription,
+    props.floorData?.isOpenPlot,
+    props.floorData?.selectedFloorType
+  ]);
 
   // 3. Area Unit Conversion Sync
   useEffect(() => {
@@ -117,7 +174,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
         const isManualArea = !prev.shape || prev.shape === '-Select-';
         return {
           ...prev,
-          length: isManualArea 
+          length: isManualArea
             ? convertAreaUnit(parseFloat(prev.length || "0"), oldUnit, newUnit).toString()
             : convertDimension(prev.length || "", targetDimUnit),
           width: isManualArea ? (prev.width || "") : convertDimension(prev.width || "", targetDimUnit)
@@ -130,7 +187,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
           ...room,
           area: convertAreaUnit(Number(room.area || 0), oldUnit, newUnit),
           total: convertAreaUnit(Number(room.total || 0), oldUnit, newUnit),
-          length: isManualArea 
+          length: isManualArea
             ? (room.length ? convertAreaUnit(parseFloat(String(room.length)), oldUnit, newUnit).toString() : "")
             : (room.length ? convertDimension(String(room.length), targetDimUnit) : ""),
           width: isManualArea ? (room.width || "") : (room.width ? convertDimension(String(room.width), targetDimUnit) : ""),
@@ -148,19 +205,41 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
 
   // 4. Auto-edit Next Empty Room
   useEffect(() => {
-    if (!isOpen || !maxRooms || maxRooms < 2 || isEditMode || editingIndex !== null || rooms.length === 0 || hasAutoActivatedRef.current) return;
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) ||
+      props.floorData?.isOpenPlot === true ||
+      props.floorData?.selectedFloorType === 'OpenPlot' ||
+      String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+      String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
+    if (isUtility || !isOpen || !maxRooms || maxRooms < 2 || isEditMode || editingIndex !== null || rooms.length === 0 || hasAutoActivatedRef.current) return;
 
-    const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.remark && r.remark !== "-Select-" && r.shape && r.shape !== "-Select-";
+    const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-";
     const lastFilled = [...rooms].reverse().findIndex(isRoomFilled);
     if (lastFilled === -1) return;
 
     const lastFilledIdx = rooms.length - 1 - lastFilled;
     const nextEmptyIdx = rooms.slice(lastFilledIdx + 1).findIndex(r => !isRoomFilled(r));
-    
+
     if (nextEmptyIdx !== -1) {
       const targetIdx = lastFilledIdx + 1 + nextEmptyIdx;
       hasAutoActivatedRef.current = true;
       setTimeout(() => actions.handleEdit(targetIdx), 200);
     }
-  }, [rooms, isOpen, maxRooms, isEditMode, editingIndex, actions, hasAutoActivatedRef]);
+  }, [
+    rooms,
+    isOpen,
+    maxRooms,
+    isEditMode,
+    editingIndex,
+    actions,
+    hasAutoActivatedRef,
+    props.floorData?.typeOfUseCategoryId,
+    props.floorData?.conTyp,
+    props.floorData?.constructionType,
+    props.floorData?.floor,
+    props.floorData?.floorDescription,
+    props.floorData?.isOpenPlot,
+    props.floorData?.selectedFloorType
+  ]);
 };

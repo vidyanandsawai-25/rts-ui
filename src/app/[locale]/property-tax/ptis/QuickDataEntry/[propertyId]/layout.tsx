@@ -1,14 +1,19 @@
 import { QuickDataEntryClientWrapper } from "@/components/modules/property-tax/ptis/QuickDataEntry/QuickDataEntryClientWrapper";
+import { getPropertyBasicDetailsAction } from "./FloorSubmission/actions";
 
 interface Props {
     children: React.ReactNode;
     params: Promise<{ locale: string; propertyId: string }>;
 }
 
-export default async function Layout({ children }: Props) {
+export default async function Layout({ children, params }: Props) {
+    const { propertyId } = await params;
+    const basicDetails = propertyId ? await getPropertyBasicDetailsAction(propertyId) : null;
+    const categoryName = basicDetails?.categoryName || "";
+    const propertyDescription = basicDetails?.propertyDescription || "";
 
     return (
-        <QuickDataEntryClientWrapper>
+        <QuickDataEntryClientWrapper categoryName={categoryName} propertyDescription={propertyDescription}>
             {children}
         </QuickDataEntryClientWrapper>
     );

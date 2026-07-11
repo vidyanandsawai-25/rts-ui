@@ -40,7 +40,8 @@ describe('Banner Component', () => {
   it('renders responsive height classes', () => {
     const { container } = render(<Banner ulbName="Test" />);
     const bannerDiv = container.querySelector('.bg-gradient-to-r');
-    expect(bannerDiv).toHaveClass('h-[170px]', 'sm:h-[230px]', 'md:h-[280px]', 'lg:h-[280px]');
+    expect(bannerDiv).toBeInTheDocument();
+    expect(bannerDiv).toHaveClass('h-[120px]', 'sm:h-[165px]', 'md:h-[200px]', 'lg:h-[220px]');
   });
 
   it('renders heading with white text and proper styling', () => {

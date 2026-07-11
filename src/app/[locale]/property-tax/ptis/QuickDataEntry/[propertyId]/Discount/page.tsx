@@ -17,16 +17,17 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
 
     setRequestLocale(locale);
 
-    let initialDiscountData = null;
-    let initialSocialData = null;
+    // On-demand SSR: fetch ONLY the data needed for the active tab
+    const discountResponse = activeTab === "discount"
+        ? await getDiscountDetailsAction(propertyId)
+        : { success: true as const, data: undefined };
 
-    if (activeTab === "social") {
-        const socialResponse = await getPropertySocialInfoAction(propertyId);
-        initialSocialData = socialResponse.data?.items || null;
-    } else {
-        const discountResponse = await getDiscountDetailsAction(propertyId);
-        initialDiscountData = discountResponse.data || null;
-    }
+    const socialResponse = activeTab === "social"
+        ? await getPropertySocialInfoAction(propertyId)
+        : { success: true as const, data: undefined };
+
+    const initialDiscountData = discountResponse.data ?? null;
+    const initialSocialData = socialResponse.data?.items ?? null;
 
     return (
         <DiscountFormview

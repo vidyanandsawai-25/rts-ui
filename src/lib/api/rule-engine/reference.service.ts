@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import { RuleScope, PolicyType, EffectTypeConfig } from '@/types/rule-engine.types';
+import { RuleScope, PolicyType, EffectTypeConfig } from '@/types/rule-engine';
 
 // ─── Scopes ───────────────────────────────────────────────────────────────────
 

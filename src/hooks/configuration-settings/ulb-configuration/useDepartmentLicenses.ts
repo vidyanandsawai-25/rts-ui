@@ -1,12 +1,10 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { getAllDepartmentsAction } from '@/app/[locale]/configuration-settings/ulb-configuration/actions';
 import { parseDurationFromApi } from '@/lib/api/configuration-settings/ulb-configuration/department-licence.mapper';
 import { calculateLicenseEndDate, calculateRenewalAlerts } from '@/lib/utils/ulb-configuration.utils';
-import { resolveUlbConfigurationErrorMessage } from '@/lib/utils/ulb-configuration-error';
 import { useDepartmentLicencesSave } from '@/hooks/configuration-settings/ulb-configuration/useDepartmentLicencesSave';
 import type {
   Department,
@@ -77,8 +75,6 @@ export function useDepartmentLicenses(
     buildInitial(initialDepts, initialLicences)
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(false);
-  const isLoadingDepartmentsRef = useRef(false);
   const { saveLicences, isSavingLicences } = useDepartmentLicencesSave({
     departments,
     setDepartments,
@@ -249,48 +245,6 @@ export function useDepartmentLicenses(
     toast.success(t('messages.disableAllSuccess'));
   }, [t]);
 
-  /** Loads department cards from Department Master API (no static fallback). */
-  const loadDepartmentsFromApi = useCallback(
-    async (licences: DepartmentLicenceDetails[]) => {
-      if (isLoadingDepartmentsRef.current) return;
-
-      isLoadingDepartmentsRef.current = true;
-      setIsLoadingDepartments(true);
-
-      try {
-        const response = await getAllDepartmentsAction();
-        if (!response.success || !response.data?.length) {
-          setDepartments([]);
-          if (!response.success) {
-            toast.error(
-              resolveUlbConfigurationErrorMessage(response.error, t, t('messages.loadError'))
-            );
-          }
-          return;
-        }
-
-        setDepartments((prev) => {
-          const next = buildInitial(response.data!, licences);
-          if (prev.length === 0) return next;
-          return mergeWithPreviousState(next, prev);
-        });
-      } catch (error) {
-        setDepartments([]);
-        toast.error(
-          resolveUlbConfigurationErrorMessage(
-            error instanceof Error ? error.message : String(error),
-            t,
-            t('messages.loadError')
-          )
-        );
-      } finally {
-        isLoadingDepartmentsRef.current = false;
-        setIsLoadingDepartments(false);
-      }
-    },
-    [mergeWithPreviousState, t]
-  );
-
   const applyMaster = useCallback(
     (master: UlbMasterLicenseSnapshot) => {
       if (!master.startDate || !master.duration) {
@@ -341,10 +295,9 @@ export function useDepartmentLicenses(
     disableAll,
     applyMaster,
     syncFromServer,
-    loadDepartmentsFromApi,
     saveLicences,
     isSavingLicences,
-    isLoadingDepartments,
+    isLoadingDepartments: false,
   };
 }
 

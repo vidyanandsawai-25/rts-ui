@@ -11,6 +11,21 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-devanagari: 'Noto Sans Devanagari', system-ui, sans-serif;
+
+  --animate-loader-scale: loader-scale 1s ease-in-out infinite;
+}
+
+@keyframes loader-scale {
+
+  0%,
+  40%,
+  100% {
+    transform: scaleY(0.4);
+  }
+
+  20% {
+    transform: scaleY(1);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,7 +47,8 @@ body {
 
 /* Global Sidebar Layout Shell Context */
 .layout-content-shifted {
-  margin-left: 0; /* Default for mobile */
+  margin-left: 0;
+  /* Default for mobile */
 }
 
 /* Sidebar width variables and state logic */
@@ -53,7 +69,7 @@ aside:not(.sidebar-expanded-aside) .sidebar-expandable-label {
   display: none !important;
 }
 
-aside:not(.sidebar-expanded-aside) details > div {
+aside:not(.sidebar-expanded-aside) details>div {
   display: none !important;
 }
 
@@ -78,7 +94,9 @@ aside:not(.sidebar-expanded-aside) .sidebar-back-icon {
     margin-left: var(--sidebar-width);
     transition: margin-left 0.3s ease-in-out;
   }
-}/* Hide Edge/IE password reveal and clear buttons to avoid double icons with custom toggles */
+}
+
+/* Hide Edge/IE password reveal and clear buttons to avoid double icons with custom toggles */
 input::-ms-reveal,
 input::-ms-clear {
   display: none;
@@ -86,8 +104,13 @@ input::-ms-clear {
 
 /* Shimmer animation for image loading skeletons */
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Ensure the drawer instance never overflows the viewport width */
@@ -105,10 +128,12 @@ body.drawer-open {
     opacity: 0;
     transform: scale(2.0);
   }
+
   30% {
     opacity: 1;
     transform: scale(2.0);
   }
+
   100% {
     opacity: 1;
     transform: scale(1.0);
@@ -120,3 +145,340 @@ body.drawer-open {
 }
 
 
+button {
+  cursor: pointer;
+}
+
+/* Custom Drawer Animations & Styling */
+@keyframes session-pill-blink {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes critical-border-flash {
+
+  0%,
+  100% {
+    border-color: rgba(239, 68, 68, 1);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  }
+
+  50% {
+    border-color: rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
+  }
+}
+
+@keyframes warning-border-flash {
+
+  0%,
+  100% {
+    border-color: rgba(245, 158, 11, 0.9);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  }
+
+  50% {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 4px rgba(245, 158, 11, 0.1);
+  }
+}
+
+@keyframes timer-blink-smooth {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes timer-blink-sharp {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.05;
+  }
+}
+
+.session-warn-active {
+  animation: session-pill-blink 1.2s ease-in-out infinite;
+}
+
+.critical-flash-active {
+  animation: critical-border-flash 0.8s ease-in-out infinite;
+}
+
+.warning-flash-active {
+  animation: warning-border-flash 1.5s ease-in-out infinite;
+}
+
+.timer-blink-smooth {
+  animation: timer-blink-smooth 1.5s ease-in-out infinite;
+}
+
+.timer-blink-sharp {
+  animation: timer-blink-sharp 0.8s steps(1) infinite;
+}
+
+/* ── ESRI Wayback Satellite History Timelapse ── */
+.tl-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  background: #0f172a;
+  width: 100%;
+  height: 100%;
+}
+
+.tl-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #0f172a;
+  color: white;
+  flex-wrap: wrap;
+  font-size: 13px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.tl-icon {
+  font-size: 16px;
+}
+
+.tl-heading {
+  font-weight: 700;
+  color: #60a5fa;
+  margin-right: 4px;
+}
+
+.tl-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  min-width: 90px;
+  text-align: center;
+}
+
+.tl-cloud {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.tl-source {
+  font-size: 11px;
+  color: #475569;
+  margin-left: auto;
+}
+
+.tl-loading {
+  font-size: 11px;
+  color: #fbbf24;
+  animation: pulse 1s infinite;
+}
+
+.tl-nav {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 6px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tl-nav:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.tl-nav:not(:disabled):hover {
+  border-color: #60a5fa;
+  color: white;
+}
+
+.tl-play {
+  background: #2563eb;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.tl-play:hover {
+  background: #1d4ed8;
+}
+
+/* Timeline dot bar */
+.tl-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #1e293b;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+}
+
+.tl-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tl-year {
+  font-size: 9px;
+  color: #94a3b8;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.tl-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.12s;
+}
+
+.tl-dot-wb {
+  background: #3b82f6;
+  border-color: #2563eb;
+}
+
+.tl-dot-active {
+  transform: scale(1.6) !important;
+  border-color: white !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.tl-dot:hover:not(.tl-dot-active) {
+  transform: scale(1.3);
+}
+
+/* Timelapse map */
+.tl-map {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Legend */
+.tl-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.property-highlight {
+  animation: prop-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes prop-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+  min-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Button Focus & Hover UI Enhancement */
+.quick-data-entry-wrapper button,
+.quick-data-entry-wrapper [role="button"],
+.quick-data-entry-wrapper input[type="button"],
+.quick-data-entry-wrapper input[type="submit"] {
+  transition: transform 200ms ease, box-shadow 200ms ease, outline 200ms ease !important;
+}
+
+.quick-data-entry-wrapper button:not(:disabled):hover,
+.quick-data-entry-wrapper [role="button"]:not(:disabled):hover,
+.quick-data-entry-wrapper input[type="button"]:not(:disabled):hover,
+.quick-data-entry-wrapper input[type="submit"]:not(:disabled):hover {
+  transform: scale(1.03) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  cursor: pointer !important;
+}
+
+.quick-data-entry-wrapper button:focus-visible,
+.quick-data-entry-wrapper [role="button"]:focus-visible,
+.quick-data-entry-wrapper input[type="button"]:focus-visible,
+.quick-data-entry-wrapper input[type="submit"]:focus-visible,
+.quick-data-entry-wrapper input:focus,
+.quick-data-entry-wrapper select:focus,
+.quick-data-entry-wrapper [role="combobox"]:focus,
+div[role="dialog"] input:focus,
+div[role="dialog"] select:focus,
+div[role="dialog"] button:focus-visible,
+div[role="dialog"] [role="combobox"]:focus {
+  outline: 2px solid rgb(0, 162, 255) !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 0 4px rgba(0, 183, 255, 0.4) !important;
+  border-color: rgb(0, 162, 255) !important;
+}

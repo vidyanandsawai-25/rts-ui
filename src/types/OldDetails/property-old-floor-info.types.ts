@@ -22,6 +22,7 @@ export interface FloorFormFieldsProps {
   useOptions: SearchSelectOption[];
   subUseOptions: SearchSelectOption[];
   hasSubUseOptions: boolean;
+  handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
   formData: {
     id?: number;
     oldFloorId: string | number;
@@ -35,6 +36,11 @@ export interface FloorFormFieldsProps {
     oldAreaSqMeter?: string;
     oldBuiltupAreaSqFeet?: string;
     oldBuiltupAreaSqMeter?: string;
+    floorDescription?: string;
+    subFloorDescription?: string | null;
+    constructionTypeDescription?: string;
+    typeOfUseDescription?: string;
+    subTypeOfUseDescription?: string | null;
   };
   errors: Record<string, string>;
   showError: (field: string) => boolean;

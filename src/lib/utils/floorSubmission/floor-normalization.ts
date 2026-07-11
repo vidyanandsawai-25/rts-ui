@@ -1,8 +1,8 @@
 import { FloorData, RoomData } from "@/types/room-details.types";
-import { RenterDetailItem, RenterMastItem } from "@/types/renter-details.types";
+import { RenterDetailItem, RenterMastItem } from "@/types/renter/renter-details.types";
 import { LookupData } from "@/types/common-details.types";
 import { OffsetData } from "@/types/offset-details.types";
-import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renter/renterUtils";
 import {
   getFloorDescription,
   getSubFloorDescription,
@@ -161,6 +161,27 @@ export function normalizeFloorData(
   const rentersList = (raw.renterMast || raw.renters || raw.renterMasts || []) as RenterMastItem[];
   const firstRenter = Array.isArray(rentersList) && rentersList.length > 0 ? rentersList[0] : null;
 
+  const getProp = (obj: Record<string, unknown>, key: string) => {
+    if (!obj) return undefined;
+    const lowerKey = key.toLowerCase();
+    const actualKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey);
+    return actualKey ? obj[actualKey] : undefined;
+  };
+  let l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
+  let w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
+
+  const isOpenPlotVal = raw.isOpenPlot === true || String(raw.selectedFloorType).toLowerCase() === 'openplot' || String(floorId) === '77';
+  if (isOpenPlotVal) {
+    const rooms = (raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as Record<string, unknown>[];
+    if (rooms && rooms.length > 0) {
+      const firstRoom = rooms[0];
+      const rL = getProp(firstRoom, 'lengthMtr') || getProp(firstRoom, 'length');
+      const rW = getProp(firstRoom, 'widthMtr') || getProp(firstRoom, 'width');
+      if (rL !== undefined && rL !== null) l = rL;
+      if (rW !== undefined && rW !== null) w = rW;
+    }
+  }
+
   // 3. Return a clean, normalized object
   return {
     ...raw, // Preserve original fields for safety
@@ -176,6 +197,8 @@ export function normalizeFloorData(
     rooms: getString(raw.rooms) || getString(raw.noOfRooms) || '',
     areaSqFt: getString(raw.areaSqFt) || getString(raw.carpetAreaSqFeet) || '',
     areaSqM: getString(raw.areaSqM) || getString(raw.carpetAreaSqMeter) || '',
+    length: l !== undefined && l !== null ? String(l) : '',
+    width: w !== undefined && w !== null ? String(w) : '',
     builtupAreaSqFt: getString(raw.builtupAreaSqFt) || getString(raw.builtupAreaSqFeet) || '0.00',
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
     isTaxable: (raw.isTaxable === 'Yes' || raw.isTaxable === true) ? 'Yes' : 'No',
@@ -194,6 +217,13 @@ export function normalizeFloorData(
     constructionTypeId,
     typeOfUseId,
     subTypeOfUseId,
+    typeOfUseCategoryId: raw.typeOfUseCategoryId !== undefined ? (raw.typeOfUseCategoryId as number | string | null) : (() => {
+      if (typeOfUseId && lookups.use) {
+        const found = lookups.use.find(u => String(u.typeOfUseId || u.id || '') === String(typeOfUseId));
+        return found ? (found.typeOfUseCategoryId !== undefined && found.typeOfUseCategoryId !== null ? (found.typeOfUseCategoryId as number | string | null) : null) : null;
+      }
+      return null;
+    })(),
 
     // Preserved Descriptions for initialLabel fallbacks
     floorDescription: floorDesc,

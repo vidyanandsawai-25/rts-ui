@@ -7,6 +7,7 @@ import { FileText, MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
     property: 'propertydetails',
@@ -17,10 +18,19 @@ const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
     olddetails: 'olddetails',
 };
 
+export function QuickDataEntryClientWrapper({ children, categoryName, propertyDescription }: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
+    return (
+        <QuickDataEntryContent categoryName={categoryName} propertyDescription={propertyDescription}>
+            {children}
+        </QuickDataEntryContent>
+    );
+}
+
 function QuickDataEntryContent({
     children,
     categoryName,
-}: { children: ReactNode; categoryName?: string }) {
+    propertyDescription,
+}: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -48,28 +58,86 @@ function QuickDataEntryContent({
     const derivedReturnTab = RETURN_TAB_BY_QDE_SEGMENT[qdeTabSegment] || '';
     const resolvedReturnTab = returnTab || derivedReturnTab;
 
-    const handleClose = () => {
-        const params = new URLSearchParams();
-        if (propertyId) params.set('propertyId', propertyId);
-        if (wardNo) params.set('wardNo', wardNo);
-        if (wardId) params.set('wardId', wardId);
-        if (propertyNo) params.set('propertyNo', propertyNo);
-        if (partitionNo) params.set('partitionNo', partitionNo);
-        if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
-        if (valuationTab) params.set('valuationTab', valuationTab);
-        if (appartmentTab) params.set('appartmentTab', appartmentTab);
-        if (subTab) params.set('subTab', subTab);
-        if (showDetails) params.set('showDetails', showDetails);
-        rateableExpands.forEach(v => params.append('rateableExpand', v));
-        capitalExpands.forEach(v => params.append('capitalExpand', v));
-        dualExpands.forEach(v => params.append('dualExpand', v));
+    const { confirm } = useConfirm();
 
-        router.push(`/${locale}/property-tax/ptis?${params}`);
+    const handleClose = () => {
+        const doClose = () => {
+            const params = new URLSearchParams();
+            if (propertyId) params.set('propertyId', propertyId);
+            if (wardNo) params.set('wardNo', wardNo);
+            if (wardId) params.set('wardId', wardId);
+            if (propertyNo) params.set('propertyNo', propertyNo);
+            if (partitionNo) params.set('partitionNo', partitionNo);
+            if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+            if (valuationTab) params.set('valuationTab', valuationTab);
+            if (appartmentTab) params.set('appartmentTab', appartmentTab);
+            if (subTab) params.set('subTab', subTab);
+            if (showDetails) params.set('showDetails', showDetails);
+            rateableExpands.forEach(v => params.append('rateableExpand', v));
+            capitalExpands.forEach(v => params.append('capitalExpand', v));
+            dualExpands.forEach(v => params.append('dualExpand', v));
+
+            router.push(`/${locale}/property-tax/ptis?${params}`);
+        };
+
+        const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
+        const hasBuildingChanges = !!win.__buildingFormHasChanges;
+        const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
+
+        if (hasBuildingChanges || hasDiscountChanges) {
+            const title = hasBuildingChanges 
+                ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
+                : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
+
+            const description = hasBuildingChanges
+                ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
+                : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+
+            const continueButton = hasBuildingChanges
+                ? (t('building.continueButton') || 'Continue Editing')
+                : (t('discount.continueButton') || 'Continue Editing');
+
+            const discardButton = hasBuildingChanges
+                ? (t('building.discardConfirmButton') || 'Discard Changes')
+                : (t('discount.discardConfirmButton') || 'Discard Changes');
+
+            confirm({
+                variant: 'warning',
+                title,
+                description,
+                confirmText: continueButton,
+                cancelText: discardButton,
+                onConfirm: () => {
+                    // Do nothing, stays on screen
+                },
+                onCancel: () => {
+                    const e = typeof window !== 'undefined' ? (window.event as Event | undefined) : null;
+                    const target = e?.target as HTMLElement | null;
+                    const isSafeDismiss = e && (
+                        e.type === 'keydown' ||
+                        (e.type === 'click' && !target?.closest?.('button')) ||
+                        target?.closest?.('button')?.getAttribute?.('aria-label') === 'Close'
+                    );
+
+                    if (isSafeDismiss) {
+                        return;
+                    }
+
+                    win.__buildingFormHasChanges = false;
+                    win.__discountFormHasChanges = false;
+                    win.__socialFormHasChanges = false;
+                    doClose();
+                }
+            });
+        } else {
+            doClose();
+        }
     };
 
     const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
 
     const drawerClassName = cn(
+        "quick-data-entry-wrapper",
         "[&_div.fixed.right-0]:!w-[97vw]",
         "md:[&_div.fixed.right-0]:!w-[1000px]",
         "lg:[&_div.fixed.right-0]:!w-[1100px]",
@@ -102,7 +170,13 @@ function QuickDataEntryContent({
                 {categoryName && (
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
                         <Tag className="h-3 w-3 text-white/95" />
-                        <span>{t('floor.propertyCategory') || 'Property Category'}: {categoryName}</span>
+                        <span>{t('floor.propertyCategory')}: {categoryName}</span>
+                    </div>
+                )}
+                {propertyDescription && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
+                        <Tag className="h-3 w-3 text-white/95" />
+                        <span>{t('property.propertyDescription')}: {propertyDescription}</span>
                     </div>
                 )}
             </div>
@@ -122,13 +196,5 @@ function QuickDataEntryContent({
                 </div>
             </Drawer>
         </div>
-    );
-}
-
-export function QuickDataEntryClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
-    return (
-        <QuickDataEntryContent categoryName={categoryName}>
-            {children}
-        </QuickDataEntryContent>
     );
 }

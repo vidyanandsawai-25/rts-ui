@@ -7,7 +7,7 @@ export const COLUMN_WIDTHS = {
   societyName: "160px",
   description: "150px",
   ownerOccupier: "210px",
-  mobileAlternate: "140px",
+  mobileAlternate: "160px",
   rvCv: "160px",
   totalTax: "160px",
   address: "230px",

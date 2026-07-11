@@ -21,6 +21,8 @@ import { InlineError } from "./components/InlineError";
 // Utils
 import { calculateRoomArea, calculateRoomTotal, getDimensionsString, isOffsetValid } from "@/lib/utils/RoomSubmission/room-submission.utils";
 import { isRoomComplete } from "@/lib/utils/RoomSubmission/room-validation.utils";
+import { focusFieldOrFallback } from "@/lib/utils/floorSubmission/focus-helpers";
+import { checkIsUtilityCategory } from "@/lib/utils/floorSubmission/floor-utility-checks";
 
 export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   externalAreaUnit?: "sq.m" | "sq.ft";
@@ -28,13 +30,44 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
 }> = (props) => {
   const { isOpen, onClose, displayMode = 'modal' } = props;
 
-  // --- State & Logic Hooks ---
-  const state = useRoomSubmissionState(props.maxRooms ?? undefined, props.externalAreaUnit);
+  const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
+    props.floorData?.isOpenPlot === true || 
+    props.floorData?.selectedFloorType === 'OpenPlot' ||
+    String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+    String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+    String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+    String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
+
+  let lastFilledRoomIndex = -1;
+  if (Array.isArray(props.existingRooms)) {
+    for (let i = props.existingRooms.length - 1; i >= 0; i--) {
+      const r = props.existingRooms[i];
+      const hasArea = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0) > 0;
+      const hasUseOrShape = (r.utilities && r.utilities !== "-Select-") || (r.shape && r.shape !== "-Select-");
+      if (hasArea || hasUseOrShape) {
+        lastFilledRoomIndex = i;
+        break;
+      }
+    }
+  }
+  const requiredRoomsCount = lastFilledRoomIndex !== -1 ? lastFilledRoomIndex + 1 : 0;
+  const computedMaxRooms = isUtilityCategory ? (props.existingRooms?.length || 0) : Math.max(props.maxRooms || 0, requiredRoomsCount);
+  const state = useRoomSubmissionState(isUtilityCategory ? undefined : computedMaxRooms, props.externalAreaUnit);
   const roomActions = useRoomActions(state, props);
   const offsetActions = useOffsetActions(state, roomActions.handleEdit);
 
   // Initialization & Side Effects
   useRoomInitialization(state, props, roomActions);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        if (document.querySelector('.z-\\[9999\\]')) return;
+        focusFieldOrFallback('room-no-input', 'form');
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   // --- Actions ---
   const handleToggleUnit = () => {
@@ -87,7 +120,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
     handleAddOffset: offsetActions.handleAddOffset,
     isOffsetDataValid: () => isOffsetValid(state.offsetData, state.selectedShape),
     handleOffsetOk: offsetActions.handleOffsetOk,
-    handleOffsetClose: () => state.setOffsetModalOpen(false),
+    handleOffsetClose: offsetActions.handleOffsetClose,
     areaUnit: state.areaUnit,
     shouldShake: state.shouldShake,
     deletingOffsetIndex: state.deletingOffsetIndex,
@@ -104,7 +137,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
             floorNumber={props.floorNumber}
             areaUnit={state.areaUnit}
             handleToggleUnit={handleToggleUnit}
-            maxRooms={props.maxRooms}
+            maxRooms={computedMaxRooms}
             availableRooms={state.availableRooms}
             displayMode={displayMode}
           />
@@ -119,6 +152,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
             InlineError={InlineError}
             calculateArea={() => calculateRoomArea(state.formData, state.shapeParameters)}
             calculateTotal={calculateRoomTotal}
+            isUtilityCategory={isUtilityCategory}
           />
 
           <RoomSubmissionFooter

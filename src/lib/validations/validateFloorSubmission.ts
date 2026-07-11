@@ -32,8 +32,8 @@ import {
  *   setFormErrors(result.errors);
  * }
  */
-export function validateFloorForm(data: unknown, t?: (key: string) => string, isAddingNewFloor?: boolean) {
-  const parseData = typeof data === 'object' && data !== null ? { ...data, isAddingNewFloor } : data;
+export function validateFloorForm(data: unknown, t?: (key: string) => string, isAddingNewFloor?: boolean, selectedFloorType?: 'Construction' | 'OpenPlot') {
+  const parseData = typeof data === 'object' && data !== null ? { ...data, isAddingNewFloor, selectedFloorType } : data;
   const result = floorFormSchema.safeParse(parseData);
 
   if (!result.success) {
@@ -45,7 +45,9 @@ export function validateFloorForm(data: unknown, t?: (key: string) => string, is
       let message = issue.message;
 
       if (t) {
-        if (path === 'floor') {
+        if (issue.message.startsWith('floor.')) {
+          message = t(issue.message) || issue.message;
+        } else if (path === 'floor') {
           message = t('floor.errors.floorRequired') || 'Floor selection is required';
         } else if (path === 'conYr') {
           message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1700 and the current financial year';
@@ -57,6 +59,8 @@ export function validateFloorForm(data: unknown, t?: (key: string) => string, is
           }
         } else if (path === 'conTyp') {
           message = t('floor.errors.constructionTypeRequired') || 'Construction type is required';
+        } else if (path === 'constructionTypeId') {
+          message = t('floor.errors.openPlotConstructionTypeNotFound') || 'Construction Type for Open Plot (op) not found in master data';
         } else if (path === 'use') {
           message = t('floor.errors.typeOfUseRequired') || 'Type of use is required';
         } else if (path === 'rooms') {

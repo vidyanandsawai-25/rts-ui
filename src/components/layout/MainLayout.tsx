@@ -12,6 +12,7 @@ import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import { buildSidebarTree } from '@/lib/utils/sidebar-tree';
 import { buildSidebarTreeFromUserScreens } from '@/lib/utils/sidebar-tree-user';
 import { PermissionsProvider } from '@/lib/providers/PermissionsProvider';
+import { LayoutFooterWrapper } from './LayoutFooterWrapper';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { getModules } from '@/lib/api/configuration-settings/screenAccess/master-data.service';
 import { getUserById } from '@/lib/api/configuration-settings/user-management/user.services';
@@ -213,8 +214,8 @@ async function SidebarWithData({ locale }: { locale: string }) {
   return <Sidebar menuItems={menuItems} locale={locale} />;
 }
 async function HeaderWithRequestContext() {
-  const { ulbData, userDisplayName, clientIp } = await getLayoutChromeData();
-  return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} />;
+  const { ulbData, userDisplayName, clientIp, menuItems } = await getLayoutChromeData();
+  return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} menuItems={menuItems} />;
 }
 async function FooterWithUlb() {
   const { ulbData } = await getLayoutChromeData();
@@ -254,13 +255,13 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
           </div>
         </main>
 
-        {!isPtisRoute && (
+        <LayoutFooterWrapper>
           <Suspense fallback={<FooterSkeleton />}>
             <div className="layout-content-shifted">
               <FooterWithUlb />
             </div>
           </Suspense>
-        )}
+        </LayoutFooterWrapper>
       </div>
     </PermissionsProvider>
   );

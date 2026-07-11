@@ -1,6 +1,8 @@
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import { LayoutGrid } from "lucide-react";
 import { AddButton, DeleteButton, EditButton } from "@/components/common";
+import { Tooltip } from "@/components/common/Tooltip";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import {
@@ -22,6 +24,16 @@ interface GroupSectionProps {
   t: TranslatorFunction;
 }
 
+function GroupNameLabel({ name }: { name: string }) {
+  return (
+    <Tooltip content={name} placement="bottom">
+      <span className="min-w-0 text-sm font-semibold text-slate-900 cursor-help truncate">
+        {name}
+      </span>
+    </Tooltip>
+  );
+}
+
 export function GroupSection({
   groups,
   allTypes,
@@ -32,14 +44,90 @@ export function GroupSection({
 }: GroupSectionProps) {
   const router = useRouter();
   const locale = useLocale();
+  const allGroupsLabel = t('group.allGroups') || "सर्व गट";
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-      <div className="flex items-center gap-3 overflow-x-auto">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col gap-3">
+      {/* Header section with Title and Add Buttons */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="font-semibold text-slate-900 text-base">{t('group.title')}</div>
+        <div className="flex items-center gap-2">
+          <AddButton
+            size="sm"
+            label={t('group.add')}
+            onClick={() =>
+              router.push(`/${locale}/property-tax/typeofusemaster/group/add`)
+            }
+          />
+          <AddButton
+            size="sm"
+            label={t('category.add') || "Add Category"}
+            onClick={() =>
+              router.push(`/${locale}/property-tax/typeofusemaster/category`)
+            }
+          />
+        </div>
+      </div>
+
+      {/* Cards list section scrollable */}
+      <div className="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200">
+        {/* All Groups Card */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            const firstType = allTypes?.[0];
+            const firstTypeId = firstType ? getTypeApiId(firstType) : "";
+            onGroupSelect("ALL", firstTypeId);
+          }}
+          onKeyDown={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (e.key === "Enter") {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement).click();
+            }
+          }}
+          className={clsx(
+            "min-w-[230px] cursor-pointer select-none rounded-xl border px-3 py-2 text-left shadow-sm transition",
+            selectedGroupId === "ALL"
+              ? "border-indigo-300 ring-2 ring-indigo-100 bg-indigo-50"
+              : "border-slate-200 hover:border-slate-300 bg-white"
+          )}
+        >
+          <div className="flex items-start gap-3 h-full">
+            <div
+              className={clsx(
+                "rounded-lg p-2",
+                selectedGroupId === "ALL"
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "bg-slate-100 text-slate-700"
+              )}
+            >
+              <LayoutGrid className="h-5 w-5" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <GroupNameLabel name={allGroupsLabel} />
+              </div>
+
+              <div className="mt-1 text-xs flex items-center gap-2">
+                <span className="text-slate-600">
+                  {groups.some(g => 'typeCount' in g)
+                    ? groups.reduce((acc, g) => acc + ((g as UseGroup & { typeCount?: number }).typeCount ?? 0), 0)
+                    : allTypes.length}{" "}
+                  {t('type.title')}
+                </span>
+                <StatusBadge value="Active" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {groups.map((g: UseGroup) => {
           const Icon = getIconComponent(getIconKey(g.groupIcon));
           const selected = g.typeOfUseGroupId === selectedGroupId;
-          const typesCount = countTypesForGroup(g, allTypes);
+          const typesCount = (g as UseGroup & { typeCount?: number }).typeCount ?? countTypesForGroup(g, allTypes);
           const groupIdForRoute = g.typeOfUseGroupId;
           const groupApiId = getGroupApiId(g);
 
@@ -55,6 +143,13 @@ export function GroupSection({
                 const firstTypeId = firstType ? getTypeApiId(firstType) : "";
                 onGroupSelect(groupApiId, firstTypeId);
               }}
+              onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) return;
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  (e.currentTarget as HTMLElement).click();
+                }
+              }}
               className={clsx(
                 "min-w-[230px] cursor-pointer select-none rounded-xl border px-3 py-2 text-left shadow-sm transition",
                 selected
@@ -62,7 +157,7 @@ export function GroupSection({
                   : "border-slate-200 hover:border-slate-300 bg-white"
               )}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 h-full">
                 <div
                   className={clsx(
                     "rounded-lg p-2",
@@ -74,13 +169,11 @@ export function GroupSection({
                   <Icon className="h-5 w-5" />
                 </div>
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="text-sm font-semibold text-slate-900">
-                      {g.groupName}
-                    </div>
+                    <GroupNameLabel name={g.groupName} />
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                       <EditButton
                         size="sm"
                         title={t('buttons.edit') + ' ' + t('group.title')}
@@ -115,14 +208,6 @@ export function GroupSection({
             </div>
           );
         })}
-
-        <AddButton
-          label={t('group.add')}
-          onClick={() =>
-            router.push(`/${locale}/property-tax/typeofusemaster/group/add`)
-          }
-          className="ml-auto"
-        />
       </div>
     </div>
   );

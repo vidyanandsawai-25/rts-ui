@@ -71,7 +71,7 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
               setTimeout(() => { focusRefs?.current['outer']?.focus(); (focusRefs?.current['outer'] as HTMLElement)?.click(); }, 100);
             }
           }}
-          disabled={formData.outer === 'Yes' || offsetModalOpen}
+          disabled={offsetModalOpen}
           className="w-full h-[40px]"
         />
       </div>

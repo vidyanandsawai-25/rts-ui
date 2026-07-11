@@ -30,6 +30,9 @@ describe("useBuildingPreview", () => {
   const mockSetLoadingPreview = vi.fn();
   const mockSetShowPreview = vi.fn();
   const mockSetPreviewData = vi.fn();
+  const mockSetErrors = vi.fn();
+  const mockValidate = vi.fn(() => ({ valid: true, errors: {} }));
+  const mockT = vi.fn((key: string) => key);
 
   const mockWard: WardItem = {
     id: 1,
@@ -113,7 +116,7 @@ describe("useBuildingPreview", () => {
     toFloor: "3",
     noOfFlatOnOneFloor: "4",
     flatStart: "101",
-    incrementedBy: "1",
+    incrementedBy: "5",
     prefix: "",
     generationType: "V",
     fromPartition: "",
@@ -128,6 +131,7 @@ describe("useBuildingPreview", () => {
   });
 
   it("should handle missing fields", async () => {
+    mockValidate.mockReturnValueOnce({ valid: false, errors: { wingLetter: "Wing letter required" } });
     const incompleteForm: PartitionFormState = {
       ...mockForm,
       wingLetter: "",
@@ -143,6 +147,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -150,12 +157,11 @@ describe("useBuildingPreview", () => {
       await result.current.handlePreviewBuilding();
     });
 
-    expect(toast.error).toHaveBeenCalledWith(
-      expect.stringContaining("Missing required fields")
-    );
+    expect(mockSetErrors).toHaveBeenCalledWith({ wingLetter: "Wing letter required" });
   });
 
   it("should handle invalid floor selection", async () => {
+    mockValidate.mockReturnValueOnce({ valid: true, errors: {} });
     const invalidForm: PartitionFormState = {
       ...mockForm,
       fromFloor: "invalid",
@@ -171,6 +177,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -178,10 +187,11 @@ describe("useBuildingPreview", () => {
       await result.current.handlePreviewBuilding();
     });
 
-    expect(toast.error).toHaveBeenCalledWith("Invalid floor selection");
+    expect(generateBuildingStructureAction).not.toHaveBeenCalled();
   });
 
   it("should validate floor range (to floor >= from floor)", async () => {
+    mockValidate.mockReturnValueOnce({ valid: false, errors: { toFloor: "To floor must be >= from floor" } });
     const invalidRangeForm: PartitionFormState = {
       ...mockForm,
       fromFloor: "3",
@@ -198,6 +208,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -205,12 +218,11 @@ describe("useBuildingPreview", () => {
       await result.current.handlePreviewBuilding();
     });
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "To Floor must be greater than or equal to From Floor"
-    );
+    expect(generateBuildingStructureAction).not.toHaveBeenCalled();
   });
 
   it("should validate numeric fields", async () => {
+    mockValidate.mockReturnValueOnce({ valid: false, errors: { noOfFlatOnOneFloor: "Must be a positive number" } });
     const invalidNumericForm: PartitionFormState = {
       ...mockForm,
       noOfFlatOnOneFloor: "-1",
@@ -226,6 +238,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -233,12 +248,11 @@ describe("useBuildingPreview", () => {
       await result.current.handlePreviewBuilding();
     });
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "No. of Flats on One Floor must be a valid positive number"
-    );
+    expect(generateBuildingStructureAction).not.toHaveBeenCalled();
   });
 
   it("should successfully generate preview", async () => {
+    mockValidate.mockReturnValueOnce({ valid: true, errors: {} });
     const mockPreviewData: BuildingStructureItem[] = [
       {
         wardId: 1,
@@ -270,6 +284,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -285,6 +302,7 @@ describe("useBuildingPreview", () => {
   });
 
   it("should handle API error", async () => {
+    mockValidate.mockReturnValueOnce({ valid: true, errors: {} });
     vi.mocked(generateBuildingStructureAction).mockResolvedValueOnce({
       success: false,
       error: "API Error",
@@ -300,6 +318,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -312,6 +333,7 @@ describe("useBuildingPreview", () => {
   });
 
   it("should handle invalid wing selection", async () => {
+    mockValidate.mockReturnValueOnce({ valid: true, errors: {} });
     const invalidWingForm: PartitionFormState = {
       ...mockForm,
       wingLetter: "Z",
@@ -327,6 +349,9 @@ describe("useBuildingPreview", () => {
         setLoadingPreview: mockSetLoadingPreview,
         setShowPreview: mockSetShowPreview,
         setPreviewData: mockSetPreviewData,
+        setErrors: mockSetErrors,
+        validate: mockValidate,
+        t: mockT,
       })
     );
 
@@ -334,8 +359,6 @@ describe("useBuildingPreview", () => {
       await result.current.handlePreviewBuilding();
     });
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "Invalid wing selection. Please select a valid wing."
-    );
+    expect(generateBuildingStructureAction).not.toHaveBeenCalled();
   });
 });

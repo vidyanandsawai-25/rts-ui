@@ -7,6 +7,7 @@ import {
   AUTH_COOKIES,
   SESSION_EXPIRED_LOGIN_ERROR,
   SESSION_TIMEOUT_REDIRECT_SECONDS,
+  INACTIVITY_TIMEOUT_SECONDS,
 } from '@/components/modules/login/constants';
 import { getCookieValue } from '@/lib/utils/cookie';
 import { clearLegacyAuthClientStorage } from '@/lib/utils/legacy-auth-storage';
@@ -66,21 +67,24 @@ export function SessionTimeoutGuard() {
     }
   }, []);
 
-  const startCountdown = useCallback((initialSeconds: number) => {
-    if (logoutStartedRef.current) return;
-    logoutStartedRef.current = true;
-    clearCountdown();
-    clearExpiryTimer();
-    setVisible(true);
-    setSecondsLeft(initialSeconds);
+  const startCountdown = useCallback(
+    (initialSeconds: number) => {
+      if (logoutStartedRef.current) return;
+      logoutStartedRef.current = true;
+      clearCountdown();
+      clearExpiryTimer();
+      setVisible(true);
+      setSecondsLeft(initialSeconds);
 
-    countdownRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        const next = prev - 1;
-        return next <= 0 ? 0 : next;
-      });
-    }, 1000);
-  }, [clearCountdown, clearExpiryTimer]);
+      countdownRef.current = setInterval(() => {
+        setSecondsLeft((prev) => {
+          const next = prev - 1;
+          return next <= 0 ? 0 : next;
+        });
+      }, 1000);
+    },
+    [clearCountdown, clearExpiryTimer]
+  );
 
   // Synchronize warning tick event with other components safely during commit phase (after render)
   useEffect(() => {
@@ -114,7 +118,7 @@ export function SessionTimeoutGuard() {
       }
 
       if (isSessionWarningActiveAtUnix(expiresUnix, nowUnix)) {
-        const remaining = (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS) - nowUnix;
+        const remaining = expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS - nowUnix;
         if (remaining > 0) {
           startCountdown(remaining);
         } else {
@@ -147,7 +151,8 @@ export function SessionTimeoutGuard() {
     }
 
     if (expiresUnix !== null && isSessionWarningActiveAtUnix(expiresUnix)) {
-      const remaining = (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS) - Math.floor(Date.now() / 1000);
+      const remaining =
+        expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS - Math.floor(Date.now() / 1000);
       if (remaining > 0) {
         startCountdown(remaining);
       } else {
@@ -160,7 +165,8 @@ export function SessionTimeoutGuard() {
 
     if (expiresUnix !== null) {
       const msUntilWarning =
-        (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS - SESSION_TIMEOUT_REDIRECT_SECONDS) * 1000 -
+        (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS - SESSION_TIMEOUT_REDIRECT_SECONDS) *
+          1000 -
         Date.now();
       if (msUntilWarning > 0 && msUntilWarning <= MAX_TIMEOUT_MS) {
         expiryTimerRef.current = setTimeout(checkClientSessionExpiry, msUntilWarning);
@@ -188,7 +194,14 @@ export function SessionTimeoutGuard() {
         );
       }
     };
-  }, [pathname, startCountdown, clearCountdown, clearExpiryTimer, checkClientSessionExpiry, locale]);
+  }, [
+    pathname,
+    startCountdown,
+    clearCountdown,
+    clearExpiryTimer,
+    checkClientSessionExpiry,
+    locale,
+  ]);
 
   // Tab-session isolation: Ensure user has a valid tab-level session when authenticated.
   useEffect(() => {
@@ -239,6 +252,54 @@ export function SessionTimeoutGuard() {
     clearLegacyAuthClientStorage();
     window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
   }, [visible, secondsLeft, locale]);
+
+  // Inactivity detection: redirect to login after 10 minutes of no user interaction
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!pathname || isLoginPath(pathname) || !hasLoggedInFlag()) return;
+
+    let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastReset = Date.now();
+
+    const handleTimeout = () => {
+      if (redirectingRef.current) return;
+      redirectingRef.current = true;
+      clearLegacyAuthClientStorage();
+      window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+    };
+
+    const resetInactivityTimer = () => {
+      const now = Date.now();
+      // Throttle: only clear and reset timer if at least 1 second has passed since last reset
+      if (inactivityTimer && now - lastReset < 1000) {
+        return;
+      }
+      lastReset = now;
+
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = setTimeout(handleTimeout, INACTIVITY_TIMEOUT_SECONDS * 1000);
+    };
+
+    // Initialize timer
+    resetInactivityTimer();
+
+    // Listen to user interaction events
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach((event) => {
+      window.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
+
+    return () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      events.forEach((event) => {
+        window.removeEventListener(event, resetInactivityTimer);
+      });
+    };
+  }, [pathname, locale]);
 
   return null;
 }

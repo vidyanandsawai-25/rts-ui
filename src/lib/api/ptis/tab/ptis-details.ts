@@ -11,6 +11,7 @@ import type {
   OldTaxesApiResponse,
   DiscountData,
   BuildingPermissionData,
+  TabHeaderInfoData,
 } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage, extractData } from './base-api';
 import { ptisMapper } from './ptis.mapper';
@@ -169,7 +170,7 @@ export const ptisDetailsService = {
   }> {
     try {
       const response = await fetchWithCertSupport<unknown>(
-        `/PropertySocialDetails?PropertyId=${propertyId}&PageSize=-1`
+        `/Property/${propertyId}/discount-details`
       );
 
       if (!response.success) {
@@ -187,6 +188,35 @@ export const ptisDetailsService = {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch discount details',
+      };
+    }
+  },
+
+  async getSocialDetails(propertyId: string | number): Promise<{
+    success: boolean;
+    data?: DiscountData;
+    error?: string;
+  }> {
+    try {
+      const response = await fetchWithCertSupport<unknown>(
+        `/PropertySocialDetails/property/${propertyId}/social-info`
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: getErrorFormattedMessage(response.error, 'Social details not found'),
+        };
+      }
+
+      const rawData = response.data;
+      if (!rawData) return { success: false, error: 'Social details not found' };
+
+      return { success: true, data: ptisMapper.mapSocialDetails(rawData) };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch social details',
       };
     }
   },
@@ -217,6 +247,35 @@ export const ptisDetailsService = {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to fetch building permission details',
+      };
+    }
+  },
+
+  async getTabHeaderInfo(propertyId: string | number): Promise<{
+    success: boolean;
+    data?: TabHeaderInfoData;
+    error?: string;
+  }> {
+    try {
+      const response = await fetchWithCertSupport<unknown>(
+        `/Property/${propertyId}/tab-header-info`
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: getErrorFormattedMessage(response.error, 'Tab header info not found'),
+        };
+      }
+
+      const rawData = extractData<TabHeaderInfoData>(response.data);
+      if (!rawData) return { success: false, error: 'Tab header info not found' };
+
+      return { success: true, data: rawData };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch tab header info',
       };
     }
   },

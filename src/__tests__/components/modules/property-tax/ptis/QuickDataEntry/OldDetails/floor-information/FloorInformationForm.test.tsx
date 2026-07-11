@@ -64,6 +64,7 @@ describe('FloorInformationForm Component', () => {
     handleSave: mockHandleSave,
     handleDelete: mockHandleDelete,
     isPending: false,
+    handleOpenDropdown: vi.fn(),
   };
 
   beforeEach(() => {

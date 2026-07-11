@@ -132,3 +132,4 @@ export async function getTaxZones(
 
   return handleApiResponse(response, t("property.errors.fetchTaxZones")).items ?? [];
 }
+

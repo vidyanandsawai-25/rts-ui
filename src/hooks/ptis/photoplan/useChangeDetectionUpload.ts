@@ -37,8 +37,8 @@ export function useChangeDetectionUpload({
     const displayOrder = type === 'before' ? 1 : 2;
     const idx = activeCategory.images.findIndex(img => img.displayOrder === displayOrder);
     const existingImg = idx !== -1 ? activeCategory.images[idx] : null;
-    const isCustom = existingImg && existingImg.propertyPhotoId !== 9998 && existingImg.propertyPhotoId !== 9999;
-    const name = type === 'before' ? 'Before (Old) Image' : 'After (New) Image';
+    const isCustom = !!existingImg?.hasPhoto;
+    const name = type === 'before' ? 'OLD' : 'NEW';
 
     setIsUploading(true);
     try {
@@ -47,11 +47,19 @@ export function useChangeDetectionUpload({
       formData.append('Remarks', name);
 
       if (isCustom && existingImg?.propertyPhotoId) {
-        const res = await replacePropertyPhotoAction(existingImg.propertyPhotoId, formData, locale);
+        formData.append('PropertyId', propertyId.toString());
+        formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
+        formData.append('PropertyPhotoId', existingImg.propertyPhotoId.toString());
+        const oldDocumentGuid = existingImg.documentGuid || (() => {
+          const match = existingImg.src.match(/\/documents\/([a-fA-F0-9-]{36})/);
+          return match ? match[1] : '';
+        })();
+
+        const res = await replacePropertyPhotoAction(existingImg.propertyPhotoId, oldDocumentGuid, formData, locale);
         if (res.success && res.data) {
           clearDocumentCacheEntry(existingImg.src);
-          const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
-          onImagesChange(activeCategory.images.map((img, i) => i === idx ? { ...img, src: url, fullSrc: url } : img));
+          const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
+          onImagesChange(activeCategory.images.map((img, i) => i === idx ? { ...img, src: url, fullSrc: url, documentGuid: res.data?.documentGuid } : img));
           toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
         } else {
           toast.error(res.error || t('media.failedToReplace') || 'Failed to replace photo');
@@ -60,13 +68,15 @@ export function useChangeDetectionUpload({
         formData.append('PropertyId', propertyId.toString());
         formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
         formData.append('DisplayOrder', displayOrder.toString());
+        formData.append('ReferenceTableIdGuid', crypto.randomUUID());
         const res = await uploadPropertyPhotoAction(formData, locale);
         if (res.success && res.data) {
-          const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
+          const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
           const newImg: AdditionalImage = {
             src: url, fullSrc: url, alt: name, title: name,
             photoTypeId: activeCategory.photoTypeId, propertyPhotoId: res.data.propertyPhotoId,
             photoTypeCode: activeCategory.photoTypeCode, hasPhoto: true, remarks: '', displayOrder,
+            documentGuid: res.data.documentGuid,
           };
           onImagesChange(activeCategory.images.map(img => img.displayOrder === displayOrder ? newImg : img));
           toast.success(t('media.photoUploadedSuccess') || 'Photo uploaded successfully');
@@ -87,24 +97,35 @@ export function useChangeDetectionUpload({
     const idx = activeCategory.images.findIndex(img => img.displayOrder === displayOrder);
     if (idx === -1) return;
     const img = activeCategory.images[idx];
-    if (img.propertyPhotoId === 9998 || img.propertyPhotoId === 9999) return;
+    if (!img.hasPhoto) return;
 
     confirm({
       title: t('media.deleteImageTitle') || 'Delete Photo',
       description: t('media.deleteImageDescription', { name: img.title }) || `Are you sure you want to delete "${img.title}"?`,
-      onConfirm: async () => {
-        setIsUploading(true);
-        try {
-          const res = await deletePropertyPhotoAction(img.propertyPhotoId!, locale);
-          if (res.success) {
+        onConfirm: async () => {
+          setIsUploading(true);
+          try {
+            const documentGuid = img.documentGuid || (() => {
+              const match = img.src.match(/\/documents\/([a-fA-F0-9-]{36})/);
+              return match ? match[1] : '';
+            })();
+
+            if (!documentGuid) {
+              toast.error(t('media.failedToDelete') || 'Failed to delete photo: missing document GUID');
+              setIsUploading(false);
+              return;
+            }
+
+            const res = await deletePropertyPhotoAction(documentGuid, locale);
+            if (res.success) {
             toast.success(t('media.photoDeletedSuccess') || 'Photo deleted successfully');
             const defaultImg: AdditionalImage = {
-              src: type === 'before' ? '/images/thane-earth-2018.jpg' : '/images/thane-earth-2026.jpg',
-              fullSrc: type === 'before' ? '/images/thane-earth-2018.jpg' : '/images/thane-earth-2026.jpg',
-              alt: type === 'before' ? '2018 Satellite View' : '2026 Satellite View',
-              title: type === 'before' ? '2018 Satellite View' : '2026 Satellite View',
+              src: '',
+              fullSrc: '',
+              alt: type === 'before' ? 'Before (Old)' : 'After (New)',
+              title: type === 'before' ? 'Before (Old)' : 'After (New)',
               photoTypeId: activeCategory.photoTypeId, photoTypeCode: 'CHANGE_DETECTION',
-              propertyPhotoId: type === 'before' ? 9998 : 9999, hasPhoto: true, displayOrder,
+              propertyPhotoId: type === 'before' ? 9998 : 9999, hasPhoto: false, displayOrder,
             };
             onImagesChange(activeCategory.images.map((item, i) => i === idx ? defaultImg : item));
           } else {

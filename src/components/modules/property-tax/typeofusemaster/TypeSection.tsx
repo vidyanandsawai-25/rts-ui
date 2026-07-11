@@ -47,27 +47,29 @@ export function TypeSection({
 
   return (
     <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white shadow-sm min-h-[400px] lg:h-[600px] flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between rounded-t-2xl border-b border-slate-100 px-4 py-3 bg-white z-10 flex-shrink-0 gap-4">
+      <div className="flex flex-col gap-3 rounded-t-2xl border-b border-slate-100 px-4 py-3 bg-white z-10 flex-shrink-0 sm:flex-row sm:items-center sm:justify-between">
         <div className="font-semibold text-slate-900">{t('type.title')}</div>
-        <SearchInput
-          className="mb-0 ml-auto w-full max-w-sm"
-          value={typeSearch}
-          onChange={onTypeSearchChange}
-          placeholder={t('type.searchPlaceholder')}
-        />
-        <AddButton
-          size="md"
-          label={t('type.add')}
-          onClick={() => {
-            const group = allGroups.find(
-              (g) => g.typeOfUseGroupId === selectedGroupId
-            );
-            const groupApiId = group ? getGroupApiId(group) : '';
-            router.push(
-              `/${locale}/property-tax/typeofusemaster/type/add?groupId=${groupApiId}`
-            );
-          }}
-        />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:flex-1 sm:gap-4">
+          <SearchInput
+            className="mb-0 w-full sm:max-w-xs"
+            value={typeSearch}
+            onChange={onTypeSearchChange}
+            placeholder={t('type.searchPlaceholder')}
+          />
+          <AddButton
+            size="md"
+            label={t('type.add')}
+            onClick={() => {
+              const group = allGroups.find(
+                (g) => g.typeOfUseGroupId === selectedGroupId
+              );
+              const groupApiId = group ? getGroupApiId(group) : '';
+              router.push(
+                `/${locale}/property-tax/typeofusemaster/type/add?groupId=${groupApiId}`
+              );
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
@@ -91,13 +93,14 @@ export function TypeSection({
                   role="button"
                   tabIndex={0}
                   onClick={() => {
-                    const currentGroup = allGroups.find(
-                      (g) => g.typeOfUseGroupId === selectedGroupId
-                    );
-                    const currentGroupApiId = currentGroup
-                      ? getGroupApiId(currentGroup)
-                      : "";
-                    onTypeSelect(currentGroupApiId, getTypeApiId(typeItem));
+                    onTypeSelect(String(typeItem.typeOfUseGroupId), getTypeApiId(typeItem));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      (e.currentTarget as HTMLElement).click();
+                    }
                   }}
                   className={clsx(
                     "cursor-pointer select-none rounded-xl border px-4 py-3 text-left shadow-sm transition",

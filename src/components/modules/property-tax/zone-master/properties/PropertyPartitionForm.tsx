@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Grid3x3, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, Select, Tabs, ValidationMessage } from "@/components/common";
+import { CancelButton, SaveButton, SearchSelect, Tabs, ValidationMessage } from "@/components/common";
 import { Column } from "@/components/common/MasterTable";
 import { PropertyPartitionFormProps } from "@/types/zone-master/properties/partition-form.types";
 import { BuildingPreviewModal } from "./BuildingPreviewModal";
@@ -187,6 +187,9 @@ export default function PropertyPartitionForm({
     setLoadingPreview,
     setShowPreview,
     setPreviewData,
+    setErrors,
+    validate,
+    t,
   });
 
   // Use hooks for submit
@@ -368,10 +371,13 @@ export default function PropertyPartitionForm({
 
         {/* Main Property Selection */}
         <div>
-          <Select
+          <SearchSelect
             label={t("partitionForm.mainPropertyNo")}
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
-            onChange={handlePropertySelect}
+            onChange={(_name, value) => {
+              // Call handlePropertySelect with dummy event as first argument
+              handlePropertySelect({} as React.ChangeEvent<HTMLSelectElement>, value);
+            }}
             options={propertyOptions}
             placeholder={loadingBuildingList ? tCommon("actions.loading") : t("partitionForm.placeholders.selectMainProperty")}
             disabled={loading || loadingBuildingList}

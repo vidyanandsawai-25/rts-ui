@@ -11,10 +11,6 @@ export function normalizePtisTaxes<T extends PtisTaxDetail>(taxes: unknown): T[]
   if (Array.isArray(taxes)) {
     const rawTaxes = taxes as Record<string, unknown>[];
     return rawTaxes
-      .filter((tax) => {
-        const name = String(tax.taxName ?? '').toUpperCase();
-        return name !== 'TAXTOTAL' && name !== 'TOTAL';
-      })
       .map((tax) => ({
         taxId: Number(tax.taxId ?? 0),
         taxName: String(tax.taxName ?? ''),
@@ -25,7 +21,6 @@ export function normalizePtisTaxes<T extends PtisTaxDetail>(taxes: unknown): T[]
 
   if (typeof taxes === 'object' && taxes !== null) {
     return Object.entries(taxes as Record<string, unknown>)
-      .filter(([key]) => key !== 'TaxTotal')
       .map(([key, value]) => ({
         taxId: 0,
         taxName: key,

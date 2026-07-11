@@ -26,16 +26,14 @@
   },
   "resultsTable": {
     "title": "Bulk Operations ({count} properties selected)",
-    "propertyMasterTitle": "Property Master Management",
+    "propertyMasterTitle": "",
     "lockButton": "Lock Selected Screens",
     "unlockButton": "Unlock Selected Screens",
     "searchPropertyPlaceholder": "Search by property no...",
     "searchButton": "Search",
     "placeholderText": "Please select a ward and property range, then click \"Show\" to view properties.",
     "columns": {
-      "wardNo": "Ward No.",
-      "propertyNo": "Property No.",
-      "partitionNo": "Partition No.",
+      "propertyDetail": "Property No.",
       "screenNames": "Screen Names",
       "status": "Status",
       "lockUnlock": "Lock/Unlock",

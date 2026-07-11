@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -10,8 +10,9 @@ import { useTaxZoningActions } from "@/hooks/taxZoning/useTaxZoningActions";
 import { useTaxZoningFile } from "@/hooks/taxZoning/useTaxZoningFile";
 
 export const useTaxZoning = (props: TaxZoningPageProps) => {
-  const { data, pageNumber, pageSize, taxZones, wardsData, allProperties } = props;
+  const { data, pageNumber, pageSize, taxZones, wardsData, allProperties, sortBy, sortOrder } = props;
   const t = useTranslations('taxZoning');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -113,7 +114,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
 
   const handleSetFromProps = (val: string) => {
     setFromProps(val);
-    
+
     // Validate if toProps is already selected
     if (toProps && val) {
       if (comparePropertyNo(val, toProps) > 0) {
@@ -124,7 +125,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
 
   const handleSetToProps = (val: string) => {
     setToProps(val);
-    
+
     // Validate if fromProps is already selected
     if (fromProps && val) {
       if (comparePropertyNo(fromProps, val) > 0) {
@@ -135,19 +136,19 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
 
   const previewData = useMemo(() => {
     if (!zone || ward.length !== 1 || !fromProps || !toProps) return [];
-    
+
     if (comparePropertyNo(fromProps, toProps) > 0) return [];
 
     const wardNo = wardsData.items.find(w => String(w.id) === ward[0])?.wardNo || ward[0];
     const taxZoneNo = taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone;
-    
+
     const existingProps = allProperties?.success && allProperties.data?.items ? allProperties.data.items : [];
     const sortedProps = [...existingProps].sort((a, b) => comparePropertyNo(a.propertyNo, b.propertyNo));
-    const inRangeProps = sortedProps.filter(p => 
-      comparePropertyNo(p.propertyNo, fromProps) >= 0 && 
+    const inRangeProps = sortedProps.filter(p =>
+      comparePropertyNo(p.propertyNo, fromProps) >= 0 &&
       comparePropertyNo(p.propertyNo, toProps) <= 0
     );
-    
+
     return inRangeProps.map(property => {
       let oldTaxZoneNo = '-';
       if (property.taxZoneId) {
@@ -166,6 +167,21 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     params.delete("wardId");
     router.replace(`/${locale}/property-tax/taxzone-master/taxzoning?${params.toString()}`);
   };
+
+  const handleSort = useCallback(
+    (columnKey: string) => {
+      let newSortOrder = "asc";
+      if (sortBy === columnKey) {
+        newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+      }
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("sortBy", columnKey);
+      params.set("sortOrder", newSortOrder);
+      router.replace(`/${locale}/property-tax/taxzone-master/taxzoning?${params.toString()}`);
+    },
+    [sortBy, sortOrder, router, locale, searchParams]
+  );
+
   const isTaxZoneValid = !!zone, isWardValid = ward.length > 0, isPropertyValid = ward.length === 1 ? previewData.length > 0 : true;
 
   return {
@@ -174,7 +190,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     pageSizes, currentPage, submitted, saving, previewPage, setPreviewPage, PREVIEW_PAGE_SIZE,
     importedChanges, hasImportedData, tableRecords, previewData,
     pagedPreviewData: useMemo(() => previewData.slice((previewPage - 1) * PREVIEW_PAGE_SIZE, previewPage * PREVIEW_PAGE_SIZE), [previewData, previewPage]),
-    columns: useMemo(() => getTaxZoningColumns(t), [t]),
+    columns: useMemo(() => getTaxZoningColumns(t, tCommon, sortBy, sortOrder, handleSort), [t, tCommon, sortBy, sortOrder, handleSort]),
     previewColumns: useMemo(() => getPreviewColumns(t), [t]),
     handleExportCSV: () => handleExportCSV(tableRecords),
     handleImportFile, handleClearImported, isTaxZoneValid, isWardValid, isPropertyValid, isPropertyRangeValid, onFormClear,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import type {
   WaterConnection,
@@ -10,10 +10,6 @@ import type {
   WaterConnectionStatusLookup,
   WaterRateMasterLookup,
 } from "@/types/waterconnection.types";
-import {
-  saveWaterConnectionAction,
-  getConnectionLookupsAction,
-} from "@/app/[locale]/property-tax/waterconnection/action";
 import { findApplicableRate } from "./applicableRateHelper";
 
 function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
@@ -41,26 +37,23 @@ interface UseConnectionFormParams {
   t: any;
   onSaved: () => void;
   onClose: () => void;
+  saveWaterConnectionAction: (data: WaterConnectionFormModel) => Promise<{ ok: boolean; error?: string }>;
 }
 
 export function useConnectionForm({
   open,
   propertyId,
   editingConnection,
-  initialTypeOptions,
-  initialSizeOptions,
-  initialStatusOptions,
-  initialRateMasters,
+  initialTypeOptions: typeOptions,
+  initialSizeOptions: sizeOptions,
+  initialStatusOptions: statusOptions,
+  initialRateMasters: rateMasters,
   t,
   onSaved,
   onClose,
+  saveWaterConnectionAction,
 }: UseConnectionFormParams) {
   const isEdit = editingConnection != null;
-
-  const [typeOptions, setTypeOptions] = useState(initialTypeOptions);
-  const [sizeOptions, setSizeOptions] = useState(initialSizeOptions);
-  const [statusOptions, setStatusOptions] = useState(initialStatusOptions);
-  const [rateMasters, setRateMasters] = useState(initialRateMasters);
 
   const [formData, setFormData] = useState<WaterConnectionFormModel>(() => {
     if (editingConnection) {
@@ -82,16 +75,6 @@ export function useConnectionForm({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch fresh lookups each time the drawer opens
-  useEffect(() => {
-    if (!open) return;
-    getConnectionLookupsAction().then(({ typeOptions: t, sizeOptions: s, statusOptions: st, rateMasters: rm }) => {
-      setTypeOptions(t);
-      setSizeOptions(s);
-      setStatusOptions(st);
-      setRateMasters(rm);
-    });
-  }, [open]);
 
   // Re-initialise the form whenever the target connection or open state changes
   const formInitKey = `${editingConnection?.id ?? "new"}-${String(open)}-${propertyId}`;
@@ -127,26 +110,44 @@ export function useConnectionForm({
   const validate = useCallback(
     (data: WaterConnectionFormModel): Record<string, string> => {
       const e: Record<string, string> = {};
-      if (!data.connectionNo.trim())
+      if (!data.connectionNo.trim()) {
         e.connectionNo = t("form.validation.connectionNoRequired");
-      else if (!/^[a-zA-Z0-9\-]+$/.test(data.connectionNo))
+      } else if (/[a-z]/.test(data.connectionNo)) {
+        e.connectionNo = "Only uppercase letters (A–Z) are allowed.";
+      } else if (!/^[A-Z0-9\-]+$/.test(data.connectionNo)) {
         e.connectionNo = t("form.validation.connectionNoInvalidChars");
-      else if (data.connectionNo.trim().length > 20)
+      } else if (data.connectionNo.trim().length > 20) {
         e.connectionNo = t("form.validation.connectionNoMaxLength");
-      if (!data.meterNo.trim())
+      }
+
+      if (!data.meterNo.trim()) {
         e.meterNo = t("form.validation.meterNoRequired");
-      else if (!/^[a-zA-Z0-9\-]+$/.test(data.meterNo))
+      } else if (/[a-z]/.test(data.meterNo)) {
+        e.meterNo = "Only uppercase letters (A–Z) are allowed.";
+      } else if (!/^[A-Z0-9\-]+$/.test(data.meterNo)) {
         e.meterNo = t("form.validation.meterNoInvalidChars");
-      else if (data.meterNo.trim().length > 20)
+      } else if (data.meterNo.trim().length > 20) {
         e.meterNo = t("form.validation.meterNoMaxLength");
+      }
+
       if (!data.waterConnectionTypeId)
         e.waterConnectionTypeId = t("form.validation.typeRequired");
       if (!data.waterConnectionSizeId)
         e.waterConnectionSizeId = t("form.validation.tapSizeRequired");
       if (!data.waterConnectionStatusId)
         e.waterConnectionStatusId = t("form.validation.statusRequired");
-      if (!data.installDate)
+      if (!data.installDate) {
         e.installDate = t("form.validation.installDateRequired");
+      } else {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        const todayStr = `${year}-${month}-${day}`;
+        if (data.installDate > todayStr) {
+          e.installDate = "Install Date cannot be in the future";
+        }
+      }
       return e;
     },
     [t]
@@ -163,7 +164,17 @@ export function useConnectionForm({
       sanitizedValue = value.replace(/[^a-zA-Z0-9\-]/g, "");
     }
     setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    
+    if (name === "connectionNo" || name === "meterNo") {
+      if (/[a-z]/.test(sanitizedValue)) {
+        setErrors((prev) => ({ ...prev, [name]: "Only uppercase letters (A–Z) are allowed." }));
+        setTouched((prev) => ({ ...prev, [name]: true }));
+      } else {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleSelectChange = (name: string, value: string) => {

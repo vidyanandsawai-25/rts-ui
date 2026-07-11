@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Tooltip } from '@/components/common';
+import { Input, Tooltip, AnimatedDigitInput } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import { COLUMN_WIDTHS } from '../../RoomTableConfig';
 import { convertSqMToSqFt, convertSqFtToSqM } from '@/lib/utils/RoomSubmission/conversions';
@@ -15,6 +15,7 @@ interface DimensionAreaFieldsProps {
   areaUnit: string;
   calculatedArea: number;
   adjustedArea: number;
+  isUtilityCategory?: boolean;
 }
 
 export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
@@ -26,6 +27,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
   areaUnit,
   calculatedArea,
   adjustedArea,
+  isUtilityCategory,
 }) => {
   const setRoomCountRef = (el: HTMLInputElement | null) => {
     if (focusRefs.current) {
@@ -71,20 +73,24 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
         </Tooltip>
       </div>
 
+
       {/* Room Count */}
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomCount }}>
-        <Input
+        <AnimatedDigitInput
           ref={setRoomCountRef}
           id="room-count-input"
-          type="text"
+          data-field="roomCount"
           value={formData.roomCount}
           maxLength={2}
           onFocus={(e) => e.target.select()}
-          onChange={(e) => handleInputChange('roomCount', e.target.value.replace(/\D/g, ''))}
+          onChange={(val) => handleInputChange('roomCount', val)}
           disabled={!isEditMode}
-          className="text-center h-[40px]"
+          readOnly={isUtilityCategory}
+          className={cn(
+            "text-center h-[40px] leading-[40px]",
+            isUtilityCategory && "bg-gray-50 text-gray-500 cursor-not-allowed"
+          )}
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
-          error={undefined}
         />
       </div>
     </>

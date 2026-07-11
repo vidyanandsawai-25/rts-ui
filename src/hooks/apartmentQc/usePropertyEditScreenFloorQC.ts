@@ -8,7 +8,7 @@ import {
   DrawerFloorDataRow,
   DrawerDropdownOption,
   DrawerSubTypeOption,
-} from "./propertyEditScreenDrawer.types";
+} from "../../types/propertyEditScreenDrawer.types";
 
 interface UsePropertyEditScreenFloorQCArgs {
   open: boolean;
@@ -125,6 +125,8 @@ export function usePropertyEditScreenFloorQC({
         area: String(item.carpetASqMtr || item.builtupASqMtr || ""),
         rentMY: String(item.rentMonthly || ""),
         rateMY: String(item.monthlyRate || ""),
+        monthlyRate: item.monthlyRate,
+        yearlyRate: item.yearlyRate,
         rentalValue: String(item.annualRentalValue || ""),
         depreciation: String(item.depreciation || ""),
         alv: String(item.annualRentalValue || ""),

@@ -23,7 +23,11 @@
     "priority": "Priority",
     "priorityPlaceholder": "e.g. 1",
     "selectCategory": "Select Category",
-    "selectScope": "Select Scope"
+    "selectScope": "Select Scope",
+    "stopProcessing": "Stop Processing",
+    "stopProcessingActive": "Stop Engine",
+    "stopProcessingInactive": "Continue",
+    "stopProcessingHint": "When enabled, no subsequent rules in the library will be evaluated once this rule set matches."
   },
   "conditionRow": {
     "selectField": "Select Field",
@@ -44,7 +48,10 @@
     "performAction": "Perform the following action",
     "invalidPercentage": "Value must be between 0% and 100%",
     "selectCategory": "Select category",
-    "selectEffectType": "Select Effect Type"
+    "selectEffectType": "Select Effect Type",
+    "outcomeActions": "Outcome Actions",
+    "addEffect": "Add Effect",
+    "actionIndex": "Action #{index}"
   },
   "saveReasonModal": {
     "title": "Confirm Rule Configuration Save",
@@ -60,16 +67,21 @@
     "addRule": "Add Rule",
     "searchByCodeOrName": "Search by Code or Name...",
     "allCategories": "All Categories",
-    "ruleCode": "Rule Code",
+    "ruleCode": "Rule Set Code",
     "ruleName": "Rule Set Name",
     "description": "Rule Set Description",
     "category": "Category",
     "status": "Status",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
     "deleteTitle": "Delete Calculation Rule?",
     "deleteDescription": "Are you sure you want to permanently delete this policy rule? This action cannot be undone and will impact property tax demand runs.",
     "deleteConfirm": "Permanently Delete",
     "deleteCancel": "Cancel",
     "deleteSuccess": "Rule deleted successfully",
+    "enabledSuccess": "Rule enabled successfully",
+    "disabledSuccess": "Rule disabled successfully",
+    "updatingStatus": "Updating rule status...",
     "priority": "Priority",
     "scope": "Rule Scope"
   },
@@ -163,6 +175,7 @@
     "stopOnMatch": "Stop on Match",
     "baseRate": "Base Rate",
     "computedValue": "Computed Value",
+    "stepRate": "Step Rate",
     "multiValueHint": "Multi-value field — enter comma-separated values (e.g. <codeTag>10, 28</codeTag>)",
     "hideRawResponse": "Hide Raw Response",
     "showRawResponse": "Show Raw Response",
@@ -180,5 +193,16 @@
     "description": "You have unsaved changes. Are you sure you want to leave? Your changes will be permanently lost.",
     "confirm": "Leave Anyway",
     "cancel": "Stay & Edit"
+  },
+  "validation": {
+    "ruleNameRequired": "Rule Name is required!",
+    "categoryRequired": "Category is required!",
+    "effectTypeRequired": "Rule {index}: Effect Type is required!",
+    "effectValueRequired": "Rule {index}: Effect Value is required!",
+    "effectValueRange": "Rule {index}: Effect Value must be between 0% and 100%!",
+    "atLeastOneRuleRequired": "At least one rule is required.",
+    "changeReasonRequired": "Please enter a reason for this change.",
+    "saveSuccess": "Rule saved successfully",
+    "saveFailure": "Failed to save rule."
   }
 }

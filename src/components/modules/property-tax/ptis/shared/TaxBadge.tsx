@@ -43,7 +43,9 @@ export function TaxBadge({ label, value, color = 'outline', className }: TaxBadg
   const formatValue = (val: number | string | null): string => {
     if (val == null || val === '') return '-';
     const numericValue = typeof val === 'string' ? Number(val) : val;
-    return Number.isFinite(numericValue) ? formatIndianNumber(numericValue) : '-';
+    if (!Number.isFinite(numericValue)) return '-';
+    const decimals = Number.isInteger(numericValue) ? 0 : 2;
+    return formatIndianNumber(numericValue, decimals, decimals);
   };
 
   return (

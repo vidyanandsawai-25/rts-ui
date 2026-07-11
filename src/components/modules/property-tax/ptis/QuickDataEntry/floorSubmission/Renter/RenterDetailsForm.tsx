@@ -13,10 +13,10 @@ import { SelectedFloorDetails } from './SelectedFloorDetails';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ActionResult } from '@/types/common.types';
-import { useRenterForm } from '@/hooks/ptis/floorSubmission/useRenterForm';
+import { useRenterForm } from '@/hooks/ptis/floorSubmission/renter/useRenterForm';
 import { RentBreakdownDialog } from './RentBreakdownDialog';
-import { calculateRentProgression } from '@/lib/utils/renter-calculations';
-import { validateRenterForm, type CurrentFloorContext, type ExistingFloorData } from '@/lib/utils/renter-validation';
+import { calculateRentProgression } from '@/lib/utils/renter/renter-calculations';
+import { validateRenterForm, type CurrentFloorContext, type ExistingFloorData } from '@/lib/utils/renter/renter-validation';
 import { getFloorSubmissionsByOwnerAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 
 const RentManagementCard = dynamic(
@@ -313,11 +313,11 @@ export const RenterDetailsForm = memo(
         </div>
 
         {popupFY && (
-          <RentBreakdownDialog 
-            isOpen={!!popupFY} 
-            onClose={() => setPopupFY(null)} 
-            fy={popupFY} 
-            progression={calculateRentProgression(formData?.renterDetails)?.progression || []} 
+          <RentBreakdownDialog
+            isOpen={!!popupFY}
+            onClose={() => setPopupFY(null)}
+            fy={popupFY}
+            progression={calculateRentProgression(formData?.renterDetails)?.progression || []}
           />
         )}
       </div>

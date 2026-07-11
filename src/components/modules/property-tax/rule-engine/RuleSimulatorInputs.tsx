@@ -1,9 +1,9 @@
 import { Trash2, HelpCircle, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/common/Input';
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import ValueInput from './ValueInput';
-import { InputRow } from './useSimulatorPayload';
+import { InputRow } from '@/hooks/rule-engine/useSimulatorPayload';
 
 interface RuleSimulatorInputsProps {
   inputs: InputRow[];
@@ -28,7 +28,7 @@ export default function RuleSimulatorInputs({
         const config = getFieldConfig(row.key);
         const isArrayField = arrayFieldIds.has(row.key) || (config && config.inputType === 'MULTISELECT');
         return (
-          <div key={index} className="flex flex-col gap-1">
+          <div key={`sim-input-${row.key || 'empty'}-${index}`} className="flex flex-col gap-1">
             <div className="grid grid-cols-12 gap-3 items-center bg-white hover:bg-slate-50/20 p-2 rounded-xl border border-slate-200 shadow-sm transition duration-200">
               <div className="col-span-5">
                 <Input

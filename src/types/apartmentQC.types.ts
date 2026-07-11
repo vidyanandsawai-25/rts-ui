@@ -85,6 +85,14 @@ export interface ApartmentQCDetail {
   oldUseType: string | null;
   /** Old construction type */
   oldConstructionType: string | null;
+  /** Old construction carpet area in sq ft */
+  oldConstructionCarpetAreaSqFt?: number | null;
+  /** Old construction carpet area in sq mtr */
+  oldConstructionCarpetAreaSqMtr?: number | null;
+  /** Old construction built up area in sq ft */
+  oldConstructionBuiltUpSqFt?: number | null;
+  /** Old construction built up area in sq mtr */
+  oldConstructionBuiltUpSqMtr?: number | null;
   /** Old CSN */
   oldCSN: string | null;
   /** Old rateable value */
@@ -257,6 +265,7 @@ export interface ApartmentPropertyTaxDetailsParams {
   wardId: string | number;
   propertyNo: string;
   partType: ApartmentPartType; // Amenity=Amenities, C=Commercial, R=Residential
+  partitionNo?: string;
 }
 
 /**
@@ -274,4 +283,40 @@ export interface ApartmentPropertyTaxDetailsByIdParams {
 export interface DualMethodTaxDetails {
   rateable: ApartmentTaxDetailsItems | null;
   capital: ApartmentTaxDetailsItems | null;
+}
+export type FloorSubmissionRow = {
+  propertyId?: number | string;
+  id: string;
+  pdnId: number | null;
+  floorId: string;
+  conYear: string;
+  asstYear: string;
+  constructionTypeId: string;
+  typeOfUseId: string;
+  subTypeOfUseId: string;
+  noOfRooms: string;
+  area: string;
+  taxable?: string;
+  subFloorId?: string;
+  renter?: string;
+  areaSqFt?: string;
+  areaSqMtr?: string;
+  buildupAreaSqFt?: string;
+  buildupAreaSqMtr?: string;
+  rentMY: string;
+  rateMY: string;
+  monthlyRate?: number;
+  yearlyRate?: number;
+  rentalValue: string;
+  depreciation: string;
+  alv: string;
+  mr: string;
+  rv: string;
+  sdrr: string;
+  baseValue: string;
+  floorFactor: string;
+  ageFactor: string;
+  ntbFactor: string;
+  useFactor: string;
+  capitalValue: string;
 }

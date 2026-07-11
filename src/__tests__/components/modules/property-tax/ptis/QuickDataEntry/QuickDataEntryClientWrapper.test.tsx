@@ -14,6 +14,14 @@ vi.mock('next/navigation', () => ({
     useParams: vi.fn(),
 }));
 
+// Mock ConfirmProvider
+const mockConfirm = vi.fn();
+vi.mock('@/components/common/ConfirmProvider', () => ({
+    useConfirm: () => ({
+        confirm: mockConfirm,
+    }),
+}));
+
 // Mock next-intl
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => {
@@ -21,6 +29,8 @@ vi.mock('next-intl', () => ({
         if (key === 'roomSubmission.info.ward') return 'Ward';
         if (key === 'roomSubmission.info.property') return 'Property';
         if (key === 'roomSubmission.info.partition') return 'Partition';
+        if (key === 'floor.propertyCategory') return 'Property Category';
+        if (key === 'property.propertyDescription') return 'Property Description';
         return key;
     },
 }));
@@ -125,5 +135,20 @@ describe('QuickDataEntryClientWrapper', () => {
         fireEvent.click(screen.getByTestId('drawer-close-btn'));
 
         expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('tab=olddetails'));
+    });
+
+    it('renders the categoryName and propertyDescription badges when provided', () => {
+        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/Property');
+        (useParams as Mock).mockReturnValue({ locale: 'en', propertyId: '123' });
+        (useSearchParams as Mock).mockReturnValue(new URLSearchParams());
+
+        render(
+            <QuickDataEntryClientWrapper categoryName="Individual" propertyDescription="Residential">
+                <div>Content</div>
+            </QuickDataEntryClientWrapper>
+        );
+
+        expect(screen.getByText('Property Category: Individual')).toBeInTheDocument();
+        expect(screen.getByText('Property Description: Residential')).toBeInTheDocument();
     });
 });

@@ -12,7 +12,7 @@ import type { UseType, UseSubType } from "@/types/typeOfUse.types";
 import {
   DrawerDropdownOption,
   DrawerSubTypeOption,
-} from "./propertyEditScreenDrawer.types";
+} from "../../types/propertyEditScreenDrawer.types";
 
 interface UsePropertyEditScreenDropdownsArgs {
   // Props passed from parent
@@ -162,48 +162,8 @@ export function usePropertyEditScreenDropdowns({
     [mergedSubTypeOptions]
   );
 
-  // ── Eager preload master data on mount so dropdowns show options on FIRST click ─
-  // The native <select> can't refresh its open-state options once shown, so we
-  // load Floor / Con Type / Use + Sub Type in parallel as soon as the drawer
-  // opens. By the time the user clicks any dropdown, the master options are
-  // already in state. The on-click handlers below remain as a safety net.
-  // Effect runs once per drawer mount — the drawer is keyed by propertyId so a
-  // different property remounts and triggers a fresh preload.
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!floors?.length && loadedFloorOptions.length === 0 && !isLoadingFloors) {
-      setIsLoadingFloors(true);
-      fetchAllFloorsAction()
-        .then((r) => { if (!cancelled && r.success && r.data) setLoadedFloorOptions(r.data); })
-        .finally(() => { if (!cancelled) setIsLoadingFloors(false); });
-    }
-
-    if (!constructionTypes?.length && loadedConTypeOptions.length === 0 && !isLoadingConTypes) {
-      setIsLoadingConTypes(true);
-      fetchAllConstructionTypesAction()
-        .then((r) => { if (!cancelled && r.success && r.data) setLoadedConTypeOptions(r.data); })
-        .finally(() => { if (!cancelled) setIsLoadingConTypes(false); });
-    }
-
-    if (!useTypes?.length && loadedUseTypeOptions.length === 0 && !isLoadingUseTypes) {
-      setIsLoadingUseTypes(true);
-      Promise.all([fetchAllUseTypesAction(), fetchAllSubTypesAction()])
-        .then(([u, s]) => {
-          if (cancelled) return;
-          if (u.success && u.data) setLoadedUseTypeOptions(u.data);
-          if (s.success && s.data) {
-            setLoadedSubTypeOptions(
-              s.data.map((x) => ({ value: x.value, label: x.label, typeOfUseId: x.typeOfUseId }))
-            );
-          }
-        })
-        .finally(() => { if (!cancelled) setIsLoadingUseTypes(false); });
-    }
-
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Eager preloading has been removed to improve initial drawer load time.
+  // Dropdown data will now be fetched on-demand when the user clicks the respective dropdowns in the Edit Drawer.
 
   // ── Trigger floor dropdown load (direct action call — no URL change) ────────
   const handleFloorDropdownClick = useCallback(() => {

@@ -5,8 +5,8 @@
 import type { Dispatch, SetStateAction, FC, RefObject } from "react";
 import { ShapeParameters, RoomFormData } from "./common-details.types";
 import type { OffsetData, OffsetAPIResponse, MinusRoomItem } from "./offset-details.types";
-import { RenterDetailItem, RenterMastItem } from "./renter-details.types";
-import type { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
+import { RenterDetailItem, RenterMastItem } from "./renter/renter-details.types";
+import type { DrawerFloorDataRow, DrawerDropdownOption } from "@/types/propertyEditScreenDrawer.types";
 export { type ShapeParameters };
 
 export interface FloorData {
@@ -70,6 +70,7 @@ export interface FloorData {
     constructionYear?: string;
     assessmentYear?: string;
     roomData?: RoomData[];
+    typeOfUseCategoryId?: number | string | null;
     [key: string]: unknown;
 }
 
@@ -172,6 +173,7 @@ export interface RoomWiseSubmissionProps {
     constructionLookup?: DrawerDropdownOption[];
     useLookup?: DrawerDropdownOption[];
     subTypeLookup?: DrawerDropdownOption[];
+    floorData?: FloorData;
 }
 
 export interface RoomTableHeaderProps {
@@ -214,7 +216,7 @@ export interface InputBoxProps {
     setCurrentRoomOffsets: (val: OffsetData[]) => void;
     handleUpdateRoom: () => void;
     handleAddRoom: () => void;
-    calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[]) => number;
+    calculateTotal: (area: number, roomCount: string | number, offsets: OffsetData[], outer?: string | boolean) => number;
     maxRooms: number | null;
     availableRooms: number | null;
     setSelectedShape: (shape: string) => void;
