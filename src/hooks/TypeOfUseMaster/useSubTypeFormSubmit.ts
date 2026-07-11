@@ -36,11 +36,12 @@ export function useSubTypeFormSubmit({
         description: formData.description,
         searchSequence: Number(formData.searchSequence ?? 0),
         status: formData.isActive ? 'Active' : 'Inactive',
+        typeOfUseCategoryId: formData.typeOfUseCategoryId ?? null,
       });
 
       if (!result.success) {
         const errorMsg = result.message || '';
-        
+
         if (
           errorMsg.includes('409') ||
           errorMsg.toLowerCase().includes('duplicate') ||
@@ -64,11 +65,12 @@ export function useSubTypeFormSubmit({
         description: formData.description,
         searchSequence: Number(formData.searchSequence ?? 0),
         status: formData.isActive ? 'Active' : 'Inactive',
+        typeOfUseCategoryId: formData.typeOfUseCategoryId ?? null,
       });
 
       if (!result.success) {
         const errorMsg = result.message || '';
-        
+
         if (
           errorMsg.includes('409') ||
           errorMsg.toLowerCase().includes('duplicate') ||
