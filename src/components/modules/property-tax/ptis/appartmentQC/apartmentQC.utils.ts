@@ -39,7 +39,7 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
       ...item,
       oldPropertyNo: item.oldPropertyNo,
       oldConstructionCarpetAreaSqFt: item.oldConstructionCarpetAreaSqFt,
-      oldConstructionCarpetAreaMtr: item.oldConstructionCarpetAreaMtr,
+      oldConstructionCarpetAreaSqMtr: item.oldConstructionCarpetAreaSqMtr,
       oldConstructionBuiltUpSqFt: item.oldConstructionBuiltUpSqFt,
       oldConstructionBuiltUpSqMtr: item.oldConstructionBuiltUpSqMtr,
       flatOrShopNo: safe(item.flatOrShopNo),
@@ -75,7 +75,7 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
   return items.map((item) => ({
     ...item,
     oldConstructionCarpetAreaSqFt: item.oldConstructionCarpetAreaSqFt,
-    oldConstructionCarpetAreaMtr: item.oldConstructionCarpetAreaMtr,
+    oldConstructionCarpetAreaSqMtr: item.oldConstructionCarpetAreaSqMtr,
     oldConstructionBuiltUpSqFt: item.oldConstructionBuiltUpSqFt,
     oldConstructionBuiltUpSqMtr: item.oldConstructionBuiltUpSqMtr,
     propertyNo: item.propertyNo || '-',
@@ -167,7 +167,7 @@ export const groupApartmentData = <T extends Record<string, unknown>>(
       oldRow.ownerName = '-';
       oldRow.occupierName = '-';
       oldRow.bhk = '-';
-      oldRow.carpetArea = formatAreaPair(item.oldConstructionCarpetAreaSqFt, item.oldConstructionCarpetAreaMtr);
+      oldRow.carpetArea = formatAreaPair(item.oldConstructionCarpetAreaSqFt, item.oldConstructionCarpetAreaSqMtr);
       oldRow.builtupArea = formatAreaPair(item.oldConstructionBuiltUpSqFt, item.oldConstructionBuiltUpSqMtr);
       oldRow.typeOfUse = safe(item.oldUseType);
       oldRow.constructionType = safe(item.oldConstructionType);
@@ -191,7 +191,7 @@ export const groupApartmentData = <T extends Record<string, unknown>>(
       oldRow.mobileNo = '-';
       oldRow.emailId = '-';
       oldRow.carpetASqFt = safe(item.oldConstructionCarpetAreaSqFt);
-      oldRow.carpetASqMtr = safe(item.oldConstructionCarpetAreaMtr);
+      oldRow.carpetASqMtr = safe(item.oldConstructionCarpetAreaSqMtr);
       oldRow.builtupASqFt = safe(item.oldConstructionBuiltUpSqFt);
       oldRow.builtupASqMtr = safe(item.oldConstructionBuiltUpSqMtr);
 

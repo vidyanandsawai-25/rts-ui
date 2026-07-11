@@ -92,6 +92,7 @@ export const useAppartmentQCSectionData = ({
   useEffect(() => {
     // We do not early return here anymore so we guarantee refetchTaxDetails is called.
     // If wardId or propertyNo is missing, refetchTaxDetails handles it and sets loading false.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refetchTaxDetails();
   }, [refetchTaxDetails]);
 

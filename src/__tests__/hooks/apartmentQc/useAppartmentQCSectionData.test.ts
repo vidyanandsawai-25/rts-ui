@@ -106,11 +106,12 @@ describe('useAppartmentQCSectionData', () => {
 
     const { result } = renderHook(() => useAppartmentQCSectionData(defaultProps));
 
+    expect(fetchApartmentPropertyTaxDetailsByTabAction).toHaveBeenCalled();
+
     await waitFor(() => {
-      expect(fetchApartmentPropertyTaxDetailsByTabAction).toHaveBeenCalled();
+      expect(result.current.taxDetailsLoading).toBe(false);
     });
 
     expect(result.current.taxDetails).toBeNull();
-    expect(result.current.taxDetailsLoading).toBe(false);
   });
 });

@@ -96,6 +96,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   React.useEffect(() => {
     const nextMain = searchParams.get('appartmentTab') || 'amenities';
     const nextSub = searchParams.get('subTab') || 'rateable';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveMainTab((prev) => (prev === nextMain ? prev : nextMain));
     setActiveSubTab((prev) => (prev === nextSub ? prev : nextSub));
   }, [searchParams]);

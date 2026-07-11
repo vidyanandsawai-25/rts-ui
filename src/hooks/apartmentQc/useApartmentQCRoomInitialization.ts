@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { RoomWiseSubmissionProps, RoomAPIResponse } from "@/types/room-details.types";
+import type { OffsetData } from "@/types/offset-details.types";
 import { ShapeParameters } from "@/types/common-details.types";
 import {
   convertAreaUnit,
@@ -58,11 +59,9 @@ export const useApartmentQCRoomInitialization = (
     isInitialized.current = true;
 
     const source: RoomAPIResponse[] = existingRooms || [];
-
     const targetCount = Number(noOfRooms) || 0;
-    const maxCount = Math.max(targetCount, source.length);
 
-    const loaded = Array.from({ length: maxCount }).map((_, i) => {
+    const loaded = Array.from({ length: targetCount }).map((_, i) => {
       const r = source[i];
       if (r) {
         // Merge offsets from all possible sources
@@ -72,48 +71,68 @@ export const useApartmentQCRoomInitialization = (
           ...(Array.isArray(r.minusRooms) ? r.minusRooms : []),
         ];
 
-      // Deduplicate by id and filter out marked for deletion
-      const seen = new Set<unknown>();
-      const offsets = offsetsRaw
-        .filter((o) => {
-          const markedForDeletion = (o as Record<string, unknown>).MarkedForDeletion ?? (o as Record<string, unknown>).markedForDeletion;
-          return markedForDeletion !== 1 && markedForDeletion !== true;
-        })
-        .map((o) => ({
-          ...o,
-          id: (o as Record<string, unknown>).roomWiseMinusId ?? o.id,
-          operation:
-            (o as Record<string, unknown>).isOffset === true
-              ? "add"
-              : (o as Record<string, unknown>).isOffset === false
-              ? "subtract"
-              : ((o as Record<string, unknown>).type as string) ||
-                (o as Record<string, unknown>).operation as string ||
-                "subtract",
-          area:
-            (o as Record<string, unknown>).area ??
-            (o as Record<string, unknown>).areaSqMtr ??
-            0,
-          shape:
-            (o as Record<string, unknown>).shapeType as string ||
-            (o as Record<string, unknown>).shape as string ||
-            "Rectangle",
-        }))
-        .filter((o) => {
-          const key = o.id || JSON.stringify(o);
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
+        // Deduplicate by id and filter out marked for deletion
+        const seen = new Set<unknown>();
+        const offsets = offsetsRaw
+          .filter((o) => {
+            const markedForDeletion = (o as Record<string, unknown>).MarkedForDeletion ?? (o as Record<string, unknown>).markedForDeletion;
+            return markedForDeletion !== 1 && markedForDeletion !== true;
+          })
+          .map((o) => ({
+            ...o,
+            id: (o as Record<string, unknown>).roomWiseMinusId ?? o.id,
+            operation:
+              (o as Record<string, unknown>).isOffset === true
+                ? "add"
+                : (o as Record<string, unknown>).isOffset === false
+                ? "subtract"
+                : ((o as Record<string, unknown>).type as string) ||
+                  (o as Record<string, unknown>).operation as string ||
+                  "subtract",
+            area:
+              (o as Record<string, unknown>).area ??
+              (o as Record<string, unknown>).areaSqMtr ??
+              0,
+            shape:
+              (o as Record<string, unknown>).shapeType as string ||
+              (o as Record<string, unknown>).shape as string ||
+              "Rectangle",
+          }))
+          .filter((o) => {
+            const key = o.id || JSON.stringify(o);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
 
+        const sp = r.shapeParameters || {};
         return {
-          ...r,
-          tempId: r.tempId || `aqc-init-${Date.now()}-${i}`,
-          roomNo: (i + 1).toString(),
-          id: r.roomWiseSubmissionId ?? r.id,
-          area: Number(r.area || 0),
-          total: Number(r.total || 0),
-          offsets,
+          id: r.id,
+          roomWiseSubmissionId: r.roomWiseSubmissionId || r.id,
+          tempId: `aqc-db-${r.id}-${i}`,
+          roomNo: String(r.roomNo || i + 1),
+          length: r.lengthMtr?.toString() || sp.length || "",
+          width: r.widthMtr?.toString() || sp.width || "",
+          area: Number(r.areaSqMtr || r.area || 0),
+          mainArea: Number(r.areaSqMtr || r.area || 0),
+          carpetArea: Number(r.totalAreaSqMtr || r.total || 0),
+          builtUpArea: Number(r.totalAreaSqMtr || r.total || 0), // Fallback if API lacks built-up area
+          roomCount: r.noOfRooms?.toString() || "1",
+          offsetMinus: r.minusYesNo ? "Yes" : "No",
+          offsets: offsets as OffsetData[],
+          roomWiseMinusData: r.roomWiseMinusData || [],
+          outer: r.outerYesNo ? "Yes" : "No",
+          total: Number(r.totalAreaSqMtr || r.total || 0),
+          areaSqMtr: Number(r.areaSqMtr || r.area || 0),
+          totalAreaSqMtr: Number(r.totalAreaSqMtr || r.total || 0),
+          remark: r.remark || "-Select-",
+          utilities: r.roomType || "-Select-",
+          roomType: r.roomType || "",
+          roomTypeId: r.roomTypeId,
+          shape: r.shape || "-Select-",
+          shapeParams: sp,
+          shapeParameters: sp,
+          isAutoGenerated: false,
         };
       }
 
