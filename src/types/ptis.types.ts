@@ -432,6 +432,7 @@ export interface TabHeaderInfoData {
   ownerName: string | null;
   address: string | null;
   typeOfUse: string | null;
+  isCombined?: boolean;
 }
 
 export interface PtisInitialData {
