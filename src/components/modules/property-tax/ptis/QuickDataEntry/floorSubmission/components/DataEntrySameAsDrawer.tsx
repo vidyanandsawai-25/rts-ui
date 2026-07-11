@@ -42,16 +42,20 @@ interface DataEntrySameAsDrawerProps {
 }
 
 export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (props) => {
-  const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo } = props;
-  const hook = useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, t });
+  const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo, initialPropertyID } = props;
+  const hook = useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, initialPropertyID, t });
 
   // Filter properties to display in tables
-  const displayedProperties = hook.filterPropertiesForTable(hook.selectableProperties, true);
-
-  const drawerClassName = "[&_div.fixed.right-0]:!w-[97vw] md:[&_div.fixed.right-0]:!w-[1000px] lg:[&_div.fixed.right-0]:!w-[1100px] xl:[&_div.fixed.right-0]:!w-[1200px] [&_div.fixed.right-0>div:first-child]:!bg-blue-600 [&_div.fixed.right-0>div:first-child_h2]:!text-white [&_div.fixed.right-0>div:first-child>div:first-child]:!flex-1 [&_div.fixed.right-0>div:first-child_button_svg]:!text-white [&_div.fixed.right-0>div:first-child_button]:hover:!bg-blue-700";
+  // useMemo is CRITICAL here — without it a new array is created every render,
+  // which would trigger TypeWiseTab's useEffect([properties]) and reset the type filter.
+  const displayedProperties = React.useMemo(
+    () => hook.filterPropertiesForTable(hook.selectableProperties, true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hook.selectableProperties, hook.filterPropertiesForTable]
+  );
 
   return (
-    <div className={drawerClassName}>
+    <>
       <Tabs
         value={hook.dataEntrySameAsTab}
         onChange={(val) => {
@@ -110,7 +114,8 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   onClearSelection={hook.handleClearPropertySelection}
                   onToggleMultiple={hook.handleToggleMultipleProperties}
                   isLoading={hook.isLoadingProperties}
-                  disabledIds={hook.typeWiseLockedPropertyIds}
+                  disabledIds={new Set()}
+                  sourcePropertyIds={hook.sourcePropertyIds}
                   isApplying={hook.isApplyingSameAs}
                   onApply={hook.handleApplySameAsDetails}
                   changeTypeInput={hook.changeTypeInput}
@@ -128,7 +133,8 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   onClearSelection={hook.handleClearPropertySelection}
                   onToggleMultiple={hook.handleToggleMultipleProperties}
                   isLoading={hook.isLoadingProperties}
-                  disabledIds={hook.sourcePropertyIds}
+                  disabledIds={new Set()}
+                  sourcePropertyIds={hook.sourcePropertyIds}
                   isApplying={hook.isApplyingSameAs}
                   onApply={hook.handleApplySameAsDetails}
                   wardOptions={hook.wardOptions}
@@ -153,7 +159,8 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   onClearSelection={hook.handleClearPropertySelection}
                   onToggleMultiple={hook.handleToggleMultipleProperties}
                   isLoading={hook.isLoadingProperties}
-                  disabledIds={hook.sourcePropertyIds}
+                  disabledIds={new Set()}
+                  sourcePropertyIds={hook.sourcePropertyIds}
                   isApplying={hook.isApplyingSameAs}
                   onApply={hook.handleApplySameAsDetails}
                 />
@@ -162,7 +169,7 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
           </div>
         </Drawer>
       </Tabs>
-    </div>
+    </>
   );
 };
 

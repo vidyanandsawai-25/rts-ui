@@ -15,7 +15,9 @@ interface SelectPropertiesTableProps {
   onToggleMultiple?: (ids: Array<string | number>, select: boolean) => void;
   isLoading?: boolean;
   disabledIds?: Set<string | number>;
+  sourcePropertyIds?: Set<string | number>;
   hideTypeColumn?: boolean;
+  leftHeaderContent?: React.ReactNode;
 }
 
 type SelectablePropertyRow = Record<string, unknown> &
@@ -66,7 +68,9 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   onToggleMultiple,
   isLoading = false,
   disabledIds = new Set(),
+  sourcePropertyIds = new Set(),
   hideTypeColumn = false,
+  leftHeaderContent,
 }) => {
   const selectedCount = selectedIds.size;
   const selectableProperties = React.useMemo(
@@ -210,15 +214,24 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           if (!row.disabled) onToggle(row.id);
         }}
         rowClassName={(row) => {
-          if (row.disabled) {
+          const isSource = sourcePropertyIds.has(row.id);
+          if (isSource) {
             return '!bg-green-50 hover:!bg-green-100';
+          }
+          if (row.disabled) {
+            return 'opacity-60 bg-slate-50 cursor-not-allowed';
           }
           if (row.selected) {
             return '!bg-blue-50 hover:!bg-blue-100';
           }
           return '';
         }}
-        headerTitle={t('floor.selectProperties.title')}
+        headerTitle={
+          <div className="flex flex-wrap items-center gap-3">
+            <span>{t('floor.selectProperties.title')}</span>
+            {leftHeaderContent}
+          </div>
+        }
         headerExtra={headerExtra}
         emptyText={t('floor.selectProperties.noProperties')}
         loadingText={t('floor.selectProperties.loading')}

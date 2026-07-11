@@ -133,7 +133,7 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
 
   /* ===== HEADER ===== */
 
-  headerTitle?: string;
+  headerTitle?: string | React.ReactNode;
 
   headerSubtitle?: string;
 
