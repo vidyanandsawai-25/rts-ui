@@ -1,7 +1,8 @@
 "use client";
 
 import { Input, Label, ValidationMessage } from "@/components/common";
-import type { LookupInputProps } from "@/types/property-search.types";
+import { useTranslations } from "next-intl";
+import type { LookupInputProps } from "@/types/property-search";
 import { COMPACT_INPUT_CLASS, COMPACT_LABEL_CLASS } from "../form-field-styles";
 import { cn } from "@/lib/utils/cn";
 
@@ -17,18 +18,39 @@ export function LookupInput({
   onBlur,
   disabled,
   maxLength,
+  onClear,
 }: LookupInputProps) {
   const listId = `${id}-datalist`;
+  const t = useTranslations("propertySearch.form");
+
+  const handleClear = () => {
+    if (onClear) {
+      onClear();
+    } else {
+      onChange("");
+    }
+  };
 
   return (
     <div className="flex flex-col w-full">
-      <Label
-        htmlFor={id}
-        className={COMPACT_LABEL_CLASS}
-        title={tooltip ?? label}
-      >
-        {label}
-      </Label>
+      <div className="mb-0.5 h-4 flex items-center justify-between gap-1">
+        <Label
+          htmlFor={id}
+          className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}
+          title={tooltip ?? (typeof label === "string" ? label : undefined)}
+        >
+          {label}
+        </Label>
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="text-[11px] font-semibold text-[#004c8c] hover:underline cursor-pointer leading-none"
+          >
+            {t("actions.clear")}
+          </button>
+        )}
+      </div>
       <Input
         id={id}
         fullWidth

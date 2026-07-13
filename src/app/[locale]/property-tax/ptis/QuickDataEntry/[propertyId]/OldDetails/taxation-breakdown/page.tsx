@@ -46,7 +46,7 @@ export default async function TaxationBreakdownPage({ params }: PageProps) {
             throw new Error(t('oldDetails.error.failedToConnect'));
         }
         throw error;
-    }   
+    }
 
     return (
         <TaxationBreakdownForm

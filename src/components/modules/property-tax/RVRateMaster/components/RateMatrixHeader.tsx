@@ -29,6 +29,7 @@ interface RateMatrixHeaderProps {
   onDeleteRates: () => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
   existingRateFound: boolean;
+  isCheckingRates?: boolean;
 }
 
 export function RateMatrixHeader({
@@ -50,6 +51,7 @@ export function RateMatrixHeader({
   onDeleteRates,
   t,
   existingRateFound,
+  isCheckingRates,
 }: RateMatrixHeaderProps) {
   return (
     <div className="bg-white border-b border-[#e0e7ef] px-6 py-3 flex items-center justify-between">
@@ -100,7 +102,7 @@ export function RateMatrixHeader({
             onClick={id ? onUpdateRates : onAddRates}
             size="md"
             className="px-4 py-2"
-            disabled={existingRateFound}
+            disabled={existingRateFound || isCheckingRates}
             title={existingRateFound ? t('messages.validationRatesAlreadyExist') : undefined}
           />
         )}

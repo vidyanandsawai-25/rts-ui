@@ -6,13 +6,14 @@ import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { createLogger } from "@/lib/utils/server-logger";
 import type { PagedResponse } from "@/types/common.types";
-import type { PropertySearchCriteriaPayload } from "@/types/property-search-api.types";
+import type { PropertySearchCriteriaPayload } from "@/types/property-search";
 import type {
-  PropertyStatsData,
   SearchResult,
-} from "@/types/property-search.types";
-import { normalizePropertySearchResponse } from "../guards/property-item-guards";
-import { normalizeDashboardStatsResponse } from "../guards/dashboard-stats-guards";
+  CardFilterParams,
+  MainCardsResponse,
+  WorkflowCardItem,
+} from "@/types/property-search";
+import { normalizePropertySearchResponse, normalizePropertySearchItem, extractPropertySearchRawItems } from "../guards/property-item-guards";
 
 const logger = createLogger("property-search/search");
 
@@ -46,6 +47,15 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.dashboardFilter != null && criteria.dashboardFilter > 0) {
     params.set("DashboardFilter", String(criteria.dashboardFilter));
   }
+  if (criteria.valuationMethod) {
+    params.set("ValuationMethod", criteria.valuationMethod);
+  }
+  if (criteria.filterType) {
+    params.set("FilterType", criteria.filterType);
+  }
+  if (criteria.valuationTypeFilter) {
+    params.set("ValuationTypeFilter", criteria.valuationTypeFilter);
+  }
   if (criteria.rvOrCv) params.set("RVorCV", criteria.rvOrCv);
   if (criteria.amountFilterOperator) {
     params.set("AmountFilterOperator", criteria.amountFilterOperator);
@@ -59,12 +69,11 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.topCount != null) {
     params.set("TopCount", String(criteria.topCount));
   }
-  // pageSize = -1 means "return all records" for client-side table pagination.
-  if (criteria.pageSize === -1) {
-    params.set("PageSize", "-1");
-    if (criteria.pageNumber) {
-      params.set("PageNumber", String(criteria.pageNumber));
-    }
+  if (criteria.pageSize != null) {
+    params.set("PageSize", String(criteria.pageSize));
+  }
+  if (criteria.pageNumber != null) {
+    params.set("PageNumber", String(criteria.pageNumber));
   }
   return params.toString();
 }
@@ -72,9 +81,10 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
 export async function searchProperties(
   criteria: PropertySearchCriteriaPayload
 ): Promise<PagedResponse<SearchResult>> {
-  const response = await apiClient.get<unknown>(
-    `/Property/search?${buildSearchParams(criteria)}`
-  );
+  const qs = buildSearchParams(criteria);
+  const url = `/PropertySearch/search/grid?${qs}`;
+
+  const response = await apiClient.get<unknown>(url);
 
   if (!response.success) {
     throw new ApiError(
@@ -87,22 +97,85 @@ export async function searchProperties(
   return normalizePropertySearchResponse(response.data);
 }
 
-export async function fetchPropertyStats(): Promise<PropertyStatsData[]> {
-  try {
-    const response = await apiClient.get<unknown>(
-      "/Property/search/dashboard-stats"
-    );
+function buildCardParams(paramsObj: CardFilterParams): string {
+  const params = new URLSearchParams();
+  if (paramsObj.propertyAssessmentStatusId) {
+    params.set("propertyAssessmentStatusId", String(paramsObj.propertyAssessmentStatusId));
+  }
+  if (paramsObj.workflowStageId) {
+    params.set("workflowStageId", String(paramsObj.workflowStageId));
+  }
+  if (paramsObj.propertyDescriptionId) {
+    params.set("propertyDescriptionId", String(paramsObj.propertyDescriptionId));
+  }
+  if (paramsObj.zoneId) {
+    params.set("zoneId", String(paramsObj.zoneId));
+  }
+  if (paramsObj.wardId) {
+    params.set("wardId", String(paramsObj.wardId));
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
 
+export async function fetchMainCards(
+  params?: CardFilterParams
+): Promise<MainCardsResponse | null> {
+  try {
+    const qs = params ? buildCardParams(params) : "";
+    const response = await apiClient.get<{ items: MainCardsResponse }>(
+      `/PropertySearch/search/dashboard/main-cards${qs}`
+    );
     if (!response.success || response.data == null) {
-      logger.warn("Dashboard stats request failed", {
-        statusCode: response.statusCode,
-      });
+      return null;
+    }
+    return response.data.items || null;
+  } catch (error) {
+    logger.error("Failed to fetch main cards", { error: error as Error });
+    return null;
+  }
+}
+
+export async function fetchWorkflowCards(
+  params?: CardFilterParams
+): Promise<WorkflowCardItem[]> {
+  try {
+    const qs = params ? buildCardParams(params) : "";
+    const response = await apiClient.get<{ items: WorkflowCardItem[] }>(
+      `/PropertySearch/search/dashboard/workflow-cards${qs}`
+    );
+    if (!response.success || response.data == null) {
       return [];
     }
-
-    return normalizeDashboardStatsResponse(response.data);
+    return response.data.items || [];
   } catch (error) {
-    logger.error("Failed to fetch property stats", { error: error as Error });
+    logger.error("Failed to fetch workflow cards", { error: error as Error });
     return [];
   }
 }
+
+interface ApartmentUnitListResponse {
+  success: boolean;
+  message?: string;
+  items?: unknown[];
+}
+
+export async function fetchApartmentUnitList(
+  propertyId: number
+): Promise<SearchResult[]> {
+  const response = await apiClient.get<ApartmentUnitListResponse>(
+    `/PropertySearch/search/apartmentunitlist?propertyId=${propertyId}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch apartment unit list",
+      "Apartment unit list retrieval failed"
+    );
+  }
+
+  const rawItems = extractPropertySearchRawItems(response.data);
+  return rawItems.map((item) => normalizePropertySearchItem(item as Record<string, unknown>));
+}
+

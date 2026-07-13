@@ -27,26 +27,28 @@ export function BasicInfoStep({
                 maxLength={20}
                 disabled={!!editingUser}
                 value={formData.userName}
-                onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                  setFormData({ ...formData, userName: val });
+                }}
                 className="border-2 text-slate-700"
                 placeholder={t('form.usernamePlaceholder')}
               />
-              {errors.userName && (
-                <ValidationMessage message={errors.userName} />
-              )}
+              {errors.userName && <ValidationMessage message={errors.userName} />}
             </div>
             <div className="space-y-2">
               <Label>{t('form.userCode')}</Label>
               <Input
                 maxLength={15}
                 value={formData.userCode}
-                onChange={(e) => setFormData({ ...formData, userCode: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+                  setFormData({ ...formData, userCode: val });
+                }}
                 className="border-2 text-slate-700"
                 placeholder={t('form.userCodePlaceholder')}
               />
-              {errors.userCode && (
-                <ValidationMessage message={errors.userCode} />
-              )}
+              {errors.userCode && <ValidationMessage message={errors.userCode} />}
             </div>
             <div className="space-y-2">
               <Label>{t('form.firstName')} *</Label>
@@ -60,9 +62,7 @@ export function BasicInfoStep({
                 }}
                 className="border-2"
               />
-              {errors.firstName && (
-                <ValidationMessage message={errors.firstName} />
-              )}
+              {errors.firstName && <ValidationMessage message={errors.firstName} />}
             </div>
             <div className="space-y-2">
               <Label>{t('form.middleName')}</Label>
@@ -75,9 +75,7 @@ export function BasicInfoStep({
                 }}
                 className="border-2"
               />
-              {errors.middleName && (
-                <ValidationMessage message={errors.middleName} />
-              )}
+              {errors.middleName && <ValidationMessage message={errors.middleName} />}
             </div>
             <div className="space-y-2">
               <Label>{t('form.lastName')} *</Label>
@@ -91,9 +89,7 @@ export function BasicInfoStep({
                 }}
                 className="border-2"
               />
-              {errors.lastName && (
-                <ValidationMessage message={errors.lastName} />
-              )}
+              {errors.lastName && <ValidationMessage message={errors.lastName} />}
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
@@ -104,12 +100,13 @@ export function BasicInfoStep({
                 required
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z0-9@.]/g, '');
+                  setFormData({ ...formData, email: val });
+                }}
                 className="border-2"
               />
-              {errors.email && (
-                <ValidationMessage message={errors.email} />
-              )}
+              {errors.email && <ValidationMessage message={errors.email} />}
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
@@ -126,9 +123,7 @@ export function BasicInfoStep({
                 }}
                 className="border-2"
               />
-              {errors.mobileNo && (
-                <ValidationMessage message={errors.mobileNo} />
-              )}
+              {errors.mobileNo && <ValidationMessage message={errors.mobileNo} />}
             </div>
             <div className="col-span-2 space-y-2">
               <Label>{t('form.address')}</Label>

@@ -123,6 +123,15 @@ export function usePartitionFormValidation({
           }
         }
       });
+      
+      // Check if incrementedBy is greater than noOfFlatOnOneFloor only for non-custom generation types
+    if (data.generationType !== "VC" && data.generationType !== "HC") {
+      const noOfFlats = parseInt(data.noOfFlatOnOneFloor, 10);
+      const incrementBy = parseInt(data.incrementedBy, 10);
+      if (!isNaN(noOfFlats) && !isNaN(incrementBy) && incrementBy <= noOfFlats) {
+        newErrors.incrementedBy = t("partitionForm.validation.incrementedByMustBeGreater");
+      }
+    }
     } else if (data.partitionType === "amenity") {
       // Validate amenity fields for Apartment Categories
       if (!data.toAmenity?.trim()) {

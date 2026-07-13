@@ -84,18 +84,27 @@ export const mapApiToBuildingState = (
 
 export const mapBuildingStateToApi = (
     state: BuildingPermissionState,
-    propertyId: number
+    propertyId: number,
+    onlyCertificateTypeId?: number,
+    _skipNumberDateValidation = false
 ): PropertyCertificateBulkSaveDto => {
     const certificates: PropertyCertificateItemDto[] = [];
     Object.values(state).forEach((item) => {
+        if (onlyCertificateTypeId !== undefined && item.certificateTypeId !== onlyCertificateTypeId) {
+            return;
+        }
+
+        const isDeleted = !item.enabled || (!item.documentGuid && !item.pendingFile);
+
         certificates.push({
             certificateTypeId: item.certificateTypeId,
-            isEnabled: item.enabled,
-            certificateNumber: item.number ? item.number : null,
-            certificateDate: item.date ? `${item.date}T00:00:00` : null,
+            isEnabled: item.enabled && !isDeleted,
+            certificateNumber: isDeleted ? null : (item.number ? item.number : null),
+            certificateDate: isDeleted ? null : (item.date ? `${item.date}T00:00:00` : null),
             propertyCertificateId: item.propertyCertificateId || null,
-            existingDocumentGuid: item.documentGuid || null,
-            hasNewDocument: false
+            existingDocumentGuid: isDeleted ? null : (item.documentGuid === "pending" ? null : (item.documentGuid || null)),
+            hasNewDocument: isDeleted ? false : (item.documentGuid === "pending" || !!item.pendingFile),
+            markedForDeletion: item.propertyCertificateId ? isDeleted : false
         });
     });
     return { propertyId, certificates };
@@ -105,19 +114,19 @@ export const localizeBackendError = (errorMsg: string, t: (key: string) => strin
     if (!errorMsg) return "";
     const cleanMsg = errorMsg.trim().toLowerCase();
     if (cleanMsg.includes("without an issue date")) {
-        return t("building.errors.cannotEnableWithoutDate") || "Cannot enable certificate without an issue date.";
+        return t("building.errors.cannotEnableWithoutDate") || "Cannot enable document without an issue date.";
     }
     if (cleanMsg.includes("without a certificate number")) {
-        return t("building.errors.cannotEnableWithoutNumber") || "Cannot enable certificate without a certificate number.";
+        return t("building.errors.cannotEnableWithoutNumber") || "Cannot enable document without a document number.";
     }
     if (cleanMsg.includes("cannot be in the future")) {
         return t("building.errors.futureDate") || "Issue date cannot be in the future.";
     }
     if (cleanMsg.includes("cannot exceed 100 characters")) {
-        return t("building.errors.numberExceedsLimit") || "Certificate number cannot exceed 100 characters.";
+        return t("building.errors.numberExceedsLimit") || "Document number cannot exceed 100 characters.";
     }
     if (cleanMsg.includes("not found")) {
-        return t("building.errors.notFound") || "Certificate not found.";
+        return t("building.errors.notFound") || "Document not found.";
     }
     return errorMsg;
 };
@@ -148,4 +157,40 @@ export const parseAndLocalizeBackendError = (
         return localizeBackendError(err, t);
     });
     return localizedErrors.join("\n");
+};
+
+export const hasChangesComparedToInitial = (
+    current: BuildingPermissionState,
+    initial: BuildingPermissionState
+): boolean => {
+    const currentKeys = Object.keys(current);
+    const initialKeys = Object.keys(initial);
+
+    if (currentKeys.length !== initialKeys.length) return true;
+
+    for (const key of currentKeys) {
+        const id = Number(key);
+        const curItem = current[id];
+        const initItem = initial[id];
+
+        if (!curItem && !initItem) continue;
+        if (!curItem || !initItem) return true;
+
+        if (curItem.enabled !== initItem.enabled) return true;
+
+        const curNum = (curItem.number || "").trim();
+        const initNum = (initItem.number || "").trim();
+        if (curNum !== initNum) return true;
+
+        const curDate = curItem.date || "";
+        const initDate = initItem.date || "";
+        if (curDate !== initDate) return true;
+
+        if (curItem.pendingFile) return true;
+
+        const initHasFile = !!(initItem.fileName || initItem.documentGuid);
+        const curHasFile = !!(curItem.fileName || curItem.documentGuid);
+        if (initHasFile !== curHasFile) return true;
+    }
+    return false;
 };

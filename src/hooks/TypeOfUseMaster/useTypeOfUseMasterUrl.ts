@@ -12,7 +12,7 @@ export function useTypeOfUseMasterUrl() {
   const sp = useSearchParams();
   const locale = useLocale();
 
-  const urlGroupId = sp.get("groupId") ?? "";
+  const urlGroupId = sp.get("groupId") ?? "ALL";
   const urlTypeId = sp.get("typeId") ?? "";
   const urlQ = sp.get("q") ?? "";
 

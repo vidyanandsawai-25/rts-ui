@@ -31,6 +31,7 @@ vi.mock('next/navigation', () => ({
     push: mockPush,
     refresh: mockRefresh,
   }),
+  usePathname: () => '/en/configuration-settings/bank-master',
 }));
 
 vi.mock('@/app/[locale]/configuration-settings/bank-master/actions', () => ({

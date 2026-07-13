@@ -1,6 +1,6 @@
 
 import RateSectionContent from '@/components/modules/property-tax/rate-section-master/RateSectionContent';
-import { getRateSectionsAction, getWardsByRateAction, getWardTotalCountAction, getRateSectionTotalCountAction, getRateSectionByIdAction, getAllRateSectionDetailsAction, getAllWardsForLinkAction, getRateSectionDetailsByIdAction, getSelectedWardsWithCountAction, getWardsPagedWithSearchAction, getWardByIdAction } from './actions';
+import { getRateSectionsAction, getWardsByRateAction, getWardTotalCountAction, getRateSectionTotalCountAction, getRateSectionByIdAction, getAllRateSectionDetailsAction, getAllWardsForLinkAction, getRateSectionDetailsByIdAction, getSelectedWardsWithCountAction, getWardsPagedWithSearchAction, getWardByIdAction, getAllRateSectionsForSelectAction } from './actions';
 import { ConfirmProvider } from '@/components/common';
 import type { SectionItem, RateItem } from '@/types/rateSectionMaster.types';
 import type { WardItem } from '@/types/wardMaster.types';
@@ -202,13 +202,24 @@ export default async function Page({ searchParams }: PageProps) {
         ? `${zoneInCurrentPage.id} - ${zoneInCurrentPage.description}`
         : String(zoneInCurrentPage.id);
     } else {
-      const zoneData = await getRateSectionByIdAction(Number(paramZone));
-      if (zoneData.success && zoneData.data) {
-        fetchId = zoneData.data.id;
-        selectedZoneNo = String(zoneData.data.id) ?? null;
-        selectedZoneLabel = zoneData.data.description
-          ? `${zoneData.data.id} - ${zoneData.data.description}`
-          : String(zoneData.data.id) ?? undefined;
+      const allRatesRes = await getAllRateSectionsForSelectAction();
+      const zoneInAll = allRatesRes.data?.find(z => String(z.id) === String(paramZone));
+      
+      if (zoneInAll) {
+        fetchId = zoneInAll.id;
+        selectedZoneNo = String(zoneInAll.id) ?? null;
+        selectedZoneLabel = zoneInAll.description
+          ? `${zoneInAll.id} - ${zoneInAll.description}`
+          : String(zoneInAll.id) ?? undefined;
+      } else {
+        const zoneData = await getRateSectionByIdAction(Number(paramZone));
+        if (zoneData.success && zoneData.data) {
+          fetchId = zoneData.data.id;
+          selectedZoneNo = String(zoneData.data.id) ?? null;
+          selectedZoneLabel = zoneData.data.description
+            ? `${zoneData.data.id} - ${zoneData.data.description}`
+            : String(zoneData.data.id) ?? undefined;
+        }
       }
     }
   } else if (allZones.length > 0) {

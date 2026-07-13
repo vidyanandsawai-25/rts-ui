@@ -74,6 +74,11 @@ export function usePropertySearch() {
           partitionNo: searchData.partitionNo,
           wardId: searchData.wardId ? searchData.wardId.toString() : null,
           propertyId: searchData.propertyId,
+          valuationTab: null,
+          appartmentTab: null,
+          subTab: null,
+          pageNumber: null,
+          searchTerm: null,
         };
 
         const result = updateUrl(params);

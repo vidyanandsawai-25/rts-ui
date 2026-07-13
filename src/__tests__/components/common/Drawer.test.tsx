@@ -1,5 +1,24 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
+
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => {
+    if (key === "login.sessionTimeout.countdown") {
+      return "60s";
+    }
+    if (key === "login.sessionTimeout.saveWorkHint") {
+      return "Session Expiring, save the work!";
+    }
+    return key;
+  },
+}));
+
+vi.mock("@/lib/utils/session-expiry-client", () => ({
+  getSessionExpiresAtUnixFromCookie: () => null,
+  isSessionWarningActiveAtUnix: () => false,
+  SESSION_EXPIRY_CLOCK_SKEW_SECONDS: 30,
+}));
+
 import { Drawer } from "@/components/common/Drawer";
 
 describe("Drawer", () => {
@@ -76,4 +95,37 @@ describe("Drawer", () => {
       unmount();
     }
   });
+
+  it("renders session warning timer when custom tick event is dispatched", () => {
+    render(<Drawer {...defaultProps} />);
+    
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+
+    fireEvent(
+      window,
+      new CustomEvent("ntis:session-warning-tick", {
+        detail: { secondsLeft: 45, active: true },
+      })
+    );
+
+    const statusEl = screen.getByRole("status");
+    expect(statusEl).toBeInTheDocument();
+    expect(statusEl.textContent).toContain("Session Expiring, save the work!");
+  });
+
+  it("renders session warning timer as floating indicator when hideHeader is true", () => {
+    render(<Drawer {...defaultProps} hideHeader={true} />);
+    
+    fireEvent(
+      window,
+      new CustomEvent("ntis:session-warning-tick", {
+        detail: { secondsLeft: 15, active: true },
+      })
+    );
+
+    const statusEl = screen.getByRole("status");
+    expect(statusEl).toBeInTheDocument();
+    expect(statusEl.textContent).toContain("Session Expiring, save the work!");
+  });
 });
+

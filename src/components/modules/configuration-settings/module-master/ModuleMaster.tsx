@@ -11,7 +11,7 @@ import type { ModuleMaster as ModuleMasterType } from '@/types/moduleMaster.type
 import { useModulePagination } from '@/hooks/configuration-settings/module-master/useModulePagination';
 import { useModuleSearch } from '@/hooks/configuration-settings/module-master/useModuleSearch';
 import { useModuleDelete } from '@/hooks/configuration-settings/module-master/useModuleDelete';
-import { usePermissions } from '@/hooks/usePermissions';
+
 
 import { getModuleColumns, type ModuleMasterTableRow } from './ModuleColumns';
 import { ModuleMasterHeader } from './components/ModuleMasterHeader';
@@ -41,14 +41,13 @@ export function ModuleMaster({
   totalPages,
   statsData,
   fetchError,
-  statusCode,
 }: ModuleMasterProps) {
   const t = useTranslations('moduleMaster');
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const router = useRouter();
 
-  const { canView, canEdit, canDelete, haveFullAccess } = usePermissions('MODULE_MASTER');
+
 
   const [isPending, startTransition] = useTransition();
 
@@ -98,39 +97,21 @@ export function ModuleMaster({
   const renderActions = useCallback(
     (row: ModuleMasterTableRow) => (
       <div className="flex items-center gap-1">
-        {(canEdit || haveFullAccess) && <EditButton onClick={() => handleRowEdit(row)} />}
-        {(canDelete || haveFullAccess) && <DeleteButton onClick={() => handleRowDelete(row)} />}
+        <EditButton onClick={() => handleRowEdit(row)} />
+        <DeleteButton onClick={() => handleRowDelete(row)} />
       </div>
     ),
-    [handleRowEdit, handleRowDelete, canEdit, canDelete, haveFullAccess]
+    [handleRowEdit, handleRowDelete]
   );
 
-  const isUnauthorized =
-    statusCode === 401 ||
-    (fetchError &&
-      (fetchError.toLowerCase().includes('unauthorized') ||
-        fetchError.toLowerCase().includes('token') ||
-        fetchError === 'messages.unauthorizedToken'));
 
-  if (isUnauthorized || (!canView && !haveFullAccess)) {
-    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
-
-    return (
-      <PageContainer>
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
-          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
-          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
-        </div>
-      </PageContainer>
-    );
-  }
 
   return (
     <PageContainer>
       <div className="space-y-4">
         <ModuleMasterHeader
           t={t}
-          onAdd={haveFullAccess ? handleAdd : undefined}
+          onAdd={handleAdd}
           search={search}
           onSearchChange={handleSearchChange}
         />

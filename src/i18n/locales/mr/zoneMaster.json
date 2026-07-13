@@ -337,6 +337,7 @@
       "taxZoneRequired": "कर क्षेत्र आवश्यक आहे",
       "propertyNoRequired": "मालमत्ता क्र. आवश्यक आहे",
       "ownerNameRequired": "मालकाचे नाव आवश्यक आहे",
+      "ownerNameMinLength": "मालकाचे नाव कमीतकमी 2 अक्षरांचे असणे आवश्यक आहे",
       "fromPropertyNoRequired": "मालमत्ता क्र. पासून आवश्यक आहे",
       "toPropertyNoRequired": "मालमत्ता क्र. पर्यंत आवश्यक आहे",
       "invalidRange": "मालमत्ता क्र. पर्यंत, मालमत्ता क्र. पासून पेक्षा जास्त असणे आवश्यक आहे",
@@ -415,7 +416,8 @@
       "generationTypeRequired": "जनरेशन प्रकार आवश्यक आहे",
       "toAmenityRequired": "सुविधा पर्यंत आवश्यक आहे",
       "toAmenityMustBeGreater": "सुविधा पर्यंत, सुविधा पासून च्या बरोबरीचे किंवा त्यापेक्षा जास्त असणे आवश्यक आहे",
-      "duplicateAmenityInRange": "सुविधा {amenity} या मालमत्तेसाठी आधीच अस्तित्वात आहे"
+      "duplicateAmenityInRange": "सुविधा {amenity} या मालमत्तेसाठी आधीच अस्तित्वात आहे",
+      "incrementedByMustBeGreater": "वाढ क्रमांक प्रति मजला फ्लॅट संख्येपेक्षा जास्त असणे आवश्यक आहे"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
@@ -479,7 +481,7 @@
         "noFloorsAvailable": "कोणतेही मजले उपलब्ध नाहीत",
         "noOfFlatOnOneFloor": "उदा., 4",
         "flatStart": "उदा., 101",
-        "incrementedBy": "उदा., 1",
+        "incrementedBy": "उदा., 100",
         "prefix": "उदा., फ्लॅट-",
         "generationType": "जनरेशन प्रकार निवडा"
       },

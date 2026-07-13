@@ -9,8 +9,6 @@ import type {
   SocietyDetailsApiResponse,
   OldDetailsApiResponse,
   OldFloorDetailApiResponse,
-  DiscountData,
-  BuildingPermissionData,
 } from '@/types/ptis.types';
 import {
   defaultPropertyDetails,
@@ -18,7 +16,7 @@ import {
   defaultSocietyDetails,
   defaultOldDetails,
 } from '@/lib/constants/ptis.constants';
-import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import { ptisSocialMapper } from './ptis-social.mapper';
 
 export const ptisMapper = {
   mapBasicDetails: (data: PropertyBasicDetailsApiResponse): PropertyDetailsData => {
@@ -35,7 +33,10 @@ export const ptisMapper = {
       surveyNo: data.surveyNo || '',
       plotNo: data.plotNo || '',
       propertyDescription: data.propertyDescription || '',
-      plotArea: data.plotArea?.toString() || '',
+      plotArea:
+        data.plotAreaSqFeet != null || data.plotAreaSqMeter != null
+          ? `${data.plotAreaSqFeet != null ? Number(data.plotAreaSqFeet).toFixed(2) : '0.00'} / ${data.plotAreaSqMeter != null ? Number(data.plotAreaSqMeter).toFixed(2) : '0.00'}`
+          : data.plotArea?.toString() || '',
       totalCarpetArea:
         data.totalCarpetAreaSqFeet != null || data.totalCarpetAreaSqMeter != null
           ? `${data.totalCarpetAreaSqFeet != null ? Number(data.totalCarpetAreaSqFeet).toFixed(2) : '0.00'} / ${data.totalCarpetAreaSqMeter != null ? Number(data.totalCarpetAreaSqMeter).toFixed(2) : '0.00'}`
@@ -52,6 +53,11 @@ export const ptisMapper = {
       noOfResidentialToilets: data.noOfResidentialToilets?.toString() || '',
       noOfCommercialToilets: data.noOfCommercialToilets?.toString() || '',
       ownerName: data.ownerName || data.ownerNameEnglish || '',
+      categoryId: data.categoryId,
+      rateSectionDescription: data.rateSectionDescription || '',
+      latitude: data.latitude || null,
+      longitude: data.longitude || null,
+      constructionYear: data.constructionYear || null,
     };
   },
 
@@ -62,17 +68,23 @@ export const ptisMapper = {
       title: data.ownerTitle || '',
       propertyHolderName: data.ownerName || '',
       propertyHolderNameMarathi: data.ownerName || '',
+      propertyHolderNameEnglish: data.ownerNameEnglish || '',
       occupierName: data.occupierName || '',
       occupierNameMarathi: data.occupierName || '',
+      occupierNameEnglish: data.occupierNameEnglish || '',
       aadharCardNo: data.adharCardNo || '',
       mobileNumber: data.mobileNo || '',
       email: data.emailId || '',
       shopName: data.flatOrShopName || '',
+      shopNameEnglish: data.flatOrShopNameEnglish || '',
       shopNo: data.flatOrShopNo || '',
       address: data.address || '',
+      addressEnglish: data.addressEnglish || '',
       buildingName: data.flatOrShopName || '',
       wingNo: data.wingNo || '',
       flatNo: data.flatOrShopNo || '',
+      alternateMobileNo: data.alternateMobileNo || '',
+      pinCode: data.pinCode || '',
     };
   },
 
@@ -97,6 +109,7 @@ export const ptisMapper = {
       managerName: data.managerName || '',
       managerEmail: data.managerEmailId || '',
       managerMobileNo: data.managerMobileNo || '',
+      societyDetailId: data.societyDetailId,
     };
   },
 
@@ -112,7 +125,10 @@ export const ptisMapper = {
       oldPlotNo: (data.oldPlotNo as string) || '',
       oldRV: data.oldRV?.toString() || '',
       oldALV: data.oldALV?.toString() || '',
-      oldPropertyTax: data.oldGeneralTax?.toString() || (data.oldPropertyTax as number | string)?.toString() || '',
+      oldPropertyTax:
+        data.oldGeneralTax?.toString() ||
+        (data.oldPropertyTax as number | string)?.toString() ||
+        '',
       oldTotalTax: data.oldTotalTax?.toString() || '',
       oldConstructionYear: data.oldConstructionYear?.toString() || '',
       oldCarpetAreaSqMeter: data.oldCarpetAreaSqMeter?.toString() || '',
@@ -138,59 +154,7 @@ export const ptisMapper = {
     }));
   },
 
-  mapDiscountDetails: (data: unknown): DiscountData => {
-    const rawData = data as Record<string, unknown> | null;
-    const rawItems = Array.isArray(rawData?.items) ? rawData.items : [];
-    const activeItems = rawItems.filter(
-      (item): item is Record<string, unknown> =>
-        !!item && typeof item === 'object' && 'isActive' in item && Boolean(item.isActive)
-    );
-    return {
-      items: activeItems.map((item) => ({
-        propertyId: Number(item.propertyId),
-        socialAttributeId: Number(item.socialAttributeId),
-        bitValue: typeof item.bitValue === 'boolean' ? item.bitValue : null,
-        intValue: item.intValue != null ? Number(item.intValue) : null,
-        decimalValue: item.decimalValue != null ? Number(item.decimalValue) : null,
-        textValue: item.textValue != null ? String(item.textValue) : null,
-        dateValue: item.dateValue != null ? String(item.dateValue) : null,
-        documentBindingId: item.documentBindingId != null ? Number(item.documentBindingId) : null,
-        remark: item.remark != null ? String(item.remark) : null,
-        socialAttributeCode: String(item.socialAttributeCode || ''),
-        socialAttributeName: String(item.socialAttributeName || ''),
-        id: Number(item.id),
-        isActive: Boolean(item.isActive),
-        createdDate: String(item.createdDate || ''),
-        updatedDate: item.updatedDate ? String(item.updatedDate) : null,
-      })),
-    };
-  },
-
-  mapBuildingPermissionDetails: (data: unknown): BuildingPermissionData => {
-    const rawData = data as Record<string, unknown> | null;
-    const rawItems = Array.isArray(rawData?.items) ? rawData.items : [];
-
-    // Filter to only include active items
-    const activeItems = rawItems.filter(
-      (item): item is Record<string, unknown> =>
-        !!item && typeof item === 'object' && 'isActive' in item && Boolean(item.isActive)
-    );
-
-    return {
-      items: activeItems.map((item) => ({
-        certificateTypeId: Number(item.certificateTypeId),
-        certificateTypeName: String(item.certificateTypeName || ''),
-        displayOrder: Number(item.displayOrder || 0),
-        hasCertificate: Boolean(item.hasCertificate),
-        propertyCertificateId:
-          item.propertyCertificateId != null ? Number(item.propertyCertificateId) : null,
-        isActive: Boolean(item.isActive),
-        certificateNo: item.certificateNo != null ? String(item.certificateNo) : null,
-        issueDate: item.issueDate ? String(item.issueDate) : null,
-        documentGuid: item.documentGuid ? String(item.documentGuid) : null,
-        fileName: item.fileName ? String(item.fileName) : null,
-        documentViewUrl: item.documentGuid ? getViewDocumentUrl(String(item.documentGuid)) : null,
-      })),
-    };
-  },
+  mapDiscountDetails: ptisSocialMapper.mapDiscountDetails,
+  mapSocialDetails: ptisSocialMapper.mapSocialDetails,
+  mapBuildingPermissionDetails: ptisSocialMapper.mapBuildingPermissionDetails,
 };

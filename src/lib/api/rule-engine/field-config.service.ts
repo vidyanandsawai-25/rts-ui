@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import { getRuleOperators, getOperatorsForDataType } from './operators.service';
 import { mapFieldTypeToDataType, mapInputType, mapSourceType } from './mappers';
 
@@ -25,6 +25,7 @@ interface ApiRuleField {
   maxValue: number;
   minLength: number;
   maxLength: number;
+  databaseColumnName?: string | null;
   displayOrder: number;
 }
 
@@ -48,7 +49,9 @@ export async function getFieldConfigurations(scopeId: number): Promise<FieldConf
 
     return {
       id: item.rulesFieldId,
-      fieldId: item.fieldName,
+      fieldId: item.databaseColumnName || item.fieldName,
+      fieldName: item.fieldName,
+      databaseColumnName: item.databaseColumnName || undefined,
       dataType,
       inputType,
       sourceType,

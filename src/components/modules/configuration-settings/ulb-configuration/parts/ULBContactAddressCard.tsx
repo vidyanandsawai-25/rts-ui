@@ -1,7 +1,7 @@
 'use client';
 
 import { Mail } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/common';
 import * as ULB_VALIDATION from '@/lib/api/configuration-settings/ulb-configuration/ulb-form-validation.constants';
 import type { ULBContactAddressCardProps } from '@/types/ulbconfig-master.types';
 import { UlbInput, UlbTextArea } from '../ULBFormField';

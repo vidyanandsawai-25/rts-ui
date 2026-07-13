@@ -11,7 +11,7 @@ export const PTIS_TABS = [
 export type PtisTabId = (typeof PTIS_TABS)[number];
 
 // Separate constant/type for valuation tabs
-export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'apartment'] as const;
+export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'reassessment', 'apartment'] as const;
 export type ValuationTabId = (typeof VALUATION_TABS)[number];
 
 /** Maximum number of properties to fetch for a single ward to prevent OOM / backend overload. */
@@ -41,6 +41,11 @@ export interface PropertyDetailsData {
   noOfResidentialToilets?: string;
   noOfCommercialToilets?: string;
   ownerName?: string;
+  categoryId?: number;
+  rateSectionDescription?: string;
+  latitude?: string | null;
+  longitude?: string | null;
+  constructionYear?: string | null;
 }
 
 export interface KYCDetailsData {
@@ -48,17 +53,23 @@ export interface KYCDetailsData {
   title: string;
   propertyHolderName: string;
   propertyHolderNameMarathi: string;
+  propertyHolderNameEnglish?: string;
   occupierName: string;
   occupierNameMarathi: string;
+  occupierNameEnglish?: string;
   aadharCardNo: string;
   mobileNumber: string;
   email: string;
   shopName: string;
+  shopNameEnglish?: string;
   address: string;
+  addressEnglish?: string;
   wingNo: string;
   flatNo: string;
   shopNo: string;
   buildingName?: string;
+  alternateMobileNo?: string;
+  pinCode?: string;
 }
 
 export interface SocietyDetailsData {
@@ -80,6 +91,7 @@ export interface SocietyDetailsData {
   managerName: string;
   managerEmail: string;
   managerMobileNo: string;
+  societyDetailId?: number;
 }
 
 export interface OldDetailsData {
@@ -268,6 +280,8 @@ export interface KycDetailsApiResponse {
   mobileNo: string | null;
   emailId: string | null;
   wingNo?: string | null;
+  alternateMobileNo?: string | null;
+  pinCode?: string | null;
 }
 
 export interface PropertyBasicDetailsApiResponse {
@@ -305,10 +319,16 @@ export interface PropertyBasicDetailsApiResponse {
   plotAreaFtWidth: number;
   plotAreaMtrLength: number;
   plotAreaMtrWidth: number;
+  plotAreaSqFeet?: number | null;
+  plotAreaSqMeter?: number | null;
   wingId: number;
   wingName: string;
   ownerName?: string;
   ownerNameEnglish?: string;
+  rateSectionDescription?: string;
+  latitude?: string | null;
+  longitude?: string | null;
+  constructionYear?: string | null;
 }
 
 export interface SocietyDetailsApiResponse {
@@ -401,6 +421,22 @@ export interface OldTaxesApiResponse {
   taxYears: OldTaxYearApiResponse[];
 }
 
+export interface TabHeaderInfoData {
+  propertyId: number;
+  statusName: string;
+  oldWardNo: string | null;
+  oldPropertyNo: string | null;
+  oldPartitionNo: string | null;
+  description: string | null;
+  type: string | null;
+  category: string | null;
+  upicId: string | null;
+  ownerName: string | null;
+  address: string | null;
+  typeOfUse: string | null;
+  isCombined?: boolean;
+}
+
 export interface PtisInitialData {
   propertyDetails?: PropertyDetailsData;
   kycDetails?: KYCDetailsData;
@@ -415,6 +451,7 @@ export interface PtisInitialData {
   oldTaxesData?: OldTaxesData | null;
   showOldTaxInfo?: boolean;
   discountDetails?: DiscountData;
+  tabHeaderInfo?: TabHeaderInfoData | null;
 }
 export * from './ptis-core.types';
 export * from './ptis-defaults.types';

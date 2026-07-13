@@ -9,6 +9,8 @@ vi.mock('next-intl', () => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
+  usePathname: () => '/mock-path',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock('@/components/common/Drawer', () => ({
@@ -50,7 +52,16 @@ describe('CombinePropertyHistory', () => {
   });
 
   it('renders correctly with empty history details', () => {
-    render(<CombinePropertyHistory historyDetails={[]} />);
+    const emptyPaged = {
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    };
+    render(<CombinePropertyHistory historyDetails={emptyPaged} />);
     
     expect(screen.getByTestId('mock-drawer')).toBeDefined();
     expect(screen.getByTestId('drawer-title')).toHaveTextContent('combinePropertyHistory');
@@ -67,8 +78,18 @@ describe('CombinePropertyHistory', () => {
       { propertyId: 2, wardNo: 'W2', propertyNo: 'P2', ownerName: 'Jane Smith' },
     ];
     
+    const filledPaged = {
+      items: mockHistoryDetails,
+      totalCount: 2,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    };
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<CombinePropertyHistory historyDetails={mockHistoryDetails as any} />);
+    render(<CombinePropertyHistory historyDetails={filledPaged as any} />);
     
     expect(screen.getByTestId('master-table')).toBeDefined();
     expect(screen.getByTestId('table-rows')).toHaveTextContent('Rows: 2');
@@ -76,7 +97,16 @@ describe('CombinePropertyHistory', () => {
   });
 
   it('calls router.back() when drawer is closed', () => {
-    render(<CombinePropertyHistory historyDetails={[]} />);
+    const emptyPaged = {
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    };
+    render(<CombinePropertyHistory historyDetails={emptyPaged} />);
     
     const closeBtn = screen.getByTestId('drawer-close');
     fireEvent.click(closeBtn);

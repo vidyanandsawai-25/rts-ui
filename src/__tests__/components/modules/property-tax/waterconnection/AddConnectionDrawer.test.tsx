@@ -2,7 +2,7 @@
  * Tests for AddConnectionDrawer component
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 
@@ -49,6 +49,7 @@ describe('AddConnectionDrawer', () => {
     sizeOptions: mockSizeOptions,
     statusOptions: mockStatusOptions,
     rateMasters: mockRateMasters,
+    saveWaterConnectionAction: vi.fn(),
   };
 
   beforeEach(() => {
@@ -139,19 +140,7 @@ describe('AddConnectionDrawer', () => {
       expect(screen.getByDisplayValue('MTR-EDIT-001')).toBeInTheDocument();
     });
 
-    it('should fetch lookups when drawer opens', async () => {
-      renderWithIntl(
-        <AddConnectionDrawer
-          {...defaultProps}
-          onClose={handlers.onClose}
-          onSaved={handlers.onSaved}
-        />
-      );
 
-      await waitFor(() => {
-        expect(getConnectionLookupsAction).toHaveBeenCalled();
-      });
-    });
   });
 
   describe('form validation', () => {

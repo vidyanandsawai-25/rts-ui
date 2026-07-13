@@ -37,6 +37,7 @@ interface UseRateMasterImportExportProps {
   t: ReturnType<typeof import("next-intl").useTranslations>;
   multipliers: Record<string, number>;
   setMultipliers: (multipliers: Record<string, number>) => void;
+  rateUnit: "SqMeter" | "SqFeet";
 }
 
 export function useRateMasterImportExport({
@@ -59,6 +60,7 @@ export function useRateMasterImportExport({
   showCopyRateSection,
   t,
   multipliers,
+  rateUnit,
 }: UseRateMasterImportExportProps) {
   const [sourceUseGroup, setSourceUseGroup] = useState("");
   const [sourceRateSection, setSourceRateSection] = useState("");
@@ -155,6 +157,7 @@ export function useRateMasterImportExport({
       assessmentYear,
       allZones,
       rateCategories,
+      rateUnit,
       t,
     });
   };

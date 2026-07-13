@@ -1,0 +1,191 @@
+'use client';
+
+import React, { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { PhotoPlanSidebar, type PhotoCategory } from './PhotoPlanSidebar';
+import { PhotoPlanGrid } from './PhotoPlanGrid';
+import { PhotoPlanViewer } from './PhotoPlanViewer';
+import { PhotoPlanModals } from './PhotoPlanModals';
+import { ChangeDetectionCompare } from './ChangeDetectionCompare';
+import { usePhotoPlanDrawerState } from '@/hooks/ptis/photoplan/usePhotoPlanDrawerState';
+import { patchCategory } from '@/lib/utils/ptis-photo-plan-localization';
+
+import type { WaybackRelease } from '@/lib/api/wayback.service';
+
+interface PhotoPlanDrawerBodyProps {
+  categories: PhotoCategory[];
+  onCategoriesChange: (categories: PhotoCategory[]) => void;
+  initialCategoryIndex?: number;
+  propertyId?: number;
+  fullyLoadedIds: Set<number>;
+  onFullyLoadedIdsChange: (ids: Set<number>) => void;
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
+}
+
+export function PhotoPlanDrawerBody({
+  categories,
+  onCategoriesChange,
+  initialCategoryIndex = 0,
+  propertyId,
+  fullyLoadedIds,
+  onFullyLoadedIdsChange,
+  initialLatitude,
+  initialLongitude,
+  initialWaybackReleases,
+}: PhotoPlanDrawerBodyProps): React.ReactElement {
+  const t = useTranslations('ptis');
+
+  const {
+    selectedCategoryIndex, setSelectedCategoryIndex,
+    selectedImageIndex, setSelectedImageIndex,
+    viewMode, setViewMode, cachedCategories,
+    isLoadingPhotos, fetchError, activeCategory,
+    loadPhotos, mutations, isUploading,
+    handleNext, handlePrev, handleDownload,
+  } = usePhotoPlanDrawerState({
+    categories,
+    onCategoriesChange,
+    propertyId,
+    initialCategoryIndex,
+    fullyLoadedIds,
+    onFullyLoadedIdsChange,
+  });
+
+  const {
+    isNamingOpen, isReplacement, isUploading: isPhotoUploading,
+    isAdding, isReplacing, isDeleting, handleAddPhoto, handleReplacePhoto,
+    handleNamingSubmit, handleDeletePhoto, setIsNamingOpen,
+    replaceImage,
+  } = mutations;
+
+  const imagesMaxOrder = activeCategory?.images?.length
+    ? Math.max(...activeCategory.images.map((img) => img.displayOrder ?? 0))
+    : 0;
+
+  const isSplit = viewMode === 'viewer';
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+    let style: HTMLStyleElement | null = null;
+    if (!isTest) {
+      style = document.createElement('style');
+      style.textContent = '.drawer-instance:has(.photo-plan-drawer-content) { width: 50% !important; max-width: 50vw !important; } div:has(+ .drawer-instance:has(.photo-plan-drawer-content)) { background-color: transparent !important; backdrop-filter: none !important; }';
+      document.head.appendChild(style);
+    }
+    return () => {
+      document.body.style.overflow = '';
+      if (style) style.remove();
+    };
+  }, []);
+
+  return (
+    <div className="relative flex flex-col xl:flex-row h-[calc(100vh-56px)] bg-slate-50 overflow-hidden photo-plan-drawer-content w-full">
+      {isUploading && (
+        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-50 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+        </div>
+      )}
+
+      <PhotoPlanSidebar
+        categories={cachedCategories}
+        selectedCategoryIndex={selectedCategoryIndex}
+        onSelectCategory={setSelectedCategoryIndex}
+        title={t('media.additionalImages') || 'Categories'}
+      />
+
+      <div className="flex-1 flex flex-col bg-slate-50 relative group/viewer overflow-hidden">
+        {activeCategory?.photoTypeCode === 'CHANGE_DETECTION' && viewMode === 'compare' ? (
+          <ChangeDetectionCompare
+            activeCategory={activeCategory}
+            onBackToGrid={() => {
+              setSelectedImageIndex(null);
+              setViewMode('grid');
+            }}
+            onImagesChange={(updatedImages) => {
+              onCategoriesChange(patchCategory(cachedCategories, selectedCategoryIndex, updatedImages));
+            }}
+            initialLatitude={initialLatitude}
+            initialLongitude={initialLongitude}
+            initialWaybackReleases={initialWaybackReleases}
+            propertyId={propertyId}
+          />
+        ) : isSplit ? (
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <div className="h-[85%] border-b border-slate-200 flex flex-col bg-slate-50 relative group/viewer overflow-hidden">
+              <PhotoPlanViewer
+                categoryName={activeCategory?.photoTypeName || ''}
+                images={activeCategory?.images || []}
+                selectedImageIndex={selectedImageIndex || 0}
+                isAdding={isAdding}
+                isReplacing={isReplacing}
+                isDeleting={isDeleting}
+                onBackToGrid={() => { setSelectedImageIndex(null); setViewMode('grid'); }}
+                onNext={handleNext} onPrev={handlePrev}
+                onDownload={handleDownload} onUpload={handleAddPhoto}
+                onReplace={handleReplacePhoto} onDelete={handleDeletePhoto}
+              />
+            </div>
+            <div className="h-[15%] flex flex-col overflow-hidden bg-slate-50">
+              <PhotoPlanGrid
+                key={activeCategory?.photoTypeCode || activeCategory?.photoTypeName || 'carousel'}
+                categoryName={activeCategory?.photoTypeName || ''}
+                images={activeCategory?.images || []}
+                selectedImageIndex={selectedImageIndex}
+                onSelectImage={(idx) => {
+                  if (activeCategory?.photoTypeCode === 'CHANGE_DETECTION') {
+                    setViewMode('compare');
+                  } else {
+                    setSelectedImageIndex(idx);
+                    setViewMode('viewer');
+                  }
+                }}
+                onAddPhoto={handleAddPhoto} onDeletePhoto={handleDeletePhoto}
+                onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos}
+                error={fetchError} onRetry={loadPhotos}
+                photoCount={activeCategory?.photoCount}
+                hideHeader isCarouselMode={true} className="p-2 px-3"
+              />
+            </div>
+          </div>
+        ) : (
+          <PhotoPlanGrid
+            categoryName={activeCategory?.photoTypeName || ''}
+            photoTypeCode={activeCategory?.photoTypeCode}
+            onCompare={() => setViewMode('compare')}
+            images={activeCategory?.images || []}
+            selectedImageIndex={selectedImageIndex}
+            onSelectImage={(idx) => {
+              if (activeCategory?.photoTypeCode === 'CHANGE_DETECTION') {
+                setViewMode('compare');
+              } else {
+                setSelectedImageIndex(idx);
+                setViewMode('viewer');
+              }
+            }}
+            onAddPhoto={handleAddPhoto} onDeletePhoto={handleDeletePhoto}
+            onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos}
+            error={fetchError} onRetry={loadPhotos}
+            photoCount={activeCategory?.photoCount}
+          />
+        )}
+      </div>
+
+      <PhotoPlanModals
+        isNamingOpen={isNamingOpen}
+        onCloseNaming={() => setIsNamingOpen(false)}
+        activeCategoryName={activeCategory?.photoTypeName || ''}
+        activeCategoryTypeId={activeCategory?.photoTypeId || 0}
+        activeCategoryTypeCode={activeCategory?.photoTypeCode || ''}
+        activeCategoryImagesLength={activeCategory?.images?.length || 0}
+        activeCategoryImagesMaxOrder={imagesMaxOrder}
+        isReplacement={isReplacement}
+        isPhotoUploading={isPhotoUploading}
+        handleNamingSubmit={handleNamingSubmit}
+        replaceImage={replaceImage}
+      />
+    </div>
+  );
+}

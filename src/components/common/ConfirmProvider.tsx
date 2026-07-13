@@ -58,12 +58,14 @@ interface DialogButtonProps {
   onClick: () => void;
   icon?: React.ElementType;
   variant: "confirm" | "cancel";
+  autoFocus?: boolean;
 }
 function DialogButton({
   label,
   onClick,
   icon: BtnIcon,
   variant,
+  autoFocus,
 }: DialogButtonProps): JSX.Element {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold " +
@@ -77,9 +79,16 @@ function DialogButton({
       : "bg-red-600 text-white hover:bg-red-700 focus:ring-red-300";
 
   const cls = variant === "cancel" ? cancelBtn : confirmBtn;
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    if (autoFocus && buttonRef.current) {
+      buttonRef.current.focus();
+    }
+  }, [autoFocus]);
 
   return (
-    <button type="button" onClick={onClick} className={`${base} ${cls}`}>
+    <button type="button" ref={buttonRef} onClick={onClick} className={`${base} ${cls}`}>
       {BtnIcon ? <BtnIcon className="h-4 w-4" /> : null}
       <span>{label}</span>
     </button>
@@ -93,6 +102,31 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
   const [open, setOpen] = useState(false);
   const [payload, setPayload] = useState<ConfirmPayload | null>(null);
   const [mounted, setMounted] = useState(false);
+
+  const modalRef = React.useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Tab") {
+      if (!modalRef.current) return;
+      const focusable = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          last.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === last) {
+          first.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => setMounted(true), 0);
@@ -200,6 +234,8 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
 
               {/* Square Modal */}
               <div
+                ref={modalRef}
+                onKeyDown={handleKeyDown}
                 role="dialog"
                 aria-modal="true"
                 className="relative w-[420px] h-[420px] max-w-[92vw] max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-gray-200 flex flex-col"
@@ -230,17 +266,18 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
                   {/* Buttons */}
                   <div className="mt-8 flex items-center justify-center gap-3">
                     <DialogButton
-                      variant="cancel"
-                      label={computed.cancelText}
-                      onClick={handleCancel}
-                      icon={X}
-                    />
-
-                    <DialogButton
                       variant="confirm"
                       label={computed.confirmText}
                       onClick={handleConfirm}
                       icon={confirmIcon}
+                      autoFocus
+                    />
+
+                    <DialogButton
+                      variant="cancel"
+                      label={computed.cancelText}
+                      onClick={handleCancel}
+                      icon={X}
                     />
                   </div>
                 </div>

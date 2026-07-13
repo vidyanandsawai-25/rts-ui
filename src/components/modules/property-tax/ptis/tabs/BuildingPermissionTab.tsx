@@ -1,11 +1,14 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { format } from 'date-fns';
-import { AlertCircle, Eye } from 'lucide-react';
+import { AlertCircle, Eye, Loader2 } from 'lucide-react';
 import FieldShell from '@/components/common/FieldShell';
 import { ValueDisplay } from './components/ValueDisplay';
+import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
+import { DocumentViewerModal } from '@/components/common';
+import { toast } from 'sonner';
 import type {
   BuildingPermissionData,
   BuildingPermissionItem,
@@ -19,7 +22,25 @@ export interface BuildingPermissionTabProps {
 
 const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) => {
   const t = useTranslations('ptis');
+  const locale = useLocale();
+  const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
+  const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string; label?: string } | null>(null);
   const items = (data?.items || []).filter((item) => item.isActive);
+
+  const closeViewer = React.useCallback(() => {
+    if (viewerData?.url) {
+      URL.revokeObjectURL(viewerData.url);
+    }
+    setViewerData(null);
+  }, [viewerData]);
+
+  React.useEffect(() => {
+    return () => {
+      if (viewerData?.url) {
+        URL.revokeObjectURL(viewerData.url);
+      }
+    };
+  }, [viewerData]);
 
   if (items.length === 0) {
     return (
@@ -66,17 +87,36 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
               <ValueDisplay value={formattedDate} />
             </div>
           </div>
-          {item.documentViewUrl && (
-            <a
-              href={item.documentViewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center"
+          {item.documentGuid && (
+            <button
+              type="button"
+              disabled={activeViewingGuid !== null}
+              onClick={async (e) => {
+                e.stopPropagation();
+                setActiveViewingGuid(item.documentGuid!);
+                try {
+                  const res = await getDocumentBlobUrl(item.documentGuid!, locale);
+                  setViewerData({
+                    isOpen: true,
+                    url: res.url,
+                    name: item.fileName || "Document",
+                    label: item.certificateTypeName
+                  });
+                } catch (err: unknown) {
+                  toast.error(err instanceof Error ? err.message : "Failed to view document");
+                } finally {
+                  setActiveViewingGuid(null);
+                }
+              }}
+              className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center border-0 bg-transparent disabled:opacity-50"
               title={t('actions.viewDocument') || 'View Document'}
             >
-              <Eye className="h-3.5 w-3.5" />
-            </a>
+              {activeViewingGuid === item.documentGuid ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+            </button>
           )}
         </div>
       </FieldShell>
@@ -84,11 +124,22 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
   };
 
   return (
-    <div className="max-h-[105px] overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-        {items.map(renderCard)}
+    <>
+      <div className="max-h-[105px] overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          {items.map(renderCard)}
+        </div>
       </div>
-    </div>
+      {viewerData && (
+        <DocumentViewerModal
+          isOpen={viewerData.isOpen}
+          onClose={closeViewer}
+          fileUrl={viewerData.url}
+          fileName={viewerData.name}
+          label={viewerData.label}
+        />
+      )}
+    </>
   );
 };
 

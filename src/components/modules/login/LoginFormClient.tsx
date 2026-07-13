@@ -67,7 +67,13 @@ function LoginFormCredentialsBody({
       animate={{ opacity: 1, x: 0 }}
       action={formAction}
       onSubmit={(e: FormEvent<HTMLFormElement>) => {
-        if (!login.validateForm()) e.preventDefault();
+        if (!login.validateForm()) {
+          e.preventDefault();
+        } else {
+          try {
+            sessionStorage.setItem('is_tab_active_session', 'true');
+          } catch {}
+        }
       }}
       className="relative space-y-4"
     >

@@ -62,10 +62,12 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
 
   // Fetch assessment years for dropdowns
   const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
-  const assessmentYearOptions = assessmentYearData.items.map((year) => ({
-    label: `${year.fromYear}-${year.toYear}`,
-    value: year.id.toString(),
-  }));
+  const assessmentYearOptions = assessmentYearData.items
+    .filter((year) => year.isActive)
+    .map((year) => ({
+      label: `${year.fromYear}-${year.toYear}`,
+      value: year.id.toString(),
+    }));
 
   const result = await fetchFloorFactorCVMasterPagedServerAction(pageNumber, pageSize, searchTerm, selectedYearRange, sortBy, sortOrder);
 

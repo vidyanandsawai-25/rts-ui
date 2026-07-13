@@ -1,4 +1,4 @@
-﻿name: CI Build and Test
+name: CI Build and Test
 
 on:
   pull_request:
@@ -52,6 +52,8 @@ jobs:
       
       - name: Run tests with coverage
         run: npm run test:coverage
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
       
       - name: Upload coverage to Azure Blob Storage
         shell: pwsh
@@ -81,7 +83,7 @@ jobs:
 
   coverage-report:
     needs: build-and-test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux]
     if: github.event_name == 'pull_request'
     permissions:
       contents: read

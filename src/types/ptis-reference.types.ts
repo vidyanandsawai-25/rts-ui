@@ -67,39 +67,3 @@ export interface FloorResponse {
   updatedDate?: string | null;
 }
 
-export interface PropertyBasicDetailsApiResponse {
-  propertyId: number;
-  wardId: number;
-  wardNo: string;
-  zoneId: number;
-  division: string;
-  propertyNo: string;
-  partitionNo: string;
-  flatOrShopNo: string;
-  plotNo: string;
-  surveyNo: string;
-  taxZoneId: number;
-  taxZoneNo: string;
-  categoryId: number;
-  categoryName: string;
-  subCategoryId?: number;
-  subCategoryName?: string;
-  propertyTypeId: number;
-  propertyDescription: string;
-  upicId: string;
-  subZoneNo: string;
-  wingNo: string;
-  noOfResidentialToilets: number;
-  noOfCommercialToilets: number;
-  totalCarpetAreaSqMeter: number;
-  totalBuiltupAreaSqMeter: number;
-  totalCarpetAreaSqFeet: number;
-  totalBuiltupAreaSqFeet: number;
-  plotArea: number;
-  plotAreaFtLength: number;
-  plotAreaFtWidth: number;
-  plotAreaMtrLength: number;
-  plotAreaMtrWidth: number;
-  wingId: number;
-  wingName: string;
-}

@@ -3,6 +3,9 @@ import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/
 import { bulkCreateRateMasterAction, bulkUpdateRateMasterAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { buildPayloadFromMatrix, applyMultiplierToMatrix, buildBulkUpdatePayload, buildBulkCreatePayload } from "./ratePayloadHelpers";
 
+// Error marker for no rates to update
+export const NO_RATES_TO_UPDATE_ERROR = '__NO_RATES_TO_UPDATE__';
+
 interface RateSubmission {
   matrixData: Array<Record<string, unknown>>;
   useGroup: string;
@@ -34,6 +37,7 @@ interface BuildPayloadConfig {
   selectedUseGroup: string;
   assessmentYear: string;
   rateFrequency: "Monthly" | "Yearly";
+  rateUnit: "SqMeter" | "SqFeet";
   rateCategories: RateCategory[];
 }
 
@@ -104,13 +108,24 @@ export async function processSingleSubmission(
     submission.useGroup
   );
 
+  // Check if there are no operations to perform
+  if (updates.length === 0 && inserts.length === 0) {
+    errors.push(NO_RATES_TO_UPDATE_ERROR);
+    return { success: false, errors };
+  }
+
   // Process updates
   if (updates.length > 0) {
     try {
       const updateResult = await bulkUpdateRateMasterAction(buildBulkUpdatePayload(updates));
       if (!updateResult.success) {
-        const errorMsg = parseBackendError(updateResult.message || 'Failed to update rates');
-        errors.push(`${getUseGroupLabel(submission.useGroup)} (Update): ${errorMsg}`);
+        const errorMsg = updateResult.message || 'Failed to update rates';
+        // Check if backend returned "No rates to update" error
+        if (errorMsg.includes('No rates to update')) {
+          errors.push(NO_RATES_TO_UPDATE_ERROR);
+        } else {
+          errors.push(`${getUseGroupLabel(submission.useGroup)} (Update): ${parseBackendError(errorMsg)}`);
+        }
       }
     } catch (error) {
       errors.push(error instanceof Error ? error.message : 'Server action failed');
@@ -122,8 +137,8 @@ export async function processSingleSubmission(
     try {
       const createResult = await bulkCreateRateMasterAction(buildBulkCreatePayload(inserts));
       if (!createResult.success) {
-        const errorMsg = parseBackendError(createResult.message || 'Failed to create rates');
-        errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${errorMsg}`);
+        const errorMsg = createResult.message || 'Failed to create rates';
+        errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${parseBackendError(errorMsg)}`);
       }
     } catch (error) {
       errors.push(error instanceof Error ? error.message : 'Server action failed');
@@ -142,7 +157,7 @@ export async function processSingleSubmission(
 export async function processRateSubmissions(
   submissions: RateSubmission[],
   config: BuildPayloadConfig,
-  getUseGroupLabel: (useGroup: string) => string
+  _getUseGroupLabel: (useGroup: string) => string
 ): Promise<ProcessSubmissionsResult> {
   let successCount = 0;
   const errorMessages: string[] = [];
@@ -152,7 +167,7 @@ export async function processRateSubmissions(
       submission,
       submission.backendRates || [],
       config,
-      getUseGroupLabel
+      _getUseGroupLabel
     );
 
     if (success) {

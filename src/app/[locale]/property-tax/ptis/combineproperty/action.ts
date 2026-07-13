@@ -157,18 +157,24 @@ export async function createCombinePropertyAction(
 
 /* ================================================================
    GET COMBINE PROPERTIES HISTORY
-   Optional: sourcePropertyId
+   Optional: sourcePropertyId, wardId, propertyNo, partitionNo, pageNumber, pageSize
 ================================================================ */
 export async function fetchCombinePropertiesHistoryAction(
   params?: GetCombinePropertiesHistoryParams
-): Promise<PropertyCombineDetails[]> {
+): Promise<PagedResponse<PropertyCombineDetails>> {
   try {
     if (params?.sourcePropertyId !== undefined && (!Number.isFinite(params.sourcePropertyId) || params.sourcePropertyId <= 0)) {
       logger.warn("Invalid Source Property ID", { sourcePropertyId: params.sourcePropertyId });
-      return [];
+      return { items: [], totalCount: 0, pageNumber: params.pageNumber ?? 1, pageSize: params.pageSize ?? 10, totalPages: 0, hasPrevious: false, hasNext: false };
     }
 
-    const result = await getCombinePropertiesHistory(params);
+    const safeParams = {
+      ...params,
+      pageNumber: params?.pageNumber ?? 1,
+      pageSize: params?.pageSize ?? 10
+    };
+
+    const result = await getCombinePropertiesHistory(safeParams);
     return result;
   } catch (error: unknown) {
     logger.error("Error fetching property combine history", undefined, error);

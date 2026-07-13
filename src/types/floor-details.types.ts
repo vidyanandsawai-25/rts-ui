@@ -1,7 +1,8 @@
 import type React from 'react';
 import { LookupData } from "./common-details.types";
 import { FloorData, RoomAPIResponse, RoomTypeResponse } from "./room-details.types";
-import { RenterDetailItem, RenterMastItem } from "./renter-details.types";
+import { RenterDetailItem, RenterMastItem } from "./renter/renter-details.types";
+import type { TypeOfUseApiItem } from "./property-basic-details.types";
 
 /* -------------------------------------------------------------------------- */
 /*                                  FLOOR DETAILS                             */
@@ -31,19 +32,7 @@ export interface ConstructionTypeResponse {
     [key: string]: unknown;
 }
 
-export interface TypeOfUseApiItem {
-    typeOfUseId: number;
-    typeOfUseCode: string;
-    description: string;
-    type: string;
-    typeOfUseGroupId: number;
-    searchKey: string | null;
-    searchSequence: number | null;
-    isActive: boolean;
-    createdDate: string;
-    updatedDate: string | null;
-    [key: string]: unknown;
-}
+export type { TypeOfUseApiItem } from "./property-basic-details.types";
 
 export interface SubTypeOfUseResponse {
     id?: number;
@@ -160,6 +149,10 @@ export interface FloorAPIResponse {
     isRenter?: boolean;
     propertyRooms?: RoomAPIResponse[];
     roomWiseSubmissionDetails?: RoomAPIResponse[];
+    length?: number | string | null;
+    width?: number | string | null;
+    lengthMtr?: number | string | null;
+    widthMtr?: number | string | null;
 }
 
 export interface FloorDetailsProps {
@@ -229,6 +222,7 @@ export interface EditSidebarFormProps {
 
 export interface EditSidebarProps {
     wardNo: string;
+    wardId?: number;
     propertyNo: string;
     partitionNo: string;
     locale: string;
@@ -249,6 +243,11 @@ export interface EditSidebarProps {
     initialPropertyID: string | number | undefined;
     initialFloors: unknown[];
     initialFloorDetails: unknown;
+    initialPlotArea?: {
+        length?: number | string | null;
+        width?: number | string | null;
+        totalPlotArea?: number | string | null;
+    } | null;
     apiErrors?: string[];
 }
 
@@ -376,6 +375,9 @@ export interface BasicInfoSectionProps extends BaseFormSectionProps {
 
     /** Triggers lazy loading for specific dropdown data */
     handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
+
+    /** Indicates if we are in Add Floor mode */
+    isAddingNewFloor?: boolean;
 }
 
 /**
@@ -534,7 +536,7 @@ export {
     type ParameterInputProps
 } from "./room-details.types";
 export * from "./offset-details.types";
-export * from "./renter-details.types";
+export * from "./renter/renter-details.types";
 
 // FloorSubmissionPayload - used for floor submission API calls
 // FloorSubmissionPayload - used for floor submission API calls
@@ -542,7 +544,7 @@ export interface FloorSubmissionPayload {
     propertyId: number;
     propertyDetailsId?: number;
     updatedBy?: number;
-    floorId: number | string;
+    floorId?: number | string;
     floorDescription?: string;
     subFloorId?: number | string;
     subFloorDescription?: string;
@@ -580,6 +582,14 @@ export interface FloorSubmissionPayload {
     renters?: unknown[];
     isRenter?: boolean;
     roomWiseSubmissionDetails?: unknown[];
+    selectedFloorType?: 'Construction' | 'OpenPlot';
+    isOpenPlot?: boolean;
+    length?: number | string | null;
+    width?: number | string | null;
+    lengthMtr?: number | string | null;
+    widthMtr?: number | string | null;
+    roomWiseMinusData?: unknown[];
+    typeOfUseCategoryId?: number | string | null;
 }
 
 // QuickDataEntryPayload - used for quick data entry submission
@@ -609,4 +619,49 @@ export interface RenterTableEntryPostRow {
     TableIncrementApplied: number;
     TableSegmentType: string;
     TableStatusLabel: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            DATA ENTRY SAME AS TYPES                        */
+/* -------------------------------------------------------------------------- */
+
+export interface SelectableProperty {
+    id: string | number;
+    propertyFloorId?: string | number | null;
+    propertyDetailsId?: string | number | null;
+    wardId?: string | number;
+    wardNo: string;
+    propertyNo: string;
+    partitionNo: string;
+    type: string | number;
+    typeLabel?: string;
+    wing: string;
+    flatNo: string;
+    carpetAreaSqFeet?: number | null;
+    carpetAreaSqMeter?: number | null;
+}
+
+export interface DataEntrySameAsItem {
+    propertyId: number;
+    propertyFloorId?: number | null;
+    propertyDetailsId?: number | null;
+    wardId: number;
+    propertyNo: string;
+    partitionNo: string;
+    type: string | number;
+    typeName?: string | null;
+    typeLabel?: string | null;
+    typeDescription?: string | null;
+    propertyTypeName?: string | null;
+    apartmentType?: string | null;
+    wingName: string;
+    flatOrShopNo: string;
+}
+
+export interface DataEntrySameAsResponse {
+    success: boolean;
+    message: string;
+    items: DataEntrySameAsItem[];
+    errors: unknown;
+    correlationId: string | null;
 }

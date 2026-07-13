@@ -20,13 +20,13 @@ export const ValueDisplay: React.FC<ValueDisplayProps> = ({
     <div
       role="textbox"
       aria-readonly="true"
-      className={`relative flex items-center px-2 border rounded text-[13px] leading-tight text-black bg-white border-blue-300 h-7 w-full overflow-hidden truncate ${className ?? ''}`}
+      className={`relative flex items-center px-2 border rounded text-[13px] font-semibold leading-tight text-black bg-white border-blue-300 h-7 w-full overflow-hidden truncate ${className ?? ''}`}
       title={displayValue.toString()}
       {...rest}
     >
       {Icon && (
         <Icon
-          className={`w-3 h-3 absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none ${prefixIconClassName || 'text-green-600'}`}
+          className={`w-5 h-5 absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none ${prefixIconClassName || 'text-green-600'}`}
         />
       )}
       <span className={Icon ? 'pl-5 truncate' : 'truncate'}>{displayValue}</span>

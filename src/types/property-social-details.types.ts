@@ -16,6 +16,13 @@ export interface SocialAttributeHierarchyDto {
     dateValue?: string | null;
     documentBindingId?: number | null;
     remark?: string | null;
+    photoTypeId?: number | null;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
+    isActive?: boolean;
+    documentGuid?: string | null;
+    photoBindingId?: number | null;
+    photoGuid?: string | null;
     children: SocialAttributeHierarchyDto[];
 }
 
@@ -41,7 +48,7 @@ export interface PropertySocialDetailsDto {
 }
 
 export interface PropertySocialInfoItemDto {
-    id?: number | null; // This corresponds to the PropertySocialDetailId in C# if existing
+    id?: number; // This corresponds to the PropertySocialDetailId in C# if existing
     socialAttributeId: number;
     bitValue?: boolean | null;
     intValue?: number | null;
@@ -50,6 +57,7 @@ export interface PropertySocialInfoItemDto {
     dateValue?: string | null;
     documentBindingId?: number | null;
     remark?: string | null;
+    isActive?: boolean;
 }
 
 export interface PropertySocialInfoApiResponse {

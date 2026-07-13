@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { AgeFactorCVMaster } from "@/types/ageFactorCv.types";
 import { useAgeFactorCvRowOps } from "./useAgeFactorCvRowOps";
@@ -72,7 +72,7 @@ export const useAgeFactorCvWeightage = ({
         setSelectedAgeRange,
         setUserAddedAgeRanges,
         ageRangeOptions,
-        isAgeRangeAdded,
+
         setIsAgeRangeAdded,
         clearFilters,
         handleAgeRangeChange,
@@ -81,7 +81,7 @@ export const useAgeFactorCvWeightage = ({
         changePage,
         changePageSize,
         handleClearAll,
-        getMissingRecordsCount,
+
         sortBy: activeSortBy,
         sortOrder: activeSortOrder,
         handleSort,
@@ -105,12 +105,9 @@ export const useAgeFactorCvWeightage = ({
         }
     }, [hasNewRecords, tW, addToast]);
 
-    const missingRecordsCount = useMemo(
-        () => getMissingRecordsCount(constructionTypeOptions, allAgeFactors),
-        [getMissingRecordsCount, constructionTypeOptions, allAgeFactors]
-    );
 
-    const canGenerateAll = hasNewRecords || isAgeRangeAdded || missingRecordsCount > 0;
+
+
 
     const {
         isUpdating,
@@ -249,7 +246,7 @@ export const useAgeFactorCvWeightage = ({
         isGeneratingAll,
         hasNewRecords,
         newRecordsCount,
-        canGenerateAll,
+
         getRowUid,
         addToast,
         removeToast,

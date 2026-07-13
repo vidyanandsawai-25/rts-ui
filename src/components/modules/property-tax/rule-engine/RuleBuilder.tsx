@@ -1,7 +1,11 @@
 'use client';
 
-import { RuleItem, RuleScope, FieldConfig, EffectTypeConfig } from '@/types/rule-engine.types';
-import { useRuleBuilder } from './useRuleBuilder';
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useConfirm } from '@/components/common/ConfirmProvider';
+import { RuleItem, RuleScope, FieldConfig, EffectTypeConfig } from '@/types/rule-engine';
+import { useRuleBuilder } from '@/hooks/rule-engine/useRuleBuilder';
 import RuleBuilderHeader from './RuleBuilderHeader';
 import RuleBuilderCard from './RuleBuilderCard';
 import RuleSaveReasonModal from './RuleSaveReasonModal';
@@ -24,53 +28,118 @@ interface RuleBuilderProps {
 }
 
 export default function RuleBuilder(props: RuleBuilderProps) {
+  const router = useRouter();
+  const confirmCtx = useConfirm();
+  const t = useTranslations('ruleEngine');
+
   const {
     ruleName, setRuleName,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
-    description, setDescription,
+    ruleDescription, setRuleDescription,
     priority, setPriority,
-    conditions, setConditions,
-    effect, setEffect, fields,
+    isActive, setIsActive,
     stopProcessing, setStopProcessing,
-    skipRuleIds, setSkipRuleIds,
-    exclusionReason, setExclusionReason,
+    rulesList, fields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
-    isSaving,
+    isSaving, 
+    addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
+    updateBlockEffect, addEffectToBlock, removeEffectFromBlock,
   } = useRuleBuilder(props);
 
+  // Serialise current form state — passed to SaveRulesButton which holds the initial snapshot
+  const currentData = JSON.stringify({ ruleName, ruleCategory, description: ruleDescription, priority, ruleScopeId, rulesList, isActive, stopProcessing });
+
+  const currentDataRef = React.useRef(currentData);
+  React.useEffect(() => {
+    currentDataRef.current = currentData;
+  }, [currentData]);
+
+  const [snapshot, setSnapshot] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setSnapshot(currentDataRef.current);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const hasChanges = snapshot !== null && currentData !== snapshot;
+
+  // Prompt before unloading the page/tab
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChanges && !isSaving) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges, isSaving]);
+
+  // Prompt when navigating via Back button
+  const handleBackClick = () => {
+    if (hasChanges && !isSaving) {
+      confirmCtx.confirm({
+        variant: 'warning',
+        title: t('unsavedChanges.title'),
+        description: t('unsavedChanges.description'),
+        confirmText: t('unsavedChanges.confirm'),
+        cancelText: t('unsavedChanges.cancel'),
+        onConfirm: () => {
+          router.push(`/${props.locale}/property-tax/rule-engine`);
+        },
+      });
+    } else {
+      router.push(`/${props.locale}/property-tax/rule-engine`);
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-5 w-full pb-8 select-none">
-      <RuleBuilderHeader locale={props.locale} />
+    <div className="flex flex-col gap-3.5 w-full px-1 pb-8 lg:pb-0 select-none lg:h-[calc(100vh-170px)] lg:overflow-hidden">
+      <RuleBuilderHeader locale={props.locale} onBackClick={handleBackClick} />
 
-      <TargetFilterPanel
-        ruleName={ruleName} setRuleName={setRuleName}
-        description={description} setDescription={setDescription}
-        priority={priority} setPriority={setPriority}
-        ruleScopeId={ruleScopeId} setRuleScopeId={setRuleScopeId}
-        ruleCategory={ruleCategory} setRuleCategory={setRuleCategory}
-        scopes={props.scopes}
-        corporations={props.corporations}
-        ruleCategoryOptions={props.ruleCategoryOptions}
-      />
+      <div className="flex flex-col gap-4 w-full flex-1 lg:min-h-0 lg:overflow-hidden">
+        {/* Top Side: Rule Details Form */}
+        <div className="w-full shrink-0">
+          <TargetFilterPanel
+            ruleName={ruleName} setRuleName={setRuleName}
+            ruleScopeId={ruleScopeId} setRuleScopeId={setRuleScopeId}
+            ruleCategory={ruleCategory} setRuleCategory={setRuleCategory}
+            ruleDescription={ruleDescription} setRuleDescription={setRuleDescription}
+            priority={priority} setPriority={setPriority}
+            scopes={props.scopes}
+            ruleCategoryOptions={props.ruleCategoryOptions}
+            isActive={isActive} setIsActive={setIsActive}
+            stopProcessing={stopProcessing} setStopProcessing={setStopProcessing}
+          />
+        </div>
 
-      <RuleBuilderCard
-        activeScopeName={activeScopeName}
-        handleSaveClick={handleSaveClick}
-        isSaving={isSaving}
-        initialRule={props.initialRule}
-        conditions={conditions} fields={fields} setConditions={setConditions}
-        effect={effect} setEffect={setEffect}
-        effectTypes={props.effectTypes} categoryOptions={props.categoryOptions}
-        effectTypeConfigs={props.effectTypeConfigs}
-        stopProcessing={stopProcessing}
-        onStopProcessingChange={setStopProcessing}
-        skipRuleIds={skipRuleIds}
-        onSkipRuleIdsChange={setSkipRuleIds}
-        exclusionReason={exclusionReason}
-        onExclusionReasonChange={setExclusionReason}
-      />
+        {/* Bottom Side: Visual Rule Builder */}
+        <div className="flex-grow min-w-0 w-full flex flex-col lg:min-h-0 lg:overflow-hidden">
+          <RuleBuilderCard
+            activeScopeName={activeScopeName}
+            handleSaveClick={handleSaveClick}
+            isSaving={isSaving}
+            currentData={currentData}
+            isEdit={!!props.initialRule}
+            rulesList={rulesList}
+            fields={fields}
+            effectTypes={props.effectTypes}
+            categoryOptions={props.categoryOptions}
+            effectTypeConfigs={props.effectTypeConfigs}
+            onAddRuleBlock={addRuleBlock}
+            onRemoveRuleBlock={removeRuleBlock}
+            onMoveRuleBlock={moveRuleBlock}
+            onUpdateRuleBlock={updateRuleBlock}
+            onUpdateBlockEffect={updateBlockEffect}
+            onAddEffectToBlock={addEffectToBlock}
+            onRemoveEffectFromBlock={removeEffectFromBlock}
+          />
+        </div>
+      </div>
 
       <RuleSaveReasonModal
         open={isReasonOpen}

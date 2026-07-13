@@ -27,7 +27,7 @@ interface AgeFactorCvHeaderExtraProps {
     factorValue: string;
     hasNewRecords: boolean;
     newRecordsCount: number;
-    canGenerateAll: boolean;
+
     isGeneratingAll: boolean;
     isBulkUpdating: boolean;
     isUpdating: boolean;
@@ -61,7 +61,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
     factorValue,
     hasNewRecords,
     newRecordsCount,
-    canGenerateAll,
+
     isGeneratingAll,
     isBulkUpdating,
     isUpdating,
@@ -259,7 +259,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                 <AddButton
                     size="sm"
                     onClick={handleGenerateAll}
-                    disabled={!canGenerateAll || isGeneratingAll || isBulkUpdating || isUpdating}
+                    disabled={!hasNewRecords || isGeneratingAll || isBulkUpdating || isUpdating}
                     className="h-[34px] px-4 font-bold bg-[#0052CC]"
                     label={isGeneratingAll ? tW('common.buttons.generating') : tW('common.buttons.generateAll')}
                 />

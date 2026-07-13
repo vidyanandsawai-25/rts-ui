@@ -11,7 +11,7 @@ import {
     getSubFloorDataAction,
 } from '../actions';
 import { PageContainer } from '@/components/common/PageContainer';
-import { floorNeedsLookupLabels } from '@/lib/utils/renter-form-mapper';
+import { floorNeedsLookupLabels } from '@/lib/utils/renter/renter-form-mapper';
 
 import { cache } from 'react';
 
@@ -106,6 +106,7 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
 
     return (
         <PageContainer>
+            {/* eslint-disable-next-line i18next/no-literal-string */}
             <Suspense fallback={<div className="p-8 flex items-center justify-center">Loading Renter Screen...</div>}>
                 <div className="flex flex-col flex-1 w-full">
                     <RenterDetailsForm 

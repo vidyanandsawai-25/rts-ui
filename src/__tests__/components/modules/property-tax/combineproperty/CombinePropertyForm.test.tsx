@@ -156,13 +156,13 @@ describe('CombinePropertyForm', () => {
       selectedBasePropertyId: '1',
       reviewData: [{ propertyId: 2, ownerName: 'John' }, { propertyId: 3, ownerName: 'Jane' }] as unknown as PropertyCombineDetails[],
       hasDifferentOwners: true,
-      differentOwnerProps: 'Ward No.: W1 Property No.: P3',
+      differentOwnerProps: 'propertyNo: W1-P3',
     } as unknown as ReturnType<typeof useCombinePropertyForm>);
 
     render(<CombinePropertyForm {...mockProps} selectedBasePropertyId="1" />);
 
     expect(screen.getByText('warningDifferentOwners')).toBeDefined();
-    expect(screen.getByText('• Ward No.: W1 Property No.: P3')).toBeDefined();
+    expect(screen.getByText('• propertyNo: W1-P3')).toBeDefined();
   });
 
   it('calls handleProceed when proceed button is clicked', () => {

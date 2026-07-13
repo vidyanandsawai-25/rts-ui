@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils/cn";
 import type {
   PropertyStatIconName,
   StatCardProps,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 
 const ICONS: Record<PropertyStatIconName, React.ElementType> = {
   "register-property": FileText,

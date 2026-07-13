@@ -1,7 +1,7 @@
 import {PageContainer} from "@/components/common/PageContainer";
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 import AddRateDrawer from "@/components/modules/property-tax/RVRateMaster/AddRateDrawer";
-import {getAssessmentYears, getConstructionTypes, getUseGroupOptions, getZoneDescriptionsPaged, getAllZoneDescriptions, getZoneOptions, getRateMasterByFilters, getRateMasterData, getRateMasterPagedAction } from "../action";
+import {getAssessmentYears, getConstructionTypes, getUseGroupOptions, getZoneDescriptionsPaged, getAllZoneDescriptions, getZoneOptions, getRateMasterByFilters, getRateMasterData, getRateMasterPagedAction, getRateFrequencyPolicy, getRateUnitPolicy } from "../action";
 
 // Force dynamic rendering to ensure fresh data on each navigation
 export const dynamic = 'force-dynamic';
@@ -36,6 +36,8 @@ export default async function AddRatePage({ searchParams }: PageProps) {
     constructionTypes,
     assessmentYears,
     allMasterData,
+    rateFrequencyPolicy,
+    rateUnitPolicy,
   ] = await Promise.all([
     getZoneOptions(),
     getUseGroupOptions(),
@@ -44,6 +46,8 @@ export default async function AddRatePage({ searchParams }: PageProps) {
     getConstructionTypes(),
     getAssessmentYears(),
     getRateMasterData(1, -1), // Get all zones for mapping (pageSize: -1 gets all items)
+    getRateFrequencyPolicy(), // Fetch rate frequency policy configuration
+    getRateUnitPolicy(), // Fetch rate unit policy configuration
   ]);
 
   // Extract zone descriptions for rate mapping
@@ -114,6 +118,7 @@ export default async function AddRatePage({ searchParams }: PageProps) {
           initialZone={initialZone}
           initialUseGroup={initialUseGroup}
           initialYear={initialYear}
+          rateUnitPolicy={rateUnitPolicy}
         />
       </PageContainer>
       <AddRateDrawer
@@ -126,6 +131,8 @@ export default async function AddRatePage({ searchParams }: PageProps) {
         rateCategories={constructionTypes.map((ct: { constructionId: string; constructionCode?: string; description?: string }) => ({ constructionId: ct.constructionId, constructionCode: ct.constructionCode, description: ct.description }))}
         paginatedZonesData={paginatedZonesData}
         initialExistingRatesCheck={initialExistingRatesCheck}
+        rateFrequencyPolicy={rateFrequencyPolicy}
+        rateUnitPolicy={rateUnitPolicy}
       />
     </>
   );

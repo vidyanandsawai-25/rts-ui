@@ -3,10 +3,11 @@
 import { cookies } from "next/headers";
 import { getUserProfileCached } from "@/lib/api/user-profile-cache";
 import { Service } from "@/types/home/home.types";
-import { getDepartmentConfig, getDepartmentRoute } from "@/config/home-services.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user-profile.types";
+import type { Department } from "@/types/departmentActivation.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
+import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
 
 /**
  * Response type for listServices
@@ -17,27 +18,50 @@ export interface ListServicesResponse {
 }
 
 /**
+ * Analyzes department name to determine the correct Lucide icon
+ */
+function getIconByDepartmentName(departmentName: string): string {
+    const lowerName = departmentName.toLowerCase().trim();
+
+    if (lowerName.includes('property')) return 'Home';
+    if (lowerName.includes('water')) return 'Droplet';
+    if (lowerName.includes('trade') || lowerName.includes('license') || lowerName.includes('bajar')) return 'ShoppingCart';
+    if (lowerName.includes('birth') || lowerName.includes('death')) return 'FileText';
+    if (lowerName.includes('garbage') || lowerName.includes('trash') || lowerName.includes('waste')) return 'Trash2';
+    if (lowerName.includes('building') || lowerName.includes('permission')) return 'Building2';
+    if (lowerName.includes('grievance') || lowerName.includes('complain')) return 'Megaphone';
+    if (lowerName.includes('rts')) return 'Timer';
+    if (lowerName.includes('asset')) return 'Landmark';
+    if (lowerName.includes('fire') || lowerName.includes('noc')) return 'Flame';
+
+    return 'LayoutGrid';
+}
+
+/**
  * Maps user department from API to UI Service interface
  */
 function mapDepartmentToService(
     department: UserDepartment,
-    locale: string
-): Service | null {
-    const config = getDepartmentConfig(department.departmentId) || getDepartmentConfig(department.departmentName);
-    
-    if (!config) {
-        return null;
-    }
+    iconName: string,
+    locale: string,
+    moduleId?: number,
+    moduleName?: string
+): Service {
+    const name = department.departmentName;
+    const lowerName = name.toLowerCase().trim();
 
-    const lookupKey = config.id ?? department.departmentName;
+    // Dynamically slugify the route segment using department name
+    const routeSegment = lowerName.replace(/[&\s]+/g, '-').replace(/-+/g, '-');
 
     return {
         id: department.departmentId,
         name: department.departmentName,
         title: department.departmentName,
         subtext: `Access ${department.departmentName} services`,
-        icon: lookupKey.toString(),
-        link: getDepartmentRoute(lookupKey, locale),
+        icon: iconName || getIconByDepartmentName(department.departmentName),
+        link: `/${locale}/${routeSegment}`,
+        moduleId,
+        moduleName,
     };
 }
 
@@ -49,41 +73,41 @@ export async function listServices(locale: string): Promise<ListServicesResponse
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        
+
         if (!userId) {
             return { services: [], error: "User not authenticated" };
         }
-        
+
         // Fetch both user profile and globally active departments list in parallel
         const [profileResponse, departmentsResponse] = await Promise.all([
             getUserProfileCached(userId),
             departmentActivationService.getDepartments(1, 1000).catch(() => ({ success: false, data: [] }))
         ]);
-        
+
         if (!profileResponse.success || !profileResponse.data) {
             return { services: [], error: profileResponse.error || "Failed to load user profile" };
         }
-        
-        // Map globally active department IDs to a set for quick lookup
-        const activeDeptIds = new Set<number>();
+
+        // Map globally active department IDs to their respective Department objects for quick lookup
+        const activeDeptsMap = new Map<number, Department>();
         let hasGlobalDepartments = false;
-        
+
         if (departmentsResponse.success && departmentsResponse.data && departmentsResponse.data.length > 0) {
             hasGlobalDepartments = true;
             departmentsResponse.data.forEach(dept => {
                 if (dept.isActive) {
-                    activeDeptIds.add(dept.departmentId);
+                    activeDeptsMap.set(dept.departmentId, dept);
                 }
             });
         }
-        
+
         // Get active departments only: active user allocation AND globally active department
         const activeDepartments = profileResponse.data.departments?.filter(d => {
             const isUserAllocationActive = d.isActive;
-            const isGlobalDeptActive = !hasGlobalDepartments || activeDeptIds.has(d.departmentId);
+            const isGlobalDeptActive = !hasGlobalDepartments || activeDeptsMap.has(d.departmentId);
             return isUserAllocationActive && isGlobalDeptActive;
         }) ?? [];
-        
+
         if (activeDepartments.length === 0) {
             return { services: [] };
         }
@@ -97,16 +121,38 @@ export async function listServices(locale: string): Promise<ListServicesResponse
             return acc;
         }, [] as UserDepartment[]);
 
-        // Map departments to services, filtering out any that don't have config
+        // Build a map: departmentId -> first active module for that department
+        const modulesByDept = new Map<number, { moduleId: number; moduleName: string }>();
+        const activeModules = profileResponse.data.moduleAccess?.filter(m => m.isActive) ?? [];
+        for (const mod of activeModules) {
+            if (!modulesByDept.has(mod.departmentId)) {
+                modulesByDept.set(mod.departmentId, {
+                    moduleId: mod.moduleId,
+                    moduleName: mod.moduleName,
+                });
+            }
+        }
+
+        // Map departments to services using dynamic icon resolved from global list
         const services = uniqueDepartments
-            .map(dept => mapDepartmentToService(dept, locale))
-            .filter((service): service is Service => service !== null);
+            .map(dept => {
+                const globalDept = activeDeptsMap.get(dept.departmentId);
+                const iconName = globalDept?.departmentIcon || '';
+                const moduleInfo = modulesByDept.get(dept.departmentId);
+                return mapDepartmentToService(
+                    dept,
+                    iconName,
+                    locale,
+                    moduleInfo?.moduleId,
+                    moduleInfo?.moduleName
+                );
+            });
 
         return { services };
     } catch (_error) {
-        return { 
-            services: [], 
-            error: "Failed to load services. Please try refreshing the page." 
+        return {
+            services: [],
+            error: "Failed to load services. Please try refreshing the page."
         };
     }
 }
@@ -200,29 +246,29 @@ export async function getUserProfileDisplayAction(): Promise<{
  * Reads userId from cookies and fetches profile data
  * Called from page.tsx server component
  */
-export async function getUserProfileSSR(): Promise<{ 
-    data: UserProfileDisplayValues | null; 
+export async function getUserProfileSSR(): Promise<{
+    data: UserProfileDisplayValues | null;
     error?: string;
 }> {
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        
+
         if (!userId) {
             return { data: null, error: "User not authenticated" };
         }
-        
+
         const response = await getUserProfileCached(userId);
-        
+
         if (!response.success || !response.data) {
-            return { 
-                data: null, 
-                error: response.error || "Failed to fetch user profile" 
+            return {
+                data: null,
+                error: response.error || "Failed to fetch user profile"
             };
         }
 
         const profile = response.data;
-        
+
         const fullName = [profile.firstName, profile.middleName, profile.lastName]
             .filter(Boolean)
             .join(' ');
@@ -262,9 +308,49 @@ export async function getUserProfileSSR(): Promise<{
 
         return { data };
     } catch (error) {
-        return { 
-            data: null, 
-            error: error instanceof Error ? error.message : "Failed to synchronize profile details" 
+        return {
+            data: null,
+            error: error instanceof Error ? error.message : "Failed to synchronize profile details"
         };
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Department Context Cookie Action
+// ---------------------------------------------------------------------------
+
+/**
+ * Sets department and module context cookies when the user clicks a department card.
+ * Uses the same client-readable cookie pattern as ULB cookies set at login.
+ *
+ * @param departmentId - The selected department ID
+ * @param departmentName - The selected department name
+ * @param moduleId - (Optional) The module ID associated with this department
+ * @param moduleName - (Optional) The module name associated with this department
+ */
+export async function setDepartmentContextAction(
+    departmentId: number,
+    departmentName: string,
+    moduleId?: number,
+    moduleName?: string
+): Promise<{ success: boolean }> {
+    try {
+        const cookieStore = await cookies();
+        // No maxAge — session cookie: removed when browser closes or session expires
+        const cookieOpts = { ...CLIENT_COOKIE_OPTIONS };
+
+        cookieStore.set(DEPARTMENT_COOKIES.DEPARTMENT_ID, String(departmentId), cookieOpts);
+        cookieStore.set(DEPARTMENT_COOKIES.DEPARTMENT_NAME, encodeURIComponent(departmentName), cookieOpts);
+
+        if (moduleId && moduleId > 0) {
+            cookieStore.set(DEPARTMENT_COOKIES.MODULE_ID, String(moduleId), cookieOpts);
+        }
+        if (moduleName) {
+            cookieStore.set(DEPARTMENT_COOKIES.MODULE_NAME, encodeURIComponent(moduleName), cookieOpts);
+        }
+
+        return { success: true };
+    } catch {
+        return { success: false };
     }
 }

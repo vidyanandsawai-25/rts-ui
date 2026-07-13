@@ -5,9 +5,9 @@ import {
     DiscountDocumentUploadResponseDto,
     UpsertPropertyDiscountInfoDto
 } from "@/types/discount.types";
-import { cookies } from 'next/headers';
-import { getAppConfig } from '@/config/app.config';
-import { serverFetch } from '@/lib/utils/server-fetch';
+import { uploadDocument, deleteDocument } from "./document.service";
+import { DocumentUploadParams } from "@/types/document.types";
+import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "../constants/document.constants";
 
 interface BackendApiResponseWrapper<T> {
     success: boolean;
@@ -59,107 +59,108 @@ export async function updateDiscountDetails(propertyId: string, data: UpsertProp
 }
 
 /**
- * Helper to build auth headers from cookies for server-side multipart uploads
+ * Upload a discount-related document using the global documents API
  */
-async function getAuthHeaders(): Promise<Record<string, string>> {
-    const cookieStore = await cookies();
-    const headers: Record<string, string> = {
-        'Accept': 'application/json, text/plain, */*',
-    };
-    const token = cookieStore.get('auth_token')?.value;
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const csrf = cookieStore.get('csrf_token')?.value;
-    if (csrf) headers['X-CSRF-Token'] = csrf;
-    const cookieStr = cookieStore.getAll()
-        .filter((c: { name: string; value: string }) => /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name))
-        .map((c: { name: string; value: string }) => `${c.name.replace(/[^\x00-\x7F]/g, '')}=${c.value.replace(/[^\x00-\x7F]/g, '')}`)
-        .join('; ');
-    if (cookieStr) headers['Cookie'] = cookieStr;
-    return headers;
-}
-
-/**
- * Helper to parse Response text to JSON and handle non-ok HTTP statuses
- */
-async function parseResponse<T>(response: Response, errorPrefix: string): Promise<T> {
-    const text = await response.text();
-    let data;
-    try {
-        data = text ? JSON.parse(text) : {};
-    } catch {
-        data = { message: text };
-    }
-
-    if (!response.ok) {
-        throw new Error(data.message || data.error || `${errorPrefix} failed with status ${response.status}`);
-    }
-
-    return data.items;
-}
-
-/**
- * Upload a discount-related document
- */
-export async function uploadDiscountDocument(
+export async function uploadDiscountDocViaGlobalApi(
     file: File, 
     propertyId: number, 
     socialAttributeId: number, 
+    propertySocialDetailId: number,
+    referenceTableIdGuid?: string,
     remark?: string
-): Promise<DiscountDocumentUploadResponseDto> {
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim();
-    if (!baseUrl) {
-        throw new Error("API base URL is not configured");
+): Promise<ApiResponse<DiscountDocumentUploadResponseDto>> {
+    try {
+        const uploadParams: DocumentUploadParams = {
+            departmentId: DEPARTMENT_ID.PTIS,
+            moduleId: MODULE_ID.PropertyDiscount,
+            referenceTableName: REFERENCE_TABLE.PropertyDiscount,
+            bindingPurpose: BINDING_PURPOSE.ProofDocument,
+            documentType: DOCUMENT_TYPE.Proof,
+            isPrimaryDocument: true
+        };
+
+        if (propertySocialDetailId > 0) {
+            uploadParams.referenceTableId = propertySocialDetailId;
+        } else if (referenceTableIdGuid) {
+            uploadParams.referenceTableIdGuid = referenceTableIdGuid;
+        }
+
+        const uploadResponse = await uploadDocument(file, uploadParams);
+        const documentBindingId = typeof uploadResponse.documentBindingId === "number" && uploadResponse.documentBindingId > 0
+            ? uploadResponse.documentBindingId
+            : null;
+
+        return {
+            success: true,
+            data: {
+                propertySocialDetailId: propertySocialDetailId > 0 ? propertySocialDetailId : null,
+                propertyId: propertyId,
+                socialAttributeId: socialAttributeId,
+                documentBindingId,
+                documentGuid: uploadResponse.documentGuid,
+                documentUrl: `/api/documents/${uploadResponse.documentGuid}/view`,
+                fileName: file.name,
+                remark: remark || null
+            }
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
     }
-    const url = `${baseUrl.replace(/\/$/, '')}/Property/discount-details/upload`;
-
-    const formData = new FormData();
-    formData.append("File", file, file.name);
-    formData.append("PropertyId", String(propertyId));
-    formData.append("SocialAttributeId", String(socialAttributeId));
-    if (remark) {
-        formData.append("Remark", remark);
-    }
-
-    const headers = await getAuthHeaders();
-    const response = await serverFetch(url, {
-        method: 'POST',
-        headers,
-        body: formData,
-        cache: 'no-store'
-    });
-
-    return parseResponse<DiscountDocumentUploadResponseDto>(response, "Upload");
 }
 
 /**
- * Replace a discount-related document
+ * Replace a discount-related document using the global documents API
  */
-export async function replaceDiscountDocument(
-    propertySocialDetailId: number, 
+export async function replaceDiscountDocViaGlobalApi(
     file: File, 
+    oldDocumentGuid: string,
+    propertyId: number, 
+    socialAttributeId: number, 
+    propertySocialDetailId: number,
+    referenceTableIdGuid?: string,
     remark?: string
-): Promise<DiscountDocumentUploadResponseDto> {
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim();
-    if (!baseUrl) {
-        throw new Error("API base URL is not configured");
+): Promise<ApiResponse<DiscountDocumentUploadResponseDto>> {
+    try {
+        const uploadResult = await uploadDiscountDocViaGlobalApi(
+            file,
+            propertyId,
+            socialAttributeId,
+            propertySocialDetailId,
+            referenceTableIdGuid,
+            remark
+        );
+
+        if (!uploadResult.success || !uploadResult.data) {
+            return uploadResult;
+        }
+
+        if (oldDocumentGuid) {
+            await deleteDocument(oldDocumentGuid);
+        }
+
+        return uploadResult;
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
     }
-    const url = `${baseUrl.replace(/\/$/, '')}/Property/discount-details/${propertySocialDetailId}/replace-document`;
+}
 
-    const formData = new FormData();
-    formData.append("File", file, file.name);
-    if (remark) {
-        formData.append("Remark", remark);
+/**
+ * Delete a discount detail document using the global documents API
+ */
+export async function deleteDiscountDoc(documentGuid: string): Promise<ApiResponse<void>> {
+    try {
+        const result = await deleteDocument(documentGuid);
+        return result;
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
     }
-
-    const headers = await getAuthHeaders();
-    const response = await serverFetch(url, {
-        method: 'POST',
-        headers,
-        body: formData,
-        cache: 'no-store'
-    });
-
-    return parseResponse<DiscountDocumentUploadResponseDto>(response, "Replace");
 }

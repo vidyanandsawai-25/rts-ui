@@ -10,6 +10,19 @@ import { toast } from 'sonner';
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorFormState');
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorFormValidation');
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorFormApi');
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ propertyId: '123', locale: 'en' }),
+  usePathname: () => '/test-path',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
@@ -23,6 +36,7 @@ describe('useFloorInformationForm', () => {
   const mockState = {
     formData: { oldFloorId: '1' },
     setFormData: vi.fn(),
+    setInitialEditValues: vi.fn(),
     handleUseTypeChange: vi.fn(),
     handleEdit: vi.fn(),
     handleReset: vi.fn(),
@@ -69,5 +83,67 @@ describe('useFloorInformationForm', () => {
 
     expect(mockApi.handleSave).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalled();
+  });
+
+  it('should calculate isChanged as false when year/area match in standard vs Marathi digits', () => {
+    const originalFormData = mockState.formData;
+    mockState.formData = {
+      oldFloorId: '1',
+      oldSubFloorId: '2',
+      oldConstructionYear: '२०२०',
+      oldAssessmentYear: '२०२१',
+      oldConstructionTypeId: '3',
+      oldTypeOfUseId: '4',
+      oldSubTypeOfUseId: '5',
+      oldAreaSqMeter: '१५.५',
+    } as any;
+    (mockState as any).initialEditValues = {
+      oldFloorId: '1',
+      oldSubFloorId: '2',
+      oldConstructionYear: '2020',
+      oldAssessmentYear: '2021',
+      oldConstructionTypeId: '3',
+      oldTypeOfUseId: '4',
+      oldSubTypeOfUseId: '5',
+      oldAreaSqMeter: '15.5',
+    } as any;
+
+    const { result } = renderHook(() => useFloorInformationForm({ propertyId: 123, locale: 'en', initialSubUseTypeOptions: [] }));
+    expect(result.current.isChanged).toBe(false);
+
+    // cleanup
+    mockState.formData = originalFormData;
+    delete (mockState as any).initialEditValues;
+  });
+
+  it('should calculate isChanged as true when year/area differ', () => {
+    const originalFormData = mockState.formData;
+    mockState.formData = {
+      oldFloorId: '1',
+      oldSubFloorId: '2',
+      oldConstructionYear: '२०२२', // different
+      oldAssessmentYear: '२०२१',
+      oldConstructionTypeId: '3',
+      oldTypeOfUseId: '4',
+      oldSubTypeOfUseId: '5',
+      oldAreaSqMeter: '१५.५',
+    } as any;
+    (mockState as any).initialEditValues = {
+      oldFloorId: '1',
+      oldSubFloorId: '2',
+      oldConstructionYear: '2020',
+      oldAssessmentYear: '2021',
+      oldConstructionTypeId: '3',
+      oldTypeOfUseId: '4',
+      oldSubTypeOfUseId: '5',
+      oldAreaSqMeter: '15.5',
+    } as any;
+
+    const { result } = renderHook(() => useFloorInformationForm({ propertyId: 123, locale: 'en', initialSubUseTypeOptions: [] }));
+    expect(result.current.isChanged).toBe(true);
+
+    // cleanup
+    mockState.formData = originalFormData;
+    delete (mockState as any).initialEditValues;
   });
 });

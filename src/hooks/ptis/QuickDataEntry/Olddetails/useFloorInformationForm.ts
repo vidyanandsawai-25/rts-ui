@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { UseFloorInformationFormProps } from "@/types/OldDetails/property-old-details.types";
 import { hasErrors } from "@/lib/utils/validation";
 import { useFloorFormState } from "./useFloorFormState";
 import { useFloorFormValidation } from "./useFloorFormValidation";
 import { useFloorFormApi } from "./useFloorFormApi";
+import { translateDevanagariDigits } from "@/lib/utils/input-sanitization";
 
 /**
  * Orchestrator hook to manage Floor Information Form.
@@ -17,6 +19,10 @@ export function useFloorInformationForm({
   initialSubUseTypeOptions
 }: UseFloorInformationFormProps) {
   const t = useTranslations('quickDataEntry');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
   // 1. Manage Form State
   const {
@@ -27,6 +33,20 @@ export function useFloorInformationForm({
     handleEdit,
     handleReset: stateReset
   } = useFloorFormState();
+
+  // Lazy loading dropdown focus triggers using transition router revalidation
+  const handleOpenDropdown = useCallback(
+    (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => {
+      if (searchParams.get(key) === 'true') return;
+      startTransition(() => {
+        const urlParams = new URLSearchParams(searchParams.toString());
+        urlParams.set(key, 'true');
+        const queryString = urlParams.toString();
+        router.replace(`${pathname}?${queryString}`, { scroll: false });
+      });
+    },
+    [searchParams, pathname, router]
+  );
 
   // Check if subUseOptions are available
   const hasSubUseOptions = initialSubUseTypeOptions && initialSubUseTypeOptions.length > 0;
@@ -65,12 +85,13 @@ export function useFloorInformationForm({
   const isChanged = initialEditValues ? (
     formData.oldFloorId !== initialEditValues.oldFloorId ||
     formData.oldSubFloorId !== initialEditValues.oldSubFloorId ||
-    formData.oldConstructionYear !== initialEditValues.oldConstructionYear ||
-    formData.oldAssessmentYear !== initialEditValues.oldAssessmentYear ||
+    translateDevanagariDigits(formData.oldConstructionYear) !== translateDevanagariDigits(initialEditValues.oldConstructionYear) ||
+    translateDevanagariDigits(formData.oldAssessmentYear || "") !== translateDevanagariDigits(initialEditValues.oldAssessmentYear || "") ||
     formData.oldConstructionTypeId !== initialEditValues.oldConstructionTypeId ||
     formData.oldTypeOfUseId !== initialEditValues.oldTypeOfUseId ||
     formData.oldSubTypeOfUseId !== initialEditValues.oldSubTypeOfUseId ||
-    formData.oldAreaSqMeter !== initialEditValues.oldAreaSqMeter
+    translateDevanagariDigits(formData.oldAreaSqMeter || "") !== translateDevanagariDigits(initialEditValues.oldAreaSqMeter || "") ||
+    translateDevanagariDigits(formData.oldCarpetAreaSqFeet || "") !== translateDevanagariDigits(initialEditValues.oldCarpetAreaSqFeet || "")
   ) : false;
 
   /**
@@ -109,6 +130,7 @@ export function useFloorInformationForm({
     handleReset,
     handleSave,
     handleDelete,
-    isChanged
+    isChanged,
+    handleOpenDropdown
   };
 }

@@ -159,7 +159,7 @@ export async function deleteOffice(officeId: number): Promise<void> {
     if (!validateOfficeId(officeId)) {
       throw new ApiError(400, "Valid Office ID is required", "Validation failed");
     }
-    const response = await apiClient.delete<void>(`/Office/${encodeURIComponent(String(officeId))}`);
+    const response = await apiClient.delete<void>(`/Office/${encodeURIComponent(String(officeId))}/purge`);
     if (!response.success) {
       let statusCode = response.statusCode;
       if (!statusCode) {

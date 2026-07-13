@@ -53,14 +53,11 @@ describe('useTaxDetailsTable Hook', () => {
   });
 
   describe('Row Generation', () => {
-    it('should return exactly 4 tax rows with correct labels', () => {
+    it('should return exactly the tax rows corresponding to provided policies', () => {
       const { result } = renderHook(() => useTaxDetailsTable(mockTaxDetailsData));
 
-      expect(result.current.taxRows).toHaveLength(4);
-      expect(result.current.taxRows[0].taxes).toBe('Net Taxes');
-      expect(result.current.taxRows[1].taxes).toBe('Retain');
-      expect(result.current.taxRows[2].taxes).toBe('Hearing');
-      expect(result.current.taxRows[3].taxes).toBe('All Taxes');
+      expect(result.current.taxRows).toHaveLength(1);
+      expect(result.current.taxRows[0].taxes).toBe('NETTAX');
     });
 
     it('should correctly map policy data to the appropriate row (NETTAX)', () => {
@@ -91,9 +88,9 @@ describe('useTaxDetailsTable Hook', () => {
 
       const { result } = renderHook(() => useTaxDetailsTable(multiPolicyData));
 
-      expect(result.current.taxRows[0].totalTax).toBe('100'); // Row 1: Net Taxes
-      expect(result.current.taxRows[2].totalTax).toBe('200'); // Row 3: Hearing
-      expect(result.current.taxRows[1].totalTax).toBe('0.00'); // Row 2: Retain (Empty)
+      expect(result.current.taxRows).toHaveLength(2);
+      expect(result.current.taxRows[0].totalTax).toBe('100'); // Row 1: NETTAX
+      expect(result.current.taxRows[1].totalTax).toBe('200'); // Row 2: HEARING
     });
 
     it('should use the API-provided taxTotal directly instead of manual calculation', () => {
@@ -114,6 +111,37 @@ describe('useTaxDetailsTable Hook', () => {
       const { result } = renderHook(() => useTaxDetailsTable(data));
       expect(result.current.taxRows[0].totalTax).toBe('100');
     });
+
+    it('should deduplicate policy codes case-insensitively and handle mixed case', () => {
+      const mixedCaseData: TaxDetailsData = {
+        propertyId: 12345,
+        policies: [
+          {
+            policyCode: 'NETTAX',
+            taxAmounts: [{ taxName: 'Tax1', taxAmount: 100 }],
+            taxTotal: 100,
+          },
+          {
+            policyCode: 'Retain',
+            taxAmounts: [{ taxName: 'Tax2', taxAmount: 150 }],
+            taxTotal: 150,
+          },
+          {
+            policyCode: 'nettax', // duplicate, should be skipped
+            taxAmounts: [{ taxName: 'Tax1', taxAmount: 200 }],
+            taxTotal: 200,
+          },
+        ],
+      };
+
+      const { result } = renderHook(() => useTaxDetailsTable(mixedCaseData));
+
+      expect(result.current.taxRows).toHaveLength(2);
+      expect(result.current.taxRows[0].taxes).toBe('NETTAX');
+      expect(result.current.taxRows[0].totalTax).toBe('100');
+      expect(result.current.taxRows[1].taxes).toBe('Retain');
+      expect(result.current.taxRows[1].totalTax).toBe('150');
+    });
   });
 
   describe('Edge Cases', () => {
@@ -124,19 +152,13 @@ describe('useTaxDetailsTable Hook', () => {
       };
       const { result } = renderHook(() => useTaxDetailsTable(emptyData));
 
-      expect(result.current.taxRows).toHaveLength(4);
-      result.current.taxRows.forEach((row) => {
-        expect(row.totalTax).toBe('0.00');
-      });
+      expect(result.current.taxRows).toHaveLength(0);
     });
 
     it('should handle undefined initialTaxDetails gracefully', () => {
       const { result } = renderHook(() => useTaxDetailsTable(undefined));
 
-      expect(result.current.taxRows).toHaveLength(4);
-      result.current.taxRows.forEach((row) => {
-        expect(row.totalTax).toBe('0.00');
-      });
+      expect(result.current.taxRows).toHaveLength(0);
       expect(result.current.taxColumns).toBeDefined();
     });
 
@@ -144,7 +166,7 @@ describe('useTaxDetailsTable Hook', () => {
       // Testing with invalid input cast to satisfy types while verifying runtime resilience
       const { result } = renderHook(() => useTaxDetailsTable({} as unknown as TaxDetailsData));
 
-      expect(result.current.taxRows).toHaveLength(4);
+      expect(result.current.taxRows).toHaveLength(0);
       expect(result.current.taxColumns).toBeDefined();
     });
   });

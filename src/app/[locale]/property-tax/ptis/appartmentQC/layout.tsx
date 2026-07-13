@@ -30,8 +30,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
     const tabs = [
         { value: 'amenities', label: 'Amenities', icon: Building2, content: null },
-        { value: 'commercial', label: 'Commercial Details', icon: Building, content: null },
-        { value: 'residential', label: 'Residential Details', icon: Home, content: null },
+        { value: 'commercial', label: 'Commercial Units', icon: Building, content: null },
+        { value: 'residential', label: 'Residential Units', icon: Home, content: null },
     ];
 
     const subTabs = [

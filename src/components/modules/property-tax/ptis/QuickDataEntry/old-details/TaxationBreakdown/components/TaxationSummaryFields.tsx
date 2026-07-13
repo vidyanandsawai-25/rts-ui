@@ -17,8 +17,8 @@ export function TaxationSummaryFields({
   return (
     <>
       {/* Aggregate Tax Sum */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-semibold text-gray-700">
+      <div className="group flex flex-col space-y-1">
+        <Label className="text-xs font-semibold text-slate-600 transition-colors">
           {t("aggregateTaxSum")}
         </Label>
         <Input
@@ -26,13 +26,13 @@ export function TaxationSummaryFields({
           type="number"
           value={taxTotal === 0 ? "" : taxTotal}
           placeholder={t("aggregateTaxSum")}
-          className="h-9 text-sm bg-gray-50 cursor-not-allowed border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+          className="h-9 text-sm bg-slate-50 border-slate-200 text-slate-500 font-medium cursor-not-allowed rounded-lg"
         />
       </div>
 
       {/* Net Payable Total */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-semibold text-gray-700">
+      <div className="group flex flex-col space-y-1.5 pb-2">
+        <Label className="text-xs font-semibold text-slate-600 transition-colors">
           {t("netPayableTotal")}
         </Label>
         <Input
@@ -40,7 +40,7 @@ export function TaxationSummaryFields({
           type="number"
           value={netTotal === 0 ? "" : netTotal}
           placeholder={t("netPayableTotal")}
-          className="h-9 text-sm bg-gray-50 cursor-not-allowed border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+          className="h-9 text-sm bg-slate-50 border-slate-200 text-slate-500 font-medium cursor-not-allowed rounded-lg"
         />
       </div>
     </>

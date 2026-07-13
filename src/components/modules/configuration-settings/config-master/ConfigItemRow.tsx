@@ -10,7 +10,7 @@ import { updateConfigItemAction } from '@/app/[locale]/configuration-settings/co
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { highlightText } from './config-master-ui.utils';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
 
 interface ConfigItemRowProps {
   item: ConfigItem;
@@ -24,7 +24,7 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
   const { success, error: toastError } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const { canEdit, canDelete, haveFullAccess } = usePermissions('CONFIG_MASTER');
+  const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
   const showToggle = canEdit || canDelete || haveFullAccess;
 
   const handleToggle = () => {

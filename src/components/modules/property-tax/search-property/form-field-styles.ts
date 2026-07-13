@@ -1,6 +1,6 @@
 /** Shared compact field styles aligned with Select `selectSize="sm"` */
 export const COMPACT_LABEL_CLASS =
-  "text-xs font-bold text-gray-900 mb-0.5 pt-0.5 block truncate";
+  "text-xs font-bold text-gray-900 block truncate";
 
 export const COMPACT_INPUT_CLASS =
   "box-border !h-8 min-h-8 px-2 !py-0 text-xs leading-8 rounded-md";

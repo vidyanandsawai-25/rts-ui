@@ -90,4 +90,54 @@ export class DateUtils {
 
     return `${year.padStart(4, "0")}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T00:00:00`;
   }
+
+  /**
+   * Calculates duration in years and months between two dates.
+   * Inclusive of the end date (typical for rental agreement durations).
+   * Supports: YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, or other standard ISO strings.
+   */
+  static calculateDurationYearsMonths(
+    fromDateStr: string | null | undefined,
+    toDateStr: string | null | undefined
+  ): string {
+    if (!fromDateStr || !toDateStr) return "N/A";
+
+    const parseLocal = (dateStr: string): Date | null => {
+      if (!dateStr) return null;
+      // Match YYYY-MM-DD
+      const ymdMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (ymdMatch) {
+        return new Date(Number(ymdMatch[1]), Number(ymdMatch[2]) - 1, Number(ymdMatch[3]));
+      }
+      // Match DD-MM-YYYY or DD/MM/YYYY
+      const dmyMatch = dateStr.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+      if (dmyMatch) {
+        return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
+      }
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const start = parseLocal(fromDateStr);
+    const end = parseLocal(toDateStr);
+
+    if (!start || !end || end < start) return "N/A";
+
+    // Adjust end date by adding 1 day to make the duration calculation inclusive
+    const endAdjusted = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1);
+
+    let years = endAdjusted.getFullYear() - start.getFullYear();
+    let months = endAdjusted.getMonth() - start.getMonth();
+
+    if (endAdjusted.getDate() < start.getDate()) {
+      months -= 1;
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    return `${years}Y ${months}M`;
+  }
 }

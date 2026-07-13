@@ -1,8 +1,11 @@
 export interface DiscountAttributeState extends Omit<DiscountAttributeDto, 'intValue' | 'decimalValue'> {
     enabled: boolean;
     isUploading?: boolean;
+    isDeleting?: boolean;
     intValue?: number | string | null;
     decimalValue?: number | string | null;
+    fileName?: string;
+    pendingFile?: File;
 }
 
 export type DiscountState = Record<number, DiscountAttributeState>;
@@ -26,6 +29,9 @@ export interface DiscountAttributeDto {
     documentGuid?: string | null;
     documentUrl?: string | null;
     remark?: string | null;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
+    isActive?: boolean;
 }
 
 export interface PropertyDiscountInfoResponseDto {
@@ -34,10 +40,10 @@ export interface PropertyDiscountInfoResponseDto {
 }
 
 export interface DiscountDocumentUploadResponseDto {
-    propertySocialDetailId: number;
+    propertySocialDetailId: number | null;
     propertyId: number;
     socialAttributeId: number;
-    documentBindingId: number;
+    documentBindingId: number | null;
     documentGuid: string;
     documentUrl: string;
     fileName: string;
@@ -54,6 +60,7 @@ export interface DiscountAttributeItemDto {
     dateValue?: string | null;
     documentBindingId?: number | null;
     remark?: string | null;
+    isActive?: boolean;
 }
 
 export interface UpsertPropertyDiscountInfoDto {
@@ -61,5 +68,3 @@ export interface UpsertPropertyDiscountInfoDto {
     updatedBy: number;
     discountAttributes: DiscountAttributeItemDto[];
 }
-
-

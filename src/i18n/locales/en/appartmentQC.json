@@ -1,11 +1,11 @@
 {
   "columns": {
-    "propertyNo": "Property No",
-    "partitionNo": "Partition No.",
+    "srNo": "Sr. No.",
+    "propertyNo": "Property No.",
     "oldPropertyNo": "Old Property No.",
     "wingName": "Wing",
-    "shopNo": "Shop No.",
-    "flatNo": "Flat No.",
+    "shopNo": "Flat/Shop No.",
+    "flatNo": "Flat/Shop No.",
     "ownerName": "Owner Name",
     "occupierName": "Occupier Name",
     "shopName": "Shop Name",
@@ -13,14 +13,16 @@
     "renterName": "Renter Name",
     "description": "Description",
     "type": "Type",
-    "apartmentType": "Apartment Type",
+    "records": "Records",
+    "apartmentType": " Type",
     "floor": "Floor",
     "assessmentYear": "Assessment Year",
     "asstYear": "Asst Year",
     "constructionYear": "Construction Year",
-    "surveyConstructionYear": "Survey Construction Year",
+    "OldConstructionYear": "Old Construction Year",
+    "surveyConstructionYear": "Construction Year",
     "conYear": "Con Year",
-    "constructionType": "Construction Type",
+    "constructionType": "Con Type",
     "conType": "Con Type",
     "toiletCount": "Toilet Count",
     "bhk": "BHK",
@@ -35,22 +37,26 @@
     "builtupASqMtr": "Builtup A (sqMtr)",
     "carpetAreaSqFtMtr": "Carpet A (sqFt/sqMtr)",
     "builtupAreaSqFtMtr": "Buildup A (sqFt/sqMtr)",
-    "oldConstArea": "Old Construction Area",
-    "oldConA": "Old Con A",
-    "oldRV": "Old RV",
+    "oldConstArea": "Con Area",
+    "constructionArea": "Con Area",
+    "oldConA": "Con A",
+    "rv": "RV",
+    "oldRV": "RV",
     "oldRVCV": "Old RV (CV)",
-    "oldTax": "Old Tax",
+    "oldTax": "Tax",
+    "tax": "Tax",
     "newRV": "New RV",
     "newTaxRV": "New Tax(RV)",
-    "capitalValue": "Capital value",
+    "capitalValue": "CV",
     "totalTaxCV": "Total Tax(CV)",
-    "newCV": "New CV",
+    "newCV": "CV",
     "newTax": "New Tax",
     "cv": "CV",
     "totalTax": "Total Tax",
     "mobileNo": "Mobile No.",
     "emailId": "Email ID",
-    "ocDate": "OC Date"
+    "ocDate": "OC Date",
+    "kyc": "KYC"
   },
   "taxDetails": {
     "title": "Property Tax Details Summary",
@@ -91,8 +97,11 @@
   },
   "apartmentTabs": {
     "amenitiesTitle": "Property Tax Amenities",
-    "commercialTitle": "Property Tax Commercial Details",
-    "residentialTitle": "Property Tax Residential Details",
+    "commercialTitle": "Property Tax Commercial Units",
+    "residentialTitle": "Property Tax Residential Units",
+    "rateable": "Rateable",
+    "capital": "Capital",
+    "dual": "Dual Method",
     "showingData": "Showing {tab} data"
   },
   "actions": {
@@ -114,18 +123,80 @@
     "apply": "Apply"
   },
   "drawer": {
+    "apartmentQCHeading": "Apartment QC",
     "title": "Property Details",
     "noPropertyData": "No property data found.",
     "goBack": "Go Back",
     "cancel": "Cancel",
+    "update": "Update",
     "basicInformation": "Basic Information",
     "floorQC": "Floor QC",
+    "basicProperty": "Basic Property",
+    "taxDetails": "Tax Details",
+    "oldPropertyDetails": "Old Property Details",
+    "photoPlan": "Photo Plan",
+    "apartmentQCLoading": "Loading...",
     "roomWiseSubmission": "Room Wise Submission",
     "loadingRoomData": "Loading room data...",
+    "viewImage": "View Image",
+    "propertyPhotos": "Property Photos",
+    "loadingPhotos": "Loading photos...",
+    "noPhotos": "No photos available",
+    "photoLoadError": "Failed to load property photos",
     "tabs": {
       "rateable": "Rateable Value",
       "capital": "Capital Value"
+    },
+    "units": {
+      "sqM": "sq.m",
+      "sqFt": "sq.ft"
     }
+  },
+  "tooltips": {
+    "srNo": "Serial Number",
+    "propertyNo": "Property Number",
+    "oldPropertyNo": "Old Property Number",
+    "wing": "Wing Name",
+    "flatOrShopNo": "Flat/Shop Number",
+    "ownerName": "Owner Name",
+    "occupierName": "Occupier Name",
+    "ocDate": "Occupancy Certificate Date",
+    "assessmentYear": "Assessment Year",
+    "constructionYear": "Construction Year",
+    "carpetArea": "Carpet Area (Square Feet / Square Meter)",
+    "builtupArea": "Built-up Area (Square Feet / Square Meter)",
+    "typeOfUse": "use",
+    "apartmentType": "Apartment Type",
+    "oldRV": "Old Rental Value",
+    "newRV": "New Rental Value",
+    "oldConstArea": "Construction Area",
+    "totalTax": "Total Tax",
+    "flatOrShopName": "Flat/Shop Name",
+    "renterName": "Renter Name",
+    "description": "Property Description",
+    "constructionType": "Construction Type",
+    "toiletCount": "Toilet Count",
+    "oldconstructionArea": " Construction Area",
+    "oldtax": "Old Tax",
+    "newtax": "New Tax",
+    "mobileNo": "Mobile Number",
+    "emailId": "Email ID",
+    "bhk": "BHK",
+    "rentMonthly": "Rent Monthly",
+    "propertyTypeName": "Description of the property type",
+    "oldTotalTax": "Old Total Tax",
+    "newTotalTax": "New Total Tax",
+    "newTaxTotalCV": "New Tax Total (CV)",
+    "totalTaxCV": "Total Tax (CV)",
+    "newTaxTotalRV": "New Tax Total (RV)",
+    "rateableValue": "Rateable Value",
+    "capitalValue": "Capital Value",
+    "cv": "Capital Value",
+    "kyc": "Know Your Customer",
+    "viewKycDetails": "View KYC Details",
+    "hideKycDetails": "Hide KYC Details",
+    "expandTable": "Expand Table",
+    "collapseTable": "Collapse Table"
   },
   "pageTitle": "Edit Property Details",
   "badges": {
@@ -149,7 +220,13 @@
     "basicDetailsUpdated": "Basic details updated successfully",
     "roomDataUpdated": "Room data updated - area refreshed",
     "failedToLoadRooms": "Failed to load existing rooms",
-    "cannotOpenRoomSubmission": "Cannot open room submission - no detail ID"
+    "cannotOpenRoomSubmission": "Cannot open room submission - no detail ID",
+    "fetchFloorQCDetailsSuccess": "Successfully fetched floor QC details",
+    "fetchFloorQCDetailsFailed": "Failed to fetch floor QC details",
+    "fetchFloorsFailed": "Failed to fetch floors",
+    "fetchConTypesFailed": "Failed to fetch construction types",
+    "fetchUseTypesFailed": "Failed to fetch use types",
+    "fetchSubTypesFailed": "Failed to fetch sub-use types"
   },
   "basicInfo": {
     "title": "Basic Information",
@@ -214,10 +291,10 @@
         "label": "New Tax"
       },
       "oldArea": {
-        "label": "Old Area"
+        "label": "Old Area (sq.mtr)"
       },
       "newArea": {
-        "label": "New Area"
+        "label": "New Area (sq.mtr)"
       },
       "oldUseType": {
         "label": "Old Use Type"
@@ -245,6 +322,17 @@
   },
   "floorQC": {
     "title": "Floor QC",
+    "form": {
+      "loading": "Loading...",
+      "selectFloor": "Select Floor",
+      "selectConType": "Select Type",
+      "selectUse": "Select Use",
+      "selectSubType": "Select Sub Type",
+      "yearPlaceholder": "YYYY",
+      "roomsPlaceholder": "e.g. 2",
+      "autoCalculated": "AUTO-CALCULATED",
+      "sqFt": "SQ FT"
+    },
     "columns": {
       "floor": "Floor",
       "conYear": "Con Year",
@@ -253,6 +341,13 @@
       "use": "Use",
       "subTypeOfUse": "Sub Type Of Use",
       "noOfRooms": "No. of Rooms",
+      "taxable": "Taxable",
+      "subFloor": "Sub Floor",
+      "renter": "Renter",
+      "areaSqFt": "Area (Sq Ft)",
+      "areaSqMtr": "Area (Sq M)",
+      "buildupAreaSqFt": "Buildup Area (sq.ft)",
+      "buildupAreaSqMtr": "Builtup Area (Sq M)",
       "area": "Area",
       "rentMY": "Rent M/Y",
       "rateMY": "Rate M/Y",
@@ -267,7 +362,37 @@
       "ageFactor": "Age Factor",
       "ntbFactor": "NTB Factor",
       "useFactor": "Use Factor",
-      "capitalValue": "Capital Value"
+      "capitalValue": "Capital Value",
+      "action": "Action",
+      "editFloorQC": "Edit Floor Details"
+    },
+    "toolTipFloorQC": {
+      "tooltips": {
+        "floor": "Floor",
+        "conYear": "Construction Year",
+        "asstYear": "Assessment Year",
+        "conType": "Construction Type",
+        "use": "Type of Use",
+        "subTypeOfUse": "Sub Type of Use",
+        "noOfRooms": "Number of Rooms",
+        "area": "Area",
+        "rentMY": "Rent Monthly / Yearly",
+        "rateMY": "Rate Monthly / Yearly",
+        "rentalValue": "Rental Value",
+        "depreciation": "Depreciation",
+        "alv": "Annual Letting Value",
+        "mr": "Maintenance",
+        "rv": "Rateable Value",
+        "sdrr": "SDRR",
+        "baseValue": "Base Value",
+        "floorFactor": "Floor Factor",
+        "ageFactor": "Age Factor",
+        "ntbFactor": "NTB Factor",
+        "useFactor": "Use Factor",
+        "capitalValue": "Capital Value",
+        "action": "Action",
+        "editFloorQC": "Edit Floor Details"
+      }
     },
     "tabs": {
       "rateable": "Rateable",
@@ -275,11 +400,19 @@
     },
     "validation": {
       "invalidYear": "Enter 4-digit year",
-      "yearOutOfRange": "Year out of range"
+      "yearOutOfRange": "Year out of range",
+      "floorRequired": "Floor is required",
+      "conYearRequired": "Construction year is required",
+      "conYearInvalid": "Construction year must be 4 digits",
+      "asstYearRequired": "Assessment year is required",
+      "asstYearInvalid": "Assessment year must be 4 digits",
+      "conTypeRequired": "Construction type is required",
+      "useRequired": "Use type is required"
     },
     "tooltips": {
       "viewRoomDetails": "View/Edit Room Details",
-      "noDetailId": "No detail ID available"
+      "noDetailId": "No detail ID available",
+      "editFloorQC": "Edit Floor QC"
     }
   },
   "list": {
@@ -301,7 +434,7 @@
       "ownerName": "Owner Name",
       "occupierName": "Occupier Name",
       "type": "Type",
-      "oldArea": "Old Area",
+      "oldArea": "Old Area ",
       "newArea": "New Area",
       "oldRV": "Old RV",
       "newRV": "New RV",

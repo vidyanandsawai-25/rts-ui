@@ -13,6 +13,7 @@ describe("TypeOfUseSection", () => {
   const defaultProps = {
     typeOfUseList: mockTypeOfUseList,
     selectedTypeOfUseIds: new Set<number>([1]),
+    initialTypeOfUseIds: new Set<number>([1]),
     onToggle: vi.fn(),
     onSelectAll: vi.fn(),
     onClearAll: vi.fn(),
@@ -100,5 +101,28 @@ describe("TypeOfUseSection", () => {
     render(<TypeOfUseSection {...defaultProps} typeOfUseList={[]} />);
 
     expect(screen.getByText("form.typeOfUseSection.noItems")).toBeInTheDocument();
+  });
+
+  it("sorts initial (pre-selected) items at the top", () => {
+    const items = [
+      { typeOfUseId: 1, typeOfUseCode: "R1", description: "Residential 1", type: "R" },
+      { typeOfUseId: 2, typeOfUseCode: "C1", description: "Commercial 1", type: "C" },
+      { typeOfUseId: 3, typeOfUseCode: "R2", description: "Residential 2", type: "R" },
+      { typeOfUseId: 4, typeOfUseCode: "C2", description: "Commercial 2", type: "C" },
+    ] as UseType[];
+
+    render(
+      <TypeOfUseSection
+        {...defaultProps}
+        typeOfUseList={items}
+        initialTypeOfUseIds={new Set([3, 4])}
+        selectedTypeOfUseIds={new Set([3, 4, 1])} // Add 1 as a new selection
+      />
+    );
+
+    const itemsInOrder = screen.getAllByText(/Residential|Commercial/);
+    // Initial items (3 and 4) should come first
+    expect(itemsInOrder[0]).toHaveTextContent("Residential 2");
+    expect(itemsInOrder[1]).toHaveTextContent("Commercial 2");
   });
 });

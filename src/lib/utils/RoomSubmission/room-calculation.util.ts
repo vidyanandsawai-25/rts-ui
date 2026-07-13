@@ -46,16 +46,11 @@ export const calculateRoomAreas = (
     const actualOffset = isOff ? Math.min(offsetArea, mainArea) : 0;
     const baseArea = mainArea - actualOffset;
 
-    let carpetArea: number;
-    let builtUpArea: number;
-
+    let carpetArea = baseArea;
     if (isOut) {
-        builtUpArea = baseArea;
-        carpetArea = builtUpArea * 0.80;
-    } else {
-        carpetArea = baseArea;
-        builtUpArea = carpetArea * 1.20;
+        carpetArea = baseArea * 0.80;
     }
+    const builtUpArea = carpetArea * 1.20;
 
     return {
         mainArea: Number(mainArea.toFixed(2)),
@@ -134,25 +129,20 @@ export const calculateRoomWiseTotals = (rooms: RoomData[], excludeIndex?: number
         const isExcluded = excludeIndex !== undefined && excludeIndex !== null && idx === excludeIndex;
 
         const carpet = parseFloat(String(room.carpetArea || room.total || 0)) || 0;
-        let builtup = parseFloat(String(room.builtUpArea || 0)) || 0;
+        const builtUp = Number((carpet * 1.20).toFixed(2));
         const count = parseInt(String(room.roomCount || 1)) || 1;
-
-        // If builtUpArea is not set but carpet area exists, calculate it
-        if (builtup === 0 && carpet > 0) {
-            const isOuter = room.outer === 'Yes';
-            builtup = isOuter ? carpet : carpet * 1.20;
-        }
 
         // Sum totals for ALL rooms
         grandTotal += (carpet * count);
-        builtupGrandTotal += (builtup * count);
+        builtupGrandTotal += (builtUp * count);
 
         // Count consumed rooms (for allocation logic capacity checking)
         if (!isExcluded) {
-            const isFilled = carpet > 0 || builtup > 0 || (room.remark && room.remark !== "-Select-") || (room.shape && room.shape !== "-Select-");
+            const isFilled = carpet > 0 || (room.remark && room.remark !== "-Select-") || (room.shape && room.shape !== "-Select-");
             if (isFilled) roomsConsumed += count;
         }
     });
+
 
     return {
         grandTotal,

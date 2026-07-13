@@ -36,7 +36,7 @@ export async function getSubTypesPagedServer(params: {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -67,11 +67,11 @@ export async function getSubTypeByIdApi(id: string | number): Promise<UseSubType
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       return null;
     }
-    
+
     return response.data ? mapApiSubTypeToUi(response.data as Record<string, unknown>) : null;
   } catch (error) {
     logger.error(`Error fetching use subtype ${id}`, { error: error as Error });
@@ -88,6 +88,7 @@ export async function createSubTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   createdBy?: string;
+  typeOfUseCategoryId?: number | null;
 }): Promise<UseSubType> {
   try {
     const payload = {
@@ -96,13 +97,14 @@ export async function createSubTypeApi(input: {
       searchSequence: input.searchSequence,
       isActive: input.isActive,
       createdBy: Number(input.createdBy ?? "1"),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     };
 
     const response = await apiClient.post<unknown>("/SubTypeOfUse", payload, {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -111,11 +113,11 @@ export async function createSubTypeApi(input: {
         backendError ? "" : TypeOfUseErrorMessages.CREATE_SUBTYPE_FAILED
       );
     }
-    
+
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    
+
     return mapApiSubTypeToUi(response.data as Record<string, unknown>);
   } catch (error) {
     logger.error("Error creating use subtype", { error: error as Error });
@@ -133,6 +135,7 @@ export async function updateSubTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   updatedBy?: string;
+  typeOfUseCategoryId?: number | null;
 }): Promise<UseSubType> {
   try {
     const payload = {
@@ -142,13 +145,14 @@ export async function updateSubTypeApi(input: {
       searchSequence: input.searchSequence,
       isActive: input.isActive,
       updatedBy: Number(input.updatedBy ?? "1"),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     };
 
     const response = await apiClient.put<unknown>(`/SubTypeOfUse/${input.subTypeOfUseId}`, payload, {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -157,11 +161,11 @@ export async function updateSubTypeApi(input: {
         backendError ? "" : TypeOfUseErrorMessages.UPDATE_SUBTYPE_FAILED
       );
     }
-    
+
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    
+
     return mapApiSubTypeToUi(response.data as Record<string, unknown>);
   } catch (error) {
     logger.error("Error updating use subtype", { error: error as Error });
@@ -178,7 +182,7 @@ export async function deleteSubTypeApi(id: string) {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -187,7 +191,7 @@ export async function deleteSubTypeApi(id: string) {
         backendError ? "" : TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED
       );
     }
-    
+
     return true;
   } catch (error) {
     logger.error(`Error deleting use subtype ${id}`, { error: error as Error });

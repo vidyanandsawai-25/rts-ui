@@ -34,6 +34,8 @@ export const defaultPropertyDetails: PropertyDetailsData = {
   noOfResidentialToilets: '',
   noOfCommercialToilets: '',
   ownerName: '',
+  rateSectionDescription: '',
+  constructionYear: null,
 };
 
 /**
@@ -44,17 +46,23 @@ export const defaultKycDetails: KYCDetailsData = {
   title: '',
   propertyHolderName: '',
   propertyHolderNameMarathi: '',
+  propertyHolderNameEnglish: '',
   occupierName: '',
   occupierNameMarathi: '',
+  occupierNameEnglish: '',
   aadharCardNo: '',
   mobileNumber: '',
   email: '',
   shopName: '',
+  shopNameEnglish: '',
   address: '',
+  addressEnglish: '',
   wingNo: '',
   flatNo: '',
   shopNo: '',
   buildingName: '',
+  alternateMobileNo: '',
+  pinCode: '',
 };
 
 /**

@@ -90,10 +90,23 @@ describe('FloorForm', () => {
     expect(screen.getByText('floor.addFloorDetails')).toBeInTheDocument();
   });
 
+  it('displays correct title when adding new open plot', () => {
+    const propsForAdding = { ...mockProps, isAddingNewFloor: true, selectedFloorType: 'OpenPlot' as const };
+    render(<FloorForm {...propsForAdding} />);
+
+    expect(screen.getByText('floor.addOpenPlotDetails')).toBeInTheDocument();
+  });
+
   it('displays correct title when editing floor', () => {
     render(<FloorForm {...mockProps} />);
 
     expect(screen.getByText('floor.editFloorDetails')).toBeInTheDocument();
+  });
+
+  it('displays correct title when editing open plot', () => {
+    render(<FloorForm {...mockProps} selectedFloorType="OpenPlot" />);
+
+    expect(screen.getByText('floor.editOpenPlotDetails')).toBeInTheDocument();
   });
 
   it('renders save button', () => {
@@ -189,7 +202,7 @@ describe('FloorForm', () => {
       subFloor: 'Attic - ATTIC',
       subFloorId: 'Attic',
       conYr: '2026',
-      asstYr: '2024',
+      asstYr: '2026',
       conTyp: 'B - सीमेंट/चुना/दगड/विटांची भिंत व स्लॅब',
       constructionTypeId: 'B',
       use: 'R - R',
@@ -254,7 +267,7 @@ describe('FloorForm', () => {
     expect(result.success).toBe(true);
   });
 
-  it('bypasses year validation refinement when isAddingNewFloor is false', () => {
+  it('does NOT bypass year validation refinement when isAddingNewFloor is false', () => {
     const userFormData = {
       ...INITIAL_FORM_STATE,
       isAddingNewFloor: false, // update mode
@@ -279,7 +292,7 @@ describe('FloorForm', () => {
       builtupAreaSqM: '726',
     };
     const result = floorFormSchema.safeParse(userFormData);
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it('enforces year validation refinement when isAddingNewFloor is true', () => {
@@ -456,6 +469,45 @@ describe('FloorForm', () => {
     };
     const result = floorFormSchema.safeParse(userFormData);
     expect(result.success).toBe(false);
+  });
+
+  it('fails Zod schema validation when selectedFloorType is OpenPlot and constructionTypeId is missing', () => {
+    const userFormData = {
+      ...INITIAL_FORM_STATE,
+      selectedFloorType: 'OpenPlot',
+      isTaxable: 'Yes',
+      length: '10',
+      width: '12',
+      areaSqFt: '120',
+      areaSqM: '11.14',
+      use: 'Residential',
+      typeOfUseId: 'R',
+      constructionTypeId: '',
+      asstYr: '2026',
+    };
+    const result = floorFormSchema.safeParse(userFormData);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some(issue => issue.path.includes('constructionTypeId'))).toBe(true);
+    }
+  });
+
+  it('passes Zod schema validation when selectedFloorType is OpenPlot and constructionTypeId is present', () => {
+    const userFormData = {
+      ...INITIAL_FORM_STATE,
+      selectedFloorType: 'OpenPlot',
+      isTaxable: 'Yes',
+      length: '10',
+      width: '12',
+      areaSqFt: '120',
+      areaSqM: '11.14',
+      use: 'Residential',
+      typeOfUseId: 'R',
+      constructionTypeId: '12',
+      asstYr: '2026',
+    };
+    const result = floorFormSchema.safeParse(userFormData);
+    expect(result.success).toBe(true);
   });
 });
 

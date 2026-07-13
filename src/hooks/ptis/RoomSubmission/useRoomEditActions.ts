@@ -57,9 +57,13 @@ export const useRoomEditActions = (state: RoomSubmissionState) => {
     setValidationErrors({});
 
     setTimeout(() => {
-      focusRefs.current['roomType']?.focus();
-      if (focusRefs.current['roomType'] && 'click' in focusRefs.current['roomType']) {
-        (focusRefs.current['roomType'] as HTMLElement).click();
+      if (focusRefs.current['roomNo']) {
+        focusRefs.current['roomNo'].focus();
+      } else {
+        focusRefs.current['roomType']?.focus();
+        if (focusRefs.current['roomType'] && 'click' in focusRefs.current['roomType']) {
+          (focusRefs.current['roomType'] as HTMLElement).click();
+        }
       }
 
       if (pendingOffsetModalOpenRef.current) {
@@ -85,6 +89,9 @@ export const useRoomEditActions = (state: RoomSubmissionState) => {
     setFilledParameters([]);
     setSelectedRoomForPlan(null);
     setValidationErrors({});
+    setTimeout(() => {
+      focusRefs.current['roomNo']?.focus();
+    }, 100);
   };
 
   return { handleEdit, handleCancelEdit };

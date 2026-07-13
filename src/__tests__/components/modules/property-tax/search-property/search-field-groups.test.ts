@@ -4,7 +4,7 @@ import {
   hasTabSearchInput,
 } from "@/components/modules/property-tax/search-property/search-field-groups";
 import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 
 describe("search-field-groups", () => {
   describe("applyTabSearchCriteria", () => {
@@ -12,14 +12,14 @@ describe("search-field-groups", () => {
       const criteria: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
         upicId: "ABC123",
-        holderName: "John Doe",
+        occupierName: "John Doe",
         mobile: "9876543210",
       };
 
       const result = applyTabSearchCriteria(criteria, "quick-search");
 
       expect(result.upicId).toBe("ABC123");
-      expect(result.holderName).toBe("");
+      expect(result.occupierName).toBe("");
       expect(result.mobile).toBe("");
     });
 
@@ -27,13 +27,13 @@ describe("search-field-groups", () => {
       const criteria: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
         upicId: "ABC123",
-        holderName: "John Doe",
+        occupierName: "John Doe",
       };
 
       const result = applyTabSearchCriteria(criteria, "kyc");
 
       expect(result.upicId).toBe("");
-      expect(result.holderName).toBe("John Doe");
+      expect(result.occupierName).toBe("John Doe");
     });
   });
 
@@ -51,7 +51,7 @@ describe("search-field-groups", () => {
     it("detects kyc search input", () => {
       const criteria: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
-        holderName: "John Doe",
+        occupierName: "John Doe",
       };
 
       expect(hasTabSearchInput(criteria, "kyc")).toBe(true);

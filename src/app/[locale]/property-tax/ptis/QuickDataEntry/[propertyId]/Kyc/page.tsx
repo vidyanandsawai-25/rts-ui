@@ -47,7 +47,7 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
     }
   } catch (error: unknown) {
     const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
-    
+
     if (error instanceof ApiError) {
       if (error.statusCode === 401) {
         throw new Error(t('kyc.errors.unauthorized'));
@@ -86,9 +86,12 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
     const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
     throw new Error(t('kyc.errors.kycNotFound'));
   }
-  
-  return <KycFormView 
-  KycDetailsData={kycDetailsData as KycDetails} 
-  OwnerTypeMasterList={ownerTypeList} locale={locale} 
-  />;
+
+  return (
+    <KycFormView
+      KycDetailsData={kycDetailsData as KycDetails}
+      OwnerTypeMasterList={ownerTypeList}
+      locale={locale}
+    />
+  )
 }

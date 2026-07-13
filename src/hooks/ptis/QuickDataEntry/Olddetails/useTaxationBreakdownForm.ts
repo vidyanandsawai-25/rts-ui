@@ -33,16 +33,16 @@ export function useTaxationBreakdownForm(
   }, [initialData]);
 
   const initialYearId = useMemo(() => {
-    if (initialData?.taxYears?.[0]?.financeYearId) {
-      return String(initialData.taxYears[0].financeYearId);
-    }
     const firstYear = initialData?.taxYears?.[0];
-    if (firstYear) {
-      const match = yearOptions.find(yo => yo.year === firstYear.year || yo.yearCode === firstYear.yearCode);
-      if (match) return String(match.id);
+    if (!firstYear) {
+      return "";
     }
-    return yearOptions[0]?.id ? String(yearOptions[0].id) : "";
-  }, [initialData, yearOptions]);
+    if (firstYear.financeYearId === null || firstYear.financeYearId === undefined) {
+      return "";
+    }
+    return String(firstYear.financeYearId);
+  }, [initialData]);
+
 
   // Validation State (defined first to be accessible by setSelectedYearId)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>(() => {

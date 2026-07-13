@@ -36,10 +36,12 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
 
     // Assessment years for dropdown
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
-    const assessmentYearOptions = assessmentYearData.items.map((year) => ({
-        label: `${year.fromYear}-${year.toYear}`,
-        value: year.id.toString(),
-    }));
+    const assessmentYearOptions = assessmentYearData.items
+        .filter((year) => year.isActive)
+        .map((year) => ({
+            label: `${year.fromYear}-${year.toYear}`,
+            value: year.id.toString(),
+        }));
 
     // Use factor data with filters and sorting
     const tableResult = await fetchUseFactorCVMasterPagedServerAction(

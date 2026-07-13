@@ -287,9 +287,10 @@ export type RateSectionFormProps = RateSectionFormAddModeProps | RateSectionForm
 export interface RateSectionCardProps {
   rate: RateItem;
   index: number;
+  serialNo: number;
   isSelected: boolean;
   isNewlyCreated: boolean;
-  onDelete: (rateId: string, rateName: string, rateNo?: string) => void;
+  onDelete: (rateId: string, rateName: string) => void;
   deletingId: string | null;
   searchParams: URLSearchParams;
   pathname: string;
@@ -342,7 +343,6 @@ export interface RateSectionListHeaderProps {
 export interface HandleRateSectionDeleteParams {
   rateId: string;
   rateName: string;
-  rateNo?: string;
   wardCounts: Record<string, number>;
   searchParams: URLSearchParams;
   pathname: string;

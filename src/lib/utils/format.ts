@@ -103,6 +103,17 @@ export function formatNumericDate(value: string | null | undefined): string {
   }).format(date);
 }
 
+export function formatAreaWithUnit(
+  sqft: number | null | undefined,
+  sqm: number | null | undefined,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string {
+  const sqftValue = formatNumber(sqft, minimumFractionDigits, maximumFractionDigits);
+  const sqmValue = formatNumber(sqm, minimumFractionDigits, maximumFractionDigits);
+  return `${sqftValue} (${sqmValue} m²)`;
+}
+
 import { DateUtils } from "./date-helpers";
 
 export function formatDateToDDMMYYYY(dateStr: string | null | undefined): string {
@@ -122,4 +133,19 @@ export function toTitleCase(str: string | null | undefined): string {
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+// --- Reassessment Specific Formatting Utilities ---
+
+export function formatReassessmentCurrency(value: number): string {
+  if (value >= 10000000) {
+    return `₹${(value / 10000000).toFixed(2)}Cr`;
+  } else if (value >= 100000) {
+    return `₹${(value / 100000).toFixed(2)}L`;
+  }
+  return `₹${value.toLocaleString('en-IN')}`;
+}
+
+export function formatReassessmentNumber(value: number): string {
+  return value.toLocaleString('en-IN');
 }

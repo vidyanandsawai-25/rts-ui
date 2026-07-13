@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
@@ -11,6 +12,7 @@ import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
 import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
 import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction, } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
+import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
 
 // Use deletion hook
 
@@ -31,14 +33,28 @@ export const useFloorDataHandlers = (params: {
   locale: string;
   propertyId: string;
   confirm: (payload: ConfirmOptions) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   INITIAL_FORM_STATE: FloorData;
+  selectedFloorType?: 'Construction' | 'OpenPlot';
+  // Area validation fields
+  isOpenSpaceAreaExceeded?: boolean;
+  isFloorAreaExceeded?: boolean;
+  availableRemainingOpenSpaceAreaSqM?: number;
+  availableRemainingConstructionAreaSqM?: number;
+  isGroundFloorAreaExceeded?: boolean;
+  isOpenSpaceNegative?: boolean;
 }) => {
   const {
     props, editingFloorForm, selectedFloor, isAddingNewFloor,
     setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, localFloors, setLocalFloors, setFormErrors,
     startTransition,
-    router, locale, propertyId, confirm, t, INITIAL_FORM_STATE
+    router, locale, propertyId, confirm, t, INITIAL_FORM_STATE, selectedFloorType,
+    isOpenSpaceAreaExceeded = false,
+    isFloorAreaExceeded = false,
+    availableRemainingOpenSpaceAreaSqM = 0,
+    availableRemainingConstructionAreaSqM = 0,
+    isGroundFloorAreaExceeded = false,
+    isOpenSpaceNegative = false
   } = params;
 
   const { floorData: floorLookup, constructionTypeData: constructionLookup, useData: useLookup, subFloorData: subFloorLookup, subTypeData } = props;
@@ -65,6 +81,26 @@ export const useFloorDataHandlers = (params: {
   const handleSave = useCallback(async () => {
     if (isSavingRef.current) return;
 
+    if (selectedFloorType === 'OpenPlot' && isOpenSpaceAreaExceeded) {
+      toast.error(t('floor.openSpaceAreaExceeded', { area: parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2)) }), { duration: 6000 });
+      return;
+    }
+
+    if (selectedFloorType === 'Construction' && isFloorAreaExceeded) {
+      toast.error(t('floor.floorAreaExceeded', { area: parseFloat(Number(availableRemainingConstructionAreaSqM || 0).toFixed(2)) }), { duration: 6000 });
+      return;
+    }
+
+    if (!selectedFloorType && isGroundFloorAreaExceeded) {
+      toast.error(t('floor.groundFloorAreaExceeded'), { duration: 6000 });
+      return;
+    }
+
+    if (isOpenSpaceNegative) {
+      toast.error(t('floor.openSpaceNegative'), { duration: 6000 });
+      return;
+    }
+
     const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
     const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
       ? editingFloorForm.roomWiseSubmissionDetails.length
@@ -79,6 +115,22 @@ export const useFloorDataHandlers = (params: {
       return;
     }
 
+    if (selectedFloorType === 'OpenPlot') {
+      const openPlotCon = constructionLookup?.find(
+        (c: any) =>
+          String(c.constructionCode || '').toLowerCase() === 'op' ||
+          String(c.description || '').toLowerCase() === 'open plot'
+      );
+      if (!openPlotCon) {
+        setFormErrors((prev) => ({
+          ...prev,
+          constructionTypeId: t('floor.errors.openPlotConstructionTypeNotFound') || 'Construction Type for Open Plot not found in master data'
+        }));
+        toast.error(t('floor.errors.openPlotConstructionTypeNotFound') || 'Construction Type for Open Plot (op) not found in master data.');
+        return;
+      }
+    }
+
     confirm({
       variant: isAddingNewFloor ? 'add' : 'update',
       title: isAddingNewFloor ? t('floor.addConfirmTitle') : t('floor.updateConfirmTitle'),
@@ -90,6 +142,7 @@ export const useFloorDataHandlers = (params: {
         setIsSaving(true);
         const previousFloors = [...localFloors];
         try {
+          const isPlotCategory = checkIsPlotCategory(props.initialPropertyData?.categoryName as string);
           const payload: FloorSubmissionPayload = mapFormToPayload({
             formData: editingFloorForm,
             floorLookup: floorLookup as LookupData[],
@@ -100,6 +153,8 @@ export const useFloorDataHandlers = (params: {
             propertyId: Number(props.initialPropertyID || 0),
             isAddingNew: isAddingNewFloor,
             existingFloorId: selectedFloor?.id,
+            selectedFloorType: selectedFloorType,
+            isPlotCategory: isPlotCategory,
           });
 
           // Optimistic Update
@@ -133,6 +188,10 @@ export const useFloorDataHandlers = (params: {
           }
           toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
 
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('floorSaved'));
+          }
+
           startTransition(() => {
             router.refresh();
             if (typeof window !== 'undefined') {
@@ -150,14 +209,14 @@ export const useFloorDataHandlers = (params: {
         } catch (error: unknown) {
           if (error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
           setLocalFloors(previousFloors);
-          toast.error(error instanceof Error ? error.message : 'An unexpected error occurred.');
+          toast.error(error instanceof Error ? error.message : t('floor.unexpectedError'));
         } finally {
           isSavingRef.current = false;
           setIsSaving(false);
         }
       },
     });
-  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, setFormErrors]);
+  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, setFormErrors, selectedFloorType]);
 
   const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
     const currentForm = formToUse || editingFloorForm;

@@ -18,9 +18,10 @@ interface Props {
   capitalData: CapitalValueResponse | null;
   searchParams: Record<string, string | string[] | undefined>;
   locale: string;
+  propertyId?: number;
 }
 
-export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, locale }) => {
+export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, locale, propertyId }) => {
   const t = useTranslations('ptis.modules.PtisTaxDetails');
   const rootT = useTranslations('ptis');
   const items = getCapitalItems(capitalData);
@@ -41,6 +42,8 @@ export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, lo
         expandedLabel={t('viewTaxBreakdown')}
         expandedRowIds={expandedRowIds}
         getExpandHref={(row) => buildExpandHref(searchParams as Record<string, string | string[] | undefined>, row.id, expandedRowIds)}
+        getEditHref={propertyId ? (row) => `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?floorId=${row.id}` : undefined}
+        editTooltip={rootT.has('floor.editFloor') ? rootT('floor.editFloor') : 'Edit Floor'}
         tableClassName="w-full min-w-[1400px]"
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}

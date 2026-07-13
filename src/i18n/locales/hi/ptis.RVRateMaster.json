@@ -21,7 +21,9 @@
   },
   "options": {
     "monthly": "मासिक",
-    "yearly": "वार्षिक"
+    "yearly": "वार्षिक",
+    "sqMeter": "वर्ग.मी.",
+    "sqFeet": "वर्ग.फ़ी."
   },
   "buttons": {
     "generateRate": "दर उत्पन्न करें",
@@ -84,6 +86,7 @@
     "validationEnterRateValue": "कृपया कम से कम एक दर मान दर्ज करें",
     "validationDeleteRecordsFirst": "पहले {year} वित्तीय वर्ष के रिकॉर्ड हटाएं, और फिर अन्य वर्ष के लिए दरें बनाने के लिए आगे बढ़ें।",
     "validationFetchUpdateFailed": "अपडेट के लिए दरें प्राप्त करने में विफल",
+    "noRatesToUpdate": "अपडेट करने के लिए कोई दर मान कॉन्फ़िगर नहीं है। कृपया पहले दर मान दर्ज करें।",
     "validationDownloadTemplateFailed": "टेम्पलेट डाउनलोड करने में विफल",
     "validationUploadValidFile": "कृपया एक मान्य CSV या Excel फ़ाइल अपलोड करें",
     "validationRatesAlreadyExist": "चयनित फ़िल्टर के लिए दरें पहले से मौजूद हैं। कृपया अपडेट करें",
@@ -94,7 +97,9 @@
     "noRatesAvailable": "कोई दरें उपलब्ध नहीं हैं",
     "noRatesMatch": "चयनित फिल्टर से कोई डेटा मेल नहीं खाता। कृपया अपने मानदंड समायोजित करें या नई दरें उत्पन्न करें।",
     "rateExceedsMaximum": "दर मूल्य {max} से अधिक नहीं हो सकता। कृपया एक वैध दर दर्ज करें।",
-    "rateValueInvalid": "दर मूल्य वैध होना चाहिए। कृपया एक वैध दर मूल्य दर्ज करें।"
+    "rateValueInvalid": "दर मूल्य वैध होना चाहिए। कृपया एक वैध दर मूल्य दर्ज करें।",
+    "cannotChangeConfiguredValue": "कॉन्फ़िगर किया गया मान बदलना संभव नहीं है। कृपया नीति कॉन्फ़िगरेशन में अपडेट करें।",
+    "rateFrequencyMismatch": "RateMonthlyOrYearly नीति के लिए दर आवृत्ति बेमेल.:-नीति {configured} के रूप में कॉन्फ़िगर की गई है, लेकिन वर्तमान दरें {existing} के रूप में दर्ज हैं। कृपया नीति कॉन्फ़िगरेशन अपडेट करें या नई दरें कॉन्फ़िगर करने से पहले मौजूदा दरें हटाएं।"
   },
   "sections": {
     "copyRatesTitle": "दरें कॉपी करें",
@@ -112,7 +117,9 @@
     "selectSourceRateSection": "स्रोत दर अनुभाग चुनें",
     "quickImport": "त्वरित आयात:",
     "rateFrequency": "दर आवृत्ति:",
-    "rateEntryMatrix": "दर प्रविष्टि मैट्रिक्स"
+    "rateUnit": "दर इकाई:",
+    "rateEntryMatrix": "दर प्रविष्टि मैट्रिक्स",
+    "previewRates": "दर पूर्वावलोकन:"
   },
   "placeholders": {
     "selectUseGroup": "उपयोग समूह चुनें...",

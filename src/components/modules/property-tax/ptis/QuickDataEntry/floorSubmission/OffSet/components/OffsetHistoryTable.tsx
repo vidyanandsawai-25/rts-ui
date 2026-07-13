@@ -63,7 +63,7 @@ export const OffsetHistoryTable: React.FC<OffsetHistoryTableProps> = ({
                                 {getDimensionsString(offset, areaUnit)}
                             </div>
                             <div className="text-gray-800 font-medium">
-                                {offset.area.toFixed(2)}
+                                {(offset.area ?? 0).toFixed(2)}
                             </div>
                             <div className="flex justify-center">
                                 <Tooltip content={t("offset.deleteConfirm.delete")}>
@@ -86,7 +86,7 @@ export const OffsetHistoryTable: React.FC<OffsetHistoryTableProps> = ({
                         {offsetList
                             .reduce(
                                 (sum, o) =>
-                                    sum + (o.operation === OFFSET_OPERATIONS.ADD ? o.area : -o.area),
+                                    sum + (o.operation === OFFSET_OPERATIONS.ADD ? (o.area ?? 0) : -(o.area ?? 0)),
                                 0
                             )
                             .toFixed(2)}{" "}

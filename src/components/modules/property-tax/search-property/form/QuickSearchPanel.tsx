@@ -2,13 +2,16 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
+import { Search, RotateCcw } from "lucide-react";
 import type {
   LookupOptions,
   SearchCriteria,
   SearchFieldErrorMap,
-} from "@/types/property-search.types";
+} from "@/types/property-search";
 import { LookupInput } from "./LookupInput";
 import { PROPERTY_SEARCH_FIELD_LIMITS } from "@/lib/validations/property-search-field-rules";
+import { Button } from "@/components/common";
+import { SEARCH_BRAND_BUTTON, SEARCH_RESET_BUTTON } from "../form-field-styles";
 
 interface QuickSearchPanelProps {
   formState: SearchCriteria;
@@ -20,6 +23,10 @@ interface QuickSearchPanelProps {
   onFieldBlur: (
     field: keyof SearchCriteria
   ) => (e: React.FocusEvent<HTMLInputElement>) => void;
+  searchPending: boolean;
+  isSubmitDisabled: boolean;
+  onReset: () => void;
+  onClearField: (field: keyof SearchCriteria) => void;
 }
 
 export function QuickSearchPanel({
@@ -30,50 +37,29 @@ export function QuickSearchPanel({
   disabled,
   setField,
   onFieldBlur,
+  searchPending,
+  isSubmitDisabled,
+  onReset,
+  onClearField,
 }: QuickSearchPanelProps) {
   const t = useTranslations("propertySearch.form");
+  const tCommon = useTranslations("common");
 
   return (
-    <div className="overflow-x-auto pb-1 pt-1.5">
-      <div className="grid min-w-[78rem] grid-cols-7 items-start gap-x-1.5 gap-y-1">
+    <div className="overflow-x-auto px-2 pb-0.5 pt-1">
+      <div className="grid min-w-[62rem] max-w-[72rem] grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] items-start gap-x-1 gap-y-0.5">
         <LookupInput
-          id="propertyNoFrom"
-          label={t("fields.propertyNoFrom")}
-          tooltip={t("tooltips.propertyNoFrom")}
-          placeholder={t("placeholders.propertyNoFrom")}
-          value={formState.propertyNoFrom}
-          options={lookupOptions.propertyNos}
-          error={fieldErrors.propertyNoFrom}
-          onChange={(v) => setField("propertyNoFrom", v)}
-          onBlur={onFieldBlur("propertyNoFrom")}
+          id="scanQR"
+          label={t("fields.scanQR")}
+          tooltip={t("fields.scanQR")}
+          placeholder={t("placeholders.scanQR")}
+          value={formState.scanQR}
+          options={[]}
+          error={fieldErrors.scanQR}
+          onChange={(v) => setField("scanQR", v)}
+          onBlur={onFieldBlur("scanQR")}
           disabled={disabled}
-          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
-        />
-        <LookupInput
-          id="propertyNoTo"
-          label={t("fields.propertyNoTo")}
-          tooltip={t("tooltips.propertyNoTo")}
-          placeholder={t("placeholders.propertyNoTo")}
-          value={formState.propertyNoTo}
-          options={propertyNoToOptions}
-          error={fieldErrors.propertyNoTo}
-          onChange={(v) => setField("propertyNoTo", v)}
-          onBlur={onFieldBlur("propertyNoTo")}
-          disabled={disabled}
-          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
-        />
-        <LookupInput
-          id="oldPropertyNo"
-          label={t("fields.oldPropertyNo")}
-          tooltip={t("tooltips.oldPropertyNo")}
-          placeholder={t("placeholders.oldPropertyNo")}
-          value={formState.oldPropertyNo}
-          options={lookupOptions.oldPropertyNos}
-          error={fieldErrors.oldPropertyNo}
-          onChange={(v) => setField("oldPropertyNo", v)}
-          onBlur={onFieldBlur("oldPropertyNo")}
-          disabled={disabled}
-          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo}
+          onClear={() => onClearField("scanQR")}
         />
         <LookupInput
           id="upicId"
@@ -87,46 +73,76 @@ export function QuickSearchPanel({
           onBlur={onFieldBlur("upicId")}
           disabled={disabled}
           maxLength={PROPERTY_SEARCH_FIELD_LIMITS.upicId}
+          onClear={() => onClearField("upicId")}
         />
         <LookupInput
-          id="citySurveyNo"
-          label={t("fields.citySurveyNo")}
-          tooltip={t("tooltips.citySurveyNo")}
-          placeholder={t("placeholders.citySurveyNo")}
-          value={formState.citySurveyNo}
-          options={lookupOptions.csns}
-          error={fieldErrors.citySurveyNo}
-          onChange={(v) => setField("citySurveyNo", v)}
-          onBlur={onFieldBlur("citySurveyNo")}
+          id="propertyNoFrom"
+          label={t("fields.propertyNoFrom")}
+          tooltip={t("tooltips.propertyNoFrom")}
+          placeholder={t("placeholders.propertyNoFrom")}
+          value={formState.propertyNoFrom}
+          options={lookupOptions.propertyNos}
+          error={fieldErrors.propertyNoFrom}
+          onChange={(v) => setField("propertyNoFrom", v)}
+          onBlur={onFieldBlur("propertyNoFrom")}
           disabled={disabled}
-          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.citySurveyNo}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
+          onClear={() => onClearField("propertyNoFrom")}
         />
         <LookupInput
-          id="subZoneNo"
-          label={t("fields.subZoneNo")}
-          tooltip={t("tooltips.subZoneNo")}
-          placeholder={t("placeholders.subZoneNo")}
-          value={formState.subZoneNo}
-          options={lookupOptions.subZoneNos}
-          error={fieldErrors.subZoneNo}
-          onChange={(v) => setField("subZoneNo", v)}
-          onBlur={onFieldBlur("subZoneNo")}
+          id="propertyNoTo"
+          label={t("fields.propertyNoTo")}
+          tooltip={t("tooltips.propertyNoTo")}
+          placeholder={t("placeholders.propertyNoTo")}
+          value={formState.propertyNoTo}
+          options={propertyNoToOptions}
+          error={fieldErrors.propertyNoTo}
+          onChange={(v) => setField("propertyNoTo", v)}
+          onBlur={onFieldBlur("propertyNoTo")}
           disabled={disabled}
-          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.subZoneNo}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
+          onClear={() => onClearField("propertyNoTo")}
         />
         <LookupInput
-          id="plotNo"
-          label={t("fields.plotNo")}
-          tooltip={t("tooltips.plotNo")}
-          placeholder={t("placeholders.plotNo")}
-          value={formState.plotNo}
-          options={[]}
-          error={fieldErrors.plotNo}
-          onChange={(v) => setField("plotNo", v)}
-          onBlur={onFieldBlur("plotNo")}
+          id="oldPropertyNo"
+          label={t("fields.oldPropertyNo")}
+          tooltip={t("tooltips.oldPropertyNo")}
+          placeholder={t("placeholders.oldPropertyNo")}
+          value={formState.oldPropertyNo}
+          options={lookupOptions.oldPropertyNos}
+          error={fieldErrors.oldPropertyNo}
+          onChange={(v) => setField("oldPropertyNo", v)}
+          onBlur={onFieldBlur("oldPropertyNo")}
           disabled={disabled}
-          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.plotNo}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo}
+          onClear={() => onClearField("oldPropertyNo")}
         />
+        <div className="flex flex-col w-full">
+          <div className="mb-0.5 h-4 flex items-center"></div>
+          <div className="flex items-center gap-1.5 h-8">
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              icon={Search}
+              disabled={searchPending || isSubmitDisabled}
+              className={`${SEARCH_BRAND_BUTTON} cursor-pointer disabled:cursor-not-allowed`}
+            >
+              {tCommon("actions.search")}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={RotateCcw}
+              onClick={onReset}
+              disabled={searchPending}
+              className={`${SEARCH_RESET_BUTTON} cursor-pointer disabled:cursor-not-allowed`}
+            >
+              {tCommon("actions.reset")}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

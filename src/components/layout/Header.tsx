@@ -3,9 +3,10 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
 import Image from 'next/image';
-import { User, Settings, Lock, Globe, ChevronDown, LogOut, Router, Loader2 } from 'lucide-react';
+import { User, Settings, Lock, Globe, ChevronDown, LogOut, Router, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { UlbMaster } from '@/types/master.types';
+import type { MenuItem } from '@/types/menu.types';
 import { Badge, Button, Card, Tooltip } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
 import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
@@ -37,13 +38,15 @@ function HeaderCouncilLogo({
   logoFallbackText: string;
 }) {
   const [logoHasError, setLogoHasError] = useState(false);
-  if (!logoSrc || logoHasError) {
+
+  if (logoHasError || !logoSrc) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 text-center text-white font-bold text-xs leading-tight px-1">
         {logoFallbackText}
       </div>
     );
   }
+
   return (
     <Image
       src={logoSrc}
@@ -63,9 +66,10 @@ interface HeaderProps {
   userDisplayName?: string;
   /** Best-effort client IP from request headers (server layout). */
   clientIp?: string;
+  menuItems?: MenuItem[];
 }
 
-export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
+export function Header({ ulbData, userDisplayName, clientIp, menuItems }: HeaderProps) {
   const t = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
@@ -73,6 +77,25 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const [langOpen, setLangOpen] = useState(false);
   const [isLogoutPending, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [warningActive, setWarningActive] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const isCritical = secondsLeft <= 20;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleTick = (e: Event) => {
+      const customEvent = e as CustomEvent<{ secondsLeft: number; active: boolean }>;
+      setWarningActive(customEvent.detail.active);
+      setSecondsLeft(customEvent.detail.secondsLeft);
+    };
+
+    window.addEventListener('ntis:session-warning-tick', handleTick);
+    return () => {
+      window.removeEventListener('ntis:session-warning-tick', handleTick);
+    };
+  }, []);
 
   const branding = ulbData as (UlbMaster & { logoUrl?: string }) | undefined;
   const logoSrc = useMemo(() => {
@@ -94,6 +117,59 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
   const headerDetails = t('app.assessmentSystem');
+
+  const activeMenuName = useMemo(() => {
+    if (!menuItems || menuItems.length === 0) return null;
+
+    const localePattern = new RegExp(`^/(${locales.join('|')})`);
+    const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
+
+    const allPaths: string[] = [];
+    menuItems.forEach((item) => {
+      if (item.href && item.href !== '#') {
+        allPaths.push(item.href.startsWith('/') ? item.href : `/${item.href}`);
+      }
+      if (item.subItems) {
+        item.subItems.forEach((sub) => {
+          if (sub.href && sub.href !== '#') {
+            allPaths.push(sub.href.startsWith('/') ? sub.href : `/${sub.href}`);
+          }
+        });
+      }
+    });
+
+    const isPathActive = (itemPath: string): boolean => {
+      if (pathWithoutLocale === itemPath) return true;
+      if (!pathWithoutLocale.startsWith(`${itemPath}/`)) return false;
+
+      const hasMoreSpecificMatch = allPaths.some((otherPath) => {
+        if (otherPath === itemPath) return false;
+        return (
+          otherPath.length > itemPath.length &&
+          (pathWithoutLocale === otherPath || pathWithoutLocale.startsWith(`${otherPath}/`))
+        );
+      });
+
+      return !hasMoreSpecificMatch;
+    };
+
+    for (const item of menuItems) {
+      if (item.subItems) {
+        for (const sub of item.subItems) {
+          const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
+          if (isPathActive(subPath)) {
+            return sub.name;
+          }
+        }
+      }
+      const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
+      if (isPathActive(itemPath)) {
+        return item.name;
+      }
+    }
+
+    return null;
+  }, [menuItems, pathname]);
 
   const localeLabel = useMemo(() => {
     if (locale === 'en') return t('language.english');
@@ -164,7 +240,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const ipDisplay = clientIp?.trim() || t('userMenu.ipUnavailable');
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 overflow-visible">
+    <header className="fixed inset-x-0 top-0 z-[100] overflow-visible">
       <div
         className="relative h-20 w-full overflow-visible shadow-2xl border-b border-white/10"
         style={{ backgroundColor: HEADER_COLORS.background }}
@@ -213,10 +289,56 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
                 <span>{t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
-                <span className="font-medium text-yellow-300">{headerDetails}</span>
+                <span className="font-medium text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>
             </div>
           </div>
+
+          {/* Session Expiration Warning (Pulsing Highlight Pill) */}
+          {warningActive && secondsLeft > 0 && (
+            <div
+              className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm font-bold shadow-lg backdrop-blur-md self-center shrink-0 transition-all duration-300 ${
+                isCritical
+                  ? 'border-red-500 bg-red-950/80 text-white shadow-red-500/30 critical-flash-active'
+                  : 'border-amber-500/70 bg-amber-950/60 text-amber-100 shadow-amber-500/20 warning-flash-active'
+              } session-warn-active`}
+              role="status"
+              aria-live="polite"
+            >
+              <span className="relative flex h-3 w-3 shrink-0">
+                <span
+                  className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                    isCritical ? 'animate-ping bg-red-400' : 'bg-amber-400 animate-pulse'
+                  }`}
+                />
+                <span
+                  className={`relative inline-flex rounded-full h-3 w-3 ${
+                    isCritical ? 'bg-red-500' : 'bg-amber-500'
+                  }`}
+                />
+              </span>
+              <AlertCircle
+                className={`h-5 w-5 shrink-0 transition-transform ${
+                  isCritical ? 'text-red-400 animate-bounce timer-blink-sharp' : 'text-amber-400 timer-blink-smooth'
+                }`}
+                aria-hidden
+              />
+              <span
+                className={`font-mono text-base font-extrabold tracking-wide ${
+                  isCritical ? 'text-red-200 timer-blink-sharp' : 'text-amber-300 timer-blink-smooth'
+                }`}
+              >
+                {t('login.sessionTimeout.countdown', { seconds: secondsLeft })}
+              </span>
+              <span
+                className={`hidden lg:inline font-semibold ${
+                  isCritical ? 'text-red-100' : 'text-amber-200/90'
+                }`}
+              >
+                {t('login.sessionTimeout.saveWorkHint')}
+              </span>
+            </div>
+          )}
 
           <div
             ref={menuRef}
