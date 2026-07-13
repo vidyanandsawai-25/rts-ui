@@ -7,16 +7,17 @@ import * as React from 'react';
 import { LoginForm } from '@/components/modules/login/LoginForm';
 import type { LoginFormCopy } from '@/types/login.types';
 import enCommon from '@/i18n/locales/en/common.json';
+import enLogin from '@/i18n/locales/en/login.json';
 
 const enCopy: LoginFormCopy = {
-  loginTitle: String(enCommon.login.title),
-  username: String(enCommon.login.username),
-  usernamePlaceholder: String(enCommon.login.usernamePlaceholder),
-  password: String(enCommon.login.password),
-  passwordPlaceholder: String(enCommon.login.passwordPlaceholder),
-  signIn: String(enCommon.login.signIn),
-  showPassword: String(enCommon.login.showPassword),
-  hidePassword: String(enCommon.login.hidePassword),
+  loginTitle: String(enLogin.title),
+  username: String(enLogin.username),
+  usernamePlaceholder: String(enLogin.usernamePlaceholder),
+  password: String(enLogin.password),
+  passwordPlaceholder: String(enLogin.passwordPlaceholder),
+  signIn: String(enLogin.signIn),
+  showPassword: String(enLogin.showPassword),
+  hidePassword: String(enLogin.hidePassword),
 };
 
 const { mockLoginAction } = vi.hoisted(() => ({
@@ -38,7 +39,13 @@ vi.mock('next/image', () => ({
 
 function renderWithIntl(ui: React.ReactElement) {
   return render(
-    <NextIntlClientProvider locale="en" messages={{ common: enCommon as Record<string, unknown> }}>
+    <NextIntlClientProvider
+      locale="en"
+      messages={{
+        common: enCommon as Record<string, unknown>,
+        login: enLogin as Record<string, unknown>,
+      }}
+    >
       {ui}
     </NextIntlClientProvider>
   );
@@ -54,7 +61,7 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
-    expect(screen.getByText(String(enCommon.login.title))).toBeInTheDocument();
+    expect(screen.getByText(String(enLogin.title))).toBeInTheDocument();
   });
 
   it('renders council name and local name from ulbData', () => {
@@ -125,18 +132,18 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderWithIntl(<LoginForm locale="en" copy={enCopy} username="preuser" />);
 
-    const usernameInput = screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder));
+    const usernameInput = screen.getByPlaceholderText(String(enLogin.usernamePlaceholder));
     expect(usernameInput).toHaveValue('preuser');
 
     await user.type(
-      screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)),
+      screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)),
       'secret'
     );
-    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+    await user.click(screen.getByRole('button', { name: String(enLogin.signIn) }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(String(enCommon.login.errors.invalidCredentials))
+        screen.getByText(String(enLogin.errors.invalidCredentials))
       ).toBeInTheDocument();
     });
 
@@ -152,19 +159,19 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
-    const passwordInput = screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder));
+    const passwordInput = screen.getByPlaceholderText(String(enLogin.passwordPlaceholder));
     expect(
-      screen.queryByRole('button', { name: String(enCommon.login.showPassword) })
+      screen.queryByRole('button', { name: String(enLogin.showPassword) })
     ).not.toBeInTheDocument();
 
     await user.type(passwordInput, 'x');
-    const toggle = screen.getByRole('button', { name: String(enCommon.login.showPassword) });
+    const toggle = screen.getByRole('button', { name: String(enLogin.showPassword) });
     expect(passwordInput).toHaveAttribute('type', 'password');
 
     await user.click(toggle);
     expect(passwordInput).toHaveAttribute('type', 'text');
     expect(
-      screen.getByRole('button', { name: String(enCommon.login.hidePassword) })
+      screen.getByRole('button', { name: String(enLogin.hidePassword) })
     ).toBeInTheDocument();
   });
 
@@ -178,15 +185,15 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     await user.type(
-      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      screen.getByPlaceholderText(String(enLogin.usernamePlaceholder)),
       'u12'
     );
-    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'p1');
-    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+    await user.type(screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)), 'p1');
+    await user.click(screen.getByRole('button', { name: String(enLogin.signIn) }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(String(enCommon.login.errors.invalidCredentials))
+        screen.getByText(String(enLogin.errors.invalidCredentials))
       ).toBeInTheDocument();
     });
   });
@@ -201,15 +208,15 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     await user.type(
-      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      screen.getByPlaceholderText(String(enLogin.usernamePlaceholder)),
       'abc'
     );
-    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'x');
-    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+    await user.type(screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)), 'x');
+    await user.click(screen.getByRole('button', { name: String(enLogin.signIn) }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(String(enCommon.login.errors.credentialsRequired))
+        screen.getByText(String(enLogin.errors.credentialsRequired))
       ).toBeInTheDocument();
     });
   });
@@ -224,15 +231,15 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     await user.type(
-      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      screen.getByPlaceholderText(String(enLogin.usernamePlaceholder)),
       'abc'
     );
-    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'x');
-    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+    await user.type(screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)), 'x');
+    await user.click(screen.getByRole('button', { name: String(enLogin.signIn) }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(String(enCommon.login.errors.serviceUnavailable))
+        screen.getByText(String(enLogin.errors.serviceUnavailable))
       ).toBeInTheDocument();
     });
   });
@@ -242,14 +249,14 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     await user.type(
-      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      screen.getByPlaceholderText(String(enLogin.usernamePlaceholder)),
       'ab'
     );
-    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'secret');
-    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+    await user.type(screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)), 'secret');
+    await user.click(screen.getByRole('button', { name: String(enLogin.signIn) }));
 
     await waitFor(() => {
-      expect(screen.getByText(String(enCommon.login.errors.USERNAME_TOO_SHORT))).toBeInTheDocument();
+      expect(screen.getByText(String(enLogin.errors.USERNAME_TOO_SHORT))).toBeInTheDocument();
     });
     expect(mockLoginAction).not.toHaveBeenCalled();
   });
@@ -259,7 +266,7 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     const usernameInput = screen.getByPlaceholderText(
-      String(enCommon.login.usernamePlaceholder)
+      String(enLogin.usernamePlaceholder)
     ) as HTMLInputElement;
     await user.type(usernameInput, 'a#b$c');
 
@@ -276,18 +283,18 @@ describe('LoginForm', () => {
     renderWithIntl(<LoginForm locale="en" copy={enCopy} username="uzer" />);
 
     const passwordInput = screen.getByPlaceholderText(
-      String(enCommon.login.passwordPlaceholder)
+      String(enLogin.passwordPlaceholder)
     ) as HTMLInputElement;
     await user.type(passwordInput, 'hunter2');
-    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+    await user.click(screen.getByRole('button', { name: String(enLogin.signIn) }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(String(enCommon.login.errors.invalidCredentials))
+        screen.getByText(String(enLogin.errors.invalidCredentials))
       ).toBeInTheDocument();
     });
     expect(
-      screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)) as HTMLInputElement
+      screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)) as HTMLInputElement
     ).toHaveValue('');
   });
 });

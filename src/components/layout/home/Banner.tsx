@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-
+import { LanguageDropdown } from "@/components/common";
 
 interface BannerProps {
     ulbName?: string;
@@ -26,6 +26,11 @@ export const Banner = ({ ulbName, backgroundSrc }: BannerProps) => {
                 style={bannerStyle}
             >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent" aria-hidden="true"></div>
+
+                {/* Language Dropdown at top right corner */}
+                <div className="absolute top-4 right-4 z-50">
+                    <LanguageDropdown />
+                </div>
 
                 {/* Banner heading */}
                 <div className="relative z-10 flex items-center justify-center h-full">
