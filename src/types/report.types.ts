@@ -213,6 +213,8 @@ export interface ReportGenerationFormProps {
   onBack?: () => void;
 }
 
+import type { FinancialYear } from '@/types/financialYear.types';
+
 export interface ReportsWorkspaceProps {
   copy?: ReportFormCopy;
   jobsCopy: ReportJobsCopy;
@@ -220,6 +222,7 @@ export interface ReportsWorkspaceProps {
   paramsCopy?: ReportParamsPanelCopy;
   reportDefinitions: ReportDefinition[];
   zones?: ZoneSummary[];
+  financialYears?: FinancialYear[];
 }
 
 export interface ReportJobsListProps {

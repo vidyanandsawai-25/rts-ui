@@ -17,11 +17,13 @@ interface UseReportParametersOptions {
   report: ReportDefinition | null;
   onQueued?: (reportRequestId: string) => void;
   copy: ReportParamsPanelCopy;
+  zones?: ZoneSummary[];
+  financialYears?: FinancialYear[];
 }
 
-export function useReportParameters({ report, onQueued, copy }: UseReportParametersOptions) {
-  const [financialYears, setFinancialYears] = useState<FinancialYear[]>([]);
-  const [zones, setZones] = useState<ZoneSummary[]>([]);
+export function useReportParameters({ report, onQueued, copy, zones: initialZones, financialYears: initialYears }: UseReportParametersOptions) {
+  const [financialYears, setFinancialYears] = useState<FinancialYear[]>(initialYears || []);
+  const [zones, setZones] = useState<ZoneSummary[]>(initialZones || []);
   const [wards, setWards] = useState<WardSummary[]>([]);
 
   const router = useRouter();
@@ -33,15 +35,20 @@ export function useReportParameters({ report, onQueued, copy }: UseReportParamet
   const wardId = searchParams.get('wardId') ?? '';
 
   // Form values
-  const [financialYearId, setFinancialYearId] = useState('');
+  const [financialYearId, setFinancialYearId] = useState(() => {
+    if (initialYears && initialYears.length > 0) {
+      return String(initialYears[0].id);
+    }
+    return '';
+  });
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
   const [propertyMode, setPropertyMode] = useState<'single' | 'range'>('single');
   const [fromPropertyNo, setFromPropertyNo] = useState('');
   const [toPropertyNo, setToPropertyNo] = useState('');
 
   // Loading states
-  const [loadingYears, setLoadingYears] = useState(true);
-  const [loadingZones, setLoadingZones] = useState(true);
+  const [loadingYears, setLoadingYears] = useState(!initialYears || initialYears.length === 0);
+  const [loadingZones, setLoadingZones] = useState(!initialZones || initialZones.length === 0);
   const [loadingWards, setLoadingWards] = useState(false);
   const [properties, setProperties] = useState<PropertySummary[]>([]);
   const [loadingProperties, setLoadingProperties] = useState(false);
@@ -52,19 +59,23 @@ export function useReportParameters({ report, onQueued, copy }: UseReportParamet
   const [fieldErrors, setFieldErrors] = useState<{ financialYearId?: string; zoneId?: string; wardId?: string }>({});
 
   useEffect(() => {
-    getFinancialYearsAction().then((years) => {
-      setFinancialYears(years);
-      setLoadingYears(false);
-      // Auto-select the first active year so user doesn't get a disabled button by default
-      if (years.length > 0) {
-        setFinancialYearId(String(years[0].id));
-      }
-    });
-    getZonesAction().then((z) => {
-      setZones(z);
-      setLoadingZones(false);
-    });
-  }, []);
+    if (!initialYears || initialYears.length === 0) {
+      getFinancialYearsAction().then((years) => {
+        setFinancialYears(years);
+        setLoadingYears(false);
+        if (years.length > 0) {
+          setFinancialYearId(String(years[0].id));
+        }
+      });
+    }
+
+    if (!initialZones || initialZones.length === 0) {
+      getZonesAction().then((z) => {
+        setZones(z);
+        setLoadingZones(false);
+      });
+    }
+  }, [initialYears, initialZones]);
 
   useEffect(() => {
     setWards([]);

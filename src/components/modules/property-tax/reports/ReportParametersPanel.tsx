@@ -2,7 +2,8 @@
 
 import { Send, CheckCircle2 } from 'lucide-react';
 import { ApplyButton, ClearButton, SearchSelect, Tabs, TabList, Tab, Label, Badge, ValidationMessage } from '@/components/common';
-import type { ReportDefinition, ReportParamsPanelCopy } from '@/types/report.types';
+import type { ReportDefinition, ReportParamsPanelCopy, ZoneSummary } from '@/types/report.types';
+import type { FinancialYear } from '@/types/financialYear.types';
 import { useReportParameters } from './useReportParameters';
 
 interface ReportParametersPanelProps {
@@ -12,6 +13,8 @@ interface ReportParametersPanelProps {
   onQueued?: (reportRequestId: string) => void;
   /** Translated copy strings */
   copy: ReportParamsPanelCopy;
+  zones?: ZoneSummary[];
+  financialYears?: FinancialYear[];
 }
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
@@ -26,7 +29,7 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
   );
 }
 
-export function ReportParametersPanel({ report, onQueued, copy }: ReportParametersPanelProps) {
+export function ReportParametersPanel({ report, onQueued, copy, zones, financialYears }: ReportParametersPanelProps) {
   const {
     zoneId, wardId,
     financialYearId, setFinancialYearId, setFieldErrors,
@@ -38,7 +41,7 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
     isPending, submitStatus, errorMsg, fieldErrors,
     yearOptions, zoneOptions, wardOptions, propertyOptions,
     handleZoneChange, handleWardChange, handleReset, handleSubmit,
-  } = useReportParameters({ report, onQueued, copy });
+  } = useReportParameters({ report, onQueued, copy, zones, financialYears });
 
   if (!report) {
     return (
