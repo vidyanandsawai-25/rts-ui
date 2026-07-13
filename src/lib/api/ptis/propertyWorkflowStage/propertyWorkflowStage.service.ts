@@ -107,7 +107,7 @@ export const propertyWorkflowStageService = {
     propertyId: number | string
   ): Promise<{ success: boolean; data?: PropertyWorkflowDetail[]; error?: string }> {
     try {
-      const response = await fetchWithCertSupport<PagedResult<PropertyWorkflowDetail>>(
+      const response = await fetchWithCertSupport<unknown>(
         `/Property/${propertyId}/workflow-details`
       );
 
@@ -118,12 +118,20 @@ export const propertyWorkflowStageService = {
         };
       }
 
-      const rawData = response.data;
-      if (!rawData || !rawData.items) {
+      const rawData = response.data as Record<string, unknown> | PropertyWorkflowDetail[] | null;
+      if (!rawData) {
         return { success: false, error: 'Workflow details not found' };
       }
 
-      return { success: true, data: Array.isArray(rawData.items) ? rawData.items : [rawData.items] };
+      // Extract array of items from response
+      let itemsList: PropertyWorkflowDetail[] = [];
+      if (Array.isArray(rawData)) {
+        itemsList = rawData;
+      } else if (rawData && typeof rawData === 'object' && 'items' in rawData && Array.isArray(rawData.items)) {
+        itemsList = rawData.items as PropertyWorkflowDetail[];
+      }
+
+      return { success: true, data: itemsList };
     } catch (error: unknown) {
       return {
         success: false,

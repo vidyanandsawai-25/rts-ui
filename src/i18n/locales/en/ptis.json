@@ -765,5 +765,15 @@
     "description": "The capital valuation taxes for this property have not been loaded. Click below to retrieve and calculate the capital value on-demand.",
     "button": "Calculate Capital Value",
     "calculating": "Calculating..."
-  }
+  },
+  "propertyTracking": "Property Tracking",
+  "unknownOwner": "Unknown Owner",
+  "completed": "Completed",
+  "progress": "Progress",
+  "current": "Current",
+  "allCompleted": "All Completed",
+  "failedToLoadTracking": "Failed to load tracking",
+  "tryAgain": "Try Again",
+  "noTrackingData": "No Tracking Data",
+  "trackingNotAvailable": "Tracking information is not available for this property yet."
 }
