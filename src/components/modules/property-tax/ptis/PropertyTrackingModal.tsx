@@ -51,7 +51,7 @@ export function PropertyTrackingModal({
 
           let statusStr = "Completed";
           if (historyRecord.currentStatus === true) {
-            statusStr = "In Progress";
+            statusStr = "Completed";
           } else if (historyRecord.currentStatus === false) {
             statusStr = "Completed";
           } else if (historyRecord.currentStatus === null || historyRecord.currentStatus === undefined) {
@@ -157,12 +157,12 @@ export function PropertyTrackingModal({
         {/* Progress Bar Header inside Drawer body */}
         {trackingData && trackingData.tracking && (
           <div className="px-6 py-4 border-b border-slate-100 bg-white">
-            <div className="flex justify-between items-center mb-2">
+            {/* <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('progress')}</span>
               <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
                 {t('current')}: {trackingData.tracking.find((s: any) => (s.status || s.Status) === "In Progress")?.stage || trackingData.tracking.find((s: any) => (s.status || s.Status) === "In Progress")?.Stage || t('allCompleted')}
               </span>
-            </div>
+            </div> */}
             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out"
@@ -331,12 +331,11 @@ export function PropertyTrackingModal({
                                 <div className="node-pop relative w-12 h-12 flex items-center justify-center" style={{ animationDelay: `${i * 0.2}s` }}>
                                   {isFirst && (
                                     <span className="absolute -top-4 bg-slate-900 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm z-30">
-                                      Start
+
                                     </span>
                                   )}
                                   {isLast && (
                                     <span className="absolute -bottom-4 bg-slate-900 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm z-30">
-                                      End
                                     </span>
                                   )}
                                   {isInProgress && <div className="snake-border shadow-lg shadow-blue-500/25" />}
