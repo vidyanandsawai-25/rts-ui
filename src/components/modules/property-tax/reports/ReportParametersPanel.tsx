@@ -1,18 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo, useTransition } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Send, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { ApplyButton, ClearButton, SearchSelect, Tabs, TabList, Tab } from '@/components/common';
-import {
-  getFinancialYearsAction,
-  getZonesAction,
-  getWardsByZoneAction,
-  getPropertiesByWardAction,
-} from '@/app/[locale]/property-tax/reports/action';
-import type { FinancialYear } from '@/types/financialYear.types';
-import type { ZoneSummary, WardSummary, PropertySummary, ReportDefinition, ReportParamsPanelCopy } from '@/types/report.types';
+import type { ReportDefinition, ReportParamsPanelCopy } from '@/types/report.types';
+import { useReportParameters } from './useReportParameters';
 
 interface ReportParametersPanelProps {
   /** The selected report from the left tabs panel */
@@ -34,243 +25,18 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
 }
 
 export function ReportParametersPanel({ report, onQueued, copy }: ReportParametersPanelProps) {
-  const [financialYears, setFinancialYears] = useState<FinancialYear[]>([]);
-  const [zones, setZones] = useState<ZoneSummary[]>([]);
-  const [wards, setWards] = useState<WardSummary[]>([]);
-
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // Read Zone/Ward from URL Search Parameters
-  const zoneId = searchParams.get('zoneId') ?? '';
-  const wardId = searchParams.get('wardId') ?? '';
-
-  // Form values
-  const [financialYearId, setFinancialYearId] = useState('');
-  const [selectedPropertyId, setSelectedPropertyId] = useState('');
-  const [propertyMode, setPropertyMode] = useState<'single' | 'range'>('single');
-  const [fromPropertyNo, setFromPropertyNo] = useState('');
-  const [toPropertyNo, setToPropertyNo] = useState('');
-
-  // Loading states
-  const [loadingYears, setLoadingYears] = useState(true);
-  const [loadingZones, setLoadingZones] = useState(true);
-  const [loadingWards, setLoadingWards] = useState(false);
-  const [properties, setProperties] = useState<PropertySummary[]>([]);
-  const [loadingProperties, setLoadingProperties] = useState(false);
-
-  const [isPending, startTransition] = useTransition();
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ financialYearId?: string; zoneId?: string; wardId?: string }>({});
-
-  useEffect(() => {
-    getFinancialYearsAction().then((years) => {
-      setFinancialYears(years);
-      setLoadingYears(false);
-      // Auto-select the first active year so user doesn't get a disabled button by default
-      if (years.length > 0) {
-        setFinancialYearId(String(years[0].id));
-      }
-    });
-    getZonesAction().then((z) => {
-      setZones(z);
-      setLoadingZones(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    setWards([]);
-    if (!zoneId) return;
-    setLoadingWards(true);
-    getWardsByZoneAction(Number(zoneId)).then((w) => {
-      setWards(w);
-      setLoadingWards(false);
-    });
-  }, [zoneId]);
-
-  useEffect(() => {
-    setProperties([]);
-    setSelectedPropertyId('');
-    setFromPropertyNo('');
-    setToPropertyNo('');
-    if (!wardId) return;
-    setLoadingProperties(true);
-    getPropertiesByWardAction(Number(wardId))
-      .then((props) => {
-        setProperties(props);
-      })
-      .finally(() => {
-        setLoadingProperties(false);
-      });
-  }, [wardId]);
-
-  useEffect(() => {
-    setSubmitStatus('idle');
-    setErrorMsg('');
-  }, [report]);
-
-  const handleZoneChange = (val: string) => {
-    setFieldErrors((prev) => ({ ...prev, zoneId: undefined, wardId: undefined }));
-    const next = new URLSearchParams(searchParams.toString());
-    if (val) {
-      next.set('zoneId', val);
-    } else {
-      next.delete('zoneId');
-    }
-    next.delete('wardId'); // clear ward when zone changes
-    router.push(`${pathname}?${next.toString()}`);
-  };
-
-  const handleWardChange = (val: string) => {
-    setFieldErrors((prev) => ({ ...prev, wardId: undefined }));
-    const next = new URLSearchParams(searchParams.toString());
-    if (val) {
-      next.set('wardId', val);
-    } else {
-      next.delete('wardId');
-    }
-    router.push(`${pathname}?${next.toString()}`);
-  };
-
-  const handleReset = () => {
-    setFinancialYearId('');
-    setSelectedPropertyId('');
-    setFromPropertyNo('');
-    setToPropertyNo('');
-    setProperties([]);
-    setSubmitStatus('idle');
-    setErrorMsg('');
-    setFieldErrors({});
-
-    // Clear zone/ward from URL
-    const next = new URLSearchParams(searchParams.toString());
-    next.delete('zoneId');
-    next.delete('wardId');
-    router.push(`${pathname}?${next.toString()}`);
-  };
-
-  const handleSubmit = () => {
-    if (!report) return;
-
-    setSubmitStatus('idle');
-    setErrorMsg('');
-
-    const nextFieldErrors: { financialYearId?: string; zoneId?: string; wardId?: string } = {};
-    if (!financialYearId) nextFieldErrors.financialYearId = copy.validation.financialYearRequired;
-    if (!zoneId) nextFieldErrors.zoneId = copy.validation.zoneRequired;
-    if (!wardId) nextFieldErrors.wardId = copy.validation.wardRequired;
-
-    if (Object.keys(nextFieldErrors).length > 0) {
-      setFieldErrors(nextFieldErrors);
-      setSubmitStatus('error');
-      setErrorMsg(copy.validation.fillAllRequired);
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const selectedProperty = properties.find((p) => String(p.propertyId) === selectedPropertyId);
-        const currentPropertyNo = selectedProperty ? selectedProperty.propertyNo : '';
-        const propertyId = (propertyMode === 'single' && selectedPropertyId) ? Number(selectedPropertyId) : null;
-
-        // Build parameters - userId is injected server-side in the route handler
-        const parameters: Record<string, string> = {};
-        if (financialYearId) {
-          parameters.financialYearId = financialYearId;
-          parameters.FinancialYearId = financialYearId;
-        }
-        if (zoneId) {
-          parameters.zoneId = zoneId;
-          parameters.ZoneId = zoneId;
-        }
-        if (wardId) {
-          parameters.wardId = wardId;
-          parameters.WardId = wardId;
-        }
-        if (propertyMode === 'single' && currentPropertyNo) {
-          parameters.propertyNo = currentPropertyNo;
-          parameters.PropertyNo = currentPropertyNo;
-        }
-        if (propertyMode === 'range') {
-          const fromIndex = properties.findIndex((p) => String(p.propertyId) === fromPropertyNo);
-          const toIndex = properties.findIndex((p) => String(p.propertyId) === toPropertyNo);
-
-          if (fromIndex !== -1 && toIndex !== -1) {
-            const start = Math.min(fromIndex, toIndex);
-            const end = Math.max(fromIndex, toIndex);
-            const rangeProperties = properties.slice(start, end + 1);
-            const bulkIds = rangeProperties.map((p) => p.propertyId).join(',');
-            parameters.propertyId = bulkIds;
-            parameters.PropertyId = bulkIds;
-          } else if (fromIndex !== -1) {
-            parameters.propertyId = String(properties[fromIndex].propertyId);
-            parameters.PropertyId = String(properties[fromIndex].propertyId);
-          } else if (toIndex !== -1) {
-            parameters.propertyId = String(properties[toIndex].propertyId);
-            parameters.PropertyId = String(properties[toIndex].propertyId);
-          }
-        } else if (propertyId !== null) {
-          parameters.propertyId = String(propertyId);
-          parameters.PropertyId = String(propertyId);
-        }
-
-        const response = await fetch('/api/report-request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reportCode: report.reportCode, parameters }),
-        });
-
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({ error: copy.validation.failedToQueue }));
-          setSubmitStatus('error');
-          setErrorMsg(err.error || copy.validation.failedToQueue);
-          return;
-        }
-
-        const result = await response.json().catch(() => ({}));
-        setSubmitStatus('success');
-        toast.success(copy.reportQueued.replace('{name}', report.reportName));
-        onQueued?.(result.reportRequestId || '');
-      } catch {
-        setSubmitStatus('error');
-        setErrorMsg(copy.validation.networkError);
-      }
-    });
-  };
-
-  const yearOptions = financialYears.map((y) => ({
-    value: String(y.id),
-    label: y.yearCode ?? String(y.year),
-  }));
-  const zoneOptions = zones.map((z) => ({
-    value: String(z.id),
-    label: z.description || z.zoneNo || `Zone ${z.id}`,
-  }));
-  const wardOptions = wards.map((w) => ({
-    value: String(w.id),
-    label: w.description || w.wardNo || `Ward ${w.id}`,
-  }));
-  const propertyOptions = useMemo(() => {
-    return properties.map((p: any) => {
-      let label = p.propertyNo;
-      if (p.fromProperty) {
-        label += `-${p.fromProperty}`;
-        if (p.toProperty && p.toProperty !== p.fromProperty) {
-          label += ` – ${p.toProperty}`;
-        }
-      } else if (p.toProperty) {
-        label += `-${p.toProperty}`;
-      } else if (p.partitionNo) {
-        label += `-${p.partitionNo}`;
-      }
-      return {
-        label,
-        value: String(p.propertyId),
-      };
-    });
-  }, [properties]);
+  const {
+    zoneId, wardId,
+    financialYearId, setFinancialYearId, setFieldErrors,
+    selectedPropertyId, setSelectedPropertyId,
+    propertyMode, setPropertyMode,
+    fromPropertyNo, setFromPropertyNo,
+    toPropertyNo, setToPropertyNo,
+    loadingYears, loadingZones, loadingWards, loadingProperties,
+    isPending, submitStatus, errorMsg, fieldErrors,
+    yearOptions, zoneOptions, wardOptions, propertyOptions,
+    handleZoneChange, handleWardChange, handleReset, handleSubmit,
+  } = useReportParameters({ report, onQueued, copy });
 
   if (!report) {
     return (
@@ -285,6 +51,7 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
 
   return (
     <div className="flex flex-col gap-4 p-5">
+      {/* Financial Year */}
       <div>
         <FieldLabel required>{copy.financialYear}</FieldLabel>
         <SearchSelect
@@ -303,6 +70,7 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
         />
       </div>
 
+      {/* Zone & Ward */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <FieldLabel required>{copy.zoneNo}</FieldLabel>
@@ -346,25 +114,20 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
             if (nextMode === 'single') {
               setFromPropertyNo('');
               setToPropertyNo('');
-              return;
+            } else {
+              setSelectedPropertyId('');
             }
-            setSelectedPropertyId('');
           }}
           variant="pills"
           size="sm"
           className="mb-3"
         >
           <TabList className="flex w-full gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" scrollable={false}>
-            <Tab value="single" className="flex-1 justify-center py-2 text-xs font-semibold">
-              {copy.propertyNo}
-            </Tab>
-            <Tab value="range" className="flex-1 justify-center py-2 text-xs font-semibold">
-              {copy.fromPropertyToProperty}
-            </Tab>
+            <Tab value="single" className="flex-1 justify-center py-2 text-xs font-semibold">{copy.propertyNo}</Tab>
+            <Tab value="range" className="flex-1 justify-center py-2 text-xs font-semibold">{copy.fromPropertyToProperty}</Tab>
           </TabList>
         </Tabs>
 
-        {/* Single Property Dropdown */}
         {propertyMode === 'single' && (
           <div>
             <label className="block text-[12px] font-medium text-gray-400 mb-1">{copy.propertyNo}</label>
@@ -381,7 +144,6 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
           </div>
         )}
 
-        {/* Range Property Dropdowns */}
         {propertyMode === 'range' && (
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -414,6 +176,7 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
         )}
       </div>
 
+      {/* Status messages */}
       {submitStatus === 'error' && (
         <div className="flex items-start gap-2.5 bg-rose-50/70 border border-rose-100/80 rounded-xl px-4 py-3 text-xs font-semibold text-rose-800">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
@@ -427,14 +190,9 @@ export function ReportParametersPanel({ report, onQueued, copy }: ReportParamete
         </div>
       )}
 
+      {/* Action buttons */}
       <div className="flex gap-2.5 mt-2 pt-3 border-t border-gray-100">
-        <ClearButton
-          type="button"
-          size="md"
-          label={copy.buttons.reset}
-          onClick={handleReset}
-          disabled={isPending}
-        />
+        <ClearButton type="button" size="md" label={copy.buttons.reset} onClick={handleReset} disabled={isPending} />
         <ApplyButton
           type="button"
           size="md"
