@@ -23,11 +23,12 @@ import type { useDigitInputs } from '@/hooks/useDigitInputs';
  * ```
  */
 export const getFieldErrorState = (
-  field: keyof KycFormData | 'mobile' | 'aadhar',
+  field: keyof KycFormData | 'mobile' | 'alternateMobile' | 'aadhar',
   isValid: boolean,
   formData: KycFormData,
   digitInputs: {
     mobile: ReturnType<typeof useDigitInputs>;
+    alternateMobile: ReturnType<typeof useDigitInputs>;
     aadhar: ReturnType<typeof useDigitInputs>;
   },
   isSubmitted: boolean = false
@@ -35,13 +36,17 @@ export const getFieldErrorState = (
   // If form is submitted, show all validation errors
   if (isSubmitted) return !isValid;
 
-  // For digit inputs (mobile/aadhar), show error only if user has entered data
-  if (field === 'mobile') {
-    return digitInputs.mobile.value.length > 0 && !isValid;
-  }
-  
-  if (field === 'aadhar') {
-    return digitInputs.aadhar.value.length > 0 && !isValid;
+  // For digit inputs (mobile/alternateMobile/aadhar), show error only if:
+  // - the input has been blurred (isFocused is false) and has some content, OR
+  // - the input is active (isFocused is true) and is nearly complete (length >= input length - 2)
+  if (field === 'mobile' || field === 'alternateMobile' || field === 'aadhar') {
+    const input = digitInputs[field];
+    if (!input) return false;
+    const len = input.digits.length;
+    return !isValid && (
+      (!input.isFocused && input.value.length > 0) ||
+      (input.isFocused && input.value.length >= len - 2)
+    );
   }
 
   // For regular form fields, show error only if field has been touched (has value)
@@ -59,7 +64,7 @@ export const getFieldErrorState = (
  * 
  * @example
  * ```tsx
- * const showError = createShowErrorHelper(formData, { mobile: mobileInput, aadhar: aadharInput }, isSubmitted);
+ * const showError = createShowErrorHelper(formData, { mobile: mobileInput, alternateMobile: alternateMobileInput, aadhar: aadharInput }, isSubmitted);
  * const hasNameError = showError('ownerName', kycValidators.isValidName(formData.ownerName ?? ''));
  * ```
  */
@@ -67,11 +72,12 @@ export const createShowErrorHelper = (
   formData: KycFormData,
   digitInputs: {
     mobile: ReturnType<typeof useDigitInputs>;
+    alternateMobile: ReturnType<typeof useDigitInputs>;
     aadhar: ReturnType<typeof useDigitInputs>;
   },
   isSubmitted: boolean = false
 ) => {
-  return (field: keyof KycFormData | 'mobile' | 'aadhar', isValid: boolean): boolean => {
+  return (field: keyof KycFormData | 'mobile' | 'alternateMobile' | 'aadhar', isValid: boolean): boolean => {
     return getFieldErrorState(field, isValid, formData, digitInputs, isSubmitted);
   };
 };

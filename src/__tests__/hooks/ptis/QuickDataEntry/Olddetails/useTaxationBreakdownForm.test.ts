@@ -232,4 +232,50 @@ describe('useTaxationBreakdownForm', () => {
     expect(toast.success).toHaveBeenCalled();
     expect(mockRefresh).toHaveBeenCalled();
   });
+
+  it('should not set any default year if financeYearId is null', () => {
+    const nullFinanceYearData = {
+      propertyId: 123,
+      taxYears: [
+        {
+          financeYearId: null as any,
+          year: 2024,
+          yearCode: '2024-25',
+          taxes: [] as any[],
+        },
+      ],
+    };
+    const mockYearOptions = [
+      { id: 1, year: 2024, yearCode: '2024-25', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+    ];
+    const { result } = renderHook(() => useTaxationBreakdownForm(nullFinanceYearData, mockYearOptions));
+    expect(result.current.selectedYearId).toBe('');
+  });
+
+  it('should not set any default year if initialData (API response) is null', () => {
+    const mockYearOptions = [
+      { id: 1, year: 2024, yearCode: '2024-25', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+    ];
+    const { result } = renderHook(() => useTaxationBreakdownForm(null, mockYearOptions));
+    expect(result.current.selectedYearId).toBe('');
+  });
+
+  it('should show correct year as selected when financeYearId is provided', () => {
+    const validFinanceYearData = {
+      propertyId: 123,
+      taxYears: [
+        {
+          financeYearId: 4,
+          year: 2024,
+          yearCode: '2024-25',
+          taxes: [] as any[],
+        },
+      ],
+    };
+    const mockYearOptions = [
+      { id: 4, year: 2024, yearCode: '2024-25', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+    ];
+    const { result } = renderHook(() => useTaxationBreakdownForm(validFinanceYearData, mockYearOptions));
+    expect(result.current.selectedYearId).toBe('4');
+  });
 });

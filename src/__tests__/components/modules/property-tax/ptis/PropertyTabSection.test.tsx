@@ -10,6 +10,7 @@ vi.spyOn(console, 'warn').mockImplementation(() => {});
 const mockT = (key: string) => key;
 vi.mock('next-intl', () => ({
   useTranslations: () => mockT,
+  useLocale: () => 'en',
 }));
 
 const stableParams = new URLSearchParams('wardNo=Ward-1&propertyNo=P-101&propertyId=101&wardId=1');

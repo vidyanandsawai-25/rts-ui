@@ -177,7 +177,7 @@ describe('PropertyInfoCard', () => {
     it('should have card container with proper styling', () => {
       const { container } = render(<PropertyInfoCard {...defaultProps} />);
 
-      const card = container.querySelector('.bg-white');
+      const card = container.firstElementChild;
       expect(card).toBeInTheDocument();
       expect(card).toHaveClass('rounded-xl');
       expect(card).toHaveClass('border');

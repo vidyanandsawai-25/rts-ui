@@ -2,30 +2,50 @@
 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { getRules, createRule, updateRule, deleteRule } from '@/lib/api/rule-engine/rule.service';
+import { getRules, getRulesSummary, getRuleById, createRule, updateRule, deleteRule, dryRunRule } from '@/lib/api/rule-engine/rule.service';
 import {
   getFieldConfigurations, getScopes, getCorporations,
   getEffectTypes, getEffectTypeConfigs, getRateSections, getRuleCategories, getDynamicFieldOptions,
   createRuleField, updateRuleField, deleteRuleField
 } from '@/lib/api/rule-engine/config.service';
-import { RuleItem } from '@/types/rule-engine.types';
+import { RuleItem } from '@/types/rule-engine';
 import { createLogger } from '@/lib/utils/server-logger';
 
 const logger = createLogger('rule-engine:actions');
 
-/** Server Action: Fetches paginated list of policy rules. */
+/** Server Action: Fetches paginated lightweight list of policy rules summary. */
 export async function fetchRulesPagedAction(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string,
-  policyTypeId?: number,
+  _policyTypeId?: number,
   ruleScopeId?: number
 ) {
   try {
-    return await getRules(pageNumber, pageSize, searchTerm, policyTypeId, ruleScopeId);
+    return await getRulesSummary(pageNumber, pageSize, searchTerm, ruleScopeId);
   } catch (error) {
     logger.error('fetchRulesPagedAction failed', { operation: 'fetchRulesPagedAction' }, error);
     return { items: [], totalCount: 0, pageNumber, pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
+  }
+}
+
+/** Server Action: Fetches full details of a specific rule configuration by ID. */
+export async function fetchRuleByIdAction(id: number) {
+  try {
+    return await getRuleById(id);
+  } catch (error) {
+    logger.error('fetchRuleByIdAction failed', { operation: 'fetchRuleByIdAction', id }, error);
+    return null;
+  }
+}
+
+/** Server Action: Fetches full rule configurations including heavy JSON blobs for a scope. */
+export async function fetchFullRulesAction(ruleScopeId?: number) {
+  try {
+    return await getRules(1, 500, undefined, undefined, ruleScopeId);
+  } catch (error) {
+    logger.error('fetchFullRulesAction failed', { operation: 'fetchFullRulesAction', ruleScopeId }, error);
+    return { items: [], totalCount: 0, pageNumber: 1, pageSize: 500, totalPages: 0, hasPrevious: false, hasNext: false };
   }
 }
 
@@ -217,4 +237,24 @@ export async function deleteRuleFieldAction(id: number) {
     };
   }
 }
+
+
+/** Server Action: Performs a trace dry-run of a category and inputs. */
+export async function dryRunRuleAction(
+  category: string,
+  input: Record<string, unknown>,
+  ruleJson?: string
+) {
+  try {
+    return await dryRunRule(category, input, ruleJson);
+  } catch (error) {
+    logger.error('dryRunRuleAction failed', { operation: 'dryRunRuleAction', category }, error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Server Action failed to perform dry-run',
+    };
+  }
+}
+
+
 

@@ -11,9 +11,6 @@ export function useFinancialYearTable({
   initialData,
   drawer = null,
   initialEditingData = null,
-  canEdit = false,
-  canDelete = false,
-  haveFullAccess = false,
 }: {
   initialData: FinancialYear[];
   totalCount: number;
@@ -21,9 +18,6 @@ export function useFinancialYearTable({
   pageSize: number;
   drawer?: 'add' | 'edit' | null;
   initialEditingData?: FinancialYear | null;
-  canEdit?: boolean;
-  canDelete?: boolean;
-  haveFullAccess?: boolean;
 }) {
   const t = useTranslations('financialYear'), tCommon = useTranslations('common'), toast = useToast(), router = useRouter();
   const { confirm } = useConfirm(), [isPending, startTransition] = useTransition(), pathname = usePathname();
@@ -183,10 +177,7 @@ export function useFinancialYearTable({
     handleClose,
     handleDelete,
     loadingState,
-    canEdit,
-    canDelete,
-    haveFullAccess,
-  }), [t, tCommon, handleEdit, handleSetCurrent, handleClose, handleDelete, loadingState, canEdit, canDelete, haveFullAccess]);
+  }), [t, tCommon, handleEdit, handleSetCurrent, handleClose, handleDelete, loadingState]);
 
   return {
     activeDrawer,

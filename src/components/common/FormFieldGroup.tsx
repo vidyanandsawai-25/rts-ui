@@ -32,6 +32,10 @@ interface TextFieldProps extends BaseFormFieldProps {
   hasError?: boolean;
   /** Change handler */
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Focus handler */
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  /** Blur handler */
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   /** Optional input className override */
   inputClassName?: string;
 }
@@ -119,7 +123,7 @@ export const FormFieldGroup: React.FC<FormFieldGroupProps> = (props) => {
   }
 
   // Text or email input
-  const { value, placeholder, maxLength, hasError = false, onChange, inputClassName } = props;
+  const { value, placeholder, maxLength, hasError = false, onChange, onFocus, onBlur, inputClassName } = props;
   const errorClassName = hasError ? 'border-red-300 focus:border-red-500' : '';
   const finalInputClassName = inputClassName ?? `${baseInputClassName} ${errorClassName}`;
 
@@ -137,6 +141,8 @@ export const FormFieldGroup: React.FC<FormFieldGroupProps> = (props) => {
         className={finalInputClassName}
         maxLength={maxLength}
         onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
     </div>
   );

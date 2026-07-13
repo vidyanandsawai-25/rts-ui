@@ -69,7 +69,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
 
     return (
         <div className={cn(
-            "absolute top-12 right-0 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50",
+            "absolute top-12 right-0 w-[calc(100vw-2rem)] sm:w-96 max-w-md bg-white rounded-lg shadow-xl border border-gray-200 z-50",
             "profile-dropdown-container animate-in fade-in zoom-in-95 duration-200"
         )}>
             {/* Header */}

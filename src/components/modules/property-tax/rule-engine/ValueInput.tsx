@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FieldConfig, StaticValue } from '@/types/rule-engine.types';
+import { FieldConfig, StaticValue } from '@/types/rule-engine';
 import { Input, Checkbox } from '@/components/common';
 import { fetchDynamicFieldOptionsAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 import DropdownValueInput from './DropdownValueInput';
@@ -10,6 +10,7 @@ import RadioValueInput from './RadioValueInput';
 
 interface ValueInputProps {
   config: FieldConfig;
+  operator?: string;
   value: string | string[];
   onChange: (val: string | string[]) => void;
   error?: string;
@@ -18,6 +19,7 @@ interface ValueInputProps {
 
 export default function ValueInput({
   config,
+  operator,
   value,
   onChange,
   error,
@@ -60,23 +62,49 @@ export default function ValueInput({
   const effectiveOptions = React.useMemo(() => {
     const base =
       config.sourceType === 'API'
-        ? apiOptions
-        : staticOptions.map((o) => ({ label: o.label, value: o.value }));
-    if (config.supportsNA) return [{ label: 'Not Applicable (N/A)', value: 'NA' }, ...base];
-    return base;
+         ? apiOptions
+         : staticOptions.map((o) => ({ label: o.label, value: o.value }));
+    const merged = config.supportsNA ? [{ label: 'Not Applicable (N/A)', value: 'NA' }, ...base] : base;
+    
+    // Deduplicate options by value to prevent React key warning issues
+    const seen = new Set<string>();
+    return merged.filter((opt) => {
+      const valStr = String(opt.value);
+      if (seen.has(valStr)) return false;
+      seen.add(valStr);
+      return true;
+    });
   }, [config.sourceType, config.supportsNA, apiOptions, staticOptions]);
 
-  const loadingPlaceholder = apiLoading ? 'Loading options…' : (config.placeholder ?? 'Select…');
-  const activeScalar = Array.isArray(value) ? value[0] || '' : value;
+  // Auto-select all options when operator is 'contains all'
+  React.useEffect(() => {
+    if (operator === 'contains all' && effectiveOptions.length > 0) {
+      const allVals = effectiveOptions.map((o) => o.value);
+      const currentVals = Array.isArray(value) ? value : [value];
+      if (
+        currentVals.length !== allVals.length ||
+        !currentVals.every((v) => allVals.includes(v))
+      ) {
+        onChange(allVals);
+      }
+    }
+  }, [operator, effectiveOptions, value, onChange]);
 
-  switch (config.inputType) {
+  const loadingPlaceholder = apiLoading ? 'Loading options…' : (config.placeholder ?? 'Select…');
+  const activeScalar = Array.isArray(value) ? (value[0] || '') : (value || '');
+
+  const isMultiSelectOp = operator && ['In', 'Not In', 'contains any', 'contains all'].includes(operator);
+  const resolvedInputType = isMultiSelectOp || config.inputType === 'MULTISELECT' ? 'MULTISELECT' : config.inputType;
+  const isFieldDisabled = disabled || operator === 'contains all';
+
+  switch (resolvedInputType) {
     case 'DROPDOWN':
       return (
         <DropdownValueInput
           config={config}
           value={activeScalar}
           onChange={onChange}
-          disabled={disabled}
+          disabled={isFieldDisabled}
           apiLoading={apiLoading}
           effectiveOptions={effectiveOptions}
           loadingPlaceholder={loadingPlaceholder}
@@ -90,7 +118,7 @@ export default function ValueInput({
           config={config}
           value={value}
           onChange={onChange}
-          disabled={disabled}
+          disabled={isFieldDisabled}
           apiLoading={apiLoading}
           effectiveOptions={effectiveOptions}
           loadingPlaceholder={loadingPlaceholder}
@@ -104,7 +132,7 @@ export default function ValueInput({
           config={config}
           value={activeScalar}
           onChange={onChange}
-          disabled={disabled}
+          disabled={isFieldDisabled}
           apiLoading={apiLoading}
           effectiveOptions={effectiveOptions}
           error={error}
@@ -119,7 +147,7 @@ export default function ValueInput({
             <Checkbox
               checked={isChecked}
               onCheckedChange={(checked) => onChange(checked ? 'true' : 'false')}
-              disabled={disabled}
+              disabled={isFieldDisabled}
               id={`checkbox-${config.fieldId}`}
               label={config.placeholder ?? config.fieldId}
             />
@@ -135,7 +163,7 @@ export default function ValueInput({
           type="date"
           value={activeScalar}
           onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
+          disabled={isFieldDisabled}
           error={error}
         />
       );
@@ -149,7 +177,7 @@ export default function ValueInput({
           value={activeScalar}
           onChange={(e) => onChange(e.target.value)}
           placeholder={config.placeholder ?? config.fieldId}
-          disabled={disabled}
+          disabled={isFieldDisabled}
           error={error}
           min={config.numericMin}
           max={config.numericMax}

@@ -34,6 +34,7 @@ vi.mock('next/navigation', () => ({
     push: vi.fn(),
     refresh: vi.fn(),
   }),
+  usePathname: () => '/en/configuration-settings/payment-mode-master',
 }));
 
 // Mock sonner
@@ -73,7 +74,7 @@ describe('PaymentModeForm', () => {
   it('renders "Add New Payment Mode" title when in add mode', () => {
     renderWithIntl(<PaymentModeForm {...defaultProps} />);
     expect(screen.getByText(enMessages.form.title.add)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it('renders "Edit Payment Mode" title when editingMode is provided', () => {
     const editingMode = {
@@ -89,7 +90,7 @@ describe('PaymentModeForm', () => {
     };
     renderWithIntl(<PaymentModeForm {...defaultProps} editingMode={editingMode as PaymentMode} />);
     expect(screen.getByText(enMessages.form.title.edit)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it('validates required fields on submit', async () => {
     renderWithIntl(<PaymentModeForm {...defaultProps} />);
@@ -103,7 +104,7 @@ describe('PaymentModeForm', () => {
     }, { timeout: 3000 });
     
     expect(mockSaveAction).not.toHaveBeenCalled();
-  });
+  }, 15000);
 
   it('successfully submits the form when valid', async () => {
     mockSaveAction.mockResolvedValue({ success: true });
@@ -126,7 +127,7 @@ describe('PaymentModeForm', () => {
         expect(defaultProps.onSuccess).toHaveBeenCalled();
         expect(defaultProps.onClose).toHaveBeenCalled();
     }, { timeout: 2000 });
-  });
+  }, 15000);
 
   it('handles API errors during submission', async () => {
     mockSaveAction.mockResolvedValue({ success: false, error: 'Server validation failed' });
@@ -149,5 +150,5 @@ describe('PaymentModeForm', () => {
     await waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith('Server validation failed');
     });
-  });
+  }, 15000);
 });

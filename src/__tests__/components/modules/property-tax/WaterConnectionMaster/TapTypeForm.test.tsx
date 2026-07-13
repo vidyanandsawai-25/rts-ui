@@ -6,7 +6,7 @@ import { ConfirmProvider } from "@/components/common/ConfirmProvider";
 describe("TapTypeForm", () => {
   it("renders without crashing", () => {
     render(
-      <IntlProvider locale="en" messages={{}}>
+      <IntlProvider locale="en" messages={{}} onError={() => {}}>
         <ConfirmProvider>
           <TapTypeForm id={null} />
         </ConfirmProvider>

@@ -4,18 +4,19 @@ import { toast } from 'sonner';
 
 export interface UseCombinePropertyStateParams {
   selectedBasePropertyId?: string;
+  initialReviewData?: PropertyCombineDetails[];
   t?: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export function useCombinePropertyState(params?: UseCombinePropertyStateParams) {
-  const { selectedBasePropertyId, t } = params || {};
-  const [reviewData, setReviewData] = useState<PropertyCombineDetails[]>([]);
-  const [isReviewing, setIsReviewing] = useState(false);
+  const { selectedBasePropertyId, initialReviewData = [], t } = params || {};
+  const [reviewData, setReviewData] = useState<PropertyCombineDetails[]>(initialReviewData);
+  const [isReviewing, setIsReviewing] = useState(initialReviewData.length > 0);
   const [remark, setRemark] = useState('');
   const [remarkError, setRemarkError] = useState(false);
   const [selectedPropertyType, setSelectedPropertyType] = useState('');
   const [showPropertyTypeDropdown, setShowPropertyTypeDropdown] = useState(false);
-  const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set());
+  const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set(initialReviewData.length > 0 && selectedBasePropertyId ? [Number(selectedBasePropertyId)] : []));
 
   const handleRemarkChange = (val: string) => {
     setRemark(val);
@@ -75,9 +76,10 @@ export function useCombinePropertyState(params?: UseCombinePropertyStateParams) 
   
   const uniqueOwners = [...new Set(checkedReviewData.map((r) => r.ownerName).filter(Boolean))];
   const hasDifferentOwners = uniqueOwners.length > 1;
+  const propNoLabel = t ? t('propertyNo') : 'PROPERTY NO.';
   const differentOwnerProps = checkedReviewData
     .filter((r, i) => i > 0 && r.ownerName !== checkedReviewData[0]?.ownerName)
-    .map((r) => `Ward No.: ${r.wardNo} Property No.: ${r.propertyNo}`)
+    .map((r) => `${propNoLabel}: ${[r.wardNo, r.propertyNo, r.partitionNo].filter(Boolean).join('-')}`)
     .join(', ');
 
   return {

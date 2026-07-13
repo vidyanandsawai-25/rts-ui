@@ -1,6 +1,11 @@
 import { apiClient } from '@/services/api.service';
 import type { PagedResponse } from '@/types/common.types';
-import type { ULBConfigurationFormData, UlbConfigurationMaster } from '@/types/ulbconfig-master.types';
+import type {
+  ULBConfigurationFormData,
+  UlbConfigurationMaster,
+  UlbImageMasterDto,
+  UlbMasterMutationResponse,
+} from '@/types/ulbconfig-master.types';
 import { ApiError } from '@/lib/utils/api';
 import {
   ULB_MASTER_DEFAULT_PAGE_SIZE,
@@ -8,7 +13,9 @@ import {
 } from './ulb-master.constants';
 import { mapFormDataToUlbMasterPayload } from './ulb-master.mapper';
 import { normalizeUlbMaster, parseUlbMasterMutationResponse } from './ulb-master-types-guard';
-import type { UlbMasterMutationResponse } from '@/types/ulbconfig-master.types';
+import { cookies } from 'next/headers';
+import { getAppConfig } from '@/config/app.config';
+import { serverFetch } from '@/lib/utils/server-fetch';
 
 // ---------------------------------------------------------------------------
 // Query helpers
@@ -145,4 +152,136 @@ export async function updateUlbMaster(
   }
 
   return parseUlbMasterMutationResponse(response.data, 'Failed to update ULB master');
+}
+
+
+/** GET `/UlbImageMaster` — paginated ULB image master records. */
+export async function getUlbImages(
+  pageNumber: number,
+  pageSize: number
+): Promise<PagedResponse<UlbImageMasterDto>> {
+  const response = await apiClient.get<PagedResponse<UlbImageMasterDto>>(
+    `/UlbImageMaster?PageNumber=${pageNumber}&PageSize=${pageSize}`
+  );
+
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to fetch ULB images',
+      'Get ULB images failed'
+    );
+  }
+
+  if (!response.data) {
+    throw new ApiError(500, 'No data received from server', 'Get ULB images — invalid response');
+  }
+
+  return response.data;
+}
+
+/** DELETE `/UlbImageMaster/{id}/purge` — permanently delete (purge) image by its ID. */
+export async function deleteUlbImage(id: number): Promise<void> {
+  const response = await apiClient.delete<void>(`/UlbImageMaster/${id}/purge`);
+
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to delete ULB image',
+      `Delete ULB image ${id} failed`
+    );
+  }
+}
+
+/** PUT `/UlbImageMaster/{id}` — update image type / details. */
+export async function updateUlbImageType(
+  id: number,
+  imageType: string,
+  imageId: number
+): Promise<void> {
+  const payload = {
+    id,
+    imageType,
+    imageId,
+  };
+
+  const response = await apiClient.put<unknown>(`/UlbImageMaster/${id}`, payload);
+
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to update ULB image type',
+      `Update ULB image type ${id} failed`
+    );
+  }
+}
+
+/** GET `/UlbImageMaster/{documentGuid}/view` — fetch document/image stream */
+export async function getUlbImageView(
+  documentGuid: string
+): Promise<{ base64: string; contentType: string }> {
+  const config = getAppConfig();
+  const baseUrl = config.api.baseUrl?.trim();
+  if (!baseUrl) {
+    throw new Error('Backend API base URL is not configured');
+  }
+
+  let cleanBase = baseUrl.replace(/\/+$/, '');
+  if (cleanBase.endsWith('/api')) {
+    cleanBase = cleanBase.substring(0, cleanBase.length - 4);
+  }
+  const finalRoot = cleanBase.endsWith('/') ? cleanBase : `${cleanBase}/`;
+  const url = `${finalRoot}api/UlbImageMaster/${encodeURIComponent(documentGuid)}/view`;
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+
+  const headers: Record<string, string> = {
+    Accept: '*/*',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await serverFetch(url, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      `Failed to fetch ULB image view: ${response.statusText}`,
+      'Get ULB image view failed'
+    );
+  }
+
+  const contentType = response.headers.get('content-type') || 'image/png';
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+
+  return { base64, contentType };
+}
+
+/** POST `/UlbImageMaster` — create ULB image master record. */
+export async function createUlbImageMaster(
+  imageType: string,
+  imageId: number
+): Promise<UlbImageMasterDto> {
+  const payload = {
+    imageType,
+    imageId,
+    isActive: true,
+  };
+
+  const response = await apiClient.post<UlbImageMasterDto>('/UlbImageMaster', payload);
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to create ULB image master record',
+      'Create ULB image master failed'
+    );
+  }
+
+  return response.data;
 }

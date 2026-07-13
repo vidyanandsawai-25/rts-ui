@@ -6,7 +6,7 @@ import {
 } from "@/lib/validations/property-search-field-rules";
 import { sanitizePropertySearchField } from "@/lib/validations/property-search-input-sanitizers";
 import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
-import type { SearchCriteria } from "@/types/property-search.types";
+import type { SearchCriteria } from "@/types/property-search";
 
 const t = (key: string) => key;
 
@@ -14,15 +14,13 @@ describe("property-search-field-rules", () => {
   it("accepts valid property numbers", () => {
     expect(validateSearchFieldValue("propertyNoFrom", "10", t)).toBeNull();
     expect(validateSearchFieldValue("propertyNoFrom", "123456", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "P-2023-001", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "10/A", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "NK10", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "NK-10", t)).toBeNull();
   });
 
   it("rejects invalid property numbers", () => {
-    expect(validateSearchFieldValue("propertyNoFrom", "P-2023-001", t)).toBe(
-      "propertyNoInvalid"
-    );
-    expect(validateSearchFieldValue("propertyNoFrom", "10/A", t)).toBe(
-      "propertyNoInvalid"
-    );
     expect(validateSearchFieldValue("propertyNoFrom", "@123", t)).toBe(
       "propertyNoInvalid"
     );
@@ -94,7 +92,14 @@ describe("property-search-field-rules", () => {
 
   it("validates rateable value format", () => {
     expect(validateSearchFieldValue("rateableValueFrom", "1234", t)).toBeNull();
-    expect(validateSearchFieldValue("rateableValueFrom", "123.45", t)).toBe(
+    expect(validateSearchFieldValue("rateableValueFrom", "1,23,456", t)).toBeNull();
+    expect(validateSearchFieldValue("rateableValueFrom", "1,23,456.78", t)).toBeNull();
+    expect(validateSearchFieldValue("rateableValueFrom", "1,07,45,17,92,073.64", t)).toBeNull();
+    expect(validateSearchFieldValue("rateableValueFrom", "123.45", t)).toBeNull();
+    expect(validateSearchFieldValue("rateableValueFrom", "123.456", t)).toBe(
+      "rateableValueInvalid"
+    );
+    expect(validateSearchFieldValue("rateableValueFrom", "1,23,456.789", t)).toBe(
       "rateableValueInvalid"
     );
     expect(validateSearchFieldValue("rateableValueFrom", "-100", t)).toBe(
@@ -103,13 +108,19 @@ describe("property-search-field-rules", () => {
     expect(validateSearchFieldValue("rateableValueFrom", "+50", t)).toBe(
       "rateableValueInvalid"
     );
+    expect(validateSearchFieldValue("rateableValueFrom", "0", t)).toBe(
+      "rateableValueInvalid"
+    );
+    expect(validateSearchFieldValue("rateableValueFrom", "0.00", t)).toBe(
+      "rateableValueInvalid"
+    );
   });
 });
 
 describe("property-search-input-sanitizers", () => {
   it("strips invalid special characters from property no", () => {
-    expect(sanitizePropertySearchField("propertyNoFrom", "P#001")).toBe("001");
-    expect(sanitizePropertySearchField("propertyNoFrom", "12/34")).toBe("1234");
+    expect(sanitizePropertySearchField("propertyNoFrom", "P#001")).toBe("P001");
+    expect(sanitizePropertySearchField("propertyNoFrom", "12/34")).toBe("12/34");
   });
 
   it("limits mobile to digits only", () => {
@@ -133,7 +144,9 @@ describe("property-search-input-sanitizers", () => {
 
   it("strips invalid characters from rateable value", () => {
     expect(sanitizePropertySearchField("rateableValueFrom", "-123")).toBe("123");
-    expect(sanitizePropertySearchField("rateableValueTo", "45.67")).toBe("4567");
+    expect(sanitizePropertySearchField("rateableValueTo", "45.67")).toBe("45.67");
+    expect(sanitizePropertySearchField("rateableValueTo", "45.678")).toBe("45.67");
+    expect(sanitizePropertySearchField("rateableValueTo", "1,23,456.78")).toBe("1,23,456.78");
     expect(sanitizePropertySearchField("rateableValueFrom", "+5e3")).toBe("53");
   });
 });
@@ -220,7 +233,7 @@ describe("property-search.validation", () => {
     it("accepts valid kyc search criteria", () => {
       const criteria: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
-        holderName: "John Doe",
+        occupierName: "John Doe",
       };
 
       const result = validatePropertySearchCriteria(criteria, "kyc", t);
@@ -248,6 +261,105 @@ describe("property-search.validation", () => {
       const errors = getPropertySearchFieldErrors(criteria, "values-dues", t);
 
       expect(errors.rateableValueFrom).toBe("rateableValueInvalid");
+    });
+
+    it("rejects invalid rateable value ranges in between filter", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "between",
+        rateableValueFrom: "1,00,000",
+        rateableValueTo: "50,000",
+      };
+
+      const errors = getPropertySearchFieldErrors(criteria, "values-dues", t);
+
+      expect(errors.rateableValueTo).toBe("rateableValueRangeInvalid");
+    });
+
+    it("rejects zero or negative count in top filter", () => {
+      const criteria1: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "top",
+        rateableValueFrom: "0",
+      };
+      const errors1 = getPropertySearchFieldErrors(criteria1, "values-dues", t);
+      expect(errors1.rateableValueFrom).toBe("rateableValueInvalid");
+
+      const criteria2: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "top",
+        rateableValueFrom: "-5",
+      };
+      const errors2 = getPropertySearchFieldErrors(criteria2, "values-dues", t);
+      expect(errors2.rateableValueFrom).toBe("rateableValueInvalid");
+    });
+
+    it("rejects 0 to 0 range in between filter", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "between",
+        rateableValueFrom: "0",
+        rateableValueTo: "0",
+      };
+
+      const errors = getPropertySearchFieldErrors(criteria, "values-dues", t);
+
+      expect(errors.rateableValueFrom).toBe("rateableValueInvalid");
+      expect(errors.rateableValueTo).toBe("rateableValueInvalid");
+    });
+
+    it("does not return field errors for empty values in getPropertySearchFieldErrors", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "between",
+        rateableValueFrom: "",
+        rateableValueTo: "",
+      };
+
+      const errors = getPropertySearchFieldErrors(criteria, "values-dues", t);
+      expect(errors.rateableValueFrom).toBeUndefined();
+      expect(errors.rateableValueTo).toBeUndefined();
+    });
+
+    it("rejects empty values-dues criteria in validatePropertySearchCriteria", () => {
+      const criteriaBetween: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
+        rateableValueFilter: "between",
+        rateableValueFrom: "",
+        rateableValueTo: "",
+      };
+      const resultBetween = validatePropertySearchCriteria(criteriaBetween, "values-dues", t);
+      expect(resultBetween).toEqual({ valid: false, message: "rateableValueBetweenRequired" });
+
+      const criteriaTop: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
+        rateableValueFilter: "top",
+        rateableValueFrom: "",
+      };
+      const resultTop = validatePropertySearchCriteria(criteriaTop, "values-dues", t);
+      expect(resultTop).toEqual({ valid: false, message: "rateableValueInvalid" });
+
+      const criteriaExact: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "rv",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "",
+      };
+      const resultExact = validatePropertySearchCriteria(criteriaExact, "values-dues", t);
+      expect(resultExact).toEqual({ valid: false, message: "rateableValueInvalid" });
+    });
+
+    it("rejects values-dues criteria when valuationMethod is missing", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "",
+        rateableValueFilter: "exact",
+        rateableValueFrom: "1000",
+      };
+      const result = validatePropertySearchCriteria(criteria, "values-dues", t);
+      expect(result).toEqual({ valid: false, message: "valuationMethodRequired" });
     });
   });
 });

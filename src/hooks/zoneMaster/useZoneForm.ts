@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { getZoneByIdAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { getZoneByIdAction, createZoneAction, updateZoneAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { ZoneFormState, ZoneFormErrors } from "@/components/modules/property-tax/zone-master/zones/ZoneFormFields";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "@/components/modules/property-tax/zone-master/constants";
@@ -106,7 +106,6 @@ export function useZoneForm({
           }
         }
       } catch (error) {
-        // TODO: Integrate with error monitoring service (e.g., Sentry) before production
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         console.error("[useZoneForm] Failed to fetch zone details:", { zoneId, error: errorMessage });
         toast.error(t("messages.loadError"));
@@ -192,6 +191,62 @@ export function useZoneForm({
     });
   };
 
+  const handleSave = async (
+    onSuccess: ((newZoneNo: string) => void) | undefined,
+    onUpdate: ((updatedZone: ZoneItem) => void) | undefined,
+    handleClose: () => void,
+    refreshRouter: () => void
+  ) => {
+    const validationErrors = validate(form);
+    setErrors(validationErrors);
+
+    const currentZoneId = zoneId ? parseInt(zoneId, 10) : undefined;
+    const isDuplicate = checkDuplicateZone(form.zoneNo, form.description, currentZoneId);
+    if (Object.keys(validationErrors).length > 0 || isDuplicate) return;
+
+    setLoading(true);
+    try {
+      if (mode === "add") {
+        const result = await createZoneAction(form);
+        if (result.success) {
+          toast.success(t("messages.createSuccess", { name: form.zoneNo }));
+          const newZoneNo = form.zoneNo;
+          resetForm();
+          if (onSuccess) onSuccess(newZoneNo);
+          handleClose();
+          refreshRouter();
+        } else {
+          const errorMsg = result.error || "";
+          if (errorMsg.includes("already exists") || errorMsg.includes("duplicate")) {
+            setErrors({ zoneNo: t("messages.duplicateZoneNo", { zoneNo: form.zoneNo }) });
+          } else {
+            toast.error(errorMsg || t("messages.createError"));
+          }
+        }
+      } else {
+        const result = await updateZoneAction(Number(zoneId), form);
+        if (result.success) {
+          const zoneName = form.description || form.zoneNo || "";
+          toast.success(t("messages.updateSuccess", { name: zoneName }));
+
+          const updatedZone: Partial<ZoneItem> & { id: number } = {
+            id: Number(zoneId),
+            ...form
+          };
+
+          onUpdate?.(updatedZone as ZoneItem);
+          handleClose();
+        } else {
+          toast.error(result.error || t("messages.updateError"));
+        }
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("messages.unexpectedError"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     form,
     setForm,
@@ -204,6 +259,7 @@ export function useZoneForm({
     checkDuplicateZone,
     resetForm,
     handleBlur,
+    handleSave,
     INITIAL,
   };
 }

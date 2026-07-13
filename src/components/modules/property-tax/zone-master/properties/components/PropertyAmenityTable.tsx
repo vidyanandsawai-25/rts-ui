@@ -57,16 +57,18 @@ export function PropertyAmenityTable({
       ),
     },
     {
-      key: "wardNo",
-      label: t("createProperty.wardName"),
-    },
-    {
-      key: "propertyNo",
+      key: "propertyIdentifier",
       label: t("createProperty.propertyNoLabel"),
-    },
-    {
-      key: "partitionNo",
-      label: t("createProperty.partitionNumber"),
+      render: (_value, row) => {
+        const item = row as SocietyAmenityDetailItem;
+        return (
+          <span className="font-medium text-gray-800">
+  {[item.wardNo, item.propertyNo, item.partitionNo]
+    .filter(Boolean)
+    .join(" - ")}
+</span>
+        );
+      },
     },
     {
       key: "partType",

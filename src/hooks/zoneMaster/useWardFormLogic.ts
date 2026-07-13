@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { getWardByIdAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { getWardByIdAction, updateWardAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { WardItem } from "@/types/wardMaster.types";
 import { WardFormState, WardFormErrors } from "@/components/modules/property-tax/zone-master/wards/WardFormFields";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "@/components/modules/property-tax/zone-master/constants";
-import { handleWardUpdate } from "@/components/modules/property-tax/zone-master/wards/wardHandlers";
 import { POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
 
 interface UseWardFormLogicProps {
@@ -130,7 +129,10 @@ export function useWardFormLogic({
       }
     };
 
-    fetchWard();
+    const runFetch = async () => {
+      await fetchWard();
+    };
+    runFetch();
   }, [open, wardId, initialData, wards, onClose, t]);
 
   const validate = (data: WardFormState) => {
@@ -195,22 +197,27 @@ export function useWardFormLogic({
     if (isDuplicate) return;
 
     setLoading(true);
-    const result = await handleWardUpdate({
-      wardId: Number(wardId),
-      wardData: {
+    try {
+      const result = await updateWardAction(Number(wardId), {
         ...originalData,
         ...form,
         sequenceNo: Number(form.sequenceNo)
-      },
-      t: (key: string, values?: Record<string, unknown>) => t(key, values)
-    });
+      });
 
-    if (result.success) {
-      onClose();
-      refreshRouter();
-      if (onSuccess) onSuccess();
+      if (result.success) {
+        toast.success(t("wardForm.updateSuccess", { wardNo: form.wardNo }));
+        onClose();
+        refreshRouter();
+        if (onSuccess) onSuccess();
+      } else {
+        toast.error(result.error || t("wardForm.updateError"));
+        setErrors({ wardNo: result.error || t("wardForm.updateError") });
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("messages.unexpectedError"));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return {

@@ -21,7 +21,7 @@ import {
   deleteWaterConnection,
   ApiError,
 } from '@/lib/api/waterconnection.services';
-import { getPropertyBasicDetails } from '@/lib/api/property-basic-details.service';
+import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import { getPropertyKycById } from '@/lib/api/property-kyc.service';
 
 /** Lightweight action — fetches ONLY the paged connections list.
@@ -95,7 +95,7 @@ export async function getWaterConnectionPageData(
     contact: kyc?.mobileNo ?? '—',
     email: kyc?.emailId ?? '—',
     address: kyc?.address ?? '—',
-    zone: basicDetails?.taxZoneNo ?? '—',
+    zone: basicDetails?.division || basicDetails?.taxZoneNo || '—',
     ward: basicDetails?.wardNo ?? '—',
     buildingType: basicDetails?.categoryName ?? '—',
   };

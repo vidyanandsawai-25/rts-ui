@@ -22,7 +22,6 @@ import { useOfficeSearch } from '@/hooks/useOfficeSearch';
 import { useOfficePagination } from '@/hooks/useOfficePagination';
 import { getOfficeTypeOptions } from '@/config/office-master.config';
 import { OfficeStatsCards } from './OfficeStatsCards';
-import { usePermissions } from '@/hooks/usePermissions';
 
 export function OfficeMaster({
   data,
@@ -39,7 +38,6 @@ export function OfficeMaster({
   inactiveOfficesCount,
   showStatsError,
   fetchError,
-  statusCode,
 }: OfficeProps): React.ReactElement {
   const router = useRouter();
   const t = useTranslations('office');
@@ -48,7 +46,7 @@ export function OfficeMaster({
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
 
-  const { canView, canEdit, canDelete, haveFullAccess } = usePermissions('OFFICE_MASTER');
+
 
   const {
     search,
@@ -68,12 +66,7 @@ export function OfficeMaster({
     status,
   });
 
-  const isUnauthorized =
-    statusCode === 401 ||
-    (fetchError &&
-      (fetchError.toLowerCase().includes('unauthorized') ||
-        fetchError.toLowerCase().includes('token') ||
-        fetchError === 'messages.unauthorizedToken'));
+
 
   React.useEffect(() => {
     if (showStatsError) {
@@ -141,30 +134,17 @@ export function OfficeMaster({
     [t, tCommon, sortBy, sortOrder, onSort]
   );
 
-  if (isUnauthorized || (!canView && !haveFullAccess)) {
-    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
 
-    return (
-      <PageContainer>
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
-          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
-          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
-        </div>
-      </PageContainer>
-    );
-  }
 
   return (
     <PageContainer
       title={t('list.title')}
       subtitle={t('list.subtitle')}
       actions={
-        haveFullAccess ? (
-          <AddButton
-            label={t('list.buttons.add')}
-            onClick={() => router.push(`/${locale}/configuration-settings/office-master/add`)}
-          />
-        ) : undefined
+        <AddButton
+          label={t('list.buttons.add')}
+          onClick={() => router.push(`/${locale}/configuration-settings/office-master/add`)}
+        />
       }
     >
       <div className="space-y-6">
@@ -236,8 +216,8 @@ export function OfficeMaster({
           }
           renderActions={(row) => (
             <>
-              {(canEdit || haveFullAccess) && <EditButton onClick={() => handleEdit(row)} />}
-              {(canDelete || haveFullAccess) && <DeleteButton onClick={() => handleDelete(row)} />}
+              <EditButton onClick={() => handleEdit(row)} />
+              <DeleteButton onClick={() => handleDelete(row)} />
             </>
           )}
           footerLeftContent={

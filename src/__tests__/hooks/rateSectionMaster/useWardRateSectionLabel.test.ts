@@ -72,7 +72,7 @@ describe("useWardRateSectionLabel", () => {
         })
       );
 
-      expect(result.current.rateSectionLabel).toBe("RS1 - Rate Section One");
+      expect(result.current.rateSectionLabel).toBe("Rate Section One");
     });
 
     it("should return rateSectionNo when description is missing", () => {
@@ -96,7 +96,7 @@ describe("useWardRateSectionLabel", () => {
         })
       );
 
-      expect(result.current.rateSectionLabel).toBe("RS1 - Rate Section One");
+      expect(result.current.rateSectionLabel).toBe("Rate Section One");
     });
 
     it("should fallback to selectedRateSection when not found anywhere", () => {
@@ -226,11 +226,11 @@ describe("useWardRateSectionLabel", () => {
         { initialProps: { selectedRateSection: "RS1" } }
       );
 
-      expect(result.current.rateSectionLabel).toBe("RS1 - Rate Section One");
+      expect(result.current.rateSectionLabel).toBe("Rate Section One");
 
       rerender({ selectedRateSection: "RS2" });
 
-      expect(result.current.rateSectionLabel).toBe("RS2 - Rate Section Two");
+      expect(result.current.rateSectionLabel).toBe("Rate Section Two");
     });
 
     it("should recalculate when rates change", () => {
@@ -244,7 +244,7 @@ describe("useWardRateSectionLabel", () => {
         { initialProps: { rates: mockRates } }
       );
 
-      expect(result.current.rateSectionLabel).toBe("RS1 - Rate Section One");
+      expect(result.current.rateSectionLabel).toBe("Rate Section One");
 
       const newRates: RateItem[] = [
         {
@@ -257,7 +257,7 @@ describe("useWardRateSectionLabel", () => {
 
       rerender({ rates: newRates });
 
-      expect(result.current.rateSectionLabel).toBe("RS1 - Updated Description");
+      expect(result.current.rateSectionLabel).toBe("Updated Description");
     });
 
     it("should recalculate when propSelectedRateSectionLabel changes", () => {
@@ -271,7 +271,7 @@ describe("useWardRateSectionLabel", () => {
         { initialProps: { propSelectedRateSectionLabel: undefined as string | undefined } }
       );
 
-      expect(result.current.rateSectionLabel).toBe("RS1 - Rate Section One");
+      expect(result.current.rateSectionLabel).toBe("Rate Section One");
 
       rerender({ propSelectedRateSectionLabel: "Override Label" as string | undefined });
 
@@ -358,7 +358,7 @@ describe("useWardRateSectionLabel", () => {
       );
 
       // Should use rates description, not sections
-      expect(result.current.rateSectionLabel).toBe("RS1 - Rate Section One");
+      expect(result.current.rateSectionLabel).toBe("Rate Section One");
     });
   });
 });

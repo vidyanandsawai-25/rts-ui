@@ -7,7 +7,6 @@ import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { ZoneFormFields } from "./ZoneFormFields";
-import { handleZoneFormSave } from "./ZoneFormActions";
 import { useZoneForm } from "@/hooks/zoneMaster/useZoneForm";
 
 interface AddModeProps {
@@ -44,14 +43,12 @@ export default function ZoneForm(props: Props) {
     form,
     setForm,
     loading,
-    setLoading,
     fetching,
     errors,
-    setErrors,
     validate,
-    checkDuplicateZone,
-    resetForm,
     handleBlur,
+    handleSave,
+    resetForm,
   } = useZoneForm({
     mode,
     open,
@@ -71,36 +68,13 @@ export default function ZoneForm(props: Props) {
     }
   };
 
-  const handleSave = () => {
-    if (mode === "add") {
-      handleZoneFormSave({
-        mode: "add",
-        form,
-        validate,
-        checkDuplicateZone,
-        setErrors,
-        setLoading,
-        resetForm,
-        onSuccess: props.onSuccess,
-        handleClose,
-        refreshRouter: () => router.refresh(),
-        t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
-      });
-    } else {
-      handleZoneFormSave({
-        mode: "edit",
-        form,
-        zoneId: props.zoneId,
-        validate,
-        checkDuplicateZone,
-        setErrors,
-        setLoading,
-        resetForm,
-        onUpdate: props.onUpdate,
-        handleClose,
-        t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
-      });
-    }
+  const handleSaveClick = () => {
+    handleSave(
+      mode === "add" ? (props as AddModeProps).onSuccess : undefined,
+      mode === "edit" ? (props as EditModeProps).onUpdate : undefined,
+      handleClose,
+      () => router.refresh()
+    );
   };
 
   const showActiveStatus = mode === "edit";
@@ -140,7 +114,7 @@ export default function ZoneForm(props: Props) {
             ? mode === "add" ? t("actions.saving") : t("actions.updating")
             : mode === "add" ? t("actions.save") : t("actions.update")
         }
-        onClick={handleSave}
+        onClick={handleSaveClick}
         disabled={loading || fetching || isFormInvalid}
       />
     </>

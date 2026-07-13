@@ -11,11 +11,12 @@ import { useFloorPagination } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFl
 import { useFloorSearch } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorSearch";
 import { SearchInput } from "@/components/common";
 
-import { 
+import {
   convertSqFtToSqM,
-  convertSqMToSqFt, 
-  calculateBuiltUpArea 
+  convertSqMToSqFt,
+  calculateBuiltUpArea
 } from "@/lib/utils/RoomSubmission/conversions";
+import { translateDevanagariDigits } from "@/lib/utils/input-sanitization";
 
 // Import refactored components
 import { FloorFormFields } from "./components/FloorFormFields";
@@ -68,7 +69,8 @@ export default function FloorInformationForm({
     handleReset,
     handleSave,
     handleDelete,
-    isChanged
+    isChanged,
+    handleOpenDropdown
   } = useFloorInformationForm({
     propertyId,
     locale,
@@ -86,21 +88,40 @@ export default function FloorInformationForm({
   const handleFieldChange = (field: string, value: string) => {
     // If carpet area in sq m is changed, calculate all derived fields
     if (field === 'oldAreaSqMeter') {
-      const carpetAreaSqM = parseFloat(value) || 0;
-      
+      const carpetAreaSqM = parseFloat(translateDevanagariDigits(value)) || 0;
+
       // Calculate Carpet Area (Sq Ft) from Carpet Area (Sq M)
       const carpetAreaSqFt = carpetAreaSqM > 0 ? convertSqMToSqFt(carpetAreaSqM) : 0;
-      
+
       // Calculate Built-up Area (Sq Ft) from Carpet Area (Sq Ft) - adds 20%
       const builtupAreaSqFt = carpetAreaSqFt > 0 ? calculateBuiltUpArea(carpetAreaSqFt) : 0;
-      
+
       // Calculate Built-up Area (Sq M) from Built-up Area (Sq Ft)
       const builtupAreaSqMeter = builtupAreaSqFt > 0 ? convertSqFtToSqM(builtupAreaSqFt) : 0;
-      
+
       setFormData(prev => ({
         ...prev,
         [field]: value,
         oldCarpetAreaSqFeet: carpetAreaSqFt > 0 ? carpetAreaSqFt.toFixed(2) : '',
+        oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
+        oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
+      }));
+    } else if (field === 'oldCarpetAreaSqFeet') {
+      const carpetAreaSqFt = parseFloat(translateDevanagariDigits(value)) || 0;
+
+      // Calculate Carpet Area (Sq M) from Carpet Area (Sq Ft)
+      const carpetAreaSqM = carpetAreaSqFt > 0 ? convertSqFtToSqM(carpetAreaSqFt) : 0;
+
+      // Calculate Built-up Area (Sq Ft) from Carpet Area (Sq Ft) - adds 20%
+      const builtupAreaSqFt = carpetAreaSqFt > 0 ? calculateBuiltUpArea(carpetAreaSqFt) : 0;
+
+      // Calculate Built-up Area (Sq M) from Built-up Area (Sq Ft)
+      const builtupAreaSqMeter = builtupAreaSqFt > 0 ? convertSqFtToSqM(builtupAreaSqFt) : 0;
+
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        oldAreaSqMeter: carpetAreaSqM > 0 ? carpetAreaSqM.toFixed(2) : '',
         oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
         oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
       }));
@@ -126,66 +147,70 @@ export default function FloorInformationForm({
   });
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-xl shadow-sm mb-10">
-        <h3 className="text-base font-bold text-blue-800 px-4 py-3 flex items-center gap-2 border-b border-blue-100">
-          <Layers className="w-5 h-5" />
-          {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
-        </h3>
+    <div className="p-4 max-w-7xl mx-auto space-y-4">
+      <div className="bg-white rounded-xl border border-blue-100 shadow-xs p-5">
+        <div className="-mx-5 mb-5 px-5 pb-3 border-b border-blue-100 flex items-center gap-2">
+          <Layers className="w-4 h-4 text-blue-600" />
+          <h3 className="text-sm font-bold text-blue-700">
+            {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
+          </h3>
+        </div>
+        {/* Floor Entry Form Fields */}
+        <FloorFormFields
+          t={t}
+          floorOptions={transformedFloorOptions}
+          subFloorOptions={transformedSubFloorOptions}
+          constructionTypeOptions={transformedConstructionTypeOptions}
+          useOptions={transformedUseOptions}
+          subUseOptions={transformedSubUseOptions}
+          hasSubUseOptions={hasSubUseOptions}
+          formData={formData}
+          errors={errors}
+          showError={showError}
+          onFieldChange={handleFieldChange}
+          onUseTypeChange={handleUseTypeChange}
+          validateYearField={validateYearField}
+          isSubmitting={isSubmitting}
+          isChanged={isChanged}
+          onSave={handleSave}
+          onReset={handleReset}
+          handleOpenDropdown={handleOpenDropdown}
+        />
 
-        <div className="mb-6 p-2">
-          {/* Floor Entry Form Fields */}
-          <FloorFormFields
-            t={t}
-            floorOptions={transformedFloorOptions}
-            subFloorOptions={transformedSubFloorOptions}
-            constructionTypeOptions={transformedConstructionTypeOptions}
-            useOptions={transformedUseOptions}
-            subUseOptions={transformedSubUseOptions}
-            hasSubUseOptions={hasSubUseOptions}
-            formData={formData}
-            errors={errors}
-            showError={showError}
-            onFieldChange={handleFieldChange}
-            onUseTypeChange={handleUseTypeChange}
-            validateYearField={validateYearField}
-            isSubmitting={isSubmitting}
-            isChanged={isChanged}
-            onSave={handleSave}
-            onReset={handleReset}
-          />
-
-          {/* Floor Details Table */}
-          <div className="mt-5">
-            <div className="flex items-center justify-between mb-3 md:pr-3">
-              <h4 className="text-sm font-semibold text-blue-800">
+        {/* Floor Details Table */}
+        <div className="mt-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 md:pr-3">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2 md:ml-2">
+              <Layers className="w-4 h-4 text-blue-600" />
+              <h4 className="text-sm font-bold text-slate-800">
                 {t('oldDetails.existingFloorDetails') || 'Existing Floor Details'}
               </h4>
-              <div className="w-72">
-                <SearchInput
-                  value={search}
-                  onChange={handleSearchInput}
-                  placeholder={tCommon('actions.search') || 'Search floor details...'}
-                  className="mb-0"
-                />
-              </div>
             </div>
-            <FloorTableSection
-              t={t}
-              tCommon={tCommon}
-              existingFloorDetails={existingFloorDetails}
-              totalCount={totalCount}
-              pageNumber={pageNumber}
-              pageSize={pageSize}
-              totalPages={totalPages}
-              searchTerm={searchTerm}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onPageChange={changePage}
-              onPageSizeChange={handlePageSizeChange}
-              onSearchChange={handleSearchChange}
-            />
+
+            <div className="w-full sm:w-72">
+              <SearchInput
+                value={search}
+                onChange={handleSearchInput}
+                placeholder={tCommon('actions.search') || 'Search floor details...'}
+                className="mb-0"
+              />
+            </div>
           </div>
+          <FloorTableSection
+            t={t}
+            tCommon={tCommon}
+            existingFloorDetails={existingFloorDetails}
+            totalCount={totalCount}
+            pageNumber={pageNumber}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            searchTerm={searchTerm}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onPageChange={changePage}
+            onPageSizeChange={handlePageSizeChange}
+            onSearchChange={handleSearchChange}
+          />
         </div>
       </div>
     </div>

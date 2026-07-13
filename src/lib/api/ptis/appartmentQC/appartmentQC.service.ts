@@ -1,7 +1,9 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError, handleApiResponse } from '@/lib/utils/api';
 import { logger } from '@/lib/utils/logger';
+import { getDownloadDocumentUrl, getViewDocumentUrl } from '@/lib/utils/document-utils';
 import type { ApartmentQCDetail, ApartmentQCResponse, ApartmentQCSearchParams } from '@/types/apartmentQC.types';
+import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
 import type { ApiResponse } from '@/types/common.types';
 
 /* ============================================================
@@ -22,6 +24,7 @@ type ParamConfig = {
 const PARAM_MAPPINGS: ParamConfig[] = [
   { key: 'wardId', queryParam: 'WardId' },
   { key: 'propertyNo', queryParam: 'PropertyNo' },
+  { key: 'partitionNo', queryParam: 'PartitionNo', shouldTrim: true },
   { key: 'propertyDetailsId', queryParam: 'PropertyDetailsId' },
   { key: 'propertyId', queryParam: 'PropertyId' },
   { key: 'partType', queryParam: 'PartType', shouldTrim: true },
@@ -49,12 +52,12 @@ function buildQueryParams(params: ApartmentQCSearchParams): URLSearchParams {
 
   PARAM_MAPPINGS.forEach(({ key, queryParam, shouldTrim, skipEmptyCheck }) => {
     const value = params[key];
-    
+
     if (value === undefined) return;
-    
+
     // Skip empty string checks for numeric parameters
     if (!skipEmptyCheck && value === '') return;
-    
+
     // Handle string trimming
     if (shouldTrim && typeof value === 'string') {
       const trimmed = value.trim();
@@ -281,6 +284,8 @@ export async function getFloorQCByPropertyIdSafe(
  * Payload for updating a floor QC detail record
  */
 export interface FloorQCUpdatePayload {
+  id?: number;
+  pdnId?: number;
   floorId?: number;
   constructionTypeId?: number;
   typeOfUseId?: number;
@@ -300,13 +305,16 @@ export interface FloorQCUpdatePayload {
  * @returns API response
  */
 export async function updateFloorQCDetail(
-  propertyId: number | string,
+  _propertyId: number | string,
   detailId: number | string,
   payload: FloorQCUpdatePayload
 ): Promise<ApiResponse<unknown>> {
   try {
-    const endpoint = `/Property/apartmentQC-details/${propertyId}/detail/${detailId}`;
-    const response = await apiClient.patch<unknown>(endpoint, payload);
+    // Using the PATCH bulk endpoint for a single record update
+    const endpoint = `/ApartmentQC/${_propertyId}`;
+    const response = await apiClient.patch<unknown>(endpoint, [
+      { ...payload, detailId: Number(detailId) }
+    ]);
     return response;
   } catch (error) {
     logger.error('[appartmentQC.service] Error updating floor QC detail', { error: error as Error });
@@ -646,14 +654,18 @@ export interface FilterOptionsResponse {
 export async function getFilterOptions(
   wardId: number | string,
   propertyNo: string,
-  field: FilterField
+  field: FilterField,
+  partType?: string
 ): Promise<ApiResponse<FilterOptionsResponse>> {
   try {
     const params = new URLSearchParams();
     params.append('WardId', String(wardId));
     params.append('PropertyNo', propertyNo);
     params.append('field', field);
-    
+    if (partType) {
+      params.append('PartType', partType);
+    }
+
     const endpoint = `/ApartmentQC/filter-options?${params.toString()}`;
     const response = await apiClient.get<FilterOptionsResponse>(endpoint);
     return response;
@@ -669,10 +681,11 @@ export async function getFilterOptions(
 export async function getFilterOptionsLocalized(
   wardId: number | string,
   propertyNo: string,
-  field: FilterField
+  field: FilterField,
+  partType?: string
 ): Promise<FilterOptionsResponse> {
   try {
-    const res = await getFilterOptions(wardId, propertyNo, field);
+    const res = await getFilterOptions(wardId, propertyNo, field, partType);
     if (!res.success) {
       throw new ApiError(
         res.statusCode ?? 500,
@@ -719,16 +732,16 @@ export async function exportApartmentQCToExcel(
   const params = new URLSearchParams();
   params.append('WardId', String(wardId));
   params.append('PropertyNo', propertyNo);
-  
+
   const endpoint = `${baseUrl}/ApartmentQC/export-excel?${params.toString()}`;
-  
+
   const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${authToken}`,
     },
   });
-  
+
   if (!response.ok) {
     throw new ApiError(
       response.status,
@@ -736,9 +749,9 @@ export async function exportApartmentQCToExcel(
       "Export Excel failed"
     );
   }
-  
+
   const blob = await response.blob();
-  
+
   // Create download link and trigger download
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -777,7 +790,10 @@ export async function getApartmentPropertyTaxDetails(
     qs.append('WardId', String(params.wardId));
     qs.append('PropertyNo', params.propertyNo);
     qs.append('PartType', params.partType);
-    
+    if (params.partitionNo) {
+      qs.append('PartitionNo', params.partitionNo);
+    }
+
     const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -876,7 +892,10 @@ export async function getApartmentPropertyTaxDetailsCv(
     qs.append('WardId', String(params.wardId));
     qs.append('PropertyNo', params.propertyNo);
     qs.append('PartType', params.partType);
-    
+    if (params.partitionNo) {
+      qs.append('PartitionNo', params.partitionNo);
+    }
+
     const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -955,24 +974,211 @@ import type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
  * @param wardId - The ward ID
  * @param propertyNo - The property number
 * @param partType - The part type (Amenity, C, or R)
+ * @param partitionNo - (Optional) The partition number
  * @returns Object containing both RV and CV tax details
  */
 export async function getDualMethodTaxDetails(
   wardId: string | number,
   propertyNo: string,
-  partType: ApartmentPartType
+  partType: ApartmentPartType,
+  partitionNo?: string
 ): Promise<DualMethodTaxDetails> {
-  const params = { wardId, propertyNo, partType };
-  
+  const params = { wardId, propertyNo, partType, partitionNo };
+
   const [rateable, capital] = await Promise.all([
     getApartmentPropertyTaxDetailsSafe(params),
     getApartmentPropertyTaxDetailsCvSafe(params),
   ]);
-  
+
   return {
     rateable,
     capital,
   };
+}
+
+/* ============================================================
+   PROPERTY PHOTOS — FETCH API
+   Endpoint: GET /property-photos/types-with-status/{propertyId}
+   Fetches photo slots and normalizes the items that already have documents
+ ============================================================ */
+
+interface PropertyPhotoApiWrapper<T> {
+  success: boolean;
+  message?: string;
+  items?: T[];
+  errors?: string[] | null;
+  correlationId?: string | null;
+}
+
+function normalizePropertyPhoto(
+  item: Partial<PropertyPhotoDto & PropertyPhotoTypeWithStatusDto>,
+  propertyId: number
+): PropertyPhotoDto | null {
+  const documentGuid = typeof item.documentGuid === 'string' ? item.documentGuid.trim() : '';
+  if (!documentGuid) {
+    return null;
+  }
+
+  return {
+    propertyPhotoId: item.propertyPhotoId ?? item.photoTypeId ?? 0,
+    propertyId: item.propertyId ?? propertyId,
+    photoTypeId: item.photoTypeId ?? 0,
+    photoTypeCode: item.photoTypeCode ?? '',
+    photoTypeName: item.photoTypeName ?? item.photoTypeCode ?? '',
+    displayOrder: item.displayOrder,
+    remarks: item.remarks,
+    documentGuid,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+    viewUrl: item.viewUrl || getViewDocumentUrl(documentGuid),
+    downloadUrl: item.downloadUrl || getDownloadDocumentUrl(documentGuid),
+  };
+}
+
+function sortPropertyPhotos<T extends { displayOrder?: number; propertyPhotoId?: number }>(
+  items: T[]
+): T[] {
+  return [...items].sort((a, b) => {
+    const displayOrderDiff = (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER);
+    if (displayOrderDiff !== 0) {
+      return displayOrderDiff;
+    }
+
+    return (a.propertyPhotoId ?? 0) - (b.propertyPhotoId ?? 0);
+  });
+}
+
+function selectApartmentQcViewerPhotos(
+  items: Array<Partial<PropertyPhotoDto & PropertyPhotoTypeWithStatusDto>>,
+  propertyId: number
+): PropertyPhotoDto[] {
+  const selectedPhotos = new Map<string, PropertyPhotoDto>();
+
+  for (const item of sortPropertyPhotos(items)) {
+    const normalizedPhoto = normalizePropertyPhoto(item, propertyId);
+    if (!normalizedPhoto) {
+      continue;
+    }
+
+    const uniqueKey =
+      normalizedPhoto.propertyPhotoId > 0
+        ? `photo:${normalizedPhoto.propertyPhotoId}`
+        : `document:${normalizedPhoto.documentGuid}`;
+
+    if (!selectedPhotos.has(uniqueKey)) {
+      selectedPhotos.set(uniqueKey, normalizedPhoto);
+    }
+  }
+
+  return Array.from(selectedPhotos.values());
+}
+
+export async function getPropertyPhotos(
+  propertyId: number
+): Promise<ApiResponse<PropertyPhotoDto[]>> {
+  try {
+    const [slotResult, photoResult] = await Promise.allSettled([
+      apiClient.get<PropertyPhotoApiWrapper<PropertyPhotoTypeWithStatusDto>>(
+        `/property-photos/types-with-status/${propertyId}`,
+        { cache: 'no-store' }
+      ),
+      apiClient.get<PropertyPhotoApiWrapper<PropertyPhotoDto>>(
+        `/property-photos/property/${propertyId}`,
+        { cache: 'no-store' }
+      ),
+    ]);
+
+    const slotResponse = slotResult.status === 'fulfilled' ? slotResult.value : null;
+    const photoResponse = photoResult.status === 'fulfilled' ? photoResult.value : null;
+
+    const slotPhotos =
+      slotResponse?.success && slotResponse.data?.success
+        ? (slotResponse.data.items ?? []).filter((item) => item.hasPhoto && !!item.documentGuid)
+        : [];
+
+    const propertyPhotos =
+      photoResponse?.success && photoResponse.data?.success ? (photoResponse.data.items ?? []) : [];
+
+    const allPhotos = selectApartmentQcViewerPhotos(
+      [...propertyPhotos, ...slotPhotos],
+      propertyId
+    );
+
+    if (allPhotos.length > 0) {
+      return {
+        success: true,
+        statusCode: photoResponse?.statusCode ?? slotResponse?.statusCode,
+        data: allPhotos,
+        message:
+          photoResponse?.data?.message ||
+          slotResponse?.data?.message ||
+          photoResponse?.message ||
+          slotResponse?.message,
+      };
+    }
+
+    return {
+      success: false,
+      statusCode: slotResponse?.statusCode || photoResponse?.statusCode || 500,
+      error:
+        slotResponse?.error ||
+        photoResponse?.error ||
+        'Failed to fetch property photos',
+      message:
+        slotResponse?.message ||
+        photoResponse?.message ||
+        'Failed to fetch property photos',
+    };
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching property photos', { error: error as Error });
+    return { success: false, statusCode: 500, error: error instanceof Error ? error.message : 'Failed to fetch property photos' };
+  }
+}
+
+/**
+ * Fetch property photos with error handling.
+ * 
+ * @param propertyId - The property ID
+ * @returns Array of PropertyPhotoDto or throws error
+ */
+export async function getPropertyPhotosLocalized(
+  propertyId: number
+): Promise<PropertyPhotoDto[]> {
+  try {
+    const res = await getPropertyPhotos(propertyId);
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch property photos",
+        "Get property photos failed"
+      );
+    }
+    return res.data;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching property photos', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch property photos"
+    );
+  }
+}
+
+/**
+ * Safe wrapper - Fetch property photos. Returns empty array on failure.
+ * 
+ * @param propertyId - The property ID
+ * @returns Array of PropertyPhotoDto or empty array on failure
+ */
+export async function getPropertyPhotosSafe(
+  propertyId: number
+): Promise<PropertyPhotoDto[]> {
+  try {
+    return await getPropertyPhotosLocalized(propertyId);
+  } catch {
+    return [];
+  }
 }
 
 /* ============================================================
@@ -997,7 +1203,7 @@ export async function getApartmentPropertyTaxDetailsById(
     const qs = new URLSearchParams();
     qs.append('Id', String(params.propertyId));
     qs.append('PartType', params.partType);
-    
+
     const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -1015,10 +1221,14 @@ export async function getApartmentPropertyTaxDetailsById(
  */
 export async function getApartmentPropertyTaxDetailsByIdLocalized(
   params: ApartmentPropertyTaxDetailsByIdParams
-): Promise<ApartmentTaxDetailsItems> {
+): Promise<ApartmentTaxDetailsItems | null> {
   try {
     const res = await getApartmentPropertyTaxDetailsById(params);
+
     if (!res.success || !res.data) {
+      if (res.statusCode === 404) {
+        return null;
+      }
       throw new ApiError(
         res.statusCode ?? 500,
         res.error || "Failed to fetch apartment property tax details",
@@ -1067,7 +1277,7 @@ export async function getApartmentPropertyTaxDetailsCvById(
     const qs = new URLSearchParams();
     qs.append('Id', String(params.propertyId));
     qs.append('PartType', params.partType);
-    
+
     const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
     const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
     return response;
@@ -1085,10 +1295,13 @@ export async function getApartmentPropertyTaxDetailsCvById(
  */
 export async function getApartmentPropertyTaxDetailsCvByIdLocalized(
   params: ApartmentPropertyTaxDetailsByIdParams
-): Promise<ApartmentTaxDetailsItems> {
+): Promise<ApartmentTaxDetailsItems | null> {
   try {
     const res = await getApartmentPropertyTaxDetailsCvById(params);
     if (!res.success || !res.data) {
+      if (res.statusCode === 404) {
+        return null;
+      }
       throw new ApiError(
         res.statusCode ?? 500,
         res.error || "Failed to fetch apartment property CV tax details",
@@ -1136,12 +1349,12 @@ export async function getDualMethodTaxDetailsById(
   partType: ApartmentPartType
 ): Promise<DualMethodTaxDetails> {
   const params = { propertyId, partType };
-  
+
   const [rateable, capital] = await Promise.all([
     getApartmentPropertyTaxDetailsByIdSafe(params),
     getApartmentPropertyTaxDetailsCvByIdSafe(params),
   ]);
-  
+
   return {
     rateable,
     capital,

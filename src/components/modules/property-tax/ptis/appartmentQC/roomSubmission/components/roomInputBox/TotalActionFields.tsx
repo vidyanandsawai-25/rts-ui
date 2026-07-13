@@ -55,6 +55,7 @@ export const TotalActionFields: React.FC<TotalActionFieldsProps> = ({
             disabled={false}
             variant="primary"
             className="w-full h-[40px] font-bold shadow-md"
+            data-enter-navigable="true"
           >
             {isActualUpdate ? t('roomSubmission.input.buttons.update') : t('roomSubmission.input.buttons.add')}
           </Button>

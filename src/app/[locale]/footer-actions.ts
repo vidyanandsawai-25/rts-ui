@@ -1,8 +1,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { footerService, FooterAction } from '@/lib/api/footer.service';
 import { z } from 'zod';
+import { getTranslations } from 'next-intl/server';
 
 export type ActionResult<T> =
   | { success: true; data: T; message?: string }
@@ -16,6 +18,15 @@ export interface FooterActionPayload {
   propertyNo?: string;
   partitionNo?: string;
   tab?: string;
+  valuationTab?: string;
+  appartmentTab?: string;
+  subTab?: string;
+  showDetails?: string;
+  rateableExpand?: string | string[];
+  capitalExpand?: string | string[];
+  dualExpand?: string | string[];
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 const ptisEditRedirectSchema = z.object({
@@ -35,6 +46,13 @@ const ptisEditRedirectSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]*$/)
     .optional(),
   tab: z.string().optional(),
+  valuationTab: z.string().optional(),
+  appartmentTab: z.string().optional(),
+  subTab: z.string().optional(),
+  showDetails: z.string().optional(),
+  rateableExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  capitalExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  dualExpand: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 /**
@@ -92,14 +110,45 @@ export async function handleFooterAction(
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
 
-        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab } =
-          validationResult.data;
+        const {
+          propertyId,
+          locale,
+          wardNo,
+          wardId,
+          propertyNo,
+          partitionNo,
+          tab,
+          valuationTab,
+          appartmentTab,
+          subTab,
+          showDetails,
+          rateableExpand,
+          capitalExpand,
+          dualExpand,
+        } = validationResult.data;
 
         const params = new URLSearchParams();
         if (wardNo) params.set('wardNo', wardNo);
         if (wardId) params.set('wardId', String(wardId));
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo && partitionNo !== '0') params.set('partitionNo', partitionNo);
+        if (valuationTab) params.set('valuationTab', valuationTab);
+        if (appartmentTab) params.set('appartmentTab', appartmentTab);
+        if (subTab) params.set('subTab', subTab);
+        if (showDetails) params.set('showDetails', showDetails);
+
+        const handleExpand = (key: string, val: string | string[] | undefined) => {
+          if (val) {
+            if (Array.isArray(val)) {
+              val.forEach((v) => params.append(key, v));
+            } else {
+              params.set(key, val);
+            }
+          }
+        };
+        handleExpand('rateableExpand', rateableExpand);
+        handleExpand('capitalExpand', capitalExpand);
+        handleExpand('dualExpand', dualExpand);
 
         let targetPath = '';
         if (tab === 'kycdetails') {
@@ -139,18 +188,81 @@ export async function handleFooterAction(
         if (payload.wardId) params.set('wardId', String(payload.wardId));
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
         if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.categoryId) params.set('categoryId', String(payload.categoryId));
+        if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
 
         redirect(`/${payloadLocale}/property-tax/ptis/combineproperty${suffix}`);
       }
+      case 'PTIS_COMMON_UPDATE': {
+        const payloadLocale = payload.locale || 'en';
+        const params = new URLSearchParams();
+
+        if (payload.propertyId) params.set('propertyId', payload.propertyId);
+        if (payload.wardId) params.set('wardId', String(payload.wardId));
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        params.set('from', 'ptis');
+
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+
+        redirect(`/${payloadLocale}/property-tax/common-details-update${suffix}`);
+      }
       case 'PTIS_TAP_WATER': {
         if (!payload.propertyId) {
           return { success: false, error: 'Property ID is missing.' };
         }
         const payloadLocale = payload.locale || 'en';
-        redirect(`/${payloadLocale}/property-tax/waterconnection?propertyId=${payload.propertyId}`);
+        const params = new URLSearchParams();
+        params.set('propertyId', String(payload.propertyId));
+        if (payload.wardId) params.set('wardId', String(payload.wardId));
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.tab) params.set('returnTab', payload.tab);
+
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+        redirect(`/${payloadLocale}/property-tax/waterconnection${suffix}`);
+      }
+      case 'PTIS_APPLY':
+      case 'PTIS_APPLICABLE_TAXES_INFO': {
+        if (!payload.propertyId) {
+          return { success: false, error: 'Property ID is missing.' };
+        }
+        const payloadLocale = payload.locale || 'en';
+        const params = new URLSearchParams();
+        params.set('propertyId', payload.propertyId);
+        if (payload.wardId) params.set('wardId', String(payload.wardId));
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo !== undefined) params.set('partitionNo', payload.partitionNo);
+        if (payload.valuationTab) params.set('valuationTab', payload.valuationTab);
+        redirect(
+          `/${payloadLocale}/property-tax/ptis/applicable-taxes/applicable?${params.toString()}`
+        );
+      }
+      case 'PTIS_REFRESH': {
+        const payloadLocale = payload.locale || 'en';
+        const propertyId = payload.propertyId;
+        const wardNo = payload.wardNo;
+        const propertyNo = payload.propertyNo;
+        const isSelected =
+          (propertyId && propertyId !== 'undefined' && propertyId !== 'null') ||
+          (wardNo && wardNo !== 'undefined' && propertyNo && propertyNo !== 'undefined');
+
+        if (!isSelected) {
+          const t = await getTranslations({ locale: payloadLocale, namespace: 'ptis' });
+          return { success: false, error: t('error.selectPropertyFirst') };
+        }
+
+        revalidatePath(`/${payloadLocale}/property-tax/ptis`, 'page');
+        return { success: true, data: null, message: 'Taxes refreshed successfully.' };
       }
       case 'PTIS_PROPERTY_REPORT': {
         const payloadLocale = payload.locale || 'en';

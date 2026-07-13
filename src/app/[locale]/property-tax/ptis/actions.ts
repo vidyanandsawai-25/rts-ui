@@ -5,12 +5,13 @@ import { createPtisSchemas, propertyIdActionSchema } from '@/lib/validations/pti
 import { retryWithBackoff } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
 
-async function getPtisValidationSchemas() {
+
+export async function getPtisValidationSchemas() {
   const t = await getTranslations('ptis');
   return createPtisSchemas((key) => t(key));
 }
 
-async function createAction<T>(
+export async function createAction<T>(
   fn: () => Promise<{ success: boolean; data?: T; error?: string | { message?: string } }>
 ): Promise<{ success: boolean; data?: T; error?: string }> {
   try {
@@ -128,83 +129,15 @@ export async function fetchPropertyDetailsOnlyAction(
   );
 }
 
-export async function fetchKycDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
-
-  return createAction(() => ptisService.getKycDetails(propertyId));
-}
-
-export async function fetchSocietyDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
-
-  return createAction(() => ptisService.getSocietyDetails(String(propertyId)));
-}
-
-export async function fetchOldDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
-
-  return createAction(() => ptisService.getOldDetails(propertyId));
-}
-
-export async function fetchOldFloorDetailsAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
-
-  return createAction(() => ptisService.getOldFloorDetails(propertyId));
-}
-
-export async function fetchOldTaxesDetailsAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
-
-  return createAction(() => ptisService.getOldTaxesDetails(propertyId));
-}
-
-export async function fetchApartmentQCDetailsAction(propertyId?: number) {
-  if (propertyId === undefined) {
-    return { success: false, error: 'Property ID is required' };
-  }
+export async function fetchPropertyBasicDetailsAction(propertyId: number) {
   const validation = propertyIdActionSchema.safeParse({ propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
-  return { success: false, error: 'Apartment QC details action is not implemented' };
+
+  return createAction(() => ptisService.getPropertyBasicDetails(propertyId));
 }
 
-export async function fetchDiscountDetailsOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
 
-  return createAction(() => ptisService.getDiscountDetails(propertyId));
-}
 
-export async function fetchBuildingPermissionOnlyAction(propertyId: number) {
-  const { wardIdActionSchema } = await getPtisValidationSchemas();
-  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
-  if (!validation.success) {
-    return { success: false, error: validation.error.issues[0].message };
-  }
 
-  return createAction(() => ptisService.getBuildingPermissionDetails(propertyId));
-}

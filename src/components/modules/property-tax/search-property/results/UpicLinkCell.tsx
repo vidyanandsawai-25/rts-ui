@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common";
-import type { UpicLinkCellProps } from "@/types/property-search.types";
+import type { UpicLinkCellProps } from "@/types/property-search";
 import { formatDisplayText } from "./result-styles";
 import { useSearchParams } from "next/navigation";
 

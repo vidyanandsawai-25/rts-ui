@@ -7,7 +7,7 @@ import { Button, useConfirm, useToast } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { deleteConfigKeyAction } from '@/app/[locale]/configuration-settings/config-master/actions';
 import { cn } from '@/lib/utils/cn';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
 
 interface ConfigItemActionsProps {
   id: string;
@@ -26,7 +26,7 @@ export function ConfigItemActions({ id, configKeyId, name, isEnabled }: ConfigIt
   const [isPending, startTransition] = useTransition();
   const [activeAction, setActiveAction] = useState<'edit' | 'delete' | 'config' | null>(null);
 
-  const { canEdit, canDelete, haveFullAccess } = usePermissions('CONFIG_MASTER');
+  const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
   const showEdit = canEdit || canDelete || haveFullAccess;
   const showDelete = canDelete || haveFullAccess;
 

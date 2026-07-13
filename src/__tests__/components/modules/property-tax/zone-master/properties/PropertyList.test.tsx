@@ -63,6 +63,19 @@ vi.mock("@/components/common", () => ({
       {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   ),
+  SearchSelect: ({ value, onChange, options, placeholder, label }: { value: string; onChange: (name: string, value: string) => void; options: Option[]; placeholder: string; label?: string }) => (
+    <div>
+      {label && <label>{label}</label>}
+      <select 
+        data-testid="ward-select" 
+        value={value} 
+        onChange={(e) => onChange("ward", e.target.value)}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  ),
   Label: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <label className={className}>{children}</label>
   ),

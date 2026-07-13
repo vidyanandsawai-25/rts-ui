@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import type { MatrixRow } from "./useMatrixState";
 
 interface SessionStorageManagerProps {
@@ -14,12 +14,19 @@ export function useSessionStorageManager({
   matrixData,
 }: SessionStorageManagerProps) {
   
+  const keyRef = React.useRef(matrixStorageKey);
+  
+  // Keep keyRef updated
+  useEffect(() => {
+    keyRef.current = matrixStorageKey;
+  }, [matrixStorageKey]);
+
   // Save matrix data to sessionStorage
   useEffect(() => {
     if (typeof window !== 'undefined' && matrixData.length > 0) {
-      sessionStorage.setItem(matrixStorageKey, JSON.stringify(matrixData));
+      sessionStorage.setItem(keyRef.current, JSON.stringify(matrixData));
     }
-  }, [matrixData, matrixStorageKey]);
+  }, [matrixData]);
 
   // Clear sessionStorage when component unmounts
   useEffect(() => {

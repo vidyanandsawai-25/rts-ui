@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 const currentFinancialStartYear = new Date().getMonth() >= 3 ? new Date().getFullYear() : new Date().getFullYear() - 1;
 
@@ -49,8 +50,7 @@ export const floorFormSchema = z.object({
 
   // Basic info - required fields
   floor: z.union([z.string(), z.null(), z.undefined()])
-    .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0 && isValidDropdownValue(val), 'Floor is required'),
+    .transform(val => String(val ?? '').trim()),
   floorId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   subFloor: z.union([z.string(), z.null(), z.undefined()])
@@ -61,10 +61,16 @@ export const floorFormSchema = z.object({
   // Year validation with consistent rules
   conYr: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0, 'Construction year is required')
-    .refine(val => /^\d*$/.test(val), 'Construction year must contain only numbers')
-    .refine(val => val.length === 4, 'Construction year must be exactly 4 digits')
-    .refine((val) => {
+    .refine(val => {
+      if (val === '') return true;
+      return /^\d*$/.test(val);
+    }, 'Construction year must contain only numbers')
+    .refine(val => {
+      if (val === '') return true;
+      return val.length === 4;
+    }, 'Construction year must be exactly 4 digits')
+    .refine(val => {
+      if (val === '') return true;
       const year = parseInt(val, 10);
       return year >= 1700 && year <= currentFinancialStartYear;
     }, {
@@ -85,14 +91,14 @@ export const floorFormSchema = z.object({
 
   // Construction and usage - required
   conTyp: z.union([z.string(), z.null(), z.undefined()])
-    .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0 && isValidDropdownValue(val), 'Construction type is required'),
+    .transform(val => String(val ?? '').trim()),
   constructionTypeId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   use: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
     .refine(val => val.length > 0 && isValidDropdownValue(val), 'Type of use is required'),
   typeOfUseId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
+  typeOfUseCategoryId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   subTyp: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
@@ -108,12 +114,7 @@ export const floorFormSchema = z.object({
 
   // Room and area validation
   rooms: z.union([z.string(), z.number(), z.null(), z.undefined()])
-    .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0, 'Number of rooms is required')
-    .refine((val) => {
-      const num = parseInt(val, 10);
-      return !isNaN(num) && num > 0;
-    }, 'Number of rooms must be a positive number'),
+    .transform(val => String(val ?? '').trim()),
 
   areaSqFt: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
@@ -186,13 +187,111 @@ export const floorFormSchema = z.object({
   roomData: z.union([z.array(z.unknown()), z.null(), z.undefined()])
     .transform(val => val ?? [])
     .default([]),
-}).refine((data) => {
+  selectedFloorType: z.enum(['Construction', 'OpenPlot']).optional(),
+  length: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
+  width: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
+}).superRefine((data, ctx) => {
+  if (data.selectedFloorType === 'OpenPlot') {
+    if (!data.constructionTypeId || String(data.constructionTypeId).trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'floor.errors.openPlotConstructionTypeNotFound',
+        path: ['constructionTypeId'],
+      });
+    }
+  }
+
+  if (data.selectedFloorType !== 'OpenPlot') {
+    // Validate floor
+    if (!data.floor || data.floor.length === 0 || !isValidDropdownValue(data.floor)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Floor is required',
+        path: ['floor'],
+      });
+    }
+
+    // Validate conYr
+    if (!data.conYr || data.conYr.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Construction year is required',
+        path: ['conYr'],
+      });
+    } else if (!/^\d*$/.test(data.conYr)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Construction year must contain only numbers',
+        path: ['conYr'],
+      });
+    } else if (data.conYr.length !== 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Construction year must be exactly 4 digits',
+        path: ['conYr'],
+      });
+    } else {
+      const year = parseInt(data.conYr, 10);
+      if (year < 1700 || year > currentFinancialStartYear) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Construction year must be between 1700 and the current financial year (${currentFinancialStartYear})`,
+          path: ['conYr'],
+        });
+      }
+    }
+
+    // Validate conTyp
+    if (!data.conTyp || data.conTyp.length === 0 || !isValidDropdownValue(data.conTyp)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Construction type is required',
+        path: ['conTyp'],
+      });
+    }
+
+    // Validate rooms
+    const isUtilityCategory = checkIsUtilityCategory(data.typeOfUseCategoryId);
+
+    if (!isUtilityCategory) {
+      if (!data.rooms || data.rooms.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Number of rooms is required',
+          path: ['rooms'],
+        });
+      } else {
+        const num = parseInt(data.rooms, 10);
+        if (isNaN(num) || num <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Number of rooms must be a positive number',
+            path: ['rooms'],
+          });
+        }
+      }
+    }
+  }
+
   // If it's an update, skip validation to allow existing database values
-  if (data.isAddingNewFloor === false) return true;
+  if (data.isAddingNewFloor === false) return;
 
   const hasValidId = data.id !== undefined && data.id !== null && data.id !== '' && data.id !== 'new' && Number(data.id) > 0;
-  if (hasValidId) return true;
+  if (hasValidId) return;
 
+  // Only validate conYr vs asstYr if we are in Construction mode and both are present
+  if (data.selectedFloorType !== 'OpenPlot' && data.conYr && data.asstYr) {
+    const conYear = parseInt(data.conYr, 10);
+    const asstYear = parseInt(data.asstYr, 10);
+    if (!isNaN(conYear) && !isNaN(asstYear) && asstYear < conYear) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Assessment year cannot be less than construction year',
+        path: ['asstYr'],
+      });
+    }
+  }
+}).refine((data) => {
   if (!data.conYr || !data.asstYr) return true;
   const conYear = parseInt(data.conYr, 10);
   const asstYear = parseInt(data.asstYr, 10);

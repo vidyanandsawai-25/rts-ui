@@ -1,39 +1,90 @@
 
 'use client';
 
-import React from "react";
-import Link from "next/link";
+import React, { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Service, ServiceCardProps } from "@/types/home/home.types";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/common/Badge";
 import { Button } from "@/components/common/ActionButton";
-import { getDepartmentIcon } from "@/config/home-services.config";
+import { resolveIcon } from "@/lib/utils/icon-mapping";
+import { setDepartmentContextAction } from "@/app/[locale]/home/action";
 
 /**
  * Gets the icon component for a department ID or name
  */
 const getIcon = (iconKey: string) => {
-    const parsedId = Number(iconKey);
-    const lookupKey = Number.isNaN(parsedId) ? iconKey : parsedId;
-    const { icon: IconComponent, className } = getDepartmentIcon(lookupKey);
+    const IconComponent = resolveIcon(iconKey, iconKey);
+    
+    // Determine the dynamic class name based on icon keywords (themed coloring)
+    let className = 'w-8 h-8 text-gray-700';
+    const lowerKey = (iconKey || '').toLowerCase();
+    
+    if (lowerKey.includes('water') || lowerKey.includes('droplet') || lowerKey.includes('wt')) {
+        className = 'w-8 h-8 text-blue-500 fill-blue-500';
+    } else if (lowerKey.includes('trade') || lowerKey.includes('shop') || lowerKey.includes('license') || lowerKey.includes('tl') || lowerKey.includes('parwana')) {
+        className = 'w-8 h-8 text-orange-600';
+    } else if (lowerKey.includes('birth') || lowerKey.includes('death') || lowerKey.includes('file') || lowerKey.includes('bd') || lowerKey.includes('certificate')) {
+        className = 'w-8 h-8 text-amber-700';
+    } else if (lowerKey.includes('garbage') || lowerKey.includes('trash') || lowerKey.includes('waste') || lowerKey.includes('gc')) {
+        className = 'w-8 h-8 text-green-700';
+    } else if (lowerKey.includes('building') || lowerKey.includes('permission') || lowerKey.includes('bp') || lowerKey.includes('house')) {
+        className = 'w-8 h-8 text-purple-700';
+    } else if (lowerKey.includes('grievance') || lowerKey.includes('mega') || lowerKey.includes('complain') || lowerKey.includes('gr')) {
+        className = 'w-8 h-8 text-red-600';
+    } else if (lowerKey.includes('rts') || lowerKey.includes('timer') || lowerKey.includes('clock')) {
+        className = 'w-8 h-8 text-indigo-600';
+    } else if (lowerKey.includes('asset') || lowerKey.includes('land') || lowerKey.includes('am')) {
+        className = 'w-8 h-8 text-teal-700';
+    } else if (lowerKey.includes('fire') || lowerKey.includes('noc') || lowerKey.includes('flame')) {
+        className = 'w-8 h-8 text-red-500 fill-red-500';
+    }
+
     return <IconComponent className={className} aria-hidden="true" />;
 };
 
 
-const ServiceCard: React.FC<ServiceCardProps> = ({
+const ServiceCard: React.FC<ServiceCardProps & { departmentId: number }> = ({
+    departmentId,
     link,
     icon,
     title,
     subtext,
-    stats
+    stats,
+    moduleId,
+    moduleName
 }) => {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+
+    /**
+     * SSR-safe navigation: Set cookies via server action FIRST, then navigate.
+     *
+     * Why not <Link> with onClick?
+     * → <Link> navigates immediately, the server action may not complete
+     *   before the destination page renders on the server (SSR).
+     * → Using router.push() after await ensures cookies are set
+     *   before the destination page's SSR reads them.
+     */
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        startTransition(async () => {
+            await setDepartmentContextAction(departmentId, title, moduleId, moduleName);
+            router.push(link);
+        });
+    };
+
     return (
-        <Link 
-            href={link} 
-            className="block group decoration-0 no-underline h-full"
+        <a
+            href={link}
+            className={cn(
+                "block group decoration-0 no-underline h-full cursor-pointer",
+                isPending && "opacity-70 pointer-events-none"
+            )}
             aria-label={`Navigate to ${title}`}
+            onClick={handleClick}
         >
             <article className={cn(
                 "relative p-6 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 min-h-[180px]",
@@ -61,7 +112,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     </div>
                 </div>
             </article>
-        </Link>
+        </a>
     );
 };
 
@@ -136,10 +187,10 @@ const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [], error }) => 
     }
 
     return (
-        <section className="w-full p-4 sm:p-8 md:p-12 min-h-[400px]" aria-label="Available Services">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 sm:gap-10 max-w-7xl mx-auto">
+        <section className="w-full p-4 sm:p-6 md:p-8 min-h-[300px]" aria-label="Available Services">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
                 {services.map(({ id, ...rest }) => (
-                    <ServiceCard key={id} {...rest} />
+                    <ServiceCard key={id} departmentId={id} {...rest} />
                 ))}
             </div>
         </section>

@@ -213,6 +213,27 @@ describe('ConnectionFormFields', () => {
     });
   });
 
+  describe('max date limit on installDate', () => {
+    it('should have max attribute set to today', () => {
+      renderWithIntl(
+        <ConnectionFormFields
+          {...defaultProps}
+          {...handlers}
+        />
+      );
+
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const todayStr = `${year}-${month}-${day}`;
+
+      // In HTML structure, the input has a label with htmlFor. getByLabelText matches this.
+      const installDateInput = screen.getByLabelText(/Install Date/i);
+      expect(installDateInput).toHaveAttribute('max', todayStr);
+    });
+  });
+
   describe('applicable rate display', () => {
     it('should display applicable rate when provided', () => {
       renderWithIntl(

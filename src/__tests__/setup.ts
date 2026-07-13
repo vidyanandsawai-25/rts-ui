@@ -8,6 +8,14 @@ expect.extend(matchers);
 // Mock server-only for tests
 vi.mock('server-only', () => ({}));
 
+// Mock next/cache for tests
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  unstable_cache: vi.fn((fn: () => unknown) => fn),
+  unstable_noStore: vi.fn(),
+}));
+
 // Mock next/headers for tests
 vi.mock('next/headers', () => ({
   cookies: vi.fn(() => ({
@@ -45,7 +53,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('lucide-react', async (importOriginal) => {
   const React = await import('react');
   const original = await importOriginal<typeof import('lucide-react')>();
-  
+
   // Create a mock icon component factory  
   const createIcon = (name: string) => {
     const lucideClassName = `lucide-${name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')}`;
@@ -151,7 +159,7 @@ vi.mock('lucide-react', async (importOriginal) => {
     Globe2: createIcon('Globe2'),
     MessageSquare: createIcon('MessageSquare'),
     MessageCircle: createIcon('MessageCircle'),
-    
+
     // Additional icons from codebase
     Loader2: createIcon('Loader2'),
     Lock: createIcon('Lock'),
@@ -167,7 +175,7 @@ vi.mock('lucide-react', async (importOriginal) => {
     Wifi: createIcon('Wifi'),
     ListTree: createIcon('ListTree'),
     List: createIcon('List'),
-    
+
     // Dashboard/Menu icons
     BarChart3: createIcon('BarChart3'),
     ClipboardCheck: createIcon('ClipboardCheck'),
@@ -184,13 +192,13 @@ vi.mock('lucide-react', async (importOriginal) => {
     FileSearch: createIcon('FileSearch'),
     FileSpreadsheet: createIcon('FileSpreadsheet'),
     LandPlot: createIcon('LandPlot'),
-    
+
     // Arrow icons
     ArrowUp: createIcon('ArrowUp'),
     ArrowDown: createIcon('ArrowDown'),
     ArrowLeft: createIcon('ArrowLeft'),
     CircleArrowLeft: createIcon('CircleArrowLeft'),
-    
+
     // Other action icons
     Share: createIcon('Share'),
     Eraser: createIcon('Eraser'),

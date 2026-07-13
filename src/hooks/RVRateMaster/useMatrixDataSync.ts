@@ -9,11 +9,11 @@ interface MatrixDataSyncProps {
   selectedZone: string;
   selectedUseGroup: string;
   assessmentYear: string;
+  rateUnit: "SqMeter" | "SqFeet";
   paginatedZoneDescriptions: IZoneDescription[];
   zoneDescriptions: IZoneDescription[];
   rateCategories: RateCategory[];
   defaultMatrixData: MatrixRow[];
-  matrixData: MatrixRow[];
   setMatrixData: (data: MatrixRow[]) => void;
   setShowMatrix: (show: boolean) => void;
   setRateFrequency: (freq: "Monthly" | "Yearly") => void;
@@ -31,11 +31,11 @@ export function useMatrixDataSync({
   selectedZone,
   selectedUseGroup,
   assessmentYear,
+  rateUnit,
   paginatedZoneDescriptions,
   zoneDescriptions,
   rateCategories,
   defaultMatrixData,
-  matrixData,
   setMatrixData,
   setShowMatrix,
   setRateFrequency,
@@ -75,8 +75,10 @@ export function useMatrixDataSync({
         const rateValues: Record<string, number> = {};
         zoneRates.forEach(rate => {
           const constructionKey = String(rate.constructionTypeId);
-          if (rate.rateSquareMeter !== undefined) {
-            rateValues[constructionKey] = rate.rateSquareMeter;
+          // Use rate value based on selected rate unit
+          const rateValue = rateUnit === 'SqFeet' ? rate.rateSquareFeet : rate.rateSquareMeter;
+          if (rateValue !== undefined) {
+            rateValues[constructionKey] = rateValue;
           }
         });
         
@@ -105,39 +107,7 @@ export function useMatrixDataSync({
       }));
       setMatrixData(zeroMatrix);
     }
-  }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency]);
-
-  // Initialize allZoneEdits with existing matrixData in edit mode
-  useEffect(() => {
-    const isEditMode = mode === 'edit' || mode === 'delete';
-    if (!isEditMode || matrixData.length === 0 || allZoneEditsInitializedRef.current) return;
-
-    const hasNonZeroValues = matrixData.some(row =>
-      rateCategories.some(cat => {
-        const key = cat.constructionCode || cat.constructionId;
-        return Number(row[key]) > 0;
-      })
-    );
-
-    if (hasNonZeroValues) {
-      const initialEdits: Record<string, Record<string, number>> = {};
-      matrixData.forEach(row => {
-        const zoneNo = row.zoneNo as string;
-        if (zoneNo) {
-          const zoneEdits: Record<string, number> = {};
-          rateCategories.forEach(cat => {
-            const key = cat.constructionCode || cat.constructionId;
-            const value = Number(row[key]);
-            if (value > 0) zoneEdits[key] = value;
-          });
-          if (Object.keys(zoneEdits).length > 0) initialEdits[zoneNo] = zoneEdits;
-        }
-      });
-      setAllZoneEdits(initialEdits);
-      allZoneEditsInitializedRef.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matrixData, mode, rateCategories, setAllZoneEdits]);
+  }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, rateUnit, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency]);
 
   // Reset initialization flag when filters change
   useEffect(() => {
@@ -145,4 +115,45 @@ export function useMatrixDataSync({
     setAllZoneEdits({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedZone, selectedUseGroup, assessmentYear, backendRates, setAllZoneEdits]);
+
+  // Initialize allZoneEdits directly from backend rates in edit mode
+  useEffect(() => {
+    const isEditMode = mode === 'edit' || mode === 'delete';
+    if (!isEditMode || allZoneEditsInitializedRef.current) return;
+
+    const ratesToUse = (backendRates?.length) ? backendRates : fetchedBackendRates;
+    if (!ratesToUse || ratesToUse.length === 0) return;
+
+    // VERY IMPORTANT: Prevent race condition where selectedZone changed but backendRates hasn't!
+    // Verify that the backend rates actually belong to the currently selected zone
+    const isMatchingZone = ratesToUse.every(r => String(r.rateSectionId) === String(selectedZone) || String(r.rateSectionNo) === String(selectedZone));
+    if (!isMatchingZone) return;
+
+    const initialEdits: Record<string, Record<string, number>> = {};
+    
+    // Initialize directly from ratesToUse (full backend data) instead of matrixData (paginated)
+    zoneDescriptions.forEach(z => {
+      const zoneRates = ratesToUse.filter(r => r.taxZoneId === z.taxZoneId || String(r.taxZoneId) === z.zoneNo);
+      const zoneEdits: Record<string, number> = {};
+      
+      rateCategories.forEach(cat => {
+        const key = cat.constructionCode || cat.constructionId;
+        const matchingRate = zoneRates.find(r => String(r.constructionTypeId) === String(cat.constructionId) || String(r.constructionID) === String(cat.constructionId));
+        
+        if (matchingRate) {
+          const rateValue = rateUnit === 'SqFeet' ? matchingRate.rateSquareFeet : matchingRate.rateSquareMeter;
+          if (rateValue !== undefined && rateValue > 0) {
+            zoneEdits[key] = rateValue;
+          }
+        }
+      });
+      
+      if (Object.keys(zoneEdits).length > 0) initialEdits[z.zoneNo] = zoneEdits;
+    });
+
+    setAllZoneEdits(initialEdits);
+    allZoneEditsInitializedRef.current = true;
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backendRates, fetchedBackendRates, selectedZone, mode, rateUnit, zoneDescriptions, rateCategories, setAllZoneEdits]);
 }

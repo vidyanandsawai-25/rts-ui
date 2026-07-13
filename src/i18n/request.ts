@@ -1,6 +1,7 @@
 /**
  * i18n Request Configuration
  * Server-side locale detection and message loading
+ * Force reload: 1
  */
 
 import { getRequestConfig } from 'next-intl/server';
@@ -44,7 +45,7 @@ export default getRequestConfig(async ({ locale }) => {
     departmentMasterMessages,
     departmentActivationMessages,
     homeMessages,
-    aliasMasterMessages,
+    multilingualTranslationMessages,
     userManagementMessages,
     grievanceCategoryMessages,
     combinePropertyMessages,
@@ -60,6 +61,11 @@ export default getRequestConfig(async ({ locale }) => {
     ruleEngineMessages,
     moujaMessages,
     policyConfigurationMessages,
+    remarkMasterMessages,
+    lockUnlockMessages,
+    socialAttributeMessages,
+    applicableTaxesMessages,
+    reassessmentMessages,
     modulesMessages,
     reportMessages,
   ] = await Promise.all([
@@ -103,7 +109,7 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/home.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/aliasMaster.json`)
+    import(`./locales/${validatedLocale}/multilingualTranslation.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/user-management.json`)
@@ -137,18 +143,28 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/rule-engine.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/mouja.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/mouja.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/policyConfiguration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/remark.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/lockUnlock.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/socialAttribute.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/applicableTaxes.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+      import(`./locales/${validatedLocale}/reassessment.json`)
+        .catch(() => ({}))
+        .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
   ]);
-
 
   return {
     locale: validatedLocale,
@@ -181,7 +197,7 @@ export default getRequestConfig(async ({ locale }) => {
       departmentMaster: departmentMasterMessages,
       departmentActivation: departmentActivationMessages,
       home: homeMessages,
-      aliasMaster: aliasMasterMessages,
+      multilingualTranslation: multilingualTranslationMessages,
       userManagement: userManagementMessages,
       grievanceCategory: grievanceCategoryMessages,
       combineProperty: combinePropertyMessages,
@@ -199,6 +215,11 @@ export default getRequestConfig(async ({ locale }) => {
       mouja: moujaMessages,
       policyConfiguration:
         policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+      remarkMaster: remarkMasterMessages.remarkMaster,
+      lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
+      socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
+      applicableTaxes: applicableTaxesMessages,
+      reassessment: reassessmentMessages,
       modules: modulesMessages,
       report: reportMessages,
     },

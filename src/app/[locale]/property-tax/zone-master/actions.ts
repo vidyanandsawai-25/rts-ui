@@ -1010,7 +1010,7 @@ import { SocietyAmenityDetailItem } from "@/types/zone-master/properties/society
 import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem, UpdateSocietyDetailPayload } from "@/types/zone-master/properties/societyDetails.types";
 import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/zone-master/properties/building-structure.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
@@ -1036,6 +1036,7 @@ export async function getAllPropertiesForWardAction(wardId: number): Promise<{
     params.set("WardId", wardId.toString());
     params.set("PageNumber", "1");
     params.set("PageSize", "-1"); // -1 returns all items without pagination
+    params.set("MarkedForDeletion", "false");
 
     const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
 
@@ -1043,7 +1044,10 @@ export async function getAllPropertiesForWardAction(wardId: number): Promise<{
       return { success: false, error: response.error || "Failed to fetch properties" };
     }
 
-    return { success: true, data: response.data.items || [] };
+    return {
+      success: true,
+      data: (response.data.items || []).filter((item) => item.markedForDeletion !== true),
+    };
   } catch (error) {
     if (error instanceof ApiError) {
       logger.error("[getAllPropertiesForWardAction] API Error", {
@@ -1079,7 +1083,13 @@ export async function getBuildingListByWardAction(wardId: number): Promise<{
     }
 
     const buildingList = await getBuildingListByWard(wardId);
-    return { success: true, data: buildingList };
+    return {
+      success: true,
+      data: buildingList.filter(
+        (item) =>
+          (item as BuildingListItem & { markedForDeletion?: boolean }).markedForDeletion !== true
+      ),
+    };
   } catch (error) {
     if (error instanceof ApiError) {
       logger.error("[getBuildingListByWardAction] API Error", {
@@ -1314,7 +1324,7 @@ export async function createSocietyDetailAction(payload: CreateSocietyDetailPayl
  */
 export async function updateSocietyDetailAction(
   id: number,
-  payload: Partial<CreateSocietyDetailPayload>
+  payload: UpdateSocietyDetailPayload
 ): Promise<{
   success: boolean;
   data?: SocietyDetailItem;
@@ -1322,7 +1332,7 @@ export async function updateSocietyDetailAction(
 }> {
   try {
     const userId = await getCurrentUserId();
-    const fullPayload = {
+    const fullPayload: UpdateSocietyDetailPayload = {
       ...payload,
       updatedBy: userId,
     };
@@ -1575,6 +1585,7 @@ export async function getNextPartitionNumberAction(
       PageSize: "1",
       SortBy: "Id",
       SortOrder: "desc",
+      MarkedForDeletion: "false",
     });
 
     const url = `/Property?${queryParams.toString()}`;

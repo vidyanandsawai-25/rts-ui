@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { FloorInformationFormData } from "@/types/OldDetails/property-old-details.types";
 import { oldDetailsValidations } from "@/lib/utils/validation-schemas";
+import { translateDevanagariDigits } from "@/lib/utils/input-sanitization";
 
 const MIN_YEAR = 1700;
 const MAX_YEAR = 2026;
@@ -19,8 +20,9 @@ export function useFloorFormValidation(hasSubUseOptions = true) {
    * Validates year range in real-time (1700-2026).
    */
   const validateYearField = useCallback((field: 'oldConstructionYear' | 'oldAssessmentYear', value: string) => {
+    const translated = translateDevanagariDigits(value);
     // Clear error if field is empty or less than 4 digits
-    if (!value || value.length < 4) {
+    if (!translated || translated.length < 4) {
       setErrors(prev => {
         const copy = { ...prev };
         delete copy[field];
@@ -30,8 +32,8 @@ export function useFloorFormValidation(hasSubUseOptions = true) {
     }
 
     // Validate when exactly 4 digits are entered
-    if (value.length === 4) {
-      const year = parseInt(value, 10);
+    if (translated.length === 4) {
+      const year = parseInt(translated, 10);
       if (isNaN(year)) {
         const errorMessage = field === 'oldConstructionYear'
           ? 'Invalid construction year format'

@@ -12,6 +12,8 @@ import { getCombinePropertyColumns, getCombinePropertyHistoryColumns, PropertyRo
 import { MasterTable } from '@/components/common/MasterTable';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PropertyType } from '@/types/property-type.types';
+import { PagedResponse } from '@/types/common.types';
+import { CombinePropertyHistoryDetails } from './CombinePropertyHistoryDetails';
 import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
 import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
 import { StatusBadge } from '@/components/common/StatusBadge';
@@ -31,7 +33,9 @@ interface CombinePropertyFormProps {
   selectedWardNo?: string;
   selectedPropertyNo?: string;
   showHistory?: boolean;
-  historyData?: PropertyCombineDetails[];
+  historyData?: PagedResponse<PropertyCombineDetails>;
+  historyDetailsData?: PagedResponse<PropertyCombineDetails>;
+  initialReviewData?: PropertyCombineDetails[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -64,8 +68,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedWardId,
     selectedWardNo,
     selectedPropertyNo,
-    showHistory = false,
-    historyData = [],
+    showHistory,
+    historyData,
+    historyDetailsData,
+    initialReviewData,
   } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,6 +115,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedBasePropertyId,
     selectedWardId,
     selectedPropertyNo,
+    initialReviewData,
     t,
   });
 
@@ -121,17 +128,30 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   const handleShowHistory = () => {
     const params = new URLSearchParams(searchParams.toString());
     if (showHistory) {
-      params.delete('showHistory');
+      params.set('showHistory', 'false');
     } else {
-      params.set('showHistory', 'true');
+      params.delete('showHistory');
     }
     router.push(`?${params.toString()}`);
   };
 
   const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(
     t as unknown as (key: string) => string, 
-    (row) => router.push(`${pathname}/${row.propertyId}`)
-  ), [t, router, pathname]);
+    (row) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('detailsPropertyId', String(row.propertyId));
+      params.set('detailsPage', '1');
+      params.set('detailsSize', '10');
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  ), [t, router, pathname, searchParams]);
+
+  const handleHistoryTableChange = (page: number, pageSize: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('historyPage', String(page));
+    params.set('historySize', String(pageSize));
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
@@ -144,7 +164,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   }, [basePropertyList]);
 
   const SUB_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
-    return (subPropertyList || []).map(toSelectOption);
+    const sortedList = [...(subPropertyList || [])].sort((a, b) => {
+      return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return sortedList.map(toSelectOption);
   }, [subPropertyList]);
 
   const PROPERTY_TYPE_OPTIONS = useMemo<SearchSelectOption[]>(() => {
@@ -213,8 +236,12 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     if (selectedPropertyNo) params.set('propertyNo', selectedPropertyNo);
     if (selectedBasePropertyId) params.set('propertyId', selectedBasePropertyId);
 
+    const partitionNo = searchParams.get('partitionNo');
+    if (partitionNo) params.set('partitionNo', partitionNo);
+
     const qs = params.toString();
-    const target = qs ? `/property-tax/ptis?${qs}` : '/property-tax/ptis';
+    const locale = pathname.split('/')[1] || 'en';
+    const target = qs ? `/${locale}/property-tax/ptis?${qs}` : `/${locale}/property-tax/ptis`;
     router.push(target);
   };
 
@@ -251,25 +278,40 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
         handleProceed={() => {
           if (showHistory) {
             const params = new URLSearchParams(searchParams.toString());
-            params.delete('showHistory');
+            params.set('showHistory', 'false');
             router.push(`?${params.toString()}`);
           }
           handleProceed();
         }}
         onShowHistory={handleShowHistory}
-        showHistory={showHistory}
+        showHistory={!!showHistory}
       />
 
       {showHistory ? (
         <div className="px-4 py-4 flex flex-col gap-4">
-          <MasterTable<HistoryRow>
-            columns={historyColumns}
-            data={historyData as HistoryRow[]}
-            paginationConfig={{ enabled: false }}
-            height="md"
-            getRowKey={(row, i) => `history-${row.propertyId || 0}-${i}`}
-            emptyText={t('emptyTableText')}
-          />
+          {(!historyData?.items || historyData.items.length === 0) ? (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-gray-500 font-medium">{t('noCombinePropertyHistoryFound')}</p>
+            </div>
+          ) : (
+            <MasterTable<HistoryRow>
+              columns={historyColumns}
+              data={(historyData?.items || []) as HistoryRow[]}
+              paginationConfig={{
+                enabled: true,
+                showPageSizeSelector: true,
+              }}
+              pageNumber={historyData?.pageNumber || 1}
+              pageSize={historyData?.pageSize || 10}
+              totalCount={historyData?.totalCount || 0}
+              totalPages={historyData?.totalPages || 0}
+              onPageChange={(page) => handleHistoryTableChange(page, historyData?.pageSize || 10)}
+              onPageSizeChange={(size) => handleHistoryTableChange(historyData?.pageNumber || 1, size)}
+              height="md"
+              getRowKey={(row, i) => `history-${row.propertyId || 0}-${i}`}
+              emptyText={t('emptyTableText')}
+            />
+          )}
         </div>
       ) : (
         <CombinePropertyReviewSection
@@ -289,6 +331,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
           remarkError={remarkError}
           setRemark={setRemark}
         />
+      )}
+
+      {searchParams.has('detailsPropertyId') && historyDetailsData && (
+        <CombinePropertyHistoryDetails historyDetails={historyDetailsData} />
       )}
     </Drawer>
   );

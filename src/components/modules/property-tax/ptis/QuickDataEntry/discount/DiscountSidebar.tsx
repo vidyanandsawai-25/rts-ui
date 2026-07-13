@@ -4,6 +4,7 @@ import React from "react";
 import { Filter, ShieldCheck, AlertCircle, EyeOff } from "lucide-react";
 import { ToggleSwitch, SearchInput, Badge } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface DiscountSidebarProps {
     searchTerm: string;
@@ -15,7 +16,10 @@ interface DiscountSidebarProps {
     onSelect: (id: number) => void;
     onToggleEnabled: (id: number, checked: boolean) => void;
     validationErrors?: Record<number, string>;
-    t: (key: string) => string;
+    t: {
+        (key: string, values?: Record<string, string | number | Date>): string;
+        has?: (key: string) => boolean;
+    };
 }
 
 export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
@@ -30,8 +34,11 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
     validationErrors,
     t,
 }) => {
+    const isActiveDiscount = (discount: DiscountAttributeState) =>
+        discount.dataType.toUpperCase() === "BIT" ? discount.bitValue === true : discount.enabled;
+
     const getStatusBadge = (discount: DiscountAttributeState) => {
-        if (!discount.enabled) {
+        if (!isActiveDiscount(discount)) {
             return (
                 <Badge variant="secondary" size="sm" icon={EyeOff}>
                     {t("discount.statusDisabled") || "Disabled"}
@@ -53,7 +60,9 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
             );
         }
 
+        const isDocReq = discount.isDocumentRequired === true;
         const hasDoc = (discount.documentGuid?.trim() ?? "") !== "" || !!discount.documentBindingId;
+        const isDocCompleted = !isDocReq || hasDoc;
         const dataTypeUpper = (discount.dataType || "").toUpperCase();
 
         // Check if value is filled when required
@@ -68,7 +77,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
             hasValue = false;
         }
 
-        if (hasDoc && hasValue) {
+        if (isDocCompleted && hasValue) {
             return (
                 <Badge
                     variant="success"
@@ -94,7 +103,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
     };
 
     return (
-        <div className="flex flex-col min-h-[500px] lg:h-[calc(100vh-220px)] border-r border-blue-100 pr-2">
+        <div className="flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border-r border-blue-100 pr-2">
             {/* Search and Filters */}
             <div className="space-y-3 mb-4">
                 <SearchInput
@@ -131,11 +140,12 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                 ) : (
                     discounts.map((discount) => {
                         const isSelected = selectedId === discount.id;
-                        const hasError = discount.enabled && !!validationErrors?.[discount.id];
-                        const translated = t(`discount.socialAttributes.${discount.socialAttributeCode}`);
-                        const displayName = translated && !translated.includes("discount.socialAttributes")
-                            ? translated
-                            : discount.socialAttributeName;
+        const hasError = isActiveDiscount(discount) && !!validationErrors?.[discount.id];
+                        const displayName = getLocalizedName(
+                            discount.socialAttributeCode,
+                            discount.socialAttributeName,
+                            t
+                        );
 
 
                         const cardClass = isSelected
@@ -172,7 +182,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                                     </span>
                                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                                         <ToggleSwitch
-                                            checked={discount.enabled}
+                                            checked={isActiveDiscount(discount)}
                                             onChange={(checked) => onToggleEnabled(discount.id, checked)}
                                             showPopup={false}
                                         />

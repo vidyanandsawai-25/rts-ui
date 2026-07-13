@@ -23,6 +23,10 @@ import {
   createTapSizeAction,
   updateTapSizeAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
+import {
+  ALPHANUMERIC_WITH_SPACES_REGEX,
+  ALPHANUMERIC_WITH_SPACES_SANITIZE,
+} from "@/lib/utils/validation-rules";
 
 const MAX_NAME = 5;
 const MAX_UNIT = 7;
@@ -57,11 +61,15 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
       const errs: Partial<Record<keyof TapSizeFormModel, string>> = {};
       if (!data.sizeName.trim())
         errs.sizeName = t("validation.sizeNameRequired");
-      else if (data.sizeName.length > MAX_NAME)
+      else if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(data.sizeName.trim()))
+        errs.sizeName = t("validation.sizeNameInvalid");
+      else if (data.sizeName.trim().length > MAX_NAME)
         errs.sizeName = t("validation.sizeNameLength", { count: MAX_NAME });
       if (!data.unit.trim())
         errs.unit = t("validation.unitRequired");
-      else if (data.unit.length > MAX_UNIT)
+      else if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(data.unit.trim()))
+        errs.unit = t("validation.unitInvalid");
+      else if (data.unit.trim().length > MAX_UNIT)
         errs.unit = t("validation.unitLength", { count: MAX_UNIT });
       return errs;
     },
@@ -73,9 +81,16 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const showError = (field: keyof TapSizeFormModel) =>
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
-  const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+   const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
+   if ((field === "sizeName" || field === "unit") && typeof value === "string") {
+     value = value
+       .normalize("NFC")
+       .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+       .replace(/\s+/g, " ")
+       .trim();
+   }
+   setFormData((prev) => ({ ...prev, [field]: value }));
+ };
 
   const handleBlur = (field: keyof TapSizeFormModel) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -103,7 +118,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
         setOpen(false);
         router.push(listUrl);
       } else {
-        toast.error(result.error ?? tCommon("errors.unexpectedError"));
+        toast.error(result.error ?? tCommon("errors.generic"));
       }
     } finally {
       setIsSubmitting(false);

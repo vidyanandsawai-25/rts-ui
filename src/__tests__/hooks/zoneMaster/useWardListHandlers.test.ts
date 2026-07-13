@@ -18,9 +18,8 @@ vi.mock("@/components/common", () => ({
   })),
 }));
 
-vi.mock("@/components/modules/property-tax/zone-master/wards/wardHandlers", () => ({
-  handleWardDelete: vi.fn(),
-  handleWardEdit: vi.fn(),
+vi.mock("@/app/[locale]/property-tax/zone-master/actions", () => ({
+  deleteWardAction: vi.fn(),
 }));
 
 vi.mock("@/components/modules/property-tax/zone-master/wards/wardColumns", () => ({

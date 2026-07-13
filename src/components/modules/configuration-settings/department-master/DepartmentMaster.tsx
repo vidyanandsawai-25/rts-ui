@@ -22,8 +22,8 @@ import { useDepartmentPagination } from "@/hooks/configuration-settings/departme
 import { DepartmentStatsCards } from "./DepartmentStatsCards";
 
 
-import { usePermissions } from "@/hooks/usePermissions";
 import { AlertCircle } from "lucide-react";
+
 
 export function DepartmentMaster({
   initialData, 
@@ -33,7 +33,6 @@ export function DepartmentMaster({
   initialTotalPages: totalPages, 
   allData = [],
   fetchError,
-  statusCode,
 }: DepartmentMasterProps): React.ReactElement {
   const router = useRouter();
   const t = useTranslations("departmentMaster");
@@ -42,7 +41,7 @@ export function DepartmentMaster({
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
 
-  const { canView, canEdit, canDelete, haveFullAccess } = usePermissions('DEPARTMENT_MASTER');
+
 
   const {
     search,
@@ -91,37 +90,17 @@ export function DepartmentMaster({
 
   const columns = getDepartmentColumns(t, tCommon);
 
-  const isUnauthorized =
-    statusCode === 401 ||
-    (fetchError &&
-      (fetchError.toLowerCase().includes('unauthorized') ||
-        fetchError.toLowerCase().includes('token') ||
-        fetchError === 'messages.unauthorizedToken'));
 
-  if (isUnauthorized || (!canView && !haveFullAccess)) {
-    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
-
-    return (
-      <PageContainer>
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
-          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
-          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
-        </div>
-      </PageContainer>
-    );
-  }
 
   return (
     <PageContainer
       title={t("title")}
       subtitle={t("subtitle")}
       actions={
-        haveFullAccess ? (
-          <AddButton 
-            label={t("form.buttons.add")}
-            onClick={() => router.push(`/${locale}/configuration-settings/department-master/add`)} 
-          />
-        ) : undefined
+        <AddButton 
+          label={t("form.buttons.add")}
+          onClick={() => router.push(`/${locale}/configuration-settings/department-master/add`)} 
+        />
       }
     >
       <div className="space-y-6">
@@ -175,8 +154,8 @@ export function DepartmentMaster({
           }
           renderActions={(row) => (
             <div className="flex items-center gap-1">
-              {(canEdit || haveFullAccess) && <EditButton onClick={() => handleEdit(row)} />}
-              {(canDelete || haveFullAccess) && <DeleteButton onClick={() => handleDelete(row)} />}
+              <EditButton onClick={() => handleEdit(row)} />
+              <DeleteButton onClick={() => handleDelete(row)} />
             </div>
           )}
           getRowKey={(row) => String(row.departmentId)}

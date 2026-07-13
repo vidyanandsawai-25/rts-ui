@@ -134,6 +134,8 @@ export function useCreatePropertyForm({
 
     if (!formData.ownerName || !formData.ownerName.trim()) {
       newErrors.ownerName = t("createProperty.errors.ownerNameRequired");
+    } else if (formData.ownerName.trim().length < 2) {
+      newErrors.ownerName = t("createProperty.errors.ownerNameMinLength");
     }
 
     if (formData.isBulkCreate) {

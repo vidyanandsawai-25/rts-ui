@@ -1,9 +1,5 @@
-import { useState, useMemo } from 'react';
-import type { UseSubType, UseGroup } from '@/types/typeOfUse.types';
-
-function getGroupApiId(g: UseGroup): string {
-  return String(g.typeOfUseGroupId);
-}
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { UseSubType } from '@/types/typeOfUse.types';
 
 interface UseSubTypeManagementParams {
   subTypes: UseSubType[];
@@ -13,8 +9,7 @@ interface UseSubTypeManagementParams {
   pageSize: number;
   urlQ: string;
   selectedTypeId: string;
-  selectedGroupId: number;
-  allGroups: UseGroup[];
+  selectedGroupId: string | number;
   pushUrl: (params: {
     groupId?: string;
     typeId?: string;
@@ -33,58 +28,62 @@ export function useSubTypeManagement({
   urlQ,
   selectedTypeId,
   selectedGroupId,
-  allGroups,
   pushUrl,
 }: UseSubTypeManagementParams) {
   const [subTypeSearch, setSubTypeSearch] = useState(urlQ);
   const [subLoading] = useState(false);
   const [loadingAll] = useState(false);
 
+  const prevUrlQRef = useRef(urlQ);
+  useEffect(() => {
+    if (prevUrlQRef.current !== urlQ) {
+      prevUrlQRef.current = urlQ;
+      setSubTypeSearch(urlQ);
+    }
+  }, [urlQ]);
+
   const searchActive = subTypeSearch.trim().length > 0;
 
   const subPageSize = pageSize;
-  const subPageNumber = pageNumber;
 
-  const effectivePageNumber = subPageNumber;
   const effectiveTotalCount = subTotalCount;
-  const effectiveTotalPages = subTotalPages;
+  const effectiveTotalPages = subTotalPages || 1;
+  const effectivePageNumber = pageNumber;
 
   const subTypeTableRows = useMemo(() => {
-    return (subTypes ?? []).map((s, idx) => ({
+    const startIndex = (effectivePageNumber - 1) * subPageSize;
+    return (subTypes || []).map((s, idx) => ({
       ...s,
-      srNo: (subPageNumber - 1) * subPageSize + idx + 1,
+      srNo: startIndex + idx + 1,
     }));
-  }, [subTypes, subPageNumber, subPageSize]);
+  }, [subTypes, effectivePageNumber, subPageSize]);
 
   const changeSubPage = (p: number) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
+    const currentGroupApiId = String(selectedGroupId);
 
     pushUrl({
       groupId: currentGroupApiId,
       typeId: selectedTypeId,
       pn: p,
       ps: subPageSize,
-      q: searchActive ? subTypeSearch : "",
+      q: subTypeSearch,
     });
   };
 
   const changeSubPageSize = (size: number) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
+    const currentGroupApiId = String(selectedGroupId);
 
     pushUrl({
       groupId: currentGroupApiId,
       typeId: selectedTypeId,
       pn: 1,
       ps: size,
-      q: searchActive ? subTypeSearch : "",
+      q: subTypeSearch,
     });
   };
 
   const onSearchChange = (val: string) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
+    const currentGroupApiId = String(selectedGroupId);
 
     setSubTypeSearch(val);
 
@@ -103,7 +102,7 @@ export function useSubTypeManagement({
     subLoading,
     loadingAll,
     subPageSize,
-    subPageNumber,
+    subPageNumber: effectivePageNumber,
     effectivePageNumber,
     effectiveTotalCount,
     effectiveTotalPages,

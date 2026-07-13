@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Droplets } from "lucide-react";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
@@ -41,12 +41,10 @@ export function ConnectionsTable({
 }: ConnectionsTableProps) {
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
-
-  const columns = useMemo(() => getWaterConnectionColumns(t, locale), [t, locale]);
+  const columns = useMemo(() => getWaterConnectionColumns(t), [t]);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm ">
       {/* Section header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-3">

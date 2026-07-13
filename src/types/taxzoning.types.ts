@@ -85,6 +85,8 @@ export type TaxZoningPageProps = {
   taxZones: PagedResponse<TaxZone>;
   wardsData: PagedResponse<Ward>;
   allProperties?: ActionResult<PagedResponse<TaxZoning>>;
+  sortBy?: string;
+  sortOrder?: string;
 };
 export interface TaxZoningFormProps {
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -117,5 +119,7 @@ export interface TaxZoningServerPageProps {
     pageSize?: string;
     taxZoneId?: string;
     wardId?: string;
+    sortBy?: string;
+    sortOrder?: string;
   };
 }

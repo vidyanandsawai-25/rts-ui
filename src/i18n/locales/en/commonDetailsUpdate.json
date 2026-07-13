@@ -20,7 +20,13 @@
       "inputParameters": "Input Parameters",
       "allPropertiesNote": "All properties under selected Zone / Node will be considered.",
       "generalUserAllowed": "General user allowed",
-      "wardPropertyRange": "Ward / Property Range"
+      "wardPropertyRange": "Ward / Property Range",
+      "selectCriteria": "Select Criteria",
+      "scopes": {
+        "WardSector": "Ward / Sector",
+        "BuildingWise": "Building Wise",
+        "PropertyRange": "Property Range"
+      }
     },
     "fieldList": {
       "title": "Select Fields to Update",
@@ -47,8 +53,14 @@
     },
     "filter": {
       "title": "Property Filter",
+      "zoneNumber": "Zone Number",
+      "selectZone": "Select Zone",
       "wardNumber": "Ward Number",
       "selectWard": "Select Ward",
+      "propertyType": "Property Type",
+      "selectPropertyType": "Select Property Type",
+      "propertyNo": "Property No",
+      "selectPropertyNo": "Select Property No",
       "fromPropertyNo": "From Property No",
       "selectFromPropertyNo": "Select From Property No",
       "toPropertyNo": "To Property No",
@@ -63,7 +75,7 @@
     },
     "preview": {
       "title": "Preview List",
-      "propertiesLoaded": "properties loaded",
+      "propertiesLoaded": "properties",
       "noProperties": "No properties found",
       "selectFilters": "Apply filters to load properties",
       "loading": "Loading properties...",
@@ -109,7 +121,29 @@
         "approvalRequired": "Approval Required",
         "addToRegistry": "Add Field to Registry",
         "addFromDb": "Add Field from DB",
-        "preview": "Preview"
+        "preview": "Preview",
+        "saveFields": "Save Fields",
+        "selectSchema": "Select Schema",
+        "selectTable": "Select Table",
+        "updateCode": "Update Code",
+        "updateNameEnglish": "Update Name (English)",
+        "updateNameMarathi": "Update Name (Marathi)",
+        "referenceTableName": "Reference Table Name",
+        "sequenceNo": "Sequence No",
+        "description": "Description",
+        "category": "Category",
+        "selectCategory": "Select Category",
+        "fieldConfiguration": "Field Configuration",
+        "fieldName": "Field Name",
+        "displayName": "Display Name",
+        "displayNameMarathi": "Display Name (Marathi)",
+        "controlType": "Control Type",
+        "selectControlType": "Select Control Type",
+        "dataType": "Data Type",
+        "selectDataType": "Select Data Type",
+        "placeholder": "Placeholder",
+        "maxLength": "Max Length",
+        "isApprovalRequired": "Is Approval Required"
       },
       "filters": {
         "category": "Category",
@@ -137,7 +171,10 @@
     },
     "buttons": {
       "import": "Import",
-      "export": "Export"
+      "export": "Export",
+      "backToPTIS": "Back to PTIS",
+      "uploadExcel": "Upload Excel",
+      "downloadExcel": "Download Excel"
     },
     "messages": {
       "fetchMenuFailed": "Failed to load update options",
@@ -145,6 +182,9 @@
       "fetchPropertiesFailed": "Failed to load properties",
       "fetchWardsFailed": "Failed to load wards",
       "fetchWingsFailed": "Failed to load wings",
+      "zoneRequired": "Zone is required",
+      "propertyTypeRequired": "Property Type is required",
+      "propertyNoRequired": "Property No is required",
       "wardRequired": "Ward is required",
       "fromPropertyRequired": "From Property No. is required",
       "toPropertyRequired": "To Property No. is required",

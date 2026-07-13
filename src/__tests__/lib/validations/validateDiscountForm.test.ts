@@ -31,6 +31,9 @@ describe("validateDiscountForm", () => {
         if (key === "discount.socialValidation.invalidDecimal") {
             return "Value must be a valid decimal number.";
         }
+        if (key === "discount.socialValidation.maxTwoDecimals") {
+            return "Maximum 2 decimal places allowed.";
+        }
         if (key === "discount.socialValidation.minVal") {
             return "Value must be greater than zero.";
         }
@@ -55,6 +58,12 @@ describe("validateDiscountForm", () => {
         if (key === "common.validation.documentRequired") {
             return "Document is required.";
         }
+        if (key === "discount.socialValidation.maxDigits") {
+            return `Value cannot exceed ${params?.digits || ""} digits.`;
+        }
+        if (key === "discount.socialValidation.yearMaxDigits") {
+            return "Year cannot exceed 4 digits.";
+        }
         return key;
     };
 
@@ -75,6 +84,7 @@ describe("validateDiscountForm", () => {
         documentBindingId: null,
         remark: null,
         enabled: true,
+        isDocumentRequired: true,
         ...overrides
     });
 
@@ -114,11 +124,18 @@ describe("validateDiscountForm", () => {
             expect(result.errors[1]).toBe("Value must be at least 1.");
         });
 
-        it("should fail if value is larger than max 32-bit int limit", () => {
+        it("should fail if value exceeds max digits limit (large value)", () => {
             const item = createBaseAttr({ dataType: "INT", intValue: "3000000000", documentGuid: "some-guid" });
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(false);
-            expect(result.errors[1]).toBe("Value cannot exceed 2147483647.");
+            expect(result.errors[1]).toBe("Value cannot exceed 3 digits.");
+        });
+
+        it("should fail if value exceeds dynamic digits limit", () => {
+            const item = createBaseAttr({ dataType: "INT", intValue: "1234", documentGuid: "some-guid" });
+            const result = validateDiscountForm({ 1: item }, tMock);
+            expect(result.isValid).toBe(false);
+            expect(result.errors[1]).toBe("Value cannot exceed 3 digits.");
         });
 
         it("should validate rating range (1-5) for GREEN_PROPERTY_STAR", () => {
@@ -205,6 +222,29 @@ describe("validateDiscountForm", () => {
             expect(result.isValid).toBe(false);
             expect(result.errors[1]).toBe("Capacity cannot exceed 100,000.");
         });
+
+        it("should reject decimal value for GREEN_PROPERTY_STAR as it must be an integer", () => {
+            const item = createBaseAttr({
+                socialAttributeCode: "GREEN_PROPERTY_STAR",
+                dataType: "INT",
+                intValue: "4.2",
+                documentGuid: "some-guid"
+            });
+            const result = validateDiscountForm({ 1: item }, tMock);
+            expect(result.isValid).toBe(false);
+            expect(result.errors[1]).toBe("Value must be a valid integer.");
+        });
+
+        it("should fail if decimal value has more than 2 decimal places", () => {
+            const item = createBaseAttr({
+                dataType: "DECIMAL",
+                decimalValue: "12.345",
+                documentGuid: "some-guid"
+            });
+            const result = validateDiscountForm({ 1: item }, tMock);
+            expect(result.isValid).toBe(false);
+            expect(result.errors[1]).toBe("Maximum 2 decimal places allowed.");
+        });
     });
 
     describe("DataType: VARCHAR validation", () => {
@@ -277,6 +317,12 @@ describe("validateDiscountForm", () => {
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(false);
             expect(result.errors[1]).toBe("Document is required.");
+        });
+
+        it("should pass if document is missing but isDocumentRequired is false", () => {
+            const item = createBaseAttr({ documentGuid: "", documentBindingId: null, isDocumentRequired: false });
+            const result = validateDiscountForm({ 1: item }, tMock);
+            expect(result.isValid).toBe(true);
         });
     });
 

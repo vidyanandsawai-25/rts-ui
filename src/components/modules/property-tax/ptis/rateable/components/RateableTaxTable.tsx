@@ -18,18 +18,19 @@ interface RateableTaxTableProps {
   rateableData: RateableValueResponse | null;
   searchParams: Record<string, string | string[] | undefined>;
   locale: string;
+  propertyId?: number;
 }
 
-export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData, searchParams, locale }) => {
+export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData, searchParams, locale, propertyId }) => {
   const t = useTranslations('ptis.modules.PtisTaxDetails');
   const rootT = useTranslations('ptis');
   const details = getRateableDetails(rateableData);
   const rows = details.map(mapRateableRow);
-  
-  const expandedParam = Array.isArray(searchParams.rateableExpand) 
-    ? searchParams.rateableExpand[searchParams.rateableExpand.length - 1] 
+
+  const expandedParam = Array.isArray(searchParams.rateableExpand)
+    ? searchParams.rateableExpand[searchParams.rateableExpand.length - 1]
     : searchParams.rateableExpand;
-    
+
   const expandedRowIds = parseExpandedRowIds(expandedParam);
 
   return (
@@ -41,6 +42,8 @@ export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData
         expandedLabel={t('viewTaxBreakdown')}
         expandedRowIds={expandedRowIds}
         getExpandHref={(row) => buildExpandHref(searchParams as Record<string, string | string[] | undefined>, row.id, expandedRowIds)}
+        getEditHref={propertyId ? (row) => `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?floorId=${row.id}` : undefined}
+        editTooltip={rootT.has('floor.editFloor') ? rootT('floor.editFloor') : 'Edit Floor'}
         tableClassName="w-full min-w-[1500px]"
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}

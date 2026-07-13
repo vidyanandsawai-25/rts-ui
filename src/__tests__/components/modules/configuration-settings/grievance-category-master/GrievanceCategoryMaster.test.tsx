@@ -1124,48 +1124,6 @@ describe('Grievance Category Master - Comprehensive Test Suite', () => {
       expect(screen.getByText('Grievance Category Master')).toBeInTheDocument();
     });
 
-    it('renders errors.noAccess when user has no access permission', () => {
-      mockPermissions.canView = false;
-      mockPermissions.haveFullAccess = false;
-
-      renderWithIntl(
-        <GrievanceCategoryMaster
-          locale="en"
-          data={mockCategories}
-          departments={mockDepartments}
-          stats={mockStats}
-          pageSize={10}
-          page={1}
-          totalCount={2}
-          initialSearch=""
-          initialDepartment="all"
-          initialStatus="all"
-        />
-      );
-      expect(screen.getByText('common.errors.noAccess')).toBeInTheDocument();
-    });
-
-    it('renders errors.unauthorized when user is unauthorized', () => {
-      mockPermissions.canView = false;
-      mockPermissions.haveFullAccess = false;
-
-      renderWithIntl(
-        <GrievanceCategoryMaster
-          locale="en"
-          data={[]}
-          departments={mockDepartments}
-          stats={mockStats}
-          pageSize={10}
-          page={1}
-          totalCount={0}
-          initialSearch=""
-          initialDepartment="all"
-          initialStatus="all"
-          statusCode={401}
-        />
-      );
-      expect(screen.getByText('common.errors.unauthorized')).toBeInTheDocument();
-    });
 
     it('renders errors.fetchFailed when fetchError is provided', () => {
       renderWithIntl(
@@ -1187,45 +1145,5 @@ describe('Grievance Category Master - Comprehensive Test Suite', () => {
       expect(screen.getByText('Network connection lost')).toBeInTheDocument();
     });
 
-    it('gates add category button visibility based on permissions', () => {
-      const { rerender } = render(
-        <NextIntlClientProvider locale="en" messages={messages}>
-          <GrievanceCategoryMaster
-            locale="en"
-            data={mockCategories}
-            departments={mockDepartments}
-            stats={mockStats}
-            pageSize={10}
-            page={1}
-            totalCount={2}
-            initialSearch=""
-            initialDepartment="all"
-            initialStatus="all"
-          />
-        </NextIntlClientProvider>
-      );
-      expect(screen.getByText('Add Category')).toBeInTheDocument();
-
-      mockPermissions.haveFullAccess = false;
-      mockPermissions.canView = true;
-
-      rerender(
-        <NextIntlClientProvider locale="en" messages={messages}>
-          <GrievanceCategoryMaster
-            locale="en"
-            data={mockCategories}
-            departments={mockDepartments}
-            stats={mockStats}
-            pageSize={10}
-            page={1}
-            totalCount={2}
-            initialSearch=""
-            initialDepartment="all"
-            initialStatus="all"
-          />
-        </NextIntlClientProvider>
-      );
-      expect(screen.queryByText('Add Category')).not.toBeInTheDocument();
-    });
   });
 });

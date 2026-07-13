@@ -21,7 +21,9 @@
   },
   "options": {
     "monthly": "Monthly",
-    "yearly": "Yearly"
+    "yearly": "Yearly",
+    "sqMeter": "Sq.Mtr",
+    "sqFeet": "Sq.Ft"
   },
   "buttons": {
     "generateRate": "Generate Rate",
@@ -71,6 +73,7 @@
     "ratesDeleteFailed": "Failed to delete rates.",
     "fetchRatesForDeleteFailed": "Failed to fetch rates for delete. Please try again.",
     "noRatesToDelete": "No rates found to delete.",
+    "noRatesToUpdate": "No rate values configured to update. Please update rate values first.",
     "downloadingRates": "Downloading rates...",
     "ratesDownloaded": "Rates downloaded successfully!",
     "downloadFailed": "Failed to download rates. Please try again.",
@@ -94,7 +97,9 @@
     "noRatesAvailable": "No rates available",
     "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates.",
     "rateExceedsMaximum": "Rate value cannot exceed {max}. Please enter a valid rate.",
-    "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value."
+    "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value.",
+    "cannotChangeConfiguredValue": "Cannot change configured value. Please update in Policy Configuration.",
+    "rateFrequencyMismatch": "Rate Frequency Mismatch for policy RateMonthlyOrYearly.:-The policy is configured as {configured}, but the current rates are entered as {existing}. Please update the policy configuration or delete the existing rates before configuring new rates."
   },
   "sections": {
     "copyRatesTitle": "Copy Rates",
@@ -112,7 +117,9 @@
     "selectSourceRateSection": "Select Source Rate Section",
     "quickImport": "Quick Import:",
     "rateFrequency": "Rate Frequency:",
-    "rateEntryMatrix": "Rate Entry Matrix"
+    "rateUnit": "Rate Unit:",
+    "rateEntryMatrix": "Rate Entry Matrix",
+    "previewRates": "Preview Rates:"
   },
   "placeholders": {
     "selectUseGroup": "Select use group...",

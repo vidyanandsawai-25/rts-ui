@@ -70,45 +70,54 @@ export function getCleanErrorMessage(
 ): string {
   if (!err) return defaultMessage;
 
+  const tryParseJsonString = (str: string): string | null => {
+    const trimmed = str.trim();
+    const firstBrace = trimmed.indexOf('{');
+    const lastBrace = trimmed.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      const jsonStr = trimmed.substring(firstBrace, lastBrace + 1);
+      try {
+        const parsed = JSON.parse(jsonStr) as Record<string, unknown>;
+        if (parsed.message && typeof parsed.message === 'string') {
+          return parsed.message;
+        }
+        if (parsed.error && typeof parsed.error === 'string') {
+          return parsed.error;
+        }
+        if (parsed.errors && typeof parsed.errors === 'object') {
+          const firstError = Object.values(parsed.errors)[0];
+          if (typeof firstError === 'string') return firstError;
+          if (Array.isArray(firstError) && typeof firstError[0] === 'string') {
+            return firstError[0];
+          }
+        }
+      } catch {}
+    }
+    return null;
+  };
+
   if (err && typeof err === 'object') {
     const errorObj = err as Record<string, unknown>;
 
-    // Try extracting responseText/error from ApiError
-    let rawText = (errorObj.responseText || errorObj.error || errorObj.message) as
+    // Try extracting responseText/error/message from ApiError or standard objects
+    const rawText = (errorObj.responseText || errorObj.error || errorObj.message) as
       | string
       | undefined;
 
     if (rawText && typeof rawText === 'string') {
-      rawText = rawText.trim();
-      if (rawText.startsWith('{') && rawText.endsWith('}')) {
-        try {
-          const parsed = JSON.parse(rawText) as Record<string, unknown>;
-          if (parsed.message && typeof parsed.message === 'string') {
-            return parsed.message;
-          }
-          if (parsed.error && typeof parsed.error === 'string') {
-            return parsed.error;
-          }
-          if (parsed.errors && typeof parsed.errors === 'object') {
-            const firstError = Object.values(parsed.errors)[0];
-            if (typeof firstError === 'string') return firstError;
-            if (Array.isArray(firstError) && typeof firstError[0] === 'string')
-              return firstError[0];
-          }
-        } catch {}
-      }
+      const jsonParsed = tryParseJsonString(rawText);
+      if (jsonParsed) return jsonParsed;
     }
 
     if (errorObj.message && typeof errorObj.message === 'string') {
+      const jsonParsed = tryParseJsonString(errorObj.message);
+      if (jsonParsed) return jsonParsed;
+
       const match = errorObj.message.match(/^[^:]+:\s*(.+?)\s*\(\d+\)$/);
       if (match && match[1]) {
         const inner = match[1];
-        if (inner.startsWith('{') && inner.endsWith('}')) {
-          try {
-            const parsed = JSON.parse(inner) as Record<string, unknown>;
-            if (parsed.message && typeof parsed.message === 'string') return parsed.message;
-          } catch {}
-        }
+        const innerJson = tryParseJsonString(inner);
+        if (innerJson) return innerJson;
         return inner;
       }
       return errorObj.message;
@@ -116,16 +125,14 @@ export function getCleanErrorMessage(
   }
 
   if (err instanceof Error) {
+    const jsonParsed = tryParseJsonString(err.message);
+    if (jsonParsed) return jsonParsed;
     return err.message;
   }
 
   const strErr = String(err);
-  if (strErr.startsWith('{') && strErr.endsWith('}')) {
-    try {
-      const parsed = JSON.parse(strErr) as Record<string, unknown>;
-      if (parsed.message && typeof parsed.message === 'string') return parsed.message;
-    } catch {}
-  }
+  const jsonParsed = tryParseJsonString(strErr);
+  if (jsonParsed) return jsonParsed;
 
   return strErr;
 }

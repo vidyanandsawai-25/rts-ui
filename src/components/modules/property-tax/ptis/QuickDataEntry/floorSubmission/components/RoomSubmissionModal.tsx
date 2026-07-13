@@ -3,13 +3,29 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Layers } from 'lucide-react';
-import { Button, MasterTable, type Column, Tooltip, Drawer } from '@/components/common';
+import { MasterTable, type Column, Tooltip, Drawer } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import type { FloorData, RoomSubmissionSidebarProps } from '@/types/floor-details.types';
 import RoomWiseSubmission from '../RoomSubmission/RoomWiseSubmission';
 import { convertSqFtToSqM, convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
+import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
 
 export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps) {
+    const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+    let lastFilledRoomIndex = -1;
+    if (Array.isArray(props.existingRooms)) {
+        for (let i = props.existingRooms.length - 1; i >= 0; i--) {
+            const r = props.existingRooms[i];
+            const hasArea = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0) > 0;
+            const hasUseOrShape = (r.utilities && r.utilities !== "-Select-") || (r.shape && r.shape !== "-Select-");
+            if (hasArea || hasUseOrShape) {
+                lastFilledRoomIndex = i;
+                break;
+            }
+        }
+    }
+    const requiredRoomsCount = lastFilledRoomIndex !== -1 ? lastFilledRoomIndex + 1 : 0;
+    const maxRoomsCount = isUtilityCategory ? (props.existingRooms?.length || 0) : Math.max(props.maxRooms || 0, requiredRoomsCount);
     const [areaUnit, setAreaUnit] = useState<"sq.m" | "sq.ft">("sq.m");
 
     const handleToggleUnit = () => {
@@ -163,10 +179,11 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                     {t('roomSubmission.table.property')}: <strong className="text-white">{props.propertyNo}</strong> •
                     {t('roomSubmission.table.partition')}: <strong className="text-white">{props.partitionNo}</strong> •
                     {t('roomSubmission.table.floor')}: <strong className="text-white">{props.floorNumber}</strong> •
-                    {t('roomSubmission.table.rooms')}: <strong className="text-white">{props.maxRooms}</strong>                </p>
+                    {t('roomSubmission.table.rooms')}: <strong className="text-white">{maxRoomsCount}</strong>                </p>
             </div>
 
-            {/* Unit Toggle Pill */}
+            {/* Unit Toggle Pill - Hidden on UI */}
+            {/*
             <div className="flex items-center bg-blue-50/50 rounded-full p-0.5 border border-blue-100 shadow-inner ml-2">
                 <Button
                     type="button"
@@ -194,6 +211,7 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                     {t('roomSubmission.input.buttons.sqft')}
                 </Button>
             </div>
+            */}
         </div>
     );
 

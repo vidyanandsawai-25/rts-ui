@@ -19,6 +19,8 @@ export default function AddRateDrawer({
   showCopyRateSection,
   paginatedZonesData,
   initialExistingRatesCheck,
+  rateFrequencyPolicy,
+  rateUnitPolicy,
 }: AddRateDrawerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,6 +82,8 @@ export default function AddRateDrawer({
         onClose={handleClose}
         paginatedZonesData={paginatedZonesData}
         initialExistingRatesCheck={initialExistingRatesCheck}
+        rateFrequencyPolicy={rateFrequencyPolicy}
+        rateUnitPolicy={rateUnitPolicy}
       />
     </Drawer>
   );

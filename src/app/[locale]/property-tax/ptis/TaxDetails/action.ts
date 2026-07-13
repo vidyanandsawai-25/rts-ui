@@ -1,7 +1,7 @@
 'use server';
 
 import { getPtisMainTaxDetailsByPropertyId, getPtisMainTaxDetailsCvByPropertyId } from '@/lib/api/ptis/ptisMain-taxdetails/taxDetails.service';
-import { MAX_PROPERTY_ID } from '@/lib/utils/kyc-validation.constants';
+import { MAX_PROPERTY_ID } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { validatePropertyId } from '@/lib/utils/ptis-normalization';
 import { handleServerError } from '@/lib/utils/server-action-error-handler';
 import type { ActionResult } from '@/types/common.types';
@@ -36,7 +36,7 @@ function validatePropertyIdInput(
 
   // Validate and normalize using existing utility
   const propertyIdNum = validatePropertyId(propertyId);
-  
+
   if (!propertyIdNum) {
     return {
       valid: false,
@@ -77,7 +77,7 @@ export async function getRateableTaxDetails(
   try {
     // Validate input
     const validation = validatePropertyIdInput(propertyId, 'rateable tax details');
-    
+
     if (!validation.valid) {
       return { success: false, error: validation.error };
     }
@@ -114,14 +114,14 @@ export async function getCapitalTaxDetails(
   try {
     // Validate input
     const validation = validatePropertyIdInput(propertyId, 'capital tax details');
-    
+
     if (!validation.valid) {
       return { success: false, error: validation.error };
     }
 
     // Fetch data with validated ID
     const result = await getPtisMainTaxDetailsCvByPropertyId(validation.id);
-    
+
     return { success: true, data: result };
   } catch (error: unknown) {
     return handleServerError<TaxDetailsData>(error, 'fetching capital tax details');

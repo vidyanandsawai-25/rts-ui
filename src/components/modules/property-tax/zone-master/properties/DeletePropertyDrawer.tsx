@@ -7,11 +7,16 @@ import { CancelButton } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { PropertyInfoSection, PropertySelectionSection } from "./components";
 import { PropertyAmenitySection } from "./components/PropertyAmenitySection";
+import { DirectPropertyDeleteSection } from "./components/DirectPropertyDeleteSection";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 import { SelectedPropertyHeaderInfo } from "./components/PropertySelectionSection";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
+import { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
+
+const isNonZeroPartition = (p: string | null | undefined) =>
+  !!p && p !== "" && p !== "0";
 
 interface DeletePropertyDrawerProps {
   isOpen: boolean;
@@ -46,7 +51,7 @@ export default function DeletePropertyDrawer({
 
   const ward = selectedWard ?? null;
 
-  const { buildingList, loadingBuildingList } = useBuildingList({
+  const { buildingList, loadingBuildingList, refetchBuildingList } = useBuildingList({
     wardId: effectiveWardId,
   });
 
@@ -62,16 +67,18 @@ export default function DeletePropertyDrawer({
     [buildingList, ssrProperties, selectedPropertyId]
   );
 
-  const isApartmentCategory = useMemo(() => {
-    const cat = selectedProperty?.catPropertyCategoryName;
-    return cat === "Apartment" || cat === "Multi Commercial Apartment";
-  }, [selectedProperty]);
+  const categoryName = useMemo(() => {
+    if (!selectedProperty) return null;
+    if ("catPropertyCategoryName" in selectedProperty) {
+      return selectedProperty.catPropertyCategoryName ?? null;
+    }
+    if ("categoryId" in selectedProperty && selectedProperty.categoryId) {
+      return categoryMap[selectedProperty.categoryId] ?? null;
+    }
+    return null;
+  }, [selectedProperty, categoryMap]);
 
-  const categoryName = useMemo(
-    () => selectedProperty?.catPropertyCategoryName ?? null,
-    [selectedProperty]
-  );
-
+  // Dropdown: only show main properties (partitionNo null / "" / "0")
   const propertyOptions = useMemo(() => {
     if (buildingList.length > 0) {
       return buildingList
@@ -93,6 +100,46 @@ export default function DeletePropertyDrawer({
         };
       });
   }, [buildingList, ssrProperties, categoryMap]);
+
+  // Sub-properties: same propertyNo as the selected main, with a non-zero partitionNo.
+  // Checks buildingList first; falls back to ssrProperties (which includes all ward properties).
+  const subPropertyRows = useMemo<DirectPropertyDeleteRow[]>(() => {
+    if (!selectedProperty) return [];
+    const matchingPropertyNo = selectedProperty.propertyNo;
+
+    const fromBuildingList = buildingList
+      .filter(
+        (item) =>
+          item.propertyNo === matchingPropertyNo &&
+          isNonZeroPartition(item.partitionNo)
+      )
+      .map((item) => ({
+        propertyId: String(item.propertyId),
+        wardNo: item.wardNo || "-",
+        propertyNo: item.propertyNo || "-",
+        partitionNo: item.partitionNo || "-",
+        categoryName: item.catPropertyCategoryName || "-",
+      }));
+
+    if (fromBuildingList.length > 0) return fromBuildingList;
+
+    return ssrProperties
+      .filter(
+        (item) =>
+          item.propertyNo === matchingPropertyNo &&
+          isNonZeroPartition(item.partitionNo)
+      )
+      .map((item) => {
+        const catName = item.categoryId ? categoryMap[item.categoryId] : null;
+        return {
+          propertyId: String(item.id),
+          wardNo: ward?.wardNo || "-",
+          propertyNo: item.propertyNo || "-",
+          partitionNo: item.partitionNo || "-",
+          categoryName: catName || "-",
+        };
+      });
+  }, [buildingList, ssrProperties, selectedProperty, categoryMap, ward]);
 
   const handleClose = () => {
     setSelectedPropertyId("");
@@ -122,7 +169,7 @@ export default function DeletePropertyDrawer({
         <PropertyInfoSection
           selectedWard={ward}
           selectedProperty={selectedProperty as unknown as ZonePropertyItem}
-          isApartmentCategory={isApartmentCategory}
+          isApartmentCategory={false}
           categoryName={categoryName}
           t={tZone}
         />
@@ -133,7 +180,7 @@ export default function DeletePropertyDrawer({
           propertyOptions={propertyOptions}
           onPropertyChange={(_e, value) => setSelectedPropertyId(value)}
           t={tZone}
-          isApartmentCategory={isApartmentCategory}
+          isApartmentCategory={false}
           label={tZone("partitionForm.mainPropertyNo")}
           placeholder={
             loadingBuildingList && propertyOptions.length === 0
@@ -148,10 +195,29 @@ export default function DeletePropertyDrawer({
         />
 
         {/* Wing selection → toggle → table → delete */}
-        {selectedPropertyId && (
-          <PropertyAmenitySection propertyId={selectedPropertyId} />
+        {selectedPropertyId && selectedProperty && (
+          <PropertyAmenitySection
+            propertyId={selectedPropertyId}
+            directDeleteFallback={
+              <DirectPropertyDeleteSection
+                propertyId={selectedPropertyId}
+                wardNo={
+                  "wardNo" in selectedProperty
+                    ? selectedProperty.wardNo
+                    : ward?.wardNo
+                }
+                propertyNo={selectedProperty.propertyNo}
+                partitionNo={selectedProperty.partitionNo}
+                categoryName={categoryName}
+                subRows={subPropertyRows}
+                onSubRowDeleted={refetchBuildingList}
+                onDeleted={() => setSelectedPropertyId("")}
+                t={tZone}
+              />
+            }
+          />
         )}
       </div>
     </Drawer>
   );
-}  
+}

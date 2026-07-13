@@ -9,6 +9,11 @@ import type { UseType } from "@/types/typeOfUse.types";
 // Mock hooks
 vi.mock("@/hooks/usePropertyTypeForm");
 
+// Mock next-intl
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 // Mock Actions
 vi.mock("@/app/[locale]/property-tax/propertytype/action", () => ({
   updatePropertyTypeValidationsAction: vi.fn(),

@@ -60,7 +60,7 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         isGeneratingAll,
         hasNewRecords,
         newRecordsCount,
-        canGenerateAll,
+
         getRowUid,
         removeToast,
         handleCellChange,
@@ -173,7 +173,7 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
                         factorValue={factorValue}
                         hasNewRecords={hasNewRecords}
                         newRecordsCount={newRecordsCount}
-                        canGenerateAll={canGenerateAll}
+
                         isGeneratingAll={isGeneratingAll}
                         isBulkUpdating={isBulkUpdating}
                         isUpdating={isUpdating}

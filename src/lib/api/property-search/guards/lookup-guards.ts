@@ -2,7 +2,7 @@
  * Lookup options type guards and normalization.
  */
 
-import type { LookupOptionsApiResponse } from "@/types/property-search-api.types";
+import type { LookupOptionsApiResponse } from "@/types/property-search";
 
 const EMPTY: LookupOptionsApiResponse = {
   propertyNos: [],

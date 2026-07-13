@@ -9,15 +9,27 @@ export interface FlatSocialAttributeState {
     parentAttributeId: number | null | undefined;
     isRequiredWhenParentTrue: boolean;
     bitValue: boolean | null;
-    intValue: number | null;
-    decimalValue: number | null;
+    intValue: number | string | null;
+    decimalValue: number | string | null;
     textValue: string | null;
     dateValue: string | null;
     documentBindingId: number | null;
     uploadedGuid?: string;
     remark: string | null;
     isUploading: boolean;
+    isDeleting?: boolean;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
+    documentGuid?: string | null;
+    documentUrl?: string | null;
+    photoBindingId?: number | null;
+    photoGuid?: string | null;
+    pendingFile?: File;
 }
+
+const normalizePositiveId = (value: number | null | undefined): number | null => {
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
+};
 
 /**
  * Flattens the nested social attributes tree into a flat map keyed by socialAttributeId.
@@ -26,22 +38,22 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
     const map: Record<number, FlatSocialAttributeState> = {};
     const traverse = (attrs: SocialAttributeHierarchyDto[], parentId?: number | null) => {
         for (const attr of attrs) {
-            const isSpecialToggle = 
-                attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-                attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
-                attr.socialAttributeCode.toUpperCase().includes("TREE");
-
+            const isBitType = attr.dataType.toUpperCase() === "BIT";
             let initialBitValue = attr.bitValue ?? null;
-            if (isSpecialToggle) {
+
+            if (isBitType) {
+                initialBitValue = attr.bitValue ?? false;
+            } else {
                 const hasValue = 
                     (attr.intValue !== null && attr.intValue !== undefined) || 
                     (attr.decimalValue !== null && attr.decimalValue !== undefined) || 
-                    (attr.propertySocialDetailId !== null && attr.propertySocialDetailId !== undefined);
+                    (attr.textValue !== null && attr.textValue !== undefined && String(attr.textValue).trim() !== "") || 
+                    (attr.bitValue === true);
                 initialBitValue = hasValue;
             }
 
             map[attr.id] = {
-                id: attr.propertySocialDetailId || null,
+                id: attr.propertySocialDetailId ?? null,
                 socialAttributeId: attr.id,
                 socialAttributeCode: attr.socialAttributeCode,
                 socialAttributeName: attr.socialAttributeName,
@@ -53,9 +65,15 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 decimalValue: attr.decimalValue ?? null,
                 textValue: attr.textValue ?? null,
                 dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
-                documentBindingId: attr.documentBindingId ?? null,
+                documentBindingId: normalizePositiveId(attr.documentBindingId ?? attr.photoBindingId),
                 remark: attr.remark ?? null,
-                isUploading: false
+                isUploading: false,
+                isPhotoRequired: attr.isPhotoRequired,
+                isDocumentRequired: attr.isDocumentRequired,
+                documentGuid: attr.documentGuid ?? attr.photoGuid ?? null,
+                documentUrl: (attr.documentGuid ?? attr.photoGuid) ? `/api/documents/${encodeURIComponent(attr.documentGuid ?? attr.photoGuid ?? "")}/view` : null,
+                photoBindingId: normalizePositiveId(attr.photoBindingId),
+                photoGuid: attr.photoGuid ?? null
             };
             if (attr.children && attr.children.length > 0) {
                 traverse(attr.children, attr.id);
@@ -73,19 +91,25 @@ export function isAttributeEnabled(
     attr: FlatSocialAttributeState,
     currentData: Record<number, FlatSocialAttributeState>
 ): boolean {
+    const code = (attr.socialAttributeCode || "").toUpperCase();
     const isSpecialToggle = 
-        attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-        attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
-        attr.socialAttributeCode.toUpperCase().includes("TREE");
+        code === "ROAD_WIDTH" || 
+        code.includes("WATER_CONN") || 
+        code.includes("TREE");
 
     if (isSpecialToggle && attr.bitValue === false) {
         return false;
     }
 
-    if (!attr.parentAttributeId) return true;
+    if (!attr.parentAttributeId) {
+        if (attr.dataType.toUpperCase() === "BIT") {
+            return attr.bitValue === true;
+        }
+        return true;
+    }
     const parent = currentData[attr.parentAttributeId];
     if (!parent) return false;
-    return !!parent.bitValue && isAttributeEnabled(parent, currentData);
+    return parent.bitValue === true && isAttributeEnabled(parent, currentData);
 }
 
 /**
@@ -107,7 +131,7 @@ export function getLocalizedName(
     name: string | undefined | null,
     t?: {
         (key: string, values?: Record<string, string | number | Date>): string;
-        has: (key: string) => boolean;
+        has?: (key: string) => boolean;
     }
 ): string {
     const rawName = name || code || "";
@@ -115,8 +139,19 @@ export function getLocalizedName(
 
     const tryTranslate = (key: string): string | null => {
         const fullKey = `discount.socialAttributes.${key}`;
-        if (typeof t.has === "function" && t.has(fullKey)) {
-            return t(fullKey);
+        if (typeof t.has === "function") {
+            if (t.has(fullKey)) {
+                return t(fullKey);
+            }
+        } else {
+            try {
+                const val = t(fullKey);
+                if (val && !val.includes("discount.socialAttributes")) {
+                    return val;
+                }
+            } catch {
+                // Ignore missing translation errors
+            }
         }
         return null;
     };
@@ -145,3 +180,4 @@ export function getLocalizedName(
 
     return rawName;
 }
+

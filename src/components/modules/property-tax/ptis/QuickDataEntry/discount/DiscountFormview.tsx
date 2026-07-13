@@ -2,16 +2,15 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Tabs, SaveButton } from "@/components/common";
+import { Tabs } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { useDiscountForm } from "@/hooks/useDiscountForm";
-import { DiscountSidebar } from "./DiscountSidebar";
-import { DiscountDetailPane } from "./DiscountDetailPane";
-import { ValidationErrorBanner } from "./ValidationErrorBanner";
+import { DiscountPane } from "./DiscountPane";
 import { SocialDetailsForm } from "./SocialDetailsForm";
 import { PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { getFilteredDiscounts } from "@/lib/utils/discount-helpers";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 
 interface DiscountFormProps {
     initialDiscountData: PropertyDiscountInfoResponseDto | null;
@@ -28,14 +27,41 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { confirm } = useConfirm();
 
-    const activeTab = searchParams.get("view") || "social";
+    const activeTab = searchParams.get("view") || "discount";
 
     const handleTabChange = useCallback((value: string | number) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("view", String(value));
-        router.push(`${pathname}?${params.toString()}`);
-    }, [searchParams, router, pathname]);
+        const win = typeof window !== 'undefined' ? (window as unknown as { __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
+        const hasChanges = activeTab === "discount" ? !!win.__discountFormHasChanges : !!win.__socialFormHasChanges;
+
+        if (hasChanges) {
+            confirm({
+                variant: 'warning',
+                title: t('discount.unsavedChangesTitle') || 'Unsaved Changes',
+                description: t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?',
+                confirmText: t('discount.continueButton') || 'Continue Editing',
+                cancelText: t('discount.discardConfirmButton') || 'Discard Changes',
+                onConfirm: () => {
+                    // Do nothing, stays on the current tab
+                },
+                onCancel: () => {
+                    const localWin = typeof window !== 'undefined' ? (window as unknown as { __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : null;
+                    if (localWin) {
+                        localWin.__discountFormHasChanges = false;
+                        localWin.__socialFormHasChanges = false;
+                    }
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set("view", String(value));
+                    router.push(`${pathname}?${params.toString()}`);
+                }
+            });
+        } else {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("view", String(value));
+            router.push(`${pathname}?${params.toString()}`);
+        }
+    }, [searchParams, router, pathname, activeTab, confirm, t]);
 
     const {
         discountData,
@@ -46,6 +72,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         handleToggleEnabled,
         handleInputChange,
         handleFileUpload,
+        handleFileDelete,
         handleSave
     } = useDiscountForm(initialDiscountData, propertyId);
 
@@ -86,7 +113,10 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         const result = await handleSave();
         if (result && !result.isValid && result.incompleteDiscounts) {
             const activeIncomplete = result.incompleteDiscounts.filter(
-                (d) => discountData[d.id]?.enabled
+                (d) => {
+                    const item = discountData[d.id];
+                    return item ? (item.dataType.toUpperCase() === "BIT" ? item.bitValue === true : item.enabled) : false;
+                }
             );
             if (activeIncomplete.length > 0) {
                 const firstInvalidId = activeIncomplete[0].id;
@@ -104,93 +134,50 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     return (
         <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="sm" className="w-full p-4">
             <Tabs.TabList className="mb-4 bg-slate-100 p-1.5 rounded-xl max-w-md border border-slate-200">
-                <Tabs.Tab value="social" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
-                    {t("discount.socialTitle")}
-                </Tabs.Tab>
                 <Tabs.Tab value="discount" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
                     {t("discount.title")}
                 </Tabs.Tab>
+                <Tabs.Tab value="social" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
+                    {t("discount.socialTitle")}
+                </Tabs.Tab>
             </Tabs.TabList>
-
-            {/* Social Information Tab */}
-            <Tabs.TabPanel value="social" className="mt-0">
-                <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5">
-                    <h3 className="text-sm font-bold text-black mb-1">
-                        {t("discount.socialTitle")}
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-4">
-                        {t("discount.socialDescription")}
-                    </p>
-                    <SocialDetailsForm
-                        key={initialSocialData ? JSON.stringify(initialSocialData) : "empty"}
-                        initialSocialData={initialSocialData}
-                        propertyId={propertyId}
-                    />
-                </div>
-            </Tabs.TabPanel>
 
             {/* Discount Information Tab */}
             <Tabs.TabPanel value="discount" className="mt-0">
+                <DiscountPane
+                    discountData={discountData}
+                    incompleteDiscounts={incompleteDiscounts}
+                    handleErrorTagClick={handleErrorTagClick}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    showActiveFirst={showActiveFirst}
+                    setShowActiveFirst={setShowActiveFirst}
+                    filteredDiscounts={filteredDiscounts}
+                    activeSelectedId={activeSelectedId}
+                    setSelectedId={setSelectedId}
+                    handleToggleEnabled={handleToggleEnabled}
+                    validationErrors={validationErrors}
+                    selectedDiscount={selectedDiscount}
+                    handleInputChange={handleInputChange}
+                    handleFileUpload={handleFileUpload}
+                    handleFileDelete={handleFileDelete}
+                    handleSaveClick={handleSaveClick}
+                    hasChanges={hasChanges}
+                    isSaving={isSaving}
+                    t={t}
+                />
+            </Tabs.TabPanel>
+
+            {/* Social Information Tab */}
+            <Tabs.TabPanel value="social" className="mt-0">
                 <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-2 md:p-3">
                     <h3 className="text-base font-bold text-blue-800 mb-3 pb-1.5 border-b border-blue-200">
-                        {t("discount.title")}
+                        {t("discount.socialTitle")}
                     </h3>
-
-                    {/* Validation Error Banner */}
-                    {incompleteDiscounts.filter(d => discountData[d.id]?.enabled).length > 0 && (
-                        <ValidationErrorBanner
-                            incompleteDiscounts={incompleteDiscounts.filter(d => discountData[d.id]?.enabled)}
-                            onTagClick={handleErrorTagClick}
-                            t={t}
-                        />
-                    )}
-
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
-                        {/* Left Sidebar */}
-                        <div className="lg:col-span-5 xl:col-span-4">
-                            <DiscountSidebar
-                                searchTerm={searchTerm}
-                                onSearchChange={setSearchTerm}
-                                showActiveFirst={showActiveFirst}
-                                onShowActiveChange={setShowActiveFirst}
-                                discounts={filteredDiscounts}
-                                selectedId={activeSelectedId}
-                                onSelect={setSelectedId}
-                                onToggleEnabled={handleToggleEnabled}
-                                validationErrors={validationErrors}
-                                t={t}
-                            />
-                        </div>
-
-                        {/* Right Detail Pane */}
-                        <div className="lg:col-span-7 xl:col-span-8">
-                            <DiscountDetailPane
-                                data={selectedDiscount}
-                                onInputChange={(field, value) => {
-                                    if (activeSelectedId !== null) {
-                                        handleInputChange(activeSelectedId, field, value);
-                                    }
-                                }}
-                                onFileUpload={(file) => {
-                                    if (activeSelectedId !== null) {
-                                        handleFileUpload(activeSelectedId, file);
-                                    }
-                                }}
-                                validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}
-                                t={t}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Save Button Section */}
-                    <div className="flex justify-end mt-3 pt-2 border-t border-blue-100">
-                        <SaveButton
-                            onClick={handleSaveClick}
-                            disabled={!hasChanges || isSaving}
-                            isLoading={isSaving}
-                            label={t("common.saveChanges") || "Save Changes"}
-                        />
-                    </div>
+                    <SocialDetailsForm
+                        initialSocialData={initialSocialData}
+                        propertyId={propertyId}
+                    />
                 </div>
             </Tabs.TabPanel>
         </Tabs>

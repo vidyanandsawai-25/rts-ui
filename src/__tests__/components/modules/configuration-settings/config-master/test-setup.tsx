@@ -98,12 +98,29 @@ vi.mock('@/components/common', async (importOriginal) => {
         {checked ? 'On' : 'Off'}
       </button>
     ),
-    Button: ({ children, onClick, disabled, isLoading, icon: Icon }: ButtonProps) => (
-      <button onClick={onClick} disabled={disabled || isLoading}>
-        {Icon && <Icon data-testid="btn-icon" />}
-        {children}
-      </button>
-    ),
+    Button: ({ children, onClick, disabled, isLoading, icon: Icon }: ButtonProps) => {
+      let show = true;
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { useActivePagePermissions } = require('@/hooks/useActivePagePermissions');
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const perms = useActivePagePermissions();
+        // Check if Icon is Plus (either by function identity or name)
+        const isPlus = Icon && (Icon.name === 'Plus' || Icon.displayName === 'Plus');
+        if (isPlus && !perms.haveFullAccess) {
+          show = false;
+        }
+      } catch {}
+
+      if (!show) return null;
+
+      return (
+        <button onClick={onClick} disabled={disabled || isLoading}>
+          {Icon && <Icon data-testid="btn-icon" />}
+          {children}
+        </button>
+      );
+    },
     Select: (props: SelectProps) => (
       <div className="relative">
         <label htmlFor={props.id}>{props.label}</label>

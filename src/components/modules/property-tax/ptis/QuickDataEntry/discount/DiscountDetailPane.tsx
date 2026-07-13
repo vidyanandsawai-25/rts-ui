@@ -2,25 +2,65 @@
 
 import React from "react";
 import { AlertCircle } from "lucide-react";
-import { Input, ValidationMessage, Label, TextArea } from "@/components/common";
+import { Label, TextArea } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { DiscountValueInput } from "./DiscountValueInput";
+import { getLocalizedName } from "@/lib/utils/social-details";
+
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
     onInputChange: (field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => void;
     onFileUpload: (file: File) => void;
+    onFileDelete: () => void;
     validationError?: string;
-    t: (key: string, values?: Record<string, string | number>) => string;
+    t: {
+        (key: string, values?: Record<string, string | number>): string;
+        has?: (key: string) => boolean;
+    };
 }
 
 export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     data,
     onInputChange,
     onFileUpload,
+    onFileDelete,
     validationError,
     t,
 }) => {
+    const { confirm } = useConfirm();
+    const isActiveDiscount = (item: DiscountAttributeState) =>
+        item.dataType.toUpperCase() === "BIT" ? item.bitValue === true : item.enabled;
+
+    const handleFileUploadWithConfirm = (file: File) => {
+        if (data && (data.documentGuid || data.documentBindingId)) {
+            confirm({
+                title: t("discount.confirmReplaceTitle") || "Replace Document",
+                description: t("discount.confirmReplaceDesc") || "Are you sure you want to replace the existing document with a new one?",
+                confirmText: t("discount.confirmReplaceOk") || "Yes, Replace",
+                cancelText: t("discount.confirmReplaceCancel") || "No, Cancel",
+                variant: "warning",
+                onConfirm: () => {
+                    onFileUpload(file);
+                }
+            });
+        } else {
+            onFileUpload(file);
+        }
+    };
+
+    const handleFileDeleteWithConfirm = () => {
+        confirm({
+            title: t("discount.confirmDeleteTitle") || "Delete Document",
+            description: t("discount.confirmDeleteDesc") || "Are you sure you want to delete the attached document? This action cannot be undone.",
+            confirmText: t("discount.confirmDeleteOk") || "Yes, Delete",
+            cancelText: t("discount.confirmDeleteCancel") || "No, Cancel",
+            variant: "delete",
+            onConfirm: onFileDelete
+        });
+    };
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
@@ -32,27 +72,21 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         );
     }
 
-    const translated = t(`discount.socialAttributes.${data.socialAttributeCode}`);
-    const displayName = translated && !translated.includes("discount.socialAttributes")
-        ? translated
-        : data.socialAttributeName;
-
+    const displayName = getLocalizedName(data.socialAttributeCode, data.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
     const tWithHas = t as unknown as { has?: (key: string) => boolean };
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
     const hasRemarkPlaceholder = typeof tWithHas.has === "function" && tWithHas.has("discount.remarkPlaceholder");
 
+    const hasAnyData = !!(
+        data.intValue !== null && data.intValue !== undefined ||
+        data.decimalValue !== null && data.decimalValue !== undefined ||
+        data.textValue?.trim() || data.dateValue?.trim() ||
+        data.documentGuid?.trim() || data.documentBindingId || data.remark?.trim()
+    );
 
-    const hasAnyData = (data.intValue !== null && data.intValue !== undefined) ||
-        (data.decimalValue !== null && data.decimalValue !== undefined) ||
-        (data.textValue && data.textValue.trim() !== "") ||
-        (data.dateValue && data.dateValue.trim() !== "") ||
-        (data.documentGuid && data.documentGuid.trim() !== "") ||
-        (!!data.documentBindingId) ||
-        (data.remark && data.remark.trim() !== "");
-
-    if (!data.enabled && !hasAnyData) {
+    if (!isActiveDiscount(data) && !hasAnyData) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-blue-500 mb-3" />
                 <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
                 <p className="text-sm font-semibold text-gray-500 max-w-sm">
@@ -62,13 +96,11 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         );
     }
 
-    const isDisabled = !data.enabled;
+    const isDisabled = !isActiveDiscount(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
     const isDocumentInvalid = !!validationError && validationError === docRequiredMsg;
     const isValueInvalid = !!validationError && !isDocumentInvalid;
-
-    const dataTypeUpper = (data.dataType || "").toUpperCase();
-    const showValueInput = dataTypeUpper !== "BIT";
+    const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
         isDisabled
@@ -79,7 +111,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     }`;
 
     return (
-        <div className={`flex flex-col min-h-[500px] lg:h-[calc(100vh-220px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+        <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
         }`}>
             <div className="space-y-5 overflow-y-auto pr-1">
@@ -99,73 +131,38 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 </div>
 
                 {showValueInput && (
-                    <div className="space-y-1.5 w-full">
-                        <Label className="text-sm font-bold text-blue-800">
-                            {t("discount.amount") || "Value"}
-                            {data.unit ? ` (${t("discount.unitLabel", { unit: data.unit }) || `Unit: ${data.unit}`})` : ""}
-                            <span className="text-red-500 ml-0.5">*</span>
-                        </Label>
-                        
-                        {dataTypeUpper === "INT" && (
-                            <Input
-                                type="number"
-                                step="1"
-                                value={data.intValue !== null && data.intValue !== undefined ? String(data.intValue) : ""}
-                                onChange={(e) => onInputChange("intValue", e.target.value)}
-                                placeholder={t("discount.amountPlaceholder") || "Enter value"}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {dataTypeUpper === "DECIMAL" && (
-                            <Input
-                                type="number"
-                                step="any"
-                                value={data.decimalValue !== null && data.decimalValue !== undefined ? String(data.decimalValue) : ""}
-                                onChange={(e) => onInputChange("decimalValue", e.target.value)}
-                                placeholder={t("discount.amountPlaceholder") || "Enter value"}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {dataTypeUpper === "VARCHAR" && (
-                            <Input
-                                value={data.textValue || ""}
-                                onChange={(e) => onInputChange("textValue", e.target.value)}
-                                placeholder={t("discount.amountPlaceholder") || "Enter text"}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {dataTypeUpper === "DATE" && (
-                            <Input
-                                type="date"
-                                value={data.dateValue || ""}
-                                onChange={(e) => onInputChange("dateValue", e.target.value)}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {isValueInvalid && <ValidationMessage message={validationError} />}
-                    </div>
+                    <DiscountValueInput
+                        data={data}
+                        isDisabled={isDisabled}
+                        inputClassName={inputClassName}
+                        onInputChange={onInputChange}
+                        isValueInvalid={isValueInvalid}
+                        validationError={validationError}
+                        t={t}
+                    />
                 )}
 
                 <div className="space-y-1.5 w-full">
-                    <Label className="text-sm font-bold text-blue-800">{t("discount.uploadDocument") || "Document Attachment"}<span className="text-red-500 ml-0.5">*</span></Label>
+                    <Label className="text-sm font-bold text-blue-800">
+                        {t("discount.uploadDocument") || "Document Attachment"}
+                        {data.isDocumentRequired === true && <span className="text-red-500 ml-0.5">*</span>}
+                    </Label>
                     <DocumentAttachment
                         documentGuid={data.documentGuid || undefined}
+                        fileName={data.fileName || undefined}
                         documentUrl={data.documentUrl || undefined}
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
+                        isDeleting={data.isDeleting}
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
-                        onFileUpload={onFileUpload}
+                        onFileUpload={handleFileUploadWithConfirm}
+                        onFileDelete={handleFileDeleteWithConfirm}
                         t={t}
+                        label={displayName}
+                        pendingFile={data.pendingFile}
                     />
+
                 </div>
 
                 <div className="space-y-1.5 w-full">

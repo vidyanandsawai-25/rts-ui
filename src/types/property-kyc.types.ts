@@ -30,21 +30,27 @@ export interface KycDetails {
   /** @deprecated Use adharCardNo instead. Retained for backward compatibility. */
   aadharCardNo?: string | null;
   adharCardNo?: string | null;
+  alternateMobileNo?: string | null;
+  pinCode?: string | null;
 }
 
 
-// Form state type for better type safety
 export type KycFormData = Partial<
   Pick<
     KycDetails,
     | 'ownerTypeId'
     | 'ownerTitle'
     | 'ownerName'
+    | 'ownerNameEnglish'
     | 'occupierName'
+    | 'occupierNameEnglish'
     | 'flatOrShopName'
+    | 'flatOrShopNameEnglish'
     | 'emailId'
     | 'address'
+    | 'addressEnglish'
     | 'location'
+    | 'pinCode'
   >
 >;
 

@@ -1,6 +1,6 @@
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
-import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem, UpdateSocietyDetailPayload } from "@/types/zone-master/properties/societyDetails.types";
 import { SocietyAmenityDetailsResponse } from "@/types/zone-master/properties/society-amenity-details.types";
 
 /**
@@ -64,7 +64,7 @@ export async function createSocietyDetail(
  */
 export async function updateSocietyDetail(
   id: number,
-  payload: Partial<CreateSocietyDetailPayload>
+  payload: UpdateSocietyDetailPayload
 ): Promise<{ success: boolean; message: string; items: SocietyDetailItem | null }> {
   const response = await apiClient.put<{ success: boolean; message: string; items: SocietyDetailItem | null }>(
     `/SocietyDetails/${id}`,

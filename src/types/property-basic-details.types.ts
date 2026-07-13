@@ -1,5 +1,4 @@
 // PROPERTY API TYPES    
-import { PropertySocietyDetailsApiItem } from "./property-society-details.types";
  import type { ElementType, ReactNode } from "react";
 
 // Represents an owner type item from OwnerType API. Endpoint: GET /api/OwnerType
@@ -104,6 +103,9 @@ export interface PropertyBasicDetailsApiItem {
     plotAreaMtrWidth: number;
     wingId: number | null;
     wingName: string | null;
+    rateSectionDescription?: string | null;
+    latitude?: string | null;
+    longitude?: string | null;
 }
 
 export interface TypeOfUseApiItem {
@@ -117,6 +119,8 @@ export interface TypeOfUseApiItem {
     isActive: boolean;
     createdDate: string;
     updatedDate: string | null;
+    typeOfUseCategoryId?: number | null;
+    [key: string]: unknown;
 }
 
 // Represents the DTO for updating property basic details. Matches UpdatePropertyBasicDetailsDto in C#
@@ -148,6 +152,7 @@ export interface UpdatePropertyBasicDetailsDto {
     plotAreaFtWidth: number | null;
     plotAreaMtrLength: number | null;
     plotAreaMtrWidth: number | null;
+    rateSectionDescription?: string | null;
 }
 
 //  Response wrapper for Property Basic Details API.
@@ -211,7 +216,6 @@ export interface PropertyFormViewProps {
     propertyCategories: PropertyCategoryApiItem[];
     propertyDescriptions: PropertyTypeApiItem[];
     propertyData: PropertyBasicDetailsApiItem | null;
-    propertySocietyDetails: PropertySocietyDetailsApiItem | null;
     locale: string;
     taxZones: TaxZoneItem[];
 }

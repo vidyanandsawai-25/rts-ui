@@ -10,9 +10,10 @@ interface RoomTypeSelectProps {
     onChange: (value: string, roomTypeId?: number) => void;
     className?: string;
     disabled?: boolean;
+    autoFocus?: boolean;
 }
 
-export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled }) => {
+export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled, autoFocus }) => {
     const { roomTypes, roomTypeDetails, isLoading } = useRoomTypeMaster();
     const t = useTranslations("quickDataEntry");
 
@@ -58,15 +59,30 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
         onChange(newVal, roomTypeId);
     };
 
+    const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (autoFocus && !isLoading && !disabled && wrapperRef.current) {
+            // Wait slightly for DOM updates before focusing
+            const timer = setTimeout(() => {
+                const btn = wrapperRef.current?.querySelector('button');
+                if (btn) btn.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [autoFocus, isLoading, disabled]);
+
     return (
-        <Select
-            options={options}
-            value={value || "-Select-"}
-            onChange={handleChange}
-            disabled={disabled || isLoading}
-            placeholder={isLoading ? t("floor.loading") : t("roomSubmission.input.roomTypes.select")}
-            selectSize="md"
-            className={className}
-        />
+        <div ref={wrapperRef} className="w-full h-full">
+            <Select
+                options={options}
+                value={value || "-Select-"}
+                onChange={handleChange}
+                disabled={disabled || isLoading}
+                placeholder={isLoading ? t("floor.loading") : t("roomSubmission.input.roomTypes.select")}
+                selectSize="md"
+                className={className}
+            />
+        </div>
     );
 };

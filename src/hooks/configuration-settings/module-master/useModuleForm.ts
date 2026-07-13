@@ -25,7 +25,7 @@ import {
   checkModuleDuplicates,
 } from '@/lib/api/configuration-settings/module-master/module-master.validator';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
 import { useModuleFormState } from './useModuleFormState';
 import { useModuleFormHandlers } from './useModuleFormHandlers';
 
@@ -47,7 +47,7 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
   const tCommon = useTranslations('common');
   const { confirm } = useConfirm();
 
-  const { canEdit, haveFullAccess } = usePermissions('MODULE_MASTER');
+  const { canEdit, haveFullAccess } = useActivePagePermissions();
   const hasWriteAccess = canEdit || haveFullAccess;
 
   const moduleId = id || null;

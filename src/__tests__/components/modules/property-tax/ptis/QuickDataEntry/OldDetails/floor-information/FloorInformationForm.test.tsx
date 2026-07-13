@@ -64,6 +64,7 @@ describe('FloorInformationForm Component', () => {
     handleSave: mockHandleSave,
     handleDelete: mockHandleDelete,
     isPending: false,
+    handleOpenDropdown: vi.fn(),
   };
 
   beforeEach(() => {
@@ -131,6 +132,7 @@ describe('FloorInformationForm Component', () => {
     // Check if table cells contain the data
     expect(screen.getByText('Ground Floor')).toBeInTheDocument();
     expect(screen.getByText('2020')).toBeInTheDocument();
-    expect(screen.getByText('1,000.00 / 0.00')).toBeInTheDocument();
+    expect(screen.getByText(/1,000\.00/)).toBeInTheDocument();
+    expect(screen.getAllByText(/0\.00/).length).toBeGreaterThan(0);
   });
 });

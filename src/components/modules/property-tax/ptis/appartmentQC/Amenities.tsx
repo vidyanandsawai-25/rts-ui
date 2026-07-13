@@ -9,6 +9,7 @@ import { ApartmentQCDetail } from '@/types/apartmentQC.types';
 import { getApartmentQCColumns } from './apartmentQC.columns';
 import { transformApartmentData } from './apartmentQC.utils';
 import { useColumnFilters } from "@/hooks/apartmentQc/useColumnFilters";
+import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
 interface AmenitiesProps {
   initialData: ApartmentQCDetail[];
@@ -38,9 +39,11 @@ const Amenities = ({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const activeTab = searchParams.get('subTab') || 'rateable';
+  const sortBy = searchParams.get('sortBy') || '';
+  const sortOrder = searchParams.get('sortOrder') || '';
 
   // Column filters
-  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+  const { activeFilters, handleFilterChange, fetchFilterOptions, isFilterPending } = useColumnFilters({
     wardId,
     propertyNo,
   });
@@ -62,11 +65,30 @@ const Amenities = ({
   }, [pathname, router, searchParams]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
-    const rowId = String(row.id || row.propertyId || 'new');
-    router.push(`${pathname}/edit/${rowId}`);
-  }, [pathname, router]);
+    const basePath = pathname.split('/appartmentQC')[0] + '/appartmentQC';
+    const params = new URLSearchParams(searchParams.toString());
+    
+    const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
+    if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
+    
+    params.delete('parentPropertyId');
+    params.delete('parentPropertyNo');
+    
+    params.set('returnTab', 'propertydetails');
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', 'amenities');
+    params.set('subTab', activeTab);
+
+    router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
+  }, [pathname, router, searchParams, activeTab]);
+
+  const handleSort = useCallback((columnKey: string) => {
+    const nextSortOrder = sortBy === columnKey && sortOrder === 'asc' ? 'desc' : 'asc';
+    updateQueryParams({ sortBy: columnKey, sortOrder: nextSortOrder, pageNumber: 1 });
+  }, [sortBy, sortOrder, updateQueryParams]);
 
   const tAqc = useTranslations("appartmentQC");
+  
   const columns = useMemo(() => getApartmentQCColumns('amenities', activeTab, tAqc), [activeTab, tAqc]);
   const transformedData = useMemo(() => transformApartmentData(initialData, 'amenities'), [initialData]);
 
@@ -74,11 +96,18 @@ const Amenities = ({
     <div className="space-y-6">
       <CommonPropertyTable
         columns={columns} data={transformedData as Record<string, unknown>[]} title={tAqc("apartmentTabs.amenitiesTitle")} activeTab={activeTab}
-        searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
+        searchQuery={searchQuery} onSearchChange={(q) => { 
+          const sanitized = q.replace(TEXT_SANITIZE, '');
+          setSearchQuery(sanitized); 
+          updateQueryParams({ searchTerm: sanitized, pageNumber: 1 }); 
+        }}
         onRowClick={handleRowClick}
-        loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
+        loading={isPending || isFilterPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         onFetchFilterOptions={fetchFilterOptions}

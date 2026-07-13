@@ -70,7 +70,22 @@ function sanitizeParams(raw: { [key: string]: string | string[] | undefined }) {
     // Normalize sort order to asc or desc only
     const sortOrder = sortOrderValue === 'asc' || sortOrderValue === 'desc' ? sortOrderValue : undefined;
 
-    return { pageNumber, pageSize, searchTerm, typeOfUseId, sortBy, sortOrder };
+    const loadFloorParam = Array.isArray(raw.loadFloor) ? raw.loadFloor[0] : raw.loadFloor;
+    const loadFloor = loadFloorParam === 'true';
+
+    const loadSubFloorParam = Array.isArray(raw.loadSubFloor) ? raw.loadSubFloor[0] : raw.loadSubFloor;
+    const loadSubFloor = loadSubFloorParam === 'true';
+
+    const loadConstructionParam = Array.isArray(raw.loadConstruction) ? raw.loadConstruction[0] : raw.loadConstruction;
+    const loadConstruction = loadConstructionParam === 'true';
+
+    const loadUsageParam = Array.isArray(raw.loadUsage) ? raw.loadUsage[0] : raw.loadUsage;
+    const loadUsage = loadUsageParam === 'true';
+
+    const loadSubTypeParam = Array.isArray(raw.loadSubType) ? raw.loadSubType[0] : raw.loadSubType;
+    const loadSubType = loadSubTypeParam === 'true';
+
+    return { pageNumber, pageSize, searchTerm, typeOfUseId, sortBy, sortOrder, loadFloor, loadSubFloor, loadConstruction, loadUsage, loadSubType };
 }
 
 export default async function FloorInformationPage({ params, searchParams }: PageProps) {
@@ -78,12 +93,23 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
     const searchParamsResolved = await searchParams;
     setRequestLocale(locale);
 
-    const { pageNumber, pageSize, searchTerm, typeOfUseId, sortBy, sortOrder } = sanitizeParams(searchParamsResolved);
+    const { 
+        pageNumber, 
+        pageSize, 
+        searchTerm, 
+        typeOfUseId, 
+        sortBy, 
+        sortOrder, 
+        loadFloor, 
+        loadSubFloor, 
+        loadConstruction, 
+        loadUsage
+    } = sanitizeParams(searchParamsResolved);
 
     let floors, subFloors, constructionTypes, useTypes, subUseTypeList, floorPaginationData;
 
     try {
-        // Fetch all required data in parallel
+        // Fetch only requested dropdown master lists (lazy loaded on focus/click using search parameter query updates)
         const [
             floorsRes,
             subFloorsRes,
@@ -92,15 +118,14 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
             subUseTypesRes,
             oldFloorDetailsRes
         ] = await Promise.all([
-            getFloorsAction(1, -1),
-            getSubFloorsAction(1, -1),
-            getConstructionTypesAction(1, -1),
-            getTypeOfUsesAction(1, -1),
-            typeOfUseId > 0 ? getSubTypeOfUsesAction(typeOfUseId, 1, -1) : Promise.resolve({ success: true, data: [] }),
+            loadFloor ? getFloorsAction(1, -1) : Promise.resolve({ success: true, data: [] }),
+            loadSubFloor ? getSubFloorsAction(1, -1) : Promise.resolve({ success: true, data: [] }),
+            loadConstruction ? getConstructionTypesAction(1, -1) : Promise.resolve({ success: true, data: [] }),
+            loadUsage ? getTypeOfUsesAction(1, -1) : Promise.resolve({ success: true, data: [] }),
+            (typeOfUseId > 0) ? getSubTypeOfUsesAction(typeOfUseId, 1, -1) : Promise.resolve({ success: true, data: [] }),
             getOldFloorDetailsAction(Number(propertyId), pageNumber, pageSize, searchTerm, sortBy, sortOrder)
         ]);
 
-        // Extract data with defaults
         floors = floorsRes?.success ? (floorsRes?.data ?? []) : [];
         subFloors = subFloorsRes?.success ? (subFloorsRes?.data ?? []) : [];
         constructionTypes = constructionTypesRes?.success ? (constructionTypesRes?.data ?? []) : [];

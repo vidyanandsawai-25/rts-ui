@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common';
 import { PropertyFormViewProps } from '@/types/property-basic-details.types';
-import { usePropertyForm } from '@/hooks/usePropertyForm';
+import { usePropertyForm } from '@/hooks/ptis/QuickDataEntry/Property/usePropertyForm';
 import { PropertyFormFields } from './PropertyFormFields';
 import { PropertyFormActions } from './PropertyFormActions';
 
@@ -35,8 +35,8 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
                         <h3 className="text-sm font-bold text-blue-800 mb-3 pb-2 border-b-2 border-blue-200">
                             {t('property.title')}
                         </h3>
-                        
-                        <PropertyFormFields 
+
+                        <PropertyFormFields
                             t={t}
                             propertyData={props.propertyData}
                             categoryOptions={categoryOptions}

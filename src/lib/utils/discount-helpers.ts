@@ -3,6 +3,7 @@ import {
     PropertyDiscountInfoResponseDto,
     DiscountAttributeItemDto
 } from "@/types/discount.types";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 /**
  * Maps the API response DTO to the dynamic local form state.
@@ -19,9 +20,17 @@ export const mapApiToDiscountState = (
     }
 
     data.discountAttributes.forEach((attr) => {
+        const isBitType = attr.dataType.toUpperCase() === "BIT";
+        const bitValue = attr.bitValue ?? false;
         state[attr.id] = {
             ...attr,
-            enabled: !!attr.bitValue,
+            dataType: attr.dataType,
+            intValue: attr.intValue ?? null,
+            decimalValue: attr.decimalValue ?? null,
+            bitValue: isBitType ? bitValue : attr.bitValue ?? null,
+            enabled: isBitType
+                ? bitValue
+                : (attr.intValue !== null || attr.decimalValue !== null || attr.textValue !== null || attr.dateValue !== null),
             dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
             isUploading: false,
         };
@@ -43,8 +52,10 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
         // Skip never-saved disabled items (propertySocialDetailId is null + bitValue false)
         // as the backend cannot process upserts for non-existent disabled records.
         const hasBeenSaved = item.propertySocialDetailId != null;
-        if (item.id && item.isDiscountApplicable && (item.enabled || hasBeenSaved)) {
-            const enabled = item.enabled;
+        const isBitType = item.dataType.toUpperCase() === "BIT";
+        const enabled = isBitType ? (item.bitValue ?? false) : item.enabled;
+
+        if (item.id && item.isDiscountApplicable && (enabled || hasBeenSaved)) {
             
             // Format numeric values safely
             let intValue = null;
@@ -65,13 +76,14 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
             discountAttributes.push({
                 propertySocialDetailId: item.propertySocialDetailId ?? null,
                 socialAttributeId: item.id,
-                bitValue: enabled,
+                bitValue: isBitType ? enabled : null,
                 intValue,
                 decimalValue,
                 textValue,
                 dateValue,
-                documentBindingId: item.documentBindingId ?? null,
-                remark: enabled ? (item.remark || null) : null
+                documentBindingId: enabled ? (item.documentBindingId ?? null) : null,
+                remark: enabled ? (item.remark || null) : null,
+                isActive: true
             });
         }
     });
@@ -86,7 +98,10 @@ export const getFilteredDiscounts = (
     discountData: DiscountState,
     searchTerm: string,
     showActiveFirst: boolean,
-    t: (key: string) => string
+    t: {
+        (key: string, values?: Record<string, string | number | Date>): string;
+        has?: (key: string) => boolean;
+    }
 ) => {
     let list = Object.values(discountData).sort(
         (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
@@ -94,20 +109,62 @@ export const getFilteredDiscounts = (
     if (searchTerm) {
         const term = searchTerm.toLowerCase();
         list = list.filter((discount) => {
-            const translated = t(`discount.socialAttributes.${discount.socialAttributeCode}`);
-            const displayName = translated && !translated.includes("discount.socialAttributes")
-                ? translated
-                : discount.socialAttributeName;
+            const displayName = getLocalizedName(
+                discount.socialAttributeCode,
+                discount.socialAttributeName,
+                t
+            );
             return displayName.toLowerCase().includes(term);
         });
     }
     if (showActiveFirst) {
         list = [...list].sort((a, b) => {
-            if (a.enabled && !b.enabled) return -1;
-            if (!a.enabled && b.enabled) return 1;
+            const aActive = a.dataType.toUpperCase() === "BIT" ? a.bitValue === true : a.enabled;
+            const bActive = b.dataType.toUpperCase() === "BIT" ? b.bitValue === true : b.enabled;
+            if (aActive && !bActive) return -1;
+            if (!aActive && bActive) return 1;
             return (a.displayOrder || 0) - (b.displayOrder || 0);
         });
     }
     return list;
 };
+
+/**
+ * Checks if the current discount state has changes compared to the initial state.
+ */
+export const hasDiscountChangesComparedToInitial = (
+    current: DiscountState,
+    initial: DiscountState
+): boolean => {
+    const currentKeys = Object.keys(current);
+    const initialKeys = Object.keys(initial);
+    if (currentKeys.length !== initialKeys.length) return true;
+
+    for (const keyStr of currentKeys) {
+        const key = Number(keyStr);
+        const currItem = current[key];
+        const initItem = initial[key];
+        if (!initItem) return true;
+
+        if ((currItem.enabled ?? false) !== (initItem.enabled ?? false)) return true;
+        if ((currItem.bitValue ?? false) !== (initItem.bitValue ?? false)) return true;
+
+        const currInt = currItem.intValue === "" || currItem.intValue === undefined ? null : currItem.intValue;
+        const initInt = initItem.intValue === "" || initItem.intValue === undefined ? null : initItem.intValue;
+        if (String(currInt ?? "") !== String(initInt ?? "")) return true;
+
+        const currDec = currItem.decimalValue === "" || currItem.decimalValue === undefined ? null : currItem.decimalValue;
+        const initDec = initItem.decimalValue === "" || initItem.decimalValue === undefined ? null : initItem.decimalValue;
+        if (String(currDec ?? "") !== String(initDec ?? "")) return true;
+
+        if ((currItem.textValue ?? "") !== (initItem.textValue ?? "")) return true;
+        if ((currItem.dateValue ?? "") !== (initItem.dateValue ?? "")) return true;
+        if ((currItem.remark ?? "") !== (initItem.remark ?? "")) return true;
+        if (currItem.pendingFile !== undefined) return true;
+        if ((currItem.documentGuid ?? "") !== (initItem.documentGuid ?? "")) return true;
+    }
+
+    return false;
+};
+
 

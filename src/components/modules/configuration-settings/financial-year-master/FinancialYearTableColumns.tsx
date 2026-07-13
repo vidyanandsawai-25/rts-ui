@@ -27,9 +27,6 @@ interface ColumnProps {
   handleClose: (id: number) => void;
   handleDelete: (id: number) => void;
   loadingState: { id: number; action: 'setCurrent' | 'close' | 'delete' | 'edit' } | null;
-  canEdit: boolean;
-  canDelete: boolean;
-  haveFullAccess: boolean;
 }
 
 export const getFinancialYearColumns = ({
@@ -40,9 +37,6 @@ export const getFinancialYearColumns = ({
   handleClose: _handleClose,
   handleDelete: _handleDelete,
   loadingState,
-  canEdit,
-  canDelete,
-  haveFullAccess,
 }: ColumnProps) => [
   {
     key: 'yearCode',
@@ -108,9 +102,6 @@ export const getFinancialYearColumns = ({
     headerClassName: "text-right",
     render: (_: unknown, row: FinancialYear) => {
       const isAnyLoading = loadingState?.id === row.id;
-      const showEdit = canEdit || canDelete || haveFullAccess;
-
-      if (!showEdit) return null;
       
       return (
         <div className="flex justify-end items-center gap-2">

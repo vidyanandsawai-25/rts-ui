@@ -25,6 +25,8 @@ interface SubTypeSectionProps {
   changeSubPageSize: (size: number) => void;
   onDeleteSubType: (subType: UseSubType) => void;
   t: TranslatorFunction;
+  allTypes: UseType[];
+  onTypeSelect: (groupId: string, typeId: string) => void;
 }
 
 export function SubTypeSection({
@@ -46,15 +48,17 @@ export function SubTypeSection({
   changeSubPageSize,
   onDeleteSubType,
   t,
+  allTypes,
+  onTypeSelect,
 }: SubTypeSectionProps) {
   const router = useRouter();
   const locale = useLocale();
 
   return (
     <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white shadow-sm lg:h-[600px] flex flex-col">
-      <div className="flex flex-col gap-4 rounded-t-2xl border-b border-slate-100 px-4 py-3 sticky top-0 bg-white md:flex-row md:items-center md:justify-between">
-        {/* Left */}
-        <div className="font-semibold text-slate-900 whitespace-nowrap flex items-center gap-3">
+      <div className="flex gap-3 rounded-t-2xl border-b border-slate-100 px-4 py-3 sticky top-0 bg-white justify-between z-10 flex-col sm:flex-row sm:items-center sm:justify-between">
+        {/* Top row: Title + badge */}
+        <div className="font-semibold text-slate-900 flex flex-wrap items-center gap-2">
           {t('subtype.title')}
           {selectedType && (
             <span className="rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
@@ -71,26 +75,25 @@ export function SubTypeSection({
           )}
         </div>
 
-        {/* Middle (between) */}
-        <div className="flex flex-col gap-3 md:flex-1 md:flex-row md:items-center md:justify-end md:gap-4">
+        {/* Bottom row: Search + Add button — wraps on small screens */}
+        <div className="flex flex-wrap items-center gap-3">
           <SearchInput
             value={subTypeSearch}
             onChange={onSearchChange}
             placeholder={t('subtype.searchPlaceholder')}
-            className="mb-0 w-full md:w-80 lg:w-96 text-gray-700"
+            className="mb-0 flex-1 min-w-[180px] text-gray-700"
+          />
+          <AddButton
+            size="md"
+            label={t('subtype.add')}
+            disabled={!selectedTypeId}
+            onClick={() =>
+              router.push(
+                `/${locale}/property-tax/typeofusemaster/subtype/add?typeId=${selectedTypeId}`
+              )
+            }
           />
         </div>
-
-        <AddButton
-          size="md"
-          label={t('subtype.add')}
-          disabled={!selectedTypeId}
-          onClick={() =>
-            router.push(
-              `/${locale}/property-tax/typeofusemaster/subtype/add?typeId=${selectedTypeId}`
-            )
-          }
-        />
       </div>
 
       <div className="p-4 flex-1 overflow-y-auto">
@@ -137,17 +140,28 @@ export function SubTypeSection({
                 enabled: true,
                 showPageSizeSelector: true,
               }}
+              onRowClick={(row) => {
+                const subType = row as UseSubType;
+                const typeItem = allTypes.find((t) => t.typeOfUseId === subType.typeOfUseId);
+                if (typeItem) {
+                  onTypeSelect(String(typeItem.typeOfUseGroupId), String(typeItem.typeOfUseId));
+                }
+              }}
               renderActions={(row) => (
                 <div className="flex items-center gap-2">
                   <EditButton
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       router.push(
                         `/${locale}/property-tax/typeofusemaster/subtype/edit/${row.subTypeOfUseId}`
-                      )
-                    }
+                      );
+                    }}
                   />
                   <DeleteButton
-                    onClick={() => onDeleteSubType(row as UseSubType)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteSubType(row as UseSubType);
+                    }}
                   />
                 </div>
               )}

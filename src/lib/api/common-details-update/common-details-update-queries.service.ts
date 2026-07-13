@@ -9,12 +9,25 @@ import {
   WardOption,
   WingOption,
   PropertyFilterParams,
+  FieldRegistrySchema,
+  FieldRegistryTable,
+  FieldRegistryColumn,
 } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
 import type { WingItem } from "@/types/wing.types";
+import { cookies } from "next/headers";
+import { getAppConfig } from "@/config/app.config";
 
 // Re-export WingItem for convenience
 export type { WingItem };
+
+export interface ScopeOption {
+  id: number;
+  name: string;
+  displayName: string;
+  description: string;
+  options: string[];
+}
 
 const logger = createLogger("BulkUpdateService");
 
@@ -58,6 +71,51 @@ export async function getBulkUpdateMenuServer(): Promise<BulkUpdateMaster[]> {
   }
 }
 
+const STATIC_SCOPE_OPTIONS: ScopeOption[] = [
+  {
+    id: 1,
+    name: "WardSector",
+    displayName: "Ward / Sector",
+    description: "Multi ward selection",
+    options: ["Zone", "Ward", "Property Type"]
+  },
+  {
+    id: 2,
+    name: "BuildingWise",
+    displayName: "Building Wise",
+    description: "Building level",
+    options: ["Zone", "Ward", "Property No"]
+  },
+  {
+    id: 3,
+    name: "PropertyRange",
+    displayName: "Property Range",
+    description: "From-to property range",
+    options: ["Ward", "From Property", "To Property"]
+  }
+];
+
+export async function getScopeOptionsServer(): Promise<ScopeOption[]> {
+  try {
+    // Returning static options instead of API call as requested
+    return STATIC_SCOPE_OPTIONS;
+  } catch (error) {
+    logger.error("Failed to fetch scope options", { error });
+    return [];
+  }
+}
+
+export async function getScopeCategoryOptionsServer(categoryId: number): Promise<ScopeOption | null> {
+  try {
+    // Returning from static options instead of API call
+    const option = STATIC_SCOPE_OPTIONS.find(opt => opt.id === Number(categoryId));
+    return option || null;
+  } catch (error) {
+    logger.error("Failed to fetch scope category options", { error, categoryId });
+    return null;
+  }
+}
+
 export async function getBulkUpdateFieldConfigServer(
   updateCode: string
 ): Promise<BulkUpdateFieldConfig[]> {
@@ -98,21 +156,28 @@ export async function getBulkUpdateFieldConfigServer(
  * Converts PascalCase keys (e.g., AddressEnglish) to camelCase (addressEnglish).
  */
 function flattenCurrentValues(items: PropertyPreviewRow[]): PropertyPreviewRow[] {
-  return items.map((item) => {
-    const raw = item as Record<string, unknown>;
-    const cv = raw.currentValues;
-    if (cv && typeof cv === "object" && !Array.isArray(cv)) {
-      const flat: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(cv as Record<string, unknown>)) {
-        // Convert PascalCase key to camelCase for frontend consistency
-        const camelKey = k.charAt(0).toLowerCase() + k.slice(1);
-        flat[camelKey] = v;
+  try {
+    if (!items || !Array.isArray(items)) return [];
+    return items.map((item) => {
+      if (!item) return item;
+      const raw = item as Record<string, unknown>;
+      const cv = raw.currentValues;
+      if (cv && typeof cv === "object" && !Array.isArray(cv)) {
+        const flat: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(cv as Record<string, unknown>)) {
+          if (!k) continue;
+          const camelKey = k.charAt(0).toLowerCase() + k.slice(1);
+          flat[camelKey] = v;
+        }
+        const { currentValues: _cv, ...rest } = raw;
+        return { ...rest, ...flat } as PropertyPreviewRow;
       }
-      const { currentValues: _cv, ...rest } = raw;
-      return { ...rest, ...flat } as PropertyPreviewRow;
-    }
-    return item;
-  });
+      return item;
+    });
+  } catch (err) {
+    logger.error("flattenCurrentValues: Error", {}, err);
+    return items;
+  }
 }
 
 export async function getPropertiesForFilterServer(
@@ -120,14 +185,32 @@ export async function getPropertiesForFilterServer(
 ): Promise<PagedResponse<PropertyPreviewRow>> {
   // Build query params for GET request
   const queryParams = new URLSearchParams();
-  queryParams.append("WardId", String(params.wardId));
-  queryParams.append("FromPropertyNo", params.fromPropertyNo);
-  queryParams.append("ToPropertyNo", params.toPropertyNo);
+  if (params.wardId) {
+    queryParams.append("WardId", String(params.wardId));
+  }
+  if (params.zoneId) {
+    queryParams.append("ZoneId", String(params.zoneId));
+  }
+  if (params.propertyTypeId) {
+    queryParams.append("PropertyTypeId", String(params.propertyTypeId));
+  }
+  if (params.fromPropertyNo) {
+    queryParams.append("FromPropertyNo", params.fromPropertyNo);
+  }
+  if (params.toPropertyNo) {
+    queryParams.append("ToPropertyNo", params.toPropertyNo);
+  }
   if (params.wingId) {
     queryParams.append("Wing", params.wingId);
   }
   if (params.updateCode) {
     queryParams.append("UpdateCode", params.updateCode);
+  }
+  if (params.page) {
+    queryParams.append("PageNumber", String(params.page));
+  }
+  if (params.pageSize) {
+    queryParams.append("PageSize", String(params.pageSize));
   }
 
   const url = `/CommonDetails/filter-properties?${queryParams.toString()}`;
@@ -184,7 +267,7 @@ export async function getPropertiesForFilterServer(
       "getPropertiesForFilterServer"
     );
   } catch (error) {
-    logger.error("getPropertiesForFilterServer: Error", { error: error as Error });
+    logger.error("getPropertiesForFilterServer: Error", {}, error);
     throw error;
   }
 }
@@ -423,3 +506,120 @@ export async function getAllWingsServer(): Promise<PagedResponse<WingItem>> {
     };
   }
 }
+
+export async function getFieldRegistrySchemasServer(): Promise<FieldRegistrySchema[]> {
+  try {
+    const response = await apiClient.get<FieldRegistrySchema[] | { items: FieldRegistrySchema[] }>(
+      `/FieldRegistry`
+    );
+
+    if (response.success && response.data) {
+      const data = response.data;
+      if (Array.isArray(data)) {
+        return data;
+      }
+      if (data && typeof data === "object" && "items" in data && Array.isArray(data.items)) {
+        return data.items;
+      }
+    }
+
+    return [];
+  } catch (error) {
+    logger.error("Failed to fetch field registry schemas", { error });
+    return [];
+  }
+}
+
+export async function getFieldRegistryTablesServer(schemaName: string): Promise<FieldRegistryTable[]> {
+  try {
+    const response = await apiClient.get<{ items: FieldRegistryTable[] } | FieldRegistryTable[]>(
+      `/FieldRegistry/GetDetailsBySchema?SchemaName=${encodeURIComponent(schemaName)}&PageSize=-1`
+    );
+
+    if (response.success && response.data) {
+      const data = response.data;
+      if (data && typeof data === "object" && "items" in data && Array.isArray(data.items)) {
+        return data.items;
+      }
+      if (Array.isArray(data)) {
+        return data;
+      }
+    }
+
+    return [];
+  } catch (error) {
+    logger.error("Failed to fetch field registry tables", { schemaName, error });
+    return [];
+  }
+}
+
+export async function getFieldRegistryColumnsServer(
+  schemaName: string,
+  tableName: string
+): Promise<FieldRegistryColumn[]> {
+  try {
+    const response = await apiClient.get<{ items: FieldRegistryColumn[] } | FieldRegistryColumn[]>(
+      `/FieldRegistry/GetDetailsByTable?SchemaName=${encodeURIComponent(
+        schemaName
+      )}&TableName=${encodeURIComponent(tableName)}&PageSize=-1`
+    );
+
+    if (response.success && response.data) {
+      const data = response.data;
+      if (data && typeof data === "object" && "items" in data && Array.isArray(data.items)) {
+        return data.items;
+      }
+      if (Array.isArray(data)) {
+        return data;
+      }
+    }
+
+    return [];
+  } catch (error) {
+    logger.error("Failed to fetch field registry columns", { schemaName, tableName, error });
+    return [];
+  }
+}
+
+export async function exportExcelServer(
+  wardId: string,
+  updateCode: string,
+  fromPropertyNo?: string,
+  toPropertyNo?: string
+): Promise<string> {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("auth_token")?.value;
+
+  if (!authToken) {
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "exportExcelServer");
+  }
+
+  const config = getAppConfig();
+  const params = new URLSearchParams();
+  params.append("WardId", wardId);
+  params.append("UpdateCode", updateCode);
+  if (fromPropertyNo) params.append("FromPropertyNo", fromPropertyNo);
+  if (toPropertyNo) params.append("ToPropertyNo", toPropertyNo);
+
+  const backendUrl = `${config.api.baseUrl.replace(/\/$/, "")}/CommonDetails/export-excel?${params.toString()}`;
+
+  logger.info("exportExcelServer: Proxying request", { backendUrl });
+
+  const response = await fetch(backendUrl, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${authToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Backend API error: ${response.statusText}`, "exportExcelServer");
+  }
+
+  const fileBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(fileBuffer).toString("base64");
+  return base64;
+}
+
+

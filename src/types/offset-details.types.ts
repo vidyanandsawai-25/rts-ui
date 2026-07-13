@@ -23,6 +23,7 @@ export interface OffsetData {
     shapeParams?: ShapeParameters;
     id?: number | string;
     roomWiseMinusId?: number | string;
+    isOffset?: boolean;
 }
 
 export interface OffsetAPIResponse {

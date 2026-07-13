@@ -52,7 +52,7 @@ vi.mock('next-intl', () => ({
     const translations: Record<string, string> = {
       'discount.title': 'Discount Information',
       'discount.description': 'Configure discount eligibility',
-      'discount.socialTitle': 'Social Information',
+      'discount.socialTitle': 'Other Social Information',
       'discount.socialDescription': 'Configure social attributes, status, and associated documents for this property.',
       'discount.unitLabel': 'Unit: {unit}',
       'discount.solarPanel': 'Solar Panel System',
@@ -94,6 +94,7 @@ vi.mock('next-intl', () => ({
     }
     return val;
   },
+  useLocale: () => 'en',
 }));
 
 // Mock sonner
@@ -105,16 +106,22 @@ vi.mock('sonner', () => ({
 }));
 
 // We need to mock the action as well because it's imported by the hook
-vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action', () => ({
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions', () => ({
   updateDiscountDetailsAction: vi.fn(),
   uploadDiscountDocumentAction: vi.fn(),
   replaceDiscountDocumentAction: vi.fn(),
-  getPropertySocialInfoAction: vi.fn(),
-  upsertPropertySocialInfoAction: vi.fn(),
+  deleteDiscountDocumentAction: vi.fn(),
 }));
 
-// Now we can safely import the action for our tests since it's mocked
-import { updateDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action';
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions', () => ({
+  getPropertySocialInfoAction: vi.fn(),
+  upsertPropertySocialInfoAction: vi.fn(),
+  uploadSocialPhotoAction: vi.fn(),
+  replaceSocialPhotoAction: vi.fn(),
+  deleteSocialDocumentAction: vi.fn(),
+}));
+
+import { updateDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';
 
 const mockInitialData: PropertyDiscountInfoResponseDto = {
   propertyId: 123,
@@ -127,6 +134,7 @@ const mockInitialData: PropertyDiscountInfoResponseDto = {
       isDiscountApplicable: true,
       propertySocialDetailId: 10,
       bitValue: true,
+      isActive: true,
       documentGuid: "guid-solar",
       documentBindingId: 100
     },
@@ -138,6 +146,7 @@ const mockInitialData: PropertyDiscountInfoResponseDto = {
       isDiscountApplicable: true,
       propertySocialDetailId: null,
       bitValue: false,
+      isActive: false,
       documentGuid: "guid-water", // Setting documentGuid so that validation passes when enabled
       documentBindingId: 101
     }
@@ -177,7 +186,7 @@ describe('DiscountFormview', () => {
     );
 
     expect(screen.getAllByText('Discount Information').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Social Information').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Other Social Information').length).toBeGreaterThan(0);
 
     const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
     fireEvent.click(discountTab);
@@ -245,13 +254,19 @@ describe('DiscountFormview', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(updateDiscountDetailsAction).toHaveBeenCalledWith(
-        'en',
-        '123',
+      expect(updateDiscountDetailsAction).toHaveBeenCalled();
+      const call = (updateDiscountDetailsAction as Mock).mock.calls[0];
+      expect(call[0]).toBe('en');
+      expect(call[1]).toBe('123');
+      const formData = call[2] as FormData;
+      expect(formData).toBeInstanceOf(FormData);
+      const discountAttributes = JSON.parse(formData.get("discountAttributes") as string);
+      expect(discountAttributes).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             socialAttributeId: 2,
             bitValue: true,
+            isActive: true,
           })
         ])
       );

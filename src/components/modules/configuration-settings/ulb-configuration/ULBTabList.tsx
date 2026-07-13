@@ -1,8 +1,7 @@
 'use client';
 
 import { Briefcase, Building2, Image as ImageIcon, Package } from 'lucide-react';
-import { Badge } from '@/components/common/Badge';
-import { Tabs } from '@/components/common/Tabs';
+import { Badge, Tabs } from '@/components/common';
 import type { ULBTabListProps, UlbTabDescriptor } from '@/types/ulbconfig-master.types';
 
 export function ULBTabList({ activeTab, completionStatus, t }: ULBTabListProps) {

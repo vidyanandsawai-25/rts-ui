@@ -6,17 +6,17 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import { Button, ToastContainer } from '@/components/common';
 import type { ToastProps } from '@/components/common';
-import { CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import { PropertyDetailsOnRenter } from './PropertyDetailsOnRenter';
 import AgreementDetails from './AgreementDetails';
 import { SelectedFloorDetails } from './SelectedFloorDetails';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ActionResult } from '@/types/common.types';
-import { useRenterForm } from '@/hooks/ptis/floorSubmission/useRenterForm';
+import { useRenterForm } from '@/hooks/ptis/floorSubmission/renter/useRenterForm';
 import { RentBreakdownDialog } from './RentBreakdownDialog';
-import { calculateRentProgression } from '@/lib/utils/renter-calculations';
-import { validateRenterForm, type CurrentFloorContext, type ExistingFloorData } from '@/lib/utils/renter-validation';
+import { calculateRentProgression } from '@/lib/utils/renter/renter-calculations';
+import { validateRenterForm, type CurrentFloorContext, type ExistingFloorData } from '@/lib/utils/renter/renter-validation';
 import { getFloorSubmissionsByOwnerAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 
 const RentManagementCard = dynamic(
@@ -27,6 +27,7 @@ const RentManagementCard = dynamic(
       <div className="flex h-32 w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-100 bg-white/50">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+          {/* eslint-disable-next-line i18next/no-literal-string */}
           <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">
             Loading rent engine...
           </span>
@@ -206,6 +207,18 @@ export const RenterDetailsForm = memo(
       return validateRenterForm(formData.renterDetails, currentFloorContext, existingFloors).length === 0;
     }, [formData?.renterDetails, currentFloorContext, existingFloors]);
 
+    const isAgreementExpired = useMemo(() => {
+      const toDateStr = formData?.renterDetails?.agreementDateTo;
+      if (!toDateStr) return false;
+      const toDate = new Date(toDateStr);
+      if (isNaN(toDate.getTime())) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const compDate = new Date(toDate);
+      compDate.setHours(0, 0, 0, 0);
+      return compDate < today;
+    }, [formData?.renterDetails?.agreementDateTo]);
+
     const [popupFY, setPopupFY] = useState<string | null>(null);
     const [toasts, setToasts] = useState<ToastProps[]>([]);
 
@@ -244,6 +257,14 @@ export const RenterDetailsForm = memo(
             </div>
           </div>
 
+          {isAgreementExpired && (
+            <div className="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 animate-in fade-in slide-in-from-top-2 duration-300">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {t('floor.renterSection.agreementExpiredWarning')}
+              </span>
+            </div>
+          )}
 
           <SelectedFloorDetails
             formData={formData}
@@ -293,11 +314,11 @@ export const RenterDetailsForm = memo(
         </div>
 
         {popupFY && (
-          <RentBreakdownDialog 
-            isOpen={!!popupFY} 
-            onClose={() => setPopupFY(null)} 
-            fy={popupFY} 
-            progression={calculateRentProgression(formData?.renterDetails)?.progression || []} 
+          <RentBreakdownDialog
+            isOpen={!!popupFY}
+            onClose={() => setPopupFY(null)}
+            fy={popupFY}
+            progression={calculateRentProgression(formData?.renterDetails)?.progression || []}
           />
         )}
       </div>

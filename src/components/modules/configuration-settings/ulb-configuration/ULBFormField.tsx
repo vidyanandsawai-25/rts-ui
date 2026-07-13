@@ -1,10 +1,7 @@
 'use client';
 
-import { Input, InputProps } from '@/components/common/Input';
-import { Select } from '@/components/common/select';
-import { TextArea } from '@/components/common/Textarea';
-import { Label } from '@/components/common/label';
-import { ValidationMessage } from '@/components/common/ValidationMessage';
+import { Input, Select, TextArea, Label, ValidationMessage } from '@/components/common';
+import type { InputProps } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import type { ChangeEvent, FocusEvent } from 'react';
 import type { UlbSelectBaseProps, UlbTextAreaProps } from '@/types/ulbconfig-master.types';

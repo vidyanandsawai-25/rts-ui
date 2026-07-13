@@ -7,7 +7,7 @@ interface SocietyFormActionsProps {
     canSubmit?: boolean;
 }
 
-export const SocietyFormActions = ({ t, isUpdating, hasChanges }: SocietyFormActionsProps) => {
+export const SocietyFormActions = ({ t, isUpdating, hasChanges = true }: SocietyFormActionsProps) => {
     return (
         <div className="flex justify-end space-x-2 mt-4">
             <UpdateButton

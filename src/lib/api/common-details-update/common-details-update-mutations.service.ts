@@ -1,8 +1,10 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
-import { BulkUpdatePayload, BulkUpdateResponse } from "@/types/common-details-update/common-details-update.types";
+import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
+import { cookies } from "next/headers";
+import { getAppConfig } from "@/config/app.config";
 
 const logger = createLogger("BulkUpdateMutations");
 
@@ -61,3 +63,87 @@ export async function executeBulkUpdateServer(
     "executeBulkUpdateServer"
   );
 }
+
+export async function addFieldRegistryServer(
+  payload: CreateFieldRegistryDto
+): Promise<ActionResult<unknown>> {
+  try {
+    logger.info("addFieldRegistryServer: Registering new field", { 
+      updateCode: payload.updateCode,
+      updateName: payload.updateName,
+      referenceTableName: payload.referenceTableName
+    });
+
+    const response = await apiClient.post<unknown>("/FieldRegistry/AddFieldRegistry", payload);
+
+    if (response.success) {
+      return { success: true, data: response.data };
+    }
+
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(
+      response.statusCode || 500,
+      response.error || t("messages.somethingWrong"),
+      "addFieldRegistryServer"
+    );
+  } catch (error) {
+    logger.error("addFieldRegistryServer: Failed", { error });
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message, statusCode: error.statusCode };
+    }
+    const t = await getTranslations("commonDetailsUpdate");
+    return { success: false, error: t("messages.somethingWrong"), statusCode: 500 };
+  }
+}
+
+export async function importExcelServer(
+  formData: FormData
+): Promise<ExcelImportResponse> {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("auth_token")?.value;
+
+  if (!authToken) {
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "importExcelServer");
+  }
+
+  const config = getAppConfig();
+  const backendUrl = `${config.api.baseUrl.replace(/\/$/, "")}/CommonDetails/import-excel`;
+
+  logger.info("importExcelServer: Proxying upload request", { backendUrl });
+
+  const response = await fetch(backendUrl, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${authToken}`,
+    },
+    body: formData,
+  });
+
+  const responseText = await response.text();
+  if (!response.ok) {
+    let errorMsg = `Upload failed with status ${response.status}`;
+    try {
+      const errData = JSON.parse(responseText);
+      errorMsg = errData.error || errData.message || errorMsg;
+    } catch {}
+    throw new ApiError(response.status, errorMsg, "importExcelServer");
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return {
+      success: data.success ?? true,
+      message: data.message || "",
+      errors: data.errors || null,
+    };
+  } catch {
+    return {
+      success: true,
+      message: responseText,
+      errors: null,
+    };
+  }
+}
+
+

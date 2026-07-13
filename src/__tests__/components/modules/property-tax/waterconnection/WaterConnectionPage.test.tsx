@@ -75,6 +75,7 @@ describe('WaterConnectionPage', () => {
     propertyId: 123,
     initialPage: 1,
     initialPageSize: 10,
+    saveWaterConnectionAction: vi.fn(),
   };
 
   beforeEach(() => {
@@ -156,7 +157,7 @@ describe('WaterConnectionPage', () => {
       });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} saveWaterConnectionAction={vi.fn()} />
       );
 
       // 1 active connection - check the stats card
@@ -164,7 +165,7 @@ describe('WaterConnectionPage', () => {
       expect(activeCard).toHaveTextContent('1');
     });
 
-    it('should calculate yearly revenue from active connections', () => {
+    it('should calculate yearly revenue from all connections (both active and inactive)', () => {
       const pageData = createMockPageData({
         connections: [
           { ...mockWaterConnections[0], isActive: true, applicableCharges: 1200 },
@@ -173,12 +174,12 @@ describe('WaterConnectionPage', () => {
       });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} saveWaterConnectionAction={vi.fn()} />
       );
 
-      // Only active connections contribute to revenue
+      // Both active and inactive connections contribute to revenue (1200 + 1800 = 3000)
       const revenueCard = screen.getByText(/yearly revenue/i).closest('div')?.parentElement;
-      expect(revenueCard).toHaveTextContent('1,200');
+      expect(revenueCard).toHaveTextContent('3,000');
     });
   });
 
@@ -292,7 +293,7 @@ describe('WaterConnectionPage', () => {
 
       // Drawer should close (title should not be visible)
       await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.queryByText(/add water connection/i)).not.toBeInTheDocument();
       });
     });
   });
@@ -302,7 +303,7 @@ describe('WaterConnectionPage', () => {
       const pageData = createMockPageData({ connections: [], totalCount: 0 });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} saveWaterConnectionAction={vi.fn()} />
       );
 
       expect(screen.getByText(/0 connections/i)).toBeInTheDocument();
@@ -312,7 +313,7 @@ describe('WaterConnectionPage', () => {
       const pageData = createMockPageData({ connections: [] });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} saveWaterConnectionAction={vi.fn()} />
       );
 
       expect(screen.getByRole('button', { name: /add connection/i })).toBeInTheDocument();

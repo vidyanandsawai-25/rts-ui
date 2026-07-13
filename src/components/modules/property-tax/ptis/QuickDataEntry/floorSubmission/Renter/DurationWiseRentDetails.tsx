@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import { History, Eye } from "lucide-react";
 import { MasterTable, Button } from "@/components/common";
-import { calculateRentProgression } from "@/lib/utils/renter-calculations";
+import { calculateRentProgression } from "@/lib/utils/renter/renter-calculations";
 import { useTranslations } from "next-intl";
-import { RenterMastItem } from "@/types/renter-details.types";
-import { RenterFormData } from "@/types/renter.types";
+import { RenterMastItem } from "@/types/renter/renter-details.types";
+import { RenterFormData } from "@/types/renter/renter.types";
 
 interface DurationWiseRentDetailsProps {
     formData: RenterFormData;

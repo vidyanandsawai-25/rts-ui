@@ -25,21 +25,23 @@
 // Generic Code Validation: Allow alphanumeric characters and underscore (A-Z, a-z, 0-9, _)
 // Must start and end with alphanumeric, underscore only allowed in between
 // Used across all modules (Construction, Tax Zone, etc.)
-export const CODE_REGEX = /^[A-Za-z0-9]+([A-Za-z0-9_]*[A-Za-z0-9]+)*$/;
+export const CODE_REGEX = /^[A-Za-z0-9](?:[A-Za-z0-9_]*[A-Za-z0-9])?$/;
 export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except alphanumeric and underscore
 
 /* ================= DESCRIPTION VALIDATION ================= */
 // Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
 // Special characters (&, -, /, etc.) must be in between other characters
 // Only single space allowed between characters, no consecutive spaces
-export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N}\/,.\-()&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
+export const DESCRIPTION_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s\/,.\-()&]*$/u;
 export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 
 /* ================= TEXT VALIDATION ================= */
 // Allow Unicode letters, marks, numbers, spaces, and basic punctuation including &
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu;
 // Validation for allowed characters, special chars in between, single space only, allows single char
-export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
+export const TEXT_ALLOWED = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s,.\-\/&]*$/u;
+export const DISPLAY_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/]/gu;
+export const UNIT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/%]/gu;
 
 /* ================= TRANSLATION TEXT VALIDATION ================= */
 // Translation text: Allow multilingual characters, underscore, hyphen, basic punctuation
@@ -49,11 +51,19 @@ export const TRANSLATION_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/_()]/gu;
 
 /* ================= SEARCH VALIDATION ================= */
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
+export const SEARCH_ALPHANUMERIC_SANITIZE = /[^A-Za-z0-9\s+\-]/g;
 
 /* ================= NAME ONLY VALIDATION ================= */
 // Name fields: Unicode letters and spaces only. No numbers, no special characters.
 export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
+
+/* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
+// Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
+// No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
+// Must start and end with an alphanumeric; a single separator is allowed between tokens.
+export const ALPHANUMERIC_WITH_SPACES_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}.][\p{L}\p{M}\p{N}.\s]*$/u;
+export const ALPHANUMERIC_WITH_SPACES_SANITIZE = /[^\p{L}\p{M}\p{N}.\s]/gu;
 
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
@@ -63,15 +73,58 @@ export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
 // Sanitize pattern for person names: removes anything not letter/mark/space/period/comma/apostrophe/hyphen
 export const PERSON_NAME_SANITIZE = /[^\p{L}\p{M}\s.,'-]/gu;
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const VALID_TLD_REGEX = /^(com|in|org|net|edu|gov|mil|info|biz|me|io|nic|ai|app|dev|tech|online|store|site|live|pro|xyz|club|agency|digital|solutions|company|email|cloud|finance|global|group|services|systems|world|today|news|media|care|center)$/i;
+export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov|mil|info|biz|me|io|nic|ai|app|dev|tech|online|store|site|live|pro|xyz|club|agency|digital|solutions|company|email|cloud|finance|global|group|services|systems|world|today|news|media|care|center)(?:\.[a-zA-Z]{2})?$/i;
 export const EMAIL_LOWERCASE_RESTRICTED_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.(com|in)$/;
+export const limitSingleAtEmail = (v: string): string => {
+  const cleaned = v.toLowerCase().replace(/[^\w@.+-]/g, '');
+
+  const first = cleaned.indexOf('@');
+  if (first === -1) return cleaned;
+
+  return (
+    cleaned.slice(0, first + 1) +
+    cleaned.slice(first + 1).replace(/@/g, '')
+  );
+};
+export const OWNER_NAME_REGEX =
+  /^[\p{L}\p{M}\s.,&'()\/\-:]+$/u;
+export const OWNER_NAME_SANITIZE =
+  /[^\p{L}\p{M}\s.,&'()\/\-:]/gu;
+
+
+export const limitOldPropertyNo = (v: string) => {
+  const cleaned = v
+    .replace(/[^0-9/-]/g, '')       // allow only digits, /, -
+    .replace(/([/-]){2,}/g, '$1');  // prevent duplicate separators
+
+  const parts = cleaned.split(/([/-])/);
+
+  let result = '';
+
+  for (const part of parts) {
+    if (part === '/' || part === '-') {
+      result += part;
+    } else {
+      const digits = part.replace(/\D/g, '');
+      result += digits; // allow unlimited digits per block
+    }
+  }
+
+  return result;
+};
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
-export const PINCODE_6_REGEX = /^[0-9]{6}$/;
+export const PINCODE_6_REGEX = /^[1-9][0-9]{5}$/;
+export const PINCODE_SANITIZE = /[^0-9]/g;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;
-export const YEAR_REGEX = /^\d{4}$/;
+export const YEAR_REGEX = /^[0-9०-९]{4}$/;
 // Positive integer (one or more digits, no decimal/sign). Generic — usable
 // for BHK, room counts, floor counts, etc.
 export const POSITIVE_INTEGER_REGEX = /^\d+$/;
+export const ONE_TO_NINETY_NINE_REGEX = /^(?:[1-9]|[1-9][0-9])$/;
+export const limitTwoDigitNumber = (value: string): string =>
+  value.replace(/[^0-9]/g, "").slice(0, 2);
+
 
 
 /* ================= POSITIVE DECIMAL VALIDATION ================= */
@@ -91,3 +144,7 @@ export const isAllZeros = (value: string): boolean => {
   if (trimmed.length === 0) return false;
   return /^0+$/.test(trimmed);
 };
+
+// Apartment QC Basic Information form validation 
+export const OWNERNAME_REGEX =
+   /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;

@@ -175,3 +175,11 @@ export interface DeletePropertyData {
   isOpen: boolean;
   properties: ZonePropertyItem[];
 }
+
+export interface DirectPropertyDeleteRow {
+  propertyId: string;
+  wardNo: string;
+  propertyNo: string;
+  partitionNo: string;
+  categoryName: string;
+}

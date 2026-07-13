@@ -7,7 +7,7 @@ import {
 } from '@/types/room-details.types';
 import { type OffsetAPIResponse, type OffsetData } from '@/types/offset-details.types';
 import { parseBoolean } from "@/lib/utils/type-guards";
-import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renter/renterUtils";
 
 
 export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData => {
@@ -79,7 +79,8 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
     const calculatedBaseArea = mainArea - actualOffset;
 
     const computedCarpetArea = isOut ? calculatedBaseArea * 0.80 : calculatedBaseArea;
-    const computedBuiltUpArea = isOut ? calculatedBaseArea : calculatedBaseArea * 1.20;
+    const finalCarpetArea = Number(room.carpetArea || room.totalAreaSqMtr || room.total || computedCarpetArea) || 0;
+    const finalBuiltUpArea = Number((finalCarpetArea * 1.20).toFixed(2));
 
     return {
         id: Number(room.roomWiseSubmissionId ?? room.id) || undefined,
@@ -90,10 +91,10 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
         length: lengthVal, width: widthVal, height: heightVal,
         area: Number(room.areaSqMtr || room.area) || 0,
         mainArea: Number(room.mainArea || mainArea) || 0,
-        carpetArea: Number(room.carpetArea || room.totalAreaSqMtr || room.total || computedCarpetArea) || 0,
-        builtUpArea: Number(room.builtUpArea || room.builtupArea || room.builtUpAreaSqMtr || room.builtupAreaSqMtr || computedBuiltUpArea) || 0,
+        carpetArea: finalCarpetArea,
+        builtUpArea: finalBuiltUpArea,
         roomCount: String(room.noOfRooms || room.roomCount || 1),
-        total: Number(room.totalAreaSqMtr || room.total || room.areaSqMtr) || 0,
+        total: Number(room.totalAreaSqMtr || room.total || finalCarpetArea) || 0,
         outer: isOut ? 'Yes' : 'No',
         offsetMinus: isOff ? 'Yes' : 'No',
         remark: room.remark || '',
@@ -197,6 +198,10 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
         areaSqM: String(carpetAreaSqMVal),
         builtupAreaSqFt: String(builtupAreaSqFtVal),
         builtupAreaSqM: String(builtupAreaSqMVal),
+        length: s(data.lengthMtr ?? data.length ?? ''),
+        width: s(data.widthMtr ?? data.width ?? ''),
+        lengthMtr: s(data.lengthMtr ?? data.length ?? ''),
+        widthMtr: s(data.widthMtr ?? data.width ?? ''),
         isTaxable: parseBoolean(data.isTaxable) ? ('Yes' as const) : ('No' as const),
         renterDetails: (data.renterDetails || []).map(normalizeRenterDetailItem),
         renterMast: (data.renterMast || data.renters || []).map(normalizeRenterMastItem),

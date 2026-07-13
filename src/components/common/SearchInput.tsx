@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils/cn";
 
@@ -8,6 +9,9 @@ interface SearchInputProps {
   placeholder?: string;
   className?: string;
   showClear?: boolean;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEnter?: () => void;
+  tabIndex?: number;
 }
 
 export function SearchInput({
@@ -16,6 +20,9 @@ export function SearchInput({
   placeholder = "Search...",
   className,
   showClear = true,
+  onKeyDown,
+  onEnter,
+  tabIndex,
 }: SearchInputProps) {
   return (
     <div className={cn("relative mb-4 w-[300px]", className)}>
@@ -30,6 +37,13 @@ export function SearchInput({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            onEnter?.();
+          }
+          onKeyDown?.(e);
+        }}
+        tabIndex={tabIndex}
         className="
           w-full rounded-lg border border-gray-300 text-gray-800
           bg-white py-2 pl-10 pr-9 text-sm

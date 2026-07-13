@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Tabs } from '@/components/common/Tabs';
+import { Tabs } from '@/components/common';
 import { useUlbConfigurationForm } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationForm';
 import { useUlbConfigurationSave } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationSave';
 import { useDepartmentLicenses } from '@/hooks/configuration-settings/ulb-configuration/useDepartmentLicenses';
@@ -28,6 +28,7 @@ export default function ULBConfigurationClient({
   initialUlbData,
   initialDeptData,
   initialLicenceData,
+  initialImagesData,
   fetchError,
   statusCode,
 }: ULBConfigurationModuleProps) {
@@ -37,24 +38,6 @@ export default function ULBConfigurationClient({
 
   const form = useUlbConfigurationForm(initialUlbData);
   const depts = useDepartmentLicenses(initialDeptData, initialLicenceData);
-  const { loadDepartmentsFromApi } = depts;
-
-  const deptServerKey = useMemo(
-    () =>
-      [
-        initialLicenceData.length,
-        ...initialLicenceData.map(
-          (l) => `${l.departmentLicenceDetailsId ?? 0}:${l.licenceEndDate ?? ''}`
-        ),
-      ].join('-'),
-    [initialLicenceData]
-  );
-
-  // Load departments from Department Master API when the tab opens (no static fallback).
-  useEffect(() => {
-    if (activeTab !== 'department-license') return;
-    void loadDepartmentsFromApi(initialLicenceData);
-  }, [activeTab, deptServerKey, initialLicenceData, loadDepartmentsFromApi]);
 
   const { save, isSaving } = useUlbConfigurationSave({
     formData: form.formData,
@@ -181,6 +164,7 @@ export default function ULBConfigurationClient({
               onNext={() => goTo('project-license-info')}
               isSaving={isSaving}
               footerClassName={FOOTER_CLASS}
+              initialImages={initialImagesData}
             />
           </Tabs.TabPanel>
 

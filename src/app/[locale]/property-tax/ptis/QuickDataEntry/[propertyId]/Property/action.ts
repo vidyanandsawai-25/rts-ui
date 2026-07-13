@@ -8,7 +8,7 @@ import {
     getMoujaMaster,
     updatePropertyBasicDetails,
     getTaxZones
-} from "@/lib/api/property-basic-details.service";
+} from "@/lib/api/ptis/propertybasicdetails/property-basic-details.service";
 
 import {
     PropertyBasicDetailsApiItem,
@@ -129,4 +129,4 @@ export async function getTaxZonesAction(
     } catch (error) {
         return { success: false, error: await getActionErrorMessage(error) };
     }
-}
+}

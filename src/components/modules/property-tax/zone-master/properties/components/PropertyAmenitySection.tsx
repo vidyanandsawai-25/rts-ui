@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Info, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 import {
   ConfirmProvider,
@@ -17,25 +18,35 @@ import {
 } from "./hooks";
 import { PropertyAmenityTable } from "./PropertyAmenityTable";
 
+interface PropertyAmenitySectionProps {
+  propertyId: string;
+  directDeleteFallback?: ReactNode;
+}
+
 /* ─────────────────────────────────────────────
    Inner component (needs ConfirmProvider above)
 ───────────────────────────────────────────── */
 
-function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
+function PropertyAmenitySectionInner({
+  propertyId,
+  directDeleteFallback,
+}: PropertyAmenitySectionProps) {
   const t = useTranslations("zoneMaster");
 
   // Data fetching hook
   const {
     wingsLoading,
     selectedSocietyDetailId,
-    setSelectedSocietyDetailId,
+    selectedWingId,
+    setSelectedWingId,
     wingOptions,
+    shouldShowWingDropdown,
     isAmenity,
     setIsAmenity,
     tableData,
     tableLoading,
     refreshTable,
-    wings,
+    societyDetails,
   } = usePropertyAmenityData({ propertyId });
 
   // Selection hook
@@ -57,6 +68,10 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
     t,
   });
 
+  if (!wingsLoading && societyDetails.length === 0 && directDeleteFallback) {
+    return <>{directDeleteFallback}</>;
+  }
+
   return (
     <div className="space-y-4">
       {/* Wings section header */}
@@ -76,17 +91,15 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
         {/* Wing dropdown */}
         {wingsLoading ? (
           <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
-        ) : wings.length === 0 ? (
-          <p className="text-sm text-gray-500">{t("createProperty.noWingsAvailable")}</p>
-        ) : (
+        ) : shouldShowWingDropdown && (
           <SearchSelect
             id="wing-select"
             name="wingSelect"
             options={wingOptions}
-            value={selectedSocietyDetailId?.toString() || ""}
+            value={selectedWingId}
             placeholder={t("createProperty.selectAWing")}
             onChange={(_, value) => {
-              setSelectedSocietyDetailId(Number(value));
+              setSelectedWingId(value);
               setIsAmenity(false);
             }}
             isLoading={wingsLoading}
@@ -162,10 +175,16 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
    Public export – wraps inner with ConfirmProvider
 ───────────────────────────────────────────── */
 
-export function PropertyAmenitySection({ propertyId }: { propertyId: string }) {
+export function PropertyAmenitySection({
+  propertyId,
+  directDeleteFallback,
+}: PropertyAmenitySectionProps) {
   return (
     <ConfirmProvider>
-      <PropertyAmenitySectionInner propertyId={propertyId} />
+      <PropertyAmenitySectionInner
+        propertyId={propertyId}
+        directDeleteFallback={directDeleteFallback}
+      />
     </ConfirmProvider>
   );
 }
