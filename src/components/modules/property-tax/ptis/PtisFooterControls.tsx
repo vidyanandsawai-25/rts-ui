@@ -294,7 +294,6 @@ export function PtisFooterDropdowns({
         propertyNo={propertyNo}
         ownerName={ownerName}
         workflowStages={workflowStages}
-        currentWorkflowStageId={currentWorkflowStageId}
       />
     </>
   );
