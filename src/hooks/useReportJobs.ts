@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchReportJobs } from '@/actions/report-actions';
+import { fetchReportJobs } from '@/app/[locale]/property-tax/reports/action';
 import type { ReportJob, ReportJobStatus } from '@/types/report.types';
 
 // Fallback poll interval — only used when SSE connection is not established.
