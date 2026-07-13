@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { requestOtp, fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/services';
-import { createRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
+import { createRtsCitizenSession, logoutRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
 
 const OTP_TTL_MS = 2 * 60 * 1000;
 
@@ -189,6 +189,14 @@ export async function verifyCitizenOtpAction(otp: string) {
 
 export async function logoutCitizenAction() {
   const c = await cookies();
+  const sessionId = c.get('rts_session')?.value;
+  if (sessionId) {
+    try {
+      await logoutRtsCitizenSession(sessionId);
+    } catch (err) {
+      console.error('Failed to logout citizen session in DB:', err);
+    }
+  }
   c.delete('rts_session');
   c.delete('rts_logged_in');
   c.delete('rts_citizen_profile');

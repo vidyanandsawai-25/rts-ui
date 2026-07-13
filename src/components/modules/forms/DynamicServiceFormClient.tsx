@@ -53,7 +53,7 @@ const Button = ({ children, className, variant, onClick }: any) => (
 interface ServiceFormProps {
   locale: string;
   serviceId: string;
-  rtsServiceId?: number;
+  govtServiceCode?: number;
   departmentId?: number;
   serviceTitle?: string;
   initialGroups?: any[] | { items?: any[] };
@@ -104,7 +104,7 @@ function getLocalizedLabelText(label: any, language: string): string {
 export default function DynamicServiceFormClient({
   locale,
   serviceId,
-  rtsServiceId,
+  govtServiceCode,
   departmentId,
   serviceTitle: serviceTitleFromServer,
   initialGroups,
@@ -883,11 +883,10 @@ export default function DynamicServiceFormClient({
           fieldId,
           fieldDefinitionId: Number(field?.fieldDefinitionId ?? field?.rawApi?.id ?? 0),
           fieldName: String(
-            field?.rawApi?.fieldName ||
-              field?.rawApi?.fieldCode ||
+            field?.rawApi?.fieldCode ||
               field?.groupFieldId ||
               field?.id ||
-              field?.fieldName ||
+              field?.fieldCode ||
               ""
           ),
           fieldLabel: getLocalizedLabelText(field?.label, language),
@@ -945,7 +944,7 @@ export default function DynamicServiceFormClient({
         JSON.stringify({
           applicationId,
           serviceId,
-          rtsServiceId,
+          govtServiceCode,
           departmentId,
           payload,
           formData,

@@ -30,7 +30,8 @@ export interface RtsDepartmentApiItem {
   departmentServiceId: number | null;
   departmentName: string;
   departmentNameLocal?: string | null;
-  deptIcon: string | null;
+  departmentIcon: string | null;
+  displayOrder: number;
   id: number;
   isActive: boolean;
   createdDate: string;

@@ -9,7 +9,7 @@ export interface RtsApplicationFieldValuePayload {
   isActive?: boolean;
   createdBy?: number;
   fieldDefinitionId: number;
-  fieldName: string;
+  // fieldName removed — API identifies fields via fieldDefinitionId only
   textValue?: string | null;
   numberValue?: number | null;
   dateValue?: string | null;
@@ -31,7 +31,7 @@ export interface CreateRtsApplicationPayload {
 export interface CreateRtsApplicationFieldValueResponse {
   applicationId: number;
   fieldDefinitionId: number;
-  fieldName: string;
+  // fieldName removed — get field metadata via fieldDefinitionId JOIN
   textValue: string | null;
   numberValue: number | null;
   dateValue: string | null;

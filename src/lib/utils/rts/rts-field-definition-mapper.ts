@@ -371,7 +371,7 @@ function mapApiItemToField(item: RtsFieldDefinitionApiItem): DynamicFormField {
     serviceId: item.serviceId,
 
     fieldCode: item.fieldCode,
-    fieldName: item.fieldName,
+    // fieldName removed from API — fieldCode is the unique identifier
     label: item.fieldLabel,
 
     type,
@@ -731,9 +731,9 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
   }
 
   return {
-    id: String(item?.fieldCode || item?.fieldName || item?.id),
+    id: String(item?.fieldCode || item?.id),
     type: oldType,
-    label: langLabel(String(item?.fieldLabel || item?.fieldName || item?.fieldCode || ""), item?.fieldLabelLocal),
+    label: langLabel(String(item?.fieldLabel || item?.fieldCode || ""), item?.fieldLabelLocal),
     required: Boolean(item?.isRequired) || hasRule(item?.validationRules, "required"),
     colSpan: getApiFieldColSpan(oldType, options.length),
     placeholder:
@@ -741,7 +741,7 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
         ? langLabel("Select")
         : oldType === "file"
           ? langLabel("Upload file")
-          : langLabel(`Enter ${item?.fieldLabel || item?.fieldName || ""}`),
+          : langLabel(`Enter ${item?.fieldLabel || item?.fieldCode || ""}`),
     helperText: undefined,
     description: undefined,
     options,

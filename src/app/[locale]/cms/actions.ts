@@ -294,7 +294,7 @@ export async function getCmsMastersAction() {
         ? srvRes.data
         : (srvRes.data.items || []);
       services = rawServices.map((s: any) => ({
-        id: String(s.id ?? s.rtsServiceId ?? ""),
+        id: String(s.id ?? s.govtServiceCode ?? ""),
         name: String(s.serviceName || s.name || ""),
         departmentId: String(s.departmentId ?? "")
       }));
@@ -393,7 +393,7 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
     if (res.success && res.data) {
       const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
       newSrv = {
-        id: String(raw.id ?? raw.rtsServiceId ?? ""),
+        id: String(raw.id ?? raw.govtServiceCode ?? ""),
         name: String(raw.serviceName || raw.name || ""),
         departmentId: String(raw.departmentId ?? "")
       };
@@ -513,7 +513,7 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
       if (res.success && res.data) {
         const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data.items || res.data);
         const updatedSrv = {
-          id: String(raw.id ?? raw.rtsServiceId ?? id),
+          id: String(raw.id ?? raw.govtServiceCode ?? id),
           name: String(raw.serviceName || raw.name || name),
           departmentId: String(raw.departmentId ?? departmentId)
         };
@@ -671,7 +671,7 @@ export async function getCmsFieldsAction() {
     if (srvRes.success && srvRes.data) {
       const rawServices = Array.isArray(srvRes.data) ? srvRes.data : (srvRes.data.items || []);
       services = rawServices.map((s: any) => ({
-        id: String(s.id ?? s.rtsServiceId ?? ""),
+        id: String(s.id ?? s.govtServiceCode ?? ""),
         name: String(s.serviceName || s.name || ""),
         departmentId: String(s.departmentId ?? "")
       }));

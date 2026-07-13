@@ -69,3 +69,22 @@ export async function validateRtsCitizenSession(
     return { success: false, message: err.message || "Network error" };
   }
 }
+
+export async function logoutRtsCitizenSession(
+  sessionId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await apiClient.post<{ success: boolean; message: string }>(
+      `/RTSCitizenSession/logout/${sessionId}`,
+      {},
+      { cache: "no-store" }
+    );
+    if (!response.success || !response.data) {
+      return { success: false, message: response.error || "Failed to logout session" };
+    }
+    return response.data;
+  } catch (err: any) {
+    return { success: false, message: err.message || "Network error" };
+  }
+}
+

@@ -2,7 +2,7 @@ export interface RtsFieldDefinitionQueryParams {
   DepartmentId?: number;
   ServiceId?: number;
   FieldCode?: string;
-  FieldName?: string;
+  // FieldName removed — FieldCode is the unique identifier
   PageNumber?: number;
   PageSize?: number;
 }
@@ -11,7 +11,7 @@ export interface RtsFieldDefinitionApiItem {
   departmentId: number;
   serviceId: number;
   fieldCode: string;
-  fieldName: string;
+  // fieldName removed — fieldCode is the unique identifier (was always identical to fieldCode)
   fieldLabel: string;
   fieldLabelLocal: string | null;
   fieldType: string;
@@ -68,7 +68,7 @@ export interface DynamicFormField {
   serviceId: number;
 
   fieldCode: string;
-  fieldName: string;
+  // fieldName removed — use fieldCode as the unique field identifier
   label: string;
 
   type: DynamicRenderFieldType;

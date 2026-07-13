@@ -170,14 +170,14 @@ export function getPropertyDtoByPropertyIdLocal(propertyId: string): PropertyMas
   return getPropertyDtoLocal(idx + 1);
 }
 
-export function getServiceFieldsLocal(rtsServiceId: number): RTSServiceFieldGroup[] {
+export function getServiceFieldsLocal(govtServiceCode: number): RTSServiceFieldGroup[] {
   return [
     {
-      groupTitle: `Service ${rtsServiceId} Fields`,
+      groupTitle: `Service ${govtServiceCode} Fields`,
       fields: [
-        { groupId: 1, rtsServiceId, groupTitle: "Applicant", groupFieldType: "text", groupFieldLabel: "Applicant Name", groupFieldRequired: true, isActive: true, groupFieldId: "applicantName" },
-        { groupId: 1, rtsServiceId, groupTitle: "Applicant", groupFieldType: "tel", groupFieldLabel: "Mobile", groupFieldRequired: true, isActive: true, groupFieldId: "mobileNo" },
-        { groupId: 2, rtsServiceId, groupTitle: "Address", groupFieldType: "text", groupFieldLabel: "Address", groupFieldRequired: false, isActive: true, groupFieldId: "address" },
+        { groupId: 1, govtServiceCode, groupTitle: "Applicant", groupFieldType: "text", groupFieldLabel: "Applicant Name", groupFieldRequired: true, isActive: true, groupFieldId: "applicantName" },
+        { groupId: 1, govtServiceCode, groupTitle: "Applicant", groupFieldType: "tel", groupFieldLabel: "Mobile", groupFieldRequired: true, isActive: true, groupFieldId: "mobileNo" },
+        { groupId: 2, govtServiceCode, groupTitle: "Address", groupFieldType: "text", groupFieldLabel: "Address", groupFieldRequired: false, isActive: true, groupFieldId: "address" },
       ],
     },
   ];
@@ -188,7 +188,7 @@ export function createDraftLocal(payload: CreateDraftRequest): CreateDraftRespon
   const now = new Date().toISOString();
   shared.drafts.set(applicationId, {
     applicationId,
-    rtsServiceId: payload.rtsServiceId,
+    govtServiceCode: payload.govtServiceCode,
     departmentId: payload.departmentId,
     status: "DRAFT",
     currentStep: payload.currentStep ?? null,
@@ -197,7 +197,7 @@ export function createDraftLocal(payload: CreateDraftRequest): CreateDraftRespon
     updatedOn: now,
     values: [],
   });
-  return { applicationId, status: "DRAFT", rtsServiceId: payload.rtsServiceId, departmentId: payload.departmentId };
+  return { applicationId, status: "DRAFT", govtServiceCode: payload.govtServiceCode, departmentId: payload.departmentId };
 }
 
 export function saveDraftValuesLocal(applicationId: number, payload: SaveDraftValuesRequest) {

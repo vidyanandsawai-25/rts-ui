@@ -13,7 +13,7 @@ function buildUrl(params: RtsFieldDefinitionQueryParams = {}): string {
   if (params.DepartmentId !== undefined) searchParams.set("DepartmentId", String(params.DepartmentId));
   if (params.ServiceId !== undefined) searchParams.set("ServiceId", String(params.ServiceId));
   if (params.FieldCode) searchParams.set("FieldCode", params.FieldCode);
-  if (params.FieldName) searchParams.set("FieldName", params.FieldName);
+  // FieldName removed — use FieldCode for filtering
   if (params.PageNumber !== undefined) searchParams.set("PageNumber", String(params.PageNumber));
   if (params.PageSize !== undefined) searchParams.set("PageSize", String(params.PageSize));
 

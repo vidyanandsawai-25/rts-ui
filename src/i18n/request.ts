@@ -67,6 +67,7 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     modulesMessages,
+    rtsMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -160,6 +161,7 @@ export default getRequestConfig(async ({ locale }) => {
         .catch(() => ({}))
         .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/rts.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -217,6 +219,7 @@ export default getRequestConfig(async ({ locale }) => {
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
       modules: modulesMessages,
+      rts: rtsMessages,
     },
   };
 });

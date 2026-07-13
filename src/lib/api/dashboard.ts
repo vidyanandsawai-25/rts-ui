@@ -33,64 +33,16 @@ function toI18nLabelWithLocal(value: string, localValue?: string | null) {
   return { en: value, hi: localVal, mr: localVal };
 }
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+function resolveDepartmentIcon(apiIcon: string | null) {
+  return apiIcon && apiIcon.trim() ? apiIcon.trim() : 'Building2';
 }
 
-function resolveDepartmentImage(name: string) {
-  const slug = slugify(name);
-  const known: Record<string, string> = {
-    'birth-death': '/images/departments/birth-death.svg',
-    'birth-death-marriage': '/images/departments/birth-death.svg',
-    'education': '/images/departments/education.svg',
-    'marriage-certificate': '/images/departments/marriage.svg',
-    'noc': '/images/departments/building.svg',
-    'ofc': '/images/departments/ofc.svg',
-    'property-tax': '/images/departments/property-tax.svg',
-    'trade-license': '/images/departments/bajar-parwana.svg',
-    'tree': '/images/departments/tree.svg',
-    'water-connection': '/images/departments/water-supply.svg',
-    'water-supply': '/images/departments/water-supply.svg',
-    'civic-amenities': '/images/departments/civic-amenities.svg',
-  };
-
-  return known[slug] || '/images/departments/building.svg';
-}
-
-function resolveDepartmentIcon(name: string, apiIcon: string | null) {
-  if (apiIcon && apiIcon.trim()) return apiIcon.trim();
-
-  const lower = name.toLowerCase();
-  if (lower.includes('fire')) return 'Flame';
-  if (lower.includes('water')) return 'Droplets';
-  if (lower.includes('trade')) return 'Briefcase';
-  if (lower.includes('property')) return 'Home';
-  if (lower.includes('birth') || lower.includes('death') || lower.includes('marriage')) return 'HeartPulse';
-  if (lower.includes('education')) return 'GraduationCap';
-  if (lower.includes('tree')) return 'TreePine';
-  if (lower.includes('noc')) return 'ShieldCheck';
-  return 'Building2';
-}
-
-function resolveServiceIcon(serviceName: string) {
-  const lower = serviceName.toLowerCase();
-  if (lower.includes('fire')) return 'Flame';
-  if (lower.includes('birth')) return 'Baby';
-  if (lower.includes('death')) return 'HeartOff';
-  if (lower.includes('marriage')) return 'Heart';
-  if (lower.includes('property')) return 'Home';
-  if (lower.includes('water')) return 'Droplets';
-  if (lower.includes('trade')) return 'Briefcase';
-  if (lower.includes('noc')) return 'ShieldCheck';
-  if (lower.includes('certificate')) return 'FileCheck';
-  return 'FileText';
+function resolveServiceIcon(apiIcon: string | null | undefined) {
+  return apiIcon && apiIcon.trim() ? apiIcon.trim() : 'FileText';
 }
 
 export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
+
   const [departments, services] = await Promise.all([getAllRtsDepartments(), getAllRtsServices()]);
 
   return departments
@@ -101,14 +53,17 @@ export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
         .map((service) => ({
           id: String(service.id),
           name: toI18nLabelWithLocal(service.serviceName, service.serviceNameLocal),
-          icon: resolveServiceIcon(service.serviceName),
-        }));
+          icon: resolveServiceIcon(service.serviceIcon),
+          displayOrder: service.displayOrder ?? 0,
+        }))
+        .sort((a, b) => a.displayOrder - b.displayOrder);
 
       return {
         id: String(department.id),
         name: toI18nLabelWithLocal(department.departmentName, department.departmentNameLocal),
-        icon: resolveDepartmentIcon(department.departmentName, department.deptIcon),
-        image: resolveDepartmentImage(department.departmentName),
+        icon: resolveDepartmentIcon(department.departmentIcon),
+        displayOrder: department.displayOrder ?? 0,
+        image: "",
         services: departmentServices,
       };
     })

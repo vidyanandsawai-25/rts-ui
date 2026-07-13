@@ -2,7 +2,8 @@
 
 export type RTSServiceField = {
   groupId: number;
-  rtsServiceId: number;
+  /** Government RTS portal service reference code (renamed from rtsServiceId) */
+  govtServiceCode: number;
   groupTitle: string;
   groupFieldType: string; // text | select | email | tel | number (based on your DB)
   groupFieldLabel: string;
@@ -18,7 +19,7 @@ export type RTSServiceFieldGroup = {
 };
 
 export type CreateDraftRequest = {
-  rtsServiceId: number;
+  govtServiceCode: number;
   departmentId: number;
   currentStep?: string;
 };
@@ -26,7 +27,7 @@ export type CreateDraftRequest = {
 export type CreateDraftResponse = {
   applicationId: number;
   status: string;
-  rtsServiceId: number;
+  govtServiceCode: number;
   departmentId: number;
 };
 
@@ -41,7 +42,7 @@ export type SubmitRequest = {
 
 export type GetApplicationResponse = {
   applicationId: number;
-  rtsServiceId: number;
+  govtServiceCode: number;
   departmentId: number;
   status: string;
   currentStep?: string | null;

@@ -24,6 +24,7 @@ type Department = {
   services: Service[];
   image: string;
   icon?: string;
+  displayOrder: number;
 };
 
 export type SearchService = Service & {

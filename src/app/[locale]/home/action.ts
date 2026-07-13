@@ -17,25 +17,6 @@ export interface ListServicesResponse {
     error?: string;
 }
 
-/**
- * Analyzes department name to determine the correct Lucide icon
- */
-function getIconByDepartmentName(departmentName: string): string {
-    const lowerName = departmentName.toLowerCase().trim();
-
-    if (lowerName.includes('property')) return 'Home';
-    if (lowerName.includes('water')) return 'Droplet';
-    if (lowerName.includes('trade') || lowerName.includes('license') || lowerName.includes('bajar')) return 'ShoppingCart';
-    if (lowerName.includes('birth') || lowerName.includes('death')) return 'FileText';
-    if (lowerName.includes('garbage') || lowerName.includes('trash') || lowerName.includes('waste')) return 'Trash2';
-    if (lowerName.includes('building') || lowerName.includes('permission')) return 'Building2';
-    if (lowerName.includes('grievance') || lowerName.includes('complain')) return 'Megaphone';
-    if (lowerName.includes('rts')) return 'Timer';
-    if (lowerName.includes('asset')) return 'Landmark';
-    if (lowerName.includes('fire') || lowerName.includes('noc')) return 'Flame';
-
-    return 'LayoutGrid';
-}
 
 /**
  * Maps user department from API to UI Service interface
@@ -58,7 +39,7 @@ function mapDepartmentToService(
         name: department.departmentName,
         title: department.departmentName,
         subtext: `Access ${department.departmentName} services`,
-        icon: iconName || getIconByDepartmentName(department.departmentName),
+        icon: iconName || 'LayoutGrid',
         link: `/${locale}/${routeSegment}`,
         moduleId,
         moduleName,

@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { CitizenLandingPage } from '@/components/modules/rts/CitizenLandingPage';
 import { CitizenLayout } from '@/components/layout';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
+import { getDashboardDepartments } from '@/lib/api/dashboard';
+import type { DepartmentDTO } from '@/types/rts-citizen.types';
 
 interface ServicePageProps {
   params: Promise<{ locale: string }>;
@@ -44,11 +46,16 @@ export default async function ServicePage({ params }: ServicePageProps) {
 
   const cookieStore = await cookies();
   const hasSession = cookieStore.has('rts_session');
-  const { ulbData } = await fetchLoginBrandingAction();
+
+  // Fetch departments + services from DB (parallel with branding)
+  const [{ ulbData }, departments] = await Promise.all([
+    fetchLoginBrandingAction(),
+    getDashboardDepartments().catch((): DepartmentDTO[] => []),
+  ]);
 
   return (
     <CitizenLayout>
-      <CitizenLandingPage isLoggedIn={hasSession} ulbData={ulbData} />
+      <CitizenLandingPage isLoggedIn={hasSession} ulbData={ulbData} departments={departments} />
     </CitizenLayout>
   );
 }

@@ -117,7 +117,7 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
         <DynamicServiceFormClient
           locale={locale}
           serviceId={serviceId}
-          rtsServiceId={canonicalServiceId}
+          govtServiceCode={canonicalServiceId}
           departmentId={departmentId}
           serviceTitle={serviceTitle}
           initialGroups={fieldDefinitions}

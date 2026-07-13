@@ -88,17 +88,8 @@ function toDateValue(value: unknown): string | null {
   return null;
 }
 
-function readFieldName(field: Record<string, unknown>): string {
-  const rawApi = field.rawApi as Record<string, unknown> | undefined;
-  return String(
-    rawApi?.fieldName ||
-      rawApi?.fieldCode ||
-      field.groupFieldId ||
-      field.id ||
-      field.fieldName ||
-      ""
-  );
-}
+// readFieldName removed — fieldName no longer sent in API payload
+
 
 function readFieldDefinitionId(field: Record<string, unknown>): number {
   const rawApi = field.rawApi as Record<string, unknown> | undefined;
@@ -132,7 +123,7 @@ export function buildRtsApplicationPayload({
         isActive: true,
         createdBy,
         fieldDefinitionId,
-        fieldName: readFieldName(field),
+        // fieldName removed — API identifies fields via fieldDefinitionId only
         textValue: null,
         numberValue: null,
         dateValue: null,

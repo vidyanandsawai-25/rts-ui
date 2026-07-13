@@ -24,6 +24,9 @@ export type DepartmentDTO = {
   /** Lucide icon name string, e.g. "HeartPulse", "Home" */
   icon: string;
 
+  /** Display sorting order from DB */
+  displayOrder: number;
+
   /**
    * Department card image.
    * Use a local public path: "/images/departments/property-tax.svg"
@@ -48,12 +51,15 @@ export type ServiceDTO = {
 
   /** Tailwind color class for card accent, e.g. "bg-blue-400" */
   color?: string;
+
+  /** Display sorting order from DB */
+  displayOrder: number;
 };
 
 // ── Service Metadata (for form page header) ──────────────────────────────────
 export type ServiceMetaDTO = {
   serviceId: string;
-  rtsServiceId: number;
+  govtServiceCode: number;
   departmentId: string;
   departmentName: I18nLabel;
 

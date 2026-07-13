@@ -7,8 +7,8 @@ import {
 } from "@/lib/mock/ui-only";
 import type { CreateDraftRequest, CreateDraftResponse, GetApplicationResponse, RTSServiceFieldGroup, SaveDraftValuesRequest, SubmitRequest } from "@/types/rts.types";
 
-export function getServiceFields(rtsServiceId: number): Promise<RTSServiceFieldGroup[]> {
-  return Promise.resolve(getServiceFieldsLocal(rtsServiceId));
+export function getServiceFields(govtServiceCode: number): Promise<RTSServiceFieldGroup[]> {
+  return Promise.resolve(getServiceFieldsLocal(govtServiceCode));
 }
 
 export function createDraft(payload: CreateDraftRequest): Promise<CreateDraftResponse> {
