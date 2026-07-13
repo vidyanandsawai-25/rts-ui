@@ -188,6 +188,10 @@ export const useFloorDataHandlers = (params: {
           }
           toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
 
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('floorSaved'));
+          }
+
           startTransition(() => {
             router.refresh();
             if (typeof window !== 'undefined') {
