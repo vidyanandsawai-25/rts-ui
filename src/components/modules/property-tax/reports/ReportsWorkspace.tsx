@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string, react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';

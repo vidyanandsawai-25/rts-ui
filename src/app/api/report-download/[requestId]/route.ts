@@ -62,7 +62,8 @@ export async function GET(
     if (contentLength) responseHeaders.set('Content-Length', contentLength);
 
     return new NextResponse(upstream.body, { status: 200, headers: responseHeaders });
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Internal server error', details: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ error: 'Internal server error', details: errorMsg }, { status: 500 });
   }
 }
