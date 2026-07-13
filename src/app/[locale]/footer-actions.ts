@@ -152,6 +152,17 @@ export async function handleFooterAction(
         const payloadLocale = payload.locale || 'en';
         redirect(`/${payloadLocale}/property-tax/waterconnection?propertyId=${payload.propertyId}`);
       }
+      case 'PTIS_PROPERTY_REPORT': {
+        const payloadLocale = payload.locale || 'en';
+        const params = new URLSearchParams();
+        if (payload.propertyId) params.set('propertyId', payload.propertyId);
+        if (payload.wardId) params.set('wardId', payload.wardId);
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+        redirect(`/${payloadLocale}/property-tax/reports${suffix}`);
+      }
       default:
         return { success: false, error: `Command ${command} is not yet implemented.` };
     }

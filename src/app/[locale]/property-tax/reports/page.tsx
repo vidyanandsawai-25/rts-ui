@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { getReportDefinitions, getZones } from '@/lib/api/report.service';
-import { ReportsWorkspace } from '@/components/modules/reports/ReportsWorkspace';
+import { ReportsWorkspace } from '@/components/modules/property-tax/reports/ReportsWorkspace';
 import type { ReportFormCopy, ReportJobsCopy, ReportWorkspaceCopy, ReportParamsPanelCopy } from '@/types/report.types';
 import { PageContainer, TableHeader } from '@/components/common';
 import Link from 'next/link';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { getReportLookupAction } from '@/app/[locale]/reports/action';
+import { getReportLookupAction } from '@/app/[locale]/property-tax/reports/action';
 import type { LookupOption } from '@/types/report.types';
 
 /**

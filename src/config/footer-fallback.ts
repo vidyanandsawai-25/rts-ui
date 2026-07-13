@@ -182,6 +182,19 @@ export const FALLBACK_FOOTER_ACTIONS: FallbackFooterAction[] = [
   haveFullAccess: true,
   haveNoAccess: false,
 },
+  {
+  actionCommand: 'PTIS_PROPERTY_REPORT',
+  buttonName: 'Report',
+  lucideIcon: 'FileText',
+  routePath: '',
+  displayOrder: 206,
+  isEnabled: true,
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  haveNoAccess: false,
+},
 
   {
     actionCommand: 'PTIS_ADD',

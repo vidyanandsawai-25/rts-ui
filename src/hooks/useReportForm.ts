@@ -10,8 +10,8 @@ import type {
 } from '@/types/report.types';
 import { useReportFormState } from './useReportFormState';
 import { useReportFormSubmission } from './useReportFormSubmission';
-import { getReportParametersAction } from '@/app/[locale]/reports/action';
-import type { GetReportParametersResult } from '@/app/[locale]/reports/action';
+import { getReportParametersAction } from '@/app/[locale]/property-tax/reports/action';
+import type { GetReportParametersResult } from '@/app/[locale]/property-tax/reports/action';
 
 function validate(
   reportCode: string,

@@ -10,7 +10,7 @@ import {
   getZonesAction,
   getWardsByZoneAction,
   getPropertiesByWardAction,
-} from '@/app/[locale]/reports/action';
+} from '@/app/[locale]/property-tax/reports/action';
 import type { FinancialYear } from '@/types/financialYear.types';
 import type { ZoneSummary, WardSummary, PropertySummary, ReportDefinition, ReportParamsPanelCopy } from '@/types/report.types';
 

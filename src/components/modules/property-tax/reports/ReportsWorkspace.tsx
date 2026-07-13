@@ -17,8 +17,8 @@ import {
   Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ReportParametersPanel } from '@/components/modules/reports/ReportParametersPanel';
-import { ReportJobsList } from '@/components/modules/reports/ReportJobsList';
+import { ReportParametersPanel } from '@/components/modules/property-tax/reports/ReportParametersPanel';
+import { ReportJobsList } from '@/components/modules/property-tax/reports/ReportJobsList';
 import { Card, Tabs, TabList, Tab, Button, useConfirm } from '@/components/common';
 import { useReportJobs } from '@/hooks/useReportJobs';
 import type { ReportsWorkspaceProps, ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';

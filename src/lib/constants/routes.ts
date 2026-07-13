@@ -17,5 +17,5 @@ export const ROUTES = {
   PROFILE: '/profile',
   SETTINGS: '/settings',
   SCREEN_ACCESS: '/configuration-settings/screenAccess',
-  REPORTS: '/reports',
+  REPORTS: '/property-tax/reports',
 } as const;
