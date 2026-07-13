@@ -141,5 +141,14 @@
       "generate": "अहवाल तयार करा",
       "queuing": "रांगेत टाकत आहे..."
     }
+  },
+  "generationForm": {
+    "loadingParameters": "मापदंड लोड होत आहेत...",
+    "failedToLoadParameters": "API मधून मापदंड लोड करण्यात अपयश:",
+    "noParametersDefined": "{report} साठी कोणतेही मापदंड परिभाषित केलेले नाहीत.",
+    "back": "मागे",
+    "selectPreviousFirst": "प्रथम मागील फील्ड निवडा",
+    "loading": "लोड होत आहे...",
+    "select": "निवडा..."
   }
 }

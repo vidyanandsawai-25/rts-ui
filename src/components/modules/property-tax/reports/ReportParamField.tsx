@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Select } from '@/components/common/select';
 import { Checkbox, Input } from '@/components/common';
 import { useLookupOptions } from '@/hooks/useLookupOptions';
@@ -21,6 +22,7 @@ interface ReportParamFieldProps {
  * 'date' supports a min-bound from its cascade parent (date ranges); plus text/number/boolean.
  */
 export function ReportParamField({ param, value, parentValue, onChange, onBlur, error }: ReportParamFieldProps) {
+  const t = useTranslations('report');
   const isSelect = param.parameterType === 'select';
   const hasParent = !!param.cascadeFromKey;
   const cascadeBlocked = hasParent && !parentValue?.trim();
@@ -42,7 +44,7 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
           name={param.parameterKey}
           label={param.label}
           required={param.isRequired}
-          placeholder={cascadeBlocked ? 'Select the previous field first' : loading ? 'Loading...' : 'Select...'}
+          placeholder={cascadeBlocked ? t('generationForm.selectPreviousFirst') : loading ? t('generationForm.loading') : t('generationForm.select')}
           options={options.map((o) => ({ value: o.value, label: o.label }))}
           value={value}
           disabled={cascadeBlocked || loading}

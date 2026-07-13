@@ -141,5 +141,14 @@
       "generate": "Generate Report",
       "queuing": "Queuing..."
     }
+  },
+  "generationForm": {
+    "loadingParameters": "Loading parameters...",
+    "failedToLoadParameters": "Failed to load parameters from API:",
+    "noParametersDefined": "No parameters are defined for {report}.",
+    "back": "Back",
+    "selectPreviousFirst": "Select the previous field first",
+    "loading": "Loading...",
+    "select": "Select..."
   }
 }

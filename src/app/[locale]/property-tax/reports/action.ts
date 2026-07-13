@@ -29,7 +29,6 @@ export async function getReportParametersAction(
     return { data, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(`[getReportParametersAction] id=${reportDefinitionId}:`, message);
     return { data: [], error: message };
   }
 }

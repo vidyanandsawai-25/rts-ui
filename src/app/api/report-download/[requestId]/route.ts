@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { getAppConfig } from '@/config/app.config';
-import { serverFetch } from '@/lib/utils/server-fetch';
+import { apiClient } from '@/services/api.service';
 
 /**
  * Streams the finished PDF for a completed report request. Proxies GET {base}/Report/download/{id}.
@@ -13,23 +11,7 @@ export async function GET(
   try {
     const { requestId } = await params;
 
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim().replace(/\/+$/, '');
-    if (!baseUrl) {
-      return NextResponse.json({ error: 'Backend API base URL is not configured' }, { status: 500 });
-    }
-
-    const downloadUrl = `${baseUrl}/Report/download/${encodeURIComponent(requestId)}`;
-    const upstream = await serverFetch(downloadUrl, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const upstream = await apiClient.fetch(`/Report/download/${encodeURIComponent(requestId)}`);
 
 
     if (!upstream.ok) {

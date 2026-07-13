@@ -1,6 +1,6 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Select } from '@/components/common/select';
 import { Button, Card } from '@/components/common';
 import { useReportForm } from '@/hooks/useReportForm';
@@ -10,6 +10,8 @@ import type { Option } from '@/components/common/select';
 import { ArrowLeft } from 'lucide-react';
 
 export function ReportGenerationForm({ copy, reportDefinitions, onQueued, selectedReportCode, onBack }: ReportGenerationFormProps) {
+  const t = useTranslations('report');
+
   const {
     reportCode,
     paramValues,
@@ -59,21 +61,20 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued, select
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
-            <span>Loading parameters...</span>
+            <span>{t('generationForm.loadingParameters')}</span>
           </div>
         )}
 
         {!parametersLoading && reportCode && parametersError && (
           <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 space-y-1">
-            <p className="font-medium">Failed to load parameters from API:</p>
+            <p className="font-medium">{t('generationForm.failedToLoadParameters')}</p>
             <code className="block font-mono text-xs break-all">{parametersError}</code>
           </div>
         )}
 
         {!parametersLoading && reportCode && !parametersError && parameters.length === 0 && (
           <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-            No parameters are defined for{' '}
-            <code className="font-mono text-xs">{selectedDefinition?.reportName ?? reportCode}</code>.
+            {t('generationForm.noParametersDefined', { report: selectedDefinition?.reportName ?? reportCode })}
           </p>
         )}
 
@@ -100,7 +101,7 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued, select
               onClick={onBack}
               disabled={isSubmitting}
             >
-              Back
+              {t('generationForm.back')}
             </Button>
           )}
           <Button
