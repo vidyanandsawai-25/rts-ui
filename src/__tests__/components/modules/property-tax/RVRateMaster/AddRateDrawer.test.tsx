@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
     replace: vi.fn(),
     refresh: vi.fn(),
   }),
-  usePathname: () => "/en/property-tax/rate-master/rvratemaster/add",
+  usePathname: () => "/en/property-tax/rvratemaster/add",
   useSearchParams: () => new URLSearchParams(),
 }));
 

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
 import type { Mouja, MoujaProps } from "@/types/mouja.types";
-import { deleteMoujaAction } from "@/app/[locale]/property-tax/rate-master/moujamaster/action";
+import { deleteMoujaAction } from "@/app/[locale]/property-tax/moujamaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { SearchInput, Select } from "@/components/common";
 import { getMoujaColumns } from "./MoujaColumns";
@@ -71,7 +71,7 @@ export function MoujaMaster({
   const handleEdit = useCallback(
     (row: Mouja) => {
       startTransition(() => {
-        router.push(`/${locale}/property-tax/rate-master/moujamaster/edit/${row.id}`);
+        router.push(`/${locale}/property-tax/moujamaster/edit/${row.id}`);
       });
     },
     [router, locale]
@@ -144,7 +144,7 @@ export function MoujaMaster({
             <AddButton
               onClick={() => {
                 startTransition(() => {
-                  router.push(`/${locale}/property-tax/rate-master/moujamaster/add`);
+                  router.push(`/${locale}/property-tax/moujamaster/add`);
                 });
               }}
               label={t("list.buttons.add")}

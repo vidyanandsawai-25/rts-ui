@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
 import type { IRateMaster } from "@/types/RVRateMaster";
 
 interface ExistingRateCheckProps {
