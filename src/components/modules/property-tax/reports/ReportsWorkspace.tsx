@@ -24,7 +24,6 @@ export function ReportsWorkspace({
   fetchProperties,
   initialJobs,
   fetchJobs,
-  fetchReportParameters,
   createReportRequest,
 }: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs(initialJobs, fetchJobs);

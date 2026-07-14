@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchReportJobs } from '@/app/[locale]/property-tax/reports/action';
 import type { ReportJob, ReportJobStatus } from '@/types/report.types';
 
 // Fallback poll interval — only used when SSE connection is not established.
@@ -28,9 +27,12 @@ function hasInProgress(jobs: ReportJob[]): boolean {
  *
  * Fallback polling kicks in only when the SSE connection is not active.
  */
-export function useReportJobs() {
-  const [jobs, setJobs] = useState<ReportJob[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function useReportJobs(
+  initialJobs: ReportJob[] = [],
+  fetchJobs?: (take?: number) => Promise<ReportJob[]>,
+) {
+  const [jobs, setJobs] = useState<ReportJob[]>(initialJobs);
+  const [isLoading, setIsLoading] = useState(initialJobs.length === 0);
   const mountedRef = useRef(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sseRef = useRef<EventSource | null>(null);
@@ -48,7 +50,14 @@ export function useReportJobs() {
   const load = useCallback(async () => {
     let keepPolling = true;
     try {
-      const list = await fetchReportJobs(25);
+      let list: ReportJob[];
+      if (fetchJobs) {
+        list = await fetchJobs(25);
+      } else {
+        const res = await fetch('/api/report-requests?take=25');
+        if (!res.ok) throw new Error('Failed to fetch jobs');
+        list = (await res.json()) as ReportJob[];
+      }
       if (!mountedRef.current) return;
       setJobs(list);
       keepPolling = hasInProgress(list);
@@ -63,7 +72,7 @@ export function useReportJobs() {
         }
       }
     }
-  }, [clearTimer]);
+  }, [clearTimer, fetchJobs]);
 
   // Public trigger: reload immediately (e.g. right after queuing a new report).
   const refresh = useCallback(() => {

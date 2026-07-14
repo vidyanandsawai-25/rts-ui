@@ -4,10 +4,6 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import type { ReportDefinition, ReportParamValues } from '@/types/report.types';
 
-interface SubmitResponse {
-  reportRequestId: string;
-  status: string;
-}
 
 interface UseReportFormSubmissionOptions {
   reportCode: string;

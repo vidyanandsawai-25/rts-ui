@@ -3,7 +3,7 @@
 import { getReportDefinitions, getReportParameters, getZones, getWardsByZone, getPropertiesByWard } from '@/lib/api/report.service';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
 import { apiClient } from '@/services/api.service';
-import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, LookupOption, ReportJob } from '@/types/report.types';
+import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, ReportJob } from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
 import { cookies } from 'next/headers';
 
