@@ -29,6 +29,10 @@ interface ReportGenerateViewProps {
   onCategoryClick: (key: string) => void;
   onSelectReport: (report: ReportDefinition) => void;
   onQueued: (requestId: string) => void;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>,
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 export function ReportGenerateView({
@@ -45,6 +49,7 @@ export function ReportGenerateView({
   onCategoryClick,
   onSelectReport,
   onQueued,
+  createReportRequest,
 }: ReportGenerateViewProps) {
   const categoryCount = (key: string) => reportsByCategory.get(key)?.length ?? 0;
   const activeCategoryDef = CATEGORIES.find((c) => c.key === selectedCategory);
@@ -105,6 +110,7 @@ export function ReportGenerateView({
                 financialYears={financialYears}
                 fetchWards={fetchWards}
                 fetchProperties={fetchProperties}
+                createReportRequest={createReportRequest}
               />
             </div>
           </Card>

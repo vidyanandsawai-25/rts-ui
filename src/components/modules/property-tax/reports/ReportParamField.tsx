@@ -2,8 +2,9 @@
 
 import { Select } from '@/components/common/select';
 import { Checkbox, Input } from '@/components/common';
-import { useLookupOptions } from '@/hooks/useLookupOptions';
-import type { ReportParameterDefinition } from '@/types/report.types';
+import { useState, useEffect, useRef } from 'react';
+import { getLookupOptions } from '@/hooks/useLookupOptions';
+import type { ReportParameterDefinition, LookupOption } from '@/types/report.types';
 
 interface ParamFieldCopy {
   selectPreviousFirst: string;
@@ -32,12 +33,42 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
   const hasParent = !!param.cascadeFromKey;
   const cascadeBlocked = hasParent && !parentValue?.trim();
 
-  // Always called (hook rules); a null source means "don't fetch" for non-select params.
-  const { options, loading } = useLookupOptions(
-    isSelect ? (param.optionsSource ?? null) : null,
-    parentValue,
-    hasParent,
-  );
+  const [options, setOptions] = useState<LookupOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const source = isSelect ? (param.optionsSource ?? null) : null;
+    if (!source || (hasParent && !parentValue?.trim())) {
+      setOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    getLookupOptions(source, parentValue?.trim() || undefined)
+      .then((opts) => {
+        if (!cancelled && mountedRef.current) {
+          setOptions(opts);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled && mountedRef.current) {
+          setOptions([]);
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isSelect, param.optionsSource, parentValue, hasParent]);
 
   const change = (v: string) => onChange(param.parameterKey, v);
   const blur = () => onBlur(param.parameterKey);

@@ -1,10 +1,11 @@
 'use server';
 
-import { getReportDefinitions, getReportParameters, getZones, getWardsByZone, getPropertiesByWard, getReportLookup } from '@/lib/api/report.service';
+import { getReportDefinitions, getReportParameters, getZones, getWardsByZone, getPropertiesByWard } from '@/lib/api/report.service';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
 import { apiClient } from '@/services/api.service';
 import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, LookupOption, ReportJob } from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
+import { cookies } from 'next/headers';
 
 export async function getReportDefinitionsAction(): Promise<ReportDefinition[]> {
   try {
@@ -51,19 +52,10 @@ export async function getPropertiesByWardAction(wardId: number): Promise<Propert
   try {
     return await getPropertiesByWard(wardId);
   } catch (err) {
-    console.error('[getPropertiesByWardAction] Failed to fetch properties by ward:', err);
     return [];
   }
 }
 
-/** Generic option source for any 'select' parameter — dispatched by lookup key on the backend. */
-export async function getReportLookupAction(key: string, parentValue?: string): Promise<LookupOption[]> {
-  try {
-    return await getReportLookup(key, parentValue);
-  } catch {
-    return [];
-  }
-}
 
 /** Fetch all active financial years for the report parameters panel. */
 export async function getFinancialYearsAction(): Promise<FinancialYear[]> {
@@ -260,6 +252,35 @@ export async function fetchReportJobs(take = 25): Promise<ReportJob[]> {
     return result.data;
   } catch {
     return [];
+  }
+}
+
+export async function createReportRequestAction(
+  reportCode: string,
+  parameters: Record<string, string>,
+): Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }> {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('user_id')?.value;
+
+    const enrichedParameters = {
+      ...parameters,
+      ...(userId ? { userId, UserId: userId } : {}),
+    };
+
+    const result = await apiClient.post<{ reportRequestId: string; status: string }>('/Report/request', {
+      reportCode,
+      parameters: enrichedParameters,
+    });
+
+    if (!result.success || !result.data) {
+      return { success: false, error: result.error || 'Failed to queue report' };
+    }
+
+    return { success: true, data: result.data };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return { success: false, error: message };
   }
 }
 

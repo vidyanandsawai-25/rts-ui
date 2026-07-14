@@ -234,6 +234,8 @@ export interface ReportGenerationFormProps {
   onQueued?: () => void;
   /** Called when the user wants to go back to the report selection grid. */
   onBack?: () => void;
+  fetchReportParameters?: (reportDefinitionId: number) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
+  createReportRequest?: (reportCode: string, parameters: Record<string, string>) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 import type { FinancialYear } from '@/types/financialYear.types';
@@ -250,6 +252,10 @@ export interface ReportsWorkspaceProps {
   fetchWards?: (zoneId: number) => Promise<WardSummary[]>;
   /** Server action injected from page.tsx — fetches properties for a given ward */
   fetchProperties?: (wardId: number) => Promise<PropertySummary[]>;
+  initialJobs?: ReportJob[];
+  fetchJobs?: (take?: number) => Promise<ReportJob[]>;
+  fetchReportParameters?: (reportDefinitionId: number) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
+  createReportRequest?: (reportCode: string, parameters: Record<string, string>) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 export interface ReportJobsListProps {

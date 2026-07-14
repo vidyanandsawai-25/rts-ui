@@ -8,7 +8,15 @@ import type { ReportGenerationFormProps } from '@/types/report.types';
 import type { Option } from '@/components/common/select';
 import { ArrowLeft } from 'lucide-react';
 
-export function ReportGenerationForm({ copy, reportDefinitions, onQueued, selectedReportCode, onBack }: ReportGenerationFormProps) {
+export function ReportGenerationForm({
+  copy,
+  reportDefinitions,
+  onQueued,
+  selectedReportCode,
+  onBack,
+  fetchReportParameters,
+  createReportRequest,
+}: ReportGenerationFormProps) {
   const {
     reportCode,
     paramValues,
@@ -23,7 +31,13 @@ export function ReportGenerationForm({ copy, reportDefinitions, onQueued, select
     handleSubmit,
     handleReset,
     selectedDefinition,
-  } = useReportForm({ reportDefinitions, onQueued, selectedReportCode });
+  } = useReportForm({
+    reportDefinitions,
+    onQueued,
+    selectedReportCode,
+    fetchReportParameters,
+    createReportRequest,
+  });
 
   const reportOptions: Option[] = reportDefinitions.map((d) => ({
     value: d.reportCode,

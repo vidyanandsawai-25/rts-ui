@@ -117,7 +117,7 @@ export function buildWorkspaceCopy(t: Translator): ReportWorkspaceCopy {
     preview: {
       title: t('workspace.preview.title'),
       downloadPdf: t('workspace.preview.downloadPdf'),
-      idLabel: t('workspace.preview.idLabel'),
+      idLabel: t.raw('workspace.preview.idLabel'),
     },
     confirm: {
       title: t('workspace.confirm.title'),

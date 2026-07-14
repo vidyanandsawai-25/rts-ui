@@ -22,8 +22,12 @@ export function ReportsWorkspace({
   financialYears,
   fetchWards,
   fetchProperties,
+  initialJobs,
+  fetchJobs,
+  fetchReportParameters,
+  createReportRequest,
 }: ReportsWorkspaceProps) {
-  const { jobs, isLoading, refresh } = useReportJobs();
+  const { jobs, isLoading, refresh } = useReportJobs(initialJobs, fetchJobs);
   const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<'generate' | 'history'>('generate');
@@ -188,6 +192,7 @@ export function ReportsWorkspace({
           onCategoryClick={handleCategoryClick}
           onSelectReport={handleSelectReport}
           onQueued={handleQueued}
+          createReportRequest={createReportRequest}
         />
       ) : (
         <div className="transition-all duration-300">

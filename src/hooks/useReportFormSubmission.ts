@@ -17,6 +17,10 @@ interface UseReportFormSubmissionOptions {
   queuedMessage: string;
   errorMessage: string;
   onQueued?: () => void;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>,
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 export function useReportFormSubmission({
@@ -27,6 +31,7 @@ export function useReportFormSubmission({
   queuedMessage,
   errorMessage,
   onQueued,
+  createReportRequest,
 }: UseReportFormSubmissionOptions) {
   const submitReport = useCallback(async () => {
     if (!selectedDefinition) return;
@@ -39,20 +44,17 @@ export function useReportFormSubmission({
 
     setIsSubmitting(true);
     try {
-      // Fire-and-forget: queue the request and return. Generation happens off-server;
-      // the "My Reports" list tracks status and offers the download when ready.
-      const response = await fetch('/api/report-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportCode, parameters }),
-      });
+      if (!createReportRequest) {
+        throw new Error('createReportRequest server action is not provided');
+      }
 
-      if (!response.ok) {
+      const result = await createReportRequest(reportCode, parameters);
+
+      if (!result.success) {
         toast.error(errorMessage);
         return;
       }
 
-      await response.json().catch(() => ({}) as SubmitResponse);
       toast.info(queuedMessage);
       onQueued?.();
     } catch {
@@ -60,7 +62,7 @@ export function useReportFormSubmission({
     } finally {
       setIsSubmitting(false);
     }
-  }, [reportCode, paramValues, selectedDefinition, setIsSubmitting, queuedMessage, errorMessage, onQueued]);
+  }, [reportCode, paramValues, selectedDefinition, setIsSubmitting, queuedMessage, errorMessage, onQueued, createReportRequest]);
 
   return { submitReport };
 }

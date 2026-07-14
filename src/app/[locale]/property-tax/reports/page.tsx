@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getReportDefinitions, getZones } from '@/lib/api/report.service';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
-import { getWardsByZoneAction, getPropertiesByWardAction } from '@/app/[locale]/property-tax/reports/action';
+import { getWardsByZoneAction, getPropertiesByWardAction, fetchReportJobs, getReportParametersAction, createReportRequestAction } from '@/app/[locale]/property-tax/reports/action';
 import { ReportsWorkspace } from '@/components/modules/property-tax/reports/ReportsWorkspace';
 import { PageContainer, TableHeader } from '@/components/common';
 import Link from 'next/link';
@@ -17,11 +17,12 @@ interface PageProps {
 export default async function ReportsPage({ params }: PageProps) {
   const { locale } = await params;
 
-  const [t, reportDefinitions, zones, financialYears] = await Promise.all([
+  const [t, reportDefinitions, zones, financialYears, initialJobs] = await Promise.all([
     getTranslations({ locale, namespace: 'report' }),
     getReportDefinitions().catch(() => []),
     getZones().catch(() => []),
     getFinancialYearsPaged(1, 100).then((res) => res.items || []).catch(() => []),
+    fetchReportJobs(25).catch(() => []),
   ]);
 
   const copy = buildFormCopy(t);
@@ -57,6 +58,10 @@ export default async function ReportsPage({ params }: PageProps) {
         financialYears={financialYears}
         fetchWards={getWardsByZoneAction}
         fetchProperties={getPropertiesByWardAction}
+        initialJobs={initialJobs}
+        fetchJobs={fetchReportJobs}
+        fetchReportParameters={getReportParametersAction}
+        createReportRequest={createReportRequestAction}
       />
     </PageContainer>
   );

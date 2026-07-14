@@ -11,8 +11,6 @@ import type {
 } from '@/types/report.types';
 import { useReportFormState } from './useReportFormState';
 import { useReportFormSubmission } from './useReportFormSubmission';
-import { getReportParametersAction } from '@/app/[locale]/property-tax/reports/action';
-import type { GetReportParametersResult } from '@/app/[locale]/property-tax/reports/action';
 
 function validate(
   reportCode: string,
@@ -49,9 +47,20 @@ interface UseReportFormOptions {
   onQueued?: () => void;
   /** Pre-selected report code from the category grid. */
   selectedReportCode?: string;
+  fetchReportParameters?: (reportDefinitionId: number) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>,
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
-export function useReportForm({ reportDefinitions, onQueued, selectedReportCode }: UseReportFormOptions) {
+export function useReportForm({
+  reportDefinitions,
+  onQueued,
+  selectedReportCode,
+  fetchReportParameters,
+  createReportRequest,
+}: UseReportFormOptions) {
   const t = useTranslations('report');
   const state = useReportFormState();
   const {
@@ -105,8 +114,12 @@ export function useReportForm({ reportDefinitions, onQueued, selectedReportCode 
     let cancelled = false;
     setParametersLoading(true);
     setParametersError(null);
-    getReportParametersAction(selectedDefinition.id)
-      .then(({ data, error }: GetReportParametersResult) => {
+    if (!fetchReportParameters) {
+      setParametersLoading(false);
+      return;
+    }
+    fetchReportParameters(selectedDefinition.id)
+      .then(({ data, error }) => {
         if (!cancelled && mountedRef.current) {
           setParameters(data);
           setParametersError(error);
@@ -125,7 +138,7 @@ export function useReportForm({ reportDefinitions, onQueued, selectedReportCode 
       cancelled = true;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDefinition?.id]);
+  }, [selectedDefinition?.id, fetchReportParameters]);
 
   const { submitReport } = useReportFormSubmission({
     reportCode,
@@ -135,6 +148,7 @@ export function useReportForm({ reportDefinitions, onQueued, selectedReportCode 
     queuedMessage: t('status.queued'),
     errorMessage: t('errors.generationFailed'),
     onQueued,
+    createReportRequest,
   });
 
   const handleReportChange = useCallback(

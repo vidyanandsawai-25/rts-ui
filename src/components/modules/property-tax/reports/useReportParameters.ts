@@ -17,9 +17,22 @@ interface UseReportParametersOptions {
   fetchWards?: (zoneId: number) => Promise<WardSummary[]>;
   /** Injected from page.tsx — fetches properties for a given ward */
   fetchProperties?: (wardId: number) => Promise<PropertySummary[]>;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>,
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
-export function useReportParameters({ report, onQueued, copy, zones: initialZones, financialYears: initialYears, fetchWards, fetchProperties }: UseReportParametersOptions) {
+export function useReportParameters({
+  report,
+  onQueued,
+  copy,
+  zones: initialZones,
+  financialYears: initialYears,
+  fetchWards,
+  fetchProperties,
+  createReportRequest,
+}: UseReportParametersOptions) {
   const financialYears = initialYears || [];
   const zones = initialZones || [];
   const [wards, setWards] = useState<WardSummary[]>([]);
@@ -195,23 +208,21 @@ export function useReportParameters({ report, onQueued, copy, zones: initialZone
           parameters.PropertyId = String(propertyId);
         }
 
-        const response = await fetch('/api/report-request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reportCode: report.reportCode, parameters }),
-        });
+        if (!createReportRequest) {
+          throw new Error('createReportRequest server action is not provided');
+        }
 
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({ error: copy.validation.failedToQueue }));
+        const result = await createReportRequest(report.reportCode, parameters);
+
+        if (!result.success || !result.data) {
           setSubmitStatus('error');
-          setErrorMsg(err.error || copy.validation.failedToQueue);
+          setErrorMsg(result.error || copy.validation.failedToQueue);
           return;
         }
 
-        const result = await response.json().catch(() => ({}));
         setSubmitStatus('success');
         toast.success(copy.reportQueued.replace('{name}', report.reportName));
-        onQueued?.(result.reportRequestId || '');
+        onQueued?.(result.data.reportRequestId || '');
       } catch {
         setSubmitStatus('error');
         setErrorMsg(copy.validation.networkError);
