@@ -69,11 +69,8 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     modulesMessages,
-<<<<<<< HEAD
     rtsMessages,
-=======
     reportMessages,
->>>>>>> main
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -169,13 +166,10 @@ export default getRequestConfig(async ({ locale }) => {
         .catch(() => ({}))
         .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-<<<<<<< HEAD
     import(`./locales/${validatedLocale}/rts.json`).catch(() => ({})).then((m) => m.default || m),
-=======
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
->>>>>>> main
   ]);
 
   return {
@@ -235,11 +229,8 @@ export default getRequestConfig(async ({ locale }) => {
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
       modules: modulesMessages,
-<<<<<<< HEAD
       rts: rtsMessages,
-=======
       report: reportMessages,
->>>>>>> main
     },
   };
 });

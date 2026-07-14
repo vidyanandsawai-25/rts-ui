@@ -2,10 +2,7 @@ import { getDashboardData } from './actions';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardHeader, CardTitle, CardContent, LanguageDropdown } from '@/components/common';
 import { AddRouteButton } from '@/components/modules/dashboard/AddRouteButton';
-<<<<<<< HEAD
 import { LanguageSelector } from '@/components/common/LanguageSelector';
-=======
->>>>>>> upstream/main
 import { DashboardTable } from '@/components/modules/dashboard/DashboardTable';
 
 /**
