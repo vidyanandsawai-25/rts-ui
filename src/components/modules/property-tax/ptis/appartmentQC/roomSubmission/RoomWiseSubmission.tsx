@@ -140,7 +140,7 @@ export const RoomWiseSubmission: React.FC<
   // ── Enter Key Navigation ──────────────────────────────────────────────────
   // TO REMOVE ENTER KEY FUNCTIONALITY: 
   // 1. Remove this line and the `useEnterKeyNavigation` import at the top.
-  // 2. Remove the `onKeyDown={handleKeyDown}` prop from the `<form>` element in the render method below.
+  // 2. Remove the `onKeyDownCapture={handleKeyDown}` prop from the `<form>` element in the render method below.
   const handleKeyDown = useEnterKeyNavigation();
 
   // ── Offset sidebar props (unchanged) ──────────────────────────────────────

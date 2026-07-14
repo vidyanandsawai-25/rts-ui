@@ -56,16 +56,13 @@ describe('useEnterKeyNavigation', () => {
   it('should prevent default and focus the next element for standard inputs', () => {
     mockActiveElement.tagName = 'INPUT';
     
+    vi.useFakeTimers();
     const { result } = renderHook(() => useEnterKeyNavigation());
     result.current(mockEvent as unknown as React.KeyboardEvent<HTMLElement>);
 
     expect(mockEvent.preventDefault).toHaveBeenCalled();
     expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
     
-    // setTimeout is used internally, we can use vi.useFakeTimers to test it properly, 
-    // but for simplicity, we mock setTimeout and execute the callback.
-    vi.useFakeTimers();
-    result.current(mockEvent as unknown as React.KeyboardEvent<HTMLElement>);
     vi.runAllTimers();
     
     expect(mockNextElement.focus).toHaveBeenCalled();

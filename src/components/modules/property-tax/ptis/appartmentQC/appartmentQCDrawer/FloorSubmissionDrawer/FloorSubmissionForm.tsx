@@ -236,7 +236,7 @@ export const FloorSubmissionForm = ({
 
     // TO REMOVE ENTER KEY FUNCTIONALITY: 
     // 1. Remove this line and the `useEnterKeyNavigation` import at the top.
-    // 2. Remove the `onKeyDown={handleKeyDown}` prop from the wrapping `<div className="p-4 bg-white...` below.
+    // 2. Remove the `onKeyDownCapture={handleKeyDown}` prop from the wrapping `<div className="p-4 bg-white...` below.
     const handleKeyDown = useEnterKeyNavigation();
 
     return (
