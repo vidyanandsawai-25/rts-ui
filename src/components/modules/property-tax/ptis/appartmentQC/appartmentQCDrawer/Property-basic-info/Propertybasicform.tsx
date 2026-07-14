@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Input, Label, SearchSelect, ValidationMessage } from "@/components/common";
+import { Input, SearchSelect, ValidationMessage } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { UpdateButton } from "@/components/common/ActionButtons";
