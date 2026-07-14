@@ -265,7 +265,7 @@ export async function createReportRequestAction(
 
     const enrichedParameters = {
       ...parameters,
-      ...(userId ? { userId, UserId: userId } : {}),
+      ...(userId ? { UserId: userId } : {}),
     };
 
     const result = await apiClient.post<{ reportRequestId: string; status: string }>('/Report/request', {
