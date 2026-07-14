@@ -115,17 +115,15 @@ const CompactSelectField = ({
 CompactSelectField.displayName = "CompactSelectField";
 
 const ReadOnlyField = ({ label, value, type = "text" }: ReadOnlyFieldProps) => (
-  <div className="flex flex-col">
-    <Label className="mb-1.5 text-sm font-medium text-gray-700">{label}</Label>
-    <Input
-      naked={false}
-      type={type}
-      value={value}
-      readOnly
-      aria-label={label}
-      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed outline-none"
-    />
-  </div>
+  <Input
+    label={label}
+    naked={false}
+    type={type}
+    value={value}
+    readOnly
+    aria-label={label}
+    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed outline-none"
+  />
 );
 ReadOnlyField.displayName = "ReadOnlyField";
 
