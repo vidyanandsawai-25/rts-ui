@@ -12,7 +12,7 @@ export default function LoginError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="common.login.pageError"
+      translationNamespace="login.pageError"
     />
   );
 }
