@@ -182,20 +182,24 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
     [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t]
   );
 
-  const headerExtra =
-    selectedCount > 0 ? (
-      <div className="ml-auto flex items-center gap-2">
-        <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
-          {t('floor.selectProperties.selected', { count: selectedCount })}
-        </span>
-        <ClearButton
-          type="button"
-          label={t('floor.selectProperties.clearSelection')}
-          onClick={onClearSelection}
-          className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
-        />
-      </div>
-    ) : null;
+  const headerExtra = (
+    <div className="flex flex-wrap items-center gap-3 flex-1">
+      {leftHeaderContent}
+      {selectedCount > 0 && (
+        <div className="ml-auto flex items-center gap-2">
+          <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
+            {t('floor.selectProperties.selected', { count: selectedCount })}
+          </span>
+          <ClearButton
+            type="button"
+            label={t('floor.selectProperties.clearSelection')}
+            onClick={onClearSelection}
+            className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
+          />
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="mt-3">
@@ -226,12 +230,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           }
           return '';
         }}
-        headerTitle={
-          <div className="flex flex-wrap items-center gap-3">
-            <span>{t('floor.selectProperties.title')}</span>
-            {leftHeaderContent}
-          </div>
-        }
+        headerTitle={t('floor.selectProperties.title')}
         headerExtra={headerExtra}
         emptyText={t('floor.selectProperties.noProperties')}
         loadingText={t('floor.selectProperties.loading')}
