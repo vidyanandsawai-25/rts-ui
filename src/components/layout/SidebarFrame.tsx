@@ -37,6 +37,17 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
     return () => document.body.classList.remove('sidebar-expanded');
   }, [collapsed]);
 
+  useEffect(() => {
+    const handleExpand = () => {
+      setCollapsed(false);
+      setOpen(true);
+    };
+    window.addEventListener('expand-sidebar', handleExpand);
+    return () => {
+      window.removeEventListener('expand-sidebar', handleExpand);
+    };
+  }, []);
+
   const toggleMobileNav = () => {
     setOpen(!open);
   };

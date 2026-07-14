@@ -6,12 +6,16 @@ import { DynamicIcon } from './FooterIconRegistry';
 import type { FooterAction } from '@/lib/api/footer.service';
 import { cn } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
+import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
+import { QCDropdownButton } from './QCDropdownButton';
 
 interface UtilityActionsProps {
   actions: FooterAction[];
   onActionClick: (command: string) => void;
   isLoading?: boolean;
   isCombined?: boolean;
+  workflowStages?: PropertyWorkflowStage[];
+  currentWorkflowStageId?: number;
 }
 
 export function UtilityActions({
@@ -19,6 +23,8 @@ export function UtilityActions({
   onActionClick,
   isLoading = false,
   isCombined = false,
+  workflowStages = [],
+  currentWorkflowStageId,
 }: UtilityActionsProps) {
   const t = useTranslations('ptis');
 
@@ -56,7 +62,7 @@ export function UtilityActions({
           isCombineAndCombined
             ? 'bg-gradient-to-r from-red-600 to-rose-700 text-white! border-transparent! hover:from-red-700 hover:to-rose-800 hover:shadow-[0_4px_12px_rgba(220,38,38,0.25)] hover:scale-[1.02]'
             : (variant === 'primary' || variant === 'blue'
-              ? 'bg-gradient-to-r from-blue-700 to-indigo-900 text-white! border-transparent! hover:from-blue-800 hover:to-indigo-950 hover:shadow-[0_4px_12px_rgba(30,58,138,0.2)] hover:scale-[1.02]'
+              ? 'bg-gradient-to-r from-blue-700 to-indigo-900 text-white! border-transparent! hover:from-blue-800 hover:to-indigo-950 hover:shadow-[0_4px_12px_rgba(30,58,138,0.25)] hover:scale-[1.02]'
               : variant === 'danger'
                 ? 'bg-gradient-to-r from-rose-50 to-red-50 text-red-600 border-red-200/80 hover:from-rose-100 hover:to-red-100 hover:border-red-300 hover:scale-[1.02]'
                 : variant === 'success'
@@ -84,6 +90,21 @@ export function UtilityActions({
         );
 
         const key = `${actionCommand}-${id ?? index}`;
+
+        if (actionCommand === 'PTIS_QC') {
+          return (
+            <QCDropdownButton
+              key={key}
+              workflowStages={workflowStages}
+              currentWorkflowStageId={currentWorkflowStageId}
+              buttonClasses={buttonClasses}
+              iconClasses={iconClasses}
+              isLoading={isLoading}
+              localizedButtonName={localizedButtonName}
+              iconName={iconName}
+            />
+          );
+        }
 
         if (hasText) {
           // If button has text + icon, render without Tooltip

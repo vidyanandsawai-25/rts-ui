@@ -724,6 +724,7 @@
         }
     },
     "floor": {
+        "separatelyUsedPlotArea": "स्वतंत्रपणे वापरलेले भूखंड क्षेत्रफळ",
         "construction": "बांधकाम",
         "openPlot": "खुली जागा",
         "propertyCategory": "मालमत्ता श्रेणी",

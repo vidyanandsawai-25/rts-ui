@@ -13,6 +13,8 @@
   --font-devanagari: 'Noto Sans Devanagari', system-ui, sans-serif;
 
   --animate-loader-scale: loader-scale 1s ease-in-out infinite;
+  --animate-bounce-subtle: bounce-subtle 3s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
 }
 
 @keyframes loader-scale {
@@ -25,6 +27,26 @@
 
   20% {
     transform: scaleY(1);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
   }
 }
 

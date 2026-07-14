@@ -24,7 +24,7 @@ import type { LoginFormProps } from '@/types/login.types';
 import { FormLoadingOverlay, LoginCredentialFields } from './LoginFormParts';
 
 function LoginRateLimitHint() {
-  const t = useTranslations('common.login');
+  const t = useTranslations('login');
   const [seconds, setSeconds] = useState(RATE_LIMIT_COUNTDOWN_INITIAL_SECONDS);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export function LoginFormClient({
   copy,
 }: LoginFormProps) {
   const { getLocalizedError } = useLoginErrorMessages();
-  const t = useTranslations('common.login');
+  const t = useTranslations('login');
 
   const [credState, credAction] = useActionState(loginCredentialsFormAction, null);
 
