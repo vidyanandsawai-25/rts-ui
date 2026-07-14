@@ -216,7 +216,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     setIsApplyingSameAs(true);
     try {
       const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType) ?? 0;
-      const promises: Promise<any>[] = [];
+      type ActionResult = { success: boolean; error?: string };
+      const promises: Promise<ActionResult>[] = [];
 
       // 1. If source property is selected, update its type directly in the database!
       if (isSourceSelected) {

@@ -81,14 +81,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   // Holds the currently selected type from the dropdown ('all' = no filter)
   const [selectedTypeFilter, setSelectedTypeFilter] = React.useState<string>('all');
 
-  // Local state for Change Type text input to avoid input loop bug
-  // Initialize as empty string by default instead of currentPropertyType
-  const [inputValue, setInputValue] = React.useState(changeTypeInput || '');
-
-  // Keep local input value in sync when prop changes
-  React.useEffect(() => {
-    setInputValue(changeTypeInput || '');
-  }, [changeTypeInput]);
+  const inputValue = changeTypeInput || '';
 
   // Extract unique sorted types from loaded properties for the dropdown options
   // Use || instead of ?? so that empty-string typeLabel also falls back to type
@@ -145,14 +138,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
     [setChangeTypeInput, onClearSelection]
   );
 
-  // Sync changeTypeInput with dropdown when parent resets (tab change / drawer open)
-  // NOTE: We intentionally do NOT have a useEffect([properties]) here —
-  // memoization of displayedProperties in DataEntrySameAsDrawer prevents spurious resets.
-  React.useEffect(() => {
-    if (!changeTypeInput) {
-      setSelectedTypeFilter('all');
-    }
-  }, [changeTypeInput]);
+
 
   // ── Render dropdown to be placed on the left side of table header ──────────
   const typeFilterDropdown = (
@@ -210,8 +196,10 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
             onChange={(e) => {
               const val = e.target.value;
               if (val === '' || ONE_TO_NINETY_NINE_REGEX.test(val)) {
-                setInputValue(val);
                 setChangeTypeInput(val);
+                if (selectedTypeFilter !== 'all' && val !== selectedTypeFilter) {
+                  setSelectedTypeFilter('all');
+                }
               }
             }}
             onFocus={(e) => {
