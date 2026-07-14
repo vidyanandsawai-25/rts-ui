@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   createMoujaAction,
   updateMoujaAction,
-} from "@/app/[locale]/property-tax/rate-master/moujamaster/action";
+} from "@/app/[locale]/property-tax/moujamaster/action";
 import { MoujaFormModel, Mouja } from "@/types/mouja.types";
 import { 
   CODE_SANITIZE, 
@@ -152,7 +152,7 @@ export function useMoujaForm({
     setOpen(false);
     setTimeout(() => {
       startTransition(() => {
-        router.push(`/${locale}/property-tax/rate-master/moujamaster`);
+        router.push(`/${locale}/property-tax/moujamaster`);
       });
     }, 400); // Increased delay for smoother animation
   }, [router, locale]);

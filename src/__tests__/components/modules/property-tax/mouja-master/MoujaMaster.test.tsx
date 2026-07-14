@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { MoujaMaster } from "@/components/modules/property-tax/mouja-master/MoujaMaster";
 import type { Mouja } from "@/types/mouja.types";
 import { toast } from "sonner";
-import { deleteMoujaAction } from "@/app/[locale]/property-tax/rate-master/moujamaster/action";
+import { deleteMoujaAction } from "@/app/[locale]/property-tax/moujamaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useMoujaSearch } from "@/hooks/moujamaster/useMoujaSearch";
 import { useMoujaPagination } from "@/hooks/moujamaster/useMoujaPagination";
@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock Actions
-vi.mock("@/app/[locale]/property-tax/rate-master/moujamaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/moujamaster/action", () => ({
   deleteMoujaAction: vi.fn(),
 }));
 
@@ -318,7 +318,7 @@ describe("MoujaMaster", () => {
       fireEvent.click(addButton);
 
       expect(mockRouterPush).toHaveBeenCalledWith(
-        "/en/property-tax/rate-master/moujamaster/add"
+        "/en/property-tax/moujamaster/add"
       );
     });
   });
@@ -335,7 +335,7 @@ describe("MoujaMaster", () => {
       fireEvent.click(editButtons[0]);
 
       expect(mockRouterPush).toHaveBeenCalledWith(
-        "/en/property-tax/rate-master/moujamaster/edit/1"
+        "/en/property-tax/moujamaster/edit/1"
       );
     });
 
@@ -350,7 +350,7 @@ describe("MoujaMaster", () => {
       fireEvent.click(editButtons[1]);
 
       expect(mockRouterPush).toHaveBeenCalledWith(
-        "/en/property-tax/rate-master/moujamaster/edit/2"
+        "/en/property-tax/moujamaster/edit/2"
       );
     });
   });
