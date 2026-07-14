@@ -222,6 +222,36 @@ vi.mock('lucide-react', async (importOriginal) => {
   };
 });
 
+// Prevent jsdom crash on scroll calls
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  writable: true,
+});
+
+// Prevent navigation implementation errors in jsdom
+Object.defineProperty(window, 'location', {
+  value: {
+    ...window.location,
+    assign: vi.fn(),
+    replace: vi.fn(),
+    reload: vi.fn(),
+  },
+  writable: true,
+});
+
+// Silence expected jsdom unimplemented warnings
+const originalError = console.error;
+vi.spyOn(console, 'error').mockImplementation((...args) => {
+  const msg = String(args[0] ?? '');
+  if (
+    msg.includes('Not implemented: navigation') ||
+    msg.includes('Not implemented: window.scrollTo')
+  ) {
+    return;
+  }
+  originalError(...args);
+});
+
 // Cleanup after each test
 afterEach(() => {
   cleanup();
