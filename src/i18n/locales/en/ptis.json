@@ -142,7 +142,6 @@
     "imageOf": "{current} of {total}",
     "fullView": "{title} - Full View",
     "photoFile": "Photo File",
-    "backToGrid": "Back to Grid",
     "retry": "Retry",
     "uploadInstructions": "Upload Instructions",
     "allowedFormats": "Allowed formats: JPEG, JPG, PNG",
@@ -269,6 +268,7 @@
     "division": "Division",
     "plotNo": "Plot No",
     "plotArea": "Plot Area",
+    "plotAreaWithUnit": "Plot Area (ft/mtr)",
     "wardNo": "Ward No",
     "blockNo": "Block No",
     "propertyNo": "Property No",
@@ -693,6 +693,7 @@
     "invalidPropertyData": "Invalid property data detected. Please check the property use details.",
     "typeOfUseGroupNotFound": "Type of use group configuration not found for the property.",
     "propertyNotSearched": "Please search for a property first before combining.",
+    "propertyNotSearchedCommonUpdate": "Please search for a property first before updating common details.",
     "noValuationData": "No valuation data available for the selected method.",
     "ratesNotFound": "Rates not found for the selected assessment year. Please configure the Rate Master.",
     "invalidAssessmentYear": "Invalid or missing assessment year for one or more floor records.",
@@ -764,5 +765,15 @@
     "description": "The capital valuation taxes for this property have not been loaded. Click below to retrieve and calculate the capital value on-demand.",
     "button": "Calculate Capital Value",
     "calculating": "Calculating..."
-  }
+  },
+  "propertyTracking": "Property Tracking",
+  "unknownOwner": "Unknown Owner",
+  "completed": "Completed",
+  "progress": "Progress",
+  "current": "Current",
+  "allCompleted": "All Completed",
+  "failedToLoadTracking": "Failed to load tracking",
+  "tryAgain": "Try Again",
+  "noTrackingData": "No Tracking Data",
+  "trackingNotAvailable": "Tracking information is not available for this property yet."
 }

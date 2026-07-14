@@ -45,10 +45,10 @@ export function useFooterActionHandler(
       return;
     }
     if (command === 'PTIS_COMMON_UPDATE' && !propertyId) {
-      const msg = t.has('error.propertyNotSearched')
-         ? t('error.propertyNotSearched')
-         : (t.has('errors.propertyNotSearched')
-           ? t('errors.propertyNotSearched')
+      const msg = t.has('error.propertyNotSearchedCommonUpdate')
+         ? t('error.propertyNotSearchedCommonUpdate')
+         : (t.has('errors.propertyNotSearchedCommonUpdate')
+           ? t('errors.propertyNotSearchedCommonUpdate')
            : 'Please search for a property first before updating common details.');
       toast.error(msg);
       return;

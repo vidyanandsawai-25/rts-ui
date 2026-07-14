@@ -194,9 +194,9 @@ export const BulkUpdateForm = ({
               } else if (isMarathiTitle) {
                 overrideConfig = { ...config, controlType: "dropdown" };
                 options = [
-                  { label: "कुमारी", value: "Miss" },
-                  { label: "श्री.", value: "Mr" },
-                  { label: "श्रीमती", value: "Mrs" }
+                  { label: "कुमारी", value: "कुमारी" },
+                  { label: "श्री.", value: "श्री." },
+                  { label: "श्रीमती", value: "श्रीमती" }
                 ];
               }
 
