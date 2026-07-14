@@ -12,9 +12,6 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/__tests__/setup.ts'],
     pool: 'threads',
-    poolOptions: {
-      threads: { maxThreads: 4, minThreads: 1 },
-    },
     maxConcurrency: 4,
     hookTimeout: 30000,
     testTimeout: 30000,
