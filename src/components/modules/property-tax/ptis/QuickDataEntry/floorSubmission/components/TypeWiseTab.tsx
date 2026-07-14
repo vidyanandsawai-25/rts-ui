@@ -68,6 +68,10 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   onApplyTypeSubmission,
   ...floorTableProps
 }) => {
+  const isApplyTypeDisabled = React.useMemo(() => {
+    return selectedIds.size === 0;
+  }, [selectedIds]);
+
   const isChangeTypeDisabled = React.useMemo(() => {
     // Apply button is disabled if no destination property (non-source) is selected
     return !Array.from(selectedIds).some((id) => !sourcePropertyIds.has(id));
@@ -218,7 +222,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
           size="sm"
           label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
           onClick={onApply}
-          disabled={isChangeTypeDisabled || isApplying}
+          disabled={isApplyTypeDisabled || isApplying}
           isLoading={isApplying}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />
