@@ -129,6 +129,7 @@ export interface ReportWorkspaceCopy {
   preview: {
     title: string;
     downloadPdf: string;
+    idLabel: string;
   };
   confirm: {
     title: string;

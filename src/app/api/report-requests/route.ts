@@ -10,7 +10,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = Number(takeParam);
     const safeTake = Number.isFinite(take) && take > 0 && take <= 100 ? Math.trunc(take) : 25;
 
-    const result = await apiClient.get<any>(`/Report/requests?take=${safeTake}`);
+    const result = await apiClient.get<unknown>(`/Report/requests?take=${safeTake}`);
 
     if (!result.success) {
       return NextResponse.json(

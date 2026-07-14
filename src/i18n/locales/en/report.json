@@ -108,7 +108,8 @@
     },
     "preview": {
       "title": "Report Preview",
-      "downloadPdf": "PDF"
+      "downloadPdf": "PDF",
+      "idLabel": "ID: {id}"
     },
     "confirm": {
       "title": "Report Creation",

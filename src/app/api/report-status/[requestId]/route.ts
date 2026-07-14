@@ -11,7 +11,7 @@ export async function GET(
   try {
     const { requestId } = await params;
 
-    const result = await apiClient.get<any>(`/Report/status/${encodeURIComponent(requestId)}`);
+    const result = await apiClient.get<unknown>(`/Report/status/${encodeURIComponent(requestId)}`);
 
     if (!result.success) {
       return NextResponse.json(

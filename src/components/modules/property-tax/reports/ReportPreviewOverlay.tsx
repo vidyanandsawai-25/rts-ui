@@ -38,7 +38,7 @@ export function ReportPreviewOverlay({
                 {report?.reportName || copy.preview.title}
               </h3>
               <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">
-                ID: {requestId}
+                {copy.preview.idLabel.replace('{id}', requestId)}
               </p>
             </div>
           </div>

@@ -108,7 +108,8 @@
     },
     "preview": {
       "title": "अहवाल पूर्वावलोकन",
-      "downloadPdf": "PDF"
+      "downloadPdf": "PDF",
+      "idLabel": "आयडी: {id}"
     },
     "confirm": {
       "title": "अहवाल निर्मिती",

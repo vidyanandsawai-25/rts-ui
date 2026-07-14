@@ -26,7 +26,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     };
 
-    const result = await apiClient.post<any>('/Report/request', enrichedBody);
+    const result = await apiClient.post<unknown>('/Report/request', enrichedBody);
 
     if (!result.success) {
       return NextResponse.json(

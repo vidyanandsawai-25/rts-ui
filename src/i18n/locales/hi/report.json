@@ -108,7 +108,8 @@
     },
     "preview": {
       "title": "रिपोर्ट पूर्वावलोकन",
-      "downloadPdf": "PDF"
+      "downloadPdf": "PDF",
+      "idLabel": "आईडी: {id}"
     },
     "confirm": {
       "title": "रिपोर्ट निर्माण",
