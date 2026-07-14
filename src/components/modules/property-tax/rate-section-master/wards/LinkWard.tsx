@@ -9,7 +9,7 @@ import { PrevPageButton, NextPageButton } from "@/components/common/ActionButton
 import { LinkWardProps } from "@/types/rateSectionMaster.types";
 import RateSectionWards from "./RateSectionWards";
 import LinkWardTabs from "./LinkWardTabs";
-import { getRateSectionDisplayLabel, getSelectedZoneName, handleToggleAvailable, handleToggleSelected } from "./linkWardHelpers";
+import { getRateSectionDisplayLabel, getSelectedZoneName, handleToggleAvailable, handleToggleSelected} from "./linkWardHelpers";
 import { useLinkWardHandlers } from "@/hooks/rateSectionMaster/useLinkWardHandlers";
 import { useLinkWardPagination } from "@/hooks/rateSectionMaster/useLinkWardPagination";
 import { useLinkWardActions } from "@/hooks/rateSectionMaster/useLinkWardActions";
@@ -98,7 +98,7 @@ export default function AddWard({
   );
 
   const totalUnassignedForHeader = useMemo(() => {
-    return allAvailableWards.filter(ward =>
+    return allAvailableWards.filter(ward => 
       !wardAssignments[ward.wardNo] && !state.selectedWards.includes(ward.wardNo)
     ).length;
   }, [allAvailableWards, wardAssignments, state.selectedWards]);
@@ -108,6 +108,7 @@ export default function AddWard({
       wardNo,
       wardAssignments,
       selectedZoneNo ?? undefined,
+      state.checkedAvailable,
       state.setCheckedAvailable,
       rates,
       t
@@ -116,6 +117,7 @@ export default function AddWard({
   const toggleSelected = (wardNo: string) =>
     handleToggleSelected(
       wardNo,
+      state.checkedSelected,
       state.setCheckedSelected
     );
 

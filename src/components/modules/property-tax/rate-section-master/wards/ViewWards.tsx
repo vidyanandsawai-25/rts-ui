@@ -84,7 +84,7 @@ export default function ViewWards({
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
-                  checked={isSelectAllActive || isSelfSelected || isAlreadyInSelected}
+                  checked={isSelfSelected || isAlreadyInSelected}
                   onCheckedChange={() => !isAlreadyInSelected && !isSelectAllActive && onToggle(w.wardNo)}
                   disabled={isAlreadyInSelected || isSelectAllActive}
                 />

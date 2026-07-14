@@ -108,7 +108,7 @@ export default function AvailableWards({
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
-                  checked={isSelectAllActive || isSelfSelected}
+                  checked={isSelfSelected}
                   onCheckedChange={() => !isSelectAllActive && onToggle(w.wardNo)}
                   disabled={isSelectAllActive}
                 />
