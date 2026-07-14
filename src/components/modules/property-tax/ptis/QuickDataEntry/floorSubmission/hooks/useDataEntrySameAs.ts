@@ -40,7 +40,9 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   const locale = String(routeParams?.locale || 'en');
   const { confirm } = useConfirm();
   const currentPropertyId = React.useMemo(() => {
-    return initialPropertyID ? Number(initialPropertyID) : undefined;
+    if (initialPropertyID == null) return undefined;
+    const id = Number(initialPropertyID);
+    return Number.isFinite(id) && id > 0 ? id : undefined;
   }, [initialPropertyID]);
   const [dataEntrySameAsTab, setDataEntrySameAsTab] = React.useState('type-wise');
   const [selectableProperties, setSelectableProperties] = React.useState<SelectableProperty[]>([]);
