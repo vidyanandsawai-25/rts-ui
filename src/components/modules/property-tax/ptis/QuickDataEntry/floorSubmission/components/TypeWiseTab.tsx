@@ -68,6 +68,10 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   onApplyTypeSubmission,
   ...floorTableProps
 }) => {
+  const isApplyTypeDisabled = React.useMemo(() => {
+    return selectedIds.size === 0;
+  }, [selectedIds]);
+
   const isChangeTypeDisabled = React.useMemo(() => {
     // Apply button is disabled if no destination property (non-source) is selected
     return !Array.from(selectedIds).some((id) => !sourcePropertyIds.has(id));
@@ -89,13 +93,19 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   // Extract unique sorted types from loaded properties for the dropdown options
   // Use || instead of ?? so that empty-string typeLabel also falls back to type
   const availableTypes = React.useMemo(() => {
-    const typeSet = new Set<string>();
+    const typeMap = new Map<string, string>(); // type -> typeLabel
     properties.forEach((p) => {
-      const raw = String(p.typeLabel || p.type || '').trim();
-      if (raw && raw !== '-') typeSet.add(raw);
+      const val = String(p.type || '').trim();
+      const label = String(p.typeLabel || p.type || '').trim();
+      if (val && val !== '-' && label && label !== '-') {
+        typeMap.set(val, label);
+      }
     });
-    return Array.from(typeSet).sort((a, b) =>
-      a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+    return Array.from(typeMap.entries()).map(([value, label]) => ({
+      value,
+      label
+    })).sort((a, b) =>
+      a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' })
     );
   }, [properties]);
 
@@ -104,8 +114,8 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
     const list = [
       { label: t('floor.selectProperties.allTypes') || 'All Types', value: 'all' }
     ];
-    availableTypes.forEach((type) => {
-      list.push({ label: type, value: type });
+    availableTypes.forEach((item) => {
+      list.push({ label: item.label, value: item.value });
     });
     return list;
   }, [availableTypes, t]);
@@ -115,7 +125,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   const filteredProperties = React.useMemo(() => {
     if (selectedTypeFilter === 'all') return properties;
     return properties.filter((p) => {
-      const raw = String(p.typeLabel || p.type || '').trim();
+      const raw = String(p.type || '').trim();
       return raw === selectedTypeFilter;
     });
   }, [properties, selectedTypeFilter]);
@@ -218,7 +228,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
           size="sm"
           label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
           onClick={onApply}
-          disabled={isChangeTypeDisabled || isApplying}
+          disabled={isApplyTypeDisabled || isApplying}
           isLoading={isApplying}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />

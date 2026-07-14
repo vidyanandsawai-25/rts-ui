@@ -166,7 +166,7 @@ describe("PolicyConfigurationForm", () => {
       isActive: true,
       allowedValues: null,
     };
-    //abcde
+    
     render(<PolicyConfigurationForm initialData={initialData} />);
     
     // Verify data is loaded
