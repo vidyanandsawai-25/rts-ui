@@ -34,7 +34,7 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
   const cascadeBlocked = hasParent && !parentValue?.trim();
 
   const [options, setOptions] = useState<LookupOption[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -46,25 +46,44 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
 
   useEffect(() => {
     const source = isSelect ? (param.optionsSource ?? null) : null;
-    if (!source || (hasParent && !parentValue?.trim())) {
-      setOptions([]);
+    const blocked = !source || (hasParent && !parentValue?.trim());
+
+    if (blocked) {
+      // keep effect pure from sync setState in body by scheduling microtask
+      queueMicrotask(() => {
+        if (mountedRef.current) {
+          setOptions([]);
+          setIsFetching(false);
+        }
+      });
       return;
     }
+
     let cancelled = false;
-    setLoading(true);
+
+    queueMicrotask(() => {
+      if (!cancelled && mountedRef.current) {
+        setIsFetching(true);
+      }
+    });
+
     getLookupOptions(source, parentValue?.trim() || undefined)
       .then((opts) => {
         if (!cancelled && mountedRef.current) {
           setOptions(opts);
-          setLoading(false);
         }
       })
       .catch(() => {
         if (!cancelled && mountedRef.current) {
           setOptions([]);
-          setLoading(false);
+        }
+      })
+      .finally(() => {
+        if (!cancelled && mountedRef.current) {
+          setIsFetching(false);
         }
       });
+
     return () => {
       cancelled = true;
     };
@@ -80,10 +99,10 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
           name={param.parameterKey}
           label={param.label}
           required={param.isRequired}
-          placeholder={cascadeBlocked ? copy.selectPreviousFirst : loading ? copy.loading : copy.select}
+          placeholder={cascadeBlocked ? copy.selectPreviousFirst : isFetching ? copy.loading : copy.select}
           options={options.map((o) => ({ value: o.value, label: o.label }))}
           value={value}
-          disabled={cascadeBlocked || loading}
+          disabled={cascadeBlocked || isFetching}
           onChange={(_, v) => change(v)}
           onBlur={blur}
           error={error}

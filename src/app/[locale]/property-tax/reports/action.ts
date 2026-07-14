@@ -51,7 +51,7 @@ export async function getWardsByZoneAction(zoneId: number): Promise<WardSummary[
 export async function getPropertiesByWardAction(wardId: number): Promise<PropertySummary[]> {
   try {
     return await getPropertiesByWard(wardId);
-  } catch (err) {
+  } catch {
     return [];
   }
 }
