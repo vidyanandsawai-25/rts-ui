@@ -144,4 +144,35 @@ describe("ConfirmProvider", () => {
     expect(() => render(<BadComponent />)).toThrow();
     spy.mockRestore();
   });
+
+  it("does not show tooltip if record name is short and fits", async () => {
+    setup({ ...basePayload, meta: { name: "ShortName" } });
+    fireEvent.click(screen.getByText("Open Confirm"));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    
+    const recordSpan = screen.getByText("ShortName");
+    expect(recordSpan).toBeInTheDocument();
+    expect(recordSpan.className).not.toContain("cursor-help");
+    
+    fireEvent.mouseEnter(recordSpan);
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("shows tooltip on hover if record name is long and truncated", async () => {
+    const longName = "VeryLongRecordNameThatExceedsTheTruncationLimitOfThirtyCharacters";
+    const expectedTruncated = "VeryLongRecordNameThatExce....";
+
+    setup({ ...basePayload, meta: { name: longName } });
+    fireEvent.click(screen.getByText("Open Confirm"));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+
+    const recordSpan = screen.getByText(expectedTruncated);
+    expect(recordSpan).toBeInTheDocument();
+    expect(recordSpan.className).toContain("cursor-help");
+
+    fireEvent.mouseEnter(recordSpan);
+    
+    await waitFor(() => expect(screen.getByRole("tooltip")).toBeInTheDocument());
+    expect(screen.getByRole("tooltip")).toHaveTextContent(longName);
+  });
 });
