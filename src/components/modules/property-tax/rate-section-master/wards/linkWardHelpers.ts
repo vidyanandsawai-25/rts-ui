@@ -25,16 +25,15 @@ export const handleToggleAvailable = (
   wardNo: string,
   wardAssignments: Record<string, { rateSectionNo: string; id: number; description?: string }>,
   selectedZoneId: string | undefined,
-  checkedAvailable: Set<string>,
-  setCheckedAvailable: (set: Set<string>) => void,
+  setCheckedAvailable: React.Dispatch<React.SetStateAction<Set<string>>>,
   rates: RateItem[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any
 ) => {
   const assignment = wardAssignments[wardNo];
   if (assignment && assignment.rateSectionNo !== selectedZoneId) {
-    const assignedLabel = assignment.description 
-      ? `${assignment.rateSectionNo} - ${assignment.description}` 
+    const assignedLabel = assignment.description
+      ? `${assignment.rateSectionNo} - ${assignment.description}`
       : getRateSectionDisplayLabel(assignment.rateSectionNo, rates);
     const selectedLabel = getRateSectionDisplayLabel(selectedZoneId || "", rates);
     toast.warning(
@@ -47,25 +46,28 @@ export const handleToggleAvailable = (
     return;
   }
 
-  const set = new Set(checkedAvailable);
-  if (set.has(wardNo)) {
-    set.delete(wardNo);
-  } else {
-    set.add(wardNo);
-  }
-  setCheckedAvailable(set);
+  setCheckedAvailable(prev => {
+    const set = new Set(prev);
+    if (set.has(wardNo)) {
+      set.delete(wardNo);
+    } else {
+      set.add(wardNo);
+    }
+    return set;
+  });
 };
 
 export const handleToggleSelected = (
   wardNo: string,
-  checkedSelected: Set<string>,
-  setCheckedSelected: (set: Set<string>) => void
+  setCheckedSelected: React.Dispatch<React.SetStateAction<Set<string>>>
 ) => {
-  const set = new Set(checkedSelected);
-  if (set.has(wardNo)) {
-    set.delete(wardNo);
-  } else {
-    set.add(wardNo);
-  }
-  setCheckedSelected(set);
+  setCheckedSelected(prev => {
+    const set = new Set(prev);
+    if (set.has(wardNo)) {
+      set.delete(wardNo);
+    } else {
+      set.add(wardNo);
+    }
+    return set;
+  });
 };

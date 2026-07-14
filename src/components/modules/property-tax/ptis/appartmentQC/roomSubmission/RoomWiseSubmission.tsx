@@ -17,6 +17,7 @@ import { useApartmentQCOffsetActions } from "@/hooks/apartmentQc/useApartmentQCO
 import { useApartmentQCRoomInitialization } from "@/hooks/apartmentQc/useApartmentQCRoomInitialization";
 import { useApartmentQCRoomListActions } from "@/hooks/apartmentQc/useApartmentQCRoomListActions";
 import { useApartmentQCRoomPersistenceActions } from "@/hooks/apartmentQc/useApartmentQCRoomPersistenceActions";
+import { useEnterKeyNavigation } from "@/hooks/apartmentQc/useEnterKeyNavigation";
 
 // ── Shared UI components (unchanged) ─────────────────────────────────────────
 import { ApartmentQCRoomLayout } from "./ApartmentQCRoomLayout";
@@ -137,39 +138,10 @@ export const RoomWiseSubmission: React.FC<
   }, [isOpen]);
 
   // ── Enter Key Navigation ──────────────────────────────────────────────────
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLFormElement>) => {
-    if (e.key === 'Enter') {
-      const activeElement = document.activeElement as HTMLElement;
-      const activeTag = activeElement?.tagName.toLowerCase();
-      const isCombobox = activeElement?.getAttribute('role') === 'combobox';
-      
-      if (activeTag === 'textarea') return;
-      
-      const isNavigableButton = activeTag === 'button' && (activeElement?.getAttribute('data-enter-navigable') === 'true' || isCombobox);
-
-      // For normal buttons (not navigable, not combobox), do not intercept Enter
-      if (activeTag === 'button' && !isNavigableButton) return;
-      
-      // Prevent default for inputs, selects, AND comboboxes (so Enter doesn't toggle them, only Space/ArrowDown does)
-      if (activeTag !== 'button' || isCombobox) {
-        e.preventDefault();
-      }
-      
-      const form = e.currentTarget;
-      // Find all focusable elements
-      const focusableElements = Array.from(
-        form.querySelectorAll('input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), button[role="combobox"]:not([disabled]), [data-enter-navigable="true"]:not([disabled])')
-      ) as HTMLElement[];
-      
-      const currentIndex = focusableElements.indexOf(activeElement);
-      
-      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
-        setTimeout(() => {
-          focusableElements[currentIndex + 1].focus();
-        }, 10);
-      }
-    }
-  }, []);
+  // TO REMOVE ENTER KEY FUNCTIONALITY: 
+  // 1. Remove this line and the `useEnterKeyNavigation` import at the top.
+  // 2. Remove the `onKeyDown={handleKeyDown}` prop from the `<form>` element in the render method below.
+  const handleKeyDown = useEnterKeyNavigation();
 
   // ── Offset sidebar props (unchanged) ──────────────────────────────────────
   const fullOffSetProps: FullOffSetFormProps = {
@@ -206,7 +178,7 @@ export const RoomWiseSubmission: React.FC<
       className={`w-full p-0 flex flex-col bg-white overflow-visible z-[112] ${displayMode === "modal" ? "" : "mb-6"
         }`}
     >
-      <form id="room-wise-submission-form" onSubmit={(e) => e.preventDefault()} onKeyDown={handleKeyDown}>
+      <form id="room-wise-submission-form" onSubmit={(e) => e.preventDefault()} onKeyDownCapture={handleKeyDown}>
         <div className="bg-white flex flex-col rounded-lg shadow-md border border-gray-200 overflow-visible">
 
           {/* Selected floor row from Floor QC table */}

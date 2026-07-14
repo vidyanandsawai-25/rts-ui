@@ -121,7 +121,7 @@ export default function RateSectionWards({
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
-                  checked={isSelfSelected}
+                  checked={isSelectAllActive || isSelfSelected}
                   onCheckedChange={() => !isSelectAllActive && onToggle(w)}
                   disabled={isSelectAllActive}
                 />
