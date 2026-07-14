@@ -10,15 +10,18 @@ import {
   FileText, 
   CheckCircle2, 
   Clock, 
-  Save, 
-  ArrowRight, 
-  Calendar,
   AlertCircle,
+  AlertTriangle,
+  Search,
+  Eye,
+  Download,
   LayoutDashboard
 } from "lucide-react";
+import TableHeader from "@/components/common/TableHeader";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { Drawer } from "@/components/common/Drawer";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
-
 type Service = {
   id: string;
   icon?: string;
@@ -71,6 +74,54 @@ function allLabels(v: LangText | string | undefined): string[] {
   return [v.en, v.hi, v.mr].filter(Boolean) as string[];
 }
 
+// ==========================================
+// START MOCK DATA FOR LOCAL DEVELOPMENT (EASY TO REMOVE)
+// ==========================================
+const MOCK_APPLICATIONS = [
+  {
+    id: "APP-2026-9872",
+    serviceId: "7176",
+    serviceName: "Property Tax Assessment (नवीन मालमत्ता कर आकारणी)",
+    submittedDate: "2026-07-10",
+    status: "pending",
+    progress: 40,
+    stages: [
+      { stage: 1, name: "Application Scrutiny", status: "completed", officer: "Assistant Commissioner (Tax)", remark: "Documents verified and found in order." },
+      { stage: 2, name: "Site Verification & Measurement", status: "pending", officer: "Tax Inspector", remark: "Site visit scheduled for 15th July." },
+      { stage: 3, name: "Tax Valuation Assessment", status: "not_started", officer: "Valuation Officer", remark: "-" },
+      { stage: 4, name: "Final Approval & Certificate", status: "not_started", officer: "Deputy Commissioner", remark: "-" }
+    ]
+  },
+  {
+    id: "APP-2026-4421",
+    serviceId: "7174",
+    serviceName: "Water Connection Permission (नवीन नळ जोडणी परवाना)",
+    submittedDate: "2026-07-08",
+    status: "approved",
+    progress: 100,
+    stages: [
+      { stage: 1, name: "Feasibility Check", status: "completed", officer: "Junior Engineer (Water)", remark: "Connection point located and approved." },
+      { stage: 2, name: "Security Deposit Payment Verification", status: "completed", officer: "Accounts Clerk", remark: "Payment of ₹4500 received and approved." },
+      { stage: 3, name: "Connection Permission Approval", status: "completed", officer: "Executive Engineer", remark: "Sanctioned connection permission." }
+    ]
+  },
+  {
+    id: "APP-2026-1102",
+    serviceId: "7190",
+    serviceName: "Fire NOC - Renewal (अग्निशमन दाखला नूतनीकरण)",
+    submittedDate: "2026-07-05",
+    status: "rejected",
+    progress: 66,
+    stages: [
+      { stage: 1, name: "Document Verification", status: "completed", officer: "Station Officer (Fire)", remark: "Identity proofs and layouts verified." },
+      { stage: 2, name: "On-site Fire Safety Inspection", status: "rejected", officer: "Fire Officer", remark: "Inadequate number of fire extinguishers found on premises. Renewal rejected." }
+    ]
+  }
+];
+// ==========================================
+// END MOCK DATA FOR LOCAL DEVELOPMENT
+// ==========================================
+
 export default function DepartmentCarsoulClient({ departments }: DepartmentCarsoulClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,388 +132,367 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
   const localePrefix = `/${lang}`;
 
   const [submissions, setSubmissions] = useState<any[]>([]);
-  const [drafts, setDrafts] = useState<any[]>([]);
-  const [selectedTrackApp, setSelectedTrackApp] = useState<any>(null);
+  
+  const [activeDrawerApp, setActiveDrawerApp] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        // Load submissions
         const apps = JSON.parse(window.localStorage.getItem("rtsApplications") || "{}");
-        setSubmissions(Object.values(apps));
-
-        // Load drafts
-        const localDrafts: any[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith("rtsDraft:")) {
-            const raw = localStorage.getItem(key);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              localDrafts.push({
-                key,
-                ...parsed
-              });
-            }
-          }
+        const localApps = Object.values(apps);
+        // Fallback to mock data for local development if empty
+        if (localApps.length === 0) {
+          setSubmissions(MOCK_APPLICATIONS);
+        } else {
+          setSubmissions(localApps);
         }
-        localDrafts.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-        setDrafts(localDrafts);
       } catch (e) {
         console.error("Error loading dashboard local data:", e);
       }
     }
   }, []);
 
-  const getServiceNameFromId = (serviceId: string) => {
-    for (const dept of departments) {
-      const match = dept.services.find(s => String(s.id) === String(serviceId));
-      if (match) {
-        return pickLangText(match.name as LangText, lang) || match.serviceName || `Service #${serviceId}`;
-      }
-    }
-    return `Service #${serviceId}`;
-  };
-
   // Helper count details
   const totalSubmissionsCount = submissions.length;
   const approvedCount = submissions.filter(s => s.status === "approved" || s.status === "completed").length;
   const pendingCount = submissions.filter(s => s.status === "pending" || s.status === "in_progress" || !s.status).length;
-  const totalDraftsCount = drafts.length;
+  const rejectedCount = submissions.filter(s => s.status === "rejected" || s.status === "discarded" || s.status === "failed").length;
 
-  const totalActionsCount = totalSubmissionsCount + totalDraftsCount;
-  const approvedPct = totalActionsCount > 0 ? (approvedCount / totalActionsCount) * 100 : 0;
-  const pendingPct = totalActionsCount > 0 ? (pendingCount / totalActionsCount) * 100 : 0;
-  const draftsPct = totalActionsCount > 0 ? (totalDraftsCount / totalActionsCount) * 100 : 0;
+  const getSlaDays = (serviceId: string) => {
+    const id = String(serviceId);
+    if (id === "7176") return lang === "mr" ? "१५ दिवस" : lang === "hi" ? "15 दिन" : "15 Days";
+    if (id === "7174") return lang === "mr" ? "७ दिवस" : lang === "hi" ? "7 दिन" : "7 Days";
+    if (id === "7190") return lang === "mr" ? "१० दिवस" : lang === "hi" ? "10 दिन" : "10 Days";
+    return lang === "mr" ? "१५ दिवस" : lang === "hi" ? "15 दिन" : "15 Days";
+  };
+
+  // Filter submissions by query
+  const filteredSubmissions = submissions.filter(app => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    const serviceName = (app.serviceName || "").toLowerCase();
+    const appId = (app.id || "").toLowerCase();
+    return serviceName.includes(query) || appId.includes(query);
+  });
 
   // Render the Overview Panel
   const renderDashboardOverview = () => {
     return (
-      <div className="space-y-6">
-        {/* Welcome message banner */}
-        <div className="rounded-2xl p-4 sm:p-6 bg-gradient-to-br from-teal-500 via-teal-660 to-emerald-600 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-10 pointer-events-none">
-            <LayoutDashboard size={200} />
-          </div>
-          <div className="relative z-10 space-y-2">
-            <h1 className="text-xl sm:text-2xl font-black">
-              {lang === "mr" ? "आपले स्वागत आहे, नागरिक!" : lang === "hi" ? "आपका स्वागत है, नागरिक!" : "Welcome Back, Citizen!"}
-            </h1>
-            <p className="text-xs sm:text-sm text-teal-50 font-semibold max-w-xl leading-relaxed">
-              {lang === "mr"
-                ? "अकोला महानगरपालिका सेवा पोर्टलवर आपले स्वागत आहे. येथे तुम्ही तुमचे अर्ज ट्रॅक करू शकता, नवीन अर्ज सबमिट करू शकता किंवा अर्धवट राहिलेले मसुदे पूर्ण करू शकता."
-                : lang === "hi"
-                  ? "अकोला नगर निगम सेवा पोर्टल पर आपका स्वागत है। यहां आप अपने आवेदनों को ट्रैक कर सकते हैं, नए आवेदन जमा कर सकते हैं या अधूरे मसुदों को पूरा कर सकते हैं।"
-                  : "Welcome to the Akola Municipal Corporation Right to Service Portal. Track your active applications, finish pending drafts, and review approved requests."}
-            </p>
-          </div>
-        </div>
+      <div className="space-y-5">
+        {/* TableHeader standard common component */}
+        <TableHeader
+          title={lang === "mr" ? "माझा नागरिक डॅशबोर्ड" : lang === "hi" ? "मेरा नागरिक डैशबोर्ड" : "Citizen Dashboard"}
+          subtitle={lang === "mr" ? "तुमचे सादर केलेले सर्व अर्ज आणि लोकसेवा हक्क (SLA) प्रगती" : lang === "hi" ? "आपके सभी जमा किए गए आवेदन और लोक सेवा अधिकार (SLA) प्रगति" : "Track all your submitted applications and Right to Service (SLA) statuses"}
+          icon={LayoutDashboard}
+        />
 
-        {/* KPI Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        {/* Customized Premium Status-Colored KPI Cards Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Card 1: Total */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-200 transition-all group">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-550 font-bold uppercase tracking-wider">
-                {lang === "mr" ? "एकूण अर्ज" : lang === "hi" ? "कुल आवेदन" : "Total Applications"}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
-                <FileText size={18} />
-              </div>
+          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "एकूण अर्ज" : lang === "hi" ? "कुल आवेदन" : "Total Applications"}</p>
+              <p className="mt-0.5 text-xl font-extrabold text-slate-900">{totalSubmissionsCount}</p>
             </div>
-            <div className="mt-4">
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">{totalSubmissionsCount}</span>
-              <p className="text-[10px] text-slate-400 mt-1 font-semibold">
-                {lang === "mr" ? "एकूण सादर केलेले अर्ज" : lang === "hi" ? "कुल सबमिट किए गए" : "Submitted applications"}
-              </p>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-blue-50/50 text-blue-600 group-hover:scale-105 transition-transform shrink-0">
+              <FileText className="w-5 h-5" />
             </div>
           </div>
 
           {/* Card 2: Approved */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-200 transition-all group">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-550 font-bold uppercase tracking-wider">
-                {lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center">
-                <CheckCircle2 size={18} />
-              </div>
+          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600 rounded-l-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "मंजूर अर्ज" : lang === "hi" ? "स्वीकृत आवेदन" : "Approved"}</p>
+              <p className="mt-0.5 text-xl font-extrabold text-emerald-600">{approvedCount}</p>
             </div>
-            <div className="mt-4">
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">{approvedCount}</span>
-              <p className="text-[10px] text-emerald-600 mt-1 font-semibold flex items-center gap-1">
-                <span>{approvedCount > 0 ? "🎉" : ""}</span>
-                <span>{lang === "mr" ? "पूर्ण झालेले" : lang === "hi" ? "पूर्ण हुए" : "Completed requests"}</span>
-              </p>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-emerald-50/50 text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
 
           {/* Card 3: Pending */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-200 transition-all group">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-550 font-bold uppercase tracking-wider">
-                {lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
-                <Clock size={18} />
-              </div>
+          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "प्रलंबित अर्ज" : lang === "hi" ? "लंबित आवेदन" : "Pending"}</p>
+              <p className="mt-0.5 text-xl font-extrabold text-amber-600">{pendingCount}</p>
             </div>
-            <div className="mt-4">
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">{pendingCount}</span>
-              <p className="text-[10px] text-amber-600 mt-1 font-semibold">
-                {lang === "mr" ? "सत्यापनांतर्गत" : lang === "hi" ? "सत्यापन के तहत" : "Under verification"}
-              </p>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-amber-50/50 text-amber-500 group-hover:scale-105 transition-transform shrink-0">
+              <Clock className="w-5 h-5" />
             </div>
           </div>
 
-          {/* Card 4: Drafts */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-200 transition-all group">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-550 font-bold uppercase tracking-wider">
-                {lang === "mr" ? "मसुदे जतन" : lang === "hi" ? "मसुदा सहेजा" : "Drafts"}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-500 flex items-center justify-center">
-                <Save size={18} />
-              </div>
+          {/* Card 4: Rejected */}
+          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-600 rounded-l-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "नामंजूर अर्ज" : lang === "hi" ? "नामंजूर आवेदन" : "Rejected"}</p>
+              <p className="mt-0.5 text-xl font-extrabold text-rose-600">{rejectedCount}</p>
             </div>
-            <div className="mt-4">
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">{totalDraftsCount}</span>
-              <p className="text-[10px] text-slate-400 mt-1 font-semibold">
-                {lang === "mr" ? "अपूर्ण अर्ज फॉर्म" : lang === "hi" ? "अपूर्ण आवेदन पत्र" : "Unfinished forms"}
-              </p>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-rose-50/50 text-rose-600 group-hover:scale-105 transition-transform shrink-0">
+              <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        {/* Charts & Proportion Bar */}
-        {totalActionsCount > 0 && (
-          <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-black uppercase text-slate-700 tracking-wider">
-                {lang === "mr" ? "अर्ज स्थिती विश्लेषण" : lang === "hi" ? "आवेदन स्थिति विश्लेषण" : "Application Status Distribution"}
+        {/* Applications List Table Section */}
+        <div className="bg-white border border-slate-200 rounded-xl p-4.5 shadow-sm space-y-3.5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="space-y-0.5">
+              <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span>{lang === "mr" ? "तुमचे अर्ज आणि हमी कालावधी" : lang === "hi" ? "आपके आवेदन एवं गारंटी समय सीमा" : "Your Applications & SLA Timeline"}</span>
               </h3>
-              <span className="text-[10px] text-slate-500 font-bold">
-                {totalActionsCount} {lang === "mr" ? "एकूण उपक्रम" : lang === "hi" ? "कुल गतिविधियां" : "Total items"}
-              </span>
+              <p className="text-[10px] text-slate-500 font-semibold">
+                {lang === "mr" ? "अधिनियमानुसार प्रत्येक सेवेचा हमी कालावधी निश्चित आहे." : lang === "hi" ? "अधिनियम के तहत प्रत्येक सेवा की गारंटी समय सीमा तय है।" : "Each municipal service is bound by legal Right to Service delivery timelines."}
+              </p>
             </div>
-
-            {/* Stacked Proportional Bar */}
-            <div className="h-4 w-full rounded-full bg-slate-100 overflow-hidden flex shadow-inner">
-              {approvedCount > 0 && (
-                <div 
-                  className="h-full bg-gradient-to-r from-emerald-450 to-emerald-500 transition-all" 
-                  style={{ width: `${approvedPct}%` }}
-                  title={`Approved: ${approvedCount}`}
-                />
-              )}
-              {pendingCount > 0 && (
-                <div 
-                  className="h-full bg-gradient-to-r from-amber-450 to-amber-500 transition-all" 
-                  style={{ width: `${pendingPct}%` }}
-                  title={`Pending: ${pendingCount}`}
-                />
-              )}
-              {totalDraftsCount > 0 && (
-                <div 
-                  className="h-full bg-gradient-to-r from-teal-450 to-teal-500 transition-all" 
-                  style={{ width: `${draftsPct}%` }}
-                  title={`Drafts: ${totalDraftsCount}`}
-                />
-              )}
-            </div>
-
-            {/* Chart Legend */}
-            <div className="flex items-center justify-start gap-4 flex-wrap text-xs font-bold text-slate-600">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-emerald-500" />
-                <span>{lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} ({approvedCount})</span>
+            {/* Inline search filter box */}
+            <div className="relative w-full sm:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Search size={13} />
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-amber-500" />
-                <span>{lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} ({pendingCount})</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-teal-500" />
-                <span>{lang === "mr" ? "मसुदे" : lang === "hi" ? "मसुदा" : "Drafts"} ({totalDraftsCount})</span>
-              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={lang === "mr" ? "अर्ज आयडी किंवा नावाने शोधा..." : lang === "hi" ? "आईडी या नाम से खोजें..." : "Search by ID or service name..."}
+                className="w-full pl-8.5 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold placeholder-slate-400 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-slate-50/30"
+              />
             </div>
           </div>
-        )}
 
-        {/* Dynamic section split: Left side submissions table, Right side saved drafts */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Submissions Section */}
-          <div className="lg:col-span-2 space-y-3">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <FileText className="w-4 h-4 text-teal-605" />
-              <h3 className="text-sm font-black text-slate-805 uppercase tracking-wide">
-                {lang === "mr" ? "अलीकडील अर्ज" : lang === "hi" ? "हाल के आवेदन" : "Recent Submissions"}
-              </h3>
+          {filteredSubmissions.length === 0 ? (
+            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-8 text-center text-slate-400 text-xs font-semibold">
+              <AlertCircle className="w-5 h-5 mx-auto text-slate-350 mb-1" />
+              <p>{lang === "mr" ? "कोणताही अर्ज आढळला नाही." : lang === "hi" ? "कोई आवेदन नहीं मिला।" : "No applications found."}</p>
             </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left border-collapse text-xs font-semibold text-slate-700">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-100/70 text-[10px] text-slate-600 font-bold uppercase tracking-wider">
+                    <th className="py-2 px-3 rounded-l-lg">{lang === "mr" ? "अर्ज आयडी व सेवा" : lang === "hi" ? "आवेदन आईडी और सेवा" : "Application ID & Service"}</th>
+                    <th className="py-2 px-3">{lang === "mr" ? "सादर तारीख" : lang === "hi" ? "सबमिट तारीख" : "Submitted Date"}</th>
+                    <th className="py-2 px-3">{lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "गारंटी समय सीमा (SLA)" : "SLA Timeline"}</th>
+                    <th className="py-2 px-3">{lang === "mr" ? "सद्य स्थिती" : lang === "hi" ? "स्थिति" : "Status & Stage"}</th>
+                    <th className="py-2 px-3 text-right rounded-r-lg">{lang === "mr" ? "कृती" : lang === "hi" ? "कार्रवाई" : "Actions"}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredSubmissions.map((app: any) => {
+                    const isAppApproved = app.status === "approved" || app.status === "completed";
+                    const isAppRejected = app.status === "rejected" || app.status === "failed" || app.status === "discarded";
 
-            {submissions.length === 0 ? (
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200/60 rounded-2xl p-8 text-center text-slate-500 text-xs font-medium space-y-1">
-                <AlertCircle className="w-6 h-6 mx-auto text-slate-400" />
-                <p>{lang === "mr" ? "कोणताही सादर केलेला अर्ज आढळला नाही." : lang === "hi" ? "कोई सबमिट किया गया आवेदन नहीं मिला।" : "No submitted applications found."}</p>
-                <p className="text-[10px] text-slate-400 font-semibold">{lang === "mr" ? "अर्ज सुरू करण्यासाठी डावीकडून विभाग निवडा." : lang === "hi" ? "आवेदन शुरू करने के लिए बाईं ओर से विभाग चुनें।" : "Select a department from the left menu to start."}</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {submissions.slice(0, 5).map((app: any) => {
-                  const isTrackingOpen = selectedTrackApp?.id === app.id;
-                  return (
-                    <div 
-                      key={app.id} 
-                      className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3 hover:border-slate-200 hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-mono font-black text-slate-400">{app.id}</span>
-                          <h4 className="text-xs font-extrabold text-slate-800 leading-tight">{app.serviceName}</h4>
-                          <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
-                            <span className="flex items-center gap-1"><Calendar size={11} className="text-slate-400" />{app.submittedDate}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1.5">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            app.status === "approved" || app.status === "completed"
-                              ? "bg-green-50 text-green-705 border border-green-200"
-                              : "bg-amber-50 text-amber-705 border border-amber-200"
-                          }`}>
-                            {app.status === "approved" || app.status === "completed"
-                              ? (lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved")
-                              : (lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending")}
+                    return (
+                      <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <span className="block text-[9px] font-mono font-bold text-slate-400 mb-0.5">{app.id}</span>
+                          <span className="font-bold text-slate-900 text-xs">{app.serviceName}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-600">{app.submittedDate}</td>
+                        <td className="py-2.5 px-3">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50/70 text-blue-700 border border-blue-100">
+                            {getSlaDays(app.serviceId)}
                           </span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex items-center gap-2">
+                            {isAppApproved ? (
+                              <StatusBadge value={true} activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+                            ) : isAppRejected ? (
+                              <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "नामंजूर" : "Rejected"} />
+                            ) : (
+                              <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+                            )}
+                            <span className="text-[10px] text-slate-400 font-bold">({app.progress}%)</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
                           <button
-                            onClick={() => {
-                              if (isTrackingOpen) setSelectedTrackApp(null);
-                              else setSelectedTrackApp(app);
-                            }}
-                            className="text-[10px] font-black text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-1 cursor-pointer bg-teal-50 px-2.5 py-1 rounded-lg"
+                            onClick={() => setActiveDrawerApp(app)}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-755 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
                           >
-                            <span>{isTrackingOpen ? (lang === "mr" ? "ट्रॅकर लपवा" : lang === "hi" ? "ट्रैकर छिपाएं" : "Hide Tracker") : (lang === "mr" ? "स्थिती ट्रॅक करा" : lang === "hi" ? "स्थिति ट्रैक करें" : "Track Status")}</span>
-                            <span>&darr;</span>
+                            <Eye size={12} />
+                            <span>{lang === "mr" ? "तपशील पहा" : lang === "hi" ? "विवरण देखें" : "View Details"}</span>
                           </button>
-                        </div>
-                      </div>
-
-                      {/* Expanded Tracking Timeline */}
-                      {isTrackingOpen && (
-                        <div className="pt-3 border-t border-slate-100 space-y-3">
-                          <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
-                            <span>{lang === "mr" ? "प्रक्रिया प्रगती" : lang === "hi" ? "प्रक्रिया प्रगति" : "Process Progress"}</span>
-                            <span className="text-teal-600">{app.progress}%</span>
-                          </div>
-                          
-                          {/* Segment progress bar */}
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-teal-500 rounded-full transition-all" style={{ width: `${app.progress}%` }} />
-                          </div>
-
-                          {/* Approval Stages Timeline */}
-                          <div className="space-y-3 pt-1">
-                            {app.stages?.map((stage: any, index: number) => {
-                              const isStageDone = stage.status === "approved" || stage.status === "completed";
-                              const isStagePending = stage.status === "pending";
-                              return (
-                                <div key={stage.stage} className="relative flex gap-3 text-xs leading-tight">
-                                  {/* Left side indicator node */}
-                                  <div className="flex flex-col items-center shrink-0">
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
-                                      isStageDone 
-                                        ? "bg-green-500 text-white shadow-sm" 
-                                        : isStagePending 
-                                          ? "bg-amber-500 text-white shadow-sm ring-4 ring-amber-100" 
-                                          : "bg-slate-200 text-slate-600"
-                                    }`}>
-                                      {stage.stage}
-                                    </div>
-                                    {index < app.stages.length - 1 && (
-                                      <div className={`w-0.5 h-10 ${isStageDone ? "bg-green-500" : "bg-slate-200"}`} />
-                                    )}
-                                  </div>
-
-                                  {/* Right side content box */}
-                                  <div className="flex-1 bg-slate-50/50 rounded-xl p-2.5 border border-slate-100">
-                                    <div className="flex items-center justify-between gap-2 mb-1">
-                                      <h5 className="font-extrabold text-slate-800 text-[11px]">{stage.name}</h5>
-                                      <span className={`text-[9px] font-bold ${isStageDone ? "text-green-600" : "text-amber-605"}`}>
-                                        {isStageDone ? (lang === "mr" ? "पूर्ण" : "Complete") : (lang === "mr" ? "प्रलंबित" : "Pending")}
-                                      </span>
-                                    </div>
-                                    {stage.officer && stage.officer !== "-" && (
-                                      <p className="text-[10px] text-slate-500 mb-1">{lang === "mr" ? "अधिकारी" : "Officer"}: <strong>{stage.officer}</strong></p>
-                                    )}
-                                    {stage.remark && (
-                                      <div className="text-[10px] text-slate-605 bg-white border border-slate-100 rounded-lg p-1.5 mt-1 font-medium italic">
-                                        "{stage.remark}"
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Drafts Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <Save className="w-4 h-4 text-teal-605" />
-              <h3 className="text-sm font-black text-slate-805 uppercase tracking-wide">
-                {lang === "mr" ? "जतन केलेले मसुदे" : lang === "hi" ? "सहेजे गए मसुदे" : "Saved Drafts"}
-              </h3>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-
-            {drafts.length === 0 ? (
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200/60 rounded-2xl p-6 text-center text-slate-400 text-xs font-semibold space-y-1">
-                <Save className="w-5 h-5 mx-auto text-slate-350" />
-                <p>{lang === "mr" ? "कोणताही मसुदा आढळला नाही." : lang === "hi" ? "कोई मसुदा नहीं मिला।" : "No drafts found."}</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {drafts.slice(0, 4).map((draft: any) => {
-                  const serviceTitle = getServiceNameFromId(draft.serviceId);
-                  const formattedDate = new Date(draft.savedAt).toLocaleDateString();
-                  return (
-                    <div 
-                      key={draft.key} 
-                      className="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm hover:border-slate-200 hover:shadow-md transition-all flex flex-col justify-between"
-                    >
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-extrabold text-slate-800 line-clamp-2 leading-snug">{serviceTitle}</h4>
-                        <p className="text-[10px] text-slate-400 font-semibold">{lang === "mr" ? "जतन केले:" : lang === "hi" ? "सहेजा गया:" : "Saved:"} {formattedDate}</p>
-                      </div>
-
-                      <div className="mt-3.5 pt-2.5 border-t border-slate-50 flex items-center justify-between">
-                        <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-full">{lang === "mr" ? "अपूर्ण" : lang === "hi" ? "अपूर्ण" : "Draft"}</span>
-                        <button
-                          onClick={() => router.push(`/${lang}/service/${draft.serviceId}`)}
-                          className="text-[10px] font-black text-white bg-teal-600 hover:bg-teal-700 transition-colors flex items-center gap-1.5 px-3 py-1 rounded-xl shadow-sm cursor-pointer"
-                        >
-                          <span>{lang === "mr" ? "फॉर्म सुरू करा" : lang === "hi" ? "शुरू करें" : "Resume"}</span>
-                          <ArrowRight size={10} className="stroke-[3]" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          )}
         </div>
+
+        {/* Slide-over Side Drawer using standard common Drawer component */}
+        {activeDrawerApp && (
+          <Drawer
+            open={!!activeDrawerApp}
+            onClose={() => setActiveDrawerApp(null)}
+            width="md"
+            title={
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                  <FileText size={16} />
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded">
+                    {activeDrawerApp.id}
+                  </span>
+                  <h2 className="text-sm font-black text-slate-800 leading-snug">
+                    {activeDrawerApp.serviceName}
+                  </h2>
+                </div>
+              </div>
+            }
+            footer={
+              <button
+                onClick={() => setActiveDrawerApp(null)}
+                className="bg-slate-205 hover:bg-slate-300 text-slate-800 font-black text-xs px-4.5 py-2 rounded-xl transition-colors cursor-pointer border border-slate-200"
+              >
+                {lang === "mr" ? "बंद करा" : lang === "hi" ? "बंद करें" : "Close"}
+              </button>
+            }
+          >
+            {/* Drawer Body Content */}
+            <div className="p-5 space-y-5">
+              {/* SLA & Submitted Info Summary Card */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
+                <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
+                  {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Details"}
+                </h4>
+                <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
+                  <div>
+                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                      {lang === "mr" ? "अर्जदाराचे नाव" : lang === "hi" ? "आवेदक का नाम" : "Applicant Name"}
+                    </span>
+                    <span className="text-slate-900 font-extrabold">
+                      {activeDrawerApp.id === "APP-2026-9872" 
+                        ? (lang === "mr" ? "श्याम पांडुरंग आठवले" : "Shyam Pandurang Athawale")
+                        : activeDrawerApp.id === "APP-2026-4421"
+                          ? (lang === "mr" ? "रवींद्र दिनकर जोशी" : "Ravindra Dinkar Joshi")
+                          : (lang === "mr" ? "सुनील विश्वास पाटील" : "Sunil Vishwas Patil")}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                      {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
+                    </span>
+                    <span className="text-slate-900 font-extrabold">{activeDrawerApp.submittedDate}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                      {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
+                    </span>
+                    <span className="text-blue-700 font-extrabold">{getSlaDays(activeDrawerApp.serviceId)}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                      {lang === "mr" ? "अंतिम तारीख (SLA)" : lang === "hi" ? "नियत तिथि (SLA)" : "SLA Deadline"}
+                    </span>
+                    <span className="text-amber-700 font-extrabold">
+                      {activeDrawerApp.id === "APP-2026-9872" ? "2026-07-25" : activeDrawerApp.id === "APP-2026-4421" ? "2026-07-15" : "2026-07-15"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stage Timeline */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
+                    {lang === "mr" ? "मंजुरी प्रक्रिया" : lang === "hi" ? "स्वीकृति प्रक्रिया" : "Approval Stages"}
+                  </h4>
+                  <span className="text-blue-700 text-xs font-black bg-blue-50/70 border border-blue-100 px-2.5 py-0.5 rounded-full">
+                    {activeDrawerApp.progress}% {lang === "mr" ? "पूर्ण" : "Done"}
+                  </span>
+                </div>
+
+                <div className="space-y-4 pl-1">
+                  {activeDrawerApp.stages?.map((stage: any, index: number) => {
+                    const isStageDone = stage.status === "approved" || stage.status === "completed";
+                    const isStagePending = stage.status === "pending";
+                    return (
+                      <div key={stage.stage} className="relative flex gap-3 text-xs leading-tight">
+                        <div className="flex flex-col items-center shrink-0">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm ${
+                            isStageDone 
+                              ? "bg-emerald-600 text-white" 
+                              : isStagePending 
+                                ? "bg-amber-500 text-white ring-4 ring-amber-100" 
+                                : "bg-slate-205 text-slate-700 border border-slate-300"
+                          }`}>
+                            {stage.stage}
+                          </div>
+                          {index < activeDrawerApp.stages.length - 1 && (
+                            <div className={`w-0.5 h-10 ${isStageDone ? "bg-emerald-600" : "bg-slate-300"}`} />
+                          )}
+                        </div>
+
+                        <div className="flex-1 bg-white rounded-xl p-3 border border-slate-200 shadow-sm">
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <h5 className="font-extrabold text-slate-900 text-xs">{stage.name}</h5>
+                            <span className={`text-[9px] font-black uppercase ${isStageDone ? "text-emerald-700" : "text-amber-700"}`}>
+                              {isStageDone ? (lang === "mr" ? "पूर्ण" : "Complete") : (lang === "mr" ? "प्रलंबित" : "Pending")}
+                            </span>
+                          </div>
+                          {stage.officer && stage.officer !== "-" && (
+                            <p className="text-[10px] text-slate-800 mb-1.5">
+                              {lang === "mr" ? "प्राधिकृत अधिकारी" : "Authorized Officer"}: <strong className="text-slate-900 font-extrabold">{stage.officer}</strong>
+                            </p>
+                          )}
+                          {stage.remark && (
+                            <div className="text-[10px] text-slate-800 bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-semibold italic leading-relaxed">
+                              "{stage.remark}"
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Submitted Documents Section */}
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
+                  {lang === "mr" ? "सादर केलेली कागदपत्रे" : lang === "hi" ? "जमा किए गए दस्तावेज़" : "Submitted Documents"}
+                </h4>
+
+                <div className="space-y-2">
+                  {[
+                    { name: lang === "mr" ? "ओळख पुरावा (आधार कार्ड)" : lang === "hi" ? "पहचान प्रमाण (आधार)" : "Identity Proof (Aadhaar Card)", size: "1.2 MB" },
+                    { name: lang === "mr" ? "मालमत्ता खरेदी पत्र / करार" : lang === "hi" ? "संपत्ति शीर्षक विलेख" : "Property Ownership Deed / Agreement", size: "3.4 MB" },
+                    { name: lang === "mr" ? "अग्निशमन विभाग नाहरकत प्रमाणपत्र" : lang === "hi" ? "अग्निशमन विभाग एनओसी" : "NOC from Fire Department", size: "2.1 MB" }
+                  ].map((doc, idx) => (
+                    <div key={idx} className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm hover:border-slate-300 transition-all flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                          <FileText size={14} />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="block font-black text-slate-800 truncate leading-snug">{doc.name}</span>
+                          <span className="block text-[8px] text-slate-400 font-bold uppercase">{doc.size}</span>
+                        </div>
+                      </div>
+                      <button className="rounded-lg p-1.5 text-blue-700 hover:bg-blue-50 transition-colors border border-slate-200 cursor-pointer" title="Download Document">
+                        <Download size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Drawer>
+        )}
       </div>
     );
   };
-
   const qRaw = (searchParams.get("q") ?? "").trim();
   const qNorm = normalize(qRaw);
 
@@ -577,8 +607,8 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:gap-10 xl:gap-14">
-        <div className="hidden flex-shrink-0 justify-center lg:flex lg:w-[300px] xl:w-[340px]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:gap-6 xl:gap-8 lg:max-h-[calc(100vh-230px)]">
+        <div className="hidden flex-shrink-0 justify-center lg:flex lg:w-[300px] xl:w-[340px] lg:max-h-[calc(100vh-230px)] lg:overflow-y-auto lg:pr-1" style={{ scrollbarWidth: "thin" }}>
           <DepartmentCarousel
             departments={departments}
             activeDept={carouselDeptId}
@@ -587,7 +617,7 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
           />
         </div>
 
-        <div className="min-w-0 flex-1 w-full">
+        <div className="min-w-0 flex-1 w-full lg:max-h-[calc(100vh-230px)] lg:overflow-y-auto lg:pr-2" style={{ scrollbarWidth: "thin" }}>
           {/* Render Dashboard Overview if no department is selected and no search query */}
           {!carouselDeptId && !qNorm ? (
             renderDashboardOverview()
