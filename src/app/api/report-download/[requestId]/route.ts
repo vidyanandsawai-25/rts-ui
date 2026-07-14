@@ -31,12 +31,15 @@ export async function GET(
     // Read the query params safely using standard URL constructor
     const parsedUrl = new URL(_request.url);
     const inline = parsedUrl.searchParams.get('inline') === 'true';
+    // Sanitize requestId to prevent header injection or invalid filenames
+    // (e.g. quotes, newlines, path separators from untrusted input)
+    const safeFilename = `${requestId}`.replace(/[^a-zA-Z0-9._-]/g, '_');
     if (inline) {
       responseHeaders.set('Content-Disposition', 'inline');
     } else {
       responseHeaders.set(
         'Content-Disposition',
-        upstream.headers.get('Content-Disposition') ?? `attachment; filename="${requestId}.pdf"`,
+        upstream.headers.get('Content-Disposition') ?? `attachment; filename="${safeFilename}.pdf"`,
       );
     }
     
@@ -44,8 +47,7 @@ export async function GET(
     if (contentLength) responseHeaders.set('Content-Length', contentLength);
 
     return new NextResponse(upstream.body, { status: 200, headers: responseHeaders });
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: 'Internal server error', details: errorMsg }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

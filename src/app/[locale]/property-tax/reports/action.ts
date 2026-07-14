@@ -5,8 +5,6 @@ import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
 import { apiClient } from '@/services/api.service';
 import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, LookupOption, ReportJob } from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
-import { cookies } from 'next/headers';
-import { getAppConfig } from '@/config/app.config';
 
 export async function getReportDefinitionsAction(): Promise<ReportDefinition[]> {
   try {
@@ -256,21 +254,10 @@ export async function resolvePropertiesAction(
 }
 
 export async function fetchReportJobs(take = 25): Promise<ReportJob[]> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-  if (!token) return [];
-
-  const config = getAppConfig();
-  const baseUrl = config.api.baseUrl?.trim().replace(/\/+$/, '');
-  if (!baseUrl) return [];
-
   try {
-    const res = await fetch(`${baseUrl}/Report/requests?take=${take}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
-    if (!res.ok) return [];
-    return (await res.json()) as ReportJob[];
+    const result = await apiClient.get<ReportJob[]>(`/Report/requests?take=${encodeURIComponent(String(take))}`);
+    if (!result.success || !result.data || !Array.isArray(result.data)) return [];
+    return result.data;
   } catch {
     return [];
   }

@@ -170,7 +170,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
           >
             <Clock className="w-3.5 h-3.5" />
             {workspaceCopy.tabs.myReports}
-            {jobs.some(j => j.status === 'Pending' || j.status === 'Processing') && (
+            {jobs.some((j) => j.status === 'Pending' || j.status === 'Processing' || j.status === 'Retrying') && (
               <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
             )}
           </button>
@@ -188,6 +188,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
                 category={cat}
                 label={workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories]}
                 count={categoryCount(cat.key)}
+                reportsCountTemplate={workspaceCopy.reportsCount}
                 isSelected={selectedCategory === cat.key}
                 onClick={() => handleCategoryClick(cat.key)}
               />

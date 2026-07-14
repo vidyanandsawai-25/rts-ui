@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useEffect, useMemo, useTransition } from 'react';
@@ -235,18 +235,9 @@ export function useReportParameters({ report, onQueued, copy, zones: initialZone
   }));
 
   const propertyOptions = useMemo(() => {
-    return properties.map((p: any) => {
-      let label = p.propertyNo;
-      if (p.fromProperty) {
-        label += `-${p.fromProperty}`;
-        if (p.toProperty && p.toProperty !== p.fromProperty) {
-          label += ` – ${p.toProperty}`;
-        }
-      } else if (p.toProperty) {
-        label += `-${p.toProperty}`;
-      } else if (p.partitionNo) {
-        label += `-${p.partitionNo}`;
-      }
+    return properties.map((p: PropertySummary) => {
+      // Build label from typed fields only — PropertySummary has propertyNo and partitionNo
+      const label = p.partitionNo ? `${p.propertyNo}-${p.partitionNo}` : p.propertyNo;
       return { label, value: String(p.propertyId) };
     });
   }, [properties]);

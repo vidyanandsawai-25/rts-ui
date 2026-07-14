@@ -117,7 +117,7 @@ export function useReportForm({ reportDefinitions, onQueued, selectedReportCode 
       .catch(() => {
         if (!cancelled && mountedRef.current) {
           setParameters([]);
-          setParametersError('Unexpected error loading parameters.');
+          setParametersError(t('errors.loadFailed'));
           setParametersLoading(false);
         }
       });

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
 import { getAppConfig } from '@/config/app.config';
+import { apiClient } from '@/services/api.service';
 
 // Force Node.js runtime — SignalR JS client requires Node.js WebSocket APIs.
 export const runtime = 'nodejs';
@@ -29,13 +30,22 @@ export async function GET(request: NextRequest): Promise<Response> {
   // Platform base without /api suffix — needed for the hub URL and hub-token endpoint
   const platformBase = apiBase.replace(/\/api$/i, '');
 
-  // Get a short-lived hub token (server → server, session JWT never leaves Next.js)
-  const hubTokenRes = await fetch(`${apiBase}/Report/hub-token`, {
-    headers: { Authorization: `Bearer ${sessionToken}` },
-    cache: 'no-store',
-  });
-  if (!hubTokenRes.ok) return new Response('Unauthorized', { status: 401 });
-  const { hubToken } = (await hubTokenRes.json()) as { hubToken: string };
+  async function fetchHubToken(): Promise<string> {
+    const result = await apiClient.get<{ hubToken: string }>('/Report/hub-token');
+    if (!result.success || !result.data?.hubToken) {
+      throw new Error(result.error || 'Unauthorized');
+    }
+    return result.data.hubToken;
+  }
+
+  // Get an initial short-lived hub token (server → server, session JWT never leaves Next.js)
+  // This early fetch also serves as our initial auth validation check.
+  let initialToken: string;
+  try {
+    initialToken = await fetchHubToken();
+  } catch {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
   const hubUrl = `${platformBase}/hubs/reports`;
   const encoder = new TextEncoder();
@@ -53,8 +63,21 @@ export async function GET(request: NextRequest): Promise<Response> {
         try { controller.enqueue(encoder.encode(': keepalive\n\n')); } catch { /* closed */ }
       }, 25_000);
 
+      let isFirstToken = true;
       conn = new HubConnectionBuilder()
-        .withUrl(hubUrl, { accessTokenFactory: () => hubToken })
+        .withUrl(hubUrl, {
+          accessTokenFactory: async () => {
+            if (isFirstToken) {
+              isFirstToken = false;
+              return initialToken;
+            }
+            try {
+              return await fetchHubToken();
+            } catch {
+              return initialToken; // Fallback to initial token if refresh fails
+            }
+          },
+        })
         .withAutomaticReconnect()
         .build();
 

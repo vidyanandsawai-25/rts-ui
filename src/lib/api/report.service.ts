@@ -37,13 +37,17 @@ export async function getReportDefinitions(): Promise<ReportDefinition[]> {
   return (result.data.items ?? []).map(normalizeReportDefinition);
 }
 
+import { ApiError } from '@/lib/utils/api';
+
 export async function getReportParameters(reportDefinitionId: number): Promise<ReportParameterDefinition[]> {
   const result = await apiClient.get<PagedResponse<ReportParameterDefinition>>(
     `/ReportParameterDefinition?ReportDefinitionId=${encodeURIComponent(String(reportDefinitionId))}&IsActive=true&PageSize=-1`
   );
   if (!result.success || !result.data) {
-    throw new Error(
-      `[${result.statusCode ?? 0}] ${result.error ?? 'Failed to fetch report parameters'}`
+    throw new ApiError(
+      result.statusCode ?? 500,
+      result.error ?? 'Failed to fetch report parameters',
+      'getReportParameters'
     );
   }
   const items = result.data.items ?? [];

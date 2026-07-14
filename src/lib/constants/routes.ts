@@ -13,9 +13,9 @@ export const ROUTES = {
   PROPERTY_TAX: {
     SEARCH_PROPERTY: '/property-tax/search-property',
     PTIS: '/property-tax/ptis',
+    REPORTS: '/property-tax/reports',
   },
   PROFILE: '/profile',
   SETTINGS: '/settings',
   SCREEN_ACCESS: '/configuration-settings/screenAccess',
-  REPORTS: '/property-tax/reports',
 } as const;

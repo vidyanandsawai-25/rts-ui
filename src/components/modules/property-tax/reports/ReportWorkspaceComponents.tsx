@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { Check, FileText } from 'lucide-react';
@@ -52,8 +51,8 @@ export function Stepper({ currentStep, copy }: { currentStep: Step; copy: Report
 
 // ── CategoryCard ─────────────────────────────────────────────────────────────
 
-export function CategoryCard({ category, label, count, isSelected, onClick }: {
-  category: Category; label: string; count: number; isSelected: boolean; onClick: () => void;
+export function CategoryCard({ category, label, count, reportsCountTemplate, isSelected, onClick }: {
+  category: Category; label: string; count: number; reportsCountTemplate: string; isSelected: boolean; onClick: () => void;
 }) {
   const Icon = category.icon;
   return (
@@ -78,7 +77,7 @@ export function CategoryCard({ category, label, count, isSelected, onClick }: {
           : 'text-gray-500 bg-gray-100'
         }`}
       >
-        {count} reports
+        {reportsCountTemplate.replace('{count}', String(count))}
       </span>
     </button>
   );
@@ -169,7 +168,10 @@ export function ReportTabsPanel({ activeCategoryDef, activeReports, selectedRepo
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
         <FileText className="w-4 h-4 text-[#004c8c]" />
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-          {workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories]} Reports
+          {workspaceCopy.reportsHeader.replace(
+            '{category}',
+            workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories],
+          )}
         </span>
         <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">
           {activeReports.length}
