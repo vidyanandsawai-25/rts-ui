@@ -140,10 +140,38 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
         ? assessmentYearVal
         : String(payload.constructionYear !== undefined ? payload.constructionYear : (payload.conYr || ''));
 
-    const carpetAreaSqFeetVal = Number(payload.carpetAreaSqFeet !== undefined ? payload.carpetAreaSqFeet : (payload.areaSqFt || 0));
-    const carpetAreaSqMeterVal = Number(payload.carpetAreaSqMeter !== undefined ? payload.carpetAreaSqMeter : (payload.areaSqM || 0));
-    const builtupAreaSqMeterVal = Number(payload.builtupAreaSqMeter !== undefined ? payload.builtupAreaSqMeter : (payload.builtupAreaSqM || 0));
-    const builtupAreaSqFeetVal = Number(payload.builtupAreaSqFeet !== undefined ? payload.builtupAreaSqFeet : (payload.builtupAreaSqFt || 0));
+    // ─── Area field mapping ───────────────────────────────────────────────────
+    // The payload coming from mapFormToPayload already has the correct keys
+    // (carpetAreaSqMeter / carpetAreaSqFeet / builtupAreaSqMeter / builtupAreaSqFeet).
+    // We read those first and fall back to the shorter UI aliases (areaSqM / areaSqFt)
+    // so that both the mapper output and any raw form data are handled consistently.
+    const isActualOpenPlotForArea = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
+
+    // Carpet Area: always use the carpet / plot area from the payload
+    const carpetAreaSqMeterVal = Number(
+        payload.carpetAreaSqMeter !== undefined ? payload.carpetAreaSqMeter
+            : (payload.areaSqM || 0)
+    ) || 0;
+    const carpetAreaSqFeetVal = Number(
+        payload.carpetAreaSqFeet !== undefined ? payload.carpetAreaSqFeet
+            : (payload.areaSqFt || 0)
+    ) || 0;
+
+    // Built-up Area:
+    //   - Open Plot  → mirror Carpet Area (plot area = built-up area)
+    //   - Construction → use the dedicated built-up area fields
+    const builtupAreaSqMeterVal = isActualOpenPlotForArea
+        ? carpetAreaSqMeterVal
+        : (Number(
+            payload.builtupAreaSqMeter !== undefined ? payload.builtupAreaSqMeter
+                : (payload.builtupAreaSqM || 0)
+        ) || 0);
+    const builtupAreaSqFeetVal = isActualOpenPlotForArea
+        ? carpetAreaSqFeetVal
+        : (Number(
+            payload.builtupAreaSqFeet !== undefined ? payload.builtupAreaSqFeet
+                : (payload.builtupAreaSqFt || 0)
+        ) || 0);
     const noOfRoomsVal = Number(payload.noOfRooms !== undefined ? payload.noOfRooms : (payload.rooms || 0));
 
     const renterYesNoVal = payload.renterYesNo !== undefined

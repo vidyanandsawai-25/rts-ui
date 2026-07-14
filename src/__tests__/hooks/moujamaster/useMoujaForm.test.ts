@@ -1,7 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useMoujaForm } from "@/hooks/moujamaster/useMoujaForm";
-import * as actions from "@/app/[locale]/property-tax/rate-master/moujamaster/action";
+import * as actions from "@/app/[locale]/property-tax/moujamaster/action";
 import { toast } from "sonner";
 import { Mouja } from "@/types/mouja.types";
 import { FormEvent } from "react";
@@ -26,7 +26,7 @@ vi.mock("sonner", () => ({
   },
 }));
 
-vi.mock("@/app/[locale]/property-tax/rate-master/moujamaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/moujamaster/action", () => ({
   createMoujaAction: vi.fn(),
   updateMoujaAction: vi.fn(),
 }));

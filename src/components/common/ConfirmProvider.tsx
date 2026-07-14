@@ -4,6 +4,7 @@ import React, { createContext, JSX, useCallback, useContext, useEffect, useMemo,
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, CheckCircle2, Info, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Tooltip } from "@/components/common/Tooltip";
 
 /* ================= Types ================= */
 
@@ -41,15 +42,48 @@ export function useConfirm(): ConfirmContextType {
   return ctx;
 }
 
-/* ✅ same line meta injection (no separate box) */
-function buildMetaSuffix(meta?: ConfirmMeta): string {
-  const name = meta?.name ? String(meta.name).trim() : "";
-  const id = meta?.id !== undefined && meta?.id !== null ? String(meta.id).trim() : "";
+function renderRecordMeta(meta?: ConfirmMeta): React.ReactNode {
+  if (!meta) return null;
+  const name = meta.name ? String(meta.name).trim() : "";
+  const id = meta.id !== undefined && meta.id !== null ? String(meta.id).trim() : "";
 
-  if (name && id) return ` (Record: ${name}, ID: ${id})`;
-  if (name) return ` (Record: ${name})`;
-  if (id) return ` (ID: ${id})`;
-  return "";
+  if (!name && !id) return null;
+
+  const TRUNCATION_LIMIT = 30;
+  const TRUNCATED_LENGTH = TRUNCATION_LIMIT - 4;
+
+  const isTruncated = name.length > TRUNCATION_LIMIT;
+  const truncatedName = isTruncated
+    ? `${name.slice(0, TRUNCATED_LENGTH)}....`
+    : name;
+
+  const recordNameElement = isTruncated ? (
+    <Tooltip content={name} placement="bottom">
+      <span className="cursor-help">{truncatedName}</span>
+    </Tooltip>
+  ) : (
+    <span>{name}</span>
+  );
+
+  return (
+    <>
+      {name && id && (
+        <>
+          {" (Record: "}
+          {recordNameElement}
+          {`, ID: ${id})`}
+        </>
+      )}
+      {name && !id && (
+        <>
+          {" (Record: "}
+          {recordNameElement}
+          {")"}
+        </>
+      )}
+      {!name && id && ` (ID: ${id})`}
+    </>
+  );
 }
 
 /* ================= DialogButton Component ================= */
@@ -155,13 +189,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
     };
 
     const d = defaults[variant];
-    const metaSuffix = buildMetaSuffix(payload?.meta);
     const baseDesc = payload?.description ?? d.description;
 
     return {
       variant,
       title: payload?.title ?? d.title,
-      description: `${baseDesc}${metaSuffix}`,
+      description: baseDesc,
       confirmText: payload?.confirmText ?? d.confirmText,
       cancelText: payload?.cancelText ?? t("cancel"),
       closeOnConfirm: payload?.closeOnConfirm ?? true,
@@ -261,7 +294,10 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
 
                   <h3 className="mt-5 text-2xl font-bold text-gray-900 leading-tight">{computed.title}</h3>
 
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-[320px]">{computed.description}</p>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-[320px]">
+                    {computed.description}
+                    {renderRecordMeta(computed.meta)}
+                  </p>
 
                   {/* Buttons */}
                   <div className="mt-8 flex items-center justify-center gap-3">

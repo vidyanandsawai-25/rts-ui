@@ -496,7 +496,7 @@ export async function deleteRateMasterAction(backendRates: IBackendRateMaster[])
   try {
     await rateMasterService.bulkPurgeRateMaster(ids);
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rate-master/rvratemaster`);
+      revalidatePath(`/${locale}/property-tax/rvratemaster`);
     }
     return { success: true, message: 'Rates deleted successfully' };
   } catch (error: unknown) {
@@ -549,7 +549,7 @@ export async function bulkCreateRateMasterAction(
     }));
     await rateMasterService.bulkCreateRateMaster(ratesWithUser);
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rate-master/rvratemaster`);
+      revalidatePath(`/${locale}/property-tax/rvratemaster`);
     }
     return { success: true, message: 'Rates created successfully' };
   } catch (error: unknown) {
@@ -595,7 +595,7 @@ export async function bulkUpdateRateMasterAction(
     }));
     await rateMasterService.bulkUpdateRateMaster(payloadWithUser);
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rate-master/rvratemaster`);
+      revalidatePath(`/${locale}/property-tax/rvratemaster`);
     }
     return { success: true, message: 'Rates updated successfully' };
   } catch (error: unknown) {

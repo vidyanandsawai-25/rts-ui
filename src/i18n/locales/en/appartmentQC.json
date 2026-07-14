@@ -330,6 +330,7 @@
       "selectSubType": "Select Sub Type",
       "yearPlaceholder": "YYYY",
       "roomsPlaceholder": "e.g. 2",
+      "auto": "Auto",
       "autoCalculated": "AUTO-CALCULATED",
       "sqFt": "SQ FT"
     },

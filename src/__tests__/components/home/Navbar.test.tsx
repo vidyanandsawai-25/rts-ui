@@ -64,7 +64,7 @@ describe('Navbar Component', () => {
   it('settings link points to correct URL', () => {
     render(<Navbar />);
     const settingsLink = screen.getByText('Settings').closest('a');
-    expect(settingsLink).toHaveAttribute('href', '/en/configuration-settings/office-master');
+    expect(settingsLink).toHaveAttribute('href', '/en/configuration-settings');
   });
 
   it('displays provided username', () => {

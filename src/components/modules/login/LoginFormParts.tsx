@@ -55,7 +55,7 @@ function FormSubmitButton({
  */
 export function FormLoadingOverlay() {
   const { pending } = useFormStatus();
-  const t = useTranslations('common.login');
+  const t = useTranslations('login');
 
   if (!pending) return null;
 
@@ -82,12 +82,21 @@ export function LoginCredentialFields({
 }: {
   loginForm: UseLoginFormReturn;
   locale: string;
-  copy: LoginFormCopy;
+  copy?: LoginFormCopy;
 }) {
+  const t = useTranslations('login');
   const { formData, errors, handleChange, handleBlur, showError } = loginForm;
   const [showPassword, setShowPassword] = useState(false);
   const usernameId = useId();
   const passwordId = useId();
+
+  const labelUsername = t('username') || copy?.username;
+  const placeholderUsername = t('usernamePlaceholder') || copy?.usernamePlaceholder;
+  const labelPassword = t('password') || copy?.password;
+  const placeholderPassword = t('passwordPlaceholder') || copy?.passwordPlaceholder;
+  const labelShowPassword = t('showPassword') || copy?.showPassword;
+  const labelHidePassword = t('hidePassword') || copy?.hidePassword;
+  const labelSignIn = t('signIn') || copy?.signIn;
 
   return (
     <>
@@ -95,7 +104,7 @@ export function LoginCredentialFields({
       <div className="space-y-5">
         <div className="space-y-1.5">
           <Label htmlFor={usernameId} className="ml-1 text-sm font-semibold text-gray-700">
-            {copy.username}
+            {labelUsername}
           </Label>
           <div className="group relative w-full">
             <User
@@ -108,7 +117,7 @@ export function LoginCredentialFields({
               value={formData.username}
               onChange={handleChange}
               onBlur={handleBlur}
-              placeholder={copy.usernamePlaceholder}
+              placeholder={placeholderUsername}
               maxLength={AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH}
               className={LOGIN_FIELD_INPUT_CLASS}
               error={showError('username') ? errors.username : undefined}
@@ -120,7 +129,7 @@ export function LoginCredentialFields({
 
         <div className="space-y-1.5">
           <Label htmlFor={passwordId} className="ml-1 text-sm font-semibold text-gray-700">
-            {copy.password}
+            {labelPassword}
           </Label>
           <div className="group relative w-full">
             <Lock
@@ -134,7 +143,7 @@ export function LoginCredentialFields({
               value={formData.password}
               onChange={handleChange}
               onBlur={handleBlur}
-              placeholder={copy.passwordPlaceholder}
+              placeholder={placeholderPassword}
               maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
               className={LOGIN_PASSWORD_INPUT_CLASS}
               error={showError('password') ? errors.password : undefined}
@@ -147,7 +156,7 @@ export function LoginCredentialFields({
                 variant="ghost"
                 size="xs"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+                aria-label={showPassword ? labelHidePassword : labelShowPassword}
                 className="absolute right-1 top-[22px] z-10 -translate-y-1/2 p-1 text-gray-400 hover:text-cyan-600"
               >
                 {showPassword ? (
@@ -166,7 +175,7 @@ export function LoginCredentialFields({
         whileTap={{ scale: 0.98 }}
         className="flex justify-center pt-4"
       >
-        <FormSubmitButton className={LOGIN_PRIMARY_SUBMIT_CLASS}>{copy.signIn}</FormSubmitButton>
+        <FormSubmitButton className={LOGIN_PRIMARY_SUBMIT_CLASS}>{labelSignIn}</FormSubmitButton>
       </motion.div>
     </>
   );

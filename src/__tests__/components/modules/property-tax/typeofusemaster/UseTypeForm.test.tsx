@@ -43,11 +43,17 @@ const mockMessages = {
     group: {
       mandatoryNote: "Fields marked with * are mandatory",
     },
+    category: {
+      fields: {
+        categoryName: "Category Name",
+      },
+    },
     type: {
       add: "Add Type of Use",
       edit: "Edit Type of Use",
       selectGroup: "Select group",
       selectType: "Select Type",
+      selectCategory: "Select Category",
       addingToGroup: "Adding to Group",
       selectUseTypeGroup: "Select Use Type Group",
       selectedGroup: "Selected Group",
@@ -82,6 +88,7 @@ const mockMessages = {
       duplicateDescription: "Duplicate Description is not allowed.",
       groupRequired: "Type Of Use Group is required.",
       typeRequired: "Type is required.",
+      categoryRequired: "Category is required.",
       saveFailed: "Failed to save. Please try again.",
       maxLength: "must be maximum {count} characters.",
       onlyAlphanumeric: "must contain only letters and numbers (no special characters).",
@@ -292,7 +299,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
       { const cb = screen.getByRole("combobox", { name: /use type group.*required/i }); fireEvent.change(cb, { target: { value: "Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
       { const cb = screen.getByRole("combobox", { name: /^type\s+required$/i }); fireEvent.change(cb, { target: { value: "Industrial" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
-      { const cb = screen.getByRole("combobox", { name: /categoryName/i }); fireEvent.change(cb, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
+      { const cb = screen.getByRole("combobox", { name: /category/i }); fireEvent.change(cb, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
 
       // Now test the sequence field
       const seqInput = screen.getByPlaceholderText("0");
@@ -318,7 +325,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Industrial Max Sequence" } });
       { const cb = screen.getByRole("combobox", { name: /use type group.*required/i }); fireEvent.change(cb, { target: { value: "Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
       { const cb = screen.getByRole("combobox", { name: /^type\s+required$/i }); fireEvent.change(cb, { target: { value: "Industrial" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
-      { const cb = screen.getByRole("combobox", { name: /categoryName/i }); fireEvent.change(cb, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
+      { const cb = screen.getByRole("combobox", { name: /category/i }); fireEvent.change(cb, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
 
       // Test with sequence = 999 (maximum valid)
       const seqInput = screen.getByPlaceholderText("0");
@@ -353,7 +360,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
       { const cb = screen.getByRole("combobox", { name: /use type group.*required/i }); fireEvent.change(cb, { target: { value: "Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
       { const cb = screen.getByRole("combobox", { name: /^type\s+required$/i }); fireEvent.change(cb, { target: { value: "Industrial" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
-      { const cb = screen.getByRole("combobox", { name: /categoryName/i }); fireEvent.change(cb, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
+      { const cb = screen.getByRole("combobox", { name: /category/i }); fireEvent.change(cb, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(cb, { key: "Enter", code: "Enter" }); }
 
       // Try to set value to 1000 (4 digits) - should be rejected by input restriction
       const seqInput = screen.getByPlaceholderText("0") as HTMLInputElement;
@@ -403,7 +410,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(typeSelect, { target: { value: "Industrial" } }); fireEvent.keyDown(typeSelect, { key: "Enter", code: "Enter" });
 
       // Select category
-      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
       fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       // Fill in sequence
@@ -448,7 +455,7 @@ describe("UseTypeForm", () => {
       const typeSelect = screen.getByRole("combobox", { name: /^type\s+required$/i });
       fireEvent.change(typeSelect, { target: { value: "Industrial" } }); fireEvent.keyDown(typeSelect, { key: "Enter", code: "Enter" });
 
-      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
       fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-type-form");
