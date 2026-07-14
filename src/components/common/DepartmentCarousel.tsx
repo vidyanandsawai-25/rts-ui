@@ -75,16 +75,45 @@ export default function DepartmentCarousel({
   useEffect(() => {
     if (disabled) return;
     if (deptList.length === 0) return;
-    if (activeIndex >= 0) return;
+    if (activeIndex >= 0 || activeDept === "" || activeDept === "dashboard") return;
     onChange(deptList[0].id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIndex, deptList, disabled]);
+  }, [activeIndex, deptList, disabled, activeDept]);
 
   if (deptList.length === 0) return null;
 
   return (
     <div className="mt-2 w-full max-w-[360px]">
       <div className="flex flex-col gap-2">
+        {/* Dashboard Overview button */}
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange("")}
+          className={[
+            "w-full flex items-center gap-3 rounded-xl border bg-white p-2.5 transition group",
+            "hover:shadow-md hover:border-gray-300",
+            (activeDept === "" || activeDept === "dashboard") ? "ring-2 ring-teal-500 border-teal-200 bg-teal-50/5" : "border-gray-200",
+            disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+          ].join(" ")}
+        >
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:scale-105"
+            style={{ background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)" }}
+          >
+            <Icons.LayoutDashboard size={24} />
+          </div>
+
+          <div className="flex-1 min-w-0 text-left">
+            <div className="text-sm font-bold text-gray-900 truncate">
+              {lang === "mr" ? "डॅशबोर्ड विहंगावलोकन" : lang === "hi" ? "डैशबोर्ड" : "Dashboard Overview"}
+            </div>
+            <div className="text-[11px] text-gray-500 mt-0.5 font-medium">
+              {lang === "mr" ? "स्थिती आणि प्रगती" : lang === "hi" ? "स्थिति और प्रगति" : "Status & Progress"}
+            </div>
+          </div>
+        </button>
+
         {deptList.map((dept, index) => {
           const isActive = dept.id === activeDept;
 

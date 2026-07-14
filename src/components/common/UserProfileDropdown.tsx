@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, ClipboardList, LogOut, ChevronDown, Landmark, Hash, Phone } from 'lucide-react';
+import { User, ClipboardList, LogOut, ChevronDown, Landmark, Hash, Phone, LayoutDashboard } from 'lucide-react';
 import { type CitizenProfile } from '@/types/rts-citizen.types';
 
 interface UserProfileDropdownProps {
@@ -38,6 +38,7 @@ export function UserProfileDropdown({
   const labels = {
     en: {
       profile: 'Citizen Profile',
+      dashboard: 'Dashboard Overview',
       myApplications: 'My Applications',
       logout: 'Logout',
       upicId: 'UPIC ID',
@@ -47,6 +48,7 @@ export function UserProfileDropdown({
     },
     mr: {
       profile: 'नागरिक तपशील',
+      dashboard: 'डॅशबोर्ड विहंगावलोकन',
       myApplications: 'माझे अर्ज',
       logout: 'लॉगआउट',
       upicId: 'UPIC आयडी',
@@ -56,6 +58,7 @@ export function UserProfileDropdown({
     },
     hi: {
       profile: 'नागरिक विवरण',
+      dashboard: 'डैशबोर्ड',
       myApplications: 'मेरे आवेदन',
       logout: 'लॉगआउट',
       upicId: 'UPIC आईडी',
@@ -65,6 +68,7 @@ export function UserProfileDropdown({
     },
   }[activeLocale as 'en' | 'mr' | 'hi'] || {
     profile: 'Citizen Profile',
+    dashboard: 'Dashboard Overview',
     myApplications: 'My Applications',
     logout: 'Logout',
     upicId: 'UPIC ID',
@@ -141,6 +145,18 @@ export function UserProfileDropdown({
 
           {/* Menu Items */}
           <div className="p-1.5 space-y-0.5">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                window.location.href = `/${activeLocale}/service/dashboard`;
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs sm:text-sm text-gray-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-colors text-left font-bold cursor-pointer"
+              type="button"
+            >
+              <LayoutDashboard size={16} className="text-gray-400 hover:text-blue-500 shrink-0" />
+              <span>{labels.dashboard}</span>
+            </button>
+
             <button
               onClick={() => {
                 setIsOpen(false);
