@@ -724,6 +724,7 @@
         }
     },
     "floor": {
+        "separatelyUsedPlotArea": "अलग से उपयोग किया गया प्लॉट क्षेत्र",
         "construction": "निर्माण",
         "openPlot": "खुली जगह",
         "propertyCategory": "संपत्ति श्रेणी",

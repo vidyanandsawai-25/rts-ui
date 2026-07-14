@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Route, AlertCircle, Map, MapPinned, ShieldCheck, FileText, ThumbsUp, BellRing, Scale, FileStack, Receipt, Check, User } from 'lucide-react';
 import { Button, Drawer } from '@/components/common';
+import { useTranslations } from 'next-intl';
 import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
 import { getPropertyWorkflowDetailsAction } from '@/app/[locale]/property-tax/ptis/workflowStageActions';
 
@@ -17,7 +18,6 @@ interface PropertyTrackingModalProps {
   propertyNo?: string;
   ownerName?: string;
   workflowStages: PropertyWorkflowStage[];
-  currentWorkflowStageId?: number;
 }
 
 export function PropertyTrackingModal({
@@ -27,8 +27,8 @@ export function PropertyTrackingModal({
   propertyNo,
   ownerName,
   workflowStages,
-  currentWorkflowStageId,
 }: PropertyTrackingModalProps) {
+  const t = useTranslations('ptis');
   const [mounted, setMounted] = useState(false);
   const [trackingData, setTrackingData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,42 +45,49 @@ export function PropertyTrackingModal({
     try {
       const res = await getPropertyWorkflowDetailsAction(propertyId);
       if (res.success && res.data) {
-        // Sort workflow stages by displayOrder
-        const sortedStages = [...workflowStages].sort((a, b) => a.displayOrder - b.displayOrder);
+        // Map exactly as returned in res.data
+        const trackingList = res.data.map((historyRecord) => {
+          const stage = workflowStages.find((s) => s.id === historyRecord.workflowStageId);
 
-        const trackingList = sortedStages.map((stage) => {
-          const historyRecord = res.data?.find((d) => d.workflowStageId === stage.id);
-
-          let statusStr = "Pending";
-          if (historyRecord) {
+          let statusStr = "Completed";
+          if (historyRecord.currentStatus === true) {
             statusStr = "Completed";
+          } else if (historyRecord.currentStatus === false) {
+            statusStr = "Completed";
+          } else if (historyRecord.currentStatus === null || historyRecord.currentStatus === undefined) {
+            statusStr = "Completed"; // Default fallback for historical stages
           }
-          if (stage.id === currentWorkflowStageId) {
-            statusStr = "In Progress";
-          }
+
+          const submittedByUser = historyRecord.createdByName || (historyRecord.createdBy != null ? `User #${historyRecord.createdBy}` : null);
+          const stageName = stage ? stage.stageName : `Stage #${historyRecord.workflowStageId}`;
 
           return {
-            stage: stage.stageName,
-            Stage: stage.stageName,
+            stage: stageName,
+            Stage: stageName,
             status: statusStr,
             Status: statusStr,
-            date: historyRecord?.createdDate || null,
-            Date: historyRecord?.createdDate || null,
-            submittedBy: historyRecord?.createdBy != null ? `User #${historyRecord.createdBy}` : null,
-            SubmittedBy: historyRecord?.createdBy != null ? `User #${historyRecord.createdBy}` : null,
+            date: historyRecord.createdDate || null,
+            Date: historyRecord.createdDate || null,
+            submittedBy: submittedByUser,
+            SubmittedBy: submittedByUser,
           };
         });
 
         setTrackingData({ tracking: trackingList });
       } else {
-        setError(res.error || 'Failed to fetch tracking data');
+        const errorMsg = res.error || '';
+        if (errorMsg.includes('404') || errorMsg.toLowerCase().includes('not found')) {
+          setTrackingData({ tracking: [] });
+        } else {
+          setError(res.error || 'Failed to fetch tracking data');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while loading tracking data');
     } finally {
       setIsLoading(false);
     }
-  }, [propertyId, workflowStages, currentWorkflowStageId]);
+  }, [propertyId, workflowStages]);
 
   useEffect(() => {
     if (isOpen && propertyId) {
@@ -92,8 +99,8 @@ export function PropertyTrackingModal({
     if (!trackingData || !trackingData.tracking) return null;
 
     const tracking = trackingData.tracking;
-    const currentStageIndex = tracking.findIndex((s: any) => (s.status || s.Status) !== "Completed");
-    const activeIndex = currentStageIndex === -1 ? tracking.length - 1 : currentStageIndex;
+    const currentStageIndex = tracking.findIndex((s: any) => (s.status || s.Status) === "In Progress");
+    const activeIndex = currentStageIndex === -1 ? tracking.findIndex((s: any) => (s.status || s.Status) === "Pending") : currentStageIndex;
 
     const totalStages = tracking.length;
     const segments: string[] = [];
@@ -132,15 +139,15 @@ export function PropertyTrackingModal({
               <Route className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight leading-none">Property Tracking</h3>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight leading-none">{t('propertyTracking')}</h3>
               <p className="text-[11px] font-semibold text-slate-500 mt-1.5 leading-none">
-                {propertyNo || "N/A"} <span className="text-slate-300 mx-1">•</span> {ownerName || "Unknown Owner"}
+                {propertyNo || "N/A"} <span className="text-slate-300 mx-1">•</span> {ownerName || t('unknownOwner')}
               </p>
             </div>
           </div>
           {trackingData && trackingData.tracking && (
             <div className="px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-600 shadow-sm whitespace-nowrap">
-              {trackingData.tracking.filter((s: any) => (s.status || s.Status) === "Completed").length} / {trackingData.tracking.length} Completed
+              {trackingData.tracking.filter((s: any) => (s.status || s.Status) === "Completed").length} / {trackingData.tracking.length} {t('completed')}
             </div>
           )}
         </div>
@@ -150,12 +157,12 @@ export function PropertyTrackingModal({
         {/* Progress Bar Header inside Drawer body */}
         {trackingData && trackingData.tracking && (
           <div className="px-6 py-4 border-b border-slate-100 bg-white">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Progress</span>
+            {/* <div className="flex justify-between items-center mb-2">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('progress')}</span>
               <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
-                Current: {trackingData.tracking.find((s: any) => (s.status || s.Status) !== "Completed")?.stage || trackingData.tracking.find((s: any) => (s.status || s.Status) !== "Completed")?.Stage || "All Completed"}
+                {t('current')}: {trackingData.tracking.find((s: any) => (s.status || s.Status) === "In Progress")?.stage || trackingData.tracking.find((s: any) => (s.status || s.Status) === "In Progress")?.Stage || t('allCompleted')}
               </span>
-            </div>
+            </div> */}
             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out"
@@ -187,16 +194,16 @@ export function PropertyTrackingModal({
               <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="w-8 h-8 text-red-500" />
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Failed to load tracking</h4>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">{t('failedToLoadTracking')}</h4>
               <p className="text-slate-500 mb-6 max-w-sm">{error}</p>
               <Button
                 className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md"
                 onClick={fetchTrackingData}
               >
-                Try Again
+                {t('tryAgain')}
               </Button>
             </div>
-          ) : trackingData && trackingData.tracking ? (
+          ) : trackingData && trackingData.tracking && trackingData.tracking.length > 0 ? (
             <div className="flex flex-col items-center">
               {routeMapData && (() => {
                 const { activeIndex, segments, containerHeight } = routeMapData;
@@ -272,7 +279,7 @@ export function PropertyTrackingModal({
                         {segments.map((d, i) => {
                           const isAllCompleted = trackingData.tracking.every((s: any) => (s.status || s.Status) === "Completed");
                           const isCompletedSeg = isAllCompleted ? true : (i < activeIndex);
-                          const isInProgressSeg = false;
+                          const isInProgressSeg = !isAllCompleted && (i === activeIndex);
 
                           if (isCompletedSeg) return <path key={`active-${i}`} d={d} fill="none" stroke="#10b981" strokeWidth="5" pathLength="1" className="path-draw" style={{ animationDelay: `${i * 0.4 + 0.15}s` }} />;
                           if (isInProgressSeg) {
@@ -295,7 +302,7 @@ export function PropertyTrackingModal({
                           const submittedBy = stageItem.submittedBy || stageItem.SubmittedBy;
 
                           const isCompleted = status === "Completed";
-                          const isInProgress = status === "In Progress" || (status === "Pending" && i === activeIndex);
+                          const isInProgress = status === "In Progress";
 
                           const yPos = 24 + i * 130;
                           const xPos = i % 2 === 0 ? 40 : 380;
@@ -324,12 +331,11 @@ export function PropertyTrackingModal({
                                 <div className="node-pop relative w-12 h-12 flex items-center justify-center" style={{ animationDelay: `${i * 0.2}s` }}>
                                   {isFirst && (
                                     <span className="absolute -top-4 bg-slate-900 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm z-30">
-                                      Start
+
                                     </span>
                                   )}
                                   {isLast && (
                                     <span className="absolute -bottom-4 bg-slate-900 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm z-30">
-                                      End
                                     </span>
                                   )}
                                   {isInProgress && <div className="snake-border shadow-lg shadow-blue-500/25" />}
@@ -437,8 +443,8 @@ export function PropertyTrackingModal({
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                 <Route className="w-8 h-8 text-slate-400" />
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">No Tracking Data</h4>
-              <p className="text-slate-500">Tracking information is not available for this property yet.</p>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">{t('noTrackingData')}</h4>
+              <p className="text-slate-500">{t('trackingNotAvailable')}</p>
             </div>
           )}
         </div>

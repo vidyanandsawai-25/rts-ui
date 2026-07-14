@@ -7,6 +7,7 @@ import { FooterPagination } from './FooterPagination';
 import { UtilityActions, RightActions } from './FooterActionButtons';
 import { useFooterActions } from '@/hooks/layout/useFooterActions';
 import type { PropertyListItem } from '@/types/ptis.types';
+import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
 import { useOptionalPtisNavigation } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
 import { useFooterActionHandler } from '@/hooks/layout/useFooterActionHandler';
 
@@ -24,6 +25,8 @@ interface BottomActionBarProps {
   categoryId?: number;
   societyDetailId?: number;
   isCombined?: boolean;
+  workflowStages?: PropertyWorkflowStage[];
+  currentWorkflowStageId?: number;
 }
 
 export function BottomActionBar({
@@ -40,6 +43,8 @@ export function BottomActionBar({
   categoryId,
   societyDetailId,
   isCombined = false,
+  workflowStages = [],
+  currentWorkflowStageId,
 }: BottomActionBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,6 +138,8 @@ export function BottomActionBar({
                 onActionClick={handleActionClick}
                 isLoading={isLoading}
                 isCombined={isCombined}
+                workflowStages={workflowStages}
+                currentWorkflowStageId={currentWorkflowStageId}
               />
               {centerContent}
             </div>
