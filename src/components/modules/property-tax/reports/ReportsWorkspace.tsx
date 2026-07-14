@@ -1,4 +1,4 @@
-/* eslint-disable i18next/no-literal-string, react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -61,12 +61,12 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
       if (requestId !== activeRequestId || isCancelled) return;
       if (status === 'Completed') {
         setIsGenerating(false);
-        toast.success('Report generated successfully!');
+        toast.success(workspaceCopy?.toast.generatedSuccess ?? '');
         refresh();
       } else if (status === 'Failed' || status === 'Cancelled') {
         setIsGenerating(false);
         setActiveRequestId(null);
-        toast.error('Report generation failed.');
+        toast.error(workspaceCopy?.toast.generationFailed ?? '');
       }
     };
 
@@ -80,12 +80,12 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
         if (isCancelled) return;
         if (data.status === 'Completed') {
           setIsGenerating(false);
-          toast.success('Report generated successfully!');
+          toast.success(workspaceCopy?.toast.generatedSuccess ?? '');
           refresh();
         } else if (data.status === 'Failed' || data.status === 'Cancelled') {
           setIsGenerating(false);
           setActiveRequestId(null);
-          toast.error('Report generation failed.');
+          toast.error(workspaceCopy?.toast.generationFailed ?? '');
         } else {
           timer = setTimeout(checkStatus, 5000);
         }
@@ -160,7 +160,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
               ${activeView === 'generate' ? 'bg-[#004c8c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
           >
             <Settings className="w-3.5 h-3.5" />
-            Generate Report
+            {workspaceCopy.tabs.generateReport}
           </button>
           <button
             type="button"
@@ -169,7 +169,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
               ${activeView === 'history' ? 'bg-[#004c8c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
           >
             <Clock className="w-3.5 h-3.5" />
-            My Reports
+            {workspaceCopy.tabs.myReports}
             {jobs.some(j => j.status === 'Pending' || j.status === 'Processing') && (
               <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
             )}
@@ -251,7 +251,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
               <div className="text-xs text-slate-500 mt-2 space-y-1.5 font-medium">
                 <p className="text-[#004c8c] font-semibold flex items-center justify-center gap-1.5">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Generating secure preview...
+                  {workspaceCopy.toast.generatingPreview}
                 </p>
                 <p className="text-slate-400">{workspaceCopy.generating.subtitle}</p>
               </div>
@@ -308,7 +308,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
               {pdfLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/75 backdrop-blur-xs z-10 transition-opacity duration-300">
                   <Loader2 className="w-9 h-9 text-[#004c8c] animate-spin" />
-                  <p className="text-xs font-bold text-slate-500 mt-3 tracking-wide">Preparing document preview...</p>
+                  <p className="text-xs font-bold text-slate-500 mt-3 tracking-wide">{workspaceCopy.toast.preparingDocument}</p>
                 </div>
               )}
               <object

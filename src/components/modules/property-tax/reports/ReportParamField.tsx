@@ -1,10 +1,15 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { Select } from '@/components/common/select';
 import { Checkbox, Input } from '@/components/common';
 import { useLookupOptions } from '@/hooks/useLookupOptions';
 import type { ReportParameterDefinition } from '@/types/report.types';
+
+interface ParamFieldCopy {
+  selectPreviousFirst: string;
+  loading: string;
+  select: string;
+}
 
 interface ReportParamFieldProps {
   param: ReportParameterDefinition;
@@ -14,6 +19,7 @@ interface ReportParamFieldProps {
   onChange: (key: string, value: string) => void;
   onBlur: (key: string) => void;
   error?: string;
+  copy: ParamFieldCopy;
 }
 
 /**
@@ -21,8 +27,7 @@ interface ReportParamFieldProps {
  * 'select' fetches its options from the generic lookup endpoint (by OptionsSource + parent value);
  * 'date' supports a min-bound from its cascade parent (date ranges); plus text/number/boolean.
  */
-export function ReportParamField({ param, value, parentValue, onChange, onBlur, error }: ReportParamFieldProps) {
-  const t = useTranslations('report');
+export function ReportParamField({ param, value, parentValue, onChange, onBlur, error, copy }: ReportParamFieldProps) {
   const isSelect = param.parameterType === 'select';
   const hasParent = !!param.cascadeFromKey;
   const cascadeBlocked = hasParent && !parentValue?.trim();
@@ -44,7 +49,7 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
           name={param.parameterKey}
           label={param.label}
           required={param.isRequired}
-          placeholder={cascadeBlocked ? t('generationForm.selectPreviousFirst') : loading ? t('generationForm.loading') : t('generationForm.select')}
+          placeholder={cascadeBlocked ? copy.selectPreviousFirst : loading ? copy.loading : copy.select}
           options={options.map((o) => ({ value: o.value, label: o.label }))}
           value={value}
           disabled={cascadeBlocked || loading}

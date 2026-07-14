@@ -84,6 +84,16 @@
       "others": "अन्य"
     },
     "reportsCount": "{count} रिपोर्ट्स",
+    "tabs": {
+      "generateReport": "रिपोर्ट बनाएं",
+      "myReports": "मेरी रिपोर्ट्स"
+    },
+    "toast": {
+      "generatedSuccess": "रिपोर्ट सफलतापूर्वक तैयार हुई!",
+      "generationFailed": "रिपोर्ट तैयार करने में विफल.",
+      "generatingPreview": "सुरक्षित पूर्वावलोकन तैयार हो रहा है...",
+      "preparingDocument": "दस्तावेज़ पूर्वावलोकन तैयार हो रहा है..."
+    },
     "emptyState": {
       "title": "ऊपर से कोई श्रेणी चुनें",
       "subtitle": "उपलब्ध रिपोर्ट देखने के लिए रिपोर्ट प्रकार चुनें"

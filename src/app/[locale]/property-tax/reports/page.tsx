@@ -59,6 +59,17 @@ export default async function ReportsPage({ params }: PageProps) {
       title: t('proTip.title'),
       body: t('proTip.body'),
     },
+    generationForm: {
+      loadingParameters: t('generationForm.loadingParameters'),
+      failedToLoadParameters: t('generationForm.failedToLoadParameters'),
+      noParametersDefined: t.raw('generationForm.noParametersDefined'),
+      back: t('generationForm.back'),
+    },
+    paramField: {
+      selectPreviousFirst: t('generationForm.selectPreviousFirst'),
+      loading: t('generationForm.loading'),
+      select: t('generationForm.select'),
+    },
   };
 
   const jobsCopy: ReportJobsCopy = {
@@ -96,6 +107,16 @@ export default async function ReportsPage({ params }: PageProps) {
       approval: t('workspace.categories.approval'),
       discount: t('workspace.categories.discount'),
       others: t('workspace.categories.others'),
+    },
+    tabs: {
+      generateReport: t('workspace.tabs.generateReport'),
+      myReports: t('workspace.tabs.myReports'),
+    },
+    toast: {
+      generatedSuccess: t('workspace.toast.generatedSuccess'),
+      generationFailed: t('workspace.toast.generationFailed'),
+      generatingPreview: t('workspace.toast.generatingPreview'),
+      preparingDocument: t('workspace.toast.preparingDocument'),
     },
     reportsCount: t.raw('workspace.reportsCount'),
     emptyState: {

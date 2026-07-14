@@ -103,6 +103,16 @@ export interface ReportWorkspaceCopy {
     discount: string;
     others: string;
   };
+  tabs: {
+    generateReport: string;
+    myReports: string;
+  };
+  toast: {
+    generatedSuccess: string;
+    generationFailed: string;
+    generatingPreview: string;
+    preparingDocument: string;
+  };
   reportsCount: string;
   emptyState: {
     title: string;
@@ -198,6 +208,18 @@ export interface ReportFormCopy {
   proTip: {
     title: string;
     body: string;
+  };
+  generationForm: {
+    loadingParameters: string;
+    failedToLoadParameters: string;
+    /** Expects a `{report}` placeholder */
+    noParametersDefined: string;
+    back: string;
+  };
+  paramField: {
+    selectPreviousFirst: string;
+    loading: string;
+    select: string;
   };
 }
 

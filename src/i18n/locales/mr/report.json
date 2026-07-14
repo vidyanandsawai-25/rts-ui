@@ -84,6 +84,16 @@
       "others": "इतर"
     },
     "reportsCount": "{count} अहवाल",
+    "tabs": {
+      "generateReport": "अहवाल तयार करा",
+      "myReports": "माझे अहवाल"
+    },
+    "toast": {
+      "generatedSuccess": "अहवाल यशस्वीरित्या तयार झाला!",
+      "generationFailed": "अहवाल तयार करण्यात अपयश.",
+      "generatingPreview": "सुरक्षित पूर्वावलोकन तयार होत आहे...",
+      "preparingDocument": "दस्तऐवज पूर्वावलोकन तयार होत आहे..."
+    },
     "emptyState": {
       "title": "वरील श्रेणी निवडा",
       "subtitle": "उपलब्ध अहवाल पाहण्यासाठी अहवाल प्रकार निवडा"

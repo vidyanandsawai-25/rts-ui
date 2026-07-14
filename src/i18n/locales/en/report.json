@@ -84,6 +84,16 @@
       "others": "Others"
     },
     "reportsCount": "{count} reports",
+    "tabs": {
+      "generateReport": "Generate Report",
+      "myReports": "My Reports"
+    },
+    "toast": {
+      "generatedSuccess": "Report generated successfully!",
+      "generationFailed": "Report generation failed.",
+      "generatingPreview": "Generating secure preview...",
+      "preparingDocument": "Preparing document preview..."
+    },
     "emptyState": {
       "title": "Select a category above",
       "subtitle": "Choose a report type to view available reports"
