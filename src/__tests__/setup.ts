@@ -235,9 +235,12 @@ Object.defineProperty(window, 'location', {
     assign: vi.fn(),
     replace: vi.fn(),
     reload: vi.fn(),
+    href: 'http://localhost/',
   },
   writable: true,
 });
+
+process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost';
 
 // Silence expected jsdom unimplemented warnings
 const originalError = console.error;
