@@ -27,7 +27,6 @@ const extraServerActionOrigins = [
 ];
 
 const nextConfig: NextConfig = {
-<<<<<<< HEAD
   images: {
     remotePatterns: [
       {
@@ -40,10 +39,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-=======
   serverExternalPackages: ["@microsoft/signalr"],
-
->>>>>>> upstream/main
   experimental: {
     serverActions: {
       allowedOrigins: extraServerActionOrigins,
