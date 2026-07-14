@@ -321,6 +321,16 @@ describe("TypeOfUseMaster", () => {
 
       expect(screen.getByText("Add Type of Use")).toBeInTheDocument();
     });
+
+    it("should render Type of Use name with truncation class", () => {
+      renderWithIntl(
+        <TypeOfUseMaster {...createMockProps()} />
+      );
+
+      const descriptionElement = screen.getByText("Residential Building");
+      expect(descriptionElement).toBeInTheDocument();
+      expect(descriptionElement.className).toContain("truncate");
+    });
   });
 
   describe("SubType Management", () => {

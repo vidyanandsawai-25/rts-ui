@@ -1,5 +1,9 @@
 import { ListTree } from 'lucide-react';
 import type { TranslatorFunction } from '@/types/typeOfUse.types';
+import { Tooltip } from '@/components/common/Tooltip';
+
+const TRUNCATION_LIMIT = 50;
+const TRUNCATED_LENGTH = TRUNCATION_LIMIT - 4;
 
 interface SubTypeFormHeaderProps {
   isEdit: boolean;
@@ -8,6 +12,16 @@ interface SubTypeFormHeaderProps {
 }
 
 export function SubTypeFormHeader({ isEdit, typeLabel, t }: SubTypeFormHeaderProps) {
+  const name = typeLabel ? typeLabel.trim() : "";
+  const isTruncated = name.length > TRUNCATION_LIMIT;
+  const displayLabel = isTruncated
+    ? `${name.slice(0, TRUNCATED_LENGTH)}....`
+    : name;
+
+  const headerText = name
+    ? t('subtype.forType', { type: displayLabel })
+    : t('subtype.addSubtitle');
+
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-10 w-10 items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md text-white">
@@ -18,9 +32,17 @@ export function SubTypeFormHeader({ isEdit, typeLabel, t }: SubTypeFormHeaderPro
           {isEdit ? t('subtype.edit') : t('subtype.add')}
         </div>
         <div className="text-sm text-slate-500">
-          {typeLabel ? t('subtype.forType', { type: typeLabel }) : t('subtype.addSubtitle')}
+          {isTruncated ? (
+            <Tooltip content={name} placement="bottom">
+              <span className="cursor-help">{headerText}</span>
+            </Tooltip>
+          ) : (
+            <span>{headerText}</span>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
+

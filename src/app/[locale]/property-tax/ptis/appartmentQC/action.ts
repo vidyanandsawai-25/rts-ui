@@ -39,6 +39,7 @@ import type {
 import { getUseTypesPagedServer } from "@/lib/api/typeofuse.service";
 import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
 import { createRoomWiseMinusSafe, createRoomWiseSubmissionSafe, deleteRoomWiseMinusSafe, deleteRoomWiseSubmissionSafe, getRoomWiseSubmissionsSafe, updateRoomWiseMinusSafe, updateRoomWiseSubmissionSafe } from "@/lib/api/ptis/appartmentQC/appartmentQC-room.service";
+import type { RoomWiseSubmissionData } from "@/lib/api/ptis/appartmentQC/appartmentQC-room.service";
 import { getSubTypesPagedServer } from "@/lib/api/typeofusesubtype.service";
 import { getPropertyTypesPaged } from "@/lib/api/property-type-crud.service";
 import { getRoomTypeData } from "@/lib/api/ptis/floorSubmission";
@@ -561,7 +562,7 @@ export async function fetchRoomWiseSubmissionsAction(params: {
 export async function getRoomWiseSubmissionsAction(params: {
   propertyId: number;
   propertyDetailsId: number;
-}): Promise<{ success: boolean; data?: import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service").RoomWiseSubmissionData[]; error?: string }> {
+}): Promise<{ success: boolean; data?: RoomWiseSubmissionData[]; error?: string }> {
   try {
     const data = await getRoomWiseSubmissionsSafe({
       propertyId: params.propertyId,
