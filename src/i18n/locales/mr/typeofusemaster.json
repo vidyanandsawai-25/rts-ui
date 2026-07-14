@@ -149,6 +149,7 @@
         "typeMissing": "प्रकार गहाळ आहे.",
         "typeRequired": "प्रकार आवश्यक आहे.",
         "groupRequired": "वापर प्रकार गट आवश्यक आहे.",
+        "categoryRequired": "श्रेणी आवश्यक आहे.",
         "descriptionRequired": "वर्णन आवश्यक आहे.",
         "searchKeyRequired": "शॉर्टकट की आवश्यक आहे.",
         "subTypeNameRequired": "उप-प्रकार नाव आवश्यक आहे.",

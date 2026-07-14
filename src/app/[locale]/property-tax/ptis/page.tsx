@@ -167,6 +167,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         <BottomActionBar
           actions={footerActions}
           properties={rawPropertyData}
+          workflowStages={workflowStages}
+          currentWorkflowStageId={
+            currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined
+          }
           leftContent={<PtisBackButton />}
           rightContent={
             <PtisFooterDropdowns

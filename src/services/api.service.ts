@@ -238,6 +238,34 @@ class ApiClient {
     }
   }
 
+  async fetch(endpoint: string, options: RequestInit = {}, requireAuth = true): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
+
+    try {
+      const headers = await this.getAuthHeaders(options, skipAuth);
+      const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+
+      const cleanHeaders: Record<string, string> = {};
+      Object.entries(headers).forEach(
+        ([k, v]) => (cleanHeaders[k] = String(v).replace(/[^\x00-\x7F]/g, ''))
+      );
+
+      const response = await serverFetch(url, {
+        cache: 'no-store',
+        ...options,
+        signal: controller.signal,
+        headers: cleanHeaders,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
   async get<T>(url: string, opt?: RequestInit, auth = true) {
     return this.request<T>(url, { ...opt, method: 'GET' }, auth);
   }

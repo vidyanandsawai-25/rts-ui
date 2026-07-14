@@ -13,7 +13,7 @@ vi.mock("@/services/api.service", () => ({
   },
 }));
 
-vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/rvratemaster/action", () => ({
   getDetailedRatesAction: vi.fn().mockResolvedValue({ items: [] }),
 }));
 
@@ -37,7 +37,7 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
   }),
   useSearchParams: () => new URLSearchParams("zone=1&useGroup=1&year=1"),
-  usePathname: () => "/en/property-tax/rate-master/rvratemaster",
+  usePathname: () => "/en/property-tax/rvratemaster",
 }));
 
 vi.mock("sonner", () => ({

@@ -135,10 +135,10 @@ export const mapFormToPayload = (params: {
     subTypeOfUseDescription,
     carpetAreaSqMeter: parseFloat(String(formData.areaSqM || 0)),
     carpetAreaSqFeet: parseFloat(String(formData.areaSqFt || 0)),
-    builtupAreaSqMeter: isOpenSpace
+    builtupAreaSqMeter: (selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot' || Boolean(params.isPlotCategory && isOpenSpace))
       ? parseFloat(String(formData.areaSqM || 0))
       : parseFloat(String(formData.builtupAreaSqM || 0)),
-    builtupAreaSqFeet: isOpenSpace
+    builtupAreaSqFeet: (selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot' || Boolean(params.isPlotCategory && isOpenSpace))
       ? parseFloat(String(formData.areaSqFt || 0))
       : parseFloat(String(formData.builtupAreaSqFt || 0)),
     noOfRooms: isUtility ? 0 : (parseInt(String(formData.rooms)) || 0),

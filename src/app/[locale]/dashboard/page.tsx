@@ -1,8 +1,11 @@
 import { getDashboardData } from './actions';
 import { getTranslations } from 'next-intl/server';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/common';
+import { Card, CardHeader, CardTitle, CardContent, LanguageDropdown } from '@/components/common';
 import { AddRouteButton } from '@/components/modules/dashboard/AddRouteButton';
+<<<<<<< HEAD
 import { LanguageSelector } from '@/components/common/LanguageSelector';
+=======
+>>>>>>> upstream/main
 import { DashboardTable } from '@/components/modules/dashboard/DashboardTable';
 
 /**
@@ -39,7 +42,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             <p className="text-gray-600 mt-2">{tDashboard('subtitle')}</p>
           </div>
           <div className="flex gap-3">
-            <LanguageSelector />
+            <LanguageDropdown />
             <AddRouteButton />
           </div>
         </div>

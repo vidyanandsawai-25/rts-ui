@@ -5,6 +5,7 @@ import React from 'react';
 import { Calculator, Loader2 } from 'lucide-react';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { SearchSelect } from '@/components/common';
+import { AnimatedDigitInput } from '@/components/common/AnimatedDigitInput';
 
 interface PlotAreaCalculatorProps {
   t: (key: string) => string;
@@ -185,15 +186,16 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-length" className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
               {t('floor.lengthShort') || 'L:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-length"
               ref={lengthInputRef}
-              type="text"
               placeholder="0.00"
               value={length}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setLength)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setLength)}
+              className="w-16 h-8 text-center"
             />
           </div>
 
@@ -205,14 +207,15 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-width" className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
               {t('floor.widthShort') || 'W:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-width"
-              type="text"
               placeholder="0.00"
               value={width}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setWidth)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setWidth)}
+              className="w-16 h-8 text-center"
             />
           </div>
 
@@ -289,15 +292,16 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-length" className="text-[11px] font-bold text-slate-500">
               {t('floor.lengthShort') || 'L:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-length"
               ref={lengthInputRef}
-              type="text"
               placeholder="0.00"
               value={length}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setLength)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setLength)}
+              className="w-16 h-8 text-center"
             />
           </div>
 
@@ -308,14 +312,15 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-width" className="text-[11px] font-bold text-slate-500">
               {t('floor.widthShort') || 'W:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-width"
-              type="text"
               placeholder="0.00"
               value={width}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setWidth)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setWidth)}
+              className="w-16 h-8 text-center"
             />
           </div>
         </div>

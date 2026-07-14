@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { downloadDetailedRates } from "@/components/modules/property-tax/RVRateMaster/view/rateDownloadHelpers";
-import { getDetailedRatesAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getDetailedRatesAction } from "@/app/[locale]/property-tax/rvratemaster/action";
 import { toast } from "sonner";
 import type { ISelectOption, RateCategory } from "@/types/RVRateMaster";
 
 // Mock dependencies
-vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/rvratemaster/action", () => ({
   getDetailedRatesAction: vi.fn(),
 }));
 
