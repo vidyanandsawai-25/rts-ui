@@ -20,8 +20,8 @@ interface UseReportParametersOptions {
 }
 
 export function useReportParameters({ report, onQueued, copy, zones: initialZones, financialYears: initialYears, fetchWards, fetchProperties }: UseReportParametersOptions) {
-  const [financialYears, setFinancialYears] = useState<FinancialYear[]>(initialYears || []);
-  const [zones, setZones] = useState<ZoneSummary[]>(initialZones || []);
+  const financialYears = initialYears || [];
+  const zones = initialZones || [];
   const [wards, setWards] = useState<WardSummary[]>([]);
 
   const router = useRouter();
