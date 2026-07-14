@@ -65,6 +65,11 @@ export const AnimatedDigitInput = React.forwardRef<HTMLInputElement, AnimatedDig
             }
             props.onKeyDown?.(e);
           }}
+          onFocus={(e) => {
+            e.target.select();
+            props.onFocus?.(e);
+          }}
+          autoComplete="off"
           disabled={disabled}
           className={cn(
             "absolute inset-0 w-full h-full text-transparent caret-blue-600 bg-transparent cursor-text z-10 text-sm font-semibold focus:outline-none",
