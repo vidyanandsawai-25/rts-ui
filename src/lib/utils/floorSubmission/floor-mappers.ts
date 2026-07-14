@@ -58,7 +58,6 @@ export const mapFormToPayload = (params: {
     isAddingNew,
     existingFloorId,
     selectedFloorType,
-    isPlotCategory,
   } = params;
 
   const isOpenSpace = selectedFloorType === 'OpenPlot' ||
@@ -163,7 +162,7 @@ export const mapFormToPayload = (params: {
     roomWiseMinusData: isOpenSpace ? [] : undefined,
     typeOfUseCategoryId: formData.typeOfUseCategoryId,
     selectedFloorType: (selectedFloorType || formData.selectedFloorType) as "Construction" | "OpenPlot" | undefined,
-    isOpenPlot: (isPlotCategory && isOpenSpace) ? true : false,
+    isOpenPlot: Boolean(params.isPlotCategory && isOpenSpace),
     length: isOpenSpace
       ? (formData.length ? Number(formData.length) : null)
       : null,

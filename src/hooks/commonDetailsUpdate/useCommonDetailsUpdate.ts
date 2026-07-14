@@ -342,10 +342,24 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     initialPage, initialPageSize, propertiesPage, propertiesPageSize
   ]);
 
-  // ── Derived ──────────────────────────────────────────────────────────────────
   // Use the full property-partition options for both From and To
-  const fromPropertyOptions = propertyOptions;
-  const toPropertyOptions = propertyOptions;
+  // Inject the initial property value if it is not already present in the loaded list
+  const fromPropertyOptions = useMemo(() => {
+    const opts = [...propertyOptions];
+    if (filterValues.fromPropertyNo && !opts.some(o => o.value === filterValues.fromPropertyNo)) {
+      opts.unshift({ label: filterValues.fromPropertyNo, value: filterValues.fromPropertyNo });
+    }
+    return opts;
+  }, [propertyOptions, filterValues.fromPropertyNo]);
+
+  const toPropertyOptions = useMemo(() => {
+    const opts = [...propertyOptions];
+    if (filterValues.toPropertyNo && !opts.some(o => o.value === filterValues.toPropertyNo)) {
+      opts.unshift({ label: filterValues.toPropertyNo, value: filterValues.toPropertyNo });
+    }
+    return opts;
+  }, [propertyOptions, filterValues.toPropertyNo]);
+
   const filteredMenuItems = useMemo(() => {
     if (!menuSearch.trim()) return menuItems;
     const q = menuSearch.toLowerCase();

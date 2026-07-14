@@ -14,7 +14,7 @@ export function LoginSuccessFlash() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const t = useTranslations('common.login');
+  const t = useTranslations('login');
   const handledRef = useRef(false);
 
   useEffect(() => {

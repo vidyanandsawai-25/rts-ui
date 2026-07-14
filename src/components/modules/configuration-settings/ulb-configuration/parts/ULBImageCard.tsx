@@ -71,7 +71,7 @@ export function ULBImageCard({
                   className={imageClassName}
                 />
               </div>
-              {imageId && (
+              {imageId !== null && imageId !== undefined && !isNaN(imageId) && (
                 <Button
                   type="button"
                   size="sm"

@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { AUTH_ERROR_CODES } from '@/components/modules/login/constants';
 
 // ---------------------------------------------------------------------------
-// Error code → `common.login.errors` key (when the key differs from the code)
+// Error code → `login.errors` key (when the key differs from the code)
 // ---------------------------------------------------------------------------
 
 const AUTH_ERROR_TO_LOGIN_I18N_KEY: Record<string, string> = {
@@ -40,7 +40,7 @@ const AUTH_ERROR_TO_LOGIN_I18N_KEY: Record<string, string> = {
  * Separated for reuse in components that don't need full form management.
  */
 export function useLoginErrorMessages() {
-  const t = useTranslations('common.login');
+  const t = useTranslations('login');
 
   const getLocalizedError = useCallback(
     (errorCode: string | undefined): string => {
