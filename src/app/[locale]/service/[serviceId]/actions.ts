@@ -60,10 +60,21 @@ export async function submitRtsApplicationAction(
   const ownerId = readCitizenOwnerIdFromCookieValue(
     cookieStore.get("rts_citizen_profile")?.value
   );
-  const sessionId = cookieStore.get("rts_session")?.value?.trim();
+  let sessionId = cookieStore.get("rts_session")?.value?.trim();
 
   if (!sessionId) {
-    throw new Error("Missing RTS citizen session");
+    // Generate a guest session if none exists to support anonymous submissions
+    const guestSessionCookie = cookieStore.get("rts_guest_session")?.value?.trim();
+    if (guestSessionCookie) {
+      sessionId = guestSessionCookie;
+    } else {
+      sessionId = "guest-" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      cookieStore.set("rts_guest_session", sessionId, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        httpOnly: true,
+      });
+    }
   }
 
   for (const fileField of fileFields) {

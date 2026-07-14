@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import Image from 'next/image';
@@ -99,6 +99,8 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+
+
   const t = (mr: string, hi: string, en: string) =>
     locale === 'mr' ? mr : locale === 'hi' ? hi : en;
 
@@ -124,6 +126,20 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     });
   }, [departments, locale]);
 
+  // Synchronize department tab from URL search parameters on mount/change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const deptId = params.get('deptId');
+      if (deptId && deptCards.length > 0) {
+        const match = deptCards.find((d) => String(d.id) === String(deptId));
+        if (match) {
+          setActiveTab(match.id);
+        }
+      }
+    }
+  }, [deptCards]);
+
   // Set initial active tab once deptCards are available
   const resolvedActiveTab = activeTab || (deptCards[0]?.id ?? '');
 
@@ -146,10 +162,28 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     if (!serviceId) return;
     const hasForm = !!getServiceFormConfig(serviceId);
     if (hasForm) {
-      if (isLoggedIn) {
-        router.push(`/${locale}/service/${serviceId}`);
-      } else {
+      // Check if service requires login (PropertyTax, Trade License, Water Supply)
+      const deptOfService = deptCards.find((d) => d.services.some((s) => String(s.id) === String(serviceId)));
+      const deptName = deptOfService ? deptOfService.title : '';
+
+      const s = serviceName.toLowerCase();
+      const d = deptName.toLowerCase();
+
+      const isPropertyTax = s.includes('property') || s.includes('tax') || d.includes('property') || d.includes('tax') ||
+                            s.includes('मालमत्ता') || s.includes('कर') || d.includes('मालमत्ता') || d.includes('कर');
+                            
+      const isTrade = s.includes('trade') || s.includes('license') || d.includes('trade') || d.includes('license') ||
+                      s.includes('व्यवसाय') || s.includes('व्यापार') || d.includes('व्यवसाय') || d.includes('व्यापार');
+                      
+      const isWater = s.includes('water') || d.includes('water') ||
+                      s.includes('पाणी') || s.includes('जल') || d.includes('पाणी') || d.includes('जल');
+
+      const requiresLogin = isPropertyTax || isTrade || isWater;
+
+      if (requiresLogin && !isLoggedIn) {
         router.push(`/${locale}/service/login?redirect=/${locale}/service/${serviceId}`);
+      } else {
+        router.push(`/${locale}/service/${serviceId}`);
       }
     } else {
       alert(
@@ -439,9 +473,19 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                   <Search className="w-5 h-5" />
                   <h4 className="font-extrabold text-sm sm:text-base">{t('शोध परिणाम', 'खोज परिणाम', 'Search Results')}</h4>
                 </div>
-                <span className="text-xs bg-white/10 text-white px-3 py-1 rounded-lg font-black">
-                  {filteredServices.length} {t('आढळले', 'मिले', 'Found')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-black rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>&larr;</span>
+                    <span>{t('विभाग पहा', 'विभाग देखें', 'View Departments')}</span>
+                  </button>
+                  <span className="text-xs bg-white/20 text-white px-3 py-1 rounded-lg font-black">
+                    {filteredServices.length} {t('आढळले', 'मिले', 'Found')}
+                  </span>
+                </div>
               </div>
               <div className="p-5 bg-white min-h-[150px]">
                 {filteredServices.length > 0 ? (

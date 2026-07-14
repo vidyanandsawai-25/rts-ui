@@ -61,6 +61,7 @@ interface ServiceFormProps {
   submitState?: "form" | "success";
   successTrackingId?: string;
   successApplicationStatus?: string;
+  isLoggedIn?: boolean;
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -112,6 +113,7 @@ export default function DynamicServiceFormClient({
   submitState = "form",
   successTrackingId = "",
   successApplicationStatus = "",
+  isLoggedIn = false,
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
@@ -192,6 +194,72 @@ export default function DynamicServiceFormClient({
   }, [baseSteps]);
 
   const steps = useMemo(() => baseSteps, [baseSteps]);
+
+  // Draft restoration check on mount
+  useEffect(() => {
+    try {
+      let foundKey: string | null = null;
+      let foundData: any = null;
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("rtsDraft:") && key.endsWith(`:${serviceId}`)) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (!foundData || new Date(parsed.savedAt) > new Date(foundData.savedAt)) {
+              foundKey = key;
+              foundData = parsed;
+            }
+          }
+        }
+      }
+
+      if (foundData && foundKey) {
+        const formattedDate = new Date(foundData.savedAt).toLocaleString();
+        MySwal.fire({
+          title: language === "en" ? "Restore Draft?" : language === "hi" ? "ड्राफ्ट पुनर्स्थापित करें?" : "मसुदा पुनर्संचयित करायचा?",
+          text: language === "en"
+            ? `We found a draft saved on ${formattedDate}. Would you like to restore it?`
+            : language === "hi"
+              ? `हमें ${formattedDate} पर सहेजा गया एक ड्राफ्ट मिला। क्या आप इसे पुनर्स्थापित करना चाहेंगे?`
+              : `आम्हाला ${formattedDate} रोजी जतन केलेला मसुदा सापडला. आपण तो पुनर्संचयित करू इच्छिता?`,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: language === "en" ? "Yes, Restore" : language === "hi" ? "हाँ, पुनर्स्थापित करें" : "होय, पुनर्संचयित करा",
+          cancelButtonText: language === "en" ? "No, Start Fresh" : language === "hi" ? "नहीं, नया शुरू करें" : "नाही, नवीन सुरू करा",
+          confirmButtonColor: "#0d9488",
+          cancelButtonColor: "#ef4444",
+          background: darkMode ? "#1f2937" : "#ffffff",
+          color: darkMode ? "#ffffff" : "#000000",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            if (foundData.applicationId) {
+              setCurrentApplicationId(foundData.applicationId);
+            }
+            if (foundData.formData) {
+              setFormData((prev) => ({
+                ...prev,
+                ...foundData.formData,
+              }));
+            }
+            MySwal.fire({
+              icon: "success",
+              title: language === "en" ? "Restored" : language === "hi" ? "पुनर्स्थापित" : "पुनर्संचयित",
+              timer: 1500,
+              showConfirmButton: false,
+              background: darkMode ? "#1f2937" : "#ffffff",
+              color: darkMode ? "#ffffff" : "#000000",
+            });
+          } else {
+            localStorage.removeItem(foundKey!);
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Error checking draft:", e);
+    }
+  }, [serviceId, language, darkMode]);
 
   const shouldRenderField = (field: any) => {
     return isConditionMet(field?.showIf, formData);
@@ -786,7 +854,13 @@ export default function DynamicServiceFormClient({
     }, 800);
   };
 
-  const handleBack = () => router.back();
+  const handleBack = () => {
+    if (isLoggedIn) {
+      router.push(`/${locale}/service/dashboard`);
+    } else {
+      router.push(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+    }
+  };
 
   const logRequiredMissing = () => {
     const required: any[] = [];
@@ -1023,6 +1097,21 @@ export default function DynamicServiceFormClient({
 
       const response = await submitApplicationAction(submitBundle);
 
+      // Clear draft on successful submit
+      if (applicationId) {
+        localStorage.removeItem(`rtsDraft:${applicationId}:${serviceId}`);
+      }
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("rtsDraft:") && key.endsWith(`:${serviceId}`)) {
+            localStorage.removeItem(key);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
       const newId = response?.items?.applicationNo?.trim();
       const newStatus = response?.items?.applicationStatus?.trim();
       const submissionDate = new Date().toLocaleString();
@@ -1080,28 +1169,41 @@ export default function DynamicServiceFormClient({
       existingData[newId] = newApplication;
       localStorage.setItem("rtsApplications", JSON.stringify(existingData));
 
-      const nextParams = new URLSearchParams();
-      if (departmentId != null && Number.isFinite(Number(departmentId))) {
-        nextParams.set("deptId", String(departmentId));
-      }
-      nextParams.set("submit", "success");
-      if (newId) nextParams.set("applicationNo", newId);
-      if (newStatus) nextParams.set("status", newStatus);
-
-      router.replace(`/${locale}/service/${serviceId}?${nextParams.toString()}`);
-      return;
-
       MySwal.fire({
         icon: "success",
-        title: language === "en" ? "Submitted" : "सबमिट हुआ",
-        text:
-          language === "en"
-            ? "Your application has been submitted successfully."
-            : "आपका आवेदन सफलतापूर्वक सबमिट हो गया है।",
+        title: language === "en" 
+          ? "Application Submitted!" 
+          : language === "hi" 
+            ? "आवेदन सबमिट हुआ!" 
+            : "अर्ज यशस्वीरित्या सादर झाला!",
+        html: language === "en" 
+          ? `<div class="space-y-3 p-2">
+               <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
+               <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>
+               <p class="text-xs text-gray-400 font-medium">Save this ID to track status. Redirecting to dashboard...</p>
+             </div>`
+          : language === "hi"
+            ? `<div class="space-y-3 p-2">
+                 <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
+                 <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>
+                 <p class="text-xs text-gray-400 font-medium">स्थिति को ट्रैक करने के लिए इस आईडी को सहेजें। डैशबोर्ड पर पुनर्निर्देशित किया जा रहा है...</p>
+               </div>`
+            : `<div class="space-y-3 p-2">
+                 <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
+                 <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>
+                 <p class="text-xs text-gray-400 font-medium">अर्ज ट्रॅक करण्यासाठी हा आयडी जतन करा. मुख्यपृष्ठावर नेले जात आहे...</p>
+               </div>`,
         timer: 2000,
         showConfirmButton: false,
         background: darkMode ? "#1f2937" : "#ffffff",
         color: darkMode ? "#ffffff" : "#000000",
+        customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
+      }).then(() => {
+        if (isLoggedIn) {
+          router.replace(`/${locale}/service/dashboard`);
+        } else {
+          router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+        }
       });
     } catch (err: any) {
       const apiErr = parseBackendError(err);
@@ -1227,7 +1329,7 @@ export default function DynamicServiceFormClient({
               </Button>
 
               <Button
-                onClick={() => router.push(`/${locale}/service/dashboard`)}
+                onClick={() => router.push(isLoggedIn ? `/${locale}/service/dashboard` : `/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`)}
                 variant="outline"
                 className={`${darkMode
                   ? "border-gray-600 hover:bg-gray-700 text-white"
