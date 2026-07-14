@@ -6,8 +6,8 @@ import { useCallback } from 'react';
  * 2. In `FloorSubmissionForm.tsx`, `RoomWiseSubmission.tsx`, and `usePropertyBasicForm.ts`:
  *    - Remove the import `useEnterKeyNavigation`.
  *    - Remove the hook initialization `const handleKeyDown = useEnterKeyNavigation();`.
- *    - Remove the `onKeyDownCapture={handleKeyDown}` (or `onKeyDown={handleKeyDown}`) prop from the main wrapper/form elements.
- *    - (For `Propertybasicform.tsx` remove `handleKeyDown` from the destructured variables of `usePropertyBasicForm` and the `onKeyDownCapture`/`onKeyDown` prop).
+ *    - Remove the `onKeyDownCapture={handleKeyDown}` prop from the main wrapper/form elements.
+ *    - (For `Propertybasicform.tsx` remove `handleKeyDown` from the destructured variables of `usePropertyBasicForm` and the `onKeyDownCapture` prop).
  */
 export const useEnterKeyNavigation = () => {
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLElement>) => {

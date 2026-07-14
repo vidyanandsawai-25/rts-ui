@@ -724,6 +724,7 @@
         }
     },
     "floor": {
+        "separatelyUsedPlotArea": "Separately Used Plot Area",
         "construction": "Construction",
         "openPlot": "Open Space",
         "propertyCategory": "Property Category",

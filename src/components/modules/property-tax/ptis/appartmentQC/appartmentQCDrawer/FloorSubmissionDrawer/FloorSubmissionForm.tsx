@@ -236,7 +236,7 @@ export const FloorSubmissionForm = ({
 
     // TO REMOVE ENTER KEY FUNCTIONALITY: 
     // 1. Remove this line and the `useEnterKeyNavigation` import at the top.
-    // 2. Remove the `onKeyDown={handleKeyDown}` prop from the wrapping `<div className="p-4 bg-white...` below.
+    // 2. Remove the `onKeyDownCapture={handleKeyDown}` prop from the wrapping `<div className="p-4 bg-white...` below.
     const handleKeyDown = useEnterKeyNavigation();
 
     return (
@@ -439,8 +439,6 @@ export const FloorSubmissionForm = ({
                             <Button 
                                 variant="ghost" 
                                 onClick={handleOpenRoomDrawer} 
-                                aria-label="Open room submission"
-                                title="Open room submission"
                                 data-enter-navigable="true"
                                 className="!p-1 !h-auto !min-h-0 flex items-center justify-center rounded hover:!bg-blue-600 hover:!text-white focus:outline-none focus:!bg-blue-600 focus:!text-white text-blue-600 transition-all active:scale-90"
                             >

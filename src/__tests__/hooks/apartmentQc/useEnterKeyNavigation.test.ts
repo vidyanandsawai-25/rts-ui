@@ -59,12 +59,14 @@ describe('useEnterKeyNavigation', () => {
     vi.useFakeTimers();
     const { result } = renderHook(() => useEnterKeyNavigation());
     result.current(mockEvent as unknown as React.KeyboardEvent<HTMLElement>);
-    vi.runAllTimers();
-    vi.useRealTimers();
-    
+
     expect(mockEvent.preventDefault).toHaveBeenCalled();
     expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
+    
+    vi.runAllTimers();
+    
     expect(mockNextElement.focus).toHaveBeenCalled();
+    vi.useRealTimers();
   });
 
   it('should ignore Enter key if pressed inside a textarea', () => {

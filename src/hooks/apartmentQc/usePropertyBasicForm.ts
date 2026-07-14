@@ -321,7 +321,7 @@ export function usePropertyBasicForm({
   // TO REMOVE ENTER KEY FUNCTIONALITY: 
   // 1. Remove this line and the `useEnterKeyNavigation` import at the top.
   // 2. Remove `handleKeyDown` from the return statement of this hook.
-  // 3. In `Propertybasicform.tsx`, remove `handleKeyDown` from `usePropertyBasicForm` output and the `onKeyDownCapture` (or `onKeyDown`) prop from the form.
+  // 3. In `Propertybasicform.tsx`, remove `handleKeyDown` from `usePropertyBasicForm` output and the `onKeyDownCapture` prop from the form.
   const handleKeyDown = useEnterKeyNavigation();
 
   return {

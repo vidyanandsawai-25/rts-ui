@@ -72,9 +72,7 @@ export default async function FloorSubmissionPage(props: { searchParams: Promise
     floorData = floorDataRes.data;
   }
   
-  if (!roomDataRes.success) {
-    console.error('[FloorSubmissionPage] Failed to prefetch room submissions', { error: ('error' in roomDataRes ? roomDataRes.error : undefined), roomPropertyId, roomPdnId });
-  } else if (roomDataRes.data) {
+  if (roomDataRes.success && roomDataRes.data) {
     initialRoomData = Array.isArray(roomDataRes.data) ? roomDataRes.data : [];
   }
   
