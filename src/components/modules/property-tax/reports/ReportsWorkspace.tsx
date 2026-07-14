@@ -22,7 +22,7 @@ import {
   ReportTabsPanel,
 } from './ReportWorkspaceComponents';
 
-export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDefinitions, zones, financialYears }: ReportsWorkspaceProps) {
+export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDefinitions, zones, financialYears, fetchWards, fetchProperties }: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs();
   const { confirm } = useConfirm();
 
@@ -221,7 +221,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
                   </span>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                  <ReportParametersPanel report={selectedReport} onQueued={handleQueued} copy={paramsCopy} zones={zones} financialYears={financialYears} />
+                  <ReportParametersPanel report={selectedReport} onQueued={handleQueued} copy={paramsCopy} zones={zones} financialYears={financialYears} fetchWards={fetchWards} fetchProperties={fetchProperties} />
                 </div>
               </Card>
             </div>

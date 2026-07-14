@@ -223,6 +223,10 @@ export interface ReportsWorkspaceProps {
   reportDefinitions: ReportDefinition[];
   zones?: ZoneSummary[];
   financialYears?: FinancialYear[];
+  /** Server action injected from page.tsx — fetches wards for a given zone */
+  fetchWards?: (zoneId: number) => Promise<WardSummary[]>;
+  /** Server action injected from page.tsx — fetches properties for a given ward */
+  fetchProperties?: (wardId: number) => Promise<PropertySummary[]>;
 }
 
 export interface ReportJobsListProps {

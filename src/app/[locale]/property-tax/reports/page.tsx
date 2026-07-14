@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getReportDefinitions, getZones } from '@/lib/api/report.service';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
+import { getWardsByZoneAction, getPropertiesByWardAction } from '@/app/[locale]/property-tax/reports/action';
 import { ReportsWorkspace } from '@/components/modules/property-tax/reports/ReportsWorkspace';
 import type { ReportFormCopy, ReportJobsCopy, ReportWorkspaceCopy, ReportParamsPanelCopy } from '@/types/report.types';
 import { PageContainer, TableHeader } from '@/components/common';
@@ -185,6 +186,8 @@ export default async function ReportsPage({ params }: PageProps) {
         reportDefinitions={reportDefinitions}
         zones={zones}
         financialYears={financialYears}
+        fetchWards={getWardsByZoneAction}
+        fetchProperties={getPropertiesByWardAction}
       />
     </PageContainer>
   );

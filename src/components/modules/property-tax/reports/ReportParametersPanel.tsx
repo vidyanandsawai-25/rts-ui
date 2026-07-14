@@ -15,6 +15,10 @@ interface ReportParametersPanelProps {
   copy: ReportParamsPanelCopy;
   zones?: ZoneSummary[];
   financialYears?: FinancialYear[];
+  /** Server action injected from page.tsx — fetches wards for a given zone */
+  fetchWards?: (zoneId: number) => Promise<import('@/types/report.types').WardSummary[]>;
+  /** Server action injected from page.tsx — fetches properties for a given ward */
+  fetchProperties?: (wardId: number) => Promise<import('@/types/report.types').PropertySummary[]>;
 }
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
@@ -29,7 +33,7 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
   );
 }
 
-export function ReportParametersPanel({ report, onQueued, copy, zones, financialYears }: ReportParametersPanelProps) {
+export function ReportParametersPanel({ report, onQueued, copy, zones, financialYears, fetchWards, fetchProperties }: ReportParametersPanelProps) {
   const {
     zoneId, wardId,
     financialYearId, setFinancialYearId, setFieldErrors,
@@ -41,7 +45,7 @@ export function ReportParametersPanel({ report, onQueued, copy, zones, financial
     isPending, submitStatus, errorMsg, fieldErrors,
     yearOptions, zoneOptions, wardOptions, propertyOptions,
     handleZoneChange, handleWardChange, handleReset, handleSubmit,
-  } = useReportParameters({ report, onQueued, copy, zones, financialYears });
+  } = useReportParameters({ report, onQueued, copy, zones, financialYears, fetchWards, fetchProperties });
 
   if (!report) {
     return (

@@ -4,12 +4,6 @@
 import { useState, useEffect, useMemo, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import {
-  getFinancialYearsAction,
-  getZonesAction,
-  getWardsByZoneAction,
-  getPropertiesByWardAction,
-} from '@/app/[locale]/property-tax/reports/action';
 import type { FinancialYear } from '@/types/financialYear.types';
 import type { ZoneSummary, WardSummary, PropertySummary, ReportDefinition, ReportParamsPanelCopy } from '@/types/report.types';
 
@@ -19,9 +13,13 @@ interface UseReportParametersOptions {
   copy: ReportParamsPanelCopy;
   zones?: ZoneSummary[];
   financialYears?: FinancialYear[];
+  /** Injected from page.tsx — fetches wards for a given zone */
+  fetchWards?: (zoneId: number) => Promise<WardSummary[]>;
+  /** Injected from page.tsx — fetches properties for a given ward */
+  fetchProperties?: (wardId: number) => Promise<PropertySummary[]>;
 }
 
-export function useReportParameters({ report, onQueued, copy, zones: initialZones, financialYears: initialYears }: UseReportParametersOptions) {
+export function useReportParameters({ report, onQueued, copy, zones: initialZones, financialYears: initialYears, fetchWards, fetchProperties }: UseReportParametersOptions) {
   const [financialYears, setFinancialYears] = useState<FinancialYear[]>(initialYears || []);
   const [zones, setZones] = useState<ZoneSummary[]>(initialZones || []);
   const [wards, setWards] = useState<WardSummary[]>([]);
@@ -46,9 +44,9 @@ export function useReportParameters({ report, onQueued, copy, zones: initialZone
   const [fromPropertyNo, setFromPropertyNo] = useState('');
   const [toPropertyNo, setToPropertyNo] = useState('');
 
-  // Loading states
-  const [loadingYears, setLoadingYears] = useState(!initialYears || initialYears.length === 0);
-  const [loadingZones, setLoadingZones] = useState(!initialZones || initialZones.length === 0);
+  // Loading states — years and zones are always pre-loaded from page.tsx
+  const [loadingYears] = useState(false);
+  const [loadingZones] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
   const [properties, setProperties] = useState<PropertySummary[]>([]);
   const [loadingProperties, setLoadingProperties] = useState(false);
@@ -58,34 +56,19 @@ export function useReportParameters({ report, onQueued, copy, zones: initialZone
   const [errorMsg, setErrorMsg] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ financialYearId?: string; zoneId?: string; wardId?: string }>({});
 
-  useEffect(() => {
-    if (!initialYears || initialYears.length === 0) {
-      getFinancialYearsAction().then((years) => {
-        setFinancialYears(years);
-        setLoadingYears(false);
-        if (years.length > 0) {
-          setFinancialYearId(String(years[0].id));
-        }
-      });
-    }
-
-    if (!initialZones || initialZones.length === 0) {
-      getZonesAction().then((z) => {
-        setZones(z);
-        setLoadingZones(false);
-      });
-    }
-  }, [initialYears, initialZones]);
+  // Years and zones are pre-fetched on the server in page.tsx and passed as props.
+  // No client-side fetching needed for the initial data.
 
   useEffect(() => {
     setWards([]);
     if (!zoneId) return;
+    if (!fetchWards) return;
     setLoadingWards(true);
-    getWardsByZoneAction(Number(zoneId)).then((w) => {
+    fetchWards(Number(zoneId)).then((w) => {
       setWards(w);
       setLoadingWards(false);
     });
-  }, [zoneId]);
+  }, [zoneId, fetchWards]);
 
   useEffect(() => {
     setProperties([]);
@@ -93,15 +76,16 @@ export function useReportParameters({ report, onQueued, copy, zones: initialZone
     setFromPropertyNo('');
     setToPropertyNo('');
     if (!wardId) return;
+    if (!fetchProperties) return;
     setLoadingProperties(true);
-    getPropertiesByWardAction(Number(wardId))
+    fetchProperties(Number(wardId))
       .then((props) => {
         setProperties(props);
       })
       .finally(() => {
         setLoadingProperties(false);
       });
-  }, [wardId]);
+  }, [wardId, fetchProperties]);
 
   useEffect(() => {
     setSubmitStatus('idle');
