@@ -18,6 +18,8 @@ export default getRequestConfig(async ({ locale }) => {
   // Load all translation files
   const [
     commonMessages,
+    loginMessages,
+    welcomeMessages,
     dashboardMessages,
     constructionMessages,
     taxZoningMessages,
@@ -70,6 +72,8 @@ export default getRequestConfig(async ({ locale }) => {
     reportMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/welcome.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/construction.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/taxzoning.json`).then((m) => m.default),
@@ -170,6 +174,8 @@ export default getRequestConfig(async ({ locale }) => {
     locale: validatedLocale,
     messages: {
       common: commonMessages,
+      login: loginMessages,
+      welcome: welcomeMessages,
       dashboard: dashboardMessages,
       construction: constructionMessages,
       taxZoning: taxZoningMessages.taxZoning,
