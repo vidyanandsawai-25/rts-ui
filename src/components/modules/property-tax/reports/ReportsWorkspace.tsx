@@ -2,27 +2,27 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { FileText, Loader2, X, Download, Settings, Clock } from 'lucide-react';
+import { Settings, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { ReportParametersPanel } from '@/components/modules/property-tax/reports/ReportParametersPanel';
-import { ReportJobsList } from '@/components/modules/property-tax/reports/ReportJobsList';
-import { Card, Button, useConfirm } from '@/components/common';
+import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
+import { useConfirm } from '@/components/common';
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
-import {
-  CATEGORIES,
-  resolveCategoryKey,
-  type Step,
-} from './ReportWorkspaceConfig';
-import {
-  Stepper,
-  CategoryCard,
-  EmptyState,
-  ReportListPanel,
-  ReportTabsPanel,
-} from './ReportWorkspaceComponents';
+import { CATEGORIES, resolveCategoryKey, type Step } from './ReportWorkspaceConfig';
+import { ReportGenerateView } from './ReportGenerateView';
+import { ReportGeneratingOverlay } from './ReportGeneratingOverlay';
+import { ReportPreviewOverlay } from './ReportPreviewOverlay';
 
-export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDefinitions, zones, financialYears, fetchWards, fetchProperties }: ReportsWorkspaceProps) {
+export function ReportsWorkspace({
+  jobsCopy,
+  workspaceCopy,
+  paramsCopy,
+  reportDefinitions,
+  zones,
+  financialYears,
+  fetchWards,
+  fetchProperties,
+}: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs();
   const { confirm } = useConfirm();
 
@@ -36,12 +36,10 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(true);
 
-  // Reset pdfLoading when a new request starts
   useEffect(() => {
     if (activeRequestId) setPdfLoading(true);
   }, [activeRequestId]);
 
-  // Fail-safe: hide loader after 3.5s if onLoad doesn't fire
   useEffect(() => {
     if (activeRequestId && !isGenerating) {
       const timer = setTimeout(() => setPdfLoading(false), 3500);
@@ -49,10 +47,8 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
     }
   }, [activeRequestId, isGenerating]);
 
-  // Poll / listen for report status while generating
   useEffect(() => {
     if (!activeRequestId || !isGenerating) return;
-
     let timer: ReturnType<typeof setTimeout>;
     let isCancelled = false;
 
@@ -100,7 +96,7 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
       window.removeEventListener('report-status-change', handleStatusChange);
       if (timer) clearTimeout(timer);
     };
-  }, [activeRequestId, isGenerating, refresh]);
+  }, [activeRequestId, isGenerating, refresh, workspaceCopy]);
 
   const reportsByCategory = useMemo(() => {
     const map = new Map<string, ReportDefinition[]>(CATEGORIES.map((cat) => [cat.key, []]));
@@ -109,8 +105,6 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
     }
     return map;
   }, [reportDefinitions]);
-
-  const categoryCount = (key: string) => reportsByCategory.get(key)?.length ?? 0;
 
   const handleCategoryClick = (catKey: string) => {
     if (selectedCategory === catKey) {
@@ -143,10 +137,11 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
     }
   };
 
-  const activeCategoryDef = CATEGORIES.find((c) => c.key === selectedCategory);
-  const activeReports = selectedCategory ? (reportsByCategory.get(selectedCategory) ?? []) : [];
-
   if (!workspaceCopy || !paramsCopy) return null;
+
+  const hasActiveJobs = jobs.some(
+    (j) => j.status === 'Pending' || j.status === 'Processing' || j.status === 'Retrying'
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -170,164 +165,53 @@ export function ReportsWorkspace({ jobsCopy, workspaceCopy, paramsCopy, reportDe
           >
             <Clock className="w-3.5 h-3.5" />
             {workspaceCopy.tabs.myReports}
-            {jobs.some((j) => j.status === 'Pending' || j.status === 'Processing' || j.status === 'Retrying') && (
+            {hasActiveJobs && (
               <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
             )}
           </button>
         </div>
       </div>
 
+      {/* Active View */}
       {activeView === 'generate' ? (
-        <>
-          <Stepper currentStep={currentStep} copy={workspaceCopy} />
-
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {CATEGORIES.map((cat) => (
-              <CategoryCard
-                key={cat.key}
-                category={cat}
-                label={workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories]}
-                count={categoryCount(cat.key)}
-                reportsCountTemplate={workspaceCopy.reportsCount}
-                isSelected={selectedCategory === cat.key}
-                onClick={() => handleCategoryClick(cat.key)}
-              />
-            ))}
-          </div>
-
-          {currentStep === 1 && <EmptyState title={workspaceCopy.emptyState.title} subtitle={workspaceCopy.emptyState.subtitle} />}
-
-          {currentStep === 2 && activeCategoryDef && (
-            <ReportListPanel
-              activeCategoryDef={activeCategoryDef}
-              activeReports={activeReports}
-              workspaceCopy={workspaceCopy}
-              onSelectReport={handleSelectReport}
-            />
-          )}
-
-          {currentStep === 3 && activeCategoryDef && selectedReport && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-              <ReportTabsPanel
-                activeCategoryDef={activeCategoryDef}
-                activeReports={activeReports}
-                selectedReport={selectedReport}
-                workspaceCopy={workspaceCopy}
-                onSelectReport={handleSelectReport}
-              />
-              <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                    {workspaceCopy.configureParameters}
-                  </span>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                  <ReportParametersPanel report={selectedReport} onQueued={handleQueued} copy={paramsCopy} zones={zones} financialYears={financialYears} fetchWards={fetchWards} fetchProperties={fetchProperties} />
-                </div>
-              </Card>
-            </div>
-          )}
-        </>
+        <ReportGenerateView
+          currentStep={currentStep}
+          selectedCategory={selectedCategory}
+          selectedReport={selectedReport}
+          reportsByCategory={reportsByCategory}
+          workspaceCopy={workspaceCopy}
+          paramsCopy={paramsCopy}
+          zones={zones ?? []}
+          financialYears={financialYears ?? []}
+          fetchWards={fetchWards ?? (() => Promise.resolve([]))}
+          fetchProperties={fetchProperties ?? (() => Promise.resolve([]))}
+          onCategoryClick={handleCategoryClick}
+          onSelectReport={handleSelectReport}
+          onQueued={handleQueued}
+        />
       ) : (
         <div className="transition-all duration-300">
           <ReportJobsList jobs={jobs} loading={isLoading} copy={jobsCopy} reportDefinitions={reportDefinitions} />
         </div>
       )}
 
-      {/* Generating overlay */}
+      {/* Overlays */}
       {isGenerating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090d16]/75 backdrop-blur-md p-4 transition-all duration-300">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full flex flex-col items-center justify-center text-center gap-5 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-100">
-            <div className="absolute -top-16 -left-16 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
-            <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl" />
-            <div className="relative flex items-center justify-center w-24 h-24 mb-2">
-              <div className="absolute inset-0 rounded-full border-4 border-blue-500/10 animate-pulse" />
-              <div className="absolute inset-2 rounded-full border-4 border-t-[#004c8c] border-r-[#004c8c] border-b-transparent border-l-transparent animate-spin duration-1000" />
-              <div className="absolute inset-4 rounded-full bg-blue-50 flex items-center justify-center shadow-inner">
-                <FileText className="w-7 h-7 text-[#004c8c] animate-bounce" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-base font-extrabold text-slate-800 tracking-wide">{workspaceCopy.generating.title}</h3>
-              <div className="text-xs text-slate-500 mt-2 space-y-1.5 font-medium">
-                <p className="text-[#004c8c] font-semibold flex items-center justify-center gap-1.5">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  {workspaceCopy.toast.generatingPreview}
-                </p>
-                <p className="text-slate-400">{workspaceCopy.generating.subtitle}</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => { setIsGenerating(false); setActiveRequestId(null); }}
-              className="w-full mt-3 py-3 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50 active:scale-95 transition-all duration-150 shadow-sm"
-            >
-              {workspaceCopy.generating.cancel}
-            </button>
-          </div>
-        </div>
+        <ReportGeneratingOverlay
+          copy={workspaceCopy}
+          onCancel={() => { setIsGenerating(false); setActiveRequestId(null); }}
+        />
       )}
 
-      {/* PDF Preview overlay */}
       {activeRequestId && !isGenerating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090d16]/80 backdrop-blur-md p-4 transition-all duration-300">
-          <div className="bg-slate-50 w-full max-w-5xl h-[88vh] rounded-3xl flex flex-col shadow-[0_25px_60px_rgba(0,0,0,0.45)] border border-white/10 overflow-hidden relative transition-all duration-300">
-            <div className="bg-white px-6 py-4 border-b border-slate-200/85 flex items-center justify-between shrink-0 shadow-sm">
-              <div className="flex items-center gap-3.5">
-                <span className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner border border-rose-100">
-                  <FileText className="w-5.5 h-5.5" />
-                </span>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-extrabold text-slate-800 tracking-wide truncate">
-                    {previewReport?.reportName || workspaceCopy.preview.title}
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">
-                    ID: {activeRequestId}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={Download}
-                  onClick={() => { window.location.href = `/api/report-download/${encodeURIComponent(activeRequestId)}`; }}
-                  className="rounded-xl px-4 py-2 font-bold bg-[#004c8c] hover:bg-[#003866] hover:shadow-md active:scale-95 transition-all duration-150 flex items-center gap-2"
-                >
-                  {workspaceCopy.preview.downloadPdf}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => { setActiveRequestId(null); setPreviewReport(null); setActiveView('history'); }}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 hover:rotate-90 active:scale-90 transition-all duration-300"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 bg-slate-200/40 p-5 relative flex items-center justify-center">
-              {pdfLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/75 backdrop-blur-xs z-10 transition-opacity duration-300">
-                  <Loader2 className="w-9 h-9 text-[#004c8c] animate-spin" />
-                  <p className="text-xs font-bold text-slate-500 mt-3 tracking-wide">{workspaceCopy.toast.preparingDocument}</p>
-                </div>
-              )}
-              <object
-                data={`/api/report-download/${encodeURIComponent(activeRequestId)}?inline=true&view=pdf#toolbar=0`}
-                type="application/pdf"
-                className="w-full h-full rounded-2xl border border-slate-200/80 shadow-md bg-white"
-                onLoad={() => setPdfLoading(false)}
-              >
-                <iframe
-                  src={`/api/report-download/${encodeURIComponent(activeRequestId)}?inline=true&view=pdf#toolbar=0`}
-                  className="w-full h-full rounded-2xl border border-slate-200/80 shadow-md bg-white"
-                  title="Report Preview"
-                  onLoad={() => setPdfLoading(false)}
-                />
-              </object>
-            </div>
-          </div>
-        </div>
+        <ReportPreviewOverlay
+          requestId={activeRequestId}
+          report={previewReport}
+          pdfLoading={pdfLoading}
+          copy={workspaceCopy}
+          onPdfLoad={() => setPdfLoading(false)}
+          onClose={() => { setActiveRequestId(null); setPreviewReport(null); setActiveView('history'); }}
+        />
       )}
     </div>
   );
