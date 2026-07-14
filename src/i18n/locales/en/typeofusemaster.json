@@ -149,6 +149,7 @@
         "typeMissing": "Type is missing.",
         "typeRequired": "Type is required.",
         "groupRequired": "Type Of Use Group is required.",
+        "categoryRequired": "Category is required.",
         "descriptionRequired": "Description is required.",
         "searchKeyRequired": "Search Key is required.",
         "subTypeNameRequired": "Sub-Type Name is required.",

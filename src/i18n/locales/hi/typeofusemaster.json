@@ -149,6 +149,7 @@
         "typeMissing": "प्रकार गुम है।",
         "typeRequired": "प्रकार आवश्यक है।",
         "groupRequired": "उपयोग प्रकार समूह आवश्यक है।",
+        "categoryRequired": "श्रेणी आवश्यक है।",
         "descriptionRequired": "विवरण आवश्यक है।",
         "searchKeyRequired": "शॉर्टकट कुंजी आवश्यक है।",
         "subTypeNameRequired": "उप-प्रकार नाम आवश्यक है।",
