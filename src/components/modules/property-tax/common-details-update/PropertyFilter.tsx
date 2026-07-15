@@ -19,7 +19,6 @@ interface PropertyFilterProps {
   setFilterValues: React.Dispatch<React.SetStateAction<PropertyFilterFormValues>>;
   filterSubmitted: boolean;
   wardOptions: SelectOption[];
-  wingOptions: SelectOption[];
   propertyOptions: SelectOption[];
   onWardChange: (wardId: string) => void;
   onPropertyDropdownFocus: () => void;
@@ -36,7 +35,6 @@ export const PropertyFilter = ({
   setFilterValues,
   filterSubmitted,
   wardOptions,
-  wingOptions,
   propertyOptions,
   onWardChange,
   onPropertyDropdownFocus,
@@ -48,9 +46,6 @@ export const PropertyFilter = ({
 }: PropertyFilterProps) => {
   // From/To Property dropdowns are disabled until a ward is selected
   const isPropertyDropdownDisabled = !filterValues.wardId;
-  
-  // Wing dropdown is disabled until From and To Property are selected
-  const isWingDropdownDisabled = !filterValues.fromPropertyNo || !filterValues.toPropertyNo;
 
   return (
     <Card
@@ -128,23 +123,7 @@ export const PropertyFilter = ({
             />
           </div>
 
-          <div>
-            <SearchSelect
-              label={t("filter.wing")}
-              value={filterValues.wingId}
-              onChange={(_, val) =>
-                setFilterValues((prev) => ({ ...prev, wingId: val }))
-              }
-              options={wingOptions}
-              placeholder={t("filter.selectWing")}
-              required
-              disabled={isWingDropdownDisabled}
-            />
-            <ValidationMessage
-              visible={filterSubmitted && !filterValues.wingId}
-              message={t("messages.wingRequired")}
-            />
-          </div>
+
 
           <div className="flex gap-2 mt-3">
             <SaveButton

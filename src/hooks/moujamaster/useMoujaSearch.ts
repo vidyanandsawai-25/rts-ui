@@ -37,7 +37,7 @@ export function useMoujaSearch({
     locale,
     sortBy,
     sortOrder,
-    basePath: '/property-tax/rate-master/moujamaster',
+    basePath: '/property-tax/moujamaster',
     startTransition,
   });
 

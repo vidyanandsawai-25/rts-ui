@@ -22,6 +22,7 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
   isDrawer = false,
 }) => {
 
+  const toggleButtonRef = React.useRef<HTMLButtonElement>(null);
   const isUtility = checkIsUtilityCategory(editingFloorForm?.typeOfUseCategoryId);
   const isOpenPlot = selectedFloorType === 'OpenPlot';
 
@@ -50,8 +51,18 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
             placeholder="0"
             disabled={!editingFloorForm.use}
             onChange={(cleaned) => {
-              setEditingFloorForm({ ...editingFloorForm, rooms: cleaned });
+              setEditingFloorForm({
+                ...editingFloorForm,
+                rooms: cleaned,
+                noOfRooms: cleaned ? Number(cleaned) : 0,
+              });
               if (formErrors.rooms) setFormErrors((prev) => ({ ...prev, rooms: '' }));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                toggleButtonRef.current?.focus();
+              }
             }}
           />
         </FieldWrapper>
@@ -78,53 +89,53 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
         }
       >
         <div className="group relative">
+          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/90 px-2 py-1 rounded-md border border-slate-300 shadow-sm transition-all duration-200 group-hover:shadow group-focus-within:border-blue-400 group-focus-within:ring-1 group-focus-within:ring-blue-100 z-20">
+            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
+              {t('floor.sqFt')}
+            </span>
+            <>
+              <div className="w-[1px] h-3.5 bg-slate-400 mx-0.5 opacity-60" />
+              <button
+                ref={toggleButtonRef}
+                type="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isUtility && !isOpenPlot) {
+                    const roomsStr = editingFloorForm.rooms !== undefined && editingFloorForm.rooms !== null ? String(editingFloorForm.rooms) : '';
+                    const roomCount = parseInt(roomsStr, 10);
+                    if (!roomsStr || isNaN(roomCount) || roomCount <= 0) {
+                      setFormErrors((prev) => ({
+                        ...prev,
+                        rooms: t('floor.errors.roomsRequiredForDetails') || 'Number of rooms must be greater than zero before entering room details.'
+                      }));
+                      toast.error(
+                        t('floor.errors.roomGuidance') || 'Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor.'
+                      );
+                      return;
+                    }
+                  }
+                  setShowRoomSubmission(true);
+                }}
+                className="flex items-center justify-center p-1 rounded hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-90"
+                title={t('floor.openRoomSubmission') || 'Open Room Submission'}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+            </>
+          </div>
           <Input
             ref={areaInputRef}
             id="floor-area-sqft"
             type="text"
             placeholder="0.00"
-            value={editingFloorForm.areaSqFt || ''}
+            value={editingFloorForm.areaSqFt ? parseFloat(String(editingFloorForm.areaSqFt)).toFixed(2) : ''}
             readOnly={true}
             className={cn(
               "h-9 text-sm pr-24 border-gray-300 focus:border-blue-500 focus:ring-blue-200 transition-colors",
               "bg-gray-50 cursor-default group-hover:bg-blue-50/30"
             )}
           />
-          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/90 px-2 py-1 rounded-md border border-slate-300 shadow-sm transition-all duration-200 group-hover:shadow group-focus-within:border-blue-400 group-focus-within:ring-1 group-focus-within:ring-blue-100">
-            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
-              {t('floor.sqFt')}
-            </span>
-            {!isOpenPlot && (
-              <>
-                <div className="w-[1px] h-3.5 bg-slate-400 mx-0.5 opacity-60" />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isUtility) {
-                      const roomsStr = editingFloorForm.rooms !== undefined && editingFloorForm.rooms !== null ? String(editingFloorForm.rooms) : '';
-                      const roomCount = parseInt(roomsStr, 10);
-                      if (!roomsStr || isNaN(roomCount) || roomCount <= 0) {
-                        setFormErrors((prev) => ({
-                          ...prev,
-                          rooms: t('floor.errors.roomsRequiredForDetails') || 'Number of rooms must be greater than zero before entering room details.'
-                        }));
-                        toast.error(
-                          t('floor.errors.roomGuidance') || 'Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor.'
-                        );
-                        return;
-                      }
-                    }
-                    setShowRoomSubmission(true);
-                  }}
-                  className="flex items-center justify-center p-1 rounded hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-90"
-                  title={t('floor.openRoomSubmission') || 'Open Room Submission'}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </FieldWrapper>
 
@@ -132,7 +143,7 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
       <ReadOnlyField
         id="floor-area-sqm"
         label={isOpenPlot ? (t('floor.plotAreaSqM') || 'Plot Area (Sq M)') : t('floor.areaSqM')}
-        value={editingFloorForm.areaSqM}
+        value={editingFloorForm.areaSqM ? parseFloat(String(editingFloorForm.areaSqM)).toFixed(2) : ''}
         badgeText={!isOpenPlot ? t('floor.autoCalculated') : undefined}
       />
 
@@ -141,13 +152,13 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
           <ReadOnlyField
             id="floor-builtup-sqft"
             label={t('floor.builtupAreaSqFt')}
-            value={editingFloorForm.builtupAreaSqFt}
+            value={editingFloorForm.builtupAreaSqFt ? parseFloat(String(editingFloorForm.builtupAreaSqFt)).toFixed(2) : ''}
           />
 
           <ReadOnlyField
             id="floor-builtup-sqm"
             label={t('floor.builtupAreaSqM')}
-            value={editingFloorForm.builtupAreaSqM}
+            value={editingFloorForm.builtupAreaSqM ? parseFloat(String(editingFloorForm.builtupAreaSqM)).toFixed(2) : ''}
           />
         </>
       )}

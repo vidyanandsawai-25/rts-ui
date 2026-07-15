@@ -1,116 +1,77 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import {
-    uploadCertificateDocumentAction,
-    replaceCertificateDocumentAction,
-    saveBuildingPermissionsAction
-} from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action";
-import {
-    BuildingPermissionState,
-    PropertyCertificateWithStatusDto
-} from "@/types/building-permission.types";
-import {
-    mapApiToBuildingState,
-    mapBuildingStateToApi,
-    parseAndLocalizeBackendError,
-    hasChangesComparedToInitial
-} from "@/lib/utils/building-helpers";
+import { saveBuildingPermissionsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action";
+import { PropertyCertificateWithStatusDto } from "@/types/building-permission.types";
+import { mapBuildingStateToApi, parseAndLocalizeBackendError } from "@/lib/utils/building-helpers";
 import { useLoading } from "@/hooks/useLoading";
 import { validateBuildingForm } from "@/lib/utils/validateBuildingForm";
-import { uploadPendingFiles } from "@/lib/utils/building-upload-helper";
+import { useBuildingFormState } from "./useBuildingFormState";
+import { useBuildingFileUpload } from "./useBuildingFileUpload";
 
 export const useBuildingForm = (
     initialData: PropertyCertificateWithStatusDto[] | null,
     propertyId: string
 ) => {
     const t = useTranslations("quickDataEntry");
-    const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
-    const [validationErrors, setValidationErrors] = useState<Record<number, string>>({});
-    const [fieldErrors, setFieldErrors] = useState<Record<number, { number?: string; date?: string; document?: string }>>({});
-    const [incompleteCertificates, setIncompleteCertificates] = useState<{ id: number; name: string }[]>([]);
-    const [buildingPermission, setBuildingPermission] = useState<BuildingPermissionState>(() =>
-        mapApiToBuildingState(initialData)
-    );
-
-    const initialMappedState = useMemo(() =>
-        mapApiToBuildingState(initialData),
-        [initialData]
-    );
-
-    const hasChanges = useMemo(() => {
-        return hasChangesComparedToInitial(buildingPermission, initialMappedState);
-    }, [buildingPermission, initialMappedState]);
-
-    const [prevInitialData, setPrevInitialData] = useState(initialData);
-    if (initialData !== prevInitialData) {
-        setPrevInitialData(initialData);
-        setBuildingPermission(mapApiToBuildingState(initialData));
-    }
-
-    const clearError = useCallback((id: number) => {
-        setValidationErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
-        setFieldErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
-        setIncompleteCertificates((prev) => prev.filter((c) => c.id !== id));
-    }, []);
-
-    const handleFileUpload = useCallback(async (id: number, file: File) => {
-        const MAX_FILE_SIZE = 5 * 1024 * 1024;
-        const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
-        if (file.size > MAX_FILE_SIZE || !ALLOWED_TYPES.includes(file.type)) {
-            toast.error(t("building.uploadInvalidFile") || "Invalid file");
-            return;
-        }
-        if (!buildingPermission[id]) {
-            toast.error(t("building.errors.notFound") || "Certificate not found.");
-            return;
-        }
-        setBuildingPermission((prev) => ({
-            ...prev,
-            [id]: { ...prev[id], pendingFile: file, fileName: file.name, documentGuid: undefined },
-        }));
-        clearError(id);
-    }, [buildingPermission, t, clearError]);
-
-    const handleFileDelete = useCallback((id: number) => {
-        setBuildingPermission((prev) => ({
-            ...prev,
-            [id]: { ...prev[id], pendingFile: undefined, fileName: undefined, documentGuid: undefined }
-        }));
-        clearError(id);
-    }, [clearError]);
-
-    const handleToggleEnabled = useCallback((id: number, checked: boolean) => {
-        setBuildingPermission((prev) => ({ ...prev, [id]: { ...prev[id], enabled: checked } }));
-        clearError(id);
-    }, [clearError]);
-
-    const handleInputChange = useCallback((id: number, field: 'number' | 'date', value: string) => {
-        setBuildingPermission((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
-        clearError(id);
-    }, [clearError]);
-
     const params = useParams();
     const locale = params.locale as string;
+    const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
+
+    const {
+        buildingPermission,
+        setBuildingPermission,
+        hasChanges,
+        validationErrors,
+        setValidationErrors,
+        fieldErrors,
+        setFieldErrors,
+        incompleteCertificates,
+        setIncompleteCertificates,
+        clearError,
+        handleToggleEnabled,
+        handleInputChange
+    } = useBuildingFormState(initialData);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
+        if (typeof window !== 'undefined') {
             (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = hasChanges;
         }
         return () => {
-            if (typeof window !== "undefined") {
-                delete (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges;
+            if (typeof window !== 'undefined') {
+                (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = false;
             }
         };
     }, [hasChanges]);
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async (opts?: {
+        skipDocumentValidation?: boolean;
+        skipNumberDateValidation?: boolean;
+        skipRevalidate?: boolean;
+        silent?: boolean;
+        onlyCertificateTypeId?: number;
+    }): Promise<{
+        success: boolean;
+        isValid: boolean;
+        incompleteCertificates?: { id: number; name: string }[];
+        updatedCertificates?: PropertyCertificateWithStatusDto[];
+    }> => {
         if (isSaving) return { success: false, isValid: true };
 
         const { isValid, errors, incompleteCertificates: invalidCerts, fieldErrors: fErrors } = validateBuildingForm(
             buildingPermission,
-            (key, params) => key.startsWith("building.") ? t(key, params) : t(`common.${key}`, params)
+            (key, params) => {
+                if (key.startsWith("building.")) {
+                    return t(key, params);
+                }
+                return t(`common.${key}`, params);
+            },
+            {
+                skipDocumentValidation: opts?.skipDocumentValidation,
+                skipNumberDateValidation: opts?.skipNumberDateValidation,
+                onlyCertificateTypeId: opts?.onlyCertificateTypeId
+            }
         );
 
         if (!isValid) {
@@ -125,45 +86,57 @@ export const useBuildingForm = (
         setIncompleteCertificates([]);
         startLoading();
 
-        const uploadResult = await uploadPendingFiles(
-            buildingPermission,
-            propertyId,
-            { uploadCertificateDocumentAction, replaceCertificateDocumentAction },
-            (key) => t(key)
-        );
-
-        if (!uploadResult.success) {
-            stopLoading();
-            setBuildingPermission(uploadResult.updatedState);
-            toast.error(uploadResult.error || t("building.uploadError"));
-            return { success: false, isValid: true };
-        }
-
-        const updatedPermissionState = uploadResult.updatedState;
-        const propId = Number(propertyId);
-
         try {
-            const payload = mapBuildingStateToApi(updatedPermissionState, propId);
-            const response = await saveBuildingPermissionsAction(locale, propertyId, payload);
+            const formData = new FormData();
+            const payload = mapBuildingStateToApi(
+                buildingPermission,
+                parseInt(propertyId),
+                opts?.onlyCertificateTypeId,
+                opts?.skipNumberDateValidation
+            );
+            formData.append("certificates", JSON.stringify(payload));
 
-            setBuildingPermission(updatedPermissionState);
+            // Append pending files
+            Object.values(buildingPermission).forEach(item => {
+                if (item.enabled && item.pendingFile) {
+                    formData.append(`file_${item.certificateTypeId}`, item.pendingFile);
+                }
+            });
+
+            const response = opts?.skipRevalidate !== undefined
+                ? await saveBuildingPermissionsAction(locale, propertyId, formData, opts.skipRevalidate)
+                : await saveBuildingPermissionsAction(locale, propertyId, formData);
+
             if (response.success) {
-                toast.success(t("building.saveSuccess") || "Building permissions saved successfully!");
+                if (!opts?.silent) {
+                    toast.success(t("building.saveSuccess") || "Building permissions saved successfully!");
+                }
                 return { success: true, isValid: true };
+            } else {
+                const displayError = response.error 
+                    ? parseAndLocalizeBackendError(response.error, buildingPermission, (key) => t(key))
+                    : (t("building.saveError") || "Error saving building permissions!");
+                toast.error(displayError);
+                return { success: false, isValid: true };
             }
-            throw new Error(response.error);
         } catch (error: unknown) {
-            setBuildingPermission(updatedPermissionState);
             const msg = error instanceof Error ? error.message : "";
             const displayError = msg 
-                ? parseAndLocalizeBackendError(msg, updatedPermissionState, (key) => t(key))
+                ? parseAndLocalizeBackendError(msg, buildingPermission, (key) => t(key))
                 : (t("building.saveError") || "Error saving building permissions!");
             toast.error(displayError);
             return { success: false, isValid: true };
         } finally {
             stopLoading();
         }
-    };
+    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors]);
+
+    const { handleFileUpload, handleFileDelete } = useBuildingFileUpload(
+        buildingPermission,
+        setBuildingPermission,
+        clearError,
+        t as unknown as (key: string, values?: Record<string, string | number>) => string
+    );
 
     return {
         buildingPermission,

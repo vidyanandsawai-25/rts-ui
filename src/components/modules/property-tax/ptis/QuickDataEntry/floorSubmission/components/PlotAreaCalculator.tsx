@@ -4,6 +4,8 @@
 import React from 'react';
 import { Calculator, Loader2 } from 'lucide-react';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
+import { SearchSelect } from '@/components/common';
+import { AnimatedDigitInput } from '@/components/common/AnimatedDigitInput';
 
 interface PlotAreaCalculatorProps {
   t: (key: string) => string;
@@ -16,14 +18,24 @@ interface PlotAreaCalculatorProps {
     width?: number | string | null;
     totalPlotArea?: number | string | null;
   } | null;
+  onChange?: (sqFt: string, sqM: string, len?: string, wid?: string) => void;
+  isLoading?: boolean;
+  buttonText?: string;
+  selectedFloorType?: 'Construction' | 'OpenPlot';
+  onChangeFloorType?: (type: 'Construction' | 'OpenPlot') => void;
 }
 
 export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
   t,
   onApply,
   onLoad,
+  onChange,
   layout = 'single-row',
   initialPlotArea,
+  isLoading = false,
+  buttonText,
+  selectedFloorType,
+  onChangeFloorType,
 }) => {
   const [length, setLength] = React.useState<string>(() => {
     if (initialPlotArea?.length !== null && initialPlotArea?.length !== undefined) {
@@ -37,13 +49,33 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
     }
     return '';
   });
-  const isLoading = false;
+
+  const lengthInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    const handleFocus = () => {
+      if (lengthInputRef.current) {
+        lengthInputRef.current.focus();
+      }
+    };
+    handleFocus(); // Focus on mount
+    window.addEventListener('floorSaved', handleFocus);
+    return () => {
+      window.removeEventListener('floorSaved', handleFocus);
+    };
+  }, []);
 
   // Store onLoad in a ref to avoid dependency changes triggering useEffect multiple times
   const onLoadRef = React.useRef(onLoad);
   React.useEffect(() => {
     onLoadRef.current = onLoad;
   }, [onLoad]);
+
+  // Store onChange in a ref to avoid dependency changes triggering useEffect multiple times
+  const onChangeRef = React.useRef(onChange);
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   // Store t in a ref to avoid translation function reference changes triggering useEffect multiple times
   const tRef = React.useRef(t);
@@ -92,9 +124,18 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
     };
   }, [length, width]);
 
+  React.useEffect(() => {
+    if (onChangeRef.current) {
+      onChangeRef.current(totalSqFt, totalSqM, length, width);
+    }
+  }, [totalSqFt, totalSqM, length, width]);
+
   const handleApply = React.useCallback(() => {
     if (onApply && numericSqM > 0) {
       onApply(totalSqFt, totalSqM, length, width);
+      if (lengthInputRef.current) {
+        lengthInputRef.current.focus();
+      }
     }
   }, [onApply, numericSqM, totalSqFt, totalSqM, length, width]);
 
@@ -132,9 +173,9 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <h4 className="text-[13px] font-bold text-slate-800 tracking-wide uppercase leading-tight">
               {t('floor.plotAreaCalculator') || 'Plot Area Calculator'}
             </h4>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+            {/* <p className="text-[11px] text-slate-400 font-medium mt-0.5">
               {t('floor.plotAreaCalcDesc') || 'Quickly calculate plot area using length and width'}
-            </p>
+            </p> */}
           </div>
         </div>
 
@@ -145,14 +186,16 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-length" className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
               {t('floor.lengthShort') || 'L:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-length"
-              type="text"
+              ref={lengthInputRef}
               placeholder="0.00"
               value={length}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setLength)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setLength)}
+              className="w-16 h-8 text-center"
             />
           </div>
 
@@ -164,14 +207,15 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-width" className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
               {t('floor.widthShort') || 'W:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-width"
-              type="text"
               placeholder="0.00"
               value={width}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setWidth)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setWidth)}
+              className="w-16 h-8 text-center"
             />
           </div>
 
@@ -187,11 +231,31 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
           <button
             type="button"
             onClick={handleApply}
-            disabled={numericSqM <= 0 || isLoading}
+            disabled={!length || !width || parseFloat(length) <= 0 || parseFloat(width) <= 0 || isLoading}
             className="h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.98]"
           >
-            {t('floor.applyArea') || 'Add Area'}
+            {buttonText || t('floor.applyArea') || 'Add Area'}
           </button>
+
+          {selectedFloorType !== undefined && onChangeFloorType && (
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
+                {t('floor.separatelyUsedPlotArea') || 'Separately Used Plot Area'}:
+              </label>
+              <SearchSelect
+                id="separately-used-plot-area-select"
+                name="separatelyUsedPlotArea"
+                menuPlacement="top"
+                options={[
+                  { label: t('floor.construction') || 'Construction', value: 'Construction' },
+                  { label: t('floor.openPlot') || 'Open Space', value: 'OpenPlot' },
+                ]}
+                value={selectedFloorType}
+                onChange={(_name, val) => onChangeFloorType(val as 'Construction' | 'OpenPlot')}
+                className="h-8 text-xs font-bold text-slate-700 min-w-[120px]"
+              />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -228,14 +292,16 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-length" className="text-[11px] font-bold text-slate-500">
               {t('floor.lengthShort') || 'L:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-length"
-              type="text"
+              ref={lengthInputRef}
               placeholder="0.00"
               value={length}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setLength)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setLength)}
+              className="w-16 h-8 text-center"
             />
           </div>
 
@@ -246,14 +312,15 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
             <label htmlFor="plot-width" className="text-[11px] font-bold text-slate-500">
               {t('floor.widthShort') || 'W:'}
             </label>
-            <input
+            <AnimatedDigitInput
               id="plot-width"
-              type="text"
               placeholder="0.00"
               value={width}
+              maxLength={7}
+              allowedPattern={/^[0-9.]$/}
               disabled={isLoading}
-              onChange={(e) => handleInputChange(e.target.value, setWidth)}
-              className="w-16 h-8 px-2 text-slate-700 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-center disabled:bg-slate-100 disabled:cursor-not-allowed"
+              onChange={(val) => handleInputChange(val, setWidth)}
+              className="w-16 h-8 text-center"
             />
           </div>
         </div>
@@ -269,15 +336,37 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
           <span className="text-blue-600 font-bold">{totalSqFt} {t('floor.sqFt') || 'Sq.Ft'}</span>
         </div>
 
-        {/* Right: Add Area Button */}
-        <button
-          type="button"
-          onClick={handleApply}
-          disabled={numericSqM <= 0 || isLoading}
-          className="h-8.5 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.97]"
-        >
-          {t('floor.applyArea') || 'Add Area'}
-        </button>
+        {/* Right: Add Area Button & Dropdown */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleApply}
+            disabled={!length || !width || parseFloat(length) <= 0 || parseFloat(width) <= 0 || isLoading}
+            className="h-8.5 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.97]"
+          >
+            {buttonText || t('floor.applyArea') || 'Add Area'}
+          </button>
+
+          {selectedFloorType !== undefined && onChangeFloorType && (
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
+                {t('floor.separatelyUsedPlotArea') || 'Separately Used Plot Area'}:
+              </label>
+              <SearchSelect
+                id="separately-used-plot-area-select-double"
+                name="separatelyUsedPlotArea"
+                menuPlacement="top"
+                options={[
+                  { label: t('floor.construction') || 'Construction', value: 'Construction' },
+                  { label: t('floor.openPlot') || 'Open Space', value: 'OpenPlot' },
+                ]}
+                value={selectedFloorType}
+                onChange={(_name, val) => onChangeFloorType(val as 'Construction' | 'OpenPlot')}
+                className="h-8.5 text-xs font-bold text-slate-700 min-w-[120px]"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

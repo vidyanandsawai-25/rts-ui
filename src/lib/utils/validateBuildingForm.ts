@@ -16,9 +16,21 @@ interface ValidationResult {
     fieldErrors?: Record<number, { number?: string; date?: string; document?: string }>;
 }
 
+
+
+
+interface ValidateBuildingFormOptions {
+    /** When true, skips the document-required check. Used when saving
+     *  is triggered internally before a file upload (pre-upload save). */
+    skipDocumentValidation?: boolean;
+    skipNumberDateValidation?: boolean;
+    onlyCertificateTypeId?: number;
+}
+
 export const validateBuildingForm = (
     state: BuildingPermissionState,
-    t: (key: string, params?: Record<string, string | number>) => string
+    t: (key: string, params?: Record<string, string | number>) => string,
+    options: ValidateBuildingFormOptions = {}
 ): ValidationResult => {
     const errors: Record<number, string> = {};
     const fieldErrors: Record<number, { number?: string; date?: string; document?: string }> = {};
@@ -26,24 +38,29 @@ export const validateBuildingForm = (
     let isValid = true;
 
     Object.values(state).forEach((item) => {
+        if (options.onlyCertificateTypeId !== undefined && item.certificateTypeId !== options.onlyCertificateTypeId) {
+            return;
+        }
         if (!item.enabled) return;
 
         const fieldErrorsForCert: { number?: string; date?: string; document?: string } = {};
 
-        // 1. Certificate Number Validation
-        const numberError = validateDocumentNumber(item.number, item.certificateTypeName || undefined);
-        if (numberError) {
-            fieldErrorsForCert.number = t(numberError.key, numberError.params);
+        if (!options.skipNumberDateValidation) {
+            // 1. Certificate Number Validation
+            const numberError = validateDocumentNumber(item.number, item.certificateTypeName || undefined);
+            if (numberError) {
+                fieldErrorsForCert.number = t(numberError.key, numberError.params);
+            }
+
+            // 2. Certificate Date Validation
+            const dateError = validateDocumentDate(item.date);
+            if (dateError) {
+                fieldErrorsForCert.date = t(dateError.key, dateError.params);
+            }
         }
 
-        // 2. Certificate Date Validation
-        const dateError = validateDocumentDate(item.date);
-        if (dateError) {
-            fieldErrorsForCert.date = t(dateError.key, dateError.params);
-        }
-
-        // 3. Document Validation
-        if ((!item.documentGuid || item.documentGuid.trim() === "") && !item.pendingFile) {
+        // 3. Document Validation (skipped during pre-upload saves)
+        if (!options.skipDocumentValidation && (!item.documentGuid || item.documentGuid.trim() === "")) {
             fieldErrorsForCert.document = t("validation.documentRequired");
         }
 

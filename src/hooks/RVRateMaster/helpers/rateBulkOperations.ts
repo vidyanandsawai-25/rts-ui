@@ -1,6 +1,6 @@
 import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
-import { bulkCreateRateMasterAction, bulkUpdateRateMasterAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { bulkCreateRateMasterAction, bulkUpdateRateMasterAction } from "@/app/[locale]/property-tax/rvratemaster/action";
 import { buildPayloadFromMatrix, applyMultiplierToMatrix, buildBulkUpdatePayload, buildBulkCreatePayload } from "./ratePayloadHelpers";
 
 // Error marker for no rates to update

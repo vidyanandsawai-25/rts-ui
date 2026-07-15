@@ -104,10 +104,11 @@ export interface SearchSelectProps {
    * Optional validation error message.
    */
   error?: string;
-    /**
-   * Optional autoFocus prop to focus the input on mount.
-   */
+  /**
+ * Optional autoFocus prop to focus the input on mount.
+ */
   autoFocus?: boolean;
+  onBlur?: () => void;
 }
 
 /** Helper to normalize string for forgiving/flexible option matching. */
@@ -140,6 +141,7 @@ export function SearchSelect({
   onEnter,
   autoFocus = false,
   menuPlacement,
+  onBlur,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -233,29 +235,33 @@ export function SearchSelect({
   /* ---------------- Validate and clear on blur ---------------- */
 
   const handleBlur = useCallback((): void => {
-    // If a selection was just made, skip the blur clearing logic
-    if (didSelectRef.current) {
-      didSelectRef.current = false;
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(false);
-    if (!hasOptions) return;
-    const cleanSearch = normalizeSearchText(search);
-    const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
-    if (matched) {
-      // If user typed a match and blurred, commit it
-      if (hasTyped) {
-        onChange(fallbackName, matched.value);
-        setHasTyped(false);
+    try {
+      // If a selection was just made, skip the blur clearing logic
+      if (didSelectRef.current) {
+        didSelectRef.current = false;
+        setIsOpen(false);
+        return;
       }
-    } else {
-      // Restore previous selected value in the input if search did not match
-      setSearch('');
-      setHasTyped(false);
-      // Do NOT clear the value, just revert to previous selection
+      setIsOpen(false);
+      if (!hasOptions) return;
+      const cleanSearch = normalizeSearchText(search);
+      const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
+      if (matched) {
+        // If user typed a match and blurred, commit it
+        if (hasTyped) {
+          onChange(fallbackName, matched.value);
+          setHasTyped(false);
+        }
+      } else {
+        // Restore previous selected value in the input if search did not match
+        setSearch('');
+        setHasTyped(false);
+        // Do NOT clear the value, just revert to previous selection
+      }
+    } finally {
+      onBlur?.();
     }
-  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped]);
+  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped, onBlur]);
 
   /* ---------------- Select option ---------------- */
 
@@ -334,7 +340,7 @@ export function SearchSelect({
   const t = useTranslations("common");
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
+    <div ref={wrapperRef} className={`relative w-full ${isOpen ? 'z-50' : ''}`}>
       {label && (
         <label
           htmlFor={fallbackId}
@@ -351,7 +357,7 @@ export function SearchSelect({
           type="text"
           name={fallbackName}
           value={displayValue}
-          autoFocus={autoFocus}   
+          autoFocus={autoFocus}
           placeholder={
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
@@ -454,16 +460,16 @@ export function SearchSelect({
                     relative flex items-center justify-between
                     px-3 py-2 text-sm cursor-pointer
                     transition-colors duration-100
-                    ${isHighlighted ? 'bg-blue-50' : ''}
-                    ${isSelected && !isHighlighted ? 'bg-slate-50' : ''}
-                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-50' : ''}
+                    ${isHighlighted ? 'bg-blue-600 text-white' : ''}
+                    ${isSelected && !isHighlighted ? 'bg-blue-50 text-blue-600' : ''}
+                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-100 text-slate-700' : ''}
                   `}
                 >
-                  <span className={`truncate ${isSelected ? 'font-medium text-blue-600' : 'text-slate-700'}`}>
+                  <span className={`truncate ${isSelected && !isHighlighted ? 'font-semibold text-blue-600' : isHighlighted ? 'text-white font-medium' : 'text-slate-700'}`}>
                     {opt.label}
                   </span>
                   {isSelected && (
-                    <Check className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                    <Check className={`h-4 w-4 flex-shrink-0 ml-2 ${isHighlighted ? 'text-white' : 'text-blue-600'}`} />
                   )}
                 </li>
               );

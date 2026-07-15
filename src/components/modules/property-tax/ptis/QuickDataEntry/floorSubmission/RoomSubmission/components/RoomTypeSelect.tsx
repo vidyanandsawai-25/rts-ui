@@ -33,7 +33,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
 
     const resolvedValue = React.useMemo(() => {
         if (!value || value === "-Select-" || value === "Room") return "-Select-";
-        
+
         const matched = roomTypeDetails.find(item => {
             const name = String(item.roomTypeName || '').trim().toLowerCase();
             const desc = String(item.description || '').trim().toLowerCase();
@@ -41,7 +41,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
             const itemId = item.roomTypeId || item.id || item.ID || '';
             const id = String(itemId).trim().toLowerCase();
             const val = String(value || '').trim().toLowerCase();
-            
+
             return (
                 (code && code === val) ||
                 (id && id === val) ||
@@ -49,7 +49,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
                 (desc && desc === val)
             );
         });
-        
+
         return matched?.roomTypeCode || value;
     }, [value, roomTypeDetails]);
 
@@ -65,7 +65,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
                     const itemId = item.roomTypeId || item.id || item.ID || '';
                     const id = String(itemId).trim();
                     const val = String(newVal || '').trim();
-                    
+
                     return (
                         (code && code === val) ||
                         (id && id === val) ||

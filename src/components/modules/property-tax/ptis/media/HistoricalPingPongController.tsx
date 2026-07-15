@@ -108,7 +108,51 @@ export function HistoricalPingPongController({
   }, [map, releases, updateLoadingState]);
 
   useEffect(() => {
-    if (!map || !map.getContainer() || years.length === 0) return;
+    if (!map || !map.getContainer()) return;
+    const cache = getMapCache(map);
+
+    if (years.length === 0) {
+      const fallbackLayerUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+      let layer = cache.get(-1);
+      if (!layer) {
+        layer = L.tileLayer(fallbackLayerUrl, {
+          maxZoom: 21,
+          attribution: '© Esri',
+        });
+        cache.set(-1, layer);
+      }
+      if (!map.hasLayer(layer)) {
+        layer.addTo(map);
+      }
+      layer.setOpacity(1.0);
+
+      // Clear all other Wayback layers from map and cache to prevent stale overlay
+      cache.forEach((l, y) => {
+        if (y !== -1) {
+          if (map.hasLayer(l)) {
+            map.removeLayer(l);
+          }
+          layerLoadingStateRef.current.delete(y);
+        }
+      });
+      for (const key of Array.from(cache.keys())) {
+        if (key !== -1) {
+          cache.delete(key);
+        }
+      }
+      updateLoadingState();
+      return;
+    }
+
+    // Clean up fallback layer if switching back to Wayback releases
+    const fallbackLayer = cache.get(-1);
+    if (fallbackLayer) {
+      if (map.hasLayer(fallbackLayer)) {
+        map.removeLayer(fallbackLayer);
+      }
+      cache.delete(-1);
+    }
+
     const activeIdx = years.indexOf(activeYear);
     if (activeIdx === -1) return;
 
@@ -119,8 +163,6 @@ export function HistoricalPingPongController({
       getOrCreateLayer(activeYear).setOpacity(1.0).setZIndex(10);
       if (prevYear !== null) getOrCreateLayer(prevYear).setOpacity(0.0).setZIndex(5);
       if (nextYear !== null) getOrCreateLayer(nextYear).setOpacity(0.0).setZIndex(5);
-
-      const cache = getMapCache(map);
       cache.forEach((layer, y) => {
         if (y !== activeYear && y !== prevYear && y !== nextYear) {
           if (map.hasLayer(layer)) layer.setOpacity(0.0).setZIndex(1);

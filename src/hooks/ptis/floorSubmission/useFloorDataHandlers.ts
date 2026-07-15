@@ -12,6 +12,7 @@ import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
 import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
 import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction, } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
+import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
 
 // Use deletion hook
 
@@ -141,6 +142,7 @@ export const useFloorDataHandlers = (params: {
         setIsSaving(true);
         const previousFloors = [...localFloors];
         try {
+          const isPlotCategory = checkIsPlotCategory(props.initialPropertyData?.categoryName as string);
           const payload: FloorSubmissionPayload = mapFormToPayload({
             formData: editingFloorForm,
             floorLookup: floorLookup as LookupData[],
@@ -152,6 +154,7 @@ export const useFloorDataHandlers = (params: {
             isAddingNew: isAddingNewFloor,
             existingFloorId: selectedFloor?.id,
             selectedFloorType: selectedFloorType,
+            isPlotCategory: isPlotCategory,
           });
 
           // Optimistic Update
@@ -184,6 +187,10 @@ export const useFloorDataHandlers = (params: {
             setEditingFloorForm(INITIAL_FORM_STATE);
           }
           toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('floorSaved'));
+          }
 
           startTransition(() => {
             router.refresh();

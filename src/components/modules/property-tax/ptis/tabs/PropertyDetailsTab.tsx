@@ -114,9 +114,9 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
 
         <FieldShell
           id="plotArea"
-          label={t('fields.plotArea')}
+          label={t('fields.plotAreaWithUnit')}
           icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
         >
           <ValueDisplay value={data.plotArea} />
         </FieldShell>
@@ -125,7 +125,7 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
           id="totalCarpetArea"
           label={t('fields.totalCarpetAreaWithUnit')}
           icon={Building2}
-          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-4 2xl:col-span-3"
+          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-4 2xl:col-span-2"
         >
           <ValueDisplay value={data.totalCarpetArea} />
         </FieldShell>

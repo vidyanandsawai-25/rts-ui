@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCircle, ChevronDown, ChevronLeft, Package, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
-import { SaveButton } from '@/components/common/ActionButtons';
-import { Badge } from '@/components/common/Badge';
-import { SearchInput } from '@/components/common/SearchInput';
+import { Button, SaveButton, Badge, SearchInput } from '@/components/common';
 import type { ULBDepartmentLicenseTabProps } from '@/types/ulbconfig-master.types';
 import { ULBDepartmentCard } from '../parts/ULBDepartmentCard';
 

@@ -1,0 +1,115 @@
+{
+  "title": "CC / OC / Electric Bill - Tax Calculation Guideline",
+  "subtitle": "Manage how tax should be calculated based on CC, OC and Electric Bill dates.",
+  "buttons": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "update": "Update",
+    "saving": "Saving...",
+    "updating": "Updating...",
+    "tryAgain": "Try again"
+  },
+  "errors": {
+    "unableToLoad": "Unable to load configuration",
+    "somethingWentWrong": "Something went wrong",
+    "offlineMode": "Offline Mode",
+    "httpStatus": "(HTTP {status})"
+  },
+  "sections": {
+    "generalSettings": "1. General Settings",
+    "datePriority": "2. Certificate Date Priority",
+    "datePriorityHint": "(1 = Highest Priority)",
+    "ccOcRules": "3. CC & OC Rules",
+    "electricBillRules": "4. Electric Bill Rules",
+    "retrospectiveRules": "5. Retrospective (No Date) Rules",
+    "otherSettings": "6. Other Settings"
+  },
+  "fields": {
+    "enableCertificateBasedTax": "Enable Certificate Based Tax",
+    "applyTaxOnlyForProtected": "Apply Tax Only For Protected Certificate Types",
+    "financialYearStart": "Financial Year Start",
+    "month": "Month",
+    "day": "Day",
+    "applyCcToOcSplit": "Apply CC to OC Split",
+    "ccOcDiffLabel": "If CC – OC difference is less than or equal to",
+    "ccPeriodMultiplier": "CC Period Multiplier",
+    "ocPeriodMultiplier": "OC Period Multiplier",
+    "electricBillDateRule": "Electric Bill Date Rule",
+    "addMonths": "Add Months to Electric Bill Date",
+    "electricBillMultiplier": "Electric Bill Multiplier",
+    "whenNoDateIsAvailable": "When No Date is Available",
+    "lookbackYears": "Lookback Years",
+    "defaultRetrospectiveMultiplier": "Default Retrospective Multiplier",
+    "enableProration": "Enable Current Year Proration",
+    "prorationMethod": "Proration Method",
+    "taxPersistenceMode": "Tax Persistence Mode",
+    "priority1": "1st Priority",
+    "priority2": "2nd Priority",
+    "priority3": "3rd Priority",
+    "priority4": "4th Priority"
+  },
+  "notes": {
+    "note": "Note:",
+    "bullet1": "These settings will be used by tax engine for calculation.",
+    "bullet2": "Changes will be applied from the next calculation run."
+  },
+  "options": {
+    "select": "Select",
+    "priorities": {
+      "OC Date": "OC Date",
+      "CC Date": "CC Date",
+      "Electric Bill Date": "Electric Bill Date",
+      "Retrospective (No Date)": "Retrospective (No Date)",
+      "Select": "Select"
+    },
+    "ebRules": {
+      "From Financial Year Start Date": "From Financial Year Start Date",
+      "From CC Date": "From CC Date",
+      "From OC Date": "From OC Date",
+      "From Electric Bill Date": "From Electric Bill Date",
+      "Exact Date": "Exact Date",
+      "Select": "Select"
+    },
+    "noDateRules": {
+      "Apply Default Retrospective": "Apply Default Retrospective",
+      "Skip Tax Calculation": "Skip Tax Calculation",
+      "Use Last Known Date": "Use Last Known Date",
+      "No Tax": "No Tax",
+      "Select": "Select"
+    },
+    "units": {
+      "Days": "Days",
+      "Months": "Months",
+      "Years": "Years",
+      "Select": "Select"
+    },
+    "proration": {
+      "Monthly": "Monthly",
+      "Daily": "Daily",
+      "Full Year": "Full Year",
+      "Select": "Select"
+    },
+    "persistence": {
+      "Property Aggregated": "Property Aggregated",
+      "Floor Level": "Floor Level",
+      "Assessment Year": "Assessment Year",
+      "Floor Ledger": "Floor Ledger",
+      "Select": "Select"
+    },
+    "months": {
+      "Select": "Select",
+      "1": "January (1)",
+      "2": "February (2)",
+      "3": "March (3)",
+      "4": "April (4)",
+      "5": "May (5)",
+      "6": "June (6)",
+      "7": "July (7)",
+      "8": "August (8)",
+      "9": "September (9)",
+      "10": "October (10)",
+      "11": "November (11)",
+      "12": "December (12)"
+    }
+  }
+}

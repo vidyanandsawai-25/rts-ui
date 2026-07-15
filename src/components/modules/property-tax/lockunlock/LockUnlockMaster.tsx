@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { toast } from "sonner";
 import { ShieldAlert } from "lucide-react";
 import { LockButton, UnlockButton, Card, PageContainer } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
@@ -21,6 +22,7 @@ export interface LockUnlockMasterProps {
   screens?: LockedScreen[];
   initialProperties?: LockUnlockPropertyItem[];
   initialPagination?: PaginationState;
+  serverError?: boolean;
 }
 
 export default function LockUnlockMaster({
@@ -29,6 +31,7 @@ export default function LockUnlockMaster({
   screens = [],
   initialProperties = [],
   initialPagination,
+  serverError = false,
 }: LockUnlockMasterProps): React.ReactElement {
   const searchParams = useSearchParams();
   const t = useTranslations("lockUnlock");
@@ -78,6 +81,12 @@ export default function LockUnlockMaster({
       return () => clearTimeout(timer);
     }
   }, [editModal.isOpen]);
+
+  React.useEffect(() => {
+    if (serverError) {
+      toast.error(t("messages.fetchFailed"));
+    }
+  }, [serverError, t]);
   // Map Wards to options format for SearchSelect
   const wardOptions = (wards || []).map((w) => ({
     label: w.wardNo,

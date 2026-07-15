@@ -7,9 +7,23 @@ export const getPreviewColumns = (
   fieldConfigs?: BulkUpdateFieldConfig[]
 ): Column<PropertyPreviewRow>[] => {
   const base: Column<PropertyPreviewRow>[] = [
-    { key: "wardNo", label: t("columns.wardNo"), headerClassName: "p-2 text-[12px]" },
-    { key: "propertyNo", label: t("columns.propertyNo"), headerClassName: "p-2 text-[12px]" },
-    { key: "partitionNo", label: t("columns.partitionNo"), headerClassName: "p-2 text-[12px]" },
+    {
+      key: "propertyNo" as keyof PropertyPreviewRow,
+      label: t("columns.propertyNo") || "Property No.",
+      headerClassName: "p-2 text-[12px]",
+      render: (_, row) => {
+        const ward = String(row.wardNo || "").trim();
+        const prop = String(row.propertyNo || "").trim();
+        const part = String(row.partitionNo || "").trim();
+        
+        const parts: string[] = [];
+        if (ward) parts.push(ward);
+        if (prop) parts.push(prop);
+        if (part && part !== "0") parts.push(part);
+        
+        return parts.join("-");
+      }
+    }
   ];
 
   if (fieldConfigs && fieldConfigs.length > 0) {
@@ -20,7 +34,7 @@ export const getPreviewColumns = (
       
       base.push({
         key: camelKey as keyof PropertyPreviewRow,
-        label: `${t("columns.currentValuePrefix")} ${config.displayName}`,
+        label: config.displayName,
         headerClassName: "p-2 text-[12px]",
         // Custom render to handle dynamic keys from flattened currentValues
         render: (

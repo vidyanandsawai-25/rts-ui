@@ -84,18 +84,27 @@ export const mapApiToBuildingState = (
 
 export const mapBuildingStateToApi = (
     state: BuildingPermissionState,
-    propertyId: number
+    propertyId: number,
+    onlyCertificateTypeId?: number,
+    _skipNumberDateValidation = false
 ): PropertyCertificateBulkSaveDto => {
     const certificates: PropertyCertificateItemDto[] = [];
     Object.values(state).forEach((item) => {
+        if (onlyCertificateTypeId !== undefined && item.certificateTypeId !== onlyCertificateTypeId) {
+            return;
+        }
+
+        const isDeleted = !item.enabled || (!item.documentGuid && !item.pendingFile);
+
         certificates.push({
             certificateTypeId: item.certificateTypeId,
-            isEnabled: item.enabled,
-            certificateNumber: item.number ? item.number : null,
-            certificateDate: item.date ? `${item.date}T00:00:00` : null,
+            isEnabled: item.enabled && !isDeleted,
+            certificateNumber: isDeleted ? null : (item.number ? item.number : null),
+            certificateDate: isDeleted ? null : (item.date ? `${item.date}T00:00:00` : null),
             propertyCertificateId: item.propertyCertificateId || null,
-            existingDocumentGuid: item.documentGuid || null,
-            hasNewDocument: false
+            existingDocumentGuid: isDeleted ? null : (item.documentGuid === "pending" ? null : (item.documentGuid || null)),
+            hasNewDocument: isDeleted ? false : (item.documentGuid === "pending" || !!item.pendingFile),
+            markedForDeletion: item.propertyCertificateId ? isDeleted : false
         });
     });
     return { propertyId, certificates };

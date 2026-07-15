@@ -34,8 +34,11 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
     validationErrors,
     t,
 }) => {
+    const isActiveDiscount = (discount: DiscountAttributeState) =>
+        discount.dataType.toUpperCase() === "BIT" ? discount.bitValue === true : discount.enabled;
+
     const getStatusBadge = (discount: DiscountAttributeState) => {
-        if (!discount.enabled) {
+        if (!isActiveDiscount(discount)) {
             return (
                 <Badge variant="secondary" size="sm" icon={EyeOff}>
                     {t("discount.statusDisabled") || "Disabled"}
@@ -137,7 +140,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                 ) : (
                     discounts.map((discount) => {
                         const isSelected = selectedId === discount.id;
-                        const hasError = discount.enabled && !!validationErrors?.[discount.id];
+        const hasError = isActiveDiscount(discount) && !!validationErrors?.[discount.id];
                         const displayName = getLocalizedName(
                             discount.socialAttributeCode,
                             discount.socialAttributeName,
@@ -179,7 +182,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                                     </span>
                                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                                         <ToggleSwitch
-                                            checked={discount.enabled}
+                                            checked={isActiveDiscount(discount)}
                                             onChange={(checked) => onToggleEnabled(discount.id, checked)}
                                             showPopup={false}
                                         />

@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
     replace: vi.fn(),
   }),
-  usePathname: () => "/en/property-tax/rate-master/rvratemaster",
+  usePathname: () => "/en/property-tax/rvratemaster",
 }));
 
 const mockMessages = {
@@ -24,10 +24,9 @@ const mockMessages = {
       rateableDescription: "Manage rateable value rates",
       capitalTitle: "Capital Value Rate Master",
       capitalDescription: "Manage capital value rates",
-      moujaTitle: "Mouja Master",
-      moujaDescription: "Manage mouja records",
-      openplotTitle: "Open Plot Rate Master",
-      openplotDescription: "Manage open plot rates",
+      moujaTab: "Mouja Master",
+      moujaTitle: "Mouja Rate Master",
+      moujaDescription: "Manage mouja rates",
     },
   },
 };
@@ -72,7 +71,7 @@ describe("RateTabsNavigation", () => {
     const rateableTab = screen.getByText("Rateable Value");
     fireEvent.click(rateableTab);
     // Assert navigation was triggered with the expected URL
-    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rate-master/rvratemaster");
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rvratemaster");
   });
 
   it("navigates to Open Plot Rate Master when clicked", () => {

@@ -25,6 +25,7 @@ interface FloorSubmissionScreenProps {
     subUseTypeOptions?: UseSubType[];
     subFloorOptions?: Array<{ id?: string | number; subFloorId?: string | number; subFloorCode?: string; description?: string }>;
     propertyId?: string | number | null;
+    initialRoomData?: unknown[];
 }
 
 export const FloorSubmissionScreen = ({
@@ -35,7 +36,8 @@ export const FloorSubmissionScreen = ({
     useOptions = [],
     subUseTypeOptions = [],
     subFloorOptions = [],
-    propertyId: propPropertyId = null
+    propertyId: propPropertyId = null,
+    initialRoomData = []
 }: FloorSubmissionScreenProps) => {
     const t = useTranslations('appartmentQC');
     const router = useRouter();
@@ -105,6 +107,7 @@ export const FloorSubmissionScreen = ({
                         floorColumns={floorColumns}
                         tableStyle={tableStyle}
                         onRowClick={(row) => setEditingRow(row)}
+                        editRowId={editRowId}
                     />
                 </div>
             </div>
@@ -127,6 +130,7 @@ export const FloorSubmissionScreen = ({
                             useOptions={useOptions}
                             subUseTypeOptions={subUseTypeOptions}
                             subFloorOptions={subFloorOptions}
+                            initialRoomData={initialRoomData}
                             isEditMode={true}
                         />
                     </div>

@@ -17,6 +17,7 @@ import { useApartmentQCOffsetActions } from "@/hooks/apartmentQc/useApartmentQCO
 import { useApartmentQCRoomInitialization } from "@/hooks/apartmentQc/useApartmentQCRoomInitialization";
 import { useApartmentQCRoomListActions } from "@/hooks/apartmentQc/useApartmentQCRoomListActions";
 import { useApartmentQCRoomPersistenceActions } from "@/hooks/apartmentQc/useApartmentQCRoomPersistenceActions";
+import { useEnterKeyNavigation } from "@/hooks/apartmentQc/useEnterKeyNavigation";
 
 // ── Shared UI components (unchanged) ─────────────────────────────────────────
 import { ApartmentQCRoomLayout } from "./ApartmentQCRoomLayout";
@@ -114,6 +115,34 @@ export const RoomWiseSubmission: React.FC<
     onClose();
   };
 
+  // ── Auto-Focus First Element ──────────────────────────────────────────────
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isOpen) {
+      timer = setTimeout(() => {
+        const form = document.getElementById('room-wise-submission-form');
+        if (form) {
+          // Find the first editable input, select, or button (combobox for Select)
+          const firstFocusable = form.querySelector(
+            'input:not([disabled]):not([readonly]), select:not([disabled]):not([readonly]), button:not([disabled])'
+          ) as HTMLElement;
+          if (firstFocusable) {
+            firstFocusable.focus();
+          }
+        }
+      }, 300); // Wait for drawer animation to finish
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isOpen]);
+
+  // ── Enter Key Navigation ──────────────────────────────────────────────────
+  // TO REMOVE ENTER KEY FUNCTIONALITY: 
+  // 1. Remove this line and the `useEnterKeyNavigation` import at the top.
+  // 2. Remove the `onKeyDownCapture={handleKeyDown}` prop from the `<form>` element in the render method below.
+  const handleKeyDown = useEnterKeyNavigation();
+
   // ── Offset sidebar props (unchanged) ──────────────────────────────────────
   const fullOffSetProps: FullOffSetFormProps = {
     offsetModalOpen: state.offsetModalOpen,
@@ -149,7 +178,7 @@ export const RoomWiseSubmission: React.FC<
       className={`w-full p-0 flex flex-col bg-white overflow-visible z-[112] ${displayMode === "modal" ? "" : "mb-6"
         }`}
     >
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form id="room-wise-submission-form" onSubmit={(e) => e.preventDefault()} onKeyDownCapture={handleKeyDown}>
         <div className="bg-white flex flex-col rounded-lg shadow-md border border-gray-200 overflow-visible">
 
           {/* Selected floor row from Floor QC table */}

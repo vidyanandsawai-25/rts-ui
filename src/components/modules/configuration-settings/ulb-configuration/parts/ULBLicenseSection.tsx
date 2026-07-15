@@ -1,8 +1,7 @@
 'use client';
 
 import { Bell, Clock, Key, RefreshCw, Shield } from 'lucide-react';
-import { Badge } from '@/components/common/Badge';
-import { Button } from '@/components/common/ActionButton';
+import { Badge, Button } from '@/components/common';
 import {
   LICENSE_DURATION_OPTIONS,
   LICENSE_TYPES,

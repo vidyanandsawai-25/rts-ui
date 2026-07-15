@@ -20,7 +20,7 @@ describe('Payload Sanitization Tests', () => {
         renter: 'Yes',
         isTaxable: 'Yes',
         renterName: 'Alice Renter',
-        
+
         // Renter Details
         renterDetails: [
           {
@@ -103,8 +103,8 @@ describe('Payload Sanitization Tests', () => {
       const room = (result.roomWiseSubmissionDetails as any[])[0];
       expect(room.id).toBe(601);
       expect(room.propertyDetailsId).toBe(206094);
-      expect(room.lengthMtr).toBe(5);
-      expect(room.widthMtr).toBe(4);
+      expect(room.lengthMtr).toBeUndefined();
+      expect(room.widthMtr).toBeUndefined();
       expect(room.heightMtr).toBe(3);
       expect(room.areaSqMtr).toBe(20);
       expect(room.roomType).toBe('Bedroom');
@@ -162,7 +162,7 @@ describe('Payload Sanitization Tests', () => {
         renterYesNo: true,
         isTaxable: false,
         renterNameEnglish: 'Bob Renter',
-        
+
         roomWiseSubmissionDetails: [
           {
             id: 701,
@@ -195,8 +195,8 @@ describe('Payload Sanitization Tests', () => {
       expect(result.roomWiseSubmissionDetails).toHaveLength(1);
       const room = (result.roomWiseSubmissionDetails as any[])[0];
       expect(room.id).toBe(701);
-      expect(room.lengthMtr).toBe(6);
-      expect(room.widthMtr).toBe(5);
+      expect(room.lengthMtr).toBeUndefined();
+      expect(room.widthMtr).toBeUndefined();
       expect(room.areaSqMtr).toBe(30);
       expect(room.roomType).toBe('Hall');
       expect(room.minusYesNo).toBe(true);
@@ -284,7 +284,7 @@ describe('Payload Sanitization Tests', () => {
       expect(result.roomWiseSubmissionDetails).toHaveLength(1);
       const room = (result.roomWiseSubmissionDetails as any[])[0];
       expect(room.roomWiseMinusData).toHaveLength(2);
-      
+
       const firstMinus = room.roomWiseMinusData[0];
       expect(firstMinus.isOffset).toBe(true);
 
@@ -309,10 +309,10 @@ describe('Payload Sanitization Tests', () => {
       const result = sanitizeRenterPayload(openSpacePayload);
 
       expect(result.isOpenPlot).toBe(true);
-      expect(result.length).toBe(12.5);
-      expect(result.width).toBe(10);
-      expect(result.lengthMtr).toBe(12.5);
-      expect(result.widthMtr).toBe(10);
+      expect(result.length).toBeUndefined();
+      expect(result.width).toBeUndefined();
+      expect(result.lengthMtr).toBeUndefined();
+      expect(result.widthMtr).toBeUndefined();
       expect(result.roomWiseSubmissionDetails).toEqual([]);
       expect(result.roomWiseMinusData).toEqual([]);
     });
@@ -332,10 +332,10 @@ describe('Payload Sanitization Tests', () => {
       const result = sanitizeRenterPayload(constructionPayload);
 
       expect(result.isOpenPlot).toBe(false);
-      expect(result.length).toBeNull();
-      expect(result.width).toBeNull();
-      expect(result.lengthMtr).toBeNull();
-      expect(result.widthMtr).toBeNull();
+      expect(result.length).toBeUndefined();
+      expect(result.width).toBeUndefined();
+      expect(result.lengthMtr).toBeUndefined();
+      expect(result.widthMtr).toBeUndefined();
       expect(result.roomWiseSubmissionDetails).toHaveLength(1);
     });
   });

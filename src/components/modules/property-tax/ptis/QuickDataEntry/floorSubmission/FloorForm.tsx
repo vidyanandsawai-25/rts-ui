@@ -209,6 +209,7 @@ const FloorForm: React.FC<FloorFormProps & {
 
           <div className="mt-4 flex justify-end md:col-span-3">
             <Button
+              id="floor-save-btn"
               onClick={onSave}
               isLoading={isOperationLoading}
               disabled={isOperationLoading || !isFormValid || isAreaExceeded}
@@ -216,6 +217,19 @@ const FloorForm: React.FC<FloorFormProps & {
             >
               {isAddingNewFloor ? t('floor.add') : t('floor.updateFloor')}
             </Button>
+            {(isOperationLoading || !isFormValid || isAreaExceeded) && (
+              <span
+                tabIndex={0}
+                onFocus={(e) => {
+                  e.preventDefault();
+                  const lengthEl = document.getElementById('plot-length');
+                  if (lengthEl) {
+                    lengthEl.focus();
+                  }
+                }}
+                className="sr-only"
+              />
+            )}
           </div>
         </div>
       </div>

@@ -111,7 +111,7 @@ export const Navbar = ({
                     )}
 
                     <Link
-                        href={`/${locale}/configuration-settings/office-master`}
+                        href={`/${locale}/configuration-settings`}
                         className="flex items-center gap-1.5 sm:gap-2 hover:text-blue-200 transition-colors shrink-0"
                         title={t('navigation.settings')}
                     >

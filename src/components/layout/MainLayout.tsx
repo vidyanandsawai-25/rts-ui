@@ -12,6 +12,7 @@ import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import { buildSidebarTree } from '@/lib/utils/sidebar-tree';
 import { buildSidebarTreeFromUserScreens } from '@/lib/utils/sidebar-tree-user';
 import { PermissionsProvider } from '@/lib/providers/PermissionsProvider';
+import { LayoutFooterWrapper } from './LayoutFooterWrapper';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { getModules } from '@/lib/api/configuration-settings/screenAccess/master-data.service';
 import { getUserById } from '@/lib/api/configuration-settings/user-management/user.services';
@@ -166,6 +167,7 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
   const headerList = await headers();
   const pathname = headerList.get('x-pathname') || '';
   const isPtisRoute = pathname.includes('/property-tax/ptis');
+  const isReportRoute = pathname.split('/').some((segment) => segment === 'reports');
 
   const { rawScreens } = await getLayoutChromeData();
 
@@ -184,13 +186,13 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
           </div>
         </main>
 
-        {!isPtisRoute && (
+        <LayoutFooterWrapper>
           <Suspense fallback={<FooterSkeleton />}>
-            <div className="layout-content-shifted">
+            <div className={isReportRoute ? '' : 'layout-content-shifted'}>
               <FooterWithUlb />
             </div>
           </Suspense>
-        )}
+        </LayoutFooterWrapper>
       </div>
     </PermissionsProvider>
   );

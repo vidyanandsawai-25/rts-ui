@@ -12,6 +12,9 @@ import {
   getAllWardsAction,
   getPropertiesByWardAction,
   getAllWingsAction,
+  getScopeOptionsAction,
+  getScopeCategoryOptionsAction,
+  getAllZonesAction,
 } from "@/app/[locale]/property-tax/common-details-update/actions";
 import {
   BulkUpdateFieldConfig,
@@ -22,6 +25,7 @@ import {
   BulkUpdateResponse,
   SelectOption,
 } from "@/types/common-details-update/common-details-update.types";
+import { ScopeOption } from "@/lib/api/common-details-update/common-details-update.service";
 import { PagedResponse } from "@/types/common.types";
 
 export const useCommonDetailsUpdateActions = (
@@ -55,10 +59,10 @@ export const useCommonDetailsUpdateActions = (
       if (result.success) {
         onSuccess(result.data);
       } else {
-        toast.error(t("messages.fetchPropertiesFailed"));
+        toast.error(result.error || t("messages.fetchPropertiesFailed"));
       }
-    } catch {
-      toast.error(t("messages.fetchPropertiesFailed"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("messages.fetchPropertiesFailed"));
     }
   }, [t]);
 
@@ -81,10 +85,11 @@ export const useCommonDetailsUpdateActions = (
    * Uses getWards from ward.services with PageSize=-1.
    */
   const loadAllWards = useCallback(async (
+    zoneId: number | undefined,
     onSuccess: (wards: SelectOption[]) => void
   ) => {
     try {
-      const result = await getAllWardsAction();
+      const result = await getAllWardsAction(zoneId);
       if (result.success && result.data) {
         const items = result.data.items || [];
         const options: SelectOption[] = items.map((ward) => ({
@@ -108,10 +113,11 @@ export const useCommonDetailsUpdateActions = (
    */
   const loadPropertiesByWard = useCallback(async (
     wardId: number,
+    updateCode: string,
     onSuccess: (properties: SelectOption[]) => void
   ) => {
     try {
-      const result = await getPropertiesByWardAction(wardId);
+      const result = await getPropertiesByWardAction(wardId, updateCode);
       if (result.success && result.data) {
         const items = result.data.items || [];
         const options: SelectOption[] = items.map((prop) => {
@@ -165,6 +171,58 @@ export const useCommonDetailsUpdateActions = (
     }
   }, []);
 
+  const loadScopeOptions = useCallback(async (
+    onSuccess: (options: ScopeOption[]) => void
+  ) => {
+    try {
+      const result = await getScopeOptionsAction();
+      if (result.success && result.data) {
+        onSuccess(result.data);
+      } else {
+        onSuccess([]);
+      }
+    } catch (error) {
+      logger.error("Failed to load scope options", { error: error as Error });
+      onSuccess([]);
+    }
+  }, []);
+
+  const loadScopeCategoryOptions = useCallback(async (
+    categoryId: number,
+    onSuccess: (option: ScopeOption) => void
+  ) => {
+    try {
+      const result = await getScopeCategoryOptionsAction(categoryId);
+      if (result.success && result.data) {
+        onSuccess(result.data);
+      }
+    } catch (error) {
+      logger.error("Failed to load scope category options", { error: error as Error });
+    }
+  }, []);
+
+  const loadAllZones = useCallback(async (
+    onSuccess: (zones: SelectOption[]) => void
+  ) => {
+    try {
+      const result = await getAllZonesAction();
+      if (result.success && result.data) {
+        const items = result.data.items || [];
+        const options: SelectOption[] = items.map((zone) => ({
+          label: zone.zoneNo,
+          value: String(zone.id),
+        }));
+        onSuccess(options);
+      } else {
+        logger.warn("Failed to load zones");
+        onSuccess([]);
+      }
+    } catch (error) {
+      logger.error("Failed to load all zones", { error: error as Error });
+      onSuccess([]);
+    }
+  }, []);
+
   const handleBulkUpdate = useCallback(async (
     apiRoute: string,
     payload: BulkUpdatePayload,
@@ -209,6 +267,9 @@ export const useCommonDetailsUpdateActions = (
     loadAllWards,
     loadPropertiesByWard,
     loadAllWings,
+    loadScopeOptions,
+    loadScopeCategoryOptions,
+    loadAllZones,
     handleBulkUpdate,
   };
 };

@@ -154,6 +154,8 @@ export function normalizeRenterMastItem(item: any): any {
         createdDate: item.createdDate ?? item.CreatedDate,
         updatedBy: item.updatedBy ?? item.UpdatedBy,
         updatedDate: item.updatedDate ?? item.UpdatedDate,
+        documentBindingId: item.documentBindingId ?? item.DocumentBindingId,
+        documentGuid: item.documentGuid ?? item.DocumentGuid,
     };
 }
 

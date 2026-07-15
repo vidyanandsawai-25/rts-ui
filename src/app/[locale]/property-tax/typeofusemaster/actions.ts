@@ -6,32 +6,39 @@ import { locales } from "@/i18n/config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { fetchAllPaged } from "@/lib/utils/pagination-helpers";
 import { ApiError } from "@/lib/utils/api";
-import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType } from "@/types/typeOfUse.types";
+import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType, TypeOfUseCategory } from "@/types/typeOfUse.types";
 
 import {
-  // ✅ groups
+  //  groups
   getUseGroupsPagedServer,
   getUseGroupById,
   createUseGroupApi,
   updateUseGroupApi,
   deleteUseGroupApi,
 
-  // ✅ types
+  //  types
   getUseTypesPagedServer,
   getUseTypeById,
   createUseTypeApi,
   updateUseTypeApi,
   deleteUseTypeApi,
 
-  // ✅ subtypes
+  // subtypes
   getSubTypesPagedServer,
   getSubTypeByIdApi,
   createSubTypeApi,
   updateSubTypeApi,
   deleteSubTypeApi,
+
+  //  categories
+  getUseCategoriesPagedServer,
+  getTypeOfUseCategoryById,
+  createTypeOfUseCategoryApi,
+  updateTypeOfUseCategoryApi,
+  deleteTypeOfUseCategoryApi,
 } from "@/lib/api/typeofusemaster.service";
 
-// ✅ Helper to get current user ID from cookies (fallback to 1 if not found)
+//  Helper to get current user ID from cookies (fallback to 1 if not found)
 async function getCurrentUserId(): Promise<string> {
   const cookieStore = await cookies();
   const userId = getUserIdFromCookies(cookieStore);
@@ -114,7 +121,7 @@ export async function updateUseGroup(input: {
       isActive: input.status === "Active",
       updatedBy: await getCurrentUserId(),
     });
-    
+
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
     }
@@ -201,7 +208,7 @@ export async function getTypeById(id: string | number) {
 
 export async function resolveTypeId(typeIdOrCode: string): Promise<string> {
   if (!typeIdOrCode) return "";
-  
+
   try {
     // Try as direct ID first
     const type = await getUseTypeById(typeIdOrCode);
@@ -213,12 +220,12 @@ export async function resolveTypeId(typeIdOrCode: string): Promise<string> {
       pageSize: 1,
       searchTerm: typeIdOrCode, // Search by code
     });
-    
+
     // Find exact match by code
     const match = result.items?.find(t => t.typeOfUseCode === typeIdOrCode);
     if (match) return String(match.typeOfUseId);
   }
-  
+
   return "";
 }
 
@@ -241,6 +248,7 @@ export async function createUseType(input: {
       isActive: (input.status ?? "Active") === "Active",
       typeOfUseCategoryId: input.typeOfUseCategoryId,
       createdBy: await getCurrentUserId(),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     });
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
@@ -278,6 +286,7 @@ export async function updateUseType(input: {
       isActive: input.status === "Active",
       typeOfUseCategoryId: input.typeOfUseCategoryId,
       updatedBy: await getCurrentUserId(),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     });
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
@@ -320,7 +329,7 @@ export async function checkTypeHasSubTypes(typeId: number): Promise<{ hasSubType
     pageSize: 1,
     typeOfUseId: typeId,
   });
-  
+
   return {
     hasSubTypes: totalCount > 0,
     count: totalCount,
@@ -333,7 +342,7 @@ export async function checkGroupHasTypes(groupId: number): Promise<{ hasTypes: b
     pageSize: 1,
     typeOfUseGroupId: groupId,
   });
-  
+
   return {
     hasTypes: totalCount > 0,
     count: totalCount,
@@ -367,6 +376,7 @@ export async function createSubType(input: {
   description: string;
   searchSequence: number;
   status?: UseStatus;
+  typeOfUseCategoryId?: number | null;
 }): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     await createSubTypeApi({
@@ -375,6 +385,7 @@ export async function createSubType(input: {
       searchSequence: input.searchSequence,
       isActive: (input.status ?? "Active") === "Active",
       createdBy: await getCurrentUserId(),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     });
 
     for (const locale of locales) {
@@ -398,6 +409,7 @@ export async function updateSubType(input: {
   description: string;
   searchSequence: number;
   status: UseStatus;
+  typeOfUseCategoryId?: number | null;
 }): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     await updateSubTypeApi({
@@ -407,6 +419,7 @@ export async function updateSubType(input: {
       searchSequence: input.searchSequence,
       isActive: input.status === "Active",
       updatedBy: await getCurrentUserId(),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     });
 
     for (const locale of locales) {
@@ -439,6 +452,93 @@ export async function deleteSubType(id: string | number): Promise<{ success: boo
       return { success: false, message: error.message };
     }
     return { success: false, message: "Failed to delete subtype" };
+  }
+}
+
+/** ===================== CATEGORY ACTIONS ===================== */
+
+export async function getAllUseCategories(searchTerm?: string) {
+  return await fetchAllPaged<TypeOfUseCategory>(
+    getUseCategoriesPagedServer,
+    searchTerm ? { searchTerm } : {}
+  );
+}
+
+export async function getCategoryById(id: string | number) {
+  return await getTypeOfUseCategoryById(id);
+}
+
+export async function createTypeOfUseCategory(input: {
+  code: string;
+  name: string;
+  status?: UseStatus;
+}): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+  try {
+    await createTypeOfUseCategoryApi({
+      typeOfUseCategoryCode: input.code,
+      typeOfUseCategoryName: input.name,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, message: error.responseText, statusCode: error.statusCode };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to create category" };
+  }
+}
+
+export async function updateTypeOfUseCategory(input: {
+  id: number;
+  code: string;
+  name: string;
+  status: UseStatus;
+}): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+  try {
+    await updateTypeOfUseCategoryApi({
+      id: input.id,
+      typeOfUseCategoryCode: input.code,
+      typeOfUseCategoryName: input.name,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, message: error.responseText, statusCode: error.statusCode };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to update category" };
+  }
+}
+
+export async function deleteTypeOfUseCategory(id: string | number): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+  try {
+    await deleteTypeOfUseCategoryApi(id);
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, message: error.responseText, statusCode: error.statusCode };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to delete category" };
   }
 }
 

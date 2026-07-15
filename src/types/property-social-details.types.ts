@@ -48,7 +48,7 @@ export interface PropertySocialDetailsDto {
 }
 
 export interface PropertySocialInfoItemDto {
-    id?: number | null; // This corresponds to the PropertySocialDetailId in C# if existing
+    id?: number; // This corresponds to the PropertySocialDetailId in C# if existing
     socialAttributeId: number;
     bitValue?: boolean | null;
     intValue?: number | null;

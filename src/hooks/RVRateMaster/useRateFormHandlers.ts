@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
 import type { IBackendRateMaster, ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import type { ConfirmOptions } from "@/components/common/ConfirmProvider";
 
@@ -65,7 +65,7 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
     if (onClose) {
       onClose();
     } else {
-      router.replace(`/${locale}/property-tax/rate-master/rvratemaster`);
+      router.replace(`/${locale}/property-tax/rvratemaster`);
     }
   };
 

@@ -40,7 +40,7 @@ export async function getUseTypesPagedServer(params: {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -71,11 +71,11 @@ export async function getUseTypeById(id: string | number): Promise<UseType | nul
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       return null;
     }
-    
+
     return response.data ? mapApiTypeToUi(response.data as Record<string, unknown>) : null;
   } catch (error) {
     logger.error(`Error fetching use type ${id}`, { error: error as Error });
@@ -106,13 +106,14 @@ export async function createUseTypeApi(input: {
       isActive: input.isActive,
       typeOfUseCategoryId: input.typeOfUseCategoryId,
       createdBy: Number(input.createdBy ?? "1"),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     };
 
     const response = await apiClient.post<unknown>("/TypeOfUse", payload, {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -121,11 +122,11 @@ export async function createUseTypeApi(input: {
         backendError ? "" : TypeOfUseErrorMessages.CREATE_TYPE_FAILED
       );
     }
-    
+
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    
+
     return mapApiTypeToUi(response.data as Record<string, unknown>);
   } catch (error) {
     logger.error("Error creating use type", { error: error as Error });
@@ -158,13 +159,14 @@ export async function updateUseTypeApi(input: {
       isActive: input.isActive,
       typeOfUseCategoryId: input.typeOfUseCategoryId,
       updatedBy: Number(input.updatedBy ?? "1"),
+      typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     };
 
     const response = await apiClient.put<unknown>(`/TypeOfUse/${input.typeOfUseId}`, payload, {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -173,11 +175,11 @@ export async function updateUseTypeApi(input: {
         backendError ? "" : TypeOfUseErrorMessages.UPDATE_TYPE_FAILED
       );
     }
-    
+
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    
+
     return mapApiTypeToUi(response.data as Record<string, unknown>);
   } catch (error) {
     logger.error("Error updating use type", { error: error as Error });
@@ -194,7 +196,7 @@ export async function deleteUseTypeApi(id: string) {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -203,7 +205,7 @@ export async function deleteUseTypeApi(id: string) {
         backendError ? "" : TypeOfUseErrorMessages.DELETE_TYPE_FAILED
       );
     }
-    
+
     return true;
   } catch (error) {
     logger.error(`Error deleting use type ${id}`, { error: error as Error });

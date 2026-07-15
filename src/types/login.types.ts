@@ -142,6 +142,7 @@ export interface UlbConfigApiBody {
   ulbName: string;
   ulbNameLocal?: string | null;
   ulbLogo?: string | null;
+  ulbBackground?: string | null;
   emailId?: string | null;
   mobileNo?: string | null;
   websiteUrl?: string | null;

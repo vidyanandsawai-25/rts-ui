@@ -157,9 +157,10 @@ export const EditableInputWithRefresh = memo(({
           type="button"
           onClick={handleRefresh}
           disabled={!value || isRefreshing || !clickHandler}
+          data-enter-navigable="true"
           className={cn(
-            "absolute right-1 bottom-1 h-[30px] w-8 flex items-center justify-center rounded",
-            "hover:bg-gray-100 transition-colors",
+            "absolute right-1 bottom-1 h-[30px] w-8 flex items-center justify-center rounded text-gray-600",
+            "hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white focus:outline-none transition-colors",
             (!value || isRefreshing || !clickHandler) && "opacity-40 cursor-not-allowed"
           )}
           title="Refresh old property data"
@@ -167,7 +168,6 @@ export const EditableInputWithRefresh = memo(({
           <RefreshCw
             size={14}
             className={cn(
-              "text-gray-600",
               isRefreshing && "animate-spin"
             )}
           />

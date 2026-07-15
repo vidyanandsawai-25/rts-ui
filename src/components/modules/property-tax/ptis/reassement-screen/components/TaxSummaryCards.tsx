@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { RotateCw } from 'lucide-react';
 
 interface SummaryCardData {
   label: string;
@@ -17,100 +16,105 @@ interface TaxSummaryCardsProps {
 }
 
 const colorMap = {
-    sky: {
-        bg: 'bg-gradient-to-br from-sky-50 to-sky-100/50',
-        ring: 'ring-sky-200/50',
-        text: 'text-sky-600',
-        dot: 'from-sky-400 to-sky-600',
-        shadow: 'shadow-sky-200'
-    },
-    purple: {
-        bg: 'bg-gradient-to-br from-purple-50 to-purple-100/50',
-        ring: 'ring-purple-200/50',
-        text: 'text-purple-600',
-        dot: 'from-purple-400 to-purple-600',
-        shadow: 'shadow-purple-200'
-    },
-    amber: {
-        bg: 'bg-gradient-to-br from-amber-50 to-amber-100/50',
-        ring: 'ring-amber-200/50',
-        text: 'text-amber-600',
-        dot: 'from-amber-400 to-amber-600',
-        shadow: 'shadow-amber-200'
-    },
-    emerald: {
-        bg: 'bg-gradient-to-br from-emerald-50 to-emerald-100/50',
-        ring: 'ring-emerald-200/50',
-        text: 'text-emerald-600',
-        dot: 'from-emerald-400 to-emerald-600',
-        shadow: 'shadow-emerald-200'
-    }
+  sky: {
+    label: 'text-blue-600',
+    newValue: 'text-blue-600',
+  },
+  purple: {
+    label: 'text-purple-600',
+    newValue: 'text-purple-600',
+  },
+  amber: {
+    label: 'text-orange-600',
+    newValue: 'text-orange-600',
+  },
+  emerald: {
+    label: 'text-emerald-600',
+    newValue: 'text-emerald-600',
+  },
+};
+
+const getDiffColor = (diff: string | number) => {
+  if (typeof diff === 'number') {
+    if (diff > 0) return 'text-emerald-600';
+    if (diff < 0) return 'text-rose-600';
+    return 'text-gray-500';
+  }
+
+  const normalized = diff.trim();
+  if (normalized.startsWith('+')) return 'text-emerald-600';
+  if (normalized.startsWith('-')) return 'text-rose-600';
+  return 'text-gray-500';
+};
+
+const getDiffArrow = (diff: string | number) => {
+  if (typeof diff === 'number') {
+    if (diff > 0) return '↑ ';
+    if (diff < 0) return '↓ ';
+    return '';
+  }
+
+  const normalized = diff.trim();
+  if (normalized.startsWith('+')) return '↑ ';
+  if (normalized.startsWith('-')) return '↓ ';
+  return '';
 };
 
 export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
-  // Translations
   const t = useTranslations('reassessment');
+  const changedStatus = t('summaryCards.changedStatus');
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="flex flex-wrap items-center justify-start gap-2.5">
       {cards.map((card, index) => {
         const colors = colorMap[card.color];
-        const isPositive = typeof card.difference === 'string' 
-          ? !card.difference.includes('-') 
-          : card.difference >= 0;
-        
-        // Check if this is the "Use" card with CHANGED status
-        const isChangedStatus = card.difference === 'CHANGED';
+        const differenceText = String(card.difference);
+        const isUseCard = card.color === 'purple';
+        const isAreaCard = card.color === 'sky';
+        const normalizedDiff = differenceText.trim().toLowerCase();
+        const isChangedStatus =
+          normalizedDiff === changedStatus.toLowerCase() ||
+          differenceText.trim().toUpperCase() === 'CHANGED';
 
         return (
-          <div 
-            key={index}
-            className="rounded-lg border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300/90"
+          <div
+            key={`${card.label}-${index}`}
+            className="flex items-center gap-2 rounded-lg border border-blue-100 bg-white p-1.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md"
           >
-            <div className="mb-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`h-2.5 w-2.5 rounded-full bg-gradient-to-br ${colors.dot} shadow-sm ${colors.shadow}`} />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                  {card.label}
-                </span>
-              </div>
-              {card.unit && (
-                <span className="rounded-md bg-slate-100/80 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 border border-slate-200/50">
-                  {card.unit}
-                </span>
-              )}
-            </div>
-
-            <div className="relative">
-              <div className="grid min-h-[80px] grid-cols-2 overflow-hidden rounded-lg border border-slate-200/80 shadow-inner">
-                <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 px-3 pt-2.5 pb-5 transition-colors duration-200 group-hover:from-slate-100">
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-slate-600">{t('summaryCards.oldLabel')}</div>
-                  <div className="mt-1.5 text-[15px] font-medium leading-none text-slate-500">
-                    {card.oldValue}
-                  </div>
+            {isUseCard ? (
+              <>
+                <div className="flex flex-col items-start leading-tight">
+                  <span className="text-purple-600 font-extrabold text-[10px]">{card.label}</span>
+                  <span className="text-[8px] xl:text-[9px] font-black px-1 py-0.5 rounded-sm uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200 leading-none mt-0.5">
+                    {isChangedStatus ? changedStatus : differenceText}
+                  </span>
                 </div>
-
-                <div className={`${colors.bg} px-3 pt-2.5 pb-5 text-right ring-1 ring-inset ${colors.ring} transition-colors duration-200`}>
-                  <div className={`text-[9px] font-bold uppercase tracking-wider ${colors.text}`}>{t('summaryCards.newLabel')}</div>
-                  <div className="mt-1.5 text-[15px] font-bold leading-none text-slate-700">
-                    {card.newValue}
-                  </div>
+                <div className="border-l border-gray-200 h-7 mx-0.5" />
+                <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
+                  <span>{t('summaryCards.oldLabel')}:{' '}<span className="font-semibold text-gray-700">{card.oldValue}</span></span>
+                  <span>{t('summaryCards.newLabel')}:{' '}<span className="font-semibold text-purple-600">{card.newValue}</span></span>
                 </div>
-              </div>
-
-              <div className="absolute left-1/2 bottom-1 -translate-x-1/2">
-                <span className={`inline-flex items-center gap-1.5 rounded-md border ${isPositive ? 'border-emerald-200 bg-emerald-50/90 text-emerald-600' : 'border-purple-200 bg-purple-50/90 text-purple-700'} px-2.5 py-0.5 text-[10px] font-bold shadow-sm backdrop-blur-sm transition-colors duration-200`}>
-                  {isChangedStatus ? (
-                    <RotateCw className="h-3 w-3" />
-                  ) : (
-                    <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d={isPositive ? "M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" : "M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"} />
-                    </svg>
-                  )}
-                  {isChangedStatus ? t('summaryCards.changedStatus') : card.difference}
+              </>
+            ) : (
+              <>
+                <span className={`font-extrabold text-xs ${colors.label}`}>{card.label}</span>
+                <div className="border-l border-gray-200 h-7 mx-0.5" />
+                <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
+                  <span>{t('summaryCards.oldLabel')}:{' '}<span className="font-semibold text-gray-700">{card.oldValue}{isAreaCard && card.unit ? ' ' + card.unit : ''}</span></span>
+                  <span>{t('summaryCards.newLabel')}:{' '}<span className={`font-semibold ${colors.newValue}`}>{card.newValue}{isAreaCard && card.unit ? ' ' + card.unit : ''}</span></span>
+                </div>
+                <div className="border-l border-gray-200 h-7 mx-0.5" />
+                <span
+                  className={`font-extrabold text-[10px] xl:text-xs flex items-center shrink-0 ${getDiffColor(card.difference)}`}
+                >
+                  {getDiffArrow(card.difference)}
+                  {typeof card.difference === 'number'
+                    ? Math.abs(card.difference)
+                    : differenceText.replace(/^[-+]/, '')}
+                  {isAreaCard && card.unit ? ' ' + card.unit : ''}
                 </span>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         );
       })}

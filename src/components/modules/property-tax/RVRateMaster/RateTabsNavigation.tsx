@@ -28,26 +28,11 @@ export function RateTabsNavigation() {
       icon: LandPlot,
       headerTitle: t("header.openplotTitle"),
       headerSubtitle: t("header.openplotDescription"),
-    },
-    {
-      value: "moujamaster",
-      label: t("header.moujaTab"),
-      icon: MapPin,
-      headerTitle: t("header.moujaTitle"),
-      headerSubtitle: t("header.moujaDescription"),
-    },
-    // The Capital Value tab is intentionally hidden for now.
-    // Uncomment and enable this tab when the /cvratemaster route and feature are implemented in a future PR.
-    // {
-    //   value: "cvratemaster",
-    //   label: t("header.capitalTab"),
-    //   icon: Landmark,
-    //   headerTitle: t("header.capitalTitle"),
-    //   headerSubtitle: t("header.capitalDescription"),
-    // },
+    }
+
   ];
 
-  const activeValue = tabConfig.find(tab => pathname.includes(`/rate-master/${tab.value}`))?.value || "rvratemaster";
+  const activeValue = tabConfig.find(tab => pathname.includes(`/${tab.value}`))?.value || "rvratemaster";
   const activeTab = tabConfig.find(tab => tab.value === activeValue) || tabConfig[0];
 
   return (
@@ -63,7 +48,7 @@ export function RateTabsNavigation() {
             variant="pills"
             onChange={(v: string | number) => {
               const tab = tabConfig.find(item => item.value === v);
-              if (tab) router.push(`/${locale}/property-tax/rate-master/${tab.value}`);
+              if (tab) router.push(`/${locale}/property-tax/${tab.value}`);
             }}
           />
         }

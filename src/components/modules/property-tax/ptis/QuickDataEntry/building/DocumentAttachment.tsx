@@ -16,6 +16,7 @@ interface DocumentAttachmentProps {
     documentUrl?: string;
     hasDocumentBinding?: boolean;
     isUploading?: boolean;
+    isDeleting?: boolean;
     isDisabled: boolean;
     isDocumentInvalid: boolean;
     documentError?: string;
@@ -27,7 +28,7 @@ interface DocumentAttachmentProps {
 }
 
 export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
-    documentGuid, fileName, hasDocumentBinding, isUploading, isDisabled,
+    documentGuid, fileName, hasDocumentBinding, isUploading, isDeleting, isDisabled,
     isDocumentInvalid, documentError, onFileUpload, onFileDelete, t, label, pendingFile
 }) => {
     const locale = useLocale();
@@ -35,7 +36,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     const [isDownloading, setIsDownloading] = React.useState(false);
     const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string } | null>(null);
 
-    const isAnyActionRunning = !!isUploading || isViewing || isDownloading;
+    const isAnyActionRunning = !!isUploading || isViewing || isDownloading || !!isDeleting;
 
     React.useEffect(() => {
         return () => { if (viewerData?.url?.startsWith("blob:")) URL.revokeObjectURL(viewerData.url); };
@@ -123,7 +124,9 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                 </Button>
                 {onFileDelete && (
                     <Button
-                        disabled={isDisabled || isAnyActionRunning} variant="delete" size="sm" icon={Trash2}
+                        disabled={isDisabled || isAnyActionRunning}
+                        isLoading={isDeleting}
+                        variant="delete" size="sm" icon={Trash2}
                         className="text-sm font-bold border border-red-200 text-red-700 rounded-lg hover:bg-red-50/40 hover:border-red-500 cursor-pointer"
                         onClick={onFileDelete}
                     >

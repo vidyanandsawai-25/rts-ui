@@ -4,12 +4,13 @@ import { getTranslations } from 'next-intl/server';
 import type { LoginFormCopy, LoginPageProps } from '@/types/login.types';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 import { resolveLoginPageErrorI18nSuffix } from '@/lib/utils/login-page-errors';
+import { LanguageDropdown } from '@/components/common';
 
 export default async function LoginPage({ params, searchParams }: LoginPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const resolvedSearchParams = await searchParams;
-  const t = await getTranslations('common');
+  const t = await getTranslations({ locale, namespace: 'login' });
 
   const usernameRaw = resolvedSearchParams?.username;
   const username =
@@ -30,7 +31,7 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
   const i18nSuffix = resolveLoginPageErrorI18nSuffix(errStr, msgStr);
   if (i18nSuffix) {
     try {
-      errorMessage = t(`login.errors.${i18nSuffix}`);
+      errorMessage = t(`errors.${i18nSuffix}`);
     } catch {
       errorMessage = '';
     }
@@ -38,23 +39,35 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
 
   const resentRaw = resolvedSearchParams?.resent;
   const showResent = resentRaw === '1' || (Array.isArray(resentRaw) && resentRaw[0] === '1');
-  const infoMessage = showResent ? t('login.tokenResentFlash') : '';
+  const infoMessage = showResent ? t('tokenResentFlash') : '';
 
   const { ulbData } = await fetchLoginBrandingAction();
 
+  const backgroundSrc = ulbData?.ulbBackground || '';
+
   const copy: LoginFormCopy = {
-    loginTitle: t('login.title'),
-    username: t('login.username'),
-    usernamePlaceholder: t('login.usernamePlaceholder'),
-    password: t('login.password'),
-    passwordPlaceholder: t('login.passwordPlaceholder'),
-    signIn: t('login.signIn'),
-    showPassword: t('login.showPassword'),
-    hidePassword: t('login.hidePassword'),
+    loginTitle: t('title'),
+    username: t('username'),
+    usernamePlaceholder: t('usernamePlaceholder'),
+    password: t('password'),
+    passwordPlaceholder: t('passwordPlaceholder'),
+    signIn: t('signIn'),
+    showPassword: t('showPassword'),
+    hidePassword: t('hidePassword'),
   };
 
+  const backgroundStyle = backgroundSrc
+    ? { backgroundImage: `url(${backgroundSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100 transition-all duration-500"
+      style={backgroundStyle}
+    >
+      <div className="absolute top-4 right-4 z-50">
+        <LanguageDropdown />
+      </div>
       <div className="flex min-h-full w-full flex-col items-center justify-center p-4 md:p-6">
         <LoginForm
           key={`${locale}-${username}`}

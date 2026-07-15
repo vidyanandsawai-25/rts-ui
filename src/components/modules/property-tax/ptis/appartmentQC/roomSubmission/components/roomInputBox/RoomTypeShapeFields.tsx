@@ -67,6 +67,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           }}
           disabled={false}
           className="w-full h-[40px]"
+          autoFocus={true}
         />
         {validationErrors.utilities && (
           <span className="text-[10px] text-red-500 mt-0.5">{t(validationErrors.utilities)}</span>
