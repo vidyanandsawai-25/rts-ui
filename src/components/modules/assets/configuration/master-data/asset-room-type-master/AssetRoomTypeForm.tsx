@@ -128,29 +128,6 @@ export default function AssetRoomTypeForm({
             visible={showError("roomTypeCode")}
           />
 
-          <SearchSelect
-            name="assetCategoryId"
-            label={t("form.fields.assetCategoryId.label")}
-            required
-            placeholder={t("form.fields.assetCategoryId.placeholder")}
-            options={categoryOptions}
-            value={formData.assetCategoryId ? String(formData.assetCategoryId) : ""}
-            onChange={handleSelectChange}
-            error={showError("assetCategoryId") ? errors.assetCategoryId : undefined}
-          />
-
-          <SearchSelect
-            name="assetTypeId"
-            label={t("form.fields.assetTypeId.label")}
-            required
-            placeholder={t("form.fields.assetTypeId.placeholder")}
-            options={typeOptions}
-            value={formData.assetTypeId ? String(formData.assetTypeId) : ""}
-            onChange={handleSelectChange}
-            disabled={!formData.assetCategoryId || typeOptions.length === 0}
-            error={showError("assetTypeId") ? errors.assetTypeId : undefined}
-          />
-
           <Input
             name="roomTypeName"
             label={t("form.fields.roomTypeName.label")}
@@ -180,6 +157,29 @@ export default function AssetRoomTypeForm({
           <ValidationMessage
             message={errors.description}
             visible={showError("description")}
+          />
+
+          <SearchSelect
+            name="assetCategoryId"
+            label={t("form.fields.assetCategoryId.label")}
+            required
+            placeholder={t("form.fields.assetCategoryId.placeholder")}
+            options={categoryOptions}
+            value={formData.assetCategoryId ? String(formData.assetCategoryId) : ""}
+            onChange={handleSelectChange}
+            error={showError("assetCategoryId") ? errors.assetCategoryId : undefined}
+          />
+
+          <SearchSelect
+            name="assetTypeId"
+            label={t("form.fields.assetTypeId.label")}
+            required
+            placeholder={t("form.fields.assetTypeId.placeholder")}
+            options={typeOptions}
+            value={formData.assetTypeId ? String(formData.assetTypeId) : ""}
+            onChange={handleSelectChange}
+            disabled={!formData.assetCategoryId || typeOptions.length === 0}
+            error={showError("assetTypeId") ? errors.assetTypeId : undefined}
           />
         </div>
 
