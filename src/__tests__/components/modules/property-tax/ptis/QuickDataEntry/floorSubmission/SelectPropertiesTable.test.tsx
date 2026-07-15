@@ -194,8 +194,22 @@ describe('SelectPropertiesTable', () => {
     };
     render(<SelectPropertiesTable {...props} />);
 
-    expect(screen.getByTestId('row-1')).toHaveClass('!bg-blue-50 hover:!bg-blue-100');
-    expect(screen.getByTestId('row-2')).toHaveClass('!bg-green-50 hover:!bg-green-100');
+    const row1 = screen.getByTestId('row-1');
+    const row2 = screen.getByTestId('row-2');
+
+    expect(row1).toHaveClass('!bg-blue-50 hover:!bg-blue-100');
+    
+    // Check visual disabled classes
+    expect(row2).toHaveClass('opacity-60', 'bg-slate-50', 'cursor-not-allowed');
+    expect(row2).not.toHaveClass('!bg-green-50', 'hover:!bg-green-100');
+
+    // Check semantic disabled state (checkbox)
+    const checkboxes = screen.getAllByTestId('mock-checkbox');
+    expect(checkboxes[2]).toBeDisabled();
+
+    // Check interaction is disabled
+    fireEvent.click(row2);
+    expect(props.onToggle).not.toHaveBeenCalledWith(2);
   });
 
   it('hides Type column when hideTypeColumn is true', () => {
