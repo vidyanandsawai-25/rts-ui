@@ -313,7 +313,11 @@ const AgreementDetails = memo(
           <div
             className={cn(
               "flex flex-col gap-1.5 shrink-0",
-              (uploadedDocument || formData?.renterDetails?.documentGuid) ? "col-span-1 sm:col-span-2 lg:w-[220px]" : "col-span-1 sm:col-span-1 lg:w-[60px]"
+              uploadedDocument
+                ? "col-span-1 sm:col-span-2 lg:w-[220px]"
+                : formData?.renterDetails?.documentGuid
+                ? "col-span-1 sm:col-span-2 lg:w-[140px]"
+                : "col-span-1 sm:col-span-1 lg:w-[60px]"
             )}
           >
             <Label className={fieldLabelClassName}>{t('floor.renterSection.document')}</Label>
