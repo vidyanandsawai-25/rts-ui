@@ -6,7 +6,6 @@ const mockBack = vi.fn();
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
 
-// Mock next-intl
 vi.mock("next-intl", () => {
   const t = (key: string) => `assetPhotoType.${key}`;
   return {
@@ -15,27 +14,27 @@ vi.mock("next-intl", () => {
   };
 });
 
-// Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     back: mockBack,
     push: mockPush,
     refresh: mockRefresh,
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock hook
 vi.mock("@/hooks/asset-masters/assetphototype/useAssetPhotoForm", () => ({
   useAssetPhotoForm: () => ({
     formData: {
       photoTypeCode: "TEST_CODE",
       photoTypeName: "Test Name",
       description: "Test description",
-      displayOrder: 1,
       isActive: true,
+      displayOrder: 1,
       assetCategoryId: 1,
-      assetTypeId: 2,
+      assetTypeId: null,
       isRequired: true,
+      isSubUnit: false,
     },
     errors: {},
     isSubmitting: false,
@@ -46,7 +45,6 @@ vi.mock("@/hooks/asset-masters/assetphototype/useAssetPhotoForm", () => ({
     handleSelectChange: vi.fn(),
     handleSubmit: vi.fn(),
     handleToggleStatus: vi.fn(),
-    handleToggleRequired: vi.fn(),
     handleCancel: vi.fn(),
     showError: () => false,
     t: (key: string) => `assetPhotoType.${key}`,
@@ -60,19 +58,14 @@ describe("AssetPhotoTypeForm Component", () => {
     vi.clearAllMocks();
   });
 
-  const mockCategories = [{ id: 1, name: "Cat 1" }];
-  const mockTypes = [{ id: 2, name: "Type 2" }];
+  test("should render form elements correctly", () => {
+    const categories = [{ id: 1, name: "Building", description: "Desc" }];
+    const assetTypes = [{ id: 1, name: "Structure", description: "Desc" }];
 
-  test("renders form inputs and selectors correctly", () => {
-    render(
-      <AssetPhotoTypeForm
-        id={null}
-        categories={mockCategories}
-        types={mockTypes}
-      />
-    );
+    render(<AssetPhotoTypeForm id={null} categories={categories} types={assetTypes} />);
 
-    expect(screen.getByLabelText("assetPhotoType.form.fields.photoTypeCode.label *")).toBeInTheDocument();
-    expect(screen.getByLabelText("assetPhotoType.form.fields.photoTypeName.label *")).toBeInTheDocument();
+    expect(screen.getByLabelText("assetPhotoType.form.fields.photoTypeCode.label", { exact: false })).toBeInTheDocument();
+    expect(screen.getByLabelText("assetPhotoType.form.fields.photoTypeName.label", { exact: false })).toBeInTheDocument();
+    expect(screen.getByLabelText("assetPhotoType.form.fields.description.label", { exact: false })).toBeInTheDocument();
   });
 });

@@ -6,7 +6,6 @@ const mockBack = vi.fn();
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
 
-// Mock next-intl
 vi.mock("next-intl", () => {
   const t = (key: string) => `assetRoomType.${key}`;
   return {
@@ -15,24 +14,24 @@ vi.mock("next-intl", () => {
   };
 });
 
-// Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     back: mockBack,
     push: mockPush,
     refresh: mockRefresh,
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock hook
 vi.mock("@/hooks/asset-masters/assetroomtype/useAssetRoomForm", () => ({
   useAssetRoomForm: () => ({
     formData: {
-      roomTypeCode: "ROOM_CODE",
-      roomTypeName: "Test Room",
+      roomTypeCode: "TEST_CODE",
+      roomTypeName: "Test Name",
       description: "Test description",
       isActive: true,
-      assetTypeId: 2,
+      assetCategoryId: 1,
+      assetTypeId: null,
     },
     errors: {},
     isSubmitting: false,
@@ -56,19 +55,14 @@ describe("AssetRoomTypeForm Component", () => {
     vi.clearAllMocks();
   });
 
-  const mockTypes = [{ id: 2, name: "Type 2" }];
-  const mockCategories = [{ id: 1, name: "Category 1" }];
+  test("should render form elements correctly", () => {
+    const categories = [{ id: 1, name: "Building", description: "Desc" }];
+    const assetTypes = [{ id: 1, name: "Structure", description: "Desc" }];
 
-  test("renders form inputs and selectors correctly", () => {
-    render(
-      <AssetRoomTypeForm
-        id={null}
-        categories={mockCategories}
-        types={mockTypes}
-      />
-    );
+    render(<AssetRoomTypeForm id={null} categories={categories} types={assetTypes} />);
 
-    expect(screen.getByLabelText("assetRoomType.form.fields.roomTypeCode.label *")).toBeInTheDocument();
-    expect(screen.getByLabelText("assetRoomType.form.fields.roomTypeName.label *")).toBeInTheDocument();
+    expect(screen.getByLabelText("assetRoomType.form.fields.roomTypeCode.label", { exact: false })).toBeInTheDocument();
+    expect(screen.getByLabelText("assetRoomType.form.fields.roomTypeName.label", { exact: false })).toBeInTheDocument();
+    expect(screen.getByLabelText("assetRoomType.form.fields.description.label", { exact: false })).toBeInTheDocument();
   });
 });
