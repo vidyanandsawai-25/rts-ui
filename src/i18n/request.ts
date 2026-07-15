@@ -70,11 +70,11 @@ export default getRequestConfig(async ({ locale }) => {
     reassessmentMessages,
     taxCalculationGuidelineMessages,
     modulesMessages,
+    addTaxesMessages,
+    reportMessages,
     gstMasterMessages,
     penaltyRuleMasterMessages,
     owningDepartmentMessages,
-    addTaxesMessages,
-    reportMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -166,13 +166,6 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-      import(`./locales/${validatedLocale}/reassessment.json`)
-        .catch(() => ({}))
-        .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/reassessment.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -186,6 +179,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -246,11 +242,11 @@ export default getRequestConfig(async ({ locale }) => {
       reassessment: reassessmentMessages,
       taxCalculationGuideline: taxCalculationGuidelineMessages,
       modules: modulesMessages,
+      addTaxes: addTaxesMessages,
+      report: reportMessages,
       gstMaster: gstMasterMessages,
       penaltyRuleMaster: penaltyRuleMasterMessages,
       owningDepartment: owningDepartmentMessages,
-      addTaxes: addTaxesMessages,
-      report: reportMessages,
     },
   };
 });
