@@ -144,40 +144,40 @@ async function SidebarWithData({ locale }: { locale: string }) {
   const pathname = headerList.get('x-pathname') || '';
   const { menuItems } = await getLayoutChromeData();
 
-  const isCmsRoute = /\/(cms|rts\/admin)(\/|$)/.test(pathname);
+  const isCmsRoute = /\/(rts-cms|rts\/admin)(\/|$)/.test(pathname);
   if (isCmsRoute) {
     const cmsMenuItems: MenuItem[] = [
       {
-        name: 'Dashboard',
-        nameHi: 'डैशबोर्ड',
+        name: 'MIS Dashboard',
+        nameHi: 'एमआइएस डैशबोर्ड',
         iconName: 'LayoutDashboard',
-        href: '/cms/dashboard',
+        href: '/rts-cms/dashboard',
       },
       {
         name: 'Inbox',
         nameHi: 'इनबॉक्स',
         iconName: 'ClipboardList',
-        href: '/cms/inbox',
+        href: '/rts-cms/inbox',
       },
       {
-        name: 'SLA Evaluation',
-        nameHi: 'मूल्यांकन (SLA)',
+        name: 'Dashboard',
+        nameHi: 'डैशबोर्ड',
         iconName: 'Hourglass',
-        href: '/cms/mulyamapan',
+        href: '/rts-cms/mulyamapan',
       },
       {
         name: 'Masters',
         nameHi: 'मास्टर्स',
         iconName: 'Database',
-        href: '/cms/masters',
+        href: '/rts-cms/masters',
         subItems: [
           {
             name: 'Dept / Services',
-            href: '/cms/masters',
-          },
+            href: '/rts-cms/masters',
+          },  
           {
             name: 'Form Field Definition',
-            href: '/cms/masters/fields',
+            href: '/rts-cms/masters/fields',
           }
         ]
       },
@@ -185,19 +185,19 @@ async function SidebarWithData({ locale }: { locale: string }) {
         name: 'User Access Control',
         nameHi: 'प्रवेश नियंत्रण',
         iconName: 'Users',
-        href: '/cms/users',
+        href: '/rts-cms/users',
         subItems: [
           {
             name: 'Users Registry',
-            href: '/cms/users',
+            href: '/rts-cms/users',
           },
           {
             name: 'Roles & Access',
-            href: '/cms/users/roles',
+            href: '/rts-cms/users/roles',
           },
           {
             name: 'Modules Manager',
-            href: '/cms/users/modules',
+            href: '/rts-cms/users/modules',
           }
         ]
       },
@@ -205,7 +205,7 @@ async function SidebarWithData({ locale }: { locale: string }) {
         name: 'Reports',
         nameHi: 'रिपोर्ट',
         iconName: 'FileBarChart',
-        href: '/cms/reports',
+        href: '/rts-cms/reports',
       },
     ];
     return <Sidebar menuItems={cmsMenuItems} locale={locale} />;

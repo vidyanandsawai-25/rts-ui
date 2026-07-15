@@ -5,7 +5,7 @@ import { Plus, Search, Shield, Mail, Phone, Users, Trash, Edit2 } from "lucide-r
 import { Card, Drawer, useConfirm } from "@/components/common";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { createCmsUserAction } from "@/app/[locale]/cms/actions";
+import { createCmsUserAction } from "@/app/[locale]/rts-cms/actions";
 import type { CmsOfficer } from "@/lib/mock/rts/cms";
 
 interface UserMgmtProps {

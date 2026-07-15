@@ -84,14 +84,14 @@ export default function DepartmentCarousel({
 
   return (
     <div className="mt-2 w-full max-w-[360px]">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col mx-3 my-1.5">
         {/* Dashboard Overview button */}
         <button
           type="button"
           disabled={disabled}
           onClick={() => onChange("")}
           className={[
-            "w-full flex items-center gap-3 rounded-xl border bg-white p-2.5 transition group",
+            "w-full flex items-center gap-3 my-1.5 rounded-xl border bg-white p-2.5 transition group",
             "hover:shadow-md hover:border-gray-300",
             (activeDept === "" || activeDept === "dashboard") ? "ring-2 ring-teal-500 border-teal-200 bg-teal-50/5" : "border-gray-200",
             disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
@@ -129,7 +129,7 @@ export default function DepartmentCarousel({
               disabled={disabled}
               onClick={() => onChange(dept.id)}
               className={[
-                "w-full flex items-center gap-3 rounded-xl border bg-white p-2 transition group",
+                "w-full flex items-center gap-3 my-1.5 rounded-xl border bg-white p-2 transition group",
                 "hover:shadow-md hover:border-gray-300",
                 isActive ? "ring-2 ring-orange-400 border-orange-200" : "border-gray-200",
                 disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { Plus, Edit2, Trash, Landmark, Folder, Search } from "lucide-react";
-import { Card, Drawer, useConfirm } from "@/components/common";
+import { Plus, Pencil, Trash2, Landmark, Folder } from "lucide-react";
+import { Badge, Button, Card, Drawer, MasterTable, SearchInput, useConfirm } from "@/components/common";
+import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import {
   saveCmsDepartmentAction,
@@ -11,7 +12,7 @@ import {
   saveCmsServiceAction,
   updateCmsServiceAction,
   deleteCmsServiceAction
-} from "@/app/[locale]/cms/actions";
+} from "@/app/[locale]/rts-cms/actions";
 
 interface MasterConfigProps {
   masters: {
@@ -19,6 +20,9 @@ interface MasterConfigProps {
     services: Array<{ id: string; name: string; departmentId: string }>;
   };
 }
+
+type DepartmentRow = Record<string, unknown> & { id: string; srNo: number; name: string; status: string };
+type ServiceRow = Record<string, unknown> & { id: string; srNo: number; name: string; departmentName: string; status: string };
 
 export default function CmsMastersConfig({ masters }: MasterConfigProps) {
   const { confirm } = useConfirm();
@@ -243,17 +247,54 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
     return map;
   }, [departments]);
 
+  const departmentRows: DepartmentRow[] = paginatedDepartments.map((dept, index) => ({
+    id: dept.id,
+    srNo: (deptPage - 1) * 12 + index + 1,
+    name: dept.name,
+    status: "Active",
+  }));
+
+  const serviceRows: ServiceRow[] = paginatedServices.map((service, index) => ({
+    id: service.id,
+    srNo: (servicePage - 1) * 12 + index + 1,
+    name: service.name,
+    departmentName: deptMap.get(service.departmentId) || service.departmentId,
+    status: "Active",
+  }));
+
+  const departmentColumns: Column<DepartmentRow>[] = [
+    { key: "srNo", label: "Sr. No.", width: "64px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-bold text-slate-500 border-r border-slate-100" },
+    { key: "name", label: "Department Name", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-semibold text-slate-800 border-r border-slate-100" },
+    { key: "status", label: "Status", width: "112px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: () => <Badge variant="success" size="sm">Active</Badge> },
+  ];
+
+  const serviceColumns: Column<ServiceRow>[] = [
+    { key: "srNo", label: "Sr. No.", width: "64px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-bold text-slate-500 border-r border-slate-100" },
+    { key: "name", label: "Service Name", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-semibold text-slate-800 border-r border-slate-100" },
+    { key: "departmentName", label: "Department Name", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-medium text-slate-500 border-r border-slate-100" },
+    { key: "status", label: "Status", width: "112px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: () => <Badge variant="success" size="sm">Active</Badge> },
+  ];
+
+  const tableHeaderClass = "!bg-[#4b70a6] !from-[#4b70a6] !via-[#4b70a6] !to-[#4b70a6] hover:!from-[#4b70a6] hover:!via-[#4b70a6] hover:!to-[#4b70a6] [&_th]:!text-white";
+  const tableClass = "border-collapse text-left text-sm [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
+  const actionButtons = (onEdit: () => void, onDelete: () => void) => (
+    <div className="flex justify-center gap-1.5" onClick={(event) => event.stopPropagation()}>
+      <Button type="button" aria-label="Edit" title="Edit" variant="edit" size="xs" icon={Pencil} onClick={onEdit} className="h-7 w-7 px-0" />
+      <Button type="button" aria-label="Delete" title="Delete" variant="delete" size="xs" icon={Trash2} onClick={onDelete} className="h-7 w-7 px-0" />
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       {/* Title & Header Actions Area */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <Card className="flex flex-col justify-between gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
             CMS Masters Config
           </h1>
-          <p className="text-[13px] text-slate-400 mt-0.5">
+          {/* <p className="text-[13px] text-slate-400 mt-0.5">
             Configure municipal departments and registered citizen services globally
-          </p>
+          </p> */}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -271,132 +312,48 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
             Registered Services
           </button>
         </div>
-      </div>
+      </Card>
 
 
 
       {/* Tables layout in a 2-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* 1. Departments Card */}
-        <Card className="p-4 border border-slate-200 bg-white shadow-sm space-y-4">
+        <Card className="p-4 border rounded-2xl border-slate-200 bg-white shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
             <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[#3d3d3d]">
               <Landmark className="h-4 w-4 text-[#4b70a6]" />
               Registered Departments Master
             </h2>
-            
-            <div className="relative w-full sm:w-64">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Search className="h-3.5 w-3.5" />
-              </span>
-              <input
-                type="text"
-                placeholder="Search departments..."
-                value={deptSearch}
-                onChange={e => handleDeptSearchChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-1.5 pl-9 pr-3 text-[12px] font-semibold text-slate-800 placeholder-slate-450 focus:border-teal-500 focus:bg-white focus:outline-none"
-              />
-            </div>
-          </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-[13px] text-slate-600">
-              <thead className="bg-[#4b70a6] text-white font-bold">
-                <tr>
-                  <th className="p-3 w-16 text-center border-r border-[#3d5a8a]">Sr. No.</th>
-                  <th className="p-3 border-r border-[#3d5a8a]">Department Name</th>
-                  <th className="p-3 w-28 text-center border-r border-[#3d5a8a]">Status</th>
-                  <th className="p-3 w-28 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredDepartments.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-slate-400 font-semibold">
-                      No departments registered.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedDepartments.map((dept, index) => {
-                    const isSelected = selectedDeptId === dept.id;
-                    return (
-                      <tr
-                        key={dept.id}
-                        onClick={() => handleSelectDept(isSelected ? null : dept.id)}
-                        className={`cursor-pointer transition border-l-4 ${
-                          isSelected
-                            ? "bg-blue-50/70 border-l-[#4b70a6] text-[#4b70a6] font-bold"
-                            : "border-l-transparent hover:bg-slate-50/50"
-                        }`}
-                      >
-                        <td className="p-3 text-center font-bold text-slate-500">{(deptPage - 1) * 12 + index + 1}</td>
-                        <td className="p-3 font-semibold text-slate-800">{dept.name}</td>
-                        <td className="p-3 text-center">
-                          <span className="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700 border border-green-200">
-                            Active
-                          </span>
-                        </td>
-                        <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
-                          <div className="flex justify-center gap-1.5">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditDepartment(dept);
-                              }}
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-[#4b70a6] bg-slate-50/50 hover:bg-slate-50 transition"
-                              title="Edit"
-                            >
-                              <Edit2 className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteDepartment(dept.id, dept.name);
-                              }}
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-rose-650 bg-rose-50/50 hover:bg-rose-100 transition"
-                              title="Delete"
-                            >
-                              <Trash className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+            <SearchInput value={deptSearch} onChange={handleDeptSearchChange} placeholder="Search departments..." className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs" />
           </div>
+          <MasterTable
+            columns={departmentColumns}
+            data={departmentRows}
+            getRowKey={(row) => row.id}
+            emptyText="No departments registered."
+            actionLabel="Actions"
+            pageNumber={deptPage}
+            pageSize={12}
+            totalCount={filteredDepartments.length}
+            totalPages={totalDeptPages}
+            onPageChange={setDeptPage}
+            paginationConfig={{ enabled: totalDeptPages > 1, showPageSizeSelector: false }}
+            maxBodyHeightClassName="max-h-auto"
+            theadClassName={tableHeaderClass}
+            tableClassName={tableClass}
+            containerClassName="gap-0"
+            onRowClick={(row) => handleSelectDept(selectedDeptId === row.id ? null : row.id)}
+            rowClassName={(row) => selectedDeptId === row.id ? "bg-blue-50/70" : ""}
+            renderActions={(row) => actionButtons(() => openEditDepartment({ id: row.id, name: row.name }), () => handleDeleteDepartment(row.id, row.name))}
+          />
 
-          {/* Department Pagination controls */}
-          {totalDeptPages > 1 && (
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-2 text-[12px] text-slate-500 font-medium">
-              <span>Showing {(deptPage - 1) * 12 + 1} - {Math.min(deptPage * 12, filteredDepartments.length)} of {filteredDepartments.length}</span>
-              <div className="flex gap-1.5">
-                <button
-                  type="button"
-                  disabled={deptPage === 1}
-                  onClick={() => setDeptPage(prev => Math.max(prev - 1, 1))}
-                  className="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Prev
-                </button>
-                <button
-                  type="button"
-                  disabled={deptPage === totalDeptPages}
-                  onClick={() => setDeptPage(prev => Math.min(prev + 1, totalDeptPages))}
-                  className="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
         </Card>
 
         {/* 2. Services Card */}
-        <Card className="p-4 border border-slate-200 bg-white shadow-sm space-y-4">
+        <Card className="p-4 rounded-2xl border-slate-200 bg-white shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
             <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[#3d3d3d]">
               <Folder className="h-4 w-4 text-[#4b70a6]" />
@@ -416,105 +373,27 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
                 </div>
               )}
 
-              <div className="relative w-full sm:w-64">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                  <Search className="h-3.5 w-3.5" />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search services..."
-                  value={serviceSearch}
-                  onChange={e => handleServiceSearchChange(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-1.5 pl-9 pr-3 text-[12px] font-semibold text-slate-800 placeholder-slate-450 focus:border-teal-500 focus:bg-white focus:outline-none"
-                />
-              </div>
+              <SearchInput value={serviceSearch} onChange={handleServiceSearchChange} placeholder="Search services..." className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs" />
             </div>
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-[13px] text-slate-600">
-              <thead className="bg-[#4b70a6] text-white font-bold">
-                <tr>
-                  <th className="p-3 w-16 text-center border-r border-[#3d5a8a]">Sr. No.</th>
-                  <th className="p-3 border-r border-[#3d5a8a]">Service Name</th>
-                  <th className="p-3 border-r border-[#3d5a8a]">Department Name</th>
-                  <th className="p-3 w-28 text-center border-r border-[#3d5a8a]">Status</th>
-                  <th className="p-3 w-28 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredServices.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-slate-400 font-semibold">
-                      No services registered.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedServices.map((service, index) => (
-                    <tr key={service.id} className="hover:bg-slate-50/50 transition">
-                      <td className="p-3 text-center font-bold text-slate-500">{(servicePage - 1) * 12 + index + 1}</td>
-                      <td className="p-3 font-semibold text-slate-800">{service.name}</td>
-                      <td className="p-3 text-slate-500 font-medium">{deptMap.get(service.departmentId) || service.departmentId}</td>
-                      <td className="p-3 text-center">
-                        <span className="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700 border border-green-200">
-                          Active
-                        </span>
-                      </td>
-                      <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-center gap-1.5">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditService(service);
-                            }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-[#4b70a6] bg-slate-50/50 hover:bg-slate-50 transition"
-                            title="Edit"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteService(service.id, service.name);
-                            }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-rose-655 bg-rose-50/50 hover:bg-rose-100 transition"
-                            title="Delete"
-                          >
-                            <Trash className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Service Pagination controls */}
-          {totalServicePages > 1 && (
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-2 text-[12px] text-slate-500 font-medium">
-              <span>Showing {(servicePage - 1) * 12 + 1} - {Math.min(servicePage * 12, filteredServices.length)} of {filteredServices.length}</span>
-              <div className="flex gap-1.5">
-                <button
-                  type="button"
-                  disabled={servicePage === 1}
-                  onClick={() => setServicePage(prev => Math.max(prev - 1, 1))}
-                  className="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Prev
-                </button>
-                <button
-                  type="button"
-                  disabled={servicePage === totalServicePages}
-                  onClick={() => setServicePage(prev => Math.min(prev + 1, totalServicePages))}
-                  className="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <MasterTable
+            columns={serviceColumns}
+            data={serviceRows}
+            getRowKey={(row) => row.id}
+            emptyText="No services registered."
+            actionLabel="Actions"
+            pageNumber={servicePage}
+            pageSize={12}
+            totalCount={filteredServices.length}
+            totalPages={totalServicePages}
+            onPageChange={setServicePage}
+            paginationConfig={{ enabled: totalServicePages > 1, showPageSizeSelector: false }}
+            maxBodyHeightClassName="max-h-auto"
+            theadClassName={tableHeaderClass}
+            tableClassName={tableClass}
+            containerClassName="gap-0"
+            renderActions={(row) => actionButtons(() => openEditService({ id: row.id, name: row.name, departmentId: filteredServices.find((service) => service.id === row.id)?.departmentId || "" }), () => handleDeleteService(row.id, row.name))}
+          />
         </Card>
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
@@ -14,12 +14,12 @@ import {
   AlertTriangle,
   Search,
   Eye,
-  Download,
   LayoutDashboard
 } from "lucide-react";
 import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Drawer } from "@/components/common/Drawer";
+import type { CmsMisDashboardUserApplicationItem } from "@/types/cms/cmsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
 type Service = {
@@ -47,6 +47,7 @@ export type SearchService = Service & {
 
 type DepartmentCarsoulClientProps = {
   departments: Department[];
+  userApplications: CmsMisDashboardUserApplicationItem[];
 };
 
 const UI = {
@@ -74,55 +75,30 @@ function allLabels(v: LangText | string | undefined): string[] {
   return [v.en, v.hi, v.mr].filter(Boolean) as string[];
 }
 
-// ==========================================
-// START MOCK DATA FOR LOCAL DEVELOPMENT (EASY TO REMOVE)
-// ==========================================
-const MOCK_APPLICATIONS = [
-  {
-    id: "APP-2026-9872",
-    serviceId: "7176",
-    serviceName: "Property Tax Assessment (नवीन मालमत्ता कर आकारणी)",
-    submittedDate: "2026-07-10",
-    status: "pending",
-    progress: 40,
-    stages: [
-      { stage: 1, name: "Application Scrutiny", status: "completed", officer: "Assistant Commissioner (Tax)", remark: "Documents verified and found in order." },
-      { stage: 2, name: "Site Verification & Measurement", status: "pending", officer: "Tax Inspector", remark: "Site visit scheduled for 15th July." },
-      { stage: 3, name: "Tax Valuation Assessment", status: "not_started", officer: "Valuation Officer", remark: "-" },
-      { stage: 4, name: "Final Approval & Certificate", status: "not_started", officer: "Deputy Commissioner", remark: "-" }
-    ]
-  },
-  {
-    id: "APP-2026-4421",
-    serviceId: "7174",
-    serviceName: "Water Connection Permission (नवीन नळ जोडणी परवाना)",
-    submittedDate: "2026-07-08",
-    status: "approved",
-    progress: 100,
-    stages: [
-      { stage: 1, name: "Feasibility Check", status: "completed", officer: "Junior Engineer (Water)", remark: "Connection point located and approved." },
-      { stage: 2, name: "Security Deposit Payment Verification", status: "completed", officer: "Accounts Clerk", remark: "Payment of ₹4500 received and approved." },
-      { stage: 3, name: "Connection Permission Approval", status: "completed", officer: "Executive Engineer", remark: "Sanctioned connection permission." }
-    ]
-  },
-  {
-    id: "APP-2026-1102",
-    serviceId: "7190",
-    serviceName: "Fire NOC - Renewal (अग्निशमन दाखला नूतनीकरण)",
-    submittedDate: "2026-07-05",
-    status: "rejected",
-    progress: 66,
-    stages: [
-      { stage: 1, name: "Document Verification", status: "completed", officer: "Station Officer (Fire)", remark: "Identity proofs and layouts verified." },
-      { stage: 2, name: "On-site Fire Safety Inspection", status: "rejected", officer: "Fire Officer", remark: "Inadequate number of fire extinguishers found on premises. Renewal rejected." }
-    ]
-  }
-];
-// ==========================================
-// END MOCK DATA FOR LOCAL DEVELOPMENT
-// ==========================================
+type CitizenApplication = CmsMisDashboardUserApplicationItem & {
+  normalizedStatus: "approved" | "rejected" | "pending";
+};
 
-export default function DepartmentCarsoulClient({ departments }: DepartmentCarsoulClientProps) {
+function normalizeApplicationStatus(status: string): CitizenApplication["normalizedStatus"] {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("approved")) return "approved";
+  if (normalized.includes("rejected") || normalized.includes("failed") || normalized.includes("discarded")) {
+    return "rejected";
+  }
+  return "pending";
+}
+
+function formatSubmittedDate(value: string, locale: Language): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat(locale === "mr" ? "mr-IN" : locale === "hi" ? "hi-IN" : "en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+export default function DepartmentCarsoulClient({ departments, userApplications }: DepartmentCarsoulClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deptFromUrl = (searchParams.get("deptId") ?? "").trim();
@@ -131,48 +107,27 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
   const lang = safeLang(language);
   const localePrefix = `/${lang}`;
 
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  
-  const [activeDrawerApp, setActiveDrawerApp] = useState<any | null>(null);
+  const [activeDrawerApp, setActiveDrawerApp] = useState<CitizenApplication | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const apps = JSON.parse(window.localStorage.getItem("rtsApplications") || "{}");
-        const localApps = Object.values(apps);
-        // Fallback to mock data for local development if empty
-        if (localApps.length === 0) {
-          setSubmissions(MOCK_APPLICATIONS);
-        } else {
-          setSubmissions(localApps);
-        }
-      } catch (e) {
-        console.error("Error loading dashboard local data:", e);
-      }
-    }
-  }, []);
+  const applications = useMemo<CitizenApplication[]>(
+    () => userApplications.map((application) => ({
+      ...application,
+      normalizedStatus: normalizeApplicationStatus(application.status),
+    })),
+    [userApplications]
+  );
 
-  // Helper count details
-  const totalSubmissionsCount = submissions.length;
-  const approvedCount = submissions.filter(s => s.status === "approved" || s.status === "completed").length;
-  const pendingCount = submissions.filter(s => s.status === "pending" || s.status === "in_progress" || !s.status).length;
-  const rejectedCount = submissions.filter(s => s.status === "rejected" || s.status === "discarded" || s.status === "failed").length;
+  const totalSubmissionsCount = applications.length;
+  const approvedCount = applications.filter((application) => application.normalizedStatus === "approved").length;
+  const pendingCount = applications.filter((application) => application.normalizedStatus === "pending").length;
+  const rejectedCount = applications.filter((application) => application.normalizedStatus === "rejected").length;
 
-  const getSlaDays = (serviceId: string) => {
-    const id = String(serviceId);
-    if (id === "7176") return lang === "mr" ? "१५ दिवस" : lang === "hi" ? "15 दिन" : "15 Days";
-    if (id === "7174") return lang === "mr" ? "७ दिवस" : lang === "hi" ? "7 दिन" : "7 Days";
-    if (id === "7190") return lang === "mr" ? "१० दिवस" : lang === "hi" ? "10 दिन" : "10 Days";
-    return lang === "mr" ? "१५ दिवस" : lang === "hi" ? "15 दिन" : "15 Days";
-  };
-
-  // Filter submissions by query
-  const filteredSubmissions = submissions.filter(app => {
+  const filteredSubmissions = applications.filter((app) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
-    const serviceName = (app.serviceName || "").toLowerCase();
-    const appId = (app.id || "").toLowerCase();
+    const serviceName = app.serviceName.toLowerCase();
+    const appId = app.applicationNo.toLowerCase();
     return serviceName.includes(query) || appId.includes(query);
   });
 
@@ -283,20 +238,21 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredSubmissions.map((app: any) => {
-                    const isAppApproved = app.status === "approved" || app.status === "completed";
-                    const isAppRejected = app.status === "rejected" || app.status === "failed" || app.status === "discarded";
+                  {filteredSubmissions.map((app) => {
+                    const isAppApproved = app.normalizedStatus === "approved";
+                    const isAppRejected = app.normalizedStatus === "rejected";
+                    const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
 
                     return (
-                      <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={app.applicationNo} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-2.5 px-3">
-                          <span className="block text-[9px] font-mono font-bold text-slate-400 mb-0.5">{app.id}</span>
-                          <span className="font-bold text-slate-900 text-xs">{app.serviceName}</span>
+                          <span className="block text-[9px] font-mono font-bold text-slate-400 mb-0.5">{app.applicationNo}</span>
+                          <span className="font-bold text-slate-900 text-xs">{serviceName}</span>
                         </td>
-                        <td className="py-2.5 px-3 text-slate-600">{app.submittedDate}</td>
+                        <td className="py-2.5 px-3 text-slate-600">{formatSubmittedDate(app.submittedDate, lang)}</td>
                         <td className="py-2.5 px-3">
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50/70 text-blue-700 border border-blue-100">
-                            {getSlaDays(app.serviceId)}
+                            {app.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
                           </span>
                         </td>
                         <td className="py-2.5 px-3">
@@ -308,7 +264,6 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
                             ) : (
                               <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
                             )}
-                            <span className="text-[10px] text-slate-400 font-bold">({app.progress}%)</span>
                           </div>
                         </td>
                         <td className="py-2.5 px-3 text-right">
@@ -342,10 +297,12 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded">
-                    {activeDrawerApp.id}
+                    {activeDrawerApp.applicationNo}
                   </span>
                   <h2 className="text-sm font-black text-slate-800 leading-snug">
-                    {activeDrawerApp.serviceName}
+                    {lang === "mr" && activeDrawerApp.serviceNameLocal
+                      ? activeDrawerApp.serviceNameLocal
+                      : activeDrawerApp.serviceName}
                   </h2>
                 </div>
               </div>
@@ -369,124 +326,39 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
                 <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
                   <div>
                     <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                      {lang === "mr" ? "अर्जदाराचे नाव" : lang === "hi" ? "आवेदक का नाम" : "Applicant Name"}
+                      {lang === "mr" ? "अर्ज क्रमांक" : lang === "hi" ? "आवेदन क्रमांक" : "Application Number"}
                     </span>
-                    <span className="text-slate-900 font-extrabold">
-                      {activeDrawerApp.id === "APP-2026-9872" 
-                        ? (lang === "mr" ? "श्याम पांडुरंग आठवले" : "Shyam Pandurang Athawale")
-                        : activeDrawerApp.id === "APP-2026-4421"
-                          ? (lang === "mr" ? "रवींद्र दिनकर जोशी" : "Ravindra Dinkar Joshi")
-                          : (lang === "mr" ? "सुनील विश्वास पाटील" : "Sunil Vishwas Patil")}
-                    </span>
+                    <span className="text-slate-900 font-extrabold">{activeDrawerApp.applicationNo}</span>
                   </div>
                   <div>
                     <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
                       {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
                     </span>
-                    <span className="text-slate-900 font-extrabold">{activeDrawerApp.submittedDate}</span>
+                    <span className="text-slate-900 font-extrabold">{formatSubmittedDate(activeDrawerApp.submittedDate, lang)}</span>
                   </div>
                   <div>
                     <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
                       {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
                     </span>
-                    <span className="text-blue-700 font-extrabold">{getSlaDays(activeDrawerApp.serviceId)}</span>
+                    <span className="text-blue-700 font-extrabold">
+                      {activeDrawerApp.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
+                    </span>
                   </div>
                   <div>
                     <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                      {lang === "mr" ? "अंतिम तारीख (SLA)" : lang === "hi" ? "नियत तिथि (SLA)" : "SLA Deadline"}
+                      {lang === "mr" ? "स्थिती" : lang === "hi" ? "स्थिति" : "Status"}
                     </span>
-                    <span className="text-amber-700 font-extrabold">
-                      {activeDrawerApp.id === "APP-2026-9872" ? "2026-07-25" : activeDrawerApp.id === "APP-2026-4421" ? "2026-07-15" : "2026-07-15"}
-                    </span>
+                    {activeDrawerApp.normalizedStatus === "approved" ? (
+                      <StatusBadge value activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+                    ) : activeDrawerApp.normalizedStatus === "rejected" ? (
+                      <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "अस्वीकृत" : "Rejected"} />
+                    ) : (
+                      <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Stage Timeline */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
-                    {lang === "mr" ? "मंजुरी प्रक्रिया" : lang === "hi" ? "स्वीकृति प्रक्रिया" : "Approval Stages"}
-                  </h4>
-                  <span className="text-blue-700 text-xs font-black bg-blue-50/70 border border-blue-100 px-2.5 py-0.5 rounded-full">
-                    {activeDrawerApp.progress}% {lang === "mr" ? "पूर्ण" : "Done"}
-                  </span>
-                </div>
-
-                <div className="space-y-4 pl-1">
-                  {activeDrawerApp.stages?.map((stage: any, index: number) => {
-                    const isStageDone = stage.status === "approved" || stage.status === "completed";
-                    const isStagePending = stage.status === "pending";
-                    return (
-                      <div key={stage.stage} className="relative flex gap-3 text-xs leading-tight">
-                        <div className="flex flex-col items-center shrink-0">
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm ${
-                            isStageDone 
-                              ? "bg-emerald-600 text-white" 
-                              : isStagePending 
-                                ? "bg-amber-500 text-white ring-4 ring-amber-100" 
-                                : "bg-slate-205 text-slate-700 border border-slate-300"
-                          }`}>
-                            {stage.stage}
-                          </div>
-                          {index < activeDrawerApp.stages.length - 1 && (
-                            <div className={`w-0.5 h-10 ${isStageDone ? "bg-emerald-600" : "bg-slate-300"}`} />
-                          )}
-                        </div>
-
-                        <div className="flex-1 bg-white rounded-xl p-3 border border-slate-200 shadow-sm">
-                          <div className="flex items-center justify-between gap-2 mb-1.5">
-                            <h5 className="font-extrabold text-slate-900 text-xs">{stage.name}</h5>
-                            <span className={`text-[9px] font-black uppercase ${isStageDone ? "text-emerald-700" : "text-amber-700"}`}>
-                              {isStageDone ? (lang === "mr" ? "पूर्ण" : "Complete") : (lang === "mr" ? "प्रलंबित" : "Pending")}
-                            </span>
-                          </div>
-                          {stage.officer && stage.officer !== "-" && (
-                            <p className="text-[10px] text-slate-800 mb-1.5">
-                              {lang === "mr" ? "प्राधिकृत अधिकारी" : "Authorized Officer"}: <strong className="text-slate-900 font-extrabold">{stage.officer}</strong>
-                            </p>
-                          )}
-                          {stage.remark && (
-                            <div className="text-[10px] text-slate-800 bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-semibold italic leading-relaxed">
-                              "{stage.remark}"
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Submitted Documents Section */}
-              <div className="space-y-3">
-                <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
-                  {lang === "mr" ? "सादर केलेली कागदपत्रे" : lang === "hi" ? "जमा किए गए दस्तावेज़" : "Submitted Documents"}
-                </h4>
-
-                <div className="space-y-2">
-                  {[
-                    { name: lang === "mr" ? "ओळख पुरावा (आधार कार्ड)" : lang === "hi" ? "पहचान प्रमाण (आधार)" : "Identity Proof (Aadhaar Card)", size: "1.2 MB" },
-                    { name: lang === "mr" ? "मालमत्ता खरेदी पत्र / करार" : lang === "hi" ? "संपत्ति शीर्षक विलेख" : "Property Ownership Deed / Agreement", size: "3.4 MB" },
-                    { name: lang === "mr" ? "अग्निशमन विभाग नाहरकत प्रमाणपत्र" : lang === "hi" ? "अग्निशमन विभाग एनओसी" : "NOC from Fire Department", size: "2.1 MB" }
-                  ].map((doc, idx) => (
-                    <div key={idx} className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm hover:border-slate-300 transition-all flex items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-                          <FileText size={14} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="block font-black text-slate-800 truncate leading-snug">{doc.name}</span>
-                          <span className="block text-[8px] text-slate-400 font-bold uppercase">{doc.size}</span>
-                        </div>
-                      </div>
-                      <button className="rounded-lg p-1.5 text-blue-700 hover:bg-blue-50 transition-colors border border-slate-200 cursor-pointer" title="Download Document">
-                        <Download size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </Drawer>
         )}
@@ -568,7 +440,7 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
     <div className="mt-3 flex flex-col gap-3 md:mt-4">
       <div className="w-full lg:hidden">
         <div
-          className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-2 pt-1 sm:-mx-4 sm:px-4"
+          className="mx-3 flex gap-2 overflow-x-auto px-3 pb-2 pt-1 sm:-mx-4 sm:px-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {/* Dashboard Overview Mobile Tab */}

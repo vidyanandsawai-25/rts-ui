@@ -1,171 +1,358 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Users,
   FileSpreadsheet,
-  BarChart3
+  BarChart3,
+  FileText,
+  CheckCircle2,
+  Clock3,
+  XCircle,
+  Timer,
 } from "lucide-react";
-import { Card } from "@/components/common";
-import type { CmsApplication } from "@/lib/mock/rts/cms";
+import { Button, Card, Input, MasterTable } from "@/components/common";
+import type { Column } from "@/components/common/MasterTable";
+import { Select } from "@/components/common/select";
+import type { CmsMisDashboardData } from "@/types/cms/cmsmisdashboard.types";
 
 interface DashboardProps {
-  stats: {
-    total: number;
-    pending: number;
-    approved: number;
-    rejected: number;
-    slaViolations: number;
-  };
+  misDashboardData: CmsMisDashboardData;
   rtsDepartments: any[];
-  applications?: CmsApplication[];
 }
 
-// Vibrant pie chart colours
+interface DepartmentalStatsRow extends Record<string, unknown> {
+  srNo: number;
+  deptId: string;
+  deptName: string;
+  totalServices: number;
+  totalApps: number;
+  rtsApps: number;
+  asApps: number;
+  pendingApps: number;
+  approvedApps: number;
+  rejectedApps: number;
+  overdueCount: number;
+  avgSlaValue: number;
+  avgSla: string;
+}
+
+interface ServiceStatsRow extends Record<string, unknown> {
+  srNo: number;
+  serviceId: string;
+  serviceName: string;
+  departmentId: string;
+  departmentName: string;
+  totalApps: number;
+  rtsApps: number;
+  asApps: number;
+  pendingApps: number;
+  approvedApps: number;
+  rejectedApps: number;
+  overdueCount: number;
+  avgSlaValue: number;
+  avgSla: string;
+}
+
 const PIE_COLORS = [
-  "#4b70a6", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6",
-  "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#6366f1",
-  "#14b8a6", "#e11d48", "#7c3aed", "#0ea5e9", "#d97706"
+  "#0B5CD5", "#F39C12", "#27AE60", "#B22222", "#8A2BE2",
+  "#008B8B", "#C66922", "#228B22", "#551A8B", "#3F7C9E",
+  "#0F7A3F", "#FF8C00"
 ];
 
-export default function CmsDashboard({ stats: _stats, rtsDepartments = [], applications = [] }: DashboardProps) {
+function formatSla(value: number, lang: "en" | "mr") {
+  const normalized = Number.isFinite(value) ? value : 0;
+  return lang === "en" ? `${normalized.toFixed(1)} Days` : `${normalized.toFixed(1)} दिवस`;
+}
 
-  // 1. Bilingual localization switcher
+export default function CmsDashboard({ misDashboardData, rtsDepartments = [] }: DashboardProps) {
   const [lang, setLang] = useState<"en" | "mr">("en");
-  const [selectedDeptId, setSelectedDeptId] = useState("birth-death");
-  // Dropdown for Section 2 service-wise table: "all" = show every service
+  const [selectedDeptId, setSelectedDeptId] = useState("");
   const [selectedServiceDeptId, setSelectedServiceDeptId] = useState<string>("all");
-  // Date range filter
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  // 2. Fallback stats
-  const dashboardStats = useMemo(() => ({
-    total: _stats?.total ?? 16,
-    pending: _stats?.pending ?? 10,
-    approved: _stats?.approved ?? 4,
-    rejected: _stats?.rejected ?? 2,
-    slaViolations: _stats?.slaViolations ?? 0,
-    clerkCorrectionPending: 3
-  }), [_stats]);
+  const serviceDepartmentLookup = useMemo(() => {
+    const lookup = new Map<string, { departmentId: string; departmentName: string }>();
 
-  const metrics = [
-    { count: String(dashboardStats.total), label: "Total Applications", labelMr: "एकूण अर्ज", color: "border-[#4b70a6] text-[#4b70a6]", bg: "bg-blue-50/50" },
-    { count: String(dashboardStats.pending), label: "Pending Verification", labelMr: "पडताळणी प्रलंबित", color: "border-amber-500 text-amber-600", bg: "bg-amber-50/50" },
-    { count: String(dashboardStats.approved), label: "Approved Applications", labelMr: "मंजूर अर्ज", color: "border-emerald-500 text-emerald-600", bg: "bg-emerald-50/50" },
-    { count: String(dashboardStats.rejected), label: "Rejected Applications", labelMr: "नाकारलेले अर्ज", color: "border-rose-500 text-rose-600", bg: "bg-rose-50/50" },
-    { count: String(dashboardStats.slaViolations), label: "SLA Violated", labelMr: "SLA उल्लंघन अर्ज", color: "border-purple-500 text-purple-600", bg: "bg-purple-50/50" },
-    { count: String(dashboardStats.clerkCorrectionPending), label: "Clerk Correction Pending", labelMr: "लिपिक दुरुस्ती प्रलंबित", color: "border-orange-400 text-orange-600", bg: "bg-orange-50/50" }
-  ];
+    rtsDepartments.forEach((department, departmentIndex) => {
+      const fallbackName = department?.name?.en || `Department ${departmentIndex + 1}`;
+      const departmentId = String(department?.id ?? `department-${departmentIndex + 1}`);
 
-  // 3. matchDeptId helper
-  const matchDeptId = (appDeptId: string, rtsDeptId: string) => {
-    if (appDeptId === rtsDeptId) return true;
-    if (appDeptId === "birth" && rtsDeptId === "birth-death") return true;
-    if (appDeptId === "trade" && rtsDeptId === "trade-license") return true;
-    if (appDeptId === "tax" && rtsDeptId === "property-tax") return true;
-    return false;
-  };
-
-  // 4. Departmental overview stats (for Section 1 table)
-  const departmentalStats = useMemo(() => {
-    return rtsDepartments.map((dept, idx) => {
-      const deptApps = (applications || []).filter(a => matchDeptId(a.departmentId, dept.id));
-      const totalServices = dept.services?.length || 0;
-      const totalApps = deptApps.length;
-      const rtsApps = deptApps.filter(a => a.source === "RTS").length;
-      const asApps = deptApps.filter(a => a.source === "Aaple Sarkar").length;
-      const pendingApps = deptApps.filter(a => !["Approved", "Rejected"].includes(a.status)).length;
-      const approvedApps = deptApps.filter(a => a.status === "Approved").length;
-      const rejectedApps = deptApps.filter(a => a.status === "Rejected").length;
-      const totalElapsed = deptApps.reduce((acc, a) => acc + (a.slaDays - a.remainingDays), 0);
-      const avgSlaVal = deptApps.length > 0 ? (totalElapsed / deptApps.length).toFixed(1) : "6.5";
-      const avgSla = lang === "en" ? `${avgSlaVal} Days` : `${avgSlaVal} दिवस`;
-      return { srNo: idx + 1, deptName: lang === "en" ? dept.name.en : dept.name.mr || dept.name.en, totalServices, totalApps, rtsApps, asApps, pendingApps, approvedApps, rejectedApps, avgSla };
+      (department?.services ?? []).forEach((service: any) => {
+        const englishName = service?.name?.en;
+        if (englishName) {
+          lookup.set(englishName.trim().toLowerCase(), {
+            departmentId,
+            departmentName: fallbackName,
+          });
+        }
+      });
     });
-  }, [rtsDepartments, applications, lang]);
 
-  // 5. Selected dept for visualizer
-  const selectedDept = useMemo(() => rtsDepartments.find(d => d.id === selectedDeptId) || rtsDepartments[0], [rtsDepartments, selectedDeptId]);
+    return lookup;
+  }, [rtsDepartments]);
+
+  const departmentalStats = useMemo<DepartmentalStatsRow[]>(() => {
+    return (misDashboardData.departmentWiseData ?? []).map((department, index) => {
+      const fallbackDepartment = rtsDepartments[index];
+      const deptId = String(fallbackDepartment?.id ?? `department-${index + 1}`);
+      const fallbackName = fallbackDepartment?.name?.en || `Department ${index + 1}`;
+      const deptName = department.departmentName?.trim() || fallbackName;
+      const avgSlaValue = Number(department.sla ?? 0);
+
+      return {
+        srNo: index + 1,
+        deptId,
+        deptName,
+        totalServices: Number(department.totalServices ?? 0),
+        totalApps: Number(department.totalApplications ?? 0),
+        rtsApps: Number(department.fromRTS ?? 0),
+        asApps: Number(department.fromAapleSarkar ?? 0),
+        pendingApps: Number(department.pending ?? 0),
+        approvedApps: Number(department.approved ?? 0),
+        rejectedApps: Number(department.rejected ?? 0),
+        overdueCount: Number(department.overdueCount ?? 0),
+        avgSlaValue,
+        avgSla: formatSla(avgSlaValue, lang),
+      };
+    });
+  }, [lang, misDashboardData.departmentWiseData, rtsDepartments]);
+
+  const serviceStats = useMemo<ServiceStatsRow[]>(() => {
+    return (misDashboardData.serviceWiseData ?? []).map((service, index) => {
+      const lookup = serviceDepartmentLookup.get(service.serviceName.trim().toLowerCase());
+      const departmentId = lookup?.departmentId ?? "unmapped";
+      const departmentName = lookup?.departmentName ?? "Other Services";
+      const avgSlaValue = Number(service.sla ?? 0);
+
+      return {
+        srNo: index + 1,
+        serviceId: `${departmentId}-${index + 1}`,
+        serviceName: service.serviceName,
+        departmentId,
+        departmentName,
+        totalApps: Number(service.totalApplications ?? 0),
+        rtsApps: Number(service.rtsApplications ?? 0),
+        asApps: Number(service.aapleSarkarApplications ?? 0),
+        pendingApps: Number(service.pending ?? 0),
+        approvedApps: Number(service.approved ?? 0),
+        rejectedApps: Number(service.rejected ?? 0),
+        overdueCount: Number(service.overdueCount ?? 0),
+        avgSlaValue,
+        avgSla: formatSla(avgSlaValue, lang),
+      };
+    });
+  }, [lang, misDashboardData.serviceWiseData, serviceDepartmentLookup]);
+
+  useEffect(() => {
+    if (!selectedDeptId && departmentalStats.length > 0) {
+      setSelectedDeptId(departmentalStats[0].deptId);
+    }
+  }, [departmentalStats, selectedDeptId]);
+
+  const selectedDept = useMemo(
+    () => departmentalStats.find((department) => department.deptId === selectedDeptId) ?? departmentalStats[0] ?? null,
+    [departmentalStats, selectedDeptId]
+  );
 
   const selectedDeptStats = useMemo(() => {
     if (!selectedDept) return null;
-    const deptApps = (applications || []).filter(a => matchDeptId(a.departmentId, selectedDept.id));
-    const totalApps = deptApps.length;
-    const rtsApps = deptApps.filter(a => a.source === "RTS").length;
-    const asApps = deptApps.filter(a => a.source === "Aaple Sarkar").length;
-    const pendingApps = deptApps.filter(a => !["Approved", "Rejected"].includes(a.status)).length;
-    const approvedApps = deptApps.filter(a => a.status === "Approved").length;
-    const rejectedApps = deptApps.filter(a => a.status === "Rejected").length;
-    const rtsPct = totalApps > 0 ? Math.round((rtsApps / totalApps) * 100) : 0;
-    const asPct = totalApps > 0 ? Math.round((asApps / totalApps) * 100) : 0;
-    const approvedPct = totalApps > 0 ? Math.round((approvedApps / totalApps) * 100) : 0;
-    const pendingPct = totalApps > 0 ? Math.round((pendingApps / totalApps) * 100) : 0;
-    const rejectedPct = totalApps > 0 ? Math.round((rejectedApps / totalApps) * 100) : 0;
-    const totalElapsed = deptApps.reduce((acc, a) => acc + (a.slaDays - a.remainingDays), 0);
-    const avgSlaVal = deptApps.length > 0 ? Number((totalElapsed / deptApps.length).toFixed(1)) : 6.5;
+
+    const totalApps = selectedDept.totalApps;
+    const rtsPct = totalApps > 0 ? Math.round((selectedDept.rtsApps / totalApps) * 100) : 0;
+    const asPct = totalApps > 0 ? Math.round((selectedDept.asApps / totalApps) * 100) : 0;
+    const approvedPct = totalApps > 0 ? Math.round((selectedDept.approvedApps / totalApps) * 100) : 0;
+    const pendingPct = totalApps > 0 ? Math.round((selectedDept.pendingApps / totalApps) * 100) : 0;
+    const rejectedPct = totalApps > 0 ? Math.round((selectedDept.rejectedApps / totalApps) * 100) : 0;
+
     return {
-      deptName: lang === "en" ? selectedDept.name.en : selectedDept.name.mr || selectedDept.name.en,
-      totalApps, rtsApps, asApps, rtsPct, asPct,
-      pendingApps, approvedApps, rejectedApps,
-      approvedPct, pendingPct, rejectedPct, avgSlaVal
+      deptName: selectedDept.deptName,
+      totalApps,
+      rtsApps: selectedDept.rtsApps,
+      asApps: selectedDept.asApps,
+      approvedApps: selectedDept.approvedApps,
+      pendingApps: selectedDept.pendingApps,
+      rejectedApps: selectedDept.rejectedApps,
+      overdueCount: selectedDept.overdueCount,
+      avgSlaVal: selectedDept.avgSlaValue,
+      rtsPct,
+      asPct,
+      approvedPct,
+      pendingPct,
+      rejectedPct,
     };
-  }, [selectedDept, applications, lang]);
+  }, [selectedDept]);
 
-  // 6. Service-wise breakdown stats — all departments, keyed by serviceId
-  const serviceStats = useMemo(() => {
-    const serviceMap = new Map<string, {
-      srNo: number; serviceId: string; serviceName: string; departmentId: string; departmentName: string;
-      totalApps: number; rtsApps: number; asApps: number;
-      pendingApps: number; approvedApps: number; rejectedApps: number;
-      totalElapsed: number; avgSla: string;
-    }>();
+  const serviceDeptOptions = useMemo(
+    () => [
+      {
+        value: "all",
+        label: lang === "en" ? "All Departments" : "सर्व विभाग",
+      },
+      ...departmentalStats.map((department) => ({
+        value: department.deptId,
+        label: department.deptName,
+      })),
+    ],
+    [departmentalStats, lang]
+  );
 
-    (applications || []).forEach(app => {
-      const key = app.serviceId;
-      if (!serviceMap.has(key)) {
-        serviceMap.set(key, {
-          srNo: 0, serviceId: app.serviceId, serviceName: app.serviceName,
-          departmentId: app.departmentId, departmentName: app.departmentName,
-          totalApps: 0, rtsApps: 0, asApps: 0,
-          pendingApps: 0, approvedApps: 0, rejectedApps: 0,
-          totalElapsed: 0, avgSla: "0 Days"
-        });
-      }
-      const entry = serviceMap.get(key)!;
-      entry.totalApps++;
-      if (app.source === "RTS") entry.rtsApps++;
-      if (app.source === "Aaple Sarkar") entry.asApps++;
-      if (!["Approved", "Rejected"].includes(app.status)) entry.pendingApps++;
-      if (app.status === "Approved") entry.approvedApps++;
-      if (app.status === "Rejected") entry.rejectedApps++;
-      entry.totalElapsed += (app.slaDays - app.remainingDays);
-    });
-
-    let srNo = 1;
-    return Array.from(serviceMap.values()).map(s => {
-      const avgSlaVal = s.totalApps > 0 ? (s.totalElapsed / s.totalApps).toFixed(1) : "6.5";
-      return { ...s, srNo: srNo++, avgSla: lang === "en" ? `${avgSlaVal} Days` : `${avgSlaVal} दिवस` };
-    });
-  }, [applications, lang]);
-
-  // 6b. Filtered service stats — based on the Section 2 dropdown selection
   const filteredServiceStats = useMemo(() => {
     if (selectedServiceDeptId === "all") return serviceStats;
-    return serviceStats.filter(s => matchDeptId(s.departmentId, selectedServiceDeptId)).map((s, i) => ({ ...s, srNo: i + 1 }));
-  }, [serviceStats, selectedServiceDeptId]);
 
-  // 7. Pie chart segments — from filteredServiceStats so it reacts to dropdown
+    return serviceStats
+      .filter((service) => service.departmentId === selectedServiceDeptId)
+      .map((service, index) => ({ ...service, srNo: index + 1 }));
+  }, [selectedServiceDeptId, serviceStats]);
+
+  const dashboardStats = useMemo(() => {
+    const totals = departmentalStats.reduce(
+      (acc, department) => {
+        acc.total += department.totalApps;
+        acc.pending += department.pendingApps;
+        acc.approved += department.approvedApps;
+        acc.rejected += department.rejectedApps;
+        acc.slaViolations += department.overdueCount;
+        return acc;
+      },
+      {
+        total: 0,
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        slaViolations: 0,
+      }
+    );
+
+    return {
+      ...totals,
+      clerkCorrectionPending: 0,
+    };
+  }, [departmentalStats]);
+
+  const metrics = [
+    {
+      count: String(dashboardStats.total),
+      label: "Total Applications",
+      labelMr: "एकूण अर्ज",
+      detail: "All Submitted",
+      detailMr: "सर्व सादर अर्ज",
+      icon: FileText,
+      iconClassName: "bg-blue-50 text-[#0B5CD5] ring-blue-100",
+      detailClassName: "text-[#0B5CD5]",
+    },
+    {
+      count: String(dashboardStats.pending),
+      label: "Pending Verification",
+      labelMr: "पडताळणी प्रलंबित",
+      detail: "In Progress",
+      detailMr: "प्रक्रियेत",
+      icon: Clock3,
+      iconClassName: "bg-amber-50 text-[#F39C12] ring-amber-100",
+      detailClassName: "text-[#C66922]",
+    },
+    {
+      count: String(dashboardStats.approved),
+      label: "Approved Applications",
+      labelMr: "मंजूर अर्ज",
+      detail: "Completed",
+      detailMr: "पूर्ण झाले",
+      icon: CheckCircle2,
+      iconClassName: "bg-emerald-50 text-[#27AE60] ring-emerald-100",
+      detailClassName: "text-[#0F7A3F]",
+    },
+    {
+      count: String(dashboardStats.rejected),
+      label: "Rejected Applications",
+      labelMr: "नाकारलेले अर्ज",
+      detail: "Not Approved",
+      detailMr: "मंजूर नाही",
+      icon: XCircle,
+      iconClassName: "bg-rose-50 text-[#B22222] ring-rose-100",
+      detailClassName: "text-[#B22222]",
+    },
+    {
+      count: String(dashboardStats.slaViolations),
+      label: "OverDue Applications",
+      labelMr: "SLA उल्लंघन अर्ज",
+      detail: "Requires Attention",
+      detailMr: "लक्ष आवश्यक",
+      icon: Timer,
+      iconClassName: "bg-violet-50 text-[#8A2BE2] ring-violet-100",
+      detailClassName: "text-[#551A8B]",
+    },
+  ];
+
+  const departmentColumns = useMemo<Column<DepartmentalStatsRow>[]>(() => [
+    {
+      key: "srNo",
+      label: lang === "en" ? "Sr. No." : "अनु. क्र.",
+      align: "center",
+      headerClassName: "border-r border-blue-300/60 text-center text-white w-16",
+      cellClassName: "border-r border-slate-100",
+      render: (_value, row) => (
+        <span className={`block px-1 py-1 font-extrabold ${selectedDeptId === row.deptId ? "text-[#0B5CD5]" : "text-slate-900"}`}>
+          {row.srNo}
+        </span>
+      ),
+    },
+    {
+      key: "deptName",
+      label: lang === "en" ? "Department" : "विभाग",
+      headerClassName: "border-r border-blue-300/60 text-left text-white",
+      cellClassName: "border-r border-slate-100",
+      render: (_value, row) => <span className={`font-bold ${selectedDeptId === row.deptId ? "text-[#0B5CD5]" : "text-slate-900"}`}>{row.deptName}</span>,
+    },
+    { key: "totalServices", label: lang === "en" ? "Total Services" : "एकूण सेवा", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-slate-700">{String(value ?? 0)}</span> },
+    { key: "totalApps", label: lang === "en" ? "Total Applications" : "एकूण अर्ज", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
+    { key: "rtsApps", label: lang === "en" ? "From RTS" : "आरटीएसकडून", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
+    { key: "asApps", label: lang === "en" ? "From Aaple Sarkar" : "आपले सरकारकडून", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "pendingApps", label: lang === "en" ? "Pending" : "प्रलंबित", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "approvedApps", label: lang === "en" ? "Approved" : "मंजूर", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
+    { key: "rejectedApps", label: lang === "en" ? "Rejected" : "नाकारलेले", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
+    { key: "overdueCount", label: lang === "en" ? "OverDue Count" : "ओव्हरड्यू संख्या", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
+    { key: "avgSla", label: lang === "en" ? "Avg. SLA" : "सरासरी SLA", align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
+  ], [lang, selectedDeptId]);
+
+  const serviceColumns = useMemo<Column<ServiceStatsRow>[]>(() => [
+    { key: "srNo", label: lang === "en" ? "Sr. No." : "अनु. क्र.", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white w-14", cellClassName: "border-r border-slate-100 bg-slate-50/50", render: (value) => <span className="font-extrabold text-slate-900">{String(value ?? 0)}</span> },
+    {
+      key: "serviceName",
+      label: lang === "en" ? "Service Name" : "सेवेचे नाव",
+      headerClassName: "border-r border-blue-300/60 text-left text-white",
+      cellClassName: "border-r border-slate-100",
+      render: (_value, row, index) => (
+        <div className="flex items-center gap-2 font-bold text-slate-900">
+          <span className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
+          {row.serviceName}
+        </div>
+      ),
+    },
+    { key: "totalApps", label: lang === "en" ? "Total Applications" : "एकूण अर्ज", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
+    { key: "rtsApps", label: lang === "en" ? "Source: RTS" : "स्रोत: आरटीएस", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
+    { key: "asApps", label: lang === "en" ? "Source: Aaple Sarkar" : "स्रोत: आपले सरकार", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "pendingApps", label: lang === "en" ? "Pending" : "प्रलंबित", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "approvedApps", label: lang === "en" ? "Approved" : "मंजूर", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
+    { key: "rejectedApps", label: lang === "en" ? "Rejected" : "नाकारलेले", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
+    { key: "overdueCount", label: lang === "en" ? "OverDue Count" : "ओव्हरड्यू संख्या", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
+    { key: "avgSla", label: lang === "en" ? "Avg. Processing Time (SLA)" : "सरासरी प्रक्रिया वेळ (SLA)", align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
+  ], [lang]);
+
   const pieSegments = useMemo(() => {
-    const total = filteredServiceStats.reduce((s, r) => s + r.totalApps, 0);
+    const total = filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0);
     if (total === 0) return [];
+
     let cumulative = 0;
-    return filteredServiceStats.map((s, i) => {
-      const pct = s.totalApps / total;
+
+    return filteredServiceStats.map((service, index) => {
+      const pct = service.totalApps / total;
       const startAngle = cumulative * 2 * Math.PI - Math.PI / 2;
       cumulative += pct;
       const endAngle = cumulative * 2 * Math.PI - Math.PI / 2;
-      const cx = 90, cy = 90, r = 75;
+      const cx = 90;
+      const cy = 90;
+      const r = 75;
       const x1 = cx + r * Math.cos(startAngle);
       const y1 = cy + r * Math.sin(startAngle);
       const x2 = cx + r * Math.cos(endAngle);
@@ -174,196 +361,186 @@ export default function CmsDashboard({ stats: _stats, rtsDepartments = [], appli
       const midAngle = startAngle + (endAngle - startAngle) / 2;
       const lx = cx + (r + 18) * Math.cos(midAngle);
       const ly = cy + (r + 18) * Math.sin(midAngle);
+
       return {
         path: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`,
-        color: PIE_COLORS[i % PIE_COLORS.length],
+        color: PIE_COLORS[index % PIE_COLORS.length],
         pct: Math.round(pct * 100),
-        name: s.serviceName,
-        lx, ly, midAngle
+        name: service.serviceName,
+        lx,
+        ly,
+        midAngle,
       };
     });
   }, [filteredServiceStats]);
 
   return (
     <div className="space-y-4">
-      {/* Title Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+      <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
-            {lang === "en" ? "RTS Executive Dashboard" : "सेवा हक्क कार्यकारी डॅशबोर्ड"}
+            {lang === "en" ? "MIS Dashboard" : "एमआइएस डैशबोर्ड"}
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {lang === "en" ? "Akola Municipal Corporation Inspired Layout • Live Verification Data" : "अकोला महानगरपालिका प्रणाली प्रेरित आराखडा • थेट पडताळणी माहिती"}
-          </p>
+          {/* <p className="mt-0.5 text-xs text-slate-400">
+            {lang === "en" ? "Akola Municipal Corporation Inspired Layout • Live Verification Data" : "अकोला महानगरपालिका प्रेरित आराखडा • थेट पडताळणी माहिती"}
+          </p> */}
         </div>
-        {/* Right side: date filter + language toggle */}
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
-
-          {/* From – To date filter */}
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-            <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm">
+            <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
               {lang === "en" ? "From" : "पासून"}
             </span>
-            <input
+            <Input
               id="dashboard-date-from"
               type="date"
               value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              className="text-[12px] font-semibold text-slate-700 bg-transparent border-none outline-none cursor-pointer"
+              onChange={(event) => setDateFrom(event.target.value)}
+              aria-label={lang === "en" ? "From date" : "सुरुवातीची तारीख"}
+              className="h-8 min-w-[132px] cursor-pointer border-0 bg-transparent px-1 text-[12px] font-semibold text-slate-700 shadow-none focus-visible:ring-0"
             />
-            <span className="text-slate-300 font-bold">|</span>
-            <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
+            <span className="font-bold text-slate-300">|</span>
+            <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
               {lang === "en" ? "To" : "पर्यंत"}
             </span>
-            <input
+            <Input
               id="dashboard-date-to"
               type="date"
+              min={dateFrom || undefined}
               value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              className="text-[12px] font-semibold text-slate-700 bg-transparent border-none outline-none cursor-pointer"
+              onChange={(event) => setDateTo(event.target.value)}
+              aria-label={lang === "en" ? "To date" : "शेवटची तारीख"}
+              className="h-8 min-w-[132px] cursor-pointer border-0 bg-transparent px-1 text-[12px] font-semibold text-slate-700 shadow-none focus-visible:ring-0"
             />
             {(dateFrom || dateTo) && (
-              <button
-                onClick={() => { setDateFrom(""); setDateTo(""); }}
-                className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition ml-1"
-                title="Clear dates"
+              <Button
+                type="button"
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                aria-label={lang === "en" ? "Clear date filter" : "तारीख फिल्टर साफ करा"}
+                title={lang === "en" ? "Clear dates" : "तारखा साफ करा"}
+                className="ml-1 h-7 min-h-0 px-2 text-[10px] font-bold text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
               >
-                ✕
-              </button>
+                ×
+              </Button>
             )}
           </div>
 
-          {/* Language toggle */}
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => setLang("en")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${lang === "en" ? "bg-[#4b70a6] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>English</button>
-            <button onClick={() => setLang("mr")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${lang === "mr" ? "bg-[#4b70a6] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>मराठी</button>
-          </div>
-        </div>
-      </div>
 
-      {/* Generic Stats Cards — 6 cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {metrics.map((m, idx) => (
-          <div key={idx} className={`flex flex-col justify-between rounded-2xl border-l-4 p-4 shadow-sm transition hover:shadow bg-white ${m.color} ${m.bg}`}>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{lang === "en" ? m.label : m.labelMr}</div>
-            <div className="mt-2 text-2xl font-extrabold text-slate-800">{m.count}</div>
-          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        {metrics.map((metric) => (
+          <Card
+            key={metric.label}
+            padding="none"
+            className="group flex min-h-[112px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-1 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className={`flex h-12 w-12 mr-3 shrink-0 items-center justify-center rounded-full ring-4 ${metric.iconClassName}`}>
+              <metric.icon className="h-6 w-6" strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold leading-tight text-slate-500">
+                {lang === "en" ? metric.label : metric.labelMr}
+              </div>
+              <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">{metric.count}</div>
+              <div className={`mt-2 text-[11px] font-bold ${metric.detailClassName}`}>
+                {lang === "en" ? metric.detail : metric.detailMr}
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
 
-      {/* SECTION 1: Departmental Breakdown + Graphical Visualizer */}
-      {/* items-start: graphical card does NOT stretch to match the table's height */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
-        {/* Table 70% — fixed max-height with scroll */}
-        <Card className="p-4 w-full lg:w-[70%] border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-3">
-            <h2 className="text-sm font-bold text-[#243B7C] flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-[#4b70a6]" />
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+        <Card className="w-full overflow-hidden border border-slate-200 bg-white p-4 shadow-sm lg:w-[70%]">
+          <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-1.5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-[#0a3275]">
+              <FileSpreadsheet className="h-5 w-5 text-[#0B5CD5]" />
               {lang === "en" ? "Departmental Service Applications Breakdown" : "विभाग निहाय सेवा अर्ज गोषवारा"}
             </h2>
-            <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200 animate-pulse">
+            <span className="animate-pulse rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-[#0F7A3F]">
               {lang === "en" ? "Click row to visualize" : "पाहण्यासाठी रो वर क्लिक करा"}
             </span>
           </div>
-          {/* max-h scroll so the table never pushes the graphical card taller */}
-          <div className="overflow-x-auto overflow-y-auto max-h-[360px] rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead className="bg-[#4b70a6] font-semibold text-white text-center sticky top-0 z-20">
-                <tr>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center w-16">{lang === "en" ? "Sr. No." : "अनु. क्र."}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-left">{lang === "en" ? "Department" : "विभाग"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Total Services" : "एकूण सेवा"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Total Applications" : "एकूण अर्ज"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "From RTS" : "आरटीएस"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "From Aaple Sarkar" : "आपले सरकार"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Pending" : "प्रलंबित"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Approved" : "मंजूर"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Rejected" : "नाकारलेले"}</th>
-                  <th className="p-3 text-center">{lang === "en" ? "Avg. SLA" : "सरासरी SLA"}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-center font-semibold text-slate-800">
-                {departmentalStats.length === 0 ? (
-                  <tr><td colSpan={10} className="p-8 text-slate-400 font-bold">{lang === "en" ? "No data." : "माहिती नाही."}</td></tr>
-                ) : departmentalStats.map((row) => {
-                  const deptId = rtsDepartments[row.srNo - 1]?.id || "";
-                  const isSelected = selectedDeptId === deptId;
-                  return (
-                    <tr key={row.srNo} className={`hover:bg-slate-50/70 transition cursor-pointer ${isSelected ? "bg-blue-50/50" : ""}`} onClick={() => setSelectedDeptId(deptId)}>
-                      <td className={`p-3 border-r border-slate-100 font-extrabold text-slate-900 ${isSelected ? "bg-blue-100/50 border-l-4 border-l-[#4b70a6]" : "bg-slate-50/50"}`}>{row.srNo}</td>
-                      <td className={`p-3 border-r border-slate-100 text-left font-bold ${isSelected ? "text-[#4b70a6]" : "text-slate-900"}`}>{row.deptName}</td>
-                      <td className="p-3 border-r border-slate-100 font-bold text-slate-700">{row.totalServices}</td>
-                      <td className="p-3 border-r border-slate-100 font-extrabold text-slate-800 bg-slate-50/30">{row.totalApps}</td>
-                      <td className="p-3 border-r border-slate-100 font-bold text-indigo-700">{row.rtsApps}</td>
-                      <td className="p-3 border-r border-slate-100 font-bold text-orange-700">{row.asApps}</td>
-                      <td className="p-3 border-r border-slate-100 font-bold text-amber-600">{row.pendingApps}</td>
-                      <td className="p-3 border-r border-slate-100 font-bold text-emerald-600">{row.approvedApps}</td>
-                      <td className="p-3 border-r border-slate-100 font-bold text-rose-600">{row.rejectedApps}</td>
-                      <td className="p-3 font-extrabold text-teal-600">{row.avgSla}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <MasterTable<DepartmentalStatsRow>
+            columns={departmentColumns}
+            data={departmentalStats}
+            emptyText={lang === "en" ? "No data." : "माहिती नाही."}
+            getRowKey={(row) => row.deptId}
+            onRowClick={(row) => setSelectedDeptId(row.deptId)}
+            rowClassName={(row) => (selectedDeptId === row.deptId ? "bg-blue-50" : "")}
+            maxBodyHeightClassName="max-h-[360px]"
+            theadClassName="bg-[#0A3275]"
+            tableClassName="border-collapse text-left text-sm"
+            containerClassName="gap-0"
+          />
         </Card>
 
-        {/* Graphical Representation 30% – completely free / auto height */}
-        <Card className="p-4 w-full lg:w-[30%] border border-slate-200 bg-white shadow-sm flex flex-col gap-3 self-start">
-          {/* Header */}
+        <Card className="flex w-full flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm lg:w-[30%]">
           <div className="border-b border-slate-100 pb-1.5">
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#4b70a6] animate-pulse" />
+            <h3 className="flex items-center gap-1.5 text-base font-bold text-slate-800">
+              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0B5CD5]" />
               {selectedDeptStats?.deptName}
             </h3>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+            <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               {lang === "en" ? "Interactive Data Visualization" : "परस्परसंवादी डेटा व्हिज्युअलायझेशन"}
             </p>
           </div>
 
-          {/* Source Share */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-[13px] font-bold text-slate-650">
+            <div className="flex items-center justify-between text-[13px] font-bold text-[#303031]">
               <span>{lang === "en" ? "Source Share" : "स्रोत विभागणी"}</span>
-              <span>{selectedDeptStats?.totalApps} {lang === "en" ? "Apps" : "अर्ज"}</span>
+              <span>{selectedDeptStats?.totalApps ?? 0} {lang === "en" ? "Apps" : "अर्ज"}</span>
             </div>
-            {selectedDeptStats?.totalApps === 0 ? (
-              <div className="h-8 w-full bg-slate-50 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-[12px] font-bold text-slate-400">
+            {(selectedDeptStats?.totalApps ?? 0) === 0 ? (
+              <div className="flex h-8 w-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-[12px] font-bold text-slate-400">
                 {lang === "en" ? "No applications registered" : "कोणतेही अर्ज नाहीत"}
               </div>
             ) : (
-              <div className="space-y-1.5 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
-                <div className="h-5 w-full rounded-lg overflow-hidden flex bg-slate-100">
-                  <div style={{ width: `${selectedDeptStats?.rtsPct || 0}%` }} className="bg-[#4b70a6] h-full transition-all duration-500 flex items-center justify-center text-[11px] font-extrabold text-white" title={`RTS: ${selectedDeptStats?.rtsApps}`}>
-                    {(selectedDeptStats?.rtsPct || 0) > 20 && `${selectedDeptStats?.rtsPct}%`}
+              <div className="mb-2 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">
+                <div className="flex h-5 w-full overflow-hidden rounded-lg bg-slate-100">
+                  <div
+                    style={{ width: `${selectedDeptStats?.rtsPct ?? 0}%` }}
+                    className="flex h-full items-center justify-center bg-[#0B5CD5] text-[11px] font-extrabold text-white transition-all duration-500"
+                    title={`RTS: ${selectedDeptStats?.rtsApps ?? 0}`}
+                  >
+                    {(selectedDeptStats?.rtsPct ?? 0) > 20 && `${selectedDeptStats?.rtsPct}%`}
                   </div>
-                  <div style={{ width: `${selectedDeptStats?.asPct || 0}%` }} className="bg-orange-500 h-full transition-all duration-500 flex items-center justify-center text-[11px] font-extrabold text-white" title={`Aaple Sarkar: ${selectedDeptStats?.asApps}`}>
-                    {(selectedDeptStats?.asPct || 0) > 20 && `${selectedDeptStats?.asPct}%`}
+                  <div
+                    style={{ width: `${selectedDeptStats?.asPct ?? 0}%` }}
+                    className="flex h-full items-center justify-center bg-[#F39C12] text-[11px] font-extrabold text-white transition-all duration-500"
+                    title={`Aaple Sarkar: ${selectedDeptStats?.asApps ?? 0}`}
+                  >
+                    {(selectedDeptStats?.asPct ?? 0) > 20 && `${selectedDeptStats?.asPct}%`}
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-[11px] font-bold px-0.5">
-                  <div className="flex items-center gap-1 text-[#4b70a6]"><span className="h-1.5 w-1.5 rounded-full bg-[#4b70a6]" /><span>RTS ({selectedDeptStats?.rtsApps})</span></div>
-                  <div className="flex items-center gap-1 text-orange-600"><span className="h-1.5 w-1.5 rounded-full bg-orange-500" /><span>Aaple Sarkar ({selectedDeptStats?.asApps})</span></div>
+                <div className="flex items-center justify-between px-0.5 text-[11px] font-bold">
+                  <div className="flex items-center gap-1 text-[#0B5CD5]"><span className="h-1.5 w-1.5 rounded-full bg-[#0B5CD5]" /><span>RTS ({selectedDeptStats?.rtsApps ?? 0})</span></div>
+                  <div className="flex items-center gap-1 text-[#C66922]"><span className="h-1.5 w-1.5 rounded-full bg-[#F39C12]" /><span>Aaple Sarkar ({selectedDeptStats?.asApps ?? 0})</span></div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Status Bar Graph */}
           <div className="space-y-1">
-            <span className="text-[13px] font-bold text-slate-700 block">{lang === "en" ? "Application Status Distribution" : "अर्ज स्थिती वितरण"}</span>
-            <div className="space-y-1.5 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
+            <span className="block text-[13px] font-bold text-[#0a3275]">
+              {lang === "en" ? "Application Status Distribution" : "अर्ज स्थिती वितरण"}
+            </span>
+            <div className="mb-2 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">
               {[
-                { label: lang === "en" ? "Approved" : "मंजूर", pct: selectedDeptStats?.approvedPct || 0, count: selectedDeptStats?.approvedApps, color: "bg-emerald-500", text: "text-emerald-700" },
-                { label: lang === "en" ? "Pending" : "प्रलंबित", pct: selectedDeptStats?.pendingPct || 0, count: selectedDeptStats?.pendingApps, color: "bg-amber-500", text: "text-amber-600" },
-                { label: lang === "en" ? "Rejected" : "नाकारलेले", pct: selectedDeptStats?.rejectedPct || 0, count: selectedDeptStats?.rejectedApps, color: "bg-rose-500", text: "text-rose-600" }
-              ].map(item => (
+                { label: lang === "en" ? "Approved" : "मंजूर", pct: selectedDeptStats?.approvedPct ?? 0, count: selectedDeptStats?.approvedApps ?? 0, color: "bg-[#27AE60]", text: "text-[#0F7A3F]" },
+                { label: lang === "en" ? "Pending" : "प्रलंबित", pct: selectedDeptStats?.pendingPct ?? 0, count: selectedDeptStats?.pendingApps ?? 0, color: "bg-[#F39C12]", text: "text-[#C66922]" },
+                { label: lang === "en" ? "Rejected" : "नाकारलेले", pct: selectedDeptStats?.rejectedPct ?? 0, count: selectedDeptStats?.rejectedApps ?? 0, color: "bg-[#B22222]", text: "text-[#B22222]" },
+              ].map((item) => (
                 <div key={item.label} className="space-y-0.5">
                   <div className="flex justify-between text-[11px] font-bold">
                     <span className={item.text}>{item.label}</span>
                     <span className="text-slate-700">{item.count} ({item.pct}%)</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div style={{ width: `${item.pct}%` }} className={`${item.color} h-full rounded-full transition-all duration-500`} />
                   </div>
                 </div>
@@ -371,16 +548,17 @@ export default function CmsDashboard({ stats: _stats, rtsDepartments = [], appli
             </div>
           </div>
 
-          {/* SLA */}
           <div className="space-y-1">
-            <span className="text-[13px] font-bold text-slate-700 block">{lang === "en" ? "SLA Target Efficiency" : "SLA कामगिरी"}</span>
-            <div className="bg-slate-50 rounded-xl p-2 flex items-center justify-between border border-slate-100 shadow-sm">
+            <span className="block text-[13px] font-bold text-[#0a3275]">
+              {lang === "en" ? "SLA Target Efficiency" : "SLA कामगिरी"}
+            </span>
+            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2 shadow-sm">
               <div className="space-y-0.5">
                 <div className="text-[12px] font-bold text-slate-600">{lang === "en" ? "SLA Speed Performance" : "SLA वेग कामगिरी"}</div>
                 <div className="text-[11px] font-bold text-slate-400">{lang === "en" ? "Target SLA: 10.0 Days" : "उद्दिष्ट: १०.० दिवस"}</div>
               </div>
               <div className="flex flex-col items-end justify-center leading-tight">
-                <span className="text-xl font-extrabold text-teal-600">{selectedDeptStats?.avgSlaVal}</span>
+                <span className="text-xl font-extrabold text-[#008B8B]">{selectedDeptStats?.avgSlaVal ?? 0}</span>
                 <span className="text-[10px] font-bold text-slate-500">{lang === "en" ? "Days" : "दिवस"}</span>
               </div>
             </div>
@@ -388,105 +566,68 @@ export default function CmsDashboard({ stats: _stats, rtsDepartments = [], appli
         </Card>
       </div>
 
-      {/* SECTION 2: Service-wise Applications Breakdown + Pie Chart */}
-      <Card className="p-4 border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+      <Card className="border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-[#4b70a6]" />
-            <h2 className="text-sm font-bold text-[#243B7C]">
+            <Users className="h-5 w-5 text-[#0B5CD5]" />
+            <h2 className="text-sm font-bold text-[#0a3275]">
               {lang === "en" ? "Service-wise Applications Breakdown" : "सेवा निहाय अर्ज गोषवारा"}
             </h2>
           </div>
-          {/* Department filter dropdown */}
           <div className="flex items-center gap-2">
-            <label className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
+            <label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
               {lang === "en" ? "Filter by Dept:" : "विभाग निवडा:"}
             </label>
-            <select
-              id="service-dept-filter"
-              value={selectedServiceDeptId}
-              onChange={e => setSelectedServiceDeptId(e.target.value)}
-              className="text-[12px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#4b70a6]/40 cursor-pointer hover:border-[#4b70a6] transition"
-            >
-              <option value="all">{lang === "en" ? "All Departments" : "सर्व विभाग"}</option>
-              {rtsDepartments.map(dept => (
-                <option key={dept.id} value={dept.id}>
-                  {lang === "en" ? dept.name.en : dept.name.mr || dept.name.en}
-                </option>
-              ))}
-            </select>
+            <div className="min-w-[180px]">
+              <Select
+                options={serviceDeptOptions}
+                value={selectedServiceDeptId}
+                onChange={(_event, value) => setSelectedServiceDeptId(value)}
+                placeholder={lang === "en" ? "All Departments" : "सर्व विभाग"}
+                selectSize="sm"
+                ariaLabel={lang === "en" ? "Filter services by department" : "विभागानुसार सेवा फिल्टर करा"}
+                className="text-[12px] font-semibold text-slate-700"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Service Table 70% */}
-          <div className="w-full lg:w-[70%] overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead className="bg-[#4b70a6] font-semibold text-white text-center sticky top-0 z-20">
-                <tr>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center w-14">{lang === "en" ? "Sr. No." : "अनु. क्र."}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-left">{lang === "en" ? "Service Name" : "सेवेचे नाव"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Total Applications" : "एकूण अर्ज"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Source: RTS" : "स्रोत: आरटीएस"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Source: Aaple Sarkar" : "स्रोत: आपले सरकार"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Pending" : "प्रलंबित"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Approved" : "मंजूर"}</th>
-                  <th className="p-3 border-r border-[#3d5a8a] text-center">{lang === "en" ? "Rejected" : "नाकारलेले"}</th>
-                  <th className="p-3 text-center">{lang === "en" ? "Avg. Processing Time (SLA)" : "सरासरी वेळ (SLA)"}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-center font-semibold text-slate-800">
-                {filteredServiceStats.length === 0 ? (
-                  <tr><td colSpan={9} className="p-8 text-slate-400 font-bold">{lang === "en" ? "No services found for this department." : "विभागासाठी सेवा उपलब्ध नाही."}</td></tr>
-                ) : filteredServiceStats.map((row, i) => (
-                  <tr key={row.serviceId} className="hover:bg-slate-50/70 transition">
-                    <td className="p-3 border-r border-slate-100 bg-slate-50/50 font-extrabold text-slate-900">{row.srNo}</td>
-                    <td className="p-3 border-r border-slate-100 text-left font-bold text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                        {row.serviceName}
-                      </div>
-                    </td>
-                    <td className="p-3 border-r border-slate-100 font-extrabold text-slate-800 bg-slate-50/30">{row.totalApps}</td>
-                    <td className="p-3 border-r border-slate-100 font-bold text-indigo-700">{row.rtsApps}</td>
-                    <td className="p-3 border-r border-slate-100 font-bold text-orange-700">{row.asApps}</td>
-                    <td className="p-3 border-r border-slate-100 font-bold text-amber-600">{row.pendingApps}</td>
-                    <td className="p-3 border-r border-slate-100 font-bold text-emerald-600">{row.approvedApps}</td>
-                    <td className="p-3 border-r border-slate-100 font-bold text-rose-600">{row.rejectedApps}</td>
-                    <td className="p-3 font-extrabold text-teal-600">{row.avgSla}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <MasterTable<ServiceStatsRow>
+            columns={serviceColumns}
+            data={filteredServiceStats}
+            emptyText={lang === "en" ? "No services found for this department." : "विभागासाठी सेवा उपलब्ध नाही."}
+            getRowKey={(row) => row.serviceId}
+            theadClassName="bg-[#0A3275]"
+            tableClassName="border-collapse text-left text-sm"
+            containerClassName="gap-0"
+          />
 
-          {/* Pie Chart 30% — clean donut with side-by-side legend */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-3 bg-slate-50/50 rounded-xl border border-slate-100 p-4 shadow-sm">
+          <div className="flex w-full flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-4 shadow-sm lg:w-[30%]">
             <div className="flex items-center gap-1.5">
-              <BarChart3 className="h-4 w-4 text-[#4b70a6]" />
+              <BarChart3 className="h-4 w-4 text-[#0B5CD5]" />
               <span className="text-[13px] font-bold text-slate-700">
                 {lang === "en" ? "Applications by Service" : "सेवेनुसार अर्ज"}
               </span>
             </div>
 
             {filteredServiceStats.length === 0 ? (
-              <div className="flex items-center justify-center h-48 text-slate-400 text-sm font-bold">
+              <div className="flex h-48 items-center justify-center text-sm font-bold text-slate-400">
                 {lang === "en" ? "No data" : "माहिती नाही"}
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3 w-full">
-                {/* Donut chart — large & prominent */}
-                <svg viewBox="0 0 180 180" className="w-64 h-64 drop-shadow-sm">
-                  {pieSegments.map((seg, i) => (
+              <div className="flex w-full flex-col items-center gap-3">
+                <svg viewBox="0 0 180 180" className="h-64 w-64 drop-shadow-sm">
+                  {pieSegments.map((segment, index) => (
                     <path
-                      key={i}
-                      d={seg.path}
-                      fill={seg.color}
+                      key={index}
+                      d={segment.path}
+                      fill={segment.color}
                       stroke="white"
                       strokeWidth="2"
-                      className="transition-all duration-300 hover:opacity-75 cursor-pointer"
+                      className="cursor-pointer transition-all duration-300 hover:opacity-75"
                     >
-                      <title>{seg.name}: {seg.pct}%</title>
+                      <title>{segment.name}: {segment.pct}%</title>
                     </path>
                   ))}
                   <circle cx="90" cy="90" r="38" fill="white" />
@@ -494,20 +635,20 @@ export default function CmsDashboard({ stats: _stats, rtsDepartments = [], appli
                     {lang === "en" ? "Total" : "एकूण"}
                   </text>
                   <text x="90" y="102" textAnchor="middle" fontSize="16" fontWeight="800" fill="#4b70a6">
-                    {filteredServiceStats.reduce((s, r) => s + r.totalApps, 0)}
+                    {filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0)}
                   </text>
                 </svg>
 
-                {/* Compact 2-column legend — no bars */}
-                <div className="w-full grid grid-cols-2 gap-x-3 gap-y-1.5">
-                  {filteredServiceStats.map((s, i) => {
-                    const total = filteredServiceStats.reduce((a, r) => a + r.totalApps, 0);
-                    const pct = total > 0 ? Math.round((s.totalApps / total) * 100) : 0;
+                <div className="grid w-full grid-cols-2 gap-x-3 gap-y-1.5">
+                  {filteredServiceStats.map((service, index) => {
+                    const total = filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0);
+                    const pct = total > 0 ? Math.round((service.totalApps / total) * 100) : 0;
+
                     return (
-                      <div key={s.serviceId} className="flex items-center gap-1.5 min-w-0">
-                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                        <span className="text-[10px] font-semibold text-slate-600 truncate flex-1">{s.serviceName}</span>
-                        <span className="text-[10px] font-bold text-slate-400 flex-shrink-0">{pct}%</span>
+                      <div key={service.serviceId} className="flex min-w-0 items-center gap-1.5">
+                        <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
+                        <span className="flex-1 truncate text-[10px] font-semibold text-slate-600">{service.serviceName}</span>
+                        <span className="flex-shrink-0 text-[10px] font-bold text-slate-400">{pct}%</span>
                       </div>
                     );
                   })}

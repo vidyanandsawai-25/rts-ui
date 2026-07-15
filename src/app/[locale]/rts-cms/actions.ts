@@ -242,9 +242,9 @@ export async function submitCmsAction(
   await writeCmsData(data);
 
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/inbox`);
-    revalidatePath(`/${locale}/cms/dashboard`);
-    revalidatePath(`/${locale}/cms/applications/${applicationId}`);
+    revalidatePath(`/${locale}/rts-cms/inbox`);
+    revalidatePath(`/${locale}/rts-cms/dashboard`);
+    revalidatePath(`/${locale}/rts-cms/applications/${applicationId}`);
   }
 
   return { success: true, application: app };
@@ -356,7 +356,7 @@ export async function saveCmsDepartmentAction(name: string) {
     }
 
     for (const locale of locales) {
-      revalidatePath(`/${locale}/cms/masters`);
+      revalidatePath(`/${locale}/rts-cms/masters`);
     }
 
     return { success: true, department: newDept };
@@ -369,7 +369,7 @@ export async function saveCmsDepartmentAction(name: string) {
     await writeCmsData(data);
 
     for (const locale of locales) {
-      revalidatePath(`/${locale}/cms/masters`);
+      revalidatePath(`/${locale}/rts-cms/masters`);
     }
     return { success: true, department: newDept };
   }
@@ -409,7 +409,7 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
     }
 
     for (const locale of locales) {
-      revalidatePath(`/${locale}/cms/masters`);
+      revalidatePath(`/${locale}/rts-cms/masters`);
     }
 
     return { success: true, service: newSrv };
@@ -422,7 +422,7 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
     await writeCmsData(data);
 
     for (const locale of locales) {
-      revalidatePath(`/${locale}/cms/masters`);
+      revalidatePath(`/${locale}/rts-cms/masters`);
     }
     return { success: true, service: newSrv };
   }
@@ -443,7 +443,7 @@ export async function updateCmsDepartmentAction(id: string, name: string) {
           name: String(raw.departmentName || raw.name || name)
         };
         for (const locale of locales) {
-          revalidatePath(`/${locale}/cms/masters`);
+          revalidatePath(`/${locale}/rts-cms/masters`);
         }
         return { success: true, department: updatedDept };
       }
@@ -460,7 +460,7 @@ export async function updateCmsDepartmentAction(id: string, name: string) {
     await writeCmsData(data);
   }
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/masters`);
+    revalidatePath(`/${locale}/rts-cms/masters`);
   }
   return { success: true, department: { id, name } };
 }
@@ -474,7 +474,7 @@ export async function deleteCmsDepartmentAction(id: string) {
       await logApiDebug(`DELETE RTSDepartment success=${res.success}, status=${res.statusCode}`);
       if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/cms/masters`);
+          revalidatePath(`/${locale}/rts-cms/masters`);
         }
         return { success: true };
       }
@@ -490,7 +490,7 @@ export async function deleteCmsDepartmentAction(id: string) {
   data.services = data.services.filter(s => s.departmentId !== id);
   await writeCmsData(data);
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/masters`);
+    revalidatePath(`/${locale}/rts-cms/masters`);
   }
   return { success: true };
 }
@@ -518,7 +518,7 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
           departmentId: String(raw.departmentId ?? departmentId)
         };
         for (const locale of locales) {
-          revalidatePath(`/${locale}/cms/masters`);
+          revalidatePath(`/${locale}/rts-cms/masters`);
         }
         return { success: true, service: updatedSrv };
       }
@@ -536,7 +536,7 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
     await writeCmsData(data);
   }
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/masters`);
+    revalidatePath(`/${locale}/rts-cms/masters`);
   }
   return { success: true, service: { id, name, departmentId } };
 }
@@ -550,7 +550,7 @@ export async function deleteCmsServiceAction(id: string) {
       await logApiDebug(`DELETE RTSService success=${res.success}, status=${res.statusCode}`);
       if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/cms/masters`);
+          revalidatePath(`/${locale}/rts-cms/masters`);
         }
         return { success: true };
       }
@@ -564,7 +564,7 @@ export async function deleteCmsServiceAction(id: string) {
   data.services = data.services.filter(s => s.id !== id);
   await writeCmsData(data);
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/masters`);
+    revalidatePath(`/${locale}/rts-cms/masters`);
   }
   return { success: true };
 }
@@ -585,7 +585,7 @@ export async function saveCmsUserRoleAction(officerId: string, newRole: string) 
   }
 
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/users`);
+    revalidatePath(`/${locale}/rts-cms/users`);
   }
 
   return { success: true, officer: data.officers[index] };
@@ -612,14 +612,14 @@ export async function createCmsUserAction(officer: {
   await writeCmsData(data);
 
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/users`);
+    revalidatePath(`/${locale}/rts-cms/users`);
   }
 
   return { success: true, officer: newOfficer };
 }
 
 // 9. Form Field Definition Actions
-export async function getCmsFieldsAction() {
+export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
   await logApiDebug("getCmsFieldsAction invoked");
   try {
     const [fieldRes, deptRes, srvRes] = await Promise.all([
@@ -629,8 +629,15 @@ export async function getCmsFieldsAction() {
     ]);
 
     let fields = [];
+    let fieldPagination = { pageNumber, pageSize, totalCount: 0, totalPages: 1 };
     if (fieldRes.success && fieldRes.data) {
       const rawFields = Array.isArray(fieldRes.data) ? fieldRes.data : (fieldRes.data.items || []);
+      fieldPagination = {
+        pageNumber: Number(fieldRes.data.pageNumber ?? pageNumber),
+        pageSize: Number(fieldRes.data.pageSize ?? pageSize),
+        totalCount: Number(fieldRes.data.totalCount ?? rawFields.length),
+        totalPages: Number(fieldRes.data.totalPages ?? (Math.ceil(rawFields.length / pageSize) || 1)),
+      };
       fields = rawFields.map((f: any) => ({
         id: String(f.id ?? ""),
         departmentId: String(f.departmentId ?? ""),
@@ -650,9 +657,6 @@ export async function getCmsFieldsAction() {
         maxLength: f.maxLength !== null ? Number(f.maxLength) : null,
         isActive: !!f.isActive
       }));
-    } else {
-      const data = await readCmsData();
-      fields = data.fieldDefinitions || [];
     }
 
     let departments = [];
@@ -680,14 +684,35 @@ export async function getCmsFieldsAction() {
       services = data.services;
     }
 
-    return { fields, departments, services };
+    if (!fieldRes.success || !fieldRes.data) {
+      const data = await readCmsData();
+      const allFields = data.fieldDefinitions || [];
+      const startIndex = (pageNumber - 1) * pageSize;
+      fields = allFields.slice(startIndex, startIndex + pageSize);
+      fieldPagination = {
+        pageNumber,
+        pageSize,
+        totalCount: allFields.length,
+        totalPages: Math.max(1, Math.ceil(allFields.length / pageSize)),
+      };
+    }
+
+    return { fields, departments, services, pagination: fieldPagination };
   } catch (error: any) {
     await logApiDebug(`getCmsFieldsAction Exception: ${error?.message || error}`);
     const data = await readCmsData();
+    const allFields = data.fieldDefinitions || [];
+    const startIndex = (pageNumber - 1) * pageSize;
     return {
-      fields: data.fieldDefinitions || [],
+      fields: allFields.slice(startIndex, startIndex + pageSize),
       departments: data.departments,
-      services: data.services
+      services: data.services,
+      pagination: {
+        pageNumber,
+        pageSize,
+        totalCount: allFields.length,
+        totalPages: Math.max(1, Math.ceil(allFields.length / pageSize)),
+      }
     };
   }
 }
@@ -758,7 +783,7 @@ export async function saveCmsFieldAction(field: any) {
     }
 
     for (const locale of locales) {
-      revalidatePath(`/${locale}/cms/masters/fields`);
+      revalidatePath(`/${locale}/rts-cms/masters/fields`);
     }
 
     return { success: true, field: newField };
@@ -790,7 +815,7 @@ export async function saveCmsFieldAction(field: any) {
     await writeCmsData(data);
 
     for (const locale of locales) {
-      revalidatePath(`/${locale}/cms/masters/fields`);
+      revalidatePath(`/${locale}/rts-cms/masters/fields`);
     }
     return { success: true, field: newField };
   }
@@ -847,7 +872,7 @@ export async function updateCmsFieldAction(id: string, field: any) {
         };
 
         for (const locale of locales) {
-          revalidatePath(`/${locale}/cms/masters/fields`);
+          revalidatePath(`/${locale}/rts-cms/masters/fields`);
         }
         return { success: true, field: updatedField };
       }
@@ -884,7 +909,7 @@ export async function updateCmsFieldAction(id: string, field: any) {
     await writeCmsData(data);
   }
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/masters/fields`);
+    revalidatePath(`/${locale}/rts-cms/masters/fields`);
   }
   return { success: true, field: updatedField };
 }
@@ -898,7 +923,7 @@ export async function deleteCmsFieldAction(id: string) {
       await logApiDebug(`DELETE RTSFieldDefinition success=${res.success}, status=${res.statusCode}`);
       if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/cms/masters/fields`);
+          revalidatePath(`/${locale}/rts-cms/masters/fields`);
         }
         return { success: true };
       }
@@ -914,7 +939,7 @@ export async function deleteCmsFieldAction(id: string) {
     await writeCmsData(data);
   }
   for (const locale of locales) {
-    revalidatePath(`/${locale}/cms/masters/fields`);
+    revalidatePath(`/${locale}/rts-cms/masters/fields`);
   }
   return { success: true };
 }

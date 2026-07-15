@@ -19,7 +19,7 @@ import {
 import { Card, Badge } from "@/components/common";
 import { toast } from "sonner";
 import { pickLangText } from "@/lib/utils/rts/lang";
-import { submitCmsAction } from "@/app/[locale]/cms/actions";
+import { submitCmsAction } from "@/app/[locale]/rts-cms/actions";
 import type { CmsApplication, CmsOfficer } from "@/lib/mock/rts/cms";
 import type { GeneratedDynamicFormSchema } from "@/components/modules/rts/admin/service-builder/types";
 
@@ -73,7 +73,7 @@ export default function CmsApplicationDetails({
         const res = await submitCmsAction(application.id, actionType, remarks, forwardOfficerId);
         if (res.success) {
           toast.success(`Application decision [${actionType}] recorded successfully!`);
-          router.push(`/${locale}/cms/inbox`);
+          router.push(`/${locale}/rts-cms/inbox`);
         }
       } catch (err) {
         toast.error("An error occurred while recording the action. Please try again.");
@@ -93,7 +93,7 @@ export default function CmsApplicationDetails({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-5">
         <div className="flex items-center gap-3">
           <Link
-            href={`/${locale}/cms/inbox`}
+            href={`/${locale}/rts-cms/inbox`}
             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition"
           >
             <ArrowLeft className="h-4 w-4" />

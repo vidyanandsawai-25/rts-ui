@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Search, Settings2, Edit2, Trash2, HelpCircle } from "lucide-react";
-import { Card, Drawer, useConfirm } from "@/components/common";
+import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
+import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { saveCmsFieldAction, updateCmsFieldAction, deleteCmsFieldAction } from "@/app/[locale]/cms/actions";
+import { saveCmsFieldAction, updateCmsFieldAction, deleteCmsFieldAction } from "@/app/[locale]/rts-cms/actions";
 
 interface CmsField {
   id: string;
@@ -36,6 +37,8 @@ interface CmsFieldsConfigProps {
   locale: string;
 }
 
+type FieldTableRow = Record<string, unknown> & CmsField;
+
 export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) {
   const t = useTranslations("cms");
   const tCommon = useTranslations("common");
@@ -47,6 +50,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
   const [selectedServiceId, setSelectedServiceId] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [pageNumber, setPageNumber] = useState(1);
 
   const filteredServicesForFilter = data.services.filter(
     s => selectedDeptId === "All" || s.departmentId === selectedDeptId
@@ -65,6 +69,11 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
 
     return deptMatch && serviceMatch && textMatch;
   });
+
+  const pageSize = 12;
+  const totalPages = Math.max(1, Math.ceil(filteredFields.length / pageSize));
+  const paginatedFields = filteredFields.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+  const fieldRows: FieldTableRow[] = paginatedFields.map((field) => ({ ...field }));
 
   const isAllSelected = filteredFields.length > 0 && filteredFields.every(f => selectedIds.includes(f.id));
   const toggleSelectAll = () => {
@@ -304,17 +313,48 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
     });
   };
 
+  const tableHeaderClass = "!bg-[#4b70a6] !from-[#4b70a6] !via-[#4b70a6] !to-[#4b70a6] hover:!from-[#4b70a6] hover:!via-[#4b70a6] hover:!to-[#4b70a6] [&_th]:!text-white";
+  const tableClass = "border-collapse text-left text-[13px] [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
+  const fieldColumns: Column<FieldTableRow>[] = [
+    {
+      key: "id",
+      label: <input type="checkbox" checked={isAllSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer rounded border-slate-350 text-teal-600 focus:ring-teal-500" />,
+      width: "40px",
+      align: "center",
+      headerClassName: "border-r border-blue-300/60 text-white",
+      cellClassName: "border-r border-slate-100 text-center",
+      render: (_value, field) => <input type="checkbox" checked={selectedIds.includes(field.id)} onChange={() => toggleSelect(field.id)} className="h-4 w-4 cursor-pointer rounded border-slate-300 text-teal-600 focus:ring-teal-500" />,
+    },
+    {
+      key: "fieldCode",
+      label: t("fields.fieldCode"),
+      headerClassName: "border-r border-blue-300/60 text-white",
+      cellClassName: "border-r border-slate-100",
+      render: (_value, field) => {
+        const dept = data.departments.find((department) => department.id === field.departmentId);
+        const service = data.services.find((item) => item.id === field.serviceId);
+        return <div className="flex flex-col gap-0.5"><span className="text-[12px] font-bold uppercase text-slate-800">{field.fieldCode}</span><span className="text-[10px] font-medium text-slate-400">{dept?.name || "NOC"} / {service?.name || "Service"}</span></div>;
+      },
+    },
+    { key: "fieldLabel", label: t("fields.fieldLabel"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 font-semibold text-slate-700" },
+    { key: "fieldType", label: t("fields.fieldType"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="inline-block rounded-lg bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase text-slate-650">{String(value ?? "")}</span> },
+    { key: "fieldGroup", label: t("fields.fieldGroup"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 text-slate-500", render: (value) => String(value || "-") },
+    { key: "isRequired", label: t("fields.isRequired"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-rose-100 bg-rose-50 text-rose-600" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? "REQUIRED" : "OPTIONAL"}</span> },
+    { key: "isActive", label: t("fields.isActive"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-teal-100 bg-teal-50 text-teal-700" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? tCommon("status.active") : tCommon("status.inactive")}</span> },
+    { key: "displayOrder", label: t("fields.displayOrder"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 font-bold text-slate-600" },
+  ];
+
   return (
     <div className="space-y-4">
       {/* Header Panel */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <Card className="flex flex-col justify-between gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
             {t("fields.title")}
           </h1>
-          <p className="text-[13px] text-slate-400 mt-0.5">
+          {/* <p className="text-[13px] text-slate-400 mt-0.5">
             {t("fields.subtitle")}
-          </p>
+          </p> */}
         </div>
         <div>
           <button
@@ -325,7 +365,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
             {t("fields.addField")}
           </button>
         </div>
-      </div>
+      </Card>
 
       {/* Advanced Filters Panel */}
       <Card className="p-3 border border-slate-200 bg-white shadow-sm">
@@ -337,6 +377,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               onChange={e => {
                 setSelectedDeptId(e.target.value);
                 setSelectedServiceId("All");
+                setPageNumber(1);
               }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 text-[13px] text-slate-700 focus:border-teal-500 focus:bg-white focus:outline-none"
             >
@@ -353,7 +394,10 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
             <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{locale === "mr" ? "सेवा निवडा" : "Select Service"}</label>
             <select
               value={selectedServiceId}
-              onChange={e => setSelectedServiceId(e.target.value)}
+              onChange={e => {
+                setSelectedServiceId(e.target.value);
+                setPageNumber(1);
+              }}
               disabled={selectedDeptId === "All"}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 text-[13px] text-slate-700 focus:border-teal-500 focus:bg-white focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -380,7 +424,10 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
                 type="text"
                 placeholder={t("fields.searchPlaceholder")}
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={e => {
+                  setSearchTerm(e.target.value);
+                  setPageNumber(1);
+                }}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-1.5 pl-9 pr-3 text-[13px] text-slate-700 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none"
               />
             </div>
@@ -389,112 +436,32 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
       </Card>
 
       {/* Main Table */}
-      <Card className="p-0 border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-[13px] text-slate-600">
-            <thead className="bg-[#4b70a6] text-white font-bold">
-              <tr>
-                <th className="p-3 w-10 text-center border-r border-[#3d5a8a]">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={toggleSelectAll}
-                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-slate-350 rounded cursor-pointer"
-                  />
-                </th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("fields.fieldCode")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("fields.fieldLabel")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("fields.fieldType")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("fields.fieldGroup")}</th>
-                <th className="p-3 text-center border-r border-[#3d5a8a]">{t("fields.isRequired")}</th>
-                <th className="p-3 text-center border-r border-[#3d5a8a]">{t("fields.isActive")}</th>
-                <th className="p-3 text-center border-r border-[#3d5a8a]">{t("fields.displayOrder")}</th>
-                <th className="p-3 text-center">{t("common.actions")}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredFields.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="p-8 text-center text-slate-400 font-semibold">
-                    {t("fields.noFields")}
-                  </td>
-                </tr>
-              ) : (
-                filteredFields.map(field => {
-                  const dept = data.departments.find(d => d.id === field.departmentId);
-                  const srv = data.services.find(s => s.id === field.serviceId);
-                  return (
-                    <tr key={field.id} className="hover:bg-slate-50/50 transition">
-                      <td className="p-3 text-center border-r border-slate-100">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(field.id)}
-                          onChange={() => toggleSelect(field.id)}
-                          className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-slate-300 rounded cursor-pointer"
-                        />
-                      </td>
-                      <td className="p-3 font-bold text-slate-800">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-bold text-[12px] uppercase">{field.fieldCode}</span>
-                          <span className="text-[10px] text-slate-400 font-medium">
-                            {dept?.name || "NOC"} / {srv?.name || "Service"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3 font-semibold text-slate-700">{field.fieldLabel}</td>
-                      <td className="p-3 text-slate-500 font-medium">
-                        <span className="inline-block px-2 py-0.5 rounded-lg bg-slate-100 text-[11px] uppercase font-bold text-slate-650">
-                          {field.fieldType}
-                        </span>
-                      </td>
-                      <td className="p-3 text-slate-500">{field.fieldGroup || "-"}</td>
-                      <td className="p-3 text-center">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold ${
-                            field.isRequired ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-slate-50 text-slate-400 border border-slate-100"
-                          }`}
-                        >
-                          {field.isRequired ? "REQUIRED" : "OPTIONAL"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold border ${
-                            field.isActive
-                              ? "bg-teal-50 text-teal-700 border-teal-100"
-                              : "bg-slate-50 text-slate-400 border-slate-100"
-                          }`}
-                        >
-                          {field.isActive ? tCommon("status.active") : tCommon("status.inactive")}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center font-bold text-slate-600">{field.displayOrder}</td>
-                      <td className="p-3 text-center">
-                        <div className="flex justify-center gap-2">
-                          <button
-                            onClick={() => handleStartEdit(field)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-[#4b70a6] bg-slate-50/50 hover:bg-slate-50 transition"
-                            title={tCommon("buttons.edit")}
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteField(field.id, field.fieldLabel)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-rose-600 bg-rose-50/50 hover:bg-rose-100 transition"
-                            title={tCommon("buttons.delete")}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      {/* <Card className="p-0 border border-slate-200 bg-white shadow-sm overflow-hidden"> */}
+        <MasterTable<FieldTableRow>
+          columns={fieldColumns}
+          data={fieldRows}
+          getRowKey={(field) => field.id}
+          emptyText={t("fields.noFields")}
+          actionLabel={t("common.actions")}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={filteredFields.length}
+          totalPages={totalPages}
+          onPageChange={setPageNumber}
+          paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+          maxBodyHeightClassName="max-h-auto"
+          theadClassName={tableHeaderClass}
+          tableClassName={tableClass}
+          containerClassName="gap-0"
+          rowClassName={() => "hover:bg-slate-50/50"}
+          renderActions={(field) => (
+            <div className="flex justify-center gap-2">
+              <button onClick={() => handleStartEdit(field)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50/50 text-[#4b70a6] transition hover:bg-slate-50" title={tCommon("buttons.edit")}><Edit2 className="h-3.5 w-3.5" /></button>
+              <button onClick={() => handleDeleteField(field.id, field.fieldLabel)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-rose-50/50 text-rose-600 transition hover:bg-rose-100" title={tCommon("buttons.delete")}><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
+          )}
+        />
+      {/* </Card> */}
 
       {/* Configuration Drawer */}
       <Drawer
