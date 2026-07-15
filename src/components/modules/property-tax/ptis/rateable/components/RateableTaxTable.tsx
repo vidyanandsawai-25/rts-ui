@@ -42,12 +42,21 @@ export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData
         expandedLabel={t('viewTaxBreakdown')}
         expandedRowIds={expandedRowIds}
         getExpandHref={(row) => buildExpandHref(searchParams as Record<string, string | string[] | undefined>, row.id, expandedRowIds)}
-        getEditHref={propertyId ? (row) => `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?floorId=${row.id}` : undefined}
+        getEditHref={propertyId ? (row) => {
+          const params = new URLSearchParams();
+          params.set('floorId', String(row.id));
+          if (searchParams.wardNo) params.set('wardNo', String(searchParams.wardNo));
+          if (searchParams.wardId) params.set('wardId', String(searchParams.wardId));
+          if (searchParams.propertyNo) params.set('propertyNo', String(searchParams.propertyNo));
+          if (searchParams.partitionNo) params.set('partitionNo', String(searchParams.partitionNo));
+          return `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${params.toString()}`;
+        } : undefined}
         editTooltip={rootT.has('floor.editFloor') ? rootT('floor.editFloor') : 'Edit Floor'}
         tableClassName="w-full min-w-[1500px]"
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}
-        containerClassName="max-h-[250px] overflow-y-auto overflow-x-auto"
+        containerClassName="overflow-x-auto"
+        heightRows={6}
         renderExpanded={(row: RateableRow) => <ShowTaxOnExpand locale={locale} taxes={row.taxes} />}
       />
     </div>
