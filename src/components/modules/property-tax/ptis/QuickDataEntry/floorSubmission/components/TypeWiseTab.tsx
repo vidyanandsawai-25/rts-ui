@@ -115,10 +115,11 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   const filteredProperties = React.useMemo(() => {
     if (selectedTypeFilter === 'all') return properties;
     return properties.filter((p) => {
+      if (sourcePropertyIds.has(p.id)) return true;
       const raw = String(p.type || '').trim();
       return raw === selectedTypeFilter;
     });
-  }, [properties, selectedTypeFilter]);
+  }, [properties, selectedTypeFilter, sourcePropertyIds]);
 
   // When a type is chosen from dropdown → auto-fill CHANGE TYPE + update filter
   // Also clears selection to avoid mismatch between visible and selected-but-hidden rows

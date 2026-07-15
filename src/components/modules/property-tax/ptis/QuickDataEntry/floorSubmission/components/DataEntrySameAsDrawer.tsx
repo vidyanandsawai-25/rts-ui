@@ -46,11 +46,9 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
   const hook = useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, initialPropertyID, t });
 
   // Filter properties to display in tables
-  // useMemo is CRITICAL here — without it a new array is created every render,
-  // which would trigger TypeWiseTab's useEffect([properties]) and reset the type filter.
+  // Memoize to prevent unnecessary re-renders in child components
   const displayedProperties = React.useMemo(
     () => hook.filterPropertiesForTable(hook.selectableProperties, true),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [hook.selectableProperties, hook.filterPropertiesForTable]
   );
 
