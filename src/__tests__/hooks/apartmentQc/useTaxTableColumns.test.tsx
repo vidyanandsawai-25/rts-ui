@@ -44,7 +44,7 @@ describe('useTaxTableColumns', () => {
   });
 
   describe('when hasData is true', () => {
-    it('should return columns array with Method, tax columns, and Total', () => {
+    it('should return columns array with Method and tax columns', () => {
       const { result } = renderHook(() => 
         useTaxTableColumns({
           taxColumns: mockTaxColumns,
@@ -54,8 +54,8 @@ describe('useTaxTableColumns', () => {
         })
       );
 
-      // Method + 3 tax columns + Total = 5 columns
-      expect(result.current).toHaveLength(5);
+      // Method + 3 tax columns = 4 columns
+      expect(result.current).toHaveLength(4);
     });
 
     it('should have Method column as first column', () => {
@@ -101,20 +101,7 @@ describe('useTaxTableColumns', () => {
       expect(result.current[3].key).toBe('Service Tax');
     });
 
-    it('should have Total column as last column', () => {
-      const { result } = renderHook(() => 
-        useTaxTableColumns({
-          taxColumns: mockTaxColumns,
-          activeSubTab: 'rateable',
-          t: mockT,
-          hasData: true,
-        })
-      );
 
-      const lastColumn = result.current[result.current.length - 1];
-      expect(lastColumn.key).toBe('total');
-      expect(lastColumn.label).toBe('Total');
-    });
 
     it('should have sticky Method column with proper className', () => {
       const { result } = renderHook(() => 
@@ -146,20 +133,7 @@ describe('useTaxTableColumns', () => {
       expect(result.current[3].align).toBe('center');
     });
 
-    it('should have correct styling on Total header', () => {
-      const { result } = renderHook(() => 
-        useTaxTableColumns({
-          taxColumns: mockTaxColumns,
-          activeSubTab: 'rateable',
-          t: mockT,
-          hasData: true,
-        })
-      );
 
-      const totalColumn = result.current[result.current.length - 1];
-      expect(totalColumn.headerClassName).toContain('border-gray-300');
-      expect(totalColumn.headerClassName).toContain('font-bold');
-    });
   });
 
   describe('when hasData is false', () => {
@@ -178,7 +152,7 @@ describe('useTaxTableColumns', () => {
   });
 
   describe('with empty taxColumns', () => {
-    it('should return only Method and Total columns when hasData is true', () => {
+    it('should return only Method column when hasData is true', () => {
       const { result } = renderHook(() => 
         useTaxTableColumns({
           taxColumns: [],
@@ -188,10 +162,9 @@ describe('useTaxTableColumns', () => {
         })
       );
 
-      // Method + Total = 2 columns
-      expect(result.current).toHaveLength(2);
+      // Method = 1 column
+      expect(result.current).toHaveLength(1);
       expect(result.current[0].key).toBe('methodLabel');
-      expect(result.current[1].key).toBe('total');
     });
   });
 
@@ -224,19 +197,7 @@ describe('useTaxTableColumns', () => {
       expect(taxColumn.render).toBeDefined();
     });
 
-    it('should have render function for total column', () => {
-      const { result } = renderHook(() => 
-        useTaxTableColumns({
-          taxColumns: mockTaxColumns,
-          activeSubTab: 'rateable',
-          t: mockT,
-          hasData: true,
-        })
-      );
 
-      const totalColumn = result.current[result.current.length - 1];
-      expect(totalColumn.render).toBeDefined();
-    });
   });
 
   describe('memoization', () => {
