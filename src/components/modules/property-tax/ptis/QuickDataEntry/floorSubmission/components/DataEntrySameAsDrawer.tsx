@@ -54,8 +54,10 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
     [hook.selectableProperties, hook.filterPropertiesForTable]
   );
 
+  const drawerClassName = "[&_div.fixed.right-0]:!w-[97vw] md:[&_div.fixed.right-0]:!w-[1000px] lg:[&_div.fixed.right-0]:!w-[1100px] xl:[&_div.fixed.right-0]:!w-[1200px] [&_div.fixed.right-0>div:first-child]:!bg-blue-600 [&_div.fixed.right-0>div:first-child_h2]:!text-white [&_div.fixed.right-0>div:first-child>div:first-child]:!flex-1 [&_div.fixed.right-0>div:first-child_button_svg]:!text-white [&_div.fixed.right-0>div:first-child_button]:hover:!bg-blue-700";
+
   return (
-    <>
+    <div className={drawerClassName}>
       <Tabs
         value={hook.dataEntrySameAsTab}
         onChange={(val) => {
@@ -169,7 +171,7 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
           </div>
         </Drawer>
       </Tabs>
-    </>
+    </div>
   );
 };
 
