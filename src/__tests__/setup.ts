@@ -226,6 +226,7 @@ vi.mock('lucide-react', async (importOriginal) => {
 Object.defineProperty(window, 'scrollTo', {
   value: vi.fn(),
   writable: true,
+  configurable: true,
 });
 
 // Prevent navigation implementation errors in jsdom
@@ -238,6 +239,7 @@ Object.defineProperty(window, 'location', {
     href: 'http://localhost/',
   },
   writable: true,
+  configurable: true,
 });
 
 process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost';
