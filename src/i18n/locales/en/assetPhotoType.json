@@ -18,6 +18,8 @@
       "description": "Description",
       "displayOrder": "Display Order",
       "status": "Status",
+      "isSubUnit": "Is Sub Unit",
+      "isRequired": "Is Required",
       "actions": "Actions"
     },
     "status": {
@@ -57,6 +59,10 @@
       "isRequired": {
         "label": "Is Document Required",
         "description": "Mark if this photo type is mandatory for assets"
+      },
+      "isSubUnit": {
+        "label": "Is Sub Unit",
+        "description": "Mark if this photo type is for sub-units"
       }
     },
     "validation": {
@@ -111,5 +117,7 @@
     "errorId": "Error ID: {id}",
     "goHome": "Go Home",
     "tryAgain": "Try Again"
-  }
+  },
+  "yes": "Yes",
+  "no": "No"
 }

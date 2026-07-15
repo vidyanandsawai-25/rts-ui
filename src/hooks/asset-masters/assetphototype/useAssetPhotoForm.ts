@@ -77,6 +77,7 @@ export function useAssetPhotoForm({
     assetCategoryId: initialData?.assetCategoryId ?? null,
     assetTypeId: initialData?.assetTypeId ?? null,
     isRequired: initialData?.isRequired ?? false,
+    isSubUnit: initialData?.isSubUnit ?? false,
   });
 
   const [displayOrderValue, setDisplayOrderValue] = useState<string>(
@@ -278,6 +279,10 @@ export function useAssetPhotoForm({
     setFormData((p) => ({ ...p, isRequired: checked }));
   }, []);
 
+  const handleToggleSubUnit = useCallback((checked: boolean): void => {
+    setFormData((p) => ({ ...p, isSubUnit: checked }));
+  }, []);
+
   const handleSelectChange = useCallback((name: string, value: string): void => {
     const parsed = Number(value);
     const numericValue = value && Number.isFinite(parsed) ? parsed : null;
@@ -339,6 +344,7 @@ export function useAssetPhotoForm({
     handleSubmit,
     handleToggleStatus,
     handleToggleRequired,
+    handleToggleSubUnit,
     handleCancel,
     showError,
     t,

@@ -34,6 +34,7 @@ export default function AssetPhotoTypeForm({
     handleSubmit,
     handleToggleStatus,
     handleToggleRequired,
+    handleToggleSubUnit,
     handleCancel,
     showError,
     t,
@@ -130,43 +131,6 @@ export default function AssetPhotoTypeForm({
             visible={showError("photoTypeCode")}
           />
 
-          <SearchSelect
-            name="assetCategoryId"
-            label={t("form.fields.assetCategoryId.label")}
-            required
-            placeholder={t("form.fields.assetCategoryId.placeholder")}
-            options={categoryOptions}
-            value={formData.assetCategoryId ? String(formData.assetCategoryId) : ""}
-            onChange={handleSelectChange}
-            error={showError("assetCategoryId") ? errors.assetCategoryId : undefined}
-          />
-
-          <SearchSelect
-            name="assetTypeId"
-            label={t("form.fields.assetTypeId.label")}
-            required
-            placeholder={t("form.fields.assetTypeId.placeholder")}
-            options={typeOptions}
-            value={formData.assetTypeId ? String(formData.assetTypeId) : ""}
-            onChange={handleSelectChange}
-            disabled={!formData.assetCategoryId || typeOptions.length === 0}
-            error={showError("assetTypeId") ? errors.assetTypeId : undefined}
-          />
-
-          <div className="flex items-center justify-between p-3 border border-[#DCEAFF] bg-white rounded-xl">
-            <div>
-              <div className="font-medium text-slate-800 text-sm">{t("form.fields.isRequired.label")}</div>
-              <div className="text-xs text-slate-500">{t("form.fields.isRequired.description")}</div>
-            </div>
-            <ToggleSwitch
-              checked={formData.isRequired}
-              onChange={handleToggleRequired}
-              showPopup={false}
-              activeLabel={t("form.fields.isRequired.label")}
-              inactiveLabel={t("form.fields.isRequired.label")}
-            />
-          </div>
-
           <Input
             name="photoTypeName"
             label={t("form.fields.photoTypeName.label")}
@@ -214,6 +178,57 @@ export default function AssetPhotoTypeForm({
             message={errors.displayOrder}
             visible={showError("displayOrder")}
           />
+
+          <SearchSelect
+            name="assetCategoryId"
+            label={t("form.fields.assetCategoryId.label")}
+            required
+            placeholder={t("form.fields.assetCategoryId.placeholder")}
+            options={categoryOptions}
+            value={formData.assetCategoryId ? String(formData.assetCategoryId) : ""}
+            onChange={handleSelectChange}
+            error={showError("assetCategoryId") ? errors.assetCategoryId : undefined}
+          />
+
+          <SearchSelect
+            name="assetTypeId"
+            label={t("form.fields.assetTypeId.label")}
+            required
+            placeholder={t("form.fields.assetTypeId.placeholder")}
+            options={typeOptions}
+            value={formData.assetTypeId ? String(formData.assetTypeId) : ""}
+            onChange={handleSelectChange}
+            disabled={!formData.assetCategoryId || typeOptions.length === 0}
+            error={showError("assetTypeId") ? errors.assetTypeId : undefined}
+          />
+
+          <div className="flex items-center justify-between p-3 border border-[#DCEAFF] bg-white rounded-xl">
+            <div>
+              <div className="font-medium text-slate-800 text-sm">{t("form.fields.isRequired.label")}</div>
+              <div className="text-xs text-slate-500">{t("form.fields.isRequired.description")}</div>
+            </div>
+            <ToggleSwitch
+              checked={formData.isRequired}
+              onChange={handleToggleRequired}
+              showPopup={false}
+              activeLabel={t("form.fields.isRequired.label")}
+              inactiveLabel={t("form.fields.isRequired.label")}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-3 border border-[#DCEAFF] bg-white rounded-xl">
+            <div>
+              <div className="font-medium text-slate-800 text-sm">{t("form.fields.isSubUnit.label")}</div>
+              <div className="text-xs text-slate-500">{t("form.fields.isSubUnit.description")}</div>
+            </div>
+            <ToggleSwitch
+              checked={formData.isSubUnit}
+              onChange={handleToggleSubUnit}
+              showPopup={false}
+              activeLabel={t("form.fields.isSubUnit.label")}
+              inactiveLabel={t("form.fields.isSubUnit.label")}
+            />
+          </div>
         </div>
 
         <MandatoryFieldsNotice message={tCommon("note.mandatory")} />

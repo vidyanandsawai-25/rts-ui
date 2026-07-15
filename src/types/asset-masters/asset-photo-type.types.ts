@@ -15,6 +15,7 @@ export interface AssetPhotoTypeFormModel {
   assetCategoryId: number | null;
   assetTypeId: number | null;
   isRequired: boolean;
+  isSubUnit: boolean;
 }
 
 /**
@@ -35,6 +36,7 @@ export interface AssetPhotoType {
   assetCategoryName?: string;
   assetTypeName?: string;
   isRequired: boolean;
+  isSubUnit: boolean;
 }
 
 /**

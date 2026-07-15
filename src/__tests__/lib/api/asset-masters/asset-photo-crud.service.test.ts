@@ -31,7 +31,7 @@ describe("AssetPhotoType API Service", () => {
       const mockApiResponse = {
         success: true,
         data: {
-          items: [{ id: 1, photoTypeCode: "T1", photoTypeName: "N1", description: "D1", displayOrder: 1, isActive: true, isRequired: false }],
+          items: [{ id: 1, photoTypeCode: "T1", photoTypeName: "N1", description: "D1", displayOrder: 1, isActive: true, isRequired: false, isSubUnit: false }],
         },
       };
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
@@ -47,7 +47,7 @@ describe("AssetPhotoType API Service", () => {
       const mockApiResponse = {
         success: true,
         data: {
-          items: [{ id: 1, photoTypeCode: "T1", photoTypeName: "N1", description: "D1", displayOrder: 1, isActive: true, isRequired: false }],
+          items: [{ id: 1, photoTypeCode: "T1", photoTypeName: "N1", description: "D1", displayOrder: 1, isActive: true, isRequired: false, isSubUnit: false }],
           totalCount: 1,
           pageNumber: 1,
           pageSize: 10,
@@ -77,7 +77,7 @@ describe("AssetPhotoType API Service", () => {
 
   describe("getAssetPhotoTypeById", () => {
     it("should fetch single record and return it", async () => {
-      const mockItem = { id: 1, photoTypeCode: "T1", photoTypeName: "N1", description: "D1", displayOrder: 1, isActive: true, isRequired: false };
+      const mockItem = { id: 1, photoTypeCode: "T1", photoTypeName: "N1", description: "D1", displayOrder: 1, isActive: true, isRequired: false, isSubUnit: false };
       vi.mocked(apiClient.get).mockResolvedValue({
         success: true,
         data: mockItem,
@@ -101,6 +101,7 @@ describe("AssetPhotoType API Service", () => {
         assetCategoryId: 1,
         assetTypeId: 2,
         isRequired: true,
+        isSubUnit: true,
       };
 
       await createAssetPhotoType(data);
@@ -114,6 +115,7 @@ describe("AssetPhotoType API Service", () => {
         assetCategoryId: 1,
         assetTypeId: 2,
         isRequired: true,
+        isSubUnit: true,
       });
     });
   });
@@ -131,6 +133,7 @@ describe("AssetPhotoType API Service", () => {
         assetCategoryId: 1,
         assetTypeId: 2,
         isRequired: true,
+        isSubUnit: false,
       };
 
       await updateAssetPhotoType(data);
@@ -145,6 +148,7 @@ describe("AssetPhotoType API Service", () => {
         assetCategoryId: 1,
         assetTypeId: 2,
         isRequired: true,
+        isSubUnit: false,
       });
     });
   });

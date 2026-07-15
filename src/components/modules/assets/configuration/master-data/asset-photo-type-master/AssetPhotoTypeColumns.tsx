@@ -2,6 +2,7 @@ import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { AssetPhotoType } from "@/types/asset-masters/asset-photo-type.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 /**
  * Renders a sortable column header with sort icon
@@ -126,6 +127,32 @@ export function getAssetPhotoTypeColumns(
         if (row.assetTypeName) parts.push(row.assetTypeName);
         return parts.length > 0 ? parts.join(" / ") : "-";
       },
+    },
+    {
+      key: "isSubUnit",
+      label: t("list.table.isSubUnit"),
+      width: "10%",
+      align: "center",
+      render: (value) => (
+        <StatusBadge
+          value={Boolean(value)}
+          activeLabel={t("yes")}
+          inactiveLabel={t("no")}
+        />
+      ),
+    },
+    {
+      key: "isRequired",
+      label: t("list.table.isRequired"),
+      width: "10%",
+      align: "center",
+      render: (value) => (
+        <StatusBadge
+          value={Boolean(value)}
+          activeLabel={t("yes")}
+          inactiveLabel={t("no")}
+        />
+      ),
     },
     {
       key: "isActive",

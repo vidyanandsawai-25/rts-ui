@@ -84,6 +84,7 @@ export async function createAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
       assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       isRequired: data.isRequired,
+      isSubUnit: data.isSubUnit,
     };
     const response = await apiClient.post<unknown>("/master/asset-photo-types", payload);
     if (!response.success) {
@@ -119,6 +120,7 @@ export async function updateAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
       assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       isRequired: data.isRequired,
+      isSubUnit: data.isSubUnit,
     };
     const response = await apiClient.put<unknown>(`/master/asset-photo-types/${encodeURIComponent(String(data.id))}`, payload);
     if (!response.success) {
