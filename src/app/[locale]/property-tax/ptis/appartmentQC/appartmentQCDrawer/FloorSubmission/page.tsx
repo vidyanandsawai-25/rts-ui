@@ -5,6 +5,7 @@ import {
   fetchUseTypesAction,
   fetchSubTypesAction 
 } from './action';
+import { getRoomWiseSubmissionsAction } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import { FloorSubmissionScreen } from '@/components/modules/property-tax/ptis/appartmentQC/appartmentQCDrawer/FloorSubmissionDrawer/FloorSubmissionScreen';
 import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
 import type { Floor } from '@/types/floor.types';
@@ -35,6 +36,10 @@ export default async function FloorSubmissionPage(props: { searchParams: Promise
   const typeOfUseIdParam = Array.isArray(searchParams.typeOfUseId) ? searchParams.typeOfUseId[0] : searchParams.typeOfUseId;
   const typeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
 
+  const roomDrawerOpen = searchParams.roomDrawerOpen === 'true';
+  const roomPdnId = typeof searchParams.roomPdnId === 'string' ? Number(searchParams.roomPdnId) : 0;
+  const roomPropertyId = typeof searchParams.roomPropertyId === 'string' ? Number(searchParams.roomPropertyId) : 0;
+
   // Use editPropertyId if available, fallback to pdnId
   const idToFetch = editPropertyId;
 
@@ -43,6 +48,7 @@ export default async function FloorSubmissionPage(props: { searchParams: Promise
   let constructionTypes: ConstructionType[] = [];
   let useTypes: UseType[] = [];
   let subTypes: UseSubType[] = [];
+  let initialRoomData: unknown[] = [];
 
   const apiType = subTab === 'dual-method' ? 'dual' : subTab;
 
@@ -51,17 +57,23 @@ export default async function FloorSubmissionPage(props: { searchParams: Promise
     floorsRes,
     constructionTypesRes,
     useTypesRes,
-    subTypesRes
+    subTypesRes,
+    roomDataRes
   ] = await Promise.all([
     idToFetch ? getFloorQCDetailsAction(idToFetch, apiType) : Promise.resolve({ success: true, data: [] }),
     loadFloor ? fetchFloorsAction() : Promise.resolve({ success: true, data: [] }),
     loadConstruction ? fetchConstructionTypesAction() : Promise.resolve({ success: true, data: [] }),
     loadUsage ? fetchUseTypesAction() : Promise.resolve({ success: true, data: [] }),
-    (typeOfUseId > 0 && loadSubType) ? fetchSubTypesAction(typeOfUseId) : Promise.resolve({ success: true, data: [] })
+    (typeOfUseId > 0 && loadSubType) ? fetchSubTypesAction(typeOfUseId) : Promise.resolve({ success: true, data: [] }),
+    (roomDrawerOpen && roomPdnId && roomPropertyId) ? getRoomWiseSubmissionsAction({ propertyId: roomPropertyId, propertyDetailsId: roomPdnId }) : Promise.resolve({ success: true, data: [] })
   ]);
 
   if (floorDataRes.success && floorDataRes.data) {
     floorData = floorDataRes.data;
+  }
+  
+  if (roomDataRes.success && roomDataRes.data) {
+    initialRoomData = Array.isArray(roomDataRes.data) ? roomDataRes.data : [];
   }
   
   floors = floorsRes.success ? (floorsRes.data || []) : [];
@@ -78,6 +90,7 @@ export default async function FloorSubmissionPage(props: { searchParams: Promise
       useOptions={useTypes}
       subUseTypeOptions={subTypes}
       propertyId={idToFetch}
+      initialRoomData={initialRoomData}
     />
   );
 }

@@ -15,7 +15,10 @@ export interface PropertyWorkflowDetail {
   moduleId?: number;
   isActive?: boolean;
   createdBy?: number;
+  createdByName?: string;
+  currentStatus?: boolean;
   createdDate?: string;
   updatedDate?: string | null;
 }
+
 

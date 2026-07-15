@@ -33,7 +33,7 @@ export type { LoginFormData, LoginFormErrors, UseLoginFormOptions, UseLoginFormR
 export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormReturn {
   const { initialUsername = '' } = options;
   
-  const t = useTranslations('common.login');
+  const t = useTranslations('login');
   
   // Form state
   const [formData, setFormData] = useState<LoginFormData>({

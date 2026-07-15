@@ -159,41 +159,41 @@ export default function FloorMaster({
           </>
         )}
 
-          actionLabel={tCommon("table.columns.actions")}
+        actionLabel={tCommon("table.columns.actions")}
 
-          paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+        paginationConfig={{ enabled: true, showPageSizeSelector: false }}
 
-          footerLeftContent={
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-700">
-                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount} {tCommon("table.entries")}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
-                <Select
-                  value={String(pageSize)}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    startTransition(() => {
-                      router.push(
-                        buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
-                      );
-                    });
-                  }}
-                  options={[10, 20, 30, 50].map((s) => ({
-                    label: String(s),
-                    value: String(s),
-                  }))}
-                  selectSize="sm"
-                  className="w-20"
-                  ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
-                />
-              </div>
+        footerLeftContent={
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-700">
+              {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount} {tCommon("table.entries")}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+              <Select
+                value={String(pageSize)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  startTransition(() => {
+                    router.push(
+                      buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
+                    );
+                  });
+                }}
+                options={[10, 20, 30, 50].map((s) => ({
+                  label: String(s),
+                  value: String(s),
+                }))}
+                selectSize="sm"
+                className="w-20"
+                ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
+              />
             </div>
-          }
+          </div>
+        }
 
-          getRowKey={(row) => String(row.id)}
-        />
-      </div>
-    
+        getRowKey={(row) => String(row.id)}
+      />
+    </div>
+
   );
 }

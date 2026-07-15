@@ -25,6 +25,8 @@ export interface RenterFormDataDetails {
     viewMode?: 'monthly' | 'annual';
     customDateRanges: CustomDateRange[];
     taxLiability?: string;
+    documentBindingId?: number;
+    documentGuid?: string;
 }
 
 export interface RenterFormData {

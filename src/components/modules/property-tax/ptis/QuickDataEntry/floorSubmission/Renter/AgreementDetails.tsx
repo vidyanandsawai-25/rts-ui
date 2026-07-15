@@ -4,15 +4,17 @@ import React, { useState, useRef, memo, useMemo, useEffect, useCallback } from '
 import { Button, Input } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { Select } from '@/components/common/select';
-import { Upload, Eye, Loader2, Calendar, Download } from 'lucide-react';
+import { Upload, Eye, Loader2, Calendar, Download, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 
 import { Swal } from '@/lib/utils/alerts';
 import { extractAgreementData } from '@/lib/utils/renter/renterUtils';
-import { AgreementDocumentViewer } from './AgreementDocumentViewer';
+import { DocumentViewerModal } from '@/components/common/DocumentViewerModal';
 import { RenterFormData, RenterFormDataDetails } from '@/types/renter/renter.types';
 import { toast } from 'sonner';
+import { globalUploadDocumentAction, globalDeleteDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
+import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import {
   validateRenterForm,
   ExistingFloorData,
@@ -25,6 +27,9 @@ interface AgreementDetailsProps {
   setFormData: React.Dispatch<React.SetStateAction<RenterFormData>>;
   existingFloors?: ExistingFloorData[];
   currentFloorContext?: CurrentFloorContext;
+  wardNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
 const toDisplayDate = (val: string) => {
@@ -74,11 +79,13 @@ const errorClassName =
 const errorBorderClassName = 'border-red-400 focus:ring-red-100';
 
 const AgreementDetails = memo(
-  ({ formData, setFormData, existingFloors = [], currentFloorContext }: AgreementDetailsProps) => {
+  ({ formData, setFormData, existingFloors = [], currentFloorContext, wardNo, propertyNo, partitionNo }: AgreementDetailsProps) => {
     const t = useTranslations('quickDataEntry');
     const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
     const [showDocumentPreview, setShowDocumentPreview] = useState(false);
     const [isProcessingOCR, setIsProcessingOCR] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const taxLiabilityOptions = useMemo(() => [
       { label: t('floor.renterSection.self'), value: 'Self' },
@@ -97,17 +104,76 @@ const AgreementDetails = memo(
     const fromDateRef = useRef<HTMLInputElement>(null);
     const toDateRef = useRef<HTMLInputElement>(null);
 
-    // Memoize object URL to prevent new URL on every render and revoke when file changes
-    const documentPreviewUrl = useMemo(() => {
-      if (!uploadedDocument) return undefined;
-      return URL.createObjectURL(uploadedDocument);
-    }, [uploadedDocument]);
+    const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
+    const [isViewing, setIsViewing] = useState(false);
 
+    const handleViewDocument = async () => {
+      if (uploadedDocument) {
+        const url = URL.createObjectURL(uploadedDocument);
+        setPreviewUrl(url);
+        setShowDocumentPreview(true);
+        return;
+      }
+      const guid = formData?.renterDetails?.documentGuid;
+      if (!guid) return;
+      setIsViewing(true);
+      try {
+        const { url } = await getDocumentBlobUrl(guid);
+        setPreviewUrl(url);
+        setShowDocumentPreview(true);
+      } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : "Failed to view document");
+      } finally {
+        setIsViewing(false);
+      }
+    };
+
+    const handleClosePreview = () => {
+      setShowDocumentPreview(false);
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setPreviewUrl(undefined);
+    };
+
+    // Clean up preview URL on unmount or file changes
     useEffect(() => {
       return () => {
-        if (documentPreviewUrl) URL.revokeObjectURL(documentPreviewUrl);
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(previewUrl);
+        }
       };
-    }, [documentPreviewUrl]);
+    }, [previewUrl]);
+
+    const handleDeleteDocument = useCallback(async () => {
+      const guid = formData?.renterDetails?.documentGuid;
+      if (!guid) {
+        setUploadedDocument(null);
+        return;
+      }
+      setIsDeleting(true);
+      try {
+        const res = await globalDeleteDocumentAction(guid);
+        if (res.success) {
+          setFormData((prev) => ({
+            ...prev,
+            renterDetails: {
+              ...prev.renterDetails,
+              documentBindingId: undefined,
+              documentGuid: undefined,
+            },
+          }));
+          setUploadedDocument(null);
+          toast.success('Document removed successfully.');
+        } else {
+          toast.error(res.error || 'Failed to remove document.');
+        }
+      } catch (_e) {
+        toast.error('Failed to remove document.');
+      } finally {
+        setIsDeleting(false);
+      }
+    }, [formData?.renterDetails?.documentGuid, setFormData]);
 
     const triggerDatePicker = (ref: React.RefObject<HTMLInputElement | null>) => {
       if (ref.current) {
@@ -247,7 +313,7 @@ const AgreementDetails = memo(
           <div
             className={cn(
               "flex flex-col gap-1.5 shrink-0",
-              uploadedDocument ? "col-span-1 sm:col-span-2 lg:w-[180px]" : "col-span-1 sm:col-span-1 lg:w-[60px]"
+              (uploadedDocument || formData?.renterDetails?.documentGuid) ? "col-span-1 sm:col-span-2 lg:w-[220px]" : "col-span-1 sm:col-span-1 lg:w-[60px]"
             )}
           >
             <Label className={fieldLabelClassName}>{t('floor.renterSection.document')}</Label>
@@ -290,31 +356,85 @@ const AgreementDetails = memo(
                       return;
                     }
 
-                    setUploadedDocument(file);
-                    if (file.type.startsWith('image/')) {
-                      processOCR(file);
-                    }
+                    setIsUploading(true);
+                    const fileData = new FormData();
+                    fileData.append('File', file);
+                    fileData.append('DepartmentId', '1');
+                    fileData.append('ModuleId', '1');
+                    fileData.append('ReferenceTableName', 'RenterMast');
+                    fileData.append('ReferenceTableId', String(formData.id || 0));
+                    fileData.append('ReferencePropertyName', 'Id');
+                    fileData.append('BindingPurpose', 'Renter Agreement');
+                    fileData.append('IsPrimaryDocument', 'true');
+
+                    globalUploadDocumentAction(fileData)
+                      .then((res) => {
+                        if (res.success && res.data) {
+                          const uploadRes = res.data as { documentBindingId?: number; documentGuid?: string };
+                          setFormData((prev) => ({
+                            ...prev,
+                            renterDetails: {
+                              ...prev.renterDetails,
+                              documentBindingId: uploadRes.documentBindingId,
+                              documentGuid: uploadRes.documentGuid,
+                            },
+                          }));
+                          toast.success('Document uploaded successfully.');
+                          setUploadedDocument(file);
+                          if (file.type.startsWith('image/')) {
+                            processOCR(file);
+                          }
+                        } else {
+                          toast.error(res.error || 'Failed to upload document.');
+                        }
+                      })
+                      .catch(() => {
+                        toast.error('Failed to upload document.');
+                      })
+                      .finally(() => {
+                        setIsUploading(false);
+                      });
                   }
                 }}
               />
               <Button
                 type="button"
+                disabled={isUploading}
                 onClick={() => document.getElementById('doc-upload')?.click()}
                 className="w-10 h-10 p-0 bg-blue-500 rounded-md shrink-0"
               >
-                {isProcessingOCR ? (
+                {isUploading || isProcessingOCR ? (
                   <Loader2 className="w-5 h-5 animate-spin text-white" />
                 ) : (
                   <Upload className="w-5 h-5 text-white" />
                 )}
               </Button>
-              {uploadedDocument && (
+              {(uploadedDocument || formData?.renterDetails?.documentGuid) && (
                 <Button
                   variant="secondary"
-                  onClick={() => setShowDocumentPreview(true)}
+                  disabled={isViewing}
+                  onClick={handleViewDocument}
                   className="h-10 w-10 p-0 rounded-md border-gray-200 bg-white shrink-0"
                 >
-                  <Eye className="w-4 h-4 text-blue-500" />
+                  {isViewing ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-blue-500" />
+                  )}
+                </Button>
+              )}
+              {(uploadedDocument || formData?.renterDetails?.documentGuid) && (
+                <Button
+                  variant="secondary"
+                  disabled={isDeleting}
+                  onClick={handleDeleteDocument}
+                  className="h-10 w-10 p-0 rounded-md border-red-200 bg-white text-red-500 hover:bg-red-50 shrink-0"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
                 </Button>
               )}
               {uploadedDocument && (
@@ -687,11 +807,15 @@ const AgreementDetails = memo(
           </div>
         </div>
 
-        <AgreementDocumentViewer
-          open={showDocumentPreview}
-          onClose={() => setShowDocumentPreview(false)}
-          documentUrl={documentPreviewUrl}
-          fileName={uploadedDocument?.name}
+        <DocumentViewerModal
+          isOpen={showDocumentPreview}
+          onClose={handleClosePreview}
+          fileUrl={previewUrl || ''}
+          fileName={uploadedDocument?.name || 'agreement_document.pdf'}
+          label={t('floor.renterSection.agreementPreview')}
+          wardNo={wardNo}
+          propertyNo={propertyNo}
+          partitionNo={partitionNo}
         />
       </div>
     );
