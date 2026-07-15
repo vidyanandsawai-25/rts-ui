@@ -11,15 +11,17 @@ describe("Find Dashboard Filter values", () => {
   });
 
   it("should query grid with DashboardFilters 1 to 10", async () => {
+    type SearchPropertiesResult = Awaited<ReturnType<typeof searchProperties>>;
+
     const mockResponse = {
       totalCount: 42,
       records: [],
       pageNumber: 1,
       pageSize: 1,
       totalPages: 1
-    };
+    } satisfies SearchPropertiesResult;
 
-    vi.mocked(searchProperties).mockResolvedValue(mockResponse as any);
+    vi.mocked(searchProperties).mockResolvedValue(mockResponse);
     
     for (let i = 1; i <= 10; i++) {
       const response = await searchProperties({
