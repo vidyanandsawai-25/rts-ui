@@ -68,9 +68,12 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   onApplyTypeSubmission,
   ...floorTableProps
 }) => {
+  const isApplyTypeDisabled = React.useMemo(() => {
+    return selectedIds.size === 0;
+  }, [selectedIds]);
+
   const isChangeTypeDisabled = React.useMemo(() => {
     // Apply button is disabled if no destination property (non-source) is selected
-    // Type Submission button is disabled if no destination property (non-source) is selected
     return !Array.from(selectedIds).some((id) => !sourcePropertyIds.has(id));
   }, [selectedIds, sourcePropertyIds]);
 
@@ -78,7 +81,14 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   // Holds the currently selected type from the dropdown ('all' = no filter)
   const [selectedTypeFilter, setSelectedTypeFilter] = React.useState<string>('all');
 
-  const inputValue = changeTypeInput || '';
+  // Local state for Change Type text input to avoid input loop bug
+  // Initialize as empty string by default instead of currentPropertyType
+  const [inputValue, setInputValue] = React.useState(changeTypeInput || '');
+
+  // Keep local input value in sync when prop changes
+  React.useEffect(() => {
+    setInputValue(changeTypeInput || '');
+  }, [changeTypeInput]);
 
   // Extract unique sorted types from loaded properties for the dropdown options
   // Use || instead of ?? so that empty-string typeLabel also falls back to type
@@ -115,11 +125,10 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   const filteredProperties = React.useMemo(() => {
     if (selectedTypeFilter === 'all') return properties;
     return properties.filter((p) => {
-      if (sourcePropertyIds.has(p.id)) return true;
       const raw = String(p.type || '').trim();
       return raw === selectedTypeFilter;
     });
-  }, [properties, selectedTypeFilter, sourcePropertyIds]);
+  }, [properties, selectedTypeFilter]);
 
   // When a type is chosen from dropdown → auto-fill CHANGE TYPE + update filter
   // Also clears selection to avoid mismatch between visible and selected-but-hidden rows
@@ -136,7 +145,14 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
     [setChangeTypeInput, onClearSelection]
   );
 
-
+  // Sync changeTypeInput with dropdown when parent resets (tab change / drawer open)
+  // NOTE: We intentionally do NOT have a useEffect([properties]) here —
+  // memoization of displayedProperties in DataEntrySameAsDrawer prevents spurious resets.
+  React.useEffect(() => {
+    if (!changeTypeInput) {
+      setSelectedTypeFilter('all');
+    }
+  }, [changeTypeInput]);
 
   // ── Render dropdown to be placed on the left side of table header ──────────
   const typeFilterDropdown = (
@@ -194,10 +210,8 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
             onChange={(e) => {
               const val = e.target.value;
               if (val === '' || ONE_TO_NINETY_NINE_REGEX.test(val)) {
+                setInputValue(val);
                 setChangeTypeInput(val);
-                if (selectedTypeFilter !== 'all' && val !== selectedTypeFilter) {
-                  setSelectedTypeFilter('all');
-                }
               }
             }}
             onFocus={(e) => {
@@ -214,7 +228,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
           size="sm"
           label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
           onClick={onApply}
-          disabled={isChangeTypeDisabled || isApplying}
+          disabled={isApplyTypeDisabled || isApplying}
           isLoading={isApplying}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />
