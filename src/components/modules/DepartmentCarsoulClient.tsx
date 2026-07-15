@@ -74,54 +74,6 @@ function allLabels(v: LangText | string | undefined): string[] {
   return [v.en, v.hi, v.mr].filter(Boolean) as string[];
 }
 
-// ==========================================
-// START MOCK DATA FOR LOCAL DEVELOPMENT (EASY TO REMOVE)
-// ==========================================
-const MOCK_APPLICATIONS = [
-  {
-    id: "APP-2026-9872",
-    serviceId: "7176",
-    serviceName: "Property Tax Assessment (नवीन मालमत्ता कर आकारणी)",
-    submittedDate: "2026-07-10",
-    status: "pending",
-    progress: 40,
-    stages: [
-      { stage: 1, name: "Application Scrutiny", status: "completed", officer: "Assistant Commissioner (Tax)", remark: "Documents verified and found in order." },
-      { stage: 2, name: "Site Verification & Measurement", status: "pending", officer: "Tax Inspector", remark: "Site visit scheduled for 15th July." },
-      { stage: 3, name: "Tax Valuation Assessment", status: "not_started", officer: "Valuation Officer", remark: "-" },
-      { stage: 4, name: "Final Approval & Certificate", status: "not_started", officer: "Deputy Commissioner", remark: "-" }
-    ]
-  },
-  {
-    id: "APP-2026-4421",
-    serviceId: "7174",
-    serviceName: "Water Connection Permission (नवीन नळ जोडणी परवाना)",
-    submittedDate: "2026-07-08",
-    status: "approved",
-    progress: 100,
-    stages: [
-      { stage: 1, name: "Feasibility Check", status: "completed", officer: "Junior Engineer (Water)", remark: "Connection point located and approved." },
-      { stage: 2, name: "Security Deposit Payment Verification", status: "completed", officer: "Accounts Clerk", remark: "Payment of ₹4500 received and approved." },
-      { stage: 3, name: "Connection Permission Approval", status: "completed", officer: "Executive Engineer", remark: "Sanctioned connection permission." }
-    ]
-  },
-  {
-    id: "APP-2026-1102",
-    serviceId: "7190",
-    serviceName: "Fire NOC - Renewal (अग्निशमन दाखला नूतनीकरण)",
-    submittedDate: "2026-07-05",
-    status: "rejected",
-    progress: 66,
-    stages: [
-      { stage: 1, name: "Document Verification", status: "completed", officer: "Station Officer (Fire)", remark: "Identity proofs and layouts verified." },
-      { stage: 2, name: "On-site Fire Safety Inspection", status: "rejected", officer: "Fire Officer", remark: "Inadequate number of fire extinguishers found on premises. Renewal rejected." }
-    ]
-  }
-];
-// ==========================================
-// END MOCK DATA FOR LOCAL DEVELOPMENT
-// ==========================================
-
 export default function DepartmentCarsoulClient({ departments }: DepartmentCarsoulClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -141,12 +93,7 @@ export default function DepartmentCarsoulClient({ departments }: DepartmentCarso
       try {
         const apps = JSON.parse(window.localStorage.getItem("rtsApplications") || "{}");
         const localApps = Object.values(apps);
-        // Fallback to mock data for local development if empty
-        if (localApps.length === 0) {
-          setSubmissions(MOCK_APPLICATIONS);
-        } else {
-          setSubmissions(localApps);
-        }
+        setSubmissions(localApps);
       } catch (e) {
         console.error("Error loading dashboard local data:", e);
       }

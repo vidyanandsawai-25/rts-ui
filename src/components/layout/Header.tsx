@@ -116,22 +116,7 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
   const locale = getLocaleFromPathname(pathname);
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
-  const isCmsRoute = /\/(cms)(\/|$)/.test(pathname);
-
-  const getCmsDepartmentName = (lang: string) => {
-    if (lang === 'mr') return 'सेवा हक्क विभाग (RTS)';
-    if (lang === 'hi') return 'सेवा का अधिकार विभाग (RTS)';
-    return 'Right to Service (RTS) Department';
-  };
-
-  const getCmsSystemName = (lang: string) => {
-    if (lang === 'mr') return 'तक्रार व अर्ज व्यवस्थापन प्रणाली (CMS)';
-    if (lang === 'hi') return 'शिकायत एवं आवेदन प्रबंधन प्रणाली (CMS)';
-    return 'Complaint & Application Management System (CMS)';
-  };
-
-  const departmentName = isCmsRoute ? getCmsDepartmentName(locale) : t('app.departmentName');
-  const headerDetails = isCmsRoute ? getCmsSystemName(locale) : t('app.assessmentSystem');
+  const headerDetails = t('app.assessmentSystem');
 
   const activeMenuName = useMemo(() => {
     if (!menuItems || menuItems.length === 0) return null;
@@ -302,7 +287,7 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
               ) : null}
 
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{departmentName}</span>
+                <span>{t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
                 <span className="font-medium text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>

@@ -140,77 +140,7 @@ const getLayoutChromeData = cache(async () => {
   };
 });
 async function SidebarWithData({ locale }: { locale: string }) {
-  const headerList = await headers();
-  const pathname = headerList.get('x-pathname') || '';
   const { menuItems } = await getLayoutChromeData();
-
-  const isCmsRoute = /\/(cms|rts\/admin)(\/|$)/.test(pathname);
-  if (isCmsRoute) {
-    const cmsMenuItems: MenuItem[] = [
-      {
-        name: 'Dashboard',
-        nameHi: 'डैशबोर्ड',
-        iconName: 'LayoutDashboard',
-        href: '/cms/dashboard',
-      },
-      {
-        name: 'Inbox',
-        nameHi: 'इनबॉक्स',
-        iconName: 'ClipboardList',
-        href: '/cms/inbox',
-      },
-      {
-        name: 'SLA Evaluation',
-        nameHi: 'मूल्यांकन (SLA)',
-        iconName: 'Hourglass',
-        href: '/cms/mulyamapan',
-      },
-      {
-        name: 'Masters',
-        nameHi: 'मास्टर्स',
-        iconName: 'Database',
-        href: '/cms/masters',
-        subItems: [
-          {
-            name: 'Dept / Services',
-            href: '/cms/masters',
-          },
-          {
-            name: 'Form Field Definition',
-            href: '/cms/masters/fields',
-          }
-        ]
-      },
-      {
-        name: 'User Access Control',
-        nameHi: 'प्रवेश नियंत्रण',
-        iconName: 'Users',
-        href: '/cms/users',
-        subItems: [
-          {
-            name: 'Users Registry',
-            href: '/cms/users',
-          },
-          {
-            name: 'Roles & Access',
-            href: '/cms/users/roles',
-          },
-          {
-            name: 'Modules Manager',
-            href: '/cms/users/modules',
-          }
-        ]
-      },
-      {
-        name: 'Reports',
-        nameHi: 'रिपोर्ट',
-        iconName: 'FileBarChart',
-        href: '/cms/reports',
-      },
-    ];
-    return <Sidebar menuItems={cmsMenuItems} locale={locale} />;
-  }
-
   return <Sidebar menuItems={menuItems} locale={locale} />;
 }
 async function HeaderWithRequestContext() {
