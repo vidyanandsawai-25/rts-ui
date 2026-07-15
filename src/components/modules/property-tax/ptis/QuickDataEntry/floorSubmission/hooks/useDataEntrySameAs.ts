@@ -40,9 +40,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   const locale = String(routeParams?.locale || 'en');
   const { confirm } = useConfirm();
   const currentPropertyId = React.useMemo(() => {
-    if (initialPropertyID == null) return undefined;
-    const id = Number(initialPropertyID);
-    return Number.isFinite(id) && id > 0 ? id : undefined;
+    return initialPropertyID ? Number(initialPropertyID) : undefined;
   }, [initialPropertyID]);
   const [dataEntrySameAsTab, setDataEntrySameAsTab] = React.useState('type-wise');
   const [selectableProperties, setSelectableProperties] = React.useState<SelectableProperty[]>([]);
@@ -218,46 +216,21 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     setIsApplyingSameAs(true);
     try {
       const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType) ?? 0;
-      type ActionResult = { success: boolean; error?: string };
-      const promises: Promise<ActionResult>[] = [];
+      const promises: Promise<any>[] = [];
 
-      // 1. If source property is selected, update its type.
+      // 1. If source property is selected, update its type directly in the database!
       if (isSourceSelected) {
         promises.push((async () => {
           // Fetch current basic details of source property
           const basicDetails = await getPropertyBasicDetailsAction(sourcePropertyId);
           if (!basicDetails) {
-            return { success: false, error: t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }) };
+            return { success: false, error: 'Could not fetch source property details' };
           }
-          
-          // Map only the fields required by UpdatePropertyBasicDetailsDto
+          // Modify only the propertyTypeId
           const updatedPayload = {
-            wardId: basicDetails.wardId,
-            taxZoneId: basicDetails.taxZoneId,
-            categoryId: basicDetails.categoryId,
-            propertyTypeId: newType, // modified
-            partitionNo: basicDetails.partitionNo,
-            flatOrShopNo: basicDetails.flatOrShopNo,
-            plotNo: basicDetails.plotNo,
-            surveyNo: basicDetails.surveyNo,
-            upicId: basicDetails.upicId,
-            subZoneNo: basicDetails.subZoneNo,
-            moujaId: basicDetails.moujaId,
-            moujaName: basicDetails.moujaName,
-            noOfResidentialToilets: basicDetails.noOfResidentialToilets,
-            noOfCommercialToilets: basicDetails.noOfCommercialToilets,
-            totalBuiltupAreaSqFeet: basicDetails.totalBuiltupAreaSqFeet,
-            totalCarpetAreaSqFeet: basicDetails.totalCarpetAreaSqFeet,
-            totalBuiltupAreaSqMeter: basicDetails.totalBuiltupAreaSqMeter,
-            totalCarpetAreaSqMeter: basicDetails.totalCarpetAreaSqMeter,
-            plotArea: basicDetails.plotArea,
-            plotAreaFtLength: basicDetails.plotAreaFtLength,
-            plotAreaFtWidth: basicDetails.plotAreaFtWidth,
-            plotAreaMtrLength: basicDetails.plotAreaMtrLength,
-            plotAreaMtrWidth: basicDetails.plotAreaMtrWidth,
-            rateSectionDescription: basicDetails.rateSectionDescription,
+            ...basicDetails,
+            propertyTypeId: newType
           };
-          
           // Call the action to save it
           return await updatePropertyBasicDetailsAction(locale, sourcePropertyId, updatedPayload);
         })());
@@ -399,7 +372,3 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     isApplyingTypeSubmission, handleApplyTypeSubmission,
   };
 }
-
-
-
-

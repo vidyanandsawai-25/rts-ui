@@ -182,24 +182,20 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
     [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t]
   );
 
-  const headerExtra = (
-    <div className="flex flex-wrap items-center gap-3 flex-1">
-      {leftHeaderContent}
-      {selectedCount > 0 && (
-        <div className="ml-auto flex items-center gap-2">
-          <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
-            {t('floor.selectProperties.selected', { count: selectedCount })}
-          </span>
-          <ClearButton
-            type="button"
-            label={t('floor.selectProperties.clearSelection')}
-            onClick={onClearSelection}
-            className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
-          />
-        </div>
-      )}
-    </div>
-  );
+  const headerExtra =
+    selectedCount > 0 ? (
+      <div className="ml-auto flex items-center gap-2">
+        <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
+          {t('floor.selectProperties.selected', { count: selectedCount })}
+        </span>
+        <ClearButton
+          type="button"
+          label={t('floor.selectProperties.clearSelection')}
+          onClick={onClearSelection}
+          className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
+        />
+      </div>
+    ) : null;
 
   return (
     <div className="mt-3">
@@ -230,7 +226,12 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           }
           return '';
         }}
-        headerTitle={t('floor.selectProperties.title')}
+        headerTitle={
+          <div className="flex flex-wrap items-center gap-3">
+            <span>{t('floor.selectProperties.title')}</span>
+            {leftHeaderContent}
+          </div>
+        }
         headerExtra={headerExtra}
         emptyText={t('floor.selectProperties.noProperties')}
         loadingText={t('floor.selectProperties.loading')}
@@ -243,3 +244,5 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
 };
 
 export default SelectPropertiesTable;
+
+
