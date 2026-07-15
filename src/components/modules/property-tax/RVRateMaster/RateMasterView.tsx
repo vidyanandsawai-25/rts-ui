@@ -75,7 +75,7 @@ export default function RateMasterView({
     handleDropdownChange('useGroup', value);
   }, [handleDropdownChange]);
   const handleGenerateRate = () => {
-    router.push(`/${locale}/property-tax/rate-master/rvratemaster/add`);
+    router.push(`/${locale}/property-tax/rvratemaster/add`);
   };
 
   const handleEditRate = () => {
@@ -83,7 +83,7 @@ export default function RateMasterView({
     params.set('zone', selectedZone ?? "");
     params.set('year', selectedYear ?? "");
     params.set('useGroup', selectedUseGroup ?? "");
-    router.push(`/${locale}/property-tax/rate-master/rvratemaster/EditDelete/bulk?${params.toString()}`);
+    router.push(`/${locale}/property-tax/rvratemaster/EditDelete/bulk?${params.toString()}`);
   };
 
   const handleDeleteRate = () => {
@@ -92,7 +92,7 @@ export default function RateMasterView({
     params.set('year', selectedYear ?? "");
     params.set('useGroup', selectedUseGroup ?? "");
     params.set('mode', 'delete');
-    router.push(`/${locale}/property-tax/rate-master/rvratemaster/EditDelete/bulk?${params.toString()}`);
+    router.push(`/${locale}/property-tax/rvratemaster/EditDelete/bulk?${params.toString()}`);
   };
 
   const handleDownloadRates = async () => {

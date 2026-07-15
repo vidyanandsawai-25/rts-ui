@@ -74,7 +74,7 @@ export async function createMoujaAction(
     await createMouja(data);
     // Revalidate all locale variants of the mouja page
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rate-master/moujamaster`, "page");
+      revalidatePath(`/${locale}/property-tax/moujamaster`, "page");
     }
     return { success: true };
   } catch (error: unknown) {
@@ -105,7 +105,7 @@ export async function updateMoujaAction(
     await updateMouja(data);
     // Revalidate all locale variants of the mouja page
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rate-master/moujamaster`, "page");
+      revalidatePath(`/${locale}/property-tax/moujamaster`, "page");
     }
     return { success: true };
   } catch (error: unknown) {
@@ -143,7 +143,7 @@ export async function deleteMoujaAction(
 
     // Revalidate all locale variants of the mouja page
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rate-master/moujamaster`, "page");
+      revalidatePath(`/${locale}/property-tax/moujamaster`, "page");
     }
     return {
       success: true,

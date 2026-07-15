@@ -5,7 +5,7 @@ import {
   getRateUnitPolicy,
   getRateFrequencyPolicy,
   getGlobalFrequencyMismatch
-} from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+} from "@/app/[locale]/property-tax/rvratemaster/action";
 import { getRateMasterPaged } from "@/lib/api/rvRateMaster";
 
 // Force dynamic rendering to ensure fresh data on each navigation
