@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo } from 'react';
 import type { 
   ApartmentTaxDetailsItems, 
@@ -18,7 +16,6 @@ export interface TaxRowData extends Record<string, unknown> {
   id: string;
   rowType: 'rateable' | 'capital' | 'single' | 'total';
   methodLabel: string;
-  total: number;
   [key: string]: unknown;
 }
 
@@ -103,12 +100,7 @@ export function createTaxMap(taxAmounts: ApartmentTaxAmountItem[] | undefined): 
   return map;
 }
 
-/**
- * Calculate total for a set of tax amounts
- */
-export function calculateTotal(taxAmounts: ApartmentTaxAmountItem[] | undefined): number {
-  return taxAmounts?.reduce((sum, tax) => sum + tax.taxAmount, 0) ?? 0;
-}
+
 
 /**
  * Determine header gradient class based on sub-tab
@@ -183,8 +175,6 @@ export function useTaxTableData(
     if (activeSubTab === 'dual-method' && dualMethodDetails) {
       const rvTaxMap = createTaxMap(dualMethodDetails.rateable?.taxAmounts);
       const cvTaxMap = createTaxMap(dualMethodDetails.capital?.taxAmounts);
-      const rvTotal = calculateTotal(dualMethodDetails.rateable?.taxAmounts);
-      const cvTotal = calculateTotal(dualMethodDetails.capital?.taxAmounts);
 
       const rows: TaxRowData[] = [];
 
@@ -193,7 +183,6 @@ export function useTaxTableData(
         id: 'rateable',
         rowType: 'rateable',
         methodLabel: tPtis('apartmentTabs.rateable'),
-        total: rvTotal,
       };
       taxColumns.forEach((tax) => {
         rvRow[tax.taxName] = rvTaxMap.get(tax.taxName);
@@ -205,7 +194,6 @@ export function useTaxTableData(
         id: 'capital',
         rowType: 'capital',
         methodLabel: tPtis('apartmentTabs.capital'),
-        total: cvTotal,
       };
       taxColumns.forEach((tax) => {
         cvRow[tax.taxName] = cvTaxMap.get(tax.taxName);
@@ -217,7 +205,6 @@ export function useTaxTableData(
         id: 'total',
         rowType: 'total',
         methodLabel: t('taxDetails.columnTotal'),
-        total: rvTotal + cvTotal,
       };
       taxColumns.forEach((tax) => {
         const rvAmount = rvTaxMap.get(tax.taxName) ?? 0;
@@ -233,13 +220,11 @@ export function useTaxTableData(
     if (!taxDetails?.taxAmounts || taxColumns.length === 0) return [];
     
     const taxMap = createTaxMap(taxDetails.taxAmounts);
-    const total = calculateTotal(taxDetails.taxAmounts);
 
     const row: TaxRowData = {
       id: 'single',
       rowType: 'single',
       methodLabel: tPtis(getTabTranslationKey(activeMainTab)),
-      total,
     };
     taxColumns.forEach((tax) => {
       row[tax.taxName] = taxMap.get(tax.taxName);
