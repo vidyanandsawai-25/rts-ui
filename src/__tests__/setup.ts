@@ -226,4 +226,3 @@ vi.mock('lucide-react', async (importOriginal) => {
 afterEach(() => {
   cleanup();
 });
-

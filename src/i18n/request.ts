@@ -69,8 +69,8 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     taxCalculationGuidelineMessages,
-    modulesMessages,
     addTaxesMessages,
+    modulesMessages,
     reportMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -235,8 +235,8 @@ export default getRequestConfig(async ({ locale }) => {
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
       taxCalculationGuideline: taxCalculationGuidelineMessages,
-      modules: modulesMessages,
       addTaxes: addTaxesMessages,
+      modules: modulesMessages,
       report: reportMessages,
     },
   };

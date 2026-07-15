@@ -8,6 +8,8 @@ import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user
 import type { Department } from "@/types/departmentActivation.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
+import { userScreenAccessService } from "@/lib/api/user-screen-access.service";
+import { filterScreensByAllocatedRoles, mergeUserScreens } from "@/lib/utils/module-access-guard";
 
 /**
  * Response type for listServices
@@ -291,6 +293,43 @@ export async function getUserProfileSSR(): Promise<{
                 .map(m => m.moduleName)
         )];
 
+        const isUserActive = profile.isActive === true || String(profile.isActive).toLowerCase() === 'true';
+        const safeDepts = Array.isArray(profile.departments) ? profile.departments : [];
+        const activeDepts = safeDepts.filter((d) => d && (d.isActive || !isUserActive));
+        const activeDeptIds = new Set(activeDepts.map((d) => String(d.departmentId)));
+
+        const roleAccess: Record<string, number[]> = {};
+        if (Array.isArray(profile.roleAllocations)) {
+          profile.roleAllocations.forEach((ra) => {
+            if (ra && (ra.isActive || !isUserActive)) {
+              const deptId = String(ra.departmentId);
+              if (activeDeptIds.has(deptId)) {
+                if (!roleAccess[deptId]) roleAccess[deptId] = [];
+                roleAccess[deptId].push(ra.userRoleId);
+              }
+            }
+          });
+        }
+
+        let hasSettingsAccess = false;
+        try {
+            const authToken = cookieStore.get('auth_token')?.value;
+            const screensRes = await userScreenAccessService.getScreensForUser(userId, authToken);
+            if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
+                const filteredScreens = filterScreensByAllocatedRoles(screensRes.data, roleAccess);
+                const mergedScreens = mergeUserScreens(filteredScreens);
+                
+                hasSettingsAccess = mergedScreens.some(s => {
+                    const route = s.routePath || '';
+                    const isConfigRoute = route.startsWith('configuration-settings') || route.startsWith('/configuration-settings');
+                    const isViewableMenu = (s.isMenu === true || s.isMenu === 1) && s.canView && !s.haveNoAccess;
+                    return isConfigRoute && isViewableMenu;
+                });
+            }
+        } catch (e) {
+            console.error('Failed to verify configuration settings access', e);
+        }
+
         const data: UserProfileDisplayValues = {
             fullName,
             email: profile.email,
@@ -304,6 +343,7 @@ export async function getUserProfileSSR(): Promise<{
             language: profile.language,
             primaryRole: roles[0] || 'User',
             primaryDepartment: departments[0] || '',
+            hasSettingsAccess,
         };
 
         return { data };

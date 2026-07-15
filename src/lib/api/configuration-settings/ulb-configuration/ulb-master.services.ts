@@ -230,7 +230,7 @@ export async function getUlbImageView(
     cleanBase = cleanBase.substring(0, cleanBase.length - 4);
   }
   const finalRoot = cleanBase.endsWith('/') ? cleanBase : `${cleanBase}/`;
-  const url = `${finalRoot}api/UlbImageMaster/${encodeURIComponent(documentGuid)}/view`;
+  const url = `${finalRoot}api/documents/${encodeURIComponent(documentGuid)}/view`;
 
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
