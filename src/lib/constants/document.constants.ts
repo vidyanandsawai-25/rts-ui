@@ -25,6 +25,7 @@ export const REFERENCE_TABLE = {
   PropertyPhoto: 'PropertyPhoto',
   PropertyOwner: 'PropertyOwners',
   BuildingPermission: 'BuildingPermissions',
+  RenterMast: 'RenterMast',
 } as const;
 
 export const DEPARTMENT_ID = {
@@ -36,5 +37,6 @@ export const MODULE_ID = {
   PropertyPhoto: 1,
   PropertyDiscount: 1,
   PropertySocialDetails: 1,
+  RenterMast: 1,
 } as const;
 

@@ -51,8 +51,8 @@ export function useCombinePropertyForm({
     selectedPropertyNo,
     selectedBasePropertyId,
     basePartitionNo,
-    submitPropertyNos: filters.searchParams.get('propertyNos') || undefined,
-    partitionNo: filters.searchParams.get('combinePartitionNo') || '',
+    submitPropertyNos: filters.computedPropertyNos || undefined,
+    partitionNo: filters.computedCombinePartitionNo || '',
     checkedProperties: state.checkedReviewData,
     selectedPropertyType: state.selectedPropertyType,
     remark: state.remark,
@@ -72,8 +72,8 @@ export function useCombinePropertyForm({
 
   const canProceed =
     !!selectedBasePropertyId &&
-    (filters.selectionMethod === 'range' 
-      ? !!(filters.rangeFrom && filters.rangeTo) && !filters.isRangeInvalid 
+    (filters.selectionMethod === 'range'
+      ? !!(filters.rangeFrom && filters.rangeTo) && !filters.isRangeInvalid
       : filters.selectedProperties.length > 0);
 
   return {
@@ -88,3 +88,4 @@ export function useCombinePropertyForm({
     }
   };
 }
+
