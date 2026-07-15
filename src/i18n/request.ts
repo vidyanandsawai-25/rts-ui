@@ -171,21 +171,15 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/addTaxes.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/addTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/assetPhotoType.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/assetRoomType.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
