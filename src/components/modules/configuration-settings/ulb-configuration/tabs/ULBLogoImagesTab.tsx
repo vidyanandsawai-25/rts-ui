@@ -59,7 +59,7 @@ export function ULBLogoImagesTab({
   );
 
   const handleDrawerSave = async () => {
-    await uploadOrReplaceImage(drawerMode, drawerCategory, selectedFile, replaceImageId);
+    await uploadOrReplaceImage(drawerMode, drawerCategory, selectedFile, replaceImageId, logoUrl);
     setDrawerOpen(false);
     setSelectedFile(null);
     setReplaceImageId(null);
@@ -81,9 +81,9 @@ export function ULBLogoImagesTab({
               iconBgColor="bg-indigo-50"
               iconTextColor="text-indigo-600"
               onTriggerUploadOrReplace={() => {
-                setDrawerMode(activeLogoImg ? 'replace' : 'upload');
+                setDrawerMode('upload');
                 setDrawerCategory('Logo');
-                setReplaceImageId(activeLogoImg ? activeLogoImg.id : null);
+                setReplaceImageId(null);
                 setSelectedFile(null);
                 setDrawerOpen(true);
               }}
@@ -101,10 +101,11 @@ export function ULBLogoImagesTab({
               icon={ImageIcon}
               iconBgColor="bg-amber-50"
               iconTextColor="text-amber-600"
+              isLandscape={true}
               onTriggerUploadOrReplace={() => {
-                setDrawerMode(backgroundImg ? 'replace' : 'upload');
+                setDrawerMode('upload');
                 setDrawerCategory('Background');
-                setReplaceImageId(backgroundImg ? backgroundImg.id : null);
+                setReplaceImageId(null);
                 setSelectedFile(null);
                 setDrawerOpen(true);
               }}
@@ -122,7 +123,7 @@ export function ULBLogoImagesTab({
             isUploading={isUploading}
             onTriggerUpload={() => {
               setDrawerMode('upload');
-              setDrawerCategory('Gallery');
+              setDrawerCategory('Logo');
               setReplaceImageId(null);
               setSelectedFile(null);
               setDrawerOpen(true);

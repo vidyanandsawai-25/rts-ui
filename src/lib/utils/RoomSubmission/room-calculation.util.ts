@@ -143,6 +143,7 @@ export const calculateRoomWiseTotals = (rooms: RoomData[], excludeIndex?: number
         }
     });
 
+
     return {
         grandTotal,
         builtupGrandTotal,

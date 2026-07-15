@@ -88,6 +88,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           className="text-center h-[40px]"
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
           error={validationErrors.roomCount ? t(validationErrors.roomCount) : undefined}
+          data-field="roomCount"
         />
       </div>
     </>

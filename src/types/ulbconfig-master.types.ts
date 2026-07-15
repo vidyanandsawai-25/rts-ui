@@ -543,6 +543,7 @@ export interface ULBImageCardProps {
   icon: LucideIcon;
   iconBgColor?: string;
   iconTextColor?: string;
+  isLandscape?: boolean;
 }
 
 export interface ULBImageGalleryProps {

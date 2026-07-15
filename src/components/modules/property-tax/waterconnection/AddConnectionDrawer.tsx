@@ -10,6 +10,7 @@ import type {
   WaterConnectionSizeLookup,
   WaterConnectionStatusLookup,
   WaterRateMasterLookup,
+  WaterConnectionFormModel,
 } from "@/types/waterconnection.types";
 import { StatusToggleCard } from "../taxzonemaster/StatusToggleCard";
 import { MandatoryFieldsNotice } from "../taxzonemaster/MandatoryFieldsNotice";
@@ -26,6 +27,7 @@ interface AddConnectionDrawerProps {
   rateMasters: WaterRateMasterLookup[];
   onClose: () => void;
   onSaved: () => void;
+  saveWaterConnectionAction: (data: WaterConnectionFormModel) => Promise<{ ok: boolean; error?: string }>;
 }
 
 export function AddConnectionDrawer({
@@ -38,6 +40,7 @@ export function AddConnectionDrawer({
   rateMasters: initialRateMasters,
   onClose,
   onSaved,
+  saveWaterConnectionAction,
 }: AddConnectionDrawerProps) {
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
@@ -69,6 +72,7 @@ export function AddConnectionDrawer({
     t,
     onSaved,
     onClose,
+    saveWaterConnectionAction,
   });
 
   return (

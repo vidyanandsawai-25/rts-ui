@@ -58,7 +58,6 @@ export const mapFormToPayload = (params: {
     isAddingNew,
     existingFloorId,
     selectedFloorType,
-    isPlotCategory,
   } = params;
 
   const isOpenSpace = selectedFloorType === 'OpenPlot' ||
@@ -122,7 +121,7 @@ export const mapFormToPayload = (params: {
     createdBy: 0,
     propertyId: Number(propertyId || 0),
     propertyDetailsId: propDetailsId,
-    ...(!isOpenSpace && floorId ? { floorId } : {}),
+    ...(selectedFloorType !== 'OpenPlot' && floorId ? { floorId } : {}),
     floorDescription,
     subFloorId,
     subFloorDescription,
@@ -136,10 +135,10 @@ export const mapFormToPayload = (params: {
     subTypeOfUseDescription,
     carpetAreaSqMeter: parseFloat(String(formData.areaSqM || 0)),
     carpetAreaSqFeet: parseFloat(String(formData.areaSqFt || 0)),
-    builtupAreaSqMeter: isOpenSpace
+    builtupAreaSqMeter: (selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot' || Boolean(params.isPlotCategory && isOpenSpace))
       ? parseFloat(String(formData.areaSqM || 0))
       : parseFloat(String(formData.builtupAreaSqM || 0)),
-    builtupAreaSqFeet: isOpenSpace
+    builtupAreaSqFeet: (selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot' || Boolean(params.isPlotCategory && isOpenSpace))
       ? parseFloat(String(formData.areaSqFt || 0))
       : parseFloat(String(formData.builtupAreaSqFt || 0)),
     noOfRooms: isUtility ? 0 : (parseInt(String(formData.rooms)) || 0),
@@ -163,7 +162,7 @@ export const mapFormToPayload = (params: {
     roomWiseMinusData: isOpenSpace ? [] : undefined,
     typeOfUseCategoryId: formData.typeOfUseCategoryId,
     selectedFloorType: (selectedFloorType || formData.selectedFloorType) as "Construction" | "OpenPlot" | undefined,
-    isOpenPlot: (isPlotCategory && isOpenSpace) ? true : false,
+    isOpenPlot: Boolean(params.isPlotCategory && isOpenSpace),
     length: isOpenSpace
       ? (formData.length ? Number(formData.length) : null)
       : null,

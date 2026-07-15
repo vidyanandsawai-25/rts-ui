@@ -12,6 +12,7 @@ import { useState, useEffect, useRef, useCallback, useId, useMemo } from "react"
 export interface Option {
   value: string;
   label: string;
+  searchText?: string;
 }
 
 /**
@@ -37,6 +38,7 @@ interface MultiSelectProps {
   id?: string;
   name?: string;
   error?: boolean;
+  onOpen?: () => void;
 }
 
 /**
@@ -64,6 +66,7 @@ export function MultiSelect({
   id,
   name,
   error = false,
+  onOpen,
 }: MultiSelectProps) {
   const tCommon = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
@@ -88,6 +91,7 @@ export function MultiSelect({
 
   const openDropdown = useCallback(() => {
     setIsOpen(true);
+    if (onOpen) onOpen();
     if (wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
@@ -97,7 +101,7 @@ export function MultiSelect({
         setPlacement('bottom');
       }
     }
-  }, []);
+  }, [onOpen]);
 
   // Close dropdown on outside click
   const handleClickOutside = useCallback((event: MouseEvent) => {
@@ -121,7 +125,8 @@ export function MultiSelect({
   const filteredOptions = useMemo(() => {
     if (!searchTerm.trim()) return options;
     return options.filter((opt) =>
-      opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (opt.searchText && opt.searchText.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [options, searchTerm]);
 
@@ -169,6 +174,7 @@ export function MultiSelect({
       ref={el => { optionsRefs.current.items[idx] = el; }}
       onFocus={() => setFocusedIndex(idx)}
       onKeyDown={e => handleLabelKeyDown(e, idx)}
+      onClick={() => handleToggle(option.value)}
       className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors ${focusedIndex === idx ? 'bg-blue-50' : ''}`}
       aria-label={option.label}
     >
@@ -176,6 +182,7 @@ export function MultiSelect({
         type="checkbox"
         checked={value.includes(option.value)}
         onChange={() => handleToggle(option.value)}
+        onClick={e => e.stopPropagation()}
         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         tabIndex={-1}
         aria-hidden="true"
@@ -307,13 +314,14 @@ export function MultiSelect({
             />
           </div>
 
-          {/* Select All Option */}
+           {/* Select All Option */}
           <div className="border-b border-gray-200 bg-gray-50 shrink-0">
             <div
               className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 cursor-pointer"
               tabIndex={0}
               ref={el => { optionsRefs.current.selectAll = el; }}
               onFocus={() => setFocusedIndex(-1)}
+              onClick={handleSelectAll}
               onKeyDown={e => {
                 if (e.key === "Enter" || e.key === " ") {
                   handleSelectAll();
@@ -342,6 +350,7 @@ export function MultiSelect({
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={handleSelectAll}
+                  onClick={e => e.stopPropagation()}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   tabIndex={-1}
                   aria-hidden="true"

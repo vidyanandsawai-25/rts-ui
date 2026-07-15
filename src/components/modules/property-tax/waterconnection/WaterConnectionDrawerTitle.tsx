@@ -9,7 +9,7 @@ interface WaterConnectionDrawerTitleProps {
 export function WaterConnectionDrawerTitle({
   title,
   subtitle,
-  propertyNo,
+ 
 }: WaterConnectionDrawerTitleProps) {
   return (
     <div className="flex items-center gap-3">
@@ -19,11 +19,7 @@ export function WaterConnectionDrawerTitle({
       <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-bold text-gray-900 leading-tight">{title}</h2>
-          {propertyNo && (
-            <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
-              {propertyNo}
-            </span>
-          )}
+         
         </div>
         <p className="text-[11px] text-gray-500 leading-tight">{subtitle}</p>
       </div>

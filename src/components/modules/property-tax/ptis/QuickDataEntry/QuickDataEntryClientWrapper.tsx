@@ -18,9 +18,9 @@ const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
     olddetails: 'olddetails',
 };
 
-export function QuickDataEntryClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
+export function QuickDataEntryClientWrapper({ children, categoryName, propertyDescription }: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
     return (
-        <QuickDataEntryContent categoryName={categoryName}>
+        <QuickDataEntryContent categoryName={categoryName} propertyDescription={propertyDescription}>
             {children}
         </QuickDataEntryContent>
     );
@@ -29,7 +29,8 @@ export function QuickDataEntryClientWrapper({ children, categoryName }: { childr
 function QuickDataEntryContent({
     children,
     categoryName,
-}: { children: ReactNode; categoryName?: string }) {
+    propertyDescription,
+}: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -170,6 +171,12 @@ function QuickDataEntryContent({
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
                         <Tag className="h-3 w-3 text-white/95" />
                         <span>{t('floor.propertyCategory')}: {categoryName}</span>
+                    </div>
+                )}
+                {propertyDescription && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
+                        <Tag className="h-3 w-3 text-white/95" />
+                        <span>{t('property.propertyDescription')}: {propertyDescription}</span>
                     </div>
                 )}
             </div>

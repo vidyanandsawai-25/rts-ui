@@ -51,7 +51,11 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
             placeholder="0"
             disabled={!editingFloorForm.use}
             onChange={(cleaned) => {
-              setEditingFloorForm({ ...editingFloorForm, rooms: cleaned });
+              setEditingFloorForm({
+                ...editingFloorForm,
+                rooms: cleaned,
+                noOfRooms: cleaned ? Number(cleaned) : 0,
+              });
               if (formErrors.rooms) setFormErrors((prev) => ({ ...prev, rooms: '' }));
             }}
             onKeyDown={(e) => {

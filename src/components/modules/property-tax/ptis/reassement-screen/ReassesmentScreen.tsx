@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import {
-  TrendingUp,
   FileText,
-  Layers,
 } from 'lucide-react';
 import {
   MasterTable,
@@ -27,10 +25,10 @@ import type {
 } from '@/types/reassessment.types';
 import { useReassessmentSummaryCards } from '@/hooks/ptis/reassessment/useReassessmentSummaryCards';
 import { useReassessmentTaxTable } from '@/hooks/ptis/reassessment/useReassessmentTaxTable';
-import { useReassessmentAutoScroll } from '@/hooks/ptis/reassessment/useReassessmentAutoScroll';
 import { useSynchronizedScrolling } from '@/hooks/ptis/reassessment/useSynchronizedScrolling';
 import { cn } from '@/lib/utils/cn';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import { useSharedAutoScroll } from '@/hooks/ptis/reassessment/useSharedAutoScroll';
 
 // ============================================
 // INTERFACES
@@ -69,27 +67,14 @@ export default function ReassesmentScreen({
 }: ReassesmentScreenProps) {
   // Translations
   const t = useTranslations('reassessment');
-  
+
   // Modal states
   const [showRetroModal, setShowRetroModal] = useState(false);
   const [showSec129Modal, setShowSec129Modal] = useState(false);
 
-  // Auto scrolling states
-  const [isOldAutoScrolling, setIsOldAutoScrolling] = useState(false);
-  const [isNewAutoScrolling, setIsNewAutoScrolling] = useState(false);
-
   // ============================================
   // HOOKS
   // ============================================
-  useReassessmentAutoScroll({
-    isAutoScrolling: isOldAutoScrolling,
-    containerId: '#old-table-container',
-  });
-  useReassessmentAutoScroll({
-    isAutoScrolling: isNewAutoScrolling,
-    containerId: '#new-table-container',
-  });
-
   const summaryCardsData = useReassessmentSummaryCards({
     oldFloorDetails,
     newFloorDetails,
@@ -101,8 +86,9 @@ export default function ReassesmentScreen({
     taxColumns,
     taxRows,
   });
-  
+
   const { oldTableRef, newTableRef } = useSynchronizedScrolling();
+  const autoScrollController = useSharedAutoScroll();
 
   // ============================================
   // RENDER
@@ -117,18 +103,17 @@ export default function ReassesmentScreen({
         {/* ==========================================
         LEFT PANEL: Municipal Registration
         ========================================== */}
-        <div className="bg-white rounded-xl shadow-md border border-sky-100 overflow-hidden flex flex-col">
-          <div className="bg-gradient-to-r from-sky-50 to-blue-50 border-b border-sky-100 px-4 py-3 flex justify-between items-center">
-            <h3 className="font-bold text-sky-900 text-sm md:text-base flex items-center gap-2">
-              <Layers className="h-4 w-4 text-sky-600" />
+        <div className="bg-white rounded-xl shadow-md border-2 border-[#2f5597] overflow-hidden flex flex-col">
+          <div className="bg-gradient-to-r from-sky-50 to-blue-50 border-b border-sky-100 px-4 py-3 flex justify-center items-center">
+            <h3 className="font-bold text-sky-900 text-sm md:text-base">
               {t('sectionHeaders.municipalRegistration')}
             </h3>
           </div>
 
-          <div className="p-4 flex flex-col gap-4 flex-grow">
+          <div className="px-4 py-2 flex flex-col gap-4 flex-grow">
             {/* Photos */}
-            <div>
-              <h4 className="text-xs font-semibold text-gray-500 mb-2">
+            <div className="border-b border-gray-200 pb-4">
+              <h4 className="text-sm font-semibold text-[#2f5597] mb-2">
                 {t('photoLabels.photoAsPerOld')}
               </h4>
               <div className="grid grid-cols-2 gap-3">
@@ -139,7 +124,7 @@ export default function ReassesmentScreen({
                   const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
                   return (
                     <>
-                      <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
+                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center">
                         {oldPropertyPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
@@ -154,7 +139,7 @@ export default function ReassesmentScreen({
                           {t('photoLabels.oldPropertyPhoto')}
                         </div>
                       </div>
-                      <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-[#0f2342] flex items-center justify-center">
+                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center">
                         {oldPlanPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
@@ -179,8 +164,7 @@ export default function ReassesmentScreen({
             <OldFloorDetails
               scrollContainerRef={oldTableRef}
               data={oldFloorDetails}
-              isAutoScrolling={isOldAutoScrolling}
-              onToggleAutoScroll={() => setIsOldAutoScrolling(!isOldAutoScrolling)}
+              autoScrollController={autoScrollController}
             />
           </div>
         </div>
@@ -188,18 +172,17 @@ export default function ReassesmentScreen({
         {/* ==========================================
         RIGHT PANEL: New Survey
         ========================================== */}
-        <div className="bg-white rounded-xl shadow-md border border-blue-100 overflow-hidden flex flex-col">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 px-4 py-3 flex justify-between items-center">
-            <h3 className="font-bold text-blue-900 text-sm md:text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
+        <div className="bg-white rounded-xl shadow-md border-2 border-[#2f5597] overflow-hidden flex flex-col">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 px-4 py-3 flex justify-center items-center">
+            <h3 className="font-bold text-blue-900 text-sm md:text-base">
               {t('sectionHeaders.newSurvey')}
             </h3>
           </div>
 
-          <div className="p-4 flex flex-col gap-4 flex-grow">
+          <div className="px-4 py-2 flex flex-col gap-4 flex-grow">
             {/* Photos */}
-            <div>
-              <h4 className="text-xs font-semibold text-gray-500 mb-2">
+            <div className="border-b border-gray-200 pb-4">
+              <h4 className="text-sm font-semibold text-[#2f5597] mb-2">
                 {t('photoLabels.photoAsPerNew')}
               </h4>
               <div className="grid grid-cols-2 gap-3">
@@ -210,7 +193,7 @@ export default function ReassesmentScreen({
                   const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
                   return (
                     <>
-                      <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
+                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center">
                         {newPropertyPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
@@ -225,7 +208,7 @@ export default function ReassesmentScreen({
                           {t('photoLabels.newPropertyPhoto')}
                         </div>
                       </div>
-                      <div className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100 flex items-center justify-center">
+                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center">
                         {newPlanPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
@@ -234,7 +217,7 @@ export default function ReassesmentScreen({
                             className="object-cover"
                           />
                         ) : (
-                          <span className="text-gray-400 text-xs">{t('photoLabels.newPlanPhoto')}</span>
+                          <span className="text-gray-300 text-xs">{t('photoLabels.newPlanPhoto')}</span>
                         )}
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.newPlanPhoto')}
@@ -250,8 +233,7 @@ export default function ReassesmentScreen({
             <NewFloorDetails
               scrollContainerRef={newTableRef}
               data={newFloorDetails}
-              isAutoScrolling={isNewAutoScrolling}
-              onToggleAutoScroll={() => setIsNewAutoScrolling(!isNewAutoScrolling)}
+              autoScrollController={autoScrollController}
             />
           </div>
         </div>
@@ -260,48 +242,61 @@ export default function ReassesmentScreen({
       {/* ==========================================
       BOTTOM PANEL: Tax Details & Reassessment Summary
       ========================================== */}
-      <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 flex flex-col gap-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-          <h3 className="font-bold text-sky-950 text-base flex items-center gap-2">
-            <FileText className="h-5 w-5 text-sky-600" />
+      <div className="bg-white rounded-xl shadow-lg border-2 border-[#2f5597] overflow-hidden">
+        {/* HEADER - Separated with blue background */}
+        <div className="flex justify-between bg-gradient-to-r from-[#d9eaf7] via-[#c5ddf5] to-[#d9eaf7] border-b-2 border-[#2f5597] px-6 py-4">
+          <h3 className="font-bold text-[#17365d] text-base whitespace-nowrap flex items-center gap-2">
+            <FileText className="h-5 w-5 text-[#17365d]" />
             {t('sectionHeaders.taxDetails')}
           </h3>
-          <div className="flex gap-2">
-            <RetrospectiveDetailsButton
-              onClick={() => setShowRetroModal(true)}
-              label={t('buttons.retrospectiveDetails')}
-              className="font-bold active:scale-98 shadow-sm"
-            />
-            <Section129Button
-              onClick={() => setShowSec129Modal(true)}
-              label={t('buttons.section129')}
-              hidden
-              className="font-bold active:scale-98 shadow-sm"
-            />
-          </div>
+          <TaxSummaryCards cards={summaryCardsData} />
         </div>
 
-        {/* Summary Cards */}
-        <TaxSummaryCards cards={summaryCardsData} />
+        {/* CONTENT - With padding */}
+        <div className="p-3 flex flex-col gap-5">
 
-        {/* Detailed Taxes Table Grid - Dynamic */}
-        {detailedTaxesData.length > 0 && (
-          <div className="min-w-0">
-            <MasterTable
-              columns={detailedTaxesColumns}
-              data={detailedTaxesData}
-              paginationConfig={{ enabled: false }}
-              tableClassName="w-full border-collapse text-left text-xs"
-              theadClassName="bg-slate-50 text-slate-900 font-bold border-b border-gray-200 text-center [&_th]:whitespace-nowrap [&_th]:p-3 [&_th]:border-r [&_th]:border-gray-200"
-              rowClassName={(row) =>
-                cn(
-                  'divide-y divide-gray-200 text-gray-700 font-semibold [&_td]:p-1.5 [&_td]:border-r [&_td]:border-gray-200',
-                  row.isTotal ? 'bg-blue-50 [&_td]:border-blue-100' : 'hover:bg-slate-50/50'
-                )
-              }
-            />
-          </div>
-        )}
+          {/* Detailed Taxes Table Grid - Dynamic */}
+          {detailedTaxesData.length > 0 && (
+            <div className="min-w-0">
+              <MasterTable
+                columns={detailedTaxesColumns}
+                data={detailedTaxesData}
+                paginationConfig={{ enabled: false }}
+                tableClassName="w-full text-[11px] font-medium border-separate border-spacing-x-[3px] border-spacing-y-[2px]"
+                theadClassName={cn(
+                  'bg-[#e8eef5] text-black font-bold',
+                  '[&_th]:bg-[#dbe5f0] [&_th]:border [&_th]:border-[#a9b8cc] [&_th]:rounded [&_th]:shadow-sm',
+                  '[&_th]:px-1.5 [&_th]:py-[3px] [&_th]:whitespace-nowrap [&_th]:text-[11px]',
+                  '[&_th]:text-[#2f4256] [&_th]:font-bold'
+                )}
+                rowClassName={(row) =>
+                  cn(
+                    'text-gray-700 font-semibold transition-colors',
+                    '[&_td]:px-0.5 [&_td]:py-[2px]',
+                    row.isTotal ? '[&_td]:font-bold' : 'hover:bg-slate-50/40'
+                  )
+                }
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* BUTTONS */}
+      <div className="flex justify-center">
+        <div className="flex gap-2">
+          <RetrospectiveDetailsButton
+            onClick={() => setShowRetroModal(true)}
+            label={t('buttons.retrospectiveDetails')}
+            className="font-bold active:scale-98 shadow-sm"
+          />
+          <Section129Button
+            onClick={() => setShowSec129Modal(true)}
+            label={t('buttons.section129')}
+            hidden
+            className="font-bold active:scale-98 shadow-sm"
+          />
+        </div>
       </div>
 
       {/* ==========================================

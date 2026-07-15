@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { WaterConnectionPage } from "@/components/modules/property-tax/waterconnection";
-import { getWaterConnectionPageData } from "./action";
+import { getWaterConnectionPageData, saveWaterConnectionAction } from "./action";
 
 interface PageProps {
   searchParams: Promise<{ propertyId?: string; page?: string; pageSize?: string }>;
@@ -23,6 +23,7 @@ export default async function Page({ searchParams }: PageProps) {
       propertyId={resolvedPropertyId}
       initialPage={resolvedPage}
       initialPageSize={resolvedPageSize}
+      saveWaterConnectionAction={saveWaterConnectionAction}
     />
   );
 }

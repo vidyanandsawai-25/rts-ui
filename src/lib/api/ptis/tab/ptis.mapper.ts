@@ -33,7 +33,10 @@ export const ptisMapper = {
       surveyNo: data.surveyNo || '',
       plotNo: data.plotNo || '',
       propertyDescription: data.propertyDescription || '',
-      plotArea: data.plotArea?.toString() || '',
+      plotArea:
+        data.plotAreaSqFeet != null || data.plotAreaSqMeter != null
+          ? `${data.plotAreaSqFeet != null ? Number(data.plotAreaSqFeet).toFixed(2) : '0.00'} / ${data.plotAreaSqMeter != null ? Number(data.plotAreaSqMeter).toFixed(2) : '0.00'}`
+          : data.plotArea?.toString() || '',
       totalCarpetArea:
         data.totalCarpetAreaSqFeet != null || data.totalCarpetAreaSqMeter != null
           ? `${data.totalCarpetAreaSqFeet != null ? Number(data.totalCarpetAreaSqFeet).toFixed(2) : '0.00'} / ${data.totalCarpetAreaSqMeter != null ? Number(data.totalCarpetAreaSqMeter).toFixed(2) : '0.00'}`

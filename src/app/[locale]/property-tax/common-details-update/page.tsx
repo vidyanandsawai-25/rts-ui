@@ -14,6 +14,10 @@ interface PageProps {
     page?: string;
     pageSize?: string;
     q?: string;
+    propertyNo?: string;
+    partitionNo?: string;
+    scopeId?: string;
+    zoneId?: string;
   }>;
 }
 
@@ -41,17 +45,25 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const searchTerm = raw.q?.trim() || "";
   const selectedField = raw.field?.trim() || "";
   const wardId = raw.wardId?.trim() || "";
-  const fromProperty = raw.fromProperty?.trim() || "";
-  const toProperty = raw.toProperty?.trim() || "";
+  
+  const rawPropertyNo = raw.propertyNo?.trim() || "";
+  const rawPartitionNo = raw.partitionNo?.trim() || "";
+  const hasPartition = rawPartitionNo !== "" && rawPartitionNo !== "0";
+  const propertyNoCombined = (rawPropertyNo && hasPartition) ? `${rawPropertyNo}-${rawPartitionNo}` : rawPropertyNo;
+
+  const fromProperty = raw.fromProperty?.trim() || propertyNoCombined;
+  const toProperty = raw.toProperty?.trim() || propertyNoCombined;
   const wing = raw.wing?.trim() || "";
   const tab = raw.tab?.trim() || "updateFields";
+  const scopeId = raw.scopeId?.trim() || "";
+  const zoneId = raw.zoneId?.trim() || "";
 
-  return { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab };
+  return { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab, scopeId, zoneId };
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab } = sanitizeParams(params);
+  const { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab, scopeId, zoneId } = sanitizeParams(params);
 
   // Fetch menu items - throw error to trigger error boundary
   const menuItems = await getMenuItemsAction();
@@ -96,6 +108,8 @@ export default async function Page({ searchParams }: PageProps) {
       initialPageSize={pageSize}
       initialSearchTerm={searchTerm}
       initialTab={tab}
+      initialScopeId={scopeId}
+      initialZoneId={zoneId}
     />
   );
 }

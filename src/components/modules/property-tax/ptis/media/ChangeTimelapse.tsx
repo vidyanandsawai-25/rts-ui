@@ -141,7 +141,7 @@ export function ChangeTimelapse({
 
       {/* Map component */}
       <div className="flex-1 relative min-h-[300px] flex flex-col">
-        {waybackReleases.length > 0 ? (
+        {!(loading && waybackReleases.length === 0) ? (
           <DynamicTimelapseMap
             lat={lat}
             lng={lng}

@@ -5,24 +5,25 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
-import type { UseSubType, UseType, UseSubTypeFormProps } from "@/types/typeOfUse.types";
+import type { UseSubType, UseType, UseSubTypeFormProps, TypeOfUseCategory } from "@/types/typeOfUse.types";
 import { Drawer } from "@/components/common/Drawer";
 import { validateForm } from '@/lib/utils/validation-helpers';
 import { sanitizeDescription } from '@/lib/utils/sanitization';
 import { useSubTypeFormValidation } from '@/hooks/TypeOfUseMaster/useSubTypeFormValidation';
 import { useSubTypeFormSubmit } from '@/hooks/TypeOfUseMaster/useSubTypeFormSubmit';
-import { DescriptionInput, SearchSequenceInput } from './TypeFormFields';
+import { DescriptionInput, SearchSequenceInput, CategorySelector } from './TypeFormFields';
 import { SubTypeStatusSection } from './SubTypeStatusSection';
 import { SubTypeFormHeader } from './SubTypeFormHeader';
 import { SubTypeFormFooter } from './SubTypeFormFooter';
 
 type FieldErrors = {
   typeId?: string;
+  categoryId?: string;
   description?: string;
   searchSequence?: string;
 };
 
-export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp = null, allSubTypes: allSubTypesProp = [] }: UseSubTypeFormProps) {
+export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp = null, allSubTypes: allSubTypesProp = [], allCategories: allCategoriesProp = [] }: UseSubTypeFormProps) {
   const t = useTranslations("typeofusemaster");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,6 +33,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
 
   const [typeInfo] = useState<UseType | null>(typeInfoProp);
   const [allSubTypes] = useState<UseSubType[]>(allSubTypesProp);
+  const [allCategories] = useState<TypeOfUseCategory[]>(allCategoriesProp);
 
   const [formData, setFormData] = useState<UseSubType>(
     initialData || {
@@ -90,6 +92,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
       const validationErrors = validateForm(next, validationSchema);
       setErrors({
         typeId: validationErrors.typeOfUseId,
+        categoryId: validationErrors.typeOfUseCategoryId,
         description: validationErrors.description,
         searchSequence: validationErrors.searchSequence,
       });
@@ -116,6 +119,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
 
     setTouched({
       typeId: true,
+      categoryId: true,
       description: true,
       searchSequence: true,
     });
@@ -123,6 +127,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
     const validationErrors = validateForm(formData, validationSchema);
     setErrors({
       typeId: validationErrors.typeOfUseId,
+      categoryId: validationErrors.typeOfUseCategoryId,
       description: validationErrors.description,
       searchSequence: validationErrors.searchSequence,
     });
@@ -186,6 +191,19 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
               onChange={(value) => setField("searchSequence", value)}
               error={errors.searchSequence}
               showError={showError("searchSequence")}
+              t={t}
+            />
+
+            {/* Category Selector */}
+            <CategorySelector
+              allCategories={allCategories}
+              selectedCategoryId={formData.typeOfUseCategoryId}
+              onChange={(categoryId) => {
+                setField("typeOfUseCategoryId", categoryId);
+                markTouched("categoryId");
+              }}
+              error={errors.categoryId}
+              showError={showError("categoryId")}
               t={t}
             />
           </div>
