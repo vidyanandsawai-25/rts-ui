@@ -4,6 +4,7 @@ import { DataEntrySameAsDrawer } from '@/components/modules/property-tax/ptis/Qu
 import { useDataEntrySameAs } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/hooks/useDataEntrySameAs';
 import type { ReactNode } from 'react';
 
+
 type DataEntrySameAsHookReturn = ReturnType<typeof useDataEntrySameAs>;
 
 interface ApplyTabMockProps {

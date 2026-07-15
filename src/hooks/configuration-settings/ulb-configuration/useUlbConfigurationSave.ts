@@ -33,7 +33,7 @@ export function useUlbConfigurationSave({
   const isSavingRef = useRef(false);
 
   const save = useCallback(
-    async (section?: UlbSectionKey): Promise<boolean> => {
+    async (section?: UlbSectionKey, suppressToast = false): Promise<boolean> => {
       if (isSavingRef.current) return false;
 
       isSavingRef.current = true;
@@ -60,7 +60,9 @@ export function useUlbConfigurationSave({
           ? t('messages.updateSuccess')
           : t('messages.createSuccess');
 
-        toast.success(response.message || fallbackMessage);
+        if (!suppressToast) {
+          toast.success(response.message || fallbackMessage);
+        }
 
         startTransition(() => {
           router.refresh();

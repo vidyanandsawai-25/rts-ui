@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { CombinePropertyItem } from '@/types/combine-property.types';
@@ -15,13 +15,29 @@ export function useCombinePropertyFilters(
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Local state for individual selections to avoid URL length limits (404 errors)
+  const [individualSelection, setIndividualSelection] = useState<string[]>(() => {
+    return searchParams.get('individual')?.split(',').filter(Boolean) ?? [];
+  });
+
   const rangeFrom = searchParams.get('from') ?? '';
   const rangeTo = searchParams.get('to') ?? '';
-  const selectedProperties = useMemo(() => {
-    const ids = searchParams.get('individual')?.split(',').filter(Boolean) ?? [];
-    return ids.filter(id => subPropertyList.some(p => String(p.id) === id));
-  }, [searchParams, subPropertyList]);
   const selectionMethod = (searchParams.get('method') as SelectionMethod) ?? 'range';
+
+  // Keep individual selection in sync if it changes from URL (e.g. initial load or back button)
+  const urlIndividual = searchParams.get('individual');
+  const [prevIndividual, setPrevIndividual] = useState<string | null>(urlIndividual);
+
+  if (urlIndividual !== prevIndividual) {
+    setPrevIndividual(urlIndividual);
+    if (urlIndividual) {
+      setIndividualSelection(urlIndividual.split(',').filter(Boolean));
+    }
+  }
+
+  const selectedProperties = useMemo(() => {
+    return individualSelection.filter(id => subPropertyList.some(p => String(p.id) === id));
+  }, [individualSelection, subPropertyList]);
 
   const buildUrl = useCallback(
     (overrides: Record<string, string | undefined>) => {
@@ -35,29 +51,26 @@ export function useCombinePropertyFilters(
     [pathname, searchParams]
   );
 
-  const calculatePropertyParams = useCallback(
-    (method: SelectionMethod, from: string, to: string, individual: string[]) => {
-      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => {
-        return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
-      });
-      let slice: CombinePropertyItem[] = [];
-      if (method === 'range' && from && to) {
-        const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === from);
-        const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === to);
-        if (fromIdx !== -1 && toIdx !== -1) {
-          const start = Math.min(fromIdx, toIdx);
-          const end = Math.max(fromIdx, toIdx);
-          slice = sortedSubPropertyList.slice(start, end + 1);
-        }
-      } else if (method === 'individual' && individual.length > 0) {
-        slice = sortedSubPropertyList.filter((i) => individual.includes(String(i.id)));
+  const computedParams = useMemo(() => {
+    const sortedSubPropertyList = [...subPropertyList].sort((a, b) => {
+      return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+    let slice: CombinePropertyItem[] = [];
+    if (selectionMethod === 'range' && rangeFrom && rangeTo) {
+      const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+      const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const start = Math.min(fromIdx, toIdx);
+        const end = Math.max(fromIdx, toIdx);
+        slice = sortedSubPropertyList.slice(start, end + 1);
       }
-      const partitionNos = Array.from(new Set(slice.map((i) => i.fromProperty || '0'))).join(',');
-      const propertyNos = Array.from(new Set(slice.map((i) => i.propertyNo).filter(Boolean))).join(',');
-      return { partitionNos, propertyNos };
-    },
-    [subPropertyList]
-  );
+    } else if (selectionMethod === 'individual' && individualSelection.length > 0) {
+      slice = sortedSubPropertyList.filter((i) => individualSelection.includes(String(i.id)));
+    }
+    const partitionNos = Array.from(new Set(slice.map((i) => i.fromProperty || '0'))).join(',');
+    const propertyNosArray = Array.from(new Set(slice.map((i) => i.propertyNo).filter(Boolean))).join(',');
+    return { partitionNos, propertyNos: propertyNosArray };
+  }, [subPropertyList, selectionMethod, rangeFrom, rangeTo, individualSelection]);
 
   const handleBasePropertyChange = (_name: string, value: string) => {
     const selected = basePropertyList.find((item) => String(item.id) === value);
@@ -67,6 +80,7 @@ export function useCombinePropertyFilters(
     const partitionChar = selected.fromProperty ? selected.fromProperty.replace(/[^A-Za-z]/g, '') : undefined;
 
     onClearReview();
+    setIndividualSelection([]);
     router.push(
       buildUrl({
         basePropertyId: String(selected.id),
@@ -79,13 +93,27 @@ export function useCombinePropertyFilters(
         from: undefined,
         to: undefined,
         individual: undefined,
+        combinePartitionNo: undefined,
+        propertyNos: undefined,
+        showHistory: undefined,
       })
     );
   };
 
   const handleMethodChange = (method: SelectionMethod) => {
     onClearReview();
-    router.push(buildUrl({ method, from: undefined, to: undefined, individual: undefined }));
+    setIndividualSelection([]);
+    router.push(
+      buildUrl({
+        method,
+        from: undefined,
+        to: undefined,
+        individual: undefined,
+        combinePartitionNo: undefined,
+        propertyNos: undefined,
+        showHistory: undefined
+      })
+    );
   };
 
   const handleRangeFromChange = (_name: string, value: string) => {
@@ -98,8 +126,17 @@ export function useCombinePropertyFilters(
         toast.error(t('rangeInvalidError'));
       }
     }
-    const params = calculatePropertyParams('range', value, rangeTo, []);
-    router.replace(buildUrl({ from: value, combinePartitionNo: params.partitionNos, propertyNos: params.propertyNos, showHistory: 'false' }), { scroll: false });
+    // We only update the small search params in URL to prevent URL length limits
+    router.replace(
+      buildUrl({
+        from: value,
+        showHistory: 'false',
+        combinePartitionNo: undefined,
+        propertyNos: undefined,
+        individual: undefined
+      }),
+      { scroll: false }
+    );
   };
 
   const handleRangeToChange = (_name: string, value: string) => {
@@ -112,17 +149,35 @@ export function useCombinePropertyFilters(
         toast.error(t('rangeInvalidError'));
       }
     }
-    const params = calculatePropertyParams('range', rangeFrom, value, []);
-    router.replace(buildUrl({ to: value, combinePartitionNo: params.partitionNos, propertyNos: params.propertyNos, showHistory: 'false' }), { scroll: false });
+    router.replace(
+      buildUrl({
+        to: value,
+        showHistory: 'false',
+        combinePartitionNo: undefined,
+        propertyNos: undefined,
+        individual: undefined
+      }),
+      { scroll: false }
+    );
   };
 
   const handleIndividualChange = (values: string[]) => {
     onClearReview();
-    const params = calculatePropertyParams('individual', '', '', values);
-    router.replace(buildUrl({ individual: values.join(','), combinePartitionNo: params.partitionNos, propertyNos: params.propertyNos, showHistory: 'false' }), { scroll: false });
+    setIndividualSelection(values);
+    // Remove large query parameters from the URL to prevent 404 errors
+    router.replace(
+      buildUrl({
+        individual: undefined,
+        combinePartitionNo: undefined,
+        propertyNos: undefined,
+        showHistory: 'false'
+      }),
+      { scroll: false }
+    );
   };
 
   const clearFilters = () => {
+    setIndividualSelection([]);
     router.push(
       buildUrl({
         from: undefined,
@@ -171,6 +226,10 @@ export function useCombinePropertyFilters(
     handleIndividualChange,
     clearFilters,
     searchParams,
-    router
+    router,
+    computedCombinePartitionNo: computedParams.partitionNos,
+    computedPropertyNos: computedParams.propertyNos,
+    individualSelection
   };
 }
+

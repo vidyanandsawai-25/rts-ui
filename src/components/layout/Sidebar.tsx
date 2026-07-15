@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -35,9 +36,78 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
 
   const t = useTranslations('common');
 
-  // Collect all paths defined in the sidebar menu items to determine most specific match
+  // Helper to extract the department segment (e.g. 'configuration-settings', 'property-tax')
+  const getDepartment = (path: string): string => {
+    const cleaned = path.replace(/^\//, '');
+    const parts = cleaned.split('/');
+    return parts[0] || '';
+  };
+
+  const currentDept = getDepartment(pathWithoutLocale);
+
+  // Dynamically extract department segments from the menu items returned by the API,
+  // while keeping 'configuration-settings' as a static filterable segment.
+  const filterableDepartments = useMemo(() => {
+    const depts = new Set<string>(['configuration-settings']);
+    menuItems.forEach((item) => {
+      if (item.href && item.href !== '#') {
+        const dept = getDepartment(item.href);
+        if (dept && dept !== 'home' && dept !== 'dashboard') {
+          depts.add(dept);
+        }
+      }
+      if (item.subItems) {
+        item.subItems.forEach((sub) => {
+          if (sub.href && sub.href !== '#') {
+            const dept = getDepartment(sub.href);
+            if (dept && dept !== 'home' && dept !== 'dashboard') {
+              depts.add(dept);
+            }
+          }
+        });
+      }
+    });
+    return Array.from(depts);
+  }, [menuItems]);
+
+  const isFilterable = filterableDepartments.includes(currentDept);
+
+  // Dynamically filter menu items based on the active department route
+  const filteredMenuItems = useMemo(() => {
+    if (!isFilterable) return menuItems;
+
+    return menuItems
+      .map((item) => {
+        // If it is a group, filter its subItems
+        if (item.subItems && item.subItems.length > 0) {
+          const filteredSub = item.subItems.filter((sub) => {
+            const subPath = sub.href ? (sub.href.startsWith('/') ? sub.href : `/${sub.href}`) : '';
+            return getDepartment(subPath) === currentDept;
+          });
+          return {
+            ...item,
+            subItems: filteredSub,
+          };
+        }
+        return item;
+      })
+      .filter((item) => {
+        // Keep group item only if it still has subItems after filtering
+        if (item.subItems && item.subItems.length > 0) {
+          return true;
+        }
+        // Keep standalone item only if its path matches the current department
+        if (item.href && item.href !== '#') {
+          const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
+          return getDepartment(itemPath) === currentDept;
+        }
+        return false;
+      });
+  }, [menuItems, currentDept, isFilterable]);
+
+  // Collect all paths defined in the filtered sidebar menu items to determine most specific match
   const allPaths: string[] = [];
-  menuItems.forEach((item) => {
+  filteredMenuItems.forEach((item) => {
     if (item.href && item.href !== '#') {
       allPaths.push(item.href.startsWith('/') ? item.href : `/${item.href}`);
     }
@@ -87,7 +157,7 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-2 px-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="space-y-2">
-          {menuItems.map((item, idx) => {
+          {filteredMenuItems.map((item, idx) => {
             const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
             const active = isPathActive(itemPath);
             const hasSubItems = item.subItems && item.subItems.length > 0;

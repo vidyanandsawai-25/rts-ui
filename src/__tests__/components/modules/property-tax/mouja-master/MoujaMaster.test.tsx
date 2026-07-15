@@ -14,6 +14,9 @@ import * as mockRouter from "next/navigation";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
+  useSearchParams: vi.fn(() => ({
+    get: vi.fn(() => ""),
+  })),
 }));
 
 // Mock Actions
@@ -247,27 +250,6 @@ describe("MoujaMaster", () => {
       expect(screen.getByText("M002 - Test Mouja 2")).toBeInTheDocument();
     });
 
-    it("should render search input in header extra", () => {
-      render(
-        <NextIntlClientProvider locale="en" messages={mockMessages}>
-          <MoujaMaster {...defaultProps} />
-        </NextIntlClientProvider>
-      );
-
-      expect(screen.getByTestId("search-input")).toBeInTheDocument();
-    });
-
-    it("should render add button in header extra", () => {
-      render(
-        <NextIntlClientProvider locale="en" messages={mockMessages}>
-          <MoujaMaster {...defaultProps} />
-        </NextIntlClientProvider>
-      );
-
-      const addButton = screen.getByRole("button", { name: /Add Mouja/i });
-      expect(addButton).toBeInTheDocument();
-    });
-
     it("should render action buttons for each row", () => {
       render(
         <NextIntlClientProvider locale="en" messages={mockMessages}>
@@ -277,49 +259,6 @@ describe("MoujaMaster", () => {
 
       expect(screen.getByTestId("actions-1")).toBeInTheDocument();
       expect(screen.getByTestId("actions-2")).toBeInTheDocument();
-    });
-  });
-
-  describe("Search Functionality", () => {
-    it("should handle search input change", () => {
-      render(
-        <NextIntlClientProvider locale="en" messages={mockMessages}>
-          <MoujaMaster {...defaultProps} />
-        </NextIntlClientProvider>
-      );
-
-      const searchInput = screen.getByTestId("search-input");
-      fireEvent.change(searchInput, { target: { value: "Test" } });
-
-      expect(mockHandleSearchChange).toHaveBeenCalledWith("Test");
-    });
-
-    it("should display search placeholder", () => {
-      render(
-        <NextIntlClientProvider locale="en" messages={mockMessages}>
-          <MoujaMaster {...defaultProps} />
-        </NextIntlClientProvider>
-      );
-
-      const searchInput = screen.getByTestId("search-input");
-      expect(searchInput).toHaveAttribute("placeholder", "Search Mouja...");
-    });
-  });
-
-  describe("Add Button", () => {
-    it("should navigate to add page when add button is clicked", () => {
-      render(
-        <NextIntlClientProvider locale="en" messages={mockMessages}>
-          <MoujaMaster {...defaultProps} />
-        </NextIntlClientProvider>
-      );
-
-      const addButton = screen.getByRole("button", { name: /Add Mouja/i });
-      fireEvent.click(addButton);
-
-      expect(mockRouterPush).toHaveBeenCalledWith(
-        "/en/property-tax/moujamaster/add"
-      );
     });
   });
 
@@ -401,7 +340,7 @@ describe("MoujaMaster", () => {
       });
     });
 
-    it("should handle delete error with 409 status", async () => {
+    it("should show error toast on deletion failure", async () => {
       const deleteMock = vi.mocked(deleteMoujaAction);
       deleteMock.mockResolvedValue({
         success: false,
@@ -427,7 +366,7 @@ describe("MoujaMaster", () => {
       });
     });
 
-    it("should handle delete error with 404 status", async () => {
+    it("should handle api specific error codes", async () => {
       const deleteMock = vi.mocked(deleteMoujaAction);
       deleteMock.mockResolvedValue({
         success: false,

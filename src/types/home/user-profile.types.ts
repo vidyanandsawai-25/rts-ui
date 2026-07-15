@@ -84,6 +84,7 @@ export interface UserProfileDisplayValues {
   language: string;
   primaryRole: string;
   primaryDepartment: string;
+  hasSettingsAccess?: boolean;
 }
 
 /**

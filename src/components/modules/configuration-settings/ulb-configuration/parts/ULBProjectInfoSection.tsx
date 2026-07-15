@@ -13,9 +13,9 @@ export function ULBProjectInfoSection({
   getFieldError,
 }: ULBProjectInfoSectionProps) {
   return (
-    <section className="mb-5 overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <section className="mb-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
-      <header className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+      <header className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-4 py-2.5">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
           <Briefcase className="h-5 w-5" />
         </div>
@@ -25,9 +25,9 @@ export function ULBProjectInfoSection({
         </div>
       </header>
 
-      <div className="grid grid-cols-12 gap-x-8 gap-y-5 p-5">
-        <div className="col-span-4 space-y-4">
-          <div className="mb-3 flex items-center gap-2">
+      <div className="grid grid-cols-12 gap-x-6 gap-y-3 p-4">
+        <div className="col-span-4 space-y-2.5">
+          <div className="mb-1.5 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-indigo-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.timeline')}</span>
           </div>
@@ -62,12 +62,12 @@ export function ULBProjectInfoSection({
           <div className="h-full w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
         </div>
 
-        <div className="col-span-7 space-y-4">
-          <div className="mb-3 flex items-center gap-2">
+        <div className="col-span-7 space-y-2.5">
+          <div className="mb-1.5 flex items-center gap-2">
             <Users className="h-4 w-4 text-violet-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.teamContacts')}</span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <UlbInputMd
               label={t('fields.implementationPartner')}
               placeholder={t('placeholders.partner')}

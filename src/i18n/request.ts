@@ -68,6 +68,8 @@ export default getRequestConfig(async ({ locale }) => {
     socialAttributeMessages,
     applicableTaxesMessages,
     reassessmentMessages,
+    taxCalculationGuidelineMessages,
+    addTaxesMessages,
     modulesMessages,
     rtsMessages,
     reportMessages,
@@ -162,11 +164,24 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+<<<<<<< HEAD
       import(`./locales/${validatedLocale}/reassessment.json`)
         .catch(() => ({}))
         .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rts.json`).catch(() => ({})).then((m) => m.default || m),
+=======
+    import(`./locales/${validatedLocale}/reassessment.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/addTaxes.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/modules.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+>>>>>>> main
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -228,6 +243,8 @@ export default getRequestConfig(async ({ locale }) => {
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
+      taxCalculationGuideline: taxCalculationGuidelineMessages,
+      addTaxes: addTaxesMessages,
       modules: modulesMessages,
       rts: rtsMessages,
       report: reportMessages,
