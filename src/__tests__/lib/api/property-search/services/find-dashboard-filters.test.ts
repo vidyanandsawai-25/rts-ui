@@ -15,10 +15,12 @@ describe("Find Dashboard Filter values", () => {
 
     const mockResponse = {
       totalCount: 42,
-      records: [],
+      items: [],
       pageNumber: 1,
       pageSize: 1,
-      totalPages: 1
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
     } satisfies SearchPropertiesResult;
 
     vi.mocked(searchProperties).mockResolvedValue(mockResponse);
