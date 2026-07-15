@@ -245,7 +245,7 @@ Object.defineProperty(window, 'location', {
 process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost';
 
 // Silence expected jsdom unimplemented warnings
-const originalError = console.error;
+const originalError = console.error.bind(console);
 vi.spyOn(console, 'error').mockImplementation((...args) => {
   const msg = String(args[0] ?? '');
   if (
