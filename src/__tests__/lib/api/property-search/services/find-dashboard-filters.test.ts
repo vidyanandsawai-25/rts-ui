@@ -1,23 +1,35 @@
-import { describe, it } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 import { searchProperties } from "@/lib/api/property-search/services/search.service";
 
+vi.mock("@/lib/api/property-search/services/search.service", () => ({
+  searchProperties: vi.fn(),
+}));
+
 describe("Find Dashboard Filter values", () => {
-  it("should query grid with DashboardFilters 1 to 9", async () => {
-    // Set base URL so apiClient doesn't fail parsing relative URL
-    process.env.NEXT_PUBLIC_API_BASE_URL = "https://localhost:7293/api";
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should query grid with DashboardFilters 1 to 10", async () => {
+    const mockResponse = {
+      totalCount: 42,
+      records: [],
+      pageNumber: 1,
+      pageSize: 1,
+      totalPages: 1
+    };
+
+    vi.mocked(searchProperties).mockResolvedValue(mockResponse as any);
     
-    console.log("Starting grid search queries...");
     for (let i = 1; i <= 10; i++) {
-      try {
-        const response = await searchProperties({
-          dashboardFilter: i,
-          pageNumber: 1,
-          pageSize: 1, // only need totalCount
-        });
-        console.log(`DashboardFilter = ${i} -> totalCount: ${response.totalCount}`);
-      } catch (error) {
-        console.log(`DashboardFilter = ${i} -> Failed: ${(error as Error).message}`);
-      }
+      const response = await searchProperties({
+        dashboardFilter: i,
+        pageNumber: 1,
+        pageSize: 1,
+      });
+      expect(response.totalCount).toBe(42);
     }
+
+    expect(searchProperties).toHaveBeenCalledTimes(10);
   });
 });
