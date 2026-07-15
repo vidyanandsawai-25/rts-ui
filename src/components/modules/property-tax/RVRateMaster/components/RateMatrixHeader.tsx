@@ -85,7 +85,13 @@ export function RateMatrixHeader({
           <StatusBadge
             variant="info"
             icon={<Users className="w-4 h-4" />}
-            label={selectedUseGroupLabel || useGroupOptions.find(u => u.value === selectedUseGroup)?.label || selectedUseGroup}
+            label={
+              selectedUseGroupLabel ||
+              selectedUseGroup
+                .split(",")
+                .map(id => useGroupOptions.find(u => String(u.value) === String(id.trim()))?.label || id.trim())
+                .join(", ")
+            }
           />
         )}
         <StatusBadge

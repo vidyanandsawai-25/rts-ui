@@ -73,7 +73,7 @@ export default function AddRateDrawer({
         id={null}
         mode="add"
         zoneOptions={emptyOptions}
-        useGroupOptions={emptyOptions}
+        useGroupOptions={isOpenPlot ? _useGroups : emptyOptions}
         assessmentYears={emptyOptions}
         assessmentYearRanges={assessmentYearRanges ?? []}
         zoneDescriptions={zoneDescriptions}

@@ -650,7 +650,7 @@ export async function bulkUpdateRateMasterAction(
     }));
     await rateMasterService.bulkUpdateRateMaster(payloadWithUser);
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/rvratemaster`);
+      revalidatePath(`/${locale}/property-tax/rate-master/rvratemaster`);
     }
     return { success: true, message: 'Rates updated successfully' };
   } catch (error: unknown) {

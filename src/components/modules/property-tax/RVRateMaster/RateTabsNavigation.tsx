@@ -48,7 +48,7 @@ export function RateTabsNavigation() {
             variant="pills"
             onChange={(v: string | number) => {
               const tab = tabConfig.find(item => item.value === v);
-              if (tab) router.push(`/${locale}/property-tax/${tab.value}`);
+              if (tab) router.push(`/${locale}/property-tax/rate-master/${tab.value}`);
             }}
           />
         }

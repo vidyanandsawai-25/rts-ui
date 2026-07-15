@@ -24,7 +24,6 @@ const mockMessages = {
       rateableDescription: "Manage rateable value rates",
       capitalTitle: "Capital Value Rate Master",
       capitalDescription: "Manage capital value rates",
-      moujaTab: "Mouja Master",
       moujaTitle: "Mouja Rate Master",
       moujaDescription: "Manage mouja rates",
     },
@@ -45,7 +44,6 @@ describe("RateTabsNavigation", () => {
 
     expect(screen.getByText("Rateable Value")).toBeInTheDocument();
     expect(screen.getByText("Open Plot Rate Master")).toBeInTheDocument();
-    expect(screen.getByText("Mouja Master")).toBeInTheDocument();
     // Capital Value tab is intentionally hidden until feature is implemented
     expect(screen.queryByText("Capital Value")).not.toBeInTheDocument();
   });
@@ -71,7 +69,7 @@ describe("RateTabsNavigation", () => {
     const rateableTab = screen.getByText("Rateable Value");
     fireEvent.click(rateableTab);
     // Assert navigation was triggered with the expected URL
-    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rvratemaster");
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rate-master/rvratemaster");
   });
 
   it("navigates to Open Plot Rate Master when clicked", () => {

@@ -77,6 +77,18 @@ export default async function EditOpenPlotRatePage({
       };
     });
 
+  // Map distinct typeofuseGroupId to distinct useGroups for Open Plot
+  const distinctGroups = new Map<number, string>();
+  typeofuseDetails.forEach((tu: ITypeOfUseDetails) => {
+    if (tu.typeOfUseGroupId && tu.groupName) {
+      distinctGroups.set(tu.typeOfUseGroupId, tu.groupName);
+    }
+  });
+  const openPlotUseGroups = Array.from(distinctGroups.entries()).map(([id, name]) => ({
+    value: String(id),
+    label: name
+  }));
+
   if (isBulkEdit) {
     // Get filter values from URL search params
     const urlZone = (resolvedSearchParams.zone as string) || "";
@@ -127,7 +139,7 @@ export default async function EditOpenPlotRatePage({
           <RateMasterView
             rateMasterData={[]}
             zones={zones ?? []}
-            useGroups={[]} // No useGroups needed for Open Plot
+            useGroups={openPlotUseGroups}
             assessmentYears={assessmentYears ?? []}
             rateCategories={rateCategories ?? []}
             rateUnitPolicy={rateUnitPolicy}
@@ -137,7 +149,7 @@ export default async function EditOpenPlotRatePage({
         <EditRateDrawer
           id="bulk"
           zones={zones}
-          useGroups={[]} // No useGroups needed for Open Plot
+          useGroups={openPlotUseGroups}
           assessmentYears={assessmentYears}
           zoneDescriptions={paginatedZonesResult.items}
           allZones={allZonesResult} // All zones (unpaginated) for copy rates functionality
@@ -196,7 +208,7 @@ export default async function EditOpenPlotRatePage({
         <RateMasterView
           rateMasterData={tableData ?? []}
           zones={zones ?? []}
-          useGroups={[]} // No useGroups needed for Open Plot
+          useGroups={openPlotUseGroups}
           assessmentYears={assessmentYears ?? []}
           rateCategories={rateCategories ?? []}
           rateUnitPolicy={rateUnitPolicy}
@@ -206,7 +218,7 @@ export default async function EditOpenPlotRatePage({
       <EditRateDrawer
         id={resolvedParams.id}
         zones={zones}
-        useGroups={[]} // No useGroups needed for Open Plot
+        useGroups={openPlotUseGroups}
         assessmentYears={assessmentYears}
         zoneDescriptions={paginatedZonesResult.items}
         allZones={allZonesResult} // All zones (unpaginated) for copy rates functionality

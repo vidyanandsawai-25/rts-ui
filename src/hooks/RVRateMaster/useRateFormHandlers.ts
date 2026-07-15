@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { IBackendRateMaster, ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import type { ConfirmOptions } from "@/components/common/ConfirmProvider";
 
@@ -58,14 +58,15 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
     locale, onClose, router, confirm, buildCompleteMatrixForSubmission,
     handleBulkCreate, handleBulkUpdate, handleDelete, setMatrixData, setShowMatrix,
     setCopySectionsExpanded, setShowMultipliersInline, setMultipliers,
-    tempMultipliers, sourceUseGroup, handleCopyRates, t
+    tempMultipliers, sourceUseGroup, handleCopyRates, t, isOpenPlot
   } = props;
 
   const handleClose = () => {
     if (onClose) {
       onClose();
     } else {
-      router.replace(`/${locale}/property-tax/rvratemaster`);
+      const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
+      router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
     }
   };
 
@@ -136,7 +137,12 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
       const found = zoneDescriptions.find(z => String(z.zoneNo) === String(selectedZone));
       if (found?.description) zoneName = found.description;
     }
-    const useGroupLabel = useGroupOptions.find(opt => opt.value === selectedUseGroup)?.label || selectedUseGroup;
+    const useGroupLabel = selectedUseGroup
+      ? selectedUseGroup
+          .split(",")
+          .map(opt => useGroupOptions.find(o => String(o.value) === String(opt.trim()))?.label || opt.trim())
+          .join(", ")
+      : "";
     const assessmentYearLabel = assessmentYearRanges?.find(ay => String(ay.value) === String(assessmentYear))?.label
       || assessmentYears?.find(ay => String(ay.value) === String(assessmentYear))?.label
       || assessmentYear;

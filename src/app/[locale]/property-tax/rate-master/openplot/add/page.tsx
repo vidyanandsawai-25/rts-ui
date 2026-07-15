@@ -12,7 +12,7 @@ import {
   getRateFrequencyPolicy,
   getRateUnitPolicy,
   getOpenPlotTypeOfUseDetailsAction
-} from "../../rvratemaster/action";
+} from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { ITypeOfUseDetails } from "@/types/RVRateMaster";
 
 // Force dynamic rendering to ensure fresh data on each navigation
@@ -144,13 +144,25 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
     toYear: String(ay.toYear),
   }));
 
+  // Map distinct typeofuseGroupId to distinct useGroups for Open Plot
+  const distinctGroups = new Map<number, string>();
+  typeofuseDetails.forEach((tu: ITypeOfUseDetails) => {
+    if (tu.typeOfUseGroupId && tu.groupName) {
+      distinctGroups.set(tu.typeOfUseGroupId, tu.groupName);
+    }
+  });
+  const openPlotUseGroups = Array.from(distinctGroups.entries()).map(([id, name]) => ({
+    value: String(id),
+    label: name
+  }));
+
   return (
     <>
       <PageContainer className="pt-24">
         <RateMasterView
           rateMasterData={tableData ?? []}
           zones={zones ?? []}
-          useGroups={[]} // No useGroups needed for Open Plot
+          useGroups={openPlotUseGroups}
           assessmentYears={assessmentYears ?? []}
           rateCategories={rateCategories}
           initialZone={initialZone}
@@ -161,7 +173,7 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
       </PageContainer>
       <AddRateDrawer
         zones={zones}
-        useGroups={[]} // No useGroups needed for Open Plot
+        useGroups={openPlotUseGroups}
         assessmentYears={assessmentYears}
         assessmentYearRanges={assessmentYearRanges}
         zoneDescriptions={paginatedZonesResult.items}

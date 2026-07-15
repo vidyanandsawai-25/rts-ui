@@ -83,6 +83,18 @@ const OpenPlotRateMasterPageServer = async ({ searchParams }: PageProps) => {
       };
     });
 
+  // Map distinct typeofuseGroupId to distinct useGroups for Open Plot
+  const distinctGroups = new Map<number, string>();
+  typeofuseDetails.forEach((tu: ITypeOfUseDetails) => {
+    if (tu.typeOfUseGroupId && tu.groupName) {
+      distinctGroups.set(tu.typeOfUseGroupId, tu.groupName);
+    }
+  });
+  const openPlotUseGroups = Array.from(distinctGroups.entries()).map(([id, name]) => ({
+    value: String(id),
+    label: name
+  }));
+
   // STEP 1: Use paginated zones for UI
   const paginatedZones = paginatedZonesResult.items;
   const totalZonePages = paginatedZonesResult.totalPages;
@@ -121,7 +133,7 @@ const OpenPlotRateMasterPageServer = async ({ searchParams }: PageProps) => {
       totalPages={totalZonePages}
       totalCount={totalZonesCount}
       zones={zones ?? []}
-      useGroups={[]} // No useGroups needed for Open Plot
+      useGroups={openPlotUseGroups}
       assessmentYears={assessmentYears ?? []}
       rateCategories={rateCategories}
       zoneDescriptions={zoneDescriptions ?? []}

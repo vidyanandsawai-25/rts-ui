@@ -13,7 +13,7 @@ import {
   getRateMasterPagedAction,
   getRateFrequencyPolicy,
   getRateUnitPolicy,
-} from "@/app/[locale]/property-tax/rvratemaster/action";
+} from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 // Force dynamic rendering to ensure fresh data on each navigation
 export const dynamic = 'force-dynamic';

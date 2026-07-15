@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { getRateMasterByFilters, deleteRateMasterAction } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { getRateMasterByFilters, deleteRateMasterAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
 import { buildRateSubmissions, fetchBackendRatesForSubmission,  processRateSubmissions, NO_RATES_TO_UPDATE_ERROR} from "./helpers/rateBulkOperations";
 import { validateMatrixHasRates, parseMatrixData, formatUseGroupLabels, getOperationResult } from "./helpers/rateOperationValidation";
@@ -34,10 +34,13 @@ export function useRateMasterOperations({
 }: UseRateMasterOperationsProps) {
   const t = useTranslations("ptis_RVRateMaster");
 
-  const getUseGroupLabel = useCallback((useGroup: string) => 
-    useGroupOptions.find(u => u.value === useGroup)?.label || useGroup,
-    [useGroupOptions]
-  );
+  const getUseGroupLabel = useCallback((useGroup: string) => {
+    if (!useGroup) return "";
+    return useGroup
+      .split(",")
+      .map(id => useGroupOptions.find(u => String(u.value) === String(id.trim()))?.label || id.trim())
+      .join(", ");
+  }, [useGroupOptions]);
 
   // Bulk create handler
   const handleBulkCreate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {

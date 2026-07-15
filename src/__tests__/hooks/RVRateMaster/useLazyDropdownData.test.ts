@@ -3,13 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useLazyDropdownData } from "@/hooks/RVRateMaster/useLazyDropdownData";
 
 // Mock the server actions
-vi.mock("@/app/[locale]/property-tax/rvratemaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
   getZoneOptions: vi.fn(),
   getUseGroupOptions: vi.fn(),
   getAssessmentYears: vi.fn(),
 }));
 
-import { getZoneOptions, getUseGroupOptions, getAssessmentYears } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { getZoneOptions, getUseGroupOptions, getAssessmentYears } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 describe("useLazyDropdownData", () => {
   const mockZoneOptions = [
