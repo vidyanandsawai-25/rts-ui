@@ -74,6 +74,7 @@ export default getRequestConfig(async ({ locale }) => {
     reportMessages,
     assetPhotoTypeMessages,
     assetRoomTypeMessages,
+    designationMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -180,6 +181,7 @@ export default getRequestConfig(async ({ locale }) => {
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/designation.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -244,6 +246,7 @@ export default getRequestConfig(async ({ locale }) => {
       report: reportMessages,
       assetPhotoType: assetPhotoTypeMessages,
       assetRoomType: assetRoomTypeMessages,
+      designation: designationMessages,
     },
   };
 });
