@@ -1,15 +1,15 @@
-import { IRateCreate } from "@/types/RVRateMaster";
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { getTranslations } from 'next-intl/server';
 
 /**
- * Bulk create rate master records (POST /Rate/Bulk)
+ * Bulk create rate master records (POST /Rate/Bulk or POST /Rate/openplot/Bulk)
  * Backend expects an array of rate objects directly
  */
-export async function bulkCreateRateMaster(payload: IRateCreate[]): Promise<void> {
+export async function bulkCreateRateMaster(payload: any[], isOpenPlot: boolean = false): Promise<void> {
   try {
-    const response = await apiClient.post<{ data?: unknown }>(`/Rate/Bulk`, payload);
+    const endpoint = isOpenPlot ? `/Rate/openplot/Bulk` : `/Rate/Bulk`;
+    const response = await apiClient.post<{ data?: unknown }>(endpoint, payload);
     if (!response.success) {
       const t = await getTranslations('ptis_RVRateMaster');
       throw new ApiError(

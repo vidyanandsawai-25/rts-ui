@@ -229,6 +229,7 @@ export async function createUseType(input: {
   type: string;
   searchSequence: number;
   status?: UseStatus;
+  typeOfUseCategoryId?: number | null;
 }): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     await createUseTypeApi({
@@ -238,6 +239,7 @@ export async function createUseType(input: {
       type: input.type,
       searchSequence: input.searchSequence,
       isActive: (input.status ?? "Active") === "Active",
+      typeOfUseCategoryId: input.typeOfUseCategoryId,
       createdBy: await getCurrentUserId(),
     });
     for (const locale of locales) {
@@ -263,6 +265,7 @@ export async function updateUseType(input: {
   type: string;
   searchSequence: number;
   status: UseStatus;
+  typeOfUseCategoryId?: number | null;
 }): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     await updateUseTypeApi({
@@ -273,6 +276,7 @@ export async function updateUseType(input: {
       type: input.type,
       searchSequence: input.searchSequence,
       isActive: input.status === "Active",
+      typeOfUseCategoryId: input.typeOfUseCategoryId,
       updatedBy: await getCurrentUserId(),
     });
     for (const locale of locales) {

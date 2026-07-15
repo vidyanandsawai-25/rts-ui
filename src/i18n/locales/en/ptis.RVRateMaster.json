@@ -6,9 +6,12 @@
     "capitalDescription": "Ready-Reckoner based Capital Value rates.",
     "moujaTitle": "Mouja Master",
     "moujaDescription": "Manage mouja records and their details",
-    "rateableTab": "Rateable Value",
+    "rateableTab": "Construction Type",
     "capitalTab": "Capital Value",
-    "moujaTab": "Mouja Master"
+    "moujaTab": "Mouja Master",
+    "openplotTitle": "Open Plot Rate Master",
+    "openplotDescription": "Manage open plot rates and related configurations for different zones, use groups, and assessment years",
+    "openplotTab": "Open Plot"
   },
   "filters": {
     "financeYear": "Finance Year",
@@ -90,6 +93,7 @@
     "validationDownloadTemplateFailed": "Failed to download template",
     "validationUploadValidFile": "Please upload a valid CSV or Excel file",
     "validationRatesAlreadyExist": "Rates already exist for selected filters. Please use Update instead",
+    "validationRatesAlreadyExistSome": "Rates already exist for {codes}. Only unconfigured use types are shown.",
     "validationIncompleteMatrix": "Please fill all rate values before adding rates. Current completion: {percentage}%",
     "validationFileEmpty": "File is empty or invalid",
     "validationParseFailed": "Failed to parse file. Please check the format.",
@@ -148,20 +152,33 @@
     "rateSqFt": "Rate (₹/Sq.ft)",
     "rateRemark": "Rate Remark"
   },
-    "rvRateMaster": {
-      "error": {
-        "title": "Something Went Wrong",
-        "description": "We encountered an error while loading the RV Rate Master page. Please try again.",
-        "tryAgain": "Try Again",
-        "goHome": "Go to Home",
-        "errorId": "Error ID: {id}"
-      },
-      "loading": {
-        "message": "Loading RV Rate Master...",
-        "description": "Please wait while we fetch the rate master data"
-      }
+  "rvRateMaster": {
+    "error": {
+      "title": "Something Went Wrong",
+      "description": "We encountered an error while loading the RV Rate Master page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
     },
-    "rvRateMasterErrors": {
+    "loading": {
+      "message": "Loading RV Rate Master...",
+      "description": "Please wait while we fetch the rate master data"
+    }
+  },
+  "openPlotRateMaster": {
+    "error": {
+      "title": "Something Went Wrong",
+      "description": "We encountered an error while loading the Open Plot Rate Master page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Open Plot Rate Master...",
+      "description": "Please wait while we fetch the rate master data"
+    }
+  },
+  "rvRateMasterErrors": {
     "errorsResponse": {
       "bulkUpdateFailed": "Failed to bulk update rate master records",
       "fetchDetailedRatesFailed": "Failed to fetch detailed rates",

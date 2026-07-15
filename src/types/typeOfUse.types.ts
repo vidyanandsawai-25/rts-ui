@@ -18,6 +18,7 @@ export interface UseGroup {
   groupName: string;
   groupIcon: string;
   isActive: boolean;
+  isOpenPlot?: boolean;
   createdDate?: string;
   updatedDate?: string | null;
   // UI-only computed field
@@ -33,6 +34,7 @@ export interface UseType {
   typeOfUseGroupId: number;
   searchSequence: number;
   isActive: boolean;
+  typeOfUseCategoryId?: number | null;
   createdDate?: string;
   updatedDate?: string | null;
   // UI-only computed field

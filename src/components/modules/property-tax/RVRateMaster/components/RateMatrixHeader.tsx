@@ -102,8 +102,7 @@ export function RateMatrixHeader({
             onClick={id ? onUpdateRates : onAddRates}
             size="md"
             className="px-4 py-2"
-            disabled={existingRateFound || isCheckingRates}
-            title={existingRateFound ? t('messages.validationRatesAlreadyExist') : undefined}
+            disabled={isCheckingRates}
           />
         )}
         {mode === "delete" && (

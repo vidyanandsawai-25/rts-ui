@@ -464,6 +464,7 @@ describe("UseTypeForm", () => {
       searchSequence: 1,
       isActive: true,
       status: "Active",
+      typeOfUseCategoryId: 10,
     };
 
     it("should render form in edit mode with initial data", () => {
@@ -508,6 +509,7 @@ describe("UseTypeForm", () => {
           type: "R",
           searchSequence: 1,
           status: "Active",
+          typeOfUseCategoryId: 10,
         });
         expect(toast.success).toHaveBeenCalledWith("Type Updated");
         expect(mockRouterBack).toHaveBeenCalled();

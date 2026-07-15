@@ -6,9 +6,12 @@
     "capitalDescription": "रेडी-रेकनर आधारित भांडवली मूल्य दर.",
     "moujaTitle": "मौजा मास्टर",
     "moujaDescription": "मौजा नोंदी आणि त्यांचे तपशील व्यवस्थापित करा",
-    "rateableTab": "करयोग्य मूल्य",
+    "rateableTab": "बांधकाम प्रकार",
     "capitalTab": "भांडवली मूल्य",
-    "moujaTab": "मौजा मास्टर"
+    "moujaTab": "मौजा मास्टर",
+    "openplotTitle": "ओपन प्लॉट",
+    "openplotDescription": "विविध झोन, वापर गट आणि मूल्यांकन वर्षांसाठी ओपन प्लॉटचे दर आणि संबंधित कॉन्फिगरेशन व्यवस्थापित करा",
+    "openplotTab": "ओपन प्लॉट"
   },
   "filters": {
     "financeYear": "आर्थिक वर्ष",
@@ -28,7 +31,9 @@
   "buttons": {
     "generateRate": "दर तयार करा",
     "editRates": "दर संपादित करा",
-    "deleteRate": "दर हटवा",    "downloadRates": "दर डाउनलोड करा",    "addRates": "दर जोडा",
+    "deleteRate": "दर हटवा",
+    "downloadRates": "दर डाउनलोड करा",
+    "addRates": "दर जोडा",
     "updateRates": "दर अपडेट करा",
     "copyRates": "दर कॉपी करा",
     "applyMultipliers": "गुणक लागू करा",
@@ -88,6 +93,7 @@
     "validationDownloadTemplateFailed": "टेम्प्लेट डाउनलोड करण्यास अयशस्वी",
     "validationUploadValidFile": "कृपया वैध CSV किंवा Excel फाइल अपलोड करा",
     "validationRatesAlreadyExist": "निवडलेल्या फिल्टर्ससाठी दर आधीच अस्तित्वात आहेत. कृपया अपडेट करा",
+    "validationRatesAlreadyExistSome": "{codes} साठी दर आधीच अस्तित्वात आहेत. फक्त न कॉन्फिगर केलेले वापर प्रकार दाखवले आहेत।",
     "validationIncompleteMatrix": "कृपया सर्व दर मूल्ये भरा. सध्याची पूर्णता: {percentage}%",
     "validationFileEmpty": "फाइल रिकामी किंवा अवैध आहे",
     "validationParseFailed": "फाइल पार्स करण्यास अयशस्वी. कृपया फॉरमॅट तपासा.",
@@ -136,7 +142,8 @@
     "deleteRatesDescription": "तुम्ही खालीलसाठी {count} दर रेकॉर्ड(्स) कायमस्वरूपी हटवू इच्छिता का:\n\n- दर विभाग: {zoneName}, वापर गट: {useGroup}, करनिर्धारण वर्ष: {assessmentYear}\n\nही कृती पूर्ववत करता येणार नाही.",
     "confirmDelete": "हटवा",
     "cancel": "रद्द करा"
-  },  "downloadHeaders": {
+  },
+  "downloadHeaders": {
     "rateSection": "दर विभाग",
     "taxZoneNo": "कर क्षेत्र क्रमांक",
     "useGroup": "वापर गट",
@@ -145,21 +152,34 @@
     "rateSqMtr": "दर (₹/चौ.मी.)",
     "rateSqFt": "दर (₹/चौ.फुट)",
     "rateRemark": "दर टिप्पणी"
-  },   
-   "rvRateMaster": {
-      "error": {
-        "title": "काहीतरी चूक झाली",
-        "description": "RV दर मास्टर पृष्ठ लोड करताना आम्हाला एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
-        "tryAgain": "पुन्हा प्रयत्न करा",
-        "goHome": "होमवर जा",
-        "errorId": "त्रुटी आयडी: {id}"
-      },
-      "loading": {
-        "message": "RV दर मास्टर लोड होत आहे...",
-        "description": "कृपया प्रतीक्षा करा आम्ही दर मास्टर डेटा आणत आहोत"
-      }
+  },
+  "rvRateMaster": {
+    "error": {
+      "title": "काहीतरी चूक झाली",
+      "description": "RV दर मास्टर पृष्ठ लोड करताना आम्हाला एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+      "tryAgain": "पुन्हा प्रयत्न करा",
+      "goHome": "होमवर जा",
+      "errorId": "त्रुटी आयडी: {id}"
     },
-    "rvRateMasterErrors": {
+    "loading": {
+      "message": "RV दर मास्टर लोड होत आहे...",
+      "description": "कृपया प्रतीक्षा करा आम्ही दर मास्टर डेटा आणत आहोत"
+    }
+  },
+  "openPlotRateMaster": {
+    "error": {
+      "title": "काहीतरी चूक झाली",
+      "description": "ओपन प्लॉट दर मास्टर पृष्ठ लोड करताना आम्हाला एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+      "tryAgain": "पुन्हा प्रयत्न करा",
+      "goHome": "होमवर जा",
+      "errorId": "त्रुटी आयडी: {id}"
+    },
+    "loading": {
+      "message": "ओपन प्लॉट दर मास्टर लोड होत आहे...",
+      "description": "कृपया प्रतीक्षा करा आम्ही दर मास्टर डेटा आणत आहोत"
+    }
+  },
+  "rvRateMasterErrors": {
     "errorsResponse": {
       "bulkUpdateFailed": "दर मास्टर रेकॉर्ड बल्क अपडेट करण्यात अयशस्वी",
       "fetchDetailedRatesFailed": "तपशीलवार दर मिळवण्यात अयशस्वी",

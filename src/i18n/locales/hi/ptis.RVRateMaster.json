@@ -6,9 +6,12 @@
     "capitalDescription": "रेडी-रेकनर आधारित पूंजी मूल्य दरें।",
     "moujaTitle": "मौजा मास्टर",
     "moujaDescription": "मौजा रिकॉर्ड और उनके विवरण प्रबंधित करें",
-    "rateableTab": "करयोग्य मूल्य",
+    "rateableTab": "निर्माण प्रकार",
     "capitalTab": "पूंजी मूल्य",
-    "moujaTab": "मौजा मास्टर"
+    "moujaTab": "मोजा मास्टर",
+    "openplotTitle": "ओपन प्लॉट",
+    "openplotDescription": "विभिन्न ज़ोन, उपयोग समूहों और मूल्यांकन वर्षों के लिए ओपन प्लॉट दरों और संबंधित कॉन्फ़िगरेशन को प्रबंधित करें",
+    "openplotTab": "ओपन प्लॉट"
   },
   "filters": {
     "financeYear": "वित्तीय वर्ष",
@@ -90,6 +93,7 @@
     "validationDownloadTemplateFailed": "टेम्पलेट डाउनलोड करने में विफल",
     "validationUploadValidFile": "कृपया एक मान्य CSV या Excel फ़ाइल अपलोड करें",
     "validationRatesAlreadyExist": "चयनित फ़िल्टर के लिए दरें पहले से मौजूद हैं। कृपया अपडेट करें",
+    "validationRatesAlreadyExistSome": "{codes} के लिए दरें पहले से मौजूद हैं। केवल अकॉन्फ़िगर किए गए उपयोग प्रकार दिखाए गए हैं।",
     "validationIncompleteMatrix": "कृपया सभी दर मान भरें। वर्तमान पूर्णता: {percentage}%",
     "validationFileEmpty": "फ़ाइल खाली या अवैध है",
     "validationParseFailed": "फ़ाइल पार्स करने में विफल। कृपया प्रारूप की जाँच करें।",
@@ -138,7 +142,8 @@
     "deleteRatesDescription": "क्या आप निम्नलिखित के लिए {count} दर रिकॉर्ड(्स) को स्थायी रूप से हटाना चाहते हैं:\n\n- दर अनुभाग: {zoneName}, उपयोग समूह: {useGroup}, मूल्यांकन वर्ष: {assessmentYear}\n\nयह कार्रवाई पूर्ववत नहीं की जा सकती है।",
     "confirmDelete": "हटाएं",
     "cancel": "रद्द करें"
-  },  "downloadHeaders": {
+  },
+  "downloadHeaders": {
     "rateSection": "दर अनुभाग",
     "taxZoneNo": "कर क्षेत्र संख्या",
     "useGroup": "उपयोग समूह",
@@ -147,7 +152,7 @@
     "rateSqMtr": "दर (₹/वर्ग मीटर)",
     "rateSqFt": "दर (₹/वर्ग फुट)",
     "rateRemark": "दर टिप्पणी"
-  },  
+  },
   "rvRateMaster": {
     "error": {
       "title": "कुछ गलत हो गया",
@@ -158,6 +163,19 @@
     },
     "loading": {
       "message": "RV दर मास्टर लोड हो रहा है...",
+      "description": "कृपया प्रतीक्षा करें जब तक हम दर मास्टर डेटा प्राप्त करते हैं"
+    }
+  },
+  "openPlotRateMaster": {
+    "error": {
+      "title": "कुछ गलत हो गया",
+      "description": "ओपन प्लॉट दर मास्टर पृष्ठ लोड करते समय हमें एक त्रुटि का सामना करना पड़ा। कृपया पुन: प्रयास करें।",
+      "tryAgain": "पुन: प्रयास करें",
+      "goHome": "होम पर जाएं",
+      "errorId": "त्रुटि आईडी: {id}"
+    },
+    "loading": {
+      "message": "ओपन प्लॉट दर मास्टर लोड हो रहा है...",
       "description": "कृपया प्रतीक्षा करें जब तक हम दर मास्टर डेटा प्राप्त करते हैं"
     }
   },

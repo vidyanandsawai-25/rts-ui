@@ -16,6 +16,7 @@ interface UseRateMasterOperationsProps {
   multipliers: Record<string, number>;
   rateCategories: RateCategory[];
   useGroupOptions: Array<{ label: string; value: string }>;
+  isOpenPlot?: boolean;
 }
 
 export function useRateMasterOperations({
@@ -29,6 +30,7 @@ export function useRateMasterOperations({
   multipliers,
   rateCategories,
   useGroupOptions,
+  isOpenPlot = false,
 }: UseRateMasterOperationsProps) {
   const t = useTranslations("ptis_RVRateMaster");
 
@@ -53,7 +55,13 @@ export function useRateMasterOperations({
     if (mode === "add" && !id) {
       try {
         const existingForSelection = await getRateMasterByFilters(selectedZone, selectedUseGroup, assessmentYear);
-        if (existingForSelection?.length) {
+        const hasExisting = isOpenPlot
+          ? existingForSelection?.some(rate => 
+              rateCategories.some(cat => Number(cat.typeOfUseGroupId) === Number(rate.typeOfUseGroupId))
+            )
+          : existingForSelection?.length > 0;
+
+        if (hasExisting) {
           toast.error(t('messages.validationRatesAlreadyExist'));
           return { success: false };
         }
@@ -62,7 +70,7 @@ export function useRateMasterOperations({
       }
     }
 
-    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories };
+    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories, isOpenPlot };
     const allRateSubmissions = buildRateSubmissions(completeMatrixData, selectedUseGroup, multipliers, rateCategories);
 
     // Fetch backend rates for each submission
@@ -85,7 +93,7 @@ export function useRateMasterOperations({
       toast.error(t('messages.ratesAddedFailed', { errors: errorMessages.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot]);
 
   // Bulk update handler
   const handleBulkUpdate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
@@ -94,7 +102,7 @@ export function useRateMasterOperations({
       return { success: false };
     }
 
-    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories };
+    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories, isOpenPlot };
     const parsedMatrixData = parseMatrixData(completeMatrixData, rateCategories);
     const allRateSubmissions = buildRateSubmissions(parsedMatrixData, selectedUseGroup, multipliers, rateCategories);
 
@@ -137,7 +145,7 @@ export function useRateMasterOperations({
       toast.error(t('messages.ratesUpdatedFailed', { errors: nonUpdateErrors.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot]);
 
   // Delete handler
   const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[]) => {

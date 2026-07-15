@@ -44,6 +44,7 @@ interface RateFormHandlersProps {
   sourceUseGroup: string;
   handleCopyRates: () => Promise<void>;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  isOpenPlot?: boolean;
 }
 
 /**
@@ -69,6 +70,10 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
   };
 
   const handleAddRates = async () => {
+    if (existingRateFound) {
+      toast.error(t('messages.validationRatesAlreadyExist'));
+      return;
+    }
     const completeMatrixData = buildCompleteMatrixForSubmission();
     const totalCells = completeMatrixData.length * rateCategories.length;
     const filledCells = completeMatrixData.reduce((count, row) => {
@@ -106,6 +111,17 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
       toast.error(t('messages.fetchRatesForDeleteFailed'));
       return;
     }
+
+    // Filter to only keep rates belonging to open plot groups when in open plot mode
+    if (props.isOpenPlot) {
+      const openPlotGroupIds = new Set(
+        props.rateCategories
+          .map(cat => Number(cat.typeOfUseGroupId))
+          .filter(id => !isNaN(id) && id > 0)
+      );
+      latestBackendRates = latestBackendRates.filter(rate => openPlotGroupIds.has(Number(rate.typeOfUseGroupId)));
+    }
+
     if (!latestBackendRates || latestBackendRates.length === 0) {
       toast.error(t('messages.noRatesToDelete'));
       return;
@@ -166,7 +182,8 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
 
     const params = new URLSearchParams({ zone: selectedZone, useGroup: selectedUseGroup });
     if (assessmentYear) params.append("assessmentYear", assessmentYear);
-    const newUrl = `/${locale}/property-tax/rate-master/rvratemaster/add?${params.toString()}`;
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : `/${locale}/property-tax/rate-master/rvratemaster/add`;
+    const newUrl = `${currentPath}?${params.toString()}`;
     window.history.pushState({}, '', newUrl);
 
     if (!isEditMode && assessmentYear) {

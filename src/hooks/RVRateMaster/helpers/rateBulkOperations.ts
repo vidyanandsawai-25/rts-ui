@@ -89,14 +89,13 @@ export async function fetchBackendRatesForSubmission(
     return [];
   }
 }
-
 /**
  * Process a single rate submission (updates + inserts)
  */
 export async function processSingleSubmission(
   submission: RateSubmission,
   backendRates: IBackendRateMaster[],
-  config: BuildPayloadConfig,
+  config: BuildPayloadConfig & { isOpenPlot?: boolean },
   getUseGroupLabel: (useGroup: string) => string
 ): Promise<{ success: boolean; errors: string[] }> {
   const errors: string[] = [];
@@ -117,7 +116,8 @@ export async function processSingleSubmission(
   // Process updates
   if (updates.length > 0) {
     try {
-      const updateResult = await bulkUpdateRateMasterAction(buildBulkUpdatePayload(updates));
+      const payload = buildBulkUpdatePayload(updates);
+      const updateResult = await bulkUpdateRateMasterAction(payload);
       if (!updateResult.success) {
         const errorMsg = updateResult.message || 'Failed to update rates';
         // Check if backend returned "No rates to update" error
@@ -135,7 +135,12 @@ export async function processSingleSubmission(
   // Process inserts
   if (inserts.length > 0) {
     try {
-      const createResult = await bulkCreateRateMasterAction(buildBulkCreatePayload(inserts));
+      const payload = buildBulkCreatePayload(inserts);
+      const finalPayload = config.isOpenPlot 
+        ? payload.map(({ constructionTypeId, ...rest }) => rest)
+        : payload;
+
+      const createResult = await bulkCreateRateMasterAction(finalPayload, config.isOpenPlot);
       if (!createResult.success) {
         const errorMsg = createResult.message || 'Failed to create rates';
         errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${parseBackendError(errorMsg)}`);
@@ -156,7 +161,7 @@ export async function processSingleSubmission(
  */
 export async function processRateSubmissions(
   submissions: RateSubmission[],
-  config: BuildPayloadConfig,
+  config: BuildPayloadConfig & { isOpenPlot?: boolean },
   _getUseGroupLabel: (useGroup: string) => string
 ): Promise<ProcessSubmissionsResult> {
   let successCount = 0;

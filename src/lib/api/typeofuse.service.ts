@@ -94,6 +94,7 @@ export async function createUseTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   createdBy?: string;
+  typeOfUseCategoryId?: number | null;
 }): Promise<UseType> {
   try {
     const payload = {
@@ -103,6 +104,7 @@ export async function createUseTypeApi(input: {
       typeOfUseGroupId: input.typeOfUseGroupId,
       searchSequence: input.searchSequence,
       isActive: input.isActive,
+      typeOfUseCategoryId: input.typeOfUseCategoryId,
       createdBy: Number(input.createdBy ?? "1"),
     };
 
@@ -143,6 +145,7 @@ export async function updateUseTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   updatedBy?: string;
+  typeOfUseCategoryId?: number | null;
 }): Promise<UseType> {
   try {
     const payload = {
@@ -153,6 +156,7 @@ export async function updateUseTypeApi(input: {
       typeOfUseGroupId: input.typeOfUseGroupId,
       searchSequence: input.searchSequence,
       isActive: input.isActive,
+      typeOfUseCategoryId: input.typeOfUseCategoryId,
       updatedBy: Number(input.updatedBy ?? "1"),
     };
 

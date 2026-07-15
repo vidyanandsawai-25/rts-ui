@@ -1,4 +1,4 @@
-import { IRateMaster, IZoneDescription, RateCategory, IBackendRateMaster } from "@/types/RVRateMaster";
+import { IRateMaster, IZoneDescription, RateCategory, IBackendRateMaster, ITypeOfUseDetails } from "@/types/RVRateMaster";
 import { PagedResponse } from "@/types/RVRateMaster";
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
@@ -65,10 +65,10 @@ export async function getRateMasterByFilters(
   assessmentYear: string
 ): Promise<IBackendRateMaster[]> {
   try {
-    const params = buildRateQueryParams(1, -1, { 
-      rateSection: zoneSection, 
-      useGroup, 
-      assessmentYear 
+    const params = buildRateQueryParams(1, -1, {
+      rateSection: zoneSection,
+      useGroup,
+      assessmentYear
     });
 
     const response = await apiClient.get<PagedResponse<IBackendRateMaster>>(`/Rate?${params.toString()}`);
@@ -115,7 +115,8 @@ export async function getRateMasterPaged(
   rateSection?: string | { value: string },
   useGroup?: string | { value: string },
   assessmentYear?: string | { value: string },
-  taxZoneIds?: number[]
+  taxZoneIds?: number[],
+  isOpenPlot: boolean = false
 ): Promise<PagedResponse<IRateMaster>> {
   try {
     const rateSectionStr = extractValue(rateSection);
@@ -150,7 +151,7 @@ export async function getRateMasterPaged(
     const data = response.data;
     const backendData: IBackendRateMaster[] = data.items || [];
 
-    let transformedData = transformBackendRatesToMatrix(backendData, constructionTypes, zoneDescriptions);
+    let transformedData = transformBackendRatesToMatrix(backendData, constructionTypes, zoneDescriptions, isOpenPlot);
     transformedData = filterByTaxZoneIds(transformedData, taxZoneIds, zoneDescriptions);
     transformedData = filterByRateSection(transformedData, rateSectionStr);
 
@@ -172,6 +173,88 @@ export async function getRateMasterPaged(
       500,
       error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
       'Get paged rate data failed'
+    );
+  }
+}
+
+/**
+ * Fetch Type Of Use details for Open Plot
+ */
+export async function getTypeOfUseDetails(
+  pageNumber: number = 1,
+  pageSize: number = -1,
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: string
+): Promise<PagedResponse<ITypeOfUseDetails>> {
+  try {
+    const qs = new URLSearchParams();
+    qs.set("pageNumber", String(pageNumber));
+    qs.set("pageSize", String(pageSize));
+    if (searchTerm) qs.set("searchTerm", searchTerm);
+    if (sortBy) qs.set("sortBy", sortBy);
+    if (sortOrder) qs.set("sortOrder", sortOrder);
+
+    const response = await apiClient.get<PagedResponse<ITypeOfUseDetails>>(`/Rate/typeofuse?${qs.toString()}`, {
+      cache: "no-store",
+    });
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch Type of Use details",
+        "Get Type of Use details failed"
+      );
+    }
+    return response.data || { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0, hasPrevious: false, hasNext: false };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : "Unknown error",
+      "Get Type of Use details failed"
+    );
+  }
+}
+
+/**
+ * Fetch Open Plot Type Of Use details (IsOpenPlot=1 and IsActive=1)
+ */
+export async function getOpenPlotTypeOfUseDetails(
+  pageNumber: number = 1,
+  pageSize: number = -1,
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: string
+): Promise<PagedResponse<ITypeOfUseDetails>> {
+  try {
+    const qs = new URLSearchParams();
+    qs.set("pageNumber", String(pageNumber));
+    qs.set("pageSize", String(pageSize));
+    if (searchTerm) qs.set("searchTerm", searchTerm);
+    if (sortBy) qs.set("sortBy", sortBy);
+    if (sortOrder) qs.set("sortOrder", sortOrder);
+
+    const response = await apiClient.get<PagedResponse<ITypeOfUseDetails>>(`/Rate/openplot/typeofuse?${qs.toString()}`, {
+      cache: "no-store",
+    });
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch Open Plot Type of Use details",
+        "Get Open Plot Type of Use details failed"
+      );
+    }
+    return response.data || { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0, hasPrevious: false, hasNext: false };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : "Unknown error",
+      "Get Open Plot Type of Use details failed"
     );
   }
 }

@@ -33,6 +33,7 @@ export function mapApiGroupToUi(g: Record<string, unknown>): UseGroup {
     groupName: String(g.groupName ?? ""),
     groupIcon: String(g.groupIcon ?? "home-icon"),
     isActive: typeof g.isActive === "boolean" ? g.isActive : (typeof g.IsActive === "boolean" ? g.IsActive : true),
+    isOpenPlot: typeof g.isOpenPlot === "boolean" ? g.isOpenPlot : (typeof g.IsOpenPlot === "boolean" ? g.IsOpenPlot : false),
     createdDate: typeof g.createdDate === "string" ? g.createdDate : (typeof g.CreatedDate === "string" ? g.CreatedDate : undefined),
     updatedDate: typeof g.updatedDate === "string" ? g.updatedDate : (typeof g.UpdatedDate === "string" ? g.UpdatedDate : null),
     // UI computed field
@@ -50,6 +51,7 @@ export function mapApiTypeToUi(t: Record<string, unknown>): UseType {
     typeOfUseGroupId: Number(t.typeOfUseGroupId ?? t.typeOfUseGroupID ?? t.groupId ?? 0),
     searchSequence: Number(t.searchSequence ?? t.SearchSequence ?? 0),
     isActive: typeof t.isActive === "boolean" ? t.isActive : (typeof t.IsActive === "boolean" ? t.IsActive : true),
+    typeOfUseCategoryId: t.typeOfUseCategoryId !== undefined && t.typeOfUseCategoryId !== null ? Number(t.typeOfUseCategoryId) : null,
     createdDate: typeof t.createdDate === "string" ? t.createdDate : (typeof t.CreatedDate === "string" ? t.CreatedDate : undefined),
     updatedDate: typeof t.updatedDate === "string" ? t.updatedDate : (typeof t.UpdatedDate === "string" ? t.UpdatedDate : null),
     // UI computed field

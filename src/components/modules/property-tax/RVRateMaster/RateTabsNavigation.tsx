@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Tabs } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
-import { Calculator, MapPin } from "lucide-react";
+import { Calculator, MapPin, LandPlot } from "lucide-react";
 
 export function RateTabsNavigation() {
   const pathname = usePathname();
@@ -21,6 +21,13 @@ export function RateTabsNavigation() {
       icon: Calculator,
       headerTitle: t("header.rateableTitle"),
       headerSubtitle: t("header.rateableDescription"),
+    },
+    {
+      value: "openplot",
+      label: t("header.openplotTab"),
+      icon: LandPlot,
+      headerTitle: t("header.openplotTitle"),
+      headerSubtitle: t("header.openplotDescription"),
     },
     {
       value: "moujamaster",

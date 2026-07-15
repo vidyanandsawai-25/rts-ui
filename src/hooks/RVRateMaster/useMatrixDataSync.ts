@@ -19,6 +19,7 @@ interface MatrixDataSyncProps {
   setRateFrequency: (freq: "Monthly" | "Yearly") => void;
   setAllZoneEdits: (edits: Record<string, Record<string, number>>) => void;
   allZoneEditsInitializedRef: React.MutableRefObject<boolean>;
+  isOpenPlot?: boolean;
 }
 
 /**
@@ -41,8 +42,9 @@ export function useMatrixDataSync({
   setRateFrequency,
   setAllZoneEdits,
   allZoneEditsInitializedRef,
+  isOpenPlot = false,
 }: MatrixDataSyncProps) {
-  
+
   // Sync matrixData with defaultMatrixData when pagination changes
   useEffect(() => {
     if (defaultMatrixData.length > 0) {
@@ -54,16 +56,16 @@ export function useMatrixDataSync({
   useEffect(() => {
     const isEditMode = mode === 'edit' || mode === 'delete';
     if (!isEditMode) return;
-    
+
     if (!selectedZone || !selectedUseGroup || !assessmentYear) {
       setMatrixData(defaultMatrixData);
       setShowMatrix(false);
       return;
     }
-    
+
     const ratesToUse = (backendRates?.length) ? backendRates : fetchedBackendRates;
     setShowMatrix(true);
-    
+
     if (ratesToUse?.length) {
       const hasMonthly = ratesToUse.some(r => r.rateRemark === "MonthWise Rate");
       const hasYearWise = ratesToUse.some(r => r.rateRemark === "YearWise Rate");
@@ -74,14 +76,23 @@ export function useMatrixDataSync({
         const zoneRates = ratesToUse.filter(row => row.taxZoneId === z.taxZoneId || String(row.taxZoneId) === z.zoneNo);
         const rateValues: Record<string, number> = {};
         zoneRates.forEach(rate => {
-          const constructionKey = String(rate.constructionTypeId);
-          // Use rate value based on selected rate unit
-          const rateValue = rateUnit === 'SqFeet' ? rate.rateSquareFeet : rate.rateSquareMeter;
-          if (rateValue !== undefined) {
-            rateValues[constructionKey] = rateValue;
+          if (isOpenPlot) {
+            const matchingCat = rateCategories.find(c => Number(c.typeOfUseGroupId) === Number(rate.typeOfUseGroupId));
+            if (!matchingCat) return; // Ignore rates that do not belong to the visible Open Plot columns
+
+            const rateValue = rateUnit === 'SqFeet' ? rate.rateSquareFeet : rate.rateSquareMeter;
+            if (rateValue !== undefined) {
+              rateValues[matchingCat.constructionId] = rateValue;
+            }
+          } else {
+            const constructionKey = String(rate.constructionTypeId);
+            const rateValue = rateUnit === 'SqFeet' ? rate.rateSquareFeet : rate.rateSquareMeter;
+            if (rateValue !== undefined) {
+              rateValues[constructionKey] = rateValue;
+            }
           }
         });
-        
+
         return {
           id: idx + 1,
           zoneNo: z.zoneNo,
@@ -107,7 +118,7 @@ export function useMatrixDataSync({
       }));
       setMatrixData(zeroMatrix);
     }
-  }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, rateUnit, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency]);
+  }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, rateUnit, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency, isOpenPlot]);
 
   // Reset initialization flag when filters change
   useEffect(() => {
@@ -130,16 +141,20 @@ export function useMatrixDataSync({
     if (!isMatchingZone) return;
 
     const initialEdits: Record<string, Record<string, number>> = {};
-    
+
     // Initialize directly from ratesToUse (full backend data) instead of matrixData (paginated)
     zoneDescriptions.forEach(z => {
       const zoneRates = ratesToUse.filter(r => r.taxZoneId === z.taxZoneId || String(r.taxZoneId) === z.zoneNo);
       const zoneEdits: Record<string, number> = {};
-      
+
       rateCategories.forEach(cat => {
         const key = cat.constructionCode || cat.constructionId;
-        const matchingRate = zoneRates.find(r => String(r.constructionTypeId) === String(cat.constructionId) || String(r.constructionID) === String(cat.constructionId));
-        
+        const matchingRate = zoneRates.find(r =>
+          isOpenPlot
+            ? String(r.typeOfUseGroupId) === String(cat.typeOfUseGroupId)
+            : (String(r.constructionTypeId) === String(cat.constructionId) || String(r.constructionID) === String(cat.constructionId))
+        );
+
         if (matchingRate) {
           const rateValue = rateUnit === 'SqFeet' ? matchingRate.rateSquareFeet : matchingRate.rateSquareMeter;
           if (rateValue !== undefined && rateValue > 0) {
@@ -147,13 +162,13 @@ export function useMatrixDataSync({
           }
         }
       });
-      
+
       if (Object.keys(zoneEdits).length > 0) initialEdits[z.zoneNo] = zoneEdits;
     });
 
     setAllZoneEdits(initialEdits);
     allZoneEditsInitializedRef.current = true;
-    
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [backendRates, fetchedBackendRates, selectedZone, mode, rateUnit, zoneDescriptions, rateCategories, setAllZoneEdits]);
+  }, [backendRates, fetchedBackendRates, selectedZone, mode, rateUnit, zoneDescriptions, rateCategories, setAllZoneEdits, isOpenPlot]);
 }

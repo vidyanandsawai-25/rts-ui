@@ -214,17 +214,17 @@ export function RateMatrixSection({
               // Sanitize and validate value
               const sanitized = sanitizePositiveDecimal(String(value));
               const numValue = sanitized === "" ? 0 : Number(sanitized);
-              
+
               // Check if value exceeds maximum allowed rate
               if (numValue > MAX_RATE_VALUE) {
                 toast.error(t('messages.rateExceedsMaximum', { max: MAX_RATE_VALUE }));
                 return;
               }
-              
+
               // Find the row to get zoneNo
               const targetRow = matrixData.find(row => String(row.id) === rowId);
               const zoneNo = (targetRow?.zoneNo || (typeof targetRow === 'object' && targetRow && 'zone' in targetRow ? (targetRow as { zone?: string }).zone : undefined)) as string;
-              
+
               // Update matrixData for current page
               setMatrixData(prev => prev.map(row => {
                 if (String(row.id) === rowId) {
@@ -232,7 +232,7 @@ export function RateMatrixSection({
                 }
                 return row;
               }));
-              
+
               // Update allZoneEdits to persist across page changes
               if (zoneNo) {
                 setAllZoneEdits(prevEdits => ({
@@ -263,7 +263,7 @@ export function RateMatrixSection({
             }}
           />
         </div>
-        
+
         {/* Pagination outside scrollable area */}
         <div className="mt-4">
           <MatrixGridPagination
