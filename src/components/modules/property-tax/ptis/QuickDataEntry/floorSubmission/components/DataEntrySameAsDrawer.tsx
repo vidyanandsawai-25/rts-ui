@@ -47,9 +47,11 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
 
   // Filter properties to display in tables
   // Memoize to prevent unnecessary re-renders in child components
+  const { selectableProperties, filterPropertiesForTable } = hook;
+
   const displayedProperties = React.useMemo(
-    () => hook.filterPropertiesForTable(hook.selectableProperties, true),
-    [hook.selectableProperties, hook.filterPropertiesForTable]
+    () => filterPropertiesForTable(selectableProperties, true),
+    [selectableProperties, filterPropertiesForTable]
   );
 
   const drawerClassName = "[&_div.fixed.right-0]:!w-[97vw] md:[&_div.fixed.right-0]:!w-[1000px] lg:[&_div.fixed.right-0]:!w-[1100px] xl:[&_div.fixed.right-0]:!w-[1200px] [&_div.fixed.right-0>div:first-child]:!bg-blue-600 [&_div.fixed.right-0>div:first-child_h2]:!text-white [&_div.fixed.right-0>div:first-child>div:first-child]:!flex-1 [&_div.fixed.right-0>div:first-child_button_svg]:!text-white [&_div.fixed.right-0>div:first-child_button]:hover:!bg-blue-700";
