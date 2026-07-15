@@ -97,22 +97,14 @@ function PtisLayoutWrapperContent({
  */
 export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactElement {
   React.useEffect(() => {
-    document.documentElement.classList.add('ptis-no-scroll');
-    document.body.classList.add('ptis-no-scroll');
-    return () => {
-      document.documentElement.classList.remove('ptis-no-scroll');
-      document.body.classList.remove('ptis-no-scroll');
-    };
-  }, []);
-
-  React.useEffect(() => {
     // Avoid unregistering service workers in production unless explicitly intended.
     if (process.env.NODE_ENV !== 'development') return;
     if (!('serviceWorker' in navigator)) return;
 
     // Check opt-in flags (query param ?clearSW=true or localStorage)
     const urlParams = new URLSearchParams(window.location.search);
-    const shouldClear = urlParams.get('clearSW') === 'true' || localStorage.getItem('clear-sw-dev') === 'true';
+    const shouldClear =
+      urlParams.get('clearSW') === 'true' || localStorage.getItem('clear-sw-dev') === 'true';
     if (!shouldClear) return;
 
     navigator.serviceWorker
