@@ -111,6 +111,7 @@ export const updatePropertyBasicDetailsAction = async (locale: string, propertyI
         }
 
         revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`, "page");
         return result;
     } catch (error) {
         return { success: false, error: await getActionErrorMessage(error) };

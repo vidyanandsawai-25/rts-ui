@@ -14,7 +14,6 @@ import {
   DATA_ENTRY_SAME_AS_FILTER_TYPES,
   normalizePartitionNo,
   getDataEntrySameAsType,
-  getNumericDataEntrySameAsId,
 } from '../components/sameAsUtils';
 
 interface UseDataEntrySameAsProps {
@@ -138,9 +137,9 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   }, [partitionNo, wardOptions]);
 
   const sourcePropertyIds = React.useMemo(() => {
-    const sourceProperty = selectableProperties.find((p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(partitionNo));
-    return sourceProperty ? new Set<string | number>([sourceProperty.id]) : new Set<string | number>();
-  }, [partitionNo, selectableProperties]);
+    const matches = selectableProperties.filter((p) => Number(String(p.id).split('-')[0]) === currentPropertyId);
+    return new Set<string | number>(matches.map((m) => m.id));
+  }, [currentPropertyId, selectableProperties]);
 
   const typeWiseLockedPropertyIds = React.useMemo(() => {
     return new Set<string | number>(sourcePropertyIds);
@@ -182,30 +181,25 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   const handleClearPropertySelection = React.useCallback(() => setSelectedPropertyIds(new Set(sourcePropertyIds)), [sourcePropertyIds]);
 
   const handleApplySameAsDetails = React.useCallback(async () => {
-    const sourceProperty = selectableProperties.find((p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(partitionNo));
-    const sourcePropertyId = getNumericDataEntrySameAsId(sourceProperty?.id);
+    const sourcePropertyId = currentPropertyId;
     if (!sourcePropertyId) {
       toast.error(t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }));
       return;
     }
 
-    // Check if the source property is selected (checked) by the user
-    const isSourceSelected = effectiveSelectedPropertyIds.has(String(sourcePropertyId)) || 
-                             effectiveSelectedPropertyIds.has(Number(sourcePropertyId)) ||
-                             (sourceProperty?.id !== undefined && (
-                               effectiveSelectedPropertyIds.has(String(sourceProperty.id)) ||
-                               effectiveSelectedPropertyIds.has(Number(sourceProperty.id))
-                             ));
+    // Check if any source property row is selected (checked) by the user
+    const isSourceSelected = Array.from(sourcePropertyIds).some((id) => effectiveSelectedPropertyIds.has(id));
 
     // Calculate destination property IDs (excluding sourcePropertyId)
-    const destinationPropertyIds = Array.from(effectiveSelectedPropertyIds).map(Number)
-      .filter((id) => (
-        Number.isFinite(id) && 
-        id > 0 && 
-        id !== sourcePropertyId && 
-        id !== Number(sourceProperty?.id) &&
-        (!currentPropertyId || id !== currentPropertyId)
-      ));
+    const destinationPropertyIds = Array.from(new Set(
+      Array.from(effectiveSelectedPropertyIds)
+        .map((id) => Number(String(id).split('-')[0]))
+        .filter((propId) => (
+          Number.isFinite(propId) && 
+          propId > 0 && 
+          propId !== sourcePropertyId
+        ))
+    ));
 
     // If neither source property nor any destination property is selected, show error
     if (destinationPropertyIds.length === 0 && !isSourceSelected) {
@@ -218,19 +212,43 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType) ?? 0;
       const promises: Promise<any>[] = [];
 
-      // 1. If source property is selected, update its type directly in the database!
+      // 1. If source property is selected, update its type.
       if (isSourceSelected) {
         promises.push((async () => {
           // Fetch current basic details of source property
           const basicDetails = await getPropertyBasicDetailsAction(sourcePropertyId);
           if (!basicDetails) {
-            return { success: false, error: 'Could not fetch source property details' };
+            return { success: false, error: t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }) };
           }
-          // Modify only the propertyTypeId
+          
+          // Map only the fields required by UpdatePropertyBasicDetailsDto
           const updatedPayload = {
-            ...basicDetails,
-            propertyTypeId: newType
+            wardId: basicDetails.wardId,
+            taxZoneId: basicDetails.taxZoneId,
+            categoryId: basicDetails.categoryId,
+            propertyTypeId: newType, // modified
+            partitionNo: basicDetails.partitionNo,
+            flatOrShopNo: basicDetails.flatOrShopNo,
+            plotNo: basicDetails.plotNo,
+            surveyNo: basicDetails.surveyNo,
+            upicId: basicDetails.upicId,
+            subZoneNo: basicDetails.subZoneNo,
+            moujaId: basicDetails.moujaId,
+            moujaName: basicDetails.moujaName,
+            noOfResidentialToilets: basicDetails.noOfResidentialToilets,
+            noOfCommercialToilets: basicDetails.noOfCommercialToilets,
+            totalBuiltupAreaSqFeet: basicDetails.totalBuiltupAreaSqFeet,
+            totalCarpetAreaSqFeet: basicDetails.totalCarpetAreaSqFeet,
+            totalBuiltupAreaSqMeter: basicDetails.totalBuiltupAreaSqMeter,
+            totalCarpetAreaSqMeter: basicDetails.totalCarpetAreaSqMeter,
+            plotArea: basicDetails.plotArea,
+            plotAreaFtLength: basicDetails.plotAreaFtLength,
+            plotAreaFtWidth: basicDetails.plotAreaFtWidth,
+            plotAreaMtrLength: basicDetails.plotAreaMtrLength,
+            plotAreaMtrWidth: basicDetails.plotAreaMtrWidth,
+            rateSectionDescription: basicDetails.rateSectionDescription,
           };
+          
           // Call the action to save it
           return await updatePropertyBasicDetailsAction(locale, sourcePropertyId, updatedPayload);
         })());
@@ -244,7 +262,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
           filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(),
           type: newType
         };
-        promises.push(applyDataEntrySameAsAction(payload));
+        promises.push(applyDataEntrySameAsAction(payload, locale));
       }
 
       const originalProperties = [...selectableProperties];
@@ -253,7 +271,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       if (dataEntrySameAsTab === 'type-wise') {
         const updatedIds = new Set(destinationPropertyIds);
         setSelectableProperties((prev) => prev.map((p) => {
-          if (updatedIds.has(Number(p.id)) || (isSourceSelected && Number(p.id) === sourcePropertyId)) {
+          const propId = Number(String(p.id).split('-')[0]);
+          if (updatedIds.has(propId) || (isSourceSelected && propId === sourcePropertyId)) {
             return { ...p, type: changeTypeInput || currentPropertyType, typeLabel: changeTypeInput || currentPropertyType };
           }
           return p;
@@ -278,31 +297,27 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType, currentPropertyId, sourcePropertyIds, locale]);
 
   const handleApplyTypeSubmission = React.useCallback(async () => {
-    const sourceProperty = selectableProperties.find((p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(partitionNo));
-    const sourcePropertyId = getNumericDataEntrySameAsId(sourceProperty?.id);
+    const sourceProperty = selectableProperties.find((p) => Number(String(p.id).split('-')[0]) === currentPropertyId);
+    const sourcePropertyId = currentPropertyId;
     if (!sourcePropertyId) {
       toast.error(t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }));
       return;
     }
-    const destinationPropertyIds = Array.from(effectiveSelectedPropertyIds).map(Number)
-      .filter((id) => (
-        Number.isFinite(id) && 
-        id > 0 && 
-        id !== sourcePropertyId && 
-        id !== Number(sourceProperty?.id) &&
-        (!currentPropertyId || id !== currentPropertyId)
-      ));
+    const destinationPropertyIds = Array.from(new Set(
+      Array.from(effectiveSelectedPropertyIds)
+        .map((id) => Number(String(id).split('-')[0]))
+        .filter((propId) => (
+          Number.isFinite(propId) && 
+          propId > 0 && 
+          propId !== sourcePropertyId
+        ))
+    ));
     if (destinationPropertyIds.length === 0) {
       toast.error(t('floor.selectProperties.selectDestinationProperty'));
       return;
     }
 
-    const isSourceSelected = effectiveSelectedPropertyIds.has(String(sourcePropertyId)) || 
-                             effectiveSelectedPropertyIds.has(Number(sourcePropertyId)) ||
-                             (sourceProperty?.id !== undefined && (
-                               effectiveSelectedPropertyIds.has(String(sourceProperty.id)) ||
-                               effectiveSelectedPropertyIds.has(Number(sourceProperty.id))
-                             ));
+    const isSourceSelected = Array.from(sourcePropertyIds).some((id) => effectiveSelectedPropertyIds.has(id));
 
     const executeSubmission = async () => {
       setIsApplyingTypeSubmission(true);
@@ -310,7 +325,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
         // Optimistic UI update based on user requirement to see changes immediately
         const updatedIds = new Set(destinationPropertyIds);
         setSelectableProperties((prev) => prev.map((p) => {
-          if (updatedIds.has(Number(p.id))) {
+          const propId = Number(String(p.id).split('-')[0]);
+          if (updatedIds.has(propId)) {
             return {
               ...p,
               carpetAreaSqFeet: sourceProperty?.carpetAreaSqFeet ?? p.carpetAreaSqFeet,
@@ -326,13 +342,13 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
             destinationPropertyIds,
             filterType: "PARKING",
             type: 1
-          }),
+          }, locale),
           applyDataEntrySameAsAction({
             sourcePropertyId,
             destinationPropertyIds,
             filterType: "PROPERTYWISE",
             type: 1
-          })
+          }, locale)
         ]);
         
         if (resParking.success && resPropertywise.success) {

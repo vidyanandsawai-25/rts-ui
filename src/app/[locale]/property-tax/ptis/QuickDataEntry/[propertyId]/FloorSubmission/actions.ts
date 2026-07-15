@@ -59,7 +59,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             const typeLabel = (item.typeLabel || item.typeName || undefined) as string | undefined;
 
             return {
-                id: item.propertyId,
+                id: `${item.propertyId}-${item.propertyFloorId ?? ''}-${item.propertyDetailsId ?? ''}-${item.wingName || ''}-${item.flatOrShopNo || ''}`,
                 propertyFloorId: item.propertyFloorId ?? null,
                 propertyDetailsId: item.propertyDetailsId ?? null,
                 wardId: item.wardId,
@@ -303,9 +303,10 @@ export const deleteFloorRenterDetailsAction = async (renterId: string | number, 
     }
 };
 
-export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
+export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload, locale: string = "en"): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
     try {
         const data = await applyDataEntrySameAs(payload);
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${payload.sourcePropertyId}/FloorSubmission`, "page");
         return { success: true, data };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
