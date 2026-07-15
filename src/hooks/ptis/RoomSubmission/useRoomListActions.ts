@@ -33,8 +33,8 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
   };
 
   const handleAddRoom = () => {
-    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
-      props.floorData?.isOpenPlot === true || 
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) ||
+      props.floorData?.isOpenPlot === true ||
       props.floorData?.selectedFloorType === 'OpenPlot' ||
       String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
       String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
@@ -134,24 +134,23 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
 
     const updated = getUpdatedRooms(rooms);
     const nextEmptyIdx = updated.findIndex((r) => {
-      return !(Number(r.area || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-");
+      return !(Number(r.area || 0) > 0 && r.shape && r.shape !== "-Select-");
     });
 
     startTransition(() => {
-      setRooms((prevRooms) => getUpdatedRooms(prevRooms));
+      setRooms(() => updated);
+      if (nextEmptyIdx !== -1 && handleEdit) {
+        handleEdit(nextEmptyIdx, updated[nextEmptyIdx]);
+      } else {
+        handleCancelEdit();
+      }
     });
-
-    if (nextEmptyIdx !== -1 && handleEdit) {
-      handleEdit(nextEmptyIdx, updated[nextEmptyIdx]);
-    } else {
-      handleCancelEdit();
-    }
   };
 
   const handleUpdateRoom = () => {
     if (editingIndex === null) return;
-    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
-      props.floorData?.isOpenPlot === true || 
+    const isUtility = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) ||
+      props.floorData?.isOpenPlot === true ||
       props.floorData?.selectedFloorType === 'OpenPlot' ||
       String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
       String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
@@ -229,53 +228,59 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
       return updated;
     };
 
-    startTransition(async () => {
-      const { pendingDeletions, setPendingDeletions } = state;
-
-      try {
-        const roomResults = await Promise.all(
-          pendingDeletions.rooms.map(async (roomId) => ({
-            id: roomId,
-            success: (await deleteRoomSubmissionNoRedirectAction(roomId))?.success
-          }))
-        );
-
-        const offsetResults = await Promise.all(
-          pendingDeletions.offsets.map(async (offsetId) => ({
-            id: offsetId,
-            success: (await deleteOffsetSubmissionNoRedirectAction(offsetId))?.success
-          }))
-        );
-
-        const failedRooms = roomResults.filter(r => !r.success).map(r => r.id);
-        const failedOffsets = offsetResults.filter(o => !o.success).map(o => o.id);
-
-        setPendingDeletions({ rooms: failedRooms, offsets: failedOffsets });
-        if (failedRooms.length > 0 || failedOffsets.length > 0) {
-          warning(t("roomSubmission.validation.someDeletionsFailed") || "Some deletions failed. Please try again.");
-          return;
-        }
-      } catch (err) {
-        const errorMsg = err instanceof Error
-          ? err.message
-          : t("roomSubmission.validation.failedPendingDeletions") || "Failed to execute pending deletions. Please try again.";
-        warning(errorMsg);
-        return;
-      }
-
+    const performUpdate = () => {
       const updated = getUpdatedRooms(rooms);
       const nextEmptyIdx = updated.findIndex((r) => {
-        return !(Number(r.area || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-");
+        return !(Number(r.area || 0) > 0 && r.shape && r.shape !== "-Select-");
       });
 
-      setRooms((prevRooms) => getUpdatedRooms(prevRooms));
+      startTransition(() => {
+        setRooms(() => updated);
+        if (nextEmptyIdx !== -1 && handleEdit) {
+          handleEdit(nextEmptyIdx, updated[nextEmptyIdx]);
+        } else {
+          handleCancelEdit();
+        }
+      });
+    };
 
-      if (nextEmptyIdx !== -1 && handleEdit) {
-        handleEdit(nextEmptyIdx, updated[nextEmptyIdx]);
-      } else {
-        handleCancelEdit();
-      }
-    });
+    const { pendingDeletions, setPendingDeletions } = state;
+    if (pendingDeletions.rooms.length > 0 || pendingDeletions.offsets.length > 0) {
+      startTransition(async () => {
+        try {
+          const roomResults = await Promise.all(
+            pendingDeletions.rooms.map(async (roomId) => ({
+              id: roomId,
+              success: (await deleteRoomSubmissionNoRedirectAction(roomId))?.success
+            }))
+          );
+
+          const offsetResults = await Promise.all(
+            pendingDeletions.offsets.map(async (offsetId) => ({
+              id: offsetId,
+              success: (await deleteOffsetSubmissionNoRedirectAction(offsetId))?.success
+            }))
+          );
+
+          const failedRooms = roomResults.filter(r => !r.success).map(r => r.id);
+          const failedOffsets = offsetResults.filter(o => !o.success).map(o => o.id);
+
+          setPendingDeletions({ rooms: failedRooms, offsets: failedOffsets });
+          if (failedRooms.length > 0 || failedOffsets.length > 0) {
+            warning(t("roomSubmission.validation.someDeletionsFailed") || "Some deletions failed. Please try again.");
+            return;
+          }
+          performUpdate();
+        } catch (err) {
+          const errorMsg = err instanceof Error
+            ? err.message
+            : t("roomSubmission.validation.failedPendingDeletions") || "Failed to execute pending deletions. Please try again.";
+          warning(errorMsg);
+        }
+      });
+    } else {
+      performUpdate();
+    }
   };
 
   const handleDelete = (index: number) => {

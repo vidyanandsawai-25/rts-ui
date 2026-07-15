@@ -31,7 +31,7 @@ export function ULBLicenseSection({
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="h-1.5 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500" />
-      <header className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+      <header className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-4 py-2.5">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
             <Key className="h-5 w-5" />
@@ -54,9 +54,9 @@ export function ULBLicenseSection({
         )}
       </header>
 
-      <div className="grid grid-cols-12 gap-x-8 gap-y-5 p-5">
-        <div className="col-span-5 space-y-4">
-          <div className="mb-3 flex items-center gap-2">
+      <div className="grid grid-cols-12 gap-x-6 gap-y-3 p-4">
+        <div className="col-span-5 space-y-2.5">
+          <div className="mb-1.5 flex items-center gap-2">
             <Shield className="h-4 w-4 text-blue-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.licenseDetails')}</span>
           </div>
@@ -74,12 +74,12 @@ export function ULBLicenseSection({
           <div className="h-full w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
         </div>
 
-        <div className="col-span-6 space-y-4">
-          <div className="mb-3 flex items-center gap-2">
+        <div className="col-span-6 space-y-2.5">
+          <div className="mb-1.5 flex items-center gap-2">
             <Clock className="h-4 w-4 text-cyan-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.durationLimits')}</span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <UlbInputMd label={t('fields.licenseStartDate')} required type="date" value={formData.licenseStartDate} error={getFieldError('licenseStartDate')} onChange={(e) => onLicenseFieldChange('licenseStartDate', e.target.value)} onBlur={() => onFieldBlur('licenseStartDate')} />
             {isCustomDuration(formData.licenseDuration) ? (
               <div className="flex items-end gap-2">
@@ -96,7 +96,7 @@ export function ULBLicenseSection({
       </div>
 
       {masterRenewalAlerts.length > 0 && (
-        <div className="border-t border-slate-100 px-5 pt-4 pb-5">
+        <div className="border-t border-slate-100 px-4 pt-3 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-slate-400" />

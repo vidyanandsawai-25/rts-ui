@@ -110,14 +110,16 @@ export const Navbar = ({
                         </div>
                     )}
 
-                    <Link
-                        href={`/${locale}/configuration-settings`}
-                        className="flex items-center gap-1.5 sm:gap-2 hover:text-blue-200 transition-colors shrink-0"
-                        title={t('navigation.settings')}
-                    >
-                        <Settings className="w-4 h-4" />
-                        <span className="hidden md:inline text-sm font-medium">{t('navigation.settings')}</span>
-                    </Link>
+                    {userProfile?.hasSettingsAccess !== false && (
+                        <Link
+                            href={`/${locale}/configuration-settings`}
+                            className="flex items-center gap-1.5 sm:gap-2 hover:text-blue-200 transition-colors shrink-0"
+                            title={t('navigation.settings')}
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span className="hidden md:inline text-sm font-medium">{t('navigation.settings')}</span>
+                        </Link>
+                    )}
 
                     {/* User info */}
                     <div className="relative">
