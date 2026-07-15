@@ -11,12 +11,6 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/__tests__/setup.ts'],
-    pool: 'threads',
-    maxConcurrency: 4,
-    hookTimeout: 30000,
-    testTimeout: 30000,
-    teardownTimeout: 10000,
-    retry: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html'],
