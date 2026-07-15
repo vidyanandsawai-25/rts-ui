@@ -26,8 +26,8 @@ export type ModalWidth = keyof typeof MODAL_WIDTH;
 export interface ModalProps {
   open: boolean;
   onClose: () => void;
-  title: string;
-  subtitle?: string;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
   count?: number;
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -149,7 +149,7 @@ export function Modal({
             </div>
 
             {subtitle && (
-              <p className="text-sm text-gray-500 font-medium">{subtitle}</p>
+              <div className="text-sm text-gray-500 font-medium">{subtitle}</div>
             )}
           </div>
 

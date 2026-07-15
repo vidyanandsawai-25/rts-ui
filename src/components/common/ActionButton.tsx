@@ -17,7 +17,8 @@ export type ButtonVariant =
   | 'danger'
   | 'success'
   | 'edit'
-  | 'delete';
+  | 'delete'
+  | 'contained';
 
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -74,7 +75,7 @@ export function Button({
     if (nextNav && typeof nextNav.usePathname === 'function') {
       pathname = nextNav.usePathname();
     }
-  } catch {}
+  } catch { }
   let screens: UserScreenAccess[] = [];
   try {
     const context = usePermissionsContext();
@@ -156,6 +157,7 @@ export function Button({
     success: 'bg-green-600 text-white hover:bg-green-700 shadow-sm',
     edit: 'text-[#1A86E8] hover:bg-blue-50 border border-blue-400 hover:shadow-md hover:scale-105',
     delete: 'text-red-500 hover:bg-red-50 border border-red-400 hover:shadow-md hover:scale-105',
+    contained: 'bg-sky-500 text-white hover:bg-sky-600 shadow-sm'
   };
 
   if (hidden) return null;
