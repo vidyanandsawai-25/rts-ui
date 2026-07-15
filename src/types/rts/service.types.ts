@@ -29,6 +29,12 @@ export interface RtsServiceApiItem {
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
+
+  // SLA and Fees fields from rts.ServiceMaster
+  sla?: string | number | null;
+  fees?: number | null;
+  feesRequired?: boolean | null;
+  isFeesRequired?: boolean | null;
 }
 
 export interface RtsServiceQueryParams {

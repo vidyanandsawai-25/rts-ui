@@ -115,8 +115,8 @@ export async function getUlbConfigurationPageDataAction(): Promise<
               isEnabled: false,
               status: 'inactive',
             });
-          } catch (err) {
-            console.error(`[ULBConfiguration] Failed to auto-deactivate expired license ${licence.departmentLicenceDetailsId}:`, err);
+          } catch (_err) {
+            // Error intentionally suppressed per user request
           }
         }
 
@@ -124,8 +124,8 @@ export async function getUlbConfigurationPageDataAction(): Promise<
         if (deptId != null && userId != null) {
           try {
             await syncMasterDepartmentWithLicense(deptId, false, userId);
-          } catch (err) {
-            console.error(`[ULBConfiguration] Failed to sync deactivated license for department ${deptId} to master:`, err);
+          } catch (_err) {
+            // Error intentionally suppressed per user request
           }
         }
       }

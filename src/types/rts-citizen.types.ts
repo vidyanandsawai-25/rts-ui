@@ -54,6 +54,11 @@ export type ServiceDTO = {
 
   /** Display sorting order from DB */
   displayOrder: number;
+
+  // SLA and Fees fields dynamically loaded from DB
+  sla?: string | number | null;
+  fees?: number | null;
+  feesRequired?: boolean | null;
 };
 
 // ── Service Metadata (for form page header) ──────────────────────────────────

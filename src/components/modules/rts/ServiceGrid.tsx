@@ -6,7 +6,6 @@ import { MoveRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { useLocale } from "next-intl";
-import { getServiceFormConfig } from "@/data/serviceFormConfig";
 type Language = "en" | "hi" | "mr";
 
 /** Types */
@@ -116,7 +115,6 @@ export default function ServiceGrid({
             UI.serviceFallback[activeLang];
 
           const deptToUseId = dept?.id ?? s.__deptId;
-          const hasForm = !!getServiceFormConfig(s.id);
           const serviceHref = deptToUseId
             ? `/service/${s.id}?deptId=${encodeURIComponent(deptToUseId)}`
             : `/service/${s.id}`;
@@ -124,19 +122,9 @@ export default function ServiceGrid({
           return (
             <Link
               key={s.id}
-              href={hasForm ? serviceHref : "#"}
-              onClick={(e) => {
-                if (!hasForm) {
-                  e.preventDefault();
-                  const msg = activeLang === "mr" 
-                    ? `${label} अर्ज सेवा सध्या उपलब्ध नाही (डेमो).` 
-                    : activeLang === "hi" 
-                      ? `${label} आवेदन सेवा अभी उपलब्ध नहीं है (डेमो)।` 
-                      : `${label} application service is not available (Demo).`;
-                  alert(msg);
-                } else {
-                  saveDeptServiceContext(s);
-                }
+              href={serviceHref}
+              onClick={() => {
+                saveDeptServiceContext(s);
               }}
               className="
                 rounded-2xl p-4 border-2 border-gray-200

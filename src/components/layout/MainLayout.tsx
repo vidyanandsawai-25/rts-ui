@@ -140,9 +140,8 @@ const getLayoutChromeData = cache(async () => {
   };
 });
 async function SidebarWithData({ locale }: { locale: string }) {
-  const headerList = await headers();
-  const pathname = headerList.get('x-pathname') || '';
   const { menuItems } = await getLayoutChromeData();
+  const pathname = (await headers()).get('x-pathname') || '';
 
   const isCmsRoute = /\/(rts-cms|rts\/admin)(\/|$)/.test(pathname);
   if (isCmsRoute) {

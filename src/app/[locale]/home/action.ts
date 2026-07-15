@@ -8,6 +8,8 @@ import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user
 import type { Department } from "@/types/departmentActivation.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
+import { userScreenAccessService } from "@/lib/api/user-screen-access.service";
+import { filterScreensByAllocatedRoles, mergeUserScreens } from "@/lib/utils/module-access-guard";
 
 /**
  * Response type for listServices
@@ -17,6 +19,25 @@ export interface ListServicesResponse {
     error?: string;
 }
 
+/**
+ * Analyzes department name to determine the correct Lucide icon
+ */
+function getIconByDepartmentName(departmentName: string): string {
+    const lowerName = departmentName.toLowerCase().trim();
+
+    if (lowerName.includes('property')) return 'Home';
+    if (lowerName.includes('water')) return 'Droplet';
+    if (lowerName.includes('trade') || lowerName.includes('license') || lowerName.includes('bajar')) return 'ShoppingCart';
+    if (lowerName.includes('birth') || lowerName.includes('death')) return 'FileText';
+    if (lowerName.includes('garbage') || lowerName.includes('trash') || lowerName.includes('waste')) return 'Trash2';
+    if (lowerName.includes('building') || lowerName.includes('permission')) return 'Building2';
+    if (lowerName.includes('grievance') || lowerName.includes('complain')) return 'Megaphone';
+    if (lowerName.includes('rts')) return 'Timer';
+    if (lowerName.includes('asset')) return 'Landmark';
+    if (lowerName.includes('fire') || lowerName.includes('noc')) return 'Flame';
+
+    return 'LayoutGrid';
+}
 
 /**
  * Maps user department from API to UI Service interface
@@ -39,7 +60,7 @@ function mapDepartmentToService(
         name: department.departmentName,
         title: department.departmentName,
         subtext: `Access ${department.departmentName} services`,
-        icon: iconName || 'LayoutGrid',
+        icon: iconName || getIconByDepartmentName(department.departmentName),
         link: `/${locale}/${routeSegment}`,
         moduleId,
         moduleName,
@@ -128,25 +149,6 @@ export async function listServices(locale: string): Promise<ListServicesResponse
                     moduleInfo?.moduleName
                 );
             });
-
-        // Ensure "RTS" card points to the CMS portal and has the right title/icon
-        const rtsCard = services.find(s => s.name?.toLowerCase() === 'rts' || s.title?.toLowerCase() === 'rts');
-        if (rtsCard) {
-            rtsCard.title = "RTS CMS";
-            rtsCard.subtext = "Complaint & Application Management System";
-            rtsCard.icon = "Timer";
-            rtsCard.link = `/${locale}/cms/inbox`;
-        } else {
-            // Append RTS CMS card for municipal staff access
-            services.push({
-                id: 9999,
-                name: "RTS CMS",
-                title: "RTS CMS",
-                subtext: "Complaint & Application Management System",
-                icon: "Timer",
-                link: `/${locale}/cms/inbox`,
-            });
-        }
 
         return { services };
     } catch (_error) {
@@ -291,6 +293,43 @@ export async function getUserProfileSSR(): Promise<{
                 .map(m => m.moduleName)
         )];
 
+        const isUserActive = profile.isActive === true || String(profile.isActive).toLowerCase() === 'true';
+        const safeDepts = Array.isArray(profile.departments) ? profile.departments : [];
+        const activeDepts = safeDepts.filter((d) => d && (d.isActive || !isUserActive));
+        const activeDeptIds = new Set(activeDepts.map((d) => String(d.departmentId)));
+
+        const roleAccess: Record<string, number[]> = {};
+        if (Array.isArray(profile.roleAllocations)) {
+          profile.roleAllocations.forEach((ra) => {
+            if (ra && (ra.isActive || !isUserActive)) {
+              const deptId = String(ra.departmentId);
+              if (activeDeptIds.has(deptId)) {
+                if (!roleAccess[deptId]) roleAccess[deptId] = [];
+                roleAccess[deptId].push(ra.userRoleId);
+              }
+            }
+          });
+        }
+
+        let hasSettingsAccess = false;
+        try {
+            const authToken = cookieStore.get('auth_token')?.value;
+            const screensRes = await userScreenAccessService.getScreensForUser(userId, authToken);
+            if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
+                const filteredScreens = filterScreensByAllocatedRoles(screensRes.data, roleAccess);
+                const mergedScreens = mergeUserScreens(filteredScreens);
+                
+                hasSettingsAccess = mergedScreens.some(s => {
+                    const route = s.routePath || '';
+                    const isConfigRoute = route.startsWith('configuration-settings') || route.startsWith('/configuration-settings');
+                    const isViewableMenu = (s.isMenu === true || s.isMenu === 1) && s.canView && !s.haveNoAccess;
+                    return isConfigRoute && isViewableMenu;
+                });
+            }
+        } catch (e) {
+            console.error('Failed to verify configuration settings access', e);
+        }
+
         const data: UserProfileDisplayValues = {
             fullName,
             email: profile.email,
@@ -304,6 +343,7 @@ export async function getUserProfileSSR(): Promise<{
             language: profile.language,
             primaryRole: roles[0] || 'User',
             primaryDepartment: departments[0] || '',
+            hasSettingsAccess,
         };
 
         return { data };

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Layers } from 'lucide-react';
+import { Layers, MapPin, Hash, Building, DoorOpen } from 'lucide-react';
 import { MasterTable, type Column, Tooltip, Drawer } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import type { FloorData, RoomSubmissionSidebarProps } from '@/types/floor-details.types';
@@ -12,6 +12,16 @@ import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utilit
 
 export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps) {
     const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
+    const isOpenPlot = props.floorData?.isOpenPlot === true || 
+        props.floorData?.selectedFloorType === 'OpenPlot' ||
+        String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+        String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+        String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
+        String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
+        String(props.floorData?.floor || '').toLowerCase().includes('open space') ||
+        String(props.floorData?.floorDescription || '').toLowerCase().includes('open space') ||
+        String(props.floorData?.typeOfUseCategory || '').toLowerCase().includes('open space') ||
+        String(props.floorData?.typeOfUseCategory || '').toLowerCase().includes('open plot');
     let lastFilledRoomIndex = -1;
     if (Array.isArray(props.existingRooms)) {
         for (let i = props.existingRooms.length - 1; i >= 0; i--) {
@@ -168,18 +178,36 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
     ], [areaUnit, t]);
 
     const drawerTitle = (
-        <div className="flex items-center gap-4">
-            <div className="flex flex-col">
-                <h2 className="text-base font-bold flex items-center gap-2 text-blue-900">
-                    <Layers className="w-4 h-4 text-blue-600" />
-                    {t('roomSubmission.title')} ({areaUnit === "sq.m" ? t('roomSubmission.table.sqMeter') : t('roomSubmission.table.sqFeet')})
-                </h2>
-                <p className="text-[11px] text-white mt-0.5 font-medium ml-8">
-                    {t('roomSubmission.table.ward')}: <strong className="text-white">{props.wardNo}</strong> •
-                    {t('roomSubmission.table.property')}: <strong className="text-white">{props.propertyNo}</strong> •
-                    {t('roomSubmission.table.partition')}: <strong className="text-white">{props.partitionNo}</strong> •
-                    {t('roomSubmission.table.floor')}: <strong className="text-white">{props.floorNumber}</strong> •
-                    {t('roomSubmission.table.rooms')}: <strong className="text-white">{maxRoomsCount}</strong>                </p>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <h2 className="text-base font-bold flex items-center gap-2 text-white shrink-0">
+                <Layers className="w-4 h-4 text-white" />
+                {isOpenPlot 
+                    ? 'OPEN SPACE SUBMISSION' 
+                    : isUtilityCategory 
+                        ? 'UTILITY WISE SUBMISSION' 
+                        : t('roomSubmission.title')} ({areaUnit === "sq.m" ? t('roomSubmission.table.sqMeter') : t('roomSubmission.table.sqFeet')})
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/20 bg-white/10 text-[11px] font-medium text-white shadow-sm">
+                    <MapPin className="w-4 h-4 text-emerald-300 animate-pulse-slow" />
+                    <span>{t('roomSubmission.table.ward')}: <strong className="font-bold">{props.wardNo || '—'}</strong></span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/20 bg-white/10 text-[11px] font-medium text-white shadow-sm">
+                    <Hash className="w-4 h-4 text-amber-300" />
+                    <span>{t('roomSubmission.table.property')}: <strong className="font-bold">{props.propertyNo || '—'}</strong></span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/20 bg-white/10 text-[11px] font-medium text-white shadow-sm">
+                    <Layers className="w-4 h-4 text-cyan-300" />
+                    <span>{t('roomSubmission.table.partition')}: <strong className="font-bold">{props.partitionNo || '—'}</strong></span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/20 bg-white/10 text-[11px] font-medium text-white shadow-sm">
+                    <Building className="w-4 h-4 text-fuchsia-300" />
+                    <span>{t('roomSubmission.table.floor')}: <strong className="font-bold">{props.floorNumber || '—'}</strong></span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/20 bg-white/10 text-[11px] font-medium text-white shadow-sm">
+                    <DoorOpen className="w-4 h-4 text-pink-300" />
+                    <span>{t('roomSubmission.table.rooms')}: <strong className="font-bold">{maxRoomsCount}</strong></span>
+                </div>
             </div>
 
             {/* Unit Toggle Pill - Hidden on UI */}

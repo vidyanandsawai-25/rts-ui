@@ -19,7 +19,6 @@ import {
   Zap,
   Clock,
 } from 'lucide-react';
-import { getServiceFormConfig } from '@/data/serviceFormConfig';
 import { rtsServiceDetails } from '@/data/rtsServiceDetails';
 import { Modal, Button } from '@/components/common';
 import type { DepartmentDTO, ServiceDTO } from '@/types/rts-citizen.types';
@@ -120,6 +119,9 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         services: (dept.services as unknown as ServiceDTO[]).map((svc) => ({
           id: svc.id,
           name: pickLang(svc.name, locale),
+          sla: svc.sla,
+          fees: svc.fees,
+          feesRequired: svc.feesRequired,
         })),
         stats: formatServiceCount(dept.services.length, locale),
       };
@@ -160,39 +162,29 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
   const handleServiceClick = (serviceName: string, serviceId?: string) => {
     if (!serviceId) return;
-    const hasForm = !!getServiceFormConfig(serviceId);
-    if (hasForm) {
-      // Check if service requires login (PropertyTax, Trade License, Water Supply)
-      const deptOfService = deptCards.find((d) => d.services.some((s) => String(s.id) === String(serviceId)));
-      const deptName = deptOfService ? deptOfService.title : '';
 
-      const s = serviceName.toLowerCase();
-      const d = deptName.toLowerCase();
+    // Check if service requires login (PropertyTax, Trade License, Water Supply)
+    const deptOfService = deptCards.find((d) => d.services.some((s) => String(s.id) === String(serviceId)));
+    const deptName = deptOfService ? deptOfService.title : '';
 
-      const isPropertyTax = s.includes('property') || s.includes('tax') || d.includes('property') || d.includes('tax') ||
-                            s.includes('मालमत्ता') || s.includes('कर') || d.includes('मालमत्ता') || d.includes('कर');
-                            
-      const isTrade = s.includes('trade') || s.includes('license') || d.includes('trade') || d.includes('license') ||
-                      s.includes('व्यवसाय') || s.includes('व्यापार') || d.includes('व्यवसाय') || d.includes('व्यापार');
-                      
-      const isWater = s.includes('water') || d.includes('water') ||
-                      s.includes('पाणी') || s.includes('जल') || d.includes('पाणी') || d.includes('जल');
+    const s = serviceName.toLowerCase();
+    const d = deptName.toLowerCase();
 
-      const requiresLogin = isPropertyTax || isTrade || isWater;
+    const isPropertyTax = s.includes('property') || s.includes('tax') || d.includes('property') || d.includes('tax') ||
+                          s.includes('मालमत्ता') || s.includes('कर') || d.includes('मालमत्ता') || d.includes('कर');
+                          
+    const isTrade = s.includes('trade') || s.includes('license') || d.includes('trade') || d.includes('license') ||
+                    s.includes('व्यवसाय') || s.includes('व्यापार') || d.includes('व्यवसाय') || d.includes('व्यापार');
+                    
+    const isWater = s.includes('water') || d.includes('water') ||
+                    s.includes('पाणी') || s.includes('जल') || d.includes('पाणी') || d.includes('जल');
 
-      if (requiresLogin && !isLoggedIn) {
-        router.push(`/${locale}/service/login?redirect=/${locale}/service/${serviceId}`);
-      } else {
-        router.push(`/${locale}/service/${serviceId}`);
-      }
+    const requiresLogin = isPropertyTax || isTrade || isWater;
+
+    if (requiresLogin && !isLoggedIn) {
+      router.push(`/${locale}/service/login?redirect=/${locale}/service/${serviceId}`);
     } else {
-      alert(
-        locale === 'mr'
-          ? `${serviceName} अर्ज सेवा सध्या उपलब्ध नाही (डेमो).`
-          : locale === 'hi'
-          ? `${serviceName} आवेदन सेवा अभी उपलब्ध नहीं है (डेमो)।`
-          : `${serviceName} application service is not available (Demo).`
-      );
+      router.push(`/${locale}/service/${serviceId}`);
     }
   };
 
@@ -568,20 +560,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        const hasAnyForm = activeDept.services.some((s) => !!getServiceFormConfig(s.id));
-                        if (hasAnyForm) {
-                          handleActionClick();
-                        } else {
-                          alert(
-                            locale === 'mr'
-                              ? `${activeDept.title} विभागाची सेवा सध्या उपलब्ध नाही (डेमो).`
-                              : locale === 'hi'
-                              ? `${activeDept.title} विभाग की सेवा अभी उपलब्ध नहीं है (डेमो)।`
-                              : `${activeDept.title} department services are not available (Demo).`
-                          );
-                        }
-                      }}
+                      onClick={handleActionClick}
                       className="px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
                     >
                       <span>{t('सर्व सेवा अर्ज करा', 'सभी सेवाएं आवेदन करें', 'Apply for Services')}</span>
@@ -626,12 +605,33 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         const details = rtsServiceDetails[selectedServiceId];
         let serviceName = '';
         let deptName = '';
+        let serviceItem: any = null;
         for (const dept of deptCards) {
           const svc = dept.services.find((s) => s.id === selectedServiceId);
-          if (svc) { serviceName = svc.name; deptName = dept.title; break; }
+          if (svc) { 
+            serviceName = svc.name; 
+            deptName = dept.title; 
+            serviceItem = svc;
+            break; 
+          }
         }
-        const transSla = details ? t(details.sla.mr, details.sla.hi, details.sla.en) : '7 Days';
-        const transFees = details ? t(details.fees.mr, details.fees.hi, details.fees.en) : 'Free';
+        
+        let transSla = '7 Days';
+        if (serviceItem?.sla !== undefined && serviceItem?.sla !== null) {
+          transSla = typeof serviceItem.sla === 'number' ? `${serviceItem.sla} ${t('दिवस', 'दिन', 'Days')}` : String(serviceItem.sla);
+        } else if (details) {
+          transSla = t(details.sla.mr, details.sla.hi, details.sla.en);
+        }
+
+        let transFees = 'Free';
+        if (serviceItem?.feesRequired === false) {
+          transFees = t('मोफत', 'निःशुल्क', 'Free');
+        } else if (serviceItem?.fees !== undefined && serviceItem?.fees !== null) {
+          transFees = `₹${serviceItem.fees}`;
+        } else if (details) {
+          transFees = t(details.fees.mr, details.fees.hi, details.fees.en);
+        }
+
         const transOfficer = details ? t(details.officer.mr, details.officer.hi, details.officer.en) : '-';
         const transDocs = details ? (locale === 'mr' ? details.documents.mr : locale === 'hi' ? details.documents.hi : details.documents.en) : [];
 

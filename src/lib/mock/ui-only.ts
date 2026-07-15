@@ -1,4 +1,3 @@
-import { departments } from "@/data/departments";
 import { properties } from "@/data/properties";
 import type { Service } from "@/types/service.types";
 import type {
@@ -42,10 +41,6 @@ const getRandomOtp = () => {
 
 export function getMockServices(): Service[] {
   return services;
-}
-
-export function getMockDashboardDepartments() {
-  return departments;
 }
 
 export async function requestOtpLocal(mobile: string): Promise<RequestOtpResponse> {
