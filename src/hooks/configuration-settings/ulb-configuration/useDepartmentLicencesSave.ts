@@ -29,7 +29,7 @@ export function useDepartmentLicencesSave({
   const [isSavingLicences, setIsSavingLicences] = useState(false);
   const isSavingLicencesRef = useRef(false);
 
-  const saveLicences = useCallback(async (): Promise<boolean> => {
+  const saveLicences = useCallback(async (suppressToast = false): Promise<boolean> => {
     if (isSavingLicencesRef.current) return false;
 
     const toSave = getDepartmentLicencesToSave(departments);
@@ -85,7 +85,9 @@ export function useDepartmentLicencesSave({
         return false;
       }
 
-      toast.success(response.message || t('messages.success'));
+      if (!suppressToast) {
+        toast.success(response.message || t('messages.success'));
+      }
 
       startTransition(() => {
         router.refresh();

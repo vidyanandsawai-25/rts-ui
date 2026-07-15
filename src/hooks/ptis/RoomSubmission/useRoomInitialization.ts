@@ -9,7 +9,7 @@ import { RoomSubmissionState } from "./useRoomSubmissionState";
 
 import { checkIsUtilityCategory } from "@/lib/utils/floorSubmission/floor-utility-checks";
 
-export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWiseSubmissionProps, actions: { handleEdit: (idx: number, room?: RoomData) => void }) => {
+export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWiseSubmissionProps, actions: { handleEdit: (idx: number, room?: RoomData) => void; handleCancelEdit?: () => void }) => {
   const {
     isOpen, floorNumber, existingRooms, maxRooms
   } = props;
@@ -125,10 +125,12 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
       setRooms(initializedRooms);
       if (initializedRooms.length > 0 && !isUtility) {
         const firstEmptyIdx = initializedRooms.findIndex((r) => {
-          return !(Number(r.area || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-");
+          return !(Number(r.area || 0) > 0 && r.shape && r.shape !== "-Select-");
         });
         if (firstEmptyIdx !== -1) {
           actions.handleEdit(firstEmptyIdx, initializedRooms[firstEmptyIdx]);
+        } else {
+          actions.handleCancelEdit?.();
         }
       }
     }
@@ -214,7 +216,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
       String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
     if (isUtility || !isOpen || !maxRooms || maxRooms < 2 || isEditMode || editingIndex !== null || rooms.length === 0 || hasAutoActivatedRef.current) return;
 
-    const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.utilities && r.utilities !== "-Select-" && r.shape && r.shape !== "-Select-";
+    const isRoomFilled = (r: RoomData) => Number(r.area || 0) > 0 && Number(r.total || 0) > 0 && r.shape && r.shape !== "-Select-";
     const lastFilled = [...rooms].reverse().findIndex(isRoomFilled);
     if (lastFilled === -1) return;
 

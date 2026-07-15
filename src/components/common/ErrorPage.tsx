@@ -53,6 +53,27 @@ export function ErrorPage({
     });
   }, [error, translationNamespace]);
 
+  const getCleanedMessage = () => {
+    if (!error?.message) return t('description');
+    
+    let cleanMsg = error.message;
+    if (cleanMsg.includes(':')) {
+      const parts = cleanMsg.split(':');
+      cleanMsg = parts.slice(1).join(':').trim();
+    }
+    
+    const lower = cleanMsg.toLowerCase();
+    if (lower.includes('timeout')) {
+      return t('description');
+    }
+    if (lower.includes('fetch failed') || lower.includes('failed to fetch') || lower.includes('network error') || lower.includes('econnrefused')) {
+      return t('description');
+    }
+    return cleanMsg;
+  };
+
+  const displayMessage = getCleanedMessage();
+
   return (
     <PageContainer>
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -71,14 +92,14 @@ export function ErrorPage({
 
               {/* Error Description */}
               <p className="text-gray-600">
-                {error.message || t('description')}
+                {displayMessage}
               </p>
 
               {/* Error Details (development only) */}
               {process.env.NODE_ENV === 'development' && (
                 <div className="w-full mt-4 p-4 bg-gray-100 rounded-md text-left">
                   <p className="text-sm font-mono text-gray-800 break-words">
-                    {error.message}
+                    {displayMessage}
                   </p>
                   {error.digest && (
                     <p className="text-xs text-gray-600 mt-2">

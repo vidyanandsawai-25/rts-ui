@@ -1,0 +1,115 @@
+{
+  "title": "CC / OC / इलेक्ट्रिक बिल - कर गणना मार्गदर्शक तत्त्वे",
+  "subtitle": "CC, OC आणि इलेक्ट्रिक बिल तारखांवर आधारित कर कसा मोजायचा ते व्यवस्थापित करा.",
+  "buttons": {
+    "cancel": "रद्द करा",
+    "save": "जतन करा",
+    "update": "अद्ययावत करा",
+    "saving": "जतन होत आहे...",
+    "updating": "अद्ययावत होत आहे...",
+    "tryAgain": "पुन्हा प्रयत्न करा"
+  },
+  "errors": {
+    "unableToLoad": "कॉन्फिगरेशन लोड करता आले नाही",
+    "somethingWentWrong": "काहीतरी चूक झाली",
+    "offlineMode": "ऑफलाइन मोड",
+    "httpStatus": "(HTTP {status})"
+  },
+  "sections": {
+    "generalSettings": "1. सामान्य सेटिंग्ज",
+    "datePriority": "2. प्रमाणपत्र तारीख प्राधान्य",
+    "datePriorityHint": "(1 = सर्वोच्च प्राधान्य)",
+    "ccOcRules": "3. CC आणि OC नियम",
+    "electricBillRules": "4. इलेक्ट्रिक बिल नियम",
+    "retrospectiveRules": "5. पूर्वलक्षी (तारीख नाही) नियम",
+    "otherSettings": "6. इतर सेटिंग्ज"
+  },
+  "fields": {
+    "enableCertificateBasedTax": "प्रमाणपत्र आधारित कर सक्षम करा",
+    "applyTaxOnlyForProtected": "केवळ संरक्षित प्रमाणपत्र प्रकारांसाठी कर लागू करा",
+    "financialYearStart": "आर्थिक वर्ष सुरुवात",
+    "month": "महिना",
+    "day": "दिवस",
+    "applyCcToOcSplit": "CC ते OC विभाजन लागू करा",
+    "ccOcDiffLabel": "जर CC – OC फरक यापेक्षा कमी किंवा समान असेल",
+    "ccPeriodMultiplier": "CC कालावधी गुणक",
+    "ocPeriodMultiplier": "OC कालावधी गुणक",
+    "electricBillDateRule": "इलेक्ट्रिक बिल तारीख नियम",
+    "addMonths": "इलेक्ट्रिक बिल तारखेत महिने जोडा",
+    "electricBillMultiplier": "इलेक्ट्रिक बिल गुणक",
+    "whenNoDateIsAvailable": "जेव्हा कोणतीही तारीख उपलब्ध नसेल",
+    "lookbackYears": "मागील वर्षे",
+    "defaultRetrospectiveMultiplier": "डीफॉल्ट पूर्वलक्षी गुणक",
+    "enableProration": "चालू वर्ष आनुपातिक सक्षम करा",
+    "prorationMethod": "आनुपातिक पद्धत",
+    "taxPersistenceMode": "कर टिकाव मोड",
+    "priority1": "1ली प्राधान्यता",
+    "priority2": "2री प्राधान्यता",
+    "priority3": "3री प्राधान्यता",
+    "priority4": "4थी प्राधान्यता"
+  },
+  "notes": {
+    "note": "टीप:",
+    "bullet1": "या सेटिंग्जचा वापर कर इंजिनद्वारे गणनेसाठी केला जाईल.",
+    "bullet2": "बदल पुढील गणना रनपासून लागू होतील."
+  },
+  "options": {
+    "select": "निवडा",
+    "priorities": {
+      "OC Date": "OC तारीख",
+      "CC Date": "CC तारीख",
+      "Electric Bill Date": "इलेक्ट्रिक बिल तारीख",
+      "Retrospective (No Date)": "पूर्वलक्षी (तारीख नाही)",
+      "Select": "निवडा"
+    },
+    "ebRules": {
+      "From Financial Year Start Date": "आर्थिक वर्ष सुरुवात तारखेपासून",
+      "From CC Date": "CC तारखेपासून",
+      "From OC Date": "OC तारखेपासून",
+      "From Electric Bill Date": "इलेक्ट्रिक बिल तारखेपासून",
+      "Exact Date": "अचूक तारीख",
+      "Select": "निवडा"
+    },
+    "noDateRules": {
+      "Apply Default Retrospective": "डीफॉल्ट पूर्वलक्षी लागू करा",
+      "Skip Tax Calculation": "कर गणना वगळा",
+      "Use Last Known Date": "शेवटची ज्ञात तारीख वापरा",
+      "No Tax": "कर नाही",
+      "Select": "निवडा"
+    },
+    "units": {
+      "Days": "दिवस",
+      "Months": "महिने",
+      "Years": "वर्षे",
+      "Select": "निवडा"
+    },
+    "proration": {
+      "Monthly": "मासिक",
+      "Daily": "दैनिक",
+      "Full Year": "पूर्ण वर्ष",
+      "Select": "निवडा"
+    },
+    "persistence": {
+      "Property Aggregated": "मालमत्ता एकत्रित",
+      "Floor Level": "मजला स्तर",
+      "Assessment Year": "मूल्यांकन वर्ष",
+      "Floor Ledger": "मजला खातेवही",
+      "Select": "निवडा"
+    },
+    "months": {
+      "Select": "निवडा",
+      "1": "जानेवारी (1)",
+      "2": "फेब्रुवारी (2)",
+      "3": "मार्च (3)",
+      "4": "एप्रिल (4)",
+      "5": "मे (5)",
+      "6": "जून (6)",
+      "7": "जुलै (7)",
+      "8": "ऑगस्ट (8)",
+      "9": "सप्टेंबर (9)",
+      "10": "ऑक्टोबर (10)",
+      "11": "नोव्हेंबर (11)",
+      "12": "डिसेंबर (12)"
+    }
+  }
+}

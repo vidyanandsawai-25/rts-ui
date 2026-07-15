@@ -170,7 +170,7 @@ describe("useCombinePropertyForm hook", () => {
 
   describe("API Actions", () => {
     it("should handle proceed to review", async () => {
-      mockSearchParams.mockReturnValue(new URLSearchParams("combinePartitionNo=P3,P4"));
+      mockSearchParams.mockReturnValue(new URLSearchParams("from=3&to=4"));
 
       const mockDetails: PropertyCombineDetails[] = [
         { propertyId: 3, wardId: 1, wardNo: "W1", propertyNo: "P3", partitionNo: "P3", oldPropertyNo: "", ownerName: "Owner 1", occupierName: "", taxAmount: 100, pendingAmount: 0, propertyDescription: ' ', propertyTypeId: 1 },
@@ -186,7 +186,7 @@ describe("useCombinePropertyForm hook", () => {
 
       expect(actions.fetchPropertyCombineDetailsAction).toHaveBeenCalledWith({
         wardId: 1,
-        propertyNo: "P1",
+        propertyNo: "P3,P4,P1",
         partitionNo: "P3,P4,P1",
       });
       expect(result.current.reviewData).toEqual(mockDetails);
@@ -200,7 +200,7 @@ describe("useCombinePropertyForm hook", () => {
       vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
       vi.mocked(actions.createCombinePropertyAction).mockResolvedValue({ success: true, message: "Success" });
 
-      mockSearchParams.mockReturnValue(new URLSearchParams("basePropertyId=1&combinePartitionNo=P3"));
+      mockSearchParams.mockReturnValue(new URLSearchParams("from=3&to=3"));
 
       const { result } = renderHook(() => useCombinePropertyForm(mockProps));
 
@@ -241,7 +241,7 @@ describe("useCombinePropertyForm hook", () => {
 
       vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
       vi.mocked(actions.createCombinePropertyAction).mockResolvedValue({ success: true, message: "Success" });
-      mockSearchParams.mockReturnValue(new URLSearchParams("basePropertyId=1&combinePartitionNo=P3,P4"));
+      mockSearchParams.mockReturnValue(new URLSearchParams("from=3&to=4"));
 
       const { result } = renderHook(() => useCombinePropertyForm(mockProps));
 
@@ -278,7 +278,7 @@ describe("useCombinePropertyForm hook", () => {
       ];
 
       vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
-      mockSearchParams.mockReturnValue(new URLSearchParams("basePropertyId=1&combinePartitionNo=P3"));
+      mockSearchParams.mockReturnValue(new URLSearchParams("from=3&to=3"));
 
       const { result } = renderHook(() => useCombinePropertyForm(mockProps));
 
@@ -288,7 +288,7 @@ describe("useCombinePropertyForm hook", () => {
 
       expect(result.current.checkedCount).toBe(1);
 
-      // Attempt to combine
+      // Attempt to combine without checking additional properties (only base property is checked)
       await act(async () => {
         await result.current.handleCombine();
       });
@@ -304,7 +304,7 @@ describe("useCombinePropertyForm hook", () => {
       ];
 
       vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
-      mockSearchParams.mockReturnValue(new URLSearchParams("combinePartitionNo=P3,P4"));
+      mockSearchParams.mockReturnValue(new URLSearchParams("from=3&to=4"));
 
       const { result } = renderHook(() => useCombinePropertyForm(mockProps));
 
@@ -338,7 +338,7 @@ describe("useCombinePropertyForm hook", () => {
       ];
 
       vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
-      mockSearchParams.mockReturnValue(new URLSearchParams("combinePartitionNo=P3,P4"));
+      mockSearchParams.mockReturnValue(new URLSearchParams("from=3&to=4"));
 
       const { result } = renderHook(() => useCombinePropertyForm(mockProps));
 

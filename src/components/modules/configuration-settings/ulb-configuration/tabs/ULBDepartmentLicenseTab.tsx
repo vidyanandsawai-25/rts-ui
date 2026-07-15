@@ -33,9 +33,9 @@ export function ULBDepartmentLicenseTab({
 
   return (
     <>
-      <div className="mb-4 flex-shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="mb-3 flex-shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="h-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500" />
-        <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white">
               <Package className="h-5 w-5" />
@@ -64,7 +64,7 @@ export function ULBDepartmentLicenseTab({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-3">
+        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2">
           <SearchInput
             placeholder={t('fields.filterModules')}
             value={searchQuery}
@@ -103,7 +103,7 @@ export function ULBDepartmentLicenseTab({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-48">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-16">
         {isLoadingDepartments ? (
           <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center">
             <Package className="mb-3 h-8 w-8 animate-pulse text-slate-300" />
