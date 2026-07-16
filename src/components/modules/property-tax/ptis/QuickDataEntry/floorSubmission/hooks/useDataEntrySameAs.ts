@@ -210,7 +210,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     setIsApplyingSameAs(true);
     try {
       const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType) ?? 0;
-      const promises: Promise<any>[] = [];
+      const promises: Promise<{ success: boolean; error?: string }>[] = [];
 
       // 1. If source property is selected, update its type.
       if (isSourceSelected) {
@@ -376,7 +376,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     } else {
       await executeSubmission();
     }
-  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, router, currentPropertyId, confirm]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, router, currentPropertyId, confirm, locale, sourcePropertyIds]);
 
   return {
     dataEntrySameAsTab, setDataEntrySameAsTab: handleDataEntrySameAsTabChange, selectableProperties, selectedPropertyIds: effectiveSelectedPropertyIds, isLoadingProperties, currentPropertyType,

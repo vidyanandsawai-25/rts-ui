@@ -793,7 +793,7 @@
             "typeClassificationNote": "* Type is used to indicate properties with the same area/plan.",
             "sourcePropertyNotFound": "Source property {partitionNo} not found.",
             "selectDestinationProperty": "Please select at least one destination property.",
-            "sourcePropertySubmissionWarning": "Submission details will NOT be applied to the source property ({partitionNo}). Do you want to proceed?",
+            "sourcePropertySubmissionWarning": "Selected property type is different than source property type, Do you want to proceed?",
             "warningTitle": "Warning",
             "noDestinationProcessed": "No destination property was processed.",
             "noDataCopied": "No data was copied. Source: {source}, type: {type}, processed: {processed}.",
