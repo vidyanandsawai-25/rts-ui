@@ -298,7 +298,7 @@ export async function addDepreciationRangeBulk(
   if (!yearRangeRVId || yearRangeRVId <= 0) {
     throw new ApiError(
       400,
-      'Could not resolve active Assessment Year Range. Please ensure an active Assessment Year Range exists in the master first.',
+      'Could not resolve active Assessment Year Range (missing active range or failed to fetch). Please ensure an active Assessment Year Range exists in the master and try again.',
       'Validation'
     );
   }
