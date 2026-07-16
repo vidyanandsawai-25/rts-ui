@@ -136,7 +136,6 @@ export async function syncDepreciationRatesFromPage(
       if (!existing) {
         // Record not found in current page, skip for now
         // UI should prevent this scenario
-        console.warn(`Record ID ${id} not found in current page records for update`);
         return null;
       }
 
@@ -272,7 +271,7 @@ export async function addDepreciationRangeBulk(
       }
     }
   } catch (err) {
-    console.warn('Failed to fetch existing depreciation records:', err);
+    // Failed to fetch existing depreciation records
   }
 
   // 2. If no existing records, fetch from AssessmentYearRange master
@@ -292,7 +291,7 @@ export async function addDepreciationRangeBulk(
         }
       }
     } catch (err) {
-      console.warn('Failed to fetch assessment year ranges:', err);
+      // Failed to fetch assessment year ranges
     }
   }
 
@@ -322,7 +321,7 @@ export async function deleteDepreciationRange(
     minYear: number;
     maxYear: number;
   },
-  userId: string
+  _userId: string
 ): Promise<void> {
   const allData = await getDepreciationsAll();
 
@@ -331,30 +330,23 @@ export async function deleteDepreciationRange(
     .map((x) => x.id);
 
   if (targetIds.length === 0) {
-    console.log('No depreciation records found for range:', payload);
     return;
   }
-
-  console.log(`Bulk deleting depreciation IDs by user ${userId}:`, targetIds);
 
   // Use DELETE with body - pass body via options
   const response = await apiClient.delete<void>('/Depreciation/Bulk/purge', {
     body: JSON.stringify(targetIds),
   });
 
-  console.log('Bulk delete response:', response);
-
   // Purge endpoints may return 204 No Content with an empty body.
   // If the shared client marks that response as unsuccessful because it
   // attempts JSON parsing first, still treat HTTP 204 or JSON parse errors as success.
   if (response.success) {
-    console.log('Successfully bulk deleted depreciation range:', payload);
     return;
   }
 
   // Handle 204 No Content or JSON parsing error on empty response
   if (response.statusCode === 204 || response.error?.includes('Unexpected end of JSON input')) {
-    console.log('Successfully bulk deleted depreciation range (empty response):', payload);
     return;
   }
 
