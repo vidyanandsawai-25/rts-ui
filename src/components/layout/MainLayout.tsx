@@ -143,40 +143,40 @@ async function SidebarWithData({ locale }: { locale: string }) {
   const { menuItems } = await getLayoutChromeData();
   const pathname = (await headers()).get('x-pathname') || '';
 
-  const isCmsRoute = /\/(rts-cms|rts\/admin)(\/|$)/.test(pathname);
+  const isCmsRoute = /\/(rts|rts\/admin)(\/|$)/.test(pathname);
   if (isCmsRoute) {
     const cmsMenuItems: MenuItem[] = [
       {
         name: 'MIS Dashboard',
         nameHi: 'एमआइएस डैशबोर्ड',
         iconName: 'LayoutDashboard',
-        href: '/rts-cms/dashboard',
+        href: '/rts/misdashboard',
       },
       {
         name: 'Inbox',
         nameHi: 'इनबॉक्स',
         iconName: 'ClipboardList',
-        href: '/rts-cms/inbox',
+        href: '/rts/inbox',
       },
       {
         name: 'Dashboard',
         nameHi: 'डैशबोर्ड',
         iconName: 'Hourglass',
-        href: '/rts-cms/mulyamapan',
+        href: '/rts/dashboard',
       },
       {
         name: 'Masters',
         nameHi: 'मास्टर्स',
         iconName: 'Database',
-        href: '/rts-cms/masters',
+        href: '/rts/masters',
         subItems: [
           {
             name: 'Dept / Services',
-            href: '/rts-cms/masters',
+            href: '/rts/masters',
           },  
           {
             name: 'Form Field Definition',
-            href: '/rts-cms/masters/fields',
+            href: '/rts/masters/fields',
           }
         ]
       },
@@ -184,28 +184,28 @@ async function SidebarWithData({ locale }: { locale: string }) {
         name: 'User Access Control',
         nameHi: 'प्रवेश नियंत्रण',
         iconName: 'Users',
-        href: '/rts-cms/users',
+        href: '/rts/users',
         subItems: [
           {
             name: 'Users Registry',
-            href: '/rts-cms/users',
+            href: '/rts/users',
           },
-          {
-            name: 'Roles & Access',
-            href: '/rts-cms/users/roles',
-          },
-          {
-            name: 'Modules Manager',
-            href: '/rts-cms/users/modules',
-          }
+          // {
+          //   name: 'Roles & Access',
+          //   href: '/rts/users/roles',
+          // },
+          // {
+          //   name: 'Modules Manager',
+          //   href: '/rts/users/modules',
+          // }
         ]
       },
-      {
-        name: 'Reports',
-        nameHi: 'रिपोर्ट',
-        iconName: 'FileBarChart',
-        href: '/rts-cms/reports',
-      },
+      // {
+      //   name: 'Reports',
+      //   nameHi: 'रिपोर्ट',
+      //   iconName: 'FileBarChart',
+      //   href: '/rts/reports',
+      // },
     ];
     return <Sidebar menuItems={cmsMenuItems} locale={locale} />;
   }

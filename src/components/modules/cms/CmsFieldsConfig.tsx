@@ -6,7 +6,7 @@ import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { saveCmsFieldAction, updateCmsFieldAction, deleteCmsFieldAction } from "@/app/[locale]/rts-cms/actions";
+import { saveCmsFieldAction, updateCmsFieldAction, deleteCmsFieldAction } from "@/app/[locale]/rts/actions";
 
 interface CmsField {
   id: string;

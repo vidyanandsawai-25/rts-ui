@@ -2,662 +2,882 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Users,
-  FileSpreadsheet,
-  BarChart3,
-  FileText,
-  CheckCircle2,
+  AlertCircle,
+  ArrowDown,
+  CheckCircle,
   Clock3,
-  XCircle,
-  Timer,
+  Eye,
+  FileText,
+  Gauge,
+  Info,
+  LoaderCircle,
 } from "lucide-react";
-import { Button, Card, Input, MasterTable } from "@/components/common";
+
+import {
+  Card,
+  MasterTable,
+  SearchInput,
+} from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { Select } from "@/components/common/select";
-import type { CmsMisDashboardData } from "@/types/cms/cmsmisdashboard.types";
+import {
+  CloseIconButton,
+  DownloadButton,
+} from "@/components/common/ActionButtons";
 
-interface DashboardProps {
-  misDashboardData: CmsMisDashboardData;
-  rtsDepartments: any[];
+import type { CmsApplication } from "@/lib/mock/rts/cms";
+
+interface CmsMulyamapanProps {
+  data: CmsApplication[];
+  masters: {
+    departments: Array<{ id: string; name: string }>;
+    services: Array<{ id: string; name: string; departmentId: string }>;
+  };
+  locale: string;
 }
 
-interface DepartmentalStatsRow extends Record<string, unknown> {
-  srNo: number;
-  deptId: string;
-  deptName: string;
-  totalServices: number;
-  totalApps: number;
-  rtsApps: number;
-  asApps: number;
-  pendingApps: number;
-  approvedApps: number;
-  rejectedApps: number;
-  overdueCount: number;
-  avgSlaValue: number;
-  avgSla: string;
-}
-
-interface ServiceStatsRow extends Record<string, unknown> {
-  srNo: number;
-  serviceId: string;
+interface SlaRecord extends Record<string, unknown> {
+  id: string;
+  appId: string;
+  citizenName: string;
+  citizenNameMr: string;
   serviceName: string;
+  serviceNameMr: string;
   departmentId: string;
-  departmentName: string;
-  totalApps: number;
-  rtsApps: number;
-  asApps: number;
-  pendingApps: number;
-  approvedApps: number;
-  rejectedApps: number;
-  overdueCount: number;
-  avgSlaValue: number;
-  avgSla: string;
+  submittedDate: string;
+  slaLimit: number;
+  pendingDays: number;
+  inProgressDays: number;
+  needsInfoDays: number;
+  verificationDays: number;
+  totalTat: number;
+  outcome: "Within SLA" | "SLA breached" | "At risk";
 }
 
-const PIE_COLORS = [
-  "#0B5CD5", "#F39C12", "#27AE60", "#B22222", "#8A2BE2",
-  "#008B8B", "#C66922", "#228B22", "#551A8B", "#3F7C9E",
-  "#0F7A3F", "#FF8C00"
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
+const MONTH_OPTIONS = [
+  { value: "June 2026", label: "June 2026" },
+  { value: "May 2026", label: "May 2026" },
+  { value: "April 2026", label: "April 2026" },
 ];
 
-function formatSla(value: number, lang: "en" | "mr") {
-  const normalized = Number.isFinite(value) ? value : 0;
-  return lang === "en" ? `${normalized.toFixed(1)} Days` : `${normalized.toFixed(1)} दिवस`;
+const DEPARTMENT_TAT_DATA = [
+  {
+    nameEn: "Property Tax",
+    nameMr: "मालमत्ता कर",
+    total: 6.8,
+    pending: 22,
+    inProgress: 37,
+    needsInfo: 26,
+    verification: 15,
+    titles: ["Pending: 1.5d", "In Progress: 2.5d", "Needs Info: 1.8d", "Verification: 1.0d"],
+  },
+  {
+    nameEn: "Trade License",
+    nameMr: "व्यावसायिक परवाना",
+    total: 9.0,
+    pending: 22,
+    inProgress: 33,
+    needsInfo: 28,
+    verification: 17,
+    titles: ["Pending: 2.0d", "In Progress: 3.0d", "Needs Info: 2.5d", "Verification: 1.5d"],
+  },
+  {
+    nameEn: "Water Connection",
+    nameMr: "जलजोडणी",
+    total: 17.7,
+    pending: 20,
+    inProgress: 34,
+    needsInfo: 28,
+    verification: 18,
+    titles: ["Pending: 3.5d", "In Progress: 6.0d", "Needs Info: 5.0d", "Verification: 3.2d"],
+  },
+  {
+    nameEn: "Town Planning",
+    nameMr: "नगर रचना",
+    total: 17.5,
+    pending: 23,
+    inProgress: 31,
+    needsInfo: 28,
+    verification: 18,
+    titles: ["Pending: 4.0d", "In Progress: 5.5d", "Needs Info: 4.8d", "Verification: 3.2d"],
+  },
+];
+
+function formatSubmittedDate(value: string, locale: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value || "-";
+
+  return new Intl.DateTimeFormat(locale === "mr" ? "mr-IN" : "en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
-export default function CmsDashboard({ misDashboardData, rtsDepartments = [] }: DashboardProps) {
-  const [lang, setLang] = useState<"en" | "mr">("en");
-  const [selectedDeptId, setSelectedDeptId] = useState("");
-  const [selectedServiceDeptId, setSelectedServiceDeptId] = useState<string>("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+export default function CmsMulyamapan({
+  data,
+  masters,
+  locale,
+}: CmsMulyamapanProps) {
+  const lang = locale === "mr" ? "mr" : "en";
 
-  const serviceDepartmentLookup = useMemo(() => {
-    const lookup = new Map<string, { departmentId: string; departmentName: string }>();
+  const [filterDept, setFilterDept] = useState("All");
+  const [filterMonth, setFilterMonth] = useState("June 2026");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterOutcome, setFilterOutcome] = useState("All");
+  const [selectedRecord, setSelectedRecord] = useState<SlaRecord | null>(null);
 
-    rtsDepartments.forEach((department, departmentIndex) => {
-      const fallbackName = department?.name?.en || `Department ${departmentIndex + 1}`;
-      const departmentId = String(department?.id ?? `department-${departmentIndex + 1}`);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-      (department?.services ?? []).forEach((service: any) => {
-        const englishName = service?.name?.en;
-        if (englishName) {
-          lookup.set(englishName.trim().toLowerCase(), {
-            departmentId,
-            departmentName: fallbackName,
-          });
-        }
-      });
-    });
-
-    return lookup;
-  }, [rtsDepartments]);
-
-  const departmentalStats = useMemo<DepartmentalStatsRow[]>(() => {
-    return (misDashboardData.departmentWiseData ?? []).map((department, index) => {
-      const fallbackDepartment = rtsDepartments[index];
-      const deptId = String(fallbackDepartment?.id ?? `department-${index + 1}`);
-      const fallbackName = fallbackDepartment?.name?.en || `Department ${index + 1}`;
-      const deptName = department.departmentName?.trim() || fallbackName;
-      const avgSlaValue = Number(department.sla ?? 0);
-
-      return {
-        srNo: index + 1,
-        deptId,
-        deptName,
-        totalServices: Number(department.totalServices ?? 0),
-        totalApps: Number(department.totalApplications ?? 0),
-        rtsApps: Number(department.fromRTS ?? 0),
-        asApps: Number(department.fromAapleSarkar ?? 0),
-        pendingApps: Number(department.pending ?? 0),
-        approvedApps: Number(department.approved ?? 0),
-        rejectedApps: Number(department.rejected ?? 0),
-        overdueCount: Number(department.overdueCount ?? 0),
-        avgSlaValue,
-        avgSla: formatSla(avgSlaValue, lang),
-      };
-    });
-  }, [lang, misDashboardData.departmentWiseData, rtsDepartments]);
-
-  const serviceStats = useMemo<ServiceStatsRow[]>(() => {
-    return (misDashboardData.serviceWiseData ?? []).map((service, index) => {
-      const lookup = serviceDepartmentLookup.get(service.serviceName.trim().toLowerCase());
-      const departmentId = lookup?.departmentId ?? "unmapped";
-      const departmentName = lookup?.departmentName ?? "Other Services";
-      const avgSlaValue = Number(service.sla ?? 0);
-
-      return {
-        srNo: index + 1,
-        serviceId: `${departmentId}-${index + 1}`,
-        serviceName: service.serviceName,
-        departmentId,
-        departmentName,
-        totalApps: Number(service.totalApplications ?? 0),
-        rtsApps: Number(service.rtsApplications ?? 0),
-        asApps: Number(service.aapleSarkarApplications ?? 0),
-        pendingApps: Number(service.pending ?? 0),
-        approvedApps: Number(service.approved ?? 0),
-        rejectedApps: Number(service.rejected ?? 0),
-        overdueCount: Number(service.overdueCount ?? 0),
-        avgSlaValue,
-        avgSla: formatSla(avgSlaValue, lang),
-      };
-    });
-  }, [lang, misDashboardData.serviceWiseData, serviceDepartmentLookup]);
-
-  useEffect(() => {
-    if (!selectedDeptId && departmentalStats.length > 0) {
-      setSelectedDeptId(departmentalStats[0].deptId);
-    }
-  }, [departmentalStats, selectedDeptId]);
-
-  const selectedDept = useMemo(
-    () => departmentalStats.find((department) => department.deptId === selectedDeptId) ?? departmentalStats[0] ?? null,
-    [departmentalStats, selectedDeptId]
-  );
-
-  const selectedDeptStats = useMemo(() => {
-    if (!selectedDept) return null;
-
-    const totalApps = selectedDept.totalApps;
-    const rtsPct = totalApps > 0 ? Math.round((selectedDept.rtsApps / totalApps) * 100) : 0;
-    const asPct = totalApps > 0 ? Math.round((selectedDept.asApps / totalApps) * 100) : 0;
-    const approvedPct = totalApps > 0 ? Math.round((selectedDept.approvedApps / totalApps) * 100) : 0;
-    const pendingPct = totalApps > 0 ? Math.round((selectedDept.pendingApps / totalApps) * 100) : 0;
-    const rejectedPct = totalApps > 0 ? Math.round((selectedDept.rejectedApps / totalApps) * 100) : 0;
-
-    return {
-      deptName: selectedDept.deptName,
-      totalApps,
-      rtsApps: selectedDept.rtsApps,
-      asApps: selectedDept.asApps,
-      approvedApps: selectedDept.approvedApps,
-      pendingApps: selectedDept.pendingApps,
-      rejectedApps: selectedDept.rejectedApps,
-      overdueCount: selectedDept.overdueCount,
-      avgSlaVal: selectedDept.avgSlaValue,
-      rtsPct,
-      asPct,
-      approvedPct,
-      pendingPct,
-      rejectedPct,
-    };
-  }, [selectedDept]);
-
-  const serviceDeptOptions = useMemo(
+  const departmentOptions = useMemo(
     () => [
       {
-        value: "all",
-        label: lang === "en" ? "All Departments" : "सर्व विभाग",
+        value: "All",
+        label: lang === "en" ? "All departments" : "सर्व विभाग",
       },
-      ...departmentalStats.map((department) => ({
-        value: department.deptId,
-        label: department.deptName,
+      ...masters.departments.map((department) => ({
+        value: department.id,
+        label: department.name,
       })),
     ],
-    [departmentalStats, lang]
+    [lang, masters.departments]
   );
 
-  const filteredServiceStats = useMemo(() => {
-    if (selectedServiceDeptId === "all") return serviceStats;
-
-    return serviceStats
-      .filter((service) => service.departmentId === selectedServiceDeptId)
-      .map((service, index) => ({ ...service, srNo: index + 1 }));
-  }, [selectedServiceDeptId, serviceStats]);
-
-  const dashboardStats = useMemo(() => {
-    const totals = departmentalStats.reduce(
-      (acc, department) => {
-        acc.total += department.totalApps;
-        acc.pending += department.pendingApps;
-        acc.approved += department.approvedApps;
-        acc.rejected += department.rejectedApps;
-        acc.slaViolations += department.overdueCount;
-        return acc;
+  const outcomeOptions = useMemo(
+    () => [
+      {
+        value: "All",
+        label: lang === "en" ? "All outcomes" : "सर्व निष्कर्ष",
       },
       {
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-        slaViolations: 0,
+        value: "Within SLA",
+        label: lang === "en" ? "Within SLA" : "SLA मर्यादेत",
+      },
+      {
+        value: "SLA breached",
+        label: lang === "en" ? "SLA breached" : "SLA उल्लंघन",
+      },
+      {
+        value: "At risk",
+        label: lang === "en" ? "At risk" : "धोक्यात",
+      },
+    ],
+    [lang]
+  );
+
+  const slaRecords = useMemo<SlaRecord[]>(() => {
+    return data.map((application) => {
+      const applicationNumber = Number.parseInt(application.id, 10) || 1000;
+
+      const pendingDays = (applicationNumber % 3) + 1;
+      const inProgressDays = (applicationNumber % 4) + 2;
+      const needsInfoDays =
+        applicationNumber % 5 === 0 ? 0 : (applicationNumber % 3) + 1;
+      const verificationDays = applicationNumber % 2 === 0 ? 1 : 2;
+
+      const totalTat =
+        pendingDays + inProgressDays + needsInfoDays + verificationDays;
+      const slaLimit = application.slaDays || 15;
+
+      let outcome: SlaRecord["outcome"] = "Within SLA";
+      if (totalTat > slaLimit) {
+        outcome = "SLA breached";
+      } else if (slaLimit - totalTat <= 2) {
+        outcome = "At risk";
       }
+
+      return {
+        id: application.id,
+        appId: application.applicationNo,
+        citizenName: application.citizenName,
+        citizenNameMr: application.citizenName,
+        serviceName: application.serviceName,
+        serviceNameMr: application.serviceName,
+        departmentId: application.departmentId,
+        submittedDate:
+          application.submissionDate ||
+          application.createdAt ||
+          application.applicationDate ||
+          "",
+        slaLimit,
+        pendingDays,
+        inProgressDays,
+        needsInfoDays,
+        verificationDays,
+        totalTat,
+        outcome,
+      };
+    });
+  }, [data]);
+
+  const filteredRecords = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+
+    return slaRecords.filter((record) => {
+      const departmentMatches =
+        filterDept === "All" || record.departmentId === filterDept;
+      const outcomeMatches =
+        filterOutcome === "All" || record.outcome === filterOutcome;
+      const textMatches =
+        !query ||
+        record.appId.toLowerCase().includes(query) ||
+        record.citizenName.toLowerCase().includes(query) ||
+        record.serviceName.toLowerCase().includes(query);
+
+      return departmentMatches && outcomeMatches && textMatches;
+    });
+  }, [filterDept, filterOutcome, searchTerm, slaRecords]);
+
+  const summary = useMemo(() => {
+    if (filteredRecords.length === 0) {
+      return {
+        avgTat: "0.0",
+        avgPending: "0.0",
+        avgInProgress: "0.0",
+        bottleneck: "N/A",
+      };
+    }
+
+    const totals = filteredRecords.reduce(
+      (accumulator, record) => ({
+        tat: accumulator.tat + record.totalTat,
+        pending: accumulator.pending + record.pendingDays,
+        inProgress: accumulator.inProgress + record.inProgressDays,
+        needsInfo: accumulator.needsInfo + record.needsInfoDays,
+        verification: accumulator.verification + record.verificationDays,
+      }),
+      { tat: 0, pending: 0, inProgress: 0, needsInfo: 0, verification: 0 }
     );
 
-    return {
-      ...totals,
-      clerkCorrectionPending: 0,
-    };
-  }, [departmentalStats]);
+    const stages = [
+      { name: lang === "en" ? "Pending" : "प्रलंबित", value: totals.pending },
+      {
+        name: lang === "en" ? "In Progress" : "प्रक्रियेत",
+        value: totals.inProgress,
+      },
+      {
+        name: lang === "en" ? "Needs Info" : "माहिती आवश्यक",
+        value: totals.needsInfo,
+      },
+      {
+        name: lang === "en" ? "Verification" : "पडताळणी",
+        value: totals.verification,
+      },
+    ].sort((first, second) => second.value - first.value);
 
-  const metrics = [
+    return {
+      avgTat: (totals.tat / filteredRecords.length).toFixed(1),
+      avgPending: (totals.pending / filteredRecords.length).toFixed(1),
+      avgInProgress: (totals.inProgress / filteredRecords.length).toFixed(1),
+      bottleneck: stages[0]?.name ?? "N/A",
+    };
+  }, [filteredRecords, lang]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
+
+  const paginatedRecords = useMemo(() => {
+    const startIndex = (pageNumber - 1) * pageSize;
+    return filteredRecords.slice(startIndex, startIndex + pageSize);
+  }, [filteredRecords, pageNumber, pageSize]);
+
+  useEffect(() => {
+    setPageNumber(1);
+  }, [filterDept, filterMonth, filterOutcome, searchTerm, pageSize]);
+
+  useEffect(() => {
+    if (pageNumber > totalPages) {
+      setPageNumber(totalPages);
+    }
+  }, [pageNumber, totalPages]);
+
+  const getOutcomeLabel = (outcome: SlaRecord["outcome"]) => {
+    if (lang === "en") return outcome;
+    if (outcome === "Within SLA") return "SLA मर्यादेत";
+    if (outcome === "SLA breached") return "SLA उल्लंघन";
+    return "धोक्यात";
+  };
+
+  const columns = useMemo<Column<SlaRecord>[]>(
+    () => [
+      {
+        key: "appId",
+        label: lang === "en" ? "App ID" : "अर्जाचा आयडी",
+        width: "130px",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "font-bold text-slate-800 text-[9px]",
+      },
+      {
+        key: "citizenName",
+        label: lang === "en" ? "Citizen" : "नागरिक",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "font-medium text-slate-700 text-[9px]",
+        render: (_value, row) =>
+          lang === "en" ? row.citizenName : row.citizenNameMr,
+      },
+      {
+        key: "serviceName",
+        label: lang === "en" ? "Service" : "सेवा",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "text-slate-500 text-[9px]",
+        render: (_value, row) =>
+          lang === "en" ? row.serviceName : row.serviceNameMr,
+      },
+      {
+        key: "slaLimit",
+        label: lang === "en" ? "SLA (days)" : "SLA (दिवस)",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "text-[9px]",
+        render: (value) => (
+          <span className="text-[9px] font-bold text-slate-500">
+            {String(value)}d
+          </span>
+        ),
+      },
+      {
+        key: "pendingDays",
+        label: lang === "en" ? "Pending" : "प्रलंबित",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "bg-amber-50/50 text-[9px]",
+        render: (value) => (
+          <span className="text-[9px] font-medium text-amber-700">
+            {String(value)}d
+          </span>
+        ),
+      },
+      {
+        key: "inProgressDays",
+        label: lang === "en" ? "In progress" : "प्रक्रियेत",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "bg-blue-50/30 text-[9px]",
+        render: (value) => (
+          <span className="text-[9px] font-medium text-blue-700">
+            {String(value)}d
+          </span>
+        ),
+      },
+      {
+        key: "needsInfoDays",
+        label: lang === "en" ? "Needs info" : "माहिती आवश्यक",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "bg-purple-50/30 text-[9px]",
+        render: (value) => {
+          const days = Number(value ?? 0);
+
+          return (
+            <span className="text-[9px] font-medium text-purple-700">
+              {days > 0 ? `${days}d` : "—"}
+            </span>
+          );
+        },
+      },
+      {
+        key: "verificationDays",
+        label: lang === "en" ? "Verification" : "पडताळणी",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "bg-emerald-50/30 text-[9px]",
+        render: (value) => (
+          <span className="text-[9px] font-medium text-emerald-700">
+            {String(value)}d
+          </span>
+        ),
+      },
+      {
+        key: "totalTat",
+        label: lang === "en" ? "Total TAT" : "एकूण वेळ",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "text-[9px]",
+        render: (_value, row) => (
+          <span className="text-[9px] font-extrabold text-slate-800">
+            {row.totalTat.toFixed(1)}d
+
+            {row.totalTat > row.slaLimit && (
+              <span className="ml-1 text-[9px] font-semibold text-rose-600">
+                (+{(row.totalTat - row.slaLimit).toFixed(0)}d)
+              </span>
+            )}
+          </span>
+        ),
+      },
+      {
+        key: "outcome",
+        label: lang === "en" ? "Outcome" : "निष्कर्ष",
+        align: "center",
+        headerClassName: "text-xs font-bold text-slate-800 tracking-wider",
+        cellClassName: "text-xs font-bold tracking-wider",
+        render: (_value, row) => (
+          <span
+            className={`inline-flex rounded-md px-2 py-0.5 text-[9px] font-bold ${row.outcome === "Within SLA"
+                ? "bg-green-50 text-green-700"
+                : row.outcome === "SLA breached"
+                  ? "bg-rose-50 text-rose-700"
+                  : "bg-amber-50 text-amber-700"
+              }`}
+          >
+            {getOutcomeLabel(row.outcome)}
+          </span>
+        ),
+      },
+    ],
+    [lang]
+  );
+
+  const metricCards = [
     {
-      count: String(dashboardStats.total),
-      label: "Total Applications",
-      labelMr: "एकूण अर्ज",
-      detail: "All Submitted",
-      detailMr: "सर्व सादर अर्ज",
-      icon: FileText,
+      key: "avg-tat",
+      icon: Gauge,
       iconClassName: "bg-blue-50 text-[#0B5CD5] ring-blue-100",
       detailClassName: "text-[#0B5CD5]",
-    },
-    {
-      count: String(dashboardStats.pending),
-      label: "Pending Verification",
-      labelMr: "पडताळणी प्रलंबित",
-      detail: "In Progress",
-      detailMr: "प्रक्रियेत",
-      icon: Clock3,
-      iconClassName: "bg-amber-50 text-[#F39C12] ring-amber-100",
-      detailClassName: "text-[#C66922]",
-    },
-    {
-      count: String(dashboardStats.approved),
-      label: "Approved Applications",
-      labelMr: "मंजूर अर्ज",
-      detail: "Completed",
-      detailMr: "पूर्ण झाले",
-      icon: CheckCircle2,
-      iconClassName: "bg-emerald-50 text-[#27AE60] ring-emerald-100",
-      detailClassName: "text-[#0F7A3F]",
-    },
-    {
-      count: String(dashboardStats.rejected),
-      label: "Rejected Applications",
-      labelMr: "नाकारलेले अर्ज",
-      detail: "Not Approved",
-      detailMr: "मंजूर नाही",
-      icon: XCircle,
-      iconClassName: "bg-rose-50 text-[#B22222] ring-rose-100",
-      detailClassName: "text-[#B22222]",
-    },
-    {
-      count: String(dashboardStats.slaViolations),
-      label: "OverDue Applications",
-      labelMr: "SLA उल्लंघन अर्ज",
-      detail: "Requires Attention",
-      detailMr: "लक्ष आवश्यक",
-      icon: Timer,
-      iconClassName: "bg-violet-50 text-[#8A2BE2] ring-violet-100",
-      detailClassName: "text-[#551A8B]",
-    },
-  ];
-
-  const departmentColumns = useMemo<Column<DepartmentalStatsRow>[]>(() => [
-    {
-      key: "srNo",
-      label: lang === "en" ? "Sr. No." : "अनु. क्र.",
-      align: "center",
-      headerClassName: "border-r border-blue-300/60 text-center text-white w-16",
-      cellClassName: "border-r border-slate-100",
-      render: (_value, row) => (
-        <span className={`block px-1 py-1 font-extrabold ${selectedDeptId === row.deptId ? "text-[#0B5CD5]" : "text-slate-900"}`}>
-          {row.srNo}
+      label:
+        lang === "en"
+          ? "Avg total TAT (days)"
+          : "एकूण सरासरी वेळ (दिवस)",
+      value: `${summary.avgTat}d`,
+      content: (
+        <span className="flex items-center gap-0.5 text-[11px] font-bold text-green-600">
+          <ArrowDown className="h-3 w-3" />
+          {lang === "en" ? "0.4 vs last month" : "मागील महिन्यापेक्षा 0.4 कमी"}
         </span>
       ),
     },
     {
-      key: "deptName",
-      label: lang === "en" ? "Department" : "विभाग",
-      headerClassName: "border-r border-blue-300/60 text-left text-white",
-      cellClassName: "border-r border-slate-100",
-      render: (_value, row) => <span className={`font-bold ${selectedDeptId === row.deptId ? "text-[#0B5CD5]" : "text-slate-900"}`}>{row.deptName}</span>,
-    },
-    { key: "totalServices", label: lang === "en" ? "Total Services" : "एकूण सेवा", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-slate-700">{String(value ?? 0)}</span> },
-    { key: "totalApps", label: lang === "en" ? "Total Applications" : "एकूण अर्ज", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
-    { key: "rtsApps", label: lang === "en" ? "From RTS" : "आरटीएसकडून", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
-    { key: "asApps", label: lang === "en" ? "From Aaple Sarkar" : "आपले सरकारकडून", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "pendingApps", label: lang === "en" ? "Pending" : "प्रलंबित", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "approvedApps", label: lang === "en" ? "Approved" : "मंजूर", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
-    { key: "rejectedApps", label: lang === "en" ? "Rejected" : "नाकारलेले", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
-    { key: "overdueCount", label: lang === "en" ? "OverDue Count" : "ओव्हरड्यू संख्या", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
-    { key: "avgSla", label: lang === "en" ? "Avg. SLA" : "सरासरी SLA", align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
-  ], [lang, selectedDeptId]);
-
-  const serviceColumns = useMemo<Column<ServiceStatsRow>[]>(() => [
-    { key: "srNo", label: lang === "en" ? "Sr. No." : "अनु. क्र.", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white w-14", cellClassName: "border-r border-slate-100 bg-slate-50/50", render: (value) => <span className="font-extrabold text-slate-900">{String(value ?? 0)}</span> },
-    {
-      key: "serviceName",
-      label: lang === "en" ? "Service Name" : "सेवेचे नाव",
-      headerClassName: "border-r border-blue-300/60 text-left text-white",
-      cellClassName: "border-r border-slate-100",
-      render: (_value, row, index) => (
-        <div className="flex items-center gap-2 font-bold text-slate-900">
-          <span className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
-          {row.serviceName}
-        </div>
+      key: "avg-pending",
+      icon: Clock3,
+      iconClassName: "bg-amber-50 text-[#F39C12] ring-amber-100",
+      detailClassName: "text-[#C66922]",
+      label:
+        lang === "en"
+          ? "Avg time — Pending stage"
+          : "सरासरी वेळ — प्रलंबित टप्पा",
+      value: `${summary.avgPending}d`,
+      content: (
+        <span className="text-[11px] text-slate-400">
+          {lang === "en" ? "days before assignment" : "नियुक्तीपूर्वीचे दिवस"}
+        </span>
       ),
     },
-    { key: "totalApps", label: lang === "en" ? "Total Applications" : "एकूण अर्ज", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
-    { key: "rtsApps", label: lang === "en" ? "Source: RTS" : "स्रोत: आरटीएस", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
-    { key: "asApps", label: lang === "en" ? "Source: Aaple Sarkar" : "स्रोत: आपले सरकार", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "pendingApps", label: lang === "en" ? "Pending" : "प्रलंबित", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "approvedApps", label: lang === "en" ? "Approved" : "मंजूर", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
-    { key: "rejectedApps", label: lang === "en" ? "Rejected" : "नाकारलेले", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
-    { key: "overdueCount", label: lang === "en" ? "OverDue Count" : "ओव्हरड्यू संख्या", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
-    { key: "avgSla", label: lang === "en" ? "Avg. Processing Time (SLA)" : "सरासरी प्रक्रिया वेळ (SLA)", align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
-  ], [lang]);
-
-  const pieSegments = useMemo(() => {
-    const total = filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0);
-    if (total === 0) return [];
-
-    let cumulative = 0;
-
-    return filteredServiceStats.map((service, index) => {
-      const pct = service.totalApps / total;
-      const startAngle = cumulative * 2 * Math.PI - Math.PI / 2;
-      cumulative += pct;
-      const endAngle = cumulative * 2 * Math.PI - Math.PI / 2;
-      const cx = 90;
-      const cy = 90;
-      const r = 75;
-      const x1 = cx + r * Math.cos(startAngle);
-      const y1 = cy + r * Math.sin(startAngle);
-      const x2 = cx + r * Math.cos(endAngle);
-      const y2 = cy + r * Math.sin(endAngle);
-      const largeArc = pct > 0.5 ? 1 : 0;
-      const midAngle = startAngle + (endAngle - startAngle) / 2;
-      const lx = cx + (r + 18) * Math.cos(midAngle);
-      const ly = cy + (r + 18) * Math.sin(midAngle);
-
-      return {
-        path: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`,
-        color: PIE_COLORS[index % PIE_COLORS.length],
-        pct: Math.round(pct * 100),
-        name: service.serviceName,
-        lx,
-        ly,
-        midAngle,
-      };
-    });
-  }, [filteredServiceStats]);
+    {
+      key: "avg-progress",
+      icon: LoaderCircle,
+      iconClassName: "bg-cyan-50 text-[#0B5CD5] ring-cyan-100",
+      detailClassName: "text-[#0B5CD5]",
+      label:
+        lang === "en"
+          ? "Avg time — In progress"
+          : "सरासरी वेळ — प्रक्रियेत",
+      value: `${summary.avgInProgress}d`,
+      content: (
+        <span className="text-[11px] text-slate-400">
+          {lang === "en" ? "days officer processing" : "अधिकारी प्रक्रिया दिवस"}
+        </span>
+      ),
+    },
+    {
+      key: "bottleneck",
+      icon: AlertCircle,
+      iconClassName: "bg-violet-50 text-[#8A2BE2] ring-violet-100",
+      detailClassName: "text-[#551A8B]",
+      label: lang === "en" ? "Bottleneck stage" : "सर्वात संथ टप्पा",
+      value: summary.bottleneck,
+      valueClass: "text-purple-700",
+      content: (
+        <span className="text-[11px] text-slate-400">
+          {lang === "en" ? "highest time spent here" : "या टप्प्यावर सर्वाधिक वेळ"}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
-      <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+      <Card
+        padding="sm"
+        className="flex flex-col justify-between gap-4 border-slate-200 shadow-sm sm:flex-row sm:items-center"
+      >
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
-            {lang === "en" ? "MIS Dashboard" : "एमआइएस डैशबोर्ड"}
+            {lang === "en" ? "Dashboard" : "डॅशबोर्ड"}
           </h1>
-          {/* <p className="mt-0.5 text-xs text-slate-400">
-            {lang === "en" ? "Akola Municipal Corporation Inspired Layout • Live Verification Data" : "अकोला महानगरपालिका प्रेरित आराखडा • थेट पडताळणी माहिती"}
-          </p> */}
+          <p className="mt-0.5 text-[13px] text-slate-400">
+            {lang === "en"
+              ? "Application-wise SLA evaluation and stage tracking"
+              : "अर्जनिहाय SLA मूल्यांकन आणि टप्पा ट्रॅकिंग"}
+          </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm">
-            <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
-              {lang === "en" ? "From" : "पासून"}
-            </span>
-            <Input
-              id="dashboard-date-from"
-              type="date"
-              value={dateFrom}
-              onChange={(event) => setDateFrom(event.target.value)}
-              aria-label={lang === "en" ? "From date" : "सुरुवातीची तारीख"}
-              className="h-8 min-w-[132px] cursor-pointer border-0 bg-transparent px-1 text-[12px] font-semibold text-slate-700 shadow-none focus-visible:ring-0"
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="min-w-[180px]">
+            <Select
+              options={departmentOptions}
+              value={filterDept}
+              onChange={(_event, value) => setFilterDept(value)}
+              placeholder={lang === "en" ? "All departments" : "सर्व विभाग"}
+              selectSize="sm"
+              ariaLabel={
+                lang === "en"
+                  ? "Filter by department"
+                  : "विभागानुसार फिल्टर"
+              }
             />
-            <span className="font-bold text-slate-300">|</span>
-            <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
-              {lang === "en" ? "To" : "पर्यंत"}
-            </span>
-            <Input
-              id="dashboard-date-to"
-              type="date"
-              min={dateFrom || undefined}
-              value={dateTo}
-              onChange={(event) => setDateTo(event.target.value)}
-              aria-label={lang === "en" ? "To date" : "शेवटची तारीख"}
-              className="h-8 min-w-[132px] cursor-pointer border-0 bg-transparent px-1 text-[12px] font-semibold text-slate-700 shadow-none focus-visible:ring-0"
-            />
-            {(dateFrom || dateTo) && (
-              <Button
-                type="button"
-                onClick={() => {
-                  setDateFrom("");
-                  setDateTo("");
-                }}
-                aria-label={lang === "en" ? "Clear date filter" : "तारीख फिल्टर साफ करा"}
-                title={lang === "en" ? "Clear dates" : "तारखा साफ करा"}
-                className="ml-1 h-7 min-h-0 px-2 text-[10px] font-bold text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
-              >
-                ×
-              </Button>
-            )}
           </div>
 
+          <div className="min-w-[140px]">
+            <Select
+              options={MONTH_OPTIONS}
+              value={filterMonth}
+              onChange={(_event, value) => setFilterMonth(value)}
+              placeholder={lang === "en" ? "Select month" : "महिना निवडा"}
+              selectSize="sm"
+              ariaLabel={lang === "en" ? "Filter by month" : "महिन्यानुसार फिल्टर"}
+            />
+          </div>
 
+          <DownloadButton
+            type="button"
+            label={lang === "en" ? "Export" : "निर्यात करा"}
+            size="sm"
+            onClick={() => window.alert("Exporting SLA evaluation report...")}
+            className="rounded-xl"
+          />
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {metrics.map((metric) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {metricCards.map((metric) => (
           <Card
-            key={metric.label}
+            key={metric.key}
             padding="none"
-            className="group flex min-h-[112px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-1 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+            className="group flex min-h-[112px] items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
           >
-            <div className={`flex h-12 w-12 mr-3 shrink-0 items-center justify-center rounded-full ring-4 ${metric.iconClassName}`}>
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-4 ${metric.iconClassName}`}>
               <metric.icon className="h-6 w-6" strokeWidth={2.2} />
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] font-bold leading-tight text-slate-500">
-                {lang === "en" ? metric.label : metric.labelMr}
+              <div className="text-[11px] font-bold leading-tight text-slate-500">
+                {metric.label}
               </div>
-              <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">{metric.count}</div>
+              <span
+                className={`mt-1 block text-2xl font-extrabold leading-none ${metric.valueClass ?? "text-slate-800"
+                  }`}
+              >
+                {metric.value}
+              </span>
               <div className={`mt-2 text-[11px] font-bold ${metric.detailClassName}`}>
-                {lang === "en" ? metric.detail : metric.detailMr}
+                {metric.content}
               </div>
             </div>
           </Card>
         ))}
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-        <Card className="w-full overflow-hidden border border-slate-200 bg-white p-4 shadow-sm lg:w-[70%]">
-          <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-1.5">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-[#0a3275]">
-              <FileSpreadsheet className="h-5 w-5 text-[#0B5CD5]" />
-              {lang === "en" ? "Departmental Service Applications Breakdown" : "विभाग निहाय सेवा अर्ज गोषवारा"}
+      <Card
+        padding="sm"
+        className="space-y-3 border-slate-200 bg-white shadow-sm"
+      >
+        <div className="flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
+              <FileText className="h-4 w-4 text-blue-600" />
+              {lang === "en"
+                ? "YOUR APPLICATIONS & SLA TIMELINE"
+                : "तुमचे अर्ज आणि SLA कालमर्यादा"}
             </h2>
-            <span className="animate-pulse rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-[#0F7A3F]">
-              {lang === "en" ? "Click row to visualize" : "पाहण्यासाठी रो वर क्लिक करा"}
-            </span>
-          </div>
-          <MasterTable<DepartmentalStatsRow>
-            columns={departmentColumns}
-            data={departmentalStats}
-            emptyText={lang === "en" ? "No data." : "माहिती नाही."}
-            getRowKey={(row) => row.deptId}
-            onRowClick={(row) => setSelectedDeptId(row.deptId)}
-            rowClassName={(row) => (selectedDeptId === row.deptId ? "bg-blue-50" : "")}
-            maxBodyHeightClassName="max-h-[360px]"
-            theadClassName="bg-[#0A3275]"
-            tableClassName="border-collapse text-left text-sm"
-            containerClassName="gap-0"
-          />
-        </Card>
-
-        <Card className="flex w-full flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm lg:w-[30%]">
-          <div className="border-b border-slate-100 pb-1.5">
-            <h3 className="flex items-center gap-1.5 text-base font-bold text-slate-800">
-              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0B5CD5]" />
-              {selectedDeptStats?.deptName}
-            </h3>
-            <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              {lang === "en" ? "Interactive Data Visualization" : "परस्परसंवादी डेटा व्हिज्युअलायझेशन"}
+            <p className="mt-0.5 text-[10px] font-medium text-slate-500">
+              {lang === "en"
+                ? "Each municipal service is bound by legal Right to Service delivery timelines."
+                : "प्रत्येक महानगरपालिका सेवा कायदेशीर सेवा हक्क वितरण कालमर्यादेने बांधील आहे."}
             </p>
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-[13px] font-bold text-[#303031]">
-              <span>{lang === "en" ? "Source Share" : "स्रोत विभागणी"}</span>
-              <span>{selectedDeptStats?.totalApps ?? 0} {lang === "en" ? "Apps" : "अर्ज"}</span>
-            </div>
-            {(selectedDeptStats?.totalApps ?? 0) === 0 ? (
-              <div className="flex h-8 w-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-[12px] font-bold text-slate-400">
-                {lang === "en" ? "No applications registered" : "कोणतेही अर्ज नाहीत"}
-              </div>
-            ) : (
-              <div className="mb-2 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">
-                <div className="flex h-5 w-full overflow-hidden rounded-lg bg-slate-100">
-                  <div
-                    style={{ width: `${selectedDeptStats?.rtsPct ?? 0}%` }}
-                    className="flex h-full items-center justify-center bg-[#0B5CD5] text-[11px] font-extrabold text-white transition-all duration-500"
-                    title={`RTS: ${selectedDeptStats?.rtsApps ?? 0}`}
-                  >
-                    {(selectedDeptStats?.rtsPct ?? 0) > 20 && `${selectedDeptStats?.rtsPct}%`}
-                  </div>
-                  <div
-                    style={{ width: `${selectedDeptStats?.asPct ?? 0}%` }}
-                    className="flex h-full items-center justify-center bg-[#F39C12] text-[11px] font-extrabold text-white transition-all duration-500"
-                    title={`Aaple Sarkar: ${selectedDeptStats?.asApps ?? 0}`}
-                  >
-                    {(selectedDeptStats?.asPct ?? 0) > 20 && `${selectedDeptStats?.asPct}%`}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between px-0.5 text-[11px] font-bold">
-                  <div className="flex items-center gap-1 text-[#0B5CD5]"><span className="h-1.5 w-1.5 rounded-full bg-[#0B5CD5]" /><span>RTS ({selectedDeptStats?.rtsApps ?? 0})</span></div>
-                  <div className="flex items-center gap-1 text-[#C66922]"><span className="h-1.5 w-1.5 rounded-full bg-[#F39C12]" /><span>Aaple Sarkar ({selectedDeptStats?.asApps ?? 0})</span></div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <span className="block text-[13px] font-bold text-[#0a3275]">
-              {lang === "en" ? "Application Status Distribution" : "अर्ज स्थिती वितरण"}
-            </span>
-            <div className="mb-2 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">
-              {[
-                { label: lang === "en" ? "Approved" : "मंजूर", pct: selectedDeptStats?.approvedPct ?? 0, count: selectedDeptStats?.approvedApps ?? 0, color: "bg-[#27AE60]", text: "text-[#0F7A3F]" },
-                { label: lang === "en" ? "Pending" : "प्रलंबित", pct: selectedDeptStats?.pendingPct ?? 0, count: selectedDeptStats?.pendingApps ?? 0, color: "bg-[#F39C12]", text: "text-[#C66922]" },
-                { label: lang === "en" ? "Rejected" : "नाकारलेले", pct: selectedDeptStats?.rejectedPct ?? 0, count: selectedDeptStats?.rejectedApps ?? 0, color: "bg-[#B22222]", text: "text-[#B22222]" },
-              ].map((item) => (
-                <div key={item.label} className="space-y-0.5">
-                  <div className="flex justify-between text-[11px] font-bold">
-                    <span className={item.text}>{item.label}</span>
-                    <span className="text-slate-700">{item.count} ({item.pct}%)</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                    <div style={{ width: `${item.pct}%` }} className={`${item.color} h-full rounded-full transition-all duration-500`} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <span className="block text-[13px] font-bold text-[#0a3275]">
-              {lang === "en" ? "SLA Target Efficiency" : "SLA कामगिरी"}
-            </span>
-            <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2 shadow-sm">
-              <div className="space-y-0.5">
-                <div className="text-[12px] font-bold text-slate-600">{lang === "en" ? "SLA Speed Performance" : "SLA वेग कामगिरी"}</div>
-                <div className="text-[11px] font-bold text-slate-400">{lang === "en" ? "Target SLA: 10.0 Days" : "उद्दिष्ट: १०.० दिवस"}</div>
-              </div>
-              <div className="flex flex-col items-end justify-center leading-tight">
-                <span className="text-xl font-extrabold text-[#008B8B]">{selectedDeptStats?.avgSlaVal ?? 0}</span>
-                <span className="text-[10px] font-bold text-slate-500">{lang === "en" ? "Days" : "दिवस"}</span>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="mb-3 flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-[#0B5CD5]" />
-            <h2 className="text-sm font-bold text-[#0a3275]">
-              {lang === "en" ? "Service-wise Applications Breakdown" : "सेवा निहाय अर्ज गोषवारा"}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
-              {lang === "en" ? "Filter by Dept:" : "विभाग निवडा:"}
-            </label>
-            <div className="min-w-[180px]">
-              <Select
-                options={serviceDeptOptions}
-                value={selectedServiceDeptId}
-                onChange={(_event, value) => setSelectedServiceDeptId(value)}
-                placeholder={lang === "en" ? "All Departments" : "सर्व विभाग"}
-                selectSize="sm"
-                ariaLabel={lang === "en" ? "Filter services by department" : "विभागानुसार सेवा फिल्टर करा"}
-                className="text-[12px] font-semibold text-slate-700"
-              />
-            </div>
-          </div>
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder={
+              lang === "en"
+                ? "Search by ID or service name..."
+                : "आयडी किंवा सेवेच्या नावाने शोधा..."
+            }
+            className="mb-0 w-full sm:w-[260px]"
+          />
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <MasterTable<ServiceStatsRow>
-            columns={serviceColumns}
-            data={filteredServiceStats}
-            emptyText={lang === "en" ? "No services found for this department." : "विभागासाठी सेवा उपलब्ध नाही."}
-            getRowKey={(row) => row.serviceId}
-            theadClassName="bg-[#0A3275]"
-            tableClassName="border-collapse text-left text-sm"
-            containerClassName="gap-0"
-          />
+        <MasterTable<SlaRecord>
+          columns={columns}
+          data={paginatedRecords}
+          emptyText={
+            lang === "en"
+              ? "No applications matched the tracking criteria."
+              : "ट्रॅकिंग निकषांशी जुळणारे अर्ज आढळले नाहीत."
+          }
+          getRowKey={(row) => row.id}
+          renderActions={(row) => (
+            <button
+              type="button"
+              onClick={() => setSelectedRecord(row)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-extrabold text-blue-700 transition hover:bg-blue-100"
+              aria-label={
+                lang === "en"
+                  ? `View details for ${row.appId}`
+                  : `${row.appId} चे तपशील पहा`
+              }
+            >
+              <Eye className="h-3 w-3" />
+              {lang === "en" ? "View Details" : "तपशील पहा"}
+            </button>
+          )}
+          actionLabel={lang === "en" ? "ACTIONS" : "कृती"}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={filteredRecords.length}
+          totalPages={totalPages}
+          onPageChange={setPageNumber}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          paginationConfig={{
+            enabled: true,
+            showPageSizeSelector: true,
+          }}
+          maxBodyHeightClassName="max-h-[520px]"
+          containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
+          theadClassName="!bg-slate-50 !from-slate-50 !via-slate-50 !to-slate-50 hover:!from-slate-50 hover:!via-slate-50 hover:!to-slate-50 [&_th]:!text-slate-700"
+          tableClassName="[&_thead_tr]:border-b [&_thead_tr]:border-slate-200 [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100 [&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-slate-50/70 [&_th]:uppercase"
+          footerLeftContent={
+            <span className="text-[12px] text-slate-400">
+              {lang === "en"
+                ? `Showing ${paginatedRecords.length} of ${filteredRecords.length} applications`
+                : `${filteredRecords.length} पैकी ${paginatedRecords.length} अर्ज दाखवत आहे`}
+            </span>
+          }
+          footerClassName="!border-slate-100 !bg-white !shadow-none"
+          footerLeftClassName="text-slate-400"
+        />
+      </Card>
 
-          <div className="flex w-full flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-4 shadow-sm lg:w-[30%]">
-            <div className="flex items-center gap-1.5">
-              <BarChart3 className="h-4 w-4 text-[#0B5CD5]" />
-              <span className="text-[13px] font-bold text-slate-700">
-                {lang === "en" ? "Applications by Service" : "सेवेनुसार अर्ज"}
-              </span>
+      <Card padding="sm" className="space-y-4 border-slate-200 shadow-sm">
+        <div>
+          <h2 className="text-sm font-bold text-[#243B7C]">
+            {lang === "en"
+              ? "Department-wise avg TAT — all stages"
+              : "विभाग निहाय सरासरी वेळ मापन — सर्व टप्पे"}
+          </h2>
+          <p className="mt-0.5 text-[12px] text-slate-400">
+            {lang === "en"
+              ? "Stacked representation of stage-duration split"
+              : "टप्पानिहाय कालावधीचे स्टॅक्ड प्रतिनिधित्व"}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+          {[
+            ["bg-amber-400", lang === "en" ? "Pending" : "प्रलंबित"],
+            ["bg-[#4b70a6]", lang === "en" ? "In Progress" : "प्रक्रियेत"],
+            ["bg-purple-400", lang === "en" ? "Needs Info" : "माहिती आवश्यक"],
+            ["bg-emerald-500", lang === "en" ? "Verification" : "पडताळणी"],
+          ].map(([colorClass, label]) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <span className={`h-3 w-3 rounded ${colorClass}`} />
+              <span>{label}</span>
             </div>
+          ))}
+        </div>
 
-            {filteredServiceStats.length === 0 ? (
-              <div className="flex h-48 items-center justify-center text-sm font-bold text-slate-400">
-                {lang === "en" ? "No data" : "माहिती नाही"}
+        <div className="space-y-4 pt-2">
+          {DEPARTMENT_TAT_DATA.map((department) => (
+            <div key={department.nameEn} className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold text-slate-700">
+                <span>
+                  {lang === "en"
+                    ? department.nameEn
+                    : `${department.nameMr} (${department.nameEn})`}
+                </span>
+                <span className="font-extrabold text-slate-800">
+                  {department.total.toFixed(1)}{" "}
+                  {lang === "en" ? "Days" : "दिवस"}
+                </span>
               </div>
-            ) : (
-              <div className="flex w-full flex-col items-center gap-3">
-                <svg viewBox="0 0 180 180" className="h-64 w-64 drop-shadow-sm">
-                  {pieSegments.map((segment, index) => (
-                    <path
-                      key={index}
-                      d={segment.path}
-                      fill={segment.color}
-                      stroke="white"
-                      strokeWidth="2"
-                      className="cursor-pointer transition-all duration-300 hover:opacity-75"
-                    >
-                      <title>{segment.name}: {segment.pct}%</title>
-                    </path>
-                  ))}
-                  <circle cx="90" cy="90" r="38" fill="white" />
-                  <text x="90" y="85" textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">
-                    {lang === "en" ? "Total" : "एकूण"}
-                  </text>
-                  <text x="90" y="102" textAnchor="middle" fontSize="16" fontWeight="800" fill="#4b70a6">
-                    {filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0)}
-                  </text>
-                </svg>
 
-                <div className="grid w-full grid-cols-2 gap-x-3 gap-y-1.5">
-                  {filteredServiceStats.map((service, index) => {
-                    const total = filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0);
-                    const pct = total > 0 ? Math.round((service.totalApps / total) * 100) : 0;
-
-                    return (
-                      <div key={service.serviceId} className="flex min-w-0 items-center gap-1.5">
-                        <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
-                        <span className="flex-1 truncate text-[10px] font-semibold text-slate-600">{service.serviceName}</span>
-                        <span className="flex-shrink-0 text-[10px] font-bold text-slate-400">{pct}%</span>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="flex h-5 w-full overflow-hidden rounded-lg border border-slate-100 shadow-inner">
+                <div
+                  style={{ width: `${department.pending}%` }}
+                  className="bg-amber-400 transition hover:opacity-90"
+                  title={department.titles[0]}
+                />
+                <div
+                  style={{ width: `${department.inProgress}%` }}
+                  className="bg-[#4b70a6] transition hover:opacity-90"
+                  title={department.titles[1]}
+                />
+                <div
+                  style={{ width: `${department.needsInfo}%` }}
+                  className="bg-purple-400 transition hover:opacity-90"
+                  title={department.titles[2]}
+                />
+                <div
+                  style={{ width: `${department.verification}%` }}
+                  className="bg-emerald-500 transition hover:opacity-90"
+                  title={department.titles[3]}
+                />
               </div>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
       </Card>
+
+      {selectedRecord && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sla-analysis-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedRecord(null);
+            }
+          }}
+        >
+          <Card
+            padding="md"
+            className="relative w-full max-w-lg overflow-hidden border-slate-200 bg-white shadow-2xl"
+          >
+            <CloseIconButton
+              title={lang === "en" ? "Close" : "बंद करा"}
+              onClick={() => setSelectedRecord(null)}
+            />
+
+            <div className="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3 pr-8">
+              <Info className="h-5 w-5 text-[#4b70a6]" />
+              <h3
+                id="sla-analysis-title"
+                className="text-sm font-extrabold text-slate-800"
+              >
+                {lang === "en"
+                  ? `SLA Timeline Analysis: ${selectedRecord.appId}`
+                  : `SLA कालरेषा विश्लेषण: ${selectedRecord.appId}`}
+              </h3>
+            </div>
+
+            <div className="space-y-4 text-[13px] text-slate-700">
+              <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-2">
+                <div>
+                  <span className="text-[11px] font-bold uppercase text-slate-400">
+                    {lang === "en" ? "Citizen Name" : "नागरिकाचे नाव"}
+                  </span>
+                  <p className="font-semibold text-slate-700">
+                    {lang === "en"
+                      ? selectedRecord.citizenName
+                      : selectedRecord.citizenNameMr}
+                  </p>
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-bold uppercase text-slate-400">
+                    {lang === "en" ? "Service Category" : "सेवा प्रकार"}
+                  </span>
+                  <p className="font-semibold text-slate-700">
+                    {lang === "en"
+                      ? selectedRecord.serviceName
+                      : selectedRecord.serviceNameMr}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-1">
+                <span className="block text-[11px] font-bold uppercase text-slate-400">
+                  {lang === "en" ? "Stage-wise duration" : "टप्पानिहाय कालावधी"}
+                </span>
+
+                {[
+                  {
+                    color: "bg-amber-400",
+                    label:
+                      lang === "en"
+                        ? "1. Clerk Allocation (Pending)"
+                        : "1. लिपिक नियुक्ती (प्रलंबित)",
+                    days: selectedRecord.pendingDays,
+                  },
+                  {
+                    color: "bg-[#4b70a6]",
+                    label:
+                      lang === "en"
+                        ? "2. Official Scrutiny (In progress)"
+                        : "2. अधिकृत छाननी (प्रक्रियेत)",
+                    days: selectedRecord.inProgressDays,
+                  },
+                  {
+                    color: "bg-purple-400",
+                    label:
+                      lang === "en"
+                        ? "3. Query Resolution (Needs info)"
+                        : "3. प्रश्न निराकरण (माहिती आवश्यक)",
+                    days: selectedRecord.needsInfoDays,
+                  },
+                  {
+                    color: "bg-emerald-500",
+                    label:
+                      lang === "en"
+                        ? "4. Final Sign-off (Verification)"
+                        : "4. अंतिम मंजुरी (पडताळणी)",
+                    days: selectedRecord.verificationDays,
+                  },
+                ].map((stage) => (
+                  <div
+                    key={stage.label}
+                    className="flex items-center justify-between gap-4"
+                  >
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <span className={`h-2 w-2 rounded-full ${stage.color}`} />
+                      {stage.label}
+                    </span>
+                    <span className="whitespace-nowrap font-bold text-slate-800">
+                      {stage.days} {lang === "en" ? "Days" : "दिवस"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-slate-100 pt-3">
+                <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    {selectedRecord.outcome === "Within SLA" ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <AlertCircle
+                        className={`h-4 w-4 ${selectedRecord.outcome === "SLA breached"
+                          ? "text-rose-600"
+                          : "text-amber-500"
+                          }`}
+                      />
+                    )}
+                    <span className="font-bold text-slate-700">
+                      {lang === "en" ? "SLA Status:" : "SLA स्थिती:"}{" "}
+                      {getOutcomeLabel(selectedRecord.outcome)}
+                    </span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="block text-[11px] text-slate-400">
+                      {lang === "en" ? "Target vs Actual" : "लक्ष्य व प्रत्यक्ष"}
+                    </span>
+                    <span className="font-extrabold text-slate-800">
+                      {selectedRecord.totalTat}d / {selectedRecord.slaLimit}d
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

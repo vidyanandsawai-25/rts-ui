@@ -1,5 +1,5 @@
 import { getCmsApplicationsAction, getCmsMastersAction } from "../actions";
-import CmsMulyamapan from "@/components/modules/cms/CmsMulyamapan";
+import CmsMulyamapan from "@/components/modules/cms/CmsDashboard";
 
 export default async function CmsMulyamapanPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

@@ -12,7 +12,7 @@ import {
   saveCmsServiceAction,
   updateCmsServiceAction,
   deleteCmsServiceAction
-} from "@/app/[locale]/rts-cms/actions";
+} from "@/app/[locale]/rts/actions";
 
 interface MasterConfigProps {
   masters: {

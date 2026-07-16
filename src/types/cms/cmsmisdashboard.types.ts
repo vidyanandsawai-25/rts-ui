@@ -1,5 +1,7 @@
 export interface CmsMisDashboardServiceItem {
   serviceName: string;
+  departmentId?: string | number;
+  departmentName?: string;
   totalApplications: number;
   aapleSarkarApplications: number;
   rtsApplications: number;
@@ -11,6 +13,7 @@ export interface CmsMisDashboardServiceItem {
 }
 
 export interface CmsMisDashboardDepartmentItem {
+  departmentId?: string | number;
   departmentName: string;
   totalServices: number;
   totalApplications: number;

@@ -4,7 +4,6 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
-import { cookies } from "next/headers";
 import { apiClient } from "@/services/api.service";
 import type {
   CmsApplication,
@@ -251,31 +250,12 @@ export async function submitCmsAction(
 }
 
 // 7. Masters Config Actions
-async function logApiDebug(message: string) {
-  const logPath = path.join(process.cwd(), "src", "lib", "mock", "rts", "api_debug.log");
-  try {
-    const timestamp = new Date().toISOString();
-    await fs.appendFile(logPath, `[${timestamp}] ${message}\n`, "utf8");
-  } catch (e) {
-    console.error("Logger error", e);
-  }
-}
-
 export async function getCmsMastersAction() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-  const { getAppConfig } = require("@/config/app.config");
-  const config = getAppConfig();
-  await logApiDebug(`getCmsMastersAction invoked. baseUrl: "${config?.api?.baseUrl}", auth_token length: ${token ? token.length : 0}`);
-
   try {
     const [deptRes, srvRes] = await Promise.all([
       apiClient.get<any>("/RTSDepartment?PageNumber=1&PageSize=-1"),
       apiClient.get<any>("/RTSService?PageNumber=1&PageSize=-1")
     ]);
-
-    await logApiDebug(`RTSDepartment API Response: success=${deptRes.success}, status=${deptRes.statusCode}, error=${deptRes.error || 'none'}, data=${JSON.stringify(deptRes.data)}`);
-    await logApiDebug(`RTSService API Response: success=${srvRes.success}, status=${srvRes.statusCode}, error=${srvRes.error || 'none'}, data=${JSON.stringify(srvRes.data)}`);
 
     let departments = [];
     let services = [];
@@ -305,17 +285,14 @@ export async function getCmsMastersAction() {
     if (!deptRes.success) {
       const data = await readCmsData();
       departments = data.departments;
-      await logApiDebug(`RTSDepartment API failed, fell back to local mock.`);
     }
     if (!srvRes.success) {
       const data = await readCmsData();
       services = data.services;
-      await logApiDebug(`RTSService API failed, fell back to local mock.`);
     }
 
     return { departments, services };
-  } catch (error: any) {
-    await logApiDebug(`getCmsMastersAction Exception: ${error?.message || error}`);
+  } catch {
     const data = await readCmsData();
     return {
       departments: data.departments,
@@ -325,7 +302,6 @@ export async function getCmsMastersAction() {
 }
 
 export async function saveCmsDepartmentAction(name: string) {
-  await logApiDebug(`saveCmsDepartmentAction invoked with name="${name}"`);
   try {
     const payload = {
       isActive: true,
@@ -335,7 +311,6 @@ export async function saveCmsDepartmentAction(name: string) {
       deptIcon: "Building"
     };
     const res = await apiClient.post<any>("/RTSDepartment", payload);
-    await logApiDebug(`POST RTSDepartment success=${res.success}, status=${res.statusCode}, error=${res.error || 'none'}, data=${JSON.stringify(res.data)}`);
     
     let newDept;
     if (res.success && res.data) {
@@ -352,7 +327,6 @@ export async function saveCmsDepartmentAction(name: string) {
       newDept = { id: nextId, name };
       data.departments.push(newDept);
       await writeCmsData(data);
-      await logApiDebug(`saveCmsDepartmentAction local save fallback.`);
     }
 
     for (const locale of locales) {
@@ -360,8 +334,7 @@ export async function saveCmsDepartmentAction(name: string) {
     }
 
     return { success: true, department: newDept };
-  } catch (error: any) {
-    await logApiDebug(`saveCmsDepartmentAction Exception: ${error?.message || error}`);
+  } catch {
     const data = await readCmsData();
     const nextId = `dept-${Date.now()}`;
     const newDept = { id: nextId, name };
@@ -376,7 +349,6 @@ export async function saveCmsDepartmentAction(name: string) {
 }
 
 export async function saveCmsServiceAction(name: string, departmentId: string) {
-  await logApiDebug(`saveCmsServiceAction invoked with name="${name}", departmentId="${departmentId}"`);
   try {
     const parsedDeptId = /^\d+$/.test(departmentId) ? parseInt(departmentId, 10) : 0;
     const payload = {
@@ -387,7 +359,6 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
       name
     };
     const res = await apiClient.post<any>("/RTSService", payload);
-    await logApiDebug(`POST RTSService success=${res.success}, status=${res.statusCode}, error=${res.error || 'none'}, data=${JSON.stringify(res.data)}`);
     
     let newSrv;
     if (res.success && res.data) {
@@ -405,7 +376,6 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
       newSrv = { id: nextId, name, departmentId };
       data.services.push(newSrv);
       await writeCmsData(data);
-      await logApiDebug(`saveCmsServiceAction local save fallback.`);
     }
 
     for (const locale of locales) {
@@ -413,8 +383,7 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
     }
 
     return { success: true, service: newSrv };
-  } catch (error: any) {
-    await logApiDebug(`saveCmsServiceAction Exception: ${error?.message || error}`);
+  } catch {
     const data = await readCmsData();
     const nextId = `service-${Date.now()}`;
     const newSrv = { id: nextId, name, departmentId };
@@ -429,13 +398,11 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
 }
 
 export async function updateCmsDepartmentAction(id: string, name: string) {
-  await logApiDebug(`updateCmsDepartmentAction invoked with id="${id}", name="${name}"`);
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
       const payload = { id: parseInt(id, 10), isActive: true, updatedBy: 1, departmentName: name, name };
       const res = await apiClient.put<any>(`/RTSDepartment/${id}`, payload);
-      await logApiDebug(`PUT RTSDepartment success=${res.success}, status=${res.statusCode}, data=${JSON.stringify(res.data)}`);
       if (res.success && res.data) {
         const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data.items || res.data);
         const updatedDept = {
@@ -448,8 +415,7 @@ export async function updateCmsDepartmentAction(id: string, name: string) {
         return { success: true, department: updatedDept };
       }
     }
-  } catch (error: any) {
-    await logApiDebug(`updateCmsDepartmentAction Exception: ${error?.message || error}`);
+  } catch {
   }
 
   // Fallback to Mock Data
@@ -466,12 +432,10 @@ export async function updateCmsDepartmentAction(id: string, name: string) {
 }
 
 export async function deleteCmsDepartmentAction(id: string) {
-  await logApiDebug(`deleteCmsDepartmentAction invoked with id="${id}"`);
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
       const res = await apiClient.delete<any>(`/RTSDepartment/${id}`);
-      await logApiDebug(`DELETE RTSDepartment success=${res.success}, status=${res.statusCode}`);
       if (res.success) {
         for (const locale of locales) {
           revalidatePath(`/${locale}/rts-cms/masters`);
@@ -479,8 +443,7 @@ export async function deleteCmsDepartmentAction(id: string) {
         return { success: true };
       }
     }
-  } catch (error: any) {
-    await logApiDebug(`deleteCmsDepartmentAction Exception: ${error?.message || error}`);
+  } catch {
   }
 
   // Fallback to Mock Data
@@ -496,7 +459,6 @@ export async function deleteCmsDepartmentAction(id: string) {
 }
 
 export async function updateCmsServiceAction(id: string, name: string, departmentId: string) {
-  await logApiDebug(`updateCmsServiceAction invoked with id="${id}", name="${name}", departmentId="${departmentId}"`);
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -509,7 +471,6 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
         name
       };
       const res = await apiClient.put<any>(`/RTSService/${id}`, payload);
-      await logApiDebug(`PUT RTSService success=${res.success}, status=${res.statusCode}, data=${JSON.stringify(res.data)}`);
       if (res.success && res.data) {
         const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data.items || res.data);
         const updatedSrv = {
@@ -523,8 +484,7 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
         return { success: true, service: updatedSrv };
       }
     }
-  } catch (error: any) {
-    await logApiDebug(`updateCmsServiceAction Exception: ${error?.message || error}`);
+  } catch {
   }
 
   // Fallback to Mock Data
@@ -542,12 +502,10 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
 }
 
 export async function deleteCmsServiceAction(id: string) {
-  await logApiDebug(`deleteCmsServiceAction invoked with id="${id}"`);
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
       const res = await apiClient.delete<any>(`/RTSService/${id}`);
-      await logApiDebug(`DELETE RTSService success=${res.success}, status=${res.statusCode}`);
       if (res.success) {
         for (const locale of locales) {
           revalidatePath(`/${locale}/rts-cms/masters`);
@@ -555,8 +513,7 @@ export async function deleteCmsServiceAction(id: string) {
         return { success: true };
       }
     }
-  } catch (error: any) {
-    await logApiDebug(`deleteCmsServiceAction Exception: ${error?.message || error}`);
+  } catch {
   }
 
   // Fallback to Mock Data
@@ -620,7 +577,6 @@ export async function createCmsUserAction(officer: {
 
 // 9. Form Field Definition Actions
 export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
-  await logApiDebug("getCmsFieldsAction invoked");
   try {
     const [fieldRes, deptRes, srvRes] = await Promise.all([
       apiClient.get<any>("/RTSFieldDefinition?PageNumber=1&PageSize=-1"),
@@ -698,8 +654,7 @@ export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
     }
 
     return { fields, departments, services, pagination: fieldPagination };
-  } catch (error: any) {
-    await logApiDebug(`getCmsFieldsAction Exception: ${error?.message || error}`);
+  } catch {
     const data = await readCmsData();
     const allFields = data.fieldDefinitions || [];
     const startIndex = (pageNumber - 1) * pageSize;
@@ -718,7 +673,6 @@ export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
 }
 
 export async function saveCmsFieldAction(field: any) {
-  await logApiDebug(`saveCmsFieldAction invoked with fieldCode="${field.fieldCode}"`);
   try {
     const payload = {
       isActive: field.isActive ?? true,
@@ -741,7 +695,6 @@ export async function saveCmsFieldAction(field: any) {
     };
 
     const res = await apiClient.post<any>("/RTSFieldDefinition", payload);
-    await logApiDebug(`POST RTSFieldDefinition response: success=${res.success}, status=${res.statusCode}`);
 
     let newField;
     if (res.success && res.data) {
@@ -779,7 +732,6 @@ export async function saveCmsFieldAction(field: any) {
       if (!data.fieldDefinitions) data.fieldDefinitions = [];
       data.fieldDefinitions.push(newField);
       await writeCmsData(data);
-      await logApiDebug(`saveCmsFieldAction local save fallback.`);
     }
 
     for (const locale of locales) {
@@ -787,8 +739,7 @@ export async function saveCmsFieldAction(field: any) {
     }
 
     return { success: true, field: newField };
-  } catch (error: any) {
-    await logApiDebug(`saveCmsFieldAction Exception: ${error?.message || error}`);
+  } catch {
     const data = await readCmsData();
     const nextId = String(Date.now());
     const newField = {
@@ -822,7 +773,6 @@ export async function saveCmsFieldAction(field: any) {
 }
 
 export async function updateCmsFieldAction(id: string, field: any) {
-  await logApiDebug(`updateCmsFieldAction invoked with id="${id}"`);
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -848,7 +798,6 @@ export async function updateCmsFieldAction(id: string, field: any) {
       };
 
       const res = await apiClient.put<any>(`/RTSFieldDefinition/${id}`, payload);
-      await logApiDebug(`PUT RTSFieldDefinition success=${res.success}, status=${res.statusCode}`);
       if (res.success && res.data) {
         const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
         const updatedField = {
@@ -877,8 +826,7 @@ export async function updateCmsFieldAction(id: string, field: any) {
         return { success: true, field: updatedField };
       }
     }
-  } catch (error: any) {
-    await logApiDebug(`updateCmsFieldAction Exception: ${error?.message || error}`);
+  } catch {
   }
 
   // Fallback to local
@@ -915,12 +863,10 @@ export async function updateCmsFieldAction(id: string, field: any) {
 }
 
 export async function deleteCmsFieldAction(id: string) {
-  await logApiDebug(`deleteCmsFieldAction invoked with id="${id}"`);
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
       const res = await apiClient.delete<any>(`/RTSFieldDefinition/${id}`);
-      await logApiDebug(`DELETE RTSFieldDefinition success=${res.success}, status=${res.statusCode}`);
       if (res.success) {
         for (const locale of locales) {
           revalidatePath(`/${locale}/rts-cms/masters/fields`);
@@ -928,8 +874,7 @@ export async function deleteCmsFieldAction(id: string) {
         return { success: true };
       }
     }
-  } catch (error: any) {
-    await logApiDebug(`deleteCmsFieldAction Exception: ${error?.message || error}`);
+  } catch {
   }
 
   // Fallback to local
