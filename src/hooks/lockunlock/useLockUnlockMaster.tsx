@@ -268,32 +268,15 @@ export function useLockUnlockMaster({
   const getPropertyQueryRange = useCallback(() => {
     let fromPropertyNoOnly = formData.fromProperty;
     let toPropertyNoOnly = formData.toProperty;
-    let partitionNoStr: string | undefined = undefined;
+    const partitionNoStr: string | undefined = undefined;
 
-    if (formData.fromProperty && formData.toProperty && propertyOptions.length > 0) {
-      const fromIdx = propertyOptions.findIndex((p) => p.value === formData.fromProperty);
-      const toIdx = propertyOptions.findIndex((p) => p.value === formData.toProperty);
-
-      if (fromIdx !== -1 && toIdx !== -1 && fromIdx <= toIdx) {
-        fromPropertyNoOnly = formData.fromProperty.split("-")[0];
-        toPropertyNoOnly = formData.toProperty.split("-")[0];
-
-        const selectedPartitions: string[] = [];
-        for (let i = fromIdx; i <= toIdx; i++) {
-          const optVal = propertyOptions[i].value;
-          const split = optVal.split("-");
-          if (split.length > 1) {
-            selectedPartitions.push(split[1]);
-          } else {
-            selectedPartitions.push("0");
-          }
-        }
-
-        if (selectedPartitions.length > 0) {
-          const uniquePartitions = Array.from(new Set(selectedPartitions));
-          partitionNoStr = uniquePartitions.join(",");
-        }
-      }
+    if (formData.fromProperty && formData.toProperty) {
+      fromPropertyNoOnly = formData.fromProperty.split("-")[0];
+      toPropertyNoOnly = formData.toProperty.split("-")[0];
+      
+      // We purposefully do not generate a massive comma-separated string 
+      // of partition numbers for the range, as it causes HTTP 414 URI Too Long.
+      // The backend will simply filter by the FromPropertyNo and ToPropertyNo boundaries.
     }
 
     return {
@@ -301,7 +284,7 @@ export function useLockUnlockMaster({
       toProperty: toPropertyNoOnly || undefined,
       partitionNo: partitionNoStr,
     };
-  }, [formData.fromProperty, formData.toProperty, propertyOptions]);
+  }, [formData.fromProperty, formData.toProperty]);
 
   const fetchProperties = useCallback(
     (pageNum: number, pageSz: number, searchTerm: string = debouncedSearchTerm, resetSelection: boolean = false) => {
@@ -341,13 +324,15 @@ export function useLockUnlockMaster({
           let searchedPropertyNo = "";
 
           if (normalizedSearch) {
+            params.SearchTerm = normalizedSearch; // Pass it as SearchTerm in case backend uses it for general search
+
             // Find selected ward label to identify and strip it if present
             const selectedWard = (wards || []).find((w) => String(w.id) === formData.wardId);
             const selectedWardNo = selectedWard?.wardNo ? selectedWard.wardNo.trim() : "";
 
             const parts = normalizedSearch.split("-").map((p) => p.trim());
             const cleanParts = [...parts];
-            // If the first part matches the selected ward number (case-insensitive), strip it.
+            
             if (
               selectedWardNo &&
               cleanParts[0] &&
@@ -357,20 +342,17 @@ export function useLockUnlockMaster({
             }
 
             if (cleanParts.length >= 2) {
-              // Combined search (e.g. "2-A10"): send "2" as Search and "A10" as PartitionNo
               const propPart = cleanParts[0];
               const partPart = cleanParts[1];
               if (propPart) params.Search = propPart;
               if (partPart) {
-                params.PartitionNo = partPart;
                 params.SearchPartitionNo = partPart;
               }
               searchedPropertyNo = propPart;
             } else if (cleanParts.length === 1 && cleanParts[0]) {
               const term = cleanParts[0];
-              // If it contains letters, it's a partition query (e.g. "A10")
+              // If it contains letters, it might be a partition query OR a general search term
               if (/[a-zA-Z]/.test(term)) {
-                params.PartitionNo = term;
                 params.SearchPartitionNo = term;
               } else {
                 params.Search = term;
@@ -471,6 +453,11 @@ export function useLockUnlockMaster({
   const handleShow = useCallback(() => {
     fetchProperties(1, pagination.pageSize, undefined, true);
   }, [fetchProperties, pagination.pageSize]);
+
+  // Handle manual search button click
+  const handleSearchButtonClick = useCallback(() => {
+    fetchProperties(1, pagination.pageSize, propertySearchTerm, true);
+  }, [fetchProperties, pagination.pageSize, propertySearchTerm]);
 
 
 
@@ -781,6 +768,7 @@ export function useLockUnlockMaster({
     handleBulkAction,
     handlePageChange,
     handlePageSizeChange,
+    handleSearchButtonClick,
     columns,
   };
 }
