@@ -14,6 +14,7 @@ interface DrawerProps {
   onClose: () => void;
   title?: React.ReactNode;
   className?: string;
+  bodyClassName?: string;
   description?: string;
   width?: "sm" | "md" | "lg" | "xl";
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export function Drawer({
   children,
   footer,
   hideHeader = false,
+  bodyClassName,
 }: DrawerProps) {
   const tLogin = useTranslations("login");
   const [warningActive, setWarningActive] = React.useState(false);
@@ -66,6 +68,57 @@ export function Drawer({
     window.addEventListener("ntis:session-warning-tick", handleTick);
     return () => {
       window.removeEventListener("ntis:session-warning-tick", handleTick);
+    };
+  }, [open]);
+
+  const drawerRef = React.useRef<HTMLDivElement>(null);
+  const lastActiveElement = React.useRef<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    lastActiveElement.current = document.activeElement as HTMLElement;
+
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    const focusableSelectors =
+      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+    // Find focusable elements
+    const focusableElements = Array.from(
+      drawer.querySelectorAll<HTMLElement>(focusableSelectors)
+    ).filter(el => {
+      if (el.tagName === 'INPUT' && (el as HTMLInputElement).type === 'hidden') return false;
+      return el.tabIndex >= 0;
+    });
+
+    const firstEl = focusableElements[0];
+    const lastEl = focusableElements[focusableElements.length - 1];
+
+    if (firstEl) {
+      firstEl.focus();
+    } else {
+      drawer.focus();
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab" && focusableElements.length > 0) {
+        if (e.shiftKey && document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl.focus();
+        } else if (!e.shiftKey && document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      lastActiveElement.current?.focus();
     };
   }, [open]);
 
@@ -184,6 +237,8 @@ export function Drawer({
       />
 
       <div
+        ref={drawerRef}
+        tabIndex={-1}
         className={`
           drawer-instance
           drawer-${width}
@@ -192,6 +247,7 @@ export function Drawer({
           bg-[#F8FAFF]
           shadow-2xl
           flex flex-col
+          focus:outline-none
           animate-in slide-in-from-right duration-300
           ${responsiveValidationClasses}
         `}
@@ -234,7 +290,7 @@ export function Drawer({
         )}
 
         {/* ================= BODY ================= */}
-        <div className="flex-1 overflow-y-auto">
+        <div className={`flex-1 ${bodyClassName || "overflow-y-auto"}`}>
           <div className="min-h-full">
             {children}
           </div>
