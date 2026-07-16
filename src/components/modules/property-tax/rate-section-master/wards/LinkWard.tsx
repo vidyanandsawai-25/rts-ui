@@ -9,7 +9,7 @@ import { PrevPageButton, NextPageButton } from "@/components/common/ActionButton
 import { LinkWardProps } from "@/types/rateSectionMaster.types";
 import RateSectionWards from "./RateSectionWards";
 import LinkWardTabs from "./LinkWardTabs";
-import { getRateSectionDisplayLabel, getSelectedZoneName, handleToggleAvailable, handleToggleSelected} from "./linkWardHelpers";
+import { getSelectedZoneName, handleToggleAvailable, handleToggleSelected} from "./linkWardHelpers";
 import { useLinkWardHandlers } from "@/hooks/rateSectionMaster/useLinkWardHandlers";
 import { useLinkWardPagination } from "@/hooks/rateSectionMaster/useLinkWardPagination";
 import { useLinkWardActions } from "@/hooks/rateSectionMaster/useLinkWardActions";
@@ -21,11 +21,11 @@ export default function AddWard({
   rates,
   sections: _sections,
   selectedZoneNo,
-  ssrAllWards,
-  ssrAllWardsCount,
-  ssrWardAssignments,
-  ssrAllRateSections,
-  ssrSelectedWards,
+  ssrAllWards = [],
+  ssrAllWardsCount = 0,
+  ssrWardAssignments = {},
+  ssrAllRateSections = [],
+  ssrSelectedWards = [],
   ssrSelectedWardsTotalCount = 0,
   ssrViewAllWards = [],
   ssrViewAllWardsTotalCount = 0,
@@ -36,6 +36,7 @@ export default function AddWard({
   const searchParams = useSearchParams();
 
   const [wardAssignments, setWardAssignments] = useState(ssrWardAssignments);
+
   const allAvailableWards = ssrAllWards;
   const totalViewAllCount = ssrViewAllWardsTotalCount || ssrAllWardsCount;
 
@@ -60,9 +61,6 @@ export default function AddWard({
 
   const handlers = useLinkWardHandlers({ searchParams, router });
 
-  const getRateSectionLabel = (rateSectionNo: string) =>
-    getRateSectionDisplayLabel(rateSectionNo, rates);
-
   const { moveToSelected, moveToAvailable } = useLinkWardActions({
     rates,
     allRateSections: ssrAllRateSections,
@@ -77,7 +75,6 @@ export default function AddWard({
     setSelectedWards: state.setSelectedWards,
     setSelectedWardsTotalCount: state.setSelectedWardsTotalCount,
     setWardAssignments,
-    getRateSectionDisplayLabel: getRateSectionLabel,
     router,
     t,
     isViewAllSelectAllActive,
@@ -167,6 +164,7 @@ export default function AddWard({
     <Drawer
       open={open}
       width="lg"
+      bodyClassName="overflow-hidden"
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
