@@ -279,8 +279,8 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
   const tableClass = "border-collapse text-left text-sm [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
   const actionButtons = (onEdit: () => void, onDelete: () => void) => (
     <div className="flex justify-center gap-1.5" onClick={(event) => event.stopPropagation()}>
-      <Button type="button" aria-label="Edit" title="Edit" variant="edit" size="xs" icon={Pencil} onClick={onEdit} className="h-7 w-7 px-0" />
-      <Button type="button" aria-label="Delete" title="Delete" variant="delete" size="xs" icon={Trash2} onClick={onDelete} className="h-7 w-7 px-0" />
+      <Button type="button" aria-label="Edit" title="Edit" variant="edit" size="sm" icon={Pencil} onClick={onEdit} className="size-10 px-0" />
+      <Button type="button" aria-label="Delete" title="Delete" variant="delete" size="sm" icon={Trash2} onClick={onDelete} className="size-10 px-0" />
     </div>
   );
 
