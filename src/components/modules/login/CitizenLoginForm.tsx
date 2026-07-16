@@ -165,7 +165,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
       const res = await sendCitizenOtpAction(method, {
         mobile,
         upicId,
-        propertyNo: method === 'property' ? `${sectorId}-${propertyNo}` : undefined
+        propertyNo: method === 'property' ? `${nodeId}-${sectorId}-${propertyNo}` : undefined
       });
       if (res.success && res.txnId) {
         setMaskedPhone(res.maskedPhone || '');

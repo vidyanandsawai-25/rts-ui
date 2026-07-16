@@ -8,7 +8,6 @@ import type { LucideIcon } from "lucide-react";
 
 import { useLanguage } from "@/components/Providers/LanguageProvider";
 import type { Language } from "@/types/language.type";
-import { rtsServiceDetails } from "@/data/rtsServiceDetails";
 import { Modal } from "./Modal";
 import { Button } from "./ActionButton";
 
@@ -201,15 +200,11 @@ export default function ServiceGrid({
               )
             : "";
 
-          const details = rtsServiceDetails[selectedServiceId];
-          
           let transSla = "7 Days";
           if (selectedService?.sla !== undefined && selectedService?.sla !== null) {
             transSla = typeof selectedService.sla === "number"
               ? `${selectedService.sla} ${getTransText("दिवस", "दिन", "Days")}`
               : String(selectedService.sla);
-          } else if (details) {
-            transSla = getTransText(details.sla.mr, details.sla.hi, details.sla.en);
           }
 
           let transFees = "Free";
@@ -217,12 +212,10 @@ export default function ServiceGrid({
             transFees = getTransText("मोफत", "निःशुल्क", "Free");
           } else if (selectedService?.fees !== undefined && selectedService?.fees !== null) {
             transFees = `₹${selectedService.fees}`;
-          } else if (details) {
-            transFees = getTransText(details.fees.mr, details.fees.hi, details.fees.en);
           }
 
-          const transOfficer = details ? getTransText(details.officer.mr, details.officer.hi, details.officer.en) : "-";
-          const transDocs = details ? (activeLang === "mr" ? details.documents.mr : activeLang === "hi" ? details.documents.hi : details.documents.en) : [];
+          const transOfficer = "-";
+          const transDocs: string[] = [];
 
           return (
             <Modal

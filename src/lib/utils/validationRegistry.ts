@@ -1,4 +1,4 @@
-import type { CustomValidate, FieldValidation, InputMode } from "../../data/Dept/formTypes";
+import type { CustomValidate, FieldValidation, InputMode } from "@/types/rts/form.types";
 
 /**
  * Global, key-based validation registry.

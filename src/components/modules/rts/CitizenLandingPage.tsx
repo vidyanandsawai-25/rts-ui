@@ -19,7 +19,6 @@ import {
   Zap,
   Clock,
 } from 'lucide-react';
-import { rtsServiceDetails } from '@/data/rtsServiceDetails';
 import { Modal, Button } from '@/components/common';
 import type { DepartmentDTO, ServiceDTO } from '@/types/rts-citizen.types';
 
@@ -602,7 +601,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
       {/* Service Details Modal */}
       {isDetailsOpen && selectedServiceId && (() => {
-        const details = rtsServiceDetails[selectedServiceId];
         let serviceName = '';
         let deptName = '';
         let serviceItem: any = null;
@@ -619,8 +617,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         let transSla = '7 Days';
         if (serviceItem?.sla !== undefined && serviceItem?.sla !== null) {
           transSla = typeof serviceItem.sla === 'number' ? `${serviceItem.sla} ${t('दिवस', 'दिन', 'Days')}` : String(serviceItem.sla);
-        } else if (details) {
-          transSla = t(details.sla.mr, details.sla.hi, details.sla.en);
         }
 
         let transFees = 'Free';
@@ -628,12 +624,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           transFees = t('मोफत', 'निःशुल्क', 'Free');
         } else if (serviceItem?.fees !== undefined && serviceItem?.fees !== null) {
           transFees = `₹${serviceItem.fees}`;
-        } else if (details) {
-          transFees = t(details.fees.mr, details.fees.hi, details.fees.en);
         }
 
-        const transOfficer = details ? t(details.officer.mr, details.officer.hi, details.officer.en) : '-';
-        const transDocs = details ? (locale === 'mr' ? details.documents.mr : locale === 'hi' ? details.documents.hi : details.documents.en) : [];
+        const transOfficer = '-';
+        const transDocs: string[] = [];
 
         return (
           <Modal open={isDetailsOpen} onClose={() => { setIsDetailsOpen(false); setSelectedServiceId(null); }} title={serviceName || 'सेवा तपशील'} subtitle={deptName} maxWidth="md">
