@@ -21,6 +21,14 @@ vi.mock('next/image', () => ({
   },
 }));
 
+// Mock next/dynamic
+vi.mock('next/dynamic', () => ({
+  default: () => {
+    const DynamicComponent = () => <div data-testid="mock-dynamic-component" />;
+    return DynamicComponent;
+  },
+}));
+
 const mockActiveCategory = {
   photoTypeId: 9999,
   photoTypeCode: 'CHANGE_DETECTION',
