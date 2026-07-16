@@ -1,5 +1,6 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError } from '@/lib/utils/api';
+import type { PagedResponse } from '@/types/common.types';
 import type {
   DepreciationConstructionType,
   DepreciationRow,
@@ -211,6 +212,7 @@ export async function bulkCreateDepreciation(payload: {
     rate: number;
   }>;
   createdBy?: number;
+  yearRangeRVId: number;
 }): Promise<void> {
   const bulkPayload = payload.rates.map((item) => ({
     isActive: true,
@@ -219,7 +221,7 @@ export async function bulkCreateDepreciation(payload: {
     minYear: payload.minYear,
     maxYear: payload.maxYear,
     rate: item.rate,
-    yearRangeRVId: 1,
+    yearRangeRVId: payload.yearRangeRVId,
   }));
 
   const response = await apiClient.post<unknown>('/Depreciation/Bulk', bulkPayload);
@@ -233,9 +235,13 @@ export async function bulkCreateDepreciation(payload: {
   }
 }
 
-/**
- * Add depreciation range for all construction types
- */
+interface AssessmentYearRangeAPIItem {
+  id?: number;
+  Id?: number;
+  isActive?: boolean | number | string;
+  IsActive?: boolean | number | string;
+}
+
 /**
  * Add depreciation range for all construction types
  */
@@ -254,11 +260,57 @@ export async function addDepreciationRangeBulk(
     rate: payload.defaultRate ?? 0,
   }));
 
+  let yearRangeRVId: number | null = null;
+
+  // 1. Try to get yearRangeRVId from existing depreciation records
+  try {
+    const existingRecords = await getDepreciationsAll();
+    if (existingRecords.length > 0) {
+      const found = existingRecords.find((r) => r.yearRangeRVId && r.yearRangeRVId > 0);
+      if (found) {
+        yearRangeRVId = found.yearRangeRVId;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch existing depreciation records:', err);
+  }
+
+  // 2. If no existing records, fetch from AssessmentYearRange master
+  if (!yearRangeRVId) {
+    try {
+      const yearRangesResponse = await apiClient.get<PagedResponse<AssessmentYearRangeAPIItem>>(
+        '/AssessmentYearRange?PageNumber=1&PageSize=100'
+      );
+      if (yearRangesResponse.success && yearRangesResponse.data?.items) {
+        const activeRange = yearRangesResponse.data.items.find((item: AssessmentYearRangeAPIItem) => {
+          const isActiveValue = item.isActive ?? item.IsActive;
+          return isActiveValue === true || isActiveValue === 1 || isActiveValue === "true";
+        });
+        const target = activeRange || yearRangesResponse.data.items[0];
+        if (target) {
+          yearRangeRVId = Number(target.id ?? target.Id);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch assessment year ranges:', err);
+    }
+  }
+
+  // Throw error if yearRangeRVId could not be resolved, preventing hardcoded defaults
+  if (!yearRangeRVId || yearRangeRVId <= 0) {
+    throw new ApiError(
+      400,
+      'Could not resolve active Assessment Year Range. Please ensure an active Assessment Year Range exists in the master first.',
+      'Validation'
+    );
+  }
+
   await bulkCreateDepreciation({
     minYear: payload.minYear,
     maxYear: payload.maxYear,
     rates,
     createdBy: Number(userId),
+    yearRangeRVId,
   });
 }
 
