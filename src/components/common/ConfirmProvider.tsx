@@ -294,10 +294,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
 
                   <h3 className="mt-5 text-2xl font-bold text-gray-900 leading-tight">{computed.title}</h3>
 
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-[320px]">
-                    {computed.description}
-                    {renderRecordMeta(computed.meta)}
-                  </p>
+                  <div className="mt-3 flex-1 overflow-y-auto w-full max-h-[140px] px-2 text-center scrollbar-thin">
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap inline-block text-left max-w-[360px]">
+                      {computed.description}
+                      {renderRecordMeta(computed.meta)}
+                    </p>
+                  </div>
 
                   {/* Buttons */}
                   <div className="mt-8 flex items-center justify-center gap-3">

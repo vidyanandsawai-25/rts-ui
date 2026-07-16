@@ -24,6 +24,16 @@ vi.mock("@/app/[locale]/property-tax/rate-section-master/actions", () => ({
   refreshSelectedWardsAction: vi.fn(),
 }));
 
+const mockConfirm = vi.fn((options) => {
+  if (options.onConfirm) options.onConfirm();
+});
+
+vi.mock("@/components/common", () => ({
+  useConfirm: vi.fn(() => ({
+    confirm: mockConfirm,
+  })),
+}));
+
 describe("useLinkWardActions", () => {
   const mockT = vi.fn((key: string, values?: Record<string, string | number>) => {
     if (values) {
@@ -56,11 +66,6 @@ describe("useLinkWardActions", () => {
     refresh: vi.fn(),
   };
 
-  const mockGetRateSectionDisplayLabel = vi.fn((rateSectionNo: string) => {
-    const rate = mockRates.find(r => r.rateSectionNo === rateSectionNo);
-    return rate?.description || rateSectionNo;
-  });
-
   const defaultParams = {
     rates: mockRates,
     allRateSections: mockRates,
@@ -75,7 +80,6 @@ describe("useLinkWardActions", () => {
     setSelectedWards: vi.fn(),
     setSelectedWardsTotalCount: vi.fn(),
     setWardAssignments: vi.fn(),
-    getRateSectionDisplayLabel: mockGetRateSectionDisplayLabel,
     router: mockRouter,
     t: mockT,
     isViewAllSelectAllActive: false,
@@ -126,7 +130,18 @@ describe("useLinkWardActions", () => {
       expect(toast.error).toHaveBeenCalledWith("wards.rateSectionNotFound");
     });
 
-    it("should show warning for wards already in other rate section", async () => {
+    it("should prompt confirmation for wards already in other rate section and link if confirmed", async () => {
+      vi.mocked(linkWardsToRateSectionAction).mockResolvedValue({
+        success: true,
+        data: { hasFailures: false, successCount: 1, failedCount: 0 },
+      });
+
+      vi.mocked(refreshSelectedWardsAction).mockResolvedValue({
+        success: true,
+        wardNos: ["W2"],
+        totalCount: 1,
+      });
+
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
@@ -139,8 +154,9 @@ describe("useLinkWardActions", () => {
         await result.current.moveToSelected();
       });
 
-      expect(toast.warning).toHaveBeenCalled();
-      expect(defaultParams.setCheckedAvailable).toHaveBeenCalledWith(new Set());
+      expect(mockConfirm).toHaveBeenCalled();
+      expect(linkWardsToRateSectionAction).toHaveBeenCalledWith(1, ["W2"]);
+      expect(toast.success).toHaveBeenCalledWith("wards.saveSuccess");
     });
 
     it("should successfully link valid wards", async () => {

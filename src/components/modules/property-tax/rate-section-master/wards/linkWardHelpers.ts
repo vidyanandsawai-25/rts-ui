@@ -1,4 +1,3 @@
-import { toast } from "sonner";
 import { RateItem } from "@/types/rateSectionMaster.types";
 
 export const getRateSectionDisplayLabel = (
@@ -23,30 +22,14 @@ export const getSelectedZoneName = (
 
 export const handleToggleAvailable = (
   wardNo: string,
-  wardAssignments: Record<string, { rateSectionNo: string; id: number; description?: string }>,
-  selectedZoneId: string | undefined,
+  _wardAssignments: Record<string, { rateSectionNo: string; id: number; description?: string }>,
+  _selectedZoneId: string | undefined,
   checkedAvailable: Set<string>,
   setCheckedAvailable: (set: Set<string>) => void,
-  rates: RateItem[],
+  _rates: RateItem[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any
+  _t: any
 ) => {
-  const assignment = wardAssignments[wardNo];
-  if (assignment && assignment.rateSectionNo !== selectedZoneId) {
-    const assignedLabel = assignment.description 
-      ? `${assignment.rateSectionNo} - ${assignment.description}` 
-      : getRateSectionDisplayLabel(assignment.rateSectionNo, rates);
-    const selectedLabel = getRateSectionDisplayLabel(selectedZoneId || "", rates);
-    toast.warning(
-      t("wards.alreadyPresentInOtherRateSection", {
-        wardNo,
-        rateSectionNo: assignedLabel,
-        selectedRateSectionName: selectedLabel
-      })
-    );
-    return;
-  }
-
   const set = new Set(checkedAvailable);
   if (set.has(wardNo)) {
     set.delete(wardNo);

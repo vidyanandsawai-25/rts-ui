@@ -1,16 +1,16 @@
 /** Fixed column widths — long text wraps within the cell */
 export const COLUMN_WIDTHS = {
-  upicId: "120px",
-  zoneWard: "160px",
-  propertyPartition: "160px",
-  category: "130px",
-  societyName: "160px",
-  description: "150px",
-  ownerOccupier: "210px",
-  mobileAlternate: "160px",
-  rvCv: "160px",
-  totalTax: "160px",
-  address: "230px",
+  upicId: "110px",
+  zoneWard: "120px",
+  propertyPartition: "125px",
+  category: "110px",
+  societyName: "120px",
+  description: "115px",
+  ownerOccupier: "160px",
+  mobileAlternate: "115px",
+  rvCv: "125px",
+  totalTax: "115px",
+  address: "180px",
   scrollbarSpacer: "20px",
 } as const;
 
