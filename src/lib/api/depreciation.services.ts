@@ -275,20 +275,7 @@ export async function addDepreciationRangeBulk(
         '/AssessmentYearRange?PageNumber=1&PageSize=100'
       );
       if (yearRangesResponse.success && yearRangesResponse.data?.items) {
-        const activeRange = yearRangesResponse.data.items.find((item) => {
-          const isActiveValue =
-            item.isActive !== undefined
-              ? item.isActive
-              : (item['IsActive'] as boolean | number | string | undefined);
-          const normalized =
-            typeof isActiveValue === 'string' ? isActiveValue.toLowerCase() : isActiveValue;
-          return (
-            normalized === true ||
-            normalized === 1 ||
-            normalized === 'true' ||
-            normalized === '1'
-          );
-        });
+        const activeRange = yearRangesResponse.data.items.find((item) => item.isActive);
         if (activeRange) {
           yearRangeRVId =
             activeRange.id !== undefined && activeRange.id > 0
