@@ -52,6 +52,8 @@ export function SessionTimeoutGuard() {
   const knownExpiryUnixRef = useRef<number | null>(null);
   const logoutStartedRef = useRef(false);
   const redirectingRef = useRef(false);
+  const isWarningFromInactivityRef = useRef(false);
+  const isWarningVisibleRef = useRef(false);
 
   const clearCountdown = useCallback(() => {
     if (countdownRef.current) {
@@ -74,6 +76,7 @@ export function SessionTimeoutGuard() {
       clearCountdown();
       clearExpiryTimer();
       setVisible(true);
+      isWarningVisibleRef.current = true;
       setSecondsLeft(initialSeconds);
 
       countdownRef.current = setInterval(() => {
@@ -86,6 +89,21 @@ export function SessionTimeoutGuard() {
     [clearCountdown, clearExpiryTimer]
   );
 
+  const hideWarning = useCallback(() => {
+    setVisible(false);
+    isWarningVisibleRef.current = false;
+    logoutStartedRef.current = false;
+    isWarningFromInactivityRef.current = false;
+    clearCountdown();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ntis:session-warning-tick', {
+          detail: { secondsLeft: 0, active: false },
+        })
+      );
+    }
+  }, [clearCountdown]);
+
   // Synchronize warning tick event with other components safely during commit phase (after render)
   useEffect(() => {
     if (!visible) return;
@@ -93,7 +111,11 @@ export function SessionTimeoutGuard() {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('ntis:session-warning-tick', {
-          detail: { secondsLeft, active: secondsLeft > 0 },
+          detail: {
+            secondsLeft,
+            active: secondsLeft > 0,
+            type: isWarningFromInactivityRef.current ? 'inactivity' : 'session',
+          },
         })
       );
     }
@@ -182,6 +204,8 @@ export function SessionTimeoutGuard() {
 
     return () => {
       setVisible(false);
+      isWarningVisibleRef.current = false;
+      isWarningFromInactivityRef.current = false;
       knownExpiryUnixRef.current = null;
       clearExpiryTimer();
       document.removeEventListener('visibilitychange', onVisibility);
@@ -250,7 +274,8 @@ export function SessionTimeoutGuard() {
 
     redirectingRef.current = true;
     clearLegacyAuthClientStorage();
-    window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+    const errorParam = isWarningFromInactivityRef.current ? 'inactivityTimeout' : SESSION_EXPIRED_LOGIN_ERROR;
+    window.location.assign(`/${locale}/login?error=${errorParam}`);
   }, [visible, secondsLeft, locale]);
 
   // Inactivity detection: redirect to login after 10 minutes of no user interaction
@@ -262,10 +287,9 @@ export function SessionTimeoutGuard() {
     let lastReset = Date.now();
 
     const handleTimeout = () => {
-      if (redirectingRef.current) return;
-      redirectingRef.current = true;
-      clearLegacyAuthClientStorage();
-      window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+      if (redirectingRef.current || logoutStartedRef.current) return;
+      isWarningFromInactivityRef.current = true;
+      startCountdown(SESSION_TIMEOUT_REDIRECT_SECONDS);
     };
 
     const resetInactivityTimer = () => {
@@ -275,6 +299,10 @@ export function SessionTimeoutGuard() {
         return;
       }
       lastReset = now;
+
+      if (isWarningVisibleRef.current && isWarningFromInactivityRef.current) {
+        hideWarning();
+      }
 
       if (inactivityTimer) {
         clearTimeout(inactivityTimer);
@@ -299,7 +327,7 @@ export function SessionTimeoutGuard() {
         window.removeEventListener(event, resetInactivityTimer);
       });
     };
-  }, [pathname, locale]);
+  }, [pathname, locale, startCountdown, hideWarning]);
 
   return null;
 }
