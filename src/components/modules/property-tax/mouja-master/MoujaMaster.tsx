@@ -1,18 +1,16 @@
 "use client";
 
 import React, { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
-import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
+import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import type { Mouja, MoujaProps } from "@/types/mouja.types";
-import { deleteMoujaAction } from "@/app/[locale]/property-tax/rate-master/moujamaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { SearchInput, Select } from "@/components/common";
+import { Select } from "@/components/common";
 import { getMoujaColumns } from "./MoujaColumns";
-import { useMoujaSearch } from "@/hooks/moujamaster/useMoujaSearch";
 import { useMoujaPagination } from "@/hooks/moujamaster/useMoujaPagination";
+import { useMoujaMasterHandlers } from "@/hooks/moujamaster/useMoujaMasterHandlers";
 
 /* ================= PAGE ================= */
 export function MoujaMaster({
@@ -32,14 +30,11 @@ export function MoujaMaster({
 
   const { confirm } = useConfirm();
   const [isPending, startTransition] = React.useTransition();
-  /* ================= SEARCH ================= */
-  const { search, currentSearchTerm, handleSearchChange } = useMoujaSearch({
-    pageSize,
-    locale,
-    sortBy,
-    sortOrder,
-    startTransition,
-  });
+
+  // Get current search term from URL for pagination purposes
+  const searchParams = useSearchParams();
+  const currentSearchTerm = searchParams.get('q') || '';
+  
   /* ================= PAGINATION ================= */
   const { buildUrl, changePage, handlePageSizeChange, paginationInfo } = useMoujaPagination({
     pageNumber,
@@ -68,57 +63,15 @@ export function MoujaMaster({
 
   const columns = getMoujaColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
-  const handleEdit = useCallback(
-    (row: Mouja) => {
-      startTransition(() => {
-        router.push(`/${locale}/property-tax/rate-master/moujamaster/edit/${row.id}`);
-      });
-    },
-    [router, locale]
-  );
+  /* ================= TABLE ACTION HANDLERS ================= */
+  const { handleEdit, handleDelete } = useMoujaMasterHandlers({
+    locale,
+    t,
+    tCommon,
+    confirm,
+    startTransition,
+  });
 
-  const handleDelete = useCallback(
-    (row: Mouja) => {
-      confirm({
-        variant: "delete",
-        title: `${t("list.table.moujaNo")}: ${row.moujaNo}`,
-        description: `${t("delete.confirmDescription")}`,
-        meta: {
-          name: row.moujaName,
-        },
-        onConfirm: async () => {
-          const fd = new FormData();
-          fd.append("id", String(row.id));
-          const result = await deleteMoujaAction(fd);
-          if (result.success) {
-            toast.success(
-              t("success.deleted", { code: row.moujaNo })
-            );
-            startTransition(() => {
-              router.refresh();
-            });
-          } else {
-            // Show appropriate error message based on status code
-            let errorMessage = tCommon("errors.deleteError");
-
-            if (result.statusCode === 409) {
-              // Record linked with another record or in use
-              errorMessage = t("apiErrors.inUse");
-            } else if (result.statusCode === 400) {
-              // Bad request / validation error
-              errorMessage = t("apiErrors.validationError");
-            } else if (result.statusCode === 404) {
-              errorMessage = t("apiErrors.notFound");
-            } else if (result.message) {
-              errorMessage = result.message;
-            }
-            toast.error(errorMessage);
-          }
-        },
-      });
-    },
-    [confirm, router, t, tCommon]
-  );
   /* ================= UI ================= */
   const { start, end, total } = paginationInfo;
   return (
@@ -133,24 +86,6 @@ export function MoujaMaster({
         totalCount={totalCount}
         totalPages={totalPages}
         onPageChange={changePage}
-        headerExtra={
-          <div className="flex items-center justify-end gap-3 ml-auto">
-            <SearchInput
-              value={search}
-              onChange={handleSearchChange}
-              placeholder={t("list.filters.search") || "Search Mouja..."}
-              className="mb-0 w-full max-w-xs text-gray-900"
-            />
-            <AddButton
-              onClick={() => {
-                startTransition(() => {
-                  router.push(`/${locale}/property-tax/rate-master/moujamaster/add`);
-                });
-              }}
-              label={t("list.buttons.add")}
-            />
-          </div>
-        }
           renderActions={(row) => (
             <>
               <EditButton

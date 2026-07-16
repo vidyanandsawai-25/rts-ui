@@ -29,6 +29,7 @@ import {
   Lock,
   Unlock,
   Search,
+  CheckCircle,
   Clock,
   ArrowUpRight,
 } from "lucide-react";
@@ -183,10 +184,36 @@ export function SaveButton({
 
 export function CancelButton({
   label = "Cancel",
+  variant = "secondary",
   ...props
-}: LabeledActionButtonProps): React.ReactElement {
+}: Omit<ButtonProps, "icon"> & { label?: string }): React.ReactElement {
   return (
-    <Button variant="secondary" icon={X} {...props}>
+    <Button variant={variant} icon={X} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function OkButton({
+  label = "OK",
+  icon = CheckCircle,
+  variant = "success",
+  ...props
+}: Omit<ButtonProps, "icon"> & { label?: string; icon?: React.ElementType }): React.ReactElement {
+  return (
+    <Button variant={variant} icon={icon} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function RefreshButton({
+  label = "Refresh",
+  variant = "secondary",
+  ...props
+}: Omit<ButtonProps, "icon"> & { label?: string }): React.ReactElement {
+  return (
+    <Button variant={variant} icon={RefreshCw} {...props}>
       {label}
     </Button>
   );
@@ -267,10 +294,11 @@ export function DeleteLabelButton({
 
 export function PreviewButton({
   label = "Preview",
+  variant = "primary",
   ...props
-}: LabeledActionButtonProps): React.ReactElement {
+}: Omit<ButtonProps, "icon"> & { label?: string }): React.ReactElement {
   return (
-    <Button variant="primary" icon={Eye} {...props}>
+    <Button variant={variant} icon={Eye} {...props}>
       {label}
     </Button>
   );
@@ -522,7 +550,7 @@ export function ViewButton(
 ): React.ReactElement {
   return (
     <Button
-      variant="edit"
+      variant="secondary"
       icon={Eye}
       size="sm"
       aria-label={ariaLabel ?? "View"}

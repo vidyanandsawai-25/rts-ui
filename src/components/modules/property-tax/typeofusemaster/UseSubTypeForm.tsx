@@ -199,7 +199,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
               allCategories={allCategories}
               selectedCategoryId={formData.typeOfUseCategoryId}
               onChange={(categoryId) => {
-                setFormData((p) => ({ ...p, typeOfUseCategoryId: categoryId }));
+                setField("typeOfUseCategoryId", categoryId);
                 markTouched("categoryId");
               }}
               error={errors.categoryId}

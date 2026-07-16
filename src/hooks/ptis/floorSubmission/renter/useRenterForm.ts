@@ -124,8 +124,12 @@ export const useRenterForm = ({
             ? Number(renterDetails.selfDeclarationAmount)
             : 0,
         taxLiability: renterDetails.taxLiability || 'Renter',
+        documentBindingId: renterDetails.documentBindingId || undefined,
         renterDetails: calculationResult?.renterDetails || [],
-        renterMast: calculationResult?.fyBreakdown || [],
+        renterMast: (calculationResult?.fyBreakdown || []).map((m: any) => ({
+          ...m,
+          documentBindingId: renterDetails.documentBindingId || undefined,
+        })),
         grandTotal: calculationResult?.grandTotal || 0,
         renterCustomIncrements,
         renterTableEntries: calculationResult?.renterTableEntries || [],

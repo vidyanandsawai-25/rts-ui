@@ -43,6 +43,14 @@ const mockMessages = {
     group: {
       mandatoryNote: "Fields marked with * are mandatory",
     },
+    category: {
+      fields: {
+        categoryName: "Category Name",
+      },
+    },
+    type: {
+      selectCategory: "Select Category",
+    },
     subtype: {
       add: "Add Sub-Type of Use",
       edit: "Edit Sub-Type",
@@ -65,6 +73,7 @@ const mockMessages = {
       duplicateSubTypeName: "Duplicate Sub-Type Name is not allowed.",
       descriptionRequired: "Description is required.",
       subTypeNameRequired: "Sub-Type Name is required.",
+      categoryRequired: "Category is required.",
       saveFailed: "Failed to save. Please try again.",
       allowedChars: "can contain letters (any language), numbers, spaces and (. - ,).",
       sequenceNonNegative: "must be 0 or greater.",
@@ -260,7 +269,7 @@ describe("UseSubTypeForm", () => {
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "999" } });
 
-      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
       fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
@@ -292,7 +301,7 @@ describe("UseSubTypeForm", () => {
       // Try to set value to 1000 (4 digits) - should be rejected by input restriction
       fireEvent.change(seqInput, { target: { value: "1000" } });
       
-      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
       fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
       
       // The input should reject values with more than 3 digits, keeping the original value (0)
@@ -313,6 +322,31 @@ describe("UseSubTypeForm", () => {
       });
     });
 
+    it("should display and clear category validation error correctly", async () => {
+      const { container } = renderWithIntl(
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} allCategories={allCategories} />
+      );
+
+      // Submit form without category selected
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
+
+      // Category validation error should be visible
+      await waitFor(() => {
+        expect(screen.getByText(/Category is required/i)).toBeInTheDocument();
+      });
+
+      // Select a valid category value
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
+      fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } });
+      fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
+
+      // Category validation error should clear immediately
+      await waitFor(() => {
+        expect(screen.queryByText(/Category is required/i)).not.toBeInTheDocument();
+      });
+    });
+
     it("should create sub-type successfully with valid data", async () => {
       mockCreateSubType.mockResolvedValue({ success: true });
 
@@ -326,7 +360,7 @@ describe("UseSubTypeForm", () => {
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "3" } });
 
-      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
       fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
@@ -355,7 +389,7 @@ describe("UseSubTypeForm", () => {
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
       fireEvent.change(descInput, { target: { value: "Second Floor" } });
 
-      const categorySelect = screen.getByRole("combobox", { name: /categoryName/i });
+      const categorySelect = screen.getByRole("combobox", { name: /category/i });
       fireEvent.change(categorySelect, { target: { value: "C01 - Residential" } }); fireEvent.keyDown(categorySelect, { key: "Enter", code: "Enter" });
 
       const form = container.querySelector("#use-subtype-form");
@@ -513,6 +547,49 @@ describe("UseSubTypeForm", () => {
         const value = (descInput as HTMLInputElement).value;
         expect(value.length).toBeLessThanOrEqual(100);
       });
+    });
+  });
+
+  describe("Drawer Header Type Name Truncation", () => {
+    it("should display short type name fully without truncation or tooltip trigger", () => {
+      const shortTypeInfo: UseType = {
+        ...typeInfo,
+        description: "This is a 45-character type of use desc name",
+      };
+
+      renderWithIntl(
+        <UseSubTypeForm
+          id={null}
+          typeInfo={shortTypeInfo}
+          allSubTypes={allSubTypes}
+          allCategories={allCategories}
+        />
+      );
+
+      const headerSpan = screen.getByText("For Type: This is a 45-character type of use desc name");
+      expect(headerSpan).toBeInTheDocument();
+      expect(headerSpan).not.toHaveClass("cursor-help");
+    });
+
+    it("should display truncated long type name with .... and cursor-help for tooltip", () => {
+      const longTypeInfo: UseType = {
+        ...typeInfo,
+        description: "This is an extremely long type of use description that exceeds thirty characters",
+      };
+
+      renderWithIntl(
+        <UseSubTypeForm
+          id={null}
+          typeInfo={longTypeInfo}
+          allSubTypes={allSubTypes}
+          allCategories={allCategories}
+        />
+      );
+
+      const expectedText = "For Type: This is an extremely long type of use descript....";
+      const headerSpan = screen.getByText(expectedText);
+      expect(headerSpan).toBeInTheDocument();
+      expect(headerSpan).toHaveClass("cursor-help");
     });
   });
 });

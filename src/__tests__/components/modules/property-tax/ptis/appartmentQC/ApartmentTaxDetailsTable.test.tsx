@@ -275,7 +275,7 @@ describe('ApartmentTaxDetailsTable', () => {
       expect(screen.getByTestId('column-count')).toHaveTextContent('0 columns');
     });
 
-    it('should show Method, tax columns, and Total when data exists', () => {
+    it('should show Method and tax columns when data exists', () => {
       render(
         <ApartmentTaxDetailsTable
           taxDetails={mockTaxDetails}
@@ -285,8 +285,8 @@ describe('ApartmentTaxDetailsTable', () => {
         />
       );
 
-      // Method + 2 tax columns + Total = 4 columns
-      expect(screen.getByTestId('column-count')).toHaveTextContent('4 columns');
+      // Method + 2 tax columns = 3 columns
+      expect(screen.getByTestId('column-count')).toHaveTextContent('3 columns');
     });
   });
 

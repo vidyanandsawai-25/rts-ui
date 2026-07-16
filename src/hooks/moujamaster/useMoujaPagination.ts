@@ -38,7 +38,7 @@ export function useMoujaPagination({
       if (newSortOrder) {
         params.set("sortOrder", newSortOrder);
       }
-      return `/${locale}/property-tax/rate-master/moujamaster?${params.toString()}`;
+      return `/${locale}/property-tax/moujamaster?${params.toString()}`;
     },
     [locale]
   );
@@ -60,7 +60,7 @@ export function useMoujaPagination({
     }
 
     startTransition(() => {
-      router.push(`/${locale}/property-tax/rate-master/moujamaster?${params.toString()}`);
+      router.push(`/${locale}/property-tax/moujamaster?${params.toString()}`);
     });
   }, [pageSize, currentSearchTerm, sortBy, sortOrder, locale, router, startTransition]);
 

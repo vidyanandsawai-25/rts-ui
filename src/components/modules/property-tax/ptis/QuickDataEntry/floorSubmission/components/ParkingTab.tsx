@@ -17,6 +17,7 @@ interface ParkingTabProps {
   onToggleMultiple?: (ids: Array<string | number>, select: boolean) => void;
   isLoading: boolean;
   disabledIds: Set<string | number>;
+  sourcePropertyIds: Set<string | number>;
   isApplying: boolean;
   onApply: () => void;
 
@@ -50,6 +51,7 @@ export const ParkingTab: React.FC<ParkingTabProps> = ({
   onToggleMultiple,
   isLoading,
   disabledIds,
+  sourcePropertyIds,
   isApplying,
   onApply,
   ...floorTableProps
@@ -72,6 +74,7 @@ export const ParkingTab: React.FC<ParkingTabProps> = ({
         onToggleMultiple={onToggleMultiple}
         isLoading={isLoading}
         disabledIds={disabledIds}
+        sourcePropertyIds={sourcePropertyIds}
         hideTypeColumn={true}
       />
 
@@ -81,7 +84,7 @@ export const ParkingTab: React.FC<ParkingTabProps> = ({
           size="sm"
           label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyParkingButton')}
           onClick={onApply}
-          disabled={selectedIds.size <= disabledIds.size || isApplying}
+          disabled={!Array.from(selectedIds).some((id) => !sourcePropertyIds.has(id)) || isApplying}
           isLoading={isApplying}
           className="h-9 px-5 text-xs font-semibold rounded-md"
         />

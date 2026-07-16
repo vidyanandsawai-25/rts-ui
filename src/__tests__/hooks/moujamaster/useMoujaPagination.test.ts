@@ -35,7 +35,7 @@ describe("useMoujaPagination", () => {
 
       const url = result.current.buildUrl(2, 20);
 
-      expect(url).toContain("/en/property-tax/rate-master/moujamaster");
+      expect(url).toContain("/en/property-tax/moujamaster");
       expect(url).toContain("page=2");
       expect(url).toContain("pageSize=20");
     });
@@ -309,7 +309,7 @@ describe("useMoujaPagination", () => {
 
       const url = result.current.buildUrl(1, 10);
 
-      expect(url).toContain("/hi/property-tax/rate-master/moujamaster");
+      expect(url).toContain("/hi/property-tax/moujamaster");
     });
 
     it("should build URL with Marathi locale", () => {
@@ -322,7 +322,7 @@ describe("useMoujaPagination", () => {
 
       const url = result.current.buildUrl(1, 10);
 
-      expect(url).toContain("/mr/property-tax/rate-master/moujamaster");
+      expect(url).toContain("/mr/property-tax/moujamaster");
     });
   });
 });

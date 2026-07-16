@@ -1,0 +1,324 @@
+{
+  "loading": {
+    "message": "मालमत्ता कर ऑपरेशन्स लोड होत आहेत...",
+    "description": "कृपया आम्ही मालमत्ता कर ऑपरेशन्स सुरू करेपर्यंत प्रतीक्षा करा"
+  },
+  "title": "Property Tax Operations",
+  "subtitle": "Post, reverse, import, and monitor property tax transactions",
+  "buttons": {
+    "guidelines": "Guidelines",
+    "userManual": "User Manual",
+    "auditTrail": "Audit Trail"
+  },
+  "stats": {
+    "financeYear": "Finance Year",
+    "totalProperties": "Total Properties",
+    "eligibleRecords": "Eligible Records",
+    "skippedLocked": "Skipped / Locked",
+    "runningJobs": "Running Jobs"
+  },
+  "permissions": {
+    "title": "User Permission",
+    "allowedMessage": "Allowed for Calculate Property Tax."
+  },
+  "tabs": {
+    "excelComingSoon": "एक्सेल आयात कार्यक्षमता लवकरच येत आहे",
+    "auditComingSoon": "ऑडिट आणि मॉनिटर कार्यक्षमता लवकरच येत आहे",
+    "manualSelection": "Manual Selection",
+    "excelImport": "Excel Import",
+    "auditMonitor": "Audit & Monitor"
+  },
+  "scopeSelection": {
+    "title": "1. Scope Selection",
+    "subtitle": "Choose scope. Only relevant fields appear below.",
+    "scopes": {
+      "allProperties": "All Properties",
+      "allPropertiesDesc": "Entire corporation",
+      "zoneNode": "Zone / Node",
+      "zoneNodeDesc": "Zone-wise selection",
+      "wardSector": "Ward / Sector",
+      "wardSectorDesc": "Multi ward selection",
+      "buildingWise": "Building Wise",
+      "buildingWiseDesc": "Building level",
+      "propertyWise": "Property Wise",
+      "propertyWiseDesc": "Selected properties",
+      "propertyRange": "Property Range",
+      "propertyRangeDesc": "From-to property range"
+    },
+    "zoneNodeSelect": "Zone / Node",
+    "zoneNodeSelectPlaceholder": "Select Zone / Node",
+    "propertyType": "Property Type",
+    "propertyTypePlaceholder": "All Types",
+    "eligibleProperties": "Eligible Properties"
+  },
+  "executionValidation": {
+    "title": "EXECUTION VALIDATION",
+    "tags": {
+      "financeYear": "Finance Year",
+      "scope": "Scope",
+      "eligibleRecords": "Eligible Records",
+      "permission": "Permission"
+    },
+    "readyRecords": "Ready Records",
+    "eligibleRecordsSub": "eligible records",
+    "reviewExecute": "Review & Execute",
+    "requiresConfirmation": "Requires final confirmation"
+  },
+  "validateEligibility": {
+    "title": "2. Validate Eligibility",
+    "subtitle": "Allowed actions based on user permission, finance year and selected scope.",
+    "actions": {
+      "addTax": "Add Tax",
+      "addTaxDesc": "Eligible for selected FY and scope",
+      "quarterlyAdd": "Quarterly Add",
+      "quarterlyAddDesc": "Eligible when quarter is selected",
+      "removeTax": "Remove Tax",
+      "removeTaxDesc": "Requires senior confirmation",
+      "quarterlyRemove": "Quarterly Remove",
+      "quarterlyRemoveDesc": "Requires approval note"
+    },
+    "status": {
+      "allowed": "Allowed",
+      "restricted": "Restricted"
+    },
+    "infoNote": "Select allowed operation here. Final decision summary will be shown only after clicking Review & Execute."
+  },
+  "progressPanel": {
+    "title": "प्रक्रिया जॉब",
+    "processing": "जॉबवर प्रक्रिया होत आहे...",
+    "completed": "पूर्ण झाले",
+    "inProgress": "प्रगतीपथावर",
+    "cancelJob": "जॉब रद्द करा",
+    "exportLog": "लॉग निर्यात करा",
+    "propertiesProcessed": "प्रक्रिया केलेल्या मालमत्ता: {processed} / {total}",
+    "expandListNotice": "प्रत्येक मालमत्ता गणनाची स्थिती पाहण्यासाठी खालील यादीचा विस्तार करा.",
+    "stats": {
+      "total": "एकूण",
+      "processed": "प्रक्रियाकृत",
+      "added": "जोडले",
+      "failed": "अयशस्वी",
+      "pending": "प्रलंबित"
+    },
+    "columns": {
+      "zone": "झोन",
+      "propertyNo": "मालमत्ता क्रमांक",
+      "owner": "मालक",
+      "taxHead": "कर शीर्ष",
+      "amount": "रक्कम",
+      "status": "स्थिती",
+      "message": "संदेश"
+    },
+    "status": {
+      "failed": "अयशस्वी",
+      "added": "जोडले"
+    }
+  },
+  "reviewModal": {
+    "title": "अंतिम पुष्टीकरण",
+    "warningPrefix": "तुम्ही",
+    "action": "कर जोडणे",
+    "warningSuffix": "सुरू करणार आहात ({count} मालमत्तांसाठी)",
+    "cancel": "रद्द करा",
+    "proceed": "पुढे जा आणि अंमलबजावणी सुरू करा",
+    "scheduleExecutionButton": "अंमलबजावणीचे वेळापत्रक करा",
+    "operation": "प्रक्रिया",
+    "backgroundNotice": "ही प्रक्रिया बॅकग्राउंडमध्ये चालविली जाईल. आपण 'ऑडिट आणि मॉनिटर' टॅबमध्ये प्रगतीचे परीक्षण करू शकता."
+  },
+  "dynamicFields": {
+    "labels": {
+      "zoneNode": "झोन / नोड",
+      "wardSector": "प्रभाग / सेक्टर",
+      "propertyType": "मालमत्तेचा प्रकार",
+      "building": "इमारत",
+      "searchProperty": "मालमत्ता शोधा",
+      "assessmentStatus": "मूल्यांकन स्थिती",
+      "fromPropertyNo": "पासून मालमत्ता क्रमांक",
+      "toPropertyNo": "पर्यंत मालमत्ता क्रमांक"
+    },
+    "placeholders": {
+      "selectZoneNode": "झोन / नोड निवडा",
+      "selectWardSector": "प्रभाग / सेक्टर निवडा",
+      "allTypes": "सर्व प्रकार",
+      "selectBuilding": "इमारत निवडा",
+      "searchByUPIC": "UPIC ID / मोबाइल नंबरद्वारे शोधा",
+      "selectPropertyType": "मालमत्तेचा प्रकार निवडा",
+      "selectAssessmentStatus": "मूल्यांकन स्थिती निवडा",
+      "noOptionsAvailable": "पर्याय उपलब्ध नाहीत",
+      "selectPropertyNo": "मालमत्ता क्रमांक निवडा"
+    },
+    "calculateEligible": "पात्र मालमत्तांची गणना करा",
+    "calculateRange": "श्रेणीची गणना करा",
+    "rangeWarningTitle": "एक विशिष्ट मालमत्ता क्रमांक श्रेणी निवडा",
+    "rangeWarningDesc": "निवडलेल्या 'पासून मालमत्ता' आणि 'पर्यंत मालमत्ता' दरम्यानच श्रेणीची गणना केली जाईल. या स्क्रीनवर झोन/प्रभाग डुप्लिकेशन टाळले जाते.",
+    "internalValidationNotice": "पूर्वावलोकनादरम्यान सिस्टम अंतर्गत झोन, प्रभाग आणि मालमत्ता अनुक्रम प्रमाणित करेल.",
+    "headerTitle": {
+      "property": "मालमत्ता निहाय — विशिष्ट मालमत्ता शोधा आणि जोडा",
+      "range": "मालमत्ता श्रेणी — पासून मालमत्ता क्रमांक आणि पर्यंत मालमत्ता क्रमांक प्रविष्ट करा"
+    }
+  },
+  "Skip_AlreadyProcessed": "आधीच प्रक्रिया केली आहे",
+  "Skip_PropertyLocked": "मालमत्ता लॉक आहे",
+  "Skip_PendingVerification": "पडताळणी प्रलंबित",
+  "Skip_InvalidScope": "अवैध व्याप्ती",
+  "Skip_PermissionRestricted": "परवानगी प्रतिबंधित",
+  "Skip_ApprovalRequired": "मंजूरी आवश्यक",
+  "excel": {
+    "total": "एकूण: {count}",
+    "eligible": "पात्र: {count}",
+    "skipped": "वगळलेले: {count}",
+    "verifyColumns": "व्याप्तीच्या आधारे कॉलम तपासा.",
+    "scopeLabel": "व्याप्ती:"
+  },
+  "excelGuide": {
+    "title": "एक्सेल आयात मार्गदर्शक",
+    "description": "मालमत्ता मोठ्या प्रमाणात अपलोड करण्यासाठी, प्रथम सिस्टम आवश्यकता असलेले एक्सेल टेम्पलेट डाउनलोड करा. आपल्या मालमत्तेच्या तपशीलांसह शीट सुधारित करा, नंतर ड्रॉपझोन वापरून अपलोड करा.",
+    "step1": "डायनॅमिक एक्सेल स्प्रेडशीट टेम्पलेट डाउनलोड करा.",
+    "step2": "आवश्यकतेनुसार तपशील भरा. झोन/प्रभाग नावे जुळवा.",
+    "step3": "पात्रता तपासण्यासाठी स्प्रेडशीट ड्रॅग आणि ड्रॉप करा.",
+    "downloadTemplate": "टेम्पलेट डाउनलोड करा"
+  },
+  "uploader": {
+    "removeFile": "फाइल काढा",
+    "uploadAnother": "दुसरी अपलोड करा",
+    "dragDrop": "एक्सेल फाइल येथे ड्रॅग आणि ड्रॉप करा",
+    "clickBrowse": "किंवा डिव्हाइसवरून ब्राउझ करण्यासाठी क्लिक करा",
+    "sizeSupport": ".xlsx / .xls फायली 10 MB पर्यंत समर्थित आहेत",
+    "browseFile": "फाइल ब्राउझ करा",
+    "previewTitle": "पात्रता पडताळणी पूर्वावलोकन",
+    "previewSubtitle": "एक्सेल स्प्रेडशीटमधून आयात केलेले कॉलम आणि ओळी तपासा"
+  },
+  "preview": {
+    "title": "ऑपरेशन पूर्वावलोकन",
+    "subtitle": "ऑपरेशन कार्यान्वित करण्यापूर्वी निवडलेले रेकॉर्ड आणि त्यांची पात्रता तपासा",
+    "close": "बंद करा",
+    "totalSelected": "एकूण निवडलेले",
+    "eligible": "पात्र",
+    "skipped": "वगळलेले",
+    "requiresApproval": "मंजूरी आवश्यक आहे",
+    "columns": {
+      "zone": "झोन",
+      "propertyNo": "मालमत्ता क्रमांक",
+      "owner": "मालक",
+      "status": "स्थिती",
+      "skipReason": "वगळण्याचे कारण"
+    },
+    "status": {
+      "eligible": "पात्र",
+      "skipped": "वगळलेले"
+    }
+  },
+  "error": {
+    "title": "सर्व्हरशी कनेक्ट करता आले नाही. कृपया नंतर पुन्हा प्रयत्न करा.",
+    "description": "मालमत्ता कर ऑपरेशन्स पृष्ठ लोड करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "goHome": "होमवर जा",
+    "errorId": "त्रुटी आयडी: {id}"
+  },
+  "guidelines": {
+    "title": "मार्गदर्शक तत्त्वे",
+    "step1": "प्रथम आर्थिक वर्ष निवडा.",
+    "step2": "व्याप्ती निवडा आणि पात्र रेकॉर्डचे पूर्वावलोकन करा.",
+    "step3": "प्रतिबंधित ऑपरेशन्ससाठी मंजुरी आवश्यक आहे.",
+    "step4": "अंतिम प्रक्रियेपूर्वी नेहमी 'तपासणी करा आणि कार्यान्वित करा' वापरा."
+  },
+  "userManual": {
+    "title": "वापरकर्ता मॅन्युअल",
+    "desc1": "ही स्क्रीन कर जोडणे, त्रैमासिक जोडणे, कर काढणे आणि त्रैमासिक काढणे यास समर्थन देते.",
+    "desc2": "सर्व मालमत्ता, झोन, प्रभाग, इमारत, मालमत्ता आणि श्रेणी मोड दरम्यान स्विच करण्यासाठी व्याप्ती कार्डे वापरा."
+  },
+  "messages": {
+    "selectedTimeInPast": "निवडलेली वेळ भूतकाळातील आहे. कृपया भविष्यातील वेळ निवडा.",
+    "timeReset": "भविष्यातील वेळ सुनिश्चित करण्यासाठी वेळ {time} वर रीसेट केली गेली आहे.",
+    "selectTimeRequired": "कृपया वेळ निवडा.",
+    "scheduledTimeInPast": "नियोजित वेळ भविष्यातील असावी.",
+    "fillRequiredFields": "कृपया गणना करण्यापूर्वी सर्व आवश्यक फील्ड भरा.",
+    "jobScheduled": "जॉब यशस्वीरित्या नियोजित केला. जॉब कोड: {jobId}",
+    "executionStarted": "अंमलबजावणी यशस्वीरित्या सुरू झाली. जॉब कोड: {jobId}",
+    "failedExecute": "ऑपरेशन कार्यान्वित करण्यात अयशस्वी.",
+    "errorExecution": "अंमलबजावणी दरम्यान त्रुटी आली.",
+    "failedPreview": "पूर्वावलोकन डेटा लोड करण्यात अयशस्वी.",
+    "errorPreview": "पूर्वावलोकन दरम्यान त्रुटी आली.",
+    "templateDownloaded": "एक्सेल टेम्पलेट यशस्वीरित्या डाउनलोड केले",
+    "failedTemplateDownload": "एक्सेल टेम्पलेट डाउनलोड करण्यात अयशस्वी",
+    "invalidFileFormat": "अवैध फाइल स्वरूप. कृपया .xlsx किंवा .xls फाइल अपलोड करा.",
+    "fileTooLarge": "फाइलचा आकार 10 MB मर्यादेपेक्षा जास्त आहे.",
+    "emptyExcelSheet": "एक्सेल शीट रिकामी आहे",
+    "uploadSuccess": "यशस्वीरित्या अपलोड केले. स्वयं-शोधलेली व्याप्ती: {scope}",
+    "failedParseExcel": "एक्सेल फाईलचे विश्लेषण करण्यात अयशस्वी",
+    "eligibleCalculated": "पात्र मालमत्तांची गणना यशस्वीरित्या झाली",
+    "failedFetchCalculation": "गणना निकाल मिळवण्यात अयशस्वी",
+    "errorCalculating": "पात्र मालमत्तांची गणना करताना त्रुटी आली",
+    "scheduledJobStarted": "नियोजित जॉब {jobId} ची अंमलबजावणी सुरू झाली आहे.",
+    "invalidRange": "पर्यंत मालमत्ता क्रमांक पासून मालमत्ता क्रमांक पेक्षा मोठा असावा. योग्य श्रेणी निवडा."
+  },
+  "schedule": {
+    "title": "जॉब अंमलबजावणीचे वेळापत्रक",
+    "subtitle": "अंमलबजावणीची तारीख आणि वेळ निर्दिष्ट करा (केवळ आज किंवा उद्या परवानगी आहे)",
+    "back": "मागे",
+    "submit": "वेळापत्रक सबमिट करा",
+    "selectDate": "तारीख निवडा",
+    "selectTime": "वेळ निवडा"
+  },
+  "audit": {
+    "stats": {
+      "totalJobs": "एकूण जॉब्स",
+      "totalJobsSub": "सर्व घाऊक कर ऑपरेशन्स",
+      "completed": "पूर्ण झाले",
+      "completedSub": "यशस्वीरित्या प्रक्रिया केली",
+      "running": "चालू असलेले",
+      "runningSub": "सध्या कार्यान्वित होत आहे",
+      "failed": "अयशस्वी",
+      "failedSub": "तपासणी आवश्यक आहे"
+    },
+    "filters": {
+      "allJobs": "सर्व जॉब्स",
+      "searchJobId": "जॉब आयडी शोधा",
+      "searchPlaceholder": "जॉब आयडी / मालमत्ता / वापरकर्ता / प्रभाग शोधा",
+      "status": "स्थिती",
+      "date": "तारीख"
+    },
+    "status": {
+      "all": "सर्व स्थिती",
+      "completed": "पूर्ण झाले",
+      "inProgress": "प्रगतीपथावर",
+      "pending": "प्रलंबित",
+      "scheduled": "नियोजित",
+      "failed": "अयशस्वी"
+    },
+    "buttons": {
+      "applyFilter": "फिल्टर लागू करा",
+      "resetFilters": "रीसेट करा",
+      "syncData": "डेटा सिंक/रिफ्रेश करा",
+      "viewDetails": "पहा"
+    },
+    "columns": {
+      "action": "कृती",
+      "jobId": "जॉब आयडी",
+      "dateTime": "तारीख आणि वेळ",
+      "operation": "ऑपरेशन",
+      "doneBy": "कोणाद्वारे केले",
+      "scope": "व्याप्ती",
+      "startTime": "सुरू होण्याची वेळ",
+      "completeTime": "पूर्ण होण्याची वेळ",
+      "duration": "कालावधी",
+      "records": "रेकॉर्ड्स",
+      "status": "स्थिती",
+      "remarks": "शेरा"
+    },
+    "detailColumns": {
+      "propertyNo": "मालमत्ता क्रमांक",
+      "owner": "मालक",
+      "taxHeadAmount": "कर शीर्ष / रक्कम",
+      "status": "स्थिती",
+      "message": "संदेश"
+    },
+    "jobDetail": {
+      "title": "जॉब लॉग: {jobId}",
+      "operationLabel": "ऑपरेशन:",
+      "doneByLabel": "कोणाद्वारे केले:",
+      "durationLabel": "कालावधी:",
+      "financialYearLabel": "आर्थिक वर्ष:",
+      "loadingText": "जॉब मालमत्ता लोड होत आहेत..."
+    }
+  }
+}

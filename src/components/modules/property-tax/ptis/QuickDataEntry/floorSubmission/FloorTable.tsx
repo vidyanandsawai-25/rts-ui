@@ -112,16 +112,16 @@ const FloorTable: React.FC<FloorTableProps> = ({
     // Append standard Action column at the end
     if (!viewOnly) {
       baseCols.push({
-      key: 'actions',
-      label: t('floor.actions'),
-      sortable: false,
-      render: (row: FloorData) => {
-        return (
-          <div className="flex justify-center items-center h-full min-h-[28px]">
-            {deleteCellRenderer(row)}
-          </div>
-        );
-      },
+        key: 'actions',
+        label: t('floor.actions'),
+        sortable: false,
+        render: (row: FloorData) => {
+          return (
+            <div className="flex justify-center items-center h-full min-h-[28px]">
+              {deleteCellRenderer(row)}
+            </div>
+          );
+        },
       });
     }
 
@@ -262,7 +262,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
           emptyMessage={t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}
-          containerClassName="border border-blue-200 shadow-md rounded-xl max-h-[200px] overflow-auto"
+          containerClassName="border border-blue-200 shadow-md rounded-xl"
+          heightRows={4}
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) =>
             viewOnly

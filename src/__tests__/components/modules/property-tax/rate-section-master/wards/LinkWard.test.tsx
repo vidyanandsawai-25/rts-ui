@@ -135,6 +135,11 @@ vi.mock("@/components/common", () => ({
       <div data-testid="tab-content">{children}</div>
     </div>
   ),
+  useConfirm: vi.fn(() => ({
+    confirm: vi.fn((options) => {
+      if (options.onConfirm) options.onConfirm();
+    }),
+  })),
 }));
 
 vi.mock("@/components/common/ActionButtons", () => ({

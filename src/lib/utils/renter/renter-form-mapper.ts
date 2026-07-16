@@ -172,6 +172,8 @@ export function mapInitialRenterFormData(
     selfDeclarationAmount: selfDeclarationAmountVal,
     customDateRanges,
     taxLiability: details.taxLiability || firstRenterMast?.taxLiability || firstRenterDetail?.taxLiability || 'Renter',
+    documentBindingId: details.documentBindingId || firstRenterMast?.documentBindingId || undefined,
+    documentGuid: details.documentGuid || firstRenterMast?.documentGuid || undefined,
   };
 
   const dbFloorId = details.floorId !== undefined ? details.floorId : details.floorID;

@@ -217,22 +217,7 @@ export function PtisFooterDropdowns({
       cancelText: 'No',
       onConfirm: () => {
         if (workflowStageId) {
-          if (val === 'Assessment' || val === 'QC Done') {
-            setTimeout(() => {
-              confirm({
-                variant: 'info',
-                title: t('footerControls.billDistribution.title') || 'Confirm Bill Distribution',
-                description: t('footerControls.billDistribution.description') || 'Are you sure you want to distribute the bill?',
-                confirmText: t('footerControls.billDistribution.confirmText') || 'Yes',
-                cancelText: t('footerControls.billDistribution.cancelText') || 'No',
-                onConfirm: () => {
-                  handleSaveWorkflowDetail(val, workflowStageId);
-                },
-              });
-            }, 100);
-          } else {
-            handleSaveWorkflowDetail(val, workflowStageId);
-          }
+          handleSaveWorkflowDetail(val, workflowStageId);
         } else {
           setQcStatus(val);
         }

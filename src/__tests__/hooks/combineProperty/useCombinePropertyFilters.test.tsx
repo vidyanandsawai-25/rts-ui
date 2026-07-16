@@ -99,8 +99,14 @@ describe('useCombinePropertyFilters', () => {
       result.current.handleRangeToChange('to', '4');
     });
 
-    // P2 to P4 includes IDs 2, 3, 4
-    expect(mockReplace).toHaveBeenCalledWith('/test-path?from=2&to=4&combinePartitionNo=P2%2CP3%2CP4&propertyNos=P2%2CP3%2CP4&showHistory=false', { scroll: false });
+    expect(mockReplace).toHaveBeenCalledWith('/test-path?from=2&to=4&showHistory=false', { scroll: false });
+    
+    // Update searchParams to simulate the final URL state
+    mockSearchParamsData = new URLSearchParams('from=2&to=4');
+    rerender();
+
+    expect(result.current.computedCombinePartitionNo).toBe('P2,P3,P4');
+    expect(result.current.computedPropertyNos).toBe('P2,P3,P4');
   });
 
   it('shows error if range is invalid', () => {
@@ -117,7 +123,8 @@ describe('useCombinePropertyFilters', () => {
   });
 
   it('handles individual changes', () => {
-    const { result } = renderHook(() => 
+    mockSearchParamsData = new URLSearchParams('method=individual');
+    const { result, rerender } = renderHook(() => 
       useCombinePropertyFilters(mockBaseList, mockSubList, mockT, mockOnClearReview)
     );
 
@@ -125,7 +132,13 @@ describe('useCombinePropertyFilters', () => {
       result.current.handleIndividualChange(['2', '4']);
     });
 
-    expect(mockReplace).toHaveBeenCalledWith('/test-path?individual=2%2C4&combinePartitionNo=P2%2CP4&propertyNos=P2%2CP4&showHistory=false', { scroll: false });
+    expect(mockReplace).toHaveBeenCalledWith('/test-path?method=individual&showHistory=false', { scroll: false });
+    
+    // Simulate re-render to verify computed properties
+    rerender();
+    expect(result.current.individualSelection).toEqual(['2', '4']);
+    expect(result.current.computedCombinePartitionNo).toBe('P2,P4');
+    expect(result.current.computedPropertyNos).toBe('P2,P4');
   });
 
   it('clears filters correctly', () => {

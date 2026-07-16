@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
     replace: vi.fn(),
   }),
-  usePathname: () => "/en/property-tax/rate-master/rvratemaster",
+  usePathname: () => "/en/property-tax/rvratemaster",
 }));
 
 const mockMessages = {
@@ -67,7 +67,7 @@ describe("RateTabsNavigation", () => {
     const rateableTab = screen.getByText("Rateable Value");
     fireEvent.click(rateableTab);
     // Assert navigation was triggered with the expected URL
-    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rate-master/rvratemaster");
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rvratemaster");
   });
 
   it("renders with proper styling", () => {
