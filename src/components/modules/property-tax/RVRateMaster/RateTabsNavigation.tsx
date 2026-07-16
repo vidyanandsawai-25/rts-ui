@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Tabs } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
-import { Calculator, MapPin, LandPlot } from "lucide-react";
+import { Calculator, LandPlot } from "lucide-react";
 
 export function RateTabsNavigation() {
   const pathname = usePathname();
