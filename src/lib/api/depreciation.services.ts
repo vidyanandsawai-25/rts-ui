@@ -270,7 +270,7 @@ export async function addDepreciationRangeBulk(
         yearRangeRVId = found.yearRangeRVId;
       }
     }
-  } catch (err) {
+  } catch {
     // Failed to fetch existing depreciation records
   }
 
@@ -290,7 +290,7 @@ export async function addDepreciationRangeBulk(
           yearRangeRVId = Number(target.id ?? target.Id);
         }
       }
-    } catch (err) {
+    } catch {
       // Failed to fetch assessment year ranges
     }
   }
