@@ -66,7 +66,7 @@ describe("Designation API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await getDesignationsPaged(1, 10, "query", "designationCode", "asc");
-      expect(apiClient.get).toHaveBeenCalledWith("/Designation?PageNumber=1&PageSize=10&MarkedForDeletion=false&SearchTerm=query&SortBy=designationCode&SortOrder=asc");
+      expect(apiClient.get).toHaveBeenCalledWith("/AmsDesignation?PageNumber=1&PageSize=10&MarkedForDeletion=false&SearchTerm=query&SortBy=designationCode&SortOrder=asc");
       expect(result).toEqual(mockApiResponse.data);
     });
   });
@@ -80,7 +80,7 @@ describe("Designation API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await getDesignationById(1);
-      expect(apiClient.get).toHaveBeenCalledWith("/Designation/1");
+      expect(apiClient.get).toHaveBeenCalledWith("/AmsDesignation/1");
       expect(result).toEqual(mockApiResponse.data);
     });
 
@@ -107,7 +107,7 @@ describe("Designation API Service", () => {
       };
 
       const result = await createDesignation(payload);
-      expect(apiClient.post).toHaveBeenCalledWith("/Designation", {
+      expect(apiClient.post).toHaveBeenCalledWith("/AmsDesignation", {
         ...payload,
         createdBy: 1,
       });
@@ -134,7 +134,7 @@ describe("Designation API Service", () => {
       };
 
       const result = await updateDesignation(payload);
-      expect(apiClient.put).toHaveBeenCalledWith("/Designation/1", {
+      expect(apiClient.put).toHaveBeenCalledWith("/AmsDesignation/1", {
         ...payload,
         updatedBy: 1,
       });
@@ -150,7 +150,7 @@ describe("Designation API Service", () => {
       vi.mocked(apiClient.delete).mockResolvedValue(mockApiResponse);
 
       await deleteDesignation(1);
-      expect(apiClient.delete).toHaveBeenCalledWith("/Designation/1");
+      expect(apiClient.delete).toHaveBeenCalledWith("/AmsDesignation/1");
     });
   });
 });

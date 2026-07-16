@@ -98,14 +98,20 @@ export function getDesignationColumns(
     {
       key: "designationLocal",
       label: createSortableLabel(t("list.table.designationLocal"), "designationLocal"),
-      width: "20%",
+      width: "15%",
       align: "center",
       render: (value) => (typeof value === "string" ? value : ""),
     },
-
     {
       key: "designationDescription",
       label: t("list.table.description"),
+      width: "15%",
+      align: "center",
+      render: (value) => (typeof value === "string" ? value : "-"),
+    },
+    {
+      key: "owningDepartmentName",
+      label: t("list.table.owningDepartment"),
       width: "15%",
       align: "center",
       render: (value) => (typeof value === "string" ? value : "-"),

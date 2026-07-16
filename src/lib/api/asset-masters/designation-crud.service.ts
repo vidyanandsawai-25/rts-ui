@@ -40,7 +40,7 @@ export async function getDesignationsPaged(
     if (sortBy?.trim()) params.append("SortBy", sortBy.trim());
     if (sortOrder?.trim()) params.append("SortOrder", sortOrder.trim());
 
-    const response = await apiClient.get<PagedResponse<Designation>>(`/Designation?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<Designation>>(`/AmsDesignation?${params.toString()}`);
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch paged designations", "Get paged designations failed");
     }
@@ -61,7 +61,7 @@ export async function getDesignationById(designationId: number): Promise<Designa
     if (typeof designationId !== "number" || designationId <= 0 || !Number.isFinite(designationId)) {
       throw new ApiError(400, "Valid Designation ID is required", "Invalid ID");
     }
-    const response = await apiClient.get<Designation>(`/Designation/${encodeURIComponent(String(designationId))}`);
+    const response = await apiClient.get<Designation>(`/AmsDesignation/${encodeURIComponent(String(designationId))}`);
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch designation", `Get designation ${designationId} failed`);
     }
@@ -87,7 +87,7 @@ export async function createDesignation(data: DesignationFormModel): Promise<str
       createdBy: data.createdBy ?? 1,
       owningDepartmentId: data.owningDepartmentId,
     };
-    const response = await apiClient.post<unknown>("/Designation", payload);
+    const response = await apiClient.post<unknown>("/AmsDesignation", payload);
     if (!response.success) {
       const errorMsg = response.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
@@ -120,7 +120,7 @@ export async function updateDesignation(data: DesignationFormModel): Promise<str
       updatedBy: data.updatedBy ?? 1,
       owningDepartmentId: data.owningDepartmentId,
     };
-    const response = await apiClient.put<unknown>(`/Designation/${encodeURIComponent(String(data.id))}`, payload);
+    const response = await apiClient.put<unknown>(`/AmsDesignation/${encodeURIComponent(String(data.id))}`, payload);
     if (!response.success) {
       const errorMsg = response.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
@@ -143,7 +143,7 @@ export async function deleteDesignation(id: number): Promise<void> {
     if (typeof id !== "number" || id <= 0 || !Number.isFinite(id)) {
       throw new ApiError(400, "Valid Designation ID is required", "Validation failed");
     }
-    const response = await apiClient.delete<void>(`/Designation/${encodeURIComponent(String(id))}`);
+    const response = await apiClient.delete<void>(`/AmsDesignation/${encodeURIComponent(String(id))}`);
     if (!response.success) {
       const errorMsg = response.error || "";
       const lowerMsg = errorMsg.toLowerCase();
