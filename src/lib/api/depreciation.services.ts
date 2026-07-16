@@ -280,7 +280,14 @@ export async function addDepreciationRangeBulk(
             item.isActive !== undefined
               ? item.isActive
               : (item['IsActive'] as boolean | number | string | undefined);
-          return isActiveValue === true || isActiveValue === 1 || isActiveValue === "true";
+          const normalized =
+            typeof isActiveValue === 'string' ? isActiveValue.toLowerCase() : isActiveValue;
+          return (
+            normalized === true ||
+            normalized === 1 ||
+            normalized === 'true' ||
+            normalized === '1'
+          );
         });
         if (activeRange) {
           yearRangeRVId =
