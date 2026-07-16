@@ -285,9 +285,8 @@ export async function addDepreciationRangeBulk(
           const isActiveValue = item.isActive ?? item.IsActive;
           return isActiveValue === true || isActiveValue === 1 || isActiveValue === "true";
         });
-        const target = activeRange || yearRangesResponse.data.items[0];
-        if (target) {
-          yearRangeRVId = Number(target.id ?? target.Id);
+        if (activeRange) {
+          yearRangeRVId = Number(activeRange.id ?? activeRange.Id);
         }
       }
     } catch {
