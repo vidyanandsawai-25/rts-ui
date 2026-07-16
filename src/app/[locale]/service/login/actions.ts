@@ -1,7 +1,8 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { requestOtp, fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/services';
+import { requestOtp } from '@/lib/api/otp.service';
+import { fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/citizen-property.service';
 import { createRtsCitizenSession, logoutRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
 
 const OTP_TTL_MS = 2 * 60 * 1000;
