@@ -50,7 +50,6 @@ export function useConfigureRatesInitialization({
   existingGroups,
   checkedIds,
   setCheckedIds,
-  groupForms,
   setGroupForms,
   setSavedAny,
   setSearchTerm,

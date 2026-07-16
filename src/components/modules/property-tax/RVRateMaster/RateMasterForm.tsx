@@ -55,7 +55,6 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
     hasConfiguredRates,
     isConfigureRatesOpen,
     localRateCategories,
-    setLocalRateCategories,
     handleConfigureSelected,
     handleConfigureRatesClick,
     handleConfigureDrawerClose,

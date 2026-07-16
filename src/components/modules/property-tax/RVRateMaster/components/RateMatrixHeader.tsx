@@ -50,7 +50,6 @@ export function RateMatrixHeader({
   onUpdateRates,
   onDeleteRates,
   t,
-  existingRateFound,
   isCheckingRates,
 }: RateMatrixHeaderProps) {
   return (

@@ -39,10 +39,10 @@ interface RateCopyHandlersProps {
 export function useRateCopyHandlers(props: RateCopyHandlersProps) {
   const {
     id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear,
-    existingRateFound, rateCategories, useGroupOptions, assessmentYears, assessmentYearRanges,
+    existingRateFound, rateCategories, useGroupOptions,
     zoneDescriptions, paginatedZoneDescriptions, matrixStorageKey, locale, setMatrixData,
     setShowMatrix, setCopySectionsExpanded, setShowMultipliersInline, setMultipliers,
-    tempMultipliers, sourceUseGroup, handleCopyRates, t, isOpenPlot
+    tempMultipliers, sourceUseGroup, handleCopyRates, t
   } = props;
 
   const handleGenerateMatrix = async () => {

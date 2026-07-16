@@ -43,7 +43,6 @@ export function GroupConfigurationCard({
   handleToggleMode,
   handleFieldChange,
   handleSaveGroup,
-  isOpenPlot = false,
 }: GroupConfigurationCardProps) {
   if (!form) return null;
 

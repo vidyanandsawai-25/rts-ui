@@ -36,7 +36,6 @@ export function useConfigureRates({
   isMatrixVisible,
   currentCategories,
   onConfigureSelected,
-  onClose,
 }: UseConfigureRatesProps) {
   const [allUseTypes, setAllUseTypes] = useState<ITypeOfUseDetails[]>([]);
   const [paginatedUseTypes, setPaginatedUseTypes] = useState<ITypeOfUseDetails[]>([]);
