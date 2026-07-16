@@ -28,18 +28,11 @@ export type FieldValidation = {
   exactLength?: number;
   min?: number;
   max?: number;
-  minDate?: string;
-  maxDate?: string;
-  minTime?: string;
-  maxTime?: string;
   allow?: string;
   normalize?: NormalizeRule | NormalizeRule[];
   customValidate?: CustomValidate;
   inputMode?: InputMode;
   message?: string;
-  acceptedFormats?: string[];
-  accept?: string;
-  maxFileSizeMb?: number;
 };
 
 export type FieldCondition =
@@ -79,21 +72,7 @@ export type BaseField = {
 };
 
 export type TextField = BaseField & {
-  type:
-    | 'text'
-    | 'email'
-    | 'tel'
-    | 'number'
-    | 'date'
-    | 'time'
-    | 'datetime-local'
-    | 'month'
-    | 'url'
-    | 'password'
-    | 'textarea'
-    | 'file'
-    | 'hidden'
-    | 'label';
+  type: 'text' | 'email' | 'tel' | 'number' | 'date' | 'textarea';
   validation?: FieldValidation;
 };
 
@@ -102,14 +81,8 @@ export type SelectField = BaseField & {
   options: SelectOption[];
 };
 
-export type RadioField = BaseField & {
-  type: "radio";
-  options: SelectOption[];
-};
-
 export type CheckboxField = BaseField & {
   type: "checkbox";
-  options?: SelectOption[];
 };
 
 export type ActionField = BaseField & {
@@ -131,7 +104,6 @@ export type LocationPickerField = BaseField & {
 export type FieldConfig =
   | TextField
   | SelectField
-  | RadioField
   | LocationPickerField
   | CheckboxField
   | ActionField

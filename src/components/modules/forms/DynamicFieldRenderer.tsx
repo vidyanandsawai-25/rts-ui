@@ -10,11 +10,12 @@ import type {
   LocationPickerField,
   NormalizeRule,
   PickedLocation,
-  RadioField,
   SelectField,
   TextField,
 } from "@/data/Dept/formTypes";
-import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
+
+// Re-import corrected path for VALIDATION_RULES if needed (it was @/lib/utils/validationRegistry)
+import { VALIDATION_RULES as REGISTRY_RULES } from "@/lib/utils/validationRegistry";
 
 const LocationPicker = dynamic(() => import("@/components/common/LocationPicker"), {
   ssr: false,
@@ -86,7 +87,7 @@ const resolveAllowRule = (allow?: string) => {
 const getFieldRules = (field: FieldConfig) => {
   const validation = (field as any).validation || {};
   const key = (field as any).validationKey;
-  const rule = key ? VALIDATION_RULES[key] : undefined;
+  const rule = key ? REGISTRY_RULES[key] : undefined;
   const normalize = mergeNormalizeRules(
     validation.normalize ?? (field as any).normalize ?? rule?.normalize
   );
@@ -167,9 +168,10 @@ function computeProofStatus(oc: boolean, cc: boolean, eb: boolean) {
   return "Weak";
 }
 
-function getChoiceOptions(field: FieldConfig): Array<{ value: string; label: LangLabel }> {
-  if (field.type !== "radio" && field.type !== "checkbox") return [];
-  const options = (field as RadioField | CheckboxField).options;
+function getChoiceOptions(field: any): Array<{ value: string; label: LangLabel }> {
+  const fType = field.type;
+  if (fType !== "radio" && fType !== "checkbox") return [];
+  const options = field.options;
   return Array.isArray(options) ? options : [];
 }
 
@@ -198,16 +200,16 @@ const FIELD_ERROR_CLASS = "mt-1 text-[10px] font-medium text-red-500";
 const getLabelColorClass = (hasError: boolean) => (hasError ? "text-red-500" : "text-slate-800");
 
 export default function DynamicFieldRenderer(props: {
-  field: FieldConfig;
+  field: any;
   lang: "en" | "hi" | "mr";
   values: Record<string, any>;
-  setValue?: (id: string, value: any, field?: FieldConfig) => void;
-  onChange?: (id: string, value: any, field?: FieldConfig) => void;
+  setValue?: (id: string, value: any, field?: any) => void;
+  onChange?: (id: string, value: any, field?: any) => void;
   error?: string;
   showError?: boolean;
 }) {
   const { field, lang, values, setValue, onChange, error, showError } = props;
-  const updateValue: (id: string, value: any, field?: FieldConfig) => void =
+  const updateValue: (id: string, value: any, field?: any) => void =
     setValue ??
     onChange ??
     ((_: string, __: any) => {
@@ -462,7 +464,7 @@ export default function DynamicFieldRenderer(props: {
   }
 
   if (field.type === "radio") {
-    const f = field as RadioField;
+    const f = field as any;
 
     return (
       <div className={wrapClass}>
@@ -473,7 +475,7 @@ export default function DynamicFieldRenderer(props: {
           </span>
         </label>
         <div className={getControlClass(hasError, "flex min-h-[40px] flex-wrap gap-x-5 gap-y-2 py-2")}>
-          {f.options.map((option) => {
+          {f.options.map((option: any) => {
             const checked = values[f.id] === option.value;
             return (
               <label key={option.value} className="inline-flex items-center gap-2 text-[14px] text-slate-700">
@@ -597,7 +599,7 @@ export default function DynamicFieldRenderer(props: {
   }
 
   if (field.type === "file") {
-    const f = field as TextField;
+    const f = field as any;
     const currentValue = values[f.id];
     const isUploaded = currentValue instanceof File || (typeof currentValue === "string" && currentValue.trim() !== "");
     const selectedFileName =
