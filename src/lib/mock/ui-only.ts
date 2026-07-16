@@ -1,4 +1,3 @@
-import { properties } from "@/data/properties";
 import type { Service } from "@/types/service.types";
 import type {
   CreateDraftRequest,
@@ -87,34 +86,12 @@ export function verifyOtpLocal(txnId: string, otp: string): VerifyOtpResponse {
   return { mobile: entry.mobile, token: `local_${entry.mobile}_${Date.now()}` };
 }
 
-const findProperty = (propertyId: string) =>
-  properties.find((p) => p.propertyNo === propertyId || p.upicNo === propertyId || `PROP-${p.propertyNo}` === propertyId) || null;
-
 export function getRegisteredPropertyIdsLocal(): string[] {
-  return properties.map((p) => p.propertyNo);
+  return [];
 }
 
-export function getRegisteredPropertyDetailsLocal(propertyId: string): RegisteredPropertyDetails {
-  const p = findProperty(propertyId);
-  if (!p) throw new Error("Property not found");
-  return {
-    zoneId: p.zone ? String(p.zone).replace(/\D+/g, "") || null : null,
-    wardNo: p.wardArea ? String(p.wardArea).replace(/\D+/g, "") || null : null,
-    surveyNo: p.surveyNo ?? null,
-    propertyAddress: p.address.en,
-    buildingName: p.buildingName ?? null,
-    flatNo: p.flatNo ?? null,
-    pincode: p.pincode ?? null,
-    commencementCertNo: p.commencementCertNo ?? null,
-    commencementCertDate: p.commencementCertDate ?? null,
-    occupancyCertNo: p.occupancyCertNo ?? null,
-    occupancyCertDateType: p.occupancyCertDateType ?? null,
-    occupancyCertDate: p.occupancyCertDate ?? null,
-    propertyLatitude: null,
-    propertyLongitude: null,
-    propertyState: p.ownerState ?? null,
-    propertyCity: p.ownerCity ?? null,
-  };
+export function getRegisteredPropertyDetailsLocal(_propertyId: string): RegisteredPropertyDetails {
+  throw new Error("Property not found");
 }
 
 export function createNewTaxationLocal(_payload: unknown): { id: number; message: string } {
@@ -122,47 +99,15 @@ export function createNewTaxationLocal(_payload: unknown): { id: number; message
 }
 
 export function getPropertyMastListLocal(): PropertyMastListItem[] {
-  return properties.map((p, idx) => ({
-    ownerId: idx + 1,
-    ownerName: [p.ownerFirstName, p.ownerMiddleName, p.ownerLastName].filter(Boolean).join(" ") || null,
-    mobileNo: p.ownerMobile ?? null,
-    propertyId: p.propertyNo,
-    propertyNo: p.propertyNo,
-  }));
+  return [];
 }
 
-export function getPropertyDtoLocal(ownerId: number): PropertyMastDto {
-  const p = properties[ownerId - 1];
-  if (!p) throw new Error("OwnerId not found");
-  return {
-    ownerId,
-    propertyId: p.propertyNo,
-    propertyNo: p.propertyNo,
-    upicNo: p.upicNo,
-    ownerName: [p.ownerFirstName, p.ownerMiddleName, p.ownerLastName].filter(Boolean).join(" ") || null,
-    mobileNo: p.ownerMobile ?? null,
-    ownerEmail: p.ownerEmail ?? null,
-    ownerAadhar: p.ownerAadhar ?? null,
-    ownerCity: p.ownerCity ?? null,
-    ownerState: p.ownerState ?? null,
-    zoneId: Number(String(p.zone).replace(/\D+/g, "")) || null,
-    wardNo: Number(String(p.wardArea).replace(/\D+/g, "")) || null,
-    surveyGatCtsNo: p.surveyNo ?? null,
-    propertyAddress: p.address.en,
-    buildingName: p.buildingName ?? null,
-    wingFlatShopNo: p.flatNo ?? null,
-    pincode: p.pincode ?? null,
-    ccNo: p.commencementCertNo ?? null,
-    ocNo: p.occupancyCertNo ?? null,
-    dateType: p.occupancyCertDateType ?? null,
-    selectedDate: p.occupancyCertDate ?? null,
-  };
+export function getPropertyDtoLocal(_ownerId: number): PropertyMastDto {
+  throw new Error("OwnerId not found");
 }
 
-export function getPropertyDtoByPropertyIdLocal(propertyId: string): PropertyMastDto {
-  const idx = properties.findIndex((p) => p.propertyNo === propertyId || p.upicNo === propertyId || `PROP-${p.propertyNo}` === propertyId);
-  if (idx < 0) throw new Error("Property not found");
-  return getPropertyDtoLocal(idx + 1);
+export function getPropertyDtoByPropertyIdLocal(_propertyId: string): PropertyMastDto {
+  throw new Error("Property not found");
 }
 
 export function getServiceFieldsLocal(govtServiceCode: number): RTSServiceFieldGroup[] {
