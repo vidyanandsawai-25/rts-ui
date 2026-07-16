@@ -18,7 +18,10 @@ export async function fetchCitizenPropertiesFromApi(
   value: string
 ): Promise<CitizenProperty[]> {
   try {
-    const url = 'https://akolamc.in/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://akolamc.in';
+    const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+    const url = `${cleanBaseUrl}/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails`;
+    
     const payload: any = {
       searchType,
       TD: '',
@@ -40,7 +43,7 @@ export async function fetchCitizenPropertiesFromApi(
       payload.PartitionNo = parts[2] || '';
     }
 
-    console.log(`[API] Fetching properties for ${searchType}: ${value}`);
+    console.log(`[API] Fetching properties dynamically from ${url} for ${searchType}: ${value}`);
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -71,7 +74,7 @@ export async function fetchCitizenPropertiesFromApi(
     return list.map((item) => ({
       ownerId: Number(item.ownerID || item.OwnerID || 0),
       upicNo: String(item.upicNo || item.UpicNo || item.unicdeAddress || item.UnicdeAddress || '').trim(),
-      ownerNameMarathi: String(item.ownerNameMarathi || item.OwnerNameMarathi || item.marathiOwnerPrathamNav || item.MarathiOwnerPrathamNav || 'धारक . .').trim(),
+      ownerNameMarathi: String(item.ownerNameMarathi || item.OwnerNameMarathi || item.marathiOwnerPrathamNav || item.MarathiOwnerPrathamNav || '').trim(),
       propertyNo: String(item.propertyNo || item.PropertyNo || '').trim(),
       mobileNo: String(item.mobileNo || item.MobileNo || '').trim(),
       category: String(item.category || item.Category || '').trim(),
