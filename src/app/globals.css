@@ -504,8 +504,3 @@ div[role="dialog"] [role="combobox"]:focus {
   box-shadow: 0 0 0 4px rgba(0, 183, 255, 0.4) !important;
   border-color: rgb(0, 162, 255) !important;
 }
-
-/* Disable page level vertical scrollbar on the PTIS screens */
-.ptis-no-scroll {
-  overflow-y: hidden !important;
-}

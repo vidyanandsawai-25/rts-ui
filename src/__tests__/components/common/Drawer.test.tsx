@@ -3,10 +3,10 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => {
-    if (key === "login.sessionTimeout.countdown") {
+    if (key === "login.sessionTimeout.countdown" || key === "sessionTimeout.countdown") {
       return "60s";
     }
-    if (key === "login.sessionTimeout.saveWorkHint") {
+    if (key === "login.sessionTimeout.saveWorkHint" || key === "sessionTimeout.saveWorkHint") {
       return "Session Expiring, save the work!";
     }
     return key;
