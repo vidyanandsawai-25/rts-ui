@@ -25,10 +25,10 @@ import {
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
-import { isConditionMet } from "@/data/Dept/formTypes";
+import { isConditionMet } from "@/lib/utils/rts/conditions";
 import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
 
-import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/data/Dept/formTypes";
+import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/types/rts/form.types";
 import { type SaveDraftValuesRequest } from "@/types/rts.types";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
 import DynamicFieldRenderer from "@/components/modules/forms/DynamicFieldRenderer";

@@ -1,45 +1,10 @@
-import {
-  createNewTaxationLocal,
-  getRegisteredPropertyDetailsLocal,
-  getRegisteredPropertyIdsLocal,
-  getMockServices,
-  requestOtpLocal,
-  verifyOtpLocal,
-} from "@/lib/mock/ui-only";
-import type { Service } from "@/types/service.types";
-import type { RegisteredPropertyDetails } from "@/types/propertyMast.types";
-
-export type RequestOtpPayload = { mobile: string };
-export type RequestOtpResponse = { message: string; txnId: string; expiresInSeconds: number; demoOtp?: string | null };
-export type VerifyOtpPayload = { txnId: string; otp: string };
-export type VerifyOtpResponse = { mobile: string; token: string };
-
-export type CreateNewTaxationPayload = Record<string, unknown>;
-export type CreateNewTaxationResponse = { id: number; message: string };
+import { Service } from "@/types/service.types";
 
 export async function getServices(): Promise<Service[]> {
-  return getMockServices();
+  return [];
 }
 
-export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
-  return requestOtpLocal(mobile);
-}
-
-export async function verifyOtp(txnId: string, otp: string): Promise<VerifyOtpResponse> {
-  return verifyOtpLocal(txnId, otp);
-}
-
-export async function getRegisteredPropertyIds(): Promise<string[]> {
-  return getRegisteredPropertyIdsLocal();
-}
-
-export async function getRegisteredPropertyDetails(propertyId: string): Promise<RegisteredPropertyDetails> {
-  return getRegisteredPropertyDetailsLocal(propertyId);
-}
-
-export async function createNewTaxation(payload: CreateNewTaxationPayload): Promise<CreateNewTaxationResponse> {
-  return createNewTaxationLocal(payload);
-}
+export type RequestOtpResponse = { message: string; txnId: string; expiresInSeconds: number; demoOtp?: string | null };
 
 export interface CitizenProfile {
   name: string;
@@ -57,6 +22,40 @@ export interface CitizenProperty {
   mobileNo: string;
   category: string;
   propertyDescription: string;
+}
+
+export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
+  const otp = process.env.NEXT_PUBLIC_LIVE_OTP === 'true'
+    ? Math.floor(100000 + Math.random() * 900000).toString()
+    : "123456";
+
+  const txnId = `txn_${mobile}_${Date.now()}`;
+
+  const isLive = process.env.NEXT_PUBLIC_LIVE_OTP === 'true';
+  if (isLive) {
+    // Send SMS via SMS gateway
+    const user = process.env.SMS_USER || "payakl";
+    const password = process.env.SMS_PASSWORD || "fb05b4a701XX";
+    const senderid = process.env.SMS_SENDERID || "AKOLMC";
+    const tempid = process.env.SMS_TEMPID || "1707175319753583565";
+    const smsText = `Your PTAX Login OTP is ${otp} Akola Municipal Corporation`;
+
+    const url = `http://sms.ptaxcollection.com/sendsms.jsp?user=${user}&password=${password}&senderid=${senderid}&mobiles=${mobile}&sms=${encodeURIComponent(smsText)}&tempid=${tempid}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error(`SMS gateway error: HTTP status ${res.status}`);
+      } else {
+        const responseText = await res.text();
+        console.log(`SMS gateway response: ${responseText}`);
+      }
+    } catch (err) {
+      console.error("Error sending SMS:", err);
+    }
+  }
+
+  return { message: "OTP generated", txnId, expiresInSeconds: 120, demoOtp: otp };
 }
 
 export async function fetchCitizenPropertiesFromApi(
@@ -81,7 +80,6 @@ export async function fetchCitizenPropertiesFromApi(
       payload.newPropertyNo = parts[1] || '';
       payload.partitionNo = parts[2] || '';
       
-      // Alternate casing matching stored procedure parameters
       payload.NewWardNo = parts[0] || '';
       payload.NewPropertyNo = parts[1] || '';
       payload.PartitionNo = parts[2] || '';

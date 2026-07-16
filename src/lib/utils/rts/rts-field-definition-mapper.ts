@@ -5,7 +5,7 @@ import type {
   DynamicRenderFieldType,
   RtsFieldDefinitionApiItem,
 } from "@/types/rts/field-definition.types";
-import type { ServiceFormConfig } from "@/data/Dept/formTypes";
+import type { ServiceFormConfig } from "@/types/rts/form.types";
 
 type ParsedValidationRules = {
   pattern?: string;

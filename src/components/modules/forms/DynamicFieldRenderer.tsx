@@ -12,7 +12,7 @@ import type {
   PickedLocation,
   SelectField,
   TextField,
-} from "@/data/Dept/formTypes";
+} from "@/types/rts/form.types";
 
 // Re-import corrected path for VALIDATION_RULES if needed (it was @/lib/utils/validationRegistry)
 import { VALIDATION_RULES as REGISTRY_RULES } from "@/lib/utils/validationRegistry";
