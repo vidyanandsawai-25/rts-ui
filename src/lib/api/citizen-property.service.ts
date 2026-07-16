@@ -18,9 +18,7 @@ export async function fetchCitizenPropertiesFromApi(
   value: string
 ): Promise<CitizenProperty[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://akolamc.in';
-    const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-    const url = `${cleanBaseUrl}/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails`;
+    const url = 'https://akolamc.in/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails';
     
     const payload: any = {
       searchType,
@@ -43,7 +41,7 @@ export async function fetchCitizenPropertiesFromApi(
       payload.PartitionNo = parts[2] || '';
     }
 
-    console.log(`[API] Fetching properties dynamically from ${url} for ${searchType}: ${value}`);
+    console.log(`[API] Fetching properties dynamically from Akola MC API: ${searchType}: ${value}`);
     const res = await fetch(url, {
       method: 'POST',
       headers: {
