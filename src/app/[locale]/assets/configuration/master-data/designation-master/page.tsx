@@ -1,6 +1,6 @@
 import React from "react";
 import { DesignationMaster } from "@/components/modules/assets/configuration/master-data/designation-master/DesignationMaster";
-import { fetchDesignationsPagedServerAction, getOwningDepartmentsAction } from "./action";
+import { fetchDesignationsPagedServerAction } from "./action";
 
 interface PageProps {
   params: Promise<{
@@ -55,10 +55,7 @@ export default async function Page({ params, searchParams }: PageProps): Promise
   const search = await searchParams;
   const { pageNumber, pageSize, searchTerm, sortBy, sortOrder } = sanitizeParams(search);
 
-  const [result, departments] = await Promise.all([
-    fetchDesignationsPagedServerAction(pageNumber, pageSize, searchTerm, sortBy, sortOrder),
-    getOwningDepartmentsAction(),
-  ]);
+  const result = await fetchDesignationsPagedServerAction(pageNumber, pageSize, searchTerm, sortBy, sortOrder);
 
   return (
     <DesignationMaster
@@ -68,7 +65,6 @@ export default async function Page({ params, searchParams }: PageProps): Promise
       totalCount={result.totalCount}
       totalPages={result.totalPages}
       locale={resolvedParams.locale}
-      departments={departments}
       sortBy={sortBy}
       sortOrder={sortOrder}
     />

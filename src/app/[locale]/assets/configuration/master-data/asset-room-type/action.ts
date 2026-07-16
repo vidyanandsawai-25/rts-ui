@@ -171,15 +171,6 @@ export async function getAssetRoomTypeByIdAction(
     }
 }
 
-export async function getAssetTypesAction() {
-    try {
-        return await getAssetTypes();
-    } catch (error) {
-        logger.error("Failed to fetch asset types", {}, error);
-        return [];
-    }
-}
-
 export async function getAssetCategoriesAction() {
     try {
         return await getAssetCategories();

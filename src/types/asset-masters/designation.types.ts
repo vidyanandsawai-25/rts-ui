@@ -35,7 +35,6 @@ export interface OwningDepartment {
 
 export interface DesignationProps extends Omit<PagedResponse<Designation>, 'items' | 'hasPrevious' | 'hasNext'> {
   data: Designation[];
-  departments: OwningDepartment[];
   sortBy?: string;
   sortOrder?: string;
 }

@@ -3,9 +3,10 @@
 import { useEffect, useRef } from "react";
 import { Briefcase as DesignationIcon } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, Input, ValidationMessage, SearchSelect } from "@/components/common";
+import { CancelButton, SaveButton } from "@/components/common";
 import { StatusToggleCard } from "./StatusToggleCard";
 import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
+import { DesignationFormFields } from "./DesignationFormFields";
 import type { Designation, OwningDepartment } from "@/types/asset-masters/designation.types";
 import { useDesignationForm } from "@/hooks/asset-masters/designation/useDesignationForm";
 
@@ -111,82 +112,17 @@ export default function DesignationForm({
           />
         )}
 
-        <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-          <Input
-            ref={designationCodeRef}
-            name="designationCode"
-            label={t("form.fields.designationCode.label")}
-            required
-            placeholder={t("form.fields.designationCode.placeholder")}
-            value={formData.designationCode}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-            className="text-gray-700"
-          />
-          <ValidationMessage
-            message={errors.designationCode}
-            visible={showError("designationCode")}
-          />
-
-          <Input
-            name="designationName"
-            label={t("form.fields.designationName.label")}
-            required
-            placeholder={t("form.fields.designationName.placeholder")}
-            value={formData.designationName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-            className="text-gray-700"
-          />
-          <ValidationMessage
-            message={errors.designationName}
-            visible={showError("designationName")}
-          />
-
-          <Input
-            name="designationLocal"
-            label={t("form.fields.designationLocal.label")}
-            required
-            placeholder={t("form.fields.designationLocal.placeholder")}
-            value={formData.designationLocal}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-            className="text-gray-700"
-          />
-          <ValidationMessage
-            message={errors.designationLocal}
-            visible={showError("designationLocal")}
-          />
-
-          <Input
-            name="designationDescription"
-            label={t("form.fields.designationDescription.label")}
-            placeholder={t("form.fields.designationDescription.placeholder")}
-            value={formData.designationDescription}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-            className="text-gray-700"
-          />
-          <ValidationMessage
-            message={errors.designationDescription}
-            visible={showError("designationDescription")}
-          />
-
-          <SearchSelect
-            name="owningDepartmentId"
-            label={t("form.fields.owningDepartmentId.label")}
-            required
-            placeholder={t("form.fields.owningDepartmentId.placeholder")}
-            options={departmentOptions}
-            value={formData.owningDepartmentId ? String(formData.owningDepartmentId) : ""}
-            onChange={handleSelectChange}
-            error={showError("owningDepartmentId") ? errors.owningDepartmentId : undefined}
-          />
-        </div>
+        <DesignationFormFields
+          designationCodeRef={designationCodeRef}
+          formData={formData}
+          errors={errors}
+          showError={showError}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+          handleSelectChange={handleSelectChange}
+          departmentOptions={departmentOptions}
+          t={t}
+        />
 
         <MandatoryFieldsNotice message={tCommon("note.mandatory")} />
       </form>

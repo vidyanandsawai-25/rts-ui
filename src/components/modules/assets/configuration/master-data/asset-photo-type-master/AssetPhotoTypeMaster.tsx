@@ -141,9 +141,7 @@ export function AssetPhotoTypeMaster({
           subtitle={t("list.subtitle")}
           icon={Image}
           actionLabel={t("list.buttons.add")}
-          onActionClick={() => {
-            router.push(`/${locale}/assets/configuration/master-data/asset-photo-type/add`);
-          }}
+          onActionClick={() => router.push(`/${locale}/assets/configuration/master-data/asset-photo-type/add`)}
           rightContent={
             <div className="flex w-full justify-end">
               <SearchInput
@@ -167,14 +165,8 @@ export function AssetPhotoTypeMaster({
           onPageChange={changePage}
           renderActions={(row) => (
             <>
-              <EditButton
-                aria-label={tCommon("table.actions.edit")}
-                onClick={() => handleEdit(row)}
-              />
-              <DeleteButton
-                aria-label={tCommon("table.actions.delete")}
-                onClick={() => handleDelete(row)}
-              />
+              <EditButton aria-label={tCommon("table.actions.edit")} onClick={() => handleEdit(row)} />
+              <DeleteButton aria-label={tCommon("table.actions.delete")} onClick={() => handleDelete(row)} />
             </>
           )}
           actionLabel={tCommon("table.columns.actions")}
@@ -187,18 +179,9 @@ export function AssetPhotoTypeMaster({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
-                  value={
-                    [10, 20, 30, 40, 50].includes(pageSize)
-                      ? String(pageSize)
-                      : pageSize > 50
-                        ? "50"
-                        : "10"
-                  }
+                  value={[10, 20, 30, 40, 50].includes(pageSize) ? String(pageSize) : pageSize > 50 ? "50" : "10"}
                   onChange={(e) => handlePageSizeChange(e.target.value)}
-                  options={[10, 20, 30, 40, 50].map((s) => ({
-                    label: String(s),
-                    value: String(s),
-                  }))}
+                  options={[10, 20, 30, 40, 50].map((s) => ({ label: String(s), value: String(s) }))}
                   selectSize="sm"
                   className="w-20"
                   ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
