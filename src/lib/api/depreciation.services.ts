@@ -1,6 +1,7 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError } from '@/lib/utils/api';
 import type { PagedResponse } from '@/types/common.types';
+import type { AssessmentYearRange } from '@/types/assessment-year-range.types';
 import type {
   DepreciationConstructionType,
   DepreciationRow,
@@ -234,13 +235,6 @@ export async function bulkCreateDepreciation(payload: {
   }
 }
 
-interface AssessmentYearRangeAPIItem {
-  id?: number;
-  Id?: number;
-  isActive?: boolean | number | string;
-  IsActive?: boolean | number | string;
-}
-
 /**
  * Add depreciation range for all construction types
  */
@@ -277,16 +271,22 @@ export async function addDepreciationRangeBulk(
   // 2. If no existing records, fetch from AssessmentYearRange master
   if (!yearRangeRVId) {
     try {
-      const yearRangesResponse = await apiClient.get<PagedResponse<AssessmentYearRangeAPIItem>>(
+      const yearRangesResponse = await apiClient.get<PagedResponse<AssessmentYearRange>>(
         '/AssessmentYearRange?PageNumber=1&PageSize=100'
       );
       if (yearRangesResponse.success && yearRangesResponse.data?.items) {
-        const activeRange = yearRangesResponse.data.items.find((item: AssessmentYearRangeAPIItem) => {
-          const isActiveValue = item.isActive ?? item.IsActive;
+        const activeRange = yearRangesResponse.data.items.find((item) => {
+          const isActiveValue =
+            item.isActive !== undefined
+              ? item.isActive
+              : (item['IsActive'] as boolean | number | string | undefined);
           return isActiveValue === true || isActiveValue === 1 || isActiveValue === "true";
         });
         if (activeRange) {
-          yearRangeRVId = Number(activeRange.id ?? activeRange.Id);
+          yearRangeRVId =
+            activeRange.id !== undefined && activeRange.id > 0
+              ? activeRange.id
+              : Number(activeRange['Id'] ?? 0);
         }
       }
     } catch {
