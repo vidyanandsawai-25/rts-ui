@@ -33,7 +33,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
 
 export const validateDesignationForm = (
   data: DesignationFormModel,
-  t: (key: string, values?: any) => string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
   isEdit: boolean
 ): Partial<Record<keyof DesignationFormModel, string>> => {
   const schema = {
@@ -70,8 +70,8 @@ export const validateDesignationForm = (
 
 export const mapDesignationApiError = (
   result: { statusCode?: number; message?: string },
-  t: (key: string, values?: any) => string,
-  tCommon: (key: string, values?: any) => string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   const errorMap: Record<number, string> = {
     409: t("apiErrors.duplicateRecord"),

@@ -15,7 +15,7 @@ interface AssetPhotoTypeFormFieldsProps {
   handleToggleSubUnit: (checked: boolean) => void;
   categoryOptions: { label: string; value: string }[];
   typeOptions: { label: string; value: string }[];
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
 }
 
 export function AssetPhotoTypeFormFields({

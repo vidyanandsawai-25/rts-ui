@@ -37,7 +37,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
 
 export const validateAssetRoomForm = (
   data: AssetRoomTypeFormModel,
-  t: (key: string, values?: any) => string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
   isEdit: boolean
 ): Partial<Record<keyof AssetRoomTypeFormModel, string>> => {
   const schema = {
@@ -69,8 +69,8 @@ export const validateAssetRoomForm = (
 
 export const mapAssetRoomApiError = (
   result: { statusCode?: number; message?: string },
-  t: (key: string, values?: any) => string,
-  tCommon: (key: string, values?: any) => string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   const errorMap: Record<number, string> = {
     409: t("apiErrors.duplicateRecord"),

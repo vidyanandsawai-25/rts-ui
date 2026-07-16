@@ -11,7 +11,7 @@ interface DesignationFormFieldsProps {
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
   departmentOptions: { label: string; value: string }[];
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
 }
 
 export function DesignationFormFields({
