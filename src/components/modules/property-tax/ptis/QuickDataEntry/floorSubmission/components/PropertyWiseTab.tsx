@@ -106,18 +106,14 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
           />
         </div>
         <div className="w-24 flex flex-col justify-end">
-          <label htmlFor="property-wise-search-property-no" className="block mb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-0.5 whitespace-nowrap">
-            {t('floor.selectProperties.propertyNo')}
-          </label>
           <Input
-            naked
             id="property-wise-search-property-no"
-            type="text"
+            label={t('floor.selectProperties.propertyNo')}
             value={searchPropertyNo}
             onChange={(e) => setSearchPropertyNo(sanitizePropertyNo(e.target.value))}
-            className="h-8 px-2 w-full text-xs font-semibold text-slate-700 bg-white border rounded shadow-sm text-center placeholder:text-slate-400 transition-colors border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-slate-200"
+            className="h-8 text-xs bg-white text-slate-700"
+            fullWidth
             disabled={!searchWardId || isFetchingProperties}
-            placeholder={t('floor.selectProperties.propertyNo')}
           />
         </div>
         <SearchButton
