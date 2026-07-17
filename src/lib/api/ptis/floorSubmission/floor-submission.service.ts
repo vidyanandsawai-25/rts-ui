@@ -37,7 +37,7 @@ function payloadHasRenterData(payload: FloorSubmissionPayload): boolean {
  */
 export async function createFloorSubmission(payload: FloorSubmissionPayload): Promise<Record<string, unknown> | unknown> {
     try {
-        validateCreateFormData(payload);
+        await validateCreateFormData(payload);
         const sanitizedPayload = sanitizeFloorPayload(payload);
         const response = await apiClient.post<SubmissionResponse>("/DataEntry", sanitizedPayload);
         if (!response.success) {
@@ -65,7 +65,7 @@ export async function createFloorSubmission(payload: FloorSubmissionPayload): Pr
  */
 export async function updateFloorSubmission(submissionId: number | string, payload: FloorSubmissionPayload): Promise<Record<string, unknown> | unknown> {
     try {
-        validateUpdateFormData(submissionId, payload);
+        await validateUpdateFormData(submissionId, payload);
 
         const submissionIdNum = Number(submissionId);
         const isRealId = submissionIdNum > 0 && submissionIdNum < TEMP_ID_THRESHOLD;

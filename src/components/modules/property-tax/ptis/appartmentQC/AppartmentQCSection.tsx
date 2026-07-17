@@ -156,7 +156,7 @@ const AppartmentQCSection = ({
             <LoadingPage translationNamespace="ptis.loading" />
           </div>
         )}
-        <div className="space-y-6">
+        <div className="space-y-2">
           <CommonPropertyTable
             columns={columns} data={convertedData} title={getTabTitle(activeMainTab, tAqc)} activeTab={activeSubTab}
             searchQuery={searchQuery} onSearchChange={(q) => { isUpdatingFromUrl.current = true; setSearchQuery(q); updateUrl({ searchTerm: q, pageNumber: 1 }); setTimeout(() => { isUpdatingFromUrl.current = false; }, 0); }}

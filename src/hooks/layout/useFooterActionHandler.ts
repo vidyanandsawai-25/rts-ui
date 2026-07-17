@@ -46,10 +46,10 @@ export function useFooterActionHandler(
     }
     if (command === 'PTIS_COMMON_UPDATE' && !propertyId) {
       const msg = t.has('error.propertyNotSearchedCommonUpdate')
-         ? t('error.propertyNotSearchedCommonUpdate')
-         : (t.has('errors.propertyNotSearchedCommonUpdate')
-           ? t('errors.propertyNotSearchedCommonUpdate')
-           : 'Please search for a property first before updating common details.');
+        ? t('error.propertyNotSearchedCommonUpdate')
+        : (t.has('errors.propertyNotSearchedCommonUpdate')
+          ? t('errors.propertyNotSearchedCommonUpdate')
+          : 'Please search for a property first before updating common details.');
       toast.error(msg);
       return;
     }
@@ -98,7 +98,10 @@ export function useFooterActionHandler(
       if (result.success) {
         toast.success(result.message || 'Action executed.');
       } else {
-        toast.error(result.error || 'Action failed.');
+        const errorMsg = result.error
+          ? (t.has(result.error) ? t(result.error) : result.error)
+          : 'Action failed.';
+        toast.error(errorMsg);
       }
     });
   };

@@ -417,7 +417,7 @@
       "toAmenityRequired": "सुविधा पर्यंत आवश्यक आहे",
       "toAmenityMustBeGreater": "सुविधा पर्यंत, सुविधा पासून च्या बरोबरीचे किंवा त्यापेक्षा जास्त असणे आवश्यक आहे",
       "duplicateAmenityInRange": "सुविधा {amenity} या मालमत्तेसाठी आधीच अस्तित्वात आहे",
-      "incrementedByMustBeGreater": "वाढ क्रमांक प्रति मजला फ्लॅट संख्येपेक्षा जास्त असणे आवश्यक आहे"
+      "incrementedByMustBeGreater": "वाढ क्रमांक प्रति मजला फ्लॅट संख्येपेक्षा जास्त किंवा त्याच्या बरोबरीचे असणे आवश्यक आहे"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
