@@ -57,7 +57,7 @@ export function useOwningDepartmentFormHandlers({
     if (name === "owningDepartmentName") {
       sanitizedValue = sanitizeText(value, 100);
     } else if (name === "description") {
-      sanitizedValue = sanitizeText(value, 250);
+      sanitizedValue = sanitizeText(value, 100);
     }
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));

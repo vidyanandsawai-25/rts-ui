@@ -71,6 +71,7 @@
       "calculationTypeRequired": "Calculation type is required",
       "valueRequired": "Penalty value is required",
       "valueInvalid": "Penalty value must be a valid non-negative number",
+      "valuePercentageInvalid": "Penalty percentage rate must be a valid non-negative number and cannot exceed 100",
       "gracePeriodRequired": "Grace period days is required",
       "gracePeriodInvalid": "Grace period days must be a valid non-negative integer",
       "mustBeActive": "New penalty rule records must be active",

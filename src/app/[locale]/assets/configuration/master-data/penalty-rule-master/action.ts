@@ -61,12 +61,16 @@ export async function savePenaltyRule(id: string, formData: FormData) {
 
     if (penaltyCode === "") return { ok: false, error: "invalid_penaltyCode" };
     if (penaltyName === "") return { ok: false, error: "invalid_penaltyName" };
-    if (calculationType === "") return { ok: false, error: "invalid_calculationType" };
+    const allowedCalculationTypes = ["Percentage", "FlatAmount", "PerDay"];
+    if (calculationType === "" || !allowedCalculationTypes.includes(calculationType)) {
+      return { ok: false, error: "invalid_calculationType" };
+    }
     if (penaltyValueRaw === "") return { ok: false, error: "invalid_penaltyValue" };
     if (gracePeriodDaysRaw === "") return { ok: false, error: "invalid_gracePeriodDays" };
 
     const penaltyValue = Number(penaltyValueRaw);
     if (!Number.isFinite(penaltyValue) || penaltyValue < 0) return { ok: false, error: "invalid_penaltyValue" };
+    if (calculationType === "Percentage" && penaltyValue > 100) return { ok: false, error: "invalid_penaltyValue" };
 
     const gracePeriodDays = Number(gracePeriodDaysRaw);
     if (!Number.isFinite(gracePeriodDays) || gracePeriodDays < 0 || !Number.isInteger(gracePeriodDays)) return { ok: false, error: "invalid_gracePeriodDays" };

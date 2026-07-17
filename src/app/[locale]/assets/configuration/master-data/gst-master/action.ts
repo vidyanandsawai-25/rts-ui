@@ -63,7 +63,7 @@ export async function saveGstMaster(id: string, formData: FormData) {
     if (effectiveFromDate === "") return { ok: false, error: "invalid_effectiveFromDate" };
 
     const taxPercentage = Number(taxPercentageRaw);
-    if (!Number.isFinite(taxPercentage) || taxPercentage < 0) return { ok: false, error: "invalid_taxPercentage" };
+    if (!Number.isFinite(taxPercentage) || taxPercentage < 0 || taxPercentage > 100) return { ok: false, error: "invalid_taxPercentage" };
 
     const effectiveToDateRaw = String(formData.get("effectiveToDate") ?? "").trim();
     if (effectiveToDateRaw === "") return { ok: false, error: "invalid_effectiveToDate" };

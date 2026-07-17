@@ -57,6 +57,9 @@ export function usePenaltyRuleFormValidation({
           if (!Number.isFinite(num) || num < 0) {
             return t("form.validation.valueInvalid");
           }
+          if (data.calculationType === "Percentage" && num > 100) {
+            return t("form.validation.valuePercentageInvalid");
+          }
           return undefined;
         },
         gracePeriodDays: (value: unknown) => {
