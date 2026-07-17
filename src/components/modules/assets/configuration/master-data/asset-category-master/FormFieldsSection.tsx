@@ -1,0 +1,110 @@
+
+import { Checkbox } from "@/components/common/checkbox";
+import { Input } from "@/components/common/Input";
+import { TextArea } from "@/components/common/Textarea";
+import type { FormFieldsSectionProps } from "@/types/asset-masters/asset-category.types";
+
+export function FormFieldsSection({
+  formData,
+  errors,
+  showError,
+  onChange,
+  onBlur,
+  onCheckboxChange,
+  t,
+  isPending = false,
+}: FormFieldsSectionProps) {
+  return (
+    <div className="space-y-6">
+      <Input
+        name="code"
+        label={t("labels.code")}
+        required
+        value={formData.code}
+        placeholder={t("placeholders.code")}
+        onChange={onChange}
+        onBlur={onBlur}
+        disabled={isPending}
+        maxLength={15}
+        error={showError("code") ? errors.code : undefined}
+        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+      />
+
+      <Input
+        name="name"
+        label={t("labels.name")}
+        required
+        value={formData.name}
+        placeholder={t("placeholders.name")}
+        onChange={onChange}
+        onBlur={onBlur}
+        disabled={isPending}
+        maxLength={50}
+        error={showError("name") ? errors.name : undefined}
+        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+      />
+
+      <TextArea
+        name="description"
+        label={t("labels.description")}
+        rows={4}
+        value={formData.description}
+        placeholder={t("placeholders.description")}
+        onChange={onChange}
+        onBlur={onBlur}
+        disabled={isPending}
+        maxLength={500}
+        error={showError("description") ? true : false}
+        errorMessage={showError("description") ? errors.description : undefined}
+        className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+      />
+
+      {/* Category Configuration Options */}
+      <div className="space-y-4 pt-4 border-t border-slate-200">
+        <h3 className="font-medium text-slate-800 text-sm">{t("labels.categoryConfiguration")}</h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="font-medium text-slate-900 text-sm">{t("labels.isMovable")}</div>
+            <Checkbox checked={!!formData.isMovable} onCheckedChange={(v) => onCheckboxChange("isMovable", !!v)} disabled={isPending} />
+          </div>
+
+          <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="font-medium text-slate-900 text-sm">{t("labels.hasFloorDetails")}</div>
+            <Checkbox checked={!!formData.hasFloorDetails} onCheckedChange={(v) => onCheckboxChange("hasFloorDetails", !!v)} disabled={isPending} />
+          </div>
+
+          <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="font-medium text-slate-900 text-sm">{t("labels.hasInventory")}</div>
+            <Checkbox checked={!!formData.hasInventory} onCheckedChange={(v) => onCheckboxChange("hasInventory", !!v)} disabled={isPending} />
+          </div>
+
+          <div className={`rounded-xl p-3 border flex items-center justify-between ${formData.hasInventory ? "border-gray-200 bg-gray-50" : "border-gray-100 bg-gray-50/50 opacity-60"}`}>
+            <div className="font-medium text-slate-900 text-sm">{t("labels.isInventoryMandatory")}</div>
+            <Checkbox checked={!!formData.isInventoryMandatory} onCheckedChange={(v) => onCheckboxChange("isInventoryMandatory", !!v)} disabled={isPending || !formData.hasInventory} />
+          </div>
+
+          <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="font-medium text-slate-900 text-sm">{t("labels.hasLegalCompliance")}</div>
+            <Checkbox checked={!!formData.hasLegalCompliance} onCheckedChange={(v) => onCheckboxChange("hasLegalCompliance", !!v)} disabled={isPending} />
+          </div>
+        </div>
+
+        <Input
+          name="valuationType"
+          label={t("labels.valuationType")}
+          value={formData.valuationType || ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const val = e.target.value.toUpperCase().replace(/[^A-Z0-9 \-_]/g, "");
+            const event = { ...e, target: { ...e.target, name: "valuationType", value: val } } as React.ChangeEvent<HTMLInputElement>;
+            onChange(event);
+          }}
+          disabled={isPending}
+          placeholder={t("placeholders.valuationType")}
+          maxLength={50}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+      </div>
+    </div>
+  );
+}
