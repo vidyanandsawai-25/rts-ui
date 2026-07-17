@@ -73,6 +73,7 @@
     "duplicateRecord": "Please check Designation Code - duplicates not allowed.",
     "notFound": "Designation not found.",
     "inUse": "Cannot deactivate/delete this Designation because it is referenced by other records.",
+    "invalidData": "Invalid data provided. Please check all fields.",
     "operationFailed": "Operation failed. Please try again later."
   },
   "success": {

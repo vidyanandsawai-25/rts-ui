@@ -61,10 +61,10 @@ export const validateAssetPhotoForm = (
         return t('form.validation.displayOrderRequired');
       }
       const numVal = Number(val);
-      if (isNaN(numVal) || numVal === 0) {
+      if (isNaN(numVal)) {
         return t('form.validation.displayOrderRequired');
       }
-      if (numVal < 0) {
+      if (numVal <= 0) {
         return t('form.validation.displayOrderInvalid');
       }
       return undefined;

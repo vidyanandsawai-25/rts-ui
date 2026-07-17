@@ -58,7 +58,7 @@ export const validateDesignationForm = (
     designationDescription: (val: unknown) => {
       if (!String(val ?? '').trim()) return undefined;
       return commonValidations.masterDescription(t, DESCRIPTION_MAX, {
-        maxLength: 'form.validation.designationDescriptionMaxLength',
+        maxLength: 'form.validation.descriptionMaxLength',
         format: 'form.validation.descriptionFormat',
       })(val);
     },
