@@ -8,6 +8,7 @@ interface AddPageProps {
   }>;
 }
 
+
 export default async function AddPage({ searchParams }: AddPageProps): Promise<React.ReactElement> {
   const params = await searchParams;
   const assetCategoryId = Number(params.assetCategoryId);
