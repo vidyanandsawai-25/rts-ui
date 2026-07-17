@@ -106,7 +106,7 @@ describe("AssetRoomType API Service", () => {
         roomTypeName: "Name",
         description: "Desc",
         isActive: true,
-        createdBy: 1,
+        createdBy: null,
         assetCategoryId: 1,
         assetTypeId: 5,
       });
@@ -132,7 +132,7 @@ describe("AssetRoomType API Service", () => {
         roomTypeName: "Name",
         description: "Desc",
         isActive: true,
-        updatedBy: 1,
+        updatedBy: null,
         assetCategoryId: 1,
         assetTypeId: 5,
       });
@@ -162,3 +162,4 @@ describe("AssetRoomType API Service", () => {
     });
   });
 });
+

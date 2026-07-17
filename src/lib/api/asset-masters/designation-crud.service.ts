@@ -75,7 +75,7 @@ export async function getDesignationById(designationId: number): Promise<Designa
 /** Creates a new designation */
 export async function createDesignation(data: DesignationFormModel): Promise<string | undefined> {
   try {
-    if (!data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim()) {
+    if (!data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim() || data.owningDepartmentId == null) {
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
@@ -84,7 +84,7 @@ export async function createDesignation(data: DesignationFormModel): Promise<str
       designationLocal: data.designationLocal.trim(),
       designationDescription: data.designationDescription?.trim() || null,
       isActive: data.isActive,
-      createdBy: data.createdBy ?? 1,
+      createdBy: data.createdBy ?? null,
       owningDepartmentId: data.owningDepartmentId,
     };
     const response = await apiClient.post<unknown>("/AmsDesignation", payload);
@@ -107,7 +107,7 @@ export async function createDesignation(data: DesignationFormModel): Promise<str
 /** Updates an existing designation */
 export async function updateDesignation(data: DesignationFormModel): Promise<string | undefined> {
   try {
-    if (!data.id || data.id <= 0 || !data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim()) {
+    if (!data.id || data.id <= 0 || !data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim() || data.owningDepartmentId == null) {
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
@@ -117,7 +117,7 @@ export async function updateDesignation(data: DesignationFormModel): Promise<str
       designationLocal: data.designationLocal.trim(),
       designationDescription: data.designationDescription?.trim() || null,
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1,
+      updatedBy: data.updatedBy ?? null,
       owningDepartmentId: data.owningDepartmentId,
     };
     const response = await apiClient.put<unknown>(`/AmsDesignation/${encodeURIComponent(String(data.id))}`, payload);
@@ -170,3 +170,4 @@ export async function deleteDesignation(id: number): Promise<void> {
     throw error;
   }
 }
+

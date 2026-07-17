@@ -80,7 +80,7 @@ export async function createAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
       description: data.description?.trim() || null,
       displayOrder: Number(data.displayOrder) || 0,
       isActive: data.isActive,
-      createdBy: data.createdBy ?? 1,
+      createdBy: data.createdBy ?? null,
       assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       isRequired: data.isRequired,
@@ -116,7 +116,7 @@ export async function updateAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
       description: data.description?.trim() || null,
       displayOrder: Number(data.displayOrder) || 0,
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1,
+      updatedBy: data.updatedBy ?? null,
       assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       isRequired: data.isRequired,
@@ -218,4 +218,5 @@ export async function getAssetTypes(assetCategoryId?: number): Promise<AssetType
     throw error;
   }
 }
+
 

@@ -132,8 +132,8 @@ export function AssetPhotoTypeFormFields({
           checked={formData.isRequired}
           onChange={handleToggleRequired}
           showPopup={false}
-          activeLabel={t("form.fields.isRequired.label")}
-          inactiveLabel={t("form.fields.isRequired.label")}
+          activeLabel={`${t("form.fields.isRequired.label")}: ${t("yes")}`}
+          inactiveLabel={`${t("form.fields.isRequired.label")}: ${t("no")}`}
         />
       </div>
 
@@ -146,10 +146,12 @@ export function AssetPhotoTypeFormFields({
           checked={formData.isSubUnit}
           onChange={handleToggleSubUnit}
           showPopup={false}
-          activeLabel={t("form.fields.isSubUnit.label")}
-          inactiveLabel={t("form.fields.isSubUnit.label")}
+          activeLabel={`${t("form.fields.isSubUnit.label")}: ${t("yes")}`}
+          inactiveLabel={`${t("form.fields.isSubUnit.label")}: ${t("no")}`}
         />
       </div>
     </div>
   );
 }
+
+

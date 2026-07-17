@@ -76,7 +76,7 @@ export async function createAssetRoomType(data: AssetRoomTypeFormModel): Promise
     }
     const payload = {
       isActive: data.isActive,
-      createdBy: data.createdBy ?? 1,
+      createdBy: data.createdBy ?? null,
       assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       roomTypeCode: data.roomTypeCode.trim(),
@@ -108,7 +108,7 @@ export async function updateAssetRoomType(data: AssetRoomTypeFormModel): Promise
     }
     const payload = {
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1,
+      updatedBy: data.updatedBy ?? null,
       assetCategoryId: data.assetCategoryId,
       assetTypeId: data.assetTypeId,
       roomTypeCode: data.roomTypeCode.trim(),
@@ -210,3 +210,4 @@ export async function getAssetTypes(assetCategoryId?: number): Promise<AssetType
     throw error;
   }
 }
+

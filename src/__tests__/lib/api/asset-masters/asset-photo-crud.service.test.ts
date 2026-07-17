@@ -111,7 +111,7 @@ describe("AssetPhotoType API Service", () => {
         description: "Desc",
         displayOrder: 2,
         isActive: true,
-        createdBy: 1,
+        createdBy: null,
         assetCategoryId: 1,
         assetTypeId: 2,
         isRequired: true,
@@ -144,7 +144,7 @@ describe("AssetPhotoType API Service", () => {
         description: "Desc",
         displayOrder: 2,
         isActive: true,
-        updatedBy: 1,
+        updatedBy: null,
         assetCategoryId: 1,
         assetTypeId: 2,
         isRequired: true,
@@ -191,3 +191,4 @@ describe("AssetPhotoType API Service", () => {
     });
   });
 });
+

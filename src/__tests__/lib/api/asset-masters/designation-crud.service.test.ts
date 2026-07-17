@@ -109,7 +109,7 @@ describe("Designation API Service", () => {
       const result = await createDesignation(payload);
       expect(apiClient.post).toHaveBeenCalledWith("/AmsDesignation", {
         ...payload,
-        createdBy: 1,
+        createdBy: null,
       });
       expect(result).toBe("Created successfully");
     });
@@ -136,7 +136,7 @@ describe("Designation API Service", () => {
       const result = await updateDesignation(payload);
       expect(apiClient.put).toHaveBeenCalledWith("/AmsDesignation/1", {
         ...payload,
-        updatedBy: 1,
+        updatedBy: null,
       });
       expect(result).toBe("Updated successfully");
     });
@@ -154,3 +154,4 @@ describe("Designation API Service", () => {
     });
   });
 });
+
