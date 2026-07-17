@@ -1,23 +1,9 @@
-<<<<<<< Updated upstream
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { CitizenLayout } from '@/components/layout';
 import DynamicServiceFormClient from '@/components/modules/forms/DynamicServiceFormClient';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 import { getServiceMapSSR } from './actions';
-=======
-import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
-import { cookies } from "next/headers";
-
-import { fetchLoginBrandingAction } from "@/app/[locale]/login/actions";
-import { CitizenLayout } from "@/components/layout";
-import DynamicServiceFormClient from "@/components/modules/rts/forms/DynamicServiceFormClient";
-import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
-import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
-import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";
->>>>>>> Stashed changes
 
 interface ServicePageProps {
   params: Promise<{ locale: string; serviceId: string }>;
