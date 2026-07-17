@@ -77,7 +77,8 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 carpetAreaSqMeter: extended.totalCarpetAreaSqMeter ?? extended.carpetAreaSqMeter ?? null,
             };
         });
-    } catch {
+    } catch (error) {
+        console.error("Error in fetchDataEntrySameAsAction:", error);
         return [];
     }
 }
