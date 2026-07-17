@@ -103,7 +103,10 @@ export const useFloorDataHandlers = (params: {
 
     const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
     const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
-      ? editingFloorForm.roomWiseSubmissionDetails.length
+      ? editingFloorForm.roomWiseSubmissionDetails.filter((r: any) => {
+          const area = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0);
+          return area > 0;
+        }).length
       : 0;
 
     if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {

@@ -33,15 +33,15 @@ export function ULBInfoTab({
   return (
     <>
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-        <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-3">
           <Card className={CARD_CLASS}>
-            <CardHeader className="px-4 pt-4 pb-2">
+            <CardHeader className="px-3.5 pt-3 pb-1.5">
               <CardTitle className={TITLE_CLASS}>
                 <Building2 className="h-3.5 w-3.5 text-primary" />
                 {t('sections.ulbDetails')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 space-y-3 px-4 pb-4">
+            <CardContent className="flex-1 space-y-2 px-3.5 pb-3">
               <UlbInput
                 label={t('fields.ulbName')}
                 required
@@ -52,7 +52,7 @@ export function ULBInfoTab({
                 onChange={(e) => onFieldChange('ulbName', e.target.value)}
                 onBlur={() => onFieldBlur('ulbName')}
               />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <UlbInput
                   label={t('fields.ulbCode')}
                   required
@@ -78,13 +78,13 @@ export function ULBInfoTab({
           </Card>
 
           <Card className={CARD_CLASS}>
-            <CardHeader className="px-4 pt-4 pb-2">
+            <CardHeader className="px-3.5 pt-3 pb-1.5">
               <CardTitle className={TITLE_CLASS}>
                 <MapPin className="h-3.5 w-3.5 text-primary" />
                 {t('sections.locationInfo')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 space-y-3 px-4 pb-4">
+            <CardContent className="flex-1 space-y-2 px-3.5 pb-3">
               <UlbSelect
                 label={t('fields.state')}
                 required
@@ -122,13 +122,13 @@ export function ULBInfoTab({
           </Card>
 
           <Card className={CARD_CLASS}>
-            <CardHeader className="px-4 pt-4 pb-2">
+            <CardHeader className="px-3.5 pt-3 pb-1.5">
               <CardTitle className={TITLE_CLASS}>
                 <User className="h-3.5 w-3.5 text-primary" />
                 {t('sections.contactInfo')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 space-y-3 px-4 pb-4">
+            <CardContent className="flex-1 space-y-2 px-3.5 pb-3">
               <UlbInput
                 label={t('fields.contactPerson')}
                 required

@@ -216,6 +216,7 @@ export default function RateSectionContent({
         existingRates={rates}
       />
       <AddWard
+        key={isAddWardOpen ? "open" : "closed"}
         open={isAddWardOpen && !isDrawerClosing}
         onClose={handleCloseDrawer}
         onSuccess={handleWardAdded}

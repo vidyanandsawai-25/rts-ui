@@ -70,6 +70,8 @@ export function usePropertySearchForm({
     touchedFields: new Set(),
   });
   const validationRef = React.useRef<HTMLDivElement | null>(null);
+  const draftRef = React.useRef(draft);
+  draftRef.current = draft;
 
   const searchParams = useSearchParams();
   const isSearchActive = searchParams.get("isActive") === "1";
@@ -202,26 +204,50 @@ export function usePropertySearchForm({
   const handleZoneChange = React.useCallback(
     (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
       const zoneId = Number(value) || 0;
-      setDraft((prev) => ({
+      const currentDraftState =
+        draftRef.current.criteriaKey === criteriaKey
+          ? draftRef.current.formState
+          : initialCriteria;
+      const nextFormState = { ...currentDraftState, zoneId, wardId: 0 };
+
+      setDraft({
         criteriaKey,
-        formState: { ...getBaseFormState(prev), zoneId, wardId: 0 },
+        formState: nextFormState,
         validationError: null,
         submitAttempted: false,
         touchedFields: new Set(),
-      }));
-      onZoneChange?.(zoneId);
+      });
+      onZoneChange?.(zoneId, nextFormState);
     },
-    [criteriaKey, getBaseFormState, onZoneChange]
+    [criteriaKey, initialCriteria, onZoneChange]
   );
 
   const handleWardChange = React.useCallback(
     (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
       const wardId = Number(value) || 0;
-      setField("wardId", wardId);
-      markFieldTouched("wardId");
-      onWardChange?.(wardId);
+      const currentDraftState =
+        draftRef.current.criteriaKey === criteriaKey
+          ? draftRef.current.formState
+          : initialCriteria;
+      const nextFormState = { ...currentDraftState, wardId };
+
+      setDraft((prev) => {
+        const nextTouched = new Set(
+          prev.criteriaKey === criteriaKey ? prev.touchedFields : EMPTY_TOUCHED_FIELDS
+        );
+        nextTouched.add("wardId");
+        return {
+          criteriaKey,
+          formState: nextFormState,
+          validationError: null,
+          submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
+          touchedFields: nextTouched,
+        };
+      });
+
+      onWardChange?.(wardId, nextFormState);
     },
-    [markFieldTouched, setField, onWardChange]
+    [criteriaKey, initialCriteria, onWardChange]
   );
 
   const handleSubmit = React.useCallback(
@@ -338,9 +364,9 @@ export function usePropertySearchForm({
         onSearch(nextFormState, activeTab);
       } else {
         if (field === "zoneId") {
-          onZoneChange?.(0);
+          onZoneChange?.(0, nextFormState);
         } else if (field === "wardId") {
-          onWardChange?.(0);
+          onWardChange?.(0, nextFormState);
         }
       }
     },

@@ -68,6 +68,13 @@
     "validationError": "प्रभाग सत्यापित करताना त्रुटी आली.",
     "moveAllError": "सर्व प्रभाग हलवताना त्रुटी आली.",
     "alreadyPresentInOtherRateSection": "क्लिक केलेला {wardNo} आधीच दर विभाग {rateSectionNo} मध्ये उपस्थित आहे, तुम्ही तो या दर विभाग {selectedRateSectionName} मध्ये जोडू शकत नाही.",
+    "reassignWardsTitle": "वार्ड पुनर्नियुक्तीची पुष्टी करा",
+    "reassignSingleWardConfirm": "वार्ड {wardNo} सध्या दर विभाग {oldRateSection} शी संबंधित आहे. आपण खात्रीने त्याला दर विभाग {newRateSection} मध्ये पुनर्नियुक्त करू इच्छिता?",
+    "assignSingleWardConfirm": "आपण खात्रीने वार्ड {wardNo} दर विभाग {newRateSection} मध्ये नियुक्त करू इच्छिता?",
+    "assignMultipleWardsConfirm": "आपण खात्रीने खालील वार्ड दर विभाग {newRateSection} मध्ये नियुक्त करू इच्छिता?\n{wardDetails}",
+    "assignAllWardsConfirm": "सर्व वार्ड दर विभाग {newRateSection} मध्ये नियुक्त केले जातील. आपण खात्रीने त्यांना दर विभाग {newRateSection} मध्ये नियुक्त करू इच्छिता?",
+    "yes": "होय",
+    "no": "नाही",
     "selectRateSection": "दर विभाग निवडा",
     "editTitle": "प्रभाग संपादित करा",
     "editDescription": "प्रभाग वर्णन संपादित करा",
@@ -83,7 +90,11 @@
     "isActive": "सक्रिय",
     "linkTitle": "दर विभागात प्रभाग लिंक करा",
     "alreadyAdded": "{rateSectionNo} मध्ये जोडले",
-    "selected": "निवडले"
+    "selected": "निवडले",
+    "wardDetailsReassign": "• प्रभाग {wardNo} (सध्या \"{oldRateSection}\" मध्ये)",
+    "wardDetailsAssign": "• प्रभाग {wardNo}",
+    "assignAllAvailableWardsConfirm": "सर्व उपलब्ध प्रभाग ({count}) दर विभाग {newRateSection} मध्ये नियुक्त केले जातील. आपण पुढे जाण्याची खात्री बाळगता का?",
+    "assignAllViewAllWardsConfirm": "{count} अनियुक्त प्रभाग दर विभाग {newRateSection} मध्ये नियुक्त केले जातील (इतर दर विभागांना नियुक्त केलेले प्रभाग वगळले जातील). आपण पुढे जाण्याची खात्री बाळगता का?"
   },
   "wardList": {
     "selectAll": "सर्व निवडा"
@@ -106,6 +117,7 @@
     "add": "जोडा",
     "save": "जतन करा",
     "saving": "जतन करत आहे...",
+    "loading": "लोड होत आहे...",
     "cancel": "रद्द करा",
     "update": "अद्यतनित करा",
     "updating": "अद्यतनित करत आहे...",

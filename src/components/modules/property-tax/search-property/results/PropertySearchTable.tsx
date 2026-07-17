@@ -55,7 +55,7 @@ export function PropertySearchTable({
     <div className="flex flex-col gap-4 w-full min-w-0">
       <div className="border border-blue-200 rounded-xl bg-white shadow-sm overflow-hidden">
         <div className="overflow-auto max-h-[calc(100vh-280px)]">
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed min-w-[1300px] text-sm">
             <thead className="sticky top-0 z-20 bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF] border-b border-blue-200 transition-colors duration-200 hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]">
               <tr>
                 <th className="w-10 px-2 py-3 text-center text-sm font-semibold text-[#1E3A8A] rounded-tl-lg border-r border-blue-200/60" />
