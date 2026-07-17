@@ -141,6 +141,10 @@ const getLayoutChromeData = cache(async () => {
 });
 async function SidebarWithData({ locale }: { locale: string }) {
   const { menuItems } = await getLayoutChromeData();
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
   return <Sidebar menuItems={menuItems} locale={locale} />;
 }
 async function HeaderWithRequestContext() {

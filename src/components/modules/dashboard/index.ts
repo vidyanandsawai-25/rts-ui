@@ -1,7 +1,2 @@
-export { DeleteButton } from './DeleteButton';
-export { AddRouteButton } from './AddRouteButton';
-export { DashboardTable } from './DashboardTable';
-<<<<<<< HEAD
-export { LanguageSelector } from '../../common/LanguageSelector';
-=======
->>>>>>> upstream/main
+// This folder is deprecated. All exports have been removed.
+// Generic dashboard boilerplate has been cleaned up.

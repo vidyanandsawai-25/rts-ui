@@ -247,7 +247,7 @@ const MOCK_I18N: Record<
         remark: {
           en: "Payment of ₹15,000 verified successfully through online portal.",
           hi: "₹15,000 का भुगतान ऑनलाइन पोर्टल के माध्यम से सफलतापूर्वक सत्यापित हुआ।",
-          mr: "₹15,000 चा भरणा ऑनलाइन पोर्टलद्वारे यशस्वीरित्या पडताळला.",
+          mr: "₹15,005 चा भरणा ऑनलाइन पोर्टलद्वारे यशस्वीरित्या पडताळला.",
         },
       },
       {
@@ -365,7 +365,6 @@ export function TrackingPanel({ authUser }: TrackingPanelProps) {
     if (status === "pending") return <Clock className="w-4 h-4 text-orange-500 flex-shrink-0" />;
     return <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />;
   };
-
 
   const getStatusBadge = (status: string) => {
     if (status === "approved") {
@@ -502,7 +501,7 @@ export function TrackingPanel({ authUser }: TrackingPanelProps) {
                 <div>
                   <p className="text-xs text-gray-600 mb-1">{t.applicationIdLabel}</p>
                   <div className="bg-white px-2.5 py-1.5 rounded border-2 border-purple-300 font-mono text-xs break-all">
-                    {td.id}
+                     {td.id}
                   </div>
                 </div>
               </div>

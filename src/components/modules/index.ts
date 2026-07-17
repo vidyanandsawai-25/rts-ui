@@ -6,10 +6,5 @@ export * from './property-tax';
 export * from './water-tax';
 export * from './bajar-parwana';
 export * from './birth-death';
-<<<<<<< HEAD
 export * from './rts';
-=======
 export * from './welcome';
->>>>>>> upstream/main
-
-

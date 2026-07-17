@@ -9,7 +9,7 @@ import { User, Landmark } from 'lucide-react';
 
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserProfileDropdown, Drawer } from '@/components/common';
-import { TrackingPanel } from '@/components/modules/dashboard/TrackingPanel';
+import { TrackingPanel } from '@/components/modules/rts/dashboard/TrackingPanel';
 import { logoutCitizenAction, switchCitizenPropertyAction } from '@/app/[locale]/service/login/actions';
 import { type CitizenProfile } from '@/lib/mock/rts-citizen.mock';
 

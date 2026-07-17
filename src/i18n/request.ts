@@ -71,6 +71,10 @@ export default getRequestConfig(async ({ locale }) => {
     taxCalculationGuidelineMessages,
     addTaxesMessages,
     modulesMessages,
+<<<<<<< Updated upstream
+=======
+    rtsMessages,
+>>>>>>> Stashed changes
     reportMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -173,6 +177,12 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/modules.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+<<<<<<< Updated upstream
+=======
+    import(`./locales/${validatedLocale}/rts.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+>>>>>>> Stashed changes
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -237,6 +247,10 @@ export default getRequestConfig(async ({ locale }) => {
       taxCalculationGuideline: taxCalculationGuidelineMessages,
       addTaxes: addTaxesMessages,
       modules: modulesMessages,
+<<<<<<< Updated upstream
+=======
+      rts: rtsMessages,
+>>>>>>> Stashed changes
       report: reportMessages,
     },
   };
