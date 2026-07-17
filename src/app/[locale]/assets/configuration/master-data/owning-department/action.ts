@@ -48,7 +48,7 @@ export async function saveOwningDepartment(id: string, formData: FormData) {
     const userId = getUserIdFromCookies(cookieStore) || 1;
 
     locale = String(formData.get("locale") ?? "").trim();
-    if (!locale) return { ok: false, error: "invalid_locale" };
+    if (!locale || !locales.includes(locale as (typeof locales)[number])) return { ok: false, error: "invalid_locale" };
 
     owningDepartmentName = String(formData.get("owningDepartmentName") ?? "").trim();
     description = String(formData.get("description") ?? "").trim();

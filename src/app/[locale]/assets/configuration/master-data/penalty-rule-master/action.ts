@@ -51,7 +51,7 @@ export async function savePenaltyRule(id: string, formData: FormData) {
     const userId = getUserIdFromCookies(cookieStore) || 1;
 
     locale = String(formData.get("locale") ?? "").trim();
-    if (!locale) return { ok: false, error: "invalid_locale" };
+    if (!locale || !locales.includes(locale as (typeof locales)[number])) return { ok: false, error: "invalid_locale" };
 
     penaltyCode = String(formData.get("penaltyCode") ?? "").trim();
     penaltyName = String(formData.get("penaltyName") ?? "").trim();

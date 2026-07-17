@@ -50,7 +50,7 @@ export async function saveGstMaster(id: string, formData: FormData) {
     const userId = getUserIdFromCookies(cookieStore) || 1;
 
     locale = String(formData.get("locale") ?? "").trim();
-    if (!locale) return { ok: false, error: "invalid_locale" };
+    if (!locale || !locales.includes(locale as (typeof locales)[number])) return { ok: false, error: "invalid_locale" };
 
     taxCode = String(formData.get("taxCode") ?? "").trim();
     taxName = String(formData.get("taxName") ?? "").trim();
