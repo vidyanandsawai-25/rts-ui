@@ -8,7 +8,6 @@ import SelectPropertiesTable from '../SelectPropertiesTable';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
 import type { SelectableProperty } from '@/types/floor-details.types';
-import { ONE_TO_NINETY_NINE_REGEX } from '@/lib/utils/validation-rules';
 
 interface TypeWiseTabProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
@@ -206,7 +205,8 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
             value={inputValue}
             onChange={(e) => {
               const val = e.target.value;
-              if (val === '' || ONE_TO_NINETY_NINE_REGEX.test(val)) {
+              const ZERO_TO_NINETY_NINE_REGEX = /^(?:0|[1-9][0-9]?)$/;
+              if (val === '' || ZERO_TO_NINETY_NINE_REGEX.test(val)) {
                 setInputValue(val);
                 setChangeTypeInput(val);
               }

@@ -40,12 +40,15 @@ export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string): Promise<SelectableProperty[]> {
+export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, partitionNo?: string): Promise<SelectableProperty[]> {
     try {
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
         params.set('PropertyNo', propertyNo);
-        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`);
+        if (partitionNo) {
+            params.set('PartitionNo', partitionNo);
+        }
+        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`, { cache: 'no-store' });
         if (!response.success || !response.data?.items) {
             return [];
         }
@@ -303,10 +306,9 @@ export const deleteFloorRenterDetailsAction = async (renterId: string | number, 
     }
 };
 
-export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload, locale: string = "en"): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
+export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
     try {
         const data = await applyDataEntrySameAs(payload);
-        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${payload.sourcePropertyId}/FloorSubmission`, "page");
         return { success: true, data };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };

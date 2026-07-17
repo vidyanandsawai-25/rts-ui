@@ -791,6 +791,7 @@
       "typeClassificationNote": "* केवल समान भवन/विंग वर्गीकरण वाली संपत्तियों को ही अद्यतन किया जाएगा।",
       "sourcePropertyNotFound": "स्रोत संपत्ति {partitionNo} नहीं मिली।",
       "selectDestinationProperty": "कृपया कम से कम एक गंतव्य संपत्ति चुनें।",
+      "invalidPropertyType": "अमान्य संपत्ति प्रकार। कृपया ड्रॉपडाउन से एक मान्य प्रकार चुनें।",
       "sourcePropertySubmissionWarning": "चयनित संपत्ति का प्रकार स्रोत संपत्ति के प्रकार से भिन्न है, क्या आप आगे बढ़ना चाहते हैं?",
       "warningTitle": "चेतावनी",
       "noDestinationProcessed": "किसी भी गंतव्य संपत्ति पर प्रक्रिया नहीं हुई।",

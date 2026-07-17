@@ -27,10 +27,8 @@ interface PropertyWiseTabProps {
   searchWardId: string;
   handleWardChange: (name: string | undefined, value: string) => void;
   isFetchingWards: boolean;
-  propertyOptions: SearchSelectOption[];
   searchPropertyNo: string;
   setSearchPropertyNo: (val: string) => void;
-  isFetchingProperties: boolean;
   sanitizeWardNo: (val: string) => string;
   sanitizePropertyNo: (val: string) => string;
   handleSearchProperties: () => void;
@@ -72,10 +70,8 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
   searchWardId,
   handleWardChange,
   isFetchingWards,
-  propertyOptions,
   searchPropertyNo,
   setSearchPropertyNo,
-  isFetchingProperties,
   sanitizeWardNo,
   sanitizePropertyNo,
   handleSearchProperties,
@@ -116,7 +112,7 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
             value={searchPropertyNo}
             onChange={(e) => setSearchPropertyNo(sanitizePropertyNo(e.target.value))}
             className="h-8 px-2 w-full text-xs font-semibold text-slate-700 bg-white border rounded shadow-sm text-center placeholder:text-slate-400 transition-colors border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-slate-200"
-            disabled={!searchWardId || isFetchingProperties}
+            disabled={!searchWardId}
             placeholder={t('floor.selectProperties.propertyNo')}
           />
         </div>

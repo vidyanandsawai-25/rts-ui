@@ -103,15 +103,22 @@ export async function getMoujaMasterAction(
 }
 
 //update property basic details
-export const updatePropertyBasicDetailsAction = async (locale: string, propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult<null>> => {
+export const updatePropertyBasicDetailsAction = async (
+    locale: string,
+    propertyId: number,
+    payload: UpdatePropertyBasicDetailsDto,
+    shouldRevalidate: boolean = true
+): Promise<ActionResult<null>> => {
     try {
         const result = await updatePropertyBasicDetails(propertyId, payload);
         if (!result.success) {
             return result;
         }
 
-        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
-        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`, "page");
+        if (shouldRevalidate) {
+            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
+            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`, "page");
+        }
         return result;
     } catch (error) {
         return { success: false, error: await getActionErrorMessage(error) };
@@ -130,4 +137,4 @@ export async function getTaxZonesAction(
     } catch (error) {
         return { success: false, error: await getActionErrorMessage(error) };
     }
-}
+}

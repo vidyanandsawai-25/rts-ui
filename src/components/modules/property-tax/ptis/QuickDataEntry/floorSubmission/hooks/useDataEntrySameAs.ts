@@ -9,7 +9,7 @@ import {
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { updatePropertyBasicDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
 import type { SelectableProperty } from '@/types/floor-details.types';
-import { getWardListAction, getPropertyListByWardAction } from '@/app/[locale]/property-tax/ptis/actions';
+import { getWardListAction } from '@/app/[locale]/property-tax/ptis/actions';
 import {
   DATA_ENTRY_SAME_AS_FILTER_TYPES,
   normalizePartitionNo,
@@ -32,15 +32,16 @@ function comparePartitionNo(a: SelectableProperty, b: SelectableProperty): numbe
   });
 }
 
-
 export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, initialPropertyID, t }: UseDataEntrySameAsProps) {
   const router = useRouter();
   const routeParams = useParams();
   const locale = String(routeParams?.locale || 'en');
   const { confirm } = useConfirm();
+
   const currentPropertyId = React.useMemo(() => {
     return initialPropertyID ? Number(initialPropertyID) : undefined;
   }, [initialPropertyID]);
+
   const [dataEntrySameAsTab, setDataEntrySameAsTab] = React.useState('type-wise');
   const [selectableProperties, setSelectableProperties] = React.useState<SelectableProperty[]>([]);
   const [selectedPropertyIds, setSelectedPropertyIds] = React.useState<Set<string | number>>(new Set());
@@ -51,15 +52,14 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   const [searchPropertyNo, setSearchPropertyNo] = React.useState(propertyNo || '');
   const [wardOptions, setWardOptions] = React.useState<SearchSelectOption[]>([]);
   const [isFetchingWards, setIsFetchingWards] = React.useState(false);
-  const [propertyOptions, setPropertyOptions] = React.useState<SearchSelectOption[]>([]);
-  const [isFetchingProperties, setIsFetchingProperties] = React.useState(false);
   const [changeTypeInput, setChangeTypeInput] = React.useState<string>('');
+  const initializedRequestRef = React.useRef<string | null>(null);
+  const wardsLoadedRef = React.useRef(false);
 
   const currentPropertyType = React.useMemo(() => {
     const match = selectableProperties.find((p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(partitionNo));
     return match ? String(match.type ?? '') : '';
   }, [selectableProperties, partitionNo]);
-
 
   const sanitizeWardNo = React.useCallback((val: string) => val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10), []);
   const sanitizePropertyNo = React.useCallback((val: string) => val.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 10), []);
@@ -68,30 +68,19 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     setIsFetchingWards(true);
     try {
       const res = await getWardListAction();
-      if (res.success && res.data) setWardOptions(res.data.map((w) => ({ label: w.wardNo || '', value: String(w.wardId) })));
+      if (res.success && res.data) {
+        setWardOptions(res.data.map((w) => ({ label: w.wardNo || '', value: String(w.wardId) })));
+        wardsLoadedRef.current = true;
+      }
     } catch {} finally { setIsFetchingWards(false); }
   }, []);
 
-  const loadPropertiesForWard = React.useCallback(async (wId: number) => {
-    setIsFetchingProperties(true);
-    try {
-      const res = await getPropertyListByWardAction(wId);
-      if (res.success && res.data) {
-        const uniqueNos = Array.from(new Set(res.data.map((p) => p.propertyNo).filter(Boolean)))
-          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-        setPropertyOptions(uniqueNos.map((pNo) => ({ label: pNo, value: pNo })));
-      } else setPropertyOptions([]);
-    } catch { setPropertyOptions([]); } finally { setIsFetchingProperties(false); }
-  }, []);
-
-  const handleWardChange = React.useCallback(async (_name: string | undefined, value: string) => {
+  const handleWardChange = React.useCallback((_name: string | undefined, value: string) => {
     setSearchWardId(value);
     setSearchPropertyNo('');
     setSelectableProperties([]);
     setSelectedPropertyIds(new Set());
-    if (Number(value)) await loadPropertiesForWard(Number(value));
-    else setPropertyOptions([]);
-  }, [loadPropertiesForWard]);
+  }, []);
 
   const handleSearchProperties = React.useCallback(async () => {
     if (!Number(searchWardId) || !searchPropertyNo.trim()) return;
@@ -99,13 +88,22 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     setSelectableProperties([]);
     setSelectedPropertyIds(new Set());
     try {
-      const results = await fetchDataEntrySameAsAction(Number(searchWardId), searchPropertyNo.trim());
+      const results = await fetchDataEntrySameAsAction(Number(searchWardId), searchPropertyNo.trim(), partitionNo);
       setSelectableProperties(results);
     } finally { setIsLoadingProperties(false); }
-  }, [searchWardId, searchPropertyNo]);
+  }, [searchWardId, searchPropertyNo, partitionNo]);
 
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      initializedRequestRef.current = null;
+      return;
+    }
+
+    const requestKey = `${wardId ?? ''}|${propertyNo ?? ''}|${partitionNo ?? ''}`;
+    if (initializedRequestRef.current === requestKey) return;
+    initializedRequestRef.current = requestKey;
+
+    let cancelled = false;
     const initData = async () => {
       setSearchWardId(wardId ? String(wardId) : '');
       setSearchPropertyNo(propertyNo || '');
@@ -113,17 +111,25 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       setSelectedPropertyIds(new Set());
       setChangeTypeInput(''); // Reset on drawer open
       setIsLoadingProperties(true);
-      if (wardOptions.length === 0) await loadWards();
-      if (Number(wardId) && propertyOptions.length === 0) await loadPropertiesForWard(Number(wardId));
-      if (Number(wardId) && propertyNo?.trim()) {
-        try {
-          const results = await fetchDataEntrySameAsAction(Number(wardId), propertyNo.trim());
-          setSelectableProperties(results);
-        } finally { setIsLoadingProperties(false); }
-      } else setIsLoadingProperties(false);
+
+      const wardPromise = wardsLoadedRef.current ? Promise.resolve() : loadWards();
+      const propertiesPromise = Number(wardId) && propertyNo?.trim()
+        ? fetchDataEntrySameAsAction(Number(wardId), propertyNo.trim(), partitionNo)
+        : Promise.resolve([]);
+
+      try {
+        const [, results] = await Promise.all([wardPromise, propertiesPromise]);
+        if (!cancelled) setSelectableProperties(results);
+      } finally {
+        if (!cancelled) setIsLoadingProperties(false);
+      }
     };
-    initData();
-  }, [isOpen, wardId, propertyNo, wardOptions.length, propertyOptions.length, loadWards, loadPropertiesForWard]);
+    void initData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, wardId, propertyNo, partitionNo, loadWards]);
 
   const filterPropertiesForTable = React.useCallback((properties: SelectableProperty[], includeCurrentPartition = false) => {
     return properties
@@ -209,70 +215,112 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
 
     setIsApplyingSameAs(true);
     try {
-      const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType) ?? 0;
+      const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType);
+      
+      // Validate that we have a valid property type ID
+      if (newType === undefined || newType === null || !Number.isFinite(newType) || newType <= 0) {
+        toast.error(t('floor.selectProperties.invalidPropertyType'));
+        setIsApplyingSameAs(false);
+        return;
+      }
+      
       const promises: Promise<{ success: boolean; error?: string }>[] = [];
 
-      // 1. If source property is selected, update its type.
-      if (isSourceSelected) {
-        promises.push((async () => {
-          // Fetch current basic details of source property
-          const basicDetails = await getPropertyBasicDetailsAction(sourcePropertyId);
-          if (!basicDetails) {
-            return { success: false, error: t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }) };
-          }
-          
-          // Map only the fields required by UpdatePropertyBasicDetailsDto
-          const updatedPayload = {
-            wardId: basicDetails.wardId,
-            taxZoneId: basicDetails.taxZoneId,
-            categoryId: basicDetails.categoryId,
-            propertyTypeId: newType, // modified
-            partitionNo: basicDetails.partitionNo,
-            flatOrShopNo: basicDetails.flatOrShopNo,
-            plotNo: basicDetails.plotNo,
-            surveyNo: basicDetails.surveyNo,
-            upicId: basicDetails.upicId,
-            subZoneNo: basicDetails.subZoneNo,
-            moujaId: basicDetails.moujaId,
-            moujaName: basicDetails.moujaName,
-            noOfResidentialToilets: basicDetails.noOfResidentialToilets,
-            noOfCommercialToilets: basicDetails.noOfCommercialToilets,
-            totalBuiltupAreaSqFeet: basicDetails.totalBuiltupAreaSqFeet,
-            totalCarpetAreaSqFeet: basicDetails.totalCarpetAreaSqFeet,
-            totalBuiltupAreaSqMeter: basicDetails.totalBuiltupAreaSqMeter,
-            totalCarpetAreaSqMeter: basicDetails.totalCarpetAreaSqMeter,
-            plotArea: basicDetails.plotArea,
-            plotAreaFtLength: basicDetails.plotAreaFtLength,
-            plotAreaFtWidth: basicDetails.plotAreaFtWidth,
-            plotAreaMtrLength: basicDetails.plotAreaMtrLength,
-            plotAreaMtrWidth: basicDetails.plotAreaMtrWidth,
-            rateSectionDescription: basicDetails.rateSectionDescription,
+      // For TYPEWISE, include ALL selected properties (including source) in the applyDataEntrySameAsAction
+      // This ensures /DataEntrySameAs/units API returns updated data since it uses same data source
+      if (dataEntrySameAsTab === 'type-wise') {
+        // Get ALL selected property IDs (including source)
+        const allSelectedPropertyIds = Array.from(new Set(
+          Array.from(effectiveSelectedPropertyIds)
+            .map((id) => Number(String(id).split('-')[0]))
+            .filter((propId) => Number.isFinite(propId) && propId > 0)
+        ));
+
+        if (allSelectedPropertyIds.length > 0) {
+          const payload = {
+            sourcePropertyId,
+            destinationPropertyIds: allSelectedPropertyIds,
+            filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(),
+            type: newType,
+            propertyTypeId: newType
           };
-          
-          // Call the action to save it
-          return await updatePropertyBasicDetailsAction(locale, sourcePropertyId, updatedPayload);
-        })());
+          promises.push(applyDataEntrySameAsAction(payload));
+        }
+      } else {
+        // For non-TYPEWISE tabs, use original logic
+        // 1. If source property is selected, update its type via basic details API
+        if (isSourceSelected) {
+          promises.push((async () => {
+            // Fetch current basic details of source property
+            const basicDetails = await getPropertyBasicDetailsAction(sourcePropertyId);
+            if (!basicDetails) {
+              return { success: false, error: t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }) };
+            }
+            
+            // Map only the fields required by UpdatePropertyBasicDetailsDto
+            const updatedPayload = {
+              wardId: basicDetails.wardId,
+              taxZoneId: basicDetails.taxZoneId,
+              categoryId: basicDetails.categoryId,
+              propertyTypeId: newType, // modified
+              partitionNo: basicDetails.partitionNo,
+              flatOrShopNo: basicDetails.flatOrShopNo,
+              plotNo: basicDetails.plotNo,
+              surveyNo: basicDetails.surveyNo,
+              upicId: basicDetails.upicId,
+              subZoneNo: basicDetails.subZoneNo,
+              moujaId: basicDetails.moujaId,
+              moujaName: basicDetails.moujaName,
+              noOfResidentialToilets: basicDetails.noOfResidentialToilets,
+              noOfCommercialToilets: basicDetails.noOfCommercialToilets,
+              totalBuiltupAreaSqFeet: basicDetails.totalBuiltupAreaSqFeet,
+              totalCarpetAreaSqFeet: basicDetails.totalCarpetAreaSqFeet,
+              totalBuiltupAreaSqMeter: basicDetails.totalBuiltupAreaSqMeter,
+              totalCarpetAreaSqMeter: basicDetails.totalCarpetAreaSqMeter,
+              plotArea: basicDetails.plotArea,
+              plotAreaFtLength: basicDetails.plotAreaFtLength,
+              plotAreaFtWidth: basicDetails.plotAreaFtWidth,
+              plotAreaMtrLength: basicDetails.plotAreaMtrLength,
+              plotAreaMtrWidth: basicDetails.plotAreaMtrWidth,
+              rateSectionDescription: basicDetails.rateSectionDescription,
+            };
+            
+            // Call the action to save it
+            return await updatePropertyBasicDetailsAction(locale, sourcePropertyId, updatedPayload, false);
+          })());
+        }
+
+        // 2. If there are destination properties selected, update their types via SameAs API
+        if (destinationPropertyIds.length > 0) {
+          const payload = {
+            sourcePropertyId,
+            destinationPropertyIds,
+            filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(),
+            type: newType,
+            propertyTypeId: newType
+          };
+          promises.push(applyDataEntrySameAsAction(payload));
+        }
       }
 
-      // 2. If there are destination properties selected, update their types via SameAs API
-      if (destinationPropertyIds.length > 0) {
-        const payload = {
-          sourcePropertyId,
-          destinationPropertyIds,
-          filterType: DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ?? dataEntrySameAsTab.toUpperCase(),
-          type: newType
-        };
-        promises.push(applyDataEntrySameAsAction(payload, locale));
+      // Check if any API call will be made
+      if (promises.length === 0) {
+        toast.error(t('floor.selectProperties.selectDestinationProperty'));
+        setIsApplyingSameAs(false);
+        return;
       }
 
       const originalProperties = [...selectableProperties];
 
       // Optimistic UI update based on user requirement to see changes immediately
       if (dataEntrySameAsTab === 'type-wise') {
-        const updatedIds = new Set(destinationPropertyIds);
+        const allSelectedIds = new Set(
+          Array.from(effectiveSelectedPropertyIds)
+            .map((id) => Number(String(id).split('-')[0]))
+        );
         setSelectableProperties((prev) => prev.map((p) => {
           const propId = Number(String(p.id).split('-')[0]);
-          if (updatedIds.has(propId) || (isSourceSelected && propId === sourcePropertyId)) {
+          if (allSelectedIds.has(propId)) {
             return { ...p, type: changeTypeInput || currentPropertyType, typeLabel: changeTypeInput || currentPropertyType };
           }
           return p;
@@ -284,6 +332,11 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
 
       if (!failedResult) {
         toast.success(t('floor.selectProperties.applySuccess'));
+        // Re-fetch the properties to get updated data from server
+        if (Number(searchWardId) && searchPropertyNo.trim()) {
+          const updatedResults = await fetchDataEntrySameAsAction(Number(searchWardId), searchPropertyNo.trim(), partitionNo);
+          setSelectableProperties(updatedResults);
+        }
         router.refresh();
       } else {
         if (dataEntrySameAsTab === 'type-wise') {
@@ -294,7 +347,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
     } finally { setIsApplyingSameAs(false); }
-  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType, currentPropertyId, sourcePropertyIds, locale]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType, currentPropertyId, sourcePropertyIds, locale, searchWardId, searchPropertyNo]);
 
   const handleApplyTypeSubmission = React.useCallback(async () => {
     const sourceProperty = selectableProperties.find((p) => Number(String(p.id).split('-')[0]) === currentPropertyId);
@@ -342,17 +395,22 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
             destinationPropertyIds,
             filterType: "PARKING",
             type: 1
-          }, locale),
+          }),
           applyDataEntrySameAsAction({
             sourcePropertyId,
             destinationPropertyIds,
             filterType: "PROPERTYWISE",
             type: 1
-          }, locale)
+          })
         ]);
         
         if (resParking.success && resPropertywise.success) {
           toast.success(t('floor.selectProperties.applySuccess'));
+          // Re-fetch the properties to get updated data from server
+          if (Number(searchWardId) && searchPropertyNo.trim()) {
+            const updatedResults = await fetchDataEntrySameAsAction(Number(searchWardId), searchPropertyNo.trim(), partitionNo);
+            setSelectableProperties(updatedResults);
+          }
           router.refresh();
         } else {
           toast.error(resParking.error || resPropertywise.error || t('floor.selectProperties.unknownError'));
@@ -376,11 +434,11 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     } else {
       await executeSubmission();
     }
-  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, router, currentPropertyId, confirm, locale, sourcePropertyIds]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, currentPropertyId, confirm, sourcePropertyIds, router, searchWardId, searchPropertyNo]);
 
   return {
     dataEntrySameAsTab, setDataEntrySameAsTab: handleDataEntrySameAsTabChange, selectableProperties, selectedPropertyIds: effectiveSelectedPropertyIds, isLoadingProperties, currentPropertyType,
-    searchWardId, searchPropertyNo, setSearchPropertyNo, wardOptions, isFetchingWards, propertyOptions, isFetchingProperties,
+    searchWardId, searchPropertyNo, setSearchPropertyNo, wardOptions, isFetchingWards,
     sanitizeWardNo, sanitizePropertyNo, handleWardChange, handleSearchProperties, isApplyingSameAs, handleApplySameAsDetails,
     filterPropertiesForTable, sourcePropertyIds, typeWiseLockedPropertyIds, activeLockedPropertyIds, handleTogglePropertySelection,
     handleToggleMultipleProperties,
