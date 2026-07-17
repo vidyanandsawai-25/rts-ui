@@ -56,13 +56,6 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          div:has(> .data-entry-same-as-header) {
-            flex: 1 1 0% !important;
-          }
-        `
-      }} />
       <Tabs
         value={hook.dataEntrySameAsTab}
         onChange={(val) => {
@@ -79,6 +72,11 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
           onClose={onClose}
           title={(
             <div className="flex w-full flex-wrap items-center gap-4 data-entry-same-as-header">
+              <style>{`
+                div[role="dialog"] > div:has(.data-entry-same-as-header) > div:first-child {
+                  flex: 1;
+                }
+              `}</style>
               <h2 className="text-[15px] font-bold leading-tight text-white">{t('floor.dataEntry')}</h2>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
@@ -95,11 +93,11 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                 </div>
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
-                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
-                  {t('floor.dataEntryTabs.typeWise')}
-                </Tabs.Tab>
                 <Tabs.Tab value="property-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.propertyWise')}
+                </Tabs.Tab>
+                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
+                  {t('floor.dataEntryTabs.typeWise')}
                 </Tabs.Tab>
                 <Tabs.Tab value="parking" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.parking')}

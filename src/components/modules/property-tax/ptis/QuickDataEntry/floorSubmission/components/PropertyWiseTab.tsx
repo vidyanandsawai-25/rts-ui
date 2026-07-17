@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SearchSelect, type SearchSelectOption } from '@/components/common';
+import { SearchSelect, type SearchSelectOption, Input } from '@/components/common';
 import { UpdateButton, SearchButton } from '@/components/common/ActionButtons';
 import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
@@ -105,19 +105,19 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
             noOptionsPlaceholder={t('search.noOptionsAvailable')}
           />
         </div>
-        <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
-          <SearchSelect
+        <div className="w-24 flex flex-col justify-end">
+          <label htmlFor="property-wise-search-property-no" className="block mb-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-0.5 whitespace-nowrap">
+            {t('floor.selectProperties.propertyNo')}
+          </label>
+          <Input
+            naked
             id="property-wise-search-property-no"
-            label={t('floor.selectProperties.propertyNo')}
-            options={propertyOptions}
+            type="text"
             value={searchPropertyNo}
-            onChange={(_name, val) => setSearchPropertyNo(val)}
-            sanitizeInput={sanitizePropertyNo}
-            className="h-8 text-xs"
+            onChange={(e) => setSearchPropertyNo(sanitizePropertyNo(e.target.value))}
+            className="h-8 px-2 w-full text-xs font-semibold text-slate-700 bg-white border rounded shadow-sm text-center placeholder:text-slate-400 transition-colors border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-slate-200"
             disabled={!searchWardId || isFetchingProperties}
-            isLoading={isFetchingProperties}
-            loadingPlaceholder={t('search.loading')}
-            noOptionsPlaceholder={t('search.noOptionsAvailable')}
+            placeholder={t('floor.selectProperties.propertyNo')}
           />
         </div>
         <SearchButton
