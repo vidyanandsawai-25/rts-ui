@@ -170,6 +170,9 @@ export function useAssessmentYearRangeForm({
 
       if (code === 400) {
         const msg = result.message?.toLowerCase() || "";
+        if (msg.includes("cannot deactivate") || msg.includes("referenced in") || msg.includes("in use")) {
+          return t("apiErrors.cannotDeactivateYearRange");
+        }
         if (msg.includes("duplicate") || msg.includes("already exists") || msg.includes("overlap")) {
           return t("apiErrors.duplicateRecord");
         }
@@ -267,7 +270,7 @@ export function useAssessmentYearRangeForm({
             }
           } catch (e) {
             // Not a JSON error, fall back to default toast
-            console.error("Failed to parse server error:", e);
+            // Silently ignore parsing errors to prevent Next.js dev overlay from popping up on string-based backend errors
           }
         }
         

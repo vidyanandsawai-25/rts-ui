@@ -71,7 +71,7 @@ export function usePropertyTypeMasterHandlers({
 
             if (result.statusCode === 409) {
               // Record linked with another record or in use
-              errorMessage = t("apiErrors.inUse");
+              errorMessage = t("apiErrors.referredInAutoWardEntry");
             } else if (result.statusCode === 400) {
               // Bad request / validation error
               errorMessage = t("apiErrors.validationError");
