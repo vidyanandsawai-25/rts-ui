@@ -170,19 +170,15 @@ export function useReportParameters({
 
         const parameters: Record<string, string> = {};
         if (financialYearId) {
-          parameters.financialYearId = financialYearId;
           parameters.FinancialYearId = financialYearId;
         }
         if (zoneId) {
-          parameters.zoneId = zoneId;
           parameters.ZoneId = zoneId;
         }
         if (wardId) {
-          parameters.wardId = wardId;
           parameters.WardId = wardId;
         }
         if (propertyMode === 'single' && currentPropertyNo) {
-          parameters.propertyNo = currentPropertyNo;
           parameters.PropertyNo = currentPropertyNo;
         }
         if (propertyMode === 'range') {
@@ -194,17 +190,13 @@ export function useReportParameters({
             const end = Math.max(fromIndex, toIndex);
             const rangeProperties = properties.slice(start, end + 1);
             const bulkIds = rangeProperties.map((p) => p.propertyId).join(',');
-            parameters.propertyId = bulkIds;
             parameters.PropertyId = bulkIds;
           } else if (fromIndex !== -1) {
-            parameters.propertyId = String(properties[fromIndex].propertyId);
             parameters.PropertyId = String(properties[fromIndex].propertyId);
           } else if (toIndex !== -1) {
-            parameters.propertyId = String(properties[toIndex].propertyId);
             parameters.PropertyId = String(properties[toIndex].propertyId);
           }
         } else if (propertyId !== null) {
-          parameters.propertyId = String(propertyId);
           parameters.PropertyId = String(propertyId);
         }
 
