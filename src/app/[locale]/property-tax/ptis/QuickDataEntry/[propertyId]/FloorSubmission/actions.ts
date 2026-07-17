@@ -45,7 +45,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
         params.set('PropertyNo', propertyNo);
-        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs?${params.toString()}`);
+        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`);
         if (!response.success || !response.data?.items) {
             return [];
         }
