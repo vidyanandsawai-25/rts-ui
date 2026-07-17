@@ -35,7 +35,6 @@ export interface UseType {
   searchSequence: number;
   typeOfUseCategoryId?: number | null;
   isActive: boolean;
-  typeOfUseCategoryId?: number | null;
   createdDate?: string;
   updatedDate?: string | null;
   // UI-only computed field

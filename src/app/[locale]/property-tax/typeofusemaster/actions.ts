@@ -246,7 +246,6 @@ export async function createUseType(input: {
       type: input.type,
       searchSequence: input.searchSequence,
       isActive: (input.status ?? "Active") === "Active",
-      typeOfUseCategoryId: input.typeOfUseCategoryId,
       createdBy: await getCurrentUserId(),
       typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     });
@@ -284,7 +283,6 @@ export async function updateUseType(input: {
       type: input.type,
       searchSequence: input.searchSequence,
       isActive: input.status === "Active",
-      typeOfUseCategoryId: input.typeOfUseCategoryId,
       updatedBy: await getCurrentUserId(),
       typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     });

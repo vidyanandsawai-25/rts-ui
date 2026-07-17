@@ -104,7 +104,6 @@ export async function createUseTypeApi(input: {
       typeOfUseGroupId: input.typeOfUseGroupId,
       searchSequence: input.searchSequence,
       isActive: input.isActive,
-      typeOfUseCategoryId: input.typeOfUseCategoryId,
       createdBy: Number(input.createdBy ?? "1"),
       typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     };
@@ -157,7 +156,6 @@ export async function updateUseTypeApi(input: {
       typeOfUseGroupId: input.typeOfUseGroupId,
       searchSequence: input.searchSequence,
       isActive: input.isActive,
-      typeOfUseCategoryId: input.typeOfUseCategoryId,
       updatedBy: Number(input.updatedBy ?? "1"),
       typeOfUseCategoryId: input.typeOfUseCategoryId ?? null,
     };
