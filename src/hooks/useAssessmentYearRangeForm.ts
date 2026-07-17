@@ -268,7 +268,7 @@ export function useAssessmentYearRangeForm({
                 if (!hasUnmappedErrors) return; // Only stop if all errors were mapped
               }
             }
-          } catch (e) {
+          } catch (_) {
             // Not a JSON error, fall back to default toast
             // Silently ignore parsing errors to prevent Next.js dev overlay from popping up on string-based backend errors
           }

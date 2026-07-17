@@ -120,7 +120,7 @@
       "inUse": "Cannot delete this record as it is in use.",
       "operationFailed": "Operation failed. Please try again later.",
       "referredInAutoWardEntry": "Cannot delete this record as it is referred in Auto Ward Entry",
-      "cannotDeactivateReferred": "Cannot deactivate this PropertyTypeMaster because it is referenced in Auto Ward Entry",
+      "cannotDeactivateReferred": "Cannot deactivate this record because it is referenced in Auto Ward Entry",
       "linkedRecordError": "Cannot modify this property type because it is linked to other records."
     },
     "success": {
