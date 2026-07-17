@@ -40,6 +40,7 @@ export function BasicInfoStep({
               <Label>{t('form.userCode')}</Label>
               <Input
                 maxLength={15}
+                disabled={!!editingUser}
                 value={formData.userCode}
                 onChange={(e) => {
                   const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');

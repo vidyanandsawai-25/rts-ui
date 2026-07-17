@@ -701,6 +701,7 @@
     "invalidConstructionYear": "Invalid or missing construction year for one or more floor records.",
     "invalidPropertyAge": "Invalid property age detected. Construction year cannot be after assessment year.",
     "typeNotFound": "Property usage type code not found or invalid.",
+    "propertyIdMissing": "Property is missing. Please search and select a property first.",
     "selectPropertyFirst": "Please select a property first.",
     "networkError": {
       "title": "Unable to Connect to Server",

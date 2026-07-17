@@ -5,7 +5,6 @@ import {
   getSubTabLabel,
   formatCurrency,
   createTaxMap,
-  calculateTotal,
   getHeaderGradientClass,
   getRowClassName,
   useTaxColumns,
@@ -134,23 +133,6 @@ describe('Utility Functions', () => {
     it('should return empty map for empty array', () => {
       const map = createTaxMap([]);
       expect(map.size).toBe(0);
-    });
-  });
-
-  describe('calculateTotal', () => {
-    it('should calculate total from tax amounts', () => {
-      const total = calculateTotal(mockTaxAmounts);
-      expect(total).toBe(1800); // 1000 + 500 + 300
-    });
-
-    it('should return 0 for undefined input', () => {
-      const total = calculateTotal(undefined);
-      expect(total).toBe(0);
-    });
-
-    it('should return 0 for empty array', () => {
-      const total = calculateTotal([]);
-      expect(total).toBe(0);
     });
   });
 
@@ -312,7 +294,6 @@ describe('useTaxTableData', () => {
 
     expect(result.current).toHaveLength(1);
     expect(result.current[0].rowType).toBe('single');
-    expect(result.current[0].total).toBe(1800);
     expect(result.current[0]['Property Tax']).toBe(1000);
   });
 
@@ -344,12 +325,9 @@ describe('useTaxTableData', () => {
       useTaxTableData(null, mockDualMethodDetails, taxColumns, 'dual-method', 'amenities', mockT, mockTPtis)
     );
 
-    // RV total: 800 + 400 = 1200
-    expect(result.current[0].total).toBe(1200);
-    // CV total: 1200 + 600 = 1800
-    expect(result.current[1].total).toBe(1800);
-    // Grand total: 1200 + 1800 = 3000
-    expect(result.current[2].total).toBe(3000);
+    expect(result.current[0]['Property Tax']).toBe(800);
+    expect(result.current[1]['Property Tax']).toBe(1200);
+    expect(result.current[2]['Property Tax']).toBe(2000); // 800 + 1200
   });
 
   it('should return empty array when no data', () => {

@@ -29,6 +29,7 @@ export const Navbar = ({
     clientIp,
 }: NavbarProps) => {
     const t = useTranslations('common');
+    const tLogin = useTranslations('login');
     const displayUlbName = ulbName || t('app.defaultUlbName');
     const locale = useLocale();
     const {
@@ -40,15 +41,19 @@ export const Navbar = ({
 
     const [warningActive, setWarningActive] = useState(false);
     const [secondsLeft, setSecondsLeft] = useState(0);
+    const [warningType, setWarningType] = useState<'session' | 'inactivity'>('session');
     const isCritical = secondsLeft <= 20;
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
         const handleTick = (e: Event) => {
-            const customEvent = e as CustomEvent<{ secondsLeft: number; active: boolean }>;
+            const customEvent = e as CustomEvent<{ secondsLeft: number; active: boolean; type?: 'session' | 'inactivity' }>;
             setWarningActive(customEvent.detail.active);
             setSecondsLeft(customEvent.detail.secondsLeft);
+            if (customEvent.detail.type) {
+                setWarningType(customEvent.detail.type);
+            }
         };
 
         window.addEventListener('ntis:session-warning-tick', handleTick);
@@ -98,26 +103,30 @@ export const Navbar = ({
                                     isCritical ? 'text-red-200 timer-blink-sharp' : 'text-amber-300 timer-blink-smooth'
                                 }`}
                             >
-                                {t('login.sessionTimeout.countdown', { seconds: secondsLeft })}
+                                {tLogin('sessionTimeout.countdown', { seconds: secondsLeft })}
                             </span>
                             <span
                                 className={`hidden lg:inline font-semibold ${
                                     isCritical ? 'text-red-100' : 'text-amber-200/90'
                                 }`}
                             >
-                                {t('login.sessionTimeout.saveWorkHint')}
+                                {warningType === 'inactivity'
+                                    ? tLogin('sessionTimeout.inactivitySaveWorkHint')
+                                    : tLogin('sessionTimeout.saveWorkHint')}
                             </span>
                         </div>
                     )}
 
-                    <Link
-                        href={`/${locale}/configuration-settings`}
-                        className="flex items-center gap-1.5 sm:gap-2 hover:text-blue-200 transition-colors shrink-0"
-                        title={t('navigation.settings')}
-                    >
-                        <Settings className="w-4 h-4" />
-                        <span className="hidden md:inline text-sm font-medium">{t('navigation.settings')}</span>
-                    </Link>
+                    {userProfile?.hasSettingsAccess !== false && (
+                        <Link
+                            href={`/${locale}/configuration-settings`}
+                            className="flex items-center gap-1.5 sm:gap-2 hover:text-blue-200 transition-colors shrink-0"
+                            title={t('navigation.settings')}
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span className="hidden md:inline text-sm font-medium">{t('navigation.settings')}</span>
+                        </Link>
+                    )}
 
                     {/* User info */}
                     <div className="relative">

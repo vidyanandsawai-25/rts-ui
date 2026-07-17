@@ -145,11 +145,22 @@ export default function ZoneList({
             >
               <Card
                 padding="sm"
+                role="button"
+                aria-pressed={isSelected}
+                tabIndex={0}
                 onClick={() =>
                   zoneId !== undefined &&
                   onZoneSelect(zoneId)
                 }
-                className={`relative p-1 rounded-xl cursor-pointer transition-all duration-200 ${isNewlyCreated
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (zoneId !== undefined) {
+                      onZoneSelect(zoneId);
+                    }
+                  }
+                }}
+                className={`relative p-1 rounded-xl cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1A86E8] focus:ring-offset-2 ${isNewlyCreated
                   ? "bg-gradient-to-br from-emerald-100 via-green-50 to-emerald-100 border-2 border-emerald-400 shadow-lg animate-pulse"
                   : isSelected
                     ? "bg-gradient-to-br from-[#E8EFF8] via-[#F4F9FE] to-[#F0F5FC] border-2 border-[#B3D6F6] shadow-lg"

@@ -15,7 +15,9 @@ interface SelectPropertiesTableProps {
   onToggleMultiple?: (ids: Array<string | number>, select: boolean) => void;
   isLoading?: boolean;
   disabledIds?: Set<string | number>;
+  sourcePropertyIds?: Set<string | number>;
   hideTypeColumn?: boolean;
+  leftHeaderContent?: React.ReactNode;
 }
 
 type SelectablePropertyRow = Record<string, unknown> &
@@ -66,7 +68,9 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   onToggleMultiple,
   isLoading = false,
   disabledIds = new Set(),
+  sourcePropertyIds = new Set(),
   hideTypeColumn = false,
+  leftHeaderContent,
 }) => {
   const selectedCount = selectedIds.size;
   const selectableProperties = React.useMemo(
@@ -178,20 +182,24 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
     [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t]
   );
 
-  const headerExtra =
-    selectedCount > 0 ? (
-      <div className="ml-auto flex items-center gap-2">
-        <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
-          {t('floor.selectProperties.selected', { count: selectedCount })}
-        </span>
-        <ClearButton
-          type="button"
-          label={t('floor.selectProperties.clearSelection')}
-          onClick={onClearSelection}
-          className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
-        />
-      </div>
-    ) : null;
+  const headerExtra = (
+    <div className="flex flex-wrap items-center gap-3 flex-1">
+      {leftHeaderContent}
+      {selectedCount > 0 && (
+        <div className="ml-auto flex items-center gap-2">
+          <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
+            {t('floor.selectProperties.selected', { count: selectedCount })}
+          </span>
+          <ClearButton
+            type="button"
+            label={t('floor.selectProperties.clearSelection')}
+            onClick={onClearSelection}
+            className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
+          />
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="mt-3">
@@ -210,8 +218,12 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           if (!row.disabled) onToggle(row.id);
         }}
         rowClassName={(row) => {
-          if (row.disabled) {
+          const isSource = sourcePropertyIds.has(row.id);
+          if (isSource) {
             return '!bg-green-50 hover:!bg-green-100';
+          }
+          if (row.disabled) {
+            return 'opacity-60 bg-slate-50 cursor-not-allowed';
           }
           if (row.selected) {
             return '!bg-blue-50 hover:!bg-blue-100';

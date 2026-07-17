@@ -4,6 +4,7 @@
  */
 const LOGIN_ERROR_QUERY_TO_I18N_SUFFIX: Record<string, string> = {
   sessionExpired: 'sessionExpired',
+  inactivityTimeout: 'inactivityTimeout',
   invalidToken: 'invalidToken',
   SESSION_EXPIRED: 'SESSION_EXPIRED',
   LOGIN_FAILED: 'LOGIN_FAILED',
