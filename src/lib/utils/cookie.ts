@@ -139,6 +139,7 @@ export function getUserIdFromCookie(): number | null {
   return id;
 }
 
+
 // ---------------------------------------------------------------------------
 // Department / Module Context Cookies
 // ---------------------------------------------------------------------------
