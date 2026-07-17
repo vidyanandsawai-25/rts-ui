@@ -23,35 +23,25 @@ export function useOwningDepartmentFormValidation({
       const schema = {
         owningDepartmentName: (value: unknown) => {
           const strVal = String(value ?? "").trim();
-          if (!strVal) {
-            return t("form.validation.nameRequired");
-          }
           if (isAllZeros(strVal)) {
             return t("form.validation.nameFormat");
           }
-          const stdErr = commonValidations.masterDescription(t, 100, {
+          return commonValidations.masterDescription(t, 100, {
             required: "form.validation.nameRequired",
             format: "form.validation.nameFormat",
             maxLength: "form.validation.nameMaxLength",
           })(value);
-          if (stdErr) return stdErr;
-          return undefined;
         },
         description: (value: unknown) => {
           const strVal = String(value ?? "").trim();
-          if (!strVal) {
-            return t("form.validation.descriptionRequired");
-          }
           if (isAllZeros(strVal)) {
             return t("form.validation.descriptionFormat");
           }
-          const stdErr = commonValidations.masterDescription(t, 100, {
+          return commonValidations.masterDescription(t, 100, {
             required: "form.validation.descriptionRequired",
             format: "form.validation.descriptionFormat",
             maxLength: "form.validation.descriptionMaxLength",
           })(value);
-          if (stdErr) return stdErr;
-          return undefined;
         },
       };
 
