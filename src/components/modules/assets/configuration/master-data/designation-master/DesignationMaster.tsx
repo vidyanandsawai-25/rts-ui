@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useTransition } from "react";
+import React, { useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ export function DesignationMaster({
         );
       });
     },
-    [pageSize, currentSearchTerm, sortBy, sortOrder, locale, router]
+    [pageSize, currentSearchTerm, sortBy, sortOrder, locale, router, startTransition]
   );
 
   const columns = getDesignationColumns(t, tCommon, sortBy, sortOrder, handleSort);
@@ -69,6 +69,33 @@ export function DesignationMaster({
     sortBy,
     sortOrder,
   });
+
+  React.useEffect(() => {
+    const allowed = [10, 20, 30, 40, 50];
+    let hasChanged = false;
+    const params = new URLSearchParams(window.location.search);
+    if (!allowed.includes(pageSize)) {
+      const newPageSize = allowed.reduce((prev, curr) =>
+        Math.abs(curr - pageSize) < Math.abs(prev - pageSize) ? curr : prev
+      );
+      params.set("pageSize", String(newPageSize));
+      hasChanged = true;
+    }
+    const rawPageStr = params.get("page");
+    if (rawPageStr !== null) {
+      const rawPage = parseInt(rawPageStr, 10);
+      if (!Number.isFinite(rawPage) || rawPage < 1) {
+        params.set("page", "1");
+        hasChanged = true;
+      } else if (totalPages > 0 && rawPage > totalPages) {
+        params.set("page", String(totalPages));
+        hasChanged = true;
+      }
+    }
+    if (hasChanged) {
+      router.replace(`/${locale}/assets/configuration/master-data/designation-master?${params.toString()}`);
+    }
+  }, [pageNumber, pageSize, totalPages, locale, router]);
 
   const handleEdit = useCallback(
     (row: Designation) => {
