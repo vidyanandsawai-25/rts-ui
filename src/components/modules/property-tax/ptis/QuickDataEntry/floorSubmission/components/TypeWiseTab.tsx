@@ -164,7 +164,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
         disabled={isLoading || availableTypes.length === 0}
         selectSize="sm"
         placeholder={t('floor.selectProperties.allTypes') || 'All Types'}
-        className="w-[100px] text-[11px]"
+        className="w-[120px] text-[11px]"
         ariaLabel={t('floor.selectProperties.selectType') || 'Select Type'}
       />
     </div>
