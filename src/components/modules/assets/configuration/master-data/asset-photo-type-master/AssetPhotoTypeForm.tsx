@@ -52,15 +52,15 @@ export default function AssetPhotoTypeForm({
   const typeOptions = types.map((type) => ({ label: type.name, value: String(type.id) }));
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => {
-        if (isEdit && statusToggleRef.current) {
-          statusToggleRef.current.focus();
-        } else if (!isEdit && photoTypeCodeRef.current) {
-          photoTypeCodeRef.current.focus();
-        }
-      }, 150);
-    }
+    if (!open) return;
+    const timeoutId = setTimeout(() => {
+      if (isEdit && statusToggleRef.current) {
+        statusToggleRef.current.focus();
+      } else if (!isEdit && photoTypeCodeRef.current) {
+        photoTypeCodeRef.current.focus();
+      }
+    }, 150);
+    return () => clearTimeout(timeoutId);
   }, [open, isEdit]);
 
   return (

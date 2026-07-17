@@ -49,15 +49,15 @@ export default function DesignationForm({
   }));
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => {
-        if (isEdit && statusToggleRef.current) {
-          statusToggleRef.current.focus();
-        } else if (!isEdit && designationCodeRef.current) {
-          designationCodeRef.current.focus();
-        }
-      }, 150);
-    }
+    if (!open) return;
+    const timeoutId = setTimeout(() => {
+      if (isEdit && statusToggleRef.current) {
+        statusToggleRef.current.focus();
+      } else if (!isEdit && designationCodeRef.current) {
+        designationCodeRef.current.focus();
+      }
+    }, 150);
+    return () => clearTimeout(timeoutId);
   }, [open, isEdit]);
 
   return (
