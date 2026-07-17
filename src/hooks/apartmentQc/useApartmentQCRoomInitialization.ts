@@ -205,6 +205,9 @@ export const useApartmentQCRoomInitialization = (
           ...room,
           area: convertAreaUnit(Number(room.area || 0), oldUnit, areaUnit),
           total: convertAreaUnit(Number(room.total || 0), oldUnit, areaUnit),
+          carpetArea: room.carpetArea ? convertAreaUnit(Number(room.carpetArea), oldUnit, areaUnit) : undefined,
+          builtUpArea: room.builtUpArea ? convertAreaUnit(Number(room.builtUpArea), oldUnit, areaUnit) : undefined,
+          mainArea: room.mainArea ? convertAreaUnit(Number(room.mainArea), oldUnit, areaUnit) : undefined,
           length: isManualArea
             ? room.length
               ? convertAreaUnit(
