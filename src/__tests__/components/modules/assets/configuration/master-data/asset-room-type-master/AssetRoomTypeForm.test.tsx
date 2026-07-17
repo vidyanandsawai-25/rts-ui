@@ -56,8 +56,8 @@ describe("AssetRoomTypeForm Component", () => {
   });
 
   test("should render form elements correctly", () => {
-    const categories = [{ id: 1, name: "Building", description: "Desc" }];
-    const assetTypes = [{ id: 1, name: "Structure", description: "Desc" }];
+    const categories = [{ id: 1, name: "Building" }];
+    const assetTypes = [{ id: 1, name: "Structure" }];
 
     render(<AssetRoomTypeForm id={null} categories={categories} types={assetTypes} />);
 
