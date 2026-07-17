@@ -240,8 +240,8 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
     const sanitizeRoom = (room: Record<string, unknown>) => ({
         ...sanitizeRoomBase(room, isUtility, isActualOpenPlot),
         propertyId: Number(room.propertyId || payload.propertyId || 0),
-        createdBy: 0,
-        roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { createdBy: 0, roomWiseSubmissionId: Number(m.roomWiseSubmissionId || 0) }))
+        createdBy: payload.createdBy ?? 0,
+        roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { createdBy: payload.createdBy ?? 0, roomWiseSubmissionId: Number(m.roomWiseSubmissionId || 0) }))
     });
 
     const sanitizedRenterDetails = sanitizeRenterDetailsForCreate(payload, parentPropertyDetailsId);
@@ -249,7 +249,7 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
 
     return {
         ...sanitizeFloorBase(payload),
-        createdBy: 0,
+        createdBy: payload.createdBy ?? 0,
         renterDetails: sanitizedRenterDetails,
         renterMast: sanitizedRenterMast,
         renters: sanitizedRenterMast,
@@ -269,9 +269,9 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
         id: Number(room.id || room.roomWiseSubmissionId || 0),
         propertyId: Number(room.propertyId || payload.propertyId || 0),
         propertyDetailsId: parentPropertyDetailsId,
-        updatedBy: 0,
+        updatedBy: payload.updatedBy ?? 0,
         roomWiseSubmissionId: Number(room.id || room.roomWiseSubmissionId || 0),
-        roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { updatedBy: 0, roomWiseMinusId: Number(m.id || m.roomWiseMinusId || 0), roomWiseSubmissionId: Number(m.roomWiseSubmissionId || room.id || room.roomWiseSubmissionId || 0) })),
+        roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { updatedBy: payload.updatedBy ?? 0, roomWiseMinusId: Number(m.id || m.roomWiseMinusId || 0), roomWiseSubmissionId: Number(m.roomWiseSubmissionId || room.id || room.roomWiseSubmissionId || 0) })),
     });
 
     const sanitizedRenterDetails = sanitizeRenterDetailsForUpdate(payload, parentPropertyDetailsId);
@@ -281,7 +281,7 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
 
     return {
         ...sanitizeFloorBase(payload),
-        updatedBy: 0,
+        updatedBy: payload.updatedBy ?? 0,
         renterDetails: sanitizedRenterDetails,
         // Mirror the GET projection by writing the renter-mast collection
         // under BOTH keys the backend exposes (`renters` is what comes back
@@ -341,10 +341,10 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
             base2Mtr: Number(room.base2Mtr || 0),
             ...(isUpdate ? {
-                updatedBy: 0,
+                updatedBy: data.updatedBy ?? 0,
                 roomWiseSubmissionId: roomId,
             } : {
-                createdBy: 0,
+                createdBy: data.createdBy ?? 0,
             }),
             roomWiseMinusData: (((room.roomWiseMinusData || room.minusRooms || room.offsets || []) as Record<string, unknown>[]) || []).map(m => {
                 const minusId = Number(m.id || m.roomWiseMinusId || 0);
@@ -369,10 +369,10 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
                     roomWiseSubmissionId: Number(m.roomWiseSubmissionId || roomId || 0),
                     isOffset: isOffsetVal,
                     ...(isUpdate ? {
-                        updatedBy: 0,
+                        updatedBy: data.updatedBy ?? 0,
                         roomWiseMinusId: minusId,
                     } : {
-                        createdBy: 0,
+                        createdBy: data.createdBy ?? 0,
                     })
                 };
             })
@@ -397,11 +397,11 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
     return {
         ...base,
         ...(isUpdate ? {
-            updatedBy: 0,
+            updatedBy: data.updatedBy ?? 0,
             isRenter: base.isRenter,
             renterYesNo: base.renterYesNo,
         } : {
-            createdBy: 0,
+            createdBy: data.createdBy ?? 0,
             isRenter: base.isRenter,
             renterYesNo: base.renterYesNo,
         }),

@@ -105,7 +105,7 @@ export async function handleFooterAction(
         if (!validationResult.success) {
           const errors = validationResult.error.format();
           if (errors.propertyId) {
-            return { success: false, error: 'Property ID is missing.' };
+            return { success: false, error: 'error.propertyIdMissing' };
           }
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
@@ -215,7 +215,7 @@ export async function handleFooterAction(
       }
       case 'PTIS_TAP_WATER': {
         if (!payload.propertyId) {
-          return { success: false, error: 'Property ID is missing.' };
+          return { success: false, error: 'error.propertyIdMissing' };
         }
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
@@ -233,7 +233,7 @@ export async function handleFooterAction(
       case 'PTIS_APPLY':
       case 'PTIS_APPLICABLE_TAXES_INFO': {
         if (!payload.propertyId) {
-          return { success: false, error: 'Property ID is missing.' };
+          return { success: false, error: 'error.propertyIdMissing' };
         }
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
