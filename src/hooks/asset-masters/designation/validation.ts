@@ -63,7 +63,13 @@ export const validateDesignationForm = (
       })(val);
     },
     isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
-    owningDepartmentId: (val: unknown) => !val ? t('form.validation.owningDepartmentRequired') : undefined,
+    owningDepartmentId: (val: unknown) => {
+      const parsed = Number(val);
+      if (!val || isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+        return t('form.validation.owningDepartmentRequired');
+      }
+      return undefined;
+    },
   };
   return validateForm(data, schema);
 };

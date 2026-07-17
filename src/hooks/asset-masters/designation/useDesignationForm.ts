@@ -152,7 +152,7 @@ export function useDesignationForm({
 
   const handleSelectChange = useCallback((name: string, value: string): void => {
     const parsed = Number(value);
-    const numericValue = value && Number.isFinite(parsed) ? parsed : null;
+    const numericValue = value && Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 
     setFormData((p) => {
       const updated = {

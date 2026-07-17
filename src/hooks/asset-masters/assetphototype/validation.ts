@@ -70,8 +70,20 @@ export const validateAssetPhotoForm = (
       return undefined;
     },
     isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
-    assetCategoryId: (val: unknown) => !val ? t('form.validation.assetCategoryRequired') : undefined,
-    assetTypeId: (val: unknown) => !val ? t('form.validation.assetTypeRequired') : undefined,
+    assetCategoryId: (val: unknown) => {
+      const parsed = Number(val);
+      if (!val || isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+        return t('form.validation.assetCategoryRequired');
+      }
+      return undefined;
+    },
+    assetTypeId: (val: unknown) => {
+      const parsed = Number(val);
+      if (!val || isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
+        return t('form.validation.assetTypeRequired');
+      }
+      return undefined;
+    },
   };
   return validateForm(data, schema);
 };

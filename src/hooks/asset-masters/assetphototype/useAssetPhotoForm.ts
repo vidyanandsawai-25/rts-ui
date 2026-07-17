@@ -90,8 +90,11 @@ export function useAssetPhotoForm({
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTouched(p => ({ ...p, [name]: true }));
-    const sanitized = name === "displayOrder" && value === "" ? "" : sanitizeFieldValue(name, value);
-    if (name === "displayOrder") setDisplayOrderValue(sanitized);
+    let sanitized = sanitizeFieldValue(name, value);
+    if (name === "displayOrder") {
+      sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "").substring(0, 4);
+      setDisplayOrderValue(sanitized);
+    }
     const updated = { ...formData, [name]: name === "displayOrder" ? (sanitized === "" ? Number.NaN : Number(sanitized)) : sanitized };
     setFormData(updated);
     const fieldErrors = validate(updated);
@@ -149,7 +152,7 @@ export function useAssetPhotoForm({
 
   const handleSelectChange = useCallback((name: string, value: string) => {
     const parsed = Number(value);
-    const numVal = value && Number.isFinite(parsed) ? parsed : null;
+    const numVal = value && Number.isInteger(parsed) && parsed > 0 ? parsed : null;
     setFormData(p => {
       const updated = name === "assetCategoryId" 
         ? { ...p, assetCategoryId: numVal, assetTypeId: null }

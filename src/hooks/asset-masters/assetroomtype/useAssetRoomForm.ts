@@ -138,7 +138,7 @@ export function useAssetRoomForm({
 
   const handleSelectChange = useCallback((name: string, value: string) => {
     const parsed = Number(value);
-    const numVal = value && Number.isFinite(parsed) ? parsed : null;
+    const numVal = value && Number.isInteger(parsed) && parsed > 0 ? parsed : null;
     if (name === "assetCategoryId") {
       setFormData(p => {
         const updated = { ...p, assetCategoryId: numVal, assetTypeId: null };
