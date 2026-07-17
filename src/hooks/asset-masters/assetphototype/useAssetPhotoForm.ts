@@ -144,37 +144,34 @@ export function useAssetPhotoForm({
     setFormData(p => ({ ...p, isActive: checked }));
   }, []);
 
-  const handleToggleRequired = useCallback((checked: boolean) => {
-    setFormData(p => ({ ...p, isRequired: checked }));
-  }, []);
-
-  const handleToggleSubUnit = useCallback((checked: boolean) => {
-    setFormData(p => ({ ...p, isSubUnit: checked }));
-  }, []);
+  const handleToggleRequired = useCallback((checked: boolean) => setFormData(p => ({ ...p, isRequired: checked })), []);
+  const handleToggleSubUnit = useCallback((checked: boolean) => setFormData(p => ({ ...p, isSubUnit: checked })), []);
 
   const handleSelectChange = useCallback((name: string, value: string) => {
     const parsed = Number(value);
     const numVal = value && Number.isFinite(parsed) ? parsed : null;
-    if (name === "assetCategoryId") {
-      setFormData(p => {
-        const updated = { ...p, assetCategoryId: numVal, assetTypeId: null };
-        const errs = validate(updated);
-        setErrors(prev => ({ ...prev, assetCategoryId: errs.assetCategoryId, assetTypeId: errs.assetTypeId }));
-        return updated;
-      });
-      pushCategoryQuery(numVal);
-    } else {
-      setFormData(p => {
-        const updated = { ...p, [name]: numVal };
-        const errs = validate(updated);
-        setErrors(prev => {
-          const err = { ...prev };
+    setFormData(p => {
+      const updated = name === "assetCategoryId" 
+        ? { ...p, assetCategoryId: numVal, assetTypeId: null }
+        : { ...p, [name]: numVal };
+      
+      const errs = validate(updated);
+      setErrors(prev => {
+        const err = { ...prev };
+        if (name === "assetCategoryId") {
+          err.assetCategoryId = errs.assetCategoryId;
+          err.assetTypeId = errs.assetTypeId;
+        } else {
           const field = name as keyof AssetPhotoTypeFormModel;
           if (errs[field]) err[field] = errs[field]; else delete err[field];
-          return err;
-        });
-        return updated;
+        }
+        return err;
       });
+      return updated;
+    });
+
+    if (name === "assetCategoryId") {
+      pushCategoryQuery(numVal);
     }
   }, [pushCategoryQuery, validate]);
 

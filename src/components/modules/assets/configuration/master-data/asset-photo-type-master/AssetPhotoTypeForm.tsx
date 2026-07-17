@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useRef } from "react";
-import { Image as ImageIcon } from "lucide-react";
+import React, { useEffect, useRef } from "react";
+import { Image as ImageIcon, CheckCircle2, X, AlertCircle } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton } from "@/components/common";
-import { StatusToggleCard } from "./StatusToggleCard";
-import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
+import { CancelButton, SaveButton, ToggleSwitch, ValidationMessage } from "@/components/common";
+import { cn } from "@/lib/utils/cn";
 import { AssetPhotoTypeFormFields } from "./AssetPhotoTypeFormFields";
 import type { AssetPhotoType } from "@/types/asset-masters/asset-photo-type.types";
 import { useAssetPhotoForm } from "@/hooks/asset-masters/assetphototype/useAssetPhotoForm";
@@ -102,16 +101,48 @@ export default function AssetPhotoTypeForm({
     >
       <form id="form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
         {isEdit && (
-          <StatusToggleCard
-            statusToggleRef={statusToggleRef}
-            isActive={isActive}
-            handleToggleStatus={handleToggleStatus}
-            statusLabel={t("form.status.label")}
-            statusDescription={t("form.status.description")}
-            activeText={tCommon("status.active")}
-            inactiveText={tCommon("status.inactive")}
-            errorMessage={errors.isActive}
-          />
+          <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
+            <div
+              className={cn(
+                "rounded-xl p-3 flex items-center justify-between",
+                isActive
+                  ? "border border-blue-200 bg-[#F0F6FF]"
+                  : "border border-gray-200 bg-gray-50"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "h-9 w-9 flex items-center justify-center rounded-full",
+                    isActive
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-200 text-gray-900"
+                  )}
+                >
+                  {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{t("form.status.label")}</div>
+                  <div className="text-sm text-gray-500">
+                    {t("form.status.description")}
+                    {isActive ? ` ${tCommon("status.active")}` : ` ${tCommon("status.inactive")}`}
+                  </div>
+                </div>
+              </div>
+
+              <ToggleSwitch
+                ref={statusToggleRef}
+                checked={isActive}
+                onChange={handleToggleStatus}
+                showPopup={false}
+                activeLabel={tCommon("status.active")}
+                inactiveLabel={tCommon("status.inactive")}
+              />
+            </div>
+            {errors.isActive && (
+              <ValidationMessage message={errors.isActive} className="mt-2" />
+            )}
+          </div>
         )}
 
         <AssetPhotoTypeFormFields
@@ -130,7 +161,10 @@ export default function AssetPhotoTypeForm({
           t={t}
         />
 
-        <MandatoryFieldsNotice message={tCommon("note.mandatory")} />
+        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+          <AlertCircle size={16} />
+          <span>{tCommon("note.mandatory")}</span>
+        </div>
       </form>
     </Drawer>
   );
