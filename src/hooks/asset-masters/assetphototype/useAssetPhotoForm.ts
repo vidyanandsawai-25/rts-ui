@@ -79,7 +79,7 @@ export function useAssetPhotoForm({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "displayOrder") {
-      const val = value.replace(/[^0-9]/g, "").replace(/^0+/, "").substring(0, 4);
+      const val = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "").substring(0, 4);
       setDisplayOrderValue(val);
       setFormData(p => ({ ...p, displayOrder: val === "" ? Number.NaN : Number(val) }));
     } else {

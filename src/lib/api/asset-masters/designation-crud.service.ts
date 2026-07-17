@@ -75,7 +75,7 @@ export async function getDesignationById(designationId: number): Promise<Designa
 /** Creates a new designation */
 export async function createDesignation(data: DesignationFormModel): Promise<string | undefined> {
   try {
-    if (!data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim() || data.owningDepartmentId == null) {
+    if (!data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim() || typeof data.owningDepartmentId !== "number" || !Number.isFinite(data.owningDepartmentId) || data.owningDepartmentId <= 0) {
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
@@ -107,7 +107,7 @@ export async function createDesignation(data: DesignationFormModel): Promise<str
 /** Updates an existing designation */
 export async function updateDesignation(data: DesignationFormModel): Promise<string | undefined> {
   try {
-    if (!data.id || data.id <= 0 || !data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim() || data.owningDepartmentId == null) {
+    if (!data.id || data.id <= 0 || !data.designationCode?.trim() || !data.designationName?.trim() || !data.designationLocal?.trim() || typeof data.owningDepartmentId !== "number" || !Number.isFinite(data.owningDepartmentId) || data.owningDepartmentId <= 0) {
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
