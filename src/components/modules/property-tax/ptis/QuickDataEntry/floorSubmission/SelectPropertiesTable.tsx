@@ -226,16 +226,18 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           }
           return '';
         }}
-        headerTitle={
-          <span className="flex items-center gap-3">
-            <span>{t('floor.selectProperties.title')}</span>
-            {leftHeaderContent}
-          </span>
+        headerTitle={t('floor.selectProperties.title')}
+        headerExtra={
+          <div className="flex items-center justify-between w-full select-properties-header-extra">
+            <div className="flex items-center">
+              {leftHeaderContent}
+            </div>
+            {headerExtra}
+          </div>
         }
-        headerExtra={headerExtra}
         emptyText={t('floor.selectProperties.noProperties')}
         loadingText={t('floor.selectProperties.loading')}
-        containerClassName=""
+        containerClassName="md:[&_div:has(>h3)]:w-auto md:[&_div:has(>.select-properties-header-extra)]:w-auto md:[&_div:has(>.select-properties-header-extra)]:grow"
         tableClassName="table-fixed text-xs [&_th]:px-3 [&_td]:px-3"
         maxBodyHeightClassName="max-h-[260px]"
       />
