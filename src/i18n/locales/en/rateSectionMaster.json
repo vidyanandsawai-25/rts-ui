@@ -68,6 +68,13 @@
     "validationError": "An error occurred while validating wards.",
     "moveAllError": "An error occurred while moving all wards.",
     "alreadyPresentInOtherRateSection": "Clicked {wardNo} is already present in rate section {rateSectionNo}, you cannot add in this rate section {selectedRateSectionName}.",
+    "reassignWardsTitle": "Confirm Ward Reassignment",
+    "reassignSingleWardConfirm": "Ward {wardNo} is currently associated with rate section {oldRateSection}. Are you sure you want to reassign it to rate section {newRateSection}?",
+    "assignSingleWardConfirm": "Are you sure you want to assign ward {wardNo} to rate section {newRateSection}?",
+    "assignMultipleWardsConfirm": "Are you sure you want to assign the following ward(s) to rate section {newRateSection}?\n{wardDetails}",
+    "assignAllWardsConfirm": "All wards will be assigned to rate section {newRateSection}. Are you sure you want to assign them to rate section {newRateSection}?",
+    "yes": "Yes",
+    "no": "No",
     "selectRateSection": "Select Rate Section",
     "editTitle": "Edit Ward",
     "editDescription": "Update ward details",
@@ -83,7 +90,11 @@
     "updateError": "Failed to update ward",
     "emptyState": "No wards assigned to this rate section. Select wards from Available Wards or View Wards tab to add them.",
     "alreadyAdded": "Added to {rateSectionNo}",
-    "selected": "Selected"
+    "selected": "Selected",
+    "wardDetailsReassign": "• Ward {wardNo} (currently in \"{oldRateSection}\")",
+    "wardDetailsAssign": "• Ward {wardNo}",
+    "assignAllAvailableWardsConfirm": "All available wards ({count}) will be assigned to rate section {newRateSection}. Are you sure you want to proceed?",
+    "assignAllViewAllWardsConfirm": "{count} unassigned wards will be assigned to rate section {newRateSection} (wards assigned to other rate sections will be skipped). Are you sure you want to proceed?"
   },
   "wardList": {
     "selectAll": "Select All"
@@ -106,6 +117,7 @@
     "add": "Add",
     "save": "Save",
     "saving": "Saving...",
+    "loading": "Loading...",
     "cancel": "Cancel",
     "update": "Update",
     "updating": "Updating...",

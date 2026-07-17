@@ -17,6 +17,7 @@ import {
     floorSubmissionSchema,
     renterSubmissionSchema
 } from '@/lib/validations/floor-submission.schema';
+import { getLoggedInUserId } from '@/lib/utils/cookie.server';
 
 /**
  * Validates renter form data for API calls
@@ -58,7 +59,7 @@ export function validateSubmissionId(id: number | string): id is number | string
  * 
  * @example
  * try {
- *   validateCreateFormData(payload);
+ *   await validateCreateFormData(payload);
  * } catch (error) {
  *   if (error instanceof ApiError) {
  *     const translatedMessage = t(error.message);
@@ -66,7 +67,11 @@ export function validateSubmissionId(id: number | string): id is number | string
  *   }
  * }
  */
-export function validateCreateFormData(data: FloorSubmissionPayload): void {
+export async function validateCreateFormData(data: FloorSubmissionPayload): Promise<void> {
+    const userId = await getLoggedInUserId();
+    data.createdBy = userId;
+    data.updatedBy = userId;
+
     const result = floorSubmissionSchema.safeParse(data);
     
     if (!result.success) {
@@ -85,9 +90,20 @@ export function validateCreateFormData(data: FloorSubmissionPayload): void {
  * @param data - Floor submission payload to validate
  * @throws ApiError with status 400 and translation key if validation fails
  */
-export function validateUpdateFormData(submissionId: number | string, data: FloorSubmissionPayload): void {
+export async function validateUpdateFormData(submissionId: number | string, data: FloorSubmissionPayload): Promise<void> {
     if (!validateSubmissionId(submissionId)) {
         throw new ApiError(400, "floor.errors.submissionIdRequired", "Floor submission ID validation failed");
     }
-    validateCreateFormData(data);
+    const userId = await getLoggedInUserId();
+    data.createdBy = data.createdBy ? Number(data.createdBy) : 0;
+    data.updatedBy = userId;
+
+    const result = floorSubmissionSchema.safeParse(data);
+    
+    if (!result.success) {
+        // Get first error - message is already a translation key
+        const firstError = result.error.issues[0];
+        const errorKey = firstError.message || 'floor.errors.invalidData';
+        throw new ApiError(400, errorKey, "Floor submission data validation failed");
+    }
 }
