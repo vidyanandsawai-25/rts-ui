@@ -87,9 +87,6 @@ export default function DepartmentConfigModal({
               {configKeyName}
             </h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
-                {t('modals.departmentConfig.idLabel', { id: configKeyId })}
-              </span>
               <p className="text-slate-500 text-xs font-medium line-clamp-1">
                 {configKeyDescription || t('modals.departmentConfig.subtitle')}
               </p>

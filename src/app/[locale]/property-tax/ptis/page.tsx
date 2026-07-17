@@ -174,6 +174,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           leftContent={<PtisBackButton />}
           rightContent={
             <PtisFooterDropdowns
+              key="footer-dropdowns"
               workflowStages={workflowStages}
               propertyId={resolvedPropertyId}
               currentWorkflowStageId={
