@@ -43,7 +43,7 @@ export function useAssetPhotoForm({
     photoTypeCode: initialData?.photoTypeCode ?? "",
     photoTypeName: initialData?.photoTypeName ?? "",
     description: initialData?.description ?? "",
-    displayOrder: initialData?.displayOrder ?? 0,
+    displayOrder: initialData?.displayOrder ?? Number.NaN,
     isActive: initialData?.isActive ?? true,
     assetCategoryId: initialData?.assetCategoryId ?? null,
     assetTypeId: initialData?.assetTypeId ?? null,
@@ -81,7 +81,7 @@ export function useAssetPhotoForm({
     if (name === "displayOrder") {
       const val = value.replace(/[^0-9]/g, "").replace(/^0+/, "").substring(0, 4);
       setDisplayOrderValue(val);
-      setFormData(p => ({ ...p, displayOrder: val === "" ? 0 : Number(val) }));
+      setFormData(p => ({ ...p, displayOrder: val === "" ? Number.NaN : Number(val) }));
     } else {
       setFormData(p => ({ ...p, [name]: sanitizeFieldValue(name, value) }));
     }
@@ -92,7 +92,7 @@ export function useAssetPhotoForm({
     setTouched(p => ({ ...p, [name]: true }));
     const sanitized = name === "displayOrder" && value === "" ? "" : sanitizeFieldValue(name, value);
     if (name === "displayOrder") setDisplayOrderValue(sanitized);
-    const updated = { ...formData, [name]: name === "displayOrder" ? (sanitized === "" ? 0 : Number(sanitized)) : sanitized };
+    const updated = { ...formData, [name]: name === "displayOrder" ? (sanitized === "" ? Number.NaN : Number(sanitized)) : sanitized };
     setFormData(updated);
     const fieldErrors = validate(updated);
     setErrors(p => {
