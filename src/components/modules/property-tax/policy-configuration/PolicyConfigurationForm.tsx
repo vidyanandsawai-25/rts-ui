@@ -235,11 +235,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       const res = await savePolicyConfiguration(isEdit ? String(formData.id) : "", fd);
 
       if (res?.ok) {
-        toast.success(
-          res.mode === "update"
-            ? t("form.messages.updateSuccess")
-            : t("form.messages.createSuccess")
-        );
+        toast.success(t("form.messages.updateSuccess"));
         setOpen(false);
         router.push(`/${locale}/property-tax/policy-configuration`);
         router.refresh();
