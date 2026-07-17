@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { SearchInput, Checkbox, Select } from "@/components/common";
 import { PrevPageButton, NextPageButton } from "@/components/common/ActionButtons";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { Label } from "@/components/common/label";
 import { RateSectionWardsProps } from "@/types/rateSectionMaster.types";
 
 const PAGE_SIZE_OPTIONS = [
@@ -109,12 +108,12 @@ export default function RateSectionWards({
             <p className="text-sm">{t("wards.emptyState")}</p>
           </div>
         )}
-
+ 
         {paginatedSelected.map(w => {
           const isSelfSelected = checkedSelected.has(w);
-
+ 
           return (
-            <Label
+            <label
               key={w}
               className="flex items-center gap-3 px-4 py-1.5 backdrop-purple-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-purple-100/50 hover:bg-white/80 hover:border-purple-300/50 hover:shadow-md"
               onClick={() => !isSelectAllActive && onToggle(w)}
@@ -129,7 +128,7 @@ export default function RateSectionWards({
               <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors">
                 {w}
               </span>
-            </Label>
+            </label>
           );
         })}
       </div>

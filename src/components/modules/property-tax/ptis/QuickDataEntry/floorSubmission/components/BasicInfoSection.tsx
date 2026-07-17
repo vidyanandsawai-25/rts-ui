@@ -33,7 +33,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
       focusFieldOrFallback('floor-is-taxable', '.bg-white.rounded-xl');
     }, 100);
     return () => clearTimeout(timer);
-  }, [editingFloorForm.id, isAddingNewFloor]);
+  }, [editingFloorForm.id, isAddingNewFloor, selectedFloorType]);
 
   const handleYearValueChange = (
     field: 'conYr' | 'asstYr',
