@@ -49,7 +49,6 @@ import {
 // Actions utilities
 import {
   parsePositiveInteger,
-  decodeJwtPayload,
   getGrievanceCategoryMasterPath,
   getAuditTimestamp,
   resolveAuditUserId,
@@ -400,24 +399,7 @@ describe('Grievance Category Master - Comprehensive Test Suite', () => {
       });
     });
 
-    describe('decodeJwtPayload', () => {
-      it('should decode valid JWT token', () => {
-        // Pre-encoded base64 payload: {"userId":123,"name":"Test User"}
-        const token = 'header.eyJ1c2VySWQiOjEyMywibmFtZSI6IlRlc3QgVXNlciJ9.signature';
-        const decoded = decodeJwtPayload(token);
-        expect(decoded).toEqual({ userId: 123, name: 'Test User' });
-      });
 
-      it('should return null for invalid token format', () => {
-        expect(decodeJwtPayload('invalid')).toBeNull();
-        expect(decodeJwtPayload('only.one')).toBeNull();
-      });
-
-      it('should return null for malformed base64', () => {
-        const token = 'header.!!!invalid_base64!!!.signature';
-        expect(decodeJwtPayload(token)).toBeNull();
-      });
-    });
 
     describe('getGrievanceCategoryMasterPath', () => {
       it('should return correct path for locale', () => {

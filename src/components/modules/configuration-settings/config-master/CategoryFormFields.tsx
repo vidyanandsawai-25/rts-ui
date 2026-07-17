@@ -1,7 +1,7 @@
 'use client';
 
 import { Label } from '@/components/common/label';
-import { Input, ValidationMessage, TextArea, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
+import { Input, ValidationMessage, TextArea, StatusToggleCard } from '@/components/common';
 import { useTranslations } from 'next-intl';
 
 
@@ -29,8 +29,6 @@ export function CategoryFormFields({
 
   return (
     <div className="space-y-6 p-6">
-      <RequiredFieldsNote text={t('modals.addCategory.form.requiredFields')} />
-
       {/* Category Code */}
       <div className="space-y-2">
         <Label htmlFor="categoryCode" required className="text-sm font-medium text-slate-700">

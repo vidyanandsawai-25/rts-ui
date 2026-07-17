@@ -17,6 +17,8 @@ interface PhotoPlanToolbarProps {
   isAdding?: boolean;
   isReplacing?: boolean;
   isDeleting?: boolean;
+  isPhotoPlanCategory?: boolean;
+  onDrawPlan?: (e: React.MouseEvent) => void;
 }
 
 export function PhotoPlanToolbar({
@@ -31,6 +33,8 @@ export function PhotoPlanToolbar({
   isAdding = false,
   isReplacing = false,
   isDeleting = false,
+  isPhotoPlanCategory = false,
+  onDrawPlan,
 }: PhotoPlanToolbarProps): React.ReactElement {
   const t = useTranslations('ptis');
   const isMutating = isAdding || isReplacing || isDeleting;
@@ -48,6 +52,17 @@ export function PhotoPlanToolbar({
 
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 h-8">
+          {isPhotoPlanCategory && onDrawPlan && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onDrawPlan}
+              disabled={isMutating}
+              className="bg-purple-600 hover:bg-purple-700 text-white border-none h-full shrink-0"
+            >
+              {t('media.drawPlan') || 'Draw Plan'}
+            </Button>
+          )}
           {hasImage ? (
             <>
               <Button
