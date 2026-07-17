@@ -69,8 +69,9 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     taxCalculationGuidelineMessages,
-    addTaxesMessages,
+    assetMessages,
     modulesMessages,
+    addTaxesMessages,
     reportMessages,
     gstMasterMessages,
     penaltyRuleMasterMessages,
@@ -172,10 +173,13 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/addTaxes.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/asset.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/addTaxes.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -241,8 +245,9 @@ export default getRequestConfig(async ({ locale }) => {
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
       taxCalculationGuideline: taxCalculationGuidelineMessages,
-      addTaxes: addTaxesMessages,
+      asset: assetMessages,
       modules: modulesMessages,
+      addTaxes: addTaxesMessages,
       report: reportMessages,
       gstMaster: gstMasterMessages,
       penaltyRuleMaster: penaltyRuleMasterMessages,
