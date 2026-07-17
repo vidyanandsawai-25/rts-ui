@@ -63,7 +63,9 @@
       "designationLocalRequired": "Designation name (Regional) is required",
       "designationLocalMaxLength": "Maximum length is 100 characters",
       "owningDepartmentRequired": "Owning Department is required",
-      "mustBeActive": "Designation must be active to save"
+      "mustBeActive": "Designation must be active to save",
+      "descriptionMaxLength": "Maximum length is {count} characters",
+      "descriptionFormat": "Invalid description format"
     }
   },
   "delete": {

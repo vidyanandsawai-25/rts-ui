@@ -63,7 +63,9 @@
       "designationLocalRequired": "क्षेत्रीय पदनाम नाम आवश्यक है",
       "designationLocalMaxLength": "अधिकतम लंबाई 100 वर्ण है",
       "owningDepartmentRequired": "विभाग आवश्यक है",
-      "mustBeActive": "सहेजने के लिए पदनाम सक्रिय होना चाहिए"
+      "mustBeActive": "सहेजने के लिए पदनाम सक्रिय होना चाहिए",
+      "descriptionMaxLength": "अधिकतम लंबाई {count} वर्ण है",
+      "descriptionFormat": "अमान्य विवरण प्रारूप"
     }
   },
   "delete": {

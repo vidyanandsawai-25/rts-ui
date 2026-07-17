@@ -98,7 +98,7 @@ export function DesignationMaster({
           } else {
             const errorMessage = result.message ||
               (result.statusCode === 409 ? t("apiErrors.inUse") :
-                result.statusCode === 400 ? t("apiErrors.validationError") :
+                result.statusCode === 400 ? t("apiErrors.invalidData") :
                   result.statusCode === 404 ? t("apiErrors.notFound") :
                     tCommon("errors.deleteError"));
             toast.error(errorMessage);

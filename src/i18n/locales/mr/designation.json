@@ -63,7 +63,9 @@
       "designationLocalRequired": "प्रादेशिक पदनाम नाव आवश्यक आहे",
       "designationLocalMaxLength": "जास्तीत जास्त लांबी १०० अक्षरे असावी",
       "owningDepartmentRequired": "विभाग आवश्यक आहे",
-      "mustBeActive": "जतन करण्यासाठी पदनाम सक्रिय असणे आवश्यक आहे"
+      "mustBeActive": "जतन करण्यासाठी पदनाम सक्रिय असणे आवश्यक आहे",
+      "descriptionMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
+      "descriptionFormat": "अवैध वर्णन स्वरूप"
     }
   },
   "delete": {

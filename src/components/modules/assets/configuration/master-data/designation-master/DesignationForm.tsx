@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Briefcase as DesignationIcon, CheckCircle2, X, AlertCircle } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton, ToggleSwitch, ValidationMessage } from "@/components/common";
