@@ -56,6 +56,13 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          div:has(> .data-entry-same-as-header) {
+            flex: 1 1 0% !important;
+          }
+        `
+      }} />
       <Tabs
         value={hook.dataEntrySameAsTab}
         onChange={(val) => {
@@ -71,7 +78,7 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
           open={isOpen}
           onClose={onClose}
           title={(
-            <div className="flex w-full flex-wrap items-center gap-4">
+            <div className="flex w-full flex-wrap items-center gap-4 data-entry-same-as-header">
               <h2 className="text-[15px] font-bold leading-tight text-white">{t('floor.dataEntry')}</h2>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
