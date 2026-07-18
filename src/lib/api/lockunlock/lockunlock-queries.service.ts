@@ -78,3 +78,46 @@ export async function getLockUnlockProperties(
 
   return normalizePagedResponse<LockUnlockPropertyItem>(response.data);
 }
+
+/**
+ * Fetches paginated properties with lock status details by category.
+ * GET /api/LockUnlock/properties/search-by-category
+ */
+export async function getLockUnlockPropertiesByCategory(
+  params: LockUnlockPropertiesQueryParams
+): Promise<LockUnlockPropertiesResponse> {
+  const urlParams = new URLSearchParams({
+    PageNumber: params.PageNumber?.toString() ?? "1",
+    PageSize: params.PageSize?.toString() ?? "10",
+  });
+
+  if (params.SearchCategory !== undefined) urlParams.append("SearchCategory", params.SearchCategory.toString());
+  if (params.ZoneId) urlParams.append("ZoneId", params.ZoneId.toString());
+  if (params.WardId) urlParams.append("WardId", params.WardId.toString());
+  if (params.PropertyFrom?.trim()) urlParams.append("PropertyFrom", params.PropertyFrom.trim());
+  if (params.PropertyTo?.trim()) urlParams.append("PropertyTo", params.PropertyTo.trim());
+  if (params.PartitionNo?.trim()) urlParams.append("PartitionNo", params.PartitionNo.trim());
+  if (params.Search?.trim()) urlParams.append("Search", params.Search.trim());
+  if (params.SearchPartitionNo?.trim()) urlParams.append("SearchPartitionNo", params.SearchPartitionNo.trim());
+  if (params.SearchTerm?.trim()) urlParams.append("SearchTerm", params.SearchTerm.trim());
+  if (params.SortBy?.trim()) urlParams.append("SortBy", params.SortBy.trim());
+  if (params.SortOrder?.trim()) urlParams.append("SortOrder", params.SortOrder.trim());
+  if (params.FilterLogic !== undefined && params.FilterLogic !== null) {
+    urlParams.append("FilterLogic", params.FilterLogic.toString());
+  }
+
+  const response = await apiClient.get<LockUnlockPropertiesResponse>(
+    `/LockUnlock/properties/search-by-category?${urlParams.toString()}`
+  );
+
+  if (!response.success || !response.data) {
+    const t = await getTranslations("lockUnlock");
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || t("messages.fetchFailed"),
+      "Get properties by category failed"
+    );
+  }
+
+  return normalizePagedResponse<LockUnlockPropertyItem>(response.data);
+}

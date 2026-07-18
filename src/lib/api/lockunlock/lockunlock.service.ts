@@ -2,6 +2,7 @@
 export {
   getLockUnlockScreens,
   getLockUnlockProperties,
+  getLockUnlockPropertiesByCategory,
 } from './lockunlock-queries.service';
 
 // Mutation operations

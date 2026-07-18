@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/utils/api";
 import {
   getLockUnlockScreens,
   getLockUnlockProperties,
+  getLockUnlockPropertiesByCategory,
   bulkLockUnlockProperties
 } from "@/lib/api/lockunlock/lockunlock.service";
 import {
@@ -41,6 +42,19 @@ export async function fetchLockUnlockPropertiesPagedAction(
 }
 
 /**
+ * Server Action to fetch properties by category (SearchCategory, Ward, range, search, pagination).
+ */
+export async function fetchLockUnlockPropertiesByCategoryAction(
+  params: LockUnlockPropertiesQueryParams
+): Promise<LockUnlockPropertiesResponse> {
+  try {
+    return await getLockUnlockPropertiesByCategory(params);
+  } catch (error: unknown) {
+    throw error;
+  }
+}
+
+/**
  * Server Action to submit a bulk lock/unlock request.
  * Supports select-all mode by resolving all matching property IDs server-side
  * when selectAll is true, then passing the resolved IDs to the legacy API.
@@ -57,16 +71,17 @@ export async function bulkLockUnlockPropertiesAction(
 
     if (payload.selectAll && payload.filters) {
       const queryParams: LockUnlockPropertiesQueryParams = {
+        SearchCategory: 4,
         WardId: payload.filters.wardId,
-        FromPropertyNo: payload.filters.fromProperty,
-        ToPropertyNo: payload.filters.toProperty,
+        PropertyFrom: payload.filters.fromProperty,
+        PropertyTo: payload.filters.toProperty,
         PartitionNo: payload.filters.partitionNo,
         Search: payload.filters.search,
         PageNumber: 1,
         PageSize: -1,
       };
 
-      const allProperties = await getLockUnlockProperties(queryParams);
+      const allProperties = await getLockUnlockPropertiesByCategory(queryParams);
 
       if (!allProperties || !allProperties.items || allProperties.items.length === 0) {
         return {

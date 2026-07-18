@@ -1,6 +1,9 @@
 {
   "title": "Lock Property",
   "subtitle": "Administrative control utility for locking or unlocking groups of properties within selected ranges.",
+  "common": {
+    "loading": "Loading..."
+  },
   "selectPropertyCard": {
     "title": "Select properties",
     "wardNo": "Ward no",
@@ -29,9 +32,10 @@
     "propertyMasterTitle": "",
     "lockButton": "Lock Selected Screens",
     "unlockButton": "Unlock Selected Screens",
-    "searchPropertyPlaceholder": "Search by property no...",
+    "searchPropertyPlaceholder": "Search by Property No. or Partition No...",
     "searchButton": "Search",
     "placeholderText": "Please select a ward and property range, then click \"Show\" to view properties.",
+    "noResultsFound": "No properties found for the selected search criteria.",
     "columns": {
       "propertyDetail": "Property No.",
       "screenNames": "Screen Names",
@@ -80,7 +84,8 @@
     "fetchSuccess": "Properties fetched successfully.",
     "fetchNoResults": "No properties found in the selected range.",
     "fetchFailed": "Failed to load properties.",
-    "fetchWardsError": "Error fetching wards:"
+    "fetchWardsError": "Error fetching wards:",
+    "searchValidationError": "Please enter a value to search."
   },
   "error": {
     "title": "Failed to connect to the server. Please try again later.",

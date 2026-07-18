@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Layers } from "lucide-react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { Layers, Loader2 } from "lucide-react";
 import {
   CardHeader,
   CardTitle,
@@ -30,7 +30,7 @@ export function ScreenSelectionCard({
   setSelectedScreenIds,
 }: ScreenSelectionCardProps) {
   const t = useTranslations("lockUnlock");
-  const { updateQueries, searchParams } = useQueryTransition();
+  const { updateQueries, searchParams, isPending } = useQueryTransition();
 
   const screenSearchFromUrl = searchParams.get("screenSearch") || "";
   const screenModuleFromUrl = searchParams.get("screenModule") || "ALL";
@@ -54,7 +54,7 @@ export function ScreenSelectionCard({
 
     const timer = setTimeout(() => {
       updateQueries({ screenSearch: searchTerm || null });
-    }, 300);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [searchTerm, updateQueries]);
@@ -102,12 +102,19 @@ export function ScreenSelectionCard({
     });
   }, [screens, searchTerm, selectedModule]);
 
-  // Select all currently visible filtered screens
+  // Select or Unselect all currently visible filtered screens
   const handleSelectAllFiltered = () => {
     const filteredIds = filteredScreens.map((s) => s.id);
     setSelectedScreenIds((prev) => {
-      const uniqueIds = new Set([...prev, ...filteredIds]);
-      return Array.from(uniqueIds);
+      const allSelected = filteredIds.length > 0 && filteredIds.every((id) => prev.includes(id));
+      if (allSelected) {
+        // Unselect all filtered items
+        return prev.filter((id) => !filteredIds.includes(id));
+      } else {
+        // Select all filtered items
+        const uniqueIds = new Set([...prev, ...filteredIds]);
+        return Array.from(uniqueIds);
+      }
     });
   };
 
@@ -122,21 +129,25 @@ export function ScreenSelectionCard({
   return (
     <div className="flex flex-col gap-4">
       <CardHeader className="mb-0 border border-slate-100 rounded-md bg-slate-50/50 py-3.5 px-6 flex flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-blue-600" />
-          <CardTitle className="text-sm font-bold text-slate-800">{t("screenSelectionCard.title")}</CardTitle>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <Layers className="w-4 h-4 text-blue-600 shrink-0" />
+            <CardTitle className="text-sm font-bold text-slate-800">
+              {t("screenSelectionCard.title")}
+            </CardTitle>
+          </div>
           <p className="text-xs text-slate-500 font-medium ml-2">
             {t("screenSelectionCard.helperText")}
           </p>
         </div>
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center whitespace-nowrap shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
           {t("screenSelectionCard.selectedCount", { count: selectedScreenIds.length })}
         </span>
       </CardHeader>
       <CardContent className="py-4 space-y-4">
         {/* Filters Row */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <SearchInput   
+          <SearchInput
             value={searchTerm}
             onChange={(val) => {
               const sanitized = val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
@@ -175,10 +186,15 @@ export function ScreenSelectionCard({
             />
           </div>
         </div>
-  
+
         {/* Screen List */}
         <div className="border border-slate-200/80 rounded-xl p-2 bg-slate-50/20 max-h-[300px] overflow-auto custom-scrollbar">
-          {screens.length === 0 ? (
+          {isPending ? (
+            <div className="flex flex-col items-center justify-center py-8 text-slate-400 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+              <p className="text-sm">{t("common.loading")}</p>
+            </div>
+          ) : screens.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">{t("screenSelectionCard.noScreens")}</p>
           ) : filteredScreens.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">{t("screenSelectionCard.noScreens")}</p>

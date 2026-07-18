@@ -15,7 +15,11 @@ import { useTranslations } from "next-intl";
 import { PropertySelectionCard } from "./PropertySelectionCard";
 import { ScreenSelectionCard } from "./ScreenSelectionCard";
 
+import { ScopeSelectionCard } from "./ScopeSelectionCard";
+import { ZoneItem } from "@/types/zoneMaster.types";
+
 export interface LockUnlockMasterProps {
+  zones?: ZoneItem[];
   wards: WardItem[];
   dropdownProperties?: { label: string; value: string }[];
   screens?: LockedScreen[];
@@ -24,6 +28,7 @@ export interface LockUnlockMasterProps {
 }
 
 export default function LockUnlockMaster({
+  zones = [],
   wards,
   dropdownProperties = [],
   screens = [],
@@ -48,6 +53,7 @@ export default function LockUnlockMaster({
     toPropertyOptions,
     isLoadingProperties,
     propertySearchTerm,
+    isSearching,
     handlePropertySearch,
     handleSearchButtonClick,
     pagination,
@@ -72,6 +78,12 @@ export default function LockUnlockMaster({
     label: w.wardNo,
     value: String(w.id),
   }));
+
+  // Map Zones to options format
+  const zoneOptions = (zones || []).map((z) => ({
+    label: z.zoneNo,
+    value: String(z.id),
+  }));
  
   return (
  
@@ -86,9 +98,15 @@ export default function LockUnlockMaster({
         {/* Left Panel */}
         <div className="col-span-5 flex flex-col gap-2 h-full">
           <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col gap-4 p-4 bg-white">
+            <ScopeSelectionCard
+              selectedCategory={formData.searchCategory}
+              onChange={(categoryId) => handleSelectChange("searchCategory", categoryId.toString())}
+            />
+            <div className="h-px bg-slate-200 w-full my-2" />
             <PropertySelectionCard
               formData={formData}
               handleSelectChange={handleSelectChange}
+              zoneOptions={zoneOptions}
               wardOptions={wardOptions}
               propertyOptions={propertyOptions}
               toPropertyOptions={toPropertyOptions}
@@ -97,6 +115,7 @@ export default function LockUnlockMaster({
               isPending={isPending}
               isLoadingProperties={isLoadingProperties}
             />
+            <div className="h-px bg-slate-200 w-full my-2" />
             <ScreenSelectionCard
               screens={screens}
               selectedScreenIds={selectedScreenIds}
@@ -108,11 +127,11 @@ export default function LockUnlockMaster({
         {/* Right Panel */}
         <div className="col-span-7 flex h-full">
           <div className="flex-1">
-            {showResults ? (
               <div className="h-full animate-in fade-in slide-in-bottom-up-2 duration-200">
                 <MasterTable<LockUnlockPropertyItem>
                   columns={columns}
                   data={properties}
+                  loading={isPending || isSearching}
                   height="md"
                   getRowKey={(row) => row.propertyId}
                   pageNumber={pagination.pageNumber}
@@ -125,7 +144,6 @@ export default function LockUnlockMaster({
                     enabled: true,
                     showPageSizeSelector: true,
                   }}
-                  //headerTitle={t("resultsTable.propertyMasterTitle")}
                   headerExtra={
                     <div className="flex items-center gap-3 w-full justify-end">
                       <SearchInput
@@ -166,17 +184,24 @@ export default function LockUnlockMaster({
                       />
                     </div>
                   }
+                  emptyText={
+                    showResults ? (
+                      <div className="flex flex-col items-center justify-center gap-2 py-8">
+                        <p className="text-xs font-semibold text-slate-500">
+                          {t("resultsTable.noResultsFound")}
+                        </p>
+                      </div>
+                    ) as unknown as string : (
+                      <div className="flex flex-col items-center justify-center gap-2 py-8">
+                        <ShieldAlert className="w-8 h-8 text-slate-300" />
+                        <p className="text-xs font-semibold text-slate-500">
+                          {t("resultsTable.placeholderText")}
+                        </p>
+                      </div>
+                    ) as unknown as string
+                  }
                 />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full min-h-[400px] border border-slate-300 rounded-xl bg-slate-50/50 text-slate-400 text-center gap-2">
-                <ShieldAlert className="w-8 h-8 text-slate-300" />
- 
-                <p className="text-xs font-semibold text-slate-500">
-                  {t("resultsTable.placeholderText")}
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>

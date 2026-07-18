@@ -27,9 +27,13 @@ export interface LockUnlockPropertiesResponse {
 }
 
 export interface LockUnlockPropertiesQueryParams {
+  ZoneId?: number;
   WardId?: number;
   FromPropertyNo?: string;
   ToPropertyNo?: string;
+  PropertyFrom?: string;
+  PropertyTo?: string;
+  SearchCategory?: number;
   PartitionNo?: string;
   Search?: string;
   SearchPartitionNo?: string;
