@@ -1,4 +1,4 @@
-import type * as React from 'react';
+import React from 'react';
 import { ActionResult } from '../common.types';
 
 /* ================= CORE MASTER DATA ================= */
@@ -7,6 +7,18 @@ import { ActionResult } from '../common.types';
 export const MASTER_IDS = {
   TYPE: 'asset-type-master',
   CATEGORY: 'asset-category-master',
+  INVENTORY_CATEGORY: 'inventory-category-master',
+  INVENTORY_MODEL: 'inventory-model-master',
+  INVENTORY_NAME: 'inventory-name-master',
+  INVENTORY_CONDITION: 'inventory-condition-master',
+  OWNERSHIP_TYPE: 'ownership-type-master',
+  OWNING_DEPARTMENT: 'owning-department-master',
+  TAX: 'gst-master',
+  PENALTY: 'penalty-rule-master',
+  ROOM_TYPE: 'room-type-master',
+  TYPE_OF_USE: 'type-of-use-master',
+  SUB_TYPE_OF_USE: 'sub-type-of-use-master',
+  ASSET_PHOTO_TYPE: 'asset-photo-type',
 } as const;
 
 export type MasterId = typeof MASTER_IDS[keyof typeof MASTER_IDS];

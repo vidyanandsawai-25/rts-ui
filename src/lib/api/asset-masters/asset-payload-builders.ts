@@ -1,5 +1,74 @@
 import type { MasterDataRecord } from '@/types/asset-masters/master-data.types';
 
+// Inventory Category
+export function buildCategoryPayload(record: MasterDataRecord, userId: number = 0) {
+  return {
+    isActive: record.status === 'Active',
+    typeCode: record.id,
+    typeName: record.name,
+    description: record.description?.trim() || '',
+    displayOrder: record.displayOrder ?? 1,
+    depreciationRate: record.depreciationRate ?? 0.1,
+    createdBy: userId,
+    updatedBy: userId,
+  };
+}
+
+export const buildCategoryCreatePayload = buildCategoryPayload;
+export const buildCategoryUpdatePayload = buildCategoryPayload;
+
+// Inventory Condition
+export function buildConditionPayload(record: MasterDataRecord, userId: number = 0) {
+  const inventoryItemCategoryId = Number(record.group) || 0;
+  return {
+    isActive: record.status === 'Active',
+    inventoryItemCategoryId,
+    conditionName: record.name,
+    conditionFactor: record.conditionFactor ?? 1.0,
+    description: record.description?.trim() || '',
+    displayOrder: record.displayOrder ?? 1,
+    createdBy: userId,
+    updatedBy: userId,
+  };
+}
+
+export const buildConditionCreatePayload = buildConditionPayload;
+export const buildConditionUpdatePayload = buildConditionPayload;
+
+// Inventory Item Name
+export function buildItemNamePayload(record: MasterDataRecord, userId: number = 0) {
+  const inventoryItemCategoryId = Number(record.group) || 0;
+  return {
+    isActive: record.status === 'Active',
+    inventoryItemCategoryId,
+    subTypeCode: record.id,
+    subTypeName: record.name,
+    description: record.description?.trim() || '',
+    displayOrder: record.displayOrder ?? 1,
+    createdBy: userId,
+    updatedBy: userId,
+  };
+}
+
+export const buildItemNameCreatePayload = buildItemNamePayload;
+export const buildItemNameUpdatePayload = buildItemNamePayload;
+
+// Inventory Model
+export function buildModelPayload(record: MasterDataRecord, userId: number = 0) {
+  const inventoryItemNameId = Number(record.group) || 0;
+  return {
+    isActive: record.status === 'Active',
+    inventoryItemNameId,
+    modelName: record.name,
+    description: record.description?.trim() || '',
+    displayOrder: record.displayOrder ?? 1,
+    createdBy: userId,
+    updatedBy: userId,
+  };
+}
+
+export const buildModelCreatePayload = buildModelPayload;
+export const buildModelUpdatePayload = buildModelPayload;
 // Asset Type
 export const buildAssetTypeCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
   typeCode: (record.id || '').trim(),

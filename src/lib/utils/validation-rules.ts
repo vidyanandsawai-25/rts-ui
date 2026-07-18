@@ -39,6 +39,8 @@ export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 // Allow Unicode letters, marks, numbers, spaces, and basic punctuation including &
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu;
 export const ASSET_MASTER_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&()]/gu;
+export const ASSET_INVENTORY_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s]/gu;
+export const ASSET_INVENTORY_NAME_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s]*$/u;
 export const ASSET_MASTER_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s_-]/gu;
 export const ASSET_MASTER_NAME_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s_-]*$/u;
 // Validation for allowed characters, special chars in between, single space only, allows single char

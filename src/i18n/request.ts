@@ -69,9 +69,13 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     taxCalculationGuidelineMessages,
-    assetMessages,
-    modulesMessages,
     addTaxesMessages,
+    assetMessages,
+    inventoryCategoryMessages,
+    inventoryConditionMessages,
+    inventoryModelMessages,
+    inventoryNameMessages,
+    modulesMessages,
     reportMessages,
     assetPhotoTypeMessages,
     assetRoomTypeMessages,
@@ -170,19 +174,31 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/reassessment.json`)
+      import(`./locales/${validatedLocale}/reassessment.json`)
+        .catch(() => ({}))
+        .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
+    import(`./locales/${validatedLocale}/addTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/asset.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/modules.json`)
+    import(`./locales/${validatedLocale}/inventoryCategory.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/addTaxes.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryCondition.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryModel.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryName.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -250,10 +266,15 @@ export default getRequestConfig(async ({ locale }) => {
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
-      taxCalculationGuideline: taxCalculationGuidelineMessages,
+      taxCalculationGuideline:
+        taxCalculationGuidelineMessages?.taxCalculationGuideline || taxCalculationGuidelineMessages,
+      addTaxes: addTaxesMessages?.addTaxes || addTaxesMessages,
       asset: assetMessages,
+      inventoryCategory: inventoryCategoryMessages?.inventoryCategory || inventoryCategoryMessages,
+      inventoryCondition: inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
+      inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
+      inventoryName: inventoryNameMessages?.inventoryName || inventoryNameMessages,
       modules: modulesMessages,
-      addTaxes: addTaxesMessages,
       report: reportMessages,
       assetPhotoType: assetPhotoTypeMessages,
       assetRoomType: assetRoomTypeMessages,
