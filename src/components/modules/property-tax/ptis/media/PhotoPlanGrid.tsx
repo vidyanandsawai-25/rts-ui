@@ -25,13 +25,15 @@ interface PhotoPlanGridProps {
   selectedImageIndex?: number | null;
   photoTypeCode?: string;
   onCompare?: () => void;
+  onDrawPlan?: (e: React.MouseEvent) => void;
+  isPhotoPlanCategory?: boolean;
 }
 
 export function PhotoPlanGrid({
   categoryName, images, onSelectImage, onAddPhoto, onDeletePhoto, onReplacePhoto,
   isLoading = false, error = null, onRetry, photoCount, hideHeader = false,
   className = '', isCarouselMode = false, selectedImageIndex = null,
-  photoTypeCode, onCompare,
+  photoTypeCode, onCompare, onDrawPlan, isPhotoPlanCategory,
 }: PhotoPlanGridProps): React.ReactElement {
   const t = useTranslations('ptis');
   const { confirm } = useConfirm();
@@ -54,6 +56,7 @@ export function PhotoPlanGrid({
       <PhotoPlanCarousel
         images={images} selectedImageIndex={selectedImageIndex} onSelectImage={onSelectImage}
         onAddPhoto={onAddPhoto} onDeletePhoto={onDeletePhoto} onReplacePhoto={onReplacePhoto} className={className}
+        onDrawPlan={onDrawPlan} isPhotoPlanCategory={isPhotoPlanCategory}
       />
     );
   }
@@ -89,12 +92,22 @@ export function PhotoPlanGrid({
           </div>
         </div>
       ) : images.length === 0 ? (
-        <div onClick={onAddPhoto} className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-white p-12 hover:border-blue-500 hover:bg-blue-50/20 cursor-pointer transition-all duration-300 select-none group">
-          <div className="p-4 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-110 transition-transform duration-300 shadow-sm mb-4">
-            <Upload className="w-8 h-8 text-slate-400 group-hover:text-blue-500" />
+        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-white p-12 transition-all duration-300 select-none group">
+          <div className="p-4 bg-slate-50 rounded-full border border-slate-200 shadow-sm mb-4">
+            <Upload className="w-8 h-8 text-slate-400" />
           </div>
-          <h3 className="text-base font-semibold text-slate-700 mb-1 group-hover:text-blue-900">{t('media.noImageUploaded') || 'No Photos Uploaded'}</h3>
-          <p className="text-xs text-slate-400 max-w-xs text-center">{t('media.clickToUpload', { title: categoryName }) || `Click here to upload a photo to the ${categoryName} folder.`}</p>
+          <h3 className="text-base font-semibold text-slate-700 mb-1">{t('media.noImageUploaded') || 'No Photos Uploaded'}</h3>
+          <p className="text-xs text-slate-400 max-w-xs text-center mb-6">{t('media.clickToUpload', { title: categoryName }) || `Click here to upload a photo to the ${categoryName} folder.`}</p>
+          <div className="flex gap-4">
+            <Button onClick={onAddPhoto} variant="primary" icon={Upload}>
+              {t('media.uploadImage') || 'Upload Image'}
+            </Button>
+            {isPhotoPlanCategory && onDrawPlan && (
+              <Button onClick={onDrawPlan} variant="primary" className="bg-purple-600 hover:bg-purple-700 text-white border-none" icon={Plus}>
+                {t('media.drawPlan') || 'Draw Plan'}
+              </Button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4 pb-8">
@@ -145,12 +158,22 @@ export function PhotoPlanGrid({
               </Card>
             )
           ) : (
-            <Card onClick={onAddPhoto} padding="none" className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
-              <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
-                <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
-              </div>
-              <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">{t('media.uploadImage') || 'Add Photo'}</span>
-            </Card>
+            <>
+              <Card onClick={onAddPhoto} padding="none" className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
+                <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
+                  <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
+                </div>
+                <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">{t('media.uploadImage') || 'Add Photo'}</span>
+              </Card>
+              {isPhotoPlanCategory && onDrawPlan && (
+                <Card onClick={onDrawPlan} padding="none" className="border border-dashed border-purple-300 rounded-lg hover:border-purple-400 bg-white hover:bg-purple-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
+                  <div className="p-2.5 bg-purple-50 rounded-full border border-purple-200 group-hover:scale-105 transition-transform duration-200 mb-2">
+                    <Plus className="w-5 h-5 text-purple-400 group-hover:text-purple-500" />
+                  </div>
+                  <span className="text-xs font-semibold text-purple-500 group-hover:text-purple-800">{t('media.drawPlan') || 'Draw Plan'}</span>
+                </Card>
+              )}
+            </>
           )}
         </div>
       )}

@@ -30,7 +30,7 @@ export function useDepartmentConfig(
 
   const toggleDeptExpansion = (deptId: number) => {
     setExpandedDepts((prev) =>
-      prev.includes(deptId) ? prev.filter((id) => id !== deptId) : [...prev, deptId]
+      prev.includes(deptId) ? [] : [deptId]
     );
   };
 

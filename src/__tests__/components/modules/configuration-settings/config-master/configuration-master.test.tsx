@@ -336,16 +336,16 @@ describe('Configuration Master PR Smoke Tests', () => {
       mockPermissions.canDelete = false;
 
       const { container, rerender } = render(
-        <ConfigItemActions id="1" configKeyId={1} name="A" isEnabled={true} />
+        <ConfigItemActions id="1" configKeyId={1} isEnabled={true} />
       );
       const buttons = container.querySelectorAll('button');
-      expect(buttons.length).toBe(3);
-      expect((buttons[buttons.length - 1] as HTMLButtonElement).disabled).toBe(false);
+      expect(buttons.length).toBe(2);
+      expect((buttons[1] as HTMLButtonElement).disabled).toBe(false);
 
       mockPermissions.haveFullAccess = false;
       mockPermissions.canEdit = true;
       mockPermissions.canDelete = false;
-      rerender(<ConfigItemActions id="1" configKeyId={1} name="A" isEnabled={true} />);
+      rerender(<ConfigItemActions id="1" configKeyId={1} isEnabled={true} />);
       const buttonsEdit = container.querySelectorAll('button');
       expect(buttonsEdit.length).toBe(2);
       expect((buttonsEdit[1] as HTMLButtonElement).disabled).toBe(true);
@@ -353,15 +353,15 @@ describe('Configuration Master PR Smoke Tests', () => {
       mockPermissions.haveFullAccess = false;
       mockPermissions.canEdit = false;
       mockPermissions.canDelete = true;
-      rerender(<ConfigItemActions id="1" configKeyId={1} name="A" isEnabled={true} />);
+      rerender(<ConfigItemActions id="1" configKeyId={1} isEnabled={true} />);
       const buttonsDelete = container.querySelectorAll('button');
-      expect(buttonsDelete.length).toBe(3);
-      expect((buttonsDelete[2] as HTMLButtonElement).disabled).toBe(true);
+      expect(buttonsDelete.length).toBe(1);
+      expect((buttonsDelete[0] as HTMLButtonElement).disabled).toBe(true);
 
       mockPermissions.haveFullAccess = false;
       mockPermissions.canEdit = false;
       mockPermissions.canDelete = false;
-      rerender(<ConfigItemActions id="1" configKeyId={1} name="A" isEnabled={true} />);
+      rerender(<ConfigItemActions id="1" configKeyId={1} isEnabled={true} />);
       const buttonsView = container.querySelectorAll('button');
       expect(buttonsView.length).toBe(1);
       expect((buttonsView[0] as HTMLButtonElement).disabled).toBe(true);

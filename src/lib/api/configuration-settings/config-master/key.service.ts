@@ -207,8 +207,8 @@ export async function updateConfigKey(id: number, payload: UpdateConfigKeyReques
 }
 
 /**
- * Delete config key (Hard delete via /purge)
+ * Delete config key (Hard delete)
  */
 export async function deleteConfigKey(id: number) {
-  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}/purge`);
+  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}`);
 }
