@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import { Badge, Input, Select } from '@/components/common';
 import { UpdateButton } from '@/components/common/ActionButtons';
