@@ -68,6 +68,8 @@ export const AUTH_COOKIES = {
   USER_NAME: 'user_name',
   /** User ID */
   USER_ID: 'user_id',
+  /** User login username */
+  LOGIN_USERNAME: 'login_username',
   /** Pending auth state (for multi-step flows) */
   PENDING_AUTH: 'pending_auth',
   /** Unix expiry (seconds) for client session timeout UI — not a secret */
@@ -125,6 +127,7 @@ export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.IS_LOGGED_IN,
   AUTH_COOKIES.USER_NAME,
   AUTH_COOKIES.USER_ID,
+  AUTH_COOKIES.LOGIN_USERNAME,
   AUTH_COOKIES.SESSION_EXPIRES_AT,
   ULB_COOKIES.ULB_NAME,
   ULB_COOKIES.ULB_NAME_LOCAL,

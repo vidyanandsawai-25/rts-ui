@@ -70,6 +70,7 @@ vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    loading: vi.fn().mockReturnValue('mock-toast-id'),
   },
 }));
 
@@ -90,12 +91,14 @@ const mockUploadPropertyPhotoAction = vi.fn();
 const mockReplacePropertyPhotoAction = vi.fn();
 const mockDeletePropertyPhotoAction = vi.fn();
 const mockGetPhotosByCategoryAction = vi.fn();
+const mockLaunchPhotoPlanDrawingToolAction = vi.fn();
 
 vi.mock('@/app/[locale]/property-tax/ptis/PhotoPlan.action', () => ({
   uploadPropertyPhotoAction: (...args: unknown[]) => mockUploadPropertyPhotoAction(...args),
   replacePropertyPhotoAction: (...args: unknown[]) => mockReplacePropertyPhotoAction(...args),
   deletePropertyPhotoAction: (...args: unknown[]) => mockDeletePropertyPhotoAction(...args),
   getPhotosByCategoryAction: (...args: unknown[]) => mockGetPhotosByCategoryAction(...args),
+  launchPhotoPlanDrawingToolAction: (...args: unknown[]) => mockLaunchPhotoPlanDrawingToolAction(...args),
 }));
 
 const mockCreatePropertyPhotoTypeAction = vi.fn();
@@ -471,21 +474,29 @@ describe('PhotoPlan Section - Complete Tests', () => {
       fireEvent.click(toggleMore);
       expect(screen.getByLabelText('Hide more images')).toBeInTheDocument();
 
-      // Clicking main photo type opens drawer via router.push
+      // Clicking main photo type opens drawer via router.replace
       fireEvent.click(frontCard!);
-      expect(mockPush).toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalled();
     });
 
-    it('handles Create click events on the Photo Plan Card and ensures Delete button is not present', () => {
+    it('handles Create click events on the Photo Plan Card and ensures Delete button is not present', async () => {
+      mockLaunchPhotoPlanDrawingToolAction.mockResolvedValue({
+        success: true,
+        data: { launchUrl: 'https://mock-launch-url.com' },
+      });
+
       render(<PropertyMediaPanel propertyId={1} initialPhotoSlots={slots} initialPhotos={photos} />);
 
       // Create new plan button check
       const createBtn = screen.getByLabelText('Create new plan');
       expect(createBtn).toBeInTheDocument();
 
-      fireEvent.click(createBtn);
-      // It should push route with action=create
-      expect(mockPush).toHaveBeenCalled();
+      await act(async () => {
+        fireEvent.click(createBtn);
+      });
+
+      // It should call the server action for authentication
+      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalledWith(1, 'THANE_Survey', expect.any(String));
 
       // Delete plan button check - should not exist
       const deleteBtn = screen.queryByLabelText('Delete plan');

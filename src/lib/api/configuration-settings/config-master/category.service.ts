@@ -95,8 +95,8 @@ export async function updateCategory(id: number, payload: UpdateConfigCategoryRe
 }
 
 /**
- * Delete category (Hard delete via /purge)
+ * Delete category (Hard delete)
  */
 export async function deleteCategory(id: number) {
-  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}/purge`);
+  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}`);
 }
