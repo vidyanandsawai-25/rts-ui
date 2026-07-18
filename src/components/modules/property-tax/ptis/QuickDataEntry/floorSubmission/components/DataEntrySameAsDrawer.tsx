@@ -19,6 +19,7 @@ interface DataEntrySameAsDrawerProps {
   propertyNo?: string;
   partitionNo?: string;
   initialPropertyID?: string | number;
+  hasFloorSubmission?: boolean;
 
   // FloorTable related props
   filteredFloors: FloorData[];
@@ -43,7 +44,16 @@ interface DataEntrySameAsDrawerProps {
 
 export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (props) => {
   const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo, initialPropertyID } = props;
-  const hook = useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, initialPropertyID, t });
+  const hook = useDataEntrySameAs({
+    isOpen,
+    wardId,
+    propertyNo,
+    partitionNo,
+    initialPropertyID,
+    t,
+    localFloors: props.filteredFloors,
+    initialFloors: props.filteredFloors
+  });
 
   // Filter properties to display in tables
   // useMemo is CRITICAL here — without it a new array is created every render,

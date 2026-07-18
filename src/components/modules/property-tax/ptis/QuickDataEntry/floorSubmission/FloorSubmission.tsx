@@ -159,6 +159,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             subTypeData={subTypeData || []}
             setEditingFloorForm={setEditingFloorForm}
             isPlotCategory={isPlotCategory}
+            partitionNo={props.partitionNo}
           />
 
 

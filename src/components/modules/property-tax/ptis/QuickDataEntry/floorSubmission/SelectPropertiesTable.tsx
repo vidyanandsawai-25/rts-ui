@@ -30,6 +30,9 @@ type SelectablePropertyRow = Record<string, unknown> &
     carpetAreaDisplay: string;
   };
 
+const greenRowClassName =
+  '!bg-green-100 [&>td]:!bg-green-100 hover:!bg-green-200 hover:[&>td]:!bg-green-200';
+
 function formatPropertyPart(value: unknown): string {
   const text = String(value ?? '').trim();
   return text || '-';
@@ -216,15 +219,15 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         rowClassName={(row) => {
           const isSource = sourcePropertyIds.has(row.id);
           if (isSource) {
-            return '!bg-green-50 hover:!bg-green-100';
+            return greenRowClassName + ' font-bold border-l-4';
           }
           if (row.disabled) {
-            return 'opacity-60 bg-slate-50 cursor-not-allowed';
+            return 'opacity-60 bg-slate-50 cursor-not-allowed border-l-4 border-l-transparent';
           }
           if (row.selected) {
-            return '!bg-blue-50 hover:!bg-blue-100';
+            return greenRowClassName;
           }
-          return '';
+          return 'border-l-4 border-l-transparent';
         }}
         headerTitle={t('floor.selectProperties.title')}
         headerExtra={
