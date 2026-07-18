@@ -25,7 +25,7 @@ interface UseDataEntrySameAsProps {
   initialPropertyID?: string | number;
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   localFloors?: FloorData[];
-  initialFloors?: any[];
+  initialFloors?: FloorData[];
 }
 
 function comparePartitionNo(a: SelectableProperty, b: SelectableProperty): number {
@@ -400,7 +400,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
     } finally { setIsApplyingSameAs(false); }
-  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType, currentPropertyId, sourcePropertyIds, locale, searchWardId, searchPropertyNo]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType, currentPropertyId, sourcePropertyIds, locale, searchWardId, searchPropertyNo, validateFloorSubmission]);
 
   const handleApplyTypeSubmission = React.useCallback(async () => {
     if (!validateFloorSubmission()) {
@@ -490,7 +490,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     } else {
       await executeSubmission();
     }
-  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, currentPropertyId, confirm, sourcePropertyIds, router, searchWardId, searchPropertyNo]);
+  }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, currentPropertyId, confirm, sourcePropertyIds, router, searchWardId, searchPropertyNo, locale, validateFloorSubmission]);
 
   return {
     dataEntrySameAsTab, setDataEntrySameAsTab: handleDataEntrySameAsTabChange, selectableProperties, selectedPropertyIds: effectiveSelectedPropertyIds, isLoadingProperties, currentPropertyType,
