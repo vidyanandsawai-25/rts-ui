@@ -68,6 +68,8 @@
       "invalidData": "Invalid data provided. Please check all fields.",
       "notFound": "Assessment year range not found.",
       "inUse": "Cannot delete this year range as it is in use.",
+      "referredInYearRange": "Cannot delete this AssessmentYearRange because it is referenced in Rate Master",
+      "cannotDeactivateYearRange": "Cannot deactivate this AssessmentYearRange because it is referenced in Rate Master",
       "operationFailed": "Operation failed. Please try again later."
     },
     "success": {
@@ -149,6 +151,8 @@
       "invalidData": "Invalid data provided. Please check all fields.",
       "notFound": "Assessment year range not found.",
       "inUse": "Cannot delete this year range as it is in use.",
+      "referredInYearRange": "Cannot delete this AssessmentYearRangeCV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
+      "cannotDeactivateYearRange": "Cannot deactivate this AssessmentYearRangeCV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
       "operationFailed": "Operation failed. Please try again later."
     },
     "success": {

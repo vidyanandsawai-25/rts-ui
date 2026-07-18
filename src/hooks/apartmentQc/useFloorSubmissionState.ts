@@ -23,7 +23,7 @@ export function useFloorSubmissionState(initialFloorData: ApartmentQCDetail[], i
       areaSqMtr: String(item.carpetASqMtr || ""),
       buildupAreaSqFt: String(item.builtupASqFt || ""),
       buildupAreaSqMtr: String(item.builtupASqMtr || ""),
-      rentMY: `${item.rentMonthly ?? 0}/${item.yearlyRent ?? 0}`,
+      rentMY: `${item.rentMonthly ?? 0}/${item.rentYearly ?? 0}`,
       rateMY: `${item.monthlyRate ?? 0}/${item.yearlyRate ?? 0}`,
       monthlyRate: item.monthlyRate ?? undefined,
       yearlyRate: item.yearlyRate ?? undefined,

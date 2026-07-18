@@ -422,7 +422,7 @@
       "toAmenityRequired": "सुविधा तक आवश्यक है",
       "toAmenityMustBeGreater": "सुविधा तक, सुविधा से के बराबर या उससे अधिक होना चाहिए",
       "duplicateAmenityInRange": "सुविधा {amenity} इस संपत्ति के लिए पहले से मौजूद है",
-      "incrementedByMustBeGreater": "वृद्धि संख्या प्रति मंजिल फ्लैटों की संख्या से अधिक होनी चाहिए"
+      "incrementedByMustBeGreater": "वृद्धि संख्या प्रति मंजिल फ्लैटों की संख्या से अधिक या उसके बराबर होनी चाहिए"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य संपत्ति चुनें",

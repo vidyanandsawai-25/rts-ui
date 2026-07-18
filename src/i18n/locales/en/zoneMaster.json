@@ -424,7 +424,7 @@
       "toAmenityRequired": "To Amenity is required",
       "toAmenityMustBeGreater": "To Amenity must be greater than or equal to From Amenity",
       "duplicateAmenityInRange": "Amenity {amenity} already exists for this property",
-      "incrementedByMustBeGreater": "Incremented By must be greater than No. of Flats per Floor"
+      "incrementedByMustBeGreater": "Incremented By must be greater than or equal to No. of Flats per Floor"
     },
     "placeholders": {
       "selectMainProperty": "Select a main property",
