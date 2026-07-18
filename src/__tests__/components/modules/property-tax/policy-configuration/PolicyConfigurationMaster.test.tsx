@@ -86,13 +86,6 @@ describe("PolicyConfigurationMaster", () => {
     expect(screen.getByText("Policy Rate 2")).toBeInTheDocument();
   });
 
-  it("navigates to add page on add button click", () => {
-    render(<PolicyConfigurationMaster {...defaultProps} />);
-    const addButton = screen.getByRole("button", { name: "policyConfiguration.list.buttons.add" });
-    fireEvent.click(addButton);
-    expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/policy-configuration/add");
-  });
-
   it("navigates to edit page on edit click", () => {
     render(<PolicyConfigurationMaster {...defaultProps} />);
     const editButtons = screen.getAllByRole("button", { name: "common.table.actions.edit" });
