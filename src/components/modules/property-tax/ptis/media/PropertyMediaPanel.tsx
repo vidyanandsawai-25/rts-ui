@@ -34,6 +34,7 @@ export interface PropertyMediaPanelProps {
 function PropertyMediaPanel({
   wardNo = '',
   propertyNo = '',
+  partitionNo = '',
   propertyId,
   initialPhotoSlots = [],
   initialPhotos = [],
@@ -207,6 +208,7 @@ function PropertyMediaPanel({
           onCategoriesChange={handleCategoriesChange}
           wardNo={wardNo}
           propertyNo={propertyNo}
+          partitionNo={partitionNo}
           initialCategoryIndex={drawerInitialCategoryIndex}
           propertyId={propertyId}
           fullyLoadedIds={fullyLoadedIds}
