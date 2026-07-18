@@ -23,6 +23,9 @@ interface PhotoPlanDrawerBodyProps {
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
   onDrawPlan?: (e: React.MouseEvent) => void;
+  wardNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
 export function PhotoPlanDrawerBody({
@@ -36,6 +39,9 @@ export function PhotoPlanDrawerBody({
   initialLongitude,
   initialWaybackReleases,
   onDrawPlan,
+  wardNo = '',
+  propertyNo = '',
+  partitionNo = '',
 }: PhotoPlanDrawerBodyProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -117,6 +123,9 @@ export function PhotoPlanDrawerBody({
             initialLongitude={initialLongitude}
             initialWaybackReleases={initialWaybackReleases}
             propertyId={propertyId}
+            wardNo={wardNo}
+            propertyNo={propertyNo}
+            partitionNo={partitionNo}
           />
         ) : isSplit ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
