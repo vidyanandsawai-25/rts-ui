@@ -148,35 +148,33 @@ async function SidebarWithData({ locale }: { locale: string }) {
     const cmsMenuItems: MenuItem[] = [
       {
         name: 'MIS Dashboard',
-        nameHi: 'एमआइएस डैशबोर्ड',
+        nameHi: 'एमआयएस डॅशबोर्ड',
         iconName: 'LayoutDashboard',
-        href: '/rts/misdashboard',
+        href: '/rts/dashboard/rts-mis',
       },
       {
-        name: 'Inbox',
-        nameHi: 'इनबॉक्स',
-        iconName: 'ClipboardList',
-        href: '/rts/inbox',
-      },
-      {
-        name: 'Dashboard',
-        nameHi: 'डैशबोर्ड',
+        name: 'Application Dashboard',
+        nameHi: ' अ‍ॅप्लिकेशन डॅशबोर्ड',
         iconName: 'Hourglass',
-        href: '/rts/dashboard',
+        href: '/rts/dashboard/rts-applications',
       },
       {
-        name: 'Masters',
-        nameHi: 'मास्टर्स',
+        name: 'Configuration Settings',
+        nameHi: 'कॉन्फिगरेशन सेटिंग्ज',
         iconName: 'Database',
-        href: '/rts/masters',
+        href: '/rts/configuration-settings',
         subItems: [
           {
-            name: 'Dept / Services',
-            href: '/rts/masters',
-          },  
+            name: 'Deptments',
+            href: '/rts/configuration-settings/rts-departments',
+          },
+          {
+            name: 'Services',
+            href: '/rts/configuration-settings/rts-services',
+          },
           {
             name: 'Form Field Definition',
-            href: '/rts/masters/fields',
+            href: '/rts/configuration-settings/rts-fields',
           }
         ]
       },
@@ -190,22 +188,8 @@ async function SidebarWithData({ locale }: { locale: string }) {
             name: 'Users Registry',
             href: '/rts/users',
           },
-          // {
-          //   name: 'Roles & Access',
-          //   href: '/rts/users/roles',
-          // },
-          // {
-          //   name: 'Modules Manager',
-          //   href: '/rts/users/modules',
-          // }
         ]
       },
-      // {
-      //   name: 'Reports',
-      //   nameHi: 'रिपोर्ट',
-      //   iconName: 'FileBarChart',
-      //   href: '/rts/reports',
-      // },
     ];
     return <Sidebar menuItems={cmsMenuItems} locale={locale} />;
   }

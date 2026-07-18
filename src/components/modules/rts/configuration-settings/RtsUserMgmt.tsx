@@ -15,12 +15,26 @@ interface UserMgmtProps {
 
 export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
   const { confirm } = useConfirm();
-  const t = useTranslations("cms");
-  const tCommon = useTranslations("common");
+  const t = useTranslations("rts");
   const [officersList, setOfficersList] = useState<CmsOfficer[]>(officers);
   const [selectedDeptId, setSelectedDeptId] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  const getRoleLabel = (role: string) => {
+    const roleKeyMap: Record<string, string> = {
+      juniorClerk: "users.roles.juniorClerk",
+      seniorClerk: "users.roles.seniorClerk",
+      inspector: "users.roles.inspector",
+      engineer: "users.roles.engineer",
+      departmentOfficer: "users.roles.departmentOfficer",
+      departmentHead: "users.roles.departmentHead",
+      administrator: "users.roles.administrator",
+    };
+
+    const translationKey = roleKeyMap[role];
+    return translationKey ? t(translationKey) : role;
+  };
 
   // Drawer control states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -31,7 +45,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
   const [formEmpId, setFormEmpId] = useState("");
   const [formDeptId, setFormDeptId] = useState("");
   const [formDesignation, setFormDesignation] = useState("");
-  const [formRole, setFormRole] = useState("Junior Clerk");
+  const [formRole, setFormRole] = useState("juniorClerk");
   const [formEmail, setFormEmail] = useState("");
   const [formMobile, setFormMobile] = useState("");
 
@@ -40,7 +54,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
     setFormEmpId("");
     setFormDeptId("");
     setFormDesignation("");
-    setFormRole("Junior Clerk");
+    setFormRole("juniorClerk");
     setFormEmail("");
     setFormMobile("");
     setEditingOfficer(null);
@@ -68,12 +82,12 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formEmpId || !formDeptId || !formDesignation || !formEmail || !formMobile) {
-      toast.error("Please fill in all mandatory fields.");
+      toast.error(t("users.fillMandatoryFields"));
       return;
     }
 
     const deptObj = departments.find(d => d.id === formDeptId);
-    const deptName = deptObj ? deptObj.name : "NOC";
+    const deptName = deptObj ? deptObj.name : t("users.unknownDepartment");
 
     if (editingOfficer) {
       // Editing Mode
@@ -94,7 +108,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
             : o
         )
       );
-      toast.success("User registry record updated successfully!");
+      toast.success(t("users.userUpdated"));
       setIsDrawerOpen(false);
       resetForm();
     } else {
@@ -114,12 +128,14 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
 
           if (res.success && res.officer) {
             setOfficersList(prev => [...prev, res.officer as CmsOfficer]);
-            toast.success("New user created successfully!");
+            toast.success(t("users.userCreated"));
             setIsDrawerOpen(false);
             resetForm();
+          } else {
+            toast.error(t("users.userCreateFailed"));
           }
         } catch (err) {
-          toast.error("Failed to create user registry record.");
+          toast.error(t("users.userCreateFailed"));
         }
       });
     }
@@ -128,22 +144,29 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
   // Toggle local status simulation
   const [activeStatuses, setActiveStatuses] = useState<Record<string, boolean>>({});
   const toggleUserStatus = (id: string) => {
+    const nextStatus = activeStatuses[id] === false;
+
     setActiveStatuses(prev => ({
       ...prev,
-      [id]: prev[id] === false ? true : false
+      [id]: nextStatus,
     }));
-    toast.success("User status toggled successfully!");
+
+    toast.success(
+      nextStatus
+        ? t("users.userActivated")
+        : t("users.userDeactivated")
+    );
   };
 
   const filteredOfficers = officersList.filter(o => {
     const deptMatch = selectedDeptId === "All" || o.departmentId === selectedDeptId;
-    const q = searchTerm.toLowerCase().trim();
+    const q = searchTerm.toLocaleLowerCase().trim();
     const textMatch =
       !q ||
-      o.name.toLowerCase().includes(q) ||
-      o.employeeId.toLowerCase().includes(q) ||
-      o.designation.toLowerCase().includes(q) ||
-      o.email.toLowerCase().includes(q);
+      o.name.toLocaleLowerCase().includes(q) ||
+      o.employeeId.toLocaleLowerCase().includes(q) ||
+      o.designation.toLocaleLowerCase().includes(q) ||
+      o.email.toLocaleLowerCase().includes(q);
 
     return deptMatch && textMatch;
   });
@@ -158,6 +181,8 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
         </div>
         <div>
           <button
+            type="button"
+            aria-label={t("users.addUser")}
             onClick={handleStartAdd}
             className="inline-flex items-center gap-1.5 rounded-xl bg-[#4b70a6] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#3d5e8c]"
           >
@@ -171,7 +196,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
       <Card className="p-3 border border-slate-200 bg-white shadow-sm">
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("common.search")}</label>
+            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("users.search")}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <Search className="h-3.5 w-3.5" />
@@ -217,7 +242,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
                 <th className="p-3 border-r border-[#3d5a8a]">{t("users.email")} / {t("users.mobile")}</th>
                 <th className="p-3 border-r border-[#3d5a8a]">{t("users.role")}</th>
                 <th className="p-3 text-center border-r border-[#3d5a8a]">{t("users.status")}</th>
-                <th className="p-3 text-center">{t("common.actions")}</th>
+                <th className="p-3 text-center">{t("users.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -251,11 +276,24 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
                       <td className="p-3 font-semibold text-slate-750">
                         <div className="flex items-center gap-1.5">
                           <Shield className="h-3.5 w-3.5 text-[#4b70a6]" />
-                          <span>{officer.role}</span>
+                          <span>{getRoleLabel(officer.role)}</span>
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <button
+                          type="button"
+                          aria-label={t("users.toggleStatusAria", {
+                            name: officer.name,
+                            status: isActive
+                              ? t("users.inactive")
+                              : t("users.active"),
+                          })}
+                          title={t("users.toggleStatusAria", {
+                            name: officer.name,
+                            status: isActive
+                              ? t("users.inactive")
+                              : t("users.active"),
+                          })}
                           onClick={() => toggleUserStatus(officer.id)}
                           className={`rounded px-1.5 py-0.5 text-[11px] font-bold border transition ${
                             isActive
@@ -263,32 +301,40 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
                               : "bg-slate-50 text-slate-400 border-slate-200"
                           }`}
                         >
-                          {isActive ? "Active" : "Inactive"}
+                          {isActive ? t("users.active") : t("users.inactive")}
                         </button>
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex justify-center gap-1.5">
                           <button
+                            type="button"
+                            aria-label={t("users.editUserAria", {
+                              name: officer.name,
+                            })}
                             onClick={() => handleStartEdit(officer)}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-[#4b70a6] bg-slate-50/50 hover:bg-slate-50 transition"
-                            title="Edit User"
+                            title={t("users.editUserAria", { name: officer.name })}
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button
+                            type="button"
+                            aria-label={t("users.removeUserAria", {
+                              name: officer.name,
+                            })}
                             onClick={() => {
                               confirm({
                                 variant: "delete",
-                                title: tCommon("buttons.delete") + " " + t("users.role"),
-                                description: t("users.removeUserConfirm"),
+                                title: t("users.removeUserTitle"),
+                                description: t("users.removeUserConfirm", { name: officer.name }),
                                 onConfirm: () => {
                                   setOfficersList(prev => prev.filter(o => o.id !== officer.id));
-                                  toast.success("User registry record removed.");
+                                  toast.success(t("users.userRemoved"));
                                 }
                               });
                             }}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-rose-600 bg-rose-50/50 hover:bg-rose-100 transition"
-                            title={tCommon("buttons.delete")}
+                            title={t("users.removeUserAria", { name: officer.name })}
                           >
                             <Trash className="h-3.5 w-3.5" />
                           </button>
@@ -306,24 +352,27 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
       {/* Redesigned Sidebar Form Drawer */}
       <Drawer
         open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          resetForm();
+        }}
         width="sm"
         title={
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-[#4b70a6]" />
             <span id="drawer-title" className="text-sm font-extrabold text-slate-800">
-              {editingOfficer ? "Edit Officer Profile" : "Register New Officer"}
+              {editingOfficer ? t("users.editUser") : t("users.newUser")}
             </span>
           </div>
         }
       >
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-[13px] text-slate-700">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-450 uppercase">Full Name</label>
+            <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.fullName")}</label>
             <input
               type="text"
               required
-              placeholder="e.g. Ramesh Kulkarni"
+              placeholder={t("users.fullNamePlaceholder")}
               value={formName}
               onChange={e => setFormName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -332,11 +381,11 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Employee ID</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.empId")}</label>
               <input
                 type="text"
                 required
-                placeholder="EMP-2026-999"
+                placeholder={t("users.employeeIdPlaceholder")}
                 value={formEmpId}
                 onChange={e => setFormEmpId(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -344,14 +393,14 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Department</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.department")}</label>
               <select
                 required
                 value={formDeptId}
                 onChange={e => setFormDeptId(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
               >
-                <option value="">Select dept...</option>
+                <option value="">{t("users.selectDepartmentPlaceholder")}</option>
                 {departments.map(d => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -363,11 +412,11 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Designation</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.designation")}</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Deputy Commissioner"
+                placeholder={t("users.designationPlaceholder")}
                 value={formDesignation}
                 onChange={e => setFormDesignation(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -375,30 +424,36 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Role</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.role")}</label>
               <select
                 value={formRole}
                 onChange={e => setFormRole(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
               >
-                <option value="Junior Clerk">Junior Clerk</option>
-                <option value="Senior Clerk">Senior Clerk</option>
-                <option value="Inspector">Inspector</option>
-                <option value="Engineer">Engineer</option>
-                <option value="Department Officer">Department Officer</option>
-                <option value="Department Head">Department Head</option>
-                <option value="Administrator">Administrator</option>
+                <option value="juniorClerk">{t("users.roles.juniorClerk")}</option>
+                <option value="seniorClerk">{t("users.roles.seniorClerk")}</option>
+                <option value="inspector">{t("users.roles.inspector")}</option>
+                <option value="engineer">{t("users.roles.engineer")}</option>
+                <option value="departmentOfficer">
+                  {t("users.roles.departmentOfficer")}
+                </option>
+                <option value="departmentHead">
+                  {t("users.roles.departmentHead")}
+                </option>
+                <option value="administrator">
+                  {t("users.roles.administrator")}
+                </option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Email Address</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.email")}</label>
               <input
                 type="email"
                 required
-                placeholder="officer@ulb.gov.in"
+                placeholder={t("users.emailPlaceholder")}
                 value={formEmail}
                 onChange={e => setFormEmail(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -406,11 +461,11 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Mobile Number</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("users.mobile")}</label>
               <input
                 type="text"
                 required
-                placeholder="9998887770"
+                placeholder={t("users.mobilePlaceholder")}
                 value={formMobile}
                 onChange={e => setFormMobile(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -421,17 +476,22 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 mt-4">
             <button
               type="button"
-              onClick={() => setIsDrawerOpen(false)}
+              aria-label={t("users.cancel")}
+              onClick={() => {
+                setIsDrawerOpen(false);
+                resetForm();
+              }}
               className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-650 transition"
             >
-              Cancel
+              {t("users.cancel")}
             </button>
             <button
               type="submit"
+              aria-label={isPending ? t("users.saving") : t("users.saveUser")}
               disabled={isPending}
               className="px-4 py-2 rounded-xl bg-[#4b70a6] text-white hover:bg-[#3d5e8c] text-xs font-bold transition flex items-center gap-1"
             >
-              {isPending ? "Saving..." : "Save User"}
+              {isPending ? t("users.saving") : t("users.saveUser")}
             </button>
           </div>
         </form>

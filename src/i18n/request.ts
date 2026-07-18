@@ -72,7 +72,6 @@ export default getRequestConfig(async ({ locale }) => {
     addTaxesMessages,
     modulesMessages,
     rtsMessages,
-    cmsMessages,
     reportMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -178,7 +177,6 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/rts.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/cms.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -244,7 +242,6 @@ export default getRequestConfig(async ({ locale }) => {
       addTaxes: addTaxesMessages,
       modules: modulesMessages,
       rts: rtsMessages,
-      cms: cmsMessages,
       report: reportMessages,
     },
   };

@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { CitizenLoginForm } from '@/components/modules/login';
+import { CitizenLoginForm } from '@/components/modules/rts/login/CitizenLoginForm';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 
 interface LoginPageProps {

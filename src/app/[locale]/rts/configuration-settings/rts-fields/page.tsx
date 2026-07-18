@@ -1,5 +1,5 @@
 import { getCmsFieldsAction } from "../../actions";
-import CmsFieldsConfig from "@/components/modules/cms/CmsFieldsConfig";
+import CmsFieldsConfig from "@/components/modules/rts/configuration-settings/RtsFieldsConfig";
 
 interface PageProps {
   params: Promise<{ locale: string }>;

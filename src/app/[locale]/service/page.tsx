@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
-import { CitizenLandingPage } from '@/components/modules/rts/CitizenLandingPage';
+import { CitizenLandingPage } from '@/components/modules/rts/citizen/CitizenLandingPage';
 import { CitizenLayout } from '@/components/layout';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 import { getDashboardDepartments } from '@/lib/api/dashboard';

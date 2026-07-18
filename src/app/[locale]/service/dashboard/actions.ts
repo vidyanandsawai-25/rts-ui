@@ -10,8 +10,8 @@
 
 import { cookies } from "next/headers";
 import { getDashboardDepartments } from "@/lib/api/dashboard";
-import { getCmsMisDashboardData } from "@/lib/api/cms/cmsmisdashboard.service";
-import type { CmsMisDashboardUserApplicationItem } from "@/types/cms/cmsmisdashboard.types";
+import { getCmsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
+import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
 
 export type DashboardData = {

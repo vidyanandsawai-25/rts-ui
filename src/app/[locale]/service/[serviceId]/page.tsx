@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 import { fetchLoginBrandingAction } from "@/app/[locale]/login/actions";
 import { CitizenLayout } from "@/components/layout";
-import DynamicServiceFormClient from "@/components/modules/forms/DynamicServiceFormClient";
+import DynamicServiceFormClient from "@/components/modules/rts/forms/DynamicServiceFormClient";
 import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
 import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
 import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";

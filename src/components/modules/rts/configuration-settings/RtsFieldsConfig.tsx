@@ -39,9 +39,8 @@ interface CmsFieldsConfigProps {
 
 type FieldTableRow = Record<string, unknown> & CmsField;
 
-export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) {
-  const t = useTranslations("cms");
-  const tCommon = useTranslations("common");
+export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
+  const t = useTranslations("rts");
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
 
@@ -60,12 +59,12 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
     const deptMatch = selectedDeptId === "All" || f.departmentId === selectedDeptId;
     const serviceMatch = selectedServiceId === "All" || f.serviceId === selectedServiceId;
     
-    const q = searchTerm.toLowerCase().trim();
+    const q = searchTerm.toLocaleLowerCase().trim();
     const textMatch =
       !q ||
-      f.fieldCode.toLowerCase().includes(q) ||
-      f.fieldLabel.toLowerCase().includes(q) ||
-      f.fieldGroup.toLowerCase().includes(q);
+      f.fieldCode.toLocaleLowerCase().includes(q) ||
+      f.fieldLabel.toLocaleLowerCase().includes(q) ||
+      f.fieldGroup.toLocaleLowerCase().includes(q);
 
     return deptMatch && serviceMatch && textMatch;
   });
@@ -95,19 +94,21 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
   const handleBulkDelete = () => {
     confirm({
       variant: "delete",
-      title: t("common.delete") + " " + t("fields.title"),
-      description: locale === "mr"
-        ? `तुम्हाला खात्री आहे की तुम्ही निवडलेले ${selectedIds.length} फील्ड्स हटवू इच्छिता?`
-        : `Are you sure you want to delete the ${selectedIds.length} selected field definitions?`,
+      title: t("fields.bulkDeleteTitle"),
+      description: t("fields.bulkDeleteConfirm", {
+        count: selectedIds.length,
+      }),
       onConfirm: async () => {
         startTransition(async () => {
           try {
             await Promise.all(selectedIds.map(id => deleteCmsFieldAction(id)));
             setFieldsList(prev => prev.filter(f => !selectedIds.includes(f.id)));
-            toast.success(locale === "mr" ? "निवडलेले फील्ड यशस्वीरित्या हटवले." : "Selected fields deleted successfully.");
+            toast.success(
+              t("fields.bulkDeleteSuccess", { count: selectedIds.length })
+            );
             setSelectedIds([]);
           } catch (err) {
-            toast.error("Failed to perform bulk delete operation.");
+            toast.error(t("fields.bulkDeleteFailed"));
           }
         });
       }
@@ -117,10 +118,11 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
   const handleBulkSetRequired = (required: boolean) => {
     confirm({
       variant: "update",
-      title: locale === "mr" ? "निवडलेले अपडेट करा" : "Update Selected",
-      description: locale === "mr"
-        ? `तुम्हाला खात्री आहे की तुम्ही निवडलेले ${selectedIds.length} फील्ड्स ${required ? "आवश्यक (Required)" : "पर्यायी (Optional)"} करू इच्छिता?`
-        : `Are you sure you want to make the ${selectedIds.length} selected fields ${required ? "Required" : "Optional"}?`,
+      title: t("fields.updateSelected"),
+      description: t("fields.bulkUpdateConfirm", {
+        count: selectedIds.length,
+        status: required ? t("fields.required") : t("fields.optional"),
+      }),
       onConfirm: async () => {
         startTransition(async () => {
           try {
@@ -158,10 +160,15 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               })
             );
 
-            toast.success(locale === "mr" ? "निवडलेले फील्ड अपडेट केले." : "Selected fields updated successfully.");
+            toast.success(
+              t("fields.bulkUpdateSuccess", {
+                count: selectedIds.length,
+                status: required ? t("fields.required") : t("fields.optional"),
+              })
+            );
             setSelectedIds([]);
           } catch (err) {
-            toast.error("Failed to perform bulk update operation.");
+            toast.error(t("fields.bulkUpdateFailed"));
           }
         });
       }
@@ -239,7 +246,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formDeptId || !formServiceId || !formCode || !formLabel || !formType) {
-      toast.error("Please fill in all mandatory fields.");
+      toast.error(t("fields.fillMandatoryFields"));
       return;
     }
 
@@ -247,7 +254,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
       try {
         JSON.parse(formOptionsJson);
       } catch (err) {
-        toast.error("Options JSON is invalid. Must be an array like: [{\"label\":\"Yes\", \"value\":\"Y\"}]");
+        toast.error(t("fields.invalidOptionsJson"));
         return;
       }
     }
@@ -276,20 +283,28 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
         if (editingField) {
           const res = await updateCmsFieldAction(editingField.id, payload);
           if (res.success && res.field) {
-            setFieldsList(prev => prev.map(f => (f.id === editingField.id ? (res.field as CmsField) : f)));
-            toast.success("Field definition updated successfully.");
+            setFieldsList(prev =>
+              prev.map(f =>
+                f.id === editingField.id ? (res.field as CmsField) : f
+              )
+            );
+            toast.success(t("fields.fieldUpdated"));
             setIsDrawerOpen(false);
+          } else {
+            toast.error(t("fields.fieldSaveFailed"));
           }
         } else {
           const res = await saveCmsFieldAction(payload);
           if (res.success && res.field) {
             setFieldsList(prev => [...prev, res.field as CmsField]);
-            toast.success("Field definition registered successfully.");
+            toast.success(t("fields.fieldCreated"));
             setIsDrawerOpen(false);
+          } else {
+            toast.error(t("fields.fieldSaveFailed"));
           }
         }
       } catch (err) {
-        toast.error("An error occurred while saving the field configuration.");
+        toast.error(t("fields.fieldSaveFailed"));
       }
     });
   };
@@ -297,17 +312,19 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
   const handleDeleteField = (id: string, name: string) => {
     confirm({
       variant: "delete",
-      title: t("common.delete") + " " + t("fields.fieldLabel"),
+      title: t("fields.deleteFieldTitle"),
       description: t("fields.confirmDeleteField", { name }),
       onConfirm: async () => {
         try {
           const res = await deleteCmsFieldAction(id);
           if (res.success) {
             setFieldsList(prev => prev.filter(f => f.id !== id));
-            toast.success("Field definition removed successfully.");
+            toast.success(t("fields.fieldDeleted"));
+          } else {
+            toast.error(t("fields.fieldDeleteFailed"));
           }
         } catch (err) {
-          toast.error("Failed to delete field definition.");
+          toast.error(t("fields.fieldDeleteFailed"));
         }
       }
     });
@@ -318,12 +335,12 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
   const fieldColumns: Column<FieldTableRow>[] = [
     {
       key: "id",
-      label: <input type="checkbox" checked={isAllSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer rounded border-slate-350 text-teal-600 focus:ring-teal-500" />,
+      label: <input type="checkbox" aria-label={t("fields.selectAll")} checked={isAllSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer rounded border-slate-350 text-teal-600 focus:ring-teal-500" />,
       width: "40px",
       align: "center",
       headerClassName: "border-r border-blue-300/60 text-white",
       cellClassName: "border-r border-slate-100 text-center",
-      render: (_value, field) => <input type="checkbox" checked={selectedIds.includes(field.id)} onChange={() => toggleSelect(field.id)} className="h-4 w-4 cursor-pointer rounded border-slate-300 text-teal-600 focus:ring-teal-500" />,
+      render: (_value, field) => <input type="checkbox" aria-label={t("fields.selectField", { name: field.fieldLabel })} checked={selectedIds.includes(field.id)} onChange={() => toggleSelect(field.id)} className="h-4 w-4 cursor-pointer rounded border-slate-300 text-teal-600 focus:ring-teal-500" />,
     },
     {
       key: "fieldCode",
@@ -333,14 +350,14 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
       render: (_value, field) => {
         const dept = data.departments.find((department) => department.id === field.departmentId);
         const service = data.services.find((item) => item.id === field.serviceId);
-        return <div className="flex flex-col gap-0.5"><span className="text-[12px] font-bold uppercase text-slate-800">{field.fieldCode}</span><span className="text-[10px] font-medium text-slate-400">{dept?.name || "NOC"} / {service?.name || "Service"}</span></div>;
+        return <div className="flex flex-col gap-0.5"><span className="text-[12px] font-bold uppercase text-slate-800">{field.fieldCode}</span><span className="text-[10px] font-medium text-slate-400">{dept?.name || t("fields.unknownDepartment")} / {service?.name || t("fields.unknownService")}</span></div>;
       },
     },
     { key: "fieldLabel", label: t("fields.fieldLabel"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 font-semibold text-slate-700" },
     { key: "fieldType", label: t("fields.fieldType"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="inline-block rounded-lg bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase text-slate-650">{String(value ?? "")}</span> },
     { key: "fieldGroup", label: t("fields.fieldGroup"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 text-slate-500", render: (value) => String(value || "-") },
-    { key: "isRequired", label: t("fields.isRequired"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-rose-100 bg-rose-50 text-rose-600" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? "REQUIRED" : "OPTIONAL"}</span> },
-    { key: "isActive", label: t("fields.isActive"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-teal-100 bg-teal-50 text-teal-700" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? tCommon("status.active") : tCommon("status.inactive")}</span> },
+    { key: "isRequired", label: t("fields.isRequired"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-rose-100 bg-rose-50 text-rose-600" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? t("fields.required") : t("fields.optional")}</span> },
+    { key: "isActive", label: t("fields.isActive"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-teal-100 bg-teal-50 text-teal-700" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? t("fields.active") : t("fields.inactive")}</span> },
     { key: "displayOrder", label: t("fields.displayOrder"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 font-bold text-slate-600" },
   ];
 
@@ -352,9 +369,6 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
             {t("fields.title")}
           </h1>
-          {/* <p className="text-[13px] text-slate-400 mt-0.5">
-            {t("fields.subtitle")}
-          </p> */}
         </div>
         <div>
           <button
@@ -371,7 +385,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
       <Card className="p-3 border border-slate-200 bg-white shadow-sm">
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("masters.selectDept")}</label>
+            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.selectDepartment")}</label>
             <select
               value={selectedDeptId}
               onChange={e => {
@@ -381,7 +395,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 text-[13px] text-slate-700 focus:border-teal-500 focus:bg-white focus:outline-none"
             >
-              <option value="All">{locale === "mr" ? "सर्व विभाग" : "All Departments"}</option>
+              <option value="All">{t("fields.allDepartments")}</option>
               {data.departments.map(d => (
                 <option key={d.id} value={d.id}>
                   {d.name}
@@ -391,7 +405,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{locale === "mr" ? "सेवा निवडा" : "Select Service"}</label>
+            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.selectService")}</label>
             <select
               value={selectedServiceId}
               onChange={e => {
@@ -403,8 +417,8 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
             >
               <option value="All">
                 {selectedDeptId === "All"
-                  ? (locale === "mr" ? "प्रथम विभाग निवडा..." : "Select department first...")
-                  : (locale === "mr" ? "सर्व सेवा" : "All Services")}
+                  ? t("fields.selectDepartmentFirst")
+                  : t("fields.allServices")}
               </option>
               {selectedDeptId !== "All" && filteredServicesForFilter.map(s => (
                 <option key={s.id} value={s.id}>
@@ -415,7 +429,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
           </div>
 
           <div className="space-y-1 sm:col-span-2">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("common.search")}</label>
+            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.search")}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <Search className="h-3.5 w-3.5" />
@@ -436,13 +450,12 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
       </Card>
 
       {/* Main Table */}
-      {/* <Card className="p-0 border border-slate-200 bg-white shadow-sm overflow-hidden"> */}
         <MasterTable<FieldTableRow>
           columns={fieldColumns}
           data={fieldRows}
           getRowKey={(field) => field.id}
           emptyText={t("fields.noFields")}
-          actionLabel={t("common.actions")}
+          actionLabel={t("fields.actions")}
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={filteredFields.length}
@@ -456,12 +469,11 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
           rowClassName={() => "hover:bg-slate-50/50"}
           renderActions={(field) => (
             <div className="flex justify-center gap-2">
-              <button onClick={() => handleStartEdit(field)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50/50 text-[#4b70a6] transition hover:bg-slate-50" title={tCommon("buttons.edit")}><Edit2 className="h-3.5 w-3.5" /></button>
-              <button onClick={() => handleDeleteField(field.id, field.fieldLabel)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-rose-50/50 text-rose-600 transition hover:bg-rose-100" title={tCommon("buttons.delete")}><Trash2 className="h-3.5 w-3.5" /></button>
+              <button onClick={() => handleStartEdit(field)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50/50 text-[#4b70a6] transition hover:bg-slate-50" title={t("fields.edit")}><Edit2 className="h-3.5 w-3.5" /></button>
+              <button onClick={() => handleDeleteField(field.id, field.fieldLabel)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-rose-50/50 text-rose-600 transition hover:bg-rose-100" title={t("fields.delete")}><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
           )}
         />
-      {/* </Card> */}
 
       {/* Configuration Drawer */}
       <Drawer
@@ -480,7 +492,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-[13px] text-slate-700">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("masters.deptName")} *</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.departmentName")} *</label>
               <select
                 required
                 value={formDeptId}
@@ -490,7 +502,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
                 }}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
               >
-                <option value="">{t("masters.selectDept")}</option>
+                <option value="">{t("fields.selectDepartment")}</option>
                 {data.departments.map(d => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -500,7 +512,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{locale === "mr" ? "विशिष्ट सेवा" : "Specific Service"} *</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.specificService")} *</label>
               <select
                 required
                 value={formServiceId}
@@ -510,8 +522,8 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               >
                 <option value="">
                   {!formDeptId
-                    ? (locale === "mr" ? "प्रथम विभाग निवडा..." : "Select department first...")
-                    : (locale === "mr" ? "सेवा निवडा" : "Select Service")}
+                    ? t("fields.selectDepartmentFirst")
+                    : t("fields.selectService")}
                 </option>
                 {formDeptId && filteredServicesForForm.map(s => (
                   <option key={s.id} value={s.id}>
@@ -528,7 +540,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <input
                 type="text"
                 required
-                placeholder="e.g. fireSafetyCertificate"
+                placeholder={t("fields.placeholders.fieldCode")}
                 value={formCode}
                 onChange={e => setFormCode(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -540,7 +552,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <input
                 type="text"
                 required
-                placeholder="e.g. Fire Safety Certificate"
+                placeholder={t("fields.placeholders.fieldLabel")}
                 value={formLabel}
                 onChange={e => setFormLabel(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -557,13 +569,13 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
                 onChange={e => setFormType(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
               >
-                <option value="text">Text Input</option>
-                <option value="number">Number Input</option>
-                <option value="select">Dropdown Options (Select)</option>
-                <option value="textarea">Multi-line Text (Textarea)</option>
-                <option value="checkbox">Toggle Checkbox</option>
-                <option value="date">Date Picker</option>
-                <option value="file">File Attachment</option>
+                <option value="text">{t("fields.fieldTypeText")}</option>
+                <option value="number">{t("fields.fieldTypeNumber")}</option>
+                <option value="select">{t("fields.fieldTypeSelect")}</option>
+                <option value="textarea">{t("fields.fieldTypeTextarea")}</option>
+                <option value="checkbox">{t("fields.fieldTypeCheckbox")}</option>
+                <option value="date">{t("fields.fieldTypeDate")}</option>
+                <option value="file">{t("fields.fieldTypeFile")}</option>
               </select>
             </div>
 
@@ -571,7 +583,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldGroup")}</label>
               <input
                 type="text"
-                placeholder="e.g. General Information"
+                placeholder={t("fields.placeholders.fieldGroup")}
                 value={formGroup}
                 onChange={e => setFormGroup(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -622,7 +634,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1">
                 {t("fields.optionsJson")} *
-                <span title='e.g. [{"label": "Option A", "value": "A"}]'>
+                <span title={t("fields.optionsJsonHelp")}>
                   <HelpCircle className="h-3 w-3 text-slate-400" />
                 </span>
               </label>
@@ -642,7 +654,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.defaultValue")}</label>
               <input
                 type="text"
-                placeholder="Default fallback text"
+                placeholder={t("fields.placeholders.defaultValue")}
                 value={formDefaultValue}
                 onChange={e => setFormDefaultValue(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -653,7 +665,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.validationRules")}</label>
               <input
                 type="text"
-                placeholder="e.g. email, regex matches"
+                placeholder={t("fields.placeholders.validationRules")}
                 value={formValidationRules}
                 onChange={e => setFormValidationRules(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -666,7 +678,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.minValue")}</label>
               <input
                 type="number"
-                placeholder="e.g. 0"
+                placeholder={t("fields.placeholders.minValue")}
                 value={formMinValue}
                 onChange={e => setFormMinValue(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -677,7 +689,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.maxValue")}</label>
               <input
                 type="number"
-                placeholder="e.g. 100"
+                placeholder={t("fields.placeholders.maxValue")}
                 value={formMaxValue}
                 onChange={e => setFormMaxValue(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -688,7 +700,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.maxLength")}</label>
               <input
                 type="number"
-                placeholder="e.g. 250"
+                placeholder={t("fields.placeholders.maxLength")}
                 value={formMaxLength}
                 onChange={e => setFormMaxLength(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -703,7 +715,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-650 transition"
               disabled={isPending}
             >
-              {tCommon("buttons.cancel")}
+              {t("fields.cancel")}
             </button>
             <button
               type="submit"
@@ -720,9 +732,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
       {selectedIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-white/95 border border-slate-200 px-5 py-3 rounded-2xl shadow-xl transition-all duration-300 transform">
           <span className="text-[12px] font-bold text-slate-700">
-            {locale === "mr" 
-              ? `${selectedIds.length} फील्ड्स निवडले`
-              : `${selectedIds.length} fields selected`}
+            {t("fields.selectedCount", { count: selectedIds.length })}
           </span>
           <div className="h-4 w-px bg-slate-200" />
           <div className="flex items-center gap-2">
@@ -731,14 +741,14 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               disabled={isPending}
               className="inline-flex h-8 px-3 items-center gap-1 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 transition text-[11px] font-bold disabled:opacity-50"
             >
-              {locale === "mr" ? "आवश्यक करा" : "Make Required"}
+              {t("fields.makeRequired")}
             </button>
             <button
               onClick={() => handleBulkSetRequired(false)}
               disabled={isPending}
               className="inline-flex h-8 px-3 items-center gap-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-150 transition text-[11px] font-bold disabled:opacity-50"
             >
-              {locale === "mr" ? "पर्यायी करा" : "Make Optional"}
+              {t("fields.makeOptional")}
             </button>
             <button
               onClick={handleBulkDelete}
@@ -746,7 +756,7 @@ export default function CmsFieldsConfig({ data, locale }: CmsFieldsConfigProps) 
               className="inline-flex h-8 px-3 items-center gap-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition text-[11px] font-bold disabled:opacity-50"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              {tCommon("buttons.delete")}
+              {t("fields.delete")}
             </button>
           </div>
         </div>

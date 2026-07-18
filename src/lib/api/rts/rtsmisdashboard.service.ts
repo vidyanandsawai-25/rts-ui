@@ -3,7 +3,7 @@
 import type {
   CmsMisDashboardRequest,
   CmsMisDashboardResponse,
-} from '@/types/cms/cmsmisdashboard.types';
+} from '@/types/rts/rtsmisdashboard.types';
 
 const CMS_MIS_DASHBOARD_URL =
   'https://onesolutionakola.tabamc.in/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData';

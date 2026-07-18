@@ -1,5 +1,5 @@
 import { getCmsMisDashboardAction } from "./actions";
-import CmsDashboard from "@/components/modules/cms/CmsMISDashboard";
+import CmsDashboard from "@/components/modules/rts/dashboard/RtsMISDashboard";
 
 export default async function CmsDashboardPage() {
   const misDashboardData = await getCmsMisDashboardAction();

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Input, Button, ValidationMessage, Card, CardHeader, CardContent } from '@/components/common';
 import { sendCitizenOtpAction, verifyCitizenOtpAction, fetchNodesAction, fetchSectorsAction } from '@/app/[locale]/service/login/actions';
-import { LoginFormCouncilLogo } from './LoginFormCouncilLogo';
+import { LoginFormCouncilLogo } from '../../login/LoginFormCouncilLogo';
 import { Landmark } from 'lucide-react';
 
 type LoginMethod = 'mobile' | 'upic' | 'property';

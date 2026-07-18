@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { getCmsApplicationByIdAction, getCmsUsersAction } from "../../actions";
+import { getCmsApplicationByIdAction, getCmsUsersAction } from "../../../actions";
 import { readStoredAdminServiceFormByServiceId } from "@/components/modules/rts/admin/service-builder/data.server";
-import CmsApplicationDetails from "@/components/modules/cms/CmsApplicationDetails";
+import CmsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
 type PageProps = {
   params: Promise<{

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Plus, Pencil, Trash2, Landmark, Folder } from "lucide-react";
 import { Badge, Button, Card, Drawer, MasterTable, SearchInput, useConfirm } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
@@ -26,6 +27,7 @@ type ServiceRow = Record<string, unknown> & { id: string; srNo: number; name: st
 
 export default function CmsMastersConfig({ masters }: MasterConfigProps) {
   const { confirm } = useConfirm();
+  const t = useTranslations("rts");
   const [departments, setDepartments] = useState(masters.departments);
   const [services, setServices] = useState(masters.services);
 
@@ -107,7 +109,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
-      toast.error("Name cannot be empty");
+      toast.error(t("masters.emptyNameError"));
       return;
     }
 
@@ -118,9 +120,9 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
             const res = await saveCmsDepartmentAction(formName);
             if (res.success && res.department) {
               setDepartments(prev => [...prev, res.department!]);
-              toast.success("Department added successfully!");
+              toast.success(t("masters.departmentAdded"));
             } else {
-              toast.error("Failed to add department");
+              toast.error(t("masters.departmentAddFailed"));
             }
           } else {
             // Edit
@@ -128,24 +130,24 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
             const res = await updateCmsDepartmentAction(editingItem.id, formName);
             if (res.success && res.department) {
               setDepartments(prev => prev.map(d => d.id === editingItem.id ? res.department! : d));
-              toast.success("Department updated successfully!");
+              toast.success(t("masters.departmentUpdated"));
             } else {
-              toast.error("Failed to update department");
+              toast.error(t("masters.departmentUpdateFailed"));
             }
           }
         } else {
           // Service
           if (!formDeptId) {
-            toast.error("Please select a department");
+            toast.error(t("masters.selectDepartmentError"));
             return;
           }
           if (drawerMode === "add") {
             const res = await saveCmsServiceAction(formName, formDeptId);
             if (res.success && res.service) {
               setServices(prev => [...prev, res.service!]);
-              toast.success("Service added successfully!");
+              toast.success(t("masters.serviceAdded"));
             } else {
-              toast.error("Failed to add service");
+              toast.error(t("masters.serviceAddFailed"));
             }
           } else {
             // Edit
@@ -153,15 +155,19 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
             const res = await updateCmsServiceAction(editingItem.id, formName, formDeptId);
             if (res.success && res.service) {
               setServices(prev => prev.map(s => s.id === editingItem.id ? res.service! : s));
-              toast.success("Service updated successfully!");
+              toast.success(t("masters.serviceUpdated"));
             } else {
-              toast.error("Failed to update service");
+              toast.error(t("masters.serviceUpdateFailed"));
             }
           }
         }
         setDrawerOpen(false);
-      } catch (err: any) {
-        toast.error(err.message || "An unexpected error occurred");
+      } catch (error: unknown) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : t("masters.unexpectedError")
+        );
       }
     });
   };
@@ -170,8 +176,8 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
   const handleDeleteDepartment = (id: string, name: string) => {
     confirm({
       variant: "delete",
-      title: "Delete Department",
-      description: `Are you sure you want to delete department "${name}"? All associated services will also be removed.`,
+      title: t("masters.deleteDepartment"),
+      description: t("masters.confirmDeleteDept", { name }),
       onConfirm: () => {
         startTransition(async () => {
           try {
@@ -180,12 +186,16 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
               setDepartments(prev => prev.filter(d => d.id !== id));
               // Cascaded local delete for services
               setServices(prev => prev.filter(s => s.departmentId !== id));
-              toast.success("Department and its services deleted!");
+              toast.success(t("masters.departmentDeleted"));
             } else {
-              toast.error("Failed to delete department");
+              toast.error(t("masters.departmentDeleteFailed"));
             }
-          } catch (err: any) {
-            toast.error(err.message || "Error deleting department");
+          } catch (error: unknown) {
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : t("masters.departmentDeleteFailed")
+            );
           }
         });
       }
@@ -195,20 +205,24 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
   const handleDeleteService = (id: string, name: string) => {
     confirm({
       variant: "delete",
-      title: "Delete Service",
-      description: `Are you sure you want to delete service "${name}"?`,
+      title: t("masters.deleteService"),
+      description: t("masters.confirmDeleteService", { name }),
       onConfirm: () => {
         startTransition(async () => {
           try {
             const res = await deleteCmsServiceAction(id);
             if (res.success) {
               setServices(prev => prev.filter(s => s.id !== id));
-              toast.success("Service deleted successfully!");
+              toast.success(t("masters.serviceDeleted"));
             } else {
-              toast.error("Failed to delete service");
+              toast.error(t("masters.serviceDeleteFailed"));
             }
-          } catch (err: any) {
-            toast.error(err.message || "Error deleting service");
+          } catch (error: unknown) {
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : t("masters.serviceDeleteFailed")
+            );
           }
         });
       }
@@ -217,12 +231,16 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
 
   // Filtered Lists
   const filteredDepartments = useMemo(() => {
-    return departments.filter(d => d.name.toLowerCase().includes(deptSearch.toLowerCase().trim()));
+    const query = deptSearch.toLocaleLowerCase().trim();
+    return departments.filter(d =>
+      d.name.toLocaleLowerCase().includes(query)
+    );
   }, [departments, deptSearch]);
 
   const filteredServices = useMemo(() => {
     return services.filter(s => {
-      const matchesSearch = s.name.toLowerCase().includes(serviceSearch.toLowerCase().trim());
+      const query = serviceSearch.toLocaleLowerCase().trim();
+      const matchesSearch = s.name.toLocaleLowerCase().includes(query);
       const matchesDept = !selectedDeptId || s.departmentId === selectedDeptId;
       return matchesSearch && matchesDept;
     });
@@ -251,36 +269,38 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
     id: dept.id,
     srNo: (deptPage - 1) * 12 + index + 1,
     name: dept.name,
-    status: "Active",
+    status: "active",
   }));
 
   const serviceRows: ServiceRow[] = paginatedServices.map((service, index) => ({
     id: service.id,
     srNo: (servicePage - 1) * 12 + index + 1,
     name: service.name,
-    departmentName: deptMap.get(service.departmentId) || service.departmentId,
-    status: "Active",
+    departmentName:
+      deptMap.get(service.departmentId) ||
+      t("masters.unknownDepartment"),
+    status: "active",
   }));
 
   const departmentColumns: Column<DepartmentRow>[] = [
-    { key: "srNo", label: "Sr. No.", width: "64px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-bold text-slate-500 border-r border-slate-100" },
-    { key: "name", label: "Department Name", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-semibold text-slate-800 border-r border-slate-100" },
-    { key: "status", label: "Status", width: "112px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: () => <Badge variant="success" size="sm">Active</Badge> },
+    { key: "srNo", label: t("masters.srNo"), width: "64px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-bold text-slate-500 border-r border-slate-100" },
+    { key: "name", label: t("masters.deptName"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-semibold text-slate-800 border-r border-slate-100" },
+    { key: "status", label: t("masters.status"), width: "112px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: () => <Badge variant="success" size="sm">{t("masters.active")}</Badge> },
   ];
 
   const serviceColumns: Column<ServiceRow>[] = [
-    { key: "srNo", label: "Sr. No.", width: "64px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-bold text-slate-500 border-r border-slate-100" },
-    { key: "name", label: "Service Name", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-semibold text-slate-800 border-r border-slate-100" },
-    { key: "departmentName", label: "Department Name", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-medium text-slate-500 border-r border-slate-100" },
-    { key: "status", label: "Status", width: "112px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: () => <Badge variant="success" size="sm">Active</Badge> },
+    { key: "srNo", label: t("masters.srNo"), width: "64px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-bold text-slate-500 border-r border-slate-100" },
+    { key: "name", label: t("masters.serviceName"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-semibold text-slate-800 border-r border-slate-100" },
+    { key: "departmentName", label: t("masters.deptName"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "font-medium text-slate-500 border-r border-slate-100" },
+    { key: "status", label: t("masters.status"), width: "112px", align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: () => <Badge variant="success" size="sm">{t("masters.active")}</Badge> },
   ];
 
   const tableHeaderClass = "!bg-[#4b70a6] !from-[#4b70a6] !via-[#4b70a6] !to-[#4b70a6] hover:!from-[#4b70a6] hover:!via-[#4b70a6] hover:!to-[#4b70a6] [&_th]:!text-white";
   const tableClass = "border-collapse text-left text-sm [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
   const actionButtons = (onEdit: () => void, onDelete: () => void) => (
     <div className="flex justify-center gap-1.5" onClick={(event) => event.stopPropagation()}>
-      <Button type="button" aria-label="Edit" title="Edit" variant="edit" size="sm" icon={Pencil} onClick={onEdit} className="size-10 px-0" />
-      <Button type="button" aria-label="Delete" title="Delete" variant="delete" size="sm" icon={Trash2} onClick={onDelete} className="size-10 px-0" />
+      <Button type="button" aria-label={t("masters.edit")} title={t("masters.edit")} variant="edit" size="sm" icon={Pencil} onClick={onEdit} className="size-10 px-0" />
+      <Button type="button" aria-label={t("masters.delete")} title={t("masters.delete")} variant="delete" size="sm" icon={Trash2} onClick={onDelete} className="size-10 px-0" />
     </div>
   );
 
@@ -290,26 +310,27 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
       <Card className="flex flex-col justify-between gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
-            CMS Masters Config
+            {t("masters.title")}
           </h1>
-          {/* <p className="text-[13px] text-slate-400 mt-0.5">
-            Configure municipal departments and registered citizen services globally
-          </p> */}
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            aria-label={t("masters.addDept")}
             onClick={openAddDepartment}
             className="inline-flex items-center gap-1.5 rounded-xl bg-[#4b70a6] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#3d5e8c]"
           >
             <Plus className="h-4 w-4" />
-            Registered Depts
+            {t("masters.addDept")}
           </button>
           <button
+            type="button"
+            aria-label={t("masters.addService")}
             onClick={openAddService}
             className="inline-flex items-center gap-1.5 rounded-xl bg-[#4b70a6] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#3d5e8c]"
           >
             <Plus className="h-4 w-4" />
-            Registered Services
+            {t("masters.addService")}
           </button>
         </div>
       </Card>
@@ -324,17 +345,17 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
             <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[#3d3d3d]">
               <Landmark className="h-4 w-4 text-[#4b70a6]" />
-              Registered Departments Master
+              {t("masters.registeredDepartmentsMaster")}
             </h2>
 
-            <SearchInput value={deptSearch} onChange={handleDeptSearchChange} placeholder="Search departments..." className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs" />
+            <SearchInput value={deptSearch} onChange={handleDeptSearchChange} placeholder={t("masters.searchDepartments")} className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs" />
           </div>
           <MasterTable
             columns={departmentColumns}
             data={departmentRows}
             getRowKey={(row) => row.id}
-            emptyText="No departments registered."
-            actionLabel="Actions"
+            emptyText={t("masters.noDepartmentsRegistered")}
+            actionLabel={t("masters.actions")}
             pageNumber={deptPage}
             pageSize={12}
             totalCount={filteredDepartments.length}
@@ -357,31 +378,34 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
             <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[#3d3d3d]">
               <Folder className="h-4 w-4 text-[#4b70a6]" />
-              Registered Services Master
+              {t("masters.registeredServicesMaster")}
             </h2>
 
             <div className="flex flex-col sm:flex-row gap-2.5 items-center w-full sm:w-auto">
               {selectedDeptId && (
                 <div className="flex items-center gap-1.5 bg-blue-50/50 border border-blue-200 rounded-xl px-2.5 py-1 text-[11px] font-bold text-[#4b70a6]">
-                  <span>Filter Active</span>
+                  <span>{t("masters.filterActive")}</span>
                   <button
+                    type="button"
+                    aria-label={t("masters.clearDepartmentFilter")}
+                    title={t("masters.clearDepartmentFilter")}
                     onClick={() => setSelectedDeptId(null)}
                     className="hover:text-blue-800 underline font-black"
                   >
-                    Clear
+                    {t("masters.clear")}
                   </button>
                 </div>
               )}
 
-              <SearchInput value={serviceSearch} onChange={handleServiceSearchChange} placeholder="Search services..." className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs" />
+              <SearchInput value={serviceSearch} onChange={handleServiceSearchChange} placeholder={t("masters.searchServices")} className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs" />
             </div>
           </div>
           <MasterTable
             columns={serviceColumns}
             data={serviceRows}
             getRowKey={(row) => row.id}
-            emptyText="No services registered."
-            actionLabel="Actions"
+            emptyText={t("masters.noServicesRegistered")}
+            actionLabel={t("masters.actions")}
             pageNumber={servicePage}
             pageSize={12}
             totalCount={filteredServices.length}
@@ -411,8 +435,8 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
             )}
             <span id="drawer-title" className="text-sm font-extrabold text-slate-800">
               {drawerMode === "add"
-                ? `Register New ${drawerType === "department" ? "Department" : "Service"}`
-                : `Edit ${drawerType === "department" ? "Department" : "Service"} Profile`}
+                ? (drawerType === "department" ? t("masters.registerNewDepartment") : t("masters.registerNewService"))
+                : (drawerType === "department" ? t("masters.editDepartmentProfile") : t("masters.editServiceProfile"))}
             </span>
           </div>
         }
@@ -420,12 +444,12 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-[13px] text-slate-700">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-450 uppercase">
-              {drawerType === "department" ? "Department Name" : "Service Name"}
+              {drawerType === "department" ? t("masters.deptName") : t("masters.serviceName")}
             </label>
             <input
               type="text"
               required
-              placeholder={drawerType === "department" ? "e.g. Health Department" : "e.g. Water Connection License"}
+              placeholder={drawerType === "department" ? t("masters.departmentNamePlaceholder") : t("masters.serviceNamePlaceholder")}
               value={formName}
               onChange={e => setFormName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
@@ -434,14 +458,14 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
 
           {drawerType === "service" && (
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Department</label>
+              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("masters.department")}</label>
               <select
                 required
                 value={formDeptId}
                 onChange={e => setFormDeptId(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
               >
-                <option value="">Select dept...</option>
+                <option value="">{t("masters.selectDepartmentPlaceholder")}</option>
                 {departments.map(d => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -457,14 +481,15 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
               onClick={() => setDrawerOpen(false)}
               className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-650 transition"
             >
-              Cancel
+              {t("masters.cancel")}
             </button>
             <button
               type="submit"
+              aria-label={isPending ? t("masters.saving") : t("masters.saveChanges")}
               disabled={isPending}
               className="px-4 py-2 rounded-xl bg-[#4b70a6] text-white hover:bg-[#3d5e8c] text-xs font-bold transition flex items-center gap-1"
             >
-              {isPending ? "Saving..." : "Save Changes"}
+              {isPending ? t("masters.saving") : t("masters.saveChanges")}
             </button>
           </div>
         </form>

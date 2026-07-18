@@ -19,7 +19,7 @@ import {
 import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Drawer } from "@/components/common/Drawer";
-import type { CmsMisDashboardUserApplicationItem } from "@/types/cms/cmsmisdashboard.types";
+import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
 type Service = {
@@ -238,13 +238,13 @@ export default function DepartmentCarsoulClient({ departments, userApplications 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredSubmissions.map((app) => {
+                  {filteredSubmissions.map((app, index) => {
                     const isAppApproved = app.normalizedStatus === "approved";
                     const isAppRejected = app.normalizedStatus === "rejected";
                     const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
 
                     return (
-                      <tr key={app.applicationNo} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-2.5 px-3">
                           <span className="block text-[9px] font-mono font-bold text-slate-400 mb-0.5">{app.applicationNo}</span>
                           <span className="font-bold text-slate-900 text-xs">{serviceName}</span>
