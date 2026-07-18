@@ -39,7 +39,7 @@ export default function AddRateDrawer({
   }), [zoneParam, useGroupParam, yearParam, assessmentYearParam]);
 
   const handleClose = () => {
-    router.replace(`/${locale}/property-tax/rate-master/rvratemaster`);
+    router.replace(`/${locale}/property-tax/rvratemaster`);
   };
   
   // For lazy loading, pass empty arrays initially to trigger lazy loading behavior

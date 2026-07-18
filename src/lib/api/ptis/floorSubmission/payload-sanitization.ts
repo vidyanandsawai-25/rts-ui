@@ -225,6 +225,7 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
         occupancyNumber: String(payload.occupancyNumber || ''),
         nonCalculateRentMonthly: Number(payload.nonCalculateRentMonthly) || 0,
         isOpenPlot: payload.isOpenPlot === true,
+        documentBindingId: payload.documentBindingId ? Number(payload.documentBindingId) : null,
     };
 };
 

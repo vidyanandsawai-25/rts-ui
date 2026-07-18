@@ -5,19 +5,7 @@ import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { User, UserTableProps } from '@/types/user-management';
 
-const getRoleBadgeColor = (role: string) => {
-  const colors: Record<string, string> = {
-    Administrator:
-      'bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-700 border-purple-500/30 ring-1 ring-purple-500/20',
-    'Department Head':
-      'bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-700 border-blue-500/30 ring-1 ring-blue-500/20',
-    Officer:
-      'bg-gradient-to-r from-indigo-500/10 to-indigo-600/10 text-indigo-700 border-indigo-500/30 ring-1 ring-indigo-500/20',
-    Clerk:
-      'bg-gradient-to-r from-slate-500/10 to-slate-600/10 text-slate-700 border-slate-500/30 ring-1 ring-slate-500/20',
-  };
-  return colors[role] || colors['Clerk'];
-};
+
 
 export function UserTable({
   users,
@@ -78,30 +66,49 @@ export function UserTable({
       ),
     },
     {
-      label: t('table.role'),
+      label: `${t('table.departments')} - ${t('table.role')}`,
       key: 'roles' as const,
-      render: (value: unknown) => (
-        <div className="flex flex-wrap gap-1">
-          {(value as string[]).map((role, idx) => (
-            <Badge key={idx} className={`px-2 py-0.5 text-[10px] ${getRoleBadgeColor(role)}`}>
-              {role}
-            </Badge>
-          ))}
-        </div>
-      ),
-    },
-    {
-      label: t('table.departments'),
-      key: 'departmentNames' as const,
-      render: (value: unknown) => {
-        const items = value as string[];
+      render: (_: unknown, row: User) => {
+        const isUserActive = row.isActive;
+        const activeDeptIds = new Set(row.departmentIds || []);
+
+        // 1. Match roles to their respective departments using raw allocations
+        const allocations = (row.rawRoleAllocations || [])
+          .filter((ra) => ra && (ra.isActive || !isUserActive) && activeDeptIds.has(String(ra.departmentId)));
+
+        let pairs: string[] = [];
+        if (allocations.length > 0) {
+          pairs = allocations.map((ra) => {
+            const dept = (row.rawDepartments || []).find((d) => String(d.departmentId) === String(ra.departmentId));
+            const deptName = dept?.departmentName || `Dept ${ra.departmentId}`;
+            const roleName = ra.userRoleName || '';
+            return `${deptName} - ${roleName}`;
+          });
+        } else {
+          // 2. Fallback to index-based alignment of departmentNames and roles
+          const depts = row.departmentNames || [];
+          const roles = row.roles || [];
+          const maxLen = Math.max(depts.length, roles.length);
+          for (let i = 0; i < maxLen; i++) {
+            const deptName = depts[i] || '';
+            const roleName = roles[i] || '';
+            if (deptName && roleName) {
+              pairs.push(`${deptName} - ${roleName}`);
+            } else if (deptName) {
+              pairs.push(deptName);
+            } else if (roleName) {
+              pairs.push(roleName);
+            }
+          }
+        }
+
         return (
-          <div className="flex flex-wrap gap-1 max-w-[150px]">
-            {items.map((val, idx) => (
+          <div className="flex flex-wrap gap-1 max-w-[250px]">
+            {pairs.map((val, idx) => (
               <Badge
                 key={idx}
                 variant="outline"
-                className="px-1.5 py-0 text-[10px] bg-slate-50 text-slate-600 border-slate-200"
+                className="px-2 py-0.5 text-[10px] bg-slate-50 text-slate-700 border-slate-200"
               >
                 {val}
               </Badge>

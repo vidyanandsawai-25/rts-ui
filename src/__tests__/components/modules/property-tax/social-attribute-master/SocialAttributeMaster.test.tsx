@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useRouter } from 'next/navigation';
 import { useConfirm } from '@/components/common/ConfirmProvider';
@@ -49,6 +49,11 @@ vi.mocked(useRouter).mockImplementation(() => ({
   prefetch: vi.fn(),
 }));
 
+Object.defineProperty(window, 'location', {
+  value: { ...window.location, assign: vi.fn(), replace: vi.fn() },
+  writable: true,
+});
+
 const defaultProps = {
   data: [
     {
@@ -95,6 +100,8 @@ describe('SocialAttributeMaster', () => {
   });
 
   afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
     vi.useRealTimers();
   });
 

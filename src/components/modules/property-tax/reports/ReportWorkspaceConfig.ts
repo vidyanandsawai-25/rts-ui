@@ -31,12 +31,12 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  { key: 'assessment', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50/70', borderColor: 'border-blue-500', glowClass: 'shadow-blue-100/70', iconBg: 'bg-blue-100' },
-  { key: 'amc', icon: BarChart2, color: 'text-amber-600', bgColor: 'bg-amber-50/70', borderColor: 'border-amber-500', glowClass: 'shadow-amber-100/70', iconBg: 'bg-amber-100' },
-  { key: 'transaction', icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-50/70', borderColor: 'border-emerald-500', glowClass: 'shadow-emerald-100/70', iconBg: 'bg-emerald-100' },
-  { key: 'approval', icon: CheckCircle, color: 'text-indigo-600', bgColor: 'bg-indigo-50/70', borderColor: 'border-indigo-500', glowClass: 'shadow-indigo-100/70', iconBg: 'bg-indigo-100' },
-  { key: 'discount', icon: Tag, color: 'text-rose-600', bgColor: 'bg-rose-50/70', borderColor: 'border-rose-500', glowClass: 'shadow-rose-100/70', iconBg: 'bg-rose-100' },
-  { key: 'others', icon: MoreHorizontal, color: 'text-slate-600', bgColor: 'bg-slate-50/70', borderColor: 'border-slate-500', glowClass: 'shadow-slate-100/70', iconBg: 'bg-slate-100' },
+  { key: 'assessment', icon: Home, color: 'text-[#800000]', bgColor: 'bg-transparent', borderColor: 'border-[#800000]', glowClass: 'shadow-[#800000]/20', iconBg: 'bg-transparent' },
+  { key: 'amc', icon: BarChart2, color: 'text-[#800000]', bgColor: 'bg-transparent', borderColor: 'border-[#800000]', glowClass: 'shadow-[#800000]/20', iconBg: 'bg-transparent' },
+  { key: 'transaction', icon: CreditCard, color: 'text-[#800000]', bgColor: 'bg-transparent', borderColor: 'border-[#800000]', glowClass: 'shadow-[#800000]/20', iconBg: 'bg-transparent' },
+  { key: 'approval', icon: CheckCircle, color: 'text-[#800000]', bgColor: 'bg-transparent', borderColor: 'border-[#800000]', glowClass: 'shadow-[#800000]/20', iconBg: 'bg-transparent' },
+  { key: 'discount', icon: Tag, color: 'text-[#800000]', bgColor: 'bg-transparent', borderColor: 'border-[#800000]', glowClass: 'shadow-[#800000]/20', iconBg: 'bg-transparent' },
+  { key: 'others', icon: MoreHorizontal, color: 'text-[#800000]', bgColor: 'bg-transparent', borderColor: 'border-[#800000]', glowClass: 'shadow-[#800000]/20', iconBg: 'bg-transparent' },
 ];
 
 export function resolveCategoryKey(report: ReportDefinition): string {

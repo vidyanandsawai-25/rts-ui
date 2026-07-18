@@ -30,7 +30,7 @@ export default function EditRateDrawer({
   const t = useTranslations("ptis_RVRateMaster");
 
   const handleClose = () => {
-    router.push(`/${locale}/property-tax/rate-master/rvratemaster`);
+    router.push(`/${locale}/property-tax/rvratemaster`);
   };
 
   const title = mode === "delete" ? t("messages.deleteRateConfiguration") : t("messages.editRateDetails");

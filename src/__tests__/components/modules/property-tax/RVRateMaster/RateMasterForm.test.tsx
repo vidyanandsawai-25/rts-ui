@@ -14,7 +14,7 @@ vi.mock("@/services/api.service", () => ({
   },
 }));
 
-vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/rvratemaster/action", () => ({
   getRateMasterByFilters: vi.fn().mockResolvedValue([]),
   getDetailedRatesAction: vi.fn().mockResolvedValue({ items: [] }),
 }));

@@ -41,16 +41,16 @@ export function ReportListPanel({
               type="button"
               onClick={() => onSelectReport(report)}
               className="
-                w-[calc(25%-9px)] text-left rounded-lg border px-3 py-3
+                group w-[calc(25%-9px)] text-left rounded-lg border px-3 py-3
                 border-gray-200 bg-white
-                hover:border-blue-300 hover:bg-blue-50/20 hover:shadow-sm
+                hover:border-red-200 hover:bg-red-50/30 hover:shadow-sm hover:-translate-y-0.5
                 transition-all duration-150 focus:outline-none
               "
             >
-              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate text-gray-400">
+              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate text-gray-400 group-hover:text-[#800000]/70 transition-colors">
                 {report.reportCode}
               </p>
-              <p className="text-xs font-semibold leading-snug text-gray-800">
+              <p className="text-xs font-semibold leading-snug text-gray-800 group-hover:text-[#800000] transition-colors">
                 {report.reportName}
               </p>
             </button>

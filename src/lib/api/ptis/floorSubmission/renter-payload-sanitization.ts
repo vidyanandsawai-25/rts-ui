@@ -88,6 +88,7 @@ const sanitizeRenterMastRow = (
     agreementDate: toIsoOrNull(payload.agreementDate),
     agreementFromDate: toIsoOrNull(payload.agreementFromDate),
     agreementToDate: toIsoOrNull(payload.agreementToDate),
+    documentBindingId: rm.documentBindingId ? Number(rm.documentBindingId) : (payload.documentBindingId ? Number(payload.documentBindingId) : null),
   };
 };
 
