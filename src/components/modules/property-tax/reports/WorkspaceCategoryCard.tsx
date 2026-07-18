@@ -1,5 +1,4 @@
 'use client';
-
 import type { Category } from './ReportWorkspaceConfig';
 
 interface CategoryCardProps {
