@@ -5,6 +5,7 @@ import {
   defaultBuildingPermission,
 } from '@/lib/constants/ptis.constants';
 import { buildDetailsFromResults, buildPropertyOptions, InitialDataResult } from './ptis-data';
+import { normalizePartition } from '@/lib/utils/format';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ActionResult } from '@/types/common.types';
@@ -24,6 +25,7 @@ import type {
   OldTaxesData,
   DiscountData,
   TabHeaderInfoData,
+  MappedPropertyItem,
 } from '@/types/ptis.types';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
@@ -49,7 +51,8 @@ type ConcurrentResultsTuple = [
   TaxDetailsResult | null,
   { success: boolean; data?: { items?: PropertyRuleLogItem[] } } | null,
   WaybackRelease[] | null,
-  ActionResult<TabHeaderInfoData> | null
+  ActionResult<TabHeaderInfoData> | null,
+  ActionResult<MappedPropertyItem[]> | null
 ];
 
 
@@ -65,6 +68,7 @@ export async function mapPtisFetchResults({
   initialMediaPanelVisible,
   showFloorParam,
   showOldTaxParam,
+  showMapDetailsParam,
   showDetailsParam,
   searchParams,
   locale,
@@ -82,18 +86,19 @@ export async function mapPtisFetchResults({
   initialMediaPanelVisible: boolean;
   showFloorParam: boolean;
   showOldTaxParam: boolean;
+  showMapDetailsParam: boolean;
   showDetailsParam: boolean;
   searchParams: Record<string, string | string[] | undefined>;
   locale: string;
   propertyIdParam: number | undefined;
   wardOptions: SearchSelectOption[];
 }) {
-  const results = detailResults.length > 0 ? detailResults : Array(17).fill(null);
+  const results = detailResults.length > 0 ? detailResults : Array(18).fill(null);
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
     discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
-    waybackReleasesRes, tabHeaderInfoResult
+    waybackReleasesRes, tabHeaderInfoResult, mappedPropertiesResult
   ] = results as unknown as ConcurrentResultsTuple;
 
   const emptyPaged: PagedResponse<ApartmentQCDetail> = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
@@ -125,8 +130,34 @@ export async function mapPtisFetchResults({
   const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
     ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)
     : undefined;
+  const mappedPropertiesData = mappedPropertiesResult?.success && Array.isArray(mappedPropertiesResult.data)
+    ? mappedPropertiesResult.data : [];
   const taxDetails = taxDetailsRes || { rateableTaxDetails: undefined, capitalTaxDetails: undefined, rateableTaxError: undefined, capitalTaxError: undefined };
-  const rawPropertyData = propertyListResult?.success && propertyListResult.data ? propertyListResult.data : [];
+  let rawPropertyData = propertyListResult?.success && propertyListResult.data ? propertyListResult.data : [];
+
+  if (propertyDetailsResult.success && propertyDetailsResult.propertyDetails) {
+    const details = propertyDetailsResult.propertyDetails;
+    const exists = rawPropertyData.some(
+      (p) =>
+        p.propertyNo === details.propertyNo &&
+        normalizePartition(p.partitionNo) === normalizePartition(details.partitionNo)
+    );
+    if (!exists) {
+      rawPropertyData = [
+        {
+          propertyId: propertyDetailsResult.propertyId!,
+          propertyNo: details.propertyNo,
+          partitionNo: details.partitionNo || '',
+          upicId: details.upicId || '',
+          ownerName: details.ownerName || '',
+          address: '',
+          displayProperty: details.propertyNo,
+        },
+        ...rawPropertyData,
+      ];
+    }
+  }
+
   const propertyOptions = buildPropertyOptions(rawPropertyData);
 
   // URL Normalization check
@@ -178,6 +209,7 @@ export async function mapPtisFetchResults({
     initialPhotos,
     showFloorParam,
     showOldTaxParam,
+    showMapDetailsParam,
     showDetailsParam,
     rateableTaxDetails: taxDetails.rateableTaxDetails ?? undefined,
     capitalTaxDetails: taxDetails.capitalTaxDetails ?? undefined,
@@ -192,5 +224,6 @@ export async function mapPtisFetchResults({
     longitude,
     waybackReleases,
     tabHeaderInfo,
+    mappedPropertiesData,
   };
 }
