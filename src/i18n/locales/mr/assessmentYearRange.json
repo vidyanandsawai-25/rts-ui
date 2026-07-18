@@ -68,6 +68,8 @@
       "invalidData": "अवैध डेटा प्रदान केला. कृपया सर्व फील्ड तपासा.",
       "notFound": "मूल्यांकन वर्ष श्रेणी सापडली नाही.",
       "inUse": "ही वर्ष श्रेणी वापरात असल्याने हटवता येत नाही.",
+      "referredInYearRange": "हे AssessmentYearRange वगळता येणार नाही कारण ते Rate Master मध्ये संदर्भित आहे.",
+      "cannotDeactivateYearRange": "हे AssessmentYearRange निष्क्रिय करता येणार नाही कारण ते Rate Master मध्ये संदर्भित आहे.",
       "operationFailed": "ऑपरेशन अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा."
     },
     "success": {
@@ -149,6 +151,8 @@
       "invalidData": "अवैध डेटा प्रदान केला. कृपया सर्व फील्ड तपासा.",
       "notFound": "मूल्यांकन वर्ष श्रेणी सापडली नाही.",
       "inUse": "ही वर्ष श्रेणी वापरात असल्याने हटवता येत नाही.",
+      "referredInYearRange": "हे AssessmentYearRangeCV वगळता येणार नाही कारण ते Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master मध्ये संदर्भित आहे.",
+      "cannotDeactivateYearRange": "हे AssessmentYearRangeCV निष्क्रिय करता येणार नाही कारण ते Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master मध्ये संदर्भित आहे.",
       "operationFailed": "ऑपरेशन अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा."
     },
     "success": {

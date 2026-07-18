@@ -294,7 +294,7 @@
             "title": "Discard Changes",
             "description": "You have unsaved changes. Are you sure you want to discard them?",
             "confirm": "Discard",
-            "cancel": "Cancel"
+            "cancel": "Continue"
         }
     },
     "categoriesLabel": "Categories",

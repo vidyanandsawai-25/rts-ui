@@ -103,7 +103,8 @@ export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactEle
 
     // Check opt-in flags (query param ?clearSW=true or localStorage)
     const urlParams = new URLSearchParams(window.location.search);
-    const shouldClear = urlParams.get('clearSW') === 'true' || localStorage.getItem('clear-sw-dev') === 'true';
+    const shouldClear =
+      urlParams.get('clearSW') === 'true' || localStorage.getItem('clear-sw-dev') === 'true';
     if (!shouldClear) return;
 
     navigator.serviceWorker

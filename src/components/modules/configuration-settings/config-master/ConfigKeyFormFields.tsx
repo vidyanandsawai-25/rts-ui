@@ -1,7 +1,7 @@
 'use client';
 
 import { Label } from '@/components/common/label';
-import { Input, Select, ValidationMessage, TextArea, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
+import { Input, Select, ValidationMessage, TextArea, StatusToggleCard } from '@/components/common';
 import type { Option } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { FormState } from '@/types/configMaster.types';
@@ -46,8 +46,6 @@ export function ConfigKeyFormFields({
 
   return (
     <div className="p-6 space-y-5">
-      <RequiredFieldsNote text={t('modals.addKey.form.requiredFields')} />
-
       {/* Category Selection */}
       <div className="space-y-2">
         <Label htmlFor="categoryId" required>
@@ -72,7 +70,7 @@ export function ConfigKeyFormFields({
           id="configCode"
           value={formData.configCode || ''}
           onChange={(e) => {
-            const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '');
+            const sanitized = e.target.value.replace(/[^A-Za-z0-9_]/g, '');
             onFieldChange('configCode', sanitized);
           }}
           placeholder={t('modals.addKey.form.placeholders.code')}

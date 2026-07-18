@@ -135,6 +135,8 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   onRowClick?: (row: Row, index: number) => void;
   // Scroll toggle visibility
   showScrollButtons?: boolean;
+  // Fixed height/max-height configuration in terms of number of rows
+  heightRows?: number;
 }
 
 /**
@@ -222,6 +224,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   renderFooter,
   onRowClick,
   showScrollButtons = true,
+  heightRows,
 }: FloorDetailsTableProps<Row>) {
   const router = useRouter();
   const [localExpandedIds, setLocalExpandedIds] = useState<Set<string>>(() =>
@@ -326,15 +329,28 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
     });
   }, [data, sortConfig]);
 
+  const containerStyle = useMemo(() => {
+    if (!heightRows || !data || data.length === 0) return undefined;
+    const rowHeight = 36;
+    const headerHeight = 36;
+    const calculatedHeight = headerHeight + (heightRows * rowHeight);
+    return {
+      height: `${calculatedHeight}px`,
+      maxHeight: `${calculatedHeight}px`,
+    };
+  }, [heightRows, data]);
+
   return (
     <div
       ref={containerRef}
       onScroll={handleScroll}
       className={cn(
         'w-full overflow-x-auto bg-white shadow-sm transition-all duration-200',
+        heightRows && 'overflow-y-auto',
         showBorder && 'border border-blue-200 rounded-xl',
         containerClassName
       )}
+      style={containerStyle}
     >
       <table className={cn('w-full border-collapse text-left', tableClassName)}>
         <thead className={cn('bg-[#1e3a8a] text-white sticky top-0 z-20', theadClassName)}>

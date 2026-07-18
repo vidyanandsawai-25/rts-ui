@@ -92,7 +92,7 @@ export const Tooltip = ({
     : null;
 
   const childRef = child
-    ? (child as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref
+    ? (child.props as { ref?: React.Ref<HTMLElement> }).ref || (child as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref
     : null;
 
   // Handle ref forwarding safely - must be before early returns

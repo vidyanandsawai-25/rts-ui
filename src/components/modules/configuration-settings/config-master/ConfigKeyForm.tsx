@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, forwardRef, useImperativeHandle } from 'react';
 import { Button, useConfirm, useToast } from '@/components/common';
 import {
   createConfigKeyAction,
@@ -27,14 +27,19 @@ const initialFormState: FormState = {
  * Handles its own state to avoid useEffect reset patterns that trigger linting errors.
  * Re-mounts via key={isOpen} in the parent to naturally reset state.
  */
-export function ConfigKeyForm({
-  initialData,
-  categoryId,
-  categories,
-  onSuccess,
-  onClose,
-  isEdit,
-}: Omit<AddConfigKeyModalProps, 'isOpen'> & { isEdit: boolean }) {
+export interface ConfigKeyFormRef {
+  handleClose: () => void;
+}
+
+export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModalProps, 'isOpen'> & { isEdit: boolean }>(
+  ({
+    initialData,
+    categoryId,
+    categories,
+    onSuccess,
+    onClose,
+    isEdit,
+  }, ref) => {
   const t = useTranslations('configMaster');
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
@@ -90,6 +95,10 @@ export function ConfigKeyForm({
     }
     onClose();
   };
+
+  useImperativeHandle(ref, () => ({
+    handleClose,
+  }));
 
   const validateForm = (): boolean => {
     const parsedCategoryId = parseInt(formData.categoryId, 10);
@@ -161,8 +170,8 @@ export function ConfigKeyForm({
   };
 
   return (
-    <div className="flex flex-col h-full light">
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+    <div className="flex flex-col h-full light w-full">
+      <div className="flex-1 overflow-y-auto">
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
           <ConfigKeyFormFields
             formData={formData}
@@ -175,7 +184,7 @@ export function ConfigKeyForm({
           />
         </form>
       </div>
-      <div className="border-t border-slate-100 p-6 flex items-center justify-end gap-3 bg-slate-50/50">
+      <div className="border-t border-[#DCEAFF] px-6 py-4 flex items-center justify-end gap-3 bg-white shrink-0">
         <Button variant="secondary" onClick={handleClose} disabled={isPending} className="cursor-pointer">
           {t('modals.addKey.buttons.cancel')}
         </Button>
@@ -193,4 +202,6 @@ export function ConfigKeyForm({
       </div>
     </div>
   );
-}
+});
+
+ConfigKeyForm.displayName = 'ConfigKeyForm';

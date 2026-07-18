@@ -91,7 +91,8 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
             startTransition(() => router.refresh());
           } else {
             const errorMessage =
-              result.statusCode === 409 ? t("apiErrors.inUse") :
+              // result.statusCode === 409 ? t("apiErrors.inUse") :
+              result.statusCode === 409 ? t("apiErrors.referredInYearRange") :
               result.statusCode === 404 ? t("apiErrors.notFound") :
               result.message || tCommon("errors.deleteError");
             toast.error(errorMessage);

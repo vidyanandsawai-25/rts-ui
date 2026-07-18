@@ -37,6 +37,7 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
     handleBulkToggle,
     handleClose,
     handleSave,
+    setErrors,
   } = useCreateWard({
     currentZone,
     existingWards,
@@ -175,7 +176,13 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
         ) : (
           <WardFormFields
             data={form}
-            onChange={setForm}
+            onChange={(v) => {
+              setForm(v);
+              const newErrors = { ...errors };
+              if (v.wardNo !== form.wardNo) delete newErrors.wardNo;
+              if (v.description !== form.description) delete newErrors.description;
+              setErrors(newErrors);
+            }}
             mode="add"
             disabled={loading}
             errors={errors}

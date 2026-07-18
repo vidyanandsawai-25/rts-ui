@@ -300,5 +300,13 @@
   "note": {
     "mandatory": "* चिह्नित फ़ील्ड अनिवार्य हैं"
   },
-  "searchPlaceholder": "संपत्तियां खोजें..."
+  "searchPlaceholder": "संपत्तियां खोजें...",
+  "validation": {
+    "codeAllZeros": "कोड शून्य नहीं हो सकता",
+    "codeFormat": "कोड के लिए अमान्य प्रारूप",
+    "nameAllZeros": "नाम शून्य नहीं हो सकता",
+    "nameFormat": "नाम के लिए अमान्य प्रारूप",
+    "descriptionAllZeros": "विवरण शून्य नहीं हो सकता",
+    "descriptionFormat": "विवरण के लिए अमान्य प्रारूप"
+  }
 }

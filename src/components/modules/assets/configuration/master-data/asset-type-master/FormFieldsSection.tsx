@@ -1,0 +1,104 @@
+import { Label } from "@/components/common/label";
+
+
+import { Input } from "@/components/common/Input";
+import { Select } from "@/components/common/select";
+import { RadioGroup, RadioGroupItem } from "@/components/common/radio-group";
+import { ValidationMessage } from "@/components/common/ValidationMessage";
+import { TextArea } from "@/components/common/Textarea";
+import type { FormFieldsSectionProps } from "@/types/asset-masters/asset-type.types";
+
+export function FormFieldsSection({
+  formData,
+  errors,
+  showError,
+  onChange,
+  onBlur,
+  onSelectChange,
+  onRadioChange,
+  t,
+  categoryOptions,
+}: FormFieldsSectionProps) {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <Label className="block text-sm font-medium text-slate-700">
+          {t("labels.category")} <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          options={categoryOptions}
+          value={String(formData.group ?? "")}
+          onChange={(_, v) => onSelectChange("group", String(v))}
+          placeholder={t("placeholders.category")}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        {showError("group") && <ValidationMessage message={errors.group} />}
+      </div>
+
+      <Input
+        name="code"
+        label={t("labels.code")}
+        required
+        value={formData.code}
+        onChange={onChange}
+        onBlur={onBlur}
+        placeholder={t("placeholders.code")}
+        maxLength={15}
+        error={showError("code") ? errors.code : undefined}
+        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+      />
+
+      <Input
+        name="name"
+        label={t("labels.name")}
+        required
+        value={formData.name}
+        onChange={onChange}
+        onBlur={onBlur}
+        placeholder={t("placeholders.name")}
+        maxLength={50}
+        error={showError("name") ? errors.name : undefined}
+        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+      />
+
+      <div className="space-y-3">
+        <Label className="block text-sm font-medium text-slate-700">
+          {t("labels.registrationType")} <span className="text-red-500">*</span>
+        </Label>
+        <RadioGroup
+          className="flex items-center gap-6"
+          value={formData.allowUnitRegistration ? "unit" : formData.allowRoomRegistration ? "room" : ""}
+          onValueChange={onRadioChange}
+        >
+          <div className="flex items-center space-x-2 cursor-pointer">
+            <RadioGroupItem value="unit" id="reg-unit" className="border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <Label htmlFor="reg-unit" className="text-sm text-slate-700 cursor-pointer select-none">
+              {t("labels.unitRegistration")}
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2 cursor-pointer">
+            <RadioGroupItem value="room" id="reg-room" className="border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <Label htmlFor="reg-room" className="text-sm text-slate-700 cursor-pointer select-none">
+              {t("labels.roomRegistration")}
+            </Label>
+          </div>
+        </RadioGroup>
+        {showError("registrationType") && <ValidationMessage message={errors.registrationType} />}
+      </div>
+
+      <TextArea
+        name="description"
+        label={t("labels.description")}
+        rows={4}
+        value={formData.description}
+        onChange={onChange}
+        onBlur={onBlur}
+        placeholder={t("placeholders.description")}
+        maxLength={500}
+        error={showError("description") ? true : false}
+        errorMessage={showError("description") ? errors.description : undefined}
+        className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+      />
+    </div>
+  );
+}

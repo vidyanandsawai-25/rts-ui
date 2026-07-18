@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, ArrowLeft, Upload, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Upload, RefreshCw, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button, useConfirm } from '@/components/common';
 import { MainImageViewer } from './MainImageViewer';
@@ -22,6 +22,8 @@ interface PhotoPlanViewerProps {
   isAdding?: boolean;
   isReplacing?: boolean;
   isDeleting?: boolean;
+  onDrawPlan?: (e: React.MouseEvent) => void;
+  isPhotoPlanCategory?: boolean;
 }
 
 export function PhotoPlanViewer({
@@ -38,6 +40,8 @@ export function PhotoPlanViewer({
   isAdding = false,
   isReplacing = false,
   isDeleting = false,
+  onDrawPlan,
+  isPhotoPlanCategory,
 }: PhotoPlanViewerProps): React.ReactElement {
   const t = useTranslations('ptis');
   const { confirm } = useConfirm();
@@ -99,26 +103,33 @@ export function PhotoPlanViewer({
         )}
         <div className="relative max-w-full max-h-full flex items-center justify-center overflow-hidden rounded-lg shadow-xl bg-slate-100 border border-slate-200 w-full h-full">
           {images.length === 0 ? (
-            <div
-              onClick={isMutating ? undefined : onUpload}
-              className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-white p-12 hover:border-blue-500 hover:bg-blue-50/20 cursor-pointer transition-all duration-300 select-none group w-full h-full min-h-[300px]"
-            >
-              <div className="p-4 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-110 transition-transform duration-300 shadow-sm mb-4">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-white p-12 transition-all duration-300 select-none group w-full h-full min-h-[300px]">
+              <div className="p-4 bg-slate-50 rounded-full border border-slate-200 shadow-sm mb-4">
                 {isAdding ? (
                   <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
                 ) : (
-                  <Upload className="w-8 h-8 text-slate-400 group-hover:text-blue-500" />
+                  <Upload className="w-8 h-8 text-slate-400" />
                 )}
               </div>
-              <h3 className="text-base font-semibold text-slate-700 mb-1 group-hover:text-blue-900">
+              <h3 className="text-base font-semibold text-slate-700 mb-1">
                 {isAdding ? (t('media.uploading') || 'Uploading...') : (t('media.noImageUploaded') || 'No Photos Uploaded')}
               </h3>
-              <p className="text-xs text-slate-400 max-w-xs text-center">
+              <p className="text-xs text-slate-400 max-w-xs text-center mb-6">
                 {isAdding
                   ? (t('media.uploadingDescription') || 'Please wait while your image is being uploaded.')
                   : (t('media.clickToUpload', { title: categoryName }) ||
                     `Click here to upload a photo to the ${categoryName} folder.`)}
               </p>
+              <div className="flex gap-4">
+                <Button onClick={onUpload} disabled={isMutating} variant="primary" icon={Upload}>
+                  {t('media.uploadImage') || 'Upload Image'}
+                </Button>
+                {isPhotoPlanCategory && onDrawPlan && (
+                  <Button onClick={onDrawPlan} disabled={isMutating} variant="primary" className="bg-purple-600 hover:bg-purple-700 text-white border-none" icon={Plus}>
+                    {t('media.drawPlan') || 'Draw Plan'}
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             <MainImageViewer
@@ -143,6 +154,8 @@ export function PhotoPlanViewer({
         isAdding={isAdding}
         isReplacing={isReplacing}
         isDeleting={isDeleting}
+        isPhotoPlanCategory={isPhotoPlanCategory}
+        onDrawPlan={onDrawPlan}
       />
     </>
   );
