@@ -103,14 +103,6 @@ export interface ReportWorkspaceCopy {
     setParameters: string;
     generateReport: string;
   };
-  categories: {
-    assessment: string;
-    amc: string;
-    transaction: string;
-    approval: string;
-    discount: string;
-    others: string;
-  };
   tabs: {
     generateReport: string;
     myReports: string;

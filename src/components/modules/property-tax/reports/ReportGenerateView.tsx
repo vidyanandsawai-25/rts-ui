@@ -5,6 +5,7 @@ import { Card } from '@/components/common';
 import { ReportParametersPanel } from './ReportParametersPanel';
 import { Stepper, CategoryCard, EmptyState, ReportListPanel, ReportTabsPanel } from './ReportWorkspaceComponents';
 import type { Category, Step } from './ReportWorkspaceConfig';
+import type { FinancialYear } from '@/types/financialYear.types';
 import type {
   ReportDefinition,
   ReportWorkspaceCopy,
@@ -13,7 +14,6 @@ import type {
   WardSummary,
   PropertySummary,
 } from '@/types/report.types';
-import type { FinancialYear } from '@/types/financialYear.types';
 
 interface ReportGenerateViewProps {
   currentStep: Step;
@@ -66,7 +66,7 @@ export function ReportGenerateView({
           <CategoryCard
             key={cat.key}
             category={cat}
-            label={cat.name || workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories] || cat.key}
+            label={cat.name || cat.key}
             count={categoryCount(cat.key)}
             reportsCountTemplate={workspaceCopy.reportsCount}
             isSelected={selectedCategory === cat.key}
