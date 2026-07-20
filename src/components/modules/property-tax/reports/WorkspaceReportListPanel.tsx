@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { FileText } from 'lucide-react';
 import { Card } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
@@ -20,12 +21,12 @@ export function ReportListPanel({
 }: ReportListPanelProps) {
   return (
     <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
-        <FileText className="w-3.5 h-3.5 text-gray-400" />
+      <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
+        <FileText className="w-4 h-4 text-[#800000]" />
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
           {activeCategoryDef.name || activeCategoryDef.key}
         </span>
-        <span className="ml-1 text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
+        <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">
           {activeReports.length}
         </span>
       </div>
@@ -41,7 +42,7 @@ export function ReportListPanel({
               type="button"
               onClick={() => onSelectReport(report)}
               className="
-                group w-[calc(25%-9px)] text-left rounded-lg border px-3 py-3
+                group w-[calc(20%-9.6px)] text-left rounded-lg border px-3 py-3
                 border-gray-200 bg-white
                 hover:border-red-200 hover:bg-red-50/30 hover:shadow-sm hover:-translate-y-0.5
                 transition-all duration-150 focus:outline-none
