@@ -10,6 +10,7 @@ interface UseLockUnlockColumnsParams {
   selectedPropertyIds: number[];
   excludedPropertyIds: number[];
   isAllPropertiesSelected: boolean;
+  searchCategory: number;
   properties: LockUnlockPropertyItem[];
   isPending: boolean;
   onSelectProperty: (propertyId: number) => void;
@@ -23,6 +24,7 @@ export function useLockUnlockColumns({
   selectedPropertyIds,
   excludedPropertyIds,
   isAllPropertiesSelected,
+  searchCategory,
   properties,
   isPending,
   onSelectProperty,
@@ -32,7 +34,10 @@ export function useLockUnlockColumns({
 }: UseLockUnlockColumnsParams): Column<LockUnlockPropertyItem>[] {
   const t = useTranslations("lockUnlock");
 
+  const isScopeZoneOrWard = searchCategory === 1 || searchCategory === 2;
+
   const isRowChecked = (propertyId: number): boolean => {
+    if (isScopeZoneOrWard) return true;
     if (isAllPropertiesSelected) {
       return !excludedPropertyIds.includes(propertyId);
     }
@@ -41,11 +46,13 @@ export function useLockUnlockColumns({
 
   const isHeaderChecked = (): boolean => {
     if (properties.length === 0) return false;
+    if (isScopeZoneOrWard) return true;
     if (isAllPropertiesSelected) return true;
     return selectedPropertyIds.length === properties.length;
   };
 
   const isHeaderIndeterminate = (): boolean => {
+    if (isScopeZoneOrWard) return false;
     if (isAllPropertiesSelected) return excludedPropertyIds.length > 0;
     const checkedCount = selectedPropertyIds.length;
     return checkedCount > 0 && checkedCount < properties.length;
@@ -58,7 +65,7 @@ export function useLockUnlockColumns({
         <input
           type="checkbox"
           checked={isHeaderChecked()}
-          disabled={isPending}
+          disabled={isPending || isScopeZoneOrWard}
           ref={(el) => {
             if (el) {
               el.indeterminate = isHeaderIndeterminate();
@@ -81,10 +88,12 @@ export function useLockUnlockColumns({
         <input
           type="checkbox"
           checked={isRowChecked(row.propertyId)}
-          disabled={isPending}
-          onChange={() => onSelectProperty(row.propertyId)}
+          disabled={isPending || isScopeZoneOrWard}
+          onChange={() => {
+            if (!isScopeZoneOrWard) onSelectProperty(row.propertyId);
+          }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !isPending) {
+            if (e.key === "Enter" && !isPending && !isScopeZoneOrWard) {
               e.preventDefault();
               onSelectProperty(row.propertyId);
             }

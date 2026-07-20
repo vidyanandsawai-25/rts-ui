@@ -97,7 +97,7 @@ export default function LockUnlockMaster({
       <div className="grid grid-cols-12 gap-2 items-stretch">
         {/* Left Panel */}
         <div className="col-span-5 flex flex-col gap-2 h-full">
-          <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col gap-4 p-4 bg-white">
+          <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col p-4 pb-1 bg-white">
             <ScopeSelectionCard
               selectedCategory={formData.searchCategory}
               onChange={(categoryId) => handleSelectChange("searchCategory", categoryId.toString())}
@@ -136,6 +136,7 @@ export default function LockUnlockMaster({
                   getRowKey={(row) => row.propertyId}
                   pageNumber={pagination.pageNumber}
                   pageSize={pagination.pageSize}
+                  pageSizeOptions={[5, 10, 20, 50, 100]}
                   totalCount={pagination.totalCount}
                   totalPages={pagination.totalPages}
                   onPageChange={handlePageChange}
@@ -165,7 +166,8 @@ export default function LockUnlockMaster({
                         size="sm"
                         label={t("resultsTable.lockButton")}
                         disabled={
-                          (!isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
+                          (!(formData.searchCategory === 1 || formData.searchCategory === 2) && 
+                           !isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
                           selectedScreenIds.length === 0 ||
                           isPending
                         }
@@ -176,7 +178,8 @@ export default function LockUnlockMaster({
                         size="sm"
                         label={t("resultsTable.unlockButton")}
                         disabled={
-                          (!isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
+                          (!(formData.searchCategory === 1 || formData.searchCategory === 2) && 
+                           !isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
                           selectedScreenIds.length === 0 ||
                           isPending
                         }

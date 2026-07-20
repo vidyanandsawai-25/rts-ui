@@ -9,7 +9,6 @@ import {
   SearchSelect,
   SearchButton,
   ClearButton,
-  MultiSelect,
 } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
@@ -49,15 +48,15 @@ export function PropertySelectionCard({
   const t = useTranslations("lockUnlock");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-1">
       <CardHeader className="mb-0 border border-slate-100 rounded-md bg-slate-50/50 py-3.5 px-6 flex flex-row items-center gap-2">
         <Building className="w-4 h-4 text-blue-600" />
         <CardTitle className="text-sm font-bold text-slate-800">{t("selectPropertyCard.title")}</CardTitle>
       </CardHeader>
-      <CardContent className="py-4">
-        <div className="flex flex-row flex-wrap gap-4 items-end">
+      <CardContent className="py-2">
+        <div className="flex flex-row flex-wrap gap-1 items-end">
           {formData.searchCategory === 1 && (
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[150px]">
               <SearchSelect
                 name="zoneId"
                 label="Zone / Node"
@@ -66,13 +65,13 @@ export function PropertySelectionCard({
                 tabIndex={0}
                 onChange={handleSelectChange}
                 options={zoneOptions}
-                placeholder={t("selectPropertyCard.selectZone") || "Select Zone"}
+                placeholder={t("selectPropertyCard.selectZone")}
               />
             </div>
           )}
 
           {formData.searchCategory !== 1 && (
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[150px]">
               <SearchSelect
                 name="wardId"
                 label={t("selectPropertyCard.wardNo")}
@@ -88,15 +87,15 @@ export function PropertySelectionCard({
           )}
 
           {formData.searchCategory === 3 && (
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-semibold mb-1 text-slate-700">
-                Property No <span className="text-red-500">*</span>
-              </label>
-              <MultiSelect
+            <div className="flex-1 min-w-[150px]">
+              <SearchSelect
+                name="propertyNos"
+                label={t("selectPropertyCard.propertyNo")}
+                required
                 options={propertyOptions}
-                value={formData.propertyNos}
-                onChange={(vals) => handleSelectChange("propertyNos", vals)}
-                placeholder="Select Properties"
+                value={formData.propertyNos[0] || ""}
+                onChange={(name, val) => handleSelectChange("propertyNos", [val])}
+                placeholder="Select Property"
                 disabled={isLoadingProperties || !formData.wardId}
               />
             </div>
@@ -104,7 +103,7 @@ export function PropertySelectionCard({
 
           {formData.searchCategory === 4 && (
             <>
-              <div className="flex-1 min-w-[200px]">
+              <div className="flex-1 min-w-[150px]">
                 <SearchSelect
                   name="fromProperty"
                   label={t("selectPropertyCard.fromProperty")}
@@ -118,7 +117,7 @@ export function PropertySelectionCard({
                   sanitizeInput={(val) => val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "")}
                 />
               </div>
-              <div className="flex-1 min-w-[200px]">
+              <div className="flex-1 min-w-[150px]">
                 <SearchSelect
                   name="toProperty"
                   label={t("selectPropertyCard.toProperty")}

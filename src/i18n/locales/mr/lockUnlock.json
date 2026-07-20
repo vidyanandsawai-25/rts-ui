@@ -14,7 +14,11 @@
     "selectEndRange": "शेवटची श्रेणी निवडा",
     "showButton": "दाखवा",
     "clearButton": "साफ करा",
-    "mandatoryBanner": "* चिन्हांकित फील्ड अनिवार्य आहेत"
+    "mandatoryBanner": "* चिन्हांकित फील्ड अनिवार्य आहेत",
+    "zoneId": "झोन / नोड",
+    "selectZone": "झोन निवडा",
+    "propertyNo": "मालमत्ता क्र.",
+    "selectProperty": "मालमत्ता निवडा"
   },
   "screenSelectionCard": {
     "title": "स्क्रीन निवड",
@@ -76,12 +80,19 @@
     "selectScreenRequired": "लॉक/अनलॉक करण्यासाठी कृपया किमान एक स्क्रीन निवडा.",
     "bulkLockTitle": "मालमत्ता बल्क लॉक करा",
     "bulkUnlockTitle": "मालमत्ता बल्क अनलॉक करा",
-    "bulkConfirmDescription": "तुम्ही निवडलेल्या {propertyCount} मालमत्तांसाठी निवडलेल्या {screenCount} स्क्रीन {action} करू इच्छिता?",
-    "bulkSuccess": "बल्क ऑपरेशन पूर्ण झाले.",
+    "bulkConfirmDescription": "तुम्हाला खात्री आहे का की तुम्ही निवडलेल्या <highlight>{propertyCount}</highlight> मालमत्तांसाठी निवडलेल्या {screenCount} स्क्रीन्स <warning>{action}</warning> करू इच्छिता?",
+    "bulkConfirmDescriptionScope": "तुम्हाला खात्री आहे का की तुम्ही निवडलेल्या स्कोपसाठी (अंदाजे <highlight>{propertyCount}</highlight> मालमत्ता) निवडलेल्या {screenCount} स्क्रीन्स <warning>{action}</warning> करू इच्छिता? या मोठ्या प्रमाणातील अपडेट प्रक्रियेमुळे मोठ्या संख्येने रेकॉर्ड्स बदलले जातात आणि ती पूर्ण होण्यासाठी अनेक मिनिटे लागू शकतात. कृपया विंडो बंद करू नका.",
+    "bulkLockUnlockConfirmation": "तुम्ही <highlight>{propertyCount}</highlight> मालमत्ता <warning>{action}</warning> करणार आहात. या मोठ्या प्रमाणातील प्रक्रियेला काही मिनिटे लागू शकतात.\nकृपया प्रक्रिया पूर्ण होईपर्यंत हे पेज चालू ठेवा.\nपुढे जाण्यासाठी, <warning>{action}</warning> वर क्लिक करा. रद्द करण्यासाठी, <highlight>Cancel</highlight> वर क्लिक करा.",
+    "bulkSuccess": "बल्क प्रक्रिया पूर्ण झाली.",
     "bulkFailed": "बल्क operation अयशस्वी झाले.",
     "clearedFilters": "सर्व फिल्टर्स साफ केले.",
     "validationError": "कृपया सर्व आवश्यक फील्ड भरा (वॉर्ड क्र., मालमत्ता क्र. पासून आणि मालमत्ता क्र. पर्यंत).",
-    "fetchSuccess": "मालमत्ता यशस्वीरित्या प्राप्त झाल्या.",
+    "validationWardAndProperty": "कृपया प्रभाग क्रमांक आणि मालमत्ता क्रमांक निवडा",
+    "validationWard": "कृपया प्रभाग क्रमांक निवडा",
+    "validationZone": "कृपया झोन निवडा",
+    "validationProperty": "कृपया मालमत्ता क्रमांक निवडा",
+    "validationFromToProperty": "कृपया पासून मालमत्ता आणि पर्यंत मालमत्ता निवडा",
+    "fetchSuccess": "मालमत्ता यशस्वीरित्या प्राप्त केल्या.",
     "fetchNoResults": "निवडलेल्या श्रेणीत कोणतीही मालमत्ता आढळली नाही.",
     "fetchFailed": "मालमत्ता लोड करण्यात अयशस्वी.",
     "fetchWardsError": "वॉर्ड प्राप्त करण्यात त्रुटी:",
@@ -93,5 +104,27 @@
     "errorId": "त्रुटि आयडी: {id}",
     "goHome": "मुख्यपृष्ठावर जा",
     "tryAgain": "पुन्हा प्रयत्न करा"
+  },
+  "scopeSelectionCard": {
+    "title": "कार्यक्षेत्र निवड",
+    "description": "कार्यक्षेत्र निवडा. खाली फक्त संबंधित फील्ड दिसतील.",
+    "options": {
+      "1": {
+        "label": "झोन / नोड",
+        "sublabel": "झोननुसार निवड"
+      },
+      "2": {
+        "label": "प्रभाग / सेक्टर",
+        "sublabel": "मल्टी प्रभाग निवड"
+      },
+      "3": {
+        "label": "इमारत नुसार",
+        "sublabel": "इमारत स्तर"
+      },
+      "4": {
+        "label": "मालमत्ता श्रेणी",
+        "sublabel": "पासून-पर्यंत मालमत्ता श्रेणी"
+      }
+    }
   }
 }

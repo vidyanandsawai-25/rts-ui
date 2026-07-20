@@ -34,6 +34,7 @@ export interface LockUnlockPropertiesQueryParams {
   PropertyFrom?: string;
   PropertyTo?: string;
   SearchCategory?: number;
+  PropertyNo?: string;
   PartitionNo?: string;
   Search?: string;
   SearchPartitionNo?: string;
@@ -46,9 +47,12 @@ export interface LockUnlockPropertiesQueryParams {
 }
 
 export interface BulkLockUnlockFilters {
-  wardId: number;
+  searchCategory?: number;
+  zoneId?: number;
+  wardId?: number;
   fromProperty?: string;
   toProperty?: string;
+  propertyNo?: string;
   partitionNo?: string;
   search?: string;
 }
@@ -61,3 +65,19 @@ export interface BulkLockUnlockPayload {
   excludedPropertyIds?: number[];
   filters?: BulkLockUnlockFilters;
 }
+
+export interface BulkByCategoryScope {
+  searchCategory: number;
+  zoneId?: number;
+  wardId?: number;
+  propertyNo?: string;
+  partitionNo?: string;
+  propertyFrom?: string;
+  propertyTo?: string;
+}
+
+export interface BulkLockUnlockByCategoryPayload {
+  scope: BulkByCategoryScope;
+  screenIds: number[];
+  action: string;
+}

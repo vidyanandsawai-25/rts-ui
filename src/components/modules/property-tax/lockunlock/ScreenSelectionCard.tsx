@@ -52,12 +52,17 @@ export function ScreenSelectionCard({
       return;
     }
 
+    if (searchTerm === (screenSearchFromUrl || "")) {
+      return;
+    }
+
     const timer = setTimeout(() => {
       updateQueries({ screenSearch: searchTerm || null });
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, updateQueries]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const selectedModule = screenModuleFromUrl;
 
@@ -84,7 +89,7 @@ export function ScreenSelectionCard({
       value: m,
     }));
     return [
-      { label: t("screenSelectionCard.allTypes") || "All Types", value: "ALL" },
+      { label: t("screenSelectionCard.allTypes"), value: "ALL" },
       ...options.sort((a, b) => a.label.localeCompare(b.label)),
     ];
   }, [screens, t]);
@@ -127,8 +132,8 @@ export function ScreenSelectionCard({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <CardHeader className="mb-0 border border-slate-100 rounded-md bg-slate-50/50 py-3.5 px-6 flex flex-row items-center justify-between">
+    <div className="flex flex-col">
+      <CardHeader className="mb-0 border border-slate-100 rounded-md bg-slate-50/50 py-1.5 px-6 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
             <Layers className="w-4 h-4 text-blue-600 shrink-0" />
@@ -144,7 +149,7 @@ export function ScreenSelectionCard({
           {t("screenSelectionCard.selectedCount", { count: selectedScreenIds.length })}
         </span>
       </CardHeader>
-      <CardContent className="py-4 space-y-4">
+      <CardContent className="py-2 space-y-2">
         {/* Filters Row */}
         <div className="flex flex-col sm:flex-row gap-3">
           <SearchInput

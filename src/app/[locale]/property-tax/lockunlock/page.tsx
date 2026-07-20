@@ -12,7 +12,9 @@ export default async function Page({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<React.ReactElement> {
 
-  let dropdownProperties: { label: string; value: string; propertyId?: number }[] = [];
+  const resolvedSearchParams = await searchParams;
+
+  let dropdownProperties: { label: string; value: string; propertyId?: number; propertyNo?: string; partitionNo?: string }[] = [];
   let properties: LockUnlockPropertyItem[] = [];
   let initialPagination:
     | {
@@ -32,13 +34,15 @@ export default async function Page({
   const wards = wardsResult.items || [];
   const screens = screensResult || [];
 
-  const params = await searchParams;
-  const wardId = params?.wardId;
-  const fromProperty = params?.fromProperty;
-  const toProperty = params?.toProperty;
+  const searchCategoryParam = Array.isArray(resolvedSearchParams?.searchCategory) ? resolvedSearchParams?.searchCategory[0] : resolvedSearchParams?.searchCategory;
+  const searchCategory = searchCategoryParam ? Number(searchCategoryParam) : 1;
 
-  // Fetch dropdown properties on the server ONLY if wardId is already in the URL
-  if (wardId && typeof wardId === "string") {
+  const wardId = resolvedSearchParams?.wardId;
+  const fromProperty = resolvedSearchParams?.fromProperty;
+  const toProperty = resolvedSearchParams?.toProperty;
+
+  // Fetch dropdown properties on the server ONLY if wardId is already in the URL and we need property selection
+  if (wardId && typeof wardId === "string" && (searchCategory === 3 || searchCategory === 4)) {
     const dropdownResponse = await fetchLockUnlockPropertiesPagedAction({
       WardId: Number(wardId),
       PageNumber: 1,
@@ -60,6 +64,8 @@ export default async function Page({
           label: displayValue,
           value: displayValue,
           propertyId: prop.propertyId,
+          propertyNo: prop.propertyNo,
+          partitionNo: normalizedPartitionNo,
         };
       })
       .filter((option) => {
@@ -70,26 +76,24 @@ export default async function Page({
         return true;
       });
   }
-  const showParam = Array.isArray(params?.show) ? params?.show[0] : params?.show;
+  const showParam = Array.isArray(resolvedSearchParams?.show) ? resolvedSearchParams?.show[0] : resolvedSearchParams?.show;
   const show = showParam === 'true';
 
-  const searchParam = Array.isArray(params?.search) ? params?.search[0] : params?.search;
-  const pageParam = Array.isArray(params?.page) ? params?.page[0] : params?.page;
-  const pageSizeParam = Array.isArray(params?.pageSize) ? params?.pageSize[0] : params?.pageSize;
-  const searchCategoryParam = Array.isArray(params?.searchCategory) ? params?.searchCategory[0] : params?.searchCategory;
-  const zoneIdParam = Array.isArray(params?.zoneId) ? params?.zoneId[0] : params?.zoneId;
-  const propertyNosParam = Array.isArray(params?.propertyNos) ? params?.propertyNos[0] : params?.propertyNos;
-
-  const pageNum = pageParam ? Number(pageParam) : 1;
+  const searchParam = Array.isArray(resolvedSearchParams?.search) ? resolvedSearchParams?.search[0] : resolvedSearchParams?.search;
+  const pageParam = Array.isArray(resolvedSearchParams?.page) ? resolvedSearchParams?.page[0] : resolvedSearchParams?.page;
+  const pageSizeParam = Array.isArray(resolvedSearchParams?.pageSize) ? resolvedSearchParams?.pageSize[0] : resolvedSearchParams?.pageSize;
   const pageSz = pageSizeParam ? Number(pageSizeParam) : 10;
-  const searchCategory = searchCategoryParam ? Number(searchCategoryParam) : 4;
+  
+  const zoneIdParam = Array.isArray(resolvedSearchParams?.zoneId) ? resolvedSearchParams?.zoneId[0] : resolvedSearchParams?.zoneId;
+  const propertyNosParam = Array.isArray(resolvedSearchParams?.propertyNos) ? resolvedSearchParams?.propertyNos[0] : resolvedSearchParams?.propertyNos;
+  const pageNum = pageParam ? Number(pageParam) : 1;
 
   const normalizedSearch = searchParam ? searchParam.replace(/\s*-\s*/g, "-").trim() : undefined;
 
   // Fetch filtered properties when show=true and valid parameters for the category exist
   if (show) {
     let isValid = false;
-    let queryParams: any = {
+    const queryParams: Record<string, unknown> = {
       SearchCategory: searchCategory,
       SearchTerm: normalizedSearch,
       PageNumber: pageNum,
@@ -103,9 +107,46 @@ export default async function Page({
       isValid = true;
       queryParams.WardId = Number(wardId);
     } else if (searchCategory === 3 && wardId && propertyNosParam) {
-      isValid = true;
       queryParams.WardId = Number(wardId);
-      queryParams.Search = propertyNosParam;
+      
+      const propertyNosArr = (propertyNosParam as string).split(",");
+      let basePropertyNo = "";
+      const partitions: string[] = [];
+      let currentValid = true;
+
+      for (const propStr of propertyNosArr) {
+        const matchedOption = dropdownProperties.find((o) => o.value === propStr);
+        let propNo = "";
+        let partition = "";
+        
+        if (matchedOption) {
+          propNo = matchedOption.propertyNo || "";
+          partition = matchedOption.partitionNo || "";
+        } else {
+          const parts = propStr.split("-");
+          propNo = parts[0];
+          partition = parts.length > 1 ? parts.slice(1).join("-") : "";
+        }
+        
+        if (!basePropertyNo) {
+          basePropertyNo = propNo;
+        } else if (basePropertyNo !== propNo) {
+          currentValid = false;
+          break;
+        }
+        
+        if (partition) {
+          partitions.push(partition);
+        }
+      }
+
+      if (currentValid && basePropertyNo) {
+        isValid = true;
+        queryParams.PropertyNo = basePropertyNo;
+        if (partitions.length > 0) {
+          queryParams.PartitionNo = partitions.join(",");
+        }
+      }
     } else if (searchCategory === 4 && wardId && fromProperty && toProperty) {
       isValid = true;
       queryParams.WardId = Number(wardId);

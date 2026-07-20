@@ -36,6 +36,12 @@ const mockT = vi.fn((key: string, _values?: Record<string, unknown>) => {
   };
   if (key === "lockUnlock") return "lockUnlock";
   return (translations[key] as string) || key;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+}) as any;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(mockT as any).rich = vi.fn((key: string, values?: Record<string, unknown>) => {
+  return mockT(key, values);
 });
 
 vi.mock("next-intl", () => ({
@@ -134,9 +140,12 @@ describe("useLockUnlockMaster", () => {
     const { result } = renderHook(() => useLockUnlockMaster(defaultProps));
 
     expect(result.current.formData).toEqual({
+      searchCategory: 1,
+      zoneId: "",
       wardId: "1",
       fromProperty: "",
       toProperty: "",
+      propertyNos: [],
     });
     expect(result.current.selectedScreenIds).toEqual([]);
     expect(result.current.showResults).toBe(false);
@@ -225,15 +234,18 @@ describe("useLockUnlockMaster", () => {
     });
 
     expect(result.current.formData).toEqual({
+      searchCategory: 1,
+      zoneId: "",
       wardId: "",
       fromProperty: "",
       toProperty: "",
+      propertyNos: [],
     });
     expect(result.current.selectedScreenIds).toEqual([]);
     expect(result.current.showResults).toBe(false);
     expect(result.current.properties).toEqual([]);
     expect(result.current.selectedPropertyIds).toEqual([]);
-    expect(mockPush).toHaveBeenCalledWith(mockPathname);
+    expect(mockPush).toHaveBeenCalledWith(`${mockPathname}?searchCategory=1`);
   });
 
   it("should handle select change for wardId", () => {

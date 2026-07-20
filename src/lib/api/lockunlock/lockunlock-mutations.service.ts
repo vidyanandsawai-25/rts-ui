@@ -1,7 +1,7 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
-import { BulkLockUnlockPayload } from "@/types/lockunlock.types";
+import { BulkLockUnlockPayload, BulkLockUnlockByCategoryPayload } from "@/types/lockunlock.types";
 
 /**
  * Submits bulk lock or unlock request for property IDs and screen IDs.
@@ -21,6 +21,30 @@ export async function bulkLockUnlockProperties(
       response.statusCode ?? 500,
       response.error || t("messages.bulkFailed"),
       "Bulk lock/unlock failed"
+    );
+  }
+
+  return response.data;
+}
+
+/**
+ * Bulk locks or unlocks properties by category (Zone or Ward).
+ * POST /api/LockUnlock/bulk-by-category
+ */
+export async function bulkLockUnlockPropertiesByCategory(
+  payload: BulkLockUnlockByCategoryPayload
+): Promise<{ success: boolean; message?: string }> {
+  const response = await apiClient.post<{ success: boolean; message?: string }>(
+    "/LockUnlock/bulk-by-category",
+    payload
+  );
+
+  if (!response.success || !response.data) {
+    const t = await getTranslations("lockUnlock");
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || t("messages.bulkFailed"),
+      "Bulk lock/unlock by category failed"
     );
   }
 
