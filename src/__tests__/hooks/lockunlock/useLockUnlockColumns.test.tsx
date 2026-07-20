@@ -54,6 +54,7 @@ describe("useLockUnlockColumns", () => {
     selectedPropertyIds: [101],
     excludedPropertyIds: [],
     isAllPropertiesSelected: false,
+    searchCategory: 3,
     properties: mockProperties,
     isPending: false,
     onSelectProperty: vi.fn(),

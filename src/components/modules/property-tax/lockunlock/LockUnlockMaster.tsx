@@ -166,8 +166,7 @@ export default function LockUnlockMaster({
                         size="sm"
                         label={t("resultsTable.lockButton")}
                         disabled={
-                          (!(formData.searchCategory === 1 || formData.searchCategory === 2) && 
-                           !isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
+                          (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) ||
                           selectedScreenIds.length === 0 ||
                           isPending
                         }
@@ -178,8 +177,7 @@ export default function LockUnlockMaster({
                         size="sm"
                         label={t("resultsTable.unlockButton")}
                         disabled={
-                          (!(formData.searchCategory === 1 || formData.searchCategory === 2) && 
-                           !isAllPropertiesSelected && selectedPropertyIds.length === 0) ||
+                          (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) ||
                           selectedScreenIds.length === 0 ||
                           isPending
                         }

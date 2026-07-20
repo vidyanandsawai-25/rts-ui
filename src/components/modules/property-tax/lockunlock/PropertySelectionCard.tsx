@@ -94,7 +94,7 @@ export function PropertySelectionCard({
                 required
                 options={propertyOptions}
                 value={formData.propertyNos[0] || ""}
-                onChange={(name, val) => handleSelectChange("propertyNos", [val])}
+                onChange={(_, val) => handleSelectChange("propertyNos", [val])}
                 placeholder="Select Property"
                 disabled={isLoadingProperties || !formData.wardId}
               />
@@ -128,6 +128,7 @@ export function PropertySelectionCard({
                   placeholder={t("selectPropertyCard.selectEndRange")}
                   isLoading={isLoadingProperties}
                   sanitizeInput={(val) => val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "")}
+                  disabled={!formData.fromProperty}
                 />
               </div>
             </>

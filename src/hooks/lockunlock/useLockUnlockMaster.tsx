@@ -12,7 +12,7 @@ import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
 export interface UseLockUnlockMasterProps {
   wardIdFromUrl: string;
   screens: LockedScreen[];
-  dropdownProperties: { label: string; value: string; propertyId?: number }[];
+  dropdownProperties: { label: string; value: string; propertyId?: number; propertyNo?: string; partitionNo?: string }[];
   initialProperties?: LockUnlockPropertyItem[];
   initialPagination?: PaginationState;
 }
@@ -543,7 +543,7 @@ export function useLockUnlockMaster({
 
   const handleSearchButtonClick = useCallback(() => {
     if (!propertySearchTerm || propertySearchTerm.trim() === "") {
-      toast.error(t("messages.searchValidationError", { defaultValue: "Please enter a value to search." }));
+      toast.error(t("messages.searchValidationError"));
       return;
     }
 
@@ -763,7 +763,8 @@ export function useLockUnlockMaster({
 
   const handleBulkAction = (action: "lock" | "unlock") => {
     const isScopeZoneOrWard = formData.searchCategory === 1 || formData.searchCategory === 2;
-    const hasSelection = isScopeZoneOrWard || isAllPropertiesSelected || selectedPropertyIds.length > 0;
+    const isBulkCategoryAction = isScopeZoneOrWard || ((formData.searchCategory === 3 || formData.searchCategory === 4) && (isAllPropertiesSelected || selectedPropertyIds.length === 0));
+    const hasSelection = isBulkCategoryAction || selectedPropertyIds.length > 0;
     
     if (!hasSelection) {
       toast.error(t("messages.selectPropertyRequired"));
@@ -774,7 +775,7 @@ export function useLockUnlockMaster({
       return;
     }
 
-    const propertyCount = isScopeZoneOrWard
+    const propertyCount = isBulkCategoryAction
       ? pagination.totalCount
       : isAllPropertiesSelected
       ? pagination.totalCount - excludedPropertyIds.length
@@ -804,42 +805,15 @@ export function useLockUnlockMaster({
       onConfirm: async () => {
         startTransition(async () => {
           try {
-            if (isScopeZoneOrWard) {
-              const scopePayload = {
-                scope: formData.searchCategory === 1 ? {
-                  searchCategory: 1,
-                  zoneId: Number(formData.zoneId)
-                } : {
-                  searchCategory: 2,
-                  wardId: Number(formData.wardId)
-                },
-                screenIds: selectedScreenIds.map(Number),
-                action,
-              };
-              const response = await bulkLockUnlockByCategoryAction(scopePayload);
-              if (response.success) {
-                toast.success(response.message || t("messages.bulkSuccess"));
-                handleShow();
-                resetSelectionState();
-              } else {
-                toast.error(response.error || t("messages.bulkFailed"));
-              }
-              return;
-            }
-
-            let payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
-              screenIds: selectedScreenIds.map(Number),
-              action,
-            };
-
-            if (isAllPropertiesSelected) {
-              const { fromProperty, toProperty } = getPropertyQueryRange();
-              
-              let basePropertyNo = "";
+            if (isBulkCategoryAction) {
+              let propertyNoStr = "";
               let partitionNoStr = "";
-              
+              let propertyFromStr = "";
+              let propertyToStr = "";
+
               if (formData.searchCategory === 3 && formData.propertyNos) {
                 const partitions: string[] = [];
+                let basePropertyNo = "";
                 for (const propStr of formData.propertyNos) {
                   const matchedOption = propertyOptions.find((o) => o.value === propStr);
                   let propNo = "";
@@ -857,28 +831,46 @@ export function useLockUnlockMaster({
                   if (!basePropertyNo) basePropertyNo = propNo;
                   if (partition) partitions.push(partition);
                 }
+                propertyNoStr = basePropertyNo;
                 if (partitions.length > 0) partitionNoStr = partitions.join(",");
+              } else if (formData.searchCategory === 4) {
+                 const { fromProperty, toProperty } = getPropertyQueryRange();
+                 propertyFromStr = fromProperty || "";
+                 propertyToStr = toProperty || "";
               }
 
-              payload = {
-                selectAll: true,
-                excludedPropertyIds,
+              const scopePayload: Parameters<typeof bulkLockUnlockByCategoryAction>[0] = {
+                scope: {
+                  searchCategory: formData.searchCategory,
+                  zoneId: formData.searchCategory === 1 ? Number(formData.zoneId) : 0,
+                  wardId: formData.searchCategory >= 2 && formData.searchCategory <= 4 ? Number(formData.wardId) : 0,
+                  propertyNo: propertyNoStr || "",
+                  propertyFrom: propertyFromStr || "",
+                  propertyTo: propertyToStr || ""
+                },
                 screenIds: selectedScreenIds.map(Number),
                 action,
-                filters: {
-                  searchCategory: formData.searchCategory,
-                  zoneId: formData.zoneId ? Number(formData.zoneId) : undefined,
-                  wardId: formData.wardId ? Number(formData.wardId) : undefined,
-                  fromProperty,
-                  toProperty,
-                  propertyNo: basePropertyNo || undefined,
-                  partitionNo: partitionNoStr || undefined,
-                  search: lastAppliedSearchRef.current || undefined,
-                },
               };
-            } else {
-              payload.propertyIds = selectedPropertyIds.map(Number);
+              
+              if (partitionNoStr) {
+                scopePayload.scope.partitionNo = partitionNoStr;
+              }
+              const response = await bulkLockUnlockByCategoryAction(scopePayload);
+              if (response.success) {
+                toast.success(response.message || t("messages.bulkSuccess"));
+                handleShow();
+                resetSelectionState();
+              } else {
+                toast.error(response.error || t("messages.bulkFailed"));
+              }
+              return;
             }
+
+            const payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
+              screenIds: selectedScreenIds.map(Number),
+              action,
+              propertyIds: selectedPropertyIds.map(Number)
+            };
 
             const response = await bulkLockUnlockPropertiesAction(payload);
 

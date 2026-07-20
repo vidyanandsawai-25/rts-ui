@@ -80,7 +80,7 @@
     "selectScreenRequired": "Please select at least one screen to lock/unlock.",
     "bulkLockTitle": "Bulk Lock Properties",
     "bulkUnlockTitle": "Bulk Unlock Properties",
-    "bulkConfirmDescription": "Are you sure you want to <warning>{action}</warning> the selected {screenCount} screen(s) for the <highlight>{propertyCount}</highlight> checked properties?",
+    "bulkConfirmDescription": "Are you sure you want to {action} the selected screen for the {propertyCount} checked properties?",
     "bulkLockUnlockConfirmation": "You are about to <warning>{action}</warning> <highlight>{propertyCount}</highlight> properties. This bulk operation may take several minutes.\nPlease keep this page open until the process completes.\nTo proceed, click <warning>{action}</warning>. To abort, click <highlight>Cancel</highlight>.",
     "bulkSuccess": "Bulk operation completed.",
     "bulkFailed": "Bulk operation failed.",
