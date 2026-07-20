@@ -82,6 +82,8 @@ export function ImageViewer({
   // Refs
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const lastActiveElement = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
 
   // Update onClose ref
@@ -125,6 +127,9 @@ export function ImageViewer({
 
     try {
       const response = await fetch(currentImage.src);
+      if (!response.ok) {
+        throw new Error(`Failed to download image (HTTP ${response.status})`);
+      }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -260,15 +265,14 @@ export function ImageViewer({
   // Update initial index when opened
   useEffect(() => {
     if (open && currentIndex !== initialIndex) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentIndex(initialIndex);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, initialIndex]);
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open and has a valid image
   useEffect(() => {
-    if (!open) return;
+    const hasImage = images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length;
+    if (!open || !hasImage) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -276,11 +280,64 @@ export function ImageViewer({
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [open]);
+  }, [open, images, currentIndex]);
+
+  // Focus trapping and restoration
+  useEffect(() => {
+    const hasImage = images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length;
+    if (!open || !hasImage) return;
+
+    lastActiveElement.current = document.activeElement as HTMLElement;
+
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+
+    const focusableSelectors =
+      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+    // Wait a brief tick for the DOM to render and focus elements to be available
+    const focusTimeout = setTimeout(() => {
+      const focusableElements = Array.from(
+        viewer.querySelectorAll<HTMLElement>(focusableSelectors)
+      );
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+      }
+    }, 0);
+
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === "Tab") {
+        const focusableElements = Array.from(
+          viewer.querySelectorAll<HTMLElement>(focusableSelectors)
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstEl = focusableElements[0];
+        const lastEl = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl.focus();
+        } else if (!e.shiftKey && document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      clearTimeout(focusTimeout);
+      document.removeEventListener("keydown", handleKeyDown);
+      lastActiveElement.current?.focus();
+    };
+  }, [open, images, currentIndex]);
 
   // Keyboard shortcuts
   useEffect(() => {
-    if (!open) return;
+    const hasImage = images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length;
+    if (!open || !hasImage) return;
 
     const handleKeyDown = (e: KeyboardEvent): void => {
       switch (e.key) {
@@ -328,7 +385,7 @@ export function ImageViewer({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open, showZoom, showRotate, showNavigation, images.length, handleZoomIn, handleZoomOut, handleRotate, handleReset, handlePrevious, handleNext]);
+  }, [open, showZoom, showRotate, showNavigation, images, currentIndex, handleZoomIn, handleZoomOut, handleRotate, handleReset, handlePrevious, handleNext]);
 
   /* =========================
      RENDER
@@ -343,6 +400,7 @@ export function ImageViewer({
 
   return (
     <div
+      ref={viewerRef}
       className={cn(
         "fixed inset-0 z-[9999] flex items-center justify-center",
         className

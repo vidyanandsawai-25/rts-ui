@@ -183,27 +183,32 @@ export default function ReassesmentScreen({
                     (p) => p.type === 'OLD_PROPERTY_PHOTO'
                   );
                   const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
+                  const hasOldPropertyPhoto = !!oldPropertyPhoto;
+                  const hasOldPlanPhoto = !!oldPlanPhoto;
                   return (
                     <>
                       <div 
-                        className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
-                        onClick={() => oldPropertyPhoto && handleImageClick('oldPropertyPhoto')}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && oldPropertyPhoto) {
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center transition-transform",
+                          hasOldPropertyPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasOldPropertyPhoto ? () => handleImageClick('oldPropertyPhoto') : undefined}
+                        role={hasOldPropertyPhoto ? "button" : undefined}
+                        tabIndex={hasOldPropertyPhoto ? 0 : -1}
+                        onKeyDown={hasOldPropertyPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleImageClick('oldPropertyPhoto');
                           }
-                        }}
+                        } : undefined}
                       >
                         {oldPropertyPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
-                            alt={t('photoLabels.oldPropertyPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
+                             alt={t('photoLabels.oldPropertyPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-400 text-xs">{t('photoLabels.oldPropertyPhoto')}</span>
                         )}
@@ -219,24 +224,27 @@ export default function ReassesmentScreen({
                         )}
                       </div>
                       <div 
-                        className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
-                        onClick={() => oldPlanPhoto && handleImageClick('oldPlanPhoto')}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && oldPlanPhoto) {
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center transition-transform",
+                          hasOldPlanPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasOldPlanPhoto ? () => handleImageClick('oldPlanPhoto') : undefined}
+                        role={hasOldPlanPhoto ? "button" : undefined}
+                        tabIndex={hasOldPlanPhoto ? 0 : -1}
+                        onKeyDown={hasOldPlanPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleImageClick('oldPlanPhoto');
                           }
-                        }}
+                        } : undefined}
                       >
                         {oldPlanPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
-                            alt={t('photoLabels.oldPlanPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
+                             alt={t('photoLabels.oldPlanPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-300 text-xs">{t('photoLabels.oldPlanPhoto')}</span>
                         )}
@@ -288,27 +296,32 @@ export default function ReassesmentScreen({
                     (p) => p.type === 'NEW_PROPERTY_PHOTO'
                   );
                   const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
+                  const hasNewPropertyPhoto = !!newPropertyPhoto;
+                  const hasNewPlanPhoto = !!newPlanPhoto;
                   return (
                     <>
                       <div 
-                        className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
-                        onClick={() => newPropertyPhoto && handleImageClick('newPropertyPhoto')}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && newPropertyPhoto) {
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center transition-transform",
+                          hasNewPropertyPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasNewPropertyPhoto ? () => handleImageClick('newPropertyPhoto') : undefined}
+                        role={hasNewPropertyPhoto ? "button" : undefined}
+                        tabIndex={hasNewPropertyPhoto ? 0 : -1}
+                        onKeyDown={hasNewPropertyPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleImageClick('newPropertyPhoto');
                           }
-                        }}
+                        } : undefined}
                       >
                         {newPropertyPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
-                            alt={t('photoLabels.newPropertyPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
+                             alt={t('photoLabels.newPropertyPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-400 text-xs">{t('photoLabels.newPropertyPhoto')}</span>
                         )}
@@ -324,24 +337,27 @@ export default function ReassesmentScreen({
                         )}
                       </div>
                       <div 
-                        className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
-                        onClick={() => newPlanPhoto && handleImageClick('newPlanPhoto')}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && newPlanPhoto) {
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center transition-transform",
+                          hasNewPlanPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasNewPlanPhoto ? () => handleImageClick('newPlanPhoto') : undefined}
+                        role={hasNewPlanPhoto ? "button" : undefined}
+                        tabIndex={hasNewPlanPhoto ? 0 : -1}
+                        onKeyDown={hasNewPlanPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleImageClick('newPlanPhoto');
                           }
-                        }}
+                        } : undefined}
                       >
                         {newPlanPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
-                            alt={t('photoLabels.newPlanPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
+                             alt={t('photoLabels.newPlanPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-300 text-xs">{t('photoLabels.newPlanPhoto')}</span>
                         )}

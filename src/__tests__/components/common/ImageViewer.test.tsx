@@ -454,6 +454,7 @@ describe("ImageViewer Component", () => {
     it("downloads image when download button is clicked", async () => {
       const mockBlob = new Blob(["test"], { type: "image/jpeg" });
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
         blob: () => Promise.resolve(mockBlob),
       });
 
@@ -601,13 +602,13 @@ describe("ImageViewer Component", () => {
       expect(spinner).toBeInTheDocument();
     });
 
-    it("hides loading spinner after image loads", () => {
+    it("hides loading spinner after image loads", async () => {
       renderImageViewer();
       const image = screen.getByTestId("viewer-image");
       
       fireEvent.load(image);
       
-      waitFor(() => {
+      await waitFor(() => {
         expect(image).toHaveClass("opacity-100");
       });
     });
