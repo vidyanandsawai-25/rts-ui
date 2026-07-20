@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { FileText } from 'lucide-react';
 import { Card } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';

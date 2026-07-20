@@ -2,11 +2,11 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Settings, Clock } from 'lucide-react';
+import { Settings, Clock, Info, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
-import { useConfirm } from '@/components/common';
+
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
 import { CATEGORIES, type Step } from './ReportWorkspaceConfig';
 import { ReportGenerateView } from './ReportGenerateView';
@@ -29,7 +29,7 @@ export function ReportsWorkspace({
   createReportRequest,
 }: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs(initialJobs, fetchJobs);
-  const { confirm } = useConfirm();
+
 
   const [activeView, setActiveView] = useState<'generate' | 'history'>('generate');
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -37,6 +37,7 @@ export function ReportsWorkspace({
   const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(null);
 
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [queuedRequestId, setQueuedRequestId] = useState<string | null>(null);
   const [previewReport, setPreviewReport] = useState<ReportDefinition | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(true);
@@ -158,14 +159,7 @@ export function ReportsWorkspace({
   const handleQueued = (requestId: string) => {
     refresh();
     if (requestId && workspaceCopy) {
-      confirm({
-        variant: 'info',
-        title: workspaceCopy.confirm.title,
-        description: workspaceCopy.confirm.description,
-        confirmText: workspaceCopy.confirm.btnGo,
-        cancelText: workspaceCopy.confirm.btnClose,
-        onConfirm: () => setActiveView('history'),
-      });
+      setQueuedRequestId(requestId);
     }
   };
 
@@ -256,6 +250,58 @@ export function ReportsWorkspace({
           onPdfLoad={() => setPdfLoading(false)}
           onClose={() => { setActiveRequestId(null); setPreviewReport(null); setActiveView('history'); }}
         />
+      )}
+
+      {queuedRequestId && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setQueuedRequestId(null)} />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative w-[420px] h-[420px] max-w-[92vw] max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-gray-200 flex flex-col"
+          >
+            <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-blue-500" />
+            <button
+              type="button"
+              onClick={() => setQueuedRequestId(null)}
+              className="absolute right-3 top-3 rounded-full p-2 hover:bg-gray-100 text-gray-600"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="p-8 flex-1 flex flex-col items-center justify-center text-center">
+              <div className="h-16 w-16 rounded-2xl border flex items-center justify-center bg-blue-50 border-blue-200 text-blue-700">
+                <Info className="h-8 w-8" />
+              </div>
+              <h3 className="mt-5 text-2xl font-bold text-gray-900 leading-tight">{workspaceCopy.confirm.title}</h3>
+              <div className="mt-3 flex-1 overflow-y-auto w-full max-h-[140px] px-2 text-center scrollbar-thin">
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap inline-block text-left max-w-[360px]">
+                  {workspaceCopy.confirm.description}
+                </p>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 p-5 bg-gray-50/50 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300"
+                onClick={() => {
+                  setQueuedRequestId(null);
+                  setActiveView('history');
+                }}
+              >
+                <Download className="h-4 w-4" />
+                <span>{workspaceCopy.confirm.btnGo}</span>
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300 focus:ring-gray-300"
+                onClick={() => setQueuedRequestId(null)}
+              >
+                <span>{workspaceCopy.confirm.btnClose}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

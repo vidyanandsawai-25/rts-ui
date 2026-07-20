@@ -38,6 +38,8 @@
     "refresh": "Refresh",
     "empty": "No reports yet. Submit one above and it will appear here.",
     "download": "Download",
+    "preview": "Preview",
+    "previewTitle": "Preview Report",
     "columns": {
       "report": "Report Name",
       "status": "Status",
@@ -114,8 +116,8 @@
     },
     "confirm": {
       "title": "Report Creation",
-      "description": "Your report is being created. You can download it by going to the 'My Reports' tab.",
-      "btnGo": "Go to My Reports",
+      "description": "Your report is being generated. You can download it from the 'Download Report' tab.",
+      "btnGo": "Open",
       "btnClose": "Close"
     }
   },
@@ -147,7 +149,7 @@
       "failedToQueue": "Failed to queue report"
     },
     "queuedSuccess": "Report queued! It will appear in the jobs list when ready.",
-    "reportQueued": "Report \"{name}\" queued successfully!",
+    "reportQueued": "Report \"{name}\" request submitted successfully.",
     "buttons": {
       "reset": "Reset",
       "generate": "Generate Report",

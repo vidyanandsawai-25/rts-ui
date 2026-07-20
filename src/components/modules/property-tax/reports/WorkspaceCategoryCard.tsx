@@ -1,5 +1,6 @@
 'use client';
 import type { Category } from './ReportWorkspaceConfig';
+import Image from 'next/image';
 
 interface CategoryCardProps {
   category: Category;
@@ -27,9 +28,11 @@ export function CategoryCard({ category, label, count, reportsCountTemplate, isS
       )}
       <span className={`transition-all duration-300`}>
         {category.logoBase64 && category.logoContentType ? (
-          <img
+          <Image
             src={`data:${category.logoContentType};base64,${category.logoBase64}`}
             alt={label}
+            width={24}
+            height={24}
             className={`w-6 h-6 object-contain ${!isSelected && 'grayscale opacity-60'}`}
           />
         ) : Icon ? (

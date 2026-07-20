@@ -88,6 +88,8 @@ export interface ReportJobsCopy {
   refresh: string;
   empty: string;
   download: string;
+  preview: string;
+  previewTitle: string;
   columns: {
     report: string;
     status: string;

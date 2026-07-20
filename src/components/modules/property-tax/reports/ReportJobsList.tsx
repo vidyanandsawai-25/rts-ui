@@ -73,9 +73,9 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions, onPrevi
                 size="xs"
                 variant="secondary"
                 onClick={() => onPreview?.(row.reportRequestId)}
-                title="Preview Report"
+                title={copy.previewTitle}
               >
-                Preview
+                {copy.preview}
               </PreviewButton>
               {/* Download button */}
               <a
