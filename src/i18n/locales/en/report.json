@@ -39,7 +39,7 @@
     "empty": "No reports yet. Submit one above and it will appear here.",
     "download": "Download",
     "columns": {
-      "report": "Report",
+      "report": "Report Name",
       "status": "Status",
       "requested": "Requested",
       "completed": "Completed",
@@ -87,7 +87,7 @@
     "reportsCount": "{count} reports",
     "tabs": {
       "generateReport": "Generate Report",
-      "myReports": "My Reports"
+      "myReports": "Download Report"
     },
     "toast": {
       "generatedSuccess": "Report generated successfully!",

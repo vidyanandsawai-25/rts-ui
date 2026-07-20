@@ -274,4 +274,6 @@ export interface ReportJobsListProps {
   loading: boolean;
   copy: ReportJobsCopy;
   reportDefinitions: ReportDefinition[];
+  /** Called when user clicks the Preview button — passes requestId */
+  onPreview?: (requestId: string) => void;
 }

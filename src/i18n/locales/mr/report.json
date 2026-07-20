@@ -39,7 +39,7 @@
     "empty": "अद्याप कोणताही अहवाल नाही. वर एक सबमिट करा आणि तो येथे दिसेल.",
     "download": "डाउनलोड",
     "columns": {
-      "report": "अहवाल",
+      "report": "अहवालाचे नाव",
       "status": "स्थिती",
       "requested": "विनंती केली",
       "completed": "पूर्ण",
@@ -87,7 +87,7 @@
     "reportsCount": "{count} अहवाल",
     "tabs": {
       "generateReport": "अहवाल तयार करा",
-      "myReports": "माझे अहवाल"
+      "myReports": "अहवाल डाउनलोड करा"
     },
     "toast": {
       "generatedSuccess": "अहवाल यशस्वीरित्या तयार झाला!",

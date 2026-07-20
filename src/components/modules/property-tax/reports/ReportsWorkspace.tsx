@@ -225,7 +225,17 @@ export function ReportsWorkspace({
         />
       ) : (
         <div className="transition-all duration-300">
-          <ReportJobsList jobs={jobs} loading={isLoading} copy={jobsCopy} reportDefinitions={reportDefinitions} />
+          <ReportJobsList
+            jobs={jobs}
+            loading={isLoading}
+            copy={jobsCopy}
+            reportDefinitions={reportDefinitions}
+            onPreview={(requestId) => {
+              setActiveRequestId(requestId);
+              setPreviewReport(null);
+              setPdfLoading(true);
+            }}
+          />
         </div>
       )}
 

@@ -39,7 +39,7 @@
     "empty": "अभी तक कोई रिपोर्ट नहीं। ऊपर एक सबमिट करें और वह यहाँ दिखाई देगी।",
     "download": "डाउनलोड",
     "columns": {
-      "report": "रिपोर्ट",
+      "report": "रिपोर्ट का नाम",
       "status": "स्थिति",
       "requested": "अनुरोध किया गया",
       "completed": "पूर्ण",
@@ -87,7 +87,7 @@
     "reportsCount": "{count} रिपोर्ट्स",
     "tabs": {
       "generateReport": "रिपोर्ट बनाएं",
-      "myReports": "मेरी रिपोर्ट्स"
+      "myReports": "रिपोर्ट डाउनलोड करें"
     },
     "toast": {
       "generatedSuccess": "रिपोर्ट सफलतापूर्वक तैयार हुई!",
