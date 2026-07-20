@@ -72,6 +72,11 @@ export function usePropertyTypeFormHandlers({
   const [, startTransition] = React.useTransition();
 
   const mapApiError = useCallback((result: { statusCode?: number; message?: string }) => {
+    const msg = result.message?.toLowerCase() || "";
+    if (msg.includes("cannot deactivate") || msg.includes("referenced in") || msg.includes("in use")) {
+      return t("apiErrors.cannotDeactivateReferred");
+    }
+
     const errorMap: Record<number, string> = {
       409: t("apiErrors.duplicateRecord"),
       404: t("apiErrors.notFound"),
@@ -83,7 +88,6 @@ export function usePropertyTypeFormHandlers({
     if (errorMap[code]) return errorMap[code];
 
     if (code === 400) {
-      const msg = result.message?.toLowerCase() || "";
       if (msg.includes("duplicate") || msg.includes("already exists")) {
         return t("apiErrors.duplicateRecord");
       }

@@ -30,6 +30,9 @@ type SelectablePropertyRow = Record<string, unknown> &
     carpetAreaDisplay: string;
   };
 
+const greenRowClassName =
+  '!bg-green-100 [&>td]:!bg-green-100 hover:!bg-green-200 hover:[&>td]:!bg-green-200';
+
 function formatPropertyPart(value: unknown): string {
   const text = String(value ?? '').trim();
   return text || '-';
@@ -182,24 +185,20 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
     [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t]
   );
 
-  const headerExtra = (
-    <div className="flex flex-wrap items-center gap-3 flex-1">
-      {leftHeaderContent}
-      {selectedCount > 0 && (
-        <div className="ml-auto flex items-center gap-2">
-          <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
-            {t('floor.selectProperties.selected', { count: selectedCount })}
-          </span>
-          <ClearButton
-            type="button"
-            label={t('floor.selectProperties.clearSelection')}
-            onClick={onClearSelection}
-            className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
-          />
-        </div>
-      )}
-    </div>
-  );
+  const headerExtra =
+    selectedCount > 0 ? (
+      <div className="ml-auto flex items-center gap-2">
+        <span className="px-2 py-0.5 text-slate-800 rounded-full text-sm font-bold">
+          {t('floor.selectProperties.selected', { count: selectedCount })}
+        </span>
+        <ClearButton
+          type="button"
+          label={t('floor.selectProperties.clearSelection')}
+          onClick={onClearSelection}
+          className="h-7 px-2.5 text-[11px] font-semibold rounded-md"
+        />
+      </div>
+    ) : null;
 
   return (
     <div className="mt-3">
@@ -220,21 +219,28 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         rowClassName={(row) => {
           const isSource = sourcePropertyIds.has(row.id);
           if (isSource) {
-            return '!bg-green-50 hover:!bg-green-100';
+            return greenRowClassName + ' font-bold border-l-4';
           }
           if (row.disabled) {
-            return 'opacity-60 bg-slate-50 cursor-not-allowed';
+            return 'opacity-60 bg-slate-50 cursor-not-allowed border-l-4 border-l-transparent';
           }
           if (row.selected) {
-            return '!bg-blue-50 hover:!bg-blue-100';
+            return greenRowClassName;
           }
-          return '';
+          return 'border-l-4 border-l-transparent';
         }}
         headerTitle={t('floor.selectProperties.title')}
-        headerExtra={headerExtra}
+        headerExtra={
+          <div className="flex items-center justify-between w-full select-properties-header-extra">
+            <div className="flex items-center">
+              {leftHeaderContent}
+            </div>
+            {headerExtra}
+          </div>
+        }
         emptyText={t('floor.selectProperties.noProperties')}
         loadingText={t('floor.selectProperties.loading')}
-        containerClassName=""
+        containerClassName="md:[&_div:has(>h3)]:w-auto md:[&_div:has(>.select-properties-header-extra)]:w-auto md:[&_div:has(>.select-properties-header-extra)]:grow"
         tableClassName="table-fixed text-xs [&_th]:px-3 [&_td]:px-3"
         maxBodyHeightClassName="max-h-[260px]"
       />
@@ -243,3 +249,5 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
 };
 
 export default SelectPropertiesTable;
+
+

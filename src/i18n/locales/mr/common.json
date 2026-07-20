@@ -300,5 +300,13 @@
   "note": {
     "mandatory": "* चिन्ह असलेली सर्व क्षेत्रे अनिवार्य आहेत"
   },
-  "searchPlaceholder": "मालमत्ता शोधा..."
+  "searchPlaceholder": "मालमत्ता शोधा...",
+  "validation": {
+    "codeAllZeros": "कोड शून्य असू शकत नाही",
+    "codeFormat": "कोडसाठी अवैध स्वरूप",
+    "nameAllZeros": "नाव शून्य असू शकत नाही",
+    "nameFormat": "नावासाठी अवैध स्वरूप",
+    "descriptionAllZeros": "वर्णन शून्य असू शकत नाही",
+    "descriptionFormat": "वर्णनासाठी अवैध स्वरूप"
+  }
 }

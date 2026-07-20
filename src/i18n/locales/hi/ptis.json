@@ -38,6 +38,11 @@
     "changeDetection": "परिवर्तन का पता लगाना",
     "changeDetectionComingSoon": "परिवर्तन का पता लगाने की जानकारी जल्द ही आ रही है।",
     "photoPlan": "फोटो प्लान",
+    "drawPlan": "ड्रॉ प्लान",
+    "drawingToolPropertyIdRequired": "प्रॉपर्टी आईडी आवश्यक है।",
+    "preparingDrawingTool": "ड्राइंग टूल तैयार किया जा रहा है...",
+    "redirectingDrawingTool": "ड्राइंग टूल पर रीडायरेक्ट किया जा रहा है...",
+    "launchUrlNotFound": "लॉन्च यूआरएल नहीं मिला।",
     "showPhotoPlan": "फोटो प्लान दिखाएं",
     "hidePhotoPlan": "फोटो प्लान छुपाएं",
     "propertyPhoto": "संपत्ति फोटो",
@@ -394,7 +399,15 @@
     "taxTotal": "कुल कर",
     "interest": "ब्याज",
     "netTotal": "कुल देय",
-    "noTaxDetails": "कोई कर विवरण उपलब्ध नहीं है"
+    "noTaxDetails": "कोई कर विवरण उपलब्ध नहीं है",
+    "noMapDetails": "कोई मानचित्र विवरण उपलब्ध नहीं है",
+    "latitude": "अक्षांश",
+    "longitude": "रेखांश",
+    "mappingCategory": "मानचित्रण श्रेणी",
+    "oldPropPartNo": "पुराना संपत्ति क्र.-अनुभाग क्र.",
+    "oldWardPropPartNo": "पुराना वार्ड-संपत्ति-अनुभाग नं",
+    "oldPlotAreaSqMtr": "पुराना भूखंड क्षेत्रफल (वर्ग मीटर)",
+    "oldConstAreaSqMtr": "पुराना निर्माण क्षेत्रफल (वर्ग मीटर)"
   },
   "taxes": {
     "generalTax": "सामान्य कर",
@@ -440,7 +453,9 @@
     "showFloorDetails": "मंजिल का विवरण दिखाएं",
     "hideFloorDetails": "मंजिल का विवरण छुपाएं",
     "showOldTax": "पुराना कर दिखाएं",
-    "hideOldTax": "पुराना कर छुपाएं"
+    "hideOldTax": "पुराना कर छुपाएं",
+    "showMapDetails": "मानचित्र विवरण दिखाएं",
+    "hideMapDetails": "मानचित्र विवरण छुपाएं"
   },
   "loading": {
     "message": "संपत्ति विवरण लोड हो रहा है",

@@ -318,5 +318,13 @@
   "rateUnit": "(₹/Sq.mtr)",
   "rateUnitSqMeter": "(₹/Sq.mtr)",
   "rateUnitSqFeet": "(₹/Sq.ft)",
-  "searchPlaceholder": "Search properties..."
+  "searchPlaceholder": "Search properties...",
+  "validation": {
+    "codeAllZeros": "Code cannot be all zeros",
+    "codeFormat": "Invalid format (only alphanumeric and hyphens allowed)",
+    "nameAllZeros": "Name cannot be all zeros",
+    "nameFormat": "Invalid format for name",
+    "descriptionAllZeros": "Description cannot be all zeros",
+    "descriptionFormat": "Invalid format for description"
+  }
 }
