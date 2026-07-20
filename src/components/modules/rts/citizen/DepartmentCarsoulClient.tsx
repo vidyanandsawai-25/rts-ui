@@ -48,6 +48,7 @@ export type SearchService = Service & {
 type DepartmentCarsoulClientProps = {
   departments: Department[];
   userApplications: CmsMisDashboardUserApplicationItem[];
+  upicId?: string;
 };
 
 const UI = {
@@ -98,7 +99,7 @@ function formatSubmittedDate(value: string, locale: Language): string {
   }).format(date);
 }
 
-export default function DepartmentCarsoulClient({ departments, userApplications }: DepartmentCarsoulClientProps) {
+export default function DepartmentCarsoulClient({ departments, userApplications, upicId }: DepartmentCarsoulClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deptFromUrl = (searchParams.get("deptId") ?? "").trim();
@@ -530,9 +531,9 @@ export default function DepartmentCarsoulClient({ departments, userApplications 
               </div>
 
               {qNorm ? (
-                <ServiceGrid departments={departments} services={results} />
+                <ServiceGrid departments={departments} services={results} upicId={upicId} />
               ) : (
-                <ServiceGrid departments={departments} deptId={selectedDeptId} />
+                <ServiceGrid departments={departments} deptId={selectedDeptId} upicId={upicId} />
               )}
             </>
           )}

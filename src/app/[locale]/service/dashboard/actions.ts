@@ -18,6 +18,11 @@ export type DashboardData = {
   departments: DepartmentDTO[];
 };
 
+export type CitizenDashboardData = DashboardData & {
+  userApplications: CmsMisDashboardUserApplicationItem[];
+  upicId?: string;
+};
+
 export async function getDashboardData(): Promise<DashboardData> {
   const departments = await getDashboardDepartments();
   return { departments };
@@ -26,6 +31,38 @@ export async function getDashboardData(): Promise<DashboardData> {
 type CitizenProfileCookie = {
   upicId?: string;
 };
+
+/** Loads all citizen dashboard data from the active server-side profile session. */
+export async function getCitizenDashboardData(): Promise<CitizenDashboardData> {
+  const departmentsPromise = getDashboardDepartments();
+
+  try {
+    const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
+    if (!profileCookie) {
+      return { departments: await departmentsPromise, userApplications: [] };
+    }
+
+    const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
+    const upicId = profile.upicId?.trim();
+    if (!upicId) {
+      return { departments: await departmentsPromise, userApplications: [] };
+    }
+
+    const [departments, response] = await Promise.all([
+      departmentsPromise,
+      getCmsMisDashboardData({ Flag: "user", UpicId: upicId }),
+    ]);
+
+    return {
+      departments,
+      upicId,
+      userApplications: response.status ? response.data.userApplicationDashboardData ?? [] : [],
+    };
+  } catch (error) {
+    console.error("Failed to load citizen dashboard data:", error);
+    return { departments: await departmentsPromise, userApplications: [] };
+  }
+}
 
 /** Loads the logged-in citizen's MIS applications from the server-only profile cookie. */
 export async function getCitizenMisApplications(): Promise<CmsMisDashboardUserApplicationItem[]> {

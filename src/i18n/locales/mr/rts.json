@@ -198,7 +198,10 @@
     "status": {
       "approved": "मंजूर",
       "pending": "प्रलंबित",
-      "rejected": "नामंजूर"
+      "rejected": "नामंजूर",
+      "withinSla": "SLA अंतर्गत",
+      "slaBreached": "SLA उल्लंघन",
+      "atRisk": "जोखमीमध्ये"
     },
     "applications": {
       "title": "तुमचे अर्ज आणि SLA कालमर्यादा",
@@ -220,6 +223,11 @@
     },
     "pagination": {
       "showing": "{total} पैकी {shown} अर्ज दाखवत आहे"
+    },
+    "outcomes": {
+      "withinSla": "SLA अंतर्गत",
+      "slaBreached": "SLA उल्लंघन",
+      "atRisk": "जोखमीमध्ये"
     },
     "units": {
       "dayShort": "{value} दिवस",

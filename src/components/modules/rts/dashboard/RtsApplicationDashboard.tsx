@@ -1,27 +1,34 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getUserMisDashboardAction } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
+import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
 import {
   AlertCircle,
   CheckCircle,
   CheckCircle2,
   Clock3,
+  Download,
   Eye,
   FileText,
+  Filter,
   Info,
   LayoutDashboard,
   TriangleAlert,
 } from "lucide-react";
 
-import { Card, MasterTable, SearchInput } from "@/components/common";
+import { Button, Card, MasterTable, SearchInput, Select } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { CloseIconButton } from "@/components/common/ActionButtons";
+import ApplicationDrawerContent from "./RtsApplicationDrawerContext";
 
-import type { CmsApplication } from "@/lib/mock/rts/cms";
+// import type { CmsApplication } from "@/lib/mock/rts/cms";
 
 interface CmsMulyamapanProps {
-  data: CmsApplication[];
+  // data: CmsApplication[];
+  data: any[];
   masters: {
     departments: Array<{ id: string; name: string }>;
     services: Array<{ id: string; name: string; departmentId: string }>;
@@ -154,10 +161,43 @@ export default function CmsMulyamapan({
   locale,
 }: CmsMulyamapanProps) {
   const t = useTranslations("rts");
+
+  const [dashboardData, setDashboardData] = useState<
+    CmsMisDashboardUserApplicationItem[]
+  >([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [applicationType, setApplicationType] = useState("all");
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecord, setSelectedRecord] = useState<SlaRecord | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState("Pending");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        setLoading(true);
+
+        const response = await getUserMisDashboardAction();
+
+        if (response.status) {
+          setDashboardData(
+            response.data.userApplicationDashboardData ?? []
+          );
+        }
+      } catch (err) {
+        console.error("Dashboard Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboard();
+  }, []);
+
 
   const numberFormatter = useMemo(
     () =>
@@ -168,32 +208,30 @@ export default function CmsMulyamapan({
   );
 
   const formatDays = (value: number | string) =>
-    t("mulyamapan.units.dayShort", { value });
+    t("applicationDashboard.units.dayShort", { value });
 
 
   const slaRecords = useMemo<SlaRecord[]>(() => {
-    return data.map((application) => {
-      const applicationNumber = Number.parseInt(application.id, 10) || 1000;
-      const statusSource = application as CmsApplication & {
-        status?: string;
-        applicationStatus?: string;
-        currentStatus?: string;
-      };
+    return dashboardData.map((application, index) => {
       const applicationStatus = normalizeApplicationStatus(
-        statusSource.applicationStatus ??
-          statusSource.currentStatus ??
-          statusSource.status
+        application.status
       );
-      const pendingDays = (applicationNumber % 3) + 1;
-      const inProgressDays = (applicationNumber % 4) + 2;
-      const needsInfoDays =
-        applicationNumber % 5 === 0 ? 0 : (applicationNumber % 3) + 1;
-      const verificationDays = applicationNumber % 2 === 0 ? 1 : 2;
+
+      const pendingDays = application.sla;
+      const inProgressDays = 0;
+      const needsInfoDays = 0;
+      const verificationDays = 0;
+
       const totalTat =
-        pendingDays + inProgressDays + needsInfoDays + verificationDays;
-      const slaLimit = application.slaDays || 15;
+        pendingDays +
+        inProgressDays +
+        needsInfoDays +
+        verificationDays;
+
+      const slaLimit = application.sla;
 
       let outcome: SlaRecord["outcome"] = "Within SLA";
+
       if (totalTat > slaLimit) {
         outcome = "SLA breached";
       } else if (slaLimit - totalTat <= 2) {
@@ -201,16 +239,12 @@ export default function CmsMulyamapan({
       }
 
       return {
-        id: application.id,
+        id: String(index + 1),
         appId: application.applicationNo,
-        citizenName: application.citizenName,
+        citizenName: "-",
         serviceName: application.serviceName,
-        departmentId: application.departmentId,
-        submittedDate:
-          application.submissionDate ||
-          application.createdAt ||
-          application.applicationDate ||
-          "",
+        departmentId: "",
+        submittedDate: application.submittedDate,
         slaLimit,
         pendingDays,
         inProgressDays,
@@ -221,7 +255,7 @@ export default function CmsMulyamapan({
         applicationStatus,
       };
     });
-  }, [data]);
+  }, [dashboardData]);
 
   const filteredRecords = useMemo(() => {
     const query = searchTerm.toLocaleLowerCase(locale).trim();
@@ -278,81 +312,148 @@ export default function CmsMulyamapan({
   }, [pageNumber, totalPages]);
 
   const getOutcomeLabel = (outcome: SlaRecord["outcome"]) => {
-    if (outcome === "Within SLA") {
-      return t("mulyamapan.outcomes.withinSla");
+    switch (outcome) {
+      case "Within SLA":
+        return t("applicationDashboard.outcomes.withinSla");
+      case "SLA breached":
+        return t("applicationDashboard.outcomes.slaBreached");
+      default:
+        return t("applicationDashboard.outcomes.atRisk");
     }
-
-    if (outcome === "SLA breached") {
-      return t("mulyamapan.outcomes.slaBreached");
-    }
-
-    return t("mulyamapan.outcomes.atRisk");
   };
 
   const columns = useMemo<Column<SlaRecord>[]>(
     () => [
       {
         key: "appId",
-        label: t("applicationDashboard.table.applicationAndService"),
-        width: "32%",
+        label: "App. No.",
+        width: "16%",
         render: (_value, row) => (
-          <div>
-            <div className="text-[9px] font-bold text-slate-400">
+          <div className="space-y-1">
+            <div className="font-semibold text-[#173B73] text-sm">
               {row.appId}
             </div>
-            <div className="mt-1 text-[11px] font-extrabold text-slate-900">
-              {row.serviceName}
+
+            <span className="text-[11px] font-medium text-blue-600">
+              Online
+            </span>
+          </div>
+        ),
+      },
+
+      {
+        key: "submittedDate",
+        label: "Submitted Date",
+        width: "12%",
+        render: (value) => {
+
+          const date = new Date(String(value));
+
+          return (
+            <div className="space-y-1">
+              <div className="font-medium text-slate-800 text-sm">
+                {date.toLocaleDateString()}
+              </div>
+
+              <div className="text-[11px] text-slate-400">
+                {date.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            </div>
+          );
+        },
+      },
+
+      {
+        key: "citizenName",
+        label: "Applicant / Owner",
+        width: "18%",
+        render: (_value, row) => (
+          <div>
+            <div className="font-semibold text-slate-800 text-sm">
+              {row.citizenName}
+            </div>
+
+            <div className="text-[11px] text-slate-500">
+              Plot No. 12, Shivaji Nagar
             </div>
           </div>
         ),
       },
+
       {
-        key: "submittedDate",
-        label: t("applicationDashboard.table.submittedDate"),
-        width: "20%",
-        render: (value) => (
-          <span>{String(value || "-")}</span>
+        key: "serviceName",
+        label: "Application Type / Work",
+        width: "18%",
+        render: (_value, row) => (
+          <div>
+            <div className="font-semibold text-slate-800 text-sm">
+              {row.serviceName}
+            </div>
+
+            <div className="text-[11px] text-slate-500">
+              Residential Building
+            </div>
+          </div>
         ),
       },
-      {
-        key: "slaLimit",
-        label: t("applicationDashboard.table.slaTimeline"),
-        width: "16%",
-        align: "center",
-        render: (value) => (
-          <span className="inline-flex rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-extrabold text-blue-700">
-            {formatDays(String(value))}
-          </span>
-        ),
-      },
+
       {
         key: "applicationStatus",
-        label: t("applicationDashboard.table.statusAndStage"),
-        width: "20%",
+        label: "Status & Stage",
+        width: "16%",
         align: "center",
         render: (_value, row) => (
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-bold ${
-              row.applicationStatus === "Approved"
-                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                : row.applicationStatus === "Rejected"
-                  ? "border-rose-300 bg-rose-50 text-rose-700"
-                  : "border-amber-300 bg-amber-50 text-amber-700"
-            }`}
-          >
+          <div className="flex flex-col items-start gap-1">
+
             <span
-              className={`h-2 w-2 rounded-full ${
-                row.applicationStatus === "Approved"
-                  ? "bg-emerald-500"
+              className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-semibold
+                ${row.applicationStatus === "Approved"
+                  ? "border-green-200 bg-green-50 text-green-700"
                   : row.applicationStatus === "Rejected"
-                    ? "bg-rose-500"
-                    : "bg-amber-500"
-              }`}
-            />
-            {t(
-              `applicationDashboard.status.${row.applicationStatus.toLowerCase()}`
-            )}
-          </span>
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-amber-200 bg-amber-50 text-amber-700"
+                }
+            `}
+            >
+              <span
+                className={`
+                h-2
+                w-2
+                rounded-full
+                ${row.applicationStatus === "Approved"
+                    ? "bg-green-500"
+                    : row.applicationStatus === "Rejected"
+                      ? "bg-red-500"
+                      : "bg-amber-500"
+                  }
+              `}
+              />
+
+              {row.applicationStatus}
+            </span>
+
+            <span className="text-[11px] text-slate-500">
+              Junior Engineer
+            </span>
+
+          </div>
+        ),
+      },
+
+      {
+        key: "pendingDays",
+        label: "Days Pending",
+        width: "10%",
+        align: "center",
+        render: (_, row) => (
+          <div
+            className="inline-flex h-7 min-w-[30px] items-center justify-center rounded-full bg-red-50 px-2 text-xs font-bold text-red-600"
+          >
+            {row.pendingDays}
+          </div>
         ),
       },
     ],
@@ -365,36 +466,44 @@ export default function CmsMulyamapan({
       icon: FileText,
       label: t("applicationDashboard.cards.totalApplications"),
       value: statusSummary.total,
-      borderClassName: "border-l-blue-600",
+
+      borderClassName: "border-l-[#2563EB]",
       valueClassName: "text-slate-900",
-      iconClassName: "border-blue-100 bg-blue-50 text-blue-600",
+      iconClassName:
+        "bg-blue-50 border-blue-100 text-[#2563EB]",
     },
     {
       key: "approved",
       icon: CheckCircle2,
       label: t("applicationDashboard.cards.approved"),
       value: statusSummary.approved,
-      borderClassName: "border-l-emerald-600",
-      valueClassName: "text-emerald-600",
-      iconClassName: "border-emerald-100 bg-emerald-50 text-emerald-600",
+
+      borderClassName: "border-l-[#10B981]",
+      valueClassName: "text-[#10B981]",
+      iconClassName:
+        "bg-emerald-50 border-emerald-100 text-[#10B981]",
     },
     {
       key: "pending",
       icon: Clock3,
       label: t("applicationDashboard.cards.pending"),
       value: statusSummary.pending,
-      borderClassName: "border-l-amber-500",
-      valueClassName: "text-amber-600",
-      iconClassName: "border-amber-100 bg-amber-50 text-amber-600",
+
+      borderClassName: "border-l-[#F59E0B]",
+      valueClassName: "text-[#F59E0B]",
+      iconClassName:
+        "bg-amber-50 border-amber-100 text-[#F59E0B]",
     },
     {
       key: "rejected",
       icon: TriangleAlert,
       label: t("applicationDashboard.cards.rejected"),
       value: statusSummary.rejected,
-      borderClassName: "border-l-rose-600",
-      valueClassName: "text-rose-600",
-      iconClassName: "border-rose-100 bg-rose-50 text-rose-600",
+
+      borderClassName: "border-l-[#EF4444]",
+      valueClassName: "text-[#EF4444]",
+      iconClassName:
+        "bg-rose-50 border-rose-100 text-[#EF4444]",
     },
   ];
 
@@ -407,28 +516,49 @@ export default function CmsMulyamapan({
 
   const dialogStages = selectedRecord
     ? [
-        {
-          color: "bg-amber-400",
-          label: t("applicationDashboard.dialog.stages.clerkAllocation"),
-          days: selectedRecord.pendingDays,
-        },
-        {
-          color: "bg-[#4b70a6]",
-          label: t("applicationDashboard.dialog.stages.officialScrutiny"),
-          days: selectedRecord.inProgressDays,
-        },
-        {
-          color: "bg-purple-400",
-          label: t("applicationDashboard.dialog.stages.queryResolution"),
-          days: selectedRecord.needsInfoDays,
-        },
-        {
-          color: "bg-emerald-500",
-          label: t("applicationDashboard.dialog.stages.finalSignOff"),
-          days: selectedRecord.verificationDays,
-        },
-      ]
+      {
+        color: "bg-amber-400",
+        label: t("applicationDashboard.dialog.stages.clerkAllocation"),
+        days: selectedRecord.pendingDays,
+      },
+      {
+        color: "bg-[#4b70a6]",
+        label: t("applicationDashboard.dialog.stages.officialScrutiny"),
+        days: selectedRecord.inProgressDays,
+      },
+      {
+        color: "bg-purple-400",
+        label: t("applicationDashboard.dialog.stages.queryResolution"),
+        days: selectedRecord.needsInfoDays,
+      },
+      {
+        color: "bg-emerald-500",
+        label: t("applicationDashboard.dialog.stages.finalSignOff"),
+        days: selectedRecord.verificationDays,
+      },
+    ]
     : [];
+
+  const applicationTypeOptions = [
+    { label: "All Types", value: "all" },
+    { label: "Building Plan Approval", value: "building" },
+    { label: "Occupancy Certificate", value: "occupancy" },
+    { label: "Trade License", value: "trade" },
+  ];
+
+  const statusOptions = [
+    { label: "Pending", value: "Pending" },
+    { label: "Approved", value: "Approved" },
+    { label: "Rejected", value: "Rejected" },
+  ];
+
+  if (loading) {
+    return (
+      <Card className="p-10 text-center">
+        Loading Dashboard...
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -449,58 +579,162 @@ export default function CmsMulyamapan({
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((metric) => (
           <Card
             key={metric.key}
             padding="none"
-            className={`flex min-h-[72px] items-center justify-between rounded-xl border border-slate-200 border-l-4 bg-white px-4 py-3 shadow-sm ${metric.borderClassName}`}
+            className={`
+        relative
+        overflow-hidden
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        shadow-sm
+        transition-all
+        duration-200
+        hover:shadow-md
+        hover:-translate-y-0.5
+        border-l-[4px]
+        ${metric.borderClassName}
+      `}
           >
-            <div>
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">
-                {metric.label}
+            <div className="flex items-center justify-between px-5 py-4">
+              {/* Left */}
+              <div className="flex flex-col">
+                <span className="text-[13px] font-semibold text-slate-600">
+                  {metric.label}
+                </span>
+
+                <span
+                  className={`mt-2 text-[34px] font-bold leading-none ${metric.valueClassName}`}
+                >
+                  {numberFormatter.format(metric.value)}
+                </span>
               </div>
+
+              {/* Right Icon */}
               <div
-                className={`mt-1 text-xl font-extrabold leading-none ${metric.valueClassName}`}
+                className={`flex h-14 w-14 items-center justify-center rounded-xl border ${metric.iconClassName}`}
               >
-                {numberFormatter.format(metric.value)}
+                <metric.icon
+                  className="h-7 w-7"
+                  strokeWidth={2}
+                />
               </div>
-            </div>
-            <div
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border ${metric.iconClassName}`}
-            >
-              <metric.icon className="h-5 w-5" strokeWidth={2} />
             </div>
           </Card>
         ))}
       </div>
 
       <Card
-        padding="sm"
-        className="space-y-3 border-slate-200 bg-white shadow-sm"
+        padding="none"
+        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
       >
-        <div className="flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
-              <FileText className="h-4 w-4 text-blue-600" />
-              {t("applicationDashboard.applications.title")}
-            </h2>
-            <p className="mt-0.5 text-[10px] font-medium text-slate-500">
-              {t("applicationDashboard.applications.description")}
-            </p>
+        {/* ================= Header ================= */}
+        <div className="border-b border-slate-200 px-6 py-5">
+
+          {/* Row 1 */}
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+
+            {/* Left */}
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-[#183B6B]">
+                <FileText className="h-5 w-5 text-[#183B6B]" />
+                {t("applicationDashboard.applications.title")}
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {t("applicationDashboard.applications.description")}
+              </p>
+            </div>
+
+            {/* Right */}
+            <div className="flex flex-wrap items-center gap-3">
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-700">
+                  Application Type :
+                </span>
+
+                <Select
+                  className="w-44"
+                  options={applicationTypeOptions}
+                  value={applicationType}
+                  onChange={(_, value) => setApplicationType(value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-700">
+                  Status :
+                </span>
+
+                <Select
+                  className="w-36"
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={(_, value) => setSelectedStatus(value)}
+                />
+              </div>
+
+              <Button
+                size="sm"
+                variant="primary"
+                className="h-10 rounded-lg px-4"
+              >
+                Register Application
+              </Button>
+
+              <Button
+                size="sm"
+                className="h-10 rounded-lg bg-[#C89317] px-4 text-white hover:bg-[#AF7F10]"
+              >
+                Download Register
+              </Button>
+
+            </div>
+
           </div>
 
-          <SearchInput
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder={t("applicationDashboard.applications.searchPlaceholder")}
-            className="mb-0 w-full sm:w-[260px]"
-          />
+          {/* Row 2 */}
+
+          <div className="mt-5 flex justify-end gap-3">
+
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search by Application No., Owner Name or Survey No..."
+              className="mb-0 w-[360px]"
+            />
+
+            <button
+              className="
+          flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          rounded-lg
+          border
+          border-slate-300
+          bg-white
+          transition
+          hover:bg-slate-50
+        "
+            >
+              <Filter className="h-5 w-5 text-slate-500" />
+            </button>
+
+          </div>
+
         </div>
 
         <MasterTable<SlaRecord>
           columns={columns}
           data={paginatedRecords}
+          loading={loading}
           emptyText={t("applicationDashboard.applications.empty")}
           getRowKey={(row) => row.id}
           renderActions={(row) => (
@@ -530,8 +764,19 @@ export default function CmsMulyamapan({
           }}
           maxBodyHeightClassName="max-h-[520px]"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
-          theadClassName="!bg-slate-50 !from-slate-50 !via-slate-50 !to-slate-50 hover:!from-slate-50 hover:!via-slate-50 hover:!to-slate-50 [&_th]:!text-slate-700"
-          tableClassName="[&_thead_tr]:border-b [&_thead_tr]:border-slate-200 [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100 [&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-slate-50/70 [&_th]:uppercase"
+          // theadClassName="!bg-slate-50 !from-slate-50 !via-slate-50 !to-slate-50 hover:!from-slate-50 hover:!via-slate-50 hover:!to-slate-50 [&_th]:!text-slate-700"
+          theadClassName="
+  !bg-[#143D7D]
+  [&_tr]:!bg-[#143D7D]
+  [&_th]:!bg-[#143D7D]
+  [&_th]:!text-white
+  [&_th]:font-semibold
+  [&_th]:uppercase
+  [&_th]:tracking-wide
+  [&_th]:text-xs
+  [&_th]:border-none"
+          // tableClassName="[&_thead_tr]:border-b [&_thead_tr]:border-slate-200 [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100 [&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-slate-50/70 [&_th]:uppercase"
+          tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[74px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
           footerLeftContent={
             <span className="text-[12px] text-slate-400">
               {t("applicationDashboard.pagination.showing", {
@@ -543,7 +788,7 @@ export default function CmsMulyamapan({
           footerClassName="!border-slate-100 !bg-white !shadow-none"
           footerLeftClassName="text-slate-400"
         />
-      </Card>
+      </Card >
 
 
       <Card padding="sm" className="space-y-4 border-slate-200 shadow-sm">
@@ -618,118 +863,42 @@ export default function CmsMulyamapan({
         </div>
       </Card>
 
-      {selectedRecord && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="sla-analysis-title"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setSelectedRecord(null);
+      {
+        selectedRecord && (
+          <Drawer
+            open={!!selectedRecord}
+            onClose={() => setSelectedRecord(null)}
+            width="md"
+            title={
+              selectedRecord && (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                      {selectedRecord.appId}
+                    </div>
+
+                    <div className="text-lg font-bold text-slate-800">
+                      {selectedRecord.serviceName}
+                    </div>
+                  </div>
+                </div>
+              )
             }
-          }}
-        >
-          <Card
-            padding="md"
-            className="relative w-full max-w-lg overflow-hidden border-slate-200 bg-white shadow-2xl"
           >
-            <CloseIconButton
-              title={t("applicationDashboard.actions.close")}
-              onClick={() => setSelectedRecord(null)}
-            />
-
-            <div className="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3 pr-8">
-              <Info className="h-5 w-5 text-[#4b70a6]" />
-              <h3
-                id="sla-analysis-title"
-                className="text-sm font-extrabold text-slate-800"
-              >
-                {t("applicationDashboard.dialog.title", {
-                  appId: selectedRecord.appId,
-                })}
-              </h3>
-            </div>
-
-            <div className="space-y-4 text-[13px] text-slate-700">
-              <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-2">
-                <div>
-                  <span className="text-[11px] font-bold uppercase text-slate-400">
-                    {t("applicationDashboard.dialog.citizenName")}
-                  </span>
-                  <p className="font-semibold text-slate-700">
-                    {selectedRecord.citizenName}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="text-[11px] font-bold uppercase text-slate-400">
-                    {t("applicationDashboard.dialog.serviceCategory")}
-                  </span>
-                  <p className="font-semibold text-slate-700">
-                    {selectedRecord.serviceName}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-1">
-                <span className="block text-[11px] font-bold uppercase text-slate-400">
-                  {t("applicationDashboard.dialog.stageWiseDuration")}
-                </span>
-
-                {dialogStages.map((stage) => (
-                  <div
-                    key={stage.label}
-                    className="flex items-center justify-between gap-4"
-                  >
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <span className={`h-2 w-2 rounded-full ${stage.color}`} />
-                      {stage.label}
-                    </span>
-                    <span className="whitespace-nowrap font-bold text-slate-800">
-                      {t("applicationDashboard.units.days", { value: stage.days })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-slate-100 pt-3">
-                <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 text-xs">
-                  <div className="flex items-center gap-1.5">
-                    {selectedRecord.outcome === "Within SLA" ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <AlertCircle
-                        className={`h-4 w-4 ${
-                          selectedRecord.outcome === "SLA breached"
-                            ? "text-rose-600"
-                            : "text-amber-500"
-                        }`}
-                      />
-                    )}
-                    <span className="font-bold text-slate-700">
-                      {t("applicationDashboard.dialog.slaStatus")}{" "}
-                      {getOutcomeLabel(selectedRecord.outcome)}
-                    </span>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="block text-[11px] text-slate-400">
-                      {t("applicationDashboard.dialog.targetVsActual")}
-                    </span>
-                    <span className="font-extrabold text-slate-800">
-                      {t("applicationDashboard.dialog.targetActualValues", {
-                        actual: selectedRecord.totalTat,
-                        target: selectedRecord.slaLimit,
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-    </div>
+            {selectedRecord && (
+              <ApplicationDrawerContent
+                record={selectedRecord}
+                t={t}
+                onClose={() => setSelectedRecord(null)}
+              />
+            )}
+          </Drawer>
+        )
+      }
+    </div >
   );
 }

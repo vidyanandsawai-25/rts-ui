@@ -2,7 +2,7 @@ import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { CitizenLayout } from '@/components/layout';
 import DashboardClient from './DashboardClient';
-import { getCitizenMisApplications, getDashboardData } from './actions';
+import { getCitizenDashboardData } from './actions';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 
 interface DashboardPageProps {
@@ -35,14 +35,11 @@ export default async function ServiceDashboardPage({ params }: DashboardPageProp
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [{ departments }, userApplications] = await Promise.all([
-    getDashboardData(),
-    getCitizenMisApplications(),
-  ]);
+  const { departments, userApplications, upicId } = await getCitizenDashboardData();
 
   return (
     <CitizenLayout>
-      <DashboardClient departments={departments} userApplications={userApplications} />
+      <DashboardClient departments={departments} userApplications={userApplications} upicId={upicId} />
     </CitizenLayout>
   );
 }

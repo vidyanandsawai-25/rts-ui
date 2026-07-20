@@ -55,6 +55,9 @@ export type ServiceDTO = {
   /** Display sorting order from DB */
   displayOrder: number;
 
+  /** Optional external service portal URL supplied by the RTS service master. */
+  serviceUrl?: string | null;
+
   // SLA and Fees fields dynamically loaded from DB
   sla?: string | number | null;
   fees?: number | null;

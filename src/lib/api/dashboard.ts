@@ -55,6 +55,7 @@ export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
           name: toI18nLabelWithLocal(service.serviceName, service.serviceNameLocal),
           icon: resolveServiceIcon(service.serviceIcon),
           displayOrder: service.displayOrder ?? 0,
+          serviceUrl: service.serviceUrl ?? null,
           sla: service.sla,
           fees: service.fees,
           feesRequired: service.feesRequired ?? service.isFeesRequired,

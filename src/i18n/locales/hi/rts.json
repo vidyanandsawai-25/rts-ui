@@ -221,6 +221,11 @@
     "pagination": {
       "showing": "{total} में से {shown} आवेदन दिखाए जा रहे हैं"
     },
+    "outcomes": {
+      "withinSla": "SLA के भीतर",
+      "slaBreached": "SLA का उल्लंघन",
+      "atRisk": "जोखिम में"
+    },
     "units": {
       "dayShort": "{value} दिन",
       "days": "{value} दिन"

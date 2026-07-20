@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import * as Icons from "lucide-react";
 import { Clock, CreditCard, Scale, UserCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -21,6 +21,7 @@ type Service = {
   name?: LangText | string;
   title?: LangText | string;
   serviceName?: string;
+  serviceUrl?: string | null;
   __deptId?: string;
   __deptName?: string;
   [key: string]: unknown;
@@ -39,6 +40,7 @@ interface ServiceGridProps {
   deptId?: string;
   services?: Service[];
   lang?: Language;
+  upicId?: string;
 }
 
 const gradients = [
@@ -67,6 +69,21 @@ const UI = {
   serviceDetails: { en: "Service Details", hi: "???? ?????", mr: "???? ?????" },
   close: { en: "Close", hi: "??? ????", mr: "??? ???" },
   apply: { en: "Apply / Process", hi: "????? ????????? ???? ????", mr: "???? ??????????? ??????? ???" },
+  invalidServiceUrl: {
+    en: "This service has an invalid external URL. Please contact the administrator.",
+    hi: "This service has an invalid external URL. Please contact the administrator.",
+    mr: "This service has an invalid external URL. Please contact the administrator.",
+  },
+  missingUpic: {
+    en: "An active property UPIC is required to continue with this external service.",
+    hi: "An active property UPIC is required to continue with this external service.",
+    mr: "An active property UPIC is required to continue with this external service.",
+  },
+  missingUpicPlaceholder: {
+    en: "This service URL is missing its UPIC placeholder. Please contact the administrator.",
+    hi: "This service URL is missing its UPIC placeholder. Please contact the administrator.",
+    mr: "This service URL is missing its UPIC placeholder. Please contact the administrator.",
+  },
 } as const;
 
 export default function ServiceGrid({
@@ -74,12 +91,15 @@ export default function ServiceGrid({
   deptId,
   services,
   lang,
+  upicId,
 }: ServiceGridProps) {
   const { language } = useLanguage();
   const activeLang = safeLang(lang ?? language);
   const router = useRouter();
+  const params = useParams<{ locale?: string }>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const getTransText = (mr: string, hi: string, en: string) => {
     if (activeLang === "mr") return mr;
@@ -108,12 +128,53 @@ export default function ServiceGrid({
   };
 
   const handleApplyClick = (service: Service) => {
+    const externalUrl = typeof service.serviceUrl === "string" ? service.serviceUrl.trim() : "";
+
+    if (externalUrl) {
+      if (!/^https?:\/\//i.test(externalUrl)) {
+        setApplyError(UI.invalidServiceUrl[activeLang]);
+        return;
+      }
+
+      try {
+        new URL(externalUrl);
+        const activeUpicId = upicId?.trim();
+        if (!activeUpicId) {
+          setApplyError(UI.missingUpic[activeLang]);
+          return;
+        }
+
+        // The service master provides the final empty parameter slot for the active UPIC.
+        const upicPlaceholderPattern = /([?&][^?&=]+)=$/;
+        if (!upicPlaceholderPattern.test(externalUrl)) {
+          setApplyError(UI.missingUpicPlaceholder[activeLang]);
+          return;
+        }
+
+        const destination = externalUrl.replace(
+          upicPlaceholderPattern,
+          `$1=${encodeURIComponent(activeUpicId)}`
+        );
+
+        saveDeptServiceContext(service);
+        setIsDetailsOpen(false);
+        setSelectedServiceId(null);
+        window.location.assign(destination);
+      } catch {
+        setApplyError(UI.invalidServiceUrl[activeLang]);
+      }
+      return;
+    }
+
     saveDeptServiceContext(service);
     const deptToUseId = dept?.id ?? service.__deptId;
+    const locale = params.locale && ["en", "hi", "mr"].includes(params.locale) ? params.locale : "en";
     const serviceHref = deptToUseId
-      ? `/service/${service.id}?deptId=${encodeURIComponent(deptToUseId)}`
-      : `/service/${service.id}`;
+      ? `/${locale}/service/${service.id}?deptId=${encodeURIComponent(deptToUseId)}`
+      : `/${locale}/service/${service.id}`;
 
+    setIsDetailsOpen(false);
+    setSelectedServiceId(null);
     router.push(serviceHref);
   };
 
@@ -142,6 +203,7 @@ export default function ServiceGrid({
             <div
               key={service.id}
               onClick={() => {
+                setApplyError(null);
                 setSelectedServiceId(service.id);
                 setIsDetailsOpen(true);
               }}
@@ -223,12 +285,18 @@ export default function ServiceGrid({
               onClose={() => {
                 setIsDetailsOpen(false);
                 setSelectedServiceId(null);
+                setApplyError(null);
               }}
               title={serviceName || UI.serviceDetails[activeLang]}
               subtitle={deptName}
               maxWidth="md"
             >
               <div className="space-y-5 text-left">
+                {applyError ? (
+                  <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                    {applyError}
+                  </div>
+                ) : null}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 shrink-0">
@@ -302,6 +370,7 @@ export default function ServiceGrid({
                     onClick={() => {
                       setIsDetailsOpen(false);
                       setSelectedServiceId(null);
+                      setApplyError(null);
                     }}
                     className="font-bold"
                   >
@@ -311,8 +380,6 @@ export default function ServiceGrid({
                     variant="primary"
                     size="md"
                     onClick={() => {
-                      setIsDetailsOpen(false);
-                      setSelectedServiceId(null);
                       if (selectedService) {
                         handleApplyClick(selectedService);
                       }

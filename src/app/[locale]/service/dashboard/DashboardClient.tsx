@@ -7,13 +7,14 @@ import type { DepartmentDTO } from "@/types/rts-citizen.types";
 type DashboardClientProps = {
   departments: DepartmentDTO[];
   userApplications: CmsMisDashboardUserApplicationItem[];
+  upicId?: string;
 };
 
-export default function DashboardClient({ departments, userApplications }: DashboardClientProps) {
+export default function DashboardClient({ departments, userApplications, upicId }: DashboardClientProps) {
   return (
     <main className="bg-white">
       <div className="w-full px-2 py-2 sm:px-2 sm:py-2">
-        <DepartmentCarouselClient departments={departments} userApplications={userApplications} />
+        <DepartmentCarouselClient departments={departments} userApplications={userApplications} upicId={upicId} />
       </div>
     </main>
   );

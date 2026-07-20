@@ -225,6 +225,11 @@
       "dayShort": "{value} Days",
       "days": "{value} Days"
     },
+    "outcomes": {
+      "withinSla": "Within SLA",
+      "slaBreached": "SLA Breached",
+      "atRisk": "At Risk"
+    },
     "graph": {
       "title": "Department-wise average TAT — all stages",
       "description": "Stacked representation of stage-duration split",
@@ -252,8 +257,8 @@
       "targetActualValues": "{actual}d / {target}d",
       "stages": {
         "clerkAllocation": "1. Clerk Allocation (Pending)",
-        "officialScrutiny": "2. Official Scrutiny (In progress)",
-        "queryResolution": "3. Query Resolution (Needs info)",
+        "officialScrutiny": "2. Official Scrutiny (In Progress)",
+        "queryResolution": "3. Query Resolution (Needs Info)",
         "finalSignOff": "4. Final Sign-off (Verification)"
       }
     }
