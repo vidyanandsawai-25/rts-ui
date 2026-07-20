@@ -31,7 +31,7 @@ import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
 import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/types/rts/form.types";
 import { type SaveDraftValuesRequest } from "@/types/rts.types";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
-import DynamicFieldRenderer from "@/components/modules/forms/DynamicFieldRenderer";
+import DynamicFieldRenderer from "@/components/modules/rts/forms/DynamicFieldRenderer";
 import {
   buildOldServiceFormConfigFromRtsFieldDefinitions,
   extractRtsFieldDefinitionItems,
