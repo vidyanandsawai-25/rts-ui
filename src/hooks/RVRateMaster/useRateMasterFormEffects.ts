@@ -73,7 +73,7 @@ export function useRateMasterFormEffects({
 
         // Remove columns not present in localRateCategories
         Object.keys(newRow).forEach(key => {
-          if (key !== 'id' && key !== 'zone' && key !== 'zoneNo' && !validIds.has(key)) {
+          if (key !== 'id' && key !== 'zone' && key !== 'zoneNo' && key !== 'taxZoneId' && !validIds.has(key)) {
             delete newRow[key];
           }
         });
