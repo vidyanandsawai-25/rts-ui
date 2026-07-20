@@ -159,6 +159,9 @@ export { UnauthorizedPage } from './UnauthorizedPage';
 export { DocumentViewerModal } from './DocumentViewerModal';
 export type { DocumentViewerModalProps } from './DocumentViewerModal';
 
+export { ImageViewer } from './ImageViewer';
+export type { ImageViewerProps, ImageViewerImage } from './ImageViewer';
+
 export { DatePicker } from './DatePicker';
 export type { DatePickerProps } from './DatePicker';
 
