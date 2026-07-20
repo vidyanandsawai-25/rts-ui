@@ -127,7 +127,7 @@ async function fetchWardPagesForZone(
     if (a.sequenceNo !== null && b.sequenceNo !== null && a.sequenceNo !== b.sequenceNo) {
       return a.sequenceNo - b.sequenceNo;
     }
-    return (a.description ?? a.wardNo).localeCompare(b.description ?? b.wardNo, "mr", {
+    return (a.wardNo ?? a.description ?? "").localeCompare(b.wardNo ?? b.description ?? "", "mr", {
       numeric: true,
       sensitivity: "base",
     });

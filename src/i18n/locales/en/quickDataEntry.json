@@ -793,7 +793,8 @@
             "typeClassificationNote": "* Type is used to indicate properties with the same area/plan.",
             "sourcePropertyNotFound": "Source property {partitionNo} not found.",
             "selectDestinationProperty": "Please select at least one destination property.",
-            "sourcePropertySubmissionWarning": "Submission details will NOT be applied to the source property ({partitionNo}). Do you want to proceed?",
+            "invalidPropertyType": "Invalid property type. Please select a valid type from the dropdown.",
+            "sourcePropertySubmissionWarning": "Selected property type is different than source property type, Do you want to proceed?",
             "warningTitle": "Warning",
             "noDestinationProcessed": "No destination property was processed.",
             "noDataCopied": "No data was copied. Source: {source}, type: {type}, processed: {processed}.",
@@ -960,6 +961,9 @@
         "add": "Add",
         "noFloorsYet": "No floors added yet. Click \"Add Floor\" to begin.",
         "noFloorsFound": "No floors found for this property.",
+        "noFloorSubmissionFound": "No floor submission found for this property. Please add at least one floor to enable Type Wise, Property Wise, and Parking Apply.",
+        "floorSubmissionRequired": "Floor submission is required. Please add at least one floor.",
+        "addFloorSubmissionToEnable": "Add at least one floor submission to enable this option.",
         "errors": {
             "invalidFloorIdForProperty": "Invalid floorId: This floor does not belong to the current property.",
             "fetchFloorData": "Failed to fetch floor data",
@@ -1568,6 +1572,12 @@
             "forbidden": "Access to the requested document is forbidden.",
             "general": "An unexpected error occurred while retrieving the document. Please try again.",
             "uploadGeneral": "An error occurred while uploading the document. Please try again."
+        }
+    },
+    "floorSubmission": {
+        "validation": {
+            "requiredBeforeApply": "Floor submission is required. Please add at least one floor.",
+            "emptyMessage": "Floor submission is required. Please add at least one floor."
         }
     }
 }
