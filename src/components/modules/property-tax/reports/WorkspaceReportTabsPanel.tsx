@@ -59,13 +59,6 @@ export function ReportTabsPanel({
                 >
                   <div className="flex items-center justify-between w-full gap-3 min-w-0">
                     <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <p className={`text-[10px] font-bold uppercase tracking-wider truncate
-                          ${isActive ? 'text-[#800000]' : 'text-gray-500 group-hover:text-[#800000]/70'}`}
-                        >
-                          {report.reportCode}
-                        </p>
-                      </div>
                       <p className={`text-sm font-semibold leading-tight truncate
                         ${isActive ? 'text-[#800000]' : 'text-gray-700 group-hover:text-[#800000]'}`}
                       >

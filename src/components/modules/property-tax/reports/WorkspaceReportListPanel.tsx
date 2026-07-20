@@ -47,9 +47,6 @@ export function ReportListPanel({
                 transition-all duration-150 focus:outline-none
               "
             >
-              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate text-gray-400 group-hover:text-[#800000]/70 transition-colors">
-                {report.reportCode}
-              </p>
               <p className="text-xs font-semibold leading-snug text-gray-800 group-hover:text-[#800000] transition-colors">
                 {report.reportName}
               </p>
