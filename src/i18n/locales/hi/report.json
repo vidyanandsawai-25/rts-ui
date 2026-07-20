@@ -1,5 +1,5 @@
 {
-  "pageTitle": "कस्टम रिपोर्ट बनाएं",
+  "pageTitle": "संपत्ति कर रिपोर्ट इंजन",
   "pageSubtitle": "रिपोर्ट प्रकार चुनें और आवश्यक फ़िल्टर निर्दिष्ट करें, फिर PDF डाउनलोड करने के लिए 'रिपोर्ट प्राप्त करें' पर क्लिक करें।",
   "fields": {
     "reportType": "रिपोर्ट प्रकार"
@@ -73,7 +73,8 @@
     "steps": {
       "selectCategory": "श्रेणी चुनें",
       "selectReport": "रिपोर्ट चुनें",
-      "setParameters": "मापदंड सेट करें"
+      "setParameters": "मापदंड सेट करें",
+      "generateReport": "रिपोर्ट तैयार करें"
     },
     "categories": {
       "assessment": "मूल्यांकन",

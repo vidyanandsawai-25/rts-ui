@@ -26,7 +26,15 @@ export function CategoryCard({ category, label, count, reportsCountTemplate, isS
         <span className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${category.color}`} style={{ backgroundColor: 'currentColor' }} />
       )}
       <span className={`transition-all duration-300`}>
-        <Icon className={`w-5 h-5 ${isSelected ? category.color : 'text-gray-500'}`} />
+        {category.logoBase64 && category.logoContentType ? (
+          <img
+            src={`data:${category.logoContentType};base64,${category.logoBase64}`}
+            alt={label}
+            className={`w-6 h-6 object-contain ${!isSelected && 'grayscale opacity-60'}`}
+          />
+        ) : Icon ? (
+          <Icon className={`w-5 h-5 ${isSelected ? category.color : 'text-gray-500'}`} />
+        ) : null}
       </span>
       <div className="flex flex-col items-center">
         <span className={`block text-xs font-bold leading-tight ${isSelected ? `${category.color} font-extrabold` : 'text-gray-700'}`}>

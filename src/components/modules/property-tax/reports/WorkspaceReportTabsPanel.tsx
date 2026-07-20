@@ -27,7 +27,7 @@ export function ReportTabsPanel({
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
           {workspaceCopy.reportsHeader.replace(
             '{category}',
-            workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories],
+            activeCategoryDef.name || workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories] || activeCategoryDef.key
           )}
         </span>
         <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">

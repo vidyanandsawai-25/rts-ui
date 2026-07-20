@@ -1,5 +1,5 @@
 {
-  "pageTitle": "Generate Custom Report",
+  "pageTitle": "Property Tax Report Engine",
   "pageSubtitle": "Select a report type and specify the required filters, then click Get Report to download the PDF.",
   "fields": {
     "reportType": "Report Type"
@@ -73,7 +73,8 @@
     "steps": {
       "selectCategory": "Select Category",
       "selectReport": "Select Report",
-      "setParameters": "Set Parameters"
+      "setParameters": "Set Parameters",
+      "generateReport": "Generate Report"
     },
     "categories": {
       "assessment": "Assessment",

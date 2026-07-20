@@ -1,6 +1,6 @@
 import 'server-only';
 import { apiClient } from '@/services/api.service';
-import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, LookupOption } from '@/types/report.types';
+import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, LookupOption, ReportModule } from '@/types/report.types';
 import type { PagedResponse } from '@/types/common.types';
 
 /**
@@ -35,6 +35,17 @@ export async function getReportDefinitions(): Promise<ReportDefinition[]> {
   );
   if (!result.success || !result.data) return [];
   return (result.data.items ?? []).map(normalizeReportDefinition);
+}
+
+export async function getReportModules(): Promise<ReportModule[]> {
+  const result = await apiClient.get<PagedResponse<Record<string, unknown>>>('/ReportModules');
+  if (!result.success || !result.data) return [];
+  return (result.data.items ?? []).map((m) => ({
+    id: Number(m.id ?? m.Id ?? 0),
+    name: String(m.name ?? m.Name ?? ''),
+    logoContentType: m.logoContentType || m.LogoContentType ? String(m.logoContentType ?? m.LogoContentType) : null,
+    logoBase64: m.logoBase64 || m.LogoBase64 ? String(m.logoBase64 ?? m.LogoBase64) : null,
+  }));
 }
 
 import { ApiError } from '@/lib/utils/api';

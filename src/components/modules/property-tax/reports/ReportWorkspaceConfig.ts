@@ -18,11 +18,15 @@ export const REPORT_CODES_BY_CATEGORY: Record<string, string[]> = {
   discount: [],
 };
 
-export type Step = 1 | 2 | 3;
+export type Step = 1 | 2 | 3 | 4;
 
 export interface Category {
+  id?: number;
   key: string;
-  icon: React.ElementType;
+  name?: string;
+  icon?: React.ElementType;
+  logoContentType?: string | null;
+  logoBase64?: string | null;
   color: string;      // text class e.g. text-blue-600
   bgColor: string;    // background class e.g. bg-blue-50
   borderColor: string;// border class e.g. border-blue-500

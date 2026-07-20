@@ -3,8 +3,7 @@
 import { Card } from '@/components/common';
 import { ReportParametersPanel } from './ReportParametersPanel';
 import { Stepper, CategoryCard, EmptyState, ReportListPanel, ReportTabsPanel } from './ReportWorkspaceComponents';
-import { CATEGORIES } from './ReportWorkspaceConfig';
-import type { Step } from './ReportWorkspaceConfig';
+import type { Category, Step } from './ReportWorkspaceConfig';
 import type {
   ReportDefinition,
   ReportWorkspaceCopy,
@@ -20,6 +19,7 @@ interface ReportGenerateViewProps {
   selectedCategory: string | null;
   selectedReport: ReportDefinition | null;
   reportsByCategory: Map<string, ReportDefinition[]>;
+  categories: Category[];
   workspaceCopy: ReportWorkspaceCopy;
   paramsCopy: ReportParamsPanelCopy;
   zones: ZoneSummary[];
@@ -40,6 +40,7 @@ export function ReportGenerateView({
   selectedCategory,
   selectedReport,
   reportsByCategory,
+  categories,
   workspaceCopy,
   paramsCopy,
   zones,
@@ -52,7 +53,7 @@ export function ReportGenerateView({
   createReportRequest,
 }: ReportGenerateViewProps) {
   const categoryCount = (key: string) => reportsByCategory.get(key)?.length ?? 0;
-  const activeCategoryDef = CATEGORIES.find((c) => c.key === selectedCategory);
+  const activeCategoryDef = categories.find((c) => c.key === selectedCategory);
   const activeReports = selectedCategory ? (reportsByCategory.get(selectedCategory) ?? []) : [];
 
   return (
@@ -60,11 +61,11 @@ export function ReportGenerateView({
       <Stepper currentStep={currentStep} copy={workspaceCopy} />
 
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <CategoryCard
             key={cat.key}
             category={cat}
-            label={workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories]}
+            label={cat.name || workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories] || cat.key}
             count={categoryCount(cat.key)}
             reportsCountTemplate={workspaceCopy.reportsCount}
             isSelected={selectedCategory === cat.key}

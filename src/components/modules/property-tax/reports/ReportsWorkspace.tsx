@@ -8,7 +8,7 @@ import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
 import { useConfirm } from '@/components/common';
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
-import { CATEGORIES, resolveCategoryKey, type Step } from './ReportWorkspaceConfig';
+import { CATEGORIES, type Step } from './ReportWorkspaceConfig';
 import { ReportGenerateView } from './ReportGenerateView';
 import { ReportGeneratingOverlay } from './ReportGeneratingOverlay';
 import { ReportPreviewOverlay } from './ReportPreviewOverlay';
@@ -18,6 +18,7 @@ export function ReportsWorkspace({
   workspaceCopy,
   paramsCopy,
   reportDefinitions,
+  reportModules,
   zones,
   financialYears,
   fetchWards,
@@ -101,13 +102,36 @@ export function ReportsWorkspace({
     };
   }, [activeRequestId, isGenerating, refresh, workspaceCopy]);
 
+  const dynamicCategories = useMemo(() => {
+    if (reportModules && reportModules.length > 0) {
+      return reportModules.map((m) => ({
+        id: m.id,
+        key: m.name.toLowerCase().replace(/\s+/g, ''),
+        name: m.name,
+        logoContentType: m.logoContentType,
+        logoBase64: m.logoBase64,
+        color: 'text-[#800000]',
+        bgColor: 'bg-transparent',
+        borderColor: 'border-[#800000]',
+        glowClass: 'shadow-[#800000]/20',
+        iconBg: 'bg-transparent',
+      }));
+    }
+    return CATEGORIES;
+  }, [reportModules]);
+
   const reportsByCategory = useMemo(() => {
-    const map = new Map<string, ReportDefinition[]>(CATEGORIES.map((cat) => [cat.key, []]));
+    const map = new Map<string, ReportDefinition[]>(dynamicCategories.map((cat) => [cat.key, []]));
     for (const report of reportDefinitions) {
-      map.get(resolveCategoryKey(report))?.push(report);
+      const rawCategory = report.category || 'assessment';
+      let catKey = rawCategory.toLowerCase().replace(/\s+/g, '');
+      if (!dynamicCategories.find(c => c.key === catKey)) {
+        catKey = dynamicCategories[0]?.key ?? 'assessment';
+      }
+      map.get(catKey)?.push(report);
     }
     return map;
-  }, [reportDefinitions]);
+  }, [reportDefinitions, dynamicCategories]);
 
   const handleCategoryClick = (catKey: string) => {
     if (selectedCategory === catKey) {
@@ -182,6 +206,7 @@ export function ReportsWorkspace({
           selectedCategory={selectedCategory}
           selectedReport={selectedReport}
           reportsByCategory={reportsByCategory}
+          categories={dynamicCategories}
           workspaceCopy={workspaceCopy}
           paramsCopy={paramsCopy}
           zones={zones ?? []}

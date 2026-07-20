@@ -10,6 +10,13 @@ export interface ReportDefinition {
   sortOrder: number;
 }
 
+export interface ReportModule {
+  id: number;
+  name: string;
+  logoContentType: string | null;
+  logoBase64: string | null;
+}
+
 export type ReportParameterType = 'text' | 'number' | 'date' | 'select' | 'boolean';
 
 export interface ReportParameterDefinition {
@@ -94,6 +101,7 @@ export interface ReportWorkspaceCopy {
     selectCategory: string;
     selectReport: string;
     setParameters: string;
+    generateReport: string;
   };
   categories: {
     assessment: string;
@@ -246,6 +254,7 @@ export interface ReportsWorkspaceProps {
   workspaceCopy?: ReportWorkspaceCopy;
   paramsCopy?: ReportParamsPanelCopy;
   reportDefinitions: ReportDefinition[];
+  reportModules?: ReportModule[];
   zones?: ZoneSummary[];
   financialYears?: FinancialYear[];
   /** Server action injected from page.tsx — fetches wards for a given zone */
