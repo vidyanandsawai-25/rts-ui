@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { useState, useEffect, memo, useMemo, useTransition, useCallback } from 'react';
@@ -282,6 +281,9 @@ export const RenterDetailsForm = memo(
                 setFormData={setFormData}
                 existingFloors={existingFloors}
                 currentFloorContext={currentFloorContext}
+                wardNo={wardNo}
+                propertyNo={propertyNo}
+                partitionNo={partitionNo}
               />
             </div>
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -314,11 +316,11 @@ export const RenterDetailsForm = memo(
         </div>
 
         {popupFY && (
-          <RentBreakdownDialog 
-            isOpen={!!popupFY} 
-            onClose={() => setPopupFY(null)} 
-            fy={popupFY} 
-            progression={calculateRentProgression(formData?.renterDetails)?.progression || []} 
+          <RentBreakdownDialog
+            isOpen={!!popupFY}
+            onClose={() => setPopupFY(null)}
+            fy={popupFY}
+            progression={calculateRentProgression(formData?.renterDetails)?.progression || []}
           />
         )}
       </div>

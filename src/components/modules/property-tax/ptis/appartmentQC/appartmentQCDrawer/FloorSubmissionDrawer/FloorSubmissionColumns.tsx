@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Column } from '@/components/common/MasterTable';
 import type { FloorSubmissionRow } from '@/types/apartmentQC.types';
-import { Tooltip, EditButton } from '@/components/common';
+import { Tooltip } from '@/components/common';
 
 import { ArrowUpDown } from 'lucide-react';
 
@@ -53,7 +53,6 @@ const makeFloorQcHeader = (columnKey: string, t: ReturnType<typeof useTranslatio
 export function useFloorSubmissionColumns({
     subTab,
     dualMethodTab,
-    onEdit,
 }: {
     subTab: string;
     dualMethodTab: string;
@@ -104,29 +103,16 @@ export function useFloorSubmissionColumns({
         { key: "capitalValue", label: makeFloorQcHeader("capitalValue", t), align: "right", cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCellHover value={row.capitalValue} /> },
     ], [t]);
 
-    const actionColumn: Column<FloorSubmissionRow> = useMemo(() => ({
-        key: "action" as keyof FloorSubmissionRow,
-        label: makeFloorQcHeader("action", t),
-        align: "center",
-        render: (_v, row) => (
-            <EditButton
-                onClick={() => onEdit(row)}
-                size="sm"
-                style={{ padding: '6px 8px', minHeight: '24px', height: '24px' }}
-                title={t("floorQC.tooltips.editFloorQC")}
-            />
-        )
-    }), [t, onEdit]);
-
+   
     return useMemo(() => {
         if (subTab === 'capital') {
-            return commonColumns.concat(capitalColumns, [actionColumn]);
+            return commonColumns.concat(capitalColumns);
         }
         if (subTab === 'dual-method') {
             return dualMethodTab === 'capital'
-                ? commonColumns.concat(capitalColumns, [actionColumn])
-                : commonColumns.concat(rateableColumns, [actionColumn]);
+                ? commonColumns.concat(capitalColumns)
+                : commonColumns.concat(rateableColumns);
         }
-        return commonColumns.concat(rateableColumns, [actionColumn]);
-    }, [subTab, dualMethodTab, commonColumns, rateableColumns, capitalColumns, actionColumn]);
+        return commonColumns.concat(rateableColumns);
+    }, [subTab, dualMethodTab, commonColumns, rateableColumns, capitalColumns]);
 }

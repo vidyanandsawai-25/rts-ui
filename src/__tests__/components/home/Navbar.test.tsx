@@ -64,7 +64,7 @@ describe('Navbar Component', () => {
   it('settings link points to correct URL', () => {
     render(<Navbar />);
     const settingsLink = screen.getByText('Settings').closest('a');
-    expect(settingsLink).toHaveAttribute('href', '/en/configuration-settings/office-master');
+    expect(settingsLink).toHaveAttribute('href', '/en/configuration-settings');
   });
 
   it('displays provided username', () => {
@@ -111,5 +111,25 @@ describe('Navbar Component', () => {
     render(<Navbar ulbName="Test City" />);
     expect(screen.getByText(/Welcome to/)).toBeInTheDocument();
     expect(screen.getByText(/Smart Governance Portal/)).toBeInTheDocument();
+  });
+
+  it('hides settings link when user does not have settings access', () => {
+    const userProfile = {
+      fullName: 'Test User',
+      email: 'test@example.com',
+      roles: ['User'],
+      departments: ['Property Tax'],
+      modules: [],
+      userId: '1',
+      userCode: 'U001',
+      mobileNo: '1234567890',
+      address: 'Test Address',
+      language: 'en',
+      primaryRole: 'User',
+      primaryDepartment: 'Property Tax',
+      hasSettingsAccess: false,
+    };
+    render(<Navbar userProfile={userProfile} />);
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument();
   });
 });

@@ -34,9 +34,11 @@ export const FOOTER_REGISTRY: Record<string, FooterButtonStyle> = {
   // PTIS Dynamic Commands from API
   'PTIS_QC': { iconName: 'CheckCircle2', variant: 'outline', alignment: 'left' },
   'PTIS_QC_REVERT': { iconName: 'Undo2', variant: 'outline', alignment: 'left' },
- 'PTIS_COMBINE': { iconName: 'Merge', variant: 'blue', alignment: 'middle' },
+  'PTIS_COMBINE': { iconName: 'Merge', variant: 'blue', alignment: 'middle' },
+  'PTIS_COMMON_UPDATE': { iconName: 'Database', variant: 'outline', alignment: 'middle' },
   'PTIS_PARTITION': { iconName: 'Split', variant: 'outline', alignment: 'middle' },
   'PTIS_TAP_WATER': { iconName: 'Droplet', variant: 'outline', alignment: 'middle' },
+  'PTIS_PROPERTY_REPORT': { iconName: 'FileText', variant: 'outline', alignment: 'middle' },
   'PTIS_APPLICABLE_TAXES_INFO': { iconName: 'Info', variant: 'outline', alignment: 'middle' },
   'PTIS_SPLIT': { iconName: 'Split', variant: 'outline', alignment: 'middle' },
   'PTIS_TRANSFER': { iconName: 'User', variant: 'outline', alignment: 'middle' },

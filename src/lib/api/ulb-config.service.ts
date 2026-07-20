@@ -15,6 +15,7 @@ function mapUlbConfigApiToMaster(raw: UlbConfigApiBody): UlbMaster {
     ulbTypeId: 1,
     isActive: true,
     ulbLogo: raw.ulbLogo ?? undefined,
+    ulbBackground: raw.ulbBackground ?? undefined,
     email: raw.emailId ?? undefined,
     phoneNo: raw.mobileNo ?? undefined,
     websiteUrl: raw.websiteUrl ?? undefined,

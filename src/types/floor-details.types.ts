@@ -222,6 +222,7 @@ export interface EditSidebarFormProps {
 
 export interface EditSidebarProps {
     wardNo: string;
+    wardId?: number;
     propertyNo: string;
     partitionNo: string;
     locale: string;
@@ -589,6 +590,7 @@ export interface FloorSubmissionPayload {
     widthMtr?: number | string | null;
     roomWiseMinusData?: unknown[];
     typeOfUseCategoryId?: number | string | null;
+    documentBindingId?: number | null;
 }
 
 // QuickDataEntryPayload - used for quick data entry submission
@@ -618,4 +620,49 @@ export interface RenterTableEntryPostRow {
     TableIncrementApplied: number;
     TableSegmentType: string;
     TableStatusLabel: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            DATA ENTRY SAME AS TYPES                        */
+/* -------------------------------------------------------------------------- */
+
+export interface SelectableProperty {
+    id: string | number;
+    propertyFloorId?: string | number | null;
+    propertyDetailsId?: string | number | null;
+    wardId?: string | number;
+    wardNo: string;
+    propertyNo: string;
+    partitionNo: string;
+    type: string | number;
+    typeLabel?: string;
+    wing: string;
+    flatNo: string;
+    carpetAreaSqFeet?: number | null;
+    carpetAreaSqMeter?: number | null;
+}
+
+export interface DataEntrySameAsItem {
+    propertyId: number;
+    propertyFloorId?: number | null;
+    propertyDetailsId?: number | null;
+    wardId: number;
+    propertyNo: string;
+    partitionNo: string;
+    type: string | number;
+    typeName?: string | null;
+    typeLabel?: string | null;
+    typeDescription?: string | null;
+    propertyTypeName?: string | null;
+    apartmentType?: string | null;
+    wingName: string;
+    flatOrShopNo: string;
+}
+
+export interface DataEntrySameAsResponse {
+    success: boolean;
+    message: string;
+    items: DataEntrySameAsItem[];
+    errors: unknown;
+    correlationId: string | null;
 }

@@ -95,21 +95,28 @@ export async function getBulkUpdateFieldConfigServer(
  * Converts PascalCase keys (e.g., AddressEnglish) to camelCase (addressEnglish).
  */
 function flattenCurrentValues(items: PropertyPreviewRow[]): PropertyPreviewRow[] {
-  return items.map((item) => {
-    const raw = item as Record<string, unknown>;
-    const cv = raw.currentValues;
-    if (cv && typeof cv === "object" && !Array.isArray(cv)) {
-      const flat: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(cv as Record<string, unknown>)) {
-        // Convert PascalCase key to camelCase for frontend consistency
-        const camelKey = k.charAt(0).toLowerCase() + k.slice(1);
-        flat[camelKey] = v;
+  try {
+    if (!items || !Array.isArray(items)) return [];
+    return items.map((item) => {
+      if (!item) return item;
+      const raw = item as Record<string, unknown>;
+      const cv = raw.currentValues;
+      if (cv && typeof cv === "object" && !Array.isArray(cv)) {
+        const flat: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(cv as Record<string, unknown>)) {
+          if (!k) continue;
+          const camelKey = k.charAt(0).toLowerCase() + k.slice(1);
+          flat[camelKey] = v;
+        }
+        const { currentValues: _cv, ...rest } = raw;
+        return { ...rest, ...flat } as PropertyPreviewRow;
       }
-      const { currentValues: _cv, ...rest } = raw;
-      return { ...rest, ...flat } as PropertyPreviewRow;
-    }
-    return item;
-  });
+      return item;
+    });
+  } catch (err) {
+    logger.error("flattenCurrentValues: Error", {}, err);
+    return items;
+  }
 }
 
 export async function getPropertiesForFilterServer(
@@ -117,9 +124,21 @@ export async function getPropertiesForFilterServer(
 ): Promise<PagedResponse<PropertyPreviewRow>> {
   // Build query params for GET request
   const queryParams = new URLSearchParams();
-  queryParams.append("WardId", String(params.wardId));
-  queryParams.append("FromPropertyNo", params.fromPropertyNo);
-  queryParams.append("ToPropertyNo", params.toPropertyNo);
+  if (params.wardId) {
+    queryParams.append("WardId", String(params.wardId));
+  }
+  if (params.zoneId) {
+    queryParams.append("ZoneId", String(params.zoneId));
+  }
+  if (params.propertyTypeId) {
+    queryParams.append("PropertyTypeId", String(params.propertyTypeId));
+  }
+  if (params.fromPropertyNo) {
+    queryParams.append("FromPropertyNo", params.fromPropertyNo);
+  }
+  if (params.toPropertyNo) {
+    queryParams.append("ToPropertyNo", params.toPropertyNo);
+  }
   if (params.wingId) {
     queryParams.append("Wing", params.wingId);
   }
@@ -181,7 +200,7 @@ export async function getPropertiesForFilterServer(
       "getPropertiesForFilterServer"
     );
   } catch (error) {
-    logger.error("getPropertiesForFilterServer: Error", { error: error as Error });
+    logger.error("getPropertiesForFilterServer: Error", {}, error);
     throw error;
   }
 }

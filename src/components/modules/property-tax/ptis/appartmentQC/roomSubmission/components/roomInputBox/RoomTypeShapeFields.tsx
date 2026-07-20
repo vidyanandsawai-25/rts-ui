@@ -63,17 +63,25 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
             handleInputChange('utilities', value);
             // Always set roomTypeId - use empty string if undefined to clear previous value
             handleInputChange('roomTypeId', roomTypeId !== undefined ? String(roomTypeId) : '');
-            setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
+            setTimeout(() => { 
+              const shapeContainer = document.getElementById('shape-select-container');
+              const shapeBtn = shapeContainer?.querySelector('button[role="combobox"]');
+              if (shapeBtn instanceof HTMLElement) {
+                shapeBtn.focus();
+                shapeBtn.click();
+              }
+            }, 100);
           }}
           disabled={false}
           className="w-full h-[40px]"
+          autoFocus={true}
         />
         {validationErrors.utilities && (
           <span className="text-[10px] text-red-500 mt-0.5">{t(validationErrors.utilities)}</span>
         )}
       </div>
 
-      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.shape }}>
+      <div id="shape-select-container" className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.shape }}>
         <Select
           options={[
             { label: t('roomSubmission.input.shapes.select'), value: '-Select-' },

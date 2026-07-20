@@ -24,6 +24,12 @@ export const TypeOfUseErrorMessages = {
   DELETE_SUBTYPE_FAILED: 'messages.deleteSubTypeFailed',
   DELETE_SUBTYPE_REFERENCED: 'messages.deleteSubTypeReferenced',
   FETCH_SUBTYPE_COUNTS_FAILED: 'messages.fetchSubTypeCountsFailed',
+
+  // Category errors
+  FETCH_CATEGORIES_FAILED: 'category.messages.fetchFailed',
+  CREATE_CATEGORY_FAILED: 'category.messages.createFailed',
+  UPDATE_CATEGORY_FAILED: 'category.messages.updateFailed',
+  DELETE_CATEGORY_FAILED: 'category.messages.deleteFailed',
 } as const;
 
 export type TypeOfUseErrorMessageKey = typeof TypeOfUseErrorMessages[keyof typeof TypeOfUseErrorMessages];

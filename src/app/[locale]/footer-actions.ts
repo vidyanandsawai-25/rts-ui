@@ -105,7 +105,7 @@ export async function handleFooterAction(
         if (!validationResult.success) {
           const errors = validationResult.error.format();
           if (errors.propertyId) {
-            return { success: false, error: 'Property ID is missing.' };
+            return { success: false, error: 'error.propertyIdMissing' };
           }
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
@@ -197,9 +197,25 @@ export async function handleFooterAction(
 
         redirect(`/${payloadLocale}/property-tax/ptis/combineproperty${suffix}`);
       }
+      case 'PTIS_COMMON_UPDATE': {
+        const payloadLocale = payload.locale || 'en';
+        const params = new URLSearchParams();
+
+        if (payload.propertyId) params.set('propertyId', payload.propertyId);
+        if (payload.wardId) params.set('wardId', String(payload.wardId));
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        params.set('from', 'ptis');
+
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+
+        redirect(`/${payloadLocale}/property-tax/common-details-update${suffix}`);
+      }
       case 'PTIS_TAP_WATER': {
         if (!payload.propertyId) {
-          return { success: false, error: 'Property ID is missing.' };
+          return { success: false, error: 'error.propertyIdMissing' };
         }
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
@@ -217,7 +233,7 @@ export async function handleFooterAction(
       case 'PTIS_APPLY':
       case 'PTIS_APPLICABLE_TAXES_INFO': {
         if (!payload.propertyId) {
-          return { success: false, error: 'Property ID is missing.' };
+          return { success: false, error: 'error.propertyIdMissing' };
         }
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
@@ -247,6 +263,17 @@ export async function handleFooterAction(
 
         revalidatePath(`/${payloadLocale}/property-tax/ptis`, 'page');
         return { success: true, data: null, message: 'Taxes refreshed successfully.' };
+      }
+      case 'PTIS_PROPERTY_REPORT': {
+        const payloadLocale = payload.locale || 'en';
+        const params = new URLSearchParams();
+        if (payload.propertyId) params.set('propertyId', payload.propertyId);
+        if (payload.wardId) params.set('wardId', payload.wardId);
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+        redirect(`/${payloadLocale}/property-tax/reports${suffix}`);
       }
       default:
         return { success: false, error: `Command ${command} is not yet implemented.` };

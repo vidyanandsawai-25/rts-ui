@@ -3,7 +3,7 @@ import { type FloorSubmissionPayload } from '@/types/floor-details.types';
 
 const TEMP_ID_THRESHOLD = 1_000_000_000_000;
 
-type AuditField = { createdBy: 0 } | { updatedBy: 0 };
+type AuditField = { createdBy: number } | { updatedBy: number };
 
 const toIsoOrNull = (value: any): string | null => {
   if (value === undefined || value === null || value === '') return null;
@@ -88,6 +88,7 @@ const sanitizeRenterMastRow = (
     agreementDate: toIsoOrNull(payload.agreementDate),
     agreementFromDate: toIsoOrNull(payload.agreementFromDate),
     agreementToDate: toIsoOrNull(payload.agreementToDate),
+    documentBindingId: rm.documentBindingId ? Number(rm.documentBindingId) : (payload.documentBindingId ? Number(payload.documentBindingId) : null),
   };
 };
 
@@ -96,7 +97,7 @@ export function sanitizeRenterDetailsForCreate(
   parentPropertyDetailsId: number
 ): Record<string, unknown>[] {
   return ((payload.renterDetails as Record<string, unknown>[]) || []).map((rd) =>
-    sanitizeRenterDetailRow(rd, parentPropertyDetailsId, { createdBy: 0 })
+    sanitizeRenterDetailRow(rd, parentPropertyDetailsId, { createdBy: payload.createdBy ?? 0 })
   );
 }
 
@@ -105,7 +106,7 @@ export function sanitizeRenterDetailsForUpdate(
   parentPropertyDetailsId: number
 ): Record<string, unknown>[] {
   return ((payload.renterDetails as Record<string, unknown>[]) || []).map((rd) =>
-    sanitizeRenterDetailRow(rd, parentPropertyDetailsId, { updatedBy: 0 })
+    sanitizeRenterDetailRow(rd, parentPropertyDetailsId, { updatedBy: payload.updatedBy ?? 0 })
   );
 }
 
@@ -114,7 +115,7 @@ export function sanitizeRenterMastForCreate(
   parentPropertyDetailsId: number
 ): Record<string, unknown>[] {
   return ((payload.renterMast as Record<string, unknown>[]) || []).map((rm) =>
-    sanitizeRenterMastRow(rm, payload, parentPropertyDetailsId, { createdBy: 0 })
+    sanitizeRenterMastRow(rm, payload, parentPropertyDetailsId, { createdBy: payload.createdBy ?? 0 })
   );
 }
 
@@ -123,7 +124,7 @@ export function sanitizeRenterMastForUpdate(
   parentPropertyDetailsId: number
 ): Record<string, unknown>[] {
   return ((payload.renterMast as Record<string, unknown>[]) || []).map((rm) =>
-    sanitizeRenterMastRow(rm, payload, parentPropertyDetailsId, { updatedBy: 0 })
+    sanitizeRenterMastRow(rm, payload, parentPropertyDetailsId, { updatedBy: payload.updatedBy ?? 0 })
   );
 }
 
@@ -139,7 +140,9 @@ export function sanitizeRenterRowsFromData(
   renterMast: Record<string, unknown>[];
   renters: Record<string, unknown>[];
 } {
-  const auditField: AuditField = isUpdate ? { updatedBy: 0 } : { createdBy: 0 };
+  const auditField: AuditField = isUpdate
+    ? { updatedBy: Number(data.updatedBy ?? 0) }
+    : { createdBy: Number(data.createdBy ?? 0) };
   const renterDetails = ((data.renterDetails as Record<string, unknown>[]) || []).map((rd) =>
     sanitizeRenterDetailRow(rd, parentPropertyDetailsId, auditField)
   );

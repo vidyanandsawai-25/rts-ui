@@ -84,6 +84,22 @@ export async function getPropertySuggestionsAction(
   return createAction(() => ptisService.getPropertySuggestions(wardNo, wardId, searchText));
 }
 
+export async function searchPropertiesAction(filters: {
+  wardNo?: string;
+  wardId?: number;
+  propertyNo?: string;
+  upicId?: string;
+  partitionNo?: string;
+}) {
+  const { searchSuggestionsSchema } = await getPtisValidationSchemas();
+  const validation = searchSuggestionsSchema.safeParse(filters);
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(() => ptisService.searchProperties(filters));
+}
+
 export async function getWardSuggestionsAction(searchText?: string) {
   return createAction(() => ptisService.getWardSuggestions(searchText));
 }

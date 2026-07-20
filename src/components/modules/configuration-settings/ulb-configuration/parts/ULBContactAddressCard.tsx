@@ -1,7 +1,7 @@
 'use client';
 
 import { Mail } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/common';
 import * as ULB_VALIDATION from '@/lib/api/configuration-settings/ulb-configuration/ulb-form-validation.constants';
 import type { ULBContactAddressCardProps } from '@/types/ulbconfig-master.types';
 import { UlbInput, UlbTextArea } from '../ULBFormField';
@@ -15,15 +15,15 @@ export function ULBContactAddressCard({
 }: ULBContactAddressCardProps) {
   return (
     <Card className="flex flex-col border-none bg-white/80 ring-1 ring-slate-200/60 lg:col-span-3">
-      <CardHeader className="px-4 pt-4 pb-2">
+      <CardHeader className="px-3.5 pt-3 pb-1.5">
         <CardTitle className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-slate-800">
           <Mail className="h-3.5 w-3.5 text-primary" />
           {t('sections.contactInfo')} & {t('fields.address')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 px-4 pb-4">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="flex flex-col gap-3">
+      <CardContent className="flex-1 px-3.5 pb-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="flex flex-col gap-2">
             <UlbInput
               label={t('fields.email')}
               required
@@ -35,7 +35,7 @@ export function ULBContactAddressCard({
               onChange={(e) => onFieldChange('email', e.target.value)}
               onBlur={() => onFieldBlur('email')}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <UlbInput
                 label={t('fields.phone')}
                 required
@@ -81,7 +81,7 @@ export function ULBContactAddressCard({
             errorMessage={getFieldError('address')}
             onChange={(e) => onFieldChange('address', e.target.value)}
             onBlur={() => onFieldBlur('address')}
-            className="min-h-[140px] flex-1"
+            className="min-h-[85px] flex-1"
           />
         </div>
       </CardContent>

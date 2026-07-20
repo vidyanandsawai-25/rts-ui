@@ -254,9 +254,14 @@ describe('DiscountFormview', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(updateDiscountDetailsAction).toHaveBeenCalledWith(
-        'en',
-        '123',
+      expect(updateDiscountDetailsAction).toHaveBeenCalled();
+      const call = (updateDiscountDetailsAction as Mock).mock.calls[0];
+      expect(call[0]).toBe('en');
+      expect(call[1]).toBe('123');
+      const formData = call[2] as FormData;
+      expect(formData).toBeInstanceOf(FormData);
+      const discountAttributes = JSON.parse(formData.get("discountAttributes") as string);
+      expect(discountAttributes).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             socialAttributeId: 2,

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tag, AlertCircle, CheckCircle2 } from "lucide-react";
-import type { UseGroup, UseType, UseTypeFormProps } from "@/types/typeOfUse.types";
+import type { UseGroup, UseType, UseTypeFormProps, TypeOfUseCategory } from "@/types/typeOfUse.types";
 import {
   createUseType,
   updateUseType,
@@ -20,6 +20,7 @@ import { useTypeFormValidation } from '@/hooks/TypeOfUseMaster/useTypeFormValida
 import {
   TypeSelector,
   GroupSelector,
+  CategorySelector,
   TypeCodeInput,
   SearchSequenceInput,
   DescriptionInput,
@@ -29,11 +30,12 @@ type FieldErrors = {
   code?: string;
   typeValue?: string;
   groupId?: string;
+  categoryId?: string;
   description?: string;
   searchSequence?: string;
 };
 
-export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp = [], allTypes: allTypesProp = [] }: UseTypeFormProps) {
+export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp = [], allTypes: allTypesProp = [], allCategories: allCategoriesProp = [] }: UseTypeFormProps) {
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,6 +45,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
   const [allGroups] = useState<UseGroup[]>(allGroupsProp);
   const [allTypes] = useState<UseType[]>(allTypesProp);
+  const [allCategories] = useState<TypeOfUseCategory[]>(allCategoriesProp);
 
   const [formData, setFormData] = useState<UseType>(
     initialData || {
@@ -82,7 +85,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
   // ✅ FIX: Find group by typeOfUseGroupId
   const selectedGroup = useMemo(
-    () => allGroups.find((g) => 
+    () => allGroups.find((g) =>
       g.typeOfUseGroupId === formData.typeOfUseGroupId
     ) || null,
     [allGroups, formData.typeOfUseGroupId]
@@ -104,11 +107,12 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
     // Create form data with typeValue for validation
     const dataToValidate = { ...formData, type: typeValue };
     const validationErrors = validateForm(dataToValidate, validationSchema);
-    
+
     setErrors({
       code: validationErrors.typeOfUseCode,
       typeValue: validationErrors.type,
       groupId: validationErrors.typeOfUseGroupId,
+      categoryId: validationErrors.typeOfUseCategoryId,
       description: validationErrors.description,
       searchSequence: validationErrors.searchSequence
     });
@@ -124,6 +128,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
         type: typeValue,
         searchSequence: Number(formData.searchSequence ?? 0),
         status: formData.isActive ? "Active" : "Inactive",
+        typeOfUseCategoryId: formData.typeOfUseCategoryId ?? null,
       });
 
       if (!result.success) {
@@ -140,6 +145,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
         type: typeValue,
         searchSequence: Number(formData.searchSequence ?? 0),
         status: formData.isActive ? "Active" : "Inactive",
+        typeOfUseCategoryId: formData.typeOfUseCategoryId ?? null,
       });
 
       if (!result.success) {
@@ -208,7 +214,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
                 <div>
                   <div className="text-base font-semibold text-slate-900">{t('type.fields.status')}</div>
                   <div className="text-sm text-slate-500">
-                    {t('type.statusMessage', { 
+                    {t('type.statusMessage', {
                       status: isActive ? t('status.active') : t('status.inactive')
                     })}
                   </div>
@@ -243,6 +249,19 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
               onClearError={() => clearFieldError("groupId")}
               error={errors.groupId}
               showError={submittedOnce && !!errors.groupId}
+              t={t}
+            />
+
+            {/* Category Selector */}
+            <CategorySelector
+              allCategories={allCategories}
+              selectedCategoryId={formData.typeOfUseCategoryId}
+              onChange={(categoryId) => {
+                setFormData((p) => ({ ...p, typeOfUseCategoryId: categoryId }));
+                if (submittedOnce) clearFieldError("categoryId");
+              }}
+              error={errors.categoryId}
+              showError={submittedOnce && !!errors.categoryId}
               t={t}
             />
 

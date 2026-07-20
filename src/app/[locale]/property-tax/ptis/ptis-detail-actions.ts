@@ -112,3 +112,12 @@ export async function fetchTabHeaderInfoAction(propertyId: number) {
 
   return createAction(() => ptisService.getTabHeaderInfo(propertyId));
 }
+
+export async function fetchMappedPropertiesAction(propertyId: number) {
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(() => ptisService.getMappedProperties(propertyId));
+}

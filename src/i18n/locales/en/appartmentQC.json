@@ -133,7 +133,9 @@
     "floorQC": "Floor QC",
     "basicProperty": "Basic Property",
     "taxDetails": "Tax Details",
+    "oldPropertyDetails": "Old Property Details",
     "photoPlan": "Photo Plan",
+    "apartmentQCLoading": "Loading...",
     "roomWiseSubmission": "Room Wise Submission",
     "loadingRoomData": "Loading room data...",
     "viewImage": "View Image",
@@ -192,7 +194,9 @@
     "cv": "Capital Value",
     "kyc": "Know Your Customer",
     "viewKycDetails": "View KYC Details",
-    "hideKycDetails": "Hide KYC Details"
+    "hideKycDetails": "Hide KYC Details",
+    "expandTable": "Expand Table",
+    "collapseTable": "Collapse Table"
   },
   "pageTitle": "Edit Property Details",
   "badges": {
@@ -326,6 +330,7 @@
       "selectSubType": "Select Sub Type",
       "yearPlaceholder": "YYYY",
       "roomsPlaceholder": "e.g. 2",
+      "auto": "Auto",
       "autoCalculated": "AUTO-CALCULATED",
       "sqFt": "SQ FT"
     },
@@ -337,6 +342,13 @@
       "use": "Use",
       "subTypeOfUse": "Sub Type Of Use",
       "noOfRooms": "No. of Rooms",
+      "taxable": "Taxable",
+      "subFloor": "Sub Floor",
+      "renter": "Renter",
+      "areaSqFt": "Area (Sq Ft)",
+      "areaSqMtr": "Area (Sq M)",
+      "buildupAreaSqFt": "Buildup Area (sq.ft)",
+      "buildupAreaSqMtr": "Builtup Area (Sq M)",
       "area": "Area",
       "rentMY": "Rent M/Y",
       "rateMY": "Rate M/Y",

@@ -42,6 +42,8 @@ export interface PropertySearchApiItem {
   cityServeyNo?: string | null;
   plotNo: string | null;
   wingFlatNo: string | null;
+  wing?: string | null;
+  flatNo?: string | null;
   propertyCount?: number | null;
   childUnitCount?: number | null;
   categoryName: string | null;

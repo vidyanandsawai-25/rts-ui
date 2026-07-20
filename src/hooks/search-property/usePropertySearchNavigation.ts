@@ -157,7 +157,10 @@ export function usePropertySearchNavigation({
    * Update zone and reset ward
    */
   const updateZone = useCallback(
-    (zoneId: number) => {
+    (zoneId: number, currentCriteria?: SearchCriteria) => {
+      const tabParam = currentParams.get("tab");
+      const activeTab: SearchTab = (tabParam === "kyc" || tabParam === "values-dues") ? tabParam : "quick-search";
+
       const url = buildUrl((params) => {
         if (zoneId > 0) {
           params.set("zoneId", String(zoneId));
@@ -167,17 +170,35 @@ export function usePropertySearchNavigation({
         params.delete("wardId");
         params.delete("status");
         params.delete("pageNumber");
+
+        if (currentCriteria) {
+          const tabCriteria = applyTabSearchCriteria(currentCriteria, activeTab);
+          (Object.keys(tabCriteria) as Array<keyof SearchCriteria>).forEach((key) => {
+            if (key === "zoneId" || key === "wardId" || NON_PERSISTED_CRITERIA_FIELDS.has(key)) {
+              return;
+            }
+            const value = tabCriteria[key];
+            if (typeof value === "string" && value.trim() !== "") {
+              params.set(key, value);
+            } else {
+              params.delete(key);
+            }
+          });
+        }
       });
       navigateTo(url);
     },
-    [buildUrl, navigateTo]
+    [buildUrl, currentParams, navigateTo]
   );
 
   /**
    * Update ward selection
    */
   const updateWard = useCallback(
-    (wardId: number) => {
+    (wardId: number, currentCriteria?: SearchCriteria) => {
+      const tabParam = currentParams.get("tab");
+      const activeTab: SearchTab = (tabParam === "kyc" || tabParam === "values-dues") ? tabParam : "quick-search";
+
       const url = buildUrl((params) => {
         if (wardId > 0) {
           params.set("wardId", String(wardId));
@@ -186,10 +207,25 @@ export function usePropertySearchNavigation({
         }
         params.delete("status");
         params.delete("pageNumber");
+
+        if (currentCriteria) {
+          const tabCriteria = applyTabSearchCriteria(currentCriteria, activeTab);
+          (Object.keys(tabCriteria) as Array<keyof SearchCriteria>).forEach((key) => {
+            if (key === "zoneId" || key === "wardId" || NON_PERSISTED_CRITERIA_FIELDS.has(key)) {
+              return;
+            }
+            const value = tabCriteria[key];
+            if (typeof value === "string" && value.trim() !== "") {
+              params.set(key, value);
+            } else {
+              params.delete(key);
+            }
+          });
+        }
       });
       navigateTo(url);
     },
-    [buildUrl, navigateTo]
+    [buildUrl, currentParams, navigateTo]
   );
 
   /**

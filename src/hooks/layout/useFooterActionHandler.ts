@@ -44,6 +44,15 @@ export function useFooterActionHandler(
       toast.error(msg);
       return;
     }
+    if (command === 'PTIS_COMMON_UPDATE' && !propertyId) {
+      const msg = t.has('error.propertyNotSearchedCommonUpdate')
+        ? t('error.propertyNotSearchedCommonUpdate')
+        : (t.has('errors.propertyNotSearchedCommonUpdate')
+          ? t('errors.propertyNotSearchedCommonUpdate')
+          : 'Please search for a property first before updating common details.');
+      toast.error(msg);
+      return;
+    }
     setClickedCommand(command);
     startTransition(async () => {
       const propertyId = searchParams.get('propertyId') || undefined;
@@ -89,7 +98,10 @@ export function useFooterActionHandler(
       if (result.success) {
         toast.success(result.message || 'Action executed.');
       } else {
-        toast.error(result.error || 'Action failed.');
+        const errorMsg = result.error
+          ? (t.has(result.error) ? t(result.error) : result.error)
+          : 'Action failed.';
+        toast.error(errorMsg);
       }
     });
   };

@@ -3,6 +3,7 @@ import { useLocale } from "next-intl";
 import { AddButton, DeleteButton, EditButton, SearchInput } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { Tooltip } from "@/components/common/Tooltip";
 import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import { clsx, getTypeApiId, getGroupApiId } from "./typeOfUseMasterUtils";
 
@@ -95,6 +96,13 @@ export function TypeSection({
                   onClick={() => {
                     onTypeSelect(String(typeItem.typeOfUseGroupId), getTypeApiId(typeItem));
                   }}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      (e.currentTarget as HTMLElement).click();
+                    }
+                  }}
                   className={clsx(
                     "cursor-pointer select-none rounded-xl border px-4 py-3 text-left shadow-sm transition",
                     selected
@@ -104,13 +112,15 @@ export function TypeSection({
                 >
                   <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
                     {/* LEFT: Code + Description */}
-                    <div className="flex items-center gap-2 min-w-0 shrink-0">
+                    <div className="flex items-center gap-2 min-w-0 shrink">
                       <span className="rounded-lg bg-emerald-500 px-2 py-1 text-xs font-bold text-white whitespace-nowrap">
                         {typeItem.typeOfUseCode}
                       </span>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {typeItem.description}
-                      </span>
+                      <Tooltip content={typeItem.description} placement="bottom">
+                        <span className="text-sm font-semibold text-slate-900 truncate">
+                          {typeItem.description}
+                        </span>
+                      </Tooltip>
                     </div>
 
                     {/* RIGHT: Action buttons */}

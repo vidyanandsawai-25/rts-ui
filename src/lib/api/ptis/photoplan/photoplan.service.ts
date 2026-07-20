@@ -1,8 +1,8 @@
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
-import { cookies } from "next/headers";
-import { getAppConfig } from "@/config/app.config";
-import { serverFetch } from "@/lib/utils/server-fetch";
+import { uploadDocument, deleteDocument } from "../../document.service";
+import { DocumentUploadParams } from "@/types/document.types";
+import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, DOCUMENT_TYPE } from "../../../constants/document.constants";
 import type { 
   PropertyPhotoDto, 
   PropertyPhotoTypeWithStatusDto, 
@@ -15,21 +15,6 @@ interface BackendApiResponseWrapper<T> {
   message?: string;
   items: T;
   errors?: string[];
-}
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const cookieStore = await cookies();
-  const headers: Record<string, string> = { 'Accept': 'application/json, text/plain, */*' };
-  const token = cookieStore.get('auth_token')?.value;
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const csrf = cookieStore.get('csrf_token')?.value;
-  if (csrf) headers['X-CSRF-Token'] = csrf;
-  const cookieStr = cookieStore.getAll()
-    .filter(c => /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name))
-    .map(c => `${c.name.replace(/[^\x00-\x7F]/g, '')}=${c.value.replace(/[^\x00-\x7F]/g, '')}`)
-    .join('; ');
-  if (cookieStr) headers['Cookie'] = cookieStr;
-  return headers;
 }
 
 export const photoPlanService = {
@@ -57,71 +42,151 @@ export const photoPlanService = {
       : { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
   },
 
-  // 3. POST - Upload a new photo
-  async uploadPropertyPhoto(
+  async uploadPhotoViaGlobalApi(
     file: File,
     propertyId: number,
     photoTypeId: number,
-    displayOrder: number,
-    remarks: string
-  ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim();
-    if (!baseUrl) return { success: false, statusCode: 500, error: "API base URL is not configured" };
-    
-    const url = `${baseUrl.replace(/\/$/, '')}/property-photos/upload`;
-    const formData = new FormData();
-    formData.append("File", file, file.name);
-    formData.append("PropertyId", propertyId.toString());
-    formData.append("PhotoTypeId", photoTypeId.toString());
-    formData.append("DisplayOrder", displayOrder.toString());
-    formData.append("Remarks", remarks || "");
-
-    const headers = await getAuthHeaders();
-    const response = await serverFetch(url, { method: 'POST', headers, body: formData, cache: 'no-store' });
-    const text = await response.text();
-    let data;
-    try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
-
-    if (!response.ok) {
-      return { success: false, statusCode: response.status, error: data.message || data.error || `Upload failed with status ${response.status}` };
-    }
-    return { success: true, statusCode: response.status, data: data.items };
-  },
-
-  // 4. POST - Replace an existing photo
-  async replacePropertyPhoto(
     propertyPhotoId: number,
-    file: File,
-    remarks: string
+    _referenceTableIdGuid?: string,
+    remarks?: string,
+    photoTypeCode?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
-    const config = getAppConfig();
-    const baseUrl = config.api.baseUrl?.trim();
-    if (!baseUrl) return { success: false, statusCode: 500, error: "API base URL is not configured" };
+    try {
+      const uploadParams: DocumentUploadParams = {
+        departmentId: DEPARTMENT_ID.PTIS,
+        moduleId: MODULE_ID.PropertyPhoto,
+        bindingPurpose: remarks || "Photo",
+        documentType: photoTypeCode || String(photoTypeId),
+        isPrimaryDocument: true
+      };
 
-    const url = `${baseUrl.replace(/\/$/, '')}/property-photos/${propertyPhotoId}/replace`;
-    const formData = new FormData();
-    formData.append("File", file, file.name);
-    formData.append("Remarks", remarks || "");
+      uploadParams.referenceTableName = REFERENCE_TABLE.PropertyPhoto;
 
-    const headers = await getAuthHeaders();
-    const response = await serverFetch(url, { method: 'POST', headers, body: formData, cache: 'no-store' });
-    const text = await response.text();
-    let data;
-    try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
+      if (propertyPhotoId > 0 && propertyPhotoId !== 9998 && propertyPhotoId !== 9999) {
+        uploadParams.referenceTableId = propertyPhotoId;
+        uploadParams.referencePropertyName = "PropertyPhotoId";
+      } else {
+        uploadParams.referenceTableId = propertyId;
+        uploadParams.referencePropertyName = "PropertyId";
+      }
 
-    if (!response.ok) {
-      return { success: false, statusCode: response.status, error: data.message || data.error || `Replace photo failed with status ${response.status}` };
+      const uploadResponse = await uploadDocument(file, uploadParams);
+
+      if (!uploadResponse.documentGuid) {
+        throw new Error("Failed to retrieve document GUID from upload.");
+      }
+
+      // Fetch the updated photos for the property to retrieve the new PropertyPhotoId
+      const photosResponse = await this.getPhotosByProperty(propertyId);
+      if (!photosResponse.success || !photosResponse.data) {
+        throw new Error(photosResponse.error || "Failed to retrieve photos list to identify the new photo ID.");
+      }
+
+      const newPhoto = photosResponse.data.find(
+        (p) => p.documentGuid === uploadResponse.documentGuid || p.documentBindingId === uploadResponse.documentBindingId
+      );
+
+      if (!newPhoto) {
+        throw new Error("Uploaded photo not found in property photo records.");
+      }
+
+      return {
+        success: true,
+        data: {
+          propertyPhotoId: newPhoto.propertyPhotoId,
+          documentGuid: newPhoto.documentGuid || uploadResponse.documentGuid,
+          documentId: uploadResponse.documentId,
+          documentBindingId: newPhoto.documentBindingId || uploadResponse.documentBindingId || 0,
+          propertyId: newPhoto.propertyId,
+          photoTypeId: newPhoto.photoTypeId,
+          displayOrder: newPhoto.displayOrder,
+          remarks: newPhoto.remarks || remarks || "",
+          fileName: file.name,
+          fileSizeBytes: file.size,
+          storagePath: uploadResponse.storagePath ?? "",
+          viewUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/view`,
+          downloadUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/download`
+        }
+      };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
     }
-    return { success: true, statusCode: response.status, data: data.items };
   },
 
-  // 5. DELETE - Delete a photo
-  async deletePropertyPhoto(propertyPhotoId: number): Promise<ApiResponse<object>> {
-    const response = await apiClient.delete<BackendApiResponseWrapper<object>>(`/property-photos/${propertyPhotoId}`);
-    return response.success && response.data
-      ? { success: response.data.success, statusCode: response.statusCode, data: response.data.items, message: response.data.message || response.message }
-      : { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
+  // 4. POST - Replace an existing photo using the global document API
+  async replacePhotoViaGlobalApi(
+    file: File,
+    oldDocumentGuid: string,
+    propertyId: number,
+    _photoTypeId: number,
+    propertyPhotoId: number,
+    _referenceTableIdGuid?: string,
+    remarks?: string
+  ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
+    try {
+      const uploadParams: DocumentUploadParams = {
+        departmentId: DEPARTMENT_ID.PTIS,
+        moduleId: MODULE_ID.PropertyPhoto,
+        referenceTableName: REFERENCE_TABLE.PropertyPhoto,
+        referencePropertyName: "PropertyPhotoId",
+        referenceTableId: propertyPhotoId,
+        bindingPurpose: remarks || "Photo",
+        documentType: DOCUMENT_TYPE.Photo,
+        isPrimaryDocument: true
+      };
+
+      const uploadResponse = await uploadDocument(file, uploadParams);
+
+      if (!uploadResponse.documentGuid) {
+        throw new Error("Failed to retrieve document GUID from upload.");
+      }
+
+      if (oldDocumentGuid && oldDocumentGuid !== uploadResponse.documentGuid) {
+        // Best-effort cleanup of the replaced document.
+        await deleteDocument(oldDocumentGuid);
+      }
+
+      // Fetch the updated photos for the property to retrieve the new PropertyPhotoId
+      const photosResponse = await this.getPhotosByProperty(propertyId);
+      if (!photosResponse.success || !photosResponse.data) {
+        throw new Error(photosResponse.error || "Failed to retrieve photos list to identify the new photo ID.");
+      }
+
+      const newPhoto = photosResponse.data.find(
+        (p) => p.documentGuid === uploadResponse.documentGuid || p.documentBindingId === uploadResponse.documentBindingId
+      );
+
+      if (!newPhoto) {
+        throw new Error("Replaced photo not found in property photo records.");
+      }
+
+      return {
+        success: true,
+        data: {
+          propertyPhotoId: newPhoto.propertyPhotoId,
+          documentGuid: newPhoto.documentGuid || uploadResponse.documentGuid,
+          documentId: uploadResponse.documentId,
+          documentBindingId: newPhoto.documentBindingId || uploadResponse.documentBindingId || 0,
+          propertyId: newPhoto.propertyId,
+          photoTypeId: newPhoto.photoTypeId,
+          displayOrder: newPhoto.displayOrder,
+          remarks: newPhoto.remarks || remarks || "",
+          fileName: file.name,
+          fileSizeBytes: file.size,
+          storagePath: uploadResponse.storagePath ?? "",
+          viewUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/view`,
+          downloadUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/download`
+        }
+      };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
   },
 
   // 6. PUT - Update a photo type name (rename slot)

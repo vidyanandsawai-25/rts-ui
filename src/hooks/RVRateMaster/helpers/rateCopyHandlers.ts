@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
 import type { ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import { processRatesForCopy, buildZoneEditsFromRates, applyRatesToMatrix } from "./index";
 

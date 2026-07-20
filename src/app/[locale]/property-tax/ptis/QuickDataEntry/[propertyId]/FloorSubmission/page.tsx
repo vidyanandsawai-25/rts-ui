@@ -5,7 +5,7 @@ import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResp
 import { FloorData, RoomTypeResponse } from '@/types/room-details.types';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { normalizeObjectResponse, normalizeArrayResponse, normalizeWrappedResponse, } from '@/lib/utils/action-response-helpers';
-import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, getPlotAreaAction, } from './actions';
+import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, } from './actions';
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 
 // Force dynamic rendering — this page relies on per-request search params.
@@ -68,6 +68,7 @@ export default async function FloorSubmissionPage({
 
     // ── URL params ──────────────────────────────────────────────────────────
     const wardNo = asString(sp.wardNo);
+    const wardId = sp.wardId ? Number(asString(sp.wardId)) : undefined;
     const propertyNo = asString(sp.propertyNo);
     const partitionNo = asString(sp.partitionNo);
     const propertyIdSp = asString(sp.propertyId);   // from URL (may be pre-set)
@@ -126,7 +127,7 @@ export default async function FloorSubmissionPage({
         floorDetailRaw,
         initialFloorsRaw,
         propertyBasicDetailsRaw,
-        initialPlotAreaResult,
+        _initialPlotAreaResult,
     ] = await Promise.all([
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
@@ -137,7 +138,7 @@ export default async function FloorSubmissionPage({
         (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
         (knownPropertyId && !hasPropertyKeys) ? getFloorSubmissionsByOwnerAction(knownPropertyId) : Promise.resolve([]),
         knownPropertyId ? getPropertyBasicDetailsAction(knownPropertyId) : Promise.resolve(null),
-        (initialPropertyID && initialPropertyID !== 'new') ? getPlotAreaAction(initialPropertyID) : Promise.resolve(null),
+        (initialPropertyID && initialPropertyID !== 'new') ? Promise.resolve(null) : Promise.resolve(null),
     ]);
 
     /** 
@@ -251,10 +252,7 @@ export default async function FloorSubmissionPage({
     }
 
     // Resolve Plot Area data
-    let initialPlotArea = null;
-    if (initialPlotAreaResult && 'success' in initialPlotAreaResult && initialPlotAreaResult.success) {
-        initialPlotArea = initialPlotAreaResult.data;
-    }
+    const initialPlotArea = null;
 
     // ── Render ──────────────────────────────────────────────────────────────
     return (
@@ -273,6 +271,7 @@ export default async function FloorSubmissionPage({
                 subFloorData={subFloorData}
                 subTypeData={subTypeData}
                 wardNo={wardNo}
+                wardId={wardId && !isNaN(wardId) ? wardId : undefined}
                 propertyNo={propertyNo}
                 partitionNo={partitionNo}
                 initialPropertyData={initialPropertyData}

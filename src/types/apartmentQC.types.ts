@@ -85,6 +85,14 @@ export interface ApartmentQCDetail {
   oldUseType: string | null;
   /** Old construction type */
   oldConstructionType: string | null;
+  /** Old construction carpet area in sq ft */
+  oldConstructionCarpetAreaSqFt?: number | null;
+  /** Old construction carpet area in sq mtr */
+  oldConstructionCarpetAreaSqMtr?: number | null;
+  /** Old construction built up area in sq ft */
+  oldConstructionBuiltUpSqFt?: number | null;
+  /** Old construction built up area in sq mtr */
+  oldConstructionBuiltUpSqMtr?: number | null;
   /** Old CSN */
   oldCSN: string | null;
   /** Old rateable value */
@@ -288,6 +296,13 @@ export type FloorSubmissionRow = {
   subTypeOfUseId: string;
   noOfRooms: string;
   area: string;
+  taxable?: string;
+  subFloorId?: string;
+  renter?: string;
+  areaSqFt?: string;
+  areaSqMtr?: string;
+  buildupAreaSqFt?: string;
+  buildupAreaSqMtr?: string;
   rentMY: string;
   rateMY: string;
   monthlyRate?: number;

@@ -46,6 +46,7 @@ interface PtisMainScreenProps {
   capitalSection?: React.ReactNode;
   dualRateableSection?: React.ReactNode;
   dualCapitalSection?: React.ReactNode;
+  reassessmentSection?: React.ReactNode;
   hasAppliedRules?: boolean;
   appliedRules?: PropertyRuleLogItem[];
 }
@@ -65,6 +66,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   capitalSection,
   dualRateableSection,
   dualCapitalSection,
+  reassessmentSection,
   hasAppliedRules = false,
   appliedRules = [],
 }) => {
@@ -88,11 +90,16 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
       ? 'rateable'
       : requestedTab;
 
-  const activeMainTab =
-    searchParams.get('appartmentTab') || 'amenities';
+  const [activeMainTab, setActiveMainTab] = useState(searchParams.get('appartmentTab') || 'amenities');
+  const [activeSubTab, setActiveSubTab] = useState(searchParams.get('subTab') || 'rateable');
 
-  const activeSubTab =
-    searchParams.get('subTab') || 'rateable';
+  React.useEffect(() => {
+    const nextMain = searchParams.get('appartmentTab') || 'amenities';
+    const nextSub = searchParams.get('subTab') || 'rateable';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveMainTab((prev) => (prev === nextMain ? prev : nextMain));
+    setActiveSubTab((prev) => (prev === nextSub ? prev : nextSub));
+  }, [searchParams]);
 
   const ptisNav = useOptionalPtisNavigation();
   const isNavigating = ptisNav?.isPending ?? false;
@@ -116,23 +123,35 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     }
   };
 
-  const handleTabChange = (value: string | number) =>
-    updateParams({ valuationTab: value.toString() });
+  const handleTabChange = (value: string | number) => {
+    if (value.toString() === 'apartment') {
+      updateParams({ 
+        valuationTab: 'apartment',
+        appartmentTab: 'amenities',
+        subTab: 'rateable',
+        pageNumber: '1'
+      });
+      setActiveMainTab('amenities');
+      setActiveSubTab('rateable');
+    } else {
+      updateParams({ valuationTab: value.toString() });
+    }
+  };
 
   const updateApartmentParams = (
     appTab: string,
     subTab: string
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    setActiveMainTab(appTab);
+    setActiveSubTab(subTab);
 
+    const params = new URLSearchParams(searchParams.toString());
     params.set('valuationTab', 'apartment');
     params.set('appartmentTab', appTab);
     params.set('subTab', subTab);
     params.set('pageNumber', '1');
 
-    router.replace(`?${params.toString()}`, {
-      scroll: false
-    });
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   const handleApartmentMainTabChange = (v: string | number) =>
@@ -155,6 +174,11 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
       value: 'dual',
       label: t('tabs.dual'),
       activeGradient: 'from-orange-600 to-red-600',
+    },
+    {
+      value: 'reassessment',
+      label: t('tabs.reassessment'),
+      activeGradient: 'from-red-600 to-yellow-600',
     },
     ...(showApartmentTab
       ? [
@@ -279,6 +303,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   wardId={wardId?.toString() || ''}
                   propertyNo={propertyNo || ''}
                   partitionNo={partitionNo}
+                  activeMainTab={activeMainTab}
+                  activeSubTab={activeSubTab}
                 />
               )}
 
@@ -294,12 +320,14 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   capitalSection={dualCapitalSection}
                 />
               )}
+              {activeTab === 'reassessment' && reassessmentSection}
 
               {![
                 'rateable',
                 'capital',
                 'apartment',
-                'dual'
+                'dual',
+                'reassessment', 
               ].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[500px] text-gray-400 p-4">
                   <div className="p-1 rounded-full bg-slate-50 border border-slate-100 mb-4 text-4xl opacity-20">

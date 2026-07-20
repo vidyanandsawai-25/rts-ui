@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({
     replace: vi.fn(),
     refresh: vi.fn(),
   }),
-  usePathname: () => "/en/property-tax/rate-master/rvratemaster/EditDelete/bulk",
+  usePathname: () => "/en/property-tax/rvratemaster/EditDelete/bulk",
   useSearchParams: () => new URLSearchParams("zone=1&useGroup=1&year=1"),
 }));
 

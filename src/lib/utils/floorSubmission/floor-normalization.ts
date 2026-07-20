@@ -167,8 +167,20 @@ export function normalizeFloorData(
     const actualKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey);
     return actualKey ? obj[actualKey] : undefined;
   };
-  const l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
-  const w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
+  let l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
+  let w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
+
+  const isOpenPlotVal = raw.isOpenPlot === true || String(raw.selectedFloorType).toLowerCase() === 'openplot' || String(floorId) === '77';
+  if (isOpenPlotVal) {
+    const rooms = (raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as Record<string, unknown>[];
+    if (rooms && rooms.length > 0) {
+      const firstRoom = rooms[0];
+      const rL = getProp(firstRoom, 'lengthMtr') || getProp(firstRoom, 'length');
+      const rW = getProp(firstRoom, 'widthMtr') || getProp(firstRoom, 'width');
+      if (rL !== undefined && rL !== null) l = rL;
+      if (rW !== undefined && rW !== null) w = rW;
+    }
+  }
 
   // 3. Return a clean, normalized object
   return {

@@ -1,12 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Tabs } from '@/components/common/Tabs';
+import { Tabs } from '@/components/common';
 import { useUlbConfigurationForm } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationForm';
 import { useUlbConfigurationSave } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationSave';
 import { useDepartmentLicenses } from '@/hooks/configuration-settings/ulb-configuration/useDepartmentLicenses';
+import {
+  findInvalidEnabledDepartment,
+  getDepartmentLicencesToSave,
+} from '@/lib/api/configuration-settings/ulb-configuration/department-licence.validator';
 import type {
   ULBConfigurationModuleProps,
   UlbSectionKey,
@@ -28,6 +32,7 @@ export default function ULBConfigurationClient({
   initialUlbData,
   initialDeptData,
   initialLicenceData,
+  initialImagesData,
   fetchError,
   statusCode,
 }: ULBConfigurationModuleProps) {
@@ -35,40 +40,25 @@ export default function ULBConfigurationClient({
   const [activeTab, setActiveTab] = useState<UlbTabId>('ulb-info');
   const [ulbMasterId, setUlbMasterId] = useState<number | undefined>(initialUlbData?.id);
 
-  const form = useUlbConfigurationForm(initialUlbData);
-  const depts = useDepartmentLicenses(initialDeptData, initialLicenceData);
-  const { loadDepartmentsFromApi } = depts;
-
-  const deptServerKey = useMemo(
-    () =>
-      [
-        initialLicenceData.length,
-        ...initialLicenceData.map(
-          (l) => `${l.departmentLicenceDetailsId ?? 0}:${l.licenceEndDate ?? ''}`
-        ),
-      ].join('-'),
-    [initialLicenceData]
+  const form = useUlbConfigurationForm(
+    initialUlbData,
+    Array.isArray(initialLicenceData) && initialLicenceData.some((l) => l.isActive ?? l.isEnabled)
   );
-
-  // Load departments from Department Master API when the tab opens (no static fallback).
-  useEffect(() => {
-    if (activeTab !== 'department-license') return;
-    void loadDepartmentsFromApi(initialLicenceData);
-  }, [activeTab, deptServerKey, initialLicenceData, loadDepartmentsFromApi]);
+  const depts = useDepartmentLicenses(initialDeptData, initialLicenceData);
 
   const { save, isSaving } = useUlbConfigurationSave({
     formData: form.formData,
     ulbMasterId,
     onSaved: (ulb) => {
       setUlbMasterId(ulb.id);
-      form.syncFromUlbMaster(ulb);
+      form.syncFromUlbMaster(ulb, depts.departments.some((d) => d.enabled));
     },
   });
 
   const goTo = useCallback((next: UlbTabId) => setActiveTab(next), []);
 
   const handleSaveSection = useCallback(
-    async (section: UlbSectionKey) => {
+    (section: UlbSectionKey) => {
       if (section !== 'ulb-info' && !ulbMasterId && !form.validateSection('ulb-info')) {
         toast.error(t('messages.completeUlbInfoFirst'));
         setActiveTab('ulb-info');
@@ -81,12 +71,10 @@ export default function ULBConfigurationClient({
         return;
       }
 
-      const saved = await save(section);
-      if (!saved) return;
-
       form.markSectionComplete(section, true);
+      toast.success(t('messages.success'));
     },
-    [form, save, t, ulbMasterId]
+    [form, t, ulbMasterId]
   );
 
   const handleApplyMaster = useCallback(() => {
@@ -97,16 +85,26 @@ export default function ULBConfigurationClient({
     });
   }, [depts, form.formData.licenseDuration, form.formData.licenseEndDate, form.formData.licenseStartDate]);
 
-  const handleSaveDepartments = useCallback(async () => {
-    const saved = await depts.saveLicences();
-    if (!saved) return;
+  const handleSaveDepartments = useCallback(() => {
+    const toSave = getDepartmentLicencesToSave(depts.departments);
+    if (findInvalidEnabledDepartment(toSave)) {
+      toast.error(t('messages.validation'));
+      return;
+    }
+
     form.setDepartmentLicenseComplete(true);
-  }, [depts, form]);
+    toast.success(t('messages.success'));
+  }, [depts.departments, form, t]);
 
   const handleFinalSave = useCallback(async () => {
     if (!form.validateSection('ulb-info')) {
       toast.error(form.getSectionValidationError('ulb-info') ?? t('messages.validation'));
       setActiveTab('ulb-info');
+      return;
+    }
+    if (!form.validateSection('logo-images')) {
+      toast.error(form.getSectionValidationError('logo-images') ?? t('messages.validation'));
+      setActiveTab('logo-images');
       return;
     }
     if (!form.validateSection('project-license-info')) {
@@ -115,10 +113,17 @@ export default function ULBConfigurationClient({
       return;
     }
 
-    const savedUlb = await save();
+    const toSaveDepts = getDepartmentLicencesToSave(depts.departments);
+    if (findInvalidEnabledDepartment(toSaveDepts)) {
+      toast.error(t('messages.validation'));
+      setActiveTab('department-license');
+      return;
+    }
+
+    const savedUlb = await save(undefined, true);
     if (!savedUlb) return;
 
-    const savedDepts = await depts.saveLicences();
+    const savedDepts = await depts.saveLicences(true);
     if (!savedDepts) return;
 
     form.setDepartmentLicenseComplete(true);
@@ -181,6 +186,7 @@ export default function ULBConfigurationClient({
               onNext={() => goTo('project-license-info')}
               isSaving={isSaving}
               footerClassName={FOOTER_CLASS}
+              initialImages={initialImagesData}
             />
           </Tabs.TabPanel>
 

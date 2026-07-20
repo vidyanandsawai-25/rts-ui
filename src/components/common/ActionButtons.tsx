@@ -29,6 +29,9 @@ import {
   Lock,
   Unlock,
   Search,
+  CheckCircle,
+  Clock,
+  ArrowUpRight,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -181,10 +184,36 @@ export function SaveButton({
 
 export function CancelButton({
   label = "Cancel",
+  variant = "secondary",
   ...props
-}: LabeledActionButtonProps): React.ReactElement {
+}: Omit<ButtonProps, "icon"> & { label?: string }): React.ReactElement {
   return (
-    <Button variant="secondary" icon={X} {...props}>
+    <Button variant={variant} icon={X} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function OkButton({
+  label = "OK",
+  icon = CheckCircle,
+  variant = "success",
+  ...props
+}: Omit<ButtonProps, "icon"> & { label?: string; icon?: React.ElementType }): React.ReactElement {
+  return (
+    <Button variant={variant} icon={icon} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function RefreshButton({
+  label = "Refresh",
+  variant = "secondary",
+  ...props
+}: Omit<ButtonProps, "icon"> & { label?: string }): React.ReactElement {
+  return (
+    <Button variant={variant} icon={RefreshCw} {...props}>
       {label}
     </Button>
   );
@@ -265,10 +294,11 @@ export function DeleteLabelButton({
 
 export function PreviewButton({
   label = "Preview",
+  variant = "primary",
   ...props
-}: LabeledActionButtonProps): React.ReactElement {
+}: Omit<ButtonProps, "icon"> & { label?: string }): React.ReactElement {
   return (
-    <Button variant="primary" icon={Eye} {...props}>
+    <Button variant={variant} icon={Eye} {...props}>
       {label}
     </Button>
   );
@@ -280,6 +310,50 @@ export function ShowHistoryButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={History} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function RetrospectiveDetailsButton({
+  label = "Retrospective Details",
+  size = "md",
+  className = "",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button
+      variant="secondary"
+      icon={Clock}
+      size={size}
+      className={cn(
+        "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-indigo-200 hover:bg-indigo-100",
+        className
+      )}
+      {...props}
+    >
+      {label}
+    </Button>
+  );
+}
+
+export function Section129Button({
+  label = "Section 129",
+  size = "xs",
+  className = "",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button
+      variant="secondary"
+      icon={ArrowUpRight}
+      size={size}
+      className={cn(
+        "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+        className
+      )}
+      {...props}
+    >
       {label}
     </Button>
   );
@@ -476,7 +550,7 @@ export function ViewButton(
 ): React.ReactElement {
   return (
     <Button
-      variant="edit"
+      variant="secondary"
       icon={Eye}
       size="sm"
       aria-label={ariaLabel ?? "View"}

@@ -45,7 +45,7 @@ export default async function ConfigMasterPage({
     if (!categoriesRes.success) {
       fetchError = categoriesRes.error;
     } else {
-      categories = categoriesRes.data || [];
+      categories = (categoriesRes.data || []).filter(c => c.isActive);
     }
 
     const activeCategoryId = categoryId || categories[0]?.id || 'all';

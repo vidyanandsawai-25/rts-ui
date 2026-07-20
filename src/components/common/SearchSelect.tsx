@@ -48,6 +48,11 @@ export interface SearchSelectProps {
   onInputFocus?: () => void;
 
   /**
+   * Optional callback triggered when the search query changes (for remote suggestions).
+   */
+  onSearchChange?: (searchText: string) => void;
+
+  /**
    * Optional force display text. Overrides label search logic.
    * Useful when the selected label is not yet in the options list.
    */
@@ -104,10 +109,11 @@ export interface SearchSelectProps {
    * Optional validation error message.
    */
   error?: string;
-    /**
-   * Optional autoFocus prop to focus the input on mount.
-   */
+  /**
+ * Optional autoFocus prop to focus the input on mount.
+ */
   autoFocus?: boolean;
+  onBlur?: () => void;
 }
 
 /** Helper to normalize string for forgiving/flexible option matching. */
@@ -125,6 +131,7 @@ export function SearchSelect({
   className,
   disableSearch = false,
   onInputFocus,
+  onSearchChange,
   forceSearchText,
   isLoading = false,
   required = false,
@@ -140,6 +147,8 @@ export function SearchSelect({
   onEnter,
   autoFocus = false,
   menuPlacement,
+  onBlur,
+  strictMode = true,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -213,7 +222,7 @@ export function SearchSelect({
   useEffect(() => {
     if (isOpen && highlightedIndex >= 0 && listRef.current) {
       const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement;
-      if (highlightedElement) {
+      if (highlightedElement && typeof highlightedElement.scrollIntoView === 'function') {
         highlightedElement.scrollIntoView({
           block: 'nearest',
           inline: 'start',
@@ -227,39 +236,87 @@ export function SearchSelect({
   const filteredOptions = useMemo<SearchSelectOption[]>(() => {
     // If search is disabled, always show all options
     if (disableSearch) return validOptions;
-    if (!hasTyped) return validOptions;
+
+    if (!hasTyped) {
+      if (!value) return validOptions;
+      const idx = validOptions.findIndex((opt) => opt.value === value);
+      if (idx >= 0) {
+        const selectedOpt = validOptions[idx];
+        const rest = validOptions.filter((_, i) => i !== idx);
+        return [selectedOpt, ...rest];
+      }
+      return validOptions;
+    }
+
     const cleanSearch = normalizeSearchText(search);
-    return validOptions.filter((opt) =>
+
+    const matches = validOptions.filter((opt) =>
       normalizeSearchText(opt.label).includes(cleanSearch)
     );
-  }, [search, hasTyped, validOptions, disableSearch]);
+
+    // Sort: exact matches first, then starts-with, then substring matches
+    return [...matches].sort((a, b) => {
+      const normA = normalizeSearchText(a.label);
+      const normB = normalizeSearchText(b.label);
+
+      const exactA = normA === cleanSearch;
+      const exactB = normB === cleanSearch;
+      if (exactA && !exactB) return -1;
+      if (!exactA && exactB) return 1;
+
+      const startsA = normA.startsWith(cleanSearch);
+      const startsB = normB.startsWith(cleanSearch);
+      if (startsA && !startsB) return -1;
+      if (!startsA && startsB) return 1;
+
+      return 0;
+    });
+  }, [search, hasTyped, validOptions, disableSearch, value]);
+
+  const prevIsOpen = useRef(isOpen);
+  useEffect(() => {
+    if (isOpen && !prevIsOpen.current) {
+      const index = filteredOptions.findIndex((opt) => opt.value === value);
+      setHighlightedIndex(index >= 0 ? index : 0);
+    }
+    prevIsOpen.current = isOpen;
+  }, [isOpen, value, filteredOptions]);
 
   /* ---------------- Validate and clear on blur ---------------- */
 
   const handleBlur = useCallback((): void => {
-    // If a selection was just made, skip the blur clearing logic
-    if (didSelectRef.current) {
-      didSelectRef.current = false;
-      setIsOpen(false);
-      return;
-    }
-    setIsOpen(false);
-    if (!hasOptions) return;
-    const cleanSearch = normalizeSearchText(search);
-    const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
-    if (matched) {
-      // If user typed a match and blurred, commit it
-      if (hasTyped) {
-        onChange(fallbackName, matched.value);
-        setHasTyped(false);
+    try {
+      // If a selection was just made, skip the blur clearing logic
+      if (didSelectRef.current) {
+        didSelectRef.current = false;
+        setIsOpen(false);
+        return;
       }
-    } else {
-      // Restore previous selected value in the input if search did not match
-      setSearch('');
-      setHasTyped(false);
-      // Do NOT clear the value, just revert to previous selection
+      setIsOpen(false);
+      if (!hasOptions) return;
+      const cleanSearch = normalizeSearchText(search);
+      const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
+      if (matched) {
+        // If user typed a match and blurred, commit it
+        if (hasTyped) {
+          onChange(fallbackName, matched.value);
+          setHasTyped(false);
+        }
+      } else {
+        if (strictMode) {
+          // Restore previous selected value in the input if search did not match
+          setSearch('');
+          setHasTyped(false);
+        } else if (hasTyped) {
+          // If not strict mode and user typed, commit the raw search value!
+          onChange(fallbackName, search);
+          setHasTyped(false);
+        }
+      }
+    } finally {
+      onBlur?.();
     }
-  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped]);
+  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped, onBlur, strictMode]);
 
   /* ---------------- Select option ---------------- */
 
@@ -288,6 +345,7 @@ export function SearchSelect({
     setHasTyped(true);
     setIsOpen(true);
     setHighlightedIndex(-1);
+    onSearchChange?.(val);
   };
 
   /* ---------------- Keyboard navigation ---------------- */
@@ -327,6 +385,16 @@ export function SearchSelect({
             onEnter?.();
             return;
           }
+
+          if (!strictMode) {
+            didSelectRef.current = true;
+            setHasTyped(false);
+            setIsOpen(false);
+            setHighlightedIndex(-1);
+            onChange(fallbackName, search);
+            onEnter?.();
+            return;
+          }
         }
         break;
       case 'Escape':
@@ -341,7 +409,7 @@ export function SearchSelect({
   const t = useTranslations("common");
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
+    <div ref={wrapperRef} className={`relative w-full ${isOpen ? 'z-50' : ''}`}>
       {label && (
         <label
           htmlFor={fallbackId}
@@ -358,7 +426,7 @@ export function SearchSelect({
           type="text"
           name={fallbackName}
           value={displayValue}
-          autoFocus={autoFocus}   
+          autoFocus={autoFocus}
           placeholder={
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
@@ -384,6 +452,7 @@ export function SearchSelect({
             onInputFocus?.();
             if (!disabled) {
               setIsOpen(true);
+              onSearchChange?.(search);
             }
           }}
           onClick={(e) => {
@@ -462,16 +531,16 @@ export function SearchSelect({
                     relative flex items-center justify-between
                     px-3 py-2 text-sm cursor-pointer
                     transition-colors duration-100
-                    ${isHighlighted ? 'bg-blue-50' : ''}
-                    ${isSelected && !isHighlighted ? 'bg-slate-50' : ''}
-                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-50' : ''}
+                    ${isHighlighted ? 'bg-blue-600 text-white' : ''}
+                    ${isSelected && !isHighlighted ? 'bg-blue-50 text-blue-600' : ''}
+                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-100 text-slate-700' : ''}
                   `}
                 >
-                  <span className={`truncate ${isSelected ? 'font-medium text-blue-600' : 'text-slate-700'}`}>
+                  <span className={`truncate ${isSelected && !isHighlighted ? 'font-semibold text-blue-600' : isHighlighted ? 'text-white font-medium' : 'text-slate-700'}`}>
                     {opt.label}
                   </span>
                   {isSelected && (
-                    <Check className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                    <Check className={`h-4 w-4 flex-shrink-0 ml-2 ${isHighlighted ? 'text-white' : 'text-blue-600'}`} />
                   )}
                 </li>
               );

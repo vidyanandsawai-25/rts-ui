@@ -25,21 +25,26 @@
 // Generic Code Validation: Allow alphanumeric characters and underscore (A-Z, a-z, 0-9, _)
 // Must start and end with alphanumeric, underscore only allowed in between
 // Used across all modules (Construction, Tax Zone, etc.)
-export const CODE_REGEX = /^[A-Za-z0-9]+([A-Za-z0-9_]*[A-Za-z0-9]+)*$/;
+export const CODE_REGEX = /^[A-Za-z0-9](?:[A-Za-z0-9_]*[A-Za-z0-9])?$/;
 export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except alphanumeric and underscore
 
 /* ================= DESCRIPTION VALIDATION ================= */
 // Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
 // Special characters (&, -, /, etc.) must be in between other characters
 // Only single space allowed between characters, no consecutive spaces
-export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N}\/,.\-()&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
+export const DESCRIPTION_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s\/,.\-()&]*$/u;
 export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 
 /* ================= TEXT VALIDATION ================= */
 // Allow Unicode letters, marks, numbers, spaces, and basic punctuation including &
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu;
+export const ASSET_MASTER_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&()]/gu;
+export const ASSET_INVENTORY_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s]/gu;
+export const ASSET_INVENTORY_NAME_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s]*$/u;
+export const ASSET_MASTER_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s_-]/gu;
+export const ASSET_MASTER_NAME_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s_-]*$/u;
 // Validation for allowed characters, special chars in between, single space only, allows single char
-export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
+export const TEXT_ALLOWED = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N}\s,.\-\/&]*$/u;
 export const DISPLAY_NAME_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/]/gu;
 export const UNIT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/%]/gu;
 
@@ -59,11 +64,11 @@ export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
 
 /* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
- // Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
- // No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
- // Must start and end with an alphanumeric; a single separator is allowed between tokens.
-export const ALPHANUMERIC_WITH_SPACES_REGEX =/^[\p{L}\p{M}\p{N}.]+(?:[\s.][\p{L}\p{M}\p{N}.]+)*$/u;
-export const ALPHANUMERIC_WITH_SPACES_SANITIZE =/[^\p{L}\p{M}\p{N}.\s]/gu;
+// Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
+// No special characters (e.g., @, #, $, %, ^, &, *, (, )) are allowed (dots are allowed).
+// Must start and end with an alphanumeric; a single separator is allowed between tokens.
+export const ALPHANUMERIC_WITH_SPACES_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}\p{N}.][\p{L}\p{M}\p{N}.\s]*$/u;
+export const ALPHANUMERIC_WITH_SPACES_SANITIZE = /[^\p{L}\p{M}\p{N}.\s]/gu;
 
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
@@ -114,7 +119,8 @@ export const limitOldPropertyNo = (v: string) => {
   return result;
 };
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
-export const PINCODE_6_REGEX = /^[0-9]{6}$/;
+export const PINCODE_6_REGEX = /^[1-9][0-9]{5}$/;
+export const PINCODE_SANITIZE = /[^0-9]/g;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;
 export const YEAR_REGEX = /^[0-9०-९]{4}$/;
 // Positive integer (one or more digits, no decimal/sign). Generic — usable
@@ -143,3 +149,7 @@ export const isAllZeros = (value: string): boolean => {
   if (trimmed.length === 0) return false;
   return /^0+$/.test(trimmed);
 };
+
+// Apartment QC Basic Information form validation 
+export const OWNERNAME_REGEX =
+   /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;

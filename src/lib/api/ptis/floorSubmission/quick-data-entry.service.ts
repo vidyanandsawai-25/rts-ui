@@ -3,6 +3,32 @@ import { ApiError } from "@/lib/utils/api";
 import { createApiError } from "./error-helpers";
 import { type QuickDataEntryPayload } from '@/types/floor-details.types';
 
+export interface ApplyDataEntrySameAsPayload {
+    sourcePropertyId: number;
+    destinationPropertyIds: number[];
+    filterType: string;
+    type: number | string;
+    propertyTypeId?: number | string;
+}
+
+export interface ApplyDataEntrySameAsResponse {
+    success: boolean;
+    message: string;
+    items: {
+        sourcePropertyId: number;
+        processedDestinations: number;
+        skippedDestinations: number;
+        propertyDetailsCopied: number;
+        roomSubmissionsCopied: number;
+        roomMinusCopied: number;
+        typeUpdatedProperties: number;
+        buildingPlanTypeInserted: number;
+        warnings: string[];
+    };
+    errors: unknown;
+    correlationId: string | null;
+}
+
 /**
  * Fetch Property submission for quick data entry
  */
@@ -71,4 +97,26 @@ export async function deleteSubmission(id: string | number): Promise<void> {
     } catch (error) {
         throw error;
     }
+}
+
+/**
+ * Apply details from source property to destination properties using /DataEntrySameAs POST endpoint.
+ * Uses apiClient so the X-CSRF-Token, Authorization, and Cookie headers are set correctly.
+ */
+export async function applyDataEntrySameAs(payload: ApplyDataEntrySameAsPayload): Promise<ApplyDataEntrySameAsResponse['items']> {
+    const response = await apiClient.post<ApplyDataEntrySameAsResponse>('/DataEntrySameAs', payload);
+
+    if (!response.success) {
+        throw new ApiError(
+            response.statusCode ?? 500,
+            response.error || 'Failed to apply details',
+            'Apply details failed'
+        );
+    }
+
+    if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Failed to apply details');
+    }
+
+    return response.data.items;
 }

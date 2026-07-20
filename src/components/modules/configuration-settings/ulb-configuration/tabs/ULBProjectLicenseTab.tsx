@@ -1,8 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
-import { SaveButton } from '@/components/common/ActionButtons';
+import { Button, SaveButton } from '@/components/common';
 import type { ULBProjectLicenseTabProps } from '@/types/ulbconfig-master.types';
 import { ULBProjectInfoSection } from '../parts/ULBProjectInfoSection';
 import { ULBLicenseSection } from '../parts/ULBLicenseSection';

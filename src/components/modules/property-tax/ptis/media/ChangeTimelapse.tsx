@@ -19,6 +19,9 @@ interface ChangeTimelapseProps {
   initialLng?: number;
   initialWaybackReleases?: WaybackRelease[];
   propertyId?: number;
+  wardNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
 export function ChangeTimelapse({
@@ -26,6 +29,9 @@ export function ChangeTimelapse({
   initialLng,
   initialWaybackReleases,
   propertyId,
+  wardNo = '',
+  propertyNo = '',
+  partitionNo = '',
 }: ChangeTimelapseProps): React.ReactElement {
   const t = useTranslations('ptis');
   const {
@@ -131,6 +137,9 @@ export function ChangeTimelapse({
         lng={lng}
         loading={loading}
         propertyId={propertyId}
+        wardNo={wardNo}
+        propertyNo={propertyNo}
+        partitionNo={partitionNo}
       />
 
       <TimelineTrack
@@ -141,7 +150,7 @@ export function ChangeTimelapse({
 
       {/* Map component */}
       <div className="flex-1 relative min-h-[300px] flex flex-col">
-        {waybackReleases.length > 0 ? (
+        {!(loading && waybackReleases.length === 0) ? (
           <DynamicTimelapseMap
             lat={lat}
             lng={lng}

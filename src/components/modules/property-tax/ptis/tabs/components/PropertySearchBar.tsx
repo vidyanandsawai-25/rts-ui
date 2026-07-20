@@ -49,6 +49,8 @@ export interface PropertySearchBarProps {
   ownerName: string;
   propertyDescription: string;
   tabHeaderInfo?: TabHeaderInfoData | null;
+  onPropertySearchChange?: (search: string) => void;
+  isSearchingProperties?: boolean;
 }
 
 export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
@@ -75,6 +77,8 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   ownerName,
   propertyDescription,
   tabHeaderInfo,
+  onPropertySearchChange,
+  isSearchingProperties = false,
 }) => {
   const t = useTranslations('ptis');
 
@@ -189,6 +193,25 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   );
   const partitionSelectValue = partitionValueMap.has(partitionOptionKey) ? partitionOptionKey : '';
 
+  // Format the Old No string, showing only '-' if there is no data
+  const oldNoDisplay = useMemo(() => {
+    if (!tabHeaderInfo) return '-';
+
+    const ward = tabHeaderInfo.oldWardNo?.trim() || '';
+    const prop = tabHeaderInfo.oldPropertyNo?.trim() || '';
+    const part = tabHeaderInfo.oldPartitionNo?.trim() || '';
+
+    const hasWard = ward && ward !== '-';
+    const hasProp = prop && prop !== '-';
+    const hasPart = part && part !== '-';
+
+    if (!hasWard && !hasProp && !hasPart) {
+      return '-';
+    }
+
+    return `${ward || '-'}|${prop || '-'}${part ? `|${part}` : ''}`;
+  }, [tabHeaderInfo]);
+
   return (
     <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-2 py-1">
       <form
@@ -243,9 +266,11 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 sanitizeInput={sanitizePropertyNo}
                 className="h-7 text-xs lg:text-sm"
                 disabled={!wardId}
-                isLoading={false}
+                isLoading={isSearchingProperties}
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
+                strictMode={false}
+                onSearchChange={onPropertySearchChange}
               />
               <Input type="hidden" name="propertyNo" value={propertyNo} />
             </div>
@@ -272,6 +297,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 isLoading={false}
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
+                strictMode={false}
               />
               <Input type="hidden" name="partitionNo" value={partitionNo} />
             </div>
@@ -369,7 +395,6 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
           </div>
         ) : (
           <div className="flex flex-col gap-0.5 min-w-0 flex-grow justify-center">
-            {/* First Row */}
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
               {/* Old No */}
               <div className="flex items-center gap-1 min-w-0">
@@ -377,15 +402,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                   {t('fields.oldNo')}:
                 </span>
                 <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[150px] lg:max-w-none">
-                  {tabHeaderInfo
-                    ? `${tabHeaderInfo.oldWardNo || '-'}|${tabHeaderInfo.oldPropertyNo || '-'}${
-                        tabHeaderInfo.oldPartitionNo !== null &&
-                        tabHeaderInfo.oldPartitionNo !== undefined &&
-                        tabHeaderInfo.oldPartitionNo !== ''
-                          ? `|${tabHeaderInfo.oldPartitionNo}`
-                          : ''
-                      }`
-                    : '-'}
+                  {oldNoDisplay}
                 </span>
               </div>
 
@@ -427,10 +444,10 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                   {tabHeaderInfo?.description || propertyDescription || '-'}
                 </span>
               </div>
-            </div>
 
-            {/* Second Row */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+              {/* Divider */}
+              <div className="hidden sm:block h-4 w-px bg-slate-400" />
+
               {/* Property Holder */}
               <div className="flex items-center gap-1 min-w-0">
                 <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">

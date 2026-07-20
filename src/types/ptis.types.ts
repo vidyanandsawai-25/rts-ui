@@ -11,7 +11,7 @@ export const PTIS_TABS = [
 export type PtisTabId = (typeof PTIS_TABS)[number];
 
 // Separate constant/type for valuation tabs
-export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'apartment'] as const;
+export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'reassessment', 'apartment'] as const;
 export type ValuationTabId = (typeof VALUATION_TABS)[number];
 
 /** Maximum number of properties to fetch for a single ward to prevent OOM / backend overload. */
@@ -319,6 +319,8 @@ export interface PropertyBasicDetailsApiResponse {
   plotAreaFtWidth: number;
   plotAreaMtrLength: number;
   plotAreaMtrWidth: number;
+  plotAreaSqFeet?: number | null;
+  plotAreaSqMeter?: number | null;
   wingId: number;
   wingName: string;
   ownerName?: string;
@@ -432,6 +434,7 @@ export interface TabHeaderInfoData {
   ownerName: string | null;
   address: string | null;
   typeOfUse: string | null;
+  isCombined?: boolean;
 }
 
 export interface PtisInitialData {
@@ -447,9 +450,63 @@ export interface PtisInitialData {
   showOldFloorInfo?: boolean;
   oldTaxesData?: OldTaxesData | null;
   showOldTaxInfo?: boolean;
+  showOldMapInfo?: boolean;
   discountDetails?: DiscountData;
   tabHeaderInfo?: TabHeaderInfoData | null;
+  mappedPropertiesData?: MappedPropertyItem[];
 }
+
+export interface MappedPropertyItem {
+  propertyId: number;
+  mappingCategory: string;
+  oldWardNo: string | null;
+  oldPropertyNo: string | null;
+  oldPartitionNo: string | null;
+  oldEgovNo: string | null;
+  oldPropertyTypeId: number | null;
+  oldALV: number | null;
+  oldRV: number | null;
+  oldGeneralTax: number | null;
+  oldTotalTax: number | null;
+  oldZoneNo: string | null;
+  oldPlotNo: string | null;
+  oldCSN: string | null;
+  oldPlotArea: number | null;
+  oldConstructionYear: string | null;
+  oldAssessmentYear: string | null;
+  oldFloor: string | null;
+  oldConstructionTypeOfUseId: string | null;
+  oldUseType: string | null;
+  oldConstructionArea: number | null;
+  oldOwnerName: string | null;
+  oldOccupierName: string | null;
+  oldAddress: string | null;
+  oldOwnerNameEnglish: string | null;
+  oldOccupierNameEnglish: string | null;
+  oldAddressEnglish: string | null;
+  noOfOldToilets: number | null;
+  oldTotalRooms: number | null;
+  oldSocietyName: string | null;
+  oldEmailId: string | null;
+  oldParkingAreaSqFt: number | null;
+  oldParkingAreaSqMtr: number | null;
+  oldAssessmentDate: string | null;
+  oldFlatOrShopNumber: string | null;
+  oldWing: string | null;
+  oldMobileNo: string | null;
+  mappedNewBuildingNo: string | null;
+}
+
+export interface MappedPropertiesApiResponse {
+  items: MappedPropertyItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
 export * from './ptis-core.types';
 export * from './ptis-defaults.types';
 export * from './ptis-search.types';

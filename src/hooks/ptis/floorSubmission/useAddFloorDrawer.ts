@@ -243,19 +243,11 @@ export const useAddFloorDrawer = ({
     return 0;
   }, [editingFloorForm.areaSqM, editingFloorForm.builtupAreaSqM, selectedFloorType]);
 
-  const totalUtilizedOpenSpaceAreaSqM = React.useMemo(() => {
-    return totalOpenSpaceAreaSqM;
-  }, [totalOpenSpaceAreaSqM]);
-
   // Remaining Area = Total Plot Area - Utilized Area - Open Space Area
   const remainingAvailablePlotAreaSqM = React.useMemo(() => {
     if (!isDataLoaded) return 0;
     return plotAreaSqM - totalConstructionAreaSqM - totalOpenSpaceAreaSqM;
   }, [isDataLoaded, plotAreaSqM, totalConstructionAreaSqM, totalOpenSpaceAreaSqM]);
-
-  const availableRemainingOpenSpaceAreaSqM = React.useMemo(() => {
-    return remainingAvailablePlotAreaSqM;
-  }, [remainingAvailablePlotAreaSqM]);
 
   const enteredFloorAreaSqM = React.useMemo(() => {
     if (selectedFloorType === 'Construction') {
@@ -265,15 +257,15 @@ export const useAddFloorDrawer = ({
   }, [editingFloorForm.builtupAreaSqM, editingFloorForm.areaSqM, selectedFloorType]);
 
   const isOpenSpaceAreaExceeded = React.useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
+    return false; // remainingAvailablePlotAreaSqM < 0;
   }, [remainingAvailablePlotAreaSqM]);
 
   const isFloorAreaExceeded = React.useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
+    return false; // remainingAvailablePlotAreaSqM < 0;
   }, [remainingAvailablePlotAreaSqM]);
 
   const isAreaExceeded = React.useMemo(() => {
-    return remainingAvailablePlotAreaSqM < 0;
+    return false; // remainingAvailablePlotAreaSqM < 0;
   }, [remainingAvailablePlotAreaSqM]);
 
   // Auto-map construction type "op" (open plot) for Open Space / Open Plot
@@ -384,7 +376,10 @@ Please enter an area less than or equal to the available area.`;
       if (!isUtility) {
         const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
         const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
-          ? editingFloorForm.roomWiseSubmissionDetails.length
+          ? editingFloorForm.roomWiseSubmissionDetails.filter((r: any) => {
+              const area = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0);
+              return area > 0;
+            }).length
           : 0;
 
         if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {
@@ -415,6 +410,7 @@ Please enter an area less than or equal to the available area.`;
         isAddingNew: !isEditMode,
         existingFloorId: isEditMode ? floorId : undefined,
         selectedFloorType: selectedFloorType,
+        isPlotCategory: isPlotCategory,
       });
 
       const response = isEditMode
@@ -493,8 +489,6 @@ Please enter an area less than or equal to the available area.`;
     enteredFloorAreaSqM,
     alreadyUtilizedOpenSpaceAreaSqM,
     enteredOpenSpaceAreaSqM,
-    totalUtilizedOpenSpaceAreaSqM,
     totalConstructionAreaSqM,
-    availableRemainingOpenSpaceAreaSqM,
   };
 };

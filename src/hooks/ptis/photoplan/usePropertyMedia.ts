@@ -10,6 +10,8 @@ import {
 } from '@/components/modules/property-tax/ptis/media/mediaData';
 import { propertyMediaCache, areSlotsEqual, arePhotosEqual, evictOldestCacheEntry } from './usePropertyPhotosQuery';
 import { useImageHoverPreview } from './useImageHoverPreview';
+import { type WaybackRelease, WAYBACK_STATIC_TILE_URL } from '@/lib/api/wayback.service';
+import { latLngToTile } from '@/lib/utils/coordinate-utils';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -17,6 +19,7 @@ export interface UsePropertyMediaProps {
   propertyId?: number;
   initialLatitude?: number;
   initialLongitude?: number;
+  initialWaybackReleases?: WaybackRelease[];
   onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   onPhotoSlotsChange?: (slots: PropertyPhotoTypeWithStatusDto[]) => void;
 }
@@ -29,6 +32,7 @@ export function usePropertyMedia({
   propertyId,
   initialLatitude,
   initialLongitude,
+  initialWaybackReleases = [],
   onPhotosChange,
   onPhotoSlotsChange,
 }: UsePropertyMediaProps) {
@@ -135,7 +139,16 @@ export function usePropertyMedia({
 
   const gisPhoto = useMemo(() => {
     const photo = gisCategory?.images?.[0];
-    const srcVal = hasCoords ? '/gis_static.png' : '';
+    let srcVal = '';
+    if (hasCoords) {
+      if (initialWaybackReleases && initialWaybackReleases.length > 0) {
+        const latestRelease = initialWaybackReleases[initialWaybackReleases.length - 1];
+        const tile = latLngToTile(initialLatitude!, initialLongitude!, 17);
+        srcVal = WAYBACK_STATIC_TILE_URL(latestRelease.releaseId, tile.x, tile.y, tile.z);
+      } else {
+        srcVal = '/gis_static.png';
+      }
+    }
     return {
       src: srcVal,
       fullSrc: srcVal,
@@ -145,9 +158,11 @@ export function usePropertyMedia({
       photoTypeCode: photo?.photoTypeCode || gisCategory?.photoTypeCode || 'GIS',
       propertyPhotoId: photo?.propertyPhotoId,
     };
-  }, [gisCategory, t, hasCoords]);
+  }, [gisCategory, t, hasCoords, initialLatitude, initialLongitude, initialWaybackReleases]);
 
-  const photoPlanPhoto = photoPlanCategory?.images[0];
+  const photoPlanPhoto = photoPlanCategory?.images && photoPlanCategory.images.length > 0
+    ? photoPlanCategory.images[photoPlanCategory.images.length - 1]
+    : undefined;
   const propertyPhoto = propertyPhotoCategory?.images[0];
 
   const remainingImages = useMemo(() => {

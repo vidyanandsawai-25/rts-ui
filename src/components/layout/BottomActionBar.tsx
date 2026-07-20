@@ -7,6 +7,7 @@ import { FooterPagination } from './FooterPagination';
 import { UtilityActions, RightActions } from './FooterActionButtons';
 import { useFooterActions } from '@/hooks/layout/useFooterActions';
 import type { PropertyListItem } from '@/types/ptis.types';
+import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
 import { useOptionalPtisNavigation } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
 import { useFooterActionHandler } from '@/hooks/layout/useFooterActionHandler';
 
@@ -23,6 +24,9 @@ interface BottomActionBarProps {
   properties?: PropertyListItem[];
   categoryId?: number;
   societyDetailId?: number;
+  isCombined?: boolean;
+  workflowStages?: PropertyWorkflowStage[];
+  currentWorkflowStageId?: number;
 }
 
 export function BottomActionBar({
@@ -38,6 +42,9 @@ export function BottomActionBar({
   properties = [],
   categoryId,
   societyDetailId,
+  isCombined = false,
+  workflowStages = [],
+  currentWorkflowStageId,
 }: BottomActionBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,7 +62,7 @@ export function BottomActionBar({
 
   // Check if properties array is present
   const hasProperties = properties.length > 0;
-  
+
   // Resolve pagination state either from our optimized context or fallback parameters
   let resolvedCurrentPage = currentPage;
   let resolvedTotalPages = totalPages;
@@ -73,7 +80,7 @@ export function BottomActionBar({
     const activeIndex = activePropertyId && hasProperties
       ? properties.findIndex((p) => p.propertyId === activePropertyId)
       : -1;
-    
+
     resolvedCurrentPage = hasProperties
       ? (activeIndex !== -1 ? activeIndex + 1 : 0)
       : currentPage;
@@ -88,6 +95,7 @@ export function BottomActionBar({
           newParams.set('propertyNo', targetProperty.propertyNo);
           const rawPart = targetProperty.partitionNo;
           newParams.set('partitionNo', rawPart && rawPart.trim() !== '' && rawPart !== '0' ? rawPart : '0');
+          // Reset table pageNumber as we are switching properties
           newParams.delete('pageNumber');
           newParams.delete('valuationTab');
         }
@@ -129,8 +137,9 @@ export function BottomActionBar({
                 actions={groupedActions.utility}
                 onActionClick={handleActionClick}
                 isLoading={isLoading}
-                isActionPending={isActionPending}
-                clickedCommand={clickedCommand}
+                isCombined={isCombined}
+                workflowStages={workflowStages}
+                currentWorkflowStageId={currentWorkflowStageId}
               />
               {centerContent}
             </div>

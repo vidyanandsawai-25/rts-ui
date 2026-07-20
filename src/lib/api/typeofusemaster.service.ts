@@ -22,6 +22,15 @@ export {
   deleteUseTypeApi,
 } from "./typeofuse.service";
  
+// Re-export all category service functions
+export {
+  getUseCategoriesPagedServer,
+  getTypeOfUseCategoryById,
+  createTypeOfUseCategoryApi,
+  updateTypeOfUseCategoryApi,
+  deleteTypeOfUseCategoryApi,
+} from "./typeofusecategory.service";
+
 // Re-export all subtype service functions
 export {
   getSubTypesPagedServer,

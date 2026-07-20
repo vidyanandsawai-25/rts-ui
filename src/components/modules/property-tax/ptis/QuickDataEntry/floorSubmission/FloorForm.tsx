@@ -209,13 +209,36 @@ const FloorForm: React.FC<FloorFormProps & {
 
           <div className="mt-4 flex justify-end md:col-span-3">
             <Button
+              id="floor-save-btn"
               onClick={onSave}
               isLoading={isOperationLoading}
               disabled={isOperationLoading || !isFormValid || isAreaExceeded}
               className="px-6 h-9 text-xs font-bold shadow-md rounded-lg transition-all duration-300 flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:bg-blue-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:pointer-events-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                  e.preventDefault();
+                  const taxableInput = document.getElementById('floor-is-taxable');
+                  if (taxableInput) {
+                    taxableInput.focus();
+                  }
+                }
+              }}
             >
               {isAddingNewFloor ? t('floor.add') : t('floor.updateFloor')}
             </Button>
+            {(isOperationLoading || !isFormValid || isAreaExceeded) && (
+              <span
+                tabIndex={0}
+                onFocus={(e) => {
+                  e.preventDefault();
+                  const lengthEl = document.getElementById('plot-length');
+                  if (lengthEl) {
+                    lengthEl.focus();
+                  }
+                }}
+                className="sr-only"
+              />
+            )}
           </div>
         </div>
       </div>

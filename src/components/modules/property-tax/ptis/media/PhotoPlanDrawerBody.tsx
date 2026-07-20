@@ -22,6 +22,10 @@ interface PhotoPlanDrawerBodyProps {
   initialLatitude?: number;
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
+  onDrawPlan?: (e: React.MouseEvent) => void;
+  wardNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
 export function PhotoPlanDrawerBody({
@@ -34,6 +38,10 @@ export function PhotoPlanDrawerBody({
   initialLatitude,
   initialLongitude,
   initialWaybackReleases,
+  onDrawPlan,
+  wardNo = '',
+  propertyNo = '',
+  partitionNo = '',
 }: PhotoPlanDrawerBodyProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -63,6 +71,10 @@ export function PhotoPlanDrawerBody({
   const imagesMaxOrder = activeCategory?.images?.length
     ? Math.max(...activeCategory.images.map((img) => img.displayOrder ?? 0))
     : 0;
+
+  const isPhotoPlanCategory =
+    activeCategory?.photoTypeCode?.toUpperCase() === 'PHOTO_PLAN' ||
+    activeCategory?.photoTypeName?.toLowerCase() === 'photo plan';
 
   const isSplit = viewMode === 'viewer';
 
@@ -111,6 +123,9 @@ export function PhotoPlanDrawerBody({
             initialLongitude={initialLongitude}
             initialWaybackReleases={initialWaybackReleases}
             propertyId={propertyId}
+            wardNo={wardNo}
+            propertyNo={propertyNo}
+            partitionNo={partitionNo}
           />
         ) : isSplit ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -126,6 +141,7 @@ export function PhotoPlanDrawerBody({
                 onNext={handleNext} onPrev={handlePrev}
                 onDownload={handleDownload} onUpload={handleAddPhoto}
                 onReplace={handleReplacePhoto} onDelete={handleDeletePhoto}
+                onDrawPlan={onDrawPlan} isPhotoPlanCategory={isPhotoPlanCategory}
               />
             </div>
             <div className="h-[15%] flex flex-col overflow-hidden bg-slate-50">
@@ -147,6 +163,8 @@ export function PhotoPlanDrawerBody({
                 error={fetchError} onRetry={loadPhotos}
                 photoCount={activeCategory?.photoCount}
                 hideHeader isCarouselMode={true} className="p-2 px-3"
+                onDrawPlan={onDrawPlan}
+                isPhotoPlanCategory={isPhotoPlanCategory}
               />
             </div>
           </div>
@@ -169,6 +187,8 @@ export function PhotoPlanDrawerBody({
             onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos}
             error={fetchError} onRetry={loadPhotos}
             photoCount={activeCategory?.photoCount}
+            onDrawPlan={onDrawPlan}
+            isPhotoPlanCategory={isPhotoPlanCategory}
           />
         )}
       </div>

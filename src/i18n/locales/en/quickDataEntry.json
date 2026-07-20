@@ -5,6 +5,10 @@
         "clear": "Clear",
         "actions": "Actions"
     },
+    "search": {
+        "loading": "Loading...",
+        "noOptionsAvailable": "No options available"
+    },
     "roomSubmission": {
         "quickDataEntry": "Property Quick Data Entry",
         "title": "ROOM WISE SUBMISSION IN SQUARE METER",
@@ -625,6 +629,10 @@
         "confirmReplaceDesc": "Are you sure you want to replace the existing document with a new one?",
         "confirmReplaceOk": "Yes, Replace",
         "confirmReplaceCancel": "No, Cancel",
+        "confirmDeleteTitle": "Delete Document",
+        "confirmDeleteDesc": "Are you sure you want to delete the attached document? This action cannot be undone.",
+        "confirmDeleteOk": "Yes, Delete",
+        "confirmDeleteCancel": "No, Cancel",
         "downloadDocument": "Download Document",
         "replaceDocument": "Replace File",
         "deleteDocument": "Delete Document",
@@ -635,8 +643,13 @@
         "uploadSuccess": "Document uploaded successfully!",
         "uploadInvalidFile": "Invalid file type or size. Only PDF, PNG, and JPG under 5MB are allowed.",
         "uploadError": "Failed to upload document.",
+        "fileRemoved": "File removed from attachment",
         "uploading": "Uploading...",
         "documentUploaded": "Document Uploaded",
+        "savingFirst": "Saving details first to initialize certificate...",
+        "saveFirst": "Please save building permission details first.",
+        "deleteSuccess": "File deleted successfully!",
+        "deleteError": "Failed to delete document.",
         "saveSuccess": "Building permissions saved successfully!",
         "saveError": "Error saving building permissions!",
         "incompleteCertificates": "The following documents have incomplete required fields",
@@ -701,6 +714,7 @@
         "errors": {
             "cannotEnableWithoutDate": "Cannot enable document without an issue date.",
             "cannotEnableWithoutNumber": "Cannot enable document without a document number.",
+            "enterDetailsFirst": "Please enter Document Number and Document Date before uploading.",
             "futureDate": "Issue date cannot be in the future.",
             "numberExceedsLimit": "Document number cannot exceed 100 characters.",
             "notFound": "Document not found.",
@@ -710,6 +724,7 @@
         }
     },
     "floor": {
+        "separatelyUsedPlotArea": "Separately Used Plot Area",
         "construction": "Construction",
         "openPlot": "Open Space",
         "propertyCategory": "Property Category",
@@ -730,11 +745,62 @@
         "unitMeters": "Meters (M)",
         "areaColon": "Area:",
         "applyArea": "Add Area",
+        "updateArea": "Update Area",
         "totalPlotArea": "Total Plot Area",
         "length": "Length",
         "width": "Width",
         "select": "Select",
         "allFloors": "All Floors",
+        "dataEntry": "Data Entry Same As",
+        "dataEntryTabs": {
+            "typeWise": "Type-wise",
+            "propertyWise": "Property-wise",
+            "parking": "Parking",
+            "close": "Close",
+            "show": "Show"
+        },
+        "selectProperties": {
+            "title": "SELECT PROPERTIES",
+            "wardNo": "Ward No.",
+            "propertyNo": "Property No.",
+            "partitionNo": "Partition No.",
+            "type": "Type",
+            "carpetArea": "Carpet Area (Sq.Ft / Sq.M)",
+            "wing": "Wing",
+            "flatNo": "Flat No.",
+            "selected": "{count} selected",
+            "clearSelection": "Clear Selection",
+            "noProperties": "No properties found for this ward.",
+            "changeType": "Change Type",
+            "selectType": "Filter by Type",
+            "allTypes": "All Types",
+            "applyTypesButton": "Apply Types",
+
+            "loading": "Loading properties...",
+            "selectAll": "Select all properties",
+            "selectProperty": "Select property {propertyNo}",
+            "search": "Search",
+            "applyButton": "Apply Details",
+            "applyPropertyButton": "Apply Property",
+            "applyParkingButton": "Apply Parking",
+            "applyTypeSubmission": "Apply Submission",
+            "applying": "Applying...",
+            "applySuccess": "Details applied successfully.",
+            "property": "Property",
+            "currentType": "Current Type",
+            "typeWiseInstruction": "Please select properties from the list below and apply the selected partition's type to these selected properties.",
+            "typeClassificationNoteTitle": "Note: Property Type Classification",
+            "typeClassificationNote": "* Type is used to indicate properties with the same area/plan.",
+            "sourcePropertyNotFound": "Source property {partitionNo} not found.",
+            "selectDestinationProperty": "Please select at least one destination property.",
+            "invalidPropertyType": "Invalid property type. Please select a valid type from the dropdown.",
+            "sourcePropertySubmissionWarning": "Selected property type is different than source property type, Do you want to proceed?",
+            "warningTitle": "Warning",
+            "noDestinationProcessed": "No destination property was processed.",
+            "noDataCopied": "No data was copied. Source: {source}, type: {type}, processed: {processed}.",
+            "applyFailed": "Failed to apply details.",
+            "unknownError": "Unknown error occurred."
+        },
         "addFloor": "Add Floor",
         "addPlot": "Add Plot",
         "addSpace": "Add Space",
@@ -895,6 +961,9 @@
         "add": "Add",
         "noFloorsYet": "No floors added yet. Click \"Add Floor\" to begin.",
         "noFloorsFound": "No floors found for this property.",
+        "noFloorSubmissionFound": "No floor submission found for this property. Please add at least one floor to enable Type Wise, Property Wise, and Parking Apply.",
+        "floorSubmissionRequired": "Floor submission is required. Please add at least one floor.",
+        "addFloorSubmissionToEnable": "Add at least one floor submission to enable this option.",
         "errors": {
             "invalidFloorIdForProperty": "Invalid floorId: This floor does not belong to the current property.",
             "fetchFloorData": "Failed to fetch floor data",
@@ -922,7 +991,11 @@
             "lengthRequired": "Length is required and must be greater than zero",
             "widthRequired": "Width is required and must be greater than zero",
             "unnecessaryLength": "Length should be empty for non-open plot submissions",
-            "unnecessaryWidth": "Width should be empty for non-open plot submissions"
+            "unnecessaryWidth": "Width should be empty for non-open plot submissions",
+            "invalidDimensions": "Length and Width must be greater than 0.",
+            "areaUpdatedSuccess": "Area updated successfully.",
+            "areaAddedSuccess": "Area added successfully.",
+            "failedToSaveArea": "Failed to save area."
         },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",
@@ -1053,6 +1126,7 @@
         "confirmDeleteOk": "Yes, Delete",
         "confirmDeleteCancel": "No, Cancel",
         "uploadInvalidFile": "Invalid file type or size. Only PDF, PNG, and JPG under 5MB are allowed.",
+        "fileRemoved": "File removed from attachment",
         "saveSuccess": "Discount details saved successfully!",
         "saveError": "Error saving discount details",
         "remark": "Remark",
@@ -1077,6 +1151,10 @@
         "bannerNavigationHint": "Click an attribute tag to navigate directly to its fields.",
         "bannerTagAriaLabel": "View incomplete fields for {name}",
         "bannerTagTooltip": "Click to view incomplete fields for {name}",
+        "unsavedChangesTitle": "Unsaved Changes",
+        "unsavedChangesDesc": "You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?",
+        "continueButton": "Continue Editing",
+        "discardConfirmButton": "Discard Changes",
         "socialAttributes": {
             "HAS_FAMILY_PLANNING": "Family Planning Benefit",
             "IS_GREEN_PROPERTY": "Green Property",
@@ -1494,6 +1572,12 @@
             "forbidden": "Access to the requested document is forbidden.",
             "general": "An unexpected error occurred while retrieving the document. Please try again.",
             "uploadGeneral": "An error occurred while uploading the document. Please try again."
+        }
+    },
+    "floorSubmission": {
+        "validation": {
+            "requiredBeforeApply": "Floor submission is required. Please add at least one floor.",
+            "emptyMessage": "Floor submission is required. Please add at least one floor."
         }
     }
 }

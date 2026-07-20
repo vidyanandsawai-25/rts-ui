@@ -132,33 +132,75 @@ export const ptisSearchService = {
     data?: PropertyListItem[];
     error?: string;
   }> {
-    const response = await fetchWithCertSupport<PagedResult<Record<string, unknown>>>(
-      `/Property?WardId=${wardId}&PageSize=-1&PageNumber=1`
-    );
+    let allItems: Record<string, unknown>[] = [];
+    let pageNumber = 1;
+    let requestedPageSize = 1000;
+    let hasNext = true;
 
-    if (!response.success || !response.data?.items) {
-      return {
-        success: false,
-        error: getErrorFormattedMessage(
-          response.error,
-          'Failed to fetch properties for the selected ward'
-        ),
-      };
+    while (hasNext) {
+      const url = `/Property?WardId=${wardId}&PageSize=${requestedPageSize}&PageNumber=${pageNumber}`;
+      const response = await fetchWithCertSupport<PagedResult<Record<string, unknown>>>(url);
+
+      if (!response.success || !response.data?.items) {
+        if (pageNumber === 1) {
+          return {
+            success: false,
+            error: getErrorFormattedMessage(
+              response.error,
+              'Failed to fetch properties for the selected ward'
+            ),
+          };
+        }
+        break;
+      }
+
+      const items = response.data.items as Record<string, unknown>[];
+      allItems = allItems.concat(items);
+
+      const actualPageSize = response.data.pageSize || items.length;
+
+      if (actualPageSize > 0 && actualPageSize < requestedPageSize) {
+        requestedPageSize = actualPageSize;
+      }
+
+      const totalCount = response.data.totalCount ?? 0;
+      hasNext =
+        response.data.hasNext === true || (items.length > 0 && allItems.length < totalCount);
+
+      if (requestedPageSize > 0) {
+        pageNumber = Math.floor(allItems.length / requestedPageSize) + 1;
+      } else {
+        pageNumber++;
+      }
+
+      if (pageNumber > 200 || items.length === 0) {
+        break;
+      }
     }
+
+    const finalData = allItems
+      .filter(
+        (p) =>
+          p.isActive !== false &&
+          p.propertyNo !== null &&
+          p.propertyNo !== undefined &&
+          String(p.propertyNo).trim() !== '' &&
+          String(p.propertyNo).toLowerCase() !== 'null' &&
+          String(p.propertyNo).toLowerCase() !== 'undefined'
+      )
+      .map((p) => ({
+        propertyId: (p.propertyId ?? p.id) as number,
+        propertyNo: (p.propertyNo as string) || '',
+        partitionNo: (p.partitionNo as string) || '',
+        upicId: (p.upicId as string) || '',
+        ownerName: (p.ownerName as string) || (p.ownerNameEnglish as string) || '',
+        address: (p.address as string) || '',
+        displayProperty: (p.displayProperty as string) || (p.propertyNo as string) || '',
+      }));
 
     return {
       success: true,
-      data: (response.data.items as Record<string, unknown>[])
-        .filter((p) => p.isActive !== false)
-        .map((p) => ({
-          propertyId: (p.propertyId ?? p.id) as number,
-          propertyNo: (p.propertyNo as string) || '',
-          partitionNo: (p.partitionNo as string) || '',
-          upicId: (p.upicId as string) || '',
-          ownerName: (p.ownerName as string) || (p.ownerNameEnglish as string) || '',
-          address: (p.address as string) || '',
-          displayProperty: (p.displayProperty as string) || (p.propertyNo as string) || '',
-        })),
+      data: finalData,
     };
   },
 

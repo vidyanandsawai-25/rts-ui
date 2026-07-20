@@ -92,6 +92,8 @@ export interface SearchResult {
   citySurveyNo: string;
   plotNo: string;
   wingFlatNo: string;
+  wing?: string;
+  flatNo?: string;
   propertyCount: number;
   childUnitCount?: number;
   category: string;
@@ -207,8 +209,8 @@ export interface PropertySearchFormProps {
   onSearch: (criteria: SearchCriteria, tab: SearchTab) => void;
   onReset: () => void;
   onTabChange: (tab: SearchTab) => void;
-  onZoneChange?: (zoneId: number) => void;
-  onWardChange?: (wardId: number) => void;
+  onZoneChange?: (zoneId: number, currentCriteria?: SearchCriteria) => void;
+  onWardChange?: (wardId: number, currentCriteria?: SearchCriteria) => void;
   disabled?: boolean;
   /** Disables only Search/Reset while a URL navigation is in progress. */
   searchPending?: boolean;
@@ -324,8 +326,8 @@ export interface UsePropertySearchFormProps {
   selectedStatus?: PropertyStatus | null;
   onSearch: (criteria: SearchCriteria, tab: SearchTab) => void;
   onReset: () => void;
-  onZoneChange?: (zoneId: number) => void;
-  onWardChange?: (wardId: number) => void;
+  onZoneChange?: (zoneId: number, currentCriteria?: SearchCriteria) => void;
+  onWardChange?: (wardId: number, currentCriteria?: SearchCriteria) => void;
   validationT: (key: SearchValidationKey) => string;
 }
 

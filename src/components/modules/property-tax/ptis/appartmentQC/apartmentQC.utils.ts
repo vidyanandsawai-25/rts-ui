@@ -38,6 +38,10 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
     return items.map((item) => ({
       ...item,
       oldPropertyNo: item.oldPropertyNo,
+      oldConstructionCarpetAreaSqFt: item.oldConstructionCarpetAreaSqFt,
+      oldConstructionCarpetAreaSqMtr: item.oldConstructionCarpetAreaSqMtr,
+      oldConstructionBuiltUpSqFt: item.oldConstructionBuiltUpSqFt,
+      oldConstructionBuiltUpSqMtr: item.oldConstructionBuiltUpSqMtr,
       flatOrShopNo: safe(item.flatOrShopNo),
       flatOrShopName: safe(item.flatOrShopName),
       ownerName: safe(item.ownerName),
@@ -54,7 +58,6 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
       carpetASqMtr: safe(item.carpetASqMtr),
       builtupASqFt: safe(item.builtupASqFt),
       builtupASqMtr: safe(item.builtupASqMtr),
-      oldConstArea: safe(item.oldConstructionArea),
       oldRV: safe(item.oldRV),
       oldTotalTax: safe(item.oldTotalTax),
       rateableValue: safe(item.rateableValue),
@@ -71,6 +74,10 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
 
   return items.map((item) => ({
     ...item,
+    oldConstructionCarpetAreaSqFt: item.oldConstructionCarpetAreaSqFt,
+    oldConstructionCarpetAreaSqMtr: item.oldConstructionCarpetAreaSqMtr,
+    oldConstructionBuiltUpSqFt: item.oldConstructionBuiltUpSqFt,
+    oldConstructionBuiltUpSqMtr: item.oldConstructionBuiltUpSqMtr,
     propertyNo: item.propertyNo || '-',
     floor: item.floor || '-',
     assessmentYear: item.assessmentYear || '-',
@@ -78,7 +85,6 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
     typeOfUse: safe(item.typeOfUse),
     carpetArea: `${item.carpetASqFt || 0} / ${item.carpetASqMtr || 0}`,
     builtupArea: `${item.builtupASqFt || 0} / ${item.builtupASqMtr || 0}`,
-    oldConstArea: item.oldConstructionArea || '-',
     oldRV: item.oldRV || '-',
     newRV: item.newTaxTotalRV || '-',
     cv: item.newTaxTotalCV || '-',
@@ -125,7 +131,6 @@ export const groupApartmentData = <T extends Record<string, unknown>>(
     newRow.bhk = safe(item.bhk);
     newRow.carpetArea = formatAreaPair(item.carpetASqFt, item.carpetASqMtr);
     newRow.builtupArea = formatAreaPair(item.builtupASqFt, item.builtupASqMtr);
-    newRow.oldConstArea = safe(item.constructionArea ?? item.newConstructionArea);
     newRow.typeOfUse = safe(item.typeOfUse);
     newRow.constructionType = safe(item.constructionType);
     newRow.rateableValue = safe(item.rateableValue ?? item.newTaxTotalRV);
@@ -162,11 +167,10 @@ export const groupApartmentData = <T extends Record<string, unknown>>(
       oldRow.ownerName = '-';
       oldRow.occupierName = '-';
       oldRow.bhk = '-';
-      oldRow.carpetArea = '-';
-      oldRow.builtupArea = '-';
+      oldRow.carpetArea = formatAreaPair(item.oldConstructionCarpetAreaSqFt, item.oldConstructionCarpetAreaSqMtr);
+      oldRow.builtupArea = formatAreaPair(item.oldConstructionBuiltUpSqFt, item.oldConstructionBuiltUpSqMtr);
       oldRow.typeOfUse = safe(item.oldUseType);
       oldRow.constructionType = safe(item.oldConstructionType);
-      oldRow.oldConstArea = safe(item.oldConstructionArea);
       oldRow.rateableValue = safe(item.oldRV);
       oldRow.oldRV = safe(item.oldRV);
       oldRow.capitalValue = '-';
@@ -186,10 +190,10 @@ export const groupApartmentData = <T extends Record<string, unknown>>(
       oldRow.toiletCount = '-';
       oldRow.mobileNo = '-';
       oldRow.emailId = '-';
-      oldRow.carpetASqFt = '-';
-      oldRow.carpetASqMtr = '-';
-      oldRow.builtupASqFt = '-';
-      oldRow.builtupASqMtr = '-';
+      oldRow.carpetASqFt = safe(item.oldConstructionCarpetAreaSqFt);
+      oldRow.carpetASqMtr = safe(item.oldConstructionCarpetAreaSqMtr);
+      oldRow.builtupASqFt = safe(item.oldConstructionBuiltUpSqFt);
+      oldRow.builtupASqMtr = safe(item.oldConstructionBuiltUpSqMtr);
 
       groups.push({
         srNo: startIdx + i + 1,

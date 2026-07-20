@@ -86,8 +86,8 @@ describe('PhotoPlanViewer Component', () => {
     const { rerender } = render(<PhotoPlanViewer {...defaultProps} images={[]} />);
     
     expect(screen.getByText('media.noImageUploaded')).toBeInTheDocument();
-    const uploadZone = screen.getByText('Click to upload Front Elevation');
-    fireEvent.click(uploadZone);
+    const uploadBtn = screen.getAllByRole('button', { name: 'media.uploadImage' })[0];
+    fireEvent.click(uploadBtn!);
     expect(defaultProps.onUpload).toHaveBeenCalled();
 
     // With isAdding={true}, upload click should not be triggered, and spinner/uploading text shown

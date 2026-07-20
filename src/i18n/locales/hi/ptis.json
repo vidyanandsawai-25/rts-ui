@@ -38,6 +38,11 @@
     "changeDetection": "परिवर्तन का पता लगाना",
     "changeDetectionComingSoon": "परिवर्तन का पता लगाने की जानकारी जल्द ही आ रही है।",
     "photoPlan": "फोटो प्लान",
+    "drawPlan": "ड्रॉ प्लान",
+    "drawingToolPropertyIdRequired": "प्रॉपर्टी आईडी आवश्यक है।",
+    "preparingDrawingTool": "ड्राइंग टूल तैयार किया जा रहा है...",
+    "redirectingDrawingTool": "ड्राइंग टूल पर रीडायरेक्ट किया जा रहा है...",
+    "launchUrlNotFound": "लॉन्च यूआरएल नहीं मिला।",
     "showPhotoPlan": "फोटो प्लान दिखाएं",
     "hidePhotoPlan": "फोटो प्लान छुपाएं",
     "propertyPhoto": "संपत्ति फोटो",
@@ -140,7 +145,6 @@
     "imageOf": "{total} में से {current}",
     "fullView": "{title} - पूर्ण दृश्य",
     "photoFile": "फोटो फ़ाइल",
-    "backToGrid": "ग्रिड पर वापस जाएं",
     "retry": "पुनः प्रयास करें",
     "uploadInstructions": "अपलोड निर्देश",
     "allowedFormats": "अनुमत प्रारूप: JPEG, JPG, PNG",
@@ -201,6 +205,7 @@
     "rateable": "कर निर्धार्य मूल्य",
     "capital": "पूंजीगत मूल्य",
     "dual": "दोहरी पद्धति",
+    "reassessment": "पुनर्मूल्यांकन",
     "apartment": "अपार्टमेंट"
   },
   "apartmentTabs": {
@@ -258,7 +263,7 @@
     }
   },
   "fields": {
-    "localeSuffix": "(स्थानीय)",
+    "localeSuffix": "(क्षेत्रीय)",
     "upicId": "यूपीआईसी आईडी",
     "propertyHolder": "संपत्ति धारक",
     "assessmentStatus": "करनिर्धारण स्थिति",
@@ -266,6 +271,7 @@
     "division": "प्रभाग",
     "plotNo": "प्लॉट नं",
     "plotArea": "प्लॉट क्षेत्रफल",
+    "plotAreaWithUnit": "प्लॉट क्षेत्रफल (ft/mtr)",
     "wardNo": "वार्ड नं",
     "blockNo": "ब्लॉक नं",
     "propertyNo": "संपत्ति नं",
@@ -393,7 +399,15 @@
     "taxTotal": "कुल कर",
     "interest": "ब्याज",
     "netTotal": "कुल देय",
-    "noTaxDetails": "कोई कर विवरण उपलब्ध नहीं है"
+    "noTaxDetails": "कोई कर विवरण उपलब्ध नहीं है",
+    "noMapDetails": "कोई मानचित्र विवरण उपलब्ध नहीं है",
+    "latitude": "अक्षांश",
+    "longitude": "रेखांश",
+    "mappingCategory": "मानचित्रण श्रेणी",
+    "oldPropPartNo": "पुराना संपत्ति क्र.-अनुभाग क्र.",
+    "oldWardPropPartNo": "पुराना वार्ड-संपत्ति-अनुभाग नं",
+    "oldPlotAreaSqMtr": "पुराना भूखंड क्षेत्रफल (वर्ग मीटर)",
+    "oldConstAreaSqMtr": "पुराना निर्माण क्षेत्रफल (वर्ग मीटर)"
   },
   "taxes": {
     "generalTax": "सामान्य कर",
@@ -439,7 +453,9 @@
     "showFloorDetails": "मंजिल का विवरण दिखाएं",
     "hideFloorDetails": "मंजिल का विवरण छुपाएं",
     "showOldTax": "पुराना कर दिखाएं",
-    "hideOldTax": "पुराना कर छुपाएं"
+    "hideOldTax": "पुराना कर छुपाएं",
+    "showMapDetails": "मानचित्र विवरण दिखाएं",
+    "hideMapDetails": "मानचित्र विवरण छुपाएं"
   },
   "loading": {
     "message": "संपत्ति विवरण लोड हो रहा है",
@@ -688,6 +704,8 @@
     "invalidPropertyData": "अवैध संपत्ति डेटा पाया गया। कृपया संपत्ति के उपयोग के विवरण की जाँच करें।",
     "typeOfUseGroupNotFound": "संपत्ति के लिए उपयोग समूह कॉन्फ़िगरेशन का प्रकार नहीं मिला।",
     "propertyNotSearched": "कृपया संयोजन करने से पहले पहले एक संपत्ति खोजें।",
+    "propertyNotSearchedCommonUpdate": "कृपया सामान्य विवरण अपडेट करने से पहले पहले एक संपत्ति खोजें।",
+    "propertyIdMissing": "संपत्ति गायब है। कृपया पहले एक संपत्ति खोजें और चुनें।",
     "selectPropertyFirst": "कृपया पहले एक संपत्ति चुनें।",
     "networkError": {
       "title": "सर्वर से कनेक्ट करने में असमर्थ",
@@ -710,6 +728,7 @@
     "networkError": "सर्वर से कनेक्ट नहीं हो सका। कृपया अपना इंटरनेट कनेक्शन जांचें।",
     "generic": "आपके अनुरोध को संसाधित करते समय कुछ गलत हो गया।",
     "propertyNotSearched": "कृपया संयोजन करने से पहले पहले एक संपत्ति खोजें।",
+    "propertyNotSearchedCommonUpdate": "कृपया सामान्य विवरण अपडेट करने से पहले पहले एक संपत्ति खोजें।",
     "noValuationData": "चुनी गई पद्धति के लिए कोई मूल्यांकन डेटा उपलब्ध नहीं है।",
     "ratesNotFound": "चुने गए मूल्यांकन वर्ष के लिए दरें नहीं मिलीं। कृपया दर मास्टर कॉन्फ़िगर करें।",
     "invalidAssessmentYear": "एक या अधिक मंजिल अभिलेखों के लिए मूल्यांकन वर्ष अमान्य या गायब है।",
@@ -769,5 +788,15 @@
     "description": "इस संपत्ति के लिए पूंजीगत मूल्य कर लोड नहीं किए गए हैं। मांग पर पूंजीगत मूल्य प्राप्त करने और गणना करने के लिए नीचे क्लिक करें।",
     "button": "पूंजीगत मूल्य की गणना करें",
     "calculating": "गणना हो रही है..."
-  }
+  },
+  "propertyTracking": "संपत्ति ट्रैकिंग",
+  "unknownOwner": "अज्ञात मालिक",
+  "completed": "पूर्ण",
+  "progress": "प्रगति",
+  "current": "वर्तमान",
+  "allCompleted": "सभी पूर्ण",
+  "failedToLoadTracking": "ट्रैकिंग लोड करने में विफल",
+  "tryAgain": "फिर से प्रयास करें",
+  "noTrackingData": "कोई ट्रैकिंग डेटा नहीं",
+  "trackingNotAvailable": "इस संपत्ति के लिए ट्रैकिंग जानकारी अभी उपलब्ध नहीं है।"
 }

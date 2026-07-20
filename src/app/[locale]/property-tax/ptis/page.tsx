@@ -18,6 +18,7 @@ import { fetchPtisPageData } from './ptis-fetch.service';
 import { PtisNavigationProvider } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
 import { getWorkflowStagesAction, getCurrentWorkflowDetailAction } from './workflowStageActions';
 import { PtisInitialData } from '@/types/ptis.types';
+import ReassessmentPage from './reassesment/page';
 import { PtisValuationSections } from './PtisValuationSections';
 import { buildFooterActions } from './buildFooterActions';
 
@@ -62,9 +63,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     kycDetails, societyDetails, buildingPermission, oldDetails, oldFloorTableData,
     oldTaxesData, discountDetails, apartmentData, rateableResult, capitalResult,
     dualSectionData, initialPhotoSlots, initialPhotos, showFloorParam,
-    showOldTaxParam, showDetailsParam, rateableTaxDetails, capitalTaxDetails,
+    showOldTaxParam, showMapDetailsParam, showDetailsParam, rateableTaxDetails, capitalTaxDetails,
     rateableTaxError, capitalTaxError, activeTab, hasAppliedRules,
     appliedRulesList, latitude, longitude, waybackReleases, tabHeaderInfo,
+    mappedPropertiesData,
   } = pageData;
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
   const valuationTab = ptisParams.tab;
@@ -81,7 +83,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     kycDetails, societyDetails, buildingPermission, wardOptions,
     propertyOptions, rawPropertyData, oldDetails, oldFloorTableData,
     showOldFloorInfo: showFloorParam, oldTaxesData,
-    showOldTaxInfo: showOldTaxParam, discountDetails, tabHeaderInfo,
+    showOldTaxInfo: showOldTaxParam, showOldMapInfo: showMapDetailsParam, discountDetails, tabHeaderInfo,
+    mappedPropertiesData,
   };
   const footerActions = buildFooterActions();
   const valuationSections = PtisValuationSections({
@@ -152,15 +155,28 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               capitalSection={valuationSections.capitalSection}
               dualRateableSection={valuationSections.dualRateableSection}
               dualCapitalSection={valuationSections.dualCapitalSection}
+              reassessmentSection={
+                <ReassessmentPage 
+                  params={params}
+                  wardId={resolvedWardId} 
+                  propertyNo={propertyNo} 
+                  partitionNo={partitionNo} 
+                />
+              }
             />
           </div>
         </PtisLayoutWrapper>
         <BottomActionBar
           actions={footerActions}
           properties={rawPropertyData}
+          workflowStages={workflowStages}
+          currentWorkflowStageId={
+            currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined
+          }
           leftContent={<PtisBackButton />}
           rightContent={
             <PtisFooterDropdowns
+              key="footer-dropdowns"
               workflowStages={workflowStages}
               propertyId={resolvedPropertyId}
               currentWorkflowStageId={
@@ -172,6 +188,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}
           societyDetailId={societyDetails.societyDetailId}
+          isCombined={!!tabHeaderInfo?.isCombined}
         />
       </div>
     </PtisNavigationProvider>

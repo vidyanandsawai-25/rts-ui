@@ -27,6 +27,8 @@ interface FloorTableProps {
   isAddingNewFloor: boolean;
   setIsAddingNewFloor: (val: boolean) => void;
   handleAddFloor: () => void;
+  handleOpenDataEntrySameAs: () => void;
+  viewOnly?: boolean;
   updateUrlParams: (params: Record<string, string | null>) => void;
   handleDeleteFloor: (floor: FloorData) => void;
   startTransition: (fn: () => void) => void;
@@ -40,6 +42,7 @@ interface FloorTableProps {
   setEditingFloorForm: (val: FloorData) => void;
   selectedFloorType?: 'Construction' | 'OpenPlot';
   isPlotCategory?: boolean;
+  partitionNo?: string;
 }
 
 const FloorTable: React.FC<FloorTableProps> = ({
@@ -53,6 +56,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
   isAddingNewFloor,
   setIsAddingNewFloor,
   handleAddFloor,
+  handleOpenDataEntrySameAs,
+  viewOnly = false,
   updateUrlParams,
   handleDeleteFloor,
   startTransition,
@@ -64,7 +69,13 @@ const FloorTable: React.FC<FloorTableProps> = ({
   subTypeData,
   setEditingFloorForm,
   isPlotCategory = false,
+  partitionNo,
 }) => {
+  const isDataEntryDisabled = React.useMemo(() => {
+    const norm = String(partitionNo ?? '').trim();
+    return !norm || norm === '0' || norm === '-';
+  }, [partitionNo]);
+
   const columns = useFloorTableColumns({
     t,
     floorLookup,
@@ -106,21 +117,23 @@ const FloorTable: React.FC<FloorTableProps> = ({
     }));
 
     // Append standard Action column at the end
-    baseCols.push({
-      key: 'actions',
-      label: t('floor.actions'),
-      sortable: false,
-      render: (row: FloorData) => {
-        return (
-          <div className="flex justify-center items-center h-full min-h-[28px]">
-            {deleteCellRenderer(row)}
-          </div>
-        );
-      },
-    });
+    if (!viewOnly) {
+      baseCols.push({
+        key: 'actions',
+        label: t('floor.actions'),
+        sortable: false,
+        render: (row: FloorData) => {
+          return (
+            <div className="flex justify-center items-center h-full min-h-[28px]">
+              {deleteCellRenderer(row)}
+            </div>
+          );
+        },
+      });
+    }
 
     return baseCols;
-  }, [columns, t, deleteCellRenderer]);
+  }, [columns, t, deleteCellRenderer, viewOnly]);
 
   /**
    * Handle row click to edit a floor
@@ -128,6 +141,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
    */
   const handleFloorRowClick = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      if (viewOnly) return;
+
       const target = e.target as HTMLElement;
       const tr = target.closest('tbody tr');
       if (!tr) return;
@@ -191,6 +206,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
       setSelectedFloor,
       setIsAddingNewFloor,
       toggleRowExpansion,
+      viewOnly,
     ]
   );
 
@@ -210,15 +226,27 @@ const FloorTable: React.FC<FloorTableProps> = ({
             {filteredFloors.length}
           </span>
         </h3>
-        <div className="flex items-center gap-2">
-          <SearchInput
-            value={floorSearch}
-            onChange={setFloorSearch}
-            placeholder={t('floor.searchFloors')}
-            className="w-32 md:w-36 mb-0 h-7 scale-90"
-          />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {!viewOnly && (
+            <SearchInput
+              value={floorSearch}
+              onChange={setFloorSearch}
+              placeholder={t('floor.searchFloors')}
+              className="w-32 md:w-36 mb-0 h-7 scale-90"
+            />
+          )}
 
-          {!isPlotCategory && (
+          {!viewOnly && (
+            <AddButton
+              label={t('floor.dataEntry')}
+              size="sm"
+              className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
+              onClick={handleOpenDataEntrySameAs}
+              disabled={isDataEntryDisabled}
+            />
+          )}
+
+          {!viewOnly && !isPlotCategory && (
             <AddButton
               label={selectedFloorType === 'OpenPlot' ? (t('floor.addSpace') || 'Add Space') : (t('floor.addFloor') || 'Add Floor')}
               size="sm"
@@ -239,13 +267,16 @@ const FloorTable: React.FC<FloorTableProps> = ({
           getExpandHref={(row) => `#floor-${row.id}`}
           renderExpanded={renderExpandedRooms}
           tableClassName="w-full min-w-[1200px]"
-          emptyMessage={t('floor.noFloorsFound')}
+          emptyMessage={viewOnly ? t('floorSubmission.validation.emptyMessage') : t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}
-          containerClassName="border border-blue-200 shadow-md rounded-xl max-h-[200px] overflow-auto"
+          containerClassName="border border-blue-200 shadow-md rounded-xl"
+          heightRows={4}
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) =>
-            `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
+            viewOnly
+              ? 'cursor-default border-l-4 border-l-transparent'
+              : `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
           }
         />
       </div>

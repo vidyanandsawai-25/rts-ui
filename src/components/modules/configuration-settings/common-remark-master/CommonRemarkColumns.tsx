@@ -63,7 +63,7 @@ export function getCommonRemarkColumns(
     {
       key: "remarkType",
       label: t("table.columns.remarkType"),
-      width: "20%",
+      width: "15%",
       render: (value, row) => {
         const type = String(value);
         const colorClass = getBadgeColorClass(type, row?.remarkTypeId ? Number(row.remarkTypeId) : undefined);
@@ -77,9 +77,9 @@ export function getCommonRemarkColumns(
     {
       key: "remark",
       label: t("table.columns.remark"),
-      width: "45%",
+      width: "50%",
       render: (value) => (
-        <span className="text-gray-800 font-medium line-clamp-2" title={String(value)}>
+        <span className="block text-gray-800 font-medium line-clamp-2 break-words" title={String(value)}>
           {String(value)}
         </span>
       ),
@@ -87,13 +87,13 @@ export function getCommonRemarkColumns(
     {
       key: "status",
       label: t("table.columns.status"),
-      width: "15%",
+      width: "10%",
       isStatus: true,
     },
     {
       key: "createdDate",
       label: t("table.columns.createdDate"),
-      width: "20%",
+      width: "15%",
       render: (value) => (
         <span className="text-gray-500 text-sm">
           {value ? formatDate(String(value)) : "-"}

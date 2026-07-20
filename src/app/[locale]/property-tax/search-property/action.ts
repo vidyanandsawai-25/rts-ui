@@ -254,38 +254,82 @@ export async function filterPropertiesAction(
     !!searchCriteria.propertyNoTo &&
     searchCriteria.propertyNoFrom !== searchCriteria.propertyNoTo;
 
+  const isKycNameSearch =
+    isSearchActive &&
+    activeTab === "kyc" &&
+    !!searchCriteria.occupierName?.trim();
+
+  const useLocalPagination = isRangeSearch || isKycNameSearch;
+
   const payload = buildPropertySearchPayload(
     selectedStatus,
     searchCriteria,
     isSearchActive,
     activeTab,
-    isRangeSearch ? undefined : pageNumber,
-    isRangeSearch ? -1 : pageSize
+    useLocalPagination ? undefined : pageNumber,
+    useLocalPagination ? -1 : pageSize
   );
 
   try {
-    const result = await searchProperties(payload);
-    const normalizedResults = result.items ?? [];
+    let sortedResults: SearchResult[] = [];
+    let totalCount = 0;
 
-    const shouldEnforcePropertyNoRange =
-      isSearchActive && activeTab === "quick-search";
+    if (isKycNameSearch) {
+      const nameQuery = searchCriteria.occupierName.trim();
+      const ownerPayload = {
+        ...payload,
+        holderName: nameQuery,
+        occupierName: undefined,
+      };
+      const occupierPayload = {
+        ...payload,
+        holderName: undefined,
+        occupierName: nameQuery,
+      };
 
-    const filteredResults = shouldEnforcePropertyNoRange
-      ? filterByPropertyNumberRange(normalizedResults, searchCriteria)
-      : normalizedResults;
+      const [ownerResult, occupierResult] = await Promise.all([
+        searchProperties(ownerPayload),
+        searchProperties(occupierPayload),
+      ]);
 
-    const sortedResults = [...filteredResults].sort((a, b) =>
-      comparePropertyNo(a.propertyNo, b.propertyNo)
-    );
+      const combined = [...(ownerResult.items ?? []), ...(occupierResult.items ?? [])];
+      const seen = new Set<number>();
+      const unique: SearchResult[] = [];
+      for (const item of combined) {
+        if (!seen.has(item.propertyId)) {
+          seen.add(item.propertyId);
+          unique.push(item);
+        }
+      }
 
-    if (isRangeSearch) {
-      const totalCount = sortedResults.length;
-      const start = (pageNumber - 1) * pageSize;
-      const slicedResults = sortedResults.slice(start, start + pageSize);
-      return { results: slicedResults, totalCount, error: null };
+      sortedResults = [...unique].sort((a, b) =>
+        comparePropertyNo(a.propertyNo, b.propertyNo)
+      );
+      totalCount = sortedResults.length;
+    } else {
+      const result = await searchProperties(payload);
+      const normalizedResults = result.items ?? [];
+
+      const shouldEnforcePropertyNoRange =
+        isSearchActive && activeTab === "quick-search";
+
+      const filteredResults = shouldEnforcePropertyNoRange
+        ? filterByPropertyNumberRange(normalizedResults, searchCriteria)
+        : normalizedResults;
+
+      sortedResults = [...filteredResults].sort((a, b) =>
+        comparePropertyNo(a.propertyNo, b.propertyNo)
+      );
+      totalCount = result.totalCount;
     }
 
-    return { results: sortedResults, totalCount: result.totalCount, error: null };
+    if (useLocalPagination) {
+      const start = (pageNumber - 1) * pageSize;
+      const slicedResults = sortedResults.slice(start, start + pageSize);
+      return { results: slicedResults, totalCount: isRangeSearch ? sortedResults.length : totalCount, error: null };
+    }
+
+    return { results: sortedResults, totalCount, error: null };
   } catch (err) {
     const message =
       err instanceof Error

@@ -20,7 +20,6 @@ export const COLUMN_ORDER = {
     'assessmentYear',
     'apartmentType',
     'typeOfUse',
-    'oldConstArea',
     'carpetArea',
     'builtupArea',
     'ocDate',
@@ -44,7 +43,6 @@ export const COLUMN_ORDER = {
     'ocDate',
     'carpetArea',
     'builtupArea',
-    'oldConstArea',
     'typeOfUse',
     'constructionType',
     'oldRV',
@@ -72,7 +70,6 @@ export const COLUMN_ORDER = {
     'apartmentType',
     'carpetArea',
     'builtupArea',
-    'oldConstArea',
     'oldRV',
     'rateableValue',
     'newTaxTotalRV',
@@ -110,7 +107,6 @@ const COLUMN_FULL_NAME_KEYS: Record<string, string> = {
   bhk: 'tooltips.bhk',
   carpetArea: 'tooltips.carpetArea',
   builtupArea: 'tooltips.builtupArea',
-  oldConstArea: 'tooltips.oldConstArea',
   capitalValue: 'tooltips.capitalValue',
   oldTotalTax: 'tooltips.oldTotalTax',
   newTaxTotalRV: 'tooltips.newTaxTotalRV',
@@ -242,6 +238,15 @@ const renderTypeBadge = (value: unknown): React.ReactNode => {
   );
 };
 
+const renderAreaPair = (value: unknown, row?: Record<string, unknown>, prefix?: string): React.ReactNode => {
+  if (!row || !prefix) return value === null || value === undefined || value === '' ? '-' : String(value);
+  const ft = row[`${prefix}ASqFt`];
+  const mtr = row[`${prefix}ASqMtr`];
+  const safeFt = ft === null || ft === undefined || ft === '' ? '-' : ft;
+  const safeMtr = mtr === null || mtr === undefined || mtr === '' ? '-' : mtr;
+  return safeFt === '-' && safeMtr === '-' ? '-' : `${safeFt} / ${safeMtr}`;
+};
+
 export const getApartmentQCColumns = (
   activeMainTab: string,
   activeSubTab: string,
@@ -290,9 +295,8 @@ export const getApartmentQCColumns = (
         cellClassName: ' text-left min-w-[170px] max-w-[170px]',
       },
       { key: 'occupierName', label: t('columns.occupierName') },
-      { key: 'carpetArea', label: t('columns.carpetAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center' },
-      { key: 'builtupArea', label: t('columns.builtupAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center' },
-      { key: 'oldConstArea', label: t('columns.constructionArea') },
+      { key: 'carpetArea', label: t('columns.carpetAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center', render: (val, row) => renderAreaPair(val, row, 'carpet') },
+      { key: 'builtupArea', label: t('columns.builtupAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center', render: (val, row) => renderAreaPair(val, row, 'builtup') },
       { key: 'typeOfUse', label: t('columns.use'), render: renderMultiRecord },
       { key: 'constructionType', label: t('columns.constructionType'),
          render: renderTruncatedText,
@@ -301,7 +305,12 @@ export const getApartmentQCColumns = (
       { key: 'totalTax', label: t('columns.tax') },
       { key: 'wing', label: t('columns.wingName') },
       { key: 'flatOrShopNo', label: t('columns.shopNo') },
-      { key: 'flatOrShopName', label: t('columns.shopName') },
+      { 
+        key: 'flatOrShopName', 
+        label: t('columns.shopName'),
+        render: renderTruncatedText,
+        cellClassName: 'text-left min-w-[170px] max-w-[170px]'
+      },
       { key: 'rentMonthly', label: t('columns.rent') },
       { key: 'renterName', label: t('columns.renterName') },
       { key: 'propertyTypeName', label: t('columns.description'), render: renderMultiRecordMax2 },
@@ -351,9 +360,8 @@ export const getApartmentQCColumns = (
       },
       { key: 'occupierName', label: t('columns.occupierName') },
       { key: 'bhk', label: t('columns.bhk') },
-      { key: 'carpetArea', label: t('columns.carpetAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center' },
-      { key: 'builtupArea', label: t('columns.builtupAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center' },
-      { key: 'oldConstArea', label: t('columns.constructionArea') },
+      { key: 'carpetArea', label: t('columns.carpetAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center', render: (val, row) => renderAreaPair(val, row, 'carpet') },
+      { key: 'builtupArea', label: t('columns.builtupAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center', render: (val, row) => renderAreaPair(val, row, 'builtup') },
       { key: 'typeOfUse', label: t('columns.use'), render: renderMultiRecord },
       { key: 'constructionType', label: t('columns.constructionType'),
          render: renderTruncatedText,
@@ -405,9 +413,8 @@ export const getApartmentQCColumns = (
     { key: 'assessmentYear', label: t('columns.asstYear'), render: renderMultiRecord },
     { key: 'apartmentType', label: t('columns.apartmentType'), render: renderMultiRecord },
     { key: 'typeOfUse', label: t('columns.use'), render: renderMultiRecord },
-    { key: 'oldConstArea', label: t('columns.oldConA') },
-    { key: 'carpetArea', label: t('columns.carpetAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center' },
-    { key: 'builtupArea', label: t('columns.builtupAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center' },
+    { key: 'carpetArea', label: t('columns.carpetAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center', render: (val, row) => renderAreaPair(val, row, 'carpet') },
+    { key: 'builtupArea', label: t('columns.builtupAreaSqFtMtr'), headerClassName: 'whitespace-pre-line text-center', render: (val, row) => renderAreaPair(val, row, 'builtup') },
     { key: 'ocDate', label: t('columns.ocDate') },
     { key: 'oldRV', label: t('columns.oldRV') },
     { key: 'totalTax', label: t('columns.totalTax') },

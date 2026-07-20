@@ -24,6 +24,7 @@ import {
   EMAIL_REGEX,
   MOBILE_10_REGEX,
   YEAR_REGEX,
+  PINCODE_6_REGEX,
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
 import { DateUtils } from './date-helpers';
@@ -202,6 +203,29 @@ export const commonValidations = {
 
         const key = messageKey || 'form.validation.invalidMobile';
         if (!MOBILE_10_REGEX.test(strVal)) {
+          return t(key);
+        }
+        return undefined;
+      },
+
+  /**
+   * Generic pincode validation (6 digits starting with 1-9)
+   *
+   * @param t - Translation function
+   * @param messageKey - Custom translation key for invalid pincode error
+   */
+  pincode:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      messageKey?: string
+    ): Validator =>
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
+        if (!strVal) return undefined; // Optional field
+
+        const key = messageKey || 'form.validation.invalidPincode';
+        // Note: PINCODE_6_REGEX checks for exactly 6 digits starting with 1-9
+        if (!PINCODE_6_REGEX.test(strVal)) {
           return t(key);
         }
         return undefined;

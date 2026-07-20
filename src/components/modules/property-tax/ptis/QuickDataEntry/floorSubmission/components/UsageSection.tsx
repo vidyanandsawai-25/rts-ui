@@ -1,55 +1,14 @@
 'use client';
 
 import React from 'react';
-import { SearchSelect, AnimatedDigitInput } from '@/components/common';
+import { SearchSelect } from '@/components/common';
 import { UsageSectionProps } from '@/types/floor-details.types';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/types/common-details.types';
 import { getSelectOptions } from '@/lib/utils/form-options.util';
 import { normalizeToStringArray } from '@/lib/utils/dropdown-helpers';
-import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { FieldWrapper } from './SectionField';
 import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
-
-const limitDecimalString = (val: string, maxBefore: number = 10, maxAfter: number = 2): string => {
-  let filtered = '';
-  let hasDot = false;
-  let beforeDotCount = 0;
-  let afterDotCount = 0;
-
-  for (const char of val) {
-    if (char === '.') {
-      if (!hasDot && beforeDotCount <= maxBefore) {
-        filtered += char;
-        hasDot = true;
-      }
-    } else if (/^[0-9]$/.test(char)) {
-      if (!hasDot) {
-        if (beforeDotCount < maxBefore) {
-          filtered += char;
-          beforeDotCount++;
-        }
-      } else {
-        if (afterDotCount < maxAfter) {
-          filtered += char;
-          afterDotCount++;
-        }
-      }
-    }
-  }
-  return filtered;
-};
-
-const handleDecimalKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentValue: string) => {
-  if (e.key === '.' && currentValue.includes('.')) {
-    e.preventDefault();
-    return;
-  }
-  const controlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', '.'];
-  if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
-    e.preventDefault();
-  }
-};
 
 export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'Construction' | 'OpenPlot'; isPlotCategory?: boolean }> = ({
   t,
@@ -70,9 +29,33 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
   getSubTypeDescription,
   handleOpenDropdown,
   selectedFloorType = 'Construction',
-  isPlotCategory = false,
+  isPlotCategory: _isPlotCategory = false,
 }) => {
   const isUseEnabled = selectedFloorType === 'OpenPlot' || !!editingFloorForm.constructionTypeId;
+
+  const filteredUseOptions = React.useMemo(() => {
+    const rawOptions = normalizeToStringArray(useOptions);
+    const lookup = (useLookup || []) as LookupData[];
+
+    return rawOptions.filter(opt => {
+      const item = lookup.find(u => {
+        const desc = String(u.description || '').trim().replace(/\s+/g, ' ');
+        const code = u.typeOfUseCode ? String(u.typeOfUseCode).trim().replace(/\s+/g, ' ') : '';
+        const id = String(u.typeOfUseId || u.id || u.ID || '').trim().replace(/\s+/g, ' ');
+        const cleanOpt = String(opt || '').trim().replace(/\s+/g, ' ');
+        return cleanOpt === desc || (code && cleanOpt === `${code} - ${desc}`) || (id && cleanOpt === `${id} - ${desc}`);
+      });
+      if (!item) return false;
+      // Only filter by category for OpenPlot; Construction shows all
+      if (selectedFloorType === 'OpenPlot') {
+        const itemCategoryId = item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null
+          ? Number(item.typeOfUseCategoryId)
+          : null;
+        return itemCategoryId === 2 || itemCategoryId === 3;
+      }
+      return true;
+    });
+  }, [useOptions, useLookup, selectedFloorType]);
 
   return (
     <>
@@ -138,7 +121,7 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
             options={[
               { label: t('floor.selectUsage'), value: "" },
               ...getSelectOptions(
-                normalizeToStringArray(useOptions),
+                filteredUseOptions,
                 useLookup,
                 'typeOfUseId',
                 'description',
@@ -230,78 +213,6 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
           />
         </div>
       </FieldWrapper>
-
-      {selectedFloorType === 'OpenPlot' && (
-        <>
-          <FieldWrapper label={t('floor.lengthMtrLabel') || 'Length (M)'} htmlFor="floor-length" required error={formErrors.length}>
-            <AnimatedDigitInput
-              id="floor-length"
-              placeholder="0.00"
-              value={String(editingFloorForm.length ?? '')}
-              disabled={isPlotCategory}
-              maxLength={14}
-              allowedPattern={/^[0-9.]$/}
-              onKeyDown={(e) => handleDecimalKeyDown(e, String(editingFloorForm.length ?? ''))}
-              onChange={(val) => {
-                const filtered = limitDecimalString(val, 10, 3);
-                const lenVal = parseFloat(filtered) || 0;
-                const widthVal = parseFloat(String(editingFloorForm.width ?? '')) || 0;
-                const sqM = lenVal * widthVal;
-                const sqFt = convertSqMToSqFt(sqM);
-
-                setEditingFloorForm((prev: FloorData) => {
-                  const updated: FloorData = {
-                    ...prev,
-                    length: filtered,
-                  };
-                  if (isPlotCategory || selectedFloorType === 'OpenPlot') {
-                    updated.areaSqM = sqM > 0 ? sqM.toFixed(2) : '0.00';
-                    updated.areaSqFt = sqFt > 0 ? sqFt.toFixed(2) : '0.00';
-                  }
-                  return updated;
-                });
-
-                if (formErrors.length) setFormErrors((prev) => ({ ...prev, length: '' }));
-              }}
-              className={`h-9 text-sm ${isPlotCategory ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-            />
-          </FieldWrapper>
-
-          <FieldWrapper label={t('floor.widthMtrLabel') || 'Width (M)'} htmlFor="floor-width" required error={formErrors.width}>
-            <AnimatedDigitInput
-              id="floor-width"
-              placeholder="0.00"
-              value={String(editingFloorForm.width ?? '')}
-              disabled={isPlotCategory}
-              maxLength={14}
-              allowedPattern={/^[0-9.]$/}
-              onKeyDown={(e) => handleDecimalKeyDown(e, String(editingFloorForm.width ?? ''))}
-              onChange={(val) => {
-                const lenVal = parseFloat(String(editingFloorForm.length ?? '')) || 0;
-                const filtered = limitDecimalString(val, 10, 3);
-                const widthVal = parseFloat(filtered) || 0;
-                const sqM = lenVal * widthVal;
-                const sqFt = convertSqMToSqFt(sqM);
-
-                setEditingFloorForm((prev: FloorData) => {
-                  const updated: FloorData = {
-                    ...prev,
-                    width: filtered,
-                  };
-                  if (isPlotCategory || selectedFloorType === 'OpenPlot') {
-                    updated.areaSqM = sqM > 0 ? sqM.toFixed(2) : '0.00';
-                    updated.areaSqFt = sqFt > 0 ? sqFt.toFixed(2) : '0.00';
-                  }
-                  return updated;
-                });
-
-                if (formErrors.width) setFormErrors((prev) => ({ ...prev, width: '' }));
-              }}
-              className={`h-9 text-sm ${isPlotCategory ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-            />
-          </FieldWrapper>
-        </>
-      )}
     </>
   );
 };

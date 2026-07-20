@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { useTranslations } from "next-intl";
 import { FullOffSetFormProps } from "@/types/offset-details.types";
 import { OffsetFormSummary } from "./components/OffsetFormSummary";
@@ -8,6 +8,7 @@ import { OffsetShapeInputs } from '../../../QuickDataEntry/floorSubmission/OffSe
 import { OffsetHistoryTable } from '../../../QuickDataEntry/floorSubmission/OffSet/components/OffsetHistoryTable';
 import { OffsetFormFooter } from '../../../QuickDataEntry/floorSubmission/OffSet/components/OffsetFormFooter';
 import { SHAPE_OPTIONS } from '../../../QuickDataEntry/floorSubmission/RoomSubmission/constants/room-submission.constants';
+import { useEnterKeyNavigation } from "@/hooks/apartmentQc/useEnterKeyNavigation";
 
 export function OffSetForm({
     isInline = false,
@@ -38,6 +39,7 @@ export function OffSetForm({
 
     // Removed unused confirm variable
     const t = useTranslations("quickDataEntry");
+    const handleKeyDown = useEnterKeyNavigation();
     
     const shapeOptions = React.useMemo(() => 
         SHAPE_OPTIONS.map(opt => ({
@@ -46,12 +48,14 @@ export function OffSetForm({
         })), [t]);
 
     // Focus "Select Shape" when drawer opens (accessibility fix)
-    const shapeSelectRef = useRef(null);
     React.useEffect(() => {
-        if (offsetModalOpen && shapeSelectRef.current) {
+        if (offsetModalOpen) {
             const timer = setTimeout(() => {
-                // @ts-expect-error: shapeSelectRef may not be a standard input, but we want to focus for accessibility
-                shapeSelectRef.current?.focus?.();
+                const shapeContainer = document.getElementById('offset-shape-select-container');
+                const shapeBtn = shapeContainer?.querySelector('button[role="combobox"]');
+                if (shapeBtn instanceof HTMLElement) {
+                    shapeBtn.focus();
+                }
             }, 300);
             return () => clearTimeout(timer);
         }
@@ -63,8 +67,10 @@ export function OffSetForm({
     };
 
     return (
-        <div
+        <form
             id="offset-sidebar-container"
+            onSubmit={(e) => e.preventDefault()}
+            onKeyDownCapture={handleKeyDown}
             className={`${isInline ? "" : "bg-gradient-to-br from-white via-blue-50 to-purple-50"} flex flex-col w-full ${shouldShake ? "animate-shake" : ""}`}
         >
 
@@ -110,6 +116,6 @@ export function OffSetForm({
                     disableOk={!!offsetValidationError}
                 />
             )}
-        </div>
+        </form>
     );
 }

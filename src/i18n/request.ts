@@ -18,6 +18,8 @@ export default getRequestConfig(async ({ locale }) => {
   // Load all translation files
   const [
     commonMessages,
+    loginMessages,
+    welcomeMessages,
     dashboardMessages,
     constructionMessages,
     taxZoningMessages,
@@ -65,9 +67,26 @@ export default getRequestConfig(async ({ locale }) => {
     lockUnlockMessages,
     socialAttributeMessages,
     applicableTaxesMessages,
+    reassessmentMessages,
+    taxCalculationGuidelineMessages,
+    addTaxesMessages,
+    assetMessages,
+    inventoryCategoryMessages,
+    inventoryConditionMessages,
+    inventoryModelMessages,
+    inventoryNameMessages,
     modulesMessages,
+    reportMessages,
+    assetPhotoTypeMessages,
+    assetRoomTypeMessages,
+    designationMessages,
+    gstMasterMessages,
+    penaltyRuleMasterMessages,
+    owningDepartmentMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/welcome.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/construction.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/taxzoning.json`).then((m) => m.default),
@@ -155,13 +174,48 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+      import(`./locales/${validatedLocale}/reassessment.json`)
+        .catch(() => ({}))
+        .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/addTaxes.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/asset.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryCategory.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryCondition.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryModel.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryName.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/report.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/designation.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
     locale: validatedLocale,
     messages: {
       common: commonMessages,
+      login: loginMessages,
+      welcome: welcomeMessages,
       dashboard: dashboardMessages,
       construction: constructionMessages,
       taxZoning: taxZoningMessages.taxZoning,
@@ -211,7 +265,23 @@ export default getRequestConfig(async ({ locale }) => {
       lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
       applicableTaxes: applicableTaxesMessages,
+      reassessment: reassessmentMessages,
+      taxCalculationGuideline:
+        taxCalculationGuidelineMessages?.taxCalculationGuideline || taxCalculationGuidelineMessages,
+      addTaxes: addTaxesMessages?.addTaxes || addTaxesMessages,
+      asset: assetMessages,
+      inventoryCategory: inventoryCategoryMessages?.inventoryCategory || inventoryCategoryMessages,
+      inventoryCondition: inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
+      inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
+      inventoryName: inventoryNameMessages?.inventoryName || inventoryNameMessages,
       modules: modulesMessages,
+      report: reportMessages,
+      assetPhotoType: assetPhotoTypeMessages,
+      assetRoomType: assetRoomTypeMessages,
+      designation: designationMessages,
+      gstMaster: gstMasterMessages,
+      penaltyRuleMaster: penaltyRuleMasterMessages,
+      owningDepartment: owningDepartmentMessages,
     },
   };
 });

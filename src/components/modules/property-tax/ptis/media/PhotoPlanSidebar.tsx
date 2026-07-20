@@ -15,6 +15,7 @@ export interface PhotoCategory {
   isCustom?: boolean;
   photoCount?: number;
   hasPhoto?: boolean;
+  propertyPhotoId?: number;
 }
 
 interface PhotoPlanSidebarProps {

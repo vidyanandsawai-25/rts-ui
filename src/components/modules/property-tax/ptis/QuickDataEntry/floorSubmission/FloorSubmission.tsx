@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React from 'react';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmission';
-import { EditSidebarProps } from '@/types/floor-details.types';
+import { EditSidebarProps, FloorSubmissionPayload } from '@/types/floor-details.types';
 import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
-import { RoomSubmissionModal, PlotAreaCalculator, FloorTypeToggle, SubmissionOverlayLoader, SubmissionApiErrors } from './components';
+import { RoomSubmissionModal, PlotAreaCalculator, SubmissionOverlayLoader, SubmissionApiErrors, DataEntrySameAsDrawer } from './components';
+import { LoadingPage } from '@/components/common';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { RoomAPIResponse, FloorData } from '@/types/room-details.types';
-import { updatePlotAreaAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
-import type { PlotAreaPayload } from '@/lib/api/ptis/floorSubmission/plot-area.service';
-import { normalizeFloorFormData, getTypeOfUseId } from '@/lib/utils/floorSubmission/floor-mappers';
+import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const {
@@ -53,14 +54,40 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     isFloorAreaExceeded,
     totalConstructionAreaSqM,
     totalOpenSpaceAreaSqM,
-    remainingAvailablePlotAreaSqM,
     availableRemainingOpenSpaceAreaSqM,
     availableRemainingConstructionAreaSqM,
     enteredFloorAreaSqM,
     alreadyUtilizedOpenSpaceAreaSqM,
     enteredOpenSpaceAreaSqM,
     locale,
+    router,
+    localFloors,
   } = useFloorSubmission(props);
+
+  const [isAddingArea, setIsAddingArea] = React.useState(false);
+
+  const openPlotRecord = React.useMemo(() => {
+    const floors = ((localFloors && localFloors.length > 0) ? localFloors : (props.initialFloors || [])) as FloorData[];
+    return floors.find(
+      (f: FloorData) =>
+        f.isOpenPlot === true ||
+        String(f.floorId) === '77' ||
+        String(f.floor) === '77'
+    ) as FloorData | undefined;
+  }, [localFloors, props.initialFloors]);
+
+  const dynamicPlotArea = React.useMemo(() => {
+    if (openPlotRecord) {
+      const rooms = ((openPlotRecord as any).roomWiseSubmissionDetails || (openPlotRecord as any).propertyRooms || []) as any[];
+      const firstRoom = (rooms[0] || {}) as any;
+      return {
+        length: firstRoom.lengthMtr || firstRoom.length || (openPlotRecord as any).length || '',
+        width: firstRoom.widthMtr || firstRoom.width || (openPlotRecord as any).width || '',
+        totalPlotArea: (openPlotRecord as any).carpetAreaSqMeter || (openPlotRecord as any).builtupAreaSqMeter || firstRoom.areaSqMtr || '',
+      };
+    }
+    return props.initialPlotArea;
+  }, [openPlotRecord, props.initialPlotArea]);
 
   const {
     floorData: floorLookup,
@@ -74,6 +101,31 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     useOptions,
   } = props;
 
+  const searchParams = useSearchParams();
+  const initShowDrawer = searchParams?.get('dataEntrySameAs') === 'true';
+  const [showDataEntrySameAsDrawer, setShowDataEntrySameAsDrawer] = React.useState(initShowDrawer);
+
+  const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
+    setShowDataEntrySameAsDrawer(true);
+    updateUrlParams({ dataEntrySameAs: 'true' });
+  }, [updateUrlParams]);
+
+  const handleCloseDataEntrySameAsDrawer = React.useCallback(() => {
+    setShowDataEntrySameAsDrawer(false);
+    updateUrlParams({ dataEntrySameAs: null });
+  }, [updateUrlParams]);
+
+  // Show full-screen loader during save/update/delete operations
+  if (isOperationLoading) {
+    return (
+      <LoadingPage
+        translationNamespace="quickDataEntry"
+        messageKey={isAddingNewFloor ? 'floor.addingFloor' : 'floor.updatingFloor'}
+        descriptionKey="floor.pleaseWait"
+      />
+    );
+  }
+
   return (
     <>
       <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative">
@@ -82,143 +134,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         {/* Render API errors if any */}
         <SubmissionApiErrors apiErrors={props.apiErrors} t={t} />
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-
-          {/* Header Controls and Area Comparison Row */}
-          <div className="flex flex-col 2xl:flex-row items-start 2xl:items-center 2xl:justify-between gap-4 bg-white border border-slate-200 rounded-xl py-2.5 px-4 shadow-sm">
-            {/* Toggle buttons */}
-            <div className="flex-shrink-0">
-              <FloorTypeToggle
-                selectedFloorType={selectedFloorType}
-                onChange={setSelectedFloorType}
-                isPlotCategory={isPlotCategory}
-                t={t}
-                size="md"
-              />
-            </div>
-
-            {/* Real-time Summary Area Display */}
-            {(selectedFloorType === 'Construction' || selectedFloorType === 'OpenPlot') && (
-              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500 w-full 2xl:w-auto">
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1.5 shadow-2xs">
-                  <span className="text-slate-500">{t('floor.plotAreaColon') || 'Plot Area:'}</span>
-                  <span className="text-sm font-extrabold text-slate-800">{parseFloat(Number(plotAreaSqM || 0).toFixed(2))} {t('floor.sqMText') || 'Sq M'}</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1.5 shadow-2xs">
-                  <span className="text-slate-500">{t('floor.utilizedAreaColon') || 'Utilized Area:'}</span>
-                  <span className="text-sm font-extrabold text-slate-800">{parseFloat(Number(totalConstructionAreaSqM || 0).toFixed(2))} {t('floor.sqMText') || 'Sq M'}</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1.5 shadow-2xs">
-                  <span className="text-slate-500">{t('floor.openSpaceAreaColon') || 'Open Space Area:'}</span>
-                  <span className="text-sm font-extrabold text-slate-800">{parseFloat(Number(totalOpenSpaceAreaSqM || 0).toFixed(2))} {t('floor.sqMText') || 'Sq M'}</span>
-                </div>
-                <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 shadow-2xs ${remainingAvailablePlotAreaSqM < 0
-                  ? 'bg-red-50 border-red-100/80 text-red-700'
-                  : 'bg-emerald-50 border-emerald-100/80 text-emerald-700'
-                  }`}>
-                  <span className={remainingAvailablePlotAreaSqM < 0 ? 'text-red-600' : 'text-emerald-600'}>{t('floor.remainingAreaColon') || 'Remaining Area:'}</span>
-                  <span className={`text-sm font-extrabold ${remainingAvailablePlotAreaSqM < 0 ? 'text-red-700' : 'text-emerald-700'}`}>
-                    {parseFloat(Number(remainingAvailablePlotAreaSqM || 0).toFixed(2))} {t('floor.sqMText') || 'Sq M'}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Plot Area Calculator Section */}
-          {(selectedFloorType === 'Construction' || selectedFloorType === 'OpenPlot') && (
-            <PlotAreaCalculator
-              t={t}
-              layout="single-row"
-              propertyId={props.initialPropertyID}
-              initialPlotArea={props.initialPlotArea}
-              onLoad={(_sqFt, sqM) => {
-                setPlotAreaSqM(parseFloat(sqM) || 0);
-                // onLoad should only set the plot area. It should not modify form state on initial mount.
-              }}
-              onApply={async (sqFt: string, sqM: string, len?: string, wid?: string) => {
-                setPlotAreaSqM(parseFloat(sqM) || 0);
-                // Only map Plot Area Calculator values to Floor/OpenSpace form for Plot categories
-                // For non-Plot categories (Individual, etc.), no form field mapping occurs
-                if (isPlotCategory) {
-                  const existingFloor = filteredFloors[0];
-                  if (existingFloor) {
-                    setSelectedFloor(existingFloor);
-                    setIsAddingNewFloor(false);
-                    updateUrlParams({
-                      floorId: String(existingFloor.id),
-                      typeOfUseId: getTypeOfUseId(existingFloor) || null,
-                      drawer: null,
-                    });
-                    setEditingFloorForm({
-                      ...normalizeFloorFormData(existingFloor),
-                      ...(len ? { length: len } : {}),
-                      ...(wid ? { width: wid } : {}),
-                      areaSqFt: sqFt,
-                      areaSqM: sqM,
-                    } as FloorData);
-                  } else {
-                    setIsAddingNewFloor(true);
-                    setEditingFloorForm((prev) => ({
-                      ...prev,
-                      ...(len ? { length: len } : {}),
-                      ...(wid ? { width: wid } : {}),
-                      ...(selectedFloorType === 'OpenPlot' ? {
-                        areaSqFt: sqFt,
-                        areaSqM: sqM,
-                      } : {}),
-                    }));
-                  }
-                  setFormErrors((prev) => ({
-                    ...prev,
-                    ...(len ? { length: '' } : {}),
-                    ...(wid ? { width: '' } : {}),
-                    ...(selectedFloorType === 'OpenPlot' ? {
-                      areaSqFt: '',
-                      areaSqM: '',
-                    } : {}),
-                  }));
-                }
-
-                // ── Call Plot Area API on "Add Area" click (always, regardless of category) ──
-                const plotLength = parseFloat(len || '0');
-                const plotWidth = parseFloat(wid || '0');
-                const totalPlotArea = plotLength * plotWidth;
-
-                if (plotLength > 0 && plotWidth > 0 && totalPlotArea > 0) {
-                  const plotAreaPayload: PlotAreaPayload = {
-                    totalPlotArea,
-                    length: plotLength,
-                    width: plotWidth,
-                  };
-
-                  const toastId = toast.loading(
-                    t('floor.savingPlotArea') || 'Saving plot area...'
-                  );
-
-                  try {
-                    const plotAreaResponse = await updatePlotAreaAction(props.initialPropertyID || 0, plotAreaPayload, locale);
-                    if (plotAreaResponse.success) {
-                      toast.success(
-                        t('floor.plotAreaSavedSuccess') || 'Plot area saved successfully',
-                        { id: toastId }
-                      );
-                    } else {
-                      toast.error(
-                        plotAreaResponse.error || t('floor.errors.plotAreaSaveFailed') || 'Failed to save plot area',
-                        { id: toastId }
-                      );
-                    }
-                  } catch {
-                    toast.error(
-                      t('floor.errors.plotAreaSaveFailed') || 'Failed to save plot area',
-                      { id: toastId }
-                    );
-                  }
-                }
-              }}
-            />
-          )}
 
           {/* All Floors Table Section */}
           <FloorTable
@@ -232,6 +147,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             isAddingNewFloor={isAddingNewFloor}
             setIsAddingNewFloor={setIsAddingNewFloor}
             handleAddFloor={handleAddFloor}
+            handleOpenDataEntrySameAs={handleOpenDataEntrySameAsDrawer}
             updateUrlParams={updateUrlParams}
             handleDeleteFloor={handleDeleteFloor}
             startTransition={startTransition}
@@ -243,10 +159,114 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             subTypeData={subTypeData || []}
             setEditingFloorForm={setEditingFloorForm}
             isPlotCategory={isPlotCategory}
+            partitionNo={props.partitionNo}
           />
 
+
+          {/* Plot Area Calculator Section */}
+          {(selectedFloorType === 'Construction' || selectedFloorType === 'OpenPlot') && (
+            <PlotAreaCalculator
+              t={t}
+              layout="single-row"
+              propertyId={props.initialPropertyID}
+              initialPlotArea={dynamicPlotArea}
+              isLoading={isAddingArea}
+              buttonText={openPlotRecord ? (t('floor.updateArea') || 'Update Area') : (t('floor.applyArea') || 'Add Area')}
+              selectedFloorType={selectedFloorType}
+              onChangeFloorType={(type) => {
+                setSelectedFloorType(type);
+                handleAddFloor();
+              }}
+              onLoad={(_sqFt, sqM) => {
+                setPlotAreaSqM(parseFloat(sqM) || 0);
+                // onLoad should only set the plot area. It should not modify form state on initial mount.
+              }}
+              onChange={(_sqFt, sqM) => {
+                setPlotAreaSqM(parseFloat(sqM) || 0);
+              }}
+              onApply={async (_sqFt: string, _sqM: string, len?: string, wid?: string) => {
+                const plotLength = parseFloat(len || '0');
+                const plotWidth = parseFloat(wid || '0');
+
+                if (isNaN(plotLength) || plotLength <= 0 || isNaN(plotWidth) || plotWidth <= 0) {
+                  toast.error(t('floor.errors.invalidDimensions') || "Length and Width must be greater than 0.");
+                  return;
+                }
+
+                const areaSqMeter = plotLength * plotWidth;
+                const areaSqFeet = convertSqMToSqFt(areaSqMeter);
+                const currentYear = new Date().getFullYear().toString();
+
+                // Update local state before the API call
+                setPlotAreaSqM(areaSqMeter);
+
+                setIsAddingArea(true);
+                try {
+                  const roomsList = ((openPlotRecord as any)?.roomWiseSubmissionDetails || (openPlotRecord as any)?.propertyRooms || []) as any[];
+                  const lastRoomRecord = roomsList.length > 0 ? roomsList[roomsList.length - 1] : null;
+                  const roomRecordId = Number(lastRoomRecord?.id || lastRoomRecord?.roomWiseSubmissionId || 0);
+
+                  const completePayload = {
+                    ...(props.initialPropertyData || {}),
+                    id: openPlotRecord?.id || 0,
+                    propertyDetailsId: openPlotRecord?.id || 0,
+                    isOpenPlot: true,
+                    selectedFloorType: 'OpenPlot',
+                    floorId: 77,
+                    constructionTypeId: 11,
+                    typeOfUseId: 10,
+                    constructionYear: currentYear,
+                    assessmentYear: currentYear,
+                    length: plotLength,
+                    width: plotWidth,
+                    carpetAreaSqMeter: areaSqMeter,
+                    carpetAreaSqFeet: areaSqFeet,
+                    builtupAreaSqMeter: areaSqMeter,
+                    builtupAreaSqFeet: areaSqFeet,
+                    roomWiseSubmissionDetails: [
+                      {
+                        ...(lastRoomRecord || {}),
+                        id: roomRecordId,
+                        roomWiseSubmissionId: roomRecordId,
+                        propertyDetailsId: openPlotRecord?.id || 0,
+                        roomNo: String(lastRoomRecord?.roomNo || '1'),
+                        roomType: String(lastRoomRecord?.roomType || 'OpenPlot'),
+                        shape: String(lastRoomRecord?.shape || 'Rectangle'),
+                        lengthMtr: plotLength,
+                        widthMtr: plotWidth,
+                        areaSqMtr: areaSqMeter,
+                        totalAreaSqMtr: areaSqMeter,
+                      },
+                    ],
+                  };
+
+                  let response;
+                  if (openPlotRecord) {
+                    response = await updateFloorSubmissionNoRedirectAction(Number(openPlotRecord.id || 0), completePayload as unknown as FloorSubmissionPayload, locale, props.initialPropertyID || 0);
+                  } else {
+                    response = await submitFloorSubmissionNoRedirectAction(completePayload as unknown as FloorSubmissionPayload, locale, props.initialPropertyID || 0);
+                  }
+
+                  if (response.success) {
+                    toast.success(openPlotRecord ? (t('floor.errors.areaUpdatedSuccess') || "Area updated successfully.") : (t('floor.errors.areaAddedSuccess') || "Area added successfully."));
+                    startTransition(() => {
+                      router.refresh();
+                    });
+                  } else {
+                    toast.error(response.error || t('floor.errors.failedToSaveArea') || "Failed to save area.");
+                  }
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : (t('floor.unexpectedError') || "An unexpected error occurred."));
+                } finally {
+                  setIsAddingArea(false);
+                }
+              }}
+            />
+          )}
+
+
           {/* Edit Floor Form Section */}
-          {(selectedFloor || isAddingNewFloor) && (
+          {(selectedFloor || isAddingNewFloor) && !showDataEntrySameAsDrawer && (
             <div className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
@@ -295,6 +315,37 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         </div>
       </div>
 
+      <DataEntrySameAsDrawer
+        isOpen={showDataEntrySameAsDrawer}
+        onClose={handleCloseDataEntrySameAsDrawer}
+        t={t}
+        wardId={props.wardId}
+        wardNo={props.wardNo}
+        propertyNo={props.propertyNo}
+        partitionNo={props.partitionNo}
+        initialPropertyID={props.initialPropertyID}
+
+        // Pass FloorTable related props to render view-only floor table inside the drawer
+        filteredFloors={filteredFloors}
+        floorSearch={floorSearch}
+        setFloorSearch={setFloorSearch}
+        selectedFloor={selectedFloor}
+        setSelectedFloor={setSelectedFloor}
+        isAddingNewFloor={isAddingNewFloor}
+        setIsAddingNewFloor={setIsAddingNewFloor}
+        handleAddFloor={handleAddFloor}
+        updateUrlParams={updateUrlParams}
+        handleDeleteFloor={handleDeleteFloor}
+        startTransition={startTransition}
+        setFormErrors={setFormErrors}
+        floorLookup={floorLookup}
+        subFloorLookup={subFloorLookup}
+        constructionLookup={constructionLookup}
+        useLookup={useLookup}
+        subTypeData={subTypeData || []}
+        setEditingFloorForm={setEditingFloorForm}
+      />
+
       <RoomSubmissionModal
         key={`${editingFloorForm.floorId || editingFloorForm.id || ''}-${editingFloorForm.noOfRooms || editingFloorForm.rooms || 0}`}
         isOpen={showRoomSubmission}
@@ -338,6 +389,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
           });
         }}
       />
+
     </>
   );
 };

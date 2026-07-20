@@ -99,7 +99,7 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
       renderActions={(row) => (
         <>
           <EditButton onClick={() => handleEdit(row)} />
-          <DeleteButton onClick={() => handleDelete(row)} />
+          <DeleteButton onClick={() => handleDelete(row)} disabled={!row.isActive} />
         </>
       )}
       actionLabel={tCommon("table.columns.actions")}

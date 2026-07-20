@@ -8,6 +8,7 @@ import {
   getAllRateSectionDetailsForRateSectionAction
 } from "@/app/[locale]/property-tax/rate-section-master/actions";
 import { RateItem } from "@/types/rateSectionMaster.types";
+import { useConfirm } from "@/components/common";
 
 interface UseLinkWardActionsParams {
   rates: RateItem[];
@@ -23,7 +24,6 @@ interface UseLinkWardActionsParams {
   setSelectedWards: (wards: string[]) => void;
   setSelectedWardsTotalCount: (count: number) => void;
   setWardAssignments: (updater: (prev: Record<string, { rateSectionNo: string; id: number; description: string }>) => Record<string, { rateSectionNo: string; id: number; description: string }>) => void;
-  getRateSectionDisplayLabel: (rateSectionNo: string) => string;
   router: { refresh: () => void };
   t: (key: string, values?: Record<string, string | number>) => string;
   isViewAllSelectAllActive?: boolean;
@@ -52,7 +52,6 @@ export function useLinkWardActions({
   setSelectedWards,
   setSelectedWardsTotalCount,
   setWardAssignments,
-  getRateSectionDisplayLabel,
   router,
   t,
   isViewAllSelectAllActive = false,
@@ -66,14 +65,19 @@ export function useLinkWardActions({
   viewAllSearch,
   availableSearch
 }: UseLinkWardActionsParams) {
+  const { confirm } = useConfirm();
 
   const moveToSelected = useCallback(async () => {
     // Check if Select All is active for either ViewAll or Available tabs
     const isSelectAllMode = isViewAllSelectAllActive || isAvailableSelectAllActive;
     
+    const getRateSectionNameOnly = (rateSectionNo: string) => {
+      const rate = allRateSections.find(r => String(r.id) === rateSectionNo);
+      return rate?.description || rateSectionNo;
+    };
+
     if (isSelectAllMode) {
       // Fetch all wards server-side
-      // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
       const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
       if (!selectedRate?.id) {
         toast.error(t("wards.rateSectionNotFound"));
@@ -93,71 +97,100 @@ export function useLinkWardActions({
         const searchTerm = isViewAllSelectAllActive ? viewAllSearch : availableSearch;
         
         const result = await getAllWardsForLinkAction(searchTerm);
-        if (result.success && result.data) {
-          // Filter out wards already in selected or assigned to another rate section
-          const wardsToLink = result.data
-            .filter(w => !selectedWards.includes(w.wardNo))
-            .filter(w => {
-              const assignment = wardAssignments[w.wardNo];
-              return !assignment || assignment.rateSectionNo === selectedZoneNo;
-            })
-            .map(w => w.wardNo);
+        
+        // Turn off loading states before displaying confirmation
+        setLoading(false);
+        if (setViewAllSelectAllLoading) setViewAllSelectAllLoading(false);
+        if (setAvailableSelectAllLoading) setAvailableSelectAllLoading(false);
 
-          if (wardsToLink.length === 0) {
-            toast.info(t("wards.noWardsToLink"));
-            return;
-          }
-
-          const linkResult = await linkWardsToRateSectionAction(selectedRate.id, wardsToLink);
-
-          if (!linkResult.success) {
-            toast.error(linkResult.error || t("wards.saveError"));
-            return;
-          }
-
-          if (linkResult.data?.hasFailures) {
-            toast.warning(
-              t("wards.partialSaveSuccess", {
-                success: linkResult.data.successCount,
-                failed: linkResult.data.failedCount
-              })
-            );
-          } else {
-            toast.success(t("wards.saveSuccess"));
-          }
-
-          // Update state
-          const newSelectedWards = [...new Set([...selectedWards, ...wardsToLink])];
-          setSelectedWards(newSelectedWards);
-          setSelectedWardsTotalCount(newSelectedWards.length);
-
-          setWardAssignments(prev => {
-            const next = { ...prev };
-            wardsToLink.forEach(w => {
-              next[w] = { rateSectionNo: selectedZoneNo || "", id: 0, description: "" };
-            });
-            return next;
-          });
-
-          const refreshResult = await refreshSelectedWardsAction(selectedRate.id);
-          if (refreshResult.success) {
-            setSelectedWards(refreshResult.wardNos);
-            setSelectedWardsTotalCount(refreshResult.totalCount);
-          }
-
-          // Reset Select All state
-          if (isViewAllSelectAllActive && setIsViewAllSelectAllActive) {
-            setIsViewAllSelectAllActive(false);
-          }
-          if (isAvailableSelectAllActive && setIsAvailableSelectAllActive) {
-            setIsAvailableSelectAllActive(false);
-          }
-          setCheckedAvailable(new Set());
-          router.refresh();
-        } else {
+        if (!result.success || !result.data) {
           toast.error(result.error || t("wards.fetchError"));
+          return;
         }
-      } finally {
+
+        // Filter out wards already in selected or assigned to another rate section
+        const wardsToLink = result.data
+          .filter(w => !selectedWards.includes(w.wardNo))
+          .filter(w => {
+            const assignment = wardAssignments[w.wardNo];
+            return !assignment || assignment.rateSectionNo === selectedZoneNo;
+          })
+          .map(w => w.wardNo);
+
+        if (wardsToLink.length === 0) {
+          toast.info(t("wards.noWardsToLink"));
+          return;
+        }
+
+        const newLabel = getRateSectionNameOnly(selectedZoneNo || "");
+        const confirmDescription = isAvailableSelectAllActive
+          ? t("wards.assignAllAvailableWardsConfirm", { newRateSection: newLabel, count: wardsToLink.length })
+          : t("wards.assignAllViewAllWardsConfirm", { newRateSection: newLabel, count: wardsToLink.length });
+
+        confirm({
+          variant: "info",
+          title: t("wards.linkTitle", { defaultValue: "Link Ward to Rate Section" }),
+          description: confirmDescription,
+          confirmText: t("wards.yes", { defaultValue: "Yes" }),
+          cancelText: t("wards.no", { defaultValue: "No" }),
+          onConfirm: async () => {
+            setLoading(true);
+            try {
+              const linkResult = await linkWardsToRateSectionAction(selectedRate.id as number, wardsToLink);
+
+              if (!linkResult.success) {
+                toast.error(linkResult.error || t("wards.saveError"));
+                return;
+              }
+
+              if (linkResult.data?.hasFailures) {
+                toast.warning(
+                  t("wards.partialSaveSuccess", {
+                    success: linkResult.data.successCount,
+                    failed: linkResult.data.failedCount
+                  })
+                );
+              } else {
+                toast.success(t("wards.saveSuccess"));
+              }
+
+              // Update state
+              const newSelectedWards = [...new Set([...selectedWards, ...wardsToLink])];
+              setSelectedWards(newSelectedWards);
+              setSelectedWardsTotalCount(newSelectedWards.length);
+
+              setWardAssignments(prev => {
+                const next = { ...prev };
+                wardsToLink.forEach(w => {
+                  next[w] = { rateSectionNo: selectedZoneNo || "", id: 0, description: newLabel };
+                });
+                return next;
+              });
+
+              const refreshResult = await refreshSelectedWardsAction(selectedRate.id as number);
+              if (refreshResult.success) {
+                setSelectedWards(refreshResult.wardNos);
+                setSelectedWardsTotalCount(refreshResult.totalCount);
+              }
+
+              // Reset Select All state
+              if (isViewAllSelectAllActive && setIsViewAllSelectAllActive) {
+                setIsViewAllSelectAllActive(false);
+              }
+              if (isAvailableSelectAllActive && setIsAvailableSelectAllActive) {
+                setIsAvailableSelectAllActive(false);
+              }
+              setCheckedAvailable(new Set());
+              router.refresh();
+            } catch {
+              toast.error(t("wards.saveError"));
+            } finally {
+              setLoading(false);
+            }
+          }
+        });
+      } catch {
+        toast.error(t("wards.fetchError"));
         setLoading(false);
         if (setViewAllSelectAllLoading) setViewAllSelectAllLoading(false);
         if (setAvailableSelectAllLoading) setAvailableSelectAllLoading(false);
@@ -178,106 +211,112 @@ export function useLinkWardActions({
     }
 
     const id = selectedRate.id;
-    const blockedWards: string[] = [];
-    const validWards: string[] = [];
+    const newLabel = getRateSectionNameOnly(selectedZoneNo || "");
 
-    toMove.forEach(w => {
-      const assignment = wardAssignments[w];
-      if (assignment && assignment.rateSectionNo !== selectedZoneNo) {
-        blockedWards.push(w);
-        return;
+    const executeLinkWards = async (wardsToLink: string[]) => {
+      setLoading(true);
+
+      try {
+        const result = await linkWardsToRateSectionAction(id, wardsToLink);
+
+        if (!result.success) {
+          toast.error(result.error || t("wards.saveError"));
+          setLoading(false);
+          return;
+        }
+
+        if (result.data?.hasFailures) {
+          toast.warning(
+            t("wards.partialSaveSuccess", {
+              success: result.data.successCount,
+              failed: result.data.failedCount
+            })
+          );
+        } else {
+          toast.success(t("wards.saveSuccess"));
+        }
+
+        // Optimistically update selectedWards immediately for instant UI feedback
+        const newSelectedWards = [...new Set([...selectedWards, ...wardsToLink])];
+        setSelectedWards(newSelectedWards);
+        setSelectedWardsTotalCount(newSelectedWards.length);
+
+        // Manually update ward assignments for immediate UI feedback
+        setWardAssignments(prev => {
+          const next = { ...prev };
+          wardsToLink.forEach(w => {
+            next[w] = { rateSectionNo: selectedZoneNo || "", id: 0, description: newLabel };
+          });
+          return next;
+        });
+
+        const refreshResult = await refreshSelectedWardsAction(id);
+        if (refreshResult.success) {
+          setSelectedWards(refreshResult.wardNos);
+          setSelectedWardsTotalCount(refreshResult.totalCount);
+        }
+
+        setCheckedAvailable(new Set());
+        router.refresh();
+
+      } catch {
+        toast.error(t("wards.saveError"));
+      } finally {
+        setLoading(false);
       }
-      if (!selectedWards.includes(w)) {
-        validWards.push(w);
+    };
+
+    let description = "";
+
+    if (toMove.length === 1) {
+      const wardNo = toMove[0];
+      const assignment = wardAssignments[wardNo];
+      if (assignment) {
+        const oldLabel = assignment.description || getRateSectionNameOnly(assignment.rateSectionNo);
+        description = t("wards.reassignSingleWardConfirm", {
+          wardNo,
+          oldRateSection: oldLabel,
+          newRateSection: newLabel
+        });
+      } else {
+        description = t("wards.assignSingleWardConfirm", {
+          wardNo,
+          newRateSection: newLabel
+        });
+      }
+    } else {
+      const wardDetails = toMove.map(w => {
+        const assignment = wardAssignments[w];
+        if (assignment) {
+          const oldLabel = assignment.description || getRateSectionNameOnly(assignment.rateSectionNo);
+          return t("wards.wardDetailsReassign", { wardNo: w, oldRateSection: oldLabel });
+        }
+        return t("wards.wardDetailsAssign", { wardNo: w });
+      }).join("\n");
+      description = t("wards.assignMultipleWardsConfirm", {
+        wardDetails,
+        newRateSection: newLabel
+      });
+    }
+
+    confirm({
+      variant: "info",
+      title: t("wards.reassignWardsTitle", { defaultValue: "Confirm Ward Reassignment" }),
+      description,
+      confirmText: t("wards.yes", { defaultValue: "Yes" }),
+      cancelText: t("wards.no", { defaultValue: "No" }),
+      onConfirm: async () => {
+        await executeLinkWards(toMove);
       }
     });
-
-    if (blockedWards.length > 0) {
-      if (blockedWards.length === 1) {
-        const assignment = wardAssignments[blockedWards[0]];
-        const assignedLabel = assignment 
-          ? (assignment.description 
-            ? `${assignment.rateSectionNo} - ${assignment.description}` 
-            : getRateSectionDisplayLabel(assignment.rateSectionNo)) 
-          : "";
-        const selectedLabel = getRateSectionDisplayLabel(selectedZoneNo || "");
-        toast.warning(
-          t("wards.alreadyPresentInOtherRateSection", {
-            wardNo: blockedWards[0],
-            rateSectionNo: assignedLabel,
-            selectedRateSectionName: selectedLabel
-          })
-        );
-      } else {
-        toast.warning(
-          t("wards.alreadyAssignedOther", { count: blockedWards.length })
-        );
-      }
-    }
-
-    if (validWards.length === 0) {
-      setCheckedAvailable(new Set());
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const result = await linkWardsToRateSectionAction(id, validWards);
-
-      if (!result.success) {
-        toast.error(result.error || t("wards.saveError"));
-        setLoading(false);
-        return;
-      }
-
-      if (result.data?.hasFailures) {
-        toast.warning(
-          t("wards.partialSaveSuccess", {
-            success: result.data.successCount,
-            failed: result.data.failedCount
-          })
-        );
-      } else {
-        toast.success(t("wards.saveSuccess"));
-      }
-
-      // Optimistically update selectedWards immediately for instant UI feedback
-      const newSelectedWards = [...new Set([...selectedWards, ...validWards])];
-      setSelectedWards(newSelectedWards);
-      setSelectedWardsTotalCount(newSelectedWards.length);
-
-      // Manually update ward assignments for immediate UI feedback
-      setWardAssignments(prev => {
-        const next = { ...prev };
-        validWards.forEach(w => {
-          next[w] = { rateSectionNo: selectedZoneNo || "", id: 0, description: "" };
-        });
-        return next;
-      });
-
-      const refreshResult = await refreshSelectedWardsAction(id);
-      if (refreshResult.success) {
-        setSelectedWards(refreshResult.wardNos);
-        setSelectedWardsTotalCount(refreshResult.totalCount);
-      }
-
-      setCheckedAvailable(new Set());
-      router.refresh();
-
-    } catch {
-      toast.error(t("wards.saveError"));
-    }
-
-    setLoading(false);
   }, [
     checkedAvailable, allRateSections, selectedZoneNo, wardAssignments, selectedWards,
     setCheckedAvailable, setLoading, setSelectedWards, setSelectedWardsTotalCount,
-    setWardAssignments, getRateSectionDisplayLabel, router, t,
+    setWardAssignments, router, t,
     isViewAllSelectAllActive, isAvailableSelectAllActive,
     setViewAllSelectAllLoading, setAvailableSelectAllLoading,
     setIsViewAllSelectAllActive, setIsAvailableSelectAllActive,
-    viewAllSearch, availableSearch
+    viewAllSearch, availableSearch, confirm
   ]);
 
   const moveToAvailable = useCallback(async () => {

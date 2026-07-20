@@ -18,9 +18,9 @@ const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
     olddetails: 'olddetails',
 };
 
-export function QuickDataEntryClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
+export function QuickDataEntryClientWrapper({ children, categoryName, propertyDescription }: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
     return (
-        <QuickDataEntryContent categoryName={categoryName}>
+        <QuickDataEntryContent categoryName={categoryName} propertyDescription={propertyDescription}>
             {children}
         </QuickDataEntryContent>
     );
@@ -29,7 +29,8 @@ export function QuickDataEntryClientWrapper({ children, categoryName }: { childr
 function QuickDataEntryContent({
     children,
     categoryName,
-}: { children: ReactNode; categoryName?: string }) {
+    propertyDescription,
+}: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -79,13 +80,33 @@ function QuickDataEntryContent({
             router.push(`/${locale}/property-tax/ptis?${params}`);
         };
 
-        if (typeof window !== 'undefined' && (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges) {
+        const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
+        const hasBuildingChanges = !!win.__buildingFormHasChanges;
+        const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
+
+        if (hasBuildingChanges || hasDiscountChanges) {
+            const title = hasBuildingChanges 
+                ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
+                : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
+
+            const description = hasBuildingChanges
+                ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
+                : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+
+            const continueButton = hasBuildingChanges
+                ? (t('building.continueButton') || 'Continue Editing')
+                : (t('discount.continueButton') || 'Continue Editing');
+
+            const discardButton = hasBuildingChanges
+                ? (t('building.discardConfirmButton') || 'Discard Changes')
+                : (t('discount.discardConfirmButton') || 'Discard Changes');
+
             confirm({
                 variant: 'warning',
-                title: t('building.unsavedChangesTitle') || 'Unsaved Changes',
-                description: t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?',
-                confirmText: t('building.continueButton') || 'Continue Editing',
-                cancelText: t('building.discardConfirmButton') || 'Discard Changes',
+                title,
+                description,
+                confirmText: continueButton,
+                cancelText: discardButton,
                 onConfirm: () => {
                     // Do nothing, stays on screen
                 },
@@ -102,7 +123,9 @@ function QuickDataEntryContent({
                         return;
                     }
 
-                    (window as unknown as { __buildingFormHasChanges?: boolean }).__buildingFormHasChanges = false;
+                    win.__buildingFormHasChanges = false;
+                    win.__discountFormHasChanges = false;
+                    win.__socialFormHasChanges = false;
                     doClose();
                 }
             });
@@ -114,6 +137,7 @@ function QuickDataEntryContent({
     const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
 
     const drawerClassName = cn(
+        "quick-data-entry-wrapper",
         "[&_div.fixed.right-0]:!w-[97vw]",
         "md:[&_div.fixed.right-0]:!w-[1000px]",
         "lg:[&_div.fixed.right-0]:!w-[1100px]",
@@ -147,6 +171,12 @@ function QuickDataEntryContent({
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
                         <Tag className="h-3 w-3 text-white/95" />
                         <span>{t('floor.propertyCategory')}: {categoryName}</span>
+                    </div>
+                )}
+                {propertyDescription && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
+                        <Tag className="h-3 w-3 text-white/95" />
+                        <span>{t('property.propertyDescription')}: {propertyDescription}</span>
                     </div>
                 )}
             </div>

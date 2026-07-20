@@ -8,7 +8,7 @@ import {
   DrawerFloorDataRow,
   DrawerDropdownOption,
   DrawerSubTypeOption,
-} from "./propertyEditScreenDrawer.types";
+} from "../../types/propertyEditScreenDrawer.types";
 
 interface UsePropertyEditScreenFloorQCArgs {
   open: boolean;

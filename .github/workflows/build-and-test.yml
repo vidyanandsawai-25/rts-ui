@@ -1,4 +1,4 @@
-﻿name: CI Build and Test
+name: CI Build and Test
 
 on:
   pull_request:
@@ -51,6 +51,8 @@ jobs:
         run: npm run lint
       
       - name: Run tests with coverage
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm run test:coverage
       
       - name: Upload coverage to Azure Blob Storage

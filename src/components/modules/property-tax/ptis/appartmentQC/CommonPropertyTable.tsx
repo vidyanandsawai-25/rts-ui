@@ -2,16 +2,15 @@
 
 import { useMemo, useCallback, useState, useRef } from 'react';
 import type { MouseEventHandler } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { ApartmentQCMasterTable, type Column } from './ApartmentQCMasterTable';
 import { SearchInput } from '@/components/common';
 import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink } from 'lucide-react';
 import { useTableAutoScroll } from '@/hooks/apartmentQc/useTableAutoScroll';
 import { ColumnFilterDropdown, type FilterField } from './ColumnFilterDropdown';
 import { Tooltip } from '@/components/common/Tooltip';
-import { logger } from '@/lib/utils/logger';
 import { groupApartmentData } from './apartmentQC.utils';
+import { useExcelExport } from '@/hooks/apartmentQc/useExcelExport';
 
 import { ExportIconButton, EyeIconButton } from '@/components/common/ActionButtons';
 import { SEARCH_ALPHANUMERIC_SANITIZE } from '@/lib/utils/validation-rules';
@@ -31,35 +30,29 @@ const FILTERABLE_COLUMNS: Record<string, FilterField> = {
 };
 
 const SORT_COLUMN_KEYS: Record<string, string> = {
-  propertyNo: 'PartitionNo',
-  flatOrShopNo: 'FlatOrShopNo',
-  constructionYear: 'ConstructionYear',
-  assessmentYear: 'AssessmentYear',
-  ocDate: 'OcDate',
-  ownerName: 'OwnerName',
-  occupierName: 'OccupierName',
-  bhk: 'Bhk',
-  carpetArea: 'CarpetASqFt',
-  builtupArea: 'BuiltupASqFt',
-  oldConstArea: 'NewConstructionArea',
-  typeOfUse: 'TypeOfUse',
-  constructionType: 'ConstructionType',
-  rateableValue: 'RateableValue',
-  oldRV: 'NewTaxTotalRV',
-  capitalValue: 'CapitalValue',
-  totalTax: 'NewTaxTotal',
-  newTaxTotalCV: 'NewTaxTotalCV',
-  wing: 'Wing',
-  flatOrShopName: 'FlatOrShopName',
-  rentMonthly: 'RentMonthly',
-  renterName: 'RenterName',
-  propertyTypeName: 'PropertyTypeName',
-  apartmentType: 'ApartmentType',
-  floor: 'Floor',
-  toiletCount: 'ToiletCount',
+  id: 'Id',
+  taxZoneId: 'TaxZoneId',
+  wardId: 'WardId',
+  propertyNo: 'PropertyNo',
+  partitionNo: 'PartitionNo',
   mobileNo: 'MobileNo',
   emailId: 'EmailId',
+  flatOrShopNo: 'FlatOrShopNo',
+  flatOrShopName: 'FlatOrShopName',
+  flatOrShopNoEnglish: 'FlatOrShopNoEnglish',
+  flatOrShopNameEnglish: 'FlatOrShopNameEnglish',
+  ownerName: 'OwnerName',
+  ownerNameEnglish: 'OwnerNameEnglish',
+  occupierName: 'OccupierName',
+  occupierNameEnglish: 'OccupierNameEnglish',
+  partType: 'PartType',
+  propertyType: 'PropertyType',
+  propertyTypeName: 'PropertyTypeName',
+  bhk: 'BHK',
+  wing: 'Wing',
+  apartmentType: 'ApartmentType',
 };
+
 
 interface FilterOption {
   value: string;
@@ -154,70 +147,13 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 }: CommonPropertyTableProps<T>) {
   const t = useTranslations('appartmentQC');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
   useTableAutoScroll(isAutoScrolling);
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [isTableExpanded, setIsTableExpanded] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Excel export state
-  const [isExporting, setIsExporting] = useState(false);
-
-  // Excel export handler - uses secure server-side API route
-  const handleExcelExport = useCallback(async () => {
-    if (!wardId || !propertyNo) {
-      logger.warn('[CommonPropertyTable] Cannot export: missing wardId or propertyNo');
-      toast.error(t('export.missingParams') || 'Missing ward ID or property number');
-      return;
-    }
-
-    setIsExporting(true);
-
-    // Show loading toast
-    const loadingToastId = toast.loading(t('export.downloading') || 'Downloading Excel file...');
-
-    try {
-      // Build the secure API route URL (auth is handled server-side via cookies)
-      const params = new URLSearchParams();
-      params.append('WardId', String(wardId));
-      params.append('PropertyNo', propertyNo);
-      const exportUrl = `/${locale}/property-tax/ptis/appartmentQC/export-excel?${params.toString()}`;
-
-      // Fetch the Excel file from secure API route
-      const response = await fetch(exportUrl, {
-        method: 'GET',
-        credentials: 'include', // Include cookies for authentication
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(errorData.error || `Failed to export Excel: ${response.statusText}`);
-      }
-
-      const blob = await response.blob();
-
-      // Create download link and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `apartment-qc-${propertyNo}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      // Dismiss loading toast and show success
-      toast.dismiss(loadingToastId);
-      toast.success(t('export.success') || 'Excel file downloaded successfully!');
-    } catch (error) {
-      logger.error('[CommonPropertyTable] Excel export failed', { error: error as Error });
-      // Dismiss loading toast and show error
-      toast.dismiss(loadingToastId);
-      toast.error(t('export.error') || 'Failed to download Excel file');
-    } finally {
-      setIsExporting(false);
-    }
-  }, [wardId, propertyNo, t, locale]);
+  const { isExporting, handleExcelExport } = useExcelExport({ wardId, propertyNo });
 
   // Derive filter options from the current data (only values actually appearing in the columns)
   const localFilterOptions = useMemo(() => {
@@ -277,7 +213,16 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 
         const isPropertyNo = col.key === 'propertyNo';
         const isOldPropertyNo = col.key === 'oldPropertyNo';
-        const sortButton = (
+        
+        // Allow sorting for all columns defined in SORT_COLUMN_KEYS
+        const disableSort = !Object.prototype.hasOwnProperty.call(SORT_COLUMN_KEYS, col.key as string);
+
+
+        const sortButton = disableSort ? (
+          <span className="inline-flex items-center justify-center p-1 gap-1 w-full h-full text-[11px] font-semibold text-white">
+            <span className="truncate">{columnLabel}</span>
+          </span>
+        ) : (
           <ApartmentSortButton
             label={columnLabel}
             sortDirection={sortDirection}
@@ -401,7 +346,9 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
         columns={styledColumns}
         data={groupedData}
         loading={loading}
-        height={250}
+        height={isTableExpanded ? 600 : 250}
+        isExpanded={isTableExpanded}
+        onToggleExpand={() => setIsTableExpanded(!isTableExpanded)}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={

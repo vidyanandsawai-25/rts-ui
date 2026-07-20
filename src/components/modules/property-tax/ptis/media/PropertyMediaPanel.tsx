@@ -11,7 +11,8 @@ import { latLngToTile } from '@/lib/utils/coordinate-utils';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
-
+import { toast } from 'sonner';
+import { launchPhotoPlanDrawingToolAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 export interface PropertyMediaPanelProps {
   wardNo?: string;
   propertyNo?: string;
@@ -33,6 +34,7 @@ export interface PropertyMediaPanelProps {
 function PropertyMediaPanel({
   wardNo = '',
   propertyNo = '',
+  partitionNo = '',
   propertyId,
   initialPhotoSlots = [],
   initialPhotos = [],
@@ -72,6 +74,7 @@ function PropertyMediaPanel({
     propertyId,
     initialLatitude,
     initialLongitude,
+    initialWaybackReleases: initialWaybackReleases,
     onPhotosChange,
     onPhotoSlotsChange,
   });
@@ -110,15 +113,43 @@ function PropertyMediaPanel({
   }
 
   const handleCreateClick = useCallback(
-    (e: React.MouseEvent) => {
+    async (e: React.MouseEvent) => {
       e.stopPropagation();
-      openDrawer(
-        photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0,
-        undefined,
-        'create'
-      );
+      
+      if (!propertyId) {
+        toast.error(t('media.drawingToolPropertyIdRequired') || 'Property ID is required.');
+        return;
+      }
+
+      const toastId = toast.loading(t('media.preparingDrawingTool') || 'Preparing drawing tool...');
+      try {
+        const councilName = 'THANE_Survey';
+        const returnUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+        const result = await launchPhotoPlanDrawingToolAction(propertyId, councilName, returnUrl);
+
+        if (!result.success || !result.data?.launchUrl) {
+           throw new Error(result.error || (t('media.launchUrlNotFound') || 'Launch URL not found in response.'));
+        }
+
+        const launchUrl = result.data.launchUrl;
+        
+        if (typeof launchUrl === 'string' && launchUrl.length > 0) {
+           const url = new URL(launchUrl);
+           if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+             throw new Error('Invalid launch URL protocol.');
+           }
+           toast.success(t('media.redirectingDrawingTool') || 'Redirecting to drawing tool...', { id: toastId });
+           window.location.assign(url.toString());
+        } else {
+           throw new Error(t('media.launchUrlNotFound') || 'Launch URL not found in response.');
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : (t('media.unexpectedError') || 'An unexpected error occurred.');
+        toast.error(errorMessage, { id: toastId });
+      }
     },
-    [photoPlanCategory, categories, openDrawer]
+    [propertyId, t]
   );
 
   if (loading) {
@@ -177,6 +208,7 @@ function PropertyMediaPanel({
           onCategoriesChange={handleCategoriesChange}
           wardNo={wardNo}
           propertyNo={propertyNo}
+          partitionNo={partitionNo}
           initialCategoryIndex={drawerInitialCategoryIndex}
           propertyId={propertyId}
           fullyLoadedIds={fullyLoadedIds}
@@ -184,6 +216,7 @@ function PropertyMediaPanel({
           initialLatitude={hasCoords ? initialLatitude : undefined}
           initialLongitude={hasCoords ? initialLongitude : undefined}
           initialWaybackReleases={waybackReleases}
+          onDrawPlan={handleCreateClick}
         />
       )}
     </div>

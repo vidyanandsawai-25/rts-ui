@@ -26,7 +26,6 @@ export {
   getSubTabLabel,
   formatCurrency,
   createTaxMap,
-  calculateTotal,
   getHeaderGradientClass,
   getRowClassName,
   // Types
