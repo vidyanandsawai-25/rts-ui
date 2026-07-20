@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import {
@@ -10,7 +10,9 @@ import {
   MasterTable,
   RetrospectiveDetailsButton,
   Section129Button,
+  ImageViewer,
 } from '@/components/common';
+import type { ImageViewerImage } from '@/components/common';
 import { RetrospectiveTaxModal } from './RetrospectiveTaxModal';
 import { Section129Modal } from './Section129Modal';
 import { OldFloorDetails } from './components/OldFloorDetails';
@@ -72,6 +74,10 @@ export default function ReassesmentScreen({
   const [showRetroModal, setShowRetroModal] = useState(false);
   const [showSec129Modal, setShowSec129Modal] = useState(false);
 
+  // Image viewer state
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
   // ============================================
   // HOOKS
   // ============================================
@@ -89,6 +95,61 @@ export default function ReassesmentScreen({
 
   const { oldTableRef, newTableRef } = useSynchronizedScrolling();
   const autoScrollController = useSharedAutoScroll();
+
+  // Prepare images for viewer
+  const viewerImages = useMemo((): ImageViewerImage[] => {
+    const images: ImageViewerImage[] = [];
+    
+    const oldPropertyPhoto = photos.find((p) => p.type === 'OLD_PROPERTY_PHOTO');
+    const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
+    const newPropertyPhoto = photos.find((p) => p.type === 'NEW_PROPERTY_PHOTO');
+    const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
+
+    if (oldPropertyPhoto) {
+      images.push({
+        src: getViewDocumentUrl(oldPropertyPhoto.documentGuid),
+        alt: t('photoLabels.oldPropertyPhoto'),
+        title: t('photoLabels.oldPropertyPhoto'),
+      });
+    }
+
+    if (oldPlanPhoto) {
+      images.push({
+        src: getViewDocumentUrl(oldPlanPhoto.documentGuid),
+        alt: t('photoLabels.oldPlanPhoto'),
+        title: t('photoLabels.oldPlanPhoto'),
+      });
+    }
+
+    if (newPropertyPhoto) {
+      images.push({
+        src: getViewDocumentUrl(newPropertyPhoto.documentGuid),
+        alt: t('photoLabels.newPropertyPhoto'),
+        title: t('photoLabels.newPropertyPhoto'),
+      });
+    }
+
+    if (newPlanPhoto) {
+      images.push({
+        src: getViewDocumentUrl(newPlanPhoto.documentGuid),
+        alt: t('photoLabels.newPlanPhoto'),
+        title: t('photoLabels.newPlanPhoto'),
+      });
+    }
+
+    return images;
+  }, [photos, t]);
+
+  // Handler to open image viewer
+  const handleImageClick = (photoType: string) => {
+    const imageIndex = viewerImages.findIndex((img) => 
+      img.title === t(`photoLabels.${photoType}`)
+    );
+    if (imageIndex !== -1) {
+      setSelectedImageIndex(imageIndex);
+      setShowImageViewer(true);
+    }
+  };
 
   // ============================================
   // RENDER
@@ -124,7 +185,18 @@ export default function ReassesmentScreen({
                   const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
                   return (
                     <>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center">
+                      <div 
+                        className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
+                        onClick={() => oldPropertyPhoto && handleImageClick('oldPropertyPhoto')}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && oldPropertyPhoto) {
+                            e.preventDefault();
+                            handleImageClick('oldPropertyPhoto');
+                          }
+                        }}
+                      >
                         {oldPropertyPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
@@ -138,8 +210,26 @@ export default function ReassesmentScreen({
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.oldPropertyPhoto')}
                         </div>
+                        {oldPropertyPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center">
+                      <div 
+                        className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
+                        onClick={() => oldPlanPhoto && handleImageClick('oldPlanPhoto')}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && oldPlanPhoto) {
+                            e.preventDefault();
+                            handleImageClick('oldPlanPhoto');
+                          }
+                        }}
+                      >
                         {oldPlanPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
@@ -153,6 +243,13 @@ export default function ReassesmentScreen({
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.oldPlanPhoto')}
                         </div>
+                        {oldPlanPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </>
                   );
@@ -193,7 +290,18 @@ export default function ReassesmentScreen({
                   const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
                   return (
                     <>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center">
+                      <div 
+                        className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
+                        onClick={() => newPropertyPhoto && handleImageClick('newPropertyPhoto')}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && newPropertyPhoto) {
+                            e.preventDefault();
+                            handleImageClick('newPropertyPhoto');
+                          }
+                        }}
+                      >
                         {newPropertyPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
@@ -207,8 +315,26 @@ export default function ReassesmentScreen({
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.newPropertyPhoto')}
                         </div>
+                        {newPropertyPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center">
+                      <div 
+                        className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center cursor-pointer transition-transform hover:scale-101"
+                        onClick={() => newPlanPhoto && handleImageClick('newPlanPhoto')}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && newPlanPhoto) {
+                            e.preventDefault();
+                            handleImageClick('newPlanPhoto');
+                          }
+                        }}
+                      >
                         {newPlanPhoto ? (
                           <ImageWithFallback
                             src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
@@ -222,6 +348,13 @@ export default function ReassesmentScreen({
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.newPlanPhoto')}
                         </div>
+                        {newPlanPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </>
                   );
@@ -316,6 +449,18 @@ export default function ReassesmentScreen({
       <Section129Modal
         open={showSec129Modal}
         onClose={() => setShowSec129Modal(false)}
+      />
+
+      {/* Image Viewer */}
+      <ImageViewer
+        open={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        images={viewerImages}
+        initialIndex={selectedImageIndex}
+        showDownload={true}
+        showRotate={true}
+        showZoom={true}
+        showNavigation={true}
       />
     </div>
   );
