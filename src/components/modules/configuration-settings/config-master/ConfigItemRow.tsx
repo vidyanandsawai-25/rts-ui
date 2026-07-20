@@ -151,7 +151,6 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
           <ConfigItemActions
             id={item.id}
             configKeyId={item.configKeyId}
-            name={item.name}
             isEnabled={item.isEnabled}
           />
           {showToggle && (

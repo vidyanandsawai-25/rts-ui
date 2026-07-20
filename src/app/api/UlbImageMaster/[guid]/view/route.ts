@@ -15,8 +15,7 @@ export async function GET(
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
-  } catch (error) {
-    console.error('API Route Error fetching ULB image:', error);
+  } catch (_error) {
     return new NextResponse('Image not found', { status: 404 });
   }
 }

@@ -1,9 +1,12 @@
-import React, { useState, useCallback, useTransition } from "react";
+import React, { useState, useMemo, useCallback, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import type { CommonRemark, CommonRemarkFormModel, RemarkCategory } from "@/types/common-remark-master/common-remark.types";
-import { saveCommonRemarkAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
+import {
+  saveCommonRemarkAction,
+  createRemarkCategoryAction,
+} from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import {
   validateRemarkType,
   validateCustomRemarkType,
@@ -37,6 +40,7 @@ export function useCommonRemarkForm({
   const t = useTranslations("remarkMaster");
   const tCommon = useTranslations("common");
 
+  const [addedCategories, setAddedCategories] = useState<RemarkCategory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CommonRemarkFormModel>({
     id: initialData?.id ?? undefined,
@@ -45,6 +49,16 @@ export function useCommonRemarkForm({
     isActive: initialData?.isActive ?? true,
   });
 
+  const categoryList = useMemo(() => {
+    const list = [...categories];
+    for (const cat of addedCategories) {
+      if (!list.some((c) => c.id === cat.id)) {
+        list.push(cat);
+      }
+    }
+    return list;
+  }, [categories, addedCategories]);
+
   const [customRemarkType, setCustomRemarkType] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -52,25 +66,28 @@ export function useCommonRemarkForm({
 
   const validate = useCallback((data: CommonRemarkFormModel, customTypeVal: string) => {
     const e: Record<string, string> = {};
+    const isCustomMode = data.remarkType === "Other";
 
-    const remarkTypeErr = validateRemarkType(data.remarkType);
-    if (remarkTypeErr) {
-      e.remarkType = t(remarkTypeErr);
-    }
+    if (isCustomMode) {
+      const customRemarkTypeErr = validateCustomRemarkType(customTypeVal, data.remarkType);
+      if (customRemarkTypeErr) {
+        e.customRemarkType = t(customRemarkTypeErr) || "Invalid custom remark type.";
+      }
+    } else {
+      const remarkTypeErr = validateRemarkType(data.remarkType);
+      if (remarkTypeErr) {
+        e.remarkType = t(remarkTypeErr);
+      }
 
-    const customRemarkTypeErr = validateCustomRemarkType(customTypeVal, data.remarkType);
-    if (customRemarkTypeErr) {
-      e.customRemarkType = t(customRemarkTypeErr) || "Invalid custom remark type.";
-    }
+      const remarkErr = validateRemark(data.remark);
+      if (remarkErr) {
+        e.remark = t(remarkErr);
+      }
 
-    const remarkErr = validateRemark(data.remark);
-    if (remarkErr) {
-      e.remark = t(remarkErr);
-    }
-
-    const isActiveErr = validateIsActive(data.isActive, isEdit);
-    if (isActiveErr) {
-      e.isActive = t(isActiveErr);
+      const isActiveErr = validateIsActive(data.isActive, isEdit);
+      if (isActiveErr) {
+        e.isActive = t(isActiveErr);
+      }
     }
 
     return e;
@@ -144,9 +161,74 @@ export function useCommonRemarkForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const isCustomMode = formData.remarkType === "Other";
+
+    if (isCustomMode) {
+      setTouched({ customRemarkType: true });
+      const v = validate(formData, customRemarkType);
+      setErrors(v);
+
+      if (Object.keys(v).length) {
+        toast.error(tCommon("errors.validationError") || "Please fix validation errors");
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        const fd = new FormData();
+        fd.append("customRemarkType", customRemarkType.trim());
+        fd.append("locale", locale);
+
+        const res = await createRemarkCategoryAction(fd);
+
+        if (res?.ok && res.data) {
+          const newCat = res.data;
+          setAddedCategories((prev) => {
+            if (prev.some((c) => c.id === newCat.id)) return prev;
+            return [...prev, newCat];
+          });
+          setFormData((p) => ({ ...p, remarkType: String(newCat.id) }));
+          setCustomRemarkType("");
+          setTouched({});
+          setErrors({});
+          toast.success(t("messages.remarkTypeAddSuccess") || "Remark Type added successfully");
+          return;
+        }
+
+        if (res && !res.ok) {
+          if (res.error === "duplicate") {
+            setErrors({
+              customRemarkType: t("apiErrors.duplicateRecord") || "This remark type already exists.",
+            });
+            toast.error(t("apiErrors.duplicateRecord") || "This remark type already exists.");
+          } else {
+            const rawMessage = res.message || "";
+            const cleanMsg = getCleanErrorMessage(rawMessage);
+
+            if (cleanMsg === "RemarkTypeName_Invalid") {
+              const translated = t("form.validation.customRemarkTypeFormat") || "Invalid Custom Remark Type format.";
+              setErrors((p) => ({ ...p, customRemarkType: translated }));
+              toast.error(translated);
+            } else {
+              toast.error(cleanMsg || tCommon("errors.operationFailed"));
+            }
+          }
+          return;
+        }
+
+        toast.error(tCommon("errors.operationFailed"));
+      } catch (err: unknown) {
+        const error = err as Error;
+        toast.error(error?.message || tCommon("errors.operationFailed"));
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     setTouched({
       remarkType: true,
-      customRemarkType: true,
       remark: true,
     });
 
@@ -166,9 +248,6 @@ export function useCommonRemarkForm({
         fd.append("id", String(formData.id));
       }
       fd.append("remarkType", formData.remarkType);
-      if (formData.remarkType === "Other") {
-        fd.append("customRemarkType", customRemarkType.trim());
-      }
       fd.append("remark", formData.remark);
       fd.append("isActive", String(formData.isActive));
       fd.append("locale", locale);
@@ -210,7 +289,7 @@ export function useCommonRemarkForm({
         } else {
           const rawMessage = res.message || "";
           const cleanMsg = getCleanErrorMessage(rawMessage);
-          
+
           if (cleanMsg === "RemarkTypeName_Invalid") {
             const translated = t("form.validation.customRemarkTypeFormat") || "Invalid Custom Remark Type format.";
             setErrors((p) => ({ ...p, customRemarkType: translated }));
@@ -242,7 +321,7 @@ export function useCommonRemarkForm({
   return {
     formData,
     customRemarkType,
-    categories,
+    categories: categoryList,
     errors,
     isSubmitting,
     open,

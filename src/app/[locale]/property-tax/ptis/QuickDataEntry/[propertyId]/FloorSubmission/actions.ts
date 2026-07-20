@@ -45,7 +45,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
         params.set('PropertyNo', propertyNo);
-        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs?${params.toString()}`);
+        const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`, { cache: 'no-store' });
         if (!response.success || !response.data?.items) {
             return [];
         }
@@ -59,7 +59,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             const typeLabel = (item.typeLabel || item.typeName || undefined) as string | undefined;
 
             return {
-                id: item.propertyId,
+                id: `${item.propertyId}-${item.propertyFloorId ?? ''}-${item.propertyDetailsId ?? ''}-${item.wingName || ''}-${item.flatOrShopNo || ''}`,
                 propertyFloorId: item.propertyFloorId ?? null,
                 propertyDetailsId: item.propertyDetailsId ?? null,
                 wardId: item.wardId,
@@ -74,7 +74,8 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 carpetAreaSqMeter: extended.totalCarpetAreaSqMeter ?? extended.carpetAreaSqMeter ?? null,
             };
         });
-    } catch {
+    } catch (error) {
+        console.error("Error in fetchDataEntrySameAsAction:", error);
         return [];
     }
 }
@@ -303,8 +304,20 @@ export const deleteFloorRenterDetailsAction = async (renterId: string | number, 
     }
 };
 
-export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
+export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPayload, locale: string = "en"): Promise<ActionResult<ApplyDataEntrySameAsResponse['items']>> {
     try {
+        const floorSubmissions = await getFloorSubmissionsByOwner(payload.sourcePropertyId);
+        const hasFloorSubmission = Array.isArray(floorSubmissions) && floorSubmissions.length > 0;
+        if (!hasFloorSubmission) {
+            return {
+                success: false,
+                error: locale === 'mr'
+                    ? "टाइप वाईज, प्रॉपर्टी वाईज किंवा पार्किंग डेटा लागू करण्यापूर्वी फ्लोअर सबमिशन आवश्यक आहे."
+                    : locale === 'hi'
+                    ? "टाइप वाइज, प्रॉपर्टी वाइज या पार्किंग डेटा लागू करने से पहले फ्लोर सबमिशन आवश्यक है।"
+                    : "Floor submission is required before applying Type Wise, Property Wise, or Parking data."
+            };
+        }
         const data = await applyDataEntrySameAs(payload);
         return { success: true, data };
     } catch (error) {

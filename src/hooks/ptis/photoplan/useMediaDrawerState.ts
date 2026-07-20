@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 export function useMediaDrawerState() {
@@ -6,13 +6,31 @@ export function useMediaDrawerState() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const isDrawerOpen = searchParams.get('drawer') === 'photo-plan';
-  const categoryIndexParam = searchParams.get('photoCategoryIndex');
-  const parsedIndex = categoryIndexParam ? parseInt(categoryIndexParam, 10) : 0;
-  const drawerInitialCategoryIndex = isNaN(parsedIndex) ? 0 : parsedIndex;
+  // Local state for instant UI responsiveness
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerInitialCategoryIndex, setDrawerInitialCategoryIndex] = useState(0);
+
+  // Sync state with URL searchParams (e.g., on initial load or back/forward navigation)
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const hasDrawer = searchParams.get('drawer') === 'photo-plan';
+    setIsDrawerOpen(hasDrawer);
+
+    if (hasDrawer) {
+      const idx = searchParams.get('photoCategoryIndex');
+      if (idx) {
+        const parsed = parseInt(idx, 10);
+        if (!isNaN(parsed)) {
+          setDrawerInitialCategoryIndex(parsed);
+        }
+      }
+    }
+  }, [searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const openDrawer = useCallback(
     (idx: number, selectedImageIndex?: number, action?: string) => {
+      // 1. URL update synchronously to prevent race conditions with child components reading window.location.search
       const p = new URLSearchParams(searchParams.toString());
       p.set('drawer', 'photo-plan');
       p.set('photoCategoryIndex', idx.toString());
@@ -28,19 +46,39 @@ export function useMediaDrawerState() {
       } else {
         p.delete('action');
       }
-      router.push(`${pathname}?${p.toString()}`);
+
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `${pathname}?${p.toString()}`);
+      }
+
+      // 2. Instant state update for UX responsiveness
+      setIsDrawerOpen(true);
+      setDrawerInitialCategoryIndex(idx);
+
+      // 3. Sync Next.js router state asynchronously
+      router.replace(`${pathname}?${p.toString()}`, { scroll: false });
     },
     [searchParams, pathname, router]
   );
 
   const closeDrawer = useCallback(() => {
+    // 1. URL update synchronously
     const p = new URLSearchParams(searchParams.toString());
     p.delete('drawer');
     p.delete('photoCategoryIndex');
     p.delete('selectedImageIndex');
     p.delete('viewMode');
     p.delete('action');
-    router.push(`${pathname}?${p.toString()}`);
+
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `${pathname}?${p.toString()}`);
+    }
+
+    // 2. Instant state update for UX responsiveness (drawer unmounts instantly)
+    setIsDrawerOpen(false);
+
+    // 3. Sync Next.js router state asynchronously
+    router.replace(`${pathname}?${p.toString()}`, { scroll: false });
   }, [searchParams, pathname, router]);
 
   return {

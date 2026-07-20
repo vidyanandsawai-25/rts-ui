@@ -68,12 +68,12 @@ export async function createConfigKeyAction(formData: FormData): Promise<ActionR
 
     const rawData = {
       categoryId: parseInt(formData.get('categoryId') as string),
-      configCode: sanitizeTextInput(formData.get('configCode') as string),
+      configCode: (formData.get('configCode') as string || '').replace(/[^A-Za-z0-9_]/g, ''),
       configName: sanitizeTextInput(formData.get('configName') as string),
       description: sanitizeTextInput(formData.get('description') as string),
       dataType: formData.get('dataType'),
       controlType: formData.get('controlType'),
-      defaultValue: sanitizeTextInput(formData.get('defaultValue') as string),
+      defaultValue: formData.get('defaultValue') as string,
       isActive: formData.get('isActive') === 'true',
     };
 
@@ -128,10 +128,10 @@ export async function updateConfigKeyAction(
 
     const validation = UpdateConfigKeySchema.safeParse({
       ...data,
-      configCode: data.configCode ? sanitizeTextInput(data.configCode) : undefined,
+      configCode: data.configCode ? data.configCode.replace(/[^A-Za-z0-9_]/g, '') : undefined,
       configName: data.configName ? sanitizeTextInput(data.configName) : undefined,
       description: data.description ? sanitizeTextInput(data.description) : undefined,
-      defaultValue: data.defaultValue !== undefined ? sanitizeTextInput(String(data.defaultValue)) : undefined,
+      defaultValue: data.defaultValue !== undefined ? String(data.defaultValue) : undefined,
       updatedBy: userId,
     });
 

@@ -117,7 +117,7 @@ function buildInitialForm(ulb: UlbConfigurationMaster | null): ULBConfigurationF
   };
 }
 
-function buildCompletionStatus(ulb: UlbConfigurationMaster | null): CompletionStatus {
+function buildCompletionStatus(ulb: UlbConfigurationMaster | null, hasLicences = false): CompletionStatus {
   return {
     ulbInfo: !!(ulb?.ulbName && ulb?.ulbCode),
     logoImages: !!ulb?.ulbLogo,
@@ -127,7 +127,7 @@ function buildCompletionStatus(ulb: UlbConfigurationMaster | null): CompletionSt
       ulb?.projectStartDate &&
       ulb?.licenceStartDate
     ),
-    departmentLicense: false,
+    departmentLicense: hasLicences,
   };
 }
 
@@ -148,7 +148,7 @@ const SECTION_TO_STATUS: Record<UlbSectionKey, keyof CompletionStatus> = {
   'project-license-info': 'projectLicenseInfo',
 };
 
-export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | null) {
+export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | null, initialHasLicences = false) {
   const t = useTranslations('ulb_configuration');
   const tCommon = useTranslations('common');
 
@@ -160,7 +160,7 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
     buildInitialRenewalAlerts(initialUlb)
   );
   const [completionStatus, setCompletionStatus] = useState<CompletionStatus>(() =>
-    buildCompletionStatus(initialUlb)
+    buildCompletionStatus(initialUlb, initialHasLicences)
   );
 
   const validateFields = useCallback(
@@ -169,15 +169,15 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
     [t, tCommon]
   );
 
-  const syncFromUlbMaster = useCallback((ulb: UlbConfigurationMaster | null) => {
+  const syncFromUlbMaster = useCallback((ulb: UlbConfigurationMaster | null, hasLicences?: boolean) => {
     setFormData(buildInitialForm(ulb));
     setErrors({});
     setTouched({});
     setSubmittedOnce({});
     setMasterRenewalAlerts(buildInitialRenewalAlerts(ulb));
     setCompletionStatus((prev) => ({
-      ...buildCompletionStatus(ulb),
-      departmentLicense: prev.departmentLicense,
+      ...buildCompletionStatus(ulb, hasLicences ?? prev.departmentLicense),
+      departmentLicense: hasLicences ?? prev.departmentLicense,
     }));
   }, []);
 

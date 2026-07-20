@@ -86,7 +86,6 @@ export function PhotoPlanNamingModal({
 
   return (
     <>
-      {open && <style dangerouslySetInnerHTML={{ __html: 'body:has(.photo-plan-naming-modal-content) div:has(+ .drawer-instance) { background-color: transparent !important; backdrop-filter: none !important; }' }} />}
       <Drawer
         open={open} onClose={onClose} width="sm"
         title={<div className="flex flex-col"><h2 className="text-base font-semibold text-slate-800">{titleStr}</h2>{subtitleStr && <p className="text-xs text-slate-400 font-normal mt-0.5">{subtitleStr}</p>}</div>}

@@ -253,6 +253,15 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
                 value={selectedFloorType}
                 onChange={(_name, val) => onChangeFloorType(val as 'Construction' | 'OpenPlot')}
                 className="h-8 text-xs font-bold text-slate-700 min-w-[120px]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    const taxableInput = document.getElementById('floor-is-taxable');
+                    if (taxableInput) {
+                      taxableInput.focus();
+                    }
+                  }
+                }}
               />
             </div>
           )}
@@ -363,6 +372,15 @@ export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = ({
                 value={selectedFloorType}
                 onChange={(_name, val) => onChangeFloorType(val as 'Construction' | 'OpenPlot')}
                 className="h-8.5 text-xs font-bold text-slate-700 min-w-[120px]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    const taxableInput = document.getElementById('floor-is-taxable');
+                    if (taxableInput) {
+                      taxableInput.focus();
+                    }
+                  }
+                }}
               />
             </div>
           )}

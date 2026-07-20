@@ -23,7 +23,7 @@ export function ReportListPanel({
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
         <FileText className="w-3.5 h-3.5 text-gray-400" />
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-          {workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories]}
+          {activeCategoryDef.name || workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories] || activeCategoryDef.key}
         </span>
         <span className="ml-1 text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
           {activeReports.length}

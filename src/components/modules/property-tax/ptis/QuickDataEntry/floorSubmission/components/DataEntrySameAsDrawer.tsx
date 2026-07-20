@@ -19,6 +19,7 @@ interface DataEntrySameAsDrawerProps {
   propertyNo?: string;
   partitionNo?: string;
   initialPropertyID?: string | number;
+  hasFloorSubmission?: boolean;
 
   // FloorTable related props
   filteredFloors: FloorData[];
@@ -43,21 +44,28 @@ interface DataEntrySameAsDrawerProps {
 
 export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (props) => {
   const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo, initialPropertyID } = props;
-  const hook = useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, initialPropertyID, t });
+  const hook = useDataEntrySameAs({
+    isOpen,
+    wardId,
+    propertyNo,
+    partitionNo,
+    initialPropertyID,
+    t,
+    localFloors: props.filteredFloors,
+    initialFloors: props.filteredFloors
+  });
 
   // Filter properties to display in tables
-  // Memoize to prevent unnecessary re-renders in child components
-  const { selectableProperties, filterPropertiesForTable } = hook;
-
+  // useMemo is CRITICAL here — without it a new array is created every render,
+  // which would trigger TypeWiseTab's useEffect([properties]) and reset the type filter.
   const displayedProperties = React.useMemo(
-    () => filterPropertiesForTable(selectableProperties, true),
-    [selectableProperties, filterPropertiesForTable]
+    () => hook.filterPropertiesForTable(hook.selectableProperties, true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hook.selectableProperties, hook.filterPropertiesForTable]
   );
 
-  const drawerClassName = "[&_div.fixed.right-0]:!w-[97vw] md:[&_div.fixed.right-0]:!w-[1000px] lg:[&_div.fixed.right-0]:!w-[1100px] xl:[&_div.fixed.right-0]:!w-[1200px] [&_div.fixed.right-0>div:first-child]:!bg-blue-600 [&_div.fixed.right-0>div:first-child_h2]:!text-white [&_div.fixed.right-0>div:first-child>div:first-child]:!flex-1 [&_div.fixed.right-0>div:first-child_button_svg]:!text-white [&_div.fixed.right-0>div:first-child_button]:hover:!bg-blue-700";
-
   return (
-    <div className={drawerClassName}>
+    <>
       <Tabs
         value={hook.dataEntrySameAsTab}
         onChange={(val) => {
@@ -73,7 +81,12 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
           open={isOpen}
           onClose={onClose}
           title={(
-            <div className="flex w-full flex-wrap items-center gap-4">
+            <div className="flex w-full flex-wrap items-center gap-4 data-entry-same-as-header">
+              <style>{`
+                div[role="dialog"] > div:has(.data-entry-same-as-header) > div:first-child {
+                  flex: 1;
+                }
+              `}</style>
               <h2 className="text-[15px] font-bold leading-tight text-white">{t('floor.dataEntry')}</h2>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
@@ -90,11 +103,11 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                 </div>
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
-                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
-                  {t('floor.dataEntryTabs.typeWise')}
-                </Tabs.Tab>
                 <Tabs.Tab value="property-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.propertyWise')}
+                </Tabs.Tab>
+                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
+                  {t('floor.dataEntryTabs.typeWise')}
                 </Tabs.Tab>
                 <Tabs.Tab value="parking" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
                   {t('floor.dataEntryTabs.parking')}
@@ -143,10 +156,8 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   searchWardId={hook.searchWardId}
                   handleWardChange={hook.handleWardChange}
                   isFetchingWards={hook.isFetchingWards}
-                  propertyOptions={hook.propertyOptions}
                   searchPropertyNo={hook.searchPropertyNo}
                   setSearchPropertyNo={hook.setSearchPropertyNo}
-                  isFetchingProperties={hook.isFetchingProperties}
                   sanitizeWardNo={hook.sanitizeWardNo}
                   sanitizePropertyNo={hook.sanitizePropertyNo}
                   handleSearchProperties={hook.handleSearchProperties}
@@ -171,7 +182,7 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
           </div>
         </Drawer>
       </Tabs>
-    </div>
+    </>
   );
 };
 

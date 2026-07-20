@@ -42,6 +42,7 @@ interface FloorTableProps {
   setEditingFloorForm: (val: FloorData) => void;
   selectedFloorType?: 'Construction' | 'OpenPlot';
   isPlotCategory?: boolean;
+  partitionNo?: string;
 }
 
 const FloorTable: React.FC<FloorTableProps> = ({
@@ -68,7 +69,13 @@ const FloorTable: React.FC<FloorTableProps> = ({
   subTypeData,
   setEditingFloorForm,
   isPlotCategory = false,
+  partitionNo,
 }) => {
+  const isDataEntryDisabled = React.useMemo(() => {
+    const norm = String(partitionNo ?? '').trim();
+    return !norm || norm === '0' || norm === '-';
+  }, [partitionNo]);
+
   const columns = useFloorTableColumns({
     t,
     floorLookup,
@@ -112,16 +119,16 @@ const FloorTable: React.FC<FloorTableProps> = ({
     // Append standard Action column at the end
     if (!viewOnly) {
       baseCols.push({
-      key: 'actions',
-      label: t('floor.actions'),
-      sortable: false,
-      render: (row: FloorData) => {
-        return (
-          <div className="flex justify-center items-center h-full min-h-[28px]">
-            {deleteCellRenderer(row)}
-          </div>
-        );
-      },
+        key: 'actions',
+        label: t('floor.actions'),
+        sortable: false,
+        render: (row: FloorData) => {
+          return (
+            <div className="flex justify-center items-center h-full min-h-[28px]">
+              {deleteCellRenderer(row)}
+            </div>
+          );
+        },
       });
     }
 
@@ -235,6 +242,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
               size="sm"
               className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
               onClick={handleOpenDataEntrySameAs}
+              disabled={isDataEntryDisabled}
             />
           )}
 
@@ -259,10 +267,11 @@ const FloorTable: React.FC<FloorTableProps> = ({
           getExpandHref={(row) => `#floor-${row.id}`}
           renderExpanded={renderExpandedRooms}
           tableClassName="w-full min-w-[1200px]"
-          emptyMessage={t('floor.noFloorsFound')}
+          emptyMessage={viewOnly ? t('floorSubmission.validation.emptyMessage') : t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}
-          containerClassName="border border-blue-200 shadow-md rounded-xl max-h-[200px] overflow-auto"
+          containerClassName="border border-blue-200 shadow-md rounded-xl"
+          heightRows={4}
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) =>
             viewOnly

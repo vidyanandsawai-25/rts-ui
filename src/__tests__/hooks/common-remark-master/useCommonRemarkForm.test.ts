@@ -4,7 +4,7 @@ import { useCommonRemarkForm } from "@/hooks/common-remark-master/useCommonRemar
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { saveCommonRemarkAction, fetchRemarkCategoriesAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
+import { saveCommonRemarkAction, createRemarkCategoryAction, fetchRemarkCategoriesAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import type { CommonRemark } from "@/types/common-remark-master/common-remark.types";
 
 // Mock next/navigation
@@ -35,6 +35,7 @@ vi.mock("sonner", () => ({
 // Mock server actions
 vi.mock("@/app/[locale]/configuration-settings/common-remark-master/actions", () => ({
   saveCommonRemarkAction: vi.fn(),
+  createRemarkCategoryAction: vi.fn(),
   fetchRemarkCategoriesAction: vi.fn(() => Promise.resolve([])),
 }));
 
@@ -411,10 +412,10 @@ describe("useCommonRemarkForm", () => {
     expect(toast.error).toHaveBeenCalledWith("apiErrors.duplicateRecord");
   });
 
-  it("should handle backend JSON validation errors on submit and display clean translated errors", async () => {
+  it("should handle backend JSON validation errors on submit when creating custom remark type", async () => {
     const rawBackendError = 'Failed to create remark type category: {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"RemarkTypeName":["RemarkTypeName_Invalid"]}}';
     
-    vi.mocked(saveCommonRemarkAction).mockResolvedValue({ 
+    vi.mocked(createRemarkCategoryAction).mockResolvedValue({ 
       ok: false, 
       error: "api_error", 
       message: rawBackendError 
@@ -427,9 +428,6 @@ describe("useCommonRemarkForm", () => {
       result.current.handleCustomTypeChange({
         target: { value: "Custom Type" },
       } as React.ChangeEvent<HTMLInputElement>);
-      result.current.handleChange({
-        target: { name: "remark", value: "Valid remark content" },
-      } as React.ChangeEvent<HTMLTextAreaElement>);
     });
 
     await act(async () => {
@@ -438,6 +436,36 @@ describe("useCommonRemarkForm", () => {
 
     expect(result.current.errors.customRemarkType).toBe("form.validation.customRemarkTypeFormat");
     expect(toast.error).toHaveBeenCalledWith("form.validation.customRemarkTypeFormat");
+  });
+
+  it("should successfully create a new remark type and switch back to select screen with new category selected", async () => {
+    vi.mocked(createRemarkCategoryAction).mockResolvedValue({
+      ok: true,
+      data: { id: 3, categoryCode: "3", categoryName: "New Custom Type" },
+    });
+
+    const { result } = await renderFormHook(defaultProps);
+
+    act(() => {
+      result.current.handleSelectChange({} as React.ChangeEvent<HTMLSelectElement>, "Other");
+      result.current.handleCustomTypeChange({
+        target: { value: "New Custom Type" },
+      } as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(createRemarkCategoryAction).toHaveBeenCalled();
+    expect(result.current.formData.remarkType).toBe("3");
+    expect(result.current.customRemarkType).toBe("");
+    expect(result.current.categories).toContainEqual({
+      id: 3,
+      categoryCode: "3",
+      categoryName: "New Custom Type",
+    });
+    expect(toast.success).toHaveBeenCalledWith("messages.remarkTypeAddSuccess");
   });
 
   it("should trigger cancel callback", async () => {

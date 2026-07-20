@@ -105,21 +105,7 @@ export const userManagementValidations = {
         }
         return undefined;
       },
-      address: (val) => {
-        if (val && existingUsers) {
-          const addressVal = String(val).trim().toLowerCase();
-          if (addressVal) {
-            const isDuplicate = existingUsers.some(
-              (u) =>
-                u.address &&
-                u.address.trim().toLowerCase() === addressVal &&
-                (excludeUserId === undefined ||
-                  (String(u.id) !== String(excludeUserId) &&
-                    Number(u.userId) !== Number(excludeUserId)))
-            );
-            if (isDuplicate) return t('form.errors.duplicateAddress');
-          }
-        }
+      address: () => {
         return undefined;
       },
       userCode: (val) => {

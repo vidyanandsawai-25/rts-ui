@@ -50,35 +50,6 @@ export async function getPolicyConfigurationById(id: string | number): Promise<P
   return response.data;
 }
 
-/** CREATE */
-export async function createPolicyConfiguration(data: PolicyConfigurationFormModel): Promise<void> {
-  const payload = {
-    policyCode: data.policyCode?.trim() || "",
-    category: data.category?.trim() || "",
-    displayName: data.displayName?.trim() || "",
-    description: data.description?.trim() || "",
-    dataType: data.dataType?.trim() || "",
-    policyValue: data.policyValue?.trim() || "",
-    defaultValue: data.defaultValue?.trim() || "",
-    unit: data.unit?.trim() || "",
-    effectiveFrom: data.effectiveFrom,
-    effectiveTo: data.effectiveTo,
-    allowedValues: data.allowedValues ?? null,
-    isActive: data.isActive,
-    createdBy: data.createdBy ?? 0,
-  };
-
-  const response = await apiClient.post<void>("/PolicyConfiguration", payload);
-
-  if (!response.success) {
-    throw new ApiError(
-      response.statusCode || 500,
-      "",
-      response.error || "Create policy configuration failed"
-    );
-  }
-}
-
 /** UPDATE */
 export async function updatePolicyConfiguration(data: PolicyConfigurationFormModel): Promise<void> {
   const payload = {

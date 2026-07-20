@@ -35,8 +35,8 @@
   "showPassword": "Show password",
   "hidePassword": "Hide password",
   "pageError": {
-    "title": "Something went wrong",
-    "description": "We could not load the sign in page. Please try again.",
+    "title": "Unable to Sign In",
+    "description": "We are unable to connect to the authentication service. Please check your network connection and try again.",
     "errorId": "Error ID: {id}",
     "goHome": "Go Home",
     "tryAgain": "Try Again"
@@ -52,7 +52,8 @@
     "description": "Your session has ended due to timeout. You will be signed out automatically.",
     "countdown": "{seconds}s",
     "redirectHint": "Redirecting to login when the timer reaches zero",
-    "saveWorkHint": "Session Expiring, save the work!"
+    "saveWorkHint": "Session Expiring, save the work!",
+    "inactivitySaveWorkHint": "Inactivity detected, save the work!"
   },
   "errors": {
     "validationError": "Validation Error",
@@ -64,7 +65,8 @@
     "sessionEstablishmentFailed": "Authentication succeeded but session could not be established",
     "invalidToken": "Invalid Token",
     "enterValidToken": "Please enter a valid 6-digit token",
-    "sessionExpired": "Session Expired",
+    "sessionExpired": "Session expired. Please login again.",
+    "inactivityTimeout": "Logged out due to inactivity. Please login again.",
     "relogin": "Please login again",
     "verificationFailed": "Verification Failed",
     "passwordsMismatch": "Passwords do not match",

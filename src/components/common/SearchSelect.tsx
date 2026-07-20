@@ -48,6 +48,11 @@ export interface SearchSelectProps {
   onInputFocus?: () => void;
 
   /**
+   * Optional callback triggered when the search query changes (for remote suggestions).
+   */
+  onSearchChange?: (searchText: string) => void;
+
+  /**
    * Optional force display text. Overrides label search logic.
    * Useful when the selected label is not yet in the options list.
    */
@@ -126,6 +131,7 @@ export function SearchSelect({
   className,
   disableSearch = false,
   onInputFocus,
+  onSearchChange,
   forceSearchText,
   isLoading = false,
   required = false,
@@ -142,6 +148,7 @@ export function SearchSelect({
   autoFocus = false,
   menuPlacement,
   onBlur,
+  strictMode = true,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -190,7 +197,11 @@ export function SearchSelect({
     if (hasTyped) return search;
     if (forceSearchText !== undefined) return forceSearchText;
     if (!hasOptions) return '';
-    return validOptions.find((o) => o.value === value)?.label ?? '';
+    const valStr = value !== undefined && value !== null ? String(value) : '';
+    const match = validOptions.find(
+      (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
+    );
+    return match?.label ?? '';
   }, [hasOptions, hasTyped, search, forceSearchText, value, validOptions]);
 
   /* ---------------- Close on outside click ---------------- */
@@ -211,7 +222,7 @@ export function SearchSelect({
   useEffect(() => {
     if (isOpen && highlightedIndex >= 0 && listRef.current) {
       const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement;
-      if (highlightedElement) {
+      if (highlightedElement && typeof highlightedElement.scrollIntoView === 'function') {
         highlightedElement.scrollIntoView({
           block: 'nearest',
           inline: 'start',
@@ -225,12 +236,51 @@ export function SearchSelect({
   const filteredOptions = useMemo<SearchSelectOption[]>(() => {
     // If search is disabled, always show all options
     if (disableSearch) return validOptions;
-    if (!hasTyped) return validOptions;
+
+    if (!hasTyped) {
+      if (!value) return validOptions;
+      const idx = validOptions.findIndex((opt) => opt.value === value);
+      if (idx >= 0) {
+        const selectedOpt = validOptions[idx];
+        const rest = validOptions.filter((_, i) => i !== idx);
+        return [selectedOpt, ...rest];
+      }
+      return validOptions;
+    }
+
     const cleanSearch = normalizeSearchText(search);
-    return validOptions.filter((opt) =>
+
+    const matches = validOptions.filter((opt) =>
       normalizeSearchText(opt.label).includes(cleanSearch)
     );
-  }, [search, hasTyped, validOptions, disableSearch]);
+
+    // Sort: exact matches first, then starts-with, then substring matches
+    return [...matches].sort((a, b) => {
+      const normA = normalizeSearchText(a.label);
+      const normB = normalizeSearchText(b.label);
+
+      const exactA = normA === cleanSearch;
+      const exactB = normB === cleanSearch;
+      if (exactA && !exactB) return -1;
+      if (!exactA && exactB) return 1;
+
+      const startsA = normA.startsWith(cleanSearch);
+      const startsB = normB.startsWith(cleanSearch);
+      if (startsA && !startsB) return -1;
+      if (!startsA && startsB) return 1;
+
+      return 0;
+    });
+  }, [search, hasTyped, validOptions, disableSearch, value]);
+
+  const prevIsOpen = useRef(isOpen);
+  useEffect(() => {
+    if (isOpen && !prevIsOpen.current) {
+      const index = filteredOptions.findIndex((opt) => opt.value === value);
+      setHighlightedIndex(index >= 0 ? index : 0);
+    }
+    prevIsOpen.current = isOpen;
+  }, [isOpen, value, filteredOptions]);
 
   /* ---------------- Validate and clear on blur ---------------- */
 
@@ -253,27 +303,35 @@ export function SearchSelect({
           setHasTyped(false);
         }
       } else {
-        // Restore previous selected value in the input if search did not match
-        setSearch('');
-        setHasTyped(false);
-        // Do NOT clear the value, just revert to previous selection
+        if (strictMode) {
+          // Restore previous selected value in the input if search did not match
+          setSearch('');
+          setHasTyped(false);
+        } else if (hasTyped) {
+          // If not strict mode and user typed, commit the raw search value!
+          onChange(fallbackName, search);
+          setHasTyped(false);
+        }
       }
     } finally {
       onBlur?.();
     }
-  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped, onBlur]);
+  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped, onBlur, strictMode]);
 
   /* ---------------- Select option ---------------- */
 
   const handleSelect = (val: string): void => {
-    const selected = validOptions.find((o) => o.value === val);
+    const valStr = String(val);
+    const selected = validOptions.find(
+      (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
+    );
     if (!selected) return;
     didSelectRef.current = true; // Mark that selection happened
     setSearch(selected.label);
     setHasTyped(false);
     setIsOpen(false);
     setHighlightedIndex(-1);
-    onChange(fallbackName, val); // always a string
+    onChange(fallbackName, String(selected.value));
   };
 
   /* ---------------- Input change ---------------- */
@@ -287,6 +345,7 @@ export function SearchSelect({
     setHasTyped(true);
     setIsOpen(true);
     setHighlightedIndex(-1);
+    onSearchChange?.(val);
   };
 
   /* ---------------- Keyboard navigation ---------------- */
@@ -323,6 +382,16 @@ export function SearchSelect({
           );
           if (exactMatch) {
             handleSelect(exactMatch.value);
+            onEnter?.();
+            return;
+          }
+
+          if (!strictMode) {
+            didSelectRef.current = true;
+            setHasTyped(false);
+            setIsOpen(false);
+            setHighlightedIndex(-1);
+            onChange(fallbackName, search);
             onEnter?.();
             return;
           }
@@ -383,6 +452,7 @@ export function SearchSelect({
             onInputFocus?.();
             if (!disabled) {
               setIsOpen(true);
+              onSearchChange?.(search);
             }
           }}
           onClick={(e) => {
@@ -445,7 +515,8 @@ export function SearchSelect({
             </li>
           ) : (
             filteredOptions.map((opt, index) => {
-              const isSelected = opt.value === value;
+              const valStr = value !== undefined && value !== null ? String(value) : '';
+              const isSelected = String(opt.value) === valStr || String(opt.value).toLowerCase() === valStr.toLowerCase();
               const isHighlighted = index === highlightedIndex;
 
               return (

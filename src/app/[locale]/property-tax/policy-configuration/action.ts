@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import {
-  createPolicyConfiguration,
   updatePolicyConfiguration,
   deletePolicyConfiguration,
   getPolicyConfigurationsPagedServer,
@@ -130,15 +129,13 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
   const cookieStore = await cookies();
   const createdBy = getUserIdFromCookies(cookieStore) ?? undefined;
 
-  let numericId: number | undefined = undefined;
-  let isUpdate = false;
+  if (!id || id.trim() === "") {
+    return { ok: false, error: "invalid_id" };
+  }
 
-  if (id && id.trim() !== "") {
-    numericId = Number(id);
-    if (!Number.isFinite(numericId) || numericId <= 0) {
-      return { ok: false, error: "invalid_id" };
-    }
-    isUpdate = true;
+  const numericId = Number(id);
+  if (!Number.isFinite(numericId) || numericId <= 0) {
+    return { ok: false, error: "invalid_id" };
   }
 
   const payload = {
@@ -159,15 +156,9 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
   };
 
   try {
-    if (isUpdate) {
-      await updatePolicyConfiguration(payload);
-      revalidatePath(`/${locale}/property-tax/policy-configuration`);
-      return { ok: true, mode: "update" as const };
-    } else {
-      await createPolicyConfiguration(payload);
-      revalidatePath(`/${locale}/property-tax/policy-configuration`);
-      return { ok: true, mode: "create" as const };
-    }
+    await updatePolicyConfiguration(payload);
+    revalidatePath(`/${locale}/property-tax/policy-configuration`);
+    return { ok: true, mode: "update" as const };
   } catch (error) {
     if (error instanceof ApiError && error.statusCode === 409) {
       return { ok: false, error: "duplicate" };

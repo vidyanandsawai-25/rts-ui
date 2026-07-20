@@ -214,6 +214,15 @@ const FloorForm: React.FC<FloorFormProps & {
               isLoading={isOperationLoading}
               disabled={isOperationLoading || !isFormValid || isAreaExceeded}
               className="px-6 h-9 text-xs font-bold shadow-md rounded-lg transition-all duration-300 flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:bg-blue-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:pointer-events-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                  e.preventDefault();
+                  const taxableInput = document.getElementById('floor-is-taxable');
+                  if (taxableInput) {
+                    taxableInput.focus();
+                  }
+                }
+              }}
             >
               {isAddingNewFloor ? t('floor.add') : t('floor.updateFloor')}
             </Button>

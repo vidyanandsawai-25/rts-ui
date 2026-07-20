@@ -71,6 +71,7 @@
     },
     "messages": {
       "addSuccess": "Remark added successfully.",
+      "remarkTypeAddSuccess": "Remark Type added successfully.",
       "updateSuccess": "Remark updated successfully.",
       "deleteSuccess": "Remark deleted successfully.",
       "deleteConfirm": "Are you sure you want to delete this remark?",
