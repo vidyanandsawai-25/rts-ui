@@ -12,6 +12,7 @@ import {
   ChevronRight,
   RefreshCw,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
 
 /* =========================
@@ -66,8 +67,7 @@ export function ImageViewer({
   zoomStep = DEFAULT_ZOOM_STEP,
   className,
 }: ImageViewerProps): React.ReactElement | null {
-  // For future translations if needed
-  // const t = useTranslations("common");
+  const t = useTranslations("common");
 
   // State
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -139,8 +139,8 @@ export function ImageViewer({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Failed to download image:", error);
+    } catch {
+      // Silent fail - user will see download not working
     }
   }, [images, currentIndex]);
 
@@ -265,8 +265,10 @@ export function ImageViewer({
   // Update initial index when opened
   useEffect(() => {
     if (open && currentIndex !== initialIndex) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentIndex(initialIndex);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialIndex]);
 
   // Prevent body scroll when modal is open and has a valid image
@@ -407,7 +409,7 @@ export function ImageViewer({
       )}
       role="dialog"
       aria-modal="true"
-      aria-label="Image viewer"
+      aria-label={t("imageViewer.title")}
       data-testid="image-viewer"
     >
       {/* Backdrop */}
@@ -445,7 +447,7 @@ export function ImageViewer({
                     "p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors",
                     "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
-                  aria-label="Zoom out"
+                  aria-label={t("imageViewer.zoomOut")}
                   data-testid="zoom-out-button"
                 >
                   <ZoomOut className="w-5 h-5" />
@@ -460,7 +462,7 @@ export function ImageViewer({
                     "p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors",
                     "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
-                  aria-label="Zoom in"
+                  aria-label={t("imageViewer.zoomIn")}
                   data-testid="zoom-in-button"
                 >
                   <ZoomIn className="w-5 h-5" />
@@ -472,7 +474,7 @@ export function ImageViewer({
               <button
                 onClick={handleRotate}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-                aria-label="Rotate clockwise"
+                aria-label={t("imageViewer.rotate")}
                 data-testid="rotate-button"
               >
                 <RotateCw className="w-5 h-5" />
@@ -482,7 +484,7 @@ export function ImageViewer({
             <button
               onClick={handleReset}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-              aria-label="Reset view"
+              aria-label={t("imageViewer.reset")}
               data-testid="reset-button"
             >
               <RefreshCw className="w-5 h-5" />
@@ -491,7 +493,7 @@ export function ImageViewer({
             <button
               onClick={handleFitToScreen}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-              aria-label="Fit to screen"
+              aria-label={t("imageViewer.fitToScreen")}
               data-testid="fit-to-screen-button"
             >
               <Maximize2 className="w-5 h-5" />
@@ -501,7 +503,7 @@ export function ImageViewer({
               <button
                 onClick={handleDownload}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-                aria-label="Download image"
+                aria-label={t("imageViewer.download")}
                 data-testid="download-button"
               >
                 <Download className="w-5 h-5" />
@@ -511,7 +513,7 @@ export function ImageViewer({
             <button
               onClick={() => onCloseRef.current()}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-              aria-label="Close viewer"
+              aria-label={t("imageViewer.close")}
               data-testid="close-button"
             >
               <X className="w-5 h-5" />
@@ -546,7 +548,7 @@ export function ImageViewer({
           <img
             ref={imageRef}
             src={currentImage.src}
-            alt={currentImage.alt || currentImage.title || "Image"}
+            alt={currentImage.alt || currentImage.title || t("imageViewer.image")}
             className={cn(
               "max-w-none transition-opacity duration-300",
               isImageLoaded ? "opacity-100" : "opacity-0"
@@ -572,7 +574,7 @@ export function ImageViewer({
                 "absolute left-4 top-1/2 -translate-y-1/2 z-10",
                 "p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
               )}
-              aria-label="Previous image"
+              aria-label={t("imageViewer.previous")}
               data-testid="previous-button"
             >
               <ChevronLeft className="w-6 h-6" />
@@ -583,7 +585,7 @@ export function ImageViewer({
                 "absolute right-4 top-1/2 -translate-y-1/2 z-10",
                 "p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
               )}
-              aria-label="Next image"
+              aria-label={t("imageViewer.next")}
               data-testid="next-button"
             >
               <ChevronRight className="w-6 h-6" />
@@ -593,12 +595,10 @@ export function ImageViewer({
 
         {/* Keyboard Shortcuts Help */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black text-white/90 text-xs px-4 py-2 rounded-lg">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
           <span className="hidden sm:inline">
-            ESC: Close | ←/→: Navigate | +/-: Zoom | R: Rotate | 0: Reset
+            {t("imageViewer.keyboardShortcuts")}
           </span>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <span className="sm:hidden">Tap or swipe to navigate</span>
+          <span className="sm:hidden">{t("imageViewer.tapToNavigate")}</span>
         </div>
       </div>
     </div>

@@ -326,5 +326,20 @@
     "nameFormat": "Invalid format for name",
     "descriptionAllZeros": "Description cannot be all zeros",
     "descriptionFormat": "Invalid format for description"
+  },
+  "imageViewer": {
+    "title": "Image viewer",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "rotate": "Rotate clockwise",
+    "reset": "Reset view",
+    "fitToScreen": "Fit to screen",
+    "download": "Download image",
+    "close": "Close viewer",
+    "previous": "Previous image",
+    "next": "Next image",
+    "image": "Image",
+    "keyboardShortcuts": "ESC: Close | ←/→: Navigate | +/-: Zoom | R: Rotate | 0: Reset",
+    "tapToNavigate": "Tap or swipe to navigate"
   }
 }
