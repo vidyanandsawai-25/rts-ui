@@ -35,8 +35,8 @@
   "showPassword": "Show password",
   "hidePassword": "Hide password",
   "pageError": {
-    "title": "Something went wrong",
-    "description": "We could not load the sign in page. Please try again.",
+    "title": "Unable to Sign In",
+    "description": "We are unable to connect to the authentication service. Please check your network connection and try again.",
     "errorId": "Error ID: {id}",
     "goHome": "Go Home",
     "tryAgain": "Try Again"

@@ -235,7 +235,14 @@ function createUlbInfoSchema(tCommon: TranslateFn, tUlb: TranslateFn): Record<st
     ),
     designation: chainValidators(
       requiredField(tUlb, 'validation.designationRequired'),
-      commonValidations.masterDescription(tCommon, CONST.DESIGNATION_MAX)
+      commonValidations.masterDescription(tCommon, CONST.DESIGNATION_MAX),
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (isGibberish(strVal)) {
+          return tUlb('validation.gibberishError');
+        }
+        return undefined;
+      }
     ),
     address: addressValidator(tCommon, tUlb),
     email: emailValidator(tCommon, tUlb, 'validation.emailFormat', 'validation.emailRequired'),
