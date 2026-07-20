@@ -276,12 +276,6 @@ export async function downloadDetailedRates(
       );
     }
 
-    // Debug: Log first rate to see structure
-    if (allRates.length > 0) {
-      console.log('Sample rate data:', allRates[0]);
-      console.log('Rate categories:', rateCategories);
-    }
-
     // Get rate section name for header
     const zoneName = zones.find(z => z.value === selectedZone)?.label || selectedZone;
 

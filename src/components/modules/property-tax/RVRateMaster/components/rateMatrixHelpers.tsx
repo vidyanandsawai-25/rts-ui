@@ -16,7 +16,8 @@ export function buildMatrixColumns(
   rateCategories: RateCategory[],
   singleColorClassHeader: string,
   tCommon: ReturnType<typeof import("next-intl").useTranslations>,
-  rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
+  rateUnit: "SqMeter" | "SqFeet" = "SqMeter",
+  t?: ReturnType<typeof import("next-intl").useTranslations>
 ) {
   // Filter out zone columns
   const filteredCategories = rateCategories.filter(cat =>
@@ -25,6 +26,7 @@ export function buildMatrixColumns(
   );
 
   const rateUnitLabel = rateUnit === "SqMeter" ? tCommon('rateUnitSqMeter') : tCommon('rateUnitSqFeet');
+  const tooltipHeader = t ? t('tooltips.associatedTypesOfUse') : 'Associated Types of Use:';
 
   return filteredCategories.map((cat) => {
     const code = (cat.constructionCode || cat.constructionId).trim().toUpperCase();
@@ -34,9 +36,8 @@ export function buildMatrixColumns(
 
     const tooltipContent = hasMultiple ? (
       <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">
-        {/* eslint-disable-next-line i18next/no-literal-string */}
         <div className="font-bold border-b border-blue-200/50 pb-1 mb-1 text-white">
-          Associated Types of Use:
+          {tooltipHeader}
         </div>
         <div className="space-y-1 mt-1">
           {associated.map((u, i) => (

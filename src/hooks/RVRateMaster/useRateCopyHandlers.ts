@@ -42,7 +42,8 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
     existingRateFound, rateCategories, useGroupOptions,
     zoneDescriptions, paginatedZoneDescriptions, matrixStorageKey, locale, setMatrixData,
     setShowMatrix, setCopySectionsExpanded, setShowMultipliersInline, setMultipliers,
-    tempMultipliers, sourceUseGroup, handleCopyRates, t
+    tempMultipliers, sourceUseGroup, handleCopyRates, t,
+    isOpenPlot = false,
   } = props;
 
   const handleGenerateMatrix = async () => {
@@ -50,7 +51,7 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
       toast.error(t('messages.selectRateSection'));
       return;
     }
-    if (!selectedUseGroup) {
+    if (!isOpenPlot && !selectedUseGroup) {
       toast.error(t('messages.selectUseGroup'));
       return;
     }
@@ -64,11 +65,13 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
       return;
     }
 
-    const params = new URLSearchParams({ zone: selectedZone, useGroup: selectedUseGroup });
-    if (assessmentYear) params.append("assessmentYear", assessmentYear);
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : `/${locale}/property-tax/rate-master/rvratemaster/add`;
-    const newUrl = `${currentPath}?${params.toString()}`;
-    window.history.pushState({}, '', newUrl);
+    if (!isOpenPlot) {
+      const params = new URLSearchParams({ zone: selectedZone, useGroup: selectedUseGroup });
+      if (assessmentYear) params.append("assessmentYear", assessmentYear);
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : `/${locale}/property-tax/rate-master/rvratemaster/add`;
+      const newUrl = `${currentPath}?${params.toString()}`;
+      window.history.pushState({}, '', newUrl);
+    }
 
     if (!isEditMode && assessmentYear) {
       const activeZones = paginatedZoneDescriptions.length > 0 ? paginatedZoneDescriptions : zoneDescriptions;

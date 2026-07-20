@@ -137,7 +137,7 @@ export function RateMatrixSection({
 
   const categoryColorMap = buildCategoryColorMap(rateCategories, singleColorClass);
   const filteredCategories = filterRateCategories(rateCategories);
-  const matrixColumns = buildMatrixColumns(filteredCategories, singleColorClassHeader, tCommon, rateUnit);
+  const matrixColumns = buildMatrixColumns(filteredCategories, singleColorClassHeader, tCommon, rateUnit, t);
   const matrixMetaColumns = buildMatrixMetaColumns(t);
   const matrixRows = buildMatrixRows(gridData, filteredCategories, zoneRemarksMap);
 

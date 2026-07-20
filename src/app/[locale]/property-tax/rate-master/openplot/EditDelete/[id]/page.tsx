@@ -115,7 +115,6 @@ export default async function EditOpenPlotRatePage({
           "ALL",
           firstAssessmentYear
         );
-        console.log(`✅ Server-side fetch: ${backendRates.length} rates found for zone=${firstZone}, useGroup=ALL, year=${firstAssessmentYear}`);
       } catch (error) {
         console.error('Error fetching rates for bulk edit:', error);
         backendRates = [];

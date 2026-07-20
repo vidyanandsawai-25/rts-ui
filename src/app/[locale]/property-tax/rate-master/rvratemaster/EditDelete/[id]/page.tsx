@@ -77,7 +77,6 @@ export default async function EditRatePage({
           firstUseGroup,
           firstAssessmentYear
         );
-        console.log(`✅ Server-side fetch: ${backendRates.length} rates found for zone=${firstZone}, useGroup=${firstUseGroup}, year=${firstAssessmentYear}`);
       } catch (error) {
         console.error('Error fetching rates for bulk edit:', error);
         backendRates = [];

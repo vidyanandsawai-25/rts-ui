@@ -1,4 +1,3 @@
-import React from "react";
 import type { RateCategory, MatrixColumn, IRateMaster, IRateValue } from "@/types/RVRateMaster";
 
 /**
@@ -88,16 +87,17 @@ export function buildRateColumns(
         </div>
       ) : description;
 
-      return {
+      const col: MatrixColumn = {
         id: catCode,
         label: (
           <span className={`inline-block font-bold rounded-lg px-2 py-0.5 ${singleColorClassHeader}`}>
             {displayCode} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
           </span>
-        ) as React.ReactNode,
-        tooltip: tooltipContent as React.ReactNode,
+        ),
+        tooltip: tooltipContent as unknown as string,
         headerClassName: `${singleColorClassHeader} font-bold text-xs text-center rounded-lg`
-      } as MatrixColumn;
+      };
+      return col;
     })
     .filter((col): col is MatrixColumn => col !== null);
 }
