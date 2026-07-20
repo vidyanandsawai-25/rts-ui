@@ -62,7 +62,7 @@ export async function bulkUpdateRateMaster(payload: Array<{ id: number, data: Re
 /**
  * Bulk purge rate master records (DELETE /Rate/Bulk/purge)
  */
-export async function bulkPurgeRateMaster(ids: number[]): Promise<void> {  
+export async function bulkPurgeRateMaster(ids: number[]): Promise<void> {
   try {
     const response = await apiClient.delete<unknown>(`/Rate/Bulk/purge`, {
       body: JSON.stringify(ids),

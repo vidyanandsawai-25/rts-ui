@@ -41,7 +41,8 @@
     "copyRatesNow": "अभी दरें कॉपी करें",
     "deleteRates": "दरें हटाएं",
     "downloadTemplate": "टेम्पलेट डाउनलोड करें",
-    "uploadExcel": "एक्सेल अपलोड करें"
+    "uploadExcel": "एक्सेल अपलोड करें",
+    "configureUseTypes": "उपयोग प्रकार कॉन्फ़िगर करें"
   },
   "messages": {
     "csvOnly": "कृपया केवल वैध CSV फ़ाइल अपलोड करें। Excel (.xlsx) फ़ाइलें समर्थित नहीं हैं।",
@@ -137,11 +138,68 @@
     "zoneDescription": "झोन विवरण",
     "assessmentYear": "मूल्यांकन वर्ष"
   },
+  "tooltips": {
+    "associatedTypesOfUse": "संबंधित उपयोग प्रकार:"
+  },
   "dialogs": {
     "deleteRatesTitle": "दरें हटाएं",
     "deleteRatesDescription": "क्या आप निम्नलिखित के लिए {count} दर रिकॉर्ड(्स) को स्थायी रूप से हटाना चाहते हैं:\n\n- दर अनुभाग: {zoneName}, उपयोग समूह: {useGroup}, मूल्यांकन वर्ष: {assessmentYear}\n\nयह कार्रवाई पूर्ववत नहीं की जा सकती है।",
     "confirmDelete": "हटाएं",
-    "cancel": "रद्द करें"
+    "cancel": "रद्द करें",
+    "configureUseTypeTitle": "उपयोग प्रकार कॉन्फ़िगर करें",
+    "configureUseTypeDescription": "क्या आप - {descriptionList} के लिए विभिन्न उपयोग प्रकार कॉन्फ़िगर करना चाहते हैं?",
+    "confirmYes": "हाँ",
+    "confirmNo": "नहीं"
+  },
+  "configureRates": {
+    "title": "ओपन प्लॉट दरें कॉन्फ़िगर करें",
+    "description": "विभिन्न प्रकार के उपयोग के लिए उपयोग समूह कॉन्फ़िगर और मैप करें",
+    "saveButton": "कॉन्फ़िगर करें",
+    "closeButton": "बंद करें",
+    "selectTypesOfUse": "उपयोग के प्रकार चुनें",
+    "searchPlaceholder": "खोजें...",
+    "noTypesFound": "कोई उपयोग प्रकार नहीं मिला",
+    "groupLabel": "समूह: {groupCode}",
+    "configureUseGroups": "उपयोग समूह कॉन्फ़िगर करें",
+    "noTypeSelected": "कृपया अपने समूह को कॉन्फ़िगर करने के लिए बाईं ओर एक उपयोग प्रकार चुनें।",
+    "loadingTypes": "उपयोग विवरण लोड हो रहे हैं...",
+    "saved": "सहेजा गया",
+    "createNewGroup": "नया समूह बनाएं",
+    "updateUseGroup": "उपयोग समूह अपडेट करें",
+    "associatedUseGroup": "संबंधित उपयोग समूह (केवल ओपन प्लॉट)",
+    "notApplicable": "लागू नहीं",
+    "selectExistingGroup": "मौजूदा समूह चुनें (केवल ओपन प्लॉट)",
+    "selectGroupPlaceholder": "-- समूह चुनें --",
+    "save": "सहेजें",
+    "groupIdCode": "समूह आईडी कोड",
+    "groupName": "समूह का नाम",
+    "iconType": "आइकन प्रकार",
+    "codePlaceholder": "उदाहरण: RES, COM",
+    "namePlaceholder": "उदाहरण: आवासीय",
+    "toast": {
+      "loadDataFailed": "प्रारंभिक कॉन्फ़िगरेशन डेटा लोड करने में विफल",
+      "loadTypesOfUseFailed": "उपयोग के प्रकार लोड करने में विफल",
+      "groupAssociated": "{typeDescription} के लिए समूह सफलतापूर्वक जोड़ा गया",
+      "failedToAssociate": "समूह जोड़ने में विफल",
+      "saveError": "सहेजने के ऑपरेशन के दौरान एक त्रुटि हुई",
+      "groupConfigured": "{typeDescription} के लिए समूह कॉन्फ़िगर और सफलतापूर्वक जोड़ा गया",
+      "failedToConfigure": "समूह कॉन्फ़िगर करने में विफल",
+      "invalidSelection": "कृपया ओपन प्लॉट के लिए उपयोग समूह वाला उपयोग प्रकार चुनें।",
+      "duplicateGroup": "कृपया अलग-अलग उपयोग समूह वाला उपयोग प्रकार चुनें",
+      "selectAtLeastOne": "कॉन्फ़िगर करने के लिए कम से कम एक उपयोग प्रकार चुनें।"
+    },
+    "validation": {
+      "codeRequired": "समूह आईडी कोड आवश्यक है",
+      "codeAllZeros": "समूह आईडी कोड सभी शून्य नहीं हो सकता",
+      "codeTooLong": "समूह आईडी कोड 10 अक्षरों से अधिक नहीं हो सकता",
+      "codeAlphanumericOnly": "समूह आईडी कोड केवल अल्फ़ान्यूमेरिक होना चाहिए",
+      "codeExists": "समूह आईडी कोड पहले से मौजूद है",
+      "nameRequired": "समूह का नाम आवश्यक है",
+      "nameAllZeros": "समूह का नाम सभी शून्य नहीं हो सकता",
+      "nameTooLong": "समूह का नाम 50 अक्षरों से अधिक नहीं हो सकता",
+      "nameInvalidChars": "समूह के नाम में अमान्य वर्ण हैं",
+      "nameExists": "समूह का नाम पहले से मौजूद है"
+    }
   },
   "downloadHeaders": {
     "rateSection": "दर अनुभाग",

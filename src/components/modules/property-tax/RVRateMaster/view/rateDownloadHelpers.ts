@@ -25,6 +25,7 @@ interface RateData {
   rateSquareMeter?: number;
   rateSquareFeet?: number;
   rateRemark?: string;
+  typeOfUseGroupId?: number;
 }
 
 interface GroupedGrid {
@@ -36,24 +37,15 @@ interface GroupedGrid {
 }
 
 /**
- * Group rates by year range and use group, then organize into grid format
+ * Group rates by year range and use group or construction type, then organize into grid format
  */
 function groupRatesIntoGrids(
   rates: RateData[],
   rateCategories: (string | RateCategory)[],
-  rateUnit: "SqMeter" | "SqFeet"
+  rateUnit: "SqMeter" | "SqFeet",
+  isOpenPlot: boolean = false,
+  useGroups: ISelectOption[] = []
 ): GroupedGrid[] {
-  // First, group by (yearRange, useGroup) combination
-  const combinationMap = new Map<string, RateData[]>();
-
-  rates.forEach(rate => {
-    const key = `${rate.yearRangeRV || ''}|${rate.typeOfUseGroup || ''}`;
-    if (!combinationMap.has(key)) {
-      combinationMap.set(key, []);
-    }
-    combinationMap.get(key)!.push(rate);
-  });
-
   // Build ordered construction type list and create mapping
   const orderedConstructionTypes: string[] = [];
   const constructionTypeMap = new Map<string, string>(); // Maps backend value to display code
@@ -71,39 +63,70 @@ function groupRatesIntoGrids(
     constructionTypeMap.set(displayCode, displayCode);
   });
 
+  // First, group by combination key
+  const combinationMap = new Map<string, RateData[]>();
+
+  rates.forEach(rate => {
+    const key = isOpenPlot
+      ? `${rate.yearRangeRV || ''}`
+      : `${rate.yearRangeRV || ''}|${rate.typeOfUseGroup || ''}`;
+
+    if (!combinationMap.has(key)) {
+      combinationMap.set(key, []);
+    }
+    combinationMap.get(key)!.push(rate);
+  });
+
   // Convert to grid format
   const grids: GroupedGrid[] = [];
 
   combinationMap.forEach((groupRates, key) => {
-    const [yearRange, useGroup] = key.split('|');
+    let yearRange = '';
+    let gridUseGroup = '';
 
-    // Collect unique tax zones and construction types for this group
+    if (isOpenPlot) {
+      yearRange = key;
+    } else {
+      const [yr, ug] = key.split('|');
+      yearRange = yr;
+      gridUseGroup = ug;
+    }
+
+    // Collect unique tax zones and construction types / use groups for this group
     const taxZonesSet = new Set<string>();
-    const constructionTypesInData = new Set<string>();
+    const columnValuesSet = new Set<string>();
     const rateDataMap = new Map<string, Map<string, number>>();
 
     groupRates.forEach(rate => {
       const taxZone = rate.taxZone || '';
-      const backendConstructionType = rate.constructionType ||
-        rate.constructionCode ||
-        rate.constructionTypeCode ||
-        (rate.constructionTypeId ? String(rate.constructionTypeId) : '');
       // Use rate value based on selected unit
       const rateValue = rateUnit === 'SqFeet'
         ? (rate.rateSquareFeet || 0)
         : (rate.rateSquareMeter || 0);
 
-      // Map backend construction type to display code
-      const displayConstructionType = constructionTypeMap.get(backendConstructionType) || backendConstructionType;
-
       if (taxZone) taxZonesSet.add(taxZone);
-      if (displayConstructionType) constructionTypesInData.add(displayConstructionType);
 
-      // Store rate: taxZone -> constructionType -> rate
-      if (!rateDataMap.has(taxZone)) {
-        rateDataMap.set(taxZone, new Map());
+      if (isOpenPlot) {
+        const useGroup = rate.typeOfUseGroup || '';
+        if (useGroup) columnValuesSet.add(useGroup);
+
+        if (!rateDataMap.has(taxZone)) {
+          rateDataMap.set(taxZone, new Map());
+        }
+        rateDataMap.get(taxZone)!.set(useGroup, rateValue);
+      } else {
+        const backendConstructionType = rate.constructionType ||
+          rate.constructionCode ||
+          rate.constructionTypeCode ||
+          (rate.constructionTypeId ? String(rate.constructionTypeId) : '');
+        const displayConstructionType = constructionTypeMap.get(backendConstructionType) || backendConstructionType;
+        if (displayConstructionType) columnValuesSet.add(displayConstructionType);
+
+        if (!rateDataMap.has(taxZone)) {
+          rateDataMap.set(taxZone, new Map());
+        }
+        rateDataMap.get(taxZone)!.set(displayConstructionType, rateValue);
       }
-      rateDataMap.get(taxZone)!.set(displayConstructionType, rateValue);
     });
 
     // Sort tax zones numerically
@@ -113,28 +136,32 @@ function groupRatesIntoGrids(
       return numA - numB;
     });
 
-    // Use all construction types from rateCategories that have data, in order
-    const constructionTypes = orderedConstructionTypes.filter(ct =>
-      constructionTypesInData.has(ct)
-    );
-
-    // Debug logging
-    console.log(`Grid for ${yearRange} - ${useGroup}:`, {
-      constructionTypesInData: Array.from(constructionTypesInData),
-      filteredConstructionTypes: constructionTypes,
-      orderedConstructionTypes
-    });
+    // Filter and order columns
+    let columnsList: string[] = [];
+    if (isOpenPlot) {
+      const orderedUseGroups = useGroups.map(ug => ug.label);
+      columnsList = orderedUseGroups.filter(ug => columnValuesSet.has(ug));
+      columnValuesSet.forEach(ug => {
+        if (!columnsList.includes(ug)) {
+          columnsList.push(ug);
+        }
+      });
+    } else {
+      columnsList = orderedConstructionTypes.filter(ct =>
+        columnValuesSet.has(ct)
+      );
+    }
 
     grids.push({
       yearRange,
-      useGroup,
+      useGroup: gridUseGroup,
       taxZones,
-      constructionTypes,
+      constructionTypes: columnsList,
       rateData: rateDataMap
     });
   });
 
-  // Sort grids by year range and use group
+  // Sort grids by year range and key
   grids.sort((a, b) => {
     const yearCompare = a.yearRange.localeCompare(b.yearRange);
     return yearCompare !== 0 ? yearCompare : a.useGroup.localeCompare(b.useGroup);
@@ -150,16 +177,17 @@ function gridsToCSV(
   grids: GroupedGrid[],
   rateSection: string,
   rateUnit: "SqMeter" | "SqFeet",
-  t: ReturnType<typeof import("next-intl").useTranslations>
+  t: ReturnType<typeof import("next-intl").useTranslations>,
+  isOpenPlot: boolean = false
 ): string {
   const csvLines: string[] = [];
 
-  // Collect all unique construction types across all grids, maintaining order
-  const allConstructionTypesSet = new Set<string>();
+  // Collect all unique columns across all grids, maintaining order
+  const allColumnsSet = new Set<string>();
   grids.forEach(grid => {
-    grid.constructionTypes.forEach(ct => allConstructionTypesSet.add(ct));
+    grid.constructionTypes.forEach(ct => allColumnsSet.add(ct));
   });
-  const allConstructionTypes = Array.from(allConstructionTypesSet);
+  const allColumns = Array.from(allColumnsSet);
 
   // Add single header row at the top
   const rateUnitLabel = rateUnit === 'SqFeet'
@@ -169,13 +197,19 @@ function gridsToCSV(
   const headerRow = [
     escapeCsvValue(t('downloadHeaders.rateSection')),
     escapeCsvValue(t('downloadHeaders.assessmentYearRange')),
-    escapeCsvValue(t('downloadHeaders.useGroup')),
-    escapeCsvValue(t('downloadHeaders.taxZoneNo')),
-    ...allConstructionTypes.map(ct => {
-      const label = `${ct} (${rateUnitLabel})`;
-      return escapeCsvValue(label);
-    })
   ];
+
+  if (!isOpenPlot) {
+    headerRow.push(escapeCsvValue(t('downloadHeaders.useGroup')));
+  }
+
+  headerRow.push(escapeCsvValue(t('downloadHeaders.taxZoneNo')));
+
+  allColumns.forEach(col => {
+    const label = `${col} (${rateUnitLabel})`;
+    headerRow.push(escapeCsvValue(label));
+  });
+
   csvLines.push(headerRow.join(','));
 
   // Add data rows for all grids
@@ -184,13 +218,17 @@ function gridsToCSV(
       const row = [
         escapeCsvValue(rateSection),
         escapeCsvValue(grid.yearRange),
-        escapeCsvValue(grid.useGroup),
-        escapeCsvValue(taxZone)
       ];
 
-      // Add rate for each construction type (use 0 if not present in this grid)
-      allConstructionTypes.forEach(constructionType => {
-        const rate = grid.rateData.get(taxZone)?.get(constructionType) || 0;
+      if (!isOpenPlot) {
+        row.push(escapeCsvValue(grid.useGroup));
+      }
+
+      row.push(escapeCsvValue(taxZone));
+
+      // Add rate for each column (use 0 if not present in this grid)
+      allColumns.forEach(column => {
+        const rate = grid.rateData.get(taxZone)?.get(column) || 0;
         row.push(escapeCsvValue(rate));
       });
 
@@ -209,7 +247,9 @@ export async function downloadDetailedRates(
   zones: ISelectOption[],
   rateUnit: "SqMeter" | "SqFeet",
   t: ReturnType<typeof import("next-intl").useTranslations>,
-  rateCategories: (string | RateCategory)[]
+  rateCategories: (string | RateCategory)[],
+  useGroups: ISelectOption[] = [],
+  isOpenPlot: boolean = false
 ) {
   if (!selectedZone || selectedZone === 'ALL') {
     toast.error(t('messages.selectRateSection'));
@@ -221,12 +261,19 @@ export async function downloadDetailedRates(
     const detailedRatesResponse = await getDetailedRatesAction(
       selectedZone, undefined, undefined, 1, -1
     );
-    const allRates = ((detailedRatesResponse as { items?: unknown[] })?.items || []) as RateData[];
+    let allRates = ((detailedRatesResponse as { items?: unknown[] })?.items || []) as RateData[];
 
     if (!allRates || allRates.length === 0) {
       toast.dismiss();
       toast.error(t('messages.noRatesAvailable'));
       return;
+    }
+
+    if (useGroups && useGroups.length > 0) {
+      const allowedGroupIds = new Set(useGroups.map(ug => Number(ug.value)));
+      allRates = allRates.filter(rate =>
+        rate.typeOfUseGroupId !== undefined && allowedGroupIds.has(Number(rate.typeOfUseGroupId))
+      );
     }
 
     // Debug: Log first rate to see structure
@@ -239,10 +286,10 @@ export async function downloadDetailedRates(
     const zoneName = zones.find(z => z.value === selectedZone)?.label || selectedZone;
 
     // Group rates into grids with proper ordering
-    const grids = groupRatesIntoGrids(allRates, rateCategories, rateUnit);
+    const grids = groupRatesIntoGrids(allRates, rateCategories, rateUnit, isOpenPlot, useGroups);
 
     // Convert grids to CSV with translations
-    const csvContent = gridsToCSV(grids, zoneName, rateUnit, t);
+    const csvContent = gridsToCSV(grids, zoneName, rateUnit, t, isOpenPlot);
 
     const BOM = '\uFEFF';
     const csvWithBOM = BOM + csvContent;

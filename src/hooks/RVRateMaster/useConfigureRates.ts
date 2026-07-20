@@ -28,7 +28,7 @@ interface UseConfigureRatesProps {
   isMatrixVisible: boolean;
   currentCategories: RateCategory[];
   onConfigureSelected?: (selectedTypes: ITypeOfUseDetails[]) => void;
-  onClose: (savedAny: boolean) => void;
+  t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
 export function useConfigureRates({
@@ -36,6 +36,7 @@ export function useConfigureRates({
   isMatrixVisible,
   currentCategories,
   onConfigureSelected,
+  t,
 }: UseConfigureRatesProps) {
   const [allUseTypes, setAllUseTypes] = useState<ITypeOfUseDetails[]>([]);
   const [paginatedUseTypes, setPaginatedUseTypes] = useState<ITypeOfUseDetails[]>([]);
@@ -73,7 +74,7 @@ export function useConfigureRates({
         setAllUseTypes(sortedTypes);
         setExistingGroups(groupsResult.items || []);
       } catch (err) {
-        toast.error("Failed to load initial configuration data");
+        toast.error(t("configureRates.toast.loadDataFailed"));
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -82,7 +83,7 @@ export function useConfigureRates({
     if (open) {
       loadData();
     }
-  }, [open]);
+  }, [open, t]);
 
   // Handle initialization and URL parameter sync
   useConfigureRatesInitialization({
@@ -107,12 +108,14 @@ export function useConfigureRates({
     setIsListLoading,
     hasInitialized,
     setHasInitialized,
+    t,
   });
 
   // Handle form updates and validation rules
   const { handleFieldChange } = useConfigureRatesValidation({
     existingGroups,
     setGroupForms,
+    t,
   });
 
   // Handle async group saving and submission checks
@@ -134,6 +137,7 @@ export function useConfigureRates({
     setCheckedIds,
     onConfigureSelected,
     setSavedAny,
+    t,
   });
 
   return {

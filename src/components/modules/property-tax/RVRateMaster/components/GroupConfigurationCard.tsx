@@ -33,6 +33,7 @@ interface GroupConfigurationCardProps {
   handleFieldChange: (id: number, field: 'code' | 'name' | 'icon', val: string) => void;
   handleSaveGroup: (id: number, tu: ITypeOfUseDetails) => void;
   isOpenPlot?: boolean;
+  t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
 export function GroupConfigurationCard({
@@ -43,6 +44,7 @@ export function GroupConfigurationCard({
   handleToggleMode,
   handleFieldChange,
   handleSaveGroup,
+  t,
 }: GroupConfigurationCardProps) {
   if (!form) return null;
 
@@ -73,20 +75,20 @@ export function GroupConfigurationCard({
         <div className="flex items-center gap-3">
           {form.isSaved && (
             <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 font-sans">
-              <CheckCircle size={16} /> Saved
+              <CheckCircle size={16} /> {t('configureRates.saved')}
             </span>
           )}
           {!form.isSaving && typeofuse.typeOfUseCode !== 'OP' && (
             form.isMappingExisting ? (
               <AddButton
                 size="sm"
-                label="Create New Group"
+                label={t('configureRates.createNewGroup')}
                 onClick={() => handleToggleMode(typeofuse.id)}
               />
             ) : (
               <UpdateButton
                 size="sm"
-                label="Update Use Group"
+                label={t('configureRates.updateUseGroup')}
                 onClick={() => handleToggleMode(typeofuse.id)}
               />
             )
@@ -98,10 +100,10 @@ export function GroupConfigurationCard({
         <CardContent className="flex flex-col gap-3 py-3 w-full">
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-slate-500 mb-1 font-sans">
-              Associated Use Group (Open Plot only)
+              {t('configureRates.associatedUseGroup')}
             </span>
             <span className="text-sm font-bold text-slate-800 font-sans bg-slate-50 border border-slate-100 rounded-md px-3 py-2">
-              {typeofuse.typeOfUseGroupCode || "N/A"} - {typeofuse.groupName || "N/A"}
+              {typeofuse.typeOfUseGroupCode || t('configureRates.notApplicable')} - {typeofuse.groupName || t('configureRates.notApplicable')}
             </span>
           </div>
         </CardContent>
@@ -109,7 +111,7 @@ export function GroupConfigurationCard({
         <CardContent className="flex flex-col sm:flex-row items-end gap-4 w-full">
           <div className="flex flex-col flex-1 w-full">
             <SearchSelect
-              label="Select Existing Group (Open Plot only)"
+              label={t('configureRates.selectExistingGroup')}
               options={existingGroups
                 .filter(g => g.isOpenPlot)
                 .map(g => ({
@@ -118,14 +120,14 @@ export function GroupConfigurationCard({
                 }))}
               value={form.selectedExistingGroupId || ""}
               onChange={(_, val) => handleSelectExistingGroup(typeofuse.id, val)}
-              placeholder="-- Select Group --"
+              placeholder={t('configureRates.selectGroupPlaceholder')}
               disabled={form.isSaving}
             />
           </div>
 
           <div className="self-stretch sm:self-auto flex items-end">
             <SaveButton
-              label="Save"
+              label={t('configureRates.save')}
               size="md"
               onClick={() => handleSaveGroup(typeofuse.id, typeofuse)}
               disabled={!form.selectedExistingGroupId || form.isSaved || form.isSaving}
@@ -140,11 +142,11 @@ export function GroupConfigurationCard({
             {/* Group ID Code */}
             <div className="flex flex-col">
               <Input
-                label="Group ID Code"
+                label={t('configureRates.groupIdCode')}
                 name={`code_${typeofuse.id}`}
                 value={form.code}
                 onChange={(e) => handleFieldChange(typeofuse.id, 'code', e.target.value)}
-                placeholder="e.g., RES, COM"
+                placeholder={t('configureRates.codePlaceholder')}
                 required
                 fullWidth
                 disabled={form.isSaved || form.isSaving}
@@ -158,11 +160,11 @@ export function GroupConfigurationCard({
             {/* Group Name */}
             <div className="flex flex-col">
               <Input
-                label="Group Name"
+                label={t('configureRates.groupName')}
                 name={`name_${typeofuse.id}`}
                 value={form.name}
                 onChange={(e) => handleFieldChange(typeofuse.id, 'name', e.target.value)}
-                placeholder="e.g., Residential"
+                placeholder={t('configureRates.namePlaceholder')}
                 required
                 fullWidth
                 disabled={form.isSaved || form.isSaving}
@@ -178,7 +180,7 @@ export function GroupConfigurationCard({
               <GroupIconSelector
                 value={form.icon}
                 onChange={(iconVal) => handleFieldChange(typeofuse.id, 'icon', iconVal)}
-                label="Icon Type"
+                label={t('configureRates.iconType')}
                 required
               />
             </div>
@@ -187,7 +189,7 @@ export function GroupConfigurationCard({
           {/* Save Button */}
           <div className="lg:mt-[24px] self-stretch lg:self-start flex items-end">
             <SaveButton
-              label="Save"
+              label={t('configureRates.save')}
               size="md"
               onClick={() => handleSaveGroup(typeofuse.id, typeofuse)}
               disabled={!isFormValid() || form.isSaved || form.isSaving}

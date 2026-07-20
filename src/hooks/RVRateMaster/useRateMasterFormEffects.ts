@@ -62,14 +62,14 @@ export function useRateMasterFormEffects({
       setMatrixData(prev => prev.map(row => {
         const newRow = { ...row };
         const validIds = new Set(localRateCategories.map(c => c.constructionId));
-        
+
         // Remove columns not present in localRateCategories
         Object.keys(newRow).forEach(key => {
           if (key !== 'id' && key !== 'zone' && key !== 'zoneNo' && !validIds.has(key)) {
             delete newRow[key];
           }
         });
-        
+
         // Add newly configured columns with default value of 0
         localRateCategories.forEach(cat => {
           if (newRow[cat.constructionId] === undefined) {

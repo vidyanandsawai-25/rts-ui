@@ -19,10 +19,10 @@ interface RateSubmission {
 function parseBackendError(errorMessage: string): string {
   try {
     // Check if the error contains rate validation errors
-    if (errorMessage.includes('Rate_RateSquareFeet_Min_0') || 
-        errorMessage.includes('Rate_RateSquareMeter_Min_0') ||
-        errorMessage.includes('RateSquareFeet') ||
-        errorMessage.includes('RateSquareMeter')) {
+    if (errorMessage.includes('Rate_RateSquareFeet_Min_0') ||
+      errorMessage.includes('Rate_RateSquareMeter_Min_0') ||
+      errorMessage.includes('RateSquareFeet') ||
+      errorMessage.includes('RateSquareMeter')) {
       return 'Rate value must be valid. Please enter a positive rate value.';
     }
     // Return original message if no pattern matches
@@ -99,7 +99,7 @@ export async function processSingleSubmission(
   getUseGroupLabel: (useGroup: string) => string
 ): Promise<{ success: boolean; errors: string[] }> {
   const errors: string[] = [];
-  
+
   const { updates, inserts } = buildPayloadFromMatrix(
     submission.matrixData,
     backendRates,
@@ -136,7 +136,7 @@ export async function processSingleSubmission(
   if (inserts.length > 0) {
     try {
       const payload = buildBulkCreatePayload(inserts);
-      const finalPayload = config.isOpenPlot 
+      const finalPayload = config.isOpenPlot
         ? payload.map(({ constructionTypeId, ...rest }) => rest)
         : payload;
 
@@ -178,7 +178,7 @@ export async function processRateSubmissions(
     if (success) {
       successCount++;
     }
-    
+
     if (errors.length > 0) {
       errorMessages.push(...errors);
     }

@@ -8,12 +8,12 @@ interface UseLazyDropdownDataReturn {
   zoneOptions: ISelectOption[];
   useGroupOptions: ISelectOption[];
   assessmentYears: AssessmentYearRangeOption[];
-  
+
   // Loading states
   isLoadingZones: boolean;
   isLoadingUseGroups: boolean;
   isLoadingAssessmentYears: boolean;
-  
+
   // Load triggers
   loadZoneOptions: () => Promise<void>;
   loadUseGroupOptions: () => Promise<void>;
@@ -29,21 +29,21 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
   const [zoneOptions, setZoneOptions] = useState<ISelectOption[]>([]);
   const [useGroupOptions, setUseGroupOptions] = useState<ISelectOption[]>([]);
   const [assessmentYears, setAssessmentYears] = useState<AssessmentYearRangeOption[]>([]);
-  
+
   // Loading states
   const [isLoadingZones, setIsLoadingZones] = useState(false);
   const [isLoadingUseGroups, setIsLoadingUseGroups] = useState(false);
   const [isLoadingAssessmentYears, setIsLoadingAssessmentYears] = useState(false);
-  
+
   // Loaded flags to prevent re-fetching
   const [zonesLoaded, setZonesLoaded] = useState(false);
   const [useGroupsLoaded, setUseGroupsLoaded] = useState(false);
   const [assessmentYearsLoaded, setAssessmentYearsLoaded] = useState(false);
-  
+
   // Load zone options on demand
   const loadZoneOptions = useCallback(async () => {
     if (zonesLoaded || isLoadingZones) return;
-    
+
     setIsLoadingZones(true);
     try {
       const data = await getZoneOptions();
@@ -56,11 +56,11 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
       setIsLoadingZones(false);
     }
   }, [zonesLoaded, isLoadingZones]);
-  
+
   // Load use group options on demand
   const loadUseGroupOptions = useCallback(async () => {
     if (useGroupsLoaded || isLoadingUseGroups) return;
-    
+
     setIsLoadingUseGroups(true);
     try {
       const data = await getUseGroupOptions();
@@ -73,11 +73,11 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
       setIsLoadingUseGroups(false);
     }
   }, [useGroupsLoaded, isLoadingUseGroups]);
-  
+
   // Load assessment years on demand
   const loadAssessmentYears = useCallback(async () => {
     if (assessmentYearsLoaded || isLoadingAssessmentYears) return;
-    
+
     setIsLoadingAssessmentYears(true);
     try {
       const data = await getAssessmentYears();
@@ -90,18 +90,18 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
       setIsLoadingAssessmentYears(false);
     }
   }, [assessmentYearsLoaded, isLoadingAssessmentYears]);
-  
+
   return {
     // Data
     zoneOptions,
     useGroupOptions,
     assessmentYears,
-    
+
     // Loading states
     isLoadingZones,
     isLoadingUseGroups,
     isLoadingAssessmentYears,
-    
+
     // Load functions
     loadZoneOptions,
     loadUseGroupOptions,

@@ -165,7 +165,7 @@ export function RateFiltersSection({
             onClick={onConfigureRates}
             className="px-4 py-2 text-sm font-semibold rounded-lg shadow transition-all bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
           >
-            Configure Use Type
+            {t("buttons.configureUseTypes")}
           </button>
         </div>
       )}

@@ -22,13 +22,15 @@ const isAllZeros = (str: string) => /^[0]+$/.test(str);
 interface UseConfigureRatesValidationProps {
   existingGroups: UseGroup[];
   setGroupForms: React.Dispatch<React.SetStateAction<Record<number, GroupFormState>>>;
+  t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
 export function useConfigureRatesValidation({
   existingGroups,
   setGroupForms,
+  t,
 }: UseConfigureRatesValidationProps) {
-  
+
   const handleFieldChange = useCallback((id: number, field: 'code' | 'name' | 'icon', val: string) => {
     setGroupForms(prev => {
       const form = prev[id];
@@ -52,18 +54,18 @@ export function useConfigureRatesValidation({
         const codeVal = field === 'code' ? cleanedVal : form.code;
         const codeTrimmed = codeVal.trim();
         if (!codeTrimmed) {
-          errors.code = "Group ID Code is required";
+          errors.code = t("configureRates.validation.codeRequired");
         } else if (isAllZeros(codeTrimmed)) {
-          errors.code = "Group ID Code cannot be all zeros";
+          errors.code = t("configureRates.validation.codeAllZeros");
         } else if (codeTrimmed.length > 10) {
-          errors.code = "Group ID Code cannot exceed 10 characters";
+          errors.code = t("configureRates.validation.codeTooLong");
         } else if (!CODE_REGEX.test(codeTrimmed)) {
-          errors.code = "Group ID Code must be alphanumeric only";
+          errors.code = t("configureRates.validation.codeAlphanumericOnly");
         } else {
           const normalized = normalize(codeTrimmed);
           const isDup = existingGroups.some(g => normalize(g.typeOfUseGroupCode || '') === normalized);
           if (isDup) {
-            errors.code = "Group ID Code already exists";
+            errors.code = t("configureRates.validation.codeExists");
           }
         }
       }
@@ -72,18 +74,18 @@ export function useConfigureRatesValidation({
         const nameVal = field === 'name' ? cleanedVal : form.name;
         const nameTrimmed = nameVal.trim();
         if (!nameTrimmed) {
-          errors.name = "Group Name is required";
+          errors.name = t("configureRates.validation.nameRequired");
         } else if (isAllZeros(nameTrimmed)) {
-          errors.name = "Group Name cannot be all zeros";
+          errors.name = t("configureRates.validation.nameAllZeros");
         } else if (nameTrimmed.length > 50) {
-          errors.name = "Group Name cannot exceed 50 characters";
+          errors.name = t("configureRates.validation.nameTooLong");
         } else if (!TEXT_ALLOWED.test(nameTrimmed)) {
-          errors.name = "Group Name contains invalid characters";
+          errors.name = t("configureRates.validation.nameInvalidChars");
         } else {
           const normalized = normalize(nameTrimmed);
           const isDup = existingGroups.some(g => normalize(g.groupName || '') === normalized);
           if (isDup) {
-            errors.name = "Group Name already exists";
+            errors.name = t("configureRates.validation.nameExists");
           }
         }
       }
@@ -91,7 +93,7 @@ export function useConfigureRatesValidation({
       updatedForm.errors = errors;
       return { ...prev, [id]: updatedForm };
     });
-  }, [existingGroups, setGroupForms]);
+  }, [existingGroups, setGroupForms, t]);
 
   return {
     handleFieldChange,

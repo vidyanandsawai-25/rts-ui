@@ -45,7 +45,7 @@ export function handleTemplateDownload(params: TemplateDownloadParams) {
     toast.error('Zones data not available for template.');
     return;
   }
-  
+
   try {
     const csvContent = generateCsvTemplate(allZones, rateCategories, rateUnit);
     const filename = `rate-master-template-${selectedZone}-${selectedUseGroup}.csv`;
@@ -88,15 +88,15 @@ export function handleFileUpload(
     try {
       const text = e.target?.result as string;
       const { zoneEdits, importedRateCount } = parseCsvContent(text, allZones, rateCategories);
-      
+
       const newEdits: Record<string, Record<string, number>> = { ...allZoneEdits, ...zoneEdits };
       setAllZoneEdits(newEdits);
 
       const updatedMatrix = applyImportedEditsToMatrix(matrixData, zoneEdits);
       setMatrixData(updatedMatrix);
-      
+
       toast.success(t('messages.importedRecordsSuccess', { count: importedRateCount }));
-      
+
       if (!showMatrix) {
         setShowMatrix(true);
       }
@@ -114,7 +114,7 @@ export function handleFileUpload(
   };
 
   reader.readAsText(file);
-  
+
   if (fileInputRef.current) {
     fileInputRef.current.value = '';
   }

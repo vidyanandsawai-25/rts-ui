@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import type { RateCategory } from "@/types/RVRateMaster";
 
 interface UrlParamSyncProps {
   selectedZone: string;
@@ -8,7 +7,6 @@ interface UrlParamSyncProps {
   copySectionsExpanded: boolean;
   showMultipliersInline: boolean;
   isOpenPlot?: boolean;
-  rateCategories?: RateCategory[];
 }
 
 /**
@@ -21,42 +19,52 @@ export function useUrlParamSync({
   copySectionsExpanded,
   showMultipliersInline,
   isOpenPlot = false,
-  rateCategories,
 }: UrlParamSyncProps) {
-  
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && selectedZone && selectedUseGroup && assessmentYear) {
-      const params = new URLSearchParams(window.location.search);
-      params.set('zone', selectedZone);
-      
-      if (isOpenPlot && rateCategories && rateCategories.length > 0) {
-        const useGroupIds = rateCategories
-          .map(c => c.typeOfUseGroupId)
-          .filter((id): id is number => id !== undefined && id !== null && id > 0);
-        const uniqueIds = Array.from(new Set(useGroupIds)).sort((a, b) => a - b);
-        if (uniqueIds.length > 0) {
-          params.set('useGroup', uniqueIds.join(','));
+    if (typeof window !== 'undefined' && selectedZone && assessmentYear) {
+      // For Open Plot, skip syncing useGroup/rateCategories to the URL.
+      // AddRateDrawer uses useSearchParams() which re-renders on every URL change,
+      // causing the lazy-loaded dropdown state to reset. Since Open Plot derives
+      // useGroup from rateCategories (not a user dropdown), no need to persist it.
+      if (isOpenPlot) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('zone', selectedZone);
+        params.set('assessmentYear', assessmentYear);
+        if (copySectionsExpanded) {
+          params.set('showCopyRates', 'true');
         } else {
-          params.set('useGroup', 'ALL');
+          params.delete('showCopyRates');
         }
-      } else {
+        if (showMultipliersInline) {
+          params.set('showMultipliers', 'true');
+        } else {
+          params.delete('showMultipliers');
+        }
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+        return;
+      }
+
+      // For non-Open Plot (Construction Type), sync all params including useGroup
+      if (selectedUseGroup) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('zone', selectedZone);
         params.set('useGroup', selectedUseGroup);
+        params.set('assessmentYear', assessmentYear);
+        if (copySectionsExpanded) {
+          params.set('showCopyRates', 'true');
+        } else {
+          params.delete('showCopyRates');
+        }
+        if (showMultipliersInline) {
+          params.set('showMultipliers', 'true');
+        } else {
+          params.delete('showMultipliers');
+        }
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
       }
-      
-      params.set('assessmentYear', assessmentYear);
-      if (copySectionsExpanded) {
-        params.set('showCopyRates', 'true');
-      } else {
-        params.delete('showCopyRates');
-      }
-      if (showMultipliersInline) {
-        params.set('showMultipliers', 'true');
-      } else {
-        params.delete('showMultipliers');
-      }
-      const currentPath = window.location.pathname;
-      const newUrl = `${currentPath}?${params.toString()}`;
-      window.history.replaceState({}, '', newUrl);
     }
-  }, [selectedZone, selectedUseGroup, assessmentYear, copySectionsExpanded, showMultipliersInline, isOpenPlot, rateCategories]);
+  }, [selectedZone, selectedUseGroup, assessmentYear, copySectionsExpanded, showMultipliersInline, isOpenPlot]);
 }

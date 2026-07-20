@@ -100,7 +100,7 @@ export default function RateMasterView({
   };
 
   const handleDownloadRates = async () => {
-    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories);
+    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories, useGroups, isOpenPlot);
   };
   const filteredData = useMemo(() =>
     filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled, isOpenPlot),
@@ -116,8 +116,8 @@ export default function RateMasterView({
   );
 
   const columns = useMemo(() =>
-    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, rateUnitPolicy?.value ?? "SqMeter"),
-    [rateCategories, tCommon, rateUnitPolicy]
+    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, t, rateUnitPolicy?.value ?? "SqMeter"),
+    [rateCategories, tCommon, t, rateUnitPolicy]
   );
 
   const isDownloadDisabled = !selectedZone || selectedZone === 'ALL' ||

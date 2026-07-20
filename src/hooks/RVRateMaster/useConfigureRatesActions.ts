@@ -35,6 +35,7 @@ interface UseConfigureRatesActionsProps {
   setCheckedIds: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   onConfigureSelected?: (selectedTypes: ITypeOfUseDetails[]) => void;
   setSavedAny: React.Dispatch<React.SetStateAction<boolean>>;
+  t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
 export function useConfigureRatesActions({
@@ -49,6 +50,7 @@ export function useConfigureRatesActions({
   setCheckedIds,
   onConfigureSelected,
   setSavedAny,
+  t,
 }: UseConfigureRatesActionsProps) {
 
   const handleCheckboxChange = useCallback((id: number) => {
@@ -158,7 +160,7 @@ export function useConfigureRatesActions({
         });
 
         if (res.success && res.typeOfUseGroupId) {
-          toast.success(`Group associated successfully for ${typeofuse.description || typeofuse.typeOfUseCode}`);
+          toast.success(t("configureRates.toast.groupAssociated", { typeDescription: typeofuse.description || typeofuse.typeOfUseCode || "" }));
           setGroupForms(prev => ({
             ...prev,
             [id]: { ...prev[id]!, isSaved: true, isSaving: false }
@@ -183,14 +185,14 @@ export function useConfigureRatesActions({
           setPaginatedUseTypes(prev => prev.map(updater));
           setSavedAny(true);
         } else {
-          toast.error(res.message || "Failed to associate group");
+          toast.error(res.message || t("configureRates.toast.failedToAssociate"));
           setGroupForms(prev => ({
             ...prev,
             [id]: { ...prev[id]!, isSaving: false }
           }));
         }
       } catch (err) {
-        toast.error("An error occurred during save operation");
+        toast.error(t("configureRates.toast.saveError"));
         console.error(err);
         setGroupForms(prev => ({
           ...prev,
@@ -205,32 +207,32 @@ export function useConfigureRatesActions({
 
     const errors: { code?: string; name?: string } = {};
     if (!codeTrimmed) {
-      errors.code = "Group ID Code is required";
+      errors.code = t("configureRates.validation.codeRequired");
     } else if (isAllZeros(codeTrimmed)) {
-      errors.code = "Group ID Code cannot be all zeros";
+      errors.code = t("configureRates.validation.codeAllZeros");
     } else if (codeTrimmed.length > 10) {
-      errors.code = "Group ID Code cannot exceed 10 characters";
+      errors.code = t("configureRates.validation.codeTooLong");
     } else if (!CODE_REGEX.test(codeTrimmed)) {
-      errors.code = "Group ID Code must be alphanumeric only";
+      errors.code = t("configureRates.validation.codeAlphanumericOnly");
     } else {
       const normalized = normalize(codeTrimmed);
       if (existingGroups.some(g => normalize(g.typeOfUseGroupCode || '') === normalized)) {
-        errors.code = "Group ID Code already exists";
+        errors.code = t("configureRates.validation.codeExists");
       }
     }
 
     if (!nameTrimmed) {
-      errors.name = "Group Name is required";
+      errors.name = t("configureRates.validation.nameRequired");
     } else if (isAllZeros(nameTrimmed)) {
-      errors.name = "Group Name cannot be all zeros";
+      errors.name = t("configureRates.validation.nameAllZeros");
     } else if (nameTrimmed.length > 50) {
-      errors.name = "Group Name cannot exceed 50 characters";
+      errors.name = t("configureRates.validation.nameTooLong");
     } else if (!TEXT_ALLOWED.test(nameTrimmed)) {
-      errors.name = "Group Name contains invalid characters";
+      errors.name = t("configureRates.validation.nameInvalidChars");
     } else {
       const normalized = normalize(nameTrimmed);
       if (existingGroups.some(g => normalize(g.groupName || '') === normalized)) {
-        errors.name = "Group Name already exists";
+        errors.name = t("configureRates.validation.nameExists");
       }
     }
 
@@ -257,7 +259,7 @@ export function useConfigureRatesActions({
       });
 
       if (res.success && res.typeOfUseGroupId) {
-        toast.success(`Group configured and associated successfully for ${typeofuse.description || typeofuse.typeOfUseCode}`);
+        toast.success(t("configureRates.toast.groupConfigured", { typeDescription: typeofuse.description || typeofuse.typeOfUseCode || "" }));
         setGroupForms(prev => ({
           ...prev,
           [id]: { ...prev[id]!, isSaved: true, isSaving: false }
@@ -289,21 +291,21 @@ export function useConfigureRatesActions({
         setPaginatedUseTypes(prev => prev.map(updater));
         setSavedAny(true);
       } else {
-        toast.error(res.message || "Failed to configure group");
+        toast.error(res.message || t("configureRates.toast.failedToConfigure"));
         setGroupForms(prev => ({
           ...prev,
           [id]: { ...prev[id]!, isSaving: false }
         }));
       }
     } catch (err) {
-      toast.error("An error occurred during save operation");
+      toast.error(t("configureRates.toast.saveError"));
       console.error(err);
       setGroupForms(prev => ({
         ...prev,
         [id]: { ...prev[id]!, isSaving: false }
       }));
     }
-  }, [existingGroups, groupForms, setAllUseTypes, setExistingGroups, setGroupForms, setPaginatedUseTypes, setSavedAny]);
+  }, [existingGroups, groupForms, setAllUseTypes, setExistingGroups, setGroupForms, setPaginatedUseTypes, setSavedAny, t]);
 
   const handleConfigureClick = useCallback(() => {
     const selected = allUseTypes.filter(tu => checkedIds[tu.id]);
@@ -315,7 +317,7 @@ export function useConfigureRatesActions({
     });
 
     if (hasInvalidSelection) {
-      toast.error("Please select Type of Use having Use Groups for Open Plot.");
+      toast.error(t("configureRates.toast.invalidSelection"));
       return;
     }
 
@@ -326,7 +328,7 @@ export function useConfigureRatesActions({
     const hasDuplicateGroupIds = selectedGroupIds.length !== new Set(selectedGroupIds).size;
 
     if (hasDuplicateGroupIds) {
-      toast.error("Please select Type of Use having distinct Use group");
+      toast.error(t("configureRates.toast.duplicateGroup"));
       return;
     }
 
@@ -346,12 +348,12 @@ export function useConfigureRatesActions({
     });
 
     if (distinctSelected.length === 0) {
-      toast.error("Please select at least one Type of Use to configure.");
+      toast.error(t("configureRates.toast.selectAtLeastOne"));
       return;
     }
 
     onConfigureSelected?.(distinctSelected);
-  }, [allUseTypes, checkedIds, existingGroups, onConfigureSelected]);
+  }, [allUseTypes, checkedIds, existingGroups, onConfigureSelected, t]);
 
   return {
     handleCheckboxChange,

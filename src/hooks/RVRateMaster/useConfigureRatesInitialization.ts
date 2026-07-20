@@ -40,6 +40,7 @@ interface ConfigureRatesInitializationProps {
   setIsListLoading: React.Dispatch<React.SetStateAction<boolean>>;
   hasInitialized: boolean;
   setHasInitialized: React.Dispatch<React.SetStateAction<boolean>>;
+  t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
 export function useConfigureRatesInitialization({
@@ -63,8 +64,9 @@ export function useConfigureRatesInitialization({
   setIsListLoading,
   hasInitialized,
   setHasInitialized,
+  t,
 }: ConfigureRatesInitializationProps) {
-  
+
   // Reset initialization state when drawer closes
   useEffect(() => {
     if (!open) {
@@ -157,7 +159,7 @@ export function useConfigureRatesInitialization({
       }
       setHasInitialized(true);
     }
-  }, [open, isMatrixVisible, currentCategories, hasInitialized, allUseTypes, existingGroups, setCheckedIds, setGroupForms, setSavedAny, setSearchTerm, setPageNumber, setHasInitialized]);
+  }, [open, isMatrixVisible, currentCategories, hasInitialized, allUseTypes, existingGroups, setCheckedIds, setGroupForms, setSavedAny, setSearchTerm, setPageNumber, setHasInitialized, t]);
 
   // Sync checkedIds state to URL query parameters
   useEffect(() => {
@@ -195,12 +197,12 @@ export function useConfigureRatesInitialization({
         setTotalCount(result.totalCount || 0);
         setTotalPages(result.totalPages || 0);
       } catch (err) {
-        toast.error("Failed to load types of use");
+        toast.error(t("configureRates.toast.loadTypesOfUseFailed"));
         console.error(err);
       } finally {
         setIsListLoading(false);
       }
     }
     loadPaginatedData();
-  }, [open, pageNumber, pageSize, debouncedSearch, allUseTypes, setPaginatedUseTypes, setTotalCount, setTotalPages, setIsListLoading]);
+  }, [open, pageNumber, pageSize, debouncedSearch, allUseTypes, setPaginatedUseTypes, setTotalCount, setTotalPages, setIsListLoading, t]);
 }

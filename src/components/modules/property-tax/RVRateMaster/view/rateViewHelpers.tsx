@@ -1,3 +1,4 @@
+import React from "react";
 import type { RateCategory, MatrixColumn, IRateMaster, IRateValue } from "@/types/RVRateMaster";
 
 /**
@@ -55,6 +56,7 @@ export function buildRateColumns(
   rateCategories: (string | RateCategory)[],
   singleColorClassHeader: string,
   tCommon: ReturnType<typeof import("next-intl").useTranslations>,
+  t: ReturnType<typeof import("next-intl").useTranslations>,
   rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
 ): MatrixColumn[] {
   const seenCodes = new Set<string>();
@@ -73,7 +75,7 @@ export function buildRateColumns(
       const tooltipContent = hasMultiple ? (
         <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">
           <div className="font-bold border-b border-blue-200/50 pb-1 mb-1 text-white">
-            Associated Types of Use:
+            {t('tooltips.associatedTypesOfUse')}
           </div>
           <div className="space-y-1 mt-1">
             {associated.map((u, i) => (

@@ -41,7 +41,8 @@
     "copyRatesNow": "आत्ता दर कॉपी करा",
     "deleteRates": "दर हटवा",
     "downloadTemplate": "टेम्प्लेट डाउनलोड करा",
-    "uploadExcel": "एक्सेल अपलोड करा"
+    "uploadExcel": "एक्सेल अपलोड करा",
+    "configureUseTypes": "वापर प्रकार कॉन्फिगर करा"
   },
   "messages": {
     "csvOnly": "कृपया वैध CSV फाइल अपलोड करा. Excel (.xlsx) फाइल्स समर्थित नाहीत.",
@@ -137,11 +138,68 @@
     "zoneDescription": "झोन विवरण",
     "assessmentYear": "करनिर्धारण वर्ष"
   },
+  "tooltips": {
+    "associatedTypesOfUse": "संबंधित वापर प्रकार:"
+  },
   "dialogs": {
     "deleteRatesTitle": "दर हटवा",
-    "deleteRatesDescription": "तुम्ही खालीलसाठी {count} दर रेकॉर्ड(्स) कायमस्वरूपी हटवू इच्छिता का:\n\n- दर विभाग: {zoneName}, वापर गट: {useGroup}, करनिर्धारण वर्ष: {assessmentYear}\n\nही कृती पूर्ववत करता येणार नाही.",
+    "deleteRatesDescription": "तुम्ही खालीलसाठी {count} दर रिकॉर्ड(्स) कायमस्वरूपी हटवू इच्छिता का:\n\n- दर विभाग: {zoneName}, वापर गट: {useGroup}, करनिर्धारण वर्ष: {assessmentYear}\n\nही कृती पूर्ववत करता येणार नाही।",
     "confirmDelete": "हटवा",
-    "cancel": "रद्द करा"
+    "cancel": "रद्द करा",
+    "configureUseTypeTitle": "वापर प्रकार कॉन्फिगर करा",
+    "configureUseTypeDescription": "तुम्ही - {descriptionList} साठी वेगवेगळे वापर प्रकार कॉन्फिगर करू इच्छिता का?",
+    "confirmYes": "होय",
+    "confirmNo": "नाही"
+  },
+  "configureRates": {
+    "title": "ओपन प्लॉट दरे कॉन्फिगर करा",
+    "description": "वेगवेगळ्या प्रकारच्या वापरासाठी वापर गट कॉन्फिगर आणि मॅप करा",
+    "saveButton": "कॉन्फिगर करा",
+    "closeButton": "बंद करा",
+    "selectTypesOfUse": "वापराचे प्रकार निवडा",
+    "searchPlaceholder": "शोधा...",
+    "noTypesFound": "कोणतेही वापर प्रकार सापडले नाहीत",
+    "groupLabel": "गट: {groupCode}",
+    "configureUseGroups": "वापर गट कॉन्फिगर करा",
+    "noTypeSelected": "कृपया तुमचा गट कॉन्फिगर करण्यासाठी डाव्या बाजूला एक वापर प्रकार निवडा।",
+    "loadingTypes": "वापराचे तपशील लोड होत आहेत...",
+    "saved": "जतन केले",
+    "createNewGroup": "नवीन गट तयार करा",
+    "updateUseGroup": "वापर गट अद्यतन करा",
+    "associatedUseGroup": "संबंधित वापर गट (केवळ ओपन प्लॉट)",
+    "notApplicable": "लागू नाही",
+    "selectExistingGroup": "विद्यमान गट निवडा (केवळ ओपन प्लॉट)",
+    "selectGroupPlaceholder": "-- गट निवडा --",
+    "save": "जतन करा",
+    "groupIdCode": "गट आयडी कोड",
+    "groupName": "गटाचे नाव",
+    "iconType": "आइकन प्रकार",
+    "codePlaceholder": "उदा. RES, COM",
+    "namePlaceholder": "उदा. निवासी",
+    "toast": {
+      "loadDataFailed": "प्रारंभिक कॉन्फिगरेशन डेटा लोड करण्यात अयशस्वी",
+      "loadTypesOfUseFailed": "वापराचे प्रकार लोड करण्यात अयशस्वी",
+      "groupAssociated": "{typeDescription} साठी गट यशस्वीरित्या जोडला गेला",
+      "failedToAssociate": "गट जोडण्यात अयशस्वी",
+      "saveError": "जतन करण्याच्या ऑपरेशन दरम्यान एक त्रुटी घडली",
+      "groupConfigured": "{typeDescription} साठी गट कॉन्फिगर आणि यशस्वीरित्या जोडला गेला",
+      "failedToConfigure": "गट कॉन्फिगर करण्यात अयशस्वी",
+      "invalidSelection": "कृपया ओपन प्लॉटसाठी वापर गट असलेला वापर प्रकार निवडा।",
+      "duplicateGroup": "कृपया वेगळे वापर गट असलेला वापर प्रकार निवडा",
+      "selectAtLeastOne": "कॉन्फिगर करण्यासाठी किमान एक वापर प्रकार निवडा।"
+    },
+    "validation": {
+      "codeRequired": "गट आयडी कोड आवश्यक आहे",
+      "codeAllZeros": "गट आयडी कोड सर्व शून्य असू शकत नाही",
+      "codeTooLong": "गट आयडी कोड 10 वर्णांपेक्षा जास्त असू शकत नाही",
+      "codeAlphanumericOnly": "गट आयडी कोड केवळ अल्फान्यूमेरिक असणे आवश्यक आहे",
+      "codeExists": "गट आयडी कोड आधीच अस्तित्वात आहे",
+      "nameRequired": "गटाचे नाव आवश्यक आहे",
+      "nameAllZeros": "गटाचे नाव सर्व शून्य असू शकत नाही",
+      "nameTooLong": "गटाचे नाव 50 वर्णांपेक्षा जास्त असू शकत नाही",
+      "nameInvalidChars": "गटाच्या नावात अवैध वर्ण आहेत",
+      "nameExists": "गटाचे नाव आधीच अस्तित्वात आहे"
+    }
   },
   "downloadHeaders": {
     "rateSection": "दर विभाग",

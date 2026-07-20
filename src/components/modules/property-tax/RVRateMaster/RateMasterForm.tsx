@@ -73,7 +73,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
   const { sourceUseGroup, setSourceUseGroup, sourceRateSection, setSourceRateSection, sourceRateSectionOptions, copySectionsExpanded, setCopySectionsExpanded, copyRatesActiveTab, setCopyRatesActiveTab, showMultipliersInline, setShowMultipliersInline, tempMultipliers, setTempMultipliers, fileInputRef, handleCopyRates, handleCopyRatesFromRateSection, handleDownloadTemplate, handleUploadExcel } = useRateMasterImportExport({ selectedZone, selectedUseGroup, assessmentYear, allZones, zoneDescriptions, rateCategories: localRateCategories, zoneOptions: finalZoneOptions, useGroupOptions: finalUseGroupOptions, assessmentYears: finalAssessmentYears, assessmentYearRanges, matrixData, setMatrixData, allZoneEdits, setAllZoneEdits, setShowMatrix, showMatrix, showCopyRateSection, t, multipliers, setMultipliers, rateUnit });
 
   useExistingRateCheck({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, allFiltersSelected, setExistingRateFound, setIsCheckingRates, isOpenPlot, rateCategories: localRateCategories });
-  useUrlParamSync({ selectedZone, selectedUseGroup, assessmentYear, copySectionsExpanded, showMultipliersInline, isOpenPlot, rateCategories: localRateCategories });
+  useUrlParamSync({ selectedZone, selectedUseGroup, assessmentYear, copySectionsExpanded, showMultipliersInline, isOpenPlot });
 
   // Handle all form side effects
   const isEditMode = !!id || !!editData || !!bulkEditData;

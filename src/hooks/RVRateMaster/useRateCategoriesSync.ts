@@ -256,7 +256,7 @@ export function useRateCategoriesSync({
 
   const handleConfigureRatesClick = async () => {
     if (!selectedZone || selectedZone === "ALL" || !assessmentYear || assessmentYear === "ALL") {
-      toast.error("Please select a Rate Section and Assessment Year Range first.");
+      toast.error(t('messages.selectRateSection'));
       return;
     }
     try {
@@ -266,10 +266,10 @@ export function useRateCategoriesSync({
       const descriptionList = opExcluded.map(t => t.description || t.typeOfUseCode).join(', ');
 
       confirm({
-        title: "Configure Use Type",
-        description: `Do you want to configure different use types for - ${descriptionList}?`,
-        confirmText: "Yes",
-        cancelText: "No",
+        title: t('dialogs.configureUseTypeTitle'),
+        description: t('dialogs.configureUseTypeDescription', { descriptionList }),
+        confirmText: t('dialogs.confirmYes'),
+        cancelText: t('dialogs.confirmNo'),
         onConfirm: () => {
           setIsConfigureRatesOpen(true);
           const params = new URLSearchParams(window.location.search);

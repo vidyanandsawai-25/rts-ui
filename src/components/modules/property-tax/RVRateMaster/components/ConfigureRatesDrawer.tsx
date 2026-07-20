@@ -1,6 +1,7 @@
 "use client";
 
 import { Settings, Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Drawer } from "@/components/common/Drawer";
 import { cn } from "@/lib/utils/cn";
 import { Checkbox } from "@/components/common/checkbox";
@@ -28,6 +29,8 @@ export function ConfigureRatesDrawer({
   currentCategories = [],
   onConfigureSelected,
 }: ConfigureRatesDrawerProps) {
+  const t = useTranslations("ptis_RVRateMaster");
+  
   const {
     allUseTypes,
     paginatedUseTypes,
@@ -56,7 +59,7 @@ export function ConfigureRatesDrawer({
     isMatrixVisible,
     currentCategories,
     onConfigureSelected,
-    onClose,
+    t,
   });
 
   const safePageNumber = Math.min(pageNumber, Math.max(1, totalPages));
@@ -84,10 +87,10 @@ export function ConfigureRatesDrawer({
             </div>
             <div>
               <div className="text-lg font-bold text-blue-900">
-                Configure Open Plot Rates
+                {t('configureRates.title')}
               </div>
               <div className="text-xs text-slate-500">
-                Configure and map use groups for different types of use
+                {t('configureRates.description')}
               </div>
             </div>
           </div>
@@ -96,13 +99,13 @@ export function ConfigureRatesDrawer({
         footer={
           <div className="flex gap-3">
             <SaveButton
-              label="Configure"
+              label={t('configureRates.saveButton')}
               size="md"
               onClick={handleConfigureClick}
               className="cursor-pointer"
             />
             <CancelButton
-              label="Close"
+              label={t('configureRates.closeButton')}
               size="md"
               onClick={() => onClose(savedAny)}
               className="cursor-pointer"
@@ -113,7 +116,7 @@ export function ConfigureRatesDrawer({
         {isLoading ? (
           <div className="p-10 text-center text-slate-500">
             <div className="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-blue-600 rounded-full mb-3" />
-            <p className="text-sm">Loading types of use details...</p>
+            <p className="text-sm">{t('configureRates.loadingTypes')}</p>
           </div>
         ) : (
           <div className="flex flex-col md:flex-row h-[calc(100vh-140px)] divide-x divide-slate-200">
@@ -122,7 +125,7 @@ export function ConfigureRatesDrawer({
               <div className="flex items-center justify-between border-b pb-2 mb-3 flex-shrink-0">
                 <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 font-sans">
                   <Info size={16} className="text-blue-500" />
-                  Select Types of Use
+                  {t('configureRates.selectTypesOfUse')}
                 </h2>
                 <SearchInput
                   className="mb-0 w-44"
@@ -131,14 +134,14 @@ export function ConfigureRatesDrawer({
                     setSearchTerm(val);
                     setPageNumber(1);
                   }}
-                  placeholder="Search..."
+                  placeholder={t('configureRates.searchPlaceholder')}
                 />
               </div>
 
               <div className={cn("flex-1 overflow-y-auto pr-1 space-y-2 mb-3 transition-opacity duration-200", isListLoading && "opacity-50")}>
                 {paginatedUseTypes.length === 0 ? (
                   <div className="text-center py-10 text-slate-400 text-sm">
-                    No types of use found
+                    {t('configureRates.noTypesFound')}
                   </div>
                 ) : (
                   paginatedUseTypes.map((tu) => {
@@ -173,7 +176,7 @@ export function ConfigureRatesDrawer({
                         {tu.typeOfUseGroupCode && (
                           <div className="flex flex-col items-end">
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-200 shadow-sm font-sans" title={tu.groupName}>
-                              Group: {tu.typeOfUseGroupCode}
+                              {t('configureRates.groupLabel', { groupCode: tu.typeOfUseGroupCode })}
                             </span>
                             {tu.groupName && (
                               <span className="text-[9px] text-slate-400 max-w-[100px] truncate font-sans" title={tu.groupName}>
@@ -205,13 +208,13 @@ export function ConfigureRatesDrawer({
             {/* RIGHT SIDE: Configurations for checked items */}
             <div className="md:w-2/3 p-5 space-y-4 overflow-y-auto h-full bg-slate-50/50">
               <h2 className="text-sm font-bold text-slate-800 border-b pb-2">
-                Configure Use Groups
+                {t('configureRates.configureUseGroups')}
               </h2>
 
               {Object.keys(checkedIds).filter(id => checkedIds[Number(id)]).length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                   <Settings size={48} className="stroke-[1.5] mb-2 text-slate-300" />
-                  <p className="text-sm">Please select a type of use on the left to configure its group.</p>
+                  <p className="text-sm">{t('configureRates.noTypeSelected')}</p>
                 </div>
               ) : (
                 <div className="space-y-5">
@@ -227,6 +230,7 @@ export function ConfigureRatesDrawer({
                         handleToggleMode={handleToggleMode}
                         handleFieldChange={handleFieldChange}
                         handleSaveGroup={handleSaveGroup}
+                        t={t}
                       />
                     ))}
                 </div>
