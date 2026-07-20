@@ -84,14 +84,6 @@ export function buildWorkspaceCopy(t: Translator): ReportWorkspaceCopy {
       setParameters: t('workspace.steps.setParameters'),
       generateReport: t('workspace.steps.generateReport'),
     },
-    categories: {
-      assessment: t('workspace.categories.assessment'),
-      amc: t('workspace.categories.amc'),
-      transaction: t('workspace.categories.transaction'),
-      approval: t('workspace.categories.approval'),
-      discount: t('workspace.categories.discount'),
-      others: t('workspace.categories.others'),
-    },
     tabs: {
       generateReport: t('workspace.tabs.generateReport'),
       myReports: t('workspace.tabs.myReports'),
