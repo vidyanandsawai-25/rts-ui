@@ -158,6 +158,7 @@
   },
   "Skip_AlreadyProcessed": "आधीच प्रक्रिया केली आहे",
   "Skip_PropertyLocked": "मालमत्ता लॉक आहे",
+  "Skip_PropertyDetailsMissing": "मालमत्तेचा तपशील गहाळ आहे",
   "Skip_PendingVerification": "पडताळणी प्रलंबित",
   "Skip_InvalidScope": "अवैध व्याप्ती",
   "Skip_PermissionRestricted": "परवानगी प्रतिबंधित",

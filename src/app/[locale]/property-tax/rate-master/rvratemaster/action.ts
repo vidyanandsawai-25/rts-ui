@@ -474,7 +474,7 @@ export async function getOpenPlotTypeOfUseDetailsAction() {
     const useTypes = result.items || [];
 
     // Sort 'OP' to the front so it takes priority for duplicate group IDs
-    useTypes.sort((a: any, b: any) => {
+    useTypes.sort((a: { typeOfUseCode?: string }, b: { typeOfUseCode?: string }) => {
       if (a.typeOfUseCode === 'OP') return -1;
       if (b.typeOfUseCode === 'OP') return 1;
       return 0;
@@ -570,7 +570,7 @@ export async function deleteRateMasterAction(backendRates: IBackendRateMaster[])
  * Bulk create rate master records (supports open plot)
  */
 export async function bulkCreateRateMasterAction(
-  rates: any[],
+  rates: Record<string, unknown>[],
   isOpenPlot: boolean = false
 ): Promise<{ success: boolean; message?: string; data?: unknown; statusCode?: number }> {
   // Wrap everything in try-catch to ensure we always return a serializable response
@@ -708,7 +708,7 @@ export async function createUseGroupAndAssignToTypeAction(input: {
         createdBy: Number(userId ?? "1"),
       };
 
-      const response = await apiClient.post<any>("/TypeOfUseGroup", payload, {
+      const response = await apiClient.post<Record<string, unknown>>("/TypeOfUseGroup", payload, {
         cache: "no-store",
         headers: { "Accept": "application/json" },
       });
@@ -717,8 +717,8 @@ export async function createUseGroupAndAssignToTypeAction(input: {
         return { success: false, message: "Failed to create use group on backend" };
       }
 
-      const resData = response.data;
-      const groupData = resData.items || resData.data || resData;
+      const resData = response.data as Record<string, unknown>;
+      const groupData = (resData.items || resData.data || resData) as Record<string, unknown>;
       typeOfUseGroupId = Number(groupData.id ?? groupData.typeOfUseGroupId ?? groupData.typeOfUseGroupID ?? 0);
     }
 
@@ -727,7 +727,7 @@ export async function createUseGroupAndAssignToTypeAction(input: {
     }
 
     // 2. Fetch the current use type via direct GET to resolve envelope structure
-    const useTypeRes = await apiClient.get<any>(`/TypeOfUse/${input.typeOfUseId}`, {
+    const useTypeRes = await apiClient.get<Record<string, unknown>>(`/TypeOfUse/${input.typeOfUseId}`, {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
@@ -736,8 +736,8 @@ export async function createUseGroupAndAssignToTypeAction(input: {
       return { success: false, message: `Type of use not found for ID ${input.typeOfUseId}` };
     }
 
-    const utResData = useTypeRes.data;
-    const useTypeData = utResData.items || utResData.data || utResData;
+    const utResData = useTypeRes.data as Record<string, unknown>;
+    const useTypeData = (utResData.items || utResData.data || utResData) as Record<string, unknown>;
 
     const typeOfUseId = Number(useTypeData.id ?? useTypeData.typeOfUseId ?? useTypeData.typeOfUseID ?? 0);
     const typeOfUseCode = String(useTypeData.typeOfUseCode ?? "");
@@ -764,7 +764,7 @@ export async function createUseGroupAndAssignToTypeAction(input: {
       updatedBy: Number(userId ?? "1"),
     };
 
-    const updateRes = await apiClient.put<any>(`/TypeOfUse/${typeOfUseId}`, updatePayload, {
+    const updateRes = await apiClient.put<Record<string, unknown>>(`/TypeOfUse/${typeOfUseId}`, updatePayload, {
       cache: "no-store",
       headers: { "Accept": "application/json", "Content-Type": "application/json" },
     });

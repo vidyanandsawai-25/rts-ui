@@ -95,7 +95,7 @@ export function buildRateColumns(
             {displayCode} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
           </span>
         ) as React.ReactNode,
-        tooltip: tooltipContent as any,
+        tooltip: tooltipContent as React.ReactNode,
         headerClassName: `${singleColorClassHeader} font-bold text-xs text-center rounded-lg`
       } as MatrixColumn;
     })

@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server';
  * Bulk create rate master records (POST /Rate/Bulk or POST /Rate/openplot/Bulk)
  * Backend expects an array of rate objects directly
  */
-export async function bulkCreateRateMaster(payload: any[], isOpenPlot: boolean = false): Promise<void> {
+export async function bulkCreateRateMaster(payload: unknown[], isOpenPlot: boolean = false): Promise<void> {
   try {
     const endpoint = isOpenPlot ? `/Rate/openplot/Bulk` : `/Rate/Bulk`;
     const response = await apiClient.post<{ data?: unknown }>(endpoint, payload);

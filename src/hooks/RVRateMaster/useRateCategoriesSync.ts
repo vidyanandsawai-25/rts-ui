@@ -81,6 +81,7 @@ export function useRateCategoriesSync({
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalRateCategories(rateCategories);
   }, [rateCategories]);
 
@@ -249,7 +250,7 @@ export function useRateCategoriesSync({
       }
 
       setHasConfiguredRates(true);
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to map selected configuration");
     }
   };
@@ -297,7 +298,7 @@ export function useRateCategoriesSync({
           }
         }
       });
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to fetch types of use for configuration check");
     }
   };

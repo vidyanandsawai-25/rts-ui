@@ -2,18 +2,26 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import type { RateCategory } from "@/types/RVRateMaster";
 
+type MatrixRow = {
+  id: number;
+  zone?: string;
+  zoneNo?: string;
+  taxZoneId?: number;
+  [key: string]: number | string | undefined;
+};
+
 interface RateMasterFormEffectsProps {
   isOpenPlot: boolean;
-  filterValues: any;
-  finalZoneOptions: any[];
-  finalUseGroupOptions: any[];
-  finalAssessmentYears: any[];
+  filterValues?: Record<string, unknown>;
+  finalZoneOptions: unknown[];
+  finalUseGroupOptions: unknown[];
+  finalAssessmentYears: unknown[];
   loadZoneOptions: () => void;
   loadUseGroupOptions: () => void;
   loadAssessmentYears: () => void;
   showMatrix: boolean;
-  matrixData: any[];
-  setMatrixData: React.Dispatch<React.SetStateAction<any[]>>;
+  matrixData: MatrixRow[];
+  setMatrixData: React.Dispatch<React.SetStateAction<MatrixRow[]>>;
   localRateCategories: RateCategory[];
   selectedZone: string;
   selectedUseGroup: string;
@@ -79,7 +87,7 @@ export function useRateMasterFormEffects({
         return newRow;
       }));
     }
-  }, [localRateCategories, showMatrix, setMatrixData]);
+  }, [localRateCategories, showMatrix, setMatrixData, matrixData.length]);
 
   // 3. Show toast alerts when filters match existing rates (only in add mode)
   const hasShownToastRef = useRef(false);

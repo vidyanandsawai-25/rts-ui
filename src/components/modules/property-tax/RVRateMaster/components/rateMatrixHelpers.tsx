@@ -34,6 +34,7 @@ export function buildMatrixColumns(
 
     const tooltipContent = hasMultiple ? (
       <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">
+        {/* eslint-disable-next-line i18next/no-literal-string */}
         <div className="font-bold border-b border-blue-200/50 pb-1 mb-1 text-white">
           Associated Types of Use:
         </div>
@@ -55,7 +56,7 @@ export function buildMatrixColumns(
           {displayCode} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
         </span>
       ),
-      tooltip: tooltipContent as any,
+      tooltip: tooltipContent as unknown as string,
       headerClassName: `${singleColorClassHeader} font-bold text-xs text-center rounded-lg`,
     };
   });

@@ -137,7 +137,7 @@ export async function processSingleSubmission(
     try {
       const payload = buildBulkCreatePayload(inserts);
       const finalPayload = config.isOpenPlot
-        ? payload.map(({ constructionTypeId, ...rest }) => rest)
+        ? payload.map(({ constructionTypeId: _constructionTypeId, ...rest }) => rest)
         : payload;
 
       const createResult = await bulkCreateRateMasterAction(finalPayload, config.isOpenPlot);

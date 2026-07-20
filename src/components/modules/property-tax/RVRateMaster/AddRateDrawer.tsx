@@ -43,10 +43,10 @@ export default function AddRateDrawer({
     const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
     router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
   };
-  
+
   // For lazy loading, pass empty arrays initially to trigger lazy loading behavior
   const emptyOptions = [] as ISelectOption[];
-  
+
   return (
     <Drawer
       open={true}
