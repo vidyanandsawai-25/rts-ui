@@ -8,6 +8,8 @@ export interface ReportDefinition {
   dataProviderCode: string;
   isActive: boolean;
   sortOrder: number;
+  /** ID of the module/category this report belongs to (from backend) */
+  moduleId?: number | null;
 }
 
 export interface ReportModule {

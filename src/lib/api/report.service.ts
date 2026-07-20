@@ -26,6 +26,9 @@ function normalizeReportDefinition(raw: Record<string, unknown>): ReportDefiniti
     dataProviderCode: String(raw.dataProviderCode ?? raw.DataProviderCode ?? ''),
     isActive: Boolean(raw.isActive ?? raw.IsActive ?? true),
     sortOrder: Number(raw.sortOrder ?? raw.SortOrder ?? 0),
+    moduleId: (raw.moduleId ?? raw.ModuleId ?? raw.reportModuleId ?? raw.ReportModuleId) != null
+      ? Number(raw.moduleId ?? raw.ModuleId ?? raw.reportModuleId ?? raw.ReportModuleId)
+      : null,
   };
 }
 

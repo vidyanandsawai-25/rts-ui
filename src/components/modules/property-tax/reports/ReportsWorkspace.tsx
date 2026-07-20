@@ -13,6 +13,7 @@ import { ReportGenerateView } from './ReportGenerateView';
 import { ReportGeneratingOverlay } from './ReportGeneratingOverlay';
 import { ReportPreviewOverlay } from './ReportPreviewOverlay';
 
+
 export function ReportsWorkspace({
   jobsCopy,
   workspaceCopy,
@@ -106,7 +107,7 @@ export function ReportsWorkspace({
     if (reportModules && reportModules.length > 0) {
       return reportModules.map((m) => ({
         id: m.id,
-        key: m.name.toLowerCase().replace(/\s+/g, ''),
+        key: m.name.toLowerCase(),
         name: m.name,
         logoContentType: m.logoContentType,
         logoBase64: m.logoBase64,
@@ -122,16 +123,20 @@ export function ReportsWorkspace({
 
   const reportsByCategory = useMemo(() => {
     const map = new Map<string, ReportDefinition[]>(dynamicCategories.map((cat) => [cat.key, []]));
+    const idToKey = new Map<number, string>(
+      dynamicCategories.filter((cat) => cat.id != null).map((cat) => [cat.id!, cat.key])
+    );
+
     for (const report of reportDefinitions) {
-      const rawCategory = report.category || 'assessment';
-      let catKey = rawCategory.toLowerCase().replace(/\s+/g, '');
-      if (!dynamicCategories.find(c => c.key === catKey)) {
-        catKey = dynamicCategories[0]?.key ?? 'assessment';
-      }
+      const catKey =
+        (report.moduleId != null && idToKey.get(report.moduleId)) ||
+        dynamicCategories[0]?.key ||
+        'assessment';
       map.get(catKey)?.push(report);
     }
     return map;
   }, [reportDefinitions, dynamicCategories]);
+
 
   const handleCategoryClick = (catKey: string) => {
     if (selectedCategory === catKey) {
