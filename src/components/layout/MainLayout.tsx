@@ -175,6 +175,11 @@ async function SidebarWithData({ locale }: { locale: string }) {
           {
             name: 'Form Field Definition',
             href: '/rts/configuration-settings/rts-fields',
+          },
+          {
+            name: 'Approval Workflows',
+            nameHi: 'अ‍ॅप्रोव्हल वर्कफ्लो',
+            href: '/rts/configuration-settings/rts-workflows',
           }
         ]
       },
