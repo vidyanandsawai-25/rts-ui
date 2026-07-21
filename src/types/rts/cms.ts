@@ -36,6 +36,7 @@ export interface CmsApplication {
   daysRemaining: number;
   remainingDays: number;
   submittedAt: string;
+  source?: string;
   fieldValues: Record<string, any>;
   documents: CmsDocument[];
   timeline: CmsTimelineStep[];
