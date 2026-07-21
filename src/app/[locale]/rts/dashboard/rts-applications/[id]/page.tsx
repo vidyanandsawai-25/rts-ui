@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { getCmsApplicationByIdAction, getCmsUsersAction } from "../../../actions";
-import { readStoredAdminServiceFormByServiceId } from "@/components/modules/rts/admin/service-builder/data.server";
 import { getRtsWorkflowStages } from "@/lib/api/rts/rts-workflow.service";
 import CmsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
@@ -19,12 +18,13 @@ export default async function CmsApplicationDetailsPage({ params }: PageProps) {
     notFound();
   }
 
-  // Retrieve matching dynamic schema config for EAV form rendering and workflow details
-  const [storedForm, officers, workflowDetails] = await Promise.all([
-    readStoredAdminServiceFormByServiceId(app.serviceId),
+  // Retrieve matching officers and workflow details
+  const [officers, workflowDetails] = await Promise.all([
     getCmsUsersAction(),
-    getRtsWorkflowStages(Number(app.serviceId))
+    getRtsWorkflowStages(Number(app.serviceId)),
   ]);
+
+  const storedForm = null;
 
   return (
     <div className="w-full">

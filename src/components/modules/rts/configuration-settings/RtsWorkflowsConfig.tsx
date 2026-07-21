@@ -134,12 +134,10 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
 
   const handleDeleteWorkflow = (id: number) => {
     confirm({
-      title: "Delete Approval Workflow",
-      message: "Are you sure you want to delete this approval workflow?",
-      confirmText: "Delete",
-      cancelText: "Cancel",
-    }).then((confirmed) => {
-      if (confirmed) {
+      variant: "delete",
+      title: t("workflowMaster.title"),
+      description: "Are you sure you want to delete this approval workflow?",
+      onConfirm: async () => {
         startTransition(() => {
           setWorkflowsList(prev => prev.filter(w => w.id !== id));
           toast.success("Approval workflow deleted successfully.");
