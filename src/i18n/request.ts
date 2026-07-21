@@ -28,6 +28,8 @@ export default getRequestConfig(async ({ locale }) => {
     quickDataEntryMessages,
     rateSectionMasterMessages,
     assessmentYearRangeMessages,
+    ownershipTypeMessages,
+    assetMessages,
     ptisMessages,
     floorFactorMasterMessages,
     weightageMasterMessages,
@@ -69,8 +71,8 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     taxCalculationGuidelineMessages,
+
     addTaxesMessages,
-    assetMessages,
     inventoryCategoryMessages,
     inventoryConditionMessages,
     inventoryModelMessages,
@@ -95,6 +97,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ownership-type.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/asset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
@@ -183,9 +187,6 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/addTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/asset.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/inventoryCategory.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -224,6 +225,9 @@ export default getRequestConfig(async ({ locale }) => {
       quickDataEntry: quickDataEntryMessages,
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
+      ownershipType: ownershipTypeMessages?.ownershipType || ownershipTypeMessages,
+      "ownership-type": ownershipTypeMessages,
+      asset: assetMessages,
       ptis: ptisMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
       weightageMaster: weightageMasterMessages.weightageMaster,
@@ -269,7 +273,6 @@ export default getRequestConfig(async ({ locale }) => {
       taxCalculationGuideline:
         taxCalculationGuidelineMessages?.taxCalculationGuideline || taxCalculationGuidelineMessages,
       addTaxes: addTaxesMessages?.addTaxes || addTaxesMessages,
-      asset: assetMessages,
       inventoryCategory: inventoryCategoryMessages?.inventoryCategory || inventoryCategoryMessages,
       inventoryCondition: inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
       inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
