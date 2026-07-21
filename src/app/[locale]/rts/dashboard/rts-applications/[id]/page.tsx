@@ -24,8 +24,6 @@ export default async function CmsApplicationDetailsPage({ params }: PageProps) {
     getRtsWorkflowStages(Number(app.serviceId)),
   ]);
 
-  const storedForm = null;
-
   return (
     <div className="w-full">
       <CmsApplicationDetails
