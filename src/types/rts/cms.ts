@@ -45,5 +45,7 @@ export interface CmsOfficer {
   id: string;
   name: string;
   role: string;
+  designation?: string;
   departmentId: string;
+  departmentName?: string;
 }
