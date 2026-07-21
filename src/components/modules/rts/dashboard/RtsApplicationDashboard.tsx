@@ -330,9 +330,12 @@ export default function CmsMulyamapan({
         width: "16%",
         render: (_value, row) => (
           <div className="space-y-1">
-            <div className="font-semibold text-[#173B73] text-sm">
+            <a
+              href={`/rts/dashboard/rts-applications/${row.id}`}
+              className="font-bold text-[#173B73] hover:text-blue-600 hover:underline text-sm block"
+            >
               {row.appId}
-            </div>
+            </a>
 
             <span className="text-[11px] font-medium text-blue-600">
               Online
@@ -789,79 +792,6 @@ export default function CmsMulyamapan({
           footerLeftClassName="text-slate-400"
         />
       </Card >
-
-
-      <Card padding="sm" className="space-y-4 border-slate-200 shadow-sm">
-        <div>
-          <h2 className="text-sm font-bold text-[#243B7C]">
-            {t("applicationDashboard.graph.title")}
-          </h2>
-          <p className="mt-0.5 text-[12px] text-slate-400">
-            {t("applicationDashboard.graph.description")}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
-          {chartLegend.map((item) => (
-            <div key={item.label} className="flex items-center gap-1.5">
-              <span className={`h-3 w-3 rounded ${item.colorClass}`} />
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-4 pt-2">
-          {DEPARTMENT_TAT_DATA.map((department) => (
-            <div key={department.key} className="space-y-1.5">
-              <div className="flex justify-between text-xs font-bold text-slate-700">
-                <span>
-                  {t(`applicationDashboard.graph.departments.${department.key}`)}
-                </span>
-                <span className="font-extrabold text-slate-800">
-                  {t("applicationDashboard.units.days", {
-                    value: department.total.toFixed(1),
-                  })}
-                </span>
-              </div>
-
-              <div className="flex h-5 w-full overflow-hidden rounded-lg border border-slate-100 shadow-inner">
-                <div
-                  style={{ width: `${department.pending}%` }}
-                  className="bg-amber-400 transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.pending"),
-                    value: department.stageDays.pending,
-                  })}
-                />
-                <div
-                  style={{ width: `${department.inProgress}%` }}
-                  className="bg-[#4b70a6] transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.inProgress"),
-                    value: department.stageDays.inProgress,
-                  })}
-                />
-                <div
-                  style={{ width: `${department.needsInfo}%` }}
-                  className="bg-purple-400 transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.needsInfo"),
-                    value: department.stageDays.needsInfo,
-                  })}
-                />
-                <div
-                  style={{ width: `${department.verification}%` }}
-                  className="bg-emerald-500 transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.verification"),
-                    value: department.stageDays.verification,
-                  })}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
 
       {
         selectedRecord && (
