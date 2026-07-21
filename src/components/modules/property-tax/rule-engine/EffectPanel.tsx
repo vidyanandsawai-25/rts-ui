@@ -1,11 +1,15 @@
 'use client';
 
+import React from 'react';
+
 import { EffectState, EffectTypeConfig, FieldConfig } from '@/types/rule-engine';
-import { Input, SearchSelect, ToggleSwitch } from '@/components/common';
+import { Input, SearchSelect } from '@/components/common';
 import { adaptEffectConfigToFieldConfig } from '@/lib/api/rule-engine/mappers';
 import ValueInput from './ValueInput';
 import { useEffectPanelOptions } from '@/hooks/rule-engine/useEffectPanelOptions';
 import { useTranslations } from 'next-intl';
+import { extractParameterMetadata } from '@/hooks/rule-engine/useRuleBuilderHelpers';
+import StopProcessingToggle from './StopProcessingToggle';
 
 interface EffectPanelProps {
   effect: EffectState;
@@ -29,6 +33,19 @@ export default function EffectPanel({
   const selectedConfig = effectTypeConfigs.find((c) => c.effectType === effect.effectType);
   const { dynamicCategoryOptions, staticApiOptions } = useEffectPanelOptions(selectedConfig);
   const t = useTranslations('ruleEngine');
+
+  // Backfill missing overrideRateLabel and parameterCode once staticApiOptions load
+  React.useEffect(() => {
+    if (effect.overrideRate !== undefined && effect.overrideRate !== null && !effect.overrideRateLabel && staticApiOptions.length > 0) {
+      const meta = extractParameterMetadata(effect.overrideRate, staticApiOptions);
+      if (meta.overrideRateLabel) {
+        onChange({
+          ...effect,
+          ...meta,
+        });
+      }
+    }
+  }, [effect.overrideRate, effect.overrideRateLabel, staticApiOptions]);
 
 
   const options = [
@@ -133,12 +150,11 @@ export default function EffectPanel({
               options={staticApiOptions}
               value={effect.overrideRate === undefined || effect.overrideRate === null ? '' : effect.overrideRate.toString()}
               onChange={(_, val) => {
-                if (!val) {
-                  onChange({ ...effect, overrideRate: undefined });
-                } else {
-                  const num = Number(val);
-                  onChange({ ...effect, overrideRate: isNaN(num) ? val : num });
-                }
+                const meta = extractParameterMetadata(val, staticApiOptions);
+                onChange({
+                  ...effect,
+                  ...meta,
+                });
               }}
               required
             />
@@ -177,19 +193,10 @@ export default function EffectPanel({
 
       {/* 5. Stop Processing Toggle */}
       {onStopProcessingChange && (
-        <div className="flex items-center gap-3 mt-2.5">
-          <div className={`inline-flex items-center gap-3.5 px-3 py-1.5 rounded-lg border transition-all duration-200 w-fit ${
-            stopProcessing ? 'bg-amber-50/70 border-amber-200/80 shadow-sm' : 'bg-zinc-50 border-zinc-200'
-          }`}>
-            <span className="text-xs font-bold text-zinc-800 select-none">{t('stopProcessing.toggleLabel')}</span>
-            <ToggleSwitch checked={stopProcessing || false} onChange={onStopProcessingChange} showPopup={false} />
-          </div>
-          <span className={`text-xs font-bold px-2.5 py-1 rounded border transition-colors ${
-            stopProcessing ? 'text-amber-800 bg-amber-50 border-amber-200 shadow-sm' : 'text-emerald-800 bg-emerald-50 border-emerald-200 shadow-sm'
-          }`}>
-            {stopProcessing ? t('stopProcessing.activeNotice') : t('stopProcessing.inactiveNotice')}
-          </span>
-        </div>
+        <StopProcessingToggle
+          stopProcessing={stopProcessing}
+          onStopProcessingChange={onStopProcessingChange}
+        />
       )}
     </div>
   );

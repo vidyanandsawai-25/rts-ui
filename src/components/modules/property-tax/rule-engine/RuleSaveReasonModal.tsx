@@ -26,7 +26,11 @@ export default function RuleSaveReasonModal({
       footer={
         <div className="flex justify-end gap-2.5">
           <CancelButton onClick={onClose} />
-          <SaveButton label={t('saveReasonModal.confirmSave')} onClick={onConfirm} />
+          <SaveButton
+            label={t('saveReasonModal.confirmSave')}
+            onClick={onConfirm}
+            disabled={!changeReason.trim()}
+          />
         </div>
       }
     >
