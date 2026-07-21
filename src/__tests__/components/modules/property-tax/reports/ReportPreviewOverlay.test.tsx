@@ -12,7 +12,7 @@ vi.mock('@/components/common', () => ({
     <button onClick={onClick as () => void} aria-label={ariaLabel as string}>×</button>
   ),
   Badge: ({ children, ...rest }: Record<string, unknown>) => (
-    <div {...rest}>{children}</div>
+    <div {...rest}>{children as React.ReactNode}</div>
   ),
 }));
 
