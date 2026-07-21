@@ -7,6 +7,7 @@ interface BuildPayloadConfig {
   rateFrequency: "Monthly" | "Yearly";
   rateUnit: "SqMeter" | "SqFeet";
   rateCategories: RateCategory[];
+  isOpenPlot?: boolean;
 }
 
 interface PayloadResult {
@@ -23,13 +24,23 @@ function findExistingRate(
   constructionId: string,
   useGroupForPayload: string,
   assessmentYear: string,
-  selectedZone: string
+  selectedZone: string,
+  isOpenPlot: boolean = false,
+  typeOfUseGroupId?: number
 ): IBackendRateMaster | undefined {
   return existingBackendRates.find(r => {
+    const matchUseGroup = isOpenPlot
+      ? Number(r.typeOfUseGroupId) === Number(typeOfUseGroupId)
+      : Number(r.typeOfUseGroupId) === Number(useGroupForPayload);
+
+    const matchConstruction = isOpenPlot
+      ? true
+      : Number(r.constructionTypeId) === Number(constructionId);
+
     return (
       Number(r.taxZoneId) === taxZoneId &&
-      Number(r.constructionTypeId) === Number(constructionId) &&
-      Number(r.typeOfUseGroupId) === Number(useGroupForPayload) &&
+      matchConstruction &&
+      matchUseGroup &&
       Number(r.yearRangeRVId ?? r.yearRangeId) === Number(assessmentYear) &&
       Number(r.rateSectionId) === Number(selectedZone)
     );
@@ -54,66 +65,83 @@ export function buildPayloadFromMatrix(
     rateCategories.forEach(cat => {
       const constructionId = typeof cat === 'string' ? cat : cat.constructionId;
       if (!constructionId) return;
-      
+
       const rowKey = typeof cat === 'string' ? cat : (cat.constructionCode || cat.constructionId);
       const val = row[rowKey];
-      
+
       // Skip if value is invalid
       if (val === undefined || val === null || val === '' || isNaN(Number(val))) return;
-      
+
       const zoneNoVal = String(row.zoneNo ?? row.zone ?? '');
       const taxZoneIdVal = row.taxZoneId || Number(zoneNoVal);
+
+      const catGroupVal = typeof cat === 'object' && cat && 'typeOfUseGroupId' in cat
+        ? Number(cat.typeOfUseGroupId)
+        : NaN;
+      const finalUseGroupId = (!isNaN(catGroupVal) && catGroupVal > 0)
+        ? catGroupVal
+        : Number(useGroupForPayload);
+
       const existing = findExistingRate(
         existingBackendRates,
         Number(taxZoneIdVal),
         constructionId,
         useGroupForPayload,
         assessmentYear,
-        selectedZone
+        selectedZone,
+        config.isOpenPlot,
+        finalUseGroupId
       );
-      
+
       // For new rates (inserts), skip if value is 0 or negative
-      // For existing rates (updates), allow 0 values, but always skip negatives
+      // For existing rates (updates), always skip negatives
+      // For open plot: if the submitted value is 0 but the existing record has a positive rate,
+      // it means the user never edited that cell (buildCompleteMatrixForSubmission defaulted it to 0).
+      // Skip the update to avoid zeroing out untouched rates.
       if (Number(val) < 0) return;
       if (!existing && Number(val) === 0) return;
-      
+      if (config.isOpenPlot && existing && Number(val) === 0) {
+        const existingRate = rateUnit === 'SqFeet' ? existing.rateSquareFeet : existing.rateSquareMeter;
+        if (Number(existingRate) > 0) return;
+      }
+
       // Calculate rate values based on selected rate unit
       // If SqMeter: entered value goes to rateSquareMeter, rateSquareFeet is calculated
       // If SqFeet: entered value goes to rateSquareFeet, rateSquareMeter is calculated
       const enteredValue = Number(val);
       const SQM_TO_SQFT = 10.7639104;
       const SQFT_TO_SQM = 0.092903;
-      const rateSquareMeterValue = rateUnit === 'SqMeter' 
-        ? enteredValue 
+      const rateSquareMeterValue = rateUnit === 'SqMeter'
+        ? enteredValue
         : Number((enteredValue * SQFT_TO_SQM).toFixed(2));
-      const rateSquareFeetValue = rateUnit === 'SqFeet' 
-        ? enteredValue 
+      const rateSquareFeetValue = rateUnit === 'SqFeet'
+        ? enteredValue
         : Number((enteredValue * SQM_TO_SQFT).toFixed(2));
-      
+
       const payload: RatePayload = {
         taxZoneId: Number(row.taxZoneId) || Number(zoneNoVal),
-        constructionTypeId: Number(constructionId),
-        typeOfUseGroupId: Number(useGroupForPayload),
+        constructionTypeId: existing ? existing.constructionTypeId : Number(constructionId),
+        typeOfUseGroupId: finalUseGroupId,
         YearRangeRVId: Number(assessmentYear),
         rateSectionId: Number(selectedZone),
         rateSquareMeter: rateSquareMeterValue,
         rateSquareFeet: rateSquareFeetValue,
         rateRemark: rateFrequency === "Yearly" ? "YearWise Rate" : "MonthWise Rate",
         createdBy: 1,
-        floorId: Number(row.floorID ?? 67),
+        floorId: existing ? existing.floorId : Number(row.floorID ?? 0),
         isActive: true,
       };
-      
+
       const rowRates = (row as { rates?: Array<Record<string, unknown>> }).rates;
-      const rateCellInRow = Array.isArray(rowRates) ? rowRates.find((r) => 
+      const rateCellInRow = Array.isArray(rowRates) ? rowRates.find((r) =>
         r.rateCategory === rowKey || Number(r.constructionTypeId) === Number(constructionId)
       ) : undefined;
       const rateIdInRow = rateCellInRow?.id;
       const existingId = rateIdInRow || existing?.id;
-      
+
       if (existingId) {
         // Compare with the appropriate original value based on rate unit
-        const originalValue = rateUnit === 'SqMeter' 
+        const originalValue = rateUnit === 'SqMeter'
           ? (existing?.rateSquareMeter ?? 0)
           : (existing?.rateSquareFeet ?? 0);
         if (enteredValue !== Number(originalValue)) {
@@ -140,7 +168,7 @@ export function applyMultiplierToMatrix(
   if (multiplier === 1.0 || multiplier <= 0) {
     return matrixData;
   }
-  
+
   return matrixData.map(row => {
     const multipliedRow = { ...row };
     rateCategories.forEach(cat => {

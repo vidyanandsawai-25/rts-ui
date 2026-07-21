@@ -15,6 +15,18 @@ export interface AssessmentYearRangeOption extends ISelectOption {
   toYear: string | number;
 }
 
+export interface ITypeOfUseDetails {
+  id: number;
+  description?: string;
+  typeOfUseCode?: string;
+  typeOfUseGroupId?: number;
+  typeOfUseCategoryId?: number;
+  typeOfUseCategoryName?: string;
+  typeOfUseCategoryCode?: string;
+  typeOfUseGroupCode?: string;
+  groupName?: string;
+}
+
 /**
  * Rate categories shown in Rate Master grid
  * Now dynamic based on backend construction types
@@ -23,6 +35,8 @@ export type RateCategory = {
   constructionId: string; // constructionTypeId as string
   constructionCode?: string; // constructionCode for display in table headers
   description?: string; // Full description for tooltips
+  typeOfUseGroupId?: number; // Optional group ID for open plot mode
+  associatedUseTypes?: { code: string; description: string }[]; // Associated types of use for open plot
 };
 
 /**
@@ -227,6 +241,7 @@ export interface RateFormProps {
     value: 'SqMeter' | 'SqFeet';
     isConfigured: boolean;
   };
+  isOpenPlot?: boolean;
 }
 
 export interface RateMasterClientProps {
@@ -246,6 +261,7 @@ export interface RateMasterClientProps {
   rateUnitPolicy?: { value: 'SqMeter' | 'SqFeet'; isConfigured: boolean };
   rateFrequencyPolicy?: { value: 'Monthly' | 'Yearly'; isConfigured: boolean };
   globalFrequencyMismatch?: { configuredFrequency: string, existingFrequency: string } | null;
+  isOpenPlot?: boolean;
 }
 /**
  * Props for Add Rate drawer component
@@ -286,6 +302,7 @@ export interface AddRateDrawerProps {
     value: 'SqMeter' | 'SqFeet';
     isConfigured: boolean;
   };
+  isOpenPlot?: boolean;
 }
 
 /**
@@ -327,6 +344,7 @@ export interface EditRateDrawerProps {
     value: 'SqMeter' | 'SqFeet';
     isConfigured: boolean;
   };
+  isOpenPlot?: boolean;
 }
 
 export interface PagedResponse<T> {

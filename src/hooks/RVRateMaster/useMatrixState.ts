@@ -47,8 +47,8 @@ export function useMatrixState({
   const totalPossibleRates = allZones.length * rateCategories.length;
 
   // Calculate completion percentage
-  const completionPercentage = totalPossibleRates > 0 
-    ? Math.round((filledRatesCount / totalPossibleRates) * 100) 
+  const completionPercentage = totalPossibleRates > 0
+    ? Math.round((filledRatesCount / totalPossibleRates) * 100)
     : 0;
 
   // Create a map of zoneNo to remark (description) for tooltips
@@ -66,7 +66,7 @@ export function useMatrixState({
     if (!allZones || allZones.length === 0) {
       return [];
     }
-    
+
     return allZones.map((z, idx) => {
       const baseData: MatrixRow = {
         id: idx + 1,
