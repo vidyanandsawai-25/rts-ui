@@ -214,7 +214,13 @@ export function Drawer({
           ">
             <div className="flex items-center gap-3">
               {/* ICON SLOT (from title JSX) */}
-              {title}
+              {typeof title === "string" ? (
+                <h2 id="drawer-title" className="text-base font-extrabold text-slate-800 tracking-tight">
+                  {title}
+                </h2>
+              ) : (
+                title
+              )}
             </div>
 
             <div className="flex items-center gap-3">
