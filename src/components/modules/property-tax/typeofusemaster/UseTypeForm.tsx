@@ -128,7 +128,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
         type: typeValue,
         searchSequence: Number(formData.searchSequence ?? 0),
         status: formData.isActive ? "Active" : "Inactive",
-        typeOfUseCategoryId: formData.typeOfUseCategoryId ?? null,
+        typeOfUseCategoryId: formData.typeOfUseCategoryId,
       });
 
       if (!result.success) {
