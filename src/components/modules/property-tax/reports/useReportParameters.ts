@@ -170,16 +170,16 @@ export function useReportParameters({
 
         const parameters: Record<string, string> = {};
         if (financialYearId) {
-          parameters.FinancialYearId = financialYearId;
+          parameters.financialYearId = financialYearId;
         }
         if (zoneId) {
-          parameters.ZoneId = zoneId;
+          parameters.zoneId = zoneId;
         }
         if (wardId) {
-          parameters.WardId = wardId;
+          parameters.wardId = wardId;
         }
         if (propertyMode === 'single' && currentPropertyNo) {
-          parameters.PropertyNo = currentPropertyNo;
+          parameters.propertyNo = currentPropertyNo;
         }
         if (propertyMode === 'range') {
           const fromIndex = properties.findIndex((p) => String(p.propertyId) === fromPropertyNo);
@@ -190,14 +190,14 @@ export function useReportParameters({
             const end = Math.max(fromIndex, toIndex);
             const rangeProperties = properties.slice(start, end + 1);
             const bulkIds = rangeProperties.map((p) => p.propertyId).join(',');
-            parameters.PropertyId = bulkIds;
+            parameters.propertyId = bulkIds;
           } else if (fromIndex !== -1) {
-            parameters.PropertyId = String(properties[fromIndex].propertyId);
+            parameters.propertyId = String(properties[fromIndex].propertyId);
           } else if (toIndex !== -1) {
-            parameters.PropertyId = String(properties[toIndex].propertyId);
+            parameters.propertyId = String(properties[toIndex].propertyId);
           }
         } else if (propertyId !== null) {
-          parameters.PropertyId = String(propertyId);
+          parameters.propertyId = String(propertyId);
         }
 
         if (!createReportRequest) {
