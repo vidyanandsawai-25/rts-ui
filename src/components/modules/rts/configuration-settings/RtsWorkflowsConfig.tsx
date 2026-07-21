@@ -1,27 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Search, GitMerge, Edit2, Trash2, CheckCircle2, XCircle, ShieldCheck, FileCheck } from "lucide-react";
+import { Plus, Search, GitMerge, Edit2, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-interface WorkflowStageItem {
-  id: number;
-  approvalFlowId: number;
-  stageOrder: number;
-  stageName: string;
-  employeeTypeId: number;
-  slaDays: number;
-  canVerifyDocument: boolean;
-  canApprove: boolean;
-  canReject: boolean;
-  canReturn: boolean;
-  canPay: boolean;
-  isFinalStage: boolean;
-}
-
 interface WorkflowItem {
   id: number;
   serviceId: number;
