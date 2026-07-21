@@ -386,7 +386,6 @@ export function SearchSelect({
             return;
           }
 
-          
           if (!strictMode) {
             didSelectRef.current = true;
             setHasTyped(false);
