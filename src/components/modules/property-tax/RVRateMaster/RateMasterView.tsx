@@ -27,6 +27,7 @@ export default function RateMasterView({
   rateUnitPolicy,
   rateFrequencyPolicy,
   globalFrequencyMismatch,
+  isOpenPlot = false,
 }: RateMasterClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -57,7 +58,7 @@ export default function RateMasterView({
     mode: "add",
     filterValues: {
       zone: initialZone,
-      useGroup: initialUseGroup || (useGroupsFiltered.length > 0 ? useGroupsFiltered[0].value : ""),
+      useGroup: isOpenPlot ? "ALL" : (initialUseGroup || (useGroupsFiltered.length > 0 ? useGroupsFiltered[0].value : "")),
       year: initialYear,
     },
     useGroupOptions: useGroupsFiltered,
@@ -75,32 +76,35 @@ export default function RateMasterView({
     handleDropdownChange('useGroup', value);
   }, [handleDropdownChange]);
   const handleGenerateRate = () => {
-    router.push(`/${locale}/property-tax/rvratemaster/add`);
+    const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
+    router.push(`/${locale}/property-tax/rate-master/${routePrefix}/add`);
   };
 
   const handleEditRate = () => {
+    const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
     const params = new URLSearchParams();
     params.set('zone', selectedZone ?? "");
     params.set('year', selectedYear ?? "");
-    params.set('useGroup', selectedUseGroup ?? "");
-    router.push(`/${locale}/property-tax/rvratemaster/EditDelete/bulk?${params.toString()}`);
+    if (!isOpenPlot) params.set('useGroup', selectedUseGroup ?? "");
+    router.push(`/${locale}/property-tax/rate-master/${routePrefix}/EditDelete/bulk?${params.toString()}`);
   };
 
   const handleDeleteRate = () => {
+    const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
     const params = new URLSearchParams();
     params.set('zone', selectedZone ?? "");
     params.set('year', selectedYear ?? "");
-    params.set('useGroup', selectedUseGroup ?? "");
+    if (!isOpenPlot) params.set('useGroup', selectedUseGroup ?? "");
     params.set('mode', 'delete');
-    router.push(`/${locale}/property-tax/rvratemaster/EditDelete/bulk?${params.toString()}`);
+    router.push(`/${locale}/property-tax/rate-master/${routePrefix}/EditDelete/bulk?${params.toString()}`);
   };
 
   const handleDownloadRates = async () => {
-    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories);
+    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories, useGroups, isOpenPlot);
   };
   const filteredData = useMemo(() =>
-    filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled),
-    [rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled]
+    filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled, isOpenPlot),
+    [rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled, isOpenPlot]
   );
   const ratesConfiguredCount = useMemo(() =>
     countConfiguredRates(filteredData),
@@ -112,12 +116,12 @@ export default function RateMasterView({
   );
 
   const columns = useMemo(() =>
-    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, rateUnitPolicy?.value ?? "SqMeter"),
-    [rateCategories, tCommon, rateUnitPolicy]
+    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, t, rateUnitPolicy?.value ?? "SqMeter"),
+    [rateCategories, tCommon, t, rateUnitPolicy]
   );
 
   const isDownloadDisabled = !selectedZone || selectedZone === 'ALL' ||
-    !selectedUseGroup || selectedUseGroup === 'ALL' ||
+    (!isOpenPlot && (!selectedUseGroup || selectedUseGroup === 'ALL')) ||
     !selectedYear || selectedYear === 'ALL';
 
   // Use the global frequency mismatch from props
@@ -158,6 +162,7 @@ export default function RateMasterView({
               onUseGroupChange={handleUseGroupChange}
               t={t}
               disabled={isDrawerOpen}
+              isOpenPlot={isOpenPlot}
             />
           </div>
 

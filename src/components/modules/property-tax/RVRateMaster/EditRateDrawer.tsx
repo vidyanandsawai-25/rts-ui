@@ -24,13 +24,15 @@ export default function EditRateDrawer({
   paginatedZonesData,
   rateFrequencyPolicy,
   rateUnitPolicy,
+  isOpenPlot = false,
 }: EditRateDrawerProps) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("ptis_RVRateMaster");
 
   const handleClose = () => {
-    router.push(`/${locale}/property-tax/rvratemaster`);
+    const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
+    router.push(`/${locale}/property-tax/rate-master/${routePrefix}`);
   };
 
   const title = mode === "delete" ? t("messages.deleteRateConfiguration") : t("messages.editRateDetails");
@@ -78,12 +80,13 @@ export default function EditRateDrawer({
         editData={editData}
         bulkEditData={bulkEditData}
         backendRates={backendRates}
-        filterValues={filterValues ? { ...filterValues, year: filterValues.year ?? "" } : undefined}
+        filterValues={filterValues ? { ...filterValues, year: filterValues.year ?? "", useGroup: isOpenPlot ? "ALL" : (filterValues.useGroup ?? "") } : undefined}
         onClose={handleClose}
         mode={mode}
         paginatedZonesData={paginatedZonesData}
         rateFrequencyPolicy={rateFrequencyPolicy}
         rateUnitPolicy={rateUnitPolicy}
+        isOpenPlot={isOpenPlot}
       />
     </Drawer>
   );
