@@ -46,8 +46,10 @@ export interface FinancialYearStart {
 
 export interface GeneralSettings {
   enableCertificateBasedTax: boolean;
-  applyTaxOnlyForProtectedCertificateTypes: boolean;
+  applyTaxOnlyForTaxableCertificateTypes: boolean;
   financialYearStart: FinancialYearStart;
+  certificateTaxScopeMode?: string;
+  minimumBackdateFinancialYear: number | undefined;
 }
 
 // ─── Section 2: Certificate Date Priority ─────────────────────────────────
@@ -70,6 +72,9 @@ export interface CcOcRules {
   ccOcDifferenceUnit: DurationUnit;
   ccPeriodMultiplier: number | undefined;
   ocPeriodMultiplier: number | undefined;
+  enableCurrentFyPartialPolicy?: boolean;
+  ccPartialPolicyCode?: string;
+  ocPartialPolicyCode?: string;
 }
 
 // ─── Section 4: Electric Bill Rules ───────────────────────────────────────
@@ -79,6 +84,8 @@ export interface ElectricBillRules {
   addMonthsToElectricBillDate: number | undefined;
   addMonthsUnit: DurationUnit;
   electricBillMultiplier: number | undefined;
+  electricBillMinimumFinancialYear?: number | undefined;
+  electricBillPartialPolicyCode?: string;
 }
 
 // ─── Section 5: Retrospective (No Date) Rules ─────────────────────────────
@@ -87,6 +94,7 @@ export interface RetrospectiveRules {
   whenNoDateIsAvailable: NoDateRule;
   lookbackYears: number | undefined;
   defaultRetrospectiveMultiplier: number | undefined;
+  enableRetrospectiveTax?: boolean;
 }
 
 // ─── Section 7: Other Settings ────────────────────────────────────────────
@@ -95,6 +103,12 @@ export interface OtherSettings {
   enableCurrentYearProration: boolean;
   prorationType: ProrationType;
   taxPersistenceMode: TaxPersistenceMode;
+  doNotUpdateNettax?: boolean;
+  guidelineChangeApplyMode?: string;
+  recalculateOnCertificateSave?: boolean;
+  recalculateOnCertificateDelete?: boolean;
+  allowFloorWiseCertificateMetadata?: boolean;
+  floorPolicyDisplayRule?: string;
 }
 
 // ─── Combined Form Data ────────────────────────────────────────────────────
@@ -106,6 +120,7 @@ export interface TaxCalculationGuidelineFormData {
   electricBillRules: ElectricBillRules;
   retrospectiveRules: RetrospectiveRules;
   otherSettings: OtherSettings;
+  dynamicGuidelines?: TaxCalculationGuidelineDto[];
 }
 
 // ─── API DTOs ──────────────────────────────────────────────────────────────
@@ -116,8 +131,9 @@ export interface TaxCalculationGuidelineDto {
   guidelineCode?: string;
   guidelineName?: string;
   description?: string;
-  enableCertificateBasedTax: boolean;
-  applyOnlyProtectedCertificateTypes: boolean;
+  enableCertificateBasedTax?: boolean;
+  applyOnlyProtectedCertificateTypes?: boolean;
+  applyOnlyTaxableCertificateTypes?: boolean;
   financialYearStartMonth?: number | null;
   financialYearStartDay?: number | null;
   datePriority1?: string | null;
@@ -144,14 +160,40 @@ export interface TaxCalculationGuidelineDto {
   policyApprovedBy?: string | null;
   remark?: string;
   isActive?: boolean;
+
+  // New fields
+  minimumBackdateFinancialYear?: number;
+  certificateTaxScopeMode?: string | null;
+  enableCurrentFyPartialPolicy?: boolean;
+  ccPartialPolicyCode?: string | null;
+  ocPartialPolicyCode?: string | null;
+  electricBillMinimumFinancialYear?: number;
+  electricBillPartialPolicyCode?: string | null;
+  enableRetrospectiveTax?: boolean;
+  doNotUpdateNettax?: boolean;
+  guidelineChangeApplyMode?: string | null;
+  recalculateOnCertificateSave?: boolean;
+  recalculateOnCertificateDelete?: boolean;
+  allowFloorWiseCertificateMetadata?: boolean;
+  floorPolicyDisplayRule?: string | null;
+
+  // Metadata/dynamic fields support
+  guidelineGroup?: string;
+  displayOrder?: number;
+  dataType?: 'BIT' | 'INT' | 'DECIMAL' | 'VARCHAR';
+  guidelineValue?: string | null;
+  allowedValues?: string | null;
 }
 
 // ─── Component Props ───────────────────────────────────────────────────────
 
+import type { PolicyConfiguration } from './policy-configuration.types';
+
 export interface TaxCalculationGuidelineModuleProps {
-  initialDto: TaxCalculationGuidelineDto | null;
+  initialDto: TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null;
   fetchError?: string;
   statusCode?: number;
+  policyConfigs?: PolicyConfiguration[];
 }
 
 export interface TaxCalculationGuidelineSectionProps {
@@ -161,4 +203,6 @@ export interface TaxCalculationGuidelineSectionProps {
     field: K,
     value: TaxCalculationGuidelineFormData[S][K]
   ) => void;
+  onChangeGuideline?: (code: string, value: string | null) => void;
+  policyConfigs?: PolicyConfiguration[];
 }

@@ -186,3 +186,163 @@ export const buildAssetCategoryUpdatePayloadFromModel = (data: any, userId: numb
   updatedBy: userId,
   codeFormat: "1"
 });
+
+
+export const buildOwnershipTypeCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  ownershipTypeName: record.name,
+  description: record.description,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildOwnershipTypeUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id,
+  ownershipTypeName: record.name,
+  description: record.description,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Owning Department
+
+export const buildOwningDepartmentCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  owningDepartmentName: record.name,
+  departmentId: record.departmentId,
+  departmentName: record.departmentName,
+  description: record.description,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildOwningDepartmentUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id,
+  owningDepartmentName: record.name,
+  departmentId: record.departmentId,
+  departmentName: record.departmentName,
+  description: record.description,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// GST Master
+export const buildGstCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  taxCode: (record.id || '').trim(),
+  taxName: record.name.trim(),
+  taxPercentage: record.taxPercentage ?? 0,
+  effectiveFromDate: record.effectiveFromDate || new Date().toISOString().split('T')[0],
+  effectiveToDate: record.effectiveToDate || null,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildGstUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id: id,
+  taxCode: (record.id || '').trim(),
+  taxName: record.name.trim(),
+  taxPercentage: record.taxPercentage ?? 0,
+  effectiveFromDate: record.effectiveFromDate || new Date().toISOString().split('T')[0],
+  effectiveToDate: record.effectiveToDate || null,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Penalty Rule Master
+export const buildPenaltyCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  penaltyCode: (record.id || '').trim(),
+  penaltyName: record.name.trim(),
+  calculationType: record.calculationType || 'FlatAmount',
+  penaltyValue: record.penaltyValue ?? 0,
+  gracePeriodDays: record.gracePeriodDays ?? 0,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildPenaltyUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id: id,
+  penaltyCode: (record.id || '').trim(),
+  penaltyName: record.name.trim(),
+  calculationType: record.calculationType || 'FlatAmount',
+  penaltyValue: record.penaltyValue ?? 0,
+  gracePeriodDays: record.gracePeriodDays ?? 0,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Room Type Master
+export const buildRoomTypeCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  roomTypeCode: (record.id || '').trim(),
+  roomTypeName: record.name.trim(),
+  description: (record.description || '').trim(),
+  assetTypeId: Number(record.group) || 0,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildRoomTypeUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id: id,
+  roomTypeCode: (record.id || '').trim(),
+  roomTypeName: record.name.trim(),
+  description: (record.description || '').trim(),
+  assetTypeId: Number(record.group) || 0,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Type Of Use Master
+export const buildTypeOfUseCreatePayload = (record: MasterDataRecord, userId = 0) => ({
+  assetTypeId: Number(record.group) || 0,
+  typeOfUseGroupId: record.departmentId || 0,
+  typeOfUseCode: (record.id || '').trim(),
+  description: (record.description || '').trim(),
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildTypeOfUseUpdatePayload = (record: MasterDataRecord, id: number, userId = 0) => ({
+  id: id,
+  assetTypeId: Number(record.group) || 0,
+  typeOfUseGroupId: record.departmentId || 0,
+  typeOfUseCode: (record.id || '').trim(),
+  description: (record.description || '').trim(),
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Sub Type Of Use Master
+export const buildSubTypeOfUseCreatePayload = (record: MasterDataRecord, userId = 0) => ({
+  typeOfUseId: record.departmentId || 0,
+  description: (record.description || '').trim(),
+  searchSequence: record.displayOrder || 0,
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildSubTypeOfUseUpdatePayload = (record: MasterDataRecord, id: number, userId = 0) => ({
+  id: id,
+  typeOfUseId: record.departmentId || 0,
+  description: (record.description || '').trim(),
+  searchSequence: record.displayOrder || 0,
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+// Asset Photo Type Master
+export const buildAssetPhotoTypeCreatePayload = (record: MasterDataRecord, userId: number = 0) => ({
+  photoTypeCode: (record.id || '').trim(),
+  photoTypeName: record.name.trim(),
+  description: (record.description || '').trim(),
+  isActive: record.status === 'Active',
+  createdBy: userId,
+});
+
+export const buildAssetPhotoTypeUpdatePayload = (record: MasterDataRecord, id: number, userId: number = 0) => ({
+  id,
+  photoTypeCode: (record.id || '').trim(),
+  photoTypeName: record.name.trim(),
+  description: (record.description || '').trim(),
+  isActive: record.status === 'Active',
+  updatedBy: userId,
+});
+
+
+
