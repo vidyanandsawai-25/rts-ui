@@ -3,6 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Settings, Clock, Info, Download, X } from 'lucide-react';
+import { Tabs, TabList, Tab, TabPanel } from '@/components/common';
 import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
@@ -172,66 +173,65 @@ export function ReportsWorkspace({
   return (
     <div className="flex flex-col gap-5">
       {/* View Switcher Tabs */}
-      <div className="flex justify-center mb-2">
-        <div className="flex p-1 bg-gray-100 rounded-xl border border-gray-200/80 shadow-sm w-full max-w-sm gap-1">
-          <button
-            type="button"
-            onClick={() => setActiveView('generate')}
-            className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all duration-200 w-1/2 focus:outline-none
-              ${activeView === 'generate' ? 'bg-[#004c8c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
-          >
-            <Settings className="w-3.5 h-3.5" />
+      <Tabs
+        variant="pills"
+        size="sm"
+        fullWidth
+        value={activeView}
+        onChange={(v) => setActiveView(v as 'generate' | 'history')}
+        activeTabClassName="bg-[#004c8c] text-white shadow-sm"
+        className="justify-center mb-2"
+      >
+        <TabList className="w-full max-w-sm mx-auto border border-gray-200/80 shadow-sm gap-1">
+          <Tab value="generate" icon={Settings}>
             {workspaceCopy.tabs.generateReport}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('history')}
-            className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all duration-200 w-1/2 focus:outline-none relative
-              ${activeView === 'history' ? 'bg-[#004c8c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            {workspaceCopy.tabs.myReports}
-            {hasActiveJobs && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
-            )}
-          </button>
-        </div>
-      </div>
+          </Tab>
+          <Tab value="history" icon={Clock}>
+            <span className="relative inline-flex items-center">
+              {workspaceCopy.tabs.myReports}
+              {hasActiveJobs && (
+                <span className="absolute -top-1.5 -right-3 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
+              )}
+            </span>
+          </Tab>
+        </TabList>
 
-      {/* Active View */}
-      {activeView === 'generate' ? (
-        <ReportGenerateView
-          currentStep={currentStep}
-          selectedCategory={selectedCategory}
-          selectedReport={selectedReport}
-          reportsByCategory={reportsByCategory}
-          categories={dynamicCategories}
-          workspaceCopy={workspaceCopy}
-          paramsCopy={paramsCopy}
-          zones={zones ?? []}
-          financialYears={financialYears ?? []}
-          fetchWards={fetchWards ?? (() => Promise.resolve([]))}
-          fetchProperties={fetchProperties ?? (() => Promise.resolve([]))}
-          onCategoryClick={handleCategoryClick}
-          onSelectReport={handleSelectReport}
-          onQueued={handleQueued}
-          createReportRequest={createReportRequest}
-        />
-      ) : (
-        <div className="transition-all duration-300">
-          <ReportJobsList
-            jobs={jobs}
-            loading={isLoading}
-            copy={jobsCopy}
-            reportDefinitions={reportDefinitions}
-            onPreview={(requestId) => {
-              setActiveRequestId(requestId);
-              setPreviewReport(null);
-              setPdfLoading(true);
-            }}
+        {/* Active View */}
+        <TabPanel value="generate" className="mt-0">
+          <ReportGenerateView
+            currentStep={currentStep}
+            selectedCategory={selectedCategory}
+            selectedReport={selectedReport}
+            reportsByCategory={reportsByCategory}
+            categories={dynamicCategories}
+            workspaceCopy={workspaceCopy}
+            paramsCopy={paramsCopy}
+            zones={zones ?? []}
+            financialYears={financialYears ?? []}
+            fetchWards={fetchWards ?? (() => Promise.resolve([]))}
+            fetchProperties={fetchProperties ?? (() => Promise.resolve([]))}
+            onCategoryClick={handleCategoryClick}
+            onSelectReport={handleSelectReport}
+            onQueued={handleQueued}
+            createReportRequest={createReportRequest}
           />
-        </div>
-      )}
+        </TabPanel>
+        <TabPanel value="history" className="mt-0">
+          <div className="transition-all duration-300">
+            <ReportJobsList
+              jobs={jobs}
+              loading={isLoading}
+              copy={jobsCopy}
+              reportDefinitions={reportDefinitions}
+              onPreview={(requestId) => {
+                setActiveRequestId(requestId);
+                setPreviewReport(null);
+                setPdfLoading(true);
+              }}
+            />
+          </div>
+        </TabPanel>
+      </Tabs>
 
       {/* Overlays */}
       {isGenerating && (
