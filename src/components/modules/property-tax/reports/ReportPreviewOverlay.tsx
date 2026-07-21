@@ -1,7 +1,7 @@
 'use client';
 
-import { FileText, Loader2, X, Download } from 'lucide-react';
-import { Button } from '@/components/common';
+import { FileText, Loader2, Download, X } from 'lucide-react';
+import { Button, IconButton } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 
 interface ReportPreviewOverlayProps {
@@ -49,13 +49,13 @@ export function ReportPreviewOverlay({
             >
               {copy.preview.downloadPdf}
             </Button>
-            <button
-              type="button"
+            <IconButton
+              icon={X}
+              variant="danger"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors duration-300"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              aria-label="Close preview"
+              className="rounded-xl"
+            />
           </div>
         </div>
 
