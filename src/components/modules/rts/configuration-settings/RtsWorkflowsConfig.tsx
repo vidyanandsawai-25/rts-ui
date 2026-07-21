@@ -12,6 +12,7 @@ interface WorkflowItem {
   flowName: string;
   isActive: boolean;
   stagesCount?: number;
+  [key: string]: unknown;
 }
 
 interface RtsWorkflowsConfigProps {
