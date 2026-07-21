@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getCmsApplicationByIdAction, getCmsUsersAction } from "../../../actions";
 import { readStoredAdminServiceFormByServiceId } from "@/components/modules/rts/admin/service-builder/data.server";
+import { getRtsWorkflowStages } from "@/lib/api/rts/rts-workflow.service";
 import CmsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
 type PageProps = {
@@ -18,10 +19,11 @@ export default async function CmsApplicationDetailsPage({ params }: PageProps) {
     notFound();
   }
 
-  // Retrieve matching dynamic schema config for EAV form rendering
-  const [storedForm, officers] = await Promise.all([
+  // Retrieve matching dynamic schema config for EAV form rendering and workflow details
+  const [storedForm, officers, workflowDetails] = await Promise.all([
     readStoredAdminServiceFormByServiceId(app.serviceId),
-    getCmsUsersAction()
+    getCmsUsersAction(),
+    getRtsWorkflowStages(Number(app.serviceId))
   ]);
 
   return (
@@ -31,6 +33,7 @@ export default async function CmsApplicationDetailsPage({ params }: PageProps) {
         formSchema={storedForm?.generatedSchema ?? null}
         officers={officers}
         locale={locale}
+        workflowDetails={workflowDetails}
       />
     </div>
   );

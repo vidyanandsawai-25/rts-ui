@@ -22,12 +22,14 @@ import { pickLangText } from "@/lib/utils/rts/lang";
 import { submitCmsAction } from "@/app/[locale]/rts/actions";
 import type { CmsApplication, CmsOfficer } from "@/lib/mock/rts/cms";
 import type { GeneratedDynamicFormSchema } from "@/components/modules/rts/admin/service-builder/types";
+import type { WorkflowDetails, WorkflowStage } from "@/lib/api/rts/rts-workflow.service";
 
 interface CmsApplicationDetailsProps {
   application: CmsApplication;
   formSchema: GeneratedDynamicFormSchema | null;
   officers: CmsOfficer[];
   locale: string;
+  workflowDetails?: WorkflowDetails | null;
 }
 
 type TabId = "profile" | "form" | "documents" | "timeline";
@@ -36,7 +38,8 @@ export default function CmsApplicationDetails({
   application,
   formSchema,
   officers,
-  locale
+  locale,
+  workflowDetails
 }: CmsApplicationDetailsProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("profile");
@@ -44,7 +47,26 @@ export default function CmsApplicationDetails({
 
   const [documentStates, setDocumentStates] = useState(application.documents);
 
-  const [actionType, setActionType] = useState<"Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments">("Approve");
+  // Dynamic workflow stage calculation
+  const completedStepsCount = application.timeline.filter(t => t.status === "completed").length;
+  const currentStageIndex = workflowDetails && workflowDetails.stages.length > 0
+    ? Math.min(completedStepsCount, workflowDetails.stages.length - 1)
+    : -1;
+  const currentStage: WorkflowStage | undefined = workflowDetails && currentStageIndex !== -1
+    ? workflowDetails.stages[currentStageIndex]
+    : undefined;
+
+  // Set default action type depending on stage permissions
+  const defaultAction = currentStage
+    ? currentStage.canApprove ? "Approve"
+      : currentStage.canVerifyDocument ? "RequestDocuments"
+      : currentStage.canReturn ? "Return"
+      : !currentStage.isFinalStage ? "Forward"
+      : currentStage.canReject ? "Reject"
+      : "Hold"
+    : "Approve";
+
+  const [actionType, setActionType] = useState<"Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments">(defaultAction);
   const [remarks, setRemarks] = useState("");
   const [forwardOfficerId, setForwardOfficerId] = useState("");
 
@@ -290,40 +312,93 @@ export default function CmsApplicationDetails({
 
           {/* TAB 4: Timeline */}
           {activeTab === "timeline" && (
-            <Card className="p-6">
-              <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-6">Movement History</h3>
-              <div className="relative border-l border-slate-200 ml-4 space-y-6">
-                {application.timeline.map((step, idx) => (
-                  <div key={idx} className="relative pl-6">
-                    <span
-                      className={`absolute left-0 top-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 bg-white ${
-                        step.status === "completed"
-                          ? "border-green-500 bg-green-500"
-                          : step.status === "current"
-                            ? "border-amber-500"
-                            : "border-slate-200"
-                      }`}
-                    />
-                    <div>
-                      <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                        <h4>{step.title}</h4>
-                        {step.timestamp && (
-                          <span className="text-[10px] text-slate-400 font-semibold">{step.timestamp}</span>
+            <div className="space-y-6">
+              {/* Dynamic Workflow Stages Pipeline */}
+              {workflowDetails && workflowDetails.stages.length > 0 && (
+                <Card className="p-6">
+                  <h3 className="text-sm font-bold text-[#4b70a6] border-b border-slate-100 pb-2 mb-6 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Approval Workflow Pipeline ({workflowDetails.flowName})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {workflowDetails.stages.map((stage, idx) => {
+                      const isCompleted = idx < currentStageIndex;
+                      const isActive = idx === currentStageIndex;
+                      const isPending = idx > currentStageIndex;
+
+                      return (
+                        <div
+                          key={stage.id}
+                          className={`p-4 rounded-xl border-2 transition ${
+                            isActive
+                              ? "bg-blue-50/50 border-blue-500 shadow-sm"
+                              : isCompleted
+                                ? "bg-green-50/30 border-green-200"
+                                : "bg-white border-slate-200/60"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] uppercase font-bold text-slate-400">Stage {stage.stageOrder}</span>
+                            <Badge
+                              variant={isActive ? "primary" : isCompleted ? "success" : "secondary"}
+                              className="text-[9px] font-bold py-0.5 px-1.5"
+                            >
+                              {isActive ? "Active" : isCompleted ? "Completed" : "Pending"}
+                            </Badge>
+                          </div>
+                          <h4 className="text-xs font-extrabold text-slate-800">{stage.stageName}</h4>
+                          <div className="mt-2 space-y-1 text-[10px] text-slate-500 font-semibold">
+                            <p>SLA Limit: {stage.slaDays} Days</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {stage.canVerifyDocument && <span className="bg-slate-100 text-slate-600 px-1 rounded">Verify</span>}
+                              {stage.canApprove && <span className="bg-emerald-100 text-emerald-700 px-1 rounded">Approve</span>}
+                              {stage.canReject && <span className="bg-rose-100 text-rose-700 px-1 rounded">Reject</span>}
+                              {stage.canReturn && <span className="bg-amber-100 text-amber-700 px-1 rounded">Return</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
+
+              {/* Movement History */}
+              <Card className="p-6">
+                <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-6">Movement History</h3>
+                <div className="relative border-l border-slate-200 ml-4 space-y-6">
+                  {application.timeline.map((step, idx) => (
+                    <div key={idx} className="relative pl-6">
+                      <span
+                        className={`absolute left-0 top-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 bg-white ${
+                          step.status === "completed"
+                            ? "border-green-500 bg-green-500"
+                            : step.status === "current"
+                              ? "border-amber-500"
+                              : "border-slate-200"
+                        }`}
+                      />
+                      <div>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                          <h4>{step.title}</h4>
+                          {step.timestamp && (
+                            <span className="text-[10px] text-slate-400 font-semibold">{step.timestamp}</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-0.5">
+                          By {step.officerName} ({step.role})
+                        </p>
+                        {step.remarks && (
+                          <div className="mt-1.5 rounded-lg bg-slate-50 p-2 text-xs text-slate-600 border border-slate-100 italic">
+                            "{step.remarks}"
+                          </div>
                         )}
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-0.5">
-                        By {step.officerName} ({step.role})
-                      </p>
-                      {step.remarks && (
-                        <div className="mt-1.5 rounded-lg bg-slate-50 p-2 text-xs text-slate-600 border border-slate-100 italic">
-                          "{step.remarks}"
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
+                  ))}
+                </div>
+              </Card>
+            </div>
           )}
         </div>
 
@@ -334,6 +409,16 @@ export default function CmsApplicationDetails({
               <Shield className="h-5 w-5" />
               <h3 className="text-sm font-bold uppercase tracking-wider">Decision Control</h3>
             </div>
+
+            {/* Display active workflow stage details */}
+            {currentStage && (
+              <div className="mb-4 rounded-xl bg-blue-50/60 border border-blue-100 p-3 text-[11px] text-slate-700 space-y-1">
+                <p className="font-extrabold text-[#4b70a6] uppercase tracking-wider text-[9px]">Active Workflow Stage</p>
+                <p className="font-bold text-slate-800">{currentStage.stageName}</p>
+                <p className="text-slate-500">Authorized Role ID: {currentStage.employeeTypeId}</p>
+                <p className="text-slate-500">Stage SLA Limit: {currentStage.slaDays} Days</p>
+              </div>
+            )}
 
             {["Approved", "Rejected"].includes(application.status) ? (
               <div className="text-center py-6 text-slate-400 bg-slate-100/50 rounded-xl">
@@ -350,12 +435,12 @@ export default function CmsApplicationDetails({
                     onChange={e => setActionType(e.target.value as any)}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-teal-500 focus:outline-none"
                   >
-                    <option value="Approve">Approve & Issue Certificate</option>
-                    <option value="Forward">Forward to Next Official</option>
-                    <option value="Return">Return to Citizen for Corrections</option>
+                    {!currentStage || currentStage.canApprove ? <option value="Approve">Approve & Issue Certificate</option> : null}
+                    {!currentStage || !currentStage.isFinalStage ? <option value="Forward">Forward to Next Official</option> : null}
+                    {!currentStage || currentStage.canReturn ? <option value="Return">Return to Citizen for Corrections</option> : null}
                     <option value="Hold">Put Application on Hold</option>
-                    <option value="RequestDocuments">Request Additional Documents</option>
-                    <option value="Reject">Reject Request</option>
+                    {!currentStage || currentStage.canVerifyDocument ? <option value="RequestDocuments">Request Additional Documents</option> : null}
+                    {!currentStage || currentStage.canReject ? <option value="Reject">Reject Request</option> : null}
                   </select>
                 </div>
 
