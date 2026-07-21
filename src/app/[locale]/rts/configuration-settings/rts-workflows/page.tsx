@@ -10,7 +10,7 @@ export default async function RtsWorkflowsPage({ params }: PageProps) {
   const masters = await getCmsMastersAction();
 
   // Mock initial workflows list mapped to services for display
-  const initialWorkflows = masters.services.slice(0, 10).map((s, idx) => ({
+  const initialWorkflows = masters.services.slice(0, 10).map((s: { id: string; name: string }, idx: number) => ({
     id: idx + 1,
     serviceId: Number(s.id),
     flowName: `${s.name} Approval Flow`,
