@@ -413,6 +413,15 @@ export function useLockUnlockMaster({
             if (!isSearchActive && (!formData.fromProperty || !formData.toProperty)) {
               throw new Error(t("messages.validationFromToProperty"));
             }
+
+            if (formData.fromProperty && formData.toProperty) {
+              const fromIndex = propertyOptions.findIndex(o => o.value === formData.fromProperty);
+              const toIndex = propertyOptions.findIndex(o => o.value === formData.toProperty);
+              if (toIndex <= fromIndex) {
+                throw new Error(t("messages.validationGreaterProperty", { defaultValue: "Please to property select must grather between the from property" }));
+              }
+            }
+
             params.WardId = Number(formData.wardId);
             params.PropertyFrom = fromProperty;
             params.PropertyTo = toProperty;
@@ -517,6 +526,15 @@ export function useLockUnlockMaster({
         toast.error(t("messages.validationFromToProperty"));
         return;
       }
+
+      if (formData.fromProperty && formData.toProperty) {
+        const fromIndex = propertyOptions.findIndex(o => o.value === formData.fromProperty);
+        const toIndex = propertyOptions.findIndex(o => o.value === formData.toProperty);
+        if (toIndex <= fromIndex) {
+          toast.error(t("messages.validationGreaterProperty", { defaultValue: "Please to property select must grather between the from property" }));
+          return;
+        }
+      }
     }
 
     const params = new URLSearchParams(searchParams.toString());
@@ -541,23 +559,22 @@ export function useLockUnlockMaster({
     });
   }, [formData, searchParams, pathname, router, t, pagination.pageSize, propertyOptions]);
 
-  const handleSearchButtonClick = useCallback(() => {
-    if (!propertySearchTerm || propertySearchTerm.trim() === "") {
+  const handleSearchButtonClick = useCallback((termOverride?: unknown) => {
+    const termToSearch = typeof termOverride === 'string' ? termOverride : propertySearchTerm;
+    
+    if (!termToSearch || termToSearch.trim() === "") {
       toast.error(t("messages.searchValidationError"));
       return;
     }
 
-    lastAppliedSearchRef.current = propertySearchTerm;
+    lastAppliedSearchRef.current = termToSearch;
     const params = new URLSearchParams(searchParams.toString());
-    if (propertySearchTerm) {
-      params.set("search", propertySearchTerm);
-    } else {
-      params.delete("search");
-    }
+    params.set("search", termToSearch);
+    
     router.push(`${pathname}?${params.toString()}`);
 
     if (showResults) {
-      fetchProperties(1, pagination.pageSize, propertySearchTerm, true);
+      fetchProperties(1, pagination.pageSize, termToSearch, true);
     }
   }, [propertySearchTerm, searchParams, pathname, router, showResults, fetchProperties, pagination.pageSize, t]);
 
@@ -595,9 +612,13 @@ export function useLockUnlockMaster({
     if (sanitizedSearchTerm === "") {
       emptySearchTimerRef.current = setTimeout(() => {
         handleClearSearch();
-      }, 500);
+      }, 1000);
+    } else {
+      emptySearchTimerRef.current = setTimeout(() => {
+        handleSearchButtonClick(sanitizedSearchTerm);
+      }, 1000);
     }
-  }, [handleClearSearch]);
+  }, [handleClearSearch, handleSearchButtonClick]);
 
   // Page navigation preserves selection state (no reset)
   const handlePageChange = useCallback(

@@ -95,7 +95,8 @@
     "fetchNoResults": "No properties found in the selected range.",
     "fetchFailed": "Failed to load properties.",
     "fetchWardsError": "Error fetching wards:",
-    "searchValidationError": "Please enter a value to search."
+    "searchValidationError": "Please enter a value to search.",
+    "validationGreaterProperty": "Please to property select must grather between the from property"
   },
   "error": {
     "title": "Failed to connect to the server. Please try again later.",

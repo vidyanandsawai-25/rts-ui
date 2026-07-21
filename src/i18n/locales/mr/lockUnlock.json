@@ -96,7 +96,8 @@
     "fetchNoResults": "निवडलेल्या श्रेणीत कोणतीही मालमत्ता आढळली नाही.",
     "fetchFailed": "मालमत्ता लोड करण्यात अयशस्वी.",
     "fetchWardsError": "वॉर्ड प्राप्त करण्यात त्रुटी:",
-    "searchValidationError": "कृपया शोधण्यासाठी मूल्य प्रविष्ट करा."
+    "searchValidationError": "कृपया शोधण्यासाठी मूल्य प्रविष्ट करा.",
+    "validationGreaterProperty": "Please to property select must grather between the from property"
   },
   "error": {
     "title": "सर्व्हरशी कनेक्ट करण्यात अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा.",

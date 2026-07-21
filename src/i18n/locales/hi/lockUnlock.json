@@ -96,7 +96,8 @@
     "fetchNoResults": "चयनित सीमा में कोई संपत्ति नहीं मिली।",
     "fetchFailed": "संपत्तियां लोड करने में विफल।",
     "fetchWardsError": "वार्ड प्राप्त करने में त्रुटि:",
-    "searchValidationError": "कृपया खोजने के लिए कोई मान दर्ज करें।"
+    "searchValidationError": "कृपया खोजने के लिए कोई मान दर्ज करें।",
+    "validationGreaterProperty": "Please to property select must grather between the from property"
   },
   "error": {
     "title": "सर्वर से कनेक्ट करने में विफल। कृपया बाद में पुनः प्रयास करें।",
