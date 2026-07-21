@@ -30,7 +30,7 @@ export default async function CmsApplicationDetailsPage({ params }: PageProps) {
     <div className="w-full">
       <CmsApplicationDetails
         application={app}
-        formSchema={storedForm?.generatedSchema ?? null}
+        formSchema={null}
         officers={officers}
         locale={locale}
         workflowDetails={workflowDetails}
