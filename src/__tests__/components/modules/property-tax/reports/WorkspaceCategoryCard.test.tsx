@@ -87,8 +87,8 @@ describe('CategoryCard', () => {
     const { container } = render(
       <CategoryCard {...defaultProps} isSelected={true} />
     );
-    // The dot is an absolutely positioned span
-    const dot = container.querySelector('span.absolute');
+    // The dot is an absolutely positioned element
+    const dot = container.querySelector('.absolute');
     expect(dot).not.toBeNull();
   });
 

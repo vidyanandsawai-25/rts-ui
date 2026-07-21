@@ -9,7 +9,8 @@
     "newPropertyPhoto": "New Property Photo",
     "newPlanPhoto": "New Plan Photo",
     "photoAsPerOld": "Photograph as per Municipal Registration",
-    "photoAsPerNew": "Photograph as per New Survey"
+    "photoAsPerNew": "Photograph as per New Survey",
+    "clickToView": "Click to view"
   },
   "sectionHeaders": {
     "municipalRegistration": "Details as per Municipal Corp. Registration",

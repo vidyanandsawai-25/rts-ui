@@ -143,14 +143,14 @@ export function RateFrequencySection({
             type="button"
             onClick={onDownloadTemplate}
             disabled={isDisabled}
-            title="Download Excel Template"
+            title={t('buttons.downloadTemplate')}
             label={t('buttons.downloadTemplate')}
           />
           <UploadButton
             type="button"
             onClick={onUploadClick}
             disabled={isDisabled}
-            title="Upload Excel File"
+            title={t('buttons.uploadExcel')}
             label={t('buttons.uploadExcel')}
           />
           <Input

@@ -1,6 +1,6 @@
 import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
-import { bulkCreateRateMasterAction, bulkUpdateRateMasterAction } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { bulkCreateRateMasterAction, bulkUpdateRateMasterAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { buildPayloadFromMatrix, applyMultiplierToMatrix, buildBulkUpdatePayload, buildBulkCreatePayload } from "./ratePayloadHelpers";
 
 // Error marker for no rates to update
@@ -19,10 +19,10 @@ interface RateSubmission {
 function parseBackendError(errorMessage: string): string {
   try {
     // Check if the error contains rate validation errors
-    if (errorMessage.includes('Rate_RateSquareFeet_Min_0') || 
-        errorMessage.includes('Rate_RateSquareMeter_Min_0') ||
-        errorMessage.includes('RateSquareFeet') ||
-        errorMessage.includes('RateSquareMeter')) {
+    if (errorMessage.includes('Rate_RateSquareFeet_Min_0') ||
+      errorMessage.includes('Rate_RateSquareMeter_Min_0') ||
+      errorMessage.includes('RateSquareFeet') ||
+      errorMessage.includes('RateSquareMeter')) {
       return 'Rate value must be valid. Please enter a positive rate value.';
     }
     // Return original message if no pattern matches
@@ -89,18 +89,17 @@ export async function fetchBackendRatesForSubmission(
     return [];
   }
 }
-
 /**
  * Process a single rate submission (updates + inserts)
  */
 export async function processSingleSubmission(
   submission: RateSubmission,
   backendRates: IBackendRateMaster[],
-  config: BuildPayloadConfig,
+  config: BuildPayloadConfig & { isOpenPlot?: boolean },
   getUseGroupLabel: (useGroup: string) => string
 ): Promise<{ success: boolean; errors: string[] }> {
   const errors: string[] = [];
-  
+
   const { updates, inserts } = buildPayloadFromMatrix(
     submission.matrixData,
     backendRates,
@@ -117,7 +116,8 @@ export async function processSingleSubmission(
   // Process updates
   if (updates.length > 0) {
     try {
-      const updateResult = await bulkUpdateRateMasterAction(buildBulkUpdatePayload(updates));
+      const payload = buildBulkUpdatePayload(updates);
+      const updateResult = await bulkUpdateRateMasterAction(payload);
       if (!updateResult.success) {
         const errorMsg = updateResult.message || 'Failed to update rates';
         // Check if backend returned "No rates to update" error
@@ -135,7 +135,12 @@ export async function processSingleSubmission(
   // Process inserts
   if (inserts.length > 0) {
     try {
-      const createResult = await bulkCreateRateMasterAction(buildBulkCreatePayload(inserts));
+      const payload = buildBulkCreatePayload(inserts);
+      const finalPayload = config.isOpenPlot
+        ? payload.map(({ constructionTypeId: _constructionTypeId, ...rest }) => rest)
+        : payload;
+
+      const createResult = await bulkCreateRateMasterAction(finalPayload, config.isOpenPlot);
       if (!createResult.success) {
         const errorMsg = createResult.message || 'Failed to create rates';
         errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${parseBackendError(errorMsg)}`);
@@ -156,7 +161,7 @@ export async function processSingleSubmission(
  */
 export async function processRateSubmissions(
   submissions: RateSubmission[],
-  config: BuildPayloadConfig,
+  config: BuildPayloadConfig & { isOpenPlot?: boolean },
   _getUseGroupLabel: (useGroup: string) => string
 ): Promise<ProcessSubmissionsResult> {
   let successCount = 0;
@@ -173,7 +178,7 @@ export async function processRateSubmissions(
     if (success) {
       successCount++;
     }
-    
+
     if (errors.length > 0) {
       errorMessages.push(...errors);
     }

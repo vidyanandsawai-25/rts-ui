@@ -1,6 +1,7 @@
 'use client';
 import type { Category } from './ReportWorkspaceConfig';
 import Image from 'next/image';
+import { Badge } from '@/components/common';
 
 interface CategoryCardProps {
   category: Category;
@@ -24,9 +25,9 @@ export function CategoryCard({ category, label, count, reportsCountTemplate, isS
         }`}
     >
       {isSelected && (
-        <span className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${category.color}`} style={{ backgroundColor: 'currentColor' }} />
+        <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${category.color}`} style={{ backgroundColor: 'currentColor' }} />
       )}
-      <span className={`transition-all duration-300`}>
+      <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent transition-all duration-300`}>
         {category.logoBase64 && category.logoContentType ? (
           <Image
             src={`data:${category.logoContentType};base64,${category.logoBase64}`}
@@ -38,20 +39,20 @@ export function CategoryCard({ category, label, count, reportsCountTemplate, isS
         ) : Icon ? (
           <Icon className={`w-5 h-5 ${isSelected ? category.color : 'text-gray-500'}`} />
         ) : null}
-      </span>
+      </Badge>
       <div className="flex flex-col items-center">
-        <span className={`block text-xs font-bold leading-tight ${isSelected ? `${category.color} font-extrabold` : 'text-gray-700'}`}>
+        <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent block text-xs font-bold leading-tight ${isSelected ? `${category.color} font-extrabold` : 'text-gray-700'}`}>
           {label}
-        </span>
+        </Badge>
       </div>
-      <span className={`text-[10px] font-bold mt-1.5 transition-all duration-300
+      <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent text-[10px] font-bold mt-1.5 transition-all duration-300
         ${isSelected
           ? category.color
           : 'text-gray-500'
         }`}
       >
         {reportsCountTemplate.replace('{count}', String(count))}
-      </span>
+      </Badge>
     </button>
   );
 }

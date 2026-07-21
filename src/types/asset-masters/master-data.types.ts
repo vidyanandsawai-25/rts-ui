@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { ActionResult } from '../common.types';
 
 /* ================= CORE MASTER DATA ================= */

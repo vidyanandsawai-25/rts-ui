@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, Loader2, Download, X } from 'lucide-react';
-import { Button, IconButton } from '@/components/common';
+import { Button, IconButton, Badge } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 
 interface ReportPreviewOverlayProps {
@@ -30,9 +30,9 @@ export function ReportPreviewOverlay({
         {/* Header */}
         <div className="bg-white px-6 py-4 border-b border-slate-200/85 flex items-center justify-between shrink-0 shadow-sm">
           <div className="flex items-center gap-3.5">
-            <span className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner border border-rose-100">
+            <Badge variant="secondary" className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner border border-rose-100 hover:bg-rose-50">
               <FileText className="w-5 h-5" />
-            </span>
+            </Badge>
             <div className="min-w-0">
               <h3 className="text-sm font-extrabold text-slate-800 tracking-wide truncate">
                 {report?.reportName || copy.preview.title}

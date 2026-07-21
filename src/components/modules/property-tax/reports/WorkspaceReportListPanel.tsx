@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import { Card } from '@/components/common';
+import { Card, Badge } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 import type { Category } from './ReportWorkspaceConfig';
 
@@ -22,12 +22,12 @@ export function ReportListPanel({
     <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
       <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
         <FileText className="w-4 h-4 text-[#800000]" />
-        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+        <Badge variant="secondary" className="bg-transparent border-none px-0 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-transparent">
           {activeCategoryDef.name || activeCategoryDef.key}
-        </span>
-        <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">
+        </Badge>
+        <Badge variant="secondary" className="bg-transparent border-none px-0 ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5 hover:bg-gray-200/80">
           {activeReports.length}
-        </span>
+        </Badge>
       </div>
       {activeReports.length === 0 ? (
         <div className="py-12 text-center text-sm text-gray-400">

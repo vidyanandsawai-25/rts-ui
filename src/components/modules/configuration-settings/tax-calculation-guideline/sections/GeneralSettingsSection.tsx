@@ -1,93 +1,45 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ToggleSwitch } from '@/components/common';
-import { MONTH_OPTIONS, DAY_OPTIONS } from '@/config/tax-calculation-guideline.config';
 import type { TaxCalculationGuidelineSectionProps } from '@/types/tax-calculation-guideline.types';
-import { TaxSelect } from '../TaxFormField';
+import { DynamicGuidelineField } from '../TaxFormField';
 
 /**
  * Section 1 – General Settings
- * ─ Enable Certificate Based Tax (toggle)
- * ─ Apply Tax Only For Protected Certificate Types (toggle)
- * ─ Financial Year Start (Month + Day dropdowns)
+ * Dynamically rendered based on metadata from the API.
  */
-export function GeneralSettingsSection({ formData, onChange }: TaxCalculationGuidelineSectionProps) {
+export function GeneralSettingsSection({ formData, onChangeGuideline }: TaxCalculationGuidelineSectionProps) {
   const t = useTranslations('taxCalculationGuideline');
-  const { generalSettings } = formData;
+  const { dynamicGuidelines = [], generalSettings } = formData;
+
+  const generalGuidelines = dynamicGuidelines
+    .filter((g) => g.guidelineGroup === 'GENERAL')
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+  const isCertTaxDisabled = !generalSettings.enableCertificateBasedTax;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col">
       <div className="border-b border-slate-100 px-4 py-2 shrink-0">
         <h2 className="text-sm font-bold text-slate-800">{t('sections.generalSettings')}</h2>
       </div>
 
-      <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:gap-6 flex-1 min-h-0 justify-center">
-        {/* Left – toggles */}
-        <div className="flex flex-1 flex-col gap-2 justify-center">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-sm font-medium text-slate-700">{t('fields.enableCertificateBasedTax')}</span>
-            <ToggleSwitch
-              id="enable-certificate-based-tax"
-              checked={generalSettings.enableCertificateBasedTax}
-              onChange={(val: boolean) => onChange('generalSettings', 'enableCertificateBasedTax', val)}
-              showPopup={false}
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-sm font-medium text-slate-700">
-              {t('fields.applyTaxOnlyForProtected')}
-            </span>
-            <ToggleSwitch
-              id="apply-tax-only-for-protected"
-              checked={generalSettings.applyTaxOnlyForProtectedCertificateTypes}
-              onChange={(val: boolean) =>
-                onChange('generalSettings', 'applyTaxOnlyForProtectedCertificateTypes', val)
-              }
-              showPopup={false}
-            />
-          </div>
-        </div>
-
-        {/* Right – Financial Year Start */}
-        <div className="flex flex-col gap-1 sm:min-w-[200px]">
-          <span className="text-xs font-semibold text-slate-700">{t('fields.financialYearStart')}</span>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <TaxSelect
-                label={t('fields.month')}
-                options={MONTH_OPTIONS.map((opt) => ({
-                  ...opt,
-                  label: t(`options.months.${opt.value}`),
-                }))}
-                value={String(generalSettings.financialYearStart.month)}
-                onChange={(val) =>
-                  onChange('generalSettings', 'financialYearStart', {
-                    ...generalSettings.financialYearStart,
-                    month: val === 'Select' ? 'Select' : Number(val),
-                  })
-                }
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-3 pb-4">
+        {generalGuidelines.map((guideline) => {
+          const isFieldDisabled =
+            guideline.guidelineCode !== 'ENABLE_CERTIFICATE_BASED_TAX' && isCertTaxDisabled;
+          return (
+            <div key={guideline.guidelineCode} className="flex flex-col justify-center min-h-0">
+              <DynamicGuidelineField
+                guideline={guideline}
+                value={guideline.guidelineValue}
+                onChange={(val) => onChangeGuideline?.(guideline.guidelineCode!, val)}
+                disabled={isFieldDisabled}
+                t={t}
               />
             </div>
-            <div className="w-20">
-              <TaxSelect
-                label={t('fields.day')}
-                options={DAY_OPTIONS.map((opt) => ({
-                  ...opt,
-                  label: opt.value === 'Select' ? t('options.select') : opt.label,
-                }))}
-                value={String(generalSettings.financialYearStart.day)}
-                onChange={(val) =>
-                  onChange('generalSettings', 'financialYearStart', {
-                    ...generalSettings.financialYearStart,
-                    day: val === 'Select' ? 'Select' : Number(val),
-                  })
-                }
-              />
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );

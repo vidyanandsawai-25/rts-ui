@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import {
@@ -10,7 +10,9 @@ import {
   MasterTable,
   RetrospectiveDetailsButton,
   Section129Button,
+  ImageViewer,
 } from '@/components/common';
+import type { ImageViewerImage } from '@/components/common';
 import { RetrospectiveTaxModal } from './RetrospectiveTaxModal';
 import { Section129Modal } from './Section129Modal';
 import { OldFloorDetails } from './components/OldFloorDetails';
@@ -72,6 +74,10 @@ export default function ReassesmentScreen({
   const [showRetroModal, setShowRetroModal] = useState(false);
   const [showSec129Modal, setShowSec129Modal] = useState(false);
 
+  // Image viewer state
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
   // ============================================
   // HOOKS
   // ============================================
@@ -89,6 +95,61 @@ export default function ReassesmentScreen({
 
   const { oldTableRef, newTableRef } = useSynchronizedScrolling();
   const autoScrollController = useSharedAutoScroll();
+
+  // Prepare images for viewer
+  const viewerImages = useMemo((): ImageViewerImage[] => {
+    const images: ImageViewerImage[] = [];
+    
+    const oldPropertyPhoto = photos.find((p) => p.type === 'OLD_PROPERTY_PHOTO');
+    const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
+    const newPropertyPhoto = photos.find((p) => p.type === 'NEW_PROPERTY_PHOTO');
+    const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
+
+    if (oldPropertyPhoto) {
+      images.push({
+        src: getViewDocumentUrl(oldPropertyPhoto.documentGuid),
+        alt: t('photoLabels.oldPropertyPhoto'),
+        title: t('photoLabels.oldPropertyPhoto'),
+      });
+    }
+
+    if (oldPlanPhoto) {
+      images.push({
+        src: getViewDocumentUrl(oldPlanPhoto.documentGuid),
+        alt: t('photoLabels.oldPlanPhoto'),
+        title: t('photoLabels.oldPlanPhoto'),
+      });
+    }
+
+    if (newPropertyPhoto) {
+      images.push({
+        src: getViewDocumentUrl(newPropertyPhoto.documentGuid),
+        alt: t('photoLabels.newPropertyPhoto'),
+        title: t('photoLabels.newPropertyPhoto'),
+      });
+    }
+
+    if (newPlanPhoto) {
+      images.push({
+        src: getViewDocumentUrl(newPlanPhoto.documentGuid),
+        alt: t('photoLabels.newPlanPhoto'),
+        title: t('photoLabels.newPlanPhoto'),
+      });
+    }
+
+    return images;
+  }, [photos, t]);
+
+  // Handler to open image viewer
+  const handleImageClick = (photoType: string) => {
+    const imageIndex = viewerImages.findIndex((img) => 
+      img.title === t(`photoLabels.${photoType}`)
+    );
+    if (imageIndex !== -1) {
+      setSelectedImageIndex(imageIndex);
+      setShowImageViewer(true);
+    }
+  };
 
   // ============================================
   // RENDER
@@ -122,37 +183,81 @@ export default function ReassesmentScreen({
                     (p) => p.type === 'OLD_PROPERTY_PHOTO'
                   );
                   const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
+                  const hasOldPropertyPhoto = !!oldPropertyPhoto;
+                  const hasOldPlanPhoto = !!oldPlanPhoto;
                   return (
                     <>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center">
+                      <div 
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center transition-transform",
+                          hasOldPropertyPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasOldPropertyPhoto ? () => handleImageClick('oldPropertyPhoto') : undefined}
+                        role={hasOldPropertyPhoto ? "button" : undefined}
+                        tabIndex={hasOldPropertyPhoto ? 0 : -1}
+                        onKeyDown={hasOldPropertyPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleImageClick('oldPropertyPhoto');
+                          }
+                        } : undefined}
+                      >
                         {oldPropertyPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
-                            alt={t('photoLabels.oldPropertyPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
+                             alt={t('photoLabels.oldPropertyPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-400 text-xs">{t('photoLabels.oldPropertyPhoto')}</span>
                         )}
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.oldPropertyPhoto')}
                         </div>
+                        {oldPropertyPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center">
+                      <div 
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center transition-transform",
+                          hasOldPlanPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasOldPlanPhoto ? () => handleImageClick('oldPlanPhoto') : undefined}
+                        role={hasOldPlanPhoto ? "button" : undefined}
+                        tabIndex={hasOldPlanPhoto ? 0 : -1}
+                        onKeyDown={hasOldPlanPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleImageClick('oldPlanPhoto');
+                          }
+                        } : undefined}
+                      >
                         {oldPlanPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
-                            alt={t('photoLabels.oldPlanPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
+                             alt={t('photoLabels.oldPlanPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-300 text-xs">{t('photoLabels.oldPlanPhoto')}</span>
                         )}
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.oldPlanPhoto')}
                         </div>
+                        {oldPlanPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </>
                   );
@@ -191,37 +296,81 @@ export default function ReassesmentScreen({
                     (p) => p.type === 'NEW_PROPERTY_PHOTO'
                   );
                   const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
+                  const hasNewPropertyPhoto = !!newPropertyPhoto;
+                  const hasNewPlanPhoto = !!newPlanPhoto;
                   return (
                     <>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center">
+                      <div 
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center transition-transform",
+                          hasNewPropertyPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasNewPropertyPhoto ? () => handleImageClick('newPropertyPhoto') : undefined}
+                        role={hasNewPropertyPhoto ? "button" : undefined}
+                        tabIndex={hasNewPropertyPhoto ? 0 : -1}
+                        onKeyDown={hasNewPropertyPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleImageClick('newPropertyPhoto');
+                          }
+                        } : undefined}
+                      >
                         {newPropertyPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
-                            alt={t('photoLabels.newPropertyPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
+                             alt={t('photoLabels.newPropertyPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-400 text-xs">{t('photoLabels.newPropertyPhoto')}</span>
                         )}
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.newPropertyPhoto')}
                         </div>
+                        {newPropertyPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center">
+                      <div 
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center transition-transform",
+                          hasNewPlanPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
+                        )}
+                        onClick={hasNewPlanPhoto ? () => handleImageClick('newPlanPhoto') : undefined}
+                        role={hasNewPlanPhoto ? "button" : undefined}
+                        tabIndex={hasNewPlanPhoto ? 0 : -1}
+                        onKeyDown={hasNewPlanPhoto ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleImageClick('newPlanPhoto');
+                          }
+                        } : undefined}
+                      >
                         {newPlanPhoto ? (
-                          <ImageWithFallback
-                            src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
-                            alt={t('photoLabels.newPlanPhoto')}
-                            fill
-                            className="object-cover"
-                          />
+                           <ImageWithFallback
+                             src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
+                             alt={t('photoLabels.newPlanPhoto')}
+                             fill
+                             className="object-cover"
+                           />
                         ) : (
                           <span className="text-gray-300 text-xs">{t('photoLabels.newPlanPhoto')}</span>
                         )}
                         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
                           {t('photoLabels.newPlanPhoto')}
                         </div>
+                        {newPlanPhoto && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
+                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </>
                   );
@@ -316,6 +465,18 @@ export default function ReassesmentScreen({
       <Section129Modal
         open={showSec129Modal}
         onClose={() => setShowSec129Modal(false)}
+      />
+
+      {/* Image Viewer */}
+      <ImageViewer
+        open={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        images={viewerImages}
+        initialIndex={selectedImageIndex}
+        showDownload={true}
+        showRotate={true}
+        showZoom={true}
+        showNavigation={true}
       />
     </div>
   );
