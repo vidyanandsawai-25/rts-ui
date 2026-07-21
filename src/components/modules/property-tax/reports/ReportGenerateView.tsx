@@ -58,7 +58,7 @@ export function ReportGenerateView({
   const activeReports = selectedCategory ? (reportsByCategory.get(selectedCategory) ?? []) : [];
 
   return (
-    <>
+    <div className="flex flex-col gap-5">
       <Stepper currentStep={currentStep} copy={workspaceCopy} />
 
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
@@ -119,6 +119,6 @@ export function ReportGenerateView({
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }

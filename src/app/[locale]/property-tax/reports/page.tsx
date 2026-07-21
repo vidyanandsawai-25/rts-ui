@@ -42,7 +42,7 @@ export default async function ReportsPage({ params }: PageProps) {
   );
 
   return (
-    <PageContainer className="p-6 w-full flex flex-col gap-6">
+    <PageContainer className="p-6 pt-2 w-full flex flex-col gap-4">
       <TableHeader
         title={copy.pageTitle}
         subtitle={copy.pageSubtitle}

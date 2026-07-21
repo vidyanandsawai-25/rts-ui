@@ -197,7 +197,7 @@ export function ReportsWorkspace({
         </TabList>
 
         {/* Active View */}
-        <TabPanel value="generate" className="mt-0">
+        <TabPanel value="generate" className="mt-4">
           <ReportGenerateView
             currentStep={currentStep}
             selectedCategory={selectedCategory}
@@ -216,7 +216,7 @@ export function ReportsWorkspace({
             createReportRequest={createReportRequest}
           />
         </TabPanel>
-        <TabPanel value="history" className="mt-0">
+        <TabPanel value="history" className="mt-6">
           <div className="transition-all duration-300">
             <ReportJobsList
               jobs={jobs}
