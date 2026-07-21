@@ -522,5 +522,24 @@
       "departmentHead": "विभाग प्रमुख",
       "administrator": "प्रशासक"
     }
+  },
+  "serviceGrid": {
+    "selectDept": "कृपया विभाग निवडा",
+    "noServices": "या विभागासाठी सेवा उपलब्ध नाहीत.",
+    "serviceFallback": "सेवा",
+    "serviceDetails": "सेवा तपशील",
+    "searchServices": "सेवा शोधा...",
+    "applyProcess": "अर्ज करा / प्रक्रिया करा",
+    "close": "बंद करा",
+    "invalidServiceUrl": "या सेवेसाठी अवैध बाह्य लिंक (URL) आहे. कृपया प्रशासकाशी संपर्क साधा.",
+    "missingUpic": "या बाह्य सेवेसाठी नागरीकाचा युपीआयसी (UPIC) आयडी असणे आवश्यक आहे.",
+    "missingUpicPlaceholder": "या सेवेच्या लिंकमध्ये युपीआयसी (UPIC) प्लेसहोल्डर गहाळ आहे. कृपया प्रशासकाशी संपर्क साधा.",
+    "timeLimitSla": "कालावधी (SLA)",
+    "feesCharges": "शुल्क / दर",
+    "receivingOfficer": "स्वीकृती अधिकारी",
+    "mandatoryDocsRequired": "आवश्यक कागदपत्रे",
+    "noDocsSpecified": "या सेवेसाठी कोणतीही कागदपत्रे निर्दिष्ट केलेली नाहीत.",
+    "free": "मोफत",
+    "days": "दिवस"
   }
 }

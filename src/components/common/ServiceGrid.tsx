@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import * as Icons from "lucide-react";
 import { Clock, CreditCard, Scale, UserCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -62,29 +63,7 @@ function pickLangText(v: LangText | string | undefined, lang: Language): string 
   return (v as any)[lang] || (v as any).en || (v as any).hi || (v as any).mr;
 }
 
-const UI = {
-  selectDept: { en: "Select a department", hi: "????? ????? ?????", mr: "????? ????? ?????" },
-  noServices: { en: "No services found", hi: "??? ???? ???? ????", mr: "???? ?????? ????" },
-  serviceFallback: { en: "Service", hi: "????", mr: "????" },
-  serviceDetails: { en: "Service Details", hi: "???? ?????", mr: "???? ?????" },
-  close: { en: "Close", hi: "??? ????", mr: "??? ???" },
-  apply: { en: "Apply / Process", hi: "????? ????????? ???? ????", mr: "???? ??????????? ??????? ???" },
-  invalidServiceUrl: {
-    en: "This service has an invalid external URL. Please contact the administrator.",
-    hi: "This service has an invalid external URL. Please contact the administrator.",
-    mr: "This service has an invalid external URL. Please contact the administrator.",
-  },
-  missingUpic: {
-    en: "An active property UPIC is required to continue with this external service.",
-    hi: "An active property UPIC is required to continue with this external service.",
-    mr: "An active property UPIC is required to continue with this external service.",
-  },
-  missingUpicPlaceholder: {
-    en: "This service URL is missing its UPIC placeholder. Please contact the administrator.",
-    hi: "This service URL is missing its UPIC placeholder. Please contact the administrator.",
-    mr: "This service URL is missing its UPIC placeholder. Please contact the administrator.",
-  },
-} as const;
+
 
 export default function ServiceGrid({
   departments,
@@ -95,6 +74,7 @@ export default function ServiceGrid({
 }: ServiceGridProps) {
   const { language } = useLanguage();
   const activeLang = safeLang(lang ?? language);
+  const t = useTranslations("rts.serviceGrid");
   const router = useRouter();
   const params = useParams<{ locale?: string }>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
@@ -132,7 +112,7 @@ export default function ServiceGrid({
 
     if (externalUrl) {
       if (!/^https?:\/\//i.test(externalUrl)) {
-        setApplyError(UI.invalidServiceUrl[activeLang]);
+        setApplyError(t("invalidServiceUrl"));
         return;
       }
 
@@ -140,14 +120,14 @@ export default function ServiceGrid({
         new URL(externalUrl);
         const activeUpicId = upicId?.trim();
         if (!activeUpicId) {
-          setApplyError(UI.missingUpic[activeLang]);
+          setApplyError(t("missingUpic"));
           return;
         }
 
         // The service master provides the final empty parameter slot for the active UPIC.
         const upicPlaceholderPattern = /([?&][^?&=]+)=$/;
         if (!upicPlaceholderPattern.test(externalUrl)) {
-          setApplyError(UI.missingUpicPlaceholder[activeLang]);
+          setApplyError(t("missingUpicPlaceholder"));
           return;
         }
 
@@ -161,7 +141,7 @@ export default function ServiceGrid({
         setSelectedServiceId(null);
         window.location.assign(destination);
       } catch {
-        setApplyError(UI.invalidServiceUrl[activeLang]);
+        setApplyError(t("invalidServiceUrl"));
       }
       return;
     }
@@ -180,9 +160,9 @@ export default function ServiceGrid({
 
   if (list.length === 0) {
     if (!services && !deptId) {
-      return <div className="p-10 text-center text-gray-400">{UI.selectDept[activeLang]}</div>;
+      return <div className="p-10 text-center text-gray-400">{t("selectDept")}</div>;
     }
-    return <div className="p-10 text-center text-gray-400">{UI.noServices[activeLang]}</div>;
+    return <div className="p-10 text-center text-gray-400">{t("noServices")}</div>;
   }
 
   return (
@@ -197,7 +177,7 @@ export default function ServiceGrid({
             pickLangText(service.name as any, activeLang) ??
             pickLangText(service.title as any, activeLang) ??
             (typeof service.serviceName === "string" ? service.serviceName : undefined) ??
-            UI.serviceFallback[activeLang];
+            t("serviceFallback");
 
           return (
             <div
@@ -265,13 +245,13 @@ export default function ServiceGrid({
           let transSla = "7 Days";
           if (selectedService?.sla !== undefined && selectedService?.sla !== null) {
             transSla = typeof selectedService.sla === "number"
-              ? `${selectedService.sla} ${getTransText("दिवस", "दिन", "Days")}`
+              ? `${selectedService.sla} ${t("days")}`
               : String(selectedService.sla);
           }
 
           let transFees = "Free";
           if (selectedService?.feesRequired === false) {
-            transFees = getTransText("मोफत", "निःशुल्क", "Free");
+            transFees = t("free");
           } else if (selectedService?.fees !== undefined && selectedService?.fees !== null) {
             transFees = `₹${selectedService.fees}`;
           }
@@ -287,7 +267,7 @@ export default function ServiceGrid({
                 setSelectedServiceId(null);
                 setApplyError(null);
               }}
-              title={serviceName || UI.serviceDetails[activeLang]}
+              title={serviceName || t("serviceDetails")}
               subtitle={deptName}
               maxWidth="md"
             >
@@ -304,7 +284,7 @@ export default function ServiceGrid({
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-blue-500 tracking-wider">
-                        {activeLang === "mr" ? "कालावधी (SLA)" : activeLang === "hi" ? "समय सीमा (SLA)" : "Time Limit (SLA)"}
+                        {t("timeLimitSla")}
                       </p>
                       <p className="text-sm font-extrabold text-slate-800">{transSla}</p>
                     </div>
@@ -316,7 +296,7 @@ export default function ServiceGrid({
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-amber-600 tracking-wider">
-                        {activeLang === "mr" ? "शुल्क / दर" : activeLang === "hi" ? "शुल्क / प्रभार" : "Fees / Charges"}
+                        {t("feesCharges")}
                       </p>
                       <p className="text-sm font-extrabold text-slate-800">{transFees}</p>
                     </div>
@@ -328,7 +308,7 @@ export default function ServiceGrid({
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
-                        {activeLang === "mr" ? "स्वीकृती अधिकारी" : activeLang === "hi" ? "स्वीकृती अधिकारी" : "Receiving Officer"}
+                        {t("receivingOfficer")}
                       </p>
                       <p className="text-sm font-extrabold text-slate-800">{transOfficer}</p>
                     </div>
@@ -338,13 +318,7 @@ export default function ServiceGrid({
                 <div className="bg-white p-5 border border-slate-200 rounded-xl space-y-3">
                   <h5 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
                     <Scale className="w-4 h-4 text-blue-600" />
-                    <span>
-                      {activeLang === "mr"
-                        ? "आवश्यक कागदपत्रे"
-                        : activeLang === "hi"
-                          ? "आवश्यक दस्तावेज़"
-                          : "Mandatory Documents Required"}
-                    </span>
+                    <span>{t("mandatoryDocsRequired")}</span>
                   </h5>
                   {transDocs.length > 0 ? (
                     <ul className="space-y-2 text-xs sm:text-sm text-slate-600 font-semibold list-disc pl-5">
@@ -354,11 +328,7 @@ export default function ServiceGrid({
                     </ul>
                   ) : (
                     <p className="text-xs text-slate-400 font-semibold italic">
-                      {activeLang === "mr"
-                        ? "या सेवेसाठी कोणतीही कागदपत्रे निर्दिष्ट केलेली नाहीत."
-                        : activeLang === "hi"
-                          ? "इस सेवा के लिए कोई दस्तावेज़ निर्दिष्ट नहीं हैं।"
-                          : "No documents specified for this service."}
+                      {t("noDocsSpecified")}
                     </p>
                   )}
                 </div>
@@ -374,7 +344,7 @@ export default function ServiceGrid({
                     }}
                     className="font-bold"
                   >
-                    {UI.close[activeLang]}
+                    {t("close")}
                   </Button>
                   <Button
                     variant="primary"
@@ -386,7 +356,7 @@ export default function ServiceGrid({
                     }}
                     className="font-extrabold"
                   >
-                    {UI.apply[activeLang]} &rarr;
+                    {t("applyProcess")} &rarr;
                   </Button>
                 </div>
               </div>

@@ -519,5 +519,24 @@
       "departmentHead": "Department Head",
       "administrator": "Administrator"
     }
+  },
+  "serviceGrid": {
+    "selectDept": "Select a department",
+    "noServices": "No services available.",
+    "serviceFallback": "Service",
+    "serviceDetails": "Service Details",
+    "searchServices": "Search Services...",
+    "applyProcess": "Apply / Process",
+    "close": "Close",
+    "invalidServiceUrl": "This service has an invalid external URL. Please contact the administrator.",
+    "missingUpic": "An active property UPIC is required to continue with this external service.",
+    "missingUpicPlaceholder": "This service URL is missing its UPIC placeholder. Please contact the administrator.",
+    "timeLimitSla": "Time Limit (SLA)",
+    "feesCharges": "Fees / Charges",
+    "receivingOfficer": "Receiving Officer",
+    "mandatoryDocsRequired": "Mandatory Documents Required",
+    "noDocsSpecified": "No documents specified for this service.",
+    "free": "Free",
+    "days": "Days"
   }
 }
