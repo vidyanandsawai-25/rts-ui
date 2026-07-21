@@ -492,6 +492,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     handleToggleMultipleProperties,
     handleClearPropertySelection, changeTypeInput, setChangeTypeInput,
     isApplyingTypeSubmission, handleApplyTypeSubmission,
+    
   };
 }
  
