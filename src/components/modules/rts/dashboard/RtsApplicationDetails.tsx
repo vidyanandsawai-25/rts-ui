@@ -324,7 +324,7 @@ export default function CmsApplicationDetails({
                     {workflowDetails.stages.map((stage, idx) => {
                       const isCompleted = idx < currentStageIndex;
                       const isActive = idx === currentStageIndex;
-                      const isPending = idx > currentStageIndex;
+                      const isStageUpcoming = idx > currentStageIndex;
 
                       return (
                         <div
@@ -340,7 +340,7 @@ export default function CmsApplicationDetails({
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] uppercase font-bold text-slate-400">Stage {stage.stageOrder}</span>
                             <Badge
-                              variant={isActive ? "primary" : isCompleted ? "success" : "secondary"}
+                              variant={isActive ? "default" : isCompleted ? "success" : "secondary"}
                               className="text-[9px] font-bold py-0.5 px-1.5"
                             >
                               {isActive ? "Active" : isCompleted ? "Completed" : "Pending"}
