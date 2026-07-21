@@ -49,10 +49,14 @@ export interface CmsApplication {
 
 export interface CmsOfficer {
   id: string;
+  employeeId?: string;
   name: string;
+  email?: string;
+  mobile?: string;
   role: string;
   designation?: string;
   departmentId: string;
   departmentName?: string;
   activeCasesCount?: number;
+  status?: string;
 }
