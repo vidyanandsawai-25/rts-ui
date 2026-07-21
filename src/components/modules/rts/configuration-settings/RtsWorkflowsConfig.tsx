@@ -279,7 +279,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
       <Card className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1 block">{t("workflowMaster.filterDept")}</label>
+            <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.filterDept")}</label>
             <select
               value={selectedDeptId}
               onChange={(e) => {
@@ -287,34 +287,34 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                 setSelectedServiceId("All");
                 setPageNumber(1);
               }}
-              className="w-full text-xs font-medium border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option value="All">{t("workflowMaster.allDepts")}</option>
+              <option value="All" className="text-slate-900 font-semibold">{t("workflowMaster.allDepts")}</option>
               {data.departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
+                <option key={d.id} value={d.id} className="text-slate-900 font-semibold">{d.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1 block">{t("workflowMaster.filterService")}</label>
+            <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.filterService")}</label>
             <select
               value={selectedServiceId}
               onChange={(e) => {
                 setSelectedServiceId(e.target.value);
                 setPageNumber(1);
               }}
-              className="w-full text-xs font-medium border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option value="All">{t("workflowMaster.allServices")}</option>
+              <option value="All" className="text-slate-900 font-semibold">{t("workflowMaster.allServices")}</option>
               {filteredServicesForFilter.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id} className="text-slate-900 font-semibold">{s.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1 block">{t("workflowMaster.searchLabel")}</label>
+            <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.searchLabel")}</label>
             <div className="relative">
               <input
                 type="text"
@@ -324,9 +324,9 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                   setSearchTerm(e.target.value);
                   setPageNumber(1);
                 }}
-                className="w-full text-xs font-medium border border-slate-200 rounded-lg p-2.5 pl-8 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 pl-8 focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-slate-400"
               />
-              <Search className="h-4 w-4 text-slate-400 absolute left-2.5 top-2.5" />
+              <Search className="h-4 w-4 text-slate-500 absolute left-2.5 top-2.5" />
             </div>
           </div>
         </div>
@@ -365,6 +365,11 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
           totalPages={totalPages}
           onPageChange={setPageNumber}
           onPageSizeChange={setPageSize}
+          paginationConfig={{
+            enabled: true,
+            showPageSizeSelector: true,
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
         />
       </Card>
 
