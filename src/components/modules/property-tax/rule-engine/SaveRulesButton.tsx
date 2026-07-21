@@ -1,54 +1,18 @@
 'use client';
 
-import React from 'react';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useToast } from '@/components/common';
 
 interface SaveRulesButtonProps {
-  /** Serialized current state — parent recomputes this each render */
-  currentData: string;
+  hasChanges: boolean;
   isSaving: boolean;
   onSave: () => void;
 }
 
-/**
- * Save Rules button with built-in change detection.
- *
- * Strategy: capture the baseline AFTER all mount effects settle using
- * setTimeout(0). This guarantees child components' on-mount onChange calls
- * (e.g. API option loading, operator normalisation) have already fired and
- * updated state before we take the snapshot. Any change after that point is
- * a genuine user edit.
- */
-export default function SaveRulesButton({ currentData, isSaving, onSave }: SaveRulesButtonProps) {
+export default function SaveRulesButton({ hasChanges, isSaving, onSave }: SaveRulesButtonProps) {
   const t = useTranslations('ruleEngine');
   const toast = useToast();
-
-  // Keep a ref always pointing to latest currentData so the setTimeout
-  // callback captures the settled value, not a stale closure.
-  const currentDataRef = React.useRef(currentData);
-  
-  React.useEffect(() => {
-    currentDataRef.current = currentData;
-  }, [currentData]);
-
-  // null = still stabilising; string = stable baseline for comparison
-  const [snapshot, setSnapshot] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    // Wait for all on-mount child effects (API fetches, operator normalisation,
-    // category sync, etc.) to finish updating state before locking the baseline.
-    const timer = setTimeout(() => {
-      setSnapshot(currentDataRef.current);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []); // run once only
-
-  // hasChanges is false while stabilising (snapshot === null)
-  const hasChanges = snapshot !== null && currentData !== snapshot;
-
-
 
   const handleClick = () => {
     if (isSaving) return;
