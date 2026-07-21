@@ -232,7 +232,7 @@ export default function ServiceGrid({
                   (selectedService.name as any)?.hi || "",
                   (selectedService.name as any)?.en || selectedService.serviceName || ""
                 )
-            : UI.serviceDetails[activeLang];
+            : t("serviceGrid.serviceDetails");
 
           const deptName = selectedDept
             ? getTransText(
