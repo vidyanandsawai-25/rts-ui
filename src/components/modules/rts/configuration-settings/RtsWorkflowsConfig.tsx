@@ -211,14 +211,14 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
   const columns: Column<WorkflowTableRow>[] = [
     {
       key: "id",
-      label: "SR NO",
+      label: t("workflowMaster.colSrNo"),
       width: "80px",
       align: "center",
       render: (_, __, index) => (pageNumber - 1) * pageSize + index + 1,
     },
     {
       key: "flowName",
-      label: "WORKFLOW NAME",
+      label: t("workflowMaster.colFlowName"),
       render: (_, row) => (
         <div>
           <div className="font-bold text-slate-800">{row.flowName}</div>
@@ -228,7 +228,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
     },
     {
       key: "serviceId",
-      label: "RTS SERVICE",
+      label: t("workflowMaster.colService"),
       render: (_, row) => {
         const serviceObj = data.services.find(s => String(s.id) === String(row.serviceId));
         return (
@@ -240,14 +240,14 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
     },
     {
       key: "isActive",
-      label: "STATUS",
+      label: t("workflowMaster.colStatus"),
       align: "center",
       render: (_, row) => (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
           row.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-500"
         }`}>
           {row.isActive ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-          {row.isActive ? "Active" : "Inactive"}
+          {row.isActive ? t("workflowMaster.active") : t("workflowMaster.inactive")}
         </span>
       ),
     },
@@ -262,8 +262,8 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
             <GitMerge className="h-8 w-8 text-amber-300" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight">Approval Workflow Master Configuration</h1>
-            <p className="text-xs text-slate-200 mt-1">Configure multi-stage approval pipelines and SLAs for RTS Services</p>
+            <h1 className="text-xl font-extrabold tracking-tight">{t("workflowMaster.title")}</h1>
+            <p className="text-xs text-slate-200 mt-1">{t("workflowMaster.subtitle")}</p>
           </div>
         </div>
         <button
@@ -271,7 +271,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
           className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-md transition text-xs"
         >
           <Plus className="h-4 w-4" />
-          Add New Workflow
+          {t("workflowMaster.addBtn")}
         </button>
       </div>
 
@@ -279,7 +279,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
       <Card className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1 block">Filter by Department</label>
+            <label className="text-xs font-bold text-slate-600 mb-1 block">{t("workflowMaster.filterDept")}</label>
             <select
               value={selectedDeptId}
               onChange={(e) => {
@@ -289,7 +289,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
               }}
               className="w-full text-xs font-medium border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option value="All">All Departments</option>
+              <option value="All">{t("workflowMaster.allDepts")}</option>
               {data.departments.map(d => (
                 <option key={d.id} value={d.id}>{d.name}</option>
               ))}
@@ -297,7 +297,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1 block">Filter by RTS Service</label>
+            <label className="text-xs font-bold text-slate-600 mb-1 block">{t("workflowMaster.filterService")}</label>
             <select
               value={selectedServiceId}
               onChange={(e) => {
@@ -306,7 +306,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
               }}
               className="w-full text-xs font-medium border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option value="All">All Services</option>
+              <option value="All">{t("workflowMaster.allServices")}</option>
               {filteredServicesForFilter.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
@@ -314,11 +314,11 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1 block">Search Workflow Name</label>
+            <label className="text-xs font-bold text-slate-600 mb-1 block">{t("workflowMaster.searchLabel")}</label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search workflow..."
+                placeholder={t("workflowMaster.searchPh")}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -338,7 +338,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
           columns={columns}
           data={paginatedWorkflows}
           loading={isPending}
-          emptyText="No approval workflows found for the selected filter."
+          emptyText={t("workflowMaster.empty")}
           getRowKey={(row) => String(row.id)}
           renderActions={(row) => (
             <div className="flex items-center justify-center gap-2">
@@ -358,7 +358,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
               </button>
             </div>
           )}
-          actionLabel="ACTIONS"
+          actionLabel={t("workflowMaster.colActions")}
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={filteredWorkflows.length}
@@ -372,13 +372,13 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
       <Drawer
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={editingWorkflow ? "Edit Approval Workflow" : "Configure New Approval Workflow"}
+        title={editingWorkflow ? t("workflowMaster.editTitle") : t("workflowMaster.createTitle")}
         width="md"
       >
         <form onSubmit={handleSubmit} className="space-y-6 p-2">
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">RTS Service *</label>
+              <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.rtsServiceLabel")}</label>
               <select
                 value={formServiceId}
                 onChange={(e) => setFormServiceId(e.target.value)}
@@ -392,10 +392,10 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">Approval Flow Name *</label>
+              <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.flowNameLabel")}</label>
               <input
                 type="text"
-                placeholder="e.g. Birth Certificate Approval Flow"
+                placeholder={t("workflowMaster.flowNamePh")}
                 value={formFlowName}
                 onChange={(e) => setFormFlowName(e.target.value)}
                 className="w-full text-xs font-medium border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
@@ -412,7 +412,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="formIsActive" className="text-xs font-bold text-slate-700 cursor-pointer">
-                Is Active Workflow
+                {t("workflowMaster.isActiveLabel")}
               </label>
             </div>
           </div>
@@ -422,7 +422,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-extrabold uppercase text-slate-700 flex items-center gap-1.5">
                 <GitMerge className="h-4 w-4 text-blue-600" />
-                Configured Pipeline Stages ({stages.length})
+                {t("workflowMaster.pipelineTitle")} ({stages.length})
               </h3>
               <button
                 type="button"
@@ -430,7 +430,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                 className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Add Stage
+                {t("workflowMaster.addStage")}
               </button>
             </div>
 
@@ -444,13 +444,13 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                       onClick={() => handleRemoveStage(idx)}
                       className="text-rose-500 hover:text-rose-700 text-xs font-bold"
                     >
-                      Remove
+                      {t("workflowMaster.removeStage")}
                     </button>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">Stage Name</label>
+                      <label className="text-[10px] font-bold text-slate-600 block">{t("workflowMaster.stageNameLabel")}</label>
                       <input
                         type="text"
                         value={stage.stageName}
@@ -462,7 +462,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">SLA Limit (Days)</label>
+                      <label className="text-[10px] font-bold text-slate-600 block">{t("workflowMaster.slaDaysLabel")}</label>
                       <input
                         type="number"
                         min={1}
@@ -486,7 +486,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                           setStages(prev => prev.map((s, i) => i === idx ? { ...s, canVerifyDocument: checked } : s));
                         }}
                       />
-                      Verify Docs
+                      {t("workflowMaster.verifyDocs")}
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -497,7 +497,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                           setStages(prev => prev.map((s, i) => i === idx ? { ...s, canApprove: checked } : s));
                         }}
                       />
-                      Approve
+                      {t("workflowMaster.approve")}
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -508,7 +508,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                           setStages(prev => prev.map((s, i) => i === idx ? { ...s, canReject: checked } : s));
                         }}
                       />
-                      Reject
+                      {t("workflowMaster.reject")}
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -519,7 +519,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                           setStages(prev => prev.map((s, i) => i === idx ? { ...s, isFinalStage: checked } : s));
                         }}
                       />
-                      Final Stage
+                      {t("workflowMaster.finalStage")}
                     </label>
                   </div>
                 </div>
@@ -533,14 +533,14 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
               onClick={() => setIsDrawerOpen(false)}
               className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg"
             >
-              Cancel
+              {t("workflowMaster.cancel")}
             </button>
             <button
               type="submit"
               disabled={isPending}
               className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm"
             >
-              {editingWorkflow ? "Update Workflow" : "Save Workflow"}
+              {editingWorkflow ? t("workflowMaster.update") : t("workflowMaster.save")}
             </button>
           </div>
         </form>

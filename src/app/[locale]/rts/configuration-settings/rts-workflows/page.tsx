@@ -1,4 +1,4 @@
-import { getCmsMastersAction } from "../actions";
+import { getCmsMastersAction } from "@/app/[locale]/rts/actions";
 import RtsWorkflowsConfig from "@/components/modules/rts/configuration-settings/RtsWorkflowsConfig";
 
 interface PageProps {
