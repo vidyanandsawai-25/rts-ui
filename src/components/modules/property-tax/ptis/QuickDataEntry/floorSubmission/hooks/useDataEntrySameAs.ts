@@ -16,7 +16,7 @@ import {
   normalizePartitionNo,
   getDataEntrySameAsType,
 } from '../components/sameAsUtils';
-
+ 
 interface UseDataEntrySameAsProps {
   isOpen: boolean;
   wardId?: string | number;
@@ -27,24 +27,24 @@ interface UseDataEntrySameAsProps {
   localFloors?: FloorData[];
   initialFloors?: FloorData[];
 }
-
+ 
 function comparePartitionNo(a: SelectableProperty, b: SelectableProperty): number {
   return String(a.partitionNo ?? '').localeCompare(String(b.partitionNo ?? ''), undefined, {
     numeric: true,
     sensitivity: 'base',
   });
 }
-
+ 
 export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, initialPropertyID, t, localFloors, initialFloors }: UseDataEntrySameAsProps) {
   const router = useRouter();
   const routeParams = useParams();
   const locale = String(routeParams?.locale || 'en');
   const { confirm } = useConfirm();
-
+ 
   const validateFloorSubmission = React.useCallback((): boolean => {
     const floors = (localFloors && localFloors.length > 0) ? localFloors : (initialFloors || []);
     const hasFloorSubmission = Array.isArray(floors) && floors.length > 0;
-
+ 
     if (!hasFloorSubmission) {
       confirm({
         variant: 'warning',
@@ -57,7 +57,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     }
     return true;
   }, [localFloors, initialFloors, t, confirm]);
-
+ 
   React.useEffect(() => {
     if (isOpen) {
       const floors = (localFloors && localFloors.length > 0) ? localFloors : (initialFloors || []);
@@ -73,11 +73,11 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       }
     }
   }, [isOpen, localFloors, initialFloors, t, confirm]);
-
+ 
   const currentPropertyId = React.useMemo(() => {
     return initialPropertyID ? Number(initialPropertyID) : undefined;
   }, [initialPropertyID]);
-
+ 
   const [dataEntrySameAsTab, setDataEntrySameAsTab] = React.useState('type-wise');
   const [selectableProperties, setSelectableProperties] = React.useState<SelectableProperty[]>([]);
   const [selectedPropertyIds, setSelectedPropertyIds] = React.useState<Set<string | number>>(new Set());
@@ -91,15 +91,15 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
   const [changeTypeInput, setChangeTypeInput] = React.useState<string>('');
   const initializedRequestRef = React.useRef<string | null>(null);
   const wardsLoadedRef = React.useRef(false);
-
+ 
   const currentPropertyType = React.useMemo(() => {
     const match = selectableProperties.find((p) => normalizePartitionNo(p.partitionNo) === normalizePartitionNo(partitionNo));
     return match ? String(match.type ?? '') : '';
   }, [selectableProperties, partitionNo]);
-
+ 
   const sanitizeWardNo = React.useCallback((val: string) => val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10), []);
   const sanitizePropertyNo = React.useCallback((val: string) => val.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 10), []);
-
+ 
   const loadWards = React.useCallback(async () => {
     setIsFetchingWards(true);
     try {
@@ -110,14 +110,14 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       }
     } catch {} finally { setIsFetchingWards(false); }
   }, []);
-
+ 
   const handleWardChange = React.useCallback((_name: string | undefined, value: string) => {
     setSearchWardId(value);
     setSearchPropertyNo('');
     setSelectableProperties([]);
     setSelectedPropertyIds(new Set());
   }, []);
-
+ 
   const handleSearchProperties = React.useCallback(async () => {
     if (!Number(searchWardId) || !searchPropertyNo.trim()) return;
     setIsLoadingProperties(true);
@@ -128,17 +128,17 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       setSelectableProperties(results);
     } finally { setIsLoadingProperties(false); }
   }, [searchWardId, searchPropertyNo]);
-
+ 
   React.useEffect(() => {
     if (!isOpen) {
       initializedRequestRef.current = null;
       return;
     }
-
+ 
     const requestKey = `${wardId ?? ''}|${propertyNo ?? ''}|${partitionNo ?? ''}`;
     if (initializedRequestRef.current === requestKey) return;
     initializedRequestRef.current = requestKey;
-
+ 
     let cancelled = false;
     const initData = async () => {
       setSearchWardId(wardId ? String(wardId) : '');
@@ -147,12 +147,12 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       setSelectedPropertyIds(new Set());
       setChangeTypeInput(''); // Reset on drawer open
       setIsLoadingProperties(true);
-
+ 
       const wardPromise = wardsLoadedRef.current ? Promise.resolve() : loadWards();
       const propertiesPromise = Number(wardId) && propertyNo?.trim()
         ? fetchDataEntrySameAsAction(Number(wardId), propertyNo.trim())
         : Promise.resolve([]);
-
+ 
       try {
         const [, results] = await Promise.all([wardPromise, propertiesPromise]);
         if (!cancelled) setSelectableProperties(results);
@@ -161,12 +161,12 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       }
     };
     void initData();
-
+ 
     return () => {
       cancelled = true;
     };
   }, [isOpen, wardId, propertyNo, partitionNo, loadWards]);
-
+ 
   const filterPropertiesForTable = React.useCallback((properties: SelectableProperty[], includeCurrentPartition = false) => {
     const mapped = properties
       .filter(p => p.partitionNo && p.partitionNo !== '-')
@@ -175,9 +175,9 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
         const wardOpt = wardOptions.find(o => o.value === String(p.wardId));
         return { ...p, wardNo: wardOpt ? wardOpt.label : '-' };
       });
-
+ 
     const sorted = [...mapped].sort(comparePartitionNo);
-
+ 
     if (currentPropertyId) {
       const sourceIndex = sorted.findIndex(p => Number(String(p.id).split('-')[0]) === currentPropertyId);
       if (sourceIndex > -1) {
@@ -185,23 +185,23 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
         sorted.unshift(sourceProp);
       }
     }
-
+ 
     return sorted;
   }, [partitionNo, wardOptions, currentPropertyId]);
-
+ 
   const sourcePropertyIds = React.useMemo(() => {
     const matches = selectableProperties.filter((p) => Number(String(p.id).split('-')[0]) === currentPropertyId);
     return new Set<string | number>(matches.map((m) => m.id));
   }, [currentPropertyId, selectableProperties]);
-
+ 
   const typeWiseLockedPropertyIds = React.useMemo(() => {
     return new Set<string | number>(sourcePropertyIds);
   }, [sourcePropertyIds]);
-
+ 
   const activeLockedPropertyIds = dataEntrySameAsTab === 'type-wise' ? typeWiseLockedPropertyIds : sourcePropertyIds;
-
+ 
   const effectiveSelectedPropertyIds = selectedPropertyIds;
-
+ 
   const handleDataEntrySameAsTabChange = React.useCallback((tab: string) => {
     if (!validateFloorSubmission()) {
       return;
@@ -210,7 +210,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     setSelectedPropertyIds(new Set(sourcePropertyIds));
     setChangeTypeInput(''); // Reset on tab change
   }, [sourcePropertyIds, validateFloorSubmission]);
-
+ 
   const handleTogglePropertySelection = React.useCallback((id: string | number) => {
     setSelectedPropertyIds(prev => {
       const next = new Set(prev);
@@ -219,7 +219,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       return next;
     });
   }, []);
-
+ 
   const handleToggleMultipleProperties = React.useCallback((ids: Array<string | number>, select: boolean) => {
     setSelectedPropertyIds(prev => {
       const next = new Set(prev);
@@ -233,9 +233,9 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       return next;
     });
   }, []);
-
+ 
   const handleClearPropertySelection = React.useCallback(() => setSelectedPropertyIds(new Set(sourcePropertyIds)), [sourcePropertyIds]);
-
+ 
   const handleApplySameAsDetails = React.useCallback(async () => {
     if (!validateFloorSubmission()) {
       return;
@@ -245,40 +245,40 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       toast.error(t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }));
       return;
     }
-
+ 
     // Check if any source property row is selected (checked) by the user
     const isSourceSelected = Array.from(sourcePropertyIds).some((id) => effectiveSelectedPropertyIds.has(id));
-
+ 
     // Calculate destination property IDs (excluding sourcePropertyId)
     const destinationPropertyIds = Array.from(new Set(
       Array.from(effectiveSelectedPropertyIds)
         .map((id) => Number(String(id).split('-')[0]))
         .filter((propId) => (
-          Number.isFinite(propId) && 
-          propId > 0 && 
+          Number.isFinite(propId) &&
+          propId > 0 &&
           propId !== sourcePropertyId
         ))
     ));
-
+ 
     // If neither source property nor any destination property is selected, show error
     if (destinationPropertyIds.length === 0 && !isSourceSelected) {
       toast.error(t('floor.selectProperties.selectDestinationProperty'));
       return;
     }
-
+ 
     setIsApplyingSameAs(true);
     try {
       const newType = getDataEntrySameAsType(changeTypeInput || currentPropertyType);
-      
+     
       // Validate that we have a valid property type ID
       if (newType === undefined || newType === null || !Number.isFinite(newType) || newType <= 0) {
         toast.error(t('floor.selectProperties.invalidPropertyType'));
         setIsApplyingSameAs(false);
         return;
       }
-      
+     
       const promises: Promise<{ success: boolean; error?: string }>[] = [];
-
+ 
       // For TYPEWISE, include ALL selected properties (including source) in the applyDataEntrySameAsAction
       // This ensures /DataEntrySameAs/units API returns updated data since it uses same data source
       if (dataEntrySameAsTab === 'type-wise') {
@@ -288,7 +288,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
             .map((id) => Number(String(id).split('-')[0]))
             .filter((propId) => Number.isFinite(propId) && propId > 0)
         ));
-
+ 
         if (allSelectedPropertyIds.length > 0) {
           const payload = {
             sourcePropertyId,
@@ -309,7 +309,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
             if (!basicDetails) {
               return { success: false, error: t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' }) };
             }
-            
+           
             // Map only the fields required by UpdatePropertyBasicDetailsDto
             const updatedPayload = {
               wardId: basicDetails.wardId,
@@ -337,12 +337,12 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
               plotAreaMtrWidth: basicDetails.plotAreaMtrWidth,
               rateSectionDescription: basicDetails.rateSectionDescription,
             };
-            
+           
             // Call the action to save it
             return await updatePropertyBasicDetailsAction(locale, sourcePropertyId, updatedPayload, false);
           })());
         }
-
+ 
         // 2. If there are destination properties selected, update their types via SameAs API
         if (destinationPropertyIds.length > 0) {
           const payload = {
@@ -355,16 +355,16 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
           promises.push(applyDataEntrySameAsAction(payload, locale));
         }
       }
-
+ 
       // Check if any API call will be made
       if (promises.length === 0) {
         toast.error(t('floor.selectProperties.selectDestinationProperty'));
         setIsApplyingSameAs(false);
         return;
       }
-
+ 
       const originalProperties = [...selectableProperties];
-
+ 
       // Optimistic UI update based on user requirement to see changes immediately
       if (dataEntrySameAsTab === 'type-wise') {
         const allSelectedIds = new Set(
@@ -379,10 +379,10 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
           return p;
         }));
       } else setSelectedPropertyIds(new Set(sourcePropertyIds));
-      
+     
       const results = await Promise.all(promises);
       const failedResult = results.find(r => !r.success);
-
+ 
       if (!failedResult) {
         toast.success(t('floor.selectProperties.applySuccess'));
         // Re-fetch the properties to get updated data from server
@@ -401,7 +401,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
     } finally { setIsApplyingSameAs(false); }
   }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, dataEntrySameAsTab, t, router, changeTypeInput, currentPropertyType, currentPropertyId, sourcePropertyIds, locale, searchWardId, searchPropertyNo, validateFloorSubmission]);
-
+ 
   const handleApplyTypeSubmission = React.useCallback(async () => {
     if (!validateFloorSubmission()) {
       return;
@@ -416,8 +416,8 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       Array.from(effectiveSelectedPropertyIds)
         .map((id) => Number(String(id).split('-')[0]))
         .filter((propId) => (
-          Number.isFinite(propId) && 
-          propId > 0 && 
+          Number.isFinite(propId) &&
+          propId > 0 &&
           propId !== sourcePropertyId
         ))
     ));
@@ -425,9 +425,9 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       toast.error(t('floor.selectProperties.selectDestinationProperty'));
       return;
     }
-
+ 
     const isSourceSelected = Array.from(sourcePropertyIds).some((id) => effectiveSelectedPropertyIds.has(id));
-
+ 
     const executeSubmission = async () => {
       setIsApplyingTypeSubmission(true);
       try {
@@ -444,24 +444,18 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
           }
           return p;
         }));
-
-        const [resParking, resPropertywise] = await Promise.all([
-          applyDataEntrySameAsAction({
-            sourcePropertyId,
-            destinationPropertyIds,
-            filterType: "PARKING",
-            type: 1
-          }, locale),
-          applyDataEntrySameAsAction({
-            sourcePropertyId,
-            destinationPropertyIds,
-            filterType: "PROPERTYWISE",
-            type: 1
-          }, locale)
-        ]);
-        
-        if (resParking.success && resPropertywise.success) {
+ 
+        const submissionResult = await applyDataEntrySameAsAction({
+          sourcePropertyId,
+          destinationPropertyIds,
+          filterType: "TYPEWISE,PROPERTYWISE",
+          type: 1
+        }, locale);
+       
+        if (submissionResult.success) {
           toast.success(t('floor.selectProperties.applySuccess'));
+          // Clear all selections (including source property) after successful submission
+          setSelectedPropertyIds(new Set());
           // Re-fetch the properties to get updated data from server
           if (Number(searchWardId) && searchPropertyNo.trim()) {
             const updatedResults = await fetchDataEntrySameAsAction(Number(searchWardId), searchPropertyNo.trim());
@@ -469,15 +463,13 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
           }
           router.refresh();
         } else {
-          toast.error(resParking.error || resPropertywise.error || t('floor.selectProperties.unknownError'));
+          toast.error(submissionResult.error || t('floor.selectProperties.unknownError'));
         }
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : t('floor.selectProperties.unknownError'));
       } finally {
         setIsApplyingTypeSubmission(false);
       }
     };
-
+ 
     if (isSourceSelected) {
       confirm({
         variant: 'warning',
@@ -491,7 +483,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
       await executeSubmission();
     }
   }, [partitionNo, selectableProperties, effectiveSelectedPropertyIds, t, currentPropertyId, confirm, sourcePropertyIds, router, searchWardId, searchPropertyNo, locale, validateFloorSubmission]);
-
+ 
   return {
     dataEntrySameAsTab, setDataEntrySameAsTab: handleDataEntrySameAsTabChange, selectableProperties, selectedPropertyIds: effectiveSelectedPropertyIds, isLoadingProperties, currentPropertyType,
     searchWardId, searchPropertyNo, setSearchPropertyNo, wardOptions, isFetchingWards,
@@ -502,3 +494,4 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
     isApplyingTypeSubmission, handleApplyTypeSubmission,
   };
 }
+ 
