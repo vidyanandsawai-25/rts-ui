@@ -1,7 +1,7 @@
 'use client';
 
 import { SlidersHorizontal } from 'lucide-react';
-import { Card } from '@/components/common';
+import { Card, Badge } from '@/components/common';
 import { ReportParametersPanel } from './ReportParametersPanel';
 import { Stepper, CategoryCard, EmptyState, ReportListPanel, ReportTabsPanel } from './ReportWorkspaceComponents';
 import type { Category, Step } from './ReportWorkspaceConfig';
@@ -100,9 +100,9 @@ export function ReportGenerateView({
           <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-300 flex flex-col bg-white">
             <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-[#800000]" />
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <Badge variant="secondary" className="bg-transparent border-none px-0 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-transparent">
                 {workspaceCopy.configureParameters}
-              </span>
+              </Badge>
             </div>
             <div className="flex-1 overflow-y-auto">
               <ReportParametersPanel

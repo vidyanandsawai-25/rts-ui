@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, ChevronRight } from 'lucide-react';
-import { Card, Tabs, TabList, Tab } from '@/components/common';
+import { Card, Tabs, TabList, Tab, Badge } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 import type { Category } from './ReportWorkspaceConfig';
 
@@ -24,15 +24,15 @@ export function ReportTabsPanel({
     <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-300 flex flex-col bg-white">
       <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
         <FileText className="w-4 h-4 text-[#800000]" />
-        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+        <Badge variant="secondary" className="bg-transparent border-none px-0 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-transparent">
           {workspaceCopy.reportsHeader.replace(
             '{category}',
             activeCategoryDef.name || activeCategoryDef.key
           )}
-        </span>
-        <span className="ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5">
+        </Badge>
+        <Badge variant="secondary" className="bg-transparent border-none px-0 ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5 hover:bg-gray-200/80">
           {activeReports.length}
-        </span>
+        </Badge>
       </div>
       <div className="flex-1 overflow-y-auto p-4 max-h-[460px]">
         <Tabs

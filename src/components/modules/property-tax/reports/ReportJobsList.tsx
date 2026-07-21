@@ -86,7 +86,7 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions, onPrevi
               </a>
             </div>
           ) : (
-            <span className="text-xs text-gray-400">-</span>
+            <Badge variant="secondary" className="bg-transparent border-none text-gray-400 hover:bg-transparent px-0">-</Badge>
           )
         }
       />

@@ -11,6 +11,9 @@ vi.mock('@/components/common', () => ({
   IconButton: ({ onClick, 'aria-label': ariaLabel }: Record<string, unknown>) => (
     <button onClick={onClick as () => void} aria-label={ariaLabel as string}>×</button>
   ),
+  Badge: ({ children, ...rest }: Record<string, unknown>) => (
+    <div {...rest}>{children}</div>
+  ),
 }));
 
 // ---------------------------------------------------------------------------
