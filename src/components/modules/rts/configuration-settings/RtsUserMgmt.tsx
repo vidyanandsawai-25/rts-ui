@@ -67,13 +67,13 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
 
   const handleStartEdit = (officer: CmsOfficer) => {
     setEditingOfficer(officer);
-    setFormName(officer.name);
-    setFormEmpId(officer.employeeId);
-    setFormDeptId(officer.departmentId);
-    setFormDesignation(officer.designation);
-    setFormRole(officer.role);
-    setFormEmail(officer.email);
-    setFormMobile(officer.mobile);
+    setFormName(officer.name || "");
+    setFormEmpId(officer.employeeId || "");
+    setFormDeptId(officer.departmentId || "");
+    setFormDesignation(officer.designation || "");
+    setFormRole(officer.role || "");
+    setFormEmail(officer.email || "");
+    setFormMobile(officer.mobile || "");
     setIsDrawerOpen(true);
   };
 
