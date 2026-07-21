@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { logger } from "@/lib/utils/logger";
 import { getZoneOptions, getUseGroupOptions, getAssessmentYears } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { ISelectOption } from "@/types/RVRateMaster";
 import type { AssessmentYearRangeOption } from "@/types/RVRateMaster";
@@ -50,7 +51,7 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
       setZoneOptions(data);
       setZonesLoaded(true);
     } catch (error) {
-      console.error("Failed to load zone options:", error);
+      logger.error("Failed to load zone options", { error: error as Error });
       setZoneOptions([]);
     } finally {
       setIsLoadingZones(false);
@@ -67,7 +68,7 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
       setUseGroupOptions(data);
       setUseGroupsLoaded(true);
     } catch (error) {
-      console.error("Failed to load use group options:", error);
+      logger.error("Failed to load use group options", { error: error as Error });
       setUseGroupOptions([]);
     } finally {
       setIsLoadingUseGroups(false);
@@ -84,7 +85,7 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
       setAssessmentYears(data);
       setAssessmentYearsLoaded(true);
     } catch (error) {
-      console.error("Failed to load assessment years:", error);
+      logger.error("Failed to load assessment years", { error: error as Error });
       setAssessmentYears([]);
     } finally {
       setIsLoadingAssessmentYears(false);

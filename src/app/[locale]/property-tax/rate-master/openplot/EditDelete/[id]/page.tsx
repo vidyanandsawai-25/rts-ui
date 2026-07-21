@@ -15,6 +15,11 @@ import {
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { ITypeOfUseDetails } from "@/types/RVRateMaster";
 
+import { createLogger } from "@/lib/utils/server-logger";
+import { ApiError } from "@/lib/utils/api";
+
+const logger = createLogger('OpenPlotEditDeletePage');
+
 // Force dynamic rendering to ensure fresh data on each navigation
 export const dynamic = 'force-dynamic';
 
@@ -116,7 +121,11 @@ export default async function EditOpenPlotRatePage({
           firstAssessmentYear
         );
       } catch (error) {
-        console.error('Error fetching rates for bulk edit:', error);
+        if (error instanceof ApiError) {
+          logger.error(`[OpenPlotEditDeletePage] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
+        } else {
+          logger.error("[OpenPlotEditDeletePage] Error fetching rates for bulk edit:", undefined, error as Error);
+        }
         backendRates = [];
       }
     }

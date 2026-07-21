@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/utils/logger";
 import { toast } from "sonner";
 import { getTypeOfUseDetailsAction, getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -76,7 +77,7 @@ export function useRateCategoriesSync({
 
       setLocalRateCategories(categoriesList);
     } catch (err) {
-      console.error("Failed to load latest rate categories", err);
+      logger.error("Failed to load latest rate categories", { error: err as Error });
     }
   };
 
@@ -251,7 +252,7 @@ export function useRateCategoriesSync({
 
       setHasConfiguredRates(true);
     } catch (_err) {
-      toast.error("Failed to map selected configuration");
+      toast.error(t('configureRates.toast.saveError'));
     }
   };
 
@@ -299,7 +300,7 @@ export function useRateCategoriesSync({
         }
       });
     } catch (_err) {
-      toast.error("Failed to fetch types of use for configuration check");
+      toast.error(t('configureRates.toast.loadTypesOfUseFailed'));
     }
   };
 

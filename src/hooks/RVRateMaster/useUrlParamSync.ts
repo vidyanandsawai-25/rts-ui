@@ -29,6 +29,8 @@ export function useUrlParamSync({
       // useGroup from rateCategories (not a user dropdown), no need to persist it.
       if (isOpenPlot) {
         const params = new URLSearchParams(window.location.search);
+        params.delete('useGroup');
+        params.delete('year');
         params.set('zone', selectedZone);
         params.set('assessmentYear', assessmentYear);
         if (copySectionsExpanded) {

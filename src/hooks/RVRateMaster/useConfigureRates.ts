@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/utils/logger";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
 import { getTypeOfUseDetailsAction, getUseGroupsPagedAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
@@ -75,7 +76,7 @@ export function useConfigureRates({
         setExistingGroups(groupsResult.items || []);
       } catch (err) {
         toast.error(t("configureRates.toast.loadDataFailed"));
-        console.error(err);
+        logger.error("Failed to load configure rates data", { error: err as Error });
       } finally {
         setIsLoading(false);
       }

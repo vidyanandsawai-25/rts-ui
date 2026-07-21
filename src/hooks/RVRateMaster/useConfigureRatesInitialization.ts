@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { logger } from "@/lib/utils/logger";
 import { toast } from "sonner";
 import { getTypeOfUseDetailsAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { ITypeOfUseDetails, RateCategory } from "@/types/RVRateMaster";
@@ -76,7 +77,7 @@ export function useConfigureRatesInitialization({
 
   // Load checkedIds from URL or currentCategories on drawer open, or reset state
   useEffect(() => {
-    if (open && !hasInitialized && allUseTypes.length > 0 && existingGroups.length > 0) {
+    if (open && !hasInitialized && allUseTypes.length > 0) {
       setCheckedIds({});
       setGroupForms({});
       setSavedAny(false);
@@ -198,7 +199,7 @@ export function useConfigureRatesInitialization({
         setTotalPages(result.totalPages || 0);
       } catch (err) {
         toast.error(t("configureRates.toast.loadTypesOfUseFailed"));
-        console.error(err);
+        logger.error("Failed to load types of use", { error: err as Error });
       } finally {
         setIsListLoading(false);
       }

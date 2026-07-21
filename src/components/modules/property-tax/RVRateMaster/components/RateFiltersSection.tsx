@@ -3,6 +3,7 @@
 import { MapPin, Calendar, Users, TrendingUp, Plus, ClipboardCopy } from "lucide-react";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
+import { Button } from "@/components/common/ActionButton";
 import { IconButton } from "@/components/common/ActionButtons";
 import { Tooltip } from "@/components/common/Tooltip";
 import { Label } from "@/components/common/label";
@@ -160,13 +161,15 @@ export function RateFiltersSection({
       {/* Configure Rates button for open plot */}
       {isOpenPlot && mode === "add" && (
         <div className="flex items-end h-10 mb-[2px]">
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="md"
             onClick={onConfigureRates}
-            className="px-4 py-2 text-sm font-semibold rounded-lg shadow transition-all bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            className="cursor-pointer"
           >
             {t("buttons.configureUseTypes")}
-          </button>
+          </Button>
         </div>
       )}
 

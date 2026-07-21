@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { logger } from "@/lib/utils/logger";
 import { toast } from "sonner";
 import { createUseGroupAndAssignToTypeAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { getIconKey } from "@/components/modules/property-tax/typeofusemaster/GroupIconSelector";
@@ -193,7 +194,7 @@ export function useConfigureRatesActions({
         }
       } catch (err) {
         toast.error(t("configureRates.toast.saveError"));
-        console.error(err);
+        logger.error("Failed to save configure rates group", { error: err as Error });
         setGroupForms(prev => ({
           ...prev,
           [id]: { ...prev[id]!, isSaving: false }
@@ -299,7 +300,7 @@ export function useConfigureRatesActions({
       }
     } catch (err) {
       toast.error(t("configureRates.toast.saveError"));
-      console.error(err);
+      logger.error("Failed to save configure rates group", { error: err as Error });
       setGroupForms(prev => ({
         ...prev,
         [id]: { ...prev[id]!, isSaving: false }

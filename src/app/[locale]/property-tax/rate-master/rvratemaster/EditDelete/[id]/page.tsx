@@ -1,4 +1,4 @@
-import {PageContainer} from "@/components/common/PageContainer";
+import { PageContainer } from "@/components/common/PageContainer";
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 import EditRateDrawer from "@/components/modules/property-tax/RVRateMaster/EditRateDrawer";
 import {
@@ -15,6 +15,11 @@ import {
   getRateUnitPolicy,
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
+import { createLogger } from "@/lib/utils/server-logger";
+import { ApiError } from "@/lib/utils/api";
+
+const logger = createLogger('RvRateMasterEditDeletePage');
+
 // Force dynamic rendering to ensure fresh data on each navigation
 export const dynamic = 'force-dynamic';
 
@@ -27,14 +32,14 @@ export default async function EditRatePage({
 }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  
+
   // Get matrix pagination params from URL
   const matrixPage = Number(resolvedSearchParams?.matrixPage) || 1;
   const matrixPageSize = Number(resolvedSearchParams?.matrixPageSize) || 10;
-  
+
   // Check if this is bulk edit (id === "bulk")
   const isBulkEdit = resolvedParams.id === "bulk";
-  
+
   if (isBulkEdit) {
     // Bulk edit: fetch dropdown options and fetch rates based on URL filters
     const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, rateFrequencyPolicy, rateUnitPolicy] =
@@ -59,7 +64,7 @@ export default async function EditRatePage({
     const firstZone = urlZone || (zones && zones.length > 0 ? zones[0].value : "");
     const firstUseGroup = urlUseGroup || (useGroups && useGroups.length > 0 ? useGroups[0].value : "");
     const firstAssessmentYear = urlAssessmentYear || (assessmentYears && assessmentYears.length > 0 ? assessmentYears[0].value : "");
-    
+
     const filterValues = {
       zone: firstZone,
       useGroup: firstUseGroup,
@@ -78,7 +83,11 @@ export default async function EditRatePage({
           firstAssessmentYear
         );
       } catch (error) {
-        console.error('Error fetching rates for bulk edit:', error);
+        if (error instanceof ApiError) {
+          logger.error(`[EditDeletePage] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
+        } else {
+          logger.error('[EditDeletePage] Error fetching rates for bulk edit:', undefined, error as Error);
+        }
         backendRates = [];
       }
     }
@@ -125,7 +134,7 @@ export default async function EditRatePage({
       </>
     );
   }
-  
+
   // Single record edit logic
   const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, editData, rateFrequencyPolicy, rateUnitPolicy] =
     await Promise.all([
@@ -196,7 +205,7 @@ export default async function EditRatePage({
         filterValues={{
           zone: selectedZone,
           useGroup: selectedUseGroup,
-          year: selectedYear,        
+          year: selectedYear,
         }}
         paginatedZonesData={paginatedZonesData}
         rateFrequencyPolicy={rateFrequencyPolicy}

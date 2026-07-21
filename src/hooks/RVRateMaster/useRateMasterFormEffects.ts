@@ -69,7 +69,7 @@ export function useRateMasterFormEffects({
     if (showMatrix && matrixData.length > 0) {
       setMatrixData(prev => prev.map(row => {
         const newRow = { ...row };
-        const validIds = new Set(localRateCategories.map(c => c.constructionId));
+        const validIds = new Set(localRateCategories.map(c => c.constructionCode || c.constructionId));
 
         // Remove columns not present in localRateCategories
         Object.keys(newRow).forEach(key => {
@@ -80,8 +80,9 @@ export function useRateMasterFormEffects({
 
         // Add newly configured columns with default value of 0
         localRateCategories.forEach(cat => {
-          if (newRow[cat.constructionId] === undefined) {
-            newRow[cat.constructionId] = 0;
+          const colKey = cat.constructionCode || cat.constructionId;
+          if (newRow[colKey] === undefined) {
+            newRow[colKey] = 0;
           }
         });
         return newRow;

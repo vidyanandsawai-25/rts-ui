@@ -42,7 +42,7 @@ export function handleTemplateDownload(params: TemplateDownloadParams) {
     return;
   }
   if (!allZones || !Array.isArray(allZones)) {
-    toast.error('Zones data not available for template.');
+    toast.error(t('messages.validationNoRatesAvailable'));
     return;
   }
 
@@ -50,9 +50,9 @@ export function handleTemplateDownload(params: TemplateDownloadParams) {
     const csvContent = generateCsvTemplate(allZones, rateCategories, rateUnit);
     const filename = `rate-master-template-${selectedZone}-${selectedUseGroup}.csv`;
     downloadFile(csvContent, filename);
-    toast.success('Template downloaded successfully!');
+    toast.success(t('messages.templateDownloadedSuccess'));
   } catch (_error) {
-    toast.error('Failed to download template');
+    toast.error(t('messages.validationDownloadTemplateFailed'));
   }
 }
 
