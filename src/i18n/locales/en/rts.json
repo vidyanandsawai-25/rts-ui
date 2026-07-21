@@ -193,6 +193,7 @@
       "totalApplications": "Total Applications",
       "approved": "Approved",
       "pending": "Pending",
+      "reverted": "Reverted",
       "rejected": "Rejected"
     },
     "status": {
@@ -206,6 +207,10 @@
       "searchPlaceholder": "Search by ID or service name...",
       "empty": "No applications matched the tracking criteria."
     },
+    "filters": {
+      "allTypes": "All Types",
+      "allStatuses": "All Statuses"
+    },
     "table": {
       "applicationAndService": "APPLICATION ID & SERVICE",
       "submittedDate": "SUBMITTED DATE",
@@ -214,8 +219,10 @@
       "actions": "ACTIONS"
     },
     "actions": {
-      "viewDetails": "View Details",
+      "viewDetails": "View",
       "viewDetailsAria": "View details for {appId}",
+      "process": "Process",
+      "processAria": "Process application {appId}",
       "close": "Close"
     },
     "pagination": {
@@ -320,6 +327,8 @@
     "targetSla": "Average processing duration",
     "serviceWiseBreakdown": "Service-wise Breakdown",
     "filterByDept": "Filter by department",
+    "filterBySource": "Filter by source",
+    "allSources": "All sources",
     "filterServicesByDepartment": "Filter services by department",
     "noServicesFound": "No services found.",
     "applicationsByService": "Applications by Service",

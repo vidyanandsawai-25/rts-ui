@@ -193,6 +193,7 @@
       "totalApplications": "कुल आवेदन",
       "approved": "स्वीकृत",
       "pending": "लंबित",
+      "reverted": "पूर्ववत",
       "rejected": "अस्वीकृत"
     },
     "status": {
@@ -206,6 +207,10 @@
       "searchPlaceholder": "आईडी या सेवा नाम से खोजें...",
       "empty": "खोज मानदंड से मेल खाने वाला कोई आवेदन नहीं मिला।"
     },
+    "filters": {
+      "allTypes": "सभी प्रकार",
+      "allStatuses": "सभी स्थितियाँ"
+    },
     "table": {
       "applicationAndService": "आवेदन आईडी और सेवा",
       "submittedDate": "जमा करने की तिथि",
@@ -214,8 +219,10 @@
       "actions": "कार्रवाई"
     },
     "actions": {
-      "viewDetails": "विवरण देखें",
+      "viewDetails": "विवरण",
       "viewDetailsAria": "{appId} का विवरण देखें",
+      "process": "प्रक्रिया करें",
+      "processAria": "आवेदन {appId} की प्रक्रिया करें",
       "close": "बंद करें"
     },
     "pagination": {
@@ -320,6 +327,8 @@
     "targetSla": "औसत प्रक्रिया अवधि",
     "serviceWiseBreakdown": "सेवा-वार विवरण",
     "filterByDept": "विभाग के अनुसार फ़िल्टर",
+    "filterBySource": "स्रोत के अनुसार फ़िल्टर",
+    "allSources": "सभी स्रोत",
     "filterServicesByDepartment": "विभाग के अनुसार सेवाएँ फ़िल्टर करें",
     "noServicesFound": "कोई सेवा नहीं मिली।",
     "applicationsByService": "सेवा के अनुसार आवेदन",

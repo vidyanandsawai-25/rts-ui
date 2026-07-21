@@ -2,14 +2,19 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Landmark, Pencil, Trash2 } from "lucide-react";
+import { Landmark } from "lucide-react";
 import {
-  Badge,
+  AddButton,
   Button,
   Card,
+  DeleteButton,
   Drawer,
+  EditButton,
+  Input,
+  Label,
   MasterTable,
   SearchInput,
+  StatusBadge,
   useConfirm,
 } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
@@ -360,9 +365,11 @@ export default function RtsDepartmentConfig({
       cellClassName:
         "border-r border-slate-100",
       render: () => (
-        <Badge variant="success" size="sm">
-          {tRts("masters.active")}
-        </Badge>
+        <StatusBadge
+          value="active"
+          activeLabel={tRts("masters.active")}
+          className="px-2 py-0.5 text-[10px]"
+        />
       ),
     },
   ];
@@ -381,22 +388,16 @@ export default function RtsDepartmentConfig({
       className="flex justify-center gap-1.5"
       onClick={(event) => event.stopPropagation()}
     >
-      <Button
+      <EditButton
         type="button"
-        variant="edit"
-        size="sm"
-        icon={Pencil}
         className="size-10 px-0"
         aria-label={tRts("masters.edit")}
         title={tRts("masters.edit")}
         onClick={onEdit}
       />
 
-      <Button
+      <DeleteButton
         type="button"
-        variant="delete"
-        size="sm"
-        icon={Trash2}
         className="size-10 px-0"
         aria-label={tRts("masters.delete")}
         title={tRts("masters.delete")}
@@ -407,30 +408,37 @@ export default function RtsDepartmentConfig({
 
   return (
     <>
-      <Card className="p-4 border rounded-2xl border-slate-200 bg-white shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
-          <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[#3d3d3d]">
-            <Landmark className="h-4 w-4 text-[#4b70a6]" />
-            {tRts("masters.registeredDepartmentsMaster")}
-          </h2>
+      <div className="space-y-4">
+        <Card className="flex flex-col justify-between rounded-2xl gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+          <div className="flex flex-row items-center gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
+              <Landmark className="h-5 w-5" />
+            </div>
+            <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-800">
+              {tRts("masters.registeredDepartmentsMaster")}
+            </h1>
+          </div>
 
-          <div className="flex items-center gap-2">
+          <AddButton
+            type="button"
+            onClick={openAddDepartment}
+            label={tRts("masters.addDept")}
+          />
+        </Card>
+
+        <Card className="border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="max-w-md space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
+              {t("actions.search")}
+            </Label>
             <SearchInput
               value={search}
               onChange={handleSearchChange}
               placeholder={tRts("masters.searchDepartments")}
-              className="mb-0 w-full sm:w-64 [&_input]:py-1.5 [&_input]:text-xs"
+              className="mb-0 [&_input]:py-1.5 [&_input]:text-xs"
             />
-
-            <Button
-              type="button"
-              icon={Landmark}
-              onClick={openAddDepartment}
-            >
-              {tRts("masters.addDept")}
-            </Button>
           </div>
-        </div>
+        </Card>
 
         <MasterTable
           columns={departmentColumns}
@@ -478,7 +486,7 @@ export default function RtsDepartmentConfig({
             )
           }
         />
-      </Card>
+      </div>
 
       <Drawer
         open={drawerOpen}
@@ -504,11 +512,11 @@ export default function RtsDepartmentConfig({
           className="p-5 space-y-4 text-[13px] text-slate-700"
         >
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase text-slate-500">
+            <Label className="text-[10px] font-bold uppercase text-slate-500">
               {tRts("masters.deptName")}
-            </label>
+            </Label>
 
-            <input
+            <Input
               type="text"
               required
               value={departmentName}
@@ -518,7 +526,7 @@ export default function RtsDepartmentConfig({
               onChange={(e) =>
                 setDepartmentName(e.target.value)
               }
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+              fullWidth
             />
           </div>
 

@@ -3,15 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { getUserMisDashboardAction } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsServiceApiItem } from "@/types/rts/service.types";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
 import {
   AlertCircle,
   CheckCircle,
   CheckCircle2,
+  ChevronRight,
   Clock3,
   Download,
-  Eye,
   FileText,
   Filter,
   Info,
@@ -19,7 +20,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-import { Button, Card, MasterTable, SearchInput, Select } from "@/components/common";
+import { Button, Card, Label, MasterTable, SearchInput, Select, ViewButton } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { CloseIconButton } from "@/components/common/ActionButtons";
 import ApplicationDrawerContent from "./RtsApplicationDrawerContext";
@@ -33,6 +34,7 @@ interface CmsMulyamapanProps {
     departments: Array<{ id: string; name: string }>;
     services: Array<{ id: string; name: string; departmentId: string }>;
   };
+  services: RtsServiceApiItem[];
   locale: string;
 }
 
@@ -50,7 +52,7 @@ interface SlaRecord extends Record<string, unknown> {
   verificationDays: number;
   totalTat: number;
   outcome: "Within SLA" | "SLA breached" | "At risk";
-  applicationStatus: "Approved" | "Pending" | "Rejected";
+  applicationStatus: "Approved" | "Pending" | "Reverted" | "Rejected";
 }
 
 interface DepartmentTatRecord {
@@ -133,7 +135,7 @@ const DEPARTMENT_TAT_DATA: DepartmentTatRecord[] = [
 
 function normalizeApplicationStatus(
   value: unknown
-): "Approved" | "Pending" | "Rejected" {
+): "Approved" | "Pending" | "Reverted" | "Rejected" {
   const normalized = String(value ?? "").trim().toLowerCase();
 
   if (
@@ -152,12 +154,21 @@ function normalizeApplicationStatus(
     return "Rejected";
   }
 
+  if (
+    normalized.includes("revert") ||
+    normalized.includes("return") ||
+    normalized.includes("sent back")
+  ) {
+    return "Reverted";
+  }
+
   return "Pending";
 }
 
 export default function CmsMulyamapan({
   data,
   masters,
+  services,
   locale,
 }: CmsMulyamapanProps) {
   const t = useTranslations("rts");
@@ -172,7 +183,7 @@ export default function CmsMulyamapan({
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecord, setSelectedRecord] = useState<SlaRecord | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState("Pending");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -261,14 +272,19 @@ export default function CmsMulyamapan({
     const query = searchTerm.toLocaleLowerCase(locale).trim();
 
     return slaRecords.filter((record) => {
-      return (
+      const matchesSearch =
         !query ||
         record.appId.toLocaleLowerCase(locale).includes(query) ||
         record.citizenName.toLocaleLowerCase(locale).includes(query) ||
-        record.serviceName.toLocaleLowerCase(locale).includes(query)
-      );
+        record.serviceName.toLocaleLowerCase(locale).includes(query);
+      const matchesService =
+        applicationType === "all" || record.serviceName === applicationType;
+      const matchesStatus =
+        selectedStatus === "all" || record.applicationStatus === selectedStatus;
+
+      return matchesSearch && matchesService && matchesStatus;
     });
-  }, [locale, searchTerm, slaRecords]);
+  }, [applicationType, locale, searchTerm, selectedStatus, slaRecords]);
 
   const statusSummary = useMemo(() => {
     return slaRecords.reduce(
@@ -279,6 +295,8 @@ export default function CmsMulyamapan({
           summary.approved += 1;
         } else if (record.applicationStatus === "Rejected") {
           summary.rejected += 1;
+        } else if (record.applicationStatus === "Reverted") {
+          summary.reverted += 1;
         } else {
           summary.pending += 1;
         }
@@ -289,6 +307,7 @@ export default function CmsMulyamapan({
         total: 0,
         approved: 0,
         pending: 0,
+        reverted: 0,
         rejected: 0,
       }
     );
@@ -303,7 +322,7 @@ export default function CmsMulyamapan({
 
   useEffect(() => {
     setPageNumber(1);
-  }, [searchTerm, pageSize]);
+  }, [applicationType, pageSize, searchTerm, selectedStatus]);
 
   useEffect(() => {
     if (pageNumber > totalPages) {
@@ -326,7 +345,8 @@ export default function CmsMulyamapan({
     () => [
       {
         key: "appId",
-        label: "App. No.",
+        label: "Application No.",
+        align: "center",
         width: "16%",
         render: (_value, row) => (
           <div className="space-y-1">
@@ -345,6 +365,7 @@ export default function CmsMulyamapan({
         key: "submittedDate",
         label: "Submitted Date",
         width: "12%",
+        align: "center",
         render: (value) => {
 
           const date = new Date(String(value));
@@ -369,6 +390,7 @@ export default function CmsMulyamapan({
       {
         key: "citizenName",
         label: "Applicant / Owner",
+        align: "center",
         width: "18%",
         render: (_value, row) => (
           <div>
@@ -406,7 +428,7 @@ export default function CmsMulyamapan({
         width: "16%",
         align: "center",
         render: (_value, row) => (
-          <div className="flex flex-col items-start gap-1">
+          <div className="flex flex-col items-center gap-1">
 
             <span
               className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-semibold
@@ -414,6 +436,8 @@ export default function CmsMulyamapan({
                   ? "border-green-200 bg-green-50 text-green-700"
                   : row.applicationStatus === "Rejected"
                     ? "border-red-200 bg-red-50 text-red-700"
+                    : row.applicationStatus === "Reverted"
+                      ? "border-violet-200 bg-violet-50 text-violet-700"
                     : "border-amber-200 bg-amber-50 text-amber-700"
                 }
             `}
@@ -427,6 +451,8 @@ export default function CmsMulyamapan({
                     ? "bg-green-500"
                     : row.applicationStatus === "Rejected"
                       ? "bg-red-500"
+                      : row.applicationStatus === "Reverted"
+                        ? "bg-violet-500"
                       : "bg-amber-500"
                   }
               `}
@@ -434,11 +460,6 @@ export default function CmsMulyamapan({
 
               {row.applicationStatus}
             </span>
-
-            <span className="text-[11px] text-slate-500">
-              Junior Engineer
-            </span>
-
           </div>
         ),
       },
@@ -450,7 +471,7 @@ export default function CmsMulyamapan({
         align: "center",
         render: (_, row) => (
           <div
-            className="inline-flex h-7 min-w-[30px] items-center justify-center rounded-full bg-red-50 px-2 text-xs font-bold text-red-600"
+            className="inline-flex h-7 min-w-[30px] items-center justify-center rounded-lg bg-red-50 px-2 text-xs font-bold text-red-600"
           >
             {row.pendingDays}
           </div>
@@ -493,6 +514,17 @@ export default function CmsMulyamapan({
       valueClassName: "text-[#F59E0B]",
       iconClassName:
         "bg-amber-50 border-amber-100 text-[#F59E0B]",
+    },
+    {
+      key: "reverted",
+      icon: AlertCircle,
+      label: t("applicationDashboard.cards.reverted"),
+      value: statusSummary.reverted,
+
+      borderClassName: "border-l-violet-500",
+      valueClassName: "text-violet-600",
+      iconClassName:
+        "bg-violet-50 border-violet-100 text-violet-600",
     },
     {
       key: "rejected",
@@ -539,18 +571,34 @@ export default function CmsMulyamapan({
     ]
     : [];
 
-  const applicationTypeOptions = [
-    { label: "All Types", value: "all" },
-    { label: "Building Plan Approval", value: "building" },
-    { label: "Occupancy Certificate", value: "occupancy" },
-    { label: "Trade License", value: "trade" },
-  ];
+  const applicationTypeOptions = useMemo(
+    () => [
+      { label: t("applicationDashboard.filters.allTypes"), value: "all" },
+      ...Array.from(
+        new Map(
+          services
+            .filter((service) => service.isActive)
+            .map((service) => [service.serviceName, service])
+        ).values()
+      ).map((service) => ({
+        label: locale === "mr" && service.serviceNameLocal
+          ? service.serviceNameLocal
+          : service.serviceName,
+        value: service.serviceName,
+      })),
+    ],
+    [locale, services, t]
+  );
 
-  const statusOptions = [
-    { label: "Pending", value: "Pending" },
-    { label: "Approved", value: "Approved" },
-    { label: "Rejected", value: "Rejected" },
-  ];
+  const statusOptions = useMemo(
+    () => [
+      { label: t("applicationDashboard.filters.allStatuses"), value: "all" },
+      ...Array.from(new Set(slaRecords.map((record) => record.applicationStatus))).map(
+        (status) => ({ label: status, value: status })
+      ),
+    ],
+    [slaRecords, t]
+  );
 
   if (loading) {
     return (
@@ -579,28 +627,14 @@ export default function CmsMulyamapan({
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {metricCards.map((metric) => (
           <Card
             key={metric.key}
             padding="none"
-            className={`
-        relative
-        overflow-hidden
-        rounded-xl
-        border
-        border-slate-200
-        bg-white
-        shadow-sm
-        transition-all
-        duration-200
-        hover:shadow-md
-        hover:-translate-y-0.5
-        border-l-[4px]
-        ${metric.borderClassName}
-      `}
+            className={`relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-[4px] ${metric.borderClassName}`}
           >
-            <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center justify-between px-5 py-2">
               {/* Left */}
               <div className="flex flex-col">
                 <span className="text-[13px] font-semibold text-slate-600">
@@ -608,7 +642,7 @@ export default function CmsMulyamapan({
                 </span>
 
                 <span
-                  className={`mt-2 text-[34px] font-bold leading-none ${metric.valueClassName}`}
+                  className={`mt-2 text-2xl font-bold leading-none ${metric.valueClassName}`}
                 >
                   {numberFormatter.format(metric.value)}
                 </span>
@@ -616,10 +650,10 @@ export default function CmsMulyamapan({
 
               {/* Right Icon */}
               <div
-                className={`flex h-14 w-14 items-center justify-center rounded-xl border ${metric.iconClassName}`}
+                className={`flex size-10 items-center justify-center rounded-xl border ${metric.iconClassName}`}
               >
                 <metric.icon
-                  className="h-7 w-7"
+                  className="size-5"
                   strokeWidth={2}
                 />
               </div>
@@ -651,82 +685,73 @@ export default function CmsMulyamapan({
             </div>
 
             {/* Right */}
-            <div className="flex flex-wrap items-center gap-3">
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-700">
-                  Application Type :
-                </span>
-
-                <Select
-                  className="w-44"
-                  options={applicationTypeOptions}
-                  value={applicationType}
-                  onChange={(_, value) => setApplicationType(value)}
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-700">
-                  Status :
-                </span>
-
-                <Select
-                  className="w-36"
-                  options={statusOptions}
-                  value={selectedStatus}
-                  onChange={(_, value) => setSelectedStatus(value)}
-                />
-              </div>
-
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
                 variant="primary"
-                className="h-10 rounded-lg px-4"
+                className="rounded-lg px-4"
               >
                 Register Application
               </Button>
 
               <Button
                 size="sm"
-                className="h-10 rounded-lg bg-[#C89317] px-4 text-white hover:bg-[#AF7F10]"
+                className="rounded-lg bg-[#C89317] px-4 text-white hover:bg-[#AF7F10]"
               >
                 Download Register
               </Button>
-
             </div>
 
           </div>
 
-          {/* Row 2 */}
+          <div className="mt-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="w-full space-y-1 sm:w-44">
+                <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
+                  Application Type
+                </Label>
+                <Select
+                  selectSize="sm"
+                  options={applicationTypeOptions}
+                  value={applicationType}
+                  onChange={(_, value) => setApplicationType(value)}
+                />
+              </div>
 
-          <div className="mt-5 flex justify-end gap-3">
+              <div className="w-full space-y-1 sm:w-36">
+                <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
+                  Status
+                </Label>
+                <Select
+                  selectSize="sm"
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={(_, value) => setSelectedStatus(value)}
+                />
+              </div>
+            </div>
 
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Search by Application No., Owner Name or Survey No..."
-              className="mb-0 w-[360px]"
-            />
+            <div className="flex items-end gap-3">
+              <div className="min-w-0 flex-1 space-y-1 xl:w-[460px]">
+                <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
+                  Search
+                </Label>
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Search by Application No., Owner Name or Survey No..."
+                  className="mb-0 w-full"
+                />
+              </div>
 
-            <button
-              className="
-          flex
-          h-10
-          w-10
-          items-center
-          justify-center
-          rounded-lg
-          border
-          border-slate-300
-          bg-white
-          transition
-          hover:bg-slate-50
-        "
-            >
-              <Filter className="h-5 w-5 text-slate-500" />
-            </button>
-
+              <button
+                type="button"
+                aria-label="Open filters"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white transition hover:bg-slate-50"
+              >
+                <Filter className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
           </div>
 
         </div>
@@ -738,17 +763,33 @@ export default function CmsMulyamapan({
           emptyText={t("applicationDashboard.applications.empty")}
           getRowKey={(row) => row.id}
           renderActions={(row) => (
-            <button
-              type="button"
-              onClick={() => setSelectedRecord(row)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-extrabold text-blue-700 transition hover:bg-blue-100"
-              aria-label={t("applicationDashboard.actions.viewDetailsAria", {
-                appId: row.appId,
-              })}
-            >
-              <Eye className="h-3 w-3" />
-              {t("applicationDashboard.actions.viewDetails")}
-            </button>
+            <div className="flex justify-center gap-2">
+              <ViewButton
+                onClick={() => setSelectedRecord(row)}
+                aria-label={t("applicationDashboard.actions.viewDetailsAria", {
+                  appId: row.appId,
+                })}
+                title={t("applicationDashboard.actions.viewDetailsAria", {
+                  appId: row.appId,
+                })}
+                className="rounded-full px-2.5 text-[10px]"
+                size="xs"
+              >
+                {t("applicationDashboard.actions.viewDetails")}
+              </ViewButton>
+              <Button
+                type="button"
+                variant="primary"
+                size="xs"
+                // onClick={() => setSelectedRecord(row)}
+                icon={ChevronRight}
+                title={t("applicationDashboard.actions.processAria", {
+                  appId: row.appId,
+                })}
+              >
+                {t("applicationDashboard.actions.process")}
+              </Button>
+            </div>
           )}
           actionLabel={t("applicationDashboard.table.actions")}
           pageNumber={pageNumber}
@@ -762,19 +803,10 @@ export default function CmsMulyamapan({
             enabled: true,
             showPageSizeSelector: true,
           }}
-          maxBodyHeightClassName="max-h-[520px]"
+          maxBodyHeightClassName="max-h-auto"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           // theadClassName="!bg-slate-50 !from-slate-50 !via-slate-50 !to-slate-50 hover:!from-slate-50 hover:!via-slate-50 hover:!to-slate-50 [&_th]:!text-slate-700"
-          theadClassName="
-  !bg-[#143D7D]
-  [&_tr]:!bg-[#143D7D]
-  [&_th]:!bg-[#143D7D]
-  [&_th]:!text-white
-  [&_th]:font-semibold
-  [&_th]:uppercase
-  [&_th]:tracking-wide
-  [&_th]:text-xs
-  [&_th]:border-none"
+          theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
           // tableClassName="[&_thead_tr]:border-b [&_thead_tr]:border-slate-200 [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100 [&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-slate-50/70 [&_th]:uppercase"
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[74px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
           footerLeftContent={
@@ -791,7 +823,7 @@ export default function CmsMulyamapan({
       </Card >
 
 
-      <Card padding="sm" className="space-y-4 border-slate-200 shadow-sm">
+      {/* <Card padding="sm" className="space-y-4 border-slate-200 shadow-sm">
         <div>
           <h2 className="text-sm font-bold text-[#243B7C]">
             {t("applicationDashboard.graph.title")}
@@ -861,7 +893,7 @@ export default function CmsMulyamapan({
             </div>
           ))}
         </div>
-      </Card>
+      </Card> */}
 
       {
         selectedRecord && (
