@@ -304,7 +304,7 @@ export default function ServiceGrid({
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-blue-500 tracking-wider">
-                        {activeLang === "mr" ? "??????? (SLA)" : activeLang === "hi" ? "??? ???? (SLA)" : "Time Limit (SLA)"}
+                        {activeLang === "mr" ? "कालावधी (SLA)" : activeLang === "hi" ? "समय सीमा (SLA)" : "Time Limit (SLA)"}
                       </p>
                       <p className="text-sm font-extrabold text-slate-800">{transSla}</p>
                     </div>
@@ -316,7 +316,7 @@ export default function ServiceGrid({
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-amber-600 tracking-wider">
-                        {activeLang === "mr" ? "????? / ????" : activeLang === "hi" ? "????? / ??????" : "Fees / Charges"}
+                        {activeLang === "mr" ? "शुल्क / दर" : activeLang === "hi" ? "शुल्क / प्रभार" : "Fees / Charges"}
                       </p>
                       <p className="text-sm font-extrabold text-slate-800">{transFees}</p>
                     </div>
@@ -328,7 +328,7 @@ export default function ServiceGrid({
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
-                        {activeLang === "mr" ? "???????? ???????" : activeLang === "hi" ? "???????? ???????" : "Receiving Officer"}
+                        {activeLang === "mr" ? "स्वीकृती अधिकारी" : activeLang === "hi" ? "स्वीकृती अधिकारी" : "Receiving Officer"}
                       </p>
                       <p className="text-sm font-extrabold text-slate-800">{transOfficer}</p>
                     </div>
@@ -340,9 +340,9 @@ export default function ServiceGrid({
                     <Scale className="w-4 h-4 text-blue-600" />
                     <span>
                       {activeLang === "mr"
-                        ? "?????? ???????? ?????????"
+                        ? "आवश्यक कागदपत्रे"
                         : activeLang === "hi"
-                          ? "?????? ???????? ????????"
+                          ? "आवश्यक दस्तावेज़"
                           : "Mandatory Documents Required"}
                     </span>
                   </h5>
@@ -355,9 +355,9 @@ export default function ServiceGrid({
                   ) : (
                     <p className="text-xs text-slate-400 font-semibold italic">
                       {activeLang === "mr"
-                        ? "?? ???????? ??????? ????????? ???? ?????? ?????."
+                        ? "या सेवेसाठी कोणतीही कागदपत्रे निर्दिष्ट केलेली नाहीत."
                         : activeLang === "hi"
-                          ? "?? ???? ?? ??? ??? ???????? ????????? ???? ????"
+                          ? "इस सेवा के लिए कोई दस्तावेज़ निर्दिष्ट नहीं हैं।"
                           : "No documents specified for this service."}
                     </p>
                   )}
