@@ -8,6 +8,7 @@ import type {
   CardFilterParams,
   MainCardsResponse,
   WorkflowCardItem,
+  PropertySearchCriteriaPayload,
 } from "@/types/property-search";
 import type {
   ZoneApiResponse,
@@ -323,13 +324,17 @@ export async function filterPropertiesAction(
       totalCount = result.totalCount;
     }
 
-    if (useLocalPagination) {
-      const start = (pageNumber - 1) * pageSize;
-      const slicedResults = sortedResults.slice(start, start + pageSize);
-      return { results: slicedResults, totalCount: isRangeSearch ? sortedResults.length : totalCount, error: null };
-    }
+    const pageResults = useLocalPagination
+      ? sortedResults.slice((pageNumber - 1) * pageSize, pageNumber * pageSize)
+      : sortedResults;
 
-    return { results: sortedResults, totalCount, error: null };
+    await enrichApartmentUnitCounts(pageResults, payload, searchCriteria);
+
+    return {
+      results: pageResults,
+      totalCount: isRangeSearch ? sortedResults.length : totalCount,
+      error: null,
+    };
   } catch (err) {
     const message =
       err instanceof Error
@@ -338,6 +343,42 @@ export async function filterPropertiesAction(
 
     return { results: [], totalCount: 0, error: message };
   }
+}
+
+async function enrichApartmentUnitCounts(
+  results: SearchResult[],
+  payload: PropertySearchCriteriaPayload,
+  searchCriteria: SearchCriteria
+): Promise<void> {
+  const apartmentItems = results.filter(
+    (item) =>
+      item.category?.toLowerCase() === "apartment" ||
+      (item.childUnitCount !== undefined && item.childUnitCount !== null)
+  );
+
+  if (apartmentItems.length === 0) return;
+
+  const unitListPayload: PropertySearchCriteriaPayload = { ...payload };
+
+  if (searchCriteria.propertyNoFrom?.trim()) {
+    unitListPayload.propertyNoFrom = searchCriteria.propertyNoFrom.trim();
+  }
+  if (searchCriteria.propertyNoTo?.trim()) {
+    unitListPayload.propertyNoTo = searchCriteria.propertyNoTo.trim();
+  }
+
+  await Promise.all(
+    apartmentItems.map(async (item) => {
+      try {
+        const res = await fetchApartmentUnitList(item.propertyId, unitListPayload);
+        if (res && typeof res.totalCount === "number") {
+          item.childUnitCount = res.totalCount;
+        }
+      } catch {
+        // Keep original childUnitCount if fetch fails
+      }
+    })
+  );
 }
 
 /* ================= STATS ================= */
@@ -373,14 +414,16 @@ export async function listAllWardsAction(): Promise<WardApiResponse[]> {
 }
 
 export async function fetchApartmentUnitListAction(
-  propertyId: number
-): Promise<{ items: SearchResult[] | null; error: string | null }> {
+  propertyId: number,
+  criteriaPayload?: PropertySearchCriteriaPayload
+): Promise<{ items: SearchResult[] | null; totalCount: number; error: string | null }> {
   try {
-    const items = await fetchApartmentUnitList(propertyId);
-    return { items, error: null };
+    const res = await fetchApartmentUnitList(propertyId, criteriaPayload);
+    return { items: res.items, totalCount: res.totalCount, error: null };
   } catch (err) {
     return {
       items: null,
+      totalCount: 0,
       error: err instanceof Error ? err.message : "Failed to fetch apartment unit list",
     };
   }

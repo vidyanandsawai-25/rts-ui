@@ -229,6 +229,8 @@ export interface PropertySearchResultsProps {
   searchError?: string | null;
   zoneOptions: ZoneOption[];
   allWardOptions: WardOption[];
+  criteria?: SearchCriteria;
+  activeTab?: SearchTab;
 }
 
 /* ================= SELECT OPTION ================= */

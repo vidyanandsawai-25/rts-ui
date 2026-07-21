@@ -11,6 +11,7 @@ import type {
 import { usePropertySearchResults } from "@/hooks/search-property";
 import { ArrowLeft } from "lucide-react";
 import { fetchApartmentUnitListAction } from "@/app/[locale]/property-tax/search-property/action";
+import { buildPropertySearchPayload } from "@/lib/api/property-search/build-search-payload";
 import type { SearchResult } from "@/types/property-search";
 import { buildPropertySearchColumns } from "./results/columns";
 import { ResultsHeader } from "./results/ResultsHeader";
@@ -43,7 +44,7 @@ function buildPagination(current: number, total: number): PageToken[] {
 
 export function PropertySearchResults({
   selectedStatus,
-  isSearchActive: _isSearchActive,
+  isSearchActive,
   results,
   totalCount: totalCountProp,
   pageNumber: pageNumberProp,
@@ -54,6 +55,8 @@ export function PropertySearchResults({
   searchError = null,
   zoneOptions,
   allWardOptions,
+  criteria,
+  activeTab,
 }: PropertySearchResultsProps): React.ReactElement {
   const t = useTranslations("propertySearch.results");
   const locale = useLocale();
@@ -94,11 +97,29 @@ export function PropertySearchResults({
   const handleLoadUnits = React.useCallback(async (row: SearchResult) => {
     setUnitsLoading(true);
     try {
-      const res = await fetchApartmentUnitListAction(row.propertyId);
+      const criteriaPayload = criteria
+        ? buildPropertySearchPayload(
+            selectedStatus,
+            criteria,
+            isSearchActive,
+            activeTab ?? "quick-search"
+          )
+        : undefined;
+
+      if (criteriaPayload && criteria?.propertyNoFrom) {
+        criteriaPayload.propertyNoFrom = criteria.propertyNoFrom.trim();
+      }
+      if (criteriaPayload && criteria?.propertyNoTo) {
+        criteriaPayload.propertyNoTo = criteria.propertyNoTo.trim();
+      }
+
+      const res = await fetchApartmentUnitListAction(row.propertyId, criteriaPayload);
       if (res.error) {
         toast.error(res.error);
       } else {
-        setUnits(res.items || []);
+        const fetchedUnits = res.items || [];
+        row.childUnitCount = res.totalCount ?? fetchedUnits.length;
+        setUnits(fetchedUnits);
         setActiveApartment(row);
         setViewMode("units");
       }
@@ -108,7 +129,7 @@ export function PropertySearchResults({
     } finally {
       setUnitsLoading(false);
     }
-  }, []);
+  }, [criteria, selectedStatus, isSearchActive, activeTab]);
 
   const handleBackToProperties = React.useCallback(() => {
     setViewMode("properties");
