@@ -383,27 +383,27 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
         <form onSubmit={handleSubmit} className="space-y-6 p-2">
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.rtsServiceLabel")}</label>
+              <label className="text-xs font-bold text-slate-800 mb-1 block">{t("workflowMaster.rtsServiceLabel")}</label>
               <select
                 value={formServiceId}
                 onChange={(e) => setFormServiceId(e.target.value)}
-                className="w-full text-xs font-medium border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 {data.services.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id} className="text-slate-900 font-semibold">{s.name}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.flowNameLabel")}</label>
+              <label className="text-xs font-bold text-slate-800 mb-1 block">{t("workflowMaster.flowNameLabel")}</label>
               <input
                 type="text"
                 placeholder={t("workflowMaster.flowNamePh")}
                 value={formFlowName}
                 onChange={(e) => setFormFlowName(e.target.value)}
-                className="w-full text-xs font-medium border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
                 required
               />
             </div>
@@ -416,7 +416,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                 onChange={(e) => setFormIsActive(e.target.checked)}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="formIsActive" className="text-xs font-bold text-slate-700 cursor-pointer">
+              <label htmlFor="formIsActive" className="text-xs font-bold text-slate-800 cursor-pointer">
                 {t("workflowMaster.isActiveLabel")}
               </label>
             </div>
@@ -425,7 +425,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
           {/* Dynamic Stages Section */}
           <div className="border-t border-slate-200 pt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-extrabold uppercase text-slate-700 flex items-center gap-1.5">
+              <h3 className="text-xs font-extrabold uppercase text-slate-800 flex items-center gap-1.5">
                 <GitMerge className="h-4 w-4 text-blue-600" />
                 {t("workflowMaster.pipelineTitle")} ({stages.length})
               </h3>
@@ -443,11 +443,11 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
               {stages.map((stage, idx) => (
                 <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <span className="text-xs font-extrabold text-blue-900">Stage #{stage.stageOrder}</span>
+                    <span className="text-xs font-extrabold text-blue-950">Stage #{stage.stageOrder}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveStage(idx)}
-                      className="text-rose-500 hover:text-rose-700 text-xs font-bold"
+                      className="text-rose-600 hover:text-rose-800 text-xs font-bold"
                     >
                       {t("workflowMaster.removeStage")}
                     </button>
@@ -455,7 +455,7 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">{t("workflowMaster.stageNameLabel")}</label>
+                      <label className="text-[10px] font-bold text-slate-700 block">{t("workflowMaster.stageNameLabel")}</label>
                       <input
                         type="text"
                         value={stage.stageName}
@@ -463,11 +463,11 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                           const val = e.target.value;
                           setStages(prev => prev.map((s, i) => i === idx ? { ...s, stageName: val } : s));
                         }}
-                        className="w-full text-xs border border-slate-300 rounded p-1.5 bg-white"
+                        className="w-full text-xs font-semibold text-slate-900 border border-slate-300 rounded p-1.5 bg-white placeholder:text-slate-400"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-slate-600 block">{t("workflowMaster.slaDaysLabel")}</label>
+                      <label className="text-[10px] font-bold text-slate-700 block">{t("workflowMaster.slaDaysLabel")}</label>
                       <input
                         type="number"
                         min={1}
@@ -476,12 +476,12 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                           const val = Number(e.target.value);
                           setStages(prev => prev.map((s, i) => i === idx ? { ...s, slaDays: val } : s));
                         }}
-                        className="w-full text-xs border border-slate-300 rounded p-1.5 bg-white"
+                        className="w-full text-xs font-semibold text-slate-900 border border-slate-300 rounded p-1.5 bg-white"
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3 pt-1 text-[11px] font-semibold text-slate-700">
+                  <div className="flex flex-wrap gap-3 pt-1 text-[11px] font-bold text-slate-800">
                     <label className="flex items-center gap-1 cursor-pointer">
                       <input
                         type="checkbox"
