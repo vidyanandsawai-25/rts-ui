@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
@@ -51,12 +52,7 @@ type DepartmentCarsoulClientProps = {
   upicId?: string;
 };
 
-const UI = {
-  available: { en: "Available Services", hi: "Available Services", mr: "Available Services" },
-  found: { en: "Services Found", hi: "Services Found", mr: "Services Found" },
-  clear: { en: "Clear", hi: "Clear", mr: "Clear" },
-  searchResults: { en: "Search Results", hi: "Search Results", mr: "Search Results" },
-} as const;
+
 
 const normalize = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -106,6 +102,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
 
   const { language } = useLanguage();
   const lang = safeLang(language);
+  const t = useTranslations("rts.serviceGrid");
   const localePrefix = `/${lang}`;
 
   const [activeDrawerApp, setActiveDrawerApp] = useState<CitizenApplication | null>(null);
@@ -502,7 +499,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
                       {exactDeptMatches.length === 1
                         ? `---- ${pickLangText(exactDeptMatches[0].name, lang)} ----`
-                        : `${UI.searchResults[lang]} - \"${qRaw}\"`}
+                        : `${t("searchResults")} - \"${qRaw}\"`}
                     </h2>
                   ) : (
                     <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
@@ -515,8 +512,8 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                   <div className="h-2 w-2 rounded-full bg-green-500" />
                   <span>
                     {qNorm
-                      ? `${results.length} ${UI.found[lang]}`
-                      : `${activeDeptObj?.services.length ?? 0} ${UI.available[lang]}`}
+                      ? `${results.length} ${t("servicesFound")}`
+                      : `${activeDeptObj?.services.length ?? 0} ${t("availableServices")}`}
                   </span>
                 </div>
 
@@ -525,7 +522,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     onClick={() => router.replace(`${localePrefix}/service/dashboard`, { scroll: false })}
                     className="shrink-0 self-center rounded-lg border bg-white px-3 py-1.5 text-xs hover:bg-gray-50 sm:self-auto"
                   >
-                    {UI.clear[lang]}
+                    {t("clear")}
                   </button>
                 ) : null}
               </div>

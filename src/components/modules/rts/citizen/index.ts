@@ -1,2 +1,2 @@
-export { default as ServiceGrid } from './ServiceGrid';
+export { default as ServiceGrid } from '@/components/common/ServiceGrid';
 export { CitizenLandingPage } from './CitizenLandingPage';

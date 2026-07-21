@@ -540,6 +540,10 @@
     "mandatoryDocsRequired": "आवश्यक कागदपत्रे",
     "noDocsSpecified": "या सेवेसाठी कोणतीही कागदपत्रे निर्दिष्ट केलेली नाहीत.",
     "free": "मोफत",
-    "days": "दिवस"
+    "days": "दिवस",
+    "availableServices": "उपलब्ध सेवा",
+    "servicesFound": "सेवा सापडल्या",
+    "clear": "साफ करा",
+    "searchResults": "शोध निकाल"
   }
 }

@@ -537,6 +537,10 @@
     "mandatoryDocsRequired": "Mandatory Documents Required",
     "noDocsSpecified": "No documents specified for this service.",
     "free": "Free",
-    "days": "Days"
+    "days": "Days",
+    "availableServices": "Available Services",
+    "servicesFound": "Services Found",
+    "clear": "Clear",
+    "searchResults": "Search Results"
   }
 }

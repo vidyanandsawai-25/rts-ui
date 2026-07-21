@@ -537,6 +537,10 @@
     "mandatoryDocsRequired": "आवश्यक दस्तावेज़",
     "noDocsSpecified": "इस सेवा के लिए कोई दस्तावेज़ निर्दिष्ट नहीं हैं।",
     "free": "निःशुल्क",
-    "days": "दिन"
+    "days": "दिन",
+    "availableServices": "उपलब्ध सेवाएँ",
+    "servicesFound": "सेवाएँ मिलीं",
+    "clear": "साफ़ करें",
+    "searchResults": "खोज परिणाम"
   }
 }
