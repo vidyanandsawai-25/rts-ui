@@ -163,10 +163,10 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
     const q = searchTerm.toLocaleLowerCase().trim();
     const textMatch =
       !q ||
-      o.name.toLocaleLowerCase().includes(q) ||
-      o.employeeId.toLocaleLowerCase().includes(q) ||
-      o.designation.toLocaleLowerCase().includes(q) ||
-      o.email.toLocaleLowerCase().includes(q);
+      (o.name?.toLocaleLowerCase() || "").includes(q) ||
+      (o.employeeId?.toLocaleLowerCase() || "").includes(q) ||
+      (o.designation?.toLocaleLowerCase() || "").includes(q) ||
+      (o.email?.toLocaleLowerCase() || "").includes(q);
 
     return deptMatch && textMatch;
   });
