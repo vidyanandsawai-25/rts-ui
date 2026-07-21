@@ -23,7 +23,7 @@ export type WorkflowDetails = {
 
 export async function getRtsWorkflowStages(serviceId: number): Promise<WorkflowDetails | null> {
   const response = await apiClient.get<{ flowName: string; stages: WorkflowStage[] }>(
-    `/RTSWorkflow/stages/${serviceId}`,
+    `/ApprovalFlowMaster/stages/${serviceId}`,
     { cache: "no-store" },
     false
   );
