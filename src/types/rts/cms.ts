@@ -34,6 +34,7 @@ export interface CmsApplication {
   assignedOfficerName: string;
   slaLimitDays: number;
   daysRemaining: number;
+  remainingDays: number;
   submittedAt: string;
   fieldValues: Record<string, any>;
   documents: CmsDocument[];
