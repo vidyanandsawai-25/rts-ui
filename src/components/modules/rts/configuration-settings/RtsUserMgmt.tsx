@@ -6,7 +6,7 @@ import { Card, Drawer, useConfirm } from "@/components/common";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { createCmsUserAction } from "@/app/[locale]/rts/actions";
-import type { CmsOfficer } from "@/lib/mock/rts/cms";
+import type { CmsOfficer } from "@/types/rts/cms";
 
 interface UserMgmtProps {
   officers: CmsOfficer[];
