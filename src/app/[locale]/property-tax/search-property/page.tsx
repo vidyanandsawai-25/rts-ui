@@ -257,16 +257,15 @@ export default async function PropertySearchPage({
   const wardOptions: WardOption[] = wards
     .filter((w) => w.zoneId === initialCriteria.zoneId)
     .map((w) => ({
-    id: w.wardId,
-    label: w.description?.trim() ? w.description : w.wardNo,
-    zoneId: w.zoneId,
-  }));
+      id: w.wardId,
+      label: w.wardNo?.trim() ? w.wardNo : w.description || "",
+      zoneId: w.zoneId,
+    }));
 
   const allWardOptions: WardOption[] = allWards.map((w) => {
     const wardNo = w.wardNo?.trim();
     const desc = w.description?.trim();
-    const label =
-      wardNo && desc && wardNo !== desc ? `${wardNo} - ${desc}` : desc || wardNo || "";
+    const label = wardNo || desc || "";
     return {
       id: w.wardId,
       label,

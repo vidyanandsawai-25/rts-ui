@@ -1,19 +1,60 @@
 'use client';
 
-import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
+import { Settings, Award, Zap, RotateCcw, Disc, ShieldCheck, Database, SlidersHorizontal, Layers, Calculator, RefreshCw } from 'lucide-react';
 import { Button, SaveButton } from '@/components/common';
 import { useTaxCalculationGuidelineForm } from '@/hooks/configuration-settings/tax-calculation-guideline/useTaxCalculationGuidelineForm';
 import type { TaxCalculationGuidelineModuleProps } from '@/types/tax-calculation-guideline.types';
-import type { TaxCalculationGuidelineFormData } from '@/types/tax-calculation-guideline.types';
-
-import { GeneralSettingsSection } from './sections/GeneralSettingsSection';
-import { CertificateDatePrioritySection } from './sections/CertificateDatePrioritySection';
-import { CcOcRulesSection } from './sections/CcOcRulesSection';
-import { ElectricBillRulesSection } from './sections/ElectricBillRulesSection';
-import { RetrospectiveRulesSection } from './sections/RetrospectiveRulesSection';
-import { OtherSettingsSection } from './sections/OtherSettingsSection';
+import { DynamicGuidelineField } from './TaxFormField';
 import { TaxGuidelineNoteFooter } from './TaxGuidelineNoteFooter';
+
+/** Visual config per section group key. */
+const SECTION_CONFIGS: Record<string, {
+  gradient: string;
+  /** Lucide icon element rendered in the gradient header. */
+  icon: ReactNode;
+  /** Number of columns in the inner field grid. */
+  cols: 2 | 3 | 4;
+  /**
+   * When true, toggle/BIT fields span both columns so that the
+   * remaining non-toggle fields pair up correctly below them.
+   * Useful for sections like Partial Policy where you want
+   * CC Partial | CC Full, OC Partial | OC Full, etc.
+   */
+  colSpanToggle?: boolean;
+}> = {
+  // GENERAL: { gradient: 'from-blue-500 to-violet-600', icon: <Settings className="w-4 h-4" />, cols: 2 },
+  // DATE_PRIORITY: { gradient: 'from-purple-500 to-indigo-600', icon: <Award className="w-4 h-4" />, cols: 2 },
+  // CC_OC: { gradient: 'from-emerald-500 to-teal-600', icon: <Settings className="w-4 h-4" />, cols: 4 },
+  // CC: { gradient: 'from-blue-500 to-purple-600', icon: <Disc className="w-4 h-4" />, cols: 3 },
+  // OC: { gradient: 'from-orange-400 to-amber-500', icon: <Disc className="w-4 h-4" />, cols: 3 },
+  // ELECTRIC_BILL: { gradient: 'from-orange-400 to-amber-600', icon: <Zap className="w-4 h-4" />, cols: 3 },
+  // RETROSPECTIVE: { gradient: 'from-pink-500 to-rose-600', icon: <RotateCcw className="w-4 h-4" />, cols: 3 },
+  // // Advanced sections – distinct colorful gradients
+  // SCOPE: { gradient: 'from-teal-500 to-cyan-600', icon: <SlidersHorizontal className="w-4 h-4" />, cols: 2 },
+  // VALIDATION: { gradient: 'from-indigo-500 to-blue-600', icon: <ShieldCheck className="w-4 h-4" />, cols: 2 },
+  // PRORATION: { gradient: 'from-green-500 to-emerald-600', icon: <Calculator className="w-4 h-4" />, cols: 2 },
+  // PARTIAL_POLICY: { gradient: 'from-violet-500 to-purple-600', icon: <Layers className="w-4 h-4" />, cols: 4 },
+  // PERSISTENCE: { gradient: 'from-amber-500 to-orange-600', icon: <Database className="w-4 h-4" />, cols: 2 },
+  // RECALCULATION: { gradient: 'from-rose-500 to-red-600', icon: <RefreshCw className="w-4 h-4" />, cols: 2 },
+
+
+  GENERAL: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Settings className="w-4 h-4" />, cols: 2 },
+  DATE_PRIORITY: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Award className="w-4 h-4" />, cols: 2 },
+  CC_OC: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Settings className="w-4 h-4" />, cols: 4 },
+  CC: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Disc className="w-4 h-4" />, cols: 3 },
+  OC: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Disc className="w-4 h-4" />, cols: 3 },
+  ELECTRIC_BILL: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Zap className="w-4 h-4" />, cols: 3 },
+  RETROSPECTIVE: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <RotateCcw className="w-4 h-4" />, cols: 3 },
+  // Advanced sections – distinct colorful gradients
+  SCOPE: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <SlidersHorizontal className="w-4 h-4" />, cols: 2 },
+  VALIDATION: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <ShieldCheck className="w-4 h-4" />, cols: 2 },
+  PRORATION: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Calculator className="w-4 h-4" />, cols: 2 },
+  PARTIAL_POLICY: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Layers className="w-4 h-4" />, cols: 4 },
+  PERSISTENCE: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Database className="w-4 h-4" />, cols: 2 },
+  RECALCULATION: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <RefreshCw className="w-4 h-4" />, cols: 2 },
+};
 
 /**
  * Client orchestrator for the CC / OC / Electric Bill – Tax Calculation
@@ -25,30 +66,161 @@ export default function TaxCalculationGuidelineClient({
   initialDto,
   fetchError,
   statusCode,
+  policyConfigs,
 }: TaxCalculationGuidelineModuleProps) {
   const t = useTranslations('taxCalculationGuideline');
-  const { formData, isSaving, isUpdate, handleChange, handleUpdate } = useTaxCalculationGuidelineForm({
+  const { formData, isSaving, isUpdate, onChangeGuideline, handleUpdate } = useTaxCalculationGuidelineForm({
     initialDto,
   });
 
-  /** Unified onChange passed to every section component */
-  const onChange = useCallback(
-    <S extends keyof TaxCalculationGuidelineFormData, K extends keyof TaxCalculationGuidelineFormData[S]>(
-      section: S,
-      field: K,
-      value: TaxCalculationGuidelineFormData[S][K]
-    ) => {
-      handleChange(section, field, value);
-    },
-    [handleChange]
-  );
+  const { dynamicGuidelines = [], generalSettings } = formData;
 
-  const sectionProps = { formData, onChange };
+  const isCertTaxDisabled = !generalSettings.enableCertificateBasedTax;
+
+  // Determine if a field should be disabled conditionally based on business rules
+  const isFieldDisabled = (code: string) => {
+    if (code === 'ENABLE_CERTIFICATE_BASED_TAX') return false;
+    if (isCertTaxDisabled) return true;
+
+    // CC & OC Rules conditional disable
+    if ([
+      'IGNORE_CC_TO_OC_IF_WITHIN_VALUE', 'IGNORE_CC_TO_OC_IF_WITHIN_TYPE', 'CC_OC_GAP_COMPARISON',
+      'CC_OC_GAP_WITHIN_ACTION', 'CC_OC_GAP_EXCEEDED_ACTION', 'INVALID_CC_OC_DATE_ORDER_ACTION',
+      'CC_PERIOD_MULTIPLIER', 'OC_PERIOD_MULTIPLIER', 'ENABLE_CURRENT_FY_PARTIAL_POLICY',
+      'CC_PARTIAL_POLICY_CODE', 'CC_FULL_POLICY_CODE', 'OC_PARTIAL_POLICY_CODE', 'OC_FULL_POLICY_CODE'
+    ].includes(code)) {
+      const splitVal = dynamicGuidelines.find(g => g.guidelineCode === 'ENABLE_CC_TO_OC_SPLIT')?.guidelineValue;
+      const isSplitOff = splitVal !== 'true' && splitVal !== '1';
+      return isSplitOff;
+    }
+
+    // Electric Bill Rules conditional disable
+    if ([
+      'ELECTRIC_BILL_CERTIFICATE_CODES', 'ELECTRIC_BILL_ADD_MONTHS', 'ELECTRIC_BILL_MULTIPLIER',
+      'ELECTRIC_BILL_MINIMUM_FINANCIAL_YEAR', 'ELECTRIC_BILL_PARTIAL_POLICY_CODE', 'ELECTRIC_BILL_FULL_POLICY_CODE'
+    ].includes(code)) {
+      const ebDateRule = dynamicGuidelines.find(g => g.guidelineCode === 'ELECTRIC_BILL_DATE_RULE')?.guidelineValue;
+      const isEbDisabled = !ebDateRule || ebDateRule === 'Select' || ebDateRule === 'NO_TAX';
+      return isEbDisabled;
+    }
+
+    // Retrospective Rules conditional disable
+    if ([
+      'NO_DATE_RULE', 'LOOKBACK_YEARS', 'RETROSPECTIVE_CURRENT_YEAR_COUNT',
+      'RETROSPECTIVE_PENDING_YEAR_COUNT_MODE', 'DEFAULT_RETROSPECTIVE_MULTIPLIER'
+    ].includes(code)) {
+      const retroVal = dynamicGuidelines.find(g => g.guidelineCode === 'ENABLE_RETROSPECTIVE_TAX')?.guidelineValue;
+      const isRetroOff = retroVal !== 'true' && retroVal !== '1';
+      return isRetroOff;
+    }
+
+    // Proration Rules conditional disable
+    if ([
+      'PRORATION_METHOD', 'CURRENT_YEAR_PRORATION_START_RULE'
+    ].includes(code)) {
+      const prorationVal = dynamicGuidelines.find(g => g.guidelineCode === 'ENABLE_CURRENT_YEAR_PRORATION')?.guidelineValue;
+      const isProrationOff = prorationVal !== 'true' && prorationVal !== '1';
+      return isProrationOff;
+    }
+
+    return false;
+  };
+
+  // Group guidelines by GuidelineGroup
+  const groupedGuidelines: Record<string, typeof dynamicGuidelines> = {};
+  for (const item of dynamicGuidelines) {
+    if (item.isActive === false) continue;
+    if (!item.guidelineCode) continue;
+    const group = item.guidelineGroup;
+    if (!group || group.trim() === '') continue;
+    if (!groupedGuidelines[group]) {
+      groupedGuidelines[group] = [];
+    }
+    groupedGuidelines[group].push(item);
+  }
+
+  // Sort each group's items by DisplayOrder
+  for (const group of Object.keys(groupedGuidelines)) {
+    groupedGuidelines[group].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  }
+
+  const renderGroupSection = (groupKey: string, titleKey: string) => {
+    const guidelines = groupedGuidelines[groupKey] || [];
+    if (guidelines.length === 0) return null;
+
+    const cfg = SECTION_CONFIGS[groupKey] ?? {
+      gradient: 'from-slate-500 to-slate-600',
+      icon: <Settings className="w-4 h-4" />,
+      cols: 2 as const,
+    };
+
+    const colClass =
+      cfg.cols === 4
+        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+        : cfg.cols === 3
+          // 3-col only at 2xl (≥1536 px) where the half-width outer container
+          // is ~740 px wide, giving each inner field ~235 px — enough for
+          // most dropdowns without truncation.
+          ? 'grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3'
+          : 'grid-cols-1 sm:grid-cols-2';
+
+    /**
+     * Returns true if the guideline field is a toggle/BIT type.
+     * Used to apply col-span-2 in sections where colSpanToggle is set.
+     */
+    const isToggleCode = (code: string, dataType?: string | null) =>
+      dataType === 'BIT' ||
+      code.startsWith('ENABLE_') ||
+      code.startsWith('SAVE_') ||
+      code.startsWith('ALLOW_') ||
+      [
+        'CERTIFICATE_REQUIRE_NO_AND_DATE', 'APPLY_ONLY_TAXABLE_CERT_TYPES',
+        'DO_NOT_UPDATE_NETTAX', 'RECALCULATE_ON_CERTIFICATE_SAVE',
+        'RECALCULATE_ON_CERTIFICATE_DELETE',
+      ].includes(code);
+
+    return (
+      <div key={groupKey} className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        {/* ── Gradient header — rounded-t-xl clips gradient corners without clipping dropdown popups ── */}
+        <div className={`bg-gradient-to-r ${cfg.gradient} px-4 py-2.5 flex items-center gap-2 rounded-t-xl`}>
+          <span className="text-white opacity-90">{cfg.icon}</span>
+          <h2 className="text-sm font-bold text-white tracking-wide">{t(titleKey)}</h2>
+        </div>
+
+        {/* ── Field grid ──────────────────────────────────────────────────── */}
+        <div className={`grid ${colClass} gap-x-4 gap-y-4 px-4 py-4`}>
+          {guidelines.map((guideline) => {
+            // Span toggle across both columns when the section requests it,
+            // so that the non-toggle policy-code pairs flow cleanly below.
+            const spanFull =
+              cfg.colSpanToggle === true &&
+              isToggleCode(guideline.guidelineCode!, guideline.dataType);
+
+            return (
+              <div
+                key={guideline.guidelineCode}
+                className={`flex flex-col${spanFull ? ' col-span-full' : ''}`}
+              >
+                <DynamicGuidelineField
+                  guideline={guideline}
+                  value={guideline.guidelineValue}
+                  onChange={(val) => onChangeGuideline?.(guideline.guidelineCode!, val)}
+                  disabled={isFieldDisabled(guideline.guidelineCode!)}
+                  t={t}
+                  policyConfigs={policyConfigs}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col gap-0 bg-[#f5f8ff]">
+    <div className="flex h-full flex-col gap-0 bg-[#f0f4ff]">
       {/* ── Page Header ───────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between border-b border-slate-200 bg-white px-6 py-4">
         <div>
@@ -79,8 +251,8 @@ export default function TaxCalculationGuidelineClient({
         </div>
       </div>
 
-      {/* ── Non-scrollable body ────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-hidden px-6 py-4 flex flex-col gap-4">
+      {/* ── Scrollable body ────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
         {fetchError && (
           <div className="shrink-0 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -93,33 +265,51 @@ export default function TaxCalculationGuidelineClient({
             </span>
           </div>
         )}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 min-h-0 flex-1">
-          {/* Left Column */}
-          <div className="flex flex-col gap-4 min-h-0">
-            <div className="flex-1 min-h-0">
-              <GeneralSettingsSection {...sectionProps} />
-            </div>
-            <div className="flex-1 min-h-0">
-              <CcOcRulesSection {...sectionProps} />
-            </div>
-            <div className="flex-1 min-h-0">
-              <RetrospectiveRulesSection {...sectionProps} />
-            </div>
+
+        {/* ── Two-column main grid ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          {/* Left Column – General → CC/OC → CC → OC */}
+          <div className="flex flex-col gap-5">
+            {renderGroupSection('GENERAL', 'sections.generalSettings')}
+            {renderGroupSection('CC_OC', 'sections.ccOcRules')}
+            {renderGroupSection('OC', 'sections.ocRules')}
+            {renderGroupSection('RETROSPECTIVE', 'sections.retrospectiveRules')}
+
           </div>
 
-          {/* Right Column */}
-          <div className="flex flex-col gap-4 min-h-0">
-            <div className="flex-1 min-h-0">
-              <CertificateDatePrioritySection {...sectionProps} />
-            </div>
-            <div className="flex-1 min-h-0">
-              <ElectricBillRulesSection {...sectionProps} />
-            </div>
-            <div className="flex-1 min-h-0">
-              <OtherSettingsSection {...sectionProps} />
-            </div>
+          {/* Right Column – Date Priority → Electric Bill → Retrospective */}
+          <div className="flex flex-col gap-5">
+            {renderGroupSection('DATE_PRIORITY', 'sections.datePriority')}
+            {renderGroupSection('ELECTRIC_BILL', 'sections.electricBillRules')}
+            {renderGroupSection('CC', 'sections.ccRules')}
+
           </div>
         </div>
+
+        {/* ── Collapsible Advanced Settings ───────────────────────────────── */}
+        <details className="group bg-white border border-slate-200 rounded-xl shadow-sm transition-all duration-300">
+          <summary className="flex items-center justify-between px-5 py-3.5 font-bold text-sm text-slate-800 cursor-pointer list-none select-none">
+            <span>{t('sections.advancedSettings')}</span>
+            <span className="transition group-open:rotate-180">
+              <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="24" className="text-slate-500 w-4 h-4"><path d="M6 9l6 6 6-6"></path></svg>
+            </span>
+          </summary>
+          <div className="px-5 pb-5 pt-1 border-t border-slate-100 flex flex-col gap-5">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-1">
+              <div className="flex flex-col gap-5">
+                {renderGroupSection('SCOPE', 'sections.scopeSettings')}
+                {renderGroupSection('VALIDATION', 'sections.certificateValidation')}
+                {renderGroupSection('PRORATION', 'sections.prorationRules')}
+              </div>
+              <div className="flex flex-col gap-5">
+                {renderGroupSection('PERSISTENCE', 'sections.persistenceSettings')}
+                {renderGroupSection('RECALCULATION', 'sections.recalculationSettings')}
+                {renderGroupSection('PARTIAL_POLICY', 'sections.partialPolicy')}
+              </div>
+            </div>
+          </div>
+        </details>
+
         <div className="shrink-0">
           <TaxGuidelineNoteFooter />
         </div>

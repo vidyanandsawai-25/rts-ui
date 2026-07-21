@@ -19,24 +19,24 @@ export interface ErrorPageProps {
 
 /**
  * Reusable error page component for Next.js error boundaries.
- * 
+ *
  * @example
  * // In error.tsx file:
  * export default function Error({ error, reset }: ErrorProps) {
  *   return <ErrorPage error={error} reset={reset} />;
  * }
- * 
+ *
  * @example
  * // With custom translation namespace:
- * <ErrorPage 
- *   error={error} 
- *   reset={reset} 
- *   translationNamespace="construction.constructionType.error" 
+ * <ErrorPage
+ *   error={error}
+ *   reset={reset}
+ *   translationNamespace="construction.constructionType.error"
  * />
  */
-export function ErrorPage({ 
-  error, 
-  reset, 
+export function ErrorPage({
+  error,
+  reset,
   translationNamespace = 'common.error',
   homeUrl,
 }: ErrorPageProps) {
@@ -55,18 +55,29 @@ export function ErrorPage({
 
   const getCleanedMessage = () => {
     if (!error?.message) return t('description');
-    
+
     let cleanMsg = error.message;
     if (cleanMsg.includes(':')) {
       const parts = cleanMsg.split(':');
       cleanMsg = parts.slice(1).join(':').trim();
     }
-    
+
     const lower = cleanMsg.toLowerCase();
-    if (lower.includes('timeout')) {
-      return t('description');
-    }
-    if (lower.includes('fetch failed') || lower.includes('failed to fetch') || lower.includes('network error') || lower.includes('econnrefused')) {
+    if (
+      lower.includes('timeout') ||
+      lower.includes('fetch failed') ||
+      lower.includes('failed to fetch') ||
+      lower.includes('network error') ||
+      lower.includes('econnrefused') ||
+      lower.includes('something went wrong') ||
+      lower.includes('unexpected error') ||
+      lower.includes('internal server error') ||
+      lower.includes('failed to load') ||
+      lower.includes('unknown error') ||
+      lower.includes('error occurred') ||
+      lower.includes('कुछ गलत') ||
+      lower.includes('काहीतरी चूक')
+    ) {
       return t('description');
     }
     return cleanMsg;
@@ -86,21 +97,15 @@ export function ErrorPage({
               </div>
 
               {/* Error Title */}
-              <h2 className="text-2xl font-semibold text-gray-900">
-                {t('title')}
-              </h2>
+              <h2 className="text-2xl font-semibold text-gray-900">{t('title')}</h2>
 
               {/* Error Description */}
-              <p className="text-gray-600">
-                {displayMessage}
-              </p>
+              <p className="text-gray-600">{displayMessage}</p>
 
               {/* Error Details (development only) */}
               {process.env.NODE_ENV === 'development' && (
                 <div className="w-full mt-4 p-4 bg-gray-100 rounded-md text-left">
-                  <p className="text-sm font-mono text-gray-800 break-words">
-                    {displayMessage}
-                  </p>
+                  <p className="text-sm font-mono text-gray-800 break-words">{displayMessage}</p>
                   {error.digest && (
                     <p className="text-xs text-gray-600 mt-2">
                       {t('errorId', { id: error.digest })}
@@ -113,13 +118,11 @@ export function ErrorPage({
               <div className="flex gap-3 mt-6">
                 <Button
                   variant="secondary"
-                  onClick={() => window.location.href = homeUrl || defaultHomeUrl}
+                  onClick={() => (window.location.href = homeUrl || defaultHomeUrl)}
                 >
                   {t('goHome')}
                 </Button>
-                <Button onClick={reset}>
-                  {t('tryAgain')}
-                </Button>
+                <Button onClick={reset}>{t('tryAgain')}</Button>
               </div>
             </div>
           </CardContent>

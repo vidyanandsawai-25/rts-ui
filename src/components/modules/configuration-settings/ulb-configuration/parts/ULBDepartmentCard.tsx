@@ -103,9 +103,10 @@ export function ULBDepartmentCard({ dept, t, onToggle, onDateChange }: ULBDepart
                       type="number"
                       min={1}
                       max={120}
+                      maxLength={3}
                       placeholder="Months"
                       value={dept.duration === 'custom' ? '' : dept.duration}
-                      onChange={(e) => onDateChange(dept.id, 'duration', e.target.value)}
+                      onChange={(e) => onDateChange(dept.id, 'duration', e.target.value.slice(0, 3))}
                       className={cn(fieldClass, 'flex-1')}
                     />
                     <Button
