@@ -58,6 +58,8 @@ export function buildJobsCopy(t: Translator): ReportJobsCopy {
     refresh: t('jobs.refresh'),
     empty: t('jobs.empty'),
     download: t('jobs.download'),
+    preview: t('jobs.preview'),
+    previewTitle: t('jobs.previewTitle'),
     columns: {
       report: t('jobs.columns.report'),
       status: t('jobs.columns.status'),

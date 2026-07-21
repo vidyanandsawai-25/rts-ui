@@ -98,7 +98,7 @@ describe('resolveCategoryKey', () => {
     // Force a report object that lacks common code keys
     const report = makeReport({});
     // Remove the reportCode field entirely
-    delete (report as Record<string, unknown>).reportCode;
+    delete (report as unknown as Record<string, unknown>).reportCode;
     expect(resolveCategoryKey(report)).toBe('assessment');
   });
 

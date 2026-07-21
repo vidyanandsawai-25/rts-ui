@@ -5,7 +5,7 @@ import type { ReportJob, ReportJobsCopy, ReportDefinition } from '@/types/report
 
 // Mock MasterTable and other common components
 vi.mock('@/components/common', () => ({
-  MasterTable: ({ data, columns, loading, renderActions, paginationConfig }: Record<string, unknown>) => {
+  MasterTable: ({ data, columns, loading, renderActions }: Record<string, unknown>) => {
     const items = data as ReportJob[];
     const cols = columns as { key: string; label: string; render?: (v: unknown, row: ReportJob) => React.ReactNode }[];
     if (loading) return <div data-testid="loading">Loading...</div>;
