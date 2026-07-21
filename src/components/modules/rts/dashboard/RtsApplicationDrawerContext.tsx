@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  CheckCircle2,
-  Clock3,
   Download,
   FileText
 } from "lucide-react";

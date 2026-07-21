@@ -6,22 +6,17 @@ import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashb
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
 import {
-  AlertCircle,
-  CheckCircle,
   CheckCircle2,
   Clock3,
-  Download,
   Eye,
   FileText,
   Filter,
-  Info,
   LayoutDashboard,
   TriangleAlert,
 } from "lucide-react";
 
 import { Button, Card, MasterTable, SearchInput, Select } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
-import { CloseIconButton } from "@/components/common/ActionButtons";
 import ApplicationDrawerContent from "./RtsApplicationDrawerContext";
 
 // import type { CmsApplication } from "@/lib/mock/rts/cms";
@@ -53,82 +48,10 @@ interface SlaRecord extends Record<string, unknown> {
   applicationStatus: "Approved" | "Pending" | "Rejected";
 }
 
-interface DepartmentTatRecord {
-  key: "propertyTax" | "tradeLicense" | "waterConnection" | "townPlanning";
-  total: number;
-  pending: number;
-  inProgress: number;
-  needsInfo: number;
-  verification: number;
-  stageDays: {
-    pending: number;
-    inProgress: number;
-    needsInfo: number;
-    verification: number;
-  };
-}
+
 
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
-
-const DEPARTMENT_TAT_DATA: DepartmentTatRecord[] = [
-  {
-    key: "propertyTax",
-    total: 6.8,
-    pending: 22,
-    inProgress: 37,
-    needsInfo: 26,
-    verification: 15,
-    stageDays: {
-      pending: 1.5,
-      inProgress: 2.5,
-      needsInfo: 1.8,
-      verification: 1.0,
-    },
-  },
-  {
-    key: "tradeLicense",
-    total: 9.0,
-    pending: 22,
-    inProgress: 33,
-    needsInfo: 28,
-    verification: 17,
-    stageDays: {
-      pending: 2.0,
-      inProgress: 3.0,
-      needsInfo: 2.5,
-      verification: 1.5,
-    },
-  },
-  {
-    key: "waterConnection",
-    total: 17.7,
-    pending: 20,
-    inProgress: 34,
-    needsInfo: 28,
-    verification: 18,
-    stageDays: {
-      pending: 3.5,
-      inProgress: 6.0,
-      needsInfo: 5.0,
-      verification: 3.2,
-    },
-  },
-  {
-    key: "townPlanning",
-    total: 17.5,
-    pending: 23,
-    inProgress: 31,
-    needsInfo: 28,
-    verification: 18,
-    stageDays: {
-      pending: 4.0,
-      inProgress: 5.5,
-      needsInfo: 4.8,
-      verification: 3.2,
-    },
-  },
-];
 
 
 function normalizeApplicationStatus(
@@ -156,8 +79,6 @@ function normalizeApplicationStatus(
 }
 
 export default function CmsMulyamapan({
-  data,
-  masters,
   locale,
 }: CmsMulyamapanProps) {
   const t = useTranslations("rts");
@@ -207,8 +128,7 @@ export default function CmsMulyamapan({
     [locale]
   );
 
-  const formatDays = (value: number | string) =>
-    t("applicationDashboard.units.dayShort", { value });
+
 
 
   const slaRecords = useMemo<SlaRecord[]>(() => {
@@ -311,16 +231,7 @@ export default function CmsMulyamapan({
     }
   }, [pageNumber, totalPages]);
 
-  const getOutcomeLabel = (outcome: SlaRecord["outcome"]) => {
-    switch (outcome) {
-      case "Within SLA":
-        return t("applicationDashboard.outcomes.withinSla");
-      case "SLA breached":
-        return t("applicationDashboard.outcomes.slaBreached");
-      default:
-        return t("applicationDashboard.outcomes.atRisk");
-    }
-  };
+
 
   const columns = useMemo<Column<SlaRecord>[]>(
     () => [
@@ -510,37 +421,7 @@ export default function CmsMulyamapan({
     },
   ];
 
-  const chartLegend = [
-    { colorClass: "bg-amber-400", label: t("applicationDashboard.graph.stages.pending") },
-    { colorClass: "bg-[#4b70a6]", label: t("applicationDashboard.graph.stages.inProgress") },
-    { colorClass: "bg-purple-400", label: t("applicationDashboard.graph.stages.needsInfo") },
-    { colorClass: "bg-emerald-500", label: t("applicationDashboard.graph.stages.verification") },
-  ];
 
-  const dialogStages = selectedRecord
-    ? [
-      {
-        color: "bg-amber-400",
-        label: t("applicationDashboard.dialog.stages.clerkAllocation"),
-        days: selectedRecord.pendingDays,
-      },
-      {
-        color: "bg-[#4b70a6]",
-        label: t("applicationDashboard.dialog.stages.officialScrutiny"),
-        days: selectedRecord.inProgressDays,
-      },
-      {
-        color: "bg-purple-400",
-        label: t("applicationDashboard.dialog.stages.queryResolution"),
-        days: selectedRecord.needsInfoDays,
-      },
-      {
-        color: "bg-emerald-500",
-        label: t("applicationDashboard.dialog.stages.finalSignOff"),
-        days: selectedRecord.verificationDays,
-      },
-    ]
-    : [];
 
   const applicationTypeOptions = [
     { label: "All Types", value: "all" },

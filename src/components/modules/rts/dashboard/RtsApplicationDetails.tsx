@@ -21,12 +21,11 @@ import { toast } from "sonner";
 import { pickLangText } from "@/lib/utils/rts/lang";
 import { submitCmsAction } from "@/app/[locale]/rts/actions";
 import type { CmsApplication, CmsOfficer } from "@/types/rts/cms";
-import type { GeneratedDynamicFormSchema } from "@/components/modules/rts/admin/service-builder/types";
 import type { WorkflowDetails, WorkflowStage } from "@/lib/api/rts/rts-workflow.service";
 
 interface CmsApplicationDetailsProps {
   application: CmsApplication;
-  formSchema: GeneratedDynamicFormSchema | null;
+  formSchema: any;
   officers: CmsOfficer[];
   locale: string;
   workflowDetails?: WorkflowDetails | null;
@@ -237,13 +236,13 @@ export default function CmsApplicationDetails({
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {formSchema.steps.map((section, idx) => (
+                  {formSchema.steps.map((section: any, idx: number) => (
                     <div key={section.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
                       <h4 className="text-xs font-bold text-[#4b70a6] uppercase tracking-wider mb-3 pb-1 border-b border-slate-100">
                         {idx + 1}. {pickLangText(section.title, "en") || "Section Details"}
                       </h4>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {section.fields.map(field => {
+                        {section.fields.map((field: any) => {
                           const val = application.fieldValues[field.id] || "—";
                           const label = pickLangText(field.label, "en") || "Field";
 
@@ -252,7 +251,7 @@ export default function CmsApplicationDetails({
                               <p className="text-slate-400 font-semibold">{label}</p>
                               <p className="font-bold text-slate-800 mt-0.5 whitespace-pre-wrap truncate">
                                 {field.type === "select"
-                                  ? field.options?.find(o => o.value === val)?.label?.en || val
+                                  ? field.options?.find((o: any) => o.value === val)?.label?.en || val
                                   : val}
                               </p>
                             </div>
@@ -324,7 +323,6 @@ export default function CmsApplicationDetails({
                     {workflowDetails.stages.map((stage, idx) => {
                       const isCompleted = idx < currentStageIndex;
                       const isActive = idx === currentStageIndex;
-                      const isStageUpcoming = idx > currentStageIndex;
 
                       return (
                         <div
