@@ -14,11 +14,7 @@
     "selectEndRange": "Select End Range",
     "showButton": "Show",
     "clearButton": "Clear all",
-    "mandatoryBanner": "Fields marked with * are mandatory",
-    "zoneId": "Zone / Node",
-    "selectZone": "Select Zone",
-    "propertyNo": "Property No",
-    "selectProperty": "Select Property"
+    "mandatoryBanner": "Fields marked with * are mandatory"
   },
   "screenSelectionCard": {
     "title": "Screen selection",
@@ -86,11 +82,6 @@
     "bulkFailed": "Bulk operation failed.",
     "clearedFilters": "Cleared all filters.",
     "validationError": "Please fill in all required fields (Ward no, From property, and To property).",
-    "validationWardAndProperty": "Please select a Ward Number and Property Number",
-    "validationWard": "Please select a Ward Number",
-    "validationZone": "Please select a Zone",
-    "validationProperty": "Please Select Property Number",
-    "validationFromToProperty": "Please Select the from property and to property",
     "fetchSuccess": "Properties fetched successfully.",
     "fetchNoResults": "No properties found in the selected range.",
     "fetchFailed": "Failed to load properties.",
@@ -104,27 +95,5 @@
     "errorId": "Error ID: {id}",
     "goHome": "Go to Home",
     "tryAgain": "Try Again"
-  },
-  "scopeSelectionCard": {
-    "title": "Scope Selection",
-    "description": "Choose scope. Only relevant fields appear below.",
-    "options": {
-      "1": {
-        "label": "Zone / Node",
-        "sublabel": "Zone-wise selection"
-      },
-      "2": {
-        "label": "Ward / Sector",
-        "sublabel": "Multi ward selection"
-      },
-      "3": {
-        "label": "Building Wise",
-        "sublabel": "Building level"
-      },
-      "4": {
-        "label": "Property Range",
-        "sublabel": "From-to property range"
-      }
-    }
   }
 }

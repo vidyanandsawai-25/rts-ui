@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef, useTransition, useMemo, useEffect } from "react";
+import { useState, useCallback, useRef, useTransition, useMemo } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } from "@/types/lockunlock.types";
-import { fetchLockUnlockPropertiesByCategoryAction, bulkLockUnlockPropertiesAction, bulkLockUnlockByCategoryAction, fetchLockUnlockPropertiesPagedAction } from "@/app/[locale]/property-tax/lockunlock/action";
+import { fetchLockUnlockPropertiesByCategoryAction, bulkLockUnlockPropertiesAction, fetchLockUnlockPropertiesPagedAction } from "@/app/[locale]/property-tax/lockunlock/action";
 import { getScreenIds } from "@/lib/api/lockunlock/lockunlock.utils";
 import { useLockUnlockColumns } from "./useLockUnlockColumns";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -43,7 +43,7 @@ export function useLockUnlockMaster({
   const toPropertyFromUrl = searchParams.get("toProperty") || "";
   const pageFromUrl = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
   const pageSizeFromUrl = searchParams.get("pageSize") ? Number(searchParams.get("pageSize")) : 10;
-  const searchCategoryFromUrl = searchParams.get("searchCategory") ? Number(searchParams.get("searchCategory")) : 1;
+  const searchCategoryFromUrl = searchParams.get("searchCategory") ? Number(searchParams.get("searchCategory")) : 4;
   const zoneIdFromUrl = searchParams.get("zoneId") || "";
   const propertyNosFromUrl = searchParams.get("propertyNos") ? searchParams.get("propertyNos")!.split(",") : [];
 
@@ -121,8 +121,6 @@ export function useLockUnlockMaster({
           return {
             label: displayValue,
             value: displayValue,
-            propertyNo: p.propertyNo,
-            partitionNo: normalizedPartitionNo,
           };
         })
         .filter((option: { label: string; value: string }) => {
@@ -142,15 +140,6 @@ export function useLockUnlockMaster({
   }, []);
 
 
-
-  // Ensure default searchCategory is reflected in the URL safely after mount
-  useEffect(() => {
-    if (!searchParams.has("searchCategory")) {
-      const url = new URL(window.location.href);
-      url.searchParams.set("searchCategory", "1");
-      window.history.replaceState(null, "", url.toString());
-    }
-  }, [searchParams]);
 
   // Search state for property number filtering (server-side search)
   const searchFromUrl = searchParams.get("search") || "";
@@ -196,8 +185,7 @@ export function useLockUnlockMaster({
       params.delete("fromProperty");
       params.delete("toProperty");
       params.delete("propertyNos");
-      params.delete("pageNumber");
-      params.delete("pageSize");
+      params.delete("page");
       params.delete("search");
       params.delete("show");
       router.push(`${pathname}?${params.toString()}`);
@@ -232,8 +220,7 @@ export function useLockUnlockMaster({
 
       params.delete("fromProperty");
       params.delete("toProperty");
-      params.delete("pageNumber");
-      params.delete("pageSize");
+      params.delete("page");
       params.delete("search");
       params.delete("show");
       router.push(`${pathname}?${params.toString()}`);
@@ -297,10 +284,8 @@ export function useLockUnlockMaster({
     setClientPagination({ pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 1 });
     setPropertySearchTerm("");
 
-    // Preserve the current searchCategory in URL
-    const params = new URLSearchParams();
-    params.set("searchCategory", formData.searchCategory.toString());
-    router.push(`${pathname}?${params.toString()}`);
+    // Clear URL parameters
+    router.push(pathname);
 
     toast.info(t("messages.clearedFilters"));
   };
@@ -336,7 +321,7 @@ export function useLockUnlockMaster({
         }
       }
 
-      const runSearch = async () => {
+      (async () => {
         setIsSearching(true);
         try {
           const { fromProperty, toProperty } = getPropertyQueryRange();
@@ -353,56 +338,16 @@ export function useLockUnlockMaster({
           };
 
           if (formData.searchCategory === 1) {
-            if (!formData.zoneId) throw new Error(t("messages.validationZone"));
+            if (!formData.zoneId) throw new Error("Please select a Zone");
             params.ZoneId = Number(formData.zoneId);
           } else if (formData.searchCategory === 2) {
             if (!formData.wardId) throw new Error("Please select a Ward");
             params.WardId = Number(formData.wardId);
           } else if (formData.searchCategory === 3) {
-            if (!formData.wardId && (!formData.propertyNos || formData.propertyNos.length === 0)) {
-              throw new Error(t("messages.validationWardAndProperty"));
-            }
-            if (!formData.wardId) {
-              throw new Error(t("messages.validationWard"));
-            }
-            if (!formData.propertyNos || formData.propertyNos.length === 0) {
-              throw new Error(t("messages.validationProperty"));
-            }
-            
-            let basePropertyNo = "";
-            const partitions: string[] = [];
-            
-            for (const propStr of formData.propertyNos) {
-              const matchedOption = propertyOptions.find((o) => o.value === propStr);
-              let propNo = "";
-              let partition = "";
-              
-              if (matchedOption) {
-                propNo = matchedOption.propertyNo || "";
-                partition = matchedOption.partitionNo || "";
-              } else {
-                // Fallback if not found in options for some reason
-                const parts = propStr.split("-");
-                propNo = parts[0];
-                partition = parts.length > 1 ? parts.slice(1).join("-") : "";
-              }
-              
-              if (!basePropertyNo) {
-                basePropertyNo = propNo;
-              } else if (basePropertyNo !== propNo) {
-                throw new Error(t("messages.samePropertyPartitionError", { defaultValue: "You can only select partitions of the same property." }));
-              }
-              
-              if (partition) {
-                partitions.push(partition);
-              }
-            }
-
+            if (!formData.wardId) throw new Error("Please select a Ward");
+            if (!formData.propertyNos || formData.propertyNos.length === 0) throw new Error("Please select at least one Property");
             params.WardId = Number(formData.wardId);
-            params.PropertyNo = basePropertyNo;
-            if (partitions.length > 0) {
-              params.PartitionNo = partitions.join(",");
-            }
+            params.Search = formData.propertyNos.join(",");
           } else if (formData.searchCategory === 4) {
             if (!isSearchActive && !formData.wardId && (!formData.fromProperty || !formData.toProperty)) {
               throw new Error(t("messages.validationError"));
@@ -461,60 +406,30 @@ export function useLockUnlockMaster({
         } finally {
           setIsSearching(false);
         }
-      };
-      
-      runSearch();
+      })();
     },
-    [formData, getPropertyQueryRange, propertySearchTerm, t, resetSelectionState, propertyOptions]
+    [propertySearchTerm, formData.wardId, formData.fromProperty, formData.toProperty, getPropertyQueryRange, t, resetSelectionState]
   );
 
   // Show (initial load) and search should reset selection
   const handleShow = useCallback(() => {
     if (formData.searchCategory === 1) {
       if (!formData.zoneId) {
-        toast.error(t("messages.validationZone"));
+        toast.error("Please select a Zone");
         return;
       }
     } else if (formData.searchCategory === 2) {
       if (!formData.wardId) {
-        toast.error(t("messages.validationWard"));
+        toast.error("Please select a Ward");
         return;
       }
     } else if (formData.searchCategory === 3) {
-      if (!formData.wardId && (!formData.propertyNos || formData.propertyNos.length === 0)) {
-        toast.error(t("messages.validationWardAndProperty"));
+      if (!formData.wardId || !formData.propertyNos || formData.propertyNos.length === 0) {
+        toast.error("Please select a Ward and at least one Property");
         return;
-      }
-      if (!formData.wardId) {
-        toast.error(t("messages.validationWard"));
-        return;
-      }
-      if (!formData.propertyNos || formData.propertyNos.length === 0) {
-        toast.error(t("messages.validationProperty"));
-        return;
-      }
-      
-      let basePropertyNo = "";
-      for (const propStr of formData.propertyNos) {
-        const matchedOption = propertyOptions.find((o) => o.value === propStr);
-        let propNo = "";
-        
-        if (matchedOption) {
-          propNo = matchedOption.propertyNo || "";
-        } else {
-          const parts = propStr.split("-");
-          propNo = parts[0];
-        }
-        
-        if (!basePropertyNo) {
-          basePropertyNo = propNo;
-        } else if (basePropertyNo !== propNo) {
-          toast.error(t("messages.samePropertyPartitionError", { defaultValue: "You can only select partitions of the same property." }));
-          return;
-        }
       }
     } else if (formData.searchCategory === 4) {
-      if (!formData.wardId && (!formData.fromProperty || !formData.toProperty)) {
+      if (!formData.wardId || !formData.fromProperty || !formData.toProperty) {
         toast.error(t("messages.validationError"));
         return;
       }
@@ -557,7 +472,7 @@ export function useLockUnlockMaster({
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`);
     });
-  }, [formData, searchParams, pathname, router, t, pagination.pageSize, propertyOptions]);
+  }, [formData, searchParams, pathname, router, t, pagination.pageSize]);
 
   const handleSearchButtonClick = useCallback((termOverride?: unknown) => {
     const termToSearch = typeof termOverride === 'string' ? termOverride : propertySearchTerm;
@@ -803,20 +718,11 @@ export function useLockUnlockMaster({
       : selectedPropertyIds.length;
 
     const title = action === "lock" ? t("messages.bulkLockTitle") : t("messages.bulkUnlockTitle");
-    const description = isScopeZoneOrWard 
-      ? t.rich("messages.bulkLockUnlockConfirmation", {
-          action: action === "lock" ? t("messages.lockButtonText").toLowerCase() : t("messages.unlockButtonText").toLowerCase(),
-          propertyCount,
-          warning: (chunks) => <span className="font-bold text-red-600">{chunks}</span>,
-          highlight: (chunks) => <span className="font-bold text-blue-600">{chunks}</span>
-        }) as unknown as string
-      : t.rich("messages.bulkConfirmDescription", {
-          action: action === "lock" ? t("messages.lockButtonText").toLowerCase() : t("messages.unlockButtonText").toLowerCase(),
-          screenCount: selectedScreenIds.length,
-          propertyCount,
-          warning: (chunks) => <span className="font-bold text-red-600">{chunks}</span>,
-          highlight: (chunks) => <span className="font-bold text-blue-600">{chunks}</span>
-        }) as unknown as string;
+    const description = t("messages.bulkConfirmDescription", {
+      action: action === "lock" ? t("messages.lockButtonText").toLowerCase() : t("messages.unlockButtonText").toLowerCase(),
+      screenCount: selectedScreenIds.length,
+      propertyCount,
+    });
 
     confirm({
       variant: action === "lock" ? "warning" : "info",
@@ -924,7 +830,6 @@ export function useLockUnlockMaster({
     isPending,
     isAllPropertiesSelected,
     excludedPropertyIds,
-    searchCategory: formData.searchCategory,
     onSelectProperty: handleSelectProperty,
     onSelectAllProperties: handleSelectAllProperties,
     onToggleLock: handleToggleLock,

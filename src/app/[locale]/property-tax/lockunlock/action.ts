@@ -7,15 +7,13 @@ import {
   getLockUnlockScreens,
   getLockUnlockProperties,
   getLockUnlockPropertiesByCategory,
-  bulkLockUnlockProperties,
-  bulkLockUnlockPropertiesByCategory
+  bulkLockUnlockProperties
 } from "@/lib/api/lockunlock/lockunlock.service";
 import {
   LockedScreen,
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
   BulkLockUnlockPayload,
-  BulkLockUnlockByCategoryPayload,
   LockUnlockPropertyItem,
 } from "@/types/lockunlock.types";
 
@@ -73,10 +71,8 @@ export async function bulkLockUnlockPropertiesAction(
 
     if (payload.selectAll && payload.filters) {
       const queryParams: LockUnlockPropertiesQueryParams = {
-        SearchCategory: payload.filters.searchCategory ?? 4,
-        ZoneId: payload.filters.zoneId,
+        SearchCategory: 4,
         WardId: payload.filters.wardId,
-        PropertyNo: payload.filters.propertyNo,
         PropertyFrom: payload.filters.fromProperty,
         PropertyTo: payload.filters.toProperty,
         PartitionNo: payload.filters.partitionNo,
@@ -145,36 +141,3 @@ export async function bulkLockUnlockPropertiesAction(
     return { success: false, error: "An unexpected error occurred during bulk operation" };
   }
 }
-
-/**
- * Server Action to bulk lock/unlock properties by category (Zone or Ward) using scope instead of property IDs.
- */
-export async function bulkLockUnlockByCategoryAction(payload: BulkLockUnlockByCategoryPayload) {
-  try {
-    const result = await bulkLockUnlockPropertiesByCategory(payload);
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/lockunlock`, "page");
-    }
-
-    if (result.success === false) {
-      return {
-        success: false,
-        error: result.message || "Failed to Complete Operation",
-      };
-    }
-
-    return {
-      success: true,
-      message: result.message || "Action Completed Successfully",
-    };
-  } catch (error: unknown) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.responseText };
-    }
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred during bulk by category operation" };
-  }
-}

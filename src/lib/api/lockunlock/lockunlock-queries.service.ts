@@ -94,7 +94,6 @@ export async function getLockUnlockPropertiesByCategory(
   if (params.SearchCategory !== undefined) urlParams.append("SearchCategory", params.SearchCategory.toString());
   if (params.ZoneId) urlParams.append("ZoneId", params.ZoneId.toString());
   if (params.WardId) urlParams.append("WardId", params.WardId.toString());
-  if (params.PropertyNo?.trim()) urlParams.append("PropertyNo", params.PropertyNo.trim());
   if (params.PropertyFrom?.trim()) urlParams.append("PropertyFrom", params.PropertyFrom.trim());
   if (params.PropertyTo?.trim()) urlParams.append("PropertyTo", params.PropertyTo.trim());
   if (params.PartitionNo?.trim()) urlParams.append("PartitionNo", params.PartitionNo.trim());

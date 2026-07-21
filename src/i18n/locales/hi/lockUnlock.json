@@ -14,11 +14,7 @@
     "selectEndRange": "अंतिम सीमा चुनें",
     "showButton": "दिखाएं",
     "clearButton": "साफ करें",
-    "mandatoryBanner": "* से चिह्नित फ़ील्ड अनिवार्य हैं",
-    "zoneId": "ज़ोन / नोड",
-    "selectZone": "ज़ोन चुनें",
-    "propertyNo": "संपत्ति क्र.",
-    "selectProperty": "संपत्ति चुनें"
+    "mandatoryBanner": "* से चिह्नित फ़ील्ड अनिवार्य हैं"
   },
   "screenSelectionCard": {
     "title": "स्क्रीन चयन",
@@ -87,11 +83,6 @@
     "bulkFailed": "बल्क ऑपरेशन विफल रहा।",
     "clearedFilters": "सभी फ़िल्टर साफ़ कर दिए गए।",
     "validationError": "कृपया सभी आवश्यक फ़ील्ड भरें (वार्ड क्र., संपत्ति क्र. से और संपत्ति क्र. तक)।",
-    "validationWardAndProperty": "कृपया वार्ड नंबर और संपत्ति नंबर चुनें",
-    "validationWard": "कृपया वार्ड नंबर चुनें",
-    "validationZone": "कृपया ज़ोन चुनें",
-    "validationProperty": "कृपया संपत्ति नंबर चुनें",
-    "validationFromToProperty": "कृपया से संपत्ति और तक संपत्ति चुनें",
     "fetchSuccess": "संपत्तियां सफलतापूर्वक प्राप्त की गईं।",
     "fetchNoResults": "चयनित सीमा में कोई संपत्ति नहीं मिली।",
     "fetchFailed": "संपत्तियां लोड करने में विफल।",
@@ -105,27 +96,5 @@
     "errorId": "त्रुटि आईडी: {id}",
     "goHome": "होम पर जाएं",
     "tryAgain": "पुनः प्रयास करें"
-  },
-  "scopeSelectionCard": {
-    "title": "कार्यक्षेत्र चयन",
-    "description": "कार्यक्षेत्र चुनें। केवल प्रासंगिक फ़ील्ड नीचे दिखाई देंगे।",
-    "options": {
-      "1": {
-        "label": "ज़ोन / नोड",
-        "sublabel": "ज़ोन के अनुसार चयन"
-      },
-      "2": {
-        "label": "वार्ड / सेक्टर",
-        "sublabel": "मल्टी वार्ड चयन"
-      },
-      "3": {
-        "label": "बिल्डिंग अनुसार",
-        "sublabel": "बिल्डिंग स्तर"
-      },
-      "4": {
-        "label": "संपत्ति सीमा",
-        "sublabel": "से-तक संपत्ति सीमा"
-      }
-    }
   }
 }

@@ -3,8 +3,6 @@
 import { MapPin, Grid, Building2, Home } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-import { useTranslations } from "next-intl";
-
 interface ScopeOption {
   id: number;
   label: string;
@@ -12,26 +10,24 @@ interface ScopeOption {
   icon: React.ElementType;
 }
 
+const SCOPE_OPTIONS: ScopeOption[] = [
+  { id: 1, label: "Zone / Node", sublabel: "Zone-wise selection", icon: MapPin },
+  { id: 2, label: "Ward / Sector", sublabel: "Multi ward selection", icon: Grid },
+  { id: 3, label: "Building Wise", sublabel: "Building level", icon: Building2 },
+  { id: 4, label: "Property Range", sublabel: "From-to property range", icon: Home },
+];
+
 interface ScopeSelectionCardProps {
   selectedCategory: number;
   onChange: (categoryId: number) => void;
 }
 
 export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectionCardProps) {
-  const t = useTranslations("lockUnlock.scopeSelectionCard");
-
-  const SCOPE_OPTIONS: ScopeOption[] = [
-    { id: 1, label: t("options.1.label"), sublabel: t("options.1.sublabel"), icon: MapPin },
-    { id: 2, label: t("options.2.label"), sublabel: t("options.2.sublabel"), icon: Grid },
-    { id: 3, label: t("options.3.label"), sublabel: t("options.3.sublabel"), icon: Building2 },
-    { id: 4, label: t("options.4.label"), sublabel: t("options.4.sublabel"), icon: Home },
-  ];
-
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <h3 className="text-lg font-bold text-slate-800">{t("title")}</h3>
-        <p className="text-sm text-slate-500">{t("description")}</p>
+        <h3 className="text-lg font-bold text-slate-800">1. Scope Selection</h3>
+        <p className="text-sm text-slate-500">Choose scope. Only relevant fields appear below.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -44,7 +40,7 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
               key={option.id}
               onClick={() => onChange(option.id)}
               className={cn(
-                "flex items-center gap-2 p-3 rounded-xl border-2 transition-all bg-white relative",
+                "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all bg-white relative",
                 isSelected
                   ? "border-blue-600 ring-2 ring-blue-50"
                   : "border-slate-100 hover:border-slate-300 hover:bg-slate-50"
