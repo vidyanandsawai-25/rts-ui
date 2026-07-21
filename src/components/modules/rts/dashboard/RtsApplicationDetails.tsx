@@ -20,7 +20,7 @@ import { Card, Badge } from "@/components/common";
 import { toast } from "sonner";
 import { pickLangText } from "@/lib/utils/rts/lang";
 import { submitCmsAction } from "@/app/[locale]/rts/actions";
-import type { CmsApplication, CmsOfficer } from "@/lib/mock/rts/cms";
+import type { CmsApplication, CmsOfficer } from "@/types/rts/cms";
 import type { GeneratedDynamicFormSchema } from "@/components/modules/rts/admin/service-builder/types";
 import type { WorkflowDetails, WorkflowStage } from "@/lib/api/rts/rts-workflow.service";
 

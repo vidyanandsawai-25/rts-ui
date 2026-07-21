@@ -9,7 +9,7 @@ import type {
   CmsApplication,
   CmsOfficer,
   CmsTimelineStep
-} from "@/lib/mock/rts/cms";
+} from "@/types/rts/cms";
 
 const DATA_FILE_PATH = path.join(
   process.cwd(),
