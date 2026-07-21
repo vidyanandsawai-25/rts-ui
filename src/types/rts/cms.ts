@@ -5,14 +5,16 @@ export interface CmsDocument {
   url: string;
   uploadedAt: string;
   verified: boolean;
+  label?: string;
+  fileName?: string;
 }
 
 export interface CmsTimelineStep {
-  id: string;
+  id?: string;
   title: string;
   role: string;
   officerName: string;
-  status: "completed" | "active" | "pending";
+  status: "completed" | "active" | "pending" | "current" | string;
   timestamp?: string;
   remarks?: string;
 }
@@ -28,7 +30,7 @@ export interface CmsApplication {
   mobile: string;
   email: string;
   aadhaar: string;
-  status: "Pending" | "Under Review" | "Approved" | "Rejected" | "Returned";
+  status: string;
   currentStage: string;
   assignedOfficerId: string;
   assignedOfficerName: string;
@@ -36,7 +38,10 @@ export interface CmsApplication {
   daysRemaining: number;
   remainingDays: number;
   submittedAt: string;
+  submissionDate?: string;
+  slaDays?: number;
   source?: string;
+  priority?: string;
   fieldValues: Record<string, any>;
   documents: CmsDocument[];
   timeline: CmsTimelineStep[];
@@ -49,4 +54,5 @@ export interface CmsOfficer {
   designation?: string;
   departmentId: string;
   departmentName?: string;
+  activeCasesCount?: number;
 }
