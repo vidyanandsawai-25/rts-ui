@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Settings, Clock, Info, Download, X } from 'lucide-react';
-import { Tabs, TabList, Tab, TabPanel } from '@/components/common';
+import { Tabs, TabList, Tab, TabPanel, Badge } from '@/components/common';
 import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
@@ -187,12 +187,14 @@ export function ReportsWorkspace({
             {workspaceCopy.tabs.generateReport}
           </Tab>
           <Tab value="history" icon={Clock}>
-            <span className="relative inline-flex items-center">
+            <Badge
+              variant={hasActiveJobs ? 'warning' : 'secondary'}
+              size="sm"
+              dot={hasActiveJobs}
+              className={hasActiveJobs ? 'animate-pulse' : ''}
+            >
               {workspaceCopy.tabs.myReports}
-              {hasActiveJobs && (
-                <span className="absolute -top-1.5 -right-3 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
-              )}
-            </span>
+            </Badge>
           </Tab>
         </TabList>
 
@@ -290,14 +292,14 @@ export function ReportsWorkspace({
                 }}
               >
                 <Download className="h-4 w-4" />
-                <span>{workspaceCopy.confirm.btnGo}</span>
+                <Badge variant="default" size="sm">{workspaceCopy.confirm.btnGo}</Badge>
               </button>
               <button
                 type="button"
                 className="inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300 focus:ring-gray-300"
                 onClick={() => setQueuedRequestId(null)}
               >
-                <span>{workspaceCopy.confirm.btnClose}</span>
+                <Badge variant="secondary" size="sm">{workspaceCopy.confirm.btnClose}</Badge>
               </button>
             </div>
           </div>
