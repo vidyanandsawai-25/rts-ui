@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
   X,
   ZoomIn,
@@ -50,6 +56,15 @@ const DEFAULT_ZOOM_STEP = 0.25;
 const ROTATION_STEP = 90;
 
 /* =========================
+   HELPERS
+========================= */
+
+/** Clamp a value between min and max */
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/* =========================
    COMPONENT
 ========================= */
 
@@ -69,49 +84,120 @@ export function ImageViewer({
 }: ImageViewerProps): React.ReactElement | null {
   const t = useTranslations("common");
 
-  // State
+  // ─── State ───────────────────────────────────────────────────────────────────
+
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const prevIndexRef = useRef(currentIndex);
 
-  // Refs
+  /**
+   * Track loaded state PER IMAGE SOURCE so switching back to a previously
+   * loaded image does not re-show the spinner, and opening the viewer always
+   * correctly reflects load state regardless of which index was last shown.
+   */
+  const [loadedSrcs, setLoadedSrcs] = useState<Set<string>>(new Set());
+  const [errorSrcs, setErrorSrcs] = useState<Set<string>>(new Set());
+
+  // ─── Refs ────────────────────────────────────────────────────────────────────
+
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   const lastActiveElement = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
 
-  // Update onClose ref
+  // Pinch-to-zoom refs (touch)
+  const pinchStartDistanceRef = useRef<number | null>(null);
+  const pinchStartZoomRef = useRef<number>(1);
+
+  // ─── Keep onClose ref current ─────────────────────────────────────────────────
+
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
 
+  // ─── Derived values ───────────────────────────────────────────────────────────
+
+  const currentImage = images[currentIndex] ?? null;
+  const hasMultipleImages = images.length > 1;
+  const isImageLoaded = currentImage ? loadedSrcs.has(currentImage.src) : false;
+  const isImageError = currentImage ? errorSrcs.has(currentImage.src) : false;
+
   /* =========================
-     HANDLERS
+     RESET TRANSFORM
+  ========================= */
+
+  const resetTransform = useCallback(() => {
+    setZoom(1);
+    setRotation(0);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  /* =========================
+     OPEN / CLOSE EFFECT
+     - On open  → sync initialIndex + reset transform
+     - On close → clear loaded/error cache for fresh loads on reopen
+     Merged into one effect to satisfy react-hooks/set-state-in-effect:
+     setState is gated behind transition booleans, not called on every run.
+  ========================= */
+
+  const prevOpenRef = useRef(false);
+
+  useEffect(() => {
+    const justOpened = open && !prevOpenRef.current;
+    const justClosed = !open && prevOpenRef.current;
+    prevOpenRef.current = open;
+
+    if (justOpened) {
+      setCurrentIndex(initialIndex);
+      resetTransform();
+    }
+
+    if (justClosed) {
+      setLoadedSrcs(new Set());
+      setErrorSrcs(new Set());
+    }
+  }, [open, initialIndex, resetTransform]);
+
+  // Reset transform whenever the displayed image index changes
+  const prevIndexRef = useRef(currentIndex);
+  useEffect(() => {
+    if (prevIndexRef.current !== currentIndex) {
+      prevIndexRef.current = currentIndex;
+      resetTransform();
+    }
+  }, [currentIndex, resetTransform]);
+
+  /* =========================
+     ZOOM HANDLERS
   ========================= */
 
   const handleZoomIn = useCallback(() => {
-    setZoom((prev) => Math.min(prev + zoomStep, maxZoom));
-  }, [zoomStep, maxZoom]);
+    setZoom((prev) => clamp(prev + zoomStep, minZoom, maxZoom));
+  }, [zoomStep, minZoom, maxZoom]);
 
   const handleZoomOut = useCallback(() => {
-    setZoom((prev) => Math.max(prev - zoomStep, minZoom));
-  }, [zoomStep, minZoom]);
+    setZoom((prev) => clamp(prev - zoomStep, minZoom, maxZoom));
+  }, [zoomStep, minZoom, maxZoom]);
+
+  const handleReset = useCallback(() => {
+    resetTransform();
+  }, [resetTransform]);
+
+  /* =========================
+     ROTATION
+  ========================= */
 
   const handleRotate = useCallback(() => {
     setRotation((prev) => (prev + ROTATION_STEP) % 360);
   }, []);
 
-  const handleReset = useCallback(() => {
-    setZoom(1);
-    setRotation(0);
-    setPosition({ x: 0, y: 0 });
-  }, []);
+  /* =========================
+     NAVIGATION
+  ========================= */
 
   const handlePrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -121,15 +207,15 @@ export function ImageViewer({
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   }, [images.length]);
 
-  const handleDownload = useCallback(async () => {
-    const currentImage = images[currentIndex];
-    if (!currentImage) return;
+  /* =========================
+     DOWNLOAD
+  ========================= */
 
+  const handleDownload = useCallback(async () => {
+    if (!currentImage) return;
     try {
       const response = await fetch(currentImage.src);
-      if (!response.ok) {
-        throw new Error(`Failed to download image (HTTP ${response.status})`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -140,31 +226,71 @@ export function ImageViewer({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch {
-      // Silent fail - user will see download not working
+      // Silent fail — user observes no download
     }
-  }, [images, currentIndex]);
+  }, [currentImage, currentIndex]);
+
+  /* =========================
+     FIT TO SCREEN
+  ========================= */
 
   const handleFitToScreen = useCallback(() => {
-    if (!imageRef.current || !containerRef.current) return;
-
-    const container = containerRef.current;
     const image = imageRef.current;
+    const container = containerRef.current;
 
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    const imageWidth = image.naturalWidth;
-    const imageHeight = image.naturalHeight;
+    // Guard against unloaded image (naturalWidth/Height are 0)
+    if (!image || !container || !image.naturalWidth || !image.naturalHeight) {
+      return;
+    }
 
-    const scaleX = containerWidth / imageWidth;
-    const scaleY = containerHeight / imageHeight;
-    const scale = Math.min(scaleX, scaleY, 1);
+    const scaleX = container.clientWidth / image.naturalWidth;
+    const scaleY = container.clientHeight / image.naturalHeight;
+    const scale = clamp(Math.min(scaleX, scaleY), minZoom, maxZoom);
 
     setZoom(scale);
     setPosition({ x: 0, y: 0 });
-  }, []);
+  }, [minZoom, maxZoom]);
 
   /* =========================
-     DRAG HANDLERS
+     CURSOR
+  ========================= */
+
+  const getCursor = useCallback((): string => {
+    if (isDragging) return "grabbing";
+    if (zoom > 1) return "grab";
+    if (zoom >= maxZoom) return "zoom-out";
+    return "zoom-in";
+  }, [isDragging, zoom, maxZoom]);
+
+  /* =========================
+     DRAG BOUNDARY CLAMPING
+  ========================= */
+
+  const getMaxDragOffset = useCallback((): { maxX: number; maxY: number } => {
+    const image = imageRef.current;
+    const container = containerRef.current;
+    if (!image || !container) return { maxX: 0, maxY: 0 };
+
+    const scaledW = (image.naturalWidth || image.clientWidth) * zoom;
+    const scaledH = (image.naturalHeight || image.clientHeight) * zoom;
+    const maxX = Math.max(0, (scaledW - container.clientWidth) / 2);
+    const maxY = Math.max(0, (scaledH - container.clientHeight) / 2);
+    return { maxX, maxY };
+  }, [zoom]);
+
+  const clampPosition = useCallback(
+    (x: number, y: number): { x: number; y: number } => {
+      const { maxX, maxY } = getMaxDragOffset();
+      return {
+        x: clamp(x, -maxX, maxX),
+        y: clamp(y, -maxY, maxY),
+      };
+    },
+    [getMaxDragOffset]
+  );
+
+  /* =========================
+     DRAG — MOUSE
   ========================= */
 
   const handleMouseDown = useCallback(
@@ -184,29 +310,44 @@ export function ImageViewer({
     (e: React.MouseEvent) => {
       if (!isDragging) return;
       e.preventDefault();
-      setPosition({
+      const raw = {
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y,
-      });
+      };
+      setPosition(clampPosition(raw.x, raw.y));
     },
-    [isDragging, dragStart]
+    [isDragging, dragStart, clampPosition]
   );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
-  const handleMouseLeave = useCallback(() => {
-    setIsDragging(false);
+  const handleMouseLeave = useCallback((e: React.MouseEvent) => {
+    // Only stop dragging when leaving the outer container itself
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
   }, []);
 
   /* =========================
-     TOUCH HANDLERS
+     DRAG — TOUCH + PINCH-TO-ZOOM
   ========================= */
+
+  const getDistance = (touches: React.TouchList): number => {
+    const [a, b] = [touches[0], touches[1]];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  };
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      if (zoom <= 1 || e.touches.length !== 1) return;
+      if (e.touches.length === 2) {
+        pinchStartDistanceRef.current = getDistance(e.touches);
+        pinchStartZoomRef.current = zoom;
+        setIsDragging(false);
+        return;
+      }
+      if (e.touches.length !== 1 || zoom <= 1) return;
       const touch = e.touches[0];
       setIsDragging(true);
       setDragStart({
@@ -219,111 +360,175 @@ export function ImageViewer({
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
+      // Pinch-to-zoom
+      if (e.touches.length === 2 && pinchStartDistanceRef.current !== null) {
+        const currentDistance = getDistance(e.touches);
+        const ratio = currentDistance / pinchStartDistanceRef.current;
+        setZoom(clamp(pinchStartZoomRef.current * ratio, minZoom, maxZoom));
+        return;
+      }
+      // Single-touch drag
       if (!isDragging || e.touches.length !== 1) return;
       const touch = e.touches[0];
-      setPosition({
+      const raw = {
         x: touch.clientX - dragStart.x,
         y: touch.clientY - dragStart.y,
-      });
+      };
+      setPosition(clampPosition(raw.x, raw.y));
     },
-    [isDragging, dragStart]
+    [isDragging, dragStart, clampPosition, minZoom, maxZoom]
   );
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
+    pinchStartDistanceRef.current = null;
   }, []);
 
   /* =========================
-     WHEEL HANDLER (ZOOM)
+     WHEEL ZOOM
+     Attached via useEffect with { passive: false } so preventDefault works.
+     Targets viewerRef so the entire modal responds to scroll, not just the
+     image area.
   ========================= */
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
-      if (!showZoom) return;
+  useEffect(() => {
+    if (!open || !showZoom) return;
+
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+
+    const onWheel = (e: WheelEvent): void => {
       e.preventDefault();
-      
+      e.stopPropagation();
       const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
-      setZoom((prev) => {
-        const newZoom = prev + delta;
-        return Math.max(minZoom, Math.min(maxZoom, newZoom));
-      });
-    },
-    [showZoom, zoomStep, minZoom, maxZoom]
+      setZoom((prev) => clamp(prev + delta, minZoom, maxZoom));
+    };
+
+    viewer.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewer.removeEventListener("wheel", onWheel);
+  }, [open, showZoom, zoomStep, minZoom, maxZoom]);
+
+  /* =========================
+     BODY SCROLL LOCK
+  ========================= */
+
+  useEffect(() => {
+    if (!open || !currentImage) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open, currentImage]);
+
+  /* =========================
+     FOCUS TRAP + KEYBOARD SHORTCUTS
+     Single unified keydown handler — runs only on open/close,
+     NOT on every navigation (currentIndex intentionally excluded).
+  ========================= */
+
+  // Keep latest shortcut handlers in a ref so the keydown closure
+  // always calls the current version without re-registering the listener.
+  const shortcutHandlers = useMemo(
+    () => ({
+      showNavigation,
+      showZoom,
+      showRotate,
+      imagesLength: images.length,
+      handlePrevious,
+      handleNext,
+      handleZoomIn,
+      handleZoomOut,
+      handleRotate,
+      handleReset,
+    }),
+    [
+      showNavigation,
+      showZoom,
+      showRotate,
+      images.length,
+      handlePrevious,
+      handleNext,
+      handleZoomIn,
+      handleZoomOut,
+      handleRotate,
+      handleReset,
+    ]
   );
 
-  // Reset state when image changes
+  const shortcutHandlersRef = useRef(shortcutHandlers);
   useEffect(() => {
-    if (prevIndexRef.current !== currentIndex) {
-      prevIndexRef.current = currentIndex;
-      setZoom(1);
-      setRotation(0);
-      setPosition({ x: 0, y: 0 });
-      setIsImageLoaded(false);
-    }
-  }, [currentIndex]);
+    shortcutHandlersRef.current = shortcutHandlers;
+  }, [shortcutHandlers]);
 
-  // Update initial index when opened
   useEffect(() => {
-    if (open && currentIndex !== initialIndex) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentIndex(initialIndex);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialIndex]);
-
-  // Prevent body scroll when modal is open and has a valid image
-  useEffect(() => {
-    const hasImage = images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length;
-    if (!open || !hasImage) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open, images, currentIndex]);
-
-  // Focus trapping and restoration
-  useEffect(() => {
-    const hasImage = images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length;
-    if (!open || !hasImage) return;
+    if (!open || !currentImage) return;
 
     lastActiveElement.current = document.activeElement as HTMLElement;
 
     const viewer = viewerRef.current;
     if (!viewer) return;
 
-    const focusableSelectors =
-      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+    const FOCUSABLE =
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-    // Wait a brief tick for the DOM to render and focus elements to be available
     const focusTimeout = setTimeout(() => {
-      const focusableElements = Array.from(
-        viewer.querySelectorAll<HTMLElement>(focusableSelectors)
-      );
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-      }
+      const els = Array.from(viewer.querySelectorAll<HTMLElement>(FOCUSABLE));
+      els[0]?.focus();
     }, 0);
 
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === "Tab") {
-        const focusableElements = Array.from(
-          viewer.querySelectorAll<HTMLElement>(focusableSelectors)
-        );
-        if (focusableElements.length === 0) return;
+      const handlers = shortcutHandlersRef.current;
 
-        const firstEl = focusableElements[0];
-        const lastEl = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey && document.activeElement === firstEl) {
-          e.preventDefault();
-          lastEl.focus();
-        } else if (!e.shiftKey && document.activeElement === lastEl) {
-          e.preventDefault();
-          firstEl.focus();
+      switch (e.key) {
+        // ── Focus trap ──────────────────────────────────────────
+        case "Tab": {
+          const els = Array.from(
+            viewer.querySelectorAll<HTMLElement>(FOCUSABLE)
+          );
+          if (els.length === 0) return;
+          const first = els[0];
+          const last = els[els.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+          break;
         }
+        // ── Shortcuts ───────────────────────────────────────────
+        case "Escape":
+          onCloseRef.current();
+          break;
+        case "ArrowLeft":
+          if (handlers.showNavigation && handlers.imagesLength > 1) {
+            handlers.handlePrevious();
+          }
+          break;
+        case "ArrowRight":
+          if (handlers.showNavigation && handlers.imagesLength > 1) {
+            handlers.handleNext();
+          }
+          break;
+        case "+":
+        case "=":
+          if (handlers.showZoom) handlers.handleZoomIn();
+          break;
+        case "-":
+        case "_":
+          if (handlers.showZoom) handlers.handleZoomOut();
+          break;
+        case "r":
+        case "R":
+          if (handlers.showRotate) handlers.handleRotate();
+          break;
+        case "0":
+          handlers.handleReset();
+          break;
+        default:
+          break;
       }
     };
 
@@ -334,71 +539,36 @@ export function ImageViewer({
       document.removeEventListener("keydown", handleKeyDown);
       lastActiveElement.current?.focus();
     };
-  }, [open, images, currentIndex]);
+    // currentIndex intentionally excluded — focus trap must not
+    // re-mount on every navigation keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const hasImage = images && images.length > 0 && currentIndex >= 0 && currentIndex < images.length;
-    if (!open || !hasImage) return;
+  /* =========================
+     IMAGE LOAD / ERROR HANDLERS
+  ========================= */
 
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      switch (e.key) {
-        case "Escape":
-          onCloseRef.current();
-          break;
-        case "ArrowLeft":
-          if (showNavigation && images.length > 1) {
-            handlePrevious();
-          }
-          break;
-        case "ArrowRight":
-          if (showNavigation && images.length > 1) {
-            handleNext();
-          }
-          break;
-        case "+":
-        case "=":
-          if (showZoom) {
-            handleZoomIn();
-          }
-          break;
-        case "-":
-        case "_":
-          if (showZoom) {
-            handleZoomOut();
-          }
-          break;
-        case "r":
-        case "R":
-          if (showRotate) {
-            handleRotate();
-          }
-          break;
-        case "0":
-          handleReset();
-          break;
-        default:
-          break;
-      }
-    };
+  const handleImageLoad = useCallback(() => {
+    if (!currentImage) return;
+    setLoadedSrcs((prev) => new Set(prev).add(currentImage.src));
+  }, [currentImage]);
 
-    document.addEventListener("keydown", handleKeyDown);
+  const handleImageError = useCallback(() => {
+    if (!currentImage) return;
+    // Mark as error AND loaded so the spinner hides
+    setErrorSrcs((prev) => new Set(prev).add(currentImage.src));
+    setLoadedSrcs((prev) => new Set(prev).add(currentImage.src));
+  }, [currentImage]);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open, showZoom, showRotate, showNavigation, images, currentIndex, handleZoomIn, handleZoomOut, handleRotate, handleReset, handlePrevious, handleNext]);
+  /* =========================
+     RENDER GUARD
+  ========================= */
+
+  if (!open || !currentImage) return null;
 
   /* =========================
      RENDER
   ========================= */
-
-  if (!open) return null;
-
-  const currentImage = images[currentIndex];
-  if (!currentImage) return null;
-
-  const hasMultipleImages = images.length > 1;
 
   return (
     <div
@@ -412,18 +582,21 @@ export function ImageViewer({
       aria-label={t("imageViewer.title")}
       data-testid="image-viewer"
     >
-      {/* Backdrop */}
+      {/* ── Backdrop ──────────────────────────────────────────────────── */}
       <div
-        className="absolute inset-0 bg-black/55 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-black/55 backdrop-blur-sm"
         onClick={() => onCloseRef.current()}
+        aria-hidden="true"
         data-testid="image-viewer-backdrop"
       />
 
-      {/* Main Container */}
+      {/* ── Shell ─────────────────────────────────────────────────────── */}
       <div className="relative w-full h-full flex flex-col">
-        {/* Header */}
+
+        {/* ── Header / Toolbar ──────────────────────────────────────────── */}
         <div className="relative z-10 flex items-center justify-between px-4 py-3 bg-black/90">
-          <div className="flex-1">
+          {/* Title + counter */}
+          <div className="flex-1 min-w-0 pr-4">
             {currentImage.title && (
               <h2 className="text-white font-semibold text-lg truncate">
                 {currentImage.title}
@@ -436,8 +609,8 @@ export function ImageViewer({
             )}
           </div>
 
-          {/* Toolbar */}
-          <div className="flex items-center gap-2">
+          {/* Controls */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {showZoom && (
               <>
                 <button
@@ -452,9 +625,16 @@ export function ImageViewer({
                 >
                   <ZoomOut className="w-5 h-5" />
                 </button>
-                <span className="text-white text-sm min-w-[4rem] text-center" data-testid="zoom-level">
+
+                <span
+                  className="text-white text-sm min-w-[4rem] text-center tabular-nums"
+                  aria-live="polite"
+                  aria-label={`${t("imageViewer.zoomLevel")} ${Math.round(zoom * 100)}%`}
+                  data-testid="zoom-level"
+                >
                   {Math.round(zoom * 100)}%
                 </span>
+
                 <button
                   onClick={handleZoomIn}
                   disabled={zoom >= maxZoom}
@@ -521,10 +701,10 @@ export function ImageViewer({
           </div>
         </div>
 
-        {/* Image Container */}
+        {/* ── Image Container ───────────────────────────────────────────── */}
         <div
           ref={containerRef}
-          className="relative flex-1 flex items-center justify-center overflow-hidden"
+          className="relative flex-1 flex items-center justify-center overflow-hidden select-none"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -532,40 +712,63 @@ export function ImageViewer({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onWheel={handleWheel}
-          style={{
-            cursor: zoom > 1 ? (isDragging ? "grabbing" : "grab") : "default",
-          }}
+          style={{ cursor: getCursor() }}
           data-testid="image-container"
         >
-          {!isImageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
+          {/* Spinner */}
+          {!isImageLoaded && !isImageError && (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              aria-label={t("imageViewer.loading")}
+              role="status"
+            >
               <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Error state */}
+          {isImageError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/60">
+              <span
+                className="text-4xl"
+                role="img"
+                aria-hidden="true"
+                aria-label={t("imageViewer.errorIcon")}
+              >
+                {"\u26A0\uFE0F"}
+              </span>
+              <p className="text-sm">{t("imageViewer.loadError")}</p>
             </div>
           )}
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             ref={imageRef}
+            key={currentImage.src}
             src={currentImage.src}
-            alt={currentImage.alt || currentImage.title || t("imageViewer.image")}
+            alt={
+              currentImage.alt ||
+              currentImage.title ||
+              t("imageViewer.image")
+            }
             className={cn(
-              "max-w-none transition-opacity duration-300",
-              isImageLoaded ? "opacity-100" : "opacity-0"
+              "max-w-none",
+              // Only apply transition when not dragging to avoid snap/lag
+              !isDragging && "transition-transform duration-200 ease-out",
+              isImageLoaded && !isImageError ? "opacity-100" : "opacity-0"
             )}
             style={{
               transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
               transformOrigin: "center",
-              transition: isDragging ? "none" : "transform 0.2s ease-out",
             }}
-            onLoad={() => setIsImageLoaded(true)}
-            onError={() => setIsImageLoaded(true)}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
             draggable={false}
             data-testid="viewer-image"
           />
         </div>
 
-        {/* Navigation Arrows */}
+        {/* ── Navigation Arrows ─────────────────────────────────────────── */}
         {showNavigation && hasMultipleImages && (
           <>
             <button
@@ -593,8 +796,11 @@ export function ImageViewer({
           </>
         )}
 
-        {/* Keyboard Shortcuts Help */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black text-white/90 text-xs px-4 py-2 rounded-lg">
+        {/* ── Keyboard Hint ─────────────────────────────────────────────── */}
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black/70 text-white/80 text-xs px-4 py-2 rounded-lg pointer-events-none select-none"
+          aria-hidden="true"
+        >
           <span className="hidden sm:inline">
             {t("imageViewer.keyboardShortcuts")}
           </span>

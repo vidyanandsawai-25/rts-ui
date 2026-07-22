@@ -30,6 +30,8 @@ export interface EffectState {
   isPercentage: boolean;
   multiplierField?: string;
   overrideRate?: number | string;
+  overrideRateLabel?: string;
+  parameterCode?: string;
 }
 
 export interface DryRunEffect {

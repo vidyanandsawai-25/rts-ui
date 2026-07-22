@@ -45,6 +45,7 @@ interface UseRateMasterFormStateProps {
     pageSize: number;
   };
   initialExistingRatesCheck?: boolean;
+  isOpenPlot?: boolean;
 }
 
 export function useRateMasterFormState({
@@ -73,6 +74,7 @@ export function useRateMasterFormState({
   showMultipliersSection,
   paginatedZonesData,
   initialExistingRatesCheck,
+  isOpenPlot = false,
 }: UseRateMasterFormStateProps) {
   const {
     matrixPageNumber,
@@ -91,9 +93,9 @@ export function useRateMasterFormState({
     isCheckingRates,
     setIsCheckingRates,
     allFiltersSelected,
-  } = useRateValidation({ selectedZone, selectedUseGroup, assessmentYear, initialExistingRatesCheck });
+  } = useRateValidation({ selectedZone, selectedUseGroup, assessmentYear, initialExistingRatesCheck, isOpenPlot });
 
-  const shouldShowMatrix = (!!editData || !!bulkEditData || (mode === 'add' && !!filterValues?.zone && !!filterValues?.useGroup));
+  const shouldShowMatrix = (!!editData || !!bulkEditData || (mode === 'add' && !isOpenPlot && !!filterValues?.zone && !!filterValues?.useGroup));
   const [showMatrix, setShowMatrix] = useState(shouldShowMatrix);
   const [allZoneEdits, setAllZoneEdits] = useState<Record<string, Record<string, number>>>({});
   const allZoneEditsInitializedRef = useRef(false);
@@ -143,6 +145,7 @@ export function useRateMasterFormState({
     setRateFrequency,
     setAllZoneEdits,
     allZoneEditsInitializedRef,
+    isOpenPlot,
   });
 
   useFormInitialization({

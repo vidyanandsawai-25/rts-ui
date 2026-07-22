@@ -81,4 +81,5 @@ export const LEGACY_TYPE_FILTER_VALUES: Record<string, TypeFilterOption> = {
   "Hearing and Appeals": "hearingAndAppeal",
   "Bills Distribution": "billDistribution",
   "Bill Generation": "billGeneration",
+  "Bill Recovery": "billGeneration",
 };

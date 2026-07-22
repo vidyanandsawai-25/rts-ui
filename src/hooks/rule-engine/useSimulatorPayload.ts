@@ -24,14 +24,28 @@ export function useSimulatorPayload(rule: RuleItem) {
 
   const [inputs, setInputs] = React.useState<InputRow[]>(() => {
     const extracted = extractRuleParameters(rule);
-    let effectParam = 'Rate';
+    const effectParamSet = new Set<string>();
     try {
       const parsed = JSON.parse(rule.effectJson);
-      if (parsed?.parameterCode) effectParam = parsed.parameterCode.replace('input.', '').trim();
+      const items = Array.isArray(parsed) ? parsed : parsed ? [parsed] : [];
+      items.forEach((eff: { parameterCode?: string; overrideRateLabel?: string }) => {
+        let code = eff.parameterCode || eff.overrideRateLabel || '';
+        if (code) {
+          if (code.includes('-')) code = code.split('-')[0].trim();
+          else if (code.includes('(')) code = code.split('(')[0].trim();
+          code = code.replace('input.', '').trim();
+          if (code && !/^\d+$/.test(code)) {
+            effectParamSet.add(code.toLowerCase());
+            if (!extracted.some((e) => e.toLowerCase() === code.toLowerCase())) {
+              extracted.push(code);
+            }
+          }
+        }
+      });
     } catch { /* ignore */ }
-    if (effectParam && !extracted.includes(effectParam)) extracted.push(effectParam);
-    if (!extracted.includes('Rate') && !extracted.includes('BaseRate')) extracted.push('Rate');
-    const rows = extracted.map(field => ({ key: field, value: '', isExtracted: true }));
+    const rows = extracted.map(field => {
+      return { key: field, value: '', isExtracted: true };
+    });
     return rows.length === 0 ? [{ key: '', value: '', isExtracted: false }] : rows;
   });
 
@@ -85,8 +99,6 @@ export function useSimulatorPayload(rule: RuleItem) {
             rows.push({ key: original, value: '', isExtracted: true });
           }
         });
-        if (!rows.some(r => r.key.toLowerCase() === 'rate'))
-          rows.push({ key: 'Rate', value: '1000', isExtracted: true });
         setInputs(rows);
       })
       .catch(err => console.error('Failed to fetch scope fields:', err));

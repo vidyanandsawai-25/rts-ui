@@ -83,6 +83,7 @@ export interface RoleMasterData {
   roleCode: string;
   roleName: string;
   isActive: boolean;
+  departmentId?: number;
 }
 
 export interface ScreenAccessPermissionData {

@@ -8,7 +8,8 @@ export function filterTableData(
   selectedZone: string,
   selectedYear: string,
   selectedUseGroup: string | undefined,
-  isPaginationEnabled: boolean
+  isPaginationEnabled: boolean,
+  isOpenPlot: boolean = false
 ): IRateMaster[] {
   if (isPaginationEnabled) {
     return rateMasterData;
@@ -17,7 +18,7 @@ export function filterTableData(
     // Use rateSection if present, fallback to zoneSection for zone filtering
     if (selectedZone !== "ALL" && (row.rateSection ?? row.zoneSection) !== selectedZone) return false;
     if (selectedYear !== "ALL" && row.assessmentYear !== selectedYear) return false;
-    if (selectedUseGroup !== "ALL" && row.useGroup !== selectedUseGroup) return false;
+    if (!isOpenPlot && selectedUseGroup !== "ALL" && row.useGroup !== selectedUseGroup) return false;
     return true;
   });
 }
@@ -54,6 +55,7 @@ export function buildRateColumns(
   rateCategories: (string | RateCategory)[],
   singleColorClassHeader: string,
   tCommon: ReturnType<typeof import("next-intl").useTranslations>,
+  t: ReturnType<typeof import("next-intl").useTranslations>,
   rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
 ): MatrixColumn[] {
   const seenCodes = new Set<string>();
@@ -65,16 +67,37 @@ export function buildRateColumns(
       const normalizedCode = catCode.trim().toUpperCase();
       if (seenCodes.has(normalizedCode)) return null;
       seenCodes.add(normalizedCode);
-      return {
+      const associated = typeof cat !== 'string' ? cat.associatedUseTypes : undefined;
+      const hasMultiple = associated && associated.length > 1;
+      const displayCode = hasMultiple ? `${normalizedCode} (+${associated.length - 1})` : normalizedCode;
+
+      const tooltipContent = hasMultiple ? (
+        <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">
+          <div className="font-bold border-b border-blue-200/50 pb-1 mb-1 text-white">
+            {t('tooltips.associatedTypesOfUse')}
+          </div>
+          <div className="space-y-1 mt-1">
+            {associated.map((u, i) => (
+              <div key={i} className="flex gap-1 items-start text-white">
+                <span className="font-bold shrink-0">• {u.code}:</span>
+                <span className="text-blue-50">{u.description}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : description;
+
+      const col: MatrixColumn = {
         id: catCode,
         label: (
           <span className={`inline-block font-bold rounded-lg px-2 py-0.5 ${singleColorClassHeader}`}>
-            {normalizedCode} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
+            {displayCode} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
           </span>
-        ) as React.ReactNode,
-        tooltip: description,
+        ),
+        tooltip: tooltipContent as unknown as string,
         headerClassName: `${singleColorClassHeader} font-bold text-xs text-center rounded-lg`
-      } as MatrixColumn;
+      };
+      return col;
     })
     .filter((col): col is MatrixColumn => col !== null);
 }

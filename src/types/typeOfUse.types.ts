@@ -18,6 +18,7 @@ export interface UseGroup {
   groupName: string;
   groupIcon: string;
   isActive: boolean;
+  isOpenPlot?: boolean;
   createdDate?: string;
   updatedDate?: string | null;
   // UI-only computed field

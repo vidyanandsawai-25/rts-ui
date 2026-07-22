@@ -42,17 +42,17 @@ export function handleTemplateDownload(params: TemplateDownloadParams) {
     return;
   }
   if (!allZones || !Array.isArray(allZones)) {
-    toast.error('Zones data not available for template.');
+    toast.error(t('messages.validationNoRatesAvailable'));
     return;
   }
-  
+
   try {
     const csvContent = generateCsvTemplate(allZones, rateCategories, rateUnit);
     const filename = `rate-master-template-${selectedZone}-${selectedUseGroup}.csv`;
     downloadFile(csvContent, filename);
-    toast.success('Template downloaded successfully!');
+    toast.success(t('messages.templateDownloadedSuccess'));
   } catch (_error) {
-    toast.error('Failed to download template');
+    toast.error(t('messages.validationDownloadTemplateFailed'));
   }
 }
 
@@ -88,15 +88,15 @@ export function handleFileUpload(
     try {
       const text = e.target?.result as string;
       const { zoneEdits, importedRateCount } = parseCsvContent(text, allZones, rateCategories);
-      
+
       const newEdits: Record<string, Record<string, number>> = { ...allZoneEdits, ...zoneEdits };
       setAllZoneEdits(newEdits);
 
       const updatedMatrix = applyImportedEditsToMatrix(matrixData, zoneEdits);
       setMatrixData(updatedMatrix);
-      
+
       toast.success(t('messages.importedRecordsSuccess', { count: importedRateCount }));
-      
+
       if (!showMatrix) {
         setShowMatrix(true);
       }
@@ -114,7 +114,7 @@ export function handleFileUpload(
   };
 
   reader.readAsText(file);
-  
+
   if (fileInputRef.current) {
     fileInputRef.current.value = '';
   }

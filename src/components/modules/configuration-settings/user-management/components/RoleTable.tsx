@@ -1,4 +1,4 @@
-import { Shield, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Shield, Edit2, Trash2, Loader2, Building2 } from 'lucide-react';
 import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { Role, RoleTableProps } from '@/types/user-management';
@@ -17,9 +17,24 @@ export function RoleTable({
 
   const columns = [
     {
+      key: 'departmentName',
+      label: t('form.departments') || 'Department',
+      width: '35%',
+      render: (value: unknown, row: Role) => (
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded shadow-sm">
+            <Building2 className="w-4 h-4 text-indigo-600" />
+          </div>
+          <span className="text-sm font-medium text-slate-700">
+            {(row.departmentName as string) || (value as string) || '-'}
+          </span>
+        </div>
+      ),
+    },
+    {
       key: 'name',
       label: t('table.role'),
-      width: '45%',
+      width: '35%',
       render: (value: unknown) => (
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-gradient-to-br from-primary/10 to-primary/20 rounded shadow-sm">
