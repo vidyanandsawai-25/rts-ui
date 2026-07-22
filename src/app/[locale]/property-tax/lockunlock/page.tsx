@@ -76,7 +76,7 @@ export default async function Page({
   const show = showParam === 'true';
 
   const searchParam = Array.isArray(params?.search) ? params?.search[0] : params?.search;
-  const pageParam = Array.isArray(params?.page) ? params?.page[0] : params?.page;
+  const pageParam = Array.isArray(params?.pageNumber) ? params?.pageNumber[0] : params?.pageNumber;
   const pageSizeParam = Array.isArray(params?.pageSize) ? params?.pageSize[0] : params?.pageSize;
   const searchCategoryParam = Array.isArray(params?.searchCategory) ? params?.searchCategory[0] : params?.searchCategory;
   const zoneIdParam = Array.isArray(params?.zoneId) ? params?.zoneId[0] : params?.zoneId;

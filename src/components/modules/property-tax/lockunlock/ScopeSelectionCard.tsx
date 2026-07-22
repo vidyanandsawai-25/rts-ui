@@ -36,6 +36,7 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
             <Card
               key={option.id}
               role="button"
+              aria-pressed={isSelected}
               tabIndex={0}
               padding="none"
               onClick={() => onChange(option.id)}

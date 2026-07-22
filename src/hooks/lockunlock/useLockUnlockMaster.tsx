@@ -339,14 +339,14 @@ export function useLockUnlockMaster({
           };
 
           if (formData.searchCategory === 1) {
-            if (!formData.zoneId) throw new Error("Please select a Zone");
+            if (!formData.zoneId) throw new Error(t("messages.selectZoneRequired"));
             params.ZoneId = Number(formData.zoneId);
           } else if (formData.searchCategory === 2) {
-            if (!formData.wardId) throw new Error("Please select a Ward");
+            if (!formData.wardId) throw new Error(t("messages.selectWardRequired"));
             params.WardId = Number(formData.wardId);
           } else if (formData.searchCategory === 3) {
-            if (!formData.wardId) throw new Error("Please select a Ward");
-            if (!formData.propertyNos || formData.propertyNos.length === 0) throw new Error("Please select at least one Property");
+            if (!formData.wardId) throw new Error(t("messages.selectWardRequired"));
+            if (!formData.propertyNos || formData.propertyNos.length === 0) throw new Error(t("messages.selectPropertyDropdownRequired"));
 
             const partitions = new Set<string>();
             const basePropertyNos = new Set<string>();
@@ -375,10 +375,10 @@ export function useLockUnlockMaster({
               throw new Error(t("messages.validationError"));
             }
             if (!formData.wardId) {
-              throw new Error(t("messages.validationWard"));
+              throw new Error(t("messages.selectWardRequired"));
             }
             if (!isSearchActive && (!formData.fromProperty || !formData.toProperty)) {
-              throw new Error(t("messages.validationFromToProperty"));
+              throw new Error(t("messages.selectFromToPropertyRequired"));
             }
 
             if (formData.fromProperty && formData.toProperty) {
@@ -456,19 +456,11 @@ export function useLockUnlockMaster({
       }
     } else if (formData.searchCategory === 4) {
       if (!formData.wardId) {
-        toast.error(t("messages.validationError"));
+        toast.error(t("messages.selectWardRequired"));
         return;
       }
       if (!formData.fromProperty || !formData.toProperty) {
         toast.error(t("messages.selectFromToPropertyRequired"));
-        return;
-      }
-      if (!formData.wardId) {
-        toast.error(t("messages.validationWard"));
-        return;
-      }
-      if (!formData.fromProperty || !formData.toProperty) {
-        toast.error(t("messages.validationFromToProperty"));
         return;
       }
 
