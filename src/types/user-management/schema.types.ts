@@ -57,6 +57,8 @@ export interface BackendUser {
 export interface BackendUserRole {
   id: number;
   userRoleName: string;
+  departmentId?: number;
+  departmentName?: string;
   isActive: boolean;
 }
 

@@ -70,6 +70,7 @@
         "selectGroup": "Select group",
         "department": "Department",
         "selectDepartment": "Select department",
+        "selectDepartmentFirst": "Select Department First",
         "module": "Module",
         "selectModule": "Select module",
         "icon": "Icon",
@@ -188,6 +189,7 @@
     },
 
     "filters": {
+      "selectDept": "Select Department",
       "selectRole": "Select Role",
       "selectDepartment": "All Departments",
       "searchPlaceholder": "Search screens...",
@@ -204,7 +206,7 @@
       "manager": "Manager",
       "user": "User",
       "viewer": "Viewer",
-      "noRolesFound": "no roles found from API",
+      "noRolesFound": "No roles available",
       "apiWarning": "Roles API:",
       "apiUnavailable": "roles endpoint may not be available yet. Using empty list."
     },

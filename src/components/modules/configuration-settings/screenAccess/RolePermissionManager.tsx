@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RolePermissionHeader } from './components/RolePermissionHeader';
@@ -47,17 +47,57 @@ export function RolePermissionManager({
   const [, startTransition] = useTransition();
   const { isLoading: isSaving, startLoading, stopLoading } = useLoading();
 
+  const deptIdFromQuery = searchParams.get('deptId');
+  const selectedDept = useMemo(() => {
+    if (
+      deptIdFromQuery &&
+      departments.some((d) => String(d.departmentMasterId ?? d.departmentId) === deptIdFromQuery)
+    ) {
+      return deptIdFromQuery;
+    }
+    return departments.length > 0
+      ? String(departments[0].departmentMasterId ?? departments[0].departmentId)
+      : '';
+  }, [deptIdFromQuery, departments]);
+
+  const filteredRoles = useMemo(() => {
+    if (!selectedDept) return [];
+    return roles.filter((r) => String(r.departmentId) === selectedDept);
+  }, [roles, selectedDept]);
+
   const roleIdFromQuery = searchParams.get('roleId');
   const selectedRole = useMemo(() => {
-    if (roleIdFromQuery && roles.some((r) => String(r.roleMasterId) === roleIdFromQuery)) {
+    if (roleIdFromQuery && filteredRoles.some((r) => String(r.roleMasterId) === roleIdFromQuery)) {
       return roleIdFromQuery;
     }
-    return roles.length > 0 ? String(roles[0].roleMasterId) : '';
-  }, [roleIdFromQuery, roles]);
+    return filteredRoles.length > 0 ? String(filteredRoles[0].roleMasterId) : '';
+  }, [roleIdFromQuery, filteredRoles]);
 
   const accessLevelConfig = useMemo(() => getAccessLevelConfig(t), [t]);
 
+  const [searchTerm, setSearchTerm] = useState('');
+
   const { hierarchy } = usePermissionHierarchy({ screens, departments, modules, t });
+
+  const filteredHierarchy = useMemo(() => {
+    if (!selectedDept) return [];
+    const deptList = hierarchy.filter((dept) => dept.id === selectedDept);
+    if (!searchTerm.trim()) return deptList;
+
+    const term = searchTerm.trim().toLowerCase();
+    return deptList
+      .map((dept) => {
+        const filteredDomains = dept.domains
+          .map((dom) => {
+            const matchedScreens = dom.screens.filter((s) => s.name.toLowerCase().includes(term));
+            return { ...dom, screens: matchedScreens };
+          })
+          .filter((dom) => dom.screens.length > 0);
+
+        return { ...dept, domains: filteredDomains };
+      })
+      .filter((dept) => dept.domains.length > 0);
+  }, [hierarchy, selectedDept, searchTerm]);
 
   const { mapPermissions, deltas, roleAccess, pendingCount, updateAccess, resetDeltas } =
     usePermissionDeltas(initialRoleAccess);
@@ -116,19 +156,41 @@ export function RolePermissionManager({
   return (
     <div className="flex flex-col h-full bg-gray-50/30">
       <RolePermissionHeader
+        selectedDept={selectedDept}
+        departments={departments}
         selectedRole={selectedRole}
-        roles={roles}
+        roles={filteredRoles}
         pendingCount={pendingCount}
         isSaving={isSaving}
         onSave={handleSave}
         onCancel={resetDeltas}
+        onDeptChange={(deptVal) => {
+          const params = new URLSearchParams(searchParams.toString());
+          params.set('deptId', deptVal);
+
+          // Find the first role in this new department
+          const firstRoleInDept = roles.find((r) => String(r.departmentId) === deptVal);
+          if (firstRoleInDept) {
+            params.set('roleId', String(firstRoleInDept.roleMasterId));
+          } else {
+            params.delete('roleId');
+          }
+
+          startTransition(() => router.push(`?${params.toString()}`, { scroll: false }));
+        }}
         onRoleChange={(val) => {
           const params = new URLSearchParams(searchParams.toString());
           params.set('roleId', val);
           startTransition(() => router.push(`?${params.toString()}`, { scroll: false }));
         }}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
         translations={{
+          selectDept: t('accessControl.filters.selectDept', { defaultValue: 'Select Department' }),
           selectRole: t('accessControl.filters.selectRole'),
+          searchPlaceholder: t('accessControl.filters.searchPlaceholder', {
+            defaultValue: 'Search screens...',
+          }),
           pendingChanges: t('accessControl.status.pendingChanges', { count: pendingCount }),
           saveChanges: t('accessControl.buttons.saveChanges'),
           cancelChanges: t('accessControl.buttons.cancelChanges'),
@@ -136,17 +198,17 @@ export function RolePermissionManager({
       />
 
       <div className="flex-1 overflow-y-auto px-1">
-        {roles.length === 0 ? (
+        {filteredRoles.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-2">
             <p className="text-lg font-semibold">{t('accessControl.roles.noRolesFound')}</p>
           </div>
-        ) : hierarchy.length === 0 ? (
+        ) : filteredHierarchy.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-2">
             <p className="text-lg font-semibold">{t('accessControl.messages.noScreensFound')}</p>
           </div>
         ) : (
           <PermissionAccordion
-            hierarchy={hierarchy}
+            hierarchy={filteredHierarchy}
             roleAccess={roleAccess}
             accessLevelConfig={accessLevelConfig}
             onUpdate={updateAccess}

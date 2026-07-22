@@ -81,7 +81,7 @@
     "modulesSelected": "मॉड्यूल चयनित",
     "rolesSelected": "भूमिकाएं चयनित",
     "noModulesForDept": "इस विभाग के लिए कोई मॉड्यूल उपलब्ध नहीं है",
-    "selectDeptPrompt": "उपलब्ध मॉड्यूल देखने के लिए एक विभाग चुनें",
+    "selectDeptPrompt": "विभाग चुनें",
     "goToDepts": "विभागों पर जाएं",
     "errors": {
       "usernameRequired": "उपयोगकर्ता नाम आवश्यक है",
