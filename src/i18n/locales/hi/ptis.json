@@ -771,6 +771,8 @@
       "applyOrder": "क्रम",
       "ruleCategory": "श्रेणी",
       "ruleScopeName": "दायरा",
+      "floorName": "मंजिल",
+      "typeOfUseName": "उपयोग का प्रकार",
       "ruleName": "नियम का नाम",
       "effectType": "प्रभाव प्रकार",
       "effectValue": "प्रभाव दर",

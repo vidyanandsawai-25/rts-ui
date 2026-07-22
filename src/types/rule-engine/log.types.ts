@@ -23,6 +23,10 @@ export interface PropertyRuleLogItem {
   applyRate?: number;
   ruleScopeId?: number;
   ruleScopeName?: string;
+  floorId?: number | null;
+  floorName?: string | null;
+  typeOfUseId?: number | null;
+  typeOfUseName?: string | null;
 }
 
 export interface PropertyRuleLogResponse {

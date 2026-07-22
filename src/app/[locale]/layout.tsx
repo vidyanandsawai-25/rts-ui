@@ -24,7 +24,6 @@ const notoSansDevanagari = Noto_Sans_Devanagari({
 
 export async function generateMetadata(): Promise<Metadata> {
   const ulbData = await getUlbConfigForLogin().catch(() => undefined);
-  const logoUrl = ulbData?.ulbLogo;
 
   const title = ulbData?.ulbName
     ? `${ulbData.ulbName}${ulbData.ulbNameLocal ? ` (${ulbData.ulbNameLocal})` : ''} - ${appConfig.app.name}`
@@ -37,11 +36,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    icons: logoUrl
-      ? {
-          icon: logoUrl,
-        }
-      : undefined,
+    icons: {
+      icon: '/favicon.ico',
+    },
   };
 }
 
