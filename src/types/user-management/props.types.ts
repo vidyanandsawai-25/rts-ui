@@ -79,6 +79,7 @@ export interface RoleFormProps {
   formData: RoleFormData;
   setFormData: React.Dispatch<React.SetStateAction<RoleFormData>>;
   onSubmit: (e: React.FormEvent) => void;
+  departments?: Department[];
   isSubmitting?: boolean;
   errors?: Record<string, string>;
 }

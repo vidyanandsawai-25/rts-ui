@@ -9,7 +9,12 @@ import { ApiError } from '@/lib/utils/api';
 import { mapBackendRoleToRole, mapBackendDesignationToDesignation } from './user-management.utils';
 
 export async function createUserRole(role: Partial<Role>, userId?: number): Promise<Role> {
-  const backendRole = { userRoleName: role.name, isActive: role.isActive, createdBy: userId || 0 };
+  const backendRole = {
+    userRoleName: role.name,
+    departmentId: role.departmentId ? Number(role.departmentId) : undefined,
+    isActive: role.isActive,
+    createdBy: userId || 0,
+  };
   const response = await apiClient.post<BackendUserRole>('/UserRole', backendRole);
   if (!response.success || !response.data) {
     throw new ApiError(
@@ -24,6 +29,8 @@ export async function createUserRole(role: Partial<Role>, userId?: number): Prom
     id: '0',
     userRoleId: 0,
     name: role.name || '',
+    departmentId: role.departmentId ? Number(role.departmentId) : undefined,
+    departmentName: role.departmentName,
     isActive: !!(role.isActive ?? true),
     status: (role.isActive ?? true) ? 'Active' : 'Inactive',
   } as Role;
@@ -33,6 +40,7 @@ export async function updateUserRole(role: Partial<Role>, userId?: number): Prom
   const backendRole = {
     userRoleId: role.userRoleId,
     userRoleName: role.name,
+    departmentId: role.departmentId ? Number(role.departmentId) : undefined,
     isActive: role.isActive,
     updatedBy: userId || 0,
   };

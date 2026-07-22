@@ -155,6 +155,20 @@ export function extractRuleParameters(rule: RuleItem): string[] {
         };
         extract(block.conditions);
       }
+
+      // Extract parameter names from effects (e.g. Rent, Rate, RV, CV, Interest)
+      const effects = block.effects || (block.effect ? [block.effect] : []);
+      effects.forEach((eff) => {
+        let code = eff.parameterCode || eff.overrideRateLabel || (eff.overrideRate !== undefined ? String(eff.overrideRate) : '');
+        if (code) {
+          if (code.includes('-')) code = code.split('-')[0].trim();
+          else if (code.includes('(')) code = code.split('(')[0].trim();
+          code = code.replace('input.', '').trim();
+          if (code && !/^\d+$/.test(code)) {
+            extracted.add(code);
+          }
+        }
+      });
     });
   } catch (_e) {
     // safe fallback
@@ -178,3 +192,44 @@ export function getRuleWiseDescriptions(conditionsJson?: string): string[] {
 
 // Re-export label helpers from their dedicated file so existing imports remain valid
 export { formatFieldName, getFieldLabel, getFriendlyOperatorLabel } from '@/components/modules/property-tax/rule-engine/field-label.helpers';
+
+/**
+ * Extracts overrideRate, overrideRateLabel, and parameterCode from a selected option value and options list.
+ */
+export function extractParameterMetadata(
+  val: string | number | undefined,
+  staticApiOptions: { label: string; value: string | number }[]
+) {
+  if (val === undefined || val === null || val === '') {
+    return {
+      overrideRate: undefined,
+      overrideRateLabel: undefined,
+      parameterCode: undefined,
+    };
+  }
+
+  const strVal = String(val).trim();
+  const selectedOpt = staticApiOptions.find(
+    (o) =>
+      String(o.value).trim().toLowerCase() === strVal.toLowerCase() ||
+      o.label.trim().toLowerCase() === strVal.toLowerCase() ||
+      o.label.split('-')[0].trim().toLowerCase() === strVal.toLowerCase() ||
+      o.label.split('(')[0].trim().toLowerCase() === strVal.toLowerCase()
+  );
+
+  const labelText = selectedOpt ? selectedOpt.label : strVal;
+  let code = labelText;
+  if (labelText.includes('-')) {
+    code = labelText.split('-')[0].trim();
+  } else if (labelText.includes('(')) {
+    code = labelText.split('(')[0].trim();
+  }
+
+  const num = Number(val);
+  return {
+    overrideRate: selectedOpt ? (typeof selectedOpt.value === 'number' ? selectedOpt.value : Number(selectedOpt.value) || selectedOpt.value) : isNaN(num) ? val : num,
+    overrideRateLabel: labelText || undefined,
+    parameterCode: code || labelText || undefined,
+  };
+}
+

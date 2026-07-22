@@ -39,6 +39,8 @@ export const createScreenAction = async (data: Partial<ScreenMasterData>) =>
       screenName: (val) => commonValidations.masterDescription(tCommon, SCREEN_NAME_MAX)(val),
       screenGroupId: (val) =>
         !val ? t('screenManagement.screens.form.errors.groupRequired') : undefined,
+      departmentMasterId: (val) =>
+        !val ? t('screenManagement.screens.form.errors.departmentRequired') : undefined,
       routePath: (val) =>
         !val ? t('screenManagement.screens.form.errors.routeRequired') : undefined,
       moduleId: (val) =>
@@ -85,6 +87,8 @@ export const updateScreenAction = async (id: number, data: Partial<ScreenMasterD
       screenName: (val) => commonValidations.masterDescription(tCommon, SCREEN_NAME_MAX)(val),
       screenGroupId: (val) =>
         !val ? t('screenManagement.screens.form.errors.groupRequired') : undefined,
+      departmentMasterId: (val) =>
+        !val ? t('screenManagement.screens.form.errors.departmentRequired') : undefined,
       routePath: (val) =>
         !val ? t('screenManagement.screens.form.errors.routeRequired') : undefined,
       isActive: (val) => commonValidations.masterActiveStatus(tCommon, true)(val),

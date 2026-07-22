@@ -45,6 +45,8 @@ export interface Role {
   id: string;
   userRoleId: number;
   name: string;
+  departmentId?: number;
+  departmentName?: string;
   isActive: boolean;
   status: 'Active' | 'Inactive';
   userCount?: number;

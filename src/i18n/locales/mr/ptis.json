@@ -775,6 +775,8 @@
       "applyOrder": "क्रम",
       "ruleCategory": "वर्ग",
       "ruleScopeName": "व्याप्ती",
+      "floorName": "मजला",
+      "typeOfUseName": "वापराचा प्रकार",
       "ruleName": "नियमाचे नाव",
       "effectType": "प्रभावाचा प्रकार",
       "effectValue": "प्रभावाचा दर",
