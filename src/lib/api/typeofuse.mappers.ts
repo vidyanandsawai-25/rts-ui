@@ -33,6 +33,7 @@ export function mapApiGroupToUi(g: Record<string, unknown>): UseGroup {
     groupName: String(g.groupName ?? ""),
     groupIcon: String(g.groupIcon ?? "home-icon"),
     isActive: typeof g.isActive === "boolean" ? g.isActive : (typeof g.IsActive === "boolean" ? g.IsActive : true),
+    isOpenPlot: typeof g.isOpenPlot === "boolean" ? g.isOpenPlot : (typeof g.IsOpenPlot === "boolean" ? g.IsOpenPlot : false),
     createdDate: typeof g.createdDate === "string" ? g.createdDate : (typeof g.CreatedDate === "string" ? g.CreatedDate : undefined),
     updatedDate: typeof g.updatedDate === "string" ? g.updatedDate : (typeof g.UpdatedDate === "string" ? g.UpdatedDate : null),
     // UI computed field
@@ -42,6 +43,7 @@ export function mapApiGroupToUi(g: Record<string, unknown>): UseGroup {
 
 /** -------------------- MAP API -> UI (TYPE) -------------------- */
 export function mapApiTypeToUi(t: Record<string, unknown>): UseType {
+  const categoryId = t.typeOfUseCategoryId ?? t.TypeOfUseCategoryId;
   return {
     typeOfUseId: Number(t.id ?? t.typeOfUseId ?? t.typeOfUseID ?? 0),
     typeOfUseCode: String(t.typeOfUseCode ?? ""),
@@ -49,7 +51,7 @@ export function mapApiTypeToUi(t: Record<string, unknown>): UseType {
     type: String(t.type ?? ""),
     typeOfUseGroupId: Number(t.typeOfUseGroupId ?? t.typeOfUseGroupID ?? t.groupId ?? 0),
     searchSequence: Number(t.searchSequence ?? t.SearchSequence ?? 0),
-    typeOfUseCategoryId: (t.typeOfUseCategoryId ?? t.TypeOfUseCategoryId ?? null) as number | null,
+    typeOfUseCategoryId: categoryId !== undefined && categoryId !== null ? Number(categoryId) : null,
     isActive: typeof t.isActive === "boolean" ? t.isActive : (typeof t.IsActive === "boolean" ? t.IsActive : true),
     createdDate: typeof t.createdDate === "string" ? t.createdDate : (typeof t.CreatedDate === "string" ? t.CreatedDate : undefined),
     updatedDate: typeof t.updatedDate === "string" ? t.updatedDate : (typeof t.UpdatedDate === "string" ? t.UpdatedDate : null),
@@ -60,12 +62,13 @@ export function mapApiTypeToUi(t: Record<string, unknown>): UseType {
 
 /** -------------------- MAP API -> UI (SUBTYPE) -------------------- */
 export function mapApiSubTypeToUi(s: Record<string, unknown>): UseSubType {
+  const categoryId = s.typeOfUseCategoryId ?? s.TypeOfUseCategoryId;
   return {
     subTypeOfUseId: Number(s.id ?? s.subTypeOfUseId ?? s.subTypeOfUseID ?? 0),
     description: String(s.description ?? ""),
     typeOfUseId: Number(s.typeOfUseId ?? s.typeOfUseID ?? s.typeId ?? 0),
     searchSequence: Number(s.searchSequence ?? s.SearchSequence ?? 0),
-    typeOfUseCategoryId: (s.typeOfUseCategoryId ?? s.TypeOfUseCategoryId ?? null) as number | null,
+    typeOfUseCategoryId: categoryId !== undefined && categoryId !== null ? Number(categoryId) : null,
     isActive: typeof s.isActive === "boolean" ? s.isActive : (typeof s.IsActive === "boolean" ? s.IsActive : true),
     createdDate: typeof s.createdDate === "string" ? s.createdDate : (typeof s.CreatedDate === "string" ? s.CreatedDate : undefined),
     updatedDate: typeof s.updatedDate === "string" ? s.updatedDate : (typeof s.UpdatedDate === "string" ? s.UpdatedDate : null),

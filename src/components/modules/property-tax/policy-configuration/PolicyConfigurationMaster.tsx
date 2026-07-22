@@ -132,10 +132,6 @@ export default function PolicyConfigurationMaster({
           title={t("list.title")}
           subtitle={t("list.subtitle")}
           icon="settings"
-          actionLabel={t("list.buttons.add")}
-          onActionClick={() => {
-            router.push(`${base}/add`);
-          }}
           rightContent={
             <div className="flex w-full justify-end">
               <SearchInput

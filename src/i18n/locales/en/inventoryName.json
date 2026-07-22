@@ -1,0 +1,101 @@
+{
+  "configuration": {
+    "header": {
+      "title": "Configuration Master",
+      "subtitle": "Centralized Master Data Management System",
+      "totalMasters": "Total Masters"
+    },
+    "tabs": {
+      "masterData": "Master Data",
+      "screenMaster": "Screen Master",
+      "screenFieldsMaster": "Screen Fields Master"
+    },
+    "masterData": {
+      "title": "Master Data",
+      "records": "Master Records",
+      "addNew": "Add New {name}",
+      "searchPlaceholder": "Search master records...",
+      "stats": {
+        "master": "Master Types",
+        "shown": "Shown",
+        "active": "Active"
+      },
+      "groupFilter": {
+        "categoriesTitle": "Categories",
+        "itemNamesTitle": "Item Names"
+      },
+      "form": {
+        "addTitle": "Add New {name}",
+        "editTitle": "Edit {name}",
+        "createSubtitle": "Create a new record",
+        "updateSubtitle": "Update existing record",
+        "labels": {
+          "code": "Code",
+          "name": "Name",
+          "description": "Description",
+          "displayOrder": "Display Order",
+          "status": "Status",
+          "active": "Active",
+          "inactive": "Inactive",
+          "category": "Category"
+        },
+        "placeholders": {
+          "code": "Enter code",
+          "name": "Enter name",
+          "description": "Enter description",
+          "displayOrder": "Enter display order",
+          "category": "Select category"
+        },
+        "buttons": {
+          "save": "Save",
+          "update": "Update",
+          "cancel": "Cancel"
+        },
+        "errors": {
+          "fillRequired": "Please fill in all required fields.",
+          "codeRequired": "Code is required.",
+          "nameRequired": "Item name is required.",
+          "categoryRequired": "Category is required.",
+          "codeFormat": "Code may contain only letters, numbers, and hyphens (-).",
+          "duplicateCode": "Code must be unique.",
+          "duplicateName": "Name must be unique.",
+          "englishOnly": "Please enter Name in English only.",
+          "noSpecialCharacters": "Please use only letters, numbers, and spaces.",
+          "maxLength": "Please enter no more than the allowed number of characters.",
+          "displayOrderRequired": "Display order is required.",
+          "apiActionsNotConfigured": "API actions are not configured.",
+          "saveFailed": "Failed to save record",
+          "deleteFailed": "Failed to delete record",
+          "unexpected": "An unexpected error occurred",
+          "codeTooLong15": "Code cannot exceed 15 characters",
+          "codeInvalidChars": "Code contains invalid characters",
+          "codeDuplicate": "This code already exists",
+          "nameTooLong50": "Name cannot exceed 50 characters",
+          "nameInvalidChars": "Name contains invalid characters",
+          "nameDuplicate": "This name already exists",
+          "descriptionTooLong": "Description cannot exceed 500 characters",
+          "descInvalidChars": "Description contains invalid characters"
+        }
+      },
+      "error": {
+        "title": "Data Loading Failed",
+        "description": "An error occurred while loading master data records. Please check your connection or try again.",
+        "categoryTitle": "Category Loading Failed",
+        "categoryDescription": "An error occurred while loading Asset Categories. Please check your connection or try again.",
+        "typeTitle": "Type Loading Failed",
+        "typeDescription": "An error occurred while loading Asset Types. Please try again.",
+        "reload": "Reload Page",
+        "tryAgain": "Try Again",
+        "goHome": "Go Home"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-type-master": "Asset Type",
+    "asset-category-master": "Asset Category",
+    "inventory-category-master": "Inventory Category",
+    "inventory-model-master": "Inventory Model",
+    "inventory-name-master": "Inventory Item Name",
+    "inventory-condition-master": "Inventory Condition"
+  }
+}

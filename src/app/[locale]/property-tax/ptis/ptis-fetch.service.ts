@@ -35,6 +35,7 @@ export async function fetchPtisPageData(
   const propertyIdParam = toPositiveInt(searchParams?.propertyId);
   const showFloorParam = searchParams?.showFloor === 'true';
   const showOldTaxParam = searchParams?.showOldTax === 'true';
+  const showMapDetailsParam = searchParams?.showMapDetails === 'true';
   const showDetailsParam = searchParams?.showDetails === 'true';
 
   const pageNumber = toPositiveInt(searchParams?.pageNumber) || 1;
@@ -140,6 +141,7 @@ export async function fetchPtisPageData(
     initialMediaPanelVisible,
     showFloorParam,
     showOldTaxParam,
+    showMapDetailsParam,
     showDetailsParam,
     searchParams,
     locale,

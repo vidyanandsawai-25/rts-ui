@@ -13,7 +13,9 @@ export function useConditionRow({
   fields,
   onChange,
 }: UseConditionRowParams) {
-  const hasValue = Array.isArray(condition.value) ? condition.value.length > 0 : !!condition.value;
+  const hasValue = Array.isArray(condition.value)
+    ? condition.value.length > 0
+    : (condition.value !== undefined && condition.value !== null && condition.value !== '');
   const [isEditing, setIsEditing] = React.useState(!hasValue);
   const [apiOptions, setApiOptions] = React.useState<{ label: string; value: string }[]>([]);
 
@@ -85,19 +87,27 @@ export function useConditionRow({
     }
     
     if (options.length > 0) {
-      const labels = valArray.map((v) => options.find((item) => String(item.value) === String(v))?.label || String(v));
+      const labels = valArray.map((v) => {
+        const vStr = String(v).toLowerCase();
+        const match = options.find((item) => String(item.value).toLowerCase() === vStr);
+        return match?.label || String(v);
+      });
       return Array.isArray(val) ? labels : labels[0];
     }
     return val;
   }, [currentField, apiOptions]);
 
   const formattedValueLabel = React.useMemo(() => {
-    if (!condition.value) return 'Empty';
+    if (condition.value === undefined || condition.value === null || condition.value === '') return 'Empty';
     if (!currentField) return String(condition.value);
 
     if (currentField.sourceType === 'API' && apiOptions.length > 0) {
       const valArray = Array.isArray(condition.value) ? condition.value : [condition.value];
-      const labels = valArray.map((v) => apiOptions.find((item) => String(item.value) === String(v))?.label || String(v));
+      const labels = valArray.map((v) => {
+        const vStr = String(v).toLowerCase();
+        const match = apiOptions.find((item) => String(item.value).toLowerCase() === vStr);
+        return match?.label || String(v);
+      });
       return labels.join(', ');
     }
 
@@ -105,7 +115,11 @@ export function useConditionRow({
       try {
         const list = JSON.parse(currentField.staticValuesJson) as StaticValue[];
         const valArray = Array.isArray(condition.value) ? condition.value : [condition.value];
-        const labels = valArray.map((v) => list.find((item) => String(item.value) === String(v))?.label || String(v));
+        const labels = valArray.map((v) => {
+          const vStr = String(v).toLowerCase();
+          const match = list.find((item) => String(item.value).toLowerCase() === vStr);
+          return match?.label || String(v);
+        });
         return labels.join(', ');
       } catch {
         return String(condition.value);

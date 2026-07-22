@@ -7,13 +7,14 @@ import {
   saveTaxCalculationGuidelineAction,
 } from '@/app/[locale]/configuration-settings/tax-calculation-guideline/actions';
 import { buildInitialFormData } from '@/lib/api/configuration-settings/tax-calculation-guideline/tax-calculation-guideline.mapper';
+import { FIELD_MAPPINGS } from '@/config/tax-calculation-guideline.config';
 import type {
   TaxCalculationGuidelineDto,
   TaxCalculationGuidelineFormData,
 } from '@/types/tax-calculation-guideline.types';
 
 interface UseTaxCalculationGuidelineFormOptions {
-  initialDto: TaxCalculationGuidelineDto | null;
+  initialDto: TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null;
 }
 
 /**
@@ -27,7 +28,7 @@ export function useTaxCalculationGuidelineForm({ initialDto }: UseTaxCalculation
   const [, startTransition] = useTransition();
 
   /** Keep track of the full API DTO to maintain all metadata */
-  const [currentDto, setCurrentDto] = useState<TaxCalculationGuidelineDto | null>(initialDto);
+  const [currentDto, setCurrentDto] = useState<TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null>(initialDto);
 
   /** Full form data state */
   const [formData, setFormData] = useState<TaxCalculationGuidelineFormData>(() =>
@@ -49,15 +50,148 @@ export function useTaxCalculationGuidelineForm({ initialDto }: UseTaxCalculation
       field: K,
       value: TaxCalculationGuidelineFormData[S][K]
     ) => {
-      setFormData((prev) => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: value,
-        },
-      }));
+      setFormData((prev) => {
+        if (section === ('dynamicGuidelines' as unknown as S)) {
+          return {
+            ...prev,
+            dynamicGuidelines: value as unknown as TaxCalculationGuidelineFormData['dynamicGuidelines']
+          };
+        }
+
+        const next = {
+          ...prev,
+          [section]: {
+            ...prev[section],
+            [field]: value,
+          },
+        };
+
+        // Sync to dynamicGuidelines list
+        if (prev.dynamicGuidelines && prev.dynamicGuidelines.length > 0) {
+          let matchedCode: string | null = null;
+          
+          for (const [code, mapping] of Object.entries(FIELD_MAPPINGS)) {
+            if (mapping.section === section) {
+              if (mapping.field === field) {
+                matchedCode = code;
+                break;
+              }
+              // Handle nested fields like financialYearStart.month
+              if (mapping.field.startsWith(String(field) + '.')) {
+                const subKey = mapping.field.split('.')[1];
+                const subVal = (value as unknown as Record<string, unknown>)?.[subKey];
+                if (subVal !== undefined) {
+                  const idx = prev.dynamicGuidelines.findIndex(item => item.guidelineCode === code);
+                  if (idx > -1) {
+                    const list = next.dynamicGuidelines ? [...next.dynamicGuidelines] : [...prev.dynamicGuidelines];
+                    list[idx] = {
+                      ...list[idx],
+                      guidelineValue: subVal === 'Select' ? null : String(subVal)
+                    };
+                    next.dynamicGuidelines = list;
+                  }
+                }
+              }
+            }
+          }
+
+          if (matchedCode) {
+            let valStr: string | null = null;
+            if (typeof value === 'boolean') {
+              valStr = String(value);
+            } else if (value === undefined || value === null || value === 'Select') {
+              valStr = null;
+            } else {
+              valStr = String(value);
+            }
+
+            next.dynamicGuidelines = prev.dynamicGuidelines.map(item => {
+              if (item.guidelineCode === matchedCode) {
+                return { ...item, guidelineValue: valStr };
+              }
+              return item;
+            });
+          }
+        }
+
+        return next;
+      });
     },
     []
+  );
+
+  /**
+   * Handle changes directly by GuidelineCode for dynamic UI rendering.
+   */
+  const onChangeGuideline = useCallback(
+    (code: string, val: string | null) => {
+      const mapping = FIELD_MAPPINGS[code];
+      if (mapping) {
+        let mappedValue: unknown = val;
+        if (mapping.type === 'boolean') {
+          mappedValue = val === 'true' || val === '1';
+        } else if (mapping.type === 'number') {
+          mappedValue = val === null || val === '' || val === undefined ? undefined : Number(val);
+        } else if (mapping.type === 'priority') {
+          const dict: Record<string, string> = {
+            OC: 'OC Date',
+            CC: 'CC Date',
+            ELECTRIC_BILL: 'Electric Bill Date',
+            RETROSPECTIVE: 'Retrospective (No Date)',
+          };
+          mappedValue = val ? (dict[val] ?? 'Select') : 'Select';
+        } else if (mapping.type === 'month' || mapping.type === 'day') {
+          const fieldName = mapping.field.split('.')[1];
+          setFormData((prev) => {
+            const newStart = {
+              ...prev.generalSettings.financialYearStart,
+              [fieldName]: val === null || val === 'Select' ? 'Select' : Number(val),
+            };
+            
+            // Also sync to dynamicGuidelines list
+            const list = prev.dynamicGuidelines ? [...prev.dynamicGuidelines] : [];
+            const idx = list.findIndex(item => item.guidelineCode === code);
+            if (idx > -1) {
+              list[idx] = { ...list[idx], guidelineValue: val };
+            }
+
+            return {
+              ...prev,
+              generalSettings: {
+                ...prev.generalSettings,
+                financialYearStart: newStart,
+              },
+              dynamicGuidelines: list,
+            };
+          });
+          return;
+        }
+
+        if (mapping.type !== 'month' && mapping.type !== 'day') {
+          handleChange(
+            mapping.section as keyof TaxCalculationGuidelineFormData,
+            mapping.field as never,
+            mappedValue as never
+          );
+        }
+      } else {
+        // Not a mapped field, update dynamicGuidelines list only
+        setFormData((prev) => {
+          const list = prev.dynamicGuidelines ? [...prev.dynamicGuidelines] : [];
+          const idx = list.findIndex((item) => item.guidelineCode === code);
+          if (idx > -1) {
+            list[idx] = { ...list[idx], guidelineValue: val };
+          } else {
+            list.push({ guidelineCode: code, guidelineValue: val, isActive: true });
+          }
+          return {
+            ...prev,
+            dynamicGuidelines: list,
+          };
+        });
+      }
+    },
+    [handleChange]
   );
 
   // ─── Save handler ─────────────────────────────────────────────────────────
@@ -95,11 +229,14 @@ export function useTaxCalculationGuidelineForm({ initialDto }: UseTaxCalculation
     }
   }, [formData, currentDto, router]);
 
+  const isUpdate = Array.isArray(currentDto) ? currentDto.length > 0 : !!currentDto?.id;
+
   return {
     formData,
     isSaving,
-    isUpdate: !!currentDto?.id,
+    isUpdate,
     handleChange,
+    onChangeGuideline,
     handleUpdate,
   };
 }

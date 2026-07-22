@@ -197,8 +197,8 @@ describe('SelectPropertiesTable', () => {
     const row1 = screen.getByTestId('row-1');
     const row2 = screen.getByTestId('row-2');
 
-    expect(row1).toHaveClass('!bg-blue-50 hover:!bg-blue-100');
-    
+    expect(row1).toHaveClass('!bg-green-100', '[&>td]:!bg-green-100');
+
     // Check visual disabled classes
     expect(row2).toHaveClass('opacity-60', 'bg-slate-50', 'cursor-not-allowed');
     expect(row2).not.toHaveClass('!bg-green-50', 'hover:!bg-green-100');

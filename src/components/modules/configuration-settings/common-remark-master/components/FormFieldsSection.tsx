@@ -56,31 +56,47 @@ export function FormFieldsSection({
   return (
     <div className="space-y-4">
       {!isCustomMode ? (
-        <div className="flex flex-col gap-1.5 w-full">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">
-              {t("form.remarkType")}
-              <span className="text-red-500"> *</span>
-            </label>
-            <button
-              type="button"
-              onClick={handleAddNewType}
-              className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-full border border-blue-200 transition-all cursor-pointer flex items-center gap-1 shadow-sm focus:outline-none"
-            >
-              <Plus size={13} className="stroke-[3]" />
-              {t("form.addNewTypeBtn") || "Add New Remark Type"}
-            </button>
+        <>
+          <div className="flex flex-col gap-1.5 w-full">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                {t("form.remarkType")}
+                <span className="text-red-500"> *</span>
+              </label>
+              <button
+                type="button"
+                onClick={handleAddNewType}
+                className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-full border border-blue-200 transition-all cursor-pointer flex items-center gap-1 shadow-sm focus:outline-none"
+              >
+                <Plus size={13} className="stroke-[3]" />
+                {t("form.addNewTypeBtn") || "Add New Remark Type"}
+              </button>
+            </div>
+            <Select
+              options={remarkTypeOptions}
+              value={formData.remarkType}
+              name="remarkType"
+              placeholder={t("form.remarkTypePlaceholder")}
+              onChange={handleSelectChange}
+              onBlur={handleBlur}
+              error={showError("remarkType") ? errors.remarkType : undefined}
+            />
           </div>
-          <Select
-            options={remarkTypeOptions}
-            value={formData.remarkType}
-            name="remarkType"
-            placeholder={t("form.remarkTypePlaceholder")}
-            onChange={handleSelectChange}
+
+          <TextArea
+            label={t("form.remark")}
+            value={formData.remark}
+            name="remark"
+            placeholder={t("form.remarkPlaceholder")}
+            onChange={handleChange}
             onBlur={handleBlur}
-            error={showError("remarkType") ? errors.remarkType : undefined}
+            maxLength={300}
+            showCharCount
+            required
+            error={showError("remark")}
+            errorMessage={showError("remark") ? errors.remark : undefined}
           />
-        </div>
+        </>
       ) : (
         <div className="flex flex-col gap-1.5 w-full">
           <div className="flex items-center justify-between">
@@ -107,20 +123,6 @@ export function FormFieldsSection({
           />
         </div>
       )}
-
-      <TextArea
-        label={t("form.remark")}
-        value={formData.remark}
-        name="remark"
-        placeholder={t("form.remarkPlaceholder")}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        maxLength={300}
-        showCharCount
-        required
-        error={showError("remark")}
-        errorMessage={showError("remark") ? errors.remark : undefined}
-      />
     </div>
   );
 }

@@ -75,7 +75,7 @@ export const ParkingTab: React.FC<ParkingTabProps> = ({
         isLoading={isLoading}
         disabledIds={disabledIds}
         sourcePropertyIds={sourcePropertyIds}
-        hideTypeColumn={true}
+        hideTypeColumn={false}
       />
 
       <div className="flex justify-end mt-4 px-1">

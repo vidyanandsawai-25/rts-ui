@@ -34,7 +34,7 @@ export function CertificateDatePrioritySection({
   const isDisabled = !formData.generalSettings.enableCertificateBasedTax;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col">
       <div className="border-b border-slate-100 px-4 py-2 shrink-0">
         <h2 className="flex items-center gap-2 text-sm font-bold text-slate-800">
           {t('sections.datePriority')}
@@ -42,7 +42,7 @@ export function CertificateDatePrioritySection({
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 px-4 py-3 lg:grid-cols-4 flex-1 min-h-0 items-center">
+      <div className="grid grid-cols-2 gap-3 px-4 py-3 pb-4 lg:grid-cols-4">
         {PRIORITY_KEYS.map((key, idx) => (
           <TaxSelect
             key={key}

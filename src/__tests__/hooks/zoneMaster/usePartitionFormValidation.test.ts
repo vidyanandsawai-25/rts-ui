@@ -272,6 +272,66 @@ describe("usePartitionFormValidation", () => {
     expect(validation.errors.incrementedBy).toBeDefined();
   });
 
+  it("should pass validation when incrementedBy equals noOfFlatOnOneFloor", () => {
+    const formWithEqualValues: PartitionFormState = {
+      ...validWingForm,
+      noOfFlatOnOneFloor: "4",
+      incrementedBy: "4", // Equal to noOfFlatOnOneFloor - should be valid
+    };
+
+    const { result } = renderHook(() =>
+      usePartitionFormValidation({
+        selectedProperty: mockProperty,
+        allProperties: mockProperties,
+        floors: mockFloors,
+      })
+    );
+
+    const validation = result.current.validate(formWithEqualValues);
+    expect(validation.valid).toBe(true);
+    expect(validation.errors.incrementedBy).toBeUndefined();
+  });
+
+  it("should fail validation when incrementedBy is less than noOfFlatOnOneFloor", () => {
+    const invalidForm: PartitionFormState = {
+      ...validWingForm,
+      noOfFlatOnOneFloor: "4",
+      incrementedBy: "3", // Less than noOfFlatOnOneFloor - should be invalid
+    };
+
+    const { result } = renderHook(() =>
+      usePartitionFormValidation({
+        selectedProperty: mockProperty,
+        allProperties: mockProperties,
+        floors: mockFloors,
+      })
+    );
+
+    const validation = result.current.validate(invalidForm);
+    expect(validation.valid).toBe(false);
+    expect(validation.errors.incrementedBy).toBeDefined();
+  });
+
+  it("should pass validation when incrementedBy is greater than noOfFlatOnOneFloor", () => {
+    const formWithGreaterValue: PartitionFormState = {
+      ...validWingForm,
+      noOfFlatOnOneFloor: "4",
+      incrementedBy: "5", // Greater than noOfFlatOnOneFloor - should be valid
+    };
+
+    const { result } = renderHook(() =>
+      usePartitionFormValidation({
+        selectedProperty: mockProperty,
+        allProperties: mockProperties,
+        floors: mockFloors,
+      })
+    );
+
+    const validation = result.current.validate(formWithGreaterValue);
+    expect(validation.valid).toBe(true);
+    expect(validation.errors.incrementedBy).toBeUndefined();
+  });
+
   it("should fail validation when fromPartition > toPartition", () => {
     const invalidForm: PartitionFormState = {
       ...validPartitionForm,

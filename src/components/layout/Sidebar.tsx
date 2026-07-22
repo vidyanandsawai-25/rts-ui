@@ -279,10 +279,6 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
           </div>
         </Link>
       </div>
-
-      <div className="sidebar-footer-label px-4 py-3 border-t border-gray-200 text-center transition-all duration-300 ease-in-out overflow-hidden">
-        <p className="text-xs text-gray-400 whitespace-nowrap">{t('sidebar.footerCopyright')}</p>
-      </div>
     </SidebarFrame>
   );
 }

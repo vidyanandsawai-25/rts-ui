@@ -3,6 +3,7 @@
 import { MapPin, Calendar, Users, TrendingUp, Plus, ClipboardCopy } from "lucide-react";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
+import { Button } from "@/components/common/ActionButton";
 import { IconButton } from "@/components/common/ActionButtons";
 import { Tooltip } from "@/components/common/Tooltip";
 import { Label } from "@/components/common/label";
@@ -49,6 +50,9 @@ interface RateFiltersSectionProps {
   onLoadAssessmentYears?: () => void;
   // Translations
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  isOpenPlot?: boolean;
+  hasConfiguredRates?: boolean;
+  onConfigureRates?: () => void;
 }
 
 export function RateFiltersSection({
@@ -74,6 +78,9 @@ export function RateFiltersSection({
   onLoadUseGroups,
   onLoadAssessmentYears,
   t,
+  isOpenPlot = false,
+  hasConfiguredRates = false,
+  onConfigureRates,
 }: RateFiltersSectionProps) {
   return (
     <div className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-2 items-stretch md:items-end mb-2">
@@ -102,28 +109,30 @@ export function RateFiltersSection({
       </div>
 
       {/* Use Group */}
-      <div className="w-full md:w-[200px]">
-        <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
-          <Users size={18} className="text-black" />
-          {t('filters.typeOfUseGroup')}
-        </Label>
-        <SearchSelect
-          id="useGroup-select"
-          name="useGroup"
-          label=""
-          options={useGroupOptions}
-          placeholder={t('placeholders.selectUseGroup')}
-          value={selectedUseGroup}
-          onChange={(_name, value) => {
-            const selectedOption = useGroupOptions.find(opt => opt.value === value);
-            onDropdownChange('useGroup', value, selectedOption?.label);
-          }}
-          onInputFocus={onLoadUseGroups}
-          isLoading={isLoadingUseGroups}
-          className={`text-black ${errors.useGroup ? 'border-red-500' : ''}`}
-        />
-        <ValidationMessage message={errors.useGroup} visible={!!errors.useGroup} />
-      </div>
+      {!isOpenPlot && (
+        <div className="w-full md:w-[200px]">
+          <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
+            <Users size={18} className="text-black" />
+            {t('filters.typeOfUseGroup')}
+          </Label>
+          <SearchSelect
+            id="useGroup-select"
+            name="useGroup"
+            label=""
+            options={useGroupOptions}
+            placeholder={t('placeholders.selectUseGroup')}
+            value={selectedUseGroup}
+            onChange={(_name, value) => {
+              const selectedOption = useGroupOptions.find(opt => opt.value === value);
+              onDropdownChange('useGroup', value, selectedOption?.label);
+            }}
+            onInputFocus={onLoadUseGroups}
+            isLoading={isLoadingUseGroups}
+            className={`text-black ${errors.useGroup ? 'border-red-500' : ''}`}
+          />
+          <ValidationMessage message={errors.useGroup} visible={!!errors.useGroup} />
+        </div>
+      )}
 
       {/* Assessment Year */}
       <div className="w-full md:w-[200px]">
@@ -149,43 +158,67 @@ export function RateFiltersSection({
         <ValidationMessage message={errors.assessmentYear} visible={!!errors.assessmentYear} />
       </div>
 
-      {/* Action Buttons - only in add mode */}
-      {mode === "add" && (
-        <>
-          {/* Multiplier Button */}
-          <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}>
-            <IconButton
-              icon={TrendingUp}
-              variant="primary"
-              aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}
-              disabled={!allFiltersSelected || existingRateFound || isCheckingRates}
-              onClick={onToggleMultipliers}
-            />
-          </Tooltip>
-          
-          {/* Generate Matrix Button */}
-          <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}>
-            <IconButton
-              icon={Plus}
-              variant="primary"
-              aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}
-              disabled={!allFiltersSelected || existingRateFound || isCheckingRates}
-              onClick={onGenerateMatrix}
-            />
-          </Tooltip>
-
-          {/* Copy Rates Toggle Button */}
-          <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}>
-            <IconButton
-              icon={ClipboardCopy}
-              variant="primary"
-              aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}
-              disabled={!allFiltersSelected || existingRateFound || isCheckingRates}
-              onClick={onToggleCopyRates}
-            />
-          </Tooltip>
-        </>
+      {/* Configure Rates button for open plot */}
+      {isOpenPlot && mode === "add" && (
+        <div className="flex items-end h-10 mb-[2px]">
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            onClick={onConfigureRates}
+            className="cursor-pointer"
+          >
+            {t("buttons.configureUseTypes")}
+          </Button>
+        </div>
       )}
+
+      {/* Action Buttons - only in add mode */}
+      {mode === "add" && (() => {
+        const isActionsDisabled = !allFiltersSelected || isCheckingRates ||
+          (isOpenPlot ? !hasConfiguredRates : existingRateFound);
+
+        return (
+          <>
+            {/* Multiplier Button */}
+            {!isOpenPlot && (
+              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}>
+                <IconButton
+                  icon={TrendingUp}
+                  variant="primary"
+                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}
+                  disabled={isActionsDisabled}
+                  onClick={onToggleMultipliers}
+                />
+              </Tooltip>
+            )}
+
+            {/* Generate Matrix Button */}
+            <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}>
+              <IconButton
+                icon={Plus}
+                variant="primary"
+                aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}
+                disabled={isActionsDisabled}
+                onClick={onGenerateMatrix}
+              />
+            </Tooltip>
+
+            {/* Copy Rates Toggle Button */}
+            {!isOpenPlot && (
+              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}>
+                <IconButton
+                  icon={ClipboardCopy}
+                  variant="primary"
+                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}
+                  disabled={isActionsDisabled}
+                  onClick={onToggleCopyRates}
+                />
+              </Tooltip>
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 }

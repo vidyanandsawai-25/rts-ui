@@ -15,6 +15,8 @@ interface PhotoPlanCarouselProps {
   onDeletePhoto: (index: number) => void;
   onReplacePhoto: (index: number) => void;
   className?: string;
+  onDrawPlan?: (e: React.MouseEvent) => void;
+  isPhotoPlanCategory?: boolean;
 }
 
 export function PhotoPlanCarousel({
@@ -25,6 +27,8 @@ export function PhotoPlanCarousel({
   onDeletePhoto,
   onReplacePhoto,
   className = '',
+  onDrawPlan,
+  isPhotoPlanCategory,
 }: PhotoPlanCarouselProps): React.ReactElement {
   const t = useTranslations('ptis');
   const { confirm } = useConfirm();
@@ -164,6 +168,20 @@ export function PhotoPlanCarousel({
             {t('media.uploadImage') || 'Add Photo'}
           </span>
         </div>
+
+        {isPhotoPlanCategory && onDrawPlan && (
+          <div
+            onClick={onDrawPlan}
+            className="w-[110px] sm:w-[130px] h-full border border-dashed border-purple-300 rounded-lg hover:border-purple-400 bg-white hover:bg-purple-50/10 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center select-none group shrink-0"
+          >
+            <div className="p-1 bg-purple-50 rounded-full border border-purple-200 group-hover:scale-105 transition-transform duration-200 mb-1">
+              <Plus className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-500" />
+            </div>
+            <span className="text-[9px] font-semibold text-purple-500 group-hover:text-purple-800">
+              {t('media.drawPlan') || 'Draw Plan'}
+            </span>
+          </div>
+        )}
       </div>
 
       {images.length > 3 && (

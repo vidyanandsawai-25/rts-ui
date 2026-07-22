@@ -163,6 +163,9 @@ export { GooglePlayBadge } from './GooglePlayBadge';
 export { SocialLinks } from './SocialLinks';
 export { UserProfileDropdown } from './UserProfileDropdown';
 
+export { ImageViewer } from './ImageViewer';
+export type { ImageViewerProps, ImageViewerImage } from './ImageViewer';
+
 export { DatePicker } from './DatePicker';
 export type { DatePickerProps } from './DatePicker';
 

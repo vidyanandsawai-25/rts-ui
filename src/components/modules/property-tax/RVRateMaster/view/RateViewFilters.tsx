@@ -2,6 +2,7 @@
 
 import { MapPin, Calendar, Users } from "lucide-react";
 import { SearchSelect } from "@/components/common";
+import { Label } from "@/components/common/label";
 import type { ISelectOption } from "@/types/RVRateMaster";
 
 interface RateViewFiltersProps {
@@ -16,6 +17,7 @@ interface RateViewFiltersProps {
   onUseGroupChange: (value: string) => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
   disabled?: boolean;
+  isOpenPlot?: boolean;
 }
 
 export function RateViewFilters({
@@ -30,15 +32,16 @@ export function RateViewFilters({
   onUseGroupChange,
   t,
   disabled = false,
+  isOpenPlot = false,
 }: RateViewFiltersProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 w-200">
+    <div className={`grid grid-cols-1 ${isOpenPlot ? 'md:grid-cols-2 w-[500px]' : 'md:grid-cols-3 w-200'} gap-1.5`}>
       {/* Rate Section */}
       <div className="flex flex-col gap-1">
-        <label htmlFor="zone-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
+        <Label htmlFor="zone-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
           <MapPin className="w-3.5 h-3.5 text-blue-500" />
           {t('filters.rateSection')}
-        </label>
+        </Label>
         <SearchSelect
           id="zone-select"
           name="zone"
@@ -53,10 +56,10 @@ export function RateViewFilters({
 
       {/* Assessment Year */}
       <div className="flex flex-col gap-1">
-        <label htmlFor="year-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
+        <Label htmlFor="year-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
           <Calendar className="w-3.5 h-3.5 text-blue-500" />
           {t('filters.assessmentYear')}
-        </label>
+        </Label>
         <SearchSelect
           id="year-select"
           name="year"
@@ -70,22 +73,24 @@ export function RateViewFilters({
       </div>
 
       {/* Use Group */}
-      <div className="flex flex-col gap-1">
-        <label htmlFor="useGroup-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
-          <Users className="w-3.5 h-3.5 text-blue-500" />
-          {t('filters.typeOfUseGroup')}
-        </label>
-        <SearchSelect
-          id="useGroup-select"
-          name="useGroup"
-          label=""
-          options={useGroupsFiltered}
-          value={selectedUseGroup ?? ""}
-          onChange={(_name, value) => onUseGroupChange(value)}
-          className="h-7 text-xs"
-          disabled={disabled}
-        />
-      </div>
+      {!isOpenPlot && (
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="useGroup-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
+            <Users className="w-3.5 h-3.5 text-blue-500" />
+            {t('filters.typeOfUseGroup')}
+          </Label>
+          <SearchSelect
+            id="useGroup-select"
+            name="useGroup"
+            label=""
+            options={useGroupsFiltered}
+            value={selectedUseGroup ?? ""}
+            onChange={(_name, value) => onUseGroupChange(value)}
+            className="h-7 text-xs"
+            disabled={disabled}
+          />
+        </div>
+      )}
     </div>
   );
 }
