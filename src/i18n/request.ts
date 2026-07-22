@@ -85,6 +85,7 @@ export default getRequestConfig(async ({ locale }) => {
     gstMasterMessages,
     penaltyRuleMasterMessages,
     owningDepartmentMessages,
+    municipalAssetMessages,
     moujaSubzoneMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -210,6 +211,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/municipalAsset.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
@@ -287,6 +289,7 @@ export default getRequestConfig(async ({ locale }) => {
       gstMaster: gstMasterMessages,
       penaltyRuleMaster: penaltyRuleMasterMessages,
       owningDepartment: owningDepartmentMessages,
+      municipalAsset: municipalAssetMessages,
       moujaSubzone: moujaSubzoneMessages,
     },
   };

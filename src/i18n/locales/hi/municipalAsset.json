@@ -1,0 +1,34 @@
+{
+  "dashboard": {
+    "title": "संपत्ति प्रबंधन",
+    "marathiTitle": "मालमत्ता व्यवस्थापन",
+    "subtitle": "नगर निगम संपत्ति प्रबंधन प्रणाली",
+    "totalCategories": "कुल श्रेणियां:",
+    "totalAssets": "कुल पंजीकृत संपत्तियां:",
+    "addNewAsset": "नई संपत्ति जोड़ें",
+    "loading": "श्रेणियां लोड हो रही हैं..."
+  },
+  "categoryCard": {
+    "totalValue": "कुल मूल्य",
+    "assetTypes": "संपत्ति के प्रकार",
+    "totalAssetTypes": "कुल संपत्ति के प्रकार",
+    "totalRegisteredAssets": "कुल पंजीकृत संपत्तियां",
+    "noTypesFound": "कोई प्रकार नहीं मिला",
+    "showMore": "+{count} अधिक",
+    "showLess": "कम दिखाएं",
+    "viewAllAssets": "सभी संपत्तियां देखें"
+  },
+  "drawer": {
+    "subtitle": "इस प्रकार के लिए सभी पंजीकृत संपत्तियों का विस्तृत दृश्य।",
+    "assetName": "संपत्ति का नाम",
+    "unnamedAsset": "अनाम संपत्ति",
+    "capitalValue": "पूंजी मूल्य (CV)",
+    "totalAssets": "कुल संपत्तियां",
+    "totalCv": "कुल CV",
+    "loadError": "विवरण लोड करने में विफल"
+  },
+  "loading": {
+    "message": "लोड हो रहा है...",
+    "description": "कृपया प्रतीक्षा करें जबकि हम संपत्ति डेटा लोड कर रहे हैं"
+  }
+}
