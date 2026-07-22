@@ -28,6 +28,13 @@
 export const CODE_REGEX = /^[A-Za-z0-9]+([A-Za-z0-9_]*[A-Za-z0-9]+)*$/; // original: /^[A-Za-z0-9](?:[A-Za-z0-9_]*[A-Za-z0-9])?$/
 export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except alphanumeric and underscore
 
+// Asset Mouja No: Allow alphanumeric (multilingual), hyphens (-), and underscores (_)
+export const ASSET_MOUJA_NO_REGEX = /^[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}_\-]*[\p{L}\p{M}\p{N}])?$/u;
+export const ASSET_MOUJA_NO_SANITIZE = /[^\p{L}\p{M}\p{N}_\-]/gu;
+// Asset Sub-Zone No: Allow alphanumeric (multilingual), dot (.), hyphen (-), and slash (/)
+export const ASSET_SUBZONE_NO_REGEX = /^[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}.\-\/]*[\p{L}\p{M}\p{N}])?$/u;
+export const ASSET_SUBZONE_NO_SANITIZE = /[^\p{L}\p{M}\p{N}.\-\/]/gu;
+
 /* ================= DESCRIPTION VALIDATION ================= */
 // Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
 // Special characters (&, -, /, etc.) must be in between other characters

@@ -16,6 +16,11 @@ export async function GET(
       },
     });
   } catch (_error) {
-    return new NextResponse('Image not found', { status: 404 });
+    return new NextResponse('Image not found', {
+      status: 404,
+      headers: {
+        'Cache-Control': 'public, max-age=300',
+      },
+    });
   }
 }
