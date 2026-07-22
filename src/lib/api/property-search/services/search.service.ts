@@ -154,17 +154,162 @@ export async function fetchWorkflowCards(
   }
 }
 
-interface ApartmentUnitListResponse {
-  success: boolean;
-  message?: string;
-  items?: unknown[];
+function buildApartmentUnitListParams(
+  propertyId: number,
+  criteria?: PropertySearchCriteriaPayload
+): string {
+  const params = new URLSearchParams();
+  params.set("propertyId", String(propertyId));
+
+  if (!criteria) {
+    return params.toString();
+  }
+
+  if (criteria.zoneId) {
+    params.set("zoneId", String(criteria.zoneId));
+    params.set("ZoneId", String(criteria.zoneId));
+  }
+  if (criteria.wardId) {
+    params.set("wardId", String(criteria.wardId));
+    params.set("WardId", String(criteria.wardId));
+  }
+  if (criteria.categoryId) {
+    params.set("categoryId", String(criteria.categoryId));
+    params.set("CategoryId", String(criteria.categoryId));
+  }
+  if (criteria.propertyAssessmentStatusId) {
+    params.set(
+      "propertyAssessmentStatusId",
+      String(criteria.propertyAssessmentStatusId)
+    );
+    params.set(
+      "PropertyAssessmentStatusId",
+      String(criteria.propertyAssessmentStatusId)
+    );
+  }
+  if (criteria.propertyNoFrom) {
+    params.set("propertyNoFrom", criteria.propertyNoFrom);
+    params.set("PropertyNoFrom", criteria.propertyNoFrom);
+  }
+  if (criteria.propertyNoTo) {
+    params.set("propertyNoTo", criteria.propertyNoTo);
+    params.set("PropertyNoTo", criteria.propertyNoTo);
+  }
+  if (criteria.oldPropertyNo) {
+    params.set("oldPropertyNo", criteria.oldPropertyNo);
+    params.set("OldPropertyNo", criteria.oldPropertyNo);
+  }
+  if (criteria.upicId) {
+    params.set("upicId", criteria.upicId);
+    params.set("UPICId", criteria.upicId);
+  }
+  if (criteria.citySurveyNo) {
+    params.set("csn", criteria.citySurveyNo);
+    params.set("CSN", criteria.citySurveyNo);
+  }
+  if (criteria.subZoneNo) {
+    params.set("subZoneNo", criteria.subZoneNo);
+    params.set("SubZoneNo", criteria.subZoneNo);
+  }
+  if (criteria.plotNo) {
+    params.set("plotNo", criteria.plotNo);
+    params.set("PlotNo", criteria.plotNo);
+  }
+  if (criteria.holderName) {
+    params.set("ownerName", criteria.holderName);
+    params.set("OwnerName", criteria.holderName);
+  }
+  if (criteria.occupierName) {
+    params.set("occupierName", criteria.occupierName);
+    params.set("OccupierName", criteria.occupierName);
+  }
+  if (criteria.mobile) {
+    params.set("mobileNo", criteria.mobile);
+    params.set("MobileNo", criteria.mobile);
+  }
+  if (criteria.shopBuildingName) {
+    params.set("flatOrShopName", criteria.shopBuildingName);
+    params.set("FlatOrShopName", criteria.shopBuildingName);
+  }
+  if (criteria.societyName) {
+    params.set("societyName", criteria.societyName);
+    params.set("SocietyName", criteria.societyName);
+  }
+  if (criteria.address) {
+    params.set("address", criteria.address);
+    params.set("Address", criteria.address);
+  }
+  if (criteria.dashboardFilter != null && criteria.dashboardFilter > 0) {
+    params.set("dashboardFilter", String(criteria.dashboardFilter));
+    params.set("DashboardFilter", String(criteria.dashboardFilter));
+  }
+  if (criteria.valuationMethod) {
+    params.set("valuationMethod", criteria.valuationMethod);
+    params.set("ValuationMethod", criteria.valuationMethod);
+  }
+  if (criteria.filterType) {
+    params.set("filterType", criteria.filterType);
+    params.set("FilterType", criteria.filterType);
+  }
+  if (criteria.amountValue != null) {
+    params.set("amountValue", String(criteria.amountValue));
+    params.set("AmountValue", String(criteria.amountValue));
+  }
+  if (criteria.amountTo != null) {
+    params.set("amountTo", String(criteria.amountTo));
+    params.set("AmountTo", String(criteria.amountTo));
+  }
+  if (criteria.topCount != null) {
+    params.set("topCount", String(criteria.topCount));
+    params.set("TopCount", String(criteria.topCount));
+  }
+
+  return params.toString();
+}
+
+function extractTotalCount(data: unknown, fallbackCount: number): number {
+  if (!data || typeof data !== "object") {
+    return fallbackCount;
+  }
+  const obj = data as Record<string, unknown>;
+
+  if (typeof obj.totalCount === "number" && Number.isFinite(obj.totalCount)) {
+    return obj.totalCount;
+  }
+  if (typeof obj.TotalCount === "number" && Number.isFinite(obj.TotalCount)) {
+    return obj.TotalCount;
+  }
+
+  if (obj.data && typeof obj.data === "object") {
+    const nestedData = obj.data as Record<string, unknown>;
+    if (typeof nestedData.totalCount === "number" && Number.isFinite(nestedData.totalCount)) {
+      return nestedData.totalCount;
+    }
+    if (typeof nestedData.TotalCount === "number" && Number.isFinite(nestedData.TotalCount)) {
+      return nestedData.TotalCount;
+    }
+  }
+
+  if (obj.items && typeof obj.items === "object" && !Array.isArray(obj.items)) {
+    const nestedItems = obj.items as Record<string, unknown>;
+    if (typeof nestedItems.totalCount === "number" && Number.isFinite(nestedItems.totalCount)) {
+      return nestedItems.totalCount;
+    }
+    if (typeof nestedItems.TotalCount === "number" && Number.isFinite(nestedItems.TotalCount)) {
+      return nestedItems.TotalCount;
+    }
+  }
+
+  return fallbackCount;
 }
 
 export async function fetchApartmentUnitList(
-  propertyId: number
-): Promise<SearchResult[]> {
-  const response = await apiClient.get<ApartmentUnitListResponse>(
-    `/PropertySearch/search/apartmentunitlist?propertyId=${propertyId}`
+  propertyId: number,
+  criteria?: PropertySearchCriteriaPayload
+): Promise<{ items: SearchResult[]; totalCount: number }> {
+  const qs = buildApartmentUnitListParams(propertyId, criteria);
+  const response = await apiClient.get<unknown>(
+    `/PropertySearch/search/apartmentunitlist?${qs}`
   );
 
   if (!response.success || !response.data) {
@@ -176,6 +321,9 @@ export async function fetchApartmentUnitList(
   }
 
   const rawItems = extractPropertySearchRawItems(response.data);
-  return rawItems.map((item) => normalizePropertySearchItem(item as Record<string, unknown>));
+  const items = rawItems.map((item) => normalizePropertySearchItem(item as Record<string, unknown>));
+  const totalCount = extractTotalCount(response.data, items.length);
+
+  return { items, totalCount };
 }
 

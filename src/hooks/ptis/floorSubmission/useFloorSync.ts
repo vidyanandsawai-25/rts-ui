@@ -169,7 +169,7 @@ export const useFloorSync = (params: {
       }
     } else {
       hasSyncedRef.current = null;
-      if (!isAddingNewFloor) {
+      if (!isAddingNewFloor && (!currentFloorIdUrl || currentFloorIdUrl === 'new')) {
         setEditingFloorForm(INITIAL_FORM_STATE);
         setSelectedFloor(null);
       }
@@ -187,6 +187,7 @@ export const useFloorSync = (params: {
     setEditingFloorForm,
     setSelectedFloor,
     INITIAL_FORM_STATE,
+    currentFloorIdUrl,
   ]);
 
   // Real-time autosave disabled to prevent unsaved changes from persisting across manual browser refreshes

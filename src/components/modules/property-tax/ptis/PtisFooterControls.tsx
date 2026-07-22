@@ -159,7 +159,7 @@ export function PtisFooterDropdowns({
 
   const handleSaveWorkflowDetail = async (stageName: string, stageId: number) => {
     if (!propertyId) {
-      toast.error('Property ID is missing');
+      toast.error(t('error.propertyIdMissing') || 'Property ID is missing. Please search and select a property first.');
       return;
     }
 

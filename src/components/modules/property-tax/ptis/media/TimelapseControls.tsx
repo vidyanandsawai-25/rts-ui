@@ -23,6 +23,9 @@ interface TimelapseControlsProps {
   lng: number;
   loading: boolean;
   propertyId?: number;
+  wardNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
 export function TimelapseControls({
@@ -41,6 +44,9 @@ export function TimelapseControls({
   lng,
   loading,
   propertyId,
+  wardNo = '',
+  propertyNo = '',
+  partitionNo = '',
 }: TimelapseControlsProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -78,7 +84,18 @@ export function TimelapseControls({
       const name = loggedInName;
       const propertyOwnerId = propertyId != null ? String(propertyId) : "";
 
-      const url = await generateGisSsoUrl(userId, name, propertyOwnerId);
+      let propertyKey = '';
+      const trimmedWard = wardNo?.trim();
+      const trimmedProp = propertyNo?.trim();
+      const trimmedPartition = partitionNo?.trim();
+
+      if (trimmedWard && trimmedProp) {
+        propertyKey = trimmedPartition
+          ? `${trimmedWard}-${trimmedProp}-${trimmedPartition}`
+          : `${trimmedWard}-${trimmedProp}`;
+      }
+
+      const url = await generateGisSsoUrl(userId, name, propertyOwnerId, propertyKey || undefined);
       
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {

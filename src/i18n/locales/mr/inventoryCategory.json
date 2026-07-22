@@ -1,0 +1,137 @@
+{
+  "configuration": {
+    "header": {
+      "title": "Configuration Master",
+      "subtitle": "केंद्रीकृत मास्टर डेटा व्यवस्थापन प्रणाली",
+      "totalMasters": "Total Masters"
+    },
+    "tabs": {
+      "masterData": "Master Data",
+      "screenMaster": "Screen Master",
+      "screenFieldsMaster": "Screen Fields Master"
+    },
+    "masterData": {
+      "title": "Master Data",
+      "records": "Master Records",
+      "addNew": "नवीन {name} जोडा",
+      "searchPlaceholder": "मास्टर रेकॉर्ड शोधा...",
+      "stats": {
+        "master": "Master Types",
+        "shown": "Shown",
+        "active": "Active"
+      },
+      "groupFilter": {
+        "categoriesTitle": "Categories",
+        "itemNamesTitle": "Item Names"
+      },
+      "form": {
+        "addTitle": "{name} जोडा",
+        "editTitle": "{name} संपादित करा",
+        "createSubtitle": "नवीन नोंद तयार करा",
+        "updateSubtitle": "निवडलेली नोंद अद्यतनित करा",
+        "labels": {
+          "code": "कोड",
+          "name": "नाव",
+          "category": "मालमत्ता श्रेणी",
+          "itemName": "आयटमचे नाव",
+          "description": "वर्णन",
+          "depreciationRate": "घसारा दर",
+          "displayOrder": "प्रदर्शन क्रम",
+          "status": "स्थिती",
+          "active": "सक्रिय",
+          "inactive": "निष्क्रिय"
+        },
+        "placeholders": {
+          "code": "कोड प्रविष्ट करा",
+          "name": "नाव प्रविष्ट करा",
+          "category": "श्रेणी निवडा",
+          "itemName": "आयटमचे नाव निवडा",
+          "description": "वर्णन प्रविष्ट करा",
+          "depreciationRate": "घसारा दर प्रविष्ट करा",
+          "displayOrder": "प्रदर्शन क्रम प्रविष्ट करा"
+        },
+        "buttons": {
+          "save": "जतन करा",
+          "update": "अद्यतनित करा",
+          "cancel": "रद्द करा"
+        },
+        "errors": {
+          "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा.",
+          "codeRequired": "कोड आवश्यक आहे.",
+          "codeFormat": "कोडमध्ये फक्त अक्षरे, संख्या आणि हायफन (-) असू शकतात.",
+          "duplicateCode": "कोड अद्वितीय असणे आवश्यक आहे.",
+          "nameRequired": "नाव आवश्यक आहे.",
+          "duplicateName": "नाव अद्वितीय असणे आवश्यक आहे.",
+          "englishOnly": "कृपया इंग्रजीमध्ये प्रविष्ट करा.",
+          "noSpecialCharacters": "कृपया नावात फक्त अक्षरे, संख्या आणि स्पेसेस वापरा.",
+          "descriptionRequired": "वर्णन आवश्यक आहे.",
+          "maxLength": "कृपया अनुमत अक्षरांच्या मर्यादेपेक्षा जास्त टाकू नका.",
+          "depreciationRateRequired": "घसारा दर आवश्यक आहे.",
+          "depreciationRateInvalid": "घसारा दर वैध क्रमांक असणे आवश्यक आहे.",
+          "depreciationRateRange": "घसारा दर 0 आणि 1 च्या दरम्यान असणे आवश्यक आहे.",
+          "displayOrderRequired": "प्रदर्शन क्रम आवश्यक आहे.",
+          "apiActionsNotConfigured": "API क्रिया संरचीत नाहीत.",
+          "saveFailed": "रेकॉर्ड जतन करता आले नाही",
+          "deleteFailed": "रेकॉर्ड हटवता आले नाही",
+          "unexpected": "एक अनपेक्षित त्रुटी आली",
+          "codeAllZeros": "कोड शून्य असू शकत नाही",
+          "codeMax": "कोड कमाल लांबीपेक्षा जास्त आहे",
+          "codeTooLong15": "कोड 15 वर्णांपेक्षा जास्त असू शकत नाही",
+          "codeInvalidChars": "कोडमध्ये अवैध वर्ण आहेत",
+          "codeDuplicate": "हा कोड आधीपासून अस्तित्वात आहे",
+          "nameAllZeros": "नाव शून्य असू शकत नाही",
+          "nameMax": "नाव कमाल लांबीपेक्षा जास्त आहे",
+          "nameFormat": "नावासाठी अवैध स्वरूप",
+          "nameTooLong50": "नाव 50 वर्णांपेक्षा जास्त असू शकत नाही",
+          "nameInvalidChars": "नावामध्ये अवैध वर्ण आहेत",
+          "nameDuplicate": "हे नाव आधीपासून अस्तित्वात आहे",
+          "descriptionAllZeros": "वर्णन शून्य असू शकत नाही",
+          "descriptionFormat": "वर्णनासाठी अवैध स्वरूप",
+          "descriptionTooLong": "वर्णन 500 वर्णांपेक्षा जास्त असू शकत नाही",
+          "descInvalidChars": "वर्णनात अवैध वर्ण आहेत",
+          "group": "अ‍ॅसेट श्रेणी आवश्यक आहे."
+        },
+        "messages": {
+          "createSuccess": "नोंद यशस्वीरित्या तयार केली",
+          "updateSuccess": "नोंद यशस्वीरित्या अद्यतनित केली",
+          "invalidIdError": "अवैध नोंद आयडी",
+          "error": "एक अनपेक्षित त्रुटी आली"
+        },
+        "validation": {
+          "codeRequired": "कोड आवश्यक आहे",
+          "codeAllZeros": "कोड शून्य असू शकत नाही",
+          "codeMax": "कोड कमाल लांबीपेक्षा जास्त आहे",
+          "codeFormat": "कोडमध्ये फक्त अक्षरे, अंक आणि हायफन (-) असू शकतात",
+          "nameRequired": "नाव आवश्यक आहे",
+          "nameAllZeros": "नाव शून्य असू शकत नाही",
+          "nameMax": "नाव कमाल लांबीपेक्षा जास्त आहे",
+          "nameFormat": "नावासाठी अवैध स्वरूप",
+          "descriptionAllZeros": "वर्णन शून्य असू शकत नाही",
+          "descriptionFormat": "वर्णनासाठी अवैध स्वरूप",
+          "fixErrors": "कृपया सबमिट करण्यापूर्वी सर्व अवैध त्रुटी दुरुस्त करा",
+          "duplicateRecord": "हा रेकॉर्ड आधीपासून अस्तित्वात आहे",
+          "duplicateError": "डुप्लिकेट रेकॉर्ड आढळला आहे"
+        }
+      },
+      "error": {
+        "title": "डेटा लोड करणे अयशस्वी",
+        "description": "मास्टर डेटा नोंदी लोड करताना एक त्रुटी आली. कृपया तुमचे कनेक्शन तपासा किंवा पुन्हा प्रयत्न करा.",
+        "categoryTitle": "श्रेणी लोड करणे अयशस्वी",
+        "categoryDescription": "अ‍ॅसेट श्रेणी लोड करताना एक त्रुटी आली. कृपया तुमचे कनेक्शन तपासा किंवा पुन्हा प्रयत्न करा.",
+        "typeTitle": "प्रकार लोड करणे अयशस्वी",
+        "typeDescription": "अ‍ॅसेट प्रकार लोड करताना एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+        "reload": "पृष्ठ पुन्हा लोड करा",
+        "tryAgain": "पुन्हा प्रयत्न करा",
+        "goHome": "मुख्यपृष्ठावर जा"
+      }
+    }
+  },
+  "masterNames": {
+    "asset-category-master": "मालमत्ता श्रेणी",
+    "asset-type-master": "मालमत्ता प्रकार",
+    "inventory-category-master": "इन्व्हेंटरी श्रेणी",
+    "inventory-model-master": "इन्व्हेंटरी मॉडेल",
+    "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
+    "inventory-condition-master": "इन्व्हेंटरी स्थिती"
+  }
+}

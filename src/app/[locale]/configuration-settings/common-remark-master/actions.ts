@@ -9,6 +9,7 @@ import {
   updateCommonRemark,
   deleteCommonRemark,
   getCommonRemarkCategories,
+  createRemarkCategory,
 } from "@/lib/api/common-remark-master/common-remark-crud.service";
 import { ApiError } from "@/lib/utils/api";
 import type { CommonRemark, CommonRemarkFormModel } from "@/types/common-remark-master/common-remark.types";
@@ -182,6 +183,47 @@ export async function saveCommonRemarkAction(id: string, formData: FormData) {
         ok: false,
         error: "api_error",
         message: error.message || "An error occurred while saving.",
+      };
+    }
+    return {
+      ok: false,
+      error: "unknown",
+      message: error instanceof Error ? error.message : "An unexpected error occurred.",
+    };
+  }
+}
+
+/**
+ * Create a new remark type category
+ */
+export async function createRemarkCategoryAction(formData: FormData) {
+  try {
+    validateRequiredStringFromFormData(formData, "locale");
+    const customRemarkType = validateRequiredStringFromFormData(formData, "customRemarkType");
+
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    const numericUserId = userId ? Number(userId) : 1;
+
+    const category = await createRemarkCategory(customRemarkType, numericUserId);
+
+    for (const loc of locales) {
+      revalidatePath(`/${loc}/configuration-settings/common-remark-master`, "page");
+    }
+    return { ok: true, data: category };
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 409) {
+      return {
+        ok: false,
+        error: "duplicate",
+        message: "This remark type already exists.",
+      };
+    }
+    if (error instanceof ApiError) {
+      return {
+        ok: false,
+        error: "api_error",
+        message: error.message || "An error occurred while saving remark type.",
       };
     }
     return {

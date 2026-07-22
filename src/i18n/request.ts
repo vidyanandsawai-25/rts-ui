@@ -28,6 +28,8 @@ export default getRequestConfig(async ({ locale }) => {
     quickDataEntryMessages,
     rateSectionMasterMessages,
     assessmentYearRangeMessages,
+    ownershipTypeMessages,
+    assetMessages,
     ptisMessages,
     floorFactorMasterMessages,
     weightageMasterMessages,
@@ -69,10 +71,22 @@ export default getRequestConfig(async ({ locale }) => {
     applicableTaxesMessages,
     reassessmentMessages,
     taxCalculationGuidelineMessages,
+
     addTaxesMessages,
+    inventoryCategoryMessages,
+    inventoryConditionMessages,
+    inventoryModelMessages,
+    inventoryNameMessages,
     modulesMessages,
     rtsMessages,
     reportMessages,
+    assetPhotoTypeMessages,
+    assetRoomTypeMessages,
+    designationMessages,
+    gstMasterMessages,
+    penaltyRuleMasterMessages,
+    owningDepartmentMessages,
+    moujaSubzoneMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -85,6 +99,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ownership-type.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/asset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
@@ -164,22 +180,44 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/reassessment.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
+      import(`./locales/${validatedLocale}/reassessment.json`)
+        .catch(() => ({}))
+        .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/addTaxes.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/modules.json`)
+    import(`./locales/${validatedLocale}/addTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+<<<<<<< HEAD
     import(`./locales/${validatedLocale}/rts.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+=======
+    import(`./locales/${validatedLocale}/inventoryCategory.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryCondition.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryModel.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/inventoryName.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+>>>>>>> main
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/designation.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -196,6 +234,9 @@ export default getRequestConfig(async ({ locale }) => {
       quickDataEntry: quickDataEntryMessages,
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
+      ownershipType: ownershipTypeMessages?.ownershipType || ownershipTypeMessages,
+      "ownership-type": ownershipTypeMessages,
+      asset: assetMessages,
       ptis: ptisMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
       weightageMaster: weightageMasterMessages.weightageMaster,
@@ -238,11 +279,23 @@ export default getRequestConfig(async ({ locale }) => {
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
       applicableTaxes: applicableTaxesMessages,
       reassessment: reassessmentMessages,
-      taxCalculationGuideline: taxCalculationGuidelineMessages,
-      addTaxes: addTaxesMessages,
+      taxCalculationGuideline:
+        taxCalculationGuidelineMessages?.taxCalculationGuideline || taxCalculationGuidelineMessages,
+      addTaxes: addTaxesMessages?.addTaxes || addTaxesMessages,
+      inventoryCategory: inventoryCategoryMessages?.inventoryCategory || inventoryCategoryMessages,
+      inventoryCondition: inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
+      inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
+      inventoryName: inventoryNameMessages?.inventoryName || inventoryNameMessages,
       modules: modulesMessages,
       rts: rtsMessages,
       report: reportMessages,
+      assetPhotoType: assetPhotoTypeMessages,
+      assetRoomType: assetRoomTypeMessages,
+      designation: designationMessages,
+      gstMaster: gstMasterMessages,
+      penaltyRuleMaster: penaltyRuleMasterMessages,
+      owningDepartment: owningDepartmentMessages,
+      moujaSubzone: moujaSubzoneMessages,
     },
   };
 });

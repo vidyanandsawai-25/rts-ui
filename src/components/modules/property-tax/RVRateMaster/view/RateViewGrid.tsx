@@ -72,63 +72,63 @@ export function RateViewGrid({
 
   return (
     <GridContainerCard
-        variant="elevated"
-        padding="none"
-        className="border-2 border-blue-200 bg-blue-50"
-      >
-        <GridContainerCardHeader className="mb-0">
-          <div className="bg-linear-to-r from-blue-100/70 via-blue-50/60 to-blue-200/40 border-b border-blue-200 px-3 md:px-4 py-1.5 md:py-2 backdrop-blur-[2px]">
-            <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
-              <div className="flex items-center gap-1.5 text-blue-900 shrink-0">
-                <CheckCircle className="w-3.5 h-3.5 text-blue-700" />
-                <span className="font-semibold text-xs md:text-sm">{t('messages.rateConfiguration')}</span>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                {rateFrequencyPolicy?.isConfigured && (
-                  <StatusBadge
-                    variant="info"
-                    icon={<CalendarClock className="w-3 h-3" />}
-                    label={t(`options.${rateFrequencyPolicy.value.toLowerCase()}`)}
-                  />
-                )}
-                {rateUnitPolicy?.isConfigured && (
-                  <StatusBadge
-                    variant="info"
-                    icon={<Ruler className="w-3 h-3" />}
-                    label={t(`options.${rateUnitPolicy.value === 'SqMeter' ? 'sqMeter' : 'sqFeet'}`)}
-                  />
-                )}
-                {selectedZone && selectedZone !== 'ALL' && (
-                  <StatusBadge
-                    variant="info"
-                    icon={<MapPin className="w-3 h-3" />}
-                    label={zones.find(z => z.value === selectedZone)?.label ?? selectedZone}
-                  />
-                )}
-                {selectedYear && selectedYear !== 'ALL' && (
-                  <StatusBadge
-                    variant="info"
-                    icon={<Calendar className="w-3 h-3" />}
-                    label={assessmentYears.find(ay => String(ay.value) === String(selectedYear))?.label || String(selectedYear)}
-                  />
-                )}
-                {useGroupLabel && useGroupLabel !== 'ALL' && (
-                  <StatusBadge
-                    variant="info"
-                    icon={<Users className="w-3 h-3" />}
-                    label={useGroupLabel}
-                  />
-                )}
+      variant="elevated"
+      padding="none"
+      className="border-2 border-blue-200 bg-blue-50"
+    >
+      <GridContainerCardHeader className="mb-0">
+        <div className="bg-linear-to-r from-blue-100/70 via-blue-50/60 to-blue-200/40 border-b border-blue-200 px-3 md:px-4 py-1.5 md:py-2 backdrop-blur-[2px]">
+          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
+            <div className="flex items-center gap-1.5 text-blue-900 shrink-0">
+              <CheckCircle className="w-3.5 h-3.5 text-blue-700" />
+              <span className="font-semibold text-xs md:text-sm">{t('messages.rateConfiguration')}</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+              {rateFrequencyPolicy?.isConfigured && (
                 <StatusBadge
                   variant="info"
-                  icon={<CheckCircle className="w-3 h-3" />}
-                  label={t('messages.ratesConfigured', { count: ratesConfiguredCount })}
+                  icon={<CalendarClock className="w-3 h-3" />}
+                  label={t(`options.${rateFrequencyPolicy.value.toLowerCase()}`)}
                 />
-              </div>
+              )}
+              {rateUnitPolicy?.isConfigured && (
+                <StatusBadge
+                  variant="info"
+                  icon={<Ruler className="w-3 h-3" />}
+                  label={t(`options.${rateUnitPolicy.value === 'SqMeter' ? 'sqMeter' : 'sqFeet'}`)}
+                />
+              )}
+              {selectedZone && selectedZone !== 'ALL' && (
+                <StatusBadge
+                  variant="info"
+                  icon={<MapPin className="w-3 h-3" />}
+                  label={zones.find(z => z.value === selectedZone)?.label ?? selectedZone}
+                />
+              )}
+              {selectedYear && selectedYear !== 'ALL' && (
+                <StatusBadge
+                  variant="info"
+                  icon={<Calendar className="w-3 h-3" />}
+                  label={assessmentYears.find(ay => String(ay.value) === String(selectedYear))?.label || String(selectedYear)}
+                />
+              )}
+              {useGroupLabel && useGroupLabel !== 'ALL' && (
+                <StatusBadge
+                  variant="info"
+                  icon={<Users className="w-3 h-3" />}
+                  label={useGroupLabel}
+                />
+              )}
+              <StatusBadge
+                variant="info"
+                icon={<CheckCircle className="w-3 h-3" />}
+                label={t('messages.ratesConfigured', { count: ratesConfiguredCount })}
+              />
             </div>
           </div>
-        </GridContainerCardHeader>
-        <GridContainerCardContent className="bg-white p-1 md:p-2">
+        </div>
+      </GridContainerCardHeader>
+      <GridContainerCardContent className="bg-white p-1 md:p-2">
         {data.length > 0 ? (
           <>
             <div className="w-full overflow-x-auto">
@@ -155,7 +155,7 @@ export function RateViewGrid({
                           r.rateCategory?.trim().toLowerCase() === col.id.trim().toLowerCase()
                         );
                         // Use rate value based on selected rate unit
-                        value = rateUnit === 'SqFeet' 
+                        value = rateUnit === 'SqFeet'
                           ? ((rateObj && rateObj.ratePerSqFt != null) ? rateObj.ratePerSqFt : 0.00)
                           : ((rateObj && rateObj.ratePerSqMtr != null) ? rateObj.ratePerSqMtr : 0.00);
                       } else if ((row as unknown as Record<string, unknown>)[col.id] != null) {

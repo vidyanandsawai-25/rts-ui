@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Card, Badge } from "@/components/common";
 import { toast } from "sonner";
+<<<<<<< HEAD
 import { pickLangText } from "@/lib/utils/rts/lang";
 import { submitRtsAction } from "@/app/[locale]/rts/actions";
 import type { RtsApplication, RtsOfficer } from "@/types/rts/rts-application.types";
@@ -29,6 +30,16 @@ interface RtsApplicationDetailsProps {
   officers: RtsOfficer[];
   locale: string;
   workflowDetails?: WorkflowDetails | null;
+=======
+import { submitRtsAction } from "@/app/[locale]/rts/applications/actions";
+import type { RtsApplication, RtsOfficer } from "@/lib/mock/rts/rts-applications.types";
+
+interface RtsApplicationDetailsProps {
+  application: RtsApplication;
+  formSchema: any | null;
+  officers: RtsOfficer[];
+  locale: string;
+>>>>>>> main
 }
 
 type TabId = "profile" | "form" | "documents" | "timeline";
@@ -37,8 +48,12 @@ export default function RtsApplicationDetails({
   application,
   formSchema,
   officers,
+<<<<<<< HEAD
   locale,
   workflowDetails
+=======
+  locale
+>>>>>>> main
 }: RtsApplicationDetailsProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("profile");
@@ -46,6 +61,7 @@ export default function RtsApplicationDetails({
 
   const [documentStates, setDocumentStates] = useState(application.documents);
 
+<<<<<<< HEAD
   // Dynamic workflow stage calculation
   const completedStepsCount = application.timeline.filter(t => t.status === "completed").length;
   const currentStageIndex = workflowDetails && workflowDetails.stages.length > 0
@@ -66,6 +82,9 @@ export default function RtsApplicationDetails({
     : "Approve";
 
   const [actionType, setActionType] = useState<"Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments">(defaultAction);
+=======
+  const [actionType, setActionType] = useState<"Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments">("Approve");
+>>>>>>> main
   const [remarks, setRemarks] = useState("");
   const [forwardOfficerId, setForwardOfficerId] = useState("");
 
@@ -94,7 +113,11 @@ export default function RtsApplicationDetails({
         const res = await submitRtsAction(application.id, actionType, remarks, forwardOfficerId);
         if (res.success) {
           toast.success(`Application decision [${actionType}] recorded successfully!`);
+<<<<<<< HEAD
           router.push(`/${locale}/rts-cms/inbox`);
+=======
+           router.push(`/${locale}/rts/applications`);
+>>>>>>> main
         }
       } catch (err) {
         toast.error("An error occurred while recording the action. Please try again.");
@@ -114,7 +137,11 @@ export default function RtsApplicationDetails({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-5">
         <div className="flex items-center gap-3">
           <Link
+<<<<<<< HEAD
             href={`/${locale}/rts-cms/inbox`}
+=======
+            href={`/${locale}/rts/applications`}
+>>>>>>> main
             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -236,6 +263,7 @@ export default function RtsApplicationDetails({
                 </div>
               ) : (
                 <div className="space-y-6">
+<<<<<<< HEAD
                   {formSchema.steps.map((section: any, idx: number) => (
                     <div key={section.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
                       <h4 className="text-xs font-bold text-[#4b70a6] uppercase tracking-wider mb-3 pb-1 border-b border-slate-100">
@@ -245,13 +273,31 @@ export default function RtsApplicationDetails({
                         {section.fields.map((field: any) => {
                           const val = application.fieldValues[field.id] || "—";
                           const label = pickLangText(field.label, "en") || "Field";
+=======
+                  {formSchema.steps?.map((section: any, idx: number) => (
+                    <div key={section.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                      <h4 className="text-xs font-bold text-[#4b70a6] uppercase tracking-wider mb-3 pb-1 border-b border-slate-100">
+                        {idx + 1}. {section.title || "Section Details"}
+                      </h4>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {section.fields?.map((field: any) => {
+                          const val = application.fieldValues[field.id] || "—";
+                          const label =
+                            typeof field.label === "object" && field.label
+                              ? field.label[locale] || field.label.en || "Field"
+                              : field.label || "Field";
+>>>>>>> main
 
                           return (
                             <div key={field.id} className="text-xs">
                               <p className="text-slate-400 font-semibold">{label}</p>
                               <p className="font-bold text-slate-800 mt-0.5 whitespace-pre-wrap truncate">
                                 {field.type === "select"
+<<<<<<< HEAD
                                   ? field.options?.find((o: any) => o.value === val)?.label?.en || val
+=======
+                                  ? field.options?.find((o: any) => o.value === val)?.label || val
+>>>>>>> main
                                   : val}
                               </p>
                             </div>
@@ -311,6 +357,7 @@ export default function RtsApplicationDetails({
 
           {/* TAB 4: Timeline */}
           {activeTab === "timeline" && (
+<<<<<<< HEAD
             <div className="space-y-6">
               {/* Dynamic Workflow Stages Pipeline */}
               {workflowDetails && workflowDetails.stages.length > 0 && (
@@ -397,6 +444,42 @@ export default function RtsApplicationDetails({
                 </div>
               </Card>
             </div>
+=======
+            <Card className="p-6">
+              <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-6">Movement History</h3>
+              <div className="relative border-l border-slate-200 ml-4 space-y-6">
+                {application.timeline?.map((step, idx) => (
+                  <div key={idx} className="relative pl-6">
+                    <span
+                      className={`absolute left-0 top-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 bg-white ${
+                        step.status === "completed"
+                          ? "border-green-500 bg-green-500"
+                          : step.status === "current"
+                            ? "border-amber-500"
+                            : "border-slate-200"
+                      }`}
+                    />
+                    <div>
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                        <h4>{step.title}</h4>
+                        {step.timestamp && (
+                          <span className="text-[10px] text-slate-400 font-semibold">{step.timestamp}</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        By {step.officerName} ({step.role})
+                      </p>
+                      {step.remarks && (
+                        <div className="mt-1.5 rounded-lg bg-slate-50 p-2 text-xs text-slate-600 border border-slate-100 italic">
+                          "{step.remarks}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+>>>>>>> main
           )}
         </div>
 
@@ -408,6 +491,7 @@ export default function RtsApplicationDetails({
               <h3 className="text-sm font-bold uppercase tracking-wider">Decision Control</h3>
             </div>
 
+<<<<<<< HEAD
             {/* Display active workflow stage details */}
             {currentStage && (
               <div className="mb-4 rounded-xl bg-blue-50/60 border border-blue-100 p-3 text-[11px] text-slate-700 space-y-1">
@@ -418,6 +502,8 @@ export default function RtsApplicationDetails({
               </div>
             )}
 
+=======
+>>>>>>> main
             {["Approved", "Rejected"].includes(application.status) ? (
               <div className="text-center py-6 text-slate-400 bg-slate-100/50 rounded-xl">
                 <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
@@ -433,12 +519,21 @@ export default function RtsApplicationDetails({
                     onChange={e => setActionType(e.target.value as any)}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-teal-500 focus:outline-none"
                   >
+<<<<<<< HEAD
                     {!currentStage || currentStage.canApprove ? <option value="Approve">Approve & Issue Certificate</option> : null}
                     {!currentStage || !currentStage.isFinalStage ? <option value="Forward">Forward to Next Official</option> : null}
                     {!currentStage || currentStage.canReturn ? <option value="Return">Return to Citizen for Corrections</option> : null}
                     <option value="Hold">Put Application on Hold</option>
                     {!currentStage || currentStage.canVerifyDocument ? <option value="RequestDocuments">Request Additional Documents</option> : null}
                     {!currentStage || currentStage.canReject ? <option value="Reject">Reject Request</option> : null}
+=======
+                    <option value="Approve">Approve & Issue Certificate</option>
+                    <option value="Forward">Forward to Next Official</option>
+                    <option value="Return">Return to Citizen for Corrections</option>
+                    <option value="Hold">Put Application on Hold</option>
+                    <option value="RequestDocuments">Request Additional Documents</option>
+                    <option value="Reject">Reject Request</option>
+>>>>>>> main
                   </select>
                 </div>
 
@@ -491,5 +586,8 @@ export default function RtsApplicationDetails({
     </div>
   );
 }
+<<<<<<< HEAD
 
 export const CmsApplicationDetails = RtsApplicationDetails;
+=======
+>>>>>>> main

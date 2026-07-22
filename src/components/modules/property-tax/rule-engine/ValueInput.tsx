@@ -63,17 +63,19 @@ export default function ValueInput({
     const base =
       config.sourceType === 'API'
          ? apiOptions
-         : staticOptions.map((o) => ({ label: o.label, value: o.value }));
+         : staticOptions.map((o) => ({ label: o.label, value: String(o.value) }));
     const merged = config.supportsNA ? [{ label: 'Not Applicable (N/A)', value: 'NA' }, ...base] : base;
     
     // Deduplicate options by value to prevent React key warning issues
     const seen = new Set<string>();
-    return merged.filter((opt) => {
-      const valStr = String(opt.value);
-      if (seen.has(valStr)) return false;
-      seen.add(valStr);
-      return true;
-    });
+    return merged
+      .filter((opt) => {
+        const valStr = String(opt.value);
+        if (seen.has(valStr.toLowerCase())) return false;
+        seen.add(valStr.toLowerCase());
+        return true;
+      })
+      .map((opt) => ({ label: opt.label, value: String(opt.value) }));
   }, [config.sourceType, config.supportsNA, apiOptions, staticOptions]);
 
   // Auto-select all options when operator is 'contains all'
@@ -91,7 +93,9 @@ export default function ValueInput({
   }, [operator, effectiveOptions, value, onChange]);
 
   const loadingPlaceholder = apiLoading ? 'Loading options…' : (config.placeholder ?? 'Select…');
-  const activeScalar = Array.isArray(value) ? (value[0] || '') : (value || '');
+  const activeScalar = Array.isArray(value)
+    ? (value[0] !== undefined && value[0] !== null ? String(value[0]) : '')
+    : (value !== undefined && value !== null ? String(value) : '');
 
   const isMultiSelectOp = operator && ['In', 'Not In', 'contains any', 'contains all'].includes(operator);
   const resolvedInputType = isMultiSelectOp || config.inputType === 'MULTISELECT' ? 'MULTISELECT' : config.inputType;

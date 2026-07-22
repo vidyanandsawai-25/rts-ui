@@ -17,7 +17,7 @@ describe('useFloorSubmissionState', () => {
         noOfRooms: 3,
         carpetASqMtr: 120,
         rentMonthly: 100,
-        yearlyRent: 1200,
+        rentYearly: 1200,
         monthlyRate: 10,
         yearlyRate: 120,
         annualRentalValue: 1500,

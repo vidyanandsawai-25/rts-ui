@@ -1,0 +1,139 @@
+"use client";
+
+import React, { useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { toast } from "sonner";
+import { createSubZoneAction, updateSubZoneAction } from "@/app/[locale]/assets/configuration/master-data/mouja-subzone/action";
+import { SubZoneFormModel, SubZoneDetails } from "@/types/asset-masters/mouja-subzone.types";
+import { sanitizeSubZoneFieldValue, validateSubZoneForm } from "./validation";
+
+interface UseSubZoneFormProps {
+  id: number | null;
+  initialData?: SubZoneDetails;
+  selectedMoujaId?: number;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = () => {}, onCancel = () => {} }: UseSubZoneFormProps) {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const locale = useLocale();
+  const t = useTranslations("moujaSubzone");
+  const tCommon = useTranslations("common");
+  const isEdit = Boolean(id);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+  const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
+  const [open, setOpen] = useState(true);
+  const [formData, setFormData] = useState<SubZoneFormModel>({
+    id: id ?? initialData?.id,
+    moujaId: initialData?.moujaId ?? selectedMoujaId ?? null,
+    subZoneNo: initialData?.subZoneNo ?? "",
+    subZoneName: initialData?.subZoneName ?? "",
+    isActive: initialData?.isActive ?? true,
+  });
+
+  const [errors, setErrors] = useState<Partial<Record<keyof SubZoneFormModel, string>>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validate = useCallback((data: SubZoneFormModel) => validateSubZoneForm(data, t, isEdit), [t, isEdit]);
+  const showError = useCallback((field: keyof SubZoneFormModel) => (submittedOnce || touched[field]) && !!errors[field], [submittedOnce, touched, errors]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({ ...p, [name]: sanitizeSubZoneFieldValue(name, value) }));
+  }, []);
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTouched((p) => ({ ...p, [name]: true }));
+    const updated = { ...formData, [name]: sanitizeSubZoneFieldValue(name, value) };
+    setFormData(updated);
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const fieldName = name as keyof SubZoneFormModel;
+      if (fieldErrors[fieldName]) return { ...p, [fieldName]: fieldErrors[fieldName] };
+      const next = { ...p };
+      delete next[fieldName];
+      return next;
+    });
+  }, [formData, validate]);
+
+  const mapApiError = useCallback((res: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
+    if (res.errors) {
+      for (const val of Object.values(res.errors)) {
+        if (val && t(`apiErrors.${val}` as never) !== `apiErrors.${val}`) return t(`apiErrors.${val}` as never);
+      }
+    }
+    if (res.message) {
+      const cleanMsg = res.message.replace(/\.$/, "");
+      if (t(`apiErrors.${cleanMsg}` as never) !== `apiErrors.${cleanMsg}`) return t(`apiErrors.${cleanMsg}` as never);
+    }
+    const errorMap: Record<number, string> = { 409: t("apiErrors.duplicateRecord"), 404: t("apiErrors.notFound"), 401: tCommon("errors.unauthorized"), 403: tCommon("errors.unauthorized") };
+    return errorMap[res.statusCode ?? 0] || t("apiErrors.operationFailed");
+  }, [t, tCommon]);
+
+  const closeAndRoute = useCallback(() => {
+    setOpen(false);
+    setTimeout(() => {
+      router.push(`/${locale}/assets/configuration/master-data/mouja-subzone${sp.toString() ? `?${sp.toString()}` : ""}`);
+    }, 400);
+  }, [router, locale, sp]);
+
+  const handleCancel = useCallback(() => {
+    onCancel();
+    closeAndRoute();
+  }, [onCancel, closeAndRoute]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittedOnce(true);
+    const v = validate(formData);
+    setErrors(v);
+    if (Object.keys(v).length > 0) {
+      toast.error(tCommon("errors.fixErrors"));
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = isEdit ? await updateSubZoneAction(formData) : await createSubZoneAction(formData);
+      if (!res.success) {
+        toast.error(mapApiError(res));
+        return;
+      }
+      toast.success(res.message || (isEdit ? t("success.subZoneUpdated") : t("success.subZoneCreated")));
+      onSuccess();
+      router.refresh();
+      closeAndRoute();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleStatus = useCallback((checked: boolean) => {
+    setIsActive(checked);
+    setFormData((p) => ({ ...p, isActive: checked }));
+  }, []);
+
+  const handleSelectChange = useCallback((name: string, value: string) => {
+    const parsed = Number(value);
+    const numericValue = value && Number.isFinite(parsed) ? parsed : null;
+    setFormData((p) => {
+      const updated = { ...p, [name]: numericValue };
+      const fieldErrors = validate(updated);
+      setErrors((prev) => {
+        const fieldName = name as keyof SubZoneFormModel;
+        if (fieldErrors[fieldName]) return { ...prev, [fieldName]: fieldErrors[fieldName] };
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
+      });
+      return updated;
+    });
+  }, [validate]);
+
+  return { formData, errors, isSubmitting, isActive, open, setOpen, handleChange, handleBlur, handleSelectChange, handleSubmit, handleToggleStatus, handleCancel, showError, t, tCommon, isEdit };
+}
