@@ -103,7 +103,6 @@ export default function RtsApplicationDetails({
     startTransition(async () => {
       try {
         const res = await submitRtsAction(application.id, actionType, remarks, forwardOfficerId);
-        const res = await submitRtsAction(application.id, actionType, remarks, forwardOfficerId);
         if (res.success) {
           toast.success(`Application decision [${actionType}] recorded successfully!`);
           router.push(`/${locale}/rts/dashboard/rts-applications`);

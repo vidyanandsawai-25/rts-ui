@@ -9,7 +9,7 @@ import type {
   RtsApplication,
   RtsOfficer,
   RtsTimelineStep
-} from "@/lib/mock/rts/rts-applications.types";
+} from "@/types/rts/rts-application.types";
 
 const DATA_FILE_PATH = path.join(
   process.cwd(),

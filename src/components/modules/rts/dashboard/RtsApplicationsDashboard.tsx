@@ -25,7 +25,7 @@ import {
   DownloadButton,
 } from "@/components/common/ActionButtons";
 
-import type { RtsApplication } from "@/lib/mock/rts/rts-applications.types";
+import type { RtsApplication } from "@/types/rts/rts-application.types";
 
 interface RtsApplicationsDashboardProps {
   data: RtsApplication[];
