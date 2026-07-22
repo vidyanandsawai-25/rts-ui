@@ -78,6 +78,8 @@ vi.mock("@/components/common", () => ({
     onClick: () => void;
     label: string;
   }) => <button onClick={onClick}>{label}</button>,
+  ImageViewer: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+    open ? <div data-testid="image-viewer"><button onClick={onClose}>Close Viewer</button></div> : null,
 }));
 
 // Modal components mock

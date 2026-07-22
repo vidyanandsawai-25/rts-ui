@@ -16,6 +16,7 @@ import type {
   OldTaxesData,
   DiscountData,
   BuildingPermissionData,
+  MappedPropertyItem,
 } from '@/types/ptis.types';
 
 export function useSyncedTabData(
@@ -28,7 +29,9 @@ export function useSyncedTabData(
   initialOldTaxesData?: OldTaxesData | null,
   initialShowOldTaxInfo?: boolean,
   initialDiscountDetails?: DiscountData,
-  initialBuildingPermission?: BuildingPermissionData
+  initialBuildingPermission?: BuildingPermissionData,
+  initialShowOldMapInfo?: boolean,
+  initialMappedPropertiesData?: MappedPropertyItem[]
 ) {
   const data = useMemo<PropertyDetailsData>(
     () => ({ ...defaultPropertyDetails, ...(initialPropertyDetails ?? {}) }),
@@ -63,6 +66,7 @@ export function useSyncedTabData(
   // UI-controlled state: user toggles these with buttons, so useState is correct here.
   const [showOldFloorInfo, setShowOldFloorInfo] = useState(initialShowOldFloorInfo ?? false);
   const [showOldTaxInfo, setShowOldTaxInfo] = useState(initialShowOldTaxInfo ?? false);
+  const [showOldMapInfo, setShowOldMapInfo] = useState(initialShowOldMapInfo ?? false);
 
   const discountDetails = useMemo<DiscountData>(
     () => ({ ...defaultDiscountData, ...(initialDiscountDetails ?? {}) }),
@@ -72,6 +76,11 @@ export function useSyncedTabData(
   const buildingPermissionData = useMemo<BuildingPermissionData>(
     () => ({ ...defaultBuildingPermission, ...(initialBuildingPermission ?? {}) }),
     [initialBuildingPermission]
+  );
+
+  const mappedPropertiesData = useMemo<MappedPropertyItem[]>(
+    () => initialMappedPropertiesData ?? [],
+    [initialMappedPropertiesData]
   );
 
   return {
@@ -86,6 +95,9 @@ export function useSyncedTabData(
     oldTaxesData,
     showOldTaxInfo,
     setShowOldTaxInfo,
+    showOldMapInfo,
+    setShowOldMapInfo,
     discountDetails,
+    mappedPropertiesData,
   };
 }

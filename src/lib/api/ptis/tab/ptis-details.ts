@@ -12,6 +12,7 @@ import type {
   DiscountData,
   BuildingPermissionData,
   TabHeaderInfoData,
+  MappedPropertyItem,
 } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage, extractData } from './base-api';
 import { ptisMapper } from './ptis.mapper';
@@ -276,6 +277,37 @@ export const ptisDetailsService = {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch tab header info',
+      };
+    }
+  },
+
+  async getMappedProperties(propertyId: string | number): Promise<{
+    success: boolean;
+    data?: MappedPropertyItem[];
+    error?: string;
+  }> {
+    try {
+      const response = await fetchWithCertSupport<unknown>(
+        `/PropertyMapMaster/mapped-properties?PropertyId=${propertyId}&PageSize=-1`
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: getErrorFormattedMessage(response.error, 'Mapped properties not found'),
+        };
+      }
+
+      const rawData = extractData<MappedPropertyItem[]>(response.data);
+      if (!rawData || !Array.isArray(rawData)) {
+        return { success: true, data: [] };
+      }
+
+      return { success: true, data: rawData };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch mapped properties',
       };
     }
   },

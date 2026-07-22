@@ -3,13 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useLazyDropdownData } from "@/hooks/RVRateMaster/useLazyDropdownData";
 
 // Mock the server actions
-vi.mock("@/app/[locale]/property-tax/rvratemaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
   getZoneOptions: vi.fn(),
   getUseGroupOptions: vi.fn(),
   getAssessmentYears: vi.fn(),
 }));
 
-import { getZoneOptions, getUseGroupOptions, getAssessmentYears } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { getZoneOptions, getUseGroupOptions, getAssessmentYears } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 describe("useLazyDropdownData", () => {
   const mockZoneOptions = [
@@ -120,7 +120,9 @@ describe("useLazyDropdownData", () => {
     
     const { result } = renderHook(() => useLazyDropdownData());
 
-    result.current.loadZoneOptions();
+    await act(async () => {
+      result.current.loadZoneOptions();
+    });
 
     await waitFor(() => {
       expect(result.current.isLoadingZones).toBe(false);
@@ -128,8 +130,9 @@ describe("useLazyDropdownData", () => {
 
     expect(result.current.zoneOptions).toEqual([]);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Failed to load zone options:",
-      expect.any(Error)
+      "[Logger] PRODUCTION ERROR:",
+      "Failed to load zone options",
+      expect.objectContaining({ error: expect.any(Error) })
     );
 
     consoleErrorSpy.mockRestore();
@@ -151,8 +154,9 @@ describe("useLazyDropdownData", () => {
 
     expect(result.current.useGroupOptions).toEqual([]);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Failed to load use group options:",
-      expect.any(Error)
+      "[Logger] PRODUCTION ERROR:",
+      "Failed to load use group options",
+      expect.objectContaining({ error: expect.any(Error) })
     );
 
     consoleErrorSpy.mockRestore();
@@ -164,7 +168,9 @@ describe("useLazyDropdownData", () => {
     
     const { result } = renderHook(() => useLazyDropdownData());
 
-    result.current.loadAssessmentYears();
+    await act(async () => {
+      result.current.loadAssessmentYears();
+    });
 
     await waitFor(() => {
       expect(result.current.isLoadingAssessmentYears).toBe(false);
@@ -172,8 +178,9 @@ describe("useLazyDropdownData", () => {
 
     expect(result.current.assessmentYears).toEqual([]);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Failed to load assessment years:",
-      expect.any(Error)
+      "[Logger] PRODUCTION ERROR:",
+      "Failed to load assessment years",
+      expect.objectContaining({ error: expect.any(Error) })
     );
 
     consoleErrorSpy.mockRestore();

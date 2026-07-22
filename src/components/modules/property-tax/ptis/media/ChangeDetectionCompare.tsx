@@ -17,6 +17,9 @@ interface ChangeDetectionCompareProps {
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
   propertyId?: number;
+  wardNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
 }
 
 export function ChangeDetectionCompare({
@@ -27,6 +30,9 @@ export function ChangeDetectionCompare({
   initialLongitude,
   initialWaybackReleases,
   propertyId,
+  wardNo = '',
+  propertyNo = '',
+  partitionNo = '',
 }: ChangeDetectionCompareProps): React.ReactElement {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-900 select-none relative">
@@ -42,6 +48,9 @@ export function ChangeDetectionCompare({
           initialLng={initialLongitude}
           initialWaybackReleases={initialWaybackReleases}
           propertyId={propertyId}
+          wardNo={wardNo}
+          propertyNo={propertyNo}
+          partitionNo={partitionNo}
         />
       </div>
     </div>

@@ -157,7 +157,8 @@
     }
   },
   "Skip_AlreadyProcessed": "Already Processed",
-  "Skip_PropertyLocked": "Property Locked",
+  "Skip_PropertyLocked": "Property is locked",
+  "Skip_PropertyDetailsMissing": "Property Details are missing",
   "Skip_PendingVerification": "Pending Verification",
   "Skip_InvalidScope": "Invalid Scope",
   "Skip_PermissionRestricted": "Permission Restricted",

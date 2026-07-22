@@ -43,29 +43,10 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     rulesList, fields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
-    isSaving, 
+    isSaving, hasChanges,
     addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
     updateBlockEffect, addEffectToBlock, removeEffectFromBlock,
   } = useRuleBuilder(props);
-
-  // Serialise current form state — passed to SaveRulesButton which holds the initial snapshot
-  const currentData = JSON.stringify({ ruleName, ruleCategory, description: ruleDescription, priority, ruleScopeId, rulesList, isActive, stopProcessing });
-
-  const currentDataRef = React.useRef(currentData);
-  React.useEffect(() => {
-    currentDataRef.current = currentData;
-  }, [currentData]);
-
-  const [snapshot, setSnapshot] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setSnapshot(currentDataRef.current);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const hasChanges = snapshot !== null && currentData !== snapshot;
 
   // Prompt before unloading the page/tab
   React.useEffect(() => {
@@ -123,7 +104,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
             activeScopeName={activeScopeName}
             handleSaveClick={handleSaveClick}
             isSaving={isSaving}
-            currentData={currentData}
+            hasChanges={hasChanges}
             isEdit={!!props.initialRule}
             rulesList={rulesList}
             fields={fields}

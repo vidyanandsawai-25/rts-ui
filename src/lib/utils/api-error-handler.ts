@@ -1,5 +1,23 @@
-export function cleanErrorMessage(message: string | undefined, defaultMessage: string): string {
-  let errMsg = message || defaultMessage;
+/**
+ * Utility for cleaning and formatting API error messages across asset master actions.
+ *
+ * @module api-error-handler
+ */
+
+import { parseErrorMessage } from "@/lib/utils/error-parser";
+
+/**
+ * Cleans an error message string by parsing JSON patterns or nested validation errors.
+ *
+ * @param message - The raw error message or string from caught exceptions
+ * @param defaultMessage - Fallback string if message is empty or undefined
+ * @returns Cleaned error message string for UI display
+ */
+export function cleanErrorMessage(message: string | undefined, defaultMessage = "Operation failed"): string {
+  if (!message) return defaultMessage;
+  const parsed = parseErrorMessage(message);
+  let errMsg = parsed || message;
+
   const payloadIdx = errMsg.indexOf("| Payload:");
   if (payloadIdx > -1) errMsg = errMsg.substring(0, payloadIdx).trim();
   

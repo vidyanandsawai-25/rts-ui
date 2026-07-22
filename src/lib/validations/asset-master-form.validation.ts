@@ -1,4 +1,4 @@
-import { CODE_REGEX, DESCRIPTION_REGEX, ASSET_MASTER_NAME_REGEX, isAllZeros } from "../utils/validation-rules";
+import { CODE_REGEX, DESCRIPTION_REGEX, ASSET_INVENTORY_NAME_REGEX, ASSET_MASTER_NAME_REGEX, isAllZeros } from "../utils/validation-rules";
 
 const CODE_MAX = 15;
 const NAME_MAX = 50;
@@ -44,6 +44,7 @@ export const validateAssetMasterForm = (data: ValidationModel, t: Translator, op
   const nameMax = options.isInventory ? "errors.nameMax" : "validation.nameMax";
   const nameFormat = options.isInventory ? "errors.nameFormat" : "validation.nameFormat";
   const maxNameLen = options.isInventory ? INV_NAME_MAX : NAME_MAX;
+  const nameRegex = options.isInventory ? ASSET_INVENTORY_NAME_REGEX : ASSET_MASTER_NAME_REGEX;
 
   if (!data.name.trim()) {
     e.name = t(nameRequired);
@@ -51,7 +52,7 @@ export const validateAssetMasterForm = (data: ValidationModel, t: Translator, op
     e.name = t(nameAllZeros);
   } else if (data.name.length > maxNameLen) {
     e.name = t(nameMax);
-  } else if (!ASSET_MASTER_NAME_REGEX.test(data.name.trim())) {
+  } else if (!nameRegex.test(data.name.trim())) {
     e.name = t(nameFormat);
   }
 

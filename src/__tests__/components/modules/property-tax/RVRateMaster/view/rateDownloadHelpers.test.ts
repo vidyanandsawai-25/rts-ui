@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { downloadDetailedRates } from "@/components/modules/property-tax/RVRateMaster/view/rateDownloadHelpers";
-import { getDetailedRatesAction } from "@/app/[locale]/property-tax/rvratemaster/action";
+import { getDetailedRatesAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { toast } from "sonner";
 import type { ISelectOption, RateCategory } from "@/types/RVRateMaster";
 
 // Mock dependencies
-vi.mock("@/app/[locale]/property-tax/rvratemaster/action", () => ({
+vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
   getDetailedRatesAction: vi.fn(),
 }));
 
@@ -439,6 +439,120 @@ describe("rateDownloadHelpers", () => {
 
         // Check that the CSV contains the square feet value (50)
         expect(blobContentSqFeet).toContain("50");
+      });
+    });
+
+    describe("Use Group Filtering", () => {
+      it("should filter rates to only use groups specified in useGroups", async () => {
+        const mockUseGroups: ISelectOption[] = [
+          { value: "101", label: "Open Plot Use 1" },
+          { value: "102", label: "Open Plot Use 2" }
+        ];
+
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "Open Plot Use 1",
+            typeOfUseGroupId: 101,
+            yearRangeRV: "1700-1997",
+            constructionType: "OP_1",
+            rateSquareMeter: 100,
+          },
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "Construction Use",
+            typeOfUseGroupId: 202, // Not in mockUseGroups
+            yearRangeRV: "1700-1997",
+            constructionType: "A",
+            rateSquareMeter: 200,
+          }
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        let blobContent: string | undefined;
+        global.Blob = class MockBlob {
+          constructor(content: string[]) {
+            blobContent = content[0];
+          }
+        } as unknown as typeof Blob;
+
+        await downloadDetailedRates(
+          "UTHALSAR",
+          mockZones,
+          "SqMeter",
+          mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>,
+          mockRateCategories,
+          mockUseGroups
+        );
+
+        expect(blobContent).toContain("Open Plot Use 1");
+        expect(blobContent).not.toContain("Construction Use");
+      });
+    });
+
+    describe("Open Plot Layout", () => {
+      it("should format CSV with Use Groups in columns and no row-wise Use Group/Construction Type column when isOpenPlot is true", async () => {
+        const mockUseGroups: ISelectOption[] = [
+          { value: "101", label: "OP_Group" },
+          { value: "102", label: "R_Group" }
+        ];
+        const openPlotRateCategories: RateCategory[] = [
+          { constructionId: "1", constructionCode: "OP", description: "OP (+4)", typeOfUseGroupId: 101 },
+          { constructionId: "2", constructionCode: "R", description: "R", typeOfUseGroupId: 102 }
+        ];
+
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "OP_Group",
+            typeOfUseGroupId: 101,
+            yearRangeRV: "1700-1997",
+            constructionType: "OP (+4)",
+            rateSquareMeter: 123,
+          },
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "R_Group",
+            typeOfUseGroupId: 102,
+            yearRangeRV: "1700-1997",
+            constructionType: "OP (+4)",
+            rateSquareMeter: 456,
+          }
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        let blobContent: string | undefined;
+        global.Blob = class MockBlob {
+          constructor(content: string[]) {
+            blobContent = content[0];
+          }
+        } as unknown as typeof Blob;
+
+        await downloadDetailedRates(
+          "UTHALSAR",
+          mockZones,
+          "SqMeter",
+          mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>,
+          openPlotRateCategories,
+          mockUseGroups,
+          true // isOpenPlot = true
+        );
+
+        // Header check: Use Group names "OP_Group" and "R_Group" should be header columns
+        expect(blobContent).toContain("OP_Group (Rate (₹/Sq.mtr))");
+        expect(blobContent).toContain("R_Group (Rate (₹/Sq.mtr))");
+        expect(blobContent).not.toContain("Construction Type");
+        expect(blobContent).not.toContain("Use Group");
+
+        // Data check: The row should contain UTHALSAR, 1700-1997, 1, 123, 456
+        expect(blobContent).toContain("123");
+        expect(blobContent).toContain("456");
       });
     });
   });

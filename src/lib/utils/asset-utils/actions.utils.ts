@@ -33,7 +33,7 @@ export function parseApiError(
     if (typeof flat === 'string' && ASSET_API_ERROR_MAP[flat]) return ASSET_API_ERROR_MAP[flat];
   } catch { }
 
-  return responseText || defaultKey;
+  return responseText.trim().startsWith('{') ? defaultKey : responseText;
 }
 
 function isRedirectError(e: unknown): boolean {
@@ -44,6 +44,35 @@ function isRedirectError(e: unknown): boolean {
     typeof (e as { digest?: unknown }).digest === 'string' &&
     String((e as { digest: string }).digest).startsWith('NEXT_REDIRECT')
   );
+}
+
+export function deduplicateErrorMessage(message: string): string {
+  if (!message || typeof message !== 'string') return message;
+  let cleaned = message.trim();
+  if (cleaned.includes('| Payload:')) {
+    cleaned = cleaned.split('| Payload:')[0].trim();
+  }
+  // Check exact halves repetition separated by ': ' (e.g., "Cannot delete X: Cannot delete X")
+  const colonSeparated = cleaned.split(': ');
+  if (colonSeparated.length % 2 === 0 && colonSeparated.length >= 2) {
+    const halfLen = colonSeparated.length / 2;
+    const firstHalf = colonSeparated.slice(0, halfLen).join(': ').trim();
+    const secondHalf = colonSeparated.slice(halfLen).join(': ').trim();
+    if (firstHalf === secondHalf && firstHalf.length > 0) {
+      return firstHalf;
+    }
+  }
+  // Check exact halves repetition separated by ':'
+  const parts = cleaned.split(':').map(p => p.trim());
+  if (parts.length % 2 === 0 && parts.length >= 2) {
+    const halfLen = parts.length / 2;
+    const firstHalf = parts.slice(0, halfLen).join(':').trim();
+    const secondHalf = parts.slice(halfLen).join(':').trim();
+    if (firstHalf === secondHalf && firstHalf.length > 0) {
+      return firstHalf;
+    }
+  }
+  return cleaned;
 }
 
 export function handleActionError<T = void>(
@@ -59,20 +88,15 @@ export function handleActionError<T = void>(
       message: error.message,
     });
 
-    const parsed = parseApiError(error.responseText, fallbackMessage);
+    const parsed = parseApiError(error.responseText || error.error, fallbackMessage);
     let resolvedError =
       parsed !== fallbackMessage ? parsed : 
       (error.responseText ? error.responseText : 
-      (error.message ? error.message : fallbackMessage));
+      (error.error ? error.error : 
+      (error.message ? error.message : fallbackMessage)));
 
     if (typeof resolvedError === 'string') {
-      if (resolvedError.includes('| Payload:')) {
-        resolvedError = resolvedError.split('| Payload:')[0].trim();
-      }
-      const parts = resolvedError.split(':').map(p => p.trim());
-      if (parts.length === 2 && parts[0] === parts[1]) {
-        resolvedError = parts[0];
-      }
+      resolvedError = deduplicateErrorMessage(resolvedError);
     }
 
     return {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import PropertyDetailsTab from '@/components/modules/property-tax/ptis/tabs/PropertyDetailsTab';
 import KycDetailsTab from '@/components/modules/property-tax/ptis/tabs/KycDetailsTab';
@@ -19,6 +19,7 @@ import { usePropertySearchState } from '@/hooks/ptis/tab/usePropertySearchState'
 import { Tabs, TabValue } from '@/components/common/Tabs';
 import type { PtisTabId, PtisInitialData } from '@/types/ptis.types';
 import { PTIS_TABS } from '@/types/ptis.types';
+import type { SearchSelectOption } from '@/components/common/SearchSelect';
 
 import { toast } from 'sonner';
 
@@ -90,7 +91,10 @@ export default function PropertyTabSection({
     oldTaxesData,
     showOldTaxInfo,
     setShowOldTaxInfo,
+    showOldMapInfo,
+    setShowOldMapInfo,
     discountDetails,
+    mappedPropertiesData,
   } = useSyncedTabData(
     initialData?.propertyDetails,
     initialData?.kycDetails,
@@ -101,7 +105,9 @@ export default function PropertyTabSection({
     initialData?.oldTaxesData,
     initialData?.showOldTaxInfo,
     initialData?.discountDetails,
-    initialData?.buildingPermission
+    initialData?.buildingPermission,
+    initialData?.showOldMapInfo,
+    initialData?.mappedPropertiesData
   );
 
   // 6. Hook: Options Management
@@ -109,12 +115,31 @@ export default function PropertyTabSection({
     initialData?.wardOptions || EMPTY_ARRAY
   );
 
+  const propertiesList = initialData?.rawPropertyData || EMPTY_ARRAY;
+
+  const dynamicPropertyOptions = useMemo<SearchSelectOption[]>(() => {
+    return propertiesList.map((p) => {
+      const trimmedPartitionNo = (p.partitionNo ?? '').trim();
+      const normalizedPartitionNo = trimmedPartitionNo === '0' ? '' : trimmedPartitionNo;
+      return {
+        label: `${p.propertyNo}${normalizedPartitionNo ? ` - ${normalizedPartitionNo}` : ''}`,
+        value: JSON.stringify({
+          propertyNo: p.propertyNo,
+          partitionNo: normalizedPartitionNo,
+          propertyId: p.propertyId,
+        }),
+      };
+    });
+  }, [propertiesList]);
+
   const { propertyOptions, propertyOptionValueMap, partitionOptions, partitionValueMap } =
     usePropertyOptions(
       draft.propertyNo,
-      initialData?.propertyOptions || EMPTY_ARRAY,
-      initialData?.rawPropertyData || EMPTY_ARRAY
+      dynamicPropertyOptions,
+      propertiesList
     );
+
+
 
   // 7. Tabs Management (Optimistic UI Pattern)
   const validatedInitialTab =
@@ -162,6 +187,16 @@ export default function PropertyTabSection({
       }
     },
     [showOldTaxInfo, setShowOldTaxInfo, updateUrl]
+  );
+
+  const handleShowMapInfoChange = useCallback(
+    (value: boolean) => {
+      if (value !== showOldMapInfo) {
+        setShowOldMapInfo(value);
+        updateUrl({ showMapDetails: value ? 'true' : null });
+      }
+    },
+    [showOldMapInfo, setShowOldMapInfo, updateUrl]
   );
 
   return (
@@ -229,6 +264,9 @@ export default function PropertyTabSection({
               oldTaxesData={oldTaxesData}
               showOldTaxInfo={showOldTaxInfo}
               setShowOldTaxInfo={handleShowTaxInfoChange}
+              showOldMapInfo={showOldMapInfo}
+              setShowOldMapInfo={handleShowMapInfoChange}
+              mappedPropertiesData={mappedPropertiesData}
             />
           </Tabs.TabPanel>
         </div>

@@ -80,8 +80,8 @@
     "saveFailed": "Failed to save"
   },
   "error": {
-    "title": "Something went wrong",
-    "description": "We encountered an unexpected error. Please try again or return to the home page.",
+    "title": "Unable to Load Page",
+    "description": "We encountered an unexpected connection issue loading this page. Please check your internet connection and try again.",
     "errorId": "Error ID: {id}",
     "goHome": "Go Home",
     "tryAgain": "Try Again"
@@ -108,6 +108,9 @@
     "updateSuccess": "Record updated successfully",
     "createSuccess": "Record created successfully",
     "deleteSuccess": "Record deleted successfully",
+    "createFailed": "Failed to create record",
+    "updateFailed": "Failed to update record",
+    "deleteFailed": "Failed to delete record",
     "loadingData": "Loading data...",
     "fetchError": "Error fetching data",
     "pleaseWait": "Please wait...",
@@ -318,5 +321,30 @@
   "rateUnit": "(₹/Sq.mtr)",
   "rateUnitSqMeter": "(₹/Sq.mtr)",
   "rateUnitSqFeet": "(₹/Sq.ft)",
-  "searchPlaceholder": "Search properties..."
+  "searchPlaceholder": "Search properties...",
+  "validation": {
+    "codeAllZeros": "Code cannot be all zeros",
+    "codeFormat": "Invalid format (only alphanumeric and hyphens allowed)",
+    "nameAllZeros": "Name cannot be all zeros",
+    "nameFormat": "Invalid format for name",
+    "descriptionAllZeros": "Description cannot be all zeros",
+    "descriptionFormat": "Invalid format for description"
+  },
+  "imageViewer": {
+    "title": "Image viewer",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "rotate": "Rotate clockwise",
+    "reset": "Reset view",
+    "fitToScreen": "Fit to screen",
+    "download": "Download image",
+    "close": "Close viewer",
+    "previous": "Previous image",
+    "next": "Next image",
+    "image": "Image",
+    "keyboardShortcuts": "ESC: Close | ←/→: Navigate | +/-: Zoom | R: Rotate | 0: Reset",
+    "tapToNavigate": "Tap or swipe to navigate",
+    "loading": "Loading image...",
+    "zoomLevel": "Zoom level"
+  }
 }

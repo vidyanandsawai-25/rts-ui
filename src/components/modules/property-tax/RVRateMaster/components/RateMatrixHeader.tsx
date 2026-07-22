@@ -50,7 +50,6 @@ export function RateMatrixHeader({
   onUpdateRates,
   onDeleteRates,
   t,
-  existingRateFound,
   isCheckingRates,
 }: RateMatrixHeaderProps) {
   return (
@@ -85,7 +84,13 @@ export function RateMatrixHeader({
           <StatusBadge
             variant="info"
             icon={<Users className="w-4 h-4" />}
-            label={selectedUseGroupLabel || useGroupOptions.find(u => u.value === selectedUseGroup)?.label || selectedUseGroup}
+            label={
+              selectedUseGroupLabel ||
+              selectedUseGroup
+                .split(",")
+                .map(id => useGroupOptions.find(u => String(u.value) === String(id.trim()))?.label || id.trim())
+                .join(", ")
+            }
           />
         )}
         <StatusBadge
@@ -102,8 +107,7 @@ export function RateMatrixHeader({
             onClick={id ? onUpdateRates : onAddRates}
             size="md"
             className="px-4 py-2"
-            disabled={existingRateFound || isCheckingRates}
-            title={existingRateFound ? t('messages.validationRatesAlreadyExist') : undefined}
+            disabled={isCheckingRates}
           />
         )}
         {mode === "delete" && (

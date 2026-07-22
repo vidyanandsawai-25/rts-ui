@@ -16,6 +16,7 @@ interface PhotoPlanDrawerProps {
   onCategoriesChange: (categories: PhotoCategory[]) => void;
   wardNo?: string;
   propertyNo?: string;
+  partitionNo?: string;
   initialCategoryIndex?: number;
   propertyId?: number;
   fullyLoadedIds: Set<number>;
@@ -33,6 +34,7 @@ export function PhotoPlanDrawer({
   onCategoriesChange,
   wardNo = '',
   propertyNo = '',
+  partitionNo = '',
   initialCategoryIndex = 0,
   propertyId,
   fullyLoadedIds,
@@ -60,6 +62,7 @@ export function PhotoPlanDrawer({
   const subtitleText = [
     wardNo && `${t('media.wardNo') || 'Ward'}: ${wardNo}`,
     propertyNo && `${t('media.propertyNo') || 'Prop'}: ${propertyNo}`,
+    partitionNo && `${t('media.partitionNo') || 'Partition'}: ${partitionNo}`,
   ]
     .filter(Boolean)
     .join(' | ');
@@ -89,6 +92,9 @@ export function PhotoPlanDrawer({
         initialLongitude={initialLongitude}
         initialWaybackReleases={initialWaybackReleases}
         onDrawPlan={onDrawPlan}
+        wardNo={wardNo}
+        propertyNo={propertyNo}
+        partitionNo={partitionNo}
       />
     </Drawer>,
     document.body

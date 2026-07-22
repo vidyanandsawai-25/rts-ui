@@ -23,7 +23,9 @@ export default function MultiSelectValueInput({
   loadingPlaceholder,
   error,
 }: MultiSelectValueInputProps) {
-  const activeList = Array.isArray(value) ? value : value ? [value] : [];
+  const activeList = Array.isArray(value)
+    ? value.map((v) => String(v))
+    : (value !== undefined && value !== null && value !== '' ? [String(value)] : []);
 
   return (
     <div className="flex flex-col gap-1 w-full">

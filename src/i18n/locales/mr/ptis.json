@@ -402,7 +402,15 @@
     "taxTotal": "एकूण कर",
     "interest": "व्याज",
     "netTotal": "एकूण देय",
-    "noTaxDetails": "कोणताही कर तपशील उपलब्ध नाही"
+    "noTaxDetails": "कोणताही कर तपशील उपलब्ध नाही",
+    "noMapDetails": "कोणताही नकाशा तपशील उपलब्ध नाही",
+    "latitude": "अक्षांश",
+    "longitude": "रेखांश",
+    "mappingCategory": "मॅपिंग वर्गवारी",
+    "oldPropPartNo": "जुना मालमत्ता क्र.-विभाग क्र.",
+    "oldWardPropPartNo": "जुना प्रभाग-मालमत्ता-विभाग क्र.",
+    "oldPlotAreaSqMtr": "जुने भूखंड क्षेत्रफळ (चौ. मी.)",
+    "oldConstAreaSqMtr": "जुने बांधकाम क्षेत्रफळ (चौ. मी.)"
   },
   "taxes": {
     "generalTax": "सामान्य कर",
@@ -448,7 +456,9 @@
     "showFloorDetails": "मजला तपशील पहा",
     "hideFloorDetails": "मजला तपशील लपवा",
     "showOldTax": "जुना कर पहा",
-    "hideOldTax": "जुना कर लपवा"
+    "hideOldTax": "जुना कर लपवा",
+    "showMapDetails": "नकाशा तपशील दाखवा",
+    "hideMapDetails": "नकाशा तपशील लपवा"
   },
   "loading": {
     "message": "मालमत्ता तपशील लोड होत आहे",
@@ -765,6 +775,8 @@
       "applyOrder": "क्रम",
       "ruleCategory": "वर्ग",
       "ruleScopeName": "व्याप्ती",
+      "floorName": "मजला",
+      "typeOfUseName": "वापराचा प्रकार",
       "ruleName": "नियमाचे नाव",
       "effectType": "प्रभावाचा प्रकार",
       "effectValue": "प्रभावाचा दर",

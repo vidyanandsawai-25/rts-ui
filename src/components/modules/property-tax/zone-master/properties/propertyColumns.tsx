@@ -77,16 +77,13 @@ export function getPropertyColumns({
       key: "propertyTypeId",
       label: t("propertyList.columns.type"),
       width: "150px",
-      render: (value: unknown, row: Record<string, unknown>) => {
-        // First check if type field has value
-        const typeValue = row.type as string | null;
-        if (typeValue) {
-          return <StatusBadge label={typeValue} variant="pending" />;
-        }
-        // Otherwise use propertyTypeId
+      render: (value: unknown) => {
         const propertyTypeId = value as number | null;
+
         if (!propertyTypeId) return "-";
+
         const typeName = propertyTypeMap[propertyTypeId];
+
         return typeName ? (
           <StatusBadge label={typeName} variant="pending" />
         ) : (
