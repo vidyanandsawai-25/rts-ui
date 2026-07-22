@@ -31,11 +31,7 @@ import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
 import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/types/rts/form.types";
 import { type SaveDraftValuesRequest } from "@/types/rts.types";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
-<<<<<<< HEAD
 import DynamicFieldRenderer from "@/components/modules/rts/forms/DynamicFieldRenderer";
-=======
-import DynamicFieldRenderer from "./DynamicFieldRenderer";
->>>>>>> main
 import {
   buildOldServiceFormConfigFromRtsFieldDefinitions,
   extractRtsFieldDefinitionItems,
@@ -1305,27 +1301,6 @@ export default function DynamicServiceFormClient({
               </div>
             </div>
 
-<<<<<<< HEAD
-            {/* <div
-              className={`p-5 rounded-xl border ${darkMode ? "border-gray-700 bg-gray-700/40" : "border-gray-200 bg-gray-50"
-                }`}
-            >
-              <div className="space-y-2">
-                <div
-                  className={`text-sm font-semibold uppercase tracking-wide ${darkMode ? "text-gray-300" : "text-gray-600"
-                    }`}
-                >
-                  {language === "en" ? "Application Status" : "Application Status"}
-                </div>
-
-                <div className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
-                  {successApplicationStatus || "Submitted"}
-                </div>
-              </div>
-            </div> */}
-
-=======
->>>>>>> main
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
               <Button
                 onClick={() => copyToClipboard(successTrackingId)}
@@ -1638,9 +1613,3 @@ export default function DynamicServiceFormClient({
     </div>
   );
 }
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> main
