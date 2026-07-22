@@ -70,6 +70,7 @@
         "selectGroup": "गट निवडा",
         "department": "विभाग",
         "selectDepartment": "विभाग निवडा",
+        "selectDepartmentFirst": "प्रथम विभाग निवडा",
         "module": "मॉड्यूल",
         "selectModule": "मॉड्यूल निवडा",
         "icon": "आयकॉन",
@@ -188,6 +189,7 @@
     },
 
     "filters": {
+      "selectDept": "विभाग निवडा",
       "selectRole": "भूमिका निवडा",
       "selectDepartment": "सर्व विभाग",
       "searchPlaceholder": "स्क्रीन शोधा...",
@@ -204,7 +206,7 @@
       "manager": "व्यवस्थापक",
       "user": "वापरकर्ता",
       "viewer": "दर्शक",
-      "noRolesFound": "एपीआयकडून कोणत्याही भूमिका सापडल्या नाहीत",
+      "noRolesFound": "कोणतीही भूमिका उपलब्ध नाही",
       "apiWarning": "भूमिका एपीआय:",
       "apiUnavailable": "भूमिका एंडपॉइंट अद्याप उपलब्ध नसू शकते. रिकाम्या सूचीचा वापर केला जात आहे।"
     },

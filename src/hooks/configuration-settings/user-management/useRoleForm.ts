@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Role } from '@/types/user-management';
+import { Role, RoleFormData } from '@/types/user-management';
 import {
   createUserRoleAction,
   updateUserRoleAction,
@@ -17,13 +17,17 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
   const [editingRole, setEditingRole] = useState<Role | null>(initialData || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [roleFormData, setRoleFormData] = useState({
+  const [roleFormData, setRoleFormData] = useState<RoleFormData>({
+    departmentId: initialData?.departmentId || '',
+    departmentName: initialData?.departmentName || '',
     name: initialData?.name || '',
     isActive: initialData ? !!initialData.isActive : true,
   });
 
   const resetRoleForm = () => {
     setRoleFormData({
+      departmentId: '',
+      departmentName: '',
       name: '',
       isActive: true,
     });
@@ -34,6 +38,8 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
   const handleRoleEdit = (role: Role) => {
     setEditingRole(role);
     setRoleFormData({
+      departmentId: role.departmentId || '',
+      departmentName: role.departmentName || '',
       name: role.name,
       isActive: !!role.isActive,
     });
@@ -77,10 +83,17 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
         }
       }
 
+      const rolePayload: Partial<Role> = {
+        name: roleFormData.name,
+        departmentId: roleFormData.departmentId ? Number(roleFormData.departmentId) : undefined,
+        departmentName: roleFormData.departmentName,
+        isActive: roleFormData.isActive,
+      };
+
       if (editingRole) {
         const updatedRole: Role = {
           ...editingRole,
-          ...roleFormData,
+          ...rolePayload,
         };
         const res = await updateUserRoleAction(updatedRole);
         if (res.success) {
@@ -100,7 +113,7 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
           toast.error(errorMsg);
         }
       } else {
-        const res = await createUserRoleAction(roleFormData);
+        const res = await createUserRoleAction(rolePayload);
         if (res.success && res.data) {
           onSuccess(res.data);
           toast.success(t('messages.roleCreateSuccess'));

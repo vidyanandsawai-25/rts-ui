@@ -70,6 +70,7 @@
         "selectGroup": "समूह चुनें",
         "department": "विभाग",
         "selectDepartment": "विभाग चुनें",
+        "selectDepartmentFirst": "पहले विभाग चुनें",
         "module": "मॉड्यूल",
         "selectModule": "मॉड्यूल चुनें",
         "icon": "आइकन",
@@ -188,6 +189,7 @@
     },
 
     "filters": {
+      "selectDept": "विभाग चुनें",
       "selectRole": "भूमिका चुनें",
       "selectDepartment": "सभी विभाग",
       "searchPlaceholder": "स्क्रीन खोजें...",
@@ -204,7 +206,7 @@
       "manager": "प्रबंधक",
       "user": "उपयोगकर्ता",
       "viewer": "दर्शक",
-      "noRolesFound": "एपीआई से कोई भूमिका नहीं मिली",
+      "noRolesFound": "कोई भूमिका उपलब्ध नहीं है",
       "apiWarning": "भूमिका एपीआई:",
       "apiUnavailable": "भूमिका एंडपॉइंट अभी उपलब्ध नहीं हो सकता है। खाली सूची का उपयोग किया जा रहा है।"
     },

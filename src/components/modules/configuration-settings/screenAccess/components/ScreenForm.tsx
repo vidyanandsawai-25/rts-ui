@@ -9,10 +9,15 @@ import {
   ScreenGroupMasterData,
   ScreenMasterData,
   ModuleMasterData,
+  DepartmentMasterData,
 } from '@/types/screen-access.types';
 import { useScreenForm } from '@/hooks/configuration-settings/screenAccess/useScreenForm';
 
-import { SCREEN_CODE_MAX, SCREEN_NAME_MAX, ROUTE_PATH_MAX } from '@/lib/constants/screen-access.constants';
+import {
+  SCREEN_CODE_MAX,
+  SCREEN_NAME_MAX,
+  ROUTE_PATH_MAX,
+} from '@/lib/constants/screen-access.constants';
 import { FormSection, FieldLabel, ErrorMsg, ToggleField } from './FormHelpers';
 import { TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 
@@ -21,9 +26,16 @@ interface ScreenFormProps {
   isEdit?: boolean;
   groups: ScreenGroupMasterData[];
   modules: ModuleMasterData[];
+  departments?: DepartmentMasterData[];
 }
 
-export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }: ScreenFormProps) {
+export function ScreenForm({
+  initialData,
+  isEdit: isEditProp,
+  groups,
+  modules,
+  departments = [],
+}: ScreenFormProps) {
   const {
     formData,
     errors,
@@ -179,47 +191,100 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
               />
               {showError('screenGroupId') && <ErrorMsg error={errors.screenGroupId} />}
             </div>
-            <div>
-              <FieldLabel
-                label={t('screenManagement.screens.form.module', {
-                  defaultValue: 'Module',
-                })}
-                required
-              />
-              <Select
-                value={String(formData.moduleId || '')}
-                onChange={(_, val) => {
-                  const numVal = val ? parseInt(val, 10) : undefined;
-                  handleChange('moduleId', numVal);
 
-                  if (numVal) {
-                    const selectedModule = modules.find((m) => m.moduleId === numVal);
-                    if (selectedModule) {
-                      handleChange('departmentMasterId', selectedModule.departmentMasterId);
+            {/* Department & Module side-by-side in single row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <FieldLabel
+                  label={t('screenManagement.screens.form.department', {
+                    defaultValue: 'Department',
+                  })}
+                  required
+                />
+                <Select
+                  value={formData.departmentMasterId ? String(formData.departmentMasterId) : ''}
+                  onChange={(_, val) => {
+                    const numVal = val ? parseInt(val, 10) : undefined;
+                    handleChange('departmentMasterId', numVal);
+
+                    // If selected module doesn't belong to the selected department, clear module selection
+                    if (formData.moduleId) {
+                      const selectedModule = modules.find((m) => m.moduleId === formData.moduleId);
+                      const modDeptId =
+                        selectedModule?.departmentMasterId ?? selectedModule?.departmentId;
+                      if (modDeptId !== numVal) {
+                        handleChange('moduleId', undefined);
+                      }
                     }
-                  } else {
-                    handleChange('departmentMasterId', undefined);
-                  }
-
-                  handleBlur('moduleId');
-                }}
-                options={modules
-                  .filter(
-                    (m) => m.isActive !== false || String(m.moduleId) === String(formData.moduleId)
-                  )
-                  .map((m) => ({
-                    value: String(m.moduleId),
-                    label:
-                      m.moduleName +
-                      (m.isActive === false
-                        ? ` (${t('filters.inactive', { defaultValue: 'Inactive' })})`
-                        : ''),
+                    handleBlur('departmentMasterId');
+                  }}
+                  options={departments.map((d) => ({
+                    value: String(d.departmentMasterId ?? d.departmentId),
+                    label: d.departmentName + (d.departmentCode ? ` (${d.departmentCode})` : ''),
                   }))}
-                placeholder={t('screenManagement.screens.form.selectModule', {
-                  defaultValue: 'Select Module',
-                })}
-              />
-              {showError('moduleId') && <ErrorMsg error={errors.moduleId as string} />}
+                  placeholder={t('screenManagement.screens.form.selectDepartment', {
+                    defaultValue: 'Select Department',
+                  })}
+                />
+                {showError('departmentMasterId') && (
+                  <ErrorMsg error={errors.departmentMasterId as string} />
+                )}
+              </div>
+
+              <div>
+                <FieldLabel
+                  label={t('screenManagement.screens.form.module', {
+                    defaultValue: 'Module',
+                  })}
+                  required
+                />
+                <Select
+                  value={String(formData.moduleId || '')}
+                  onChange={(_, val) => {
+                    const numVal = val ? parseInt(val, 10) : undefined;
+                    handleChange('moduleId', numVal);
+
+                    if (numVal) {
+                      const selectedModule = modules.find((m) => m.moduleId === numVal);
+                      const modDeptId =
+                        selectedModule?.departmentMasterId ?? selectedModule?.departmentId;
+                      if (modDeptId && formData.departmentMasterId !== modDeptId) {
+                        handleChange('departmentMasterId', modDeptId);
+                      }
+                    }
+
+                    handleBlur('moduleId');
+                  }}
+                  options={modules
+                    .filter((m) => {
+                      const modDeptId = m.departmentMasterId ?? m.departmentId;
+                      const matchesDept =
+                        !formData.departmentMasterId || modDeptId === formData.departmentMasterId;
+                      const isActiveOrSelected =
+                        m.isActive !== false || String(m.moduleId) === String(formData.moduleId);
+                      return matchesDept && isActiveOrSelected;
+                    })
+                    .map((m) => ({
+                      value: String(m.moduleId),
+                      label:
+                        m.moduleName +
+                        (m.isActive === false
+                          ? ` (${t('filters.inactive', { defaultValue: 'Inactive' })})`
+                          : ''),
+                    }))}
+                  placeholder={
+                    !formData.departmentMasterId
+                      ? t('screenManagement.screens.form.selectDepartmentFirst', {
+                          defaultValue: 'Select Department First',
+                        })
+                      : t('screenManagement.screens.form.selectModule', {
+                          defaultValue: 'Select Module',
+                        })
+                  }
+                  disabled={!formData.departmentMasterId}
+                />
+                {showError('moduleId') && <ErrorMsg error={errors.moduleId as string} />}
+              </div>
             </div>
           </div>
         </FormSection>
