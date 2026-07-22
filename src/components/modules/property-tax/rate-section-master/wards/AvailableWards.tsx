@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { SearchInput, Select } from "@/components/common";
 import { PrevPageButton, NextPageButton } from "@/components/common/ActionButtons";
-import { Label } from "@/components/common/label";
 import { AvailableWardsProps } from "@/types/rateSectionMaster.types";
 import { Checkbox } from "@/components/common";
 
@@ -91,7 +90,7 @@ export default function AvailableWards({
               {t('wardList.selectAll')}
               {selectAllLoading && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-blue-100 text-blue-700">
-                  Loading...
+                  {t('actions.loading')}
                 </span>
               )}
             </span>
@@ -101,7 +100,7 @@ export default function AvailableWards({
           const isSelfSelected = checkedAvailable.has(w.wardNo);
 
           return (
-            <Label
+            <label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
               onClick={() => !isSelectAllActive && onToggle(w.wardNo)}
@@ -117,7 +116,7 @@ export default function AvailableWards({
               <span className="text-sm font-medium transition-colors text-gray-700 group-hover:text-blue-700">
                 {w.wardNo}
               </span>
-            </Label>
+            </label>
           );
         })}
         {paginatedUnassignedWards.length === 0 && (

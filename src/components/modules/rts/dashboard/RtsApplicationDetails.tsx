@@ -103,6 +103,7 @@ export default function RtsApplicationDetails({
     startTransition(async () => {
       try {
         const res = await submitRtsAction(application.id, actionType, remarks, forwardOfficerId);
+        const res = await submitRtsAction(application.id, actionType, remarks, forwardOfficerId);
         if (res.success) {
           toast.success(`Application decision [${actionType}] recorded successfully!`);
           router.push(`/${locale}/rts/dashboard/rts-applications`);
@@ -508,12 +509,8 @@ export default function RtsApplicationDetails({
                       <option value="Return">Return to Citizen for Corrections</option>
                     ) : null}
                     <option value="Hold">Put Application on Hold</option>
-                    {!currentStage || currentStage.canVerifyDocument ? (
-                      <option value="RequestDocuments">Request Additional Documents</option>
-                    ) : null}
-                    {!currentStage || currentStage.canReject ? (
-                      <option value="Reject">Reject Request</option>
-                    ) : null}
+                    <option value="RequestDocuments">Request Additional Documents</option>
+                    <option value="Reject">Reject Request</option>
                   </select>
                 </div>
 
@@ -568,3 +565,8 @@ export default function RtsApplicationDetails({
     </div>
   );
 }
+<<<<<<< HEAD
+
+export const CmsApplicationDetails = RtsApplicationDetails;
+=======
+>>>>>>> main

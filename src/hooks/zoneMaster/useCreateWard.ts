@@ -137,17 +137,25 @@ export function useCreateWard({
     return null;
   };
 
-  const checkDuplicateWard = (wardNo: string) => {
+  const checkDuplicateWard = (wardNo: string, description: string) => {
     const wardNoValue = wardNo.trim().toUpperCase();
+    const wardNameValue = description.trim().toUpperCase();
 
-    const duplicate = existingWards.find((ward) => {
+    const duplicateNo = existingWards.find((ward) => {
       return ward.wardNo?.trim().toUpperCase() === wardNoValue;
     });
 
-    if (duplicate) {
-      toast.error(
-        t("createWardMessages.duplicateWard", { wardNo: duplicate.wardNo })
-      );
+    if (duplicateNo) {
+      setErrors((prev) => ({ ...prev, wardNo: t("messages.duplicateWardNo", { wardNo: duplicateNo.wardNo }) }));
+      return true;
+    }
+
+    const duplicateName = existingWards.find((ward) => {
+      return (ward.description || "").trim().toUpperCase() === wardNameValue;
+    });
+
+    if (duplicateName) {
+      setErrors((prev) => ({ ...prev, description: t("messages.duplicateWardName", { name: duplicateName.description || description }) }));
       return true;
     }
 
@@ -234,7 +242,7 @@ export function useCreateWard({
       return;
     }
 
-    if (checkDuplicateWard(form.wardNo)) return;
+    if (checkDuplicateWard(form.wardNo, form.description)) return;
 
     setLoading(true);
     setErrors({});
@@ -254,7 +262,10 @@ export function useCreateWard({
         if (onSuccess) onSuccess(form.wardNo);
       } else {
         const errorMsg = result.error || "";
-        if (errorMsg.includes("already exists") || errorMsg.includes("duplicate")) {
+        const lowerMsg = errorMsg.toLowerCase();
+        if (lowerMsg.includes("name") || lowerMsg.includes("description")) {
+          setErrors({ description: t("messages.duplicateWardName", { name: form.description }) });
+        } else if (lowerMsg.includes("ward") || lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
           setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo }) });
         } else {
           toast.error(errorMsg || t("createWardMessages.createError"));
@@ -273,6 +284,7 @@ export function useCreateWard({
     setForm,
     loading,
     errors,
+    setErrors,
     bulkErrors,
     bulkFrom,
     setBulkFrom,

@@ -23,11 +23,13 @@ export default function DropdownValueInput({
   loadingPlaceholder,
   error,
 }: DropdownValueInputProps) {
+  const safeValue = value !== undefined && value !== null ? String(value) : '';
+
   return (
     <div className="flex flex-col gap-1 w-full">
       <SearchSelect
         options={effectiveOptions}
-        value={value}
+        value={safeValue}
         onChange={(_, val) => onChange(val)}
         placeholder={loadingPlaceholder}
         disabled={disabled || apiLoading}

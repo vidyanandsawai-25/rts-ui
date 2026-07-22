@@ -80,6 +80,7 @@ export default function CommonRemarkMaster(props: CommonRemarkProps) {
           data={normalizedData}
           loading={isPending}
           height="lg"
+          tableClassName="table-fixed w-full"
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={totalCount}

@@ -1,5 +1,7 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError } from '@/lib/utils/api';
+import type { PagedResponse } from '@/types/common.types';
+import type { AssessmentYearRange } from '@/types/assessment-year-range.types';
 import type {
   DepreciationConstructionType,
   DepreciationRow,
@@ -135,7 +137,6 @@ export async function syncDepreciationRatesFromPage(
       if (!existing) {
         // Record not found in current page, skip for now
         // UI should prevent this scenario
-        console.warn(`Record ID ${id} not found in current page records for update`);
         return null;
       }
 
@@ -211,6 +212,7 @@ export async function bulkCreateDepreciation(payload: {
     rate: number;
   }>;
   createdBy?: number;
+  yearRangeRVId: number;
 }): Promise<void> {
   const bulkPayload = payload.rates.map((item) => ({
     isActive: true,
@@ -219,7 +221,7 @@ export async function bulkCreateDepreciation(payload: {
     minYear: payload.minYear,
     maxYear: payload.maxYear,
     rate: item.rate,
-    yearRangeRVId: 1,
+    yearRangeRVId: payload.yearRangeRVId,
   }));
 
   const response = await apiClient.post<unknown>('/Depreciation/Bulk', bulkPayload);
@@ -233,9 +235,6 @@ export async function bulkCreateDepreciation(payload: {
   }
 }
 
-/**
- * Add depreciation range for all construction types
- */
 /**
  * Add depreciation range for all construction types
  */
@@ -254,11 +253,53 @@ export async function addDepreciationRangeBulk(
     rate: payload.defaultRate ?? 0,
   }));
 
+  let yearRangeRVId: number | null = null;
+
+  // 1. Try to get yearRangeRVId from existing depreciation records
+  try {
+    const existingRecords = await getDepreciationsAll();
+    if (existingRecords.length > 0) {
+      const found = existingRecords.find((r) => r.yearRangeRVId && r.yearRangeRVId > 0);
+      if (found) {
+        yearRangeRVId = found.yearRangeRVId;
+      }
+    }
+  } catch {
+    // Failed to fetch existing depreciation records
+  }
+
+  // 2. If no existing records, fetch from AssessmentYearRange master
+  if (!yearRangeRVId) {
+    try {
+      const yearRangesResponse = await apiClient.get<PagedResponse<AssessmentYearRange>>(
+        '/AssessmentYearRange?PageNumber=1&PageSize=100'
+      );
+      if (yearRangesResponse.success && yearRangesResponse.data?.items) {
+        const activeRange = yearRangesResponse.data.items.find((item) => item.isActive);
+        if (activeRange) {
+          yearRangeRVId = activeRange.id;
+        }
+      }
+    } catch {
+      // Failed to fetch assessment year ranges
+    }
+  }
+
+  // Throw error if yearRangeRVId could not be resolved, preventing hardcoded defaults
+  if (!yearRangeRVId || yearRangeRVId <= 0) {
+    throw new ApiError(
+      400,
+      'Could not resolve active Assessment Year Range (missing active range or failed to fetch). Please ensure an active Assessment Year Range exists in the master and try again.',
+      'Validation'
+    );
+  }
+
   await bulkCreateDepreciation({
     minYear: payload.minYear,
     maxYear: payload.maxYear,
     rates,
     createdBy: Number(userId),
+    yearRangeRVId,
   });
 }
 
@@ -270,7 +311,7 @@ export async function deleteDepreciationRange(
     minYear: number;
     maxYear: number;
   },
-  userId: string
+  _userId: string
 ): Promise<void> {
   const allData = await getDepreciationsAll();
 
@@ -279,30 +320,23 @@ export async function deleteDepreciationRange(
     .map((x) => x.id);
 
   if (targetIds.length === 0) {
-    console.log('No depreciation records found for range:', payload);
     return;
   }
-
-  console.log(`Bulk deleting depreciation IDs by user ${userId}:`, targetIds);
 
   // Use DELETE with body - pass body via options
   const response = await apiClient.delete<void>('/Depreciation/Bulk/purge', {
     body: JSON.stringify(targetIds),
   });
 
-  console.log('Bulk delete response:', response);
-
   // Purge endpoints may return 204 No Content with an empty body.
   // If the shared client marks that response as unsuccessful because it
   // attempts JSON parsing first, still treat HTTP 204 or JSON parse errors as success.
   if (response.success) {
-    console.log('Successfully bulk deleted depreciation range:', payload);
     return;
   }
 
   // Handle 204 No Content or JSON parsing error on empty response
   if (response.statusCode === 204 || response.error?.includes('Unexpected end of JSON input')) {
-    console.log('Successfully bulk deleted depreciation range (empty response):', payload);
     return;
   }
 

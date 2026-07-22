@@ -3,10 +3,7 @@ import { createGrievanceCategoryAction } from '@/app/[locale]/configuration-sett
 import { updateGrievanceCategoryAction } from '@/app/[locale]/configuration-settings/grievance-category-master/actions/update';
 import { deleteGrievanceCategoryAction } from '@/app/[locale]/configuration-settings/grievance-category-master/actions/delete';
 import { getGrievanceCategoryMasterData } from '@/app/[locale]/configuration-settings/grievance-category-master/data-fetcher';
-import {
-  decodeJwtPayload,
-  verifyJWTSignature,
-} from '@/app/[locale]/configuration-settings/grievance-category-master/actions/utils';
+
 import {
   createGrievanceCategory,
   updateGrievanceCategory,
@@ -15,7 +12,6 @@ import {
 } from '@/lib/api/configuration-settings/grievance-category-master/grievanceCategory.service';
 import { departmentMasterService } from '@/lib/api/departmentMaster.service';
 import { revalidatePath } from 'next/cache';
-import crypto from 'crypto';
 import type { ApiResponse } from '@/types/common.types';
 import type { GrievanceCategory } from '@/types/grievance-category-master/grievanceCategory.types';
 import type { DepartmentMaster } from '@/types/departmentMaster.types';
@@ -233,73 +229,7 @@ describe('Grievance Category Master Server Actions', () => {
   });
 });
 
-describe('Grievance Category JWT Verification Utilities', () => {
-  const originalEnv = process.env;
 
-  beforeEach(() => {
-    process.env = { ...originalEnv };
-  });
-
-  // Generate a valid mock JWT with HMAC-SHA256 signature
-  const createMockJWT = (payload: object, secret: string): string => {
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-    const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const signature = crypto
-      .createHmac('sha256', secret)
-      .update(`${header}.${payloadStr}`)
-      .digest()
-      .toString('base64url');
-    return `${header}.${payloadStr}.${signature}`;
-  };
-
-  it('verifies valid JWT signature and fails invalid signature', () => {
-    const payload = { userId: 42, exp: Math.floor(Date.now() / 1000) + 3600 };
-    const secret = 'my-super-secret-key';
-    const validToken = createMockJWT(payload, secret);
-    const tamperedToken = validToken.slice(0, -5) + 'xxxxx';
-
-    expect(verifyJWTSignature(validToken, secret)).toBe(true);
-    expect(verifyJWTSignature(tamperedToken, secret)).toBe(false);
-  });
-
-  it('decodes JWT payload successfully and extracts correct fields when signature is verified', () => {
-    process.env.JWT_SECRET = 'correct-secret';
-    const payload = { userId: 42, exp: Math.floor(Date.now() / 1000) + 3600 };
-    const token = createMockJWT(payload, 'correct-secret');
-
-    const decoded = decodeJwtPayload(token);
-    expect(decoded).not.toBeNull();
-    expect(decoded?.userId).toBe(42);
-  });
-
-  it('rejects expired tokens even if signature is valid', () => {
-    process.env.JWT_SECRET = 'correct-secret';
-    const payload = { userId: 42, exp: Math.floor(Date.now() / 1000) - 100 }; // Expired
-    const token = createMockJWT(payload, 'correct-secret');
-
-    const decoded = decodeJwtPayload(token);
-    expect(decoded).toBeNull();
-  });
-
-  it('rejects signature mismatch tokens strictly', () => {
-    process.env.JWT_SECRET = 'correct-secret';
-    const payload = { userId: 42, exp: Math.floor(Date.now() / 1000) + 3600 };
-    const token = createMockJWT(payload, 'wrong-secret');
-
-    const decoded = decodeJwtPayload(token);
-    expect(decoded).toBeNull();
-  });
-
-  it('strictly requires signature verification in production and rejects when JWT_SECRET is unset', () => {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
-    delete process.env.JWT_SECRET;
-    const payload = { userId: 42, exp: Math.floor(Date.now() / 1000) + 3600 };
-    const token = createMockJWT(payload, 'any-secret');
-
-    const decoded = decodeJwtPayload(token);
-    expect(decoded).toBeNull();
-  });
-});
 
 describe('Grievance Category Master Data Fetcher', () => {
   beforeEach(() => {

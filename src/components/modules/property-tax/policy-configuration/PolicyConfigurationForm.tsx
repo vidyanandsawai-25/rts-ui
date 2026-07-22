@@ -20,7 +20,7 @@ import {
 } from "@/lib/validations/policy-configuration-datatype";
 
 export interface PolicyConfigurationFormProps {
-  initialData: PolicyConfigurationFormModel | null;
+  initialData: PolicyConfigurationFormModel;
 }
 function resolveValueFromAllowedList(value: string, allowedValues: string | null): string {
   if (!allowedValues || !allowedValues.trim()) return value;
@@ -41,26 +41,8 @@ function resolveValueFromAllowedList(value: string, allowedValues: string | null
   return options[0] ?? value;
 }
 function prepareInitialData(
-  data: PolicyConfigurationFormModel | null
+  data: PolicyConfigurationFormModel
 ): PolicyConfigurationFormModel {
-  if (!data) {
-    return {
-      id: undefined,
-      policyCode: "",
-      category: "",
-      displayName: "",
-      description: "",
-      dataType: "",
-      policyValue: "",
-      defaultValue: "",
-      unit: "",
-      effectiveFrom: "",
-      effectiveTo: null,
-      allowedValues: null,
-      isActive: true,
-    };
-  }
-
   return {
     ...data,
     unit: data.unit ?? "",
@@ -72,7 +54,7 @@ function prepareInitialData(
 
 export default function PolicyConfigurationForm({ initialData }: PolicyConfigurationFormProps) {
   const router = useRouter();
-  const isEdit = initialData?.id != null;
+  const isEdit = initialData.id != null;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -214,6 +196,11 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       return;
     }
 
+    if (!isEdit || formData.id == null) {
+      toast.error(t("form.messages.invalidIdError"));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -232,14 +219,10 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       fd.append("allowedValues", formData.allowedValues ?? "");
       fd.append("isActive", String(formData.isActive));
 
-      const res = await savePolicyConfiguration(isEdit ? String(formData.id) : "", fd);
+      const res = await savePolicyConfiguration(String(formData.id), fd);
 
       if (res?.ok) {
-        toast.success(
-          res.mode === "update"
-            ? t("form.messages.updateSuccess")
-            : t("form.messages.createSuccess")
-        );
+        toast.success(t("form.messages.updateSuccess"));
         setOpen(false);
         router.push(`/${locale}/property-tax/policy-configuration`);
         router.refresh();
@@ -279,10 +262,10 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("form.editTitle") : t("form.addTitle")}
+              {t("form.editTitle")}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t("form.editSubtitle") : t("form.subtitle")}
+              {t("form.editSubtitle")}
             </div>
           </div>
         </div>
@@ -291,7 +274,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
         <>
           <CancelButton label={t("form.actions.cancel")} onClick={handleClose} />
           <SaveButton
-            label={isEdit ? t("form.actions.update") : t("form.actions.save")}
+            label={t("form.actions.update")}
             type="submit"
             form="policy-config-form"
             isLoading={isSubmitting}

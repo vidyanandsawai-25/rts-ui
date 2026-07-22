@@ -124,6 +124,9 @@ export async function persistAuthSessionCookies(
   cookieStore.set(AUTH_COOKIES.SESSION_ID, sessionId, secure);
   cookieStore.set(AUTH_COOKIES.IS_LOGGED_IN, 'true', client);
   cookieStore.set(AUTH_COOKIES.USER_NAME, displayName, client);
+  if (auth.username) {
+    cookieStore.set(AUTH_COOKIES.LOGIN_USERNAME, auth.username, client);
+  }
   cookieStore.set(AUTH_COOKIES.SESSION_EXPIRES_AT, String(expiresAtUnix), client);
 
   const uid = auth.userId;

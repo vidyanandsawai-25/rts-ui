@@ -158,6 +158,7 @@
   },
   "Skip_AlreadyProcessed": "पहले से ही संसाधित",
   "Skip_PropertyLocked": "संपत्ति लॉक है",
+  "Skip_PropertyDetailsMissing": "संपत्ति का विवरण उपलब्ध नहीं है",
   "Skip_PendingVerification": "सत्यापन लंबित",
   "Skip_InvalidScope": "अमान्य दायरा",
   "Skip_PermissionRestricted": "अनुमति प्रतिबंधित",

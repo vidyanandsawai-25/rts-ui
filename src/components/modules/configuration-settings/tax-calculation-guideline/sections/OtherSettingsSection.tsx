@@ -1,78 +1,51 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ToggleSwitch } from '@/components/common';
-import {
-  PRORATION_TYPE_OPTIONS,
-  TAX_PERSISTENCE_MODE_OPTIONS,
-} from '@/config/tax-calculation-guideline.config';
-import type {
-  ProrationType,
-  TaxCalculationGuidelineSectionProps,
-  TaxPersistenceMode,
-} from '@/types/tax-calculation-guideline.types';
-import { cn } from '@/lib/utils/cn';
-import { TaxSelect } from '../TaxFormField';
+import type { TaxCalculationGuidelineSectionProps } from '@/types/tax-calculation-guideline.types';
+import { DynamicGuidelineField } from '../TaxFormField';
 
 /**
  * Section 7 – Other Settings
- * ─ Enable Current Year Proration (toggle)
- * ─ Proration Method (dropdown)
- * ─ Tax Persistence Mode (dropdown)
+ * Dynamically rendered based on metadata from the API.
  */
-export function OtherSettingsSection({ formData, onChange }: TaxCalculationGuidelineSectionProps) {
+export function OtherSettingsSection({ formData, onChangeGuideline }: TaxCalculationGuidelineSectionProps) {
   const t = useTranslations('taxCalculationGuideline');
-  const { otherSettings } = formData;
+  const { dynamicGuidelines = [], generalSettings } = formData;
 
-  const isCertTaxDisabled = !formData.generalSettings.enableCertificateBasedTax;
-  const isProrationDisabled = isCertTaxDisabled || !otherSettings.enableCurrentYearProration;
+  const otherGuidelines = dynamicGuidelines
+    .filter((g) => g.guidelineGroup === 'OTHER')
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+  const isCertTaxDisabled = !generalSettings.enableCertificateBasedTax;
+
+  // Find proration toggle
+  const prorationToggle = dynamicGuidelines.find((g) => g.guidelineCode === 'ENABLE_CURRENT_YEAR_PRORATION');
+  const isProrationDisabled = isCertTaxDisabled || !prorationToggle || (prorationToggle.guidelineValue !== 'true' && prorationToggle.guidelineValue !== '1');
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col">
       <div className="border-b border-slate-100 px-4 py-2 shrink-0">
         <h2 className="text-sm font-bold text-slate-800">{t('sections.otherSettings')}</h2>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 px-4 py-3 flex-1 min-h-0">
-        {/* Enable Proration */}
-        <div className={cn("flex flex-col gap-1", isCertTaxDisabled && "opacity-60 pointer-events-none")}>
-          <span className="text-xs font-medium text-slate-700">{t('fields.enableProration')}</span>
-          <ToggleSwitch
-            id="enable-current-year-proration"
-            checked={otherSettings.enableCurrentYearProration}
-            disabled={isCertTaxDisabled}
-            onChange={(val: boolean) => onChange('otherSettings', 'enableCurrentYearProration', val)}
-            showPopup={false}
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-3 pb-4">
+        {otherGuidelines.map((guideline) => {
+          const code = guideline.guidelineCode;
+          const isProrationMethod = code === 'PRORATION_METHOD';
+          const isFieldDisabled = isProrationMethod ? isProrationDisabled : isCertTaxDisabled;
 
-        {/* Proration Method */}
-        <TaxSelect
-          label={t('fields.prorationMethod')}
-          options={PRORATION_TYPE_OPTIONS.map((opt) => ({
-            ...opt,
-            label: t(`options.proration.${opt.value}`),
-          }))}
-          value={otherSettings.prorationType}
-          disabled={isProrationDisabled}
-          onChange={(val) => onChange('otherSettings', 'prorationType', val as ProrationType)}
-          className="min-w-[130px]"
-        />
-
-        {/* Tax Persistence Mode */}
-        <TaxSelect
-          label={t('fields.taxPersistenceMode')}
-          options={TAX_PERSISTENCE_MODE_OPTIONS.map((opt) => ({
-            ...opt,
-            label: t(`options.persistence.${opt.value}`),
-          }))}
-          value={otherSettings.taxPersistenceMode}
-          disabled={isCertTaxDisabled}
-          onChange={(val) =>
-            onChange('otherSettings', 'taxPersistenceMode', val as TaxPersistenceMode)
-          }
-          className="min-w-[180px]"
-        />
+          return (
+            <div key={guideline.guidelineCode} className="flex flex-col justify-center min-h-0">
+              <DynamicGuidelineField
+                guideline={guideline}
+                value={guideline.guidelineValue}
+                onChange={(val) => onChangeGuideline?.(guideline.guidelineCode!, val)}
+                disabled={isFieldDisabled}
+                t={t}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

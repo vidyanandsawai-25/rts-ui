@@ -49,6 +49,8 @@ export interface PropertySearchBarProps {
   ownerName: string;
   propertyDescription: string;
   tabHeaderInfo?: TabHeaderInfoData | null;
+  onPropertySearchChange?: (search: string) => void;
+  isSearchingProperties?: boolean;
 }
 
 export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
@@ -75,6 +77,8 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   ownerName,
   propertyDescription,
   tabHeaderInfo,
+  onPropertySearchChange,
+  isSearchingProperties = false,
 }) => {
   const t = useTranslations('ptis');
 
@@ -262,9 +266,11 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 sanitizeInput={sanitizePropertyNo}
                 className="h-7 text-xs lg:text-sm"
                 disabled={!wardId}
-                isLoading={false}
+                isLoading={isSearchingProperties}
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
+                strictMode={false}
+                onSearchChange={onPropertySearchChange}
               />
               <Input type="hidden" name="propertyNo" value={propertyNo} />
             </div>
@@ -291,6 +297,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 isLoading={false}
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
+                strictMode={false}
               />
               <Input type="hidden" name="partitionNo" value={partitionNo} />
             </div>

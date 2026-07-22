@@ -11,7 +11,7 @@ interface RuleBuilderCardProps {
   activeScopeName: string;
   handleSaveClick: () => void;
   isSaving: boolean;
-  currentData: string;
+  hasChanges: boolean;
   isEdit: boolean;
   rulesList: RuleBlock[];
   fields: FieldConfig[];
@@ -33,7 +33,7 @@ interface RuleBuilderCardProps {
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
 export default function RuleBuilderCard({
-  activeScopeName, handleSaveClick, isSaving, currentData, isEdit,
+  activeScopeName, handleSaveClick, isSaving, hasChanges, isEdit,
   rulesList, fields,
   effectTypes, categoryOptions, effectTypeConfigs,
   onAddRuleBlock, onRemoveRuleBlock, onMoveRuleBlock, onUpdateRuleBlock,
@@ -84,7 +84,7 @@ export default function RuleBuilderCard({
         <span className="text-sm font-bold text-gray-800">{t('builder.title', { scopeName: activeScopeName })}</span>
         <div className="flex items-center gap-2">
           <SaveRulesButton
-            currentData={currentData}
+            hasChanges={hasChanges}
             isSaving={isSaving}
             onSave={handleSaveClick}
           />

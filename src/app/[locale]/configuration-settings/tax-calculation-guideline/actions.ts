@@ -17,7 +17,7 @@ import { mapFormDataToDto } from '@/lib/api/configuration-settings/tax-calculati
  * Server action – load the tax calculation guideline for SSR.
  */
 export async function getTaxCalculationGuidelineAction(): Promise<
-  ApiResponse<TaxCalculationGuidelineDto | null>
+  ApiResponse<TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null>
 > {
   try {
     const data = await getTaxCalculationGuideline();
@@ -42,14 +42,15 @@ export async function getTaxCalculationGuidelineAction(): Promise<
  */
 export async function saveTaxCalculationGuidelineAction(
   formData: TaxCalculationGuidelineFormData,
-  baseDto?: TaxCalculationGuidelineDto | null
-): Promise<ApiResponse<TaxCalculationGuidelineDto> & { message?: string }> {
+  baseDto?: TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null
+): Promise<ApiResponse<TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[]> & { message?: string }> {
   try {
     let activeDto = baseDto;
 
     // Self-healing fallback: if the client state is in "create" mode but a record
-    // already exists in the database, automatically fetch it and perform an update (PUT).
-    if (!activeDto?.id) {
+    // already exists in the database, automatically fetch it and perform an update.
+    const isCreateMode = !activeDto || (Array.isArray(activeDto) && activeDto.length === 0) || (!Array.isArray(activeDto) && !activeDto.id);
+    if (isCreateMode) {
       const existing = await getTaxCalculationGuideline();
       if (existing) {
         activeDto = existing;
@@ -64,11 +65,13 @@ export async function saveTaxCalculationGuidelineAction(
       revalidatePath(`/${locale}/configuration-settings/tax-calculation-guideline`, 'page');
     }
 
+    const isUpdate = Array.isArray(activeDto) ? activeDto.length > 0 : !!activeDto?.id;
+
     return {
       success: true,
       statusCode: 200,
       data: saved,
-      message: activeDto?.id
+      message: isUpdate
         ? 'Tax calculation guideline updated successfully'
         : 'Tax calculation guideline created successfully',
     };

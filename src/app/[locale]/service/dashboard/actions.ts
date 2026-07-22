@@ -28,6 +28,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   return { departments };
 }
 
+<<<<<<< HEAD
 type CitizenProfileCookie = {
   upicId?: string;
 };
@@ -81,3 +82,5 @@ export async function getCitizenMisApplications(): Promise<CmsMisDashboardUserAp
     return [];
   }
 }
+=======
+>>>>>>> main

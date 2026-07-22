@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { getDashboardData } from './actions';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardHeader, CardTitle, CardContent, LanguageDropdown } from '@/components/common';
@@ -75,3 +76,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       </div>
   );
 }
+=======
+// This file is intentionally left empty.
+// The generic dashboard has been removed.
+// RTS dashboard is at: /rts/dashboard
+// Property Tax dashboard is at: /property-tax/ptis
+>>>>>>> main

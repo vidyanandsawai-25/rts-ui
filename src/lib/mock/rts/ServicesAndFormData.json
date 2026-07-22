@@ -1,0 +1,795 @@
+{
+  "services": [
+    {
+      "id": 66,
+      "serviceName": "Fire NOC",
+      "departmentId": "noc",
+      "departmentName": "NOC",
+      "description": "fdfsdfsdfsdfsdfsdfsfsfsfsdf",
+      "status": "Draft",
+      "createdAt": "2026-06-25T11:08:22.388Z",
+      "updatedAt": "2026-06-25T11:08:22.388Z",
+      "sections": [
+        {
+          "id": "section-fp7qr6-mqtd29lk",
+          "title": "New Section",
+          "description": "Group related fields together.",
+          "fields": [
+            {
+              "id": "field-eeyhiy-mqtd29lk",
+              "key": "name_on_owner",
+              "label": "Name on Owner",
+              "type": "text",
+              "required": true,
+              "placeholder": "Enter Full Name",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [],
+              "min": 0,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-3yhfxy-mqtd4zwi",
+              "key": "full_name_gucg",
+              "label": "Address of Owner",
+              "type": "text",
+              "required": true,
+              "placeholder": "Enter Owner Details",
+              "helpText": "",
+              "colSpan": 3,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-upeb69-mqtd6g1u",
+              "key": "mobile_number_fqxk",
+              "label": "Owner Mobile Number",
+              "type": "tel",
+              "required": true,
+              "placeholder": "Enter Owner mobile number",
+              "helpText": "",
+              "colSpan": 2,
+              "options": [],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-xx6pit-mqtd6uei",
+              "key": "email_address_bvhd",
+              "label": "Owner Email",
+              "type": "email",
+              "required": true,
+              "placeholder": "Enter Owner email address",
+              "helpText": "",
+              "colSpan": 2,
+              "options": [],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            }
+          ]
+        },
+        {
+          "id": "section-gcbter-mqtd7wzm",
+          "title": "Industry/Business Details",
+          "description": "Enter Industry Details",
+          "fields": [
+            {
+              "id": "field-dc8c1l-mqtdj5dc",
+              "key": "full_name_p5ql",
+              "label": "Name of Industry / Business / Company/Firm",
+              "type": "text",
+              "required": true,
+              "placeholder": "Enter Name of Industry / Business / Company/Firm",
+              "helpText": "",
+              "colSpan": 2,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-w6yt7y-mqtdjv4o",
+              "key": "full_name_jial",
+              "label": "Address of Industry / Business / Company/Firm*",
+              "type": "textarea",
+              "required": true,
+              "placeholder": "Enter Address of Industry / Business / Company/Firm*",
+              "helpText": "",
+              "colSpan": 4,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-euh5pw-mqtdknv4",
+              "key": "full_name_l2is",
+              "label": "Details of Industry/Business/Company/Firm As Per Proposed Map (With Signature of Blue Printed Architect and Owner)",
+              "type": "textarea",
+              "required": true,
+              "placeholder": "Enter Details of Industry/Business/Company/Firm",
+              "helpText": "",
+              "colSpan": 4,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            }
+          ]
+        },
+        {
+          "id": "section-rjyhxb-mqtddayp",
+          "title": "Building Specifications",
+          "description": "Enter Building Specifications",
+          "fields": [
+            {
+              "id": "field-qvoo5a-mqtddk8h",
+              "key": "full_name_z2vu",
+              "label": "Plot Area (in Sq. Mtr)",
+              "type": "number",
+              "required": true,
+              "placeholder": "EnterPlot Area (in Sq. Mtr)",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [],
+              "min": 2,
+              "max": 10,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-bw1nf5-mqtdehcx",
+              "key": "full_name_8351",
+              "label": "Total Builtup Area (In sq. Mtr)",
+              "type": "number",
+              "required": true,
+              "placeholder": "Enter Total Builtup Area ",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-9imj7y-mqtdfbi0",
+              "key": "full_name_q322",
+              "label": "No. of Floors",
+              "type": "number",
+              "required": false,
+              "placeholder": "Enter No. of Floors",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-laudrk-mqte2uv9",
+              "key": "full_name_yjuz",
+              "label": "Floor Wise Builtup Area (In sq. Mtr)",
+              "type": "textarea",
+              "required": true,
+              "placeholder": "Floot 1: 500 sq.m, Floor 2: 450 sq.m etc.",
+              "helpText": "",
+              "colSpan": 4,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-73wt0n-mqte50zx",
+              "key": "full_name_svaj",
+              "label": "Building Types",
+              "type": "select",
+              "required": true,
+              "placeholder": "Select ...",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [
+                {
+                  "id": "option-amoqwh-mqte5api",
+                  "label": "Residential"
+                },
+                {
+                  "id": "opt-f1f3nw-mqte5x0d",
+                  "label": "Commercial"
+                },
+                {
+                  "id": "opt-k2st3b-mqte649x",
+                  "label": "Industrial"
+                },
+                {
+                  "id": "opt-57o4cn-mqte68ud",
+                  "label": "Mix Use"
+                },
+                {
+                  "id": "opt-uwcn7z-mqte6eo5",
+                  "label": "Institutional"
+                }
+              ],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-chuhiz-mqte6sv9",
+              "key": "custom_dropdown_l8g9",
+              "label": "Building Height Category",
+              "type": "select",
+              "required": true,
+              "placeholder": "Select ...",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [
+                {
+                  "id": "opt-ugthkg-mqte6sv9",
+                  "label": "Low Rise (< 15 m)"
+                },
+                {
+                  "id": "opt-af9h4y-mqte6sv9",
+                  "label": "Mid Rise (15m - 24m)"
+                },
+                {
+                  "id": "opt-wafhir-mqte85xx",
+                  "label": "High Rise (> 24m)"
+                }
+              ],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-obwbt4-mqte9odx",
+              "key": "custom_dropdown_539c",
+              "label": "Building Capacity",
+              "type": "select",
+              "required": true,
+              "placeholder": "Select ...",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [
+                {
+                  "id": "opt-0nm3co-mqte9odx",
+                  "label": "Small (< 50 Occupants)"
+                },
+                {
+                  "id": "opt-19ne3y-mqte9odx",
+                  "label": "Medium (50 - 200 occupants)"
+                },
+                {
+                  "id": "opt-b7gwql-mqteaf6d",
+                  "label": "Large (> 200 occupants)"
+                }
+              ],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-hannwl-mqtebuws",
+              "key": "full_name_ub0r",
+              "label": "Rating (sq. Mtr)",
+              "type": "number",
+              "required": true,
+              "placeholder": "Enter rating",
+              "helpText": "",
+              "colSpan": 1,
+              "options": [],
+              "min": 2,
+              "max": 100,
+              "dateRestriction": "none"
+            }
+          ]
+        },
+        {
+          "id": "section-e3mqe4-mqtecw5w",
+          "title": "Upload Documents",
+          "description": "Group related fields together.",
+          "fields": [
+            {
+              "id": "field-c7zhdx-mqtee9ws",
+              "key": "uploaded_file_0fq2",
+              "label": "Application in the prescribed format",
+              "type": "file",
+              "required": true,
+              "placeholder": "Select document...",
+              "helpText": "",
+              "colSpan": 2,
+              "options": [],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-4vvik7-mqteeobo",
+              "key": "uploaded_file_bffd",
+              "label": "Certificate of no dues",
+              "type": "file",
+              "required": true,
+              "placeholder": "Select document...",
+              "helpText": "",
+              "colSpan": 2,
+              "options": [],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            },
+            {
+              "id": "field-mxdatc-mqtef0c4",
+              "key": "uploaded_file_ezo6",
+              "label": "Application of the architect",
+              "type": "file",
+              "required": true,
+              "placeholder": "Select document...",
+              "helpText": "",
+              "colSpan": 2,
+              "options": [],
+              "min": 0,
+              "max": 50,
+              "dateRestriction": "none"
+            }
+          ]
+        }
+      ],
+      "generatedSchema": {
+        "serviceId": "service-psz62g-mqtefdv8",
+        "serviceName": "Fire Extinguisher Certificate",
+        "departmentId": "noc",
+        "departmentName": "NOC",
+        "description": "fdfsdfsdfsdfsdfsdfsfsfsfsdf",
+        "steps": [
+          {
+            "id": "new-section",
+            "title": {
+              "en": "New Section",
+              "hi": "New Section",
+              "mr": "New Section"
+            },
+            "description": {
+              "en": "Group related fields together.",
+              "hi": "Group related fields together.",
+              "mr": "Group related fields together."
+            },
+            "fields": [
+              {
+                "id": "name-on-owner",
+                "type": "text",
+                "label": {
+                  "en": "Name on Owner",
+                  "hi": "Name on Owner",
+                  "mr": "Name on Owner"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Enter Full Name",
+                  "hi": "Enter Full Name",
+                  "mr": "Enter Full Name"
+                }
+              },
+              {
+                "id": "full-name-gucg",
+                "type": "text",
+                "label": {
+                  "en": "Address of Owner",
+                  "hi": "Address of Owner",
+                  "mr": "Address of Owner"
+                },
+                "required": true,
+                "colSpan": 9,
+                "placeholder": {
+                  "en": "Enter Owner Details",
+                  "hi": "Enter Owner Details",
+                  "mr": "Enter Owner Details"
+                }
+              },
+              {
+                "id": "mobile-number-fqxk",
+                "type": "tel",
+                "label": {
+                  "en": "Owner Mobile Number",
+                  "hi": "Owner Mobile Number",
+                  "mr": "Owner Mobile Number"
+                },
+                "required": true,
+                "colSpan": 6,
+                "placeholder": {
+                  "en": "Enter Owner mobile number",
+                  "hi": "Enter Owner mobile number",
+                  "mr": "Enter Owner mobile number"
+                }
+              },
+              {
+                "id": "email-address-bvhd",
+                "type": "email",
+                "label": {
+                  "en": "Owner Email",
+                  "hi": "Owner Email",
+                  "mr": "Owner Email"
+                },
+                "required": true,
+                "colSpan": 6,
+                "placeholder": {
+                  "en": "Enter Owner email address",
+                  "hi": "Enter Owner email address",
+                  "mr": "Enter Owner email address"
+                }
+              }
+            ]
+          },
+          {
+            "id": "industry-business-details",
+            "title": {
+              "en": "Industry/Business Details",
+              "hi": "Industry/Business Details",
+              "mr": "Industry/Business Details"
+            },
+            "description": {
+              "en": "Enter Industry Details",
+              "hi": "Enter Industry Details",
+              "mr": "Enter Industry Details"
+            },
+            "fields": [
+              {
+                "id": "full-name-p5ql",
+                "type": "text",
+                "label": {
+                  "en": "Name of Industry / Business / Company/Firm",
+                  "hi": "Name of Industry / Business / Company/Firm",
+                  "mr": "Name of Industry / Business / Company/Firm"
+                },
+                "required": true,
+                "colSpan": 6,
+                "placeholder": {
+                  "en": "Enter Name of Industry / Business / Company/Firm",
+                  "hi": "Enter Name of Industry / Business / Company/Firm",
+                  "mr": "Enter Name of Industry / Business / Company/Firm"
+                }
+              },
+              {
+                "id": "full-name-jial",
+                "type": "textarea",
+                "label": {
+                  "en": "Address of Industry / Business / Company/Firm*",
+                  "hi": "Address of Industry / Business / Company/Firm*",
+                  "mr": "Address of Industry / Business / Company/Firm*"
+                },
+                "required": true,
+                "colSpan": 12,
+                "placeholder": {
+                  "en": "Enter Address of Industry / Business / Company/Firm*",
+                  "hi": "Enter Address of Industry / Business / Company/Firm*",
+                  "mr": "Enter Address of Industry / Business / Company/Firm*"
+                }
+              },
+              {
+                "id": "full-name-l2is",
+                "type": "textarea",
+                "label": {
+                  "en": "Details of Industry/Business/Company/Firm As Per Proposed Map (With Signature of Blue Printed Architect and Owner)",
+                  "hi": "Details of Industry/Business/Company/Firm As Per Proposed Map (With Signature of Blue Printed Architect and Owner)",
+                  "mr": "Details of Industry/Business/Company/Firm As Per Proposed Map (With Signature of Blue Printed Architect and Owner)"
+                },
+                "required": true,
+                "colSpan": 12,
+                "placeholder": {
+                  "en": "Enter Details of Industry/Business/Company/Firm",
+                  "hi": "Enter Details of Industry/Business/Company/Firm",
+                  "mr": "Enter Details of Industry/Business/Company/Firm"
+                }
+              }
+            ]
+          },
+          {
+            "id": "building-specifications",
+            "title": {
+              "en": "Building Specifications",
+              "hi": "Building Specifications",
+              "mr": "Building Specifications"
+            },
+            "description": {
+              "en": "Enter Building Specifications",
+              "hi": "Enter Building Specifications",
+              "mr": "Enter Building Specifications"
+            },
+            "fields": [
+              {
+                "id": "full-name-z2vu",
+                "type": "number",
+                "label": {
+                  "en": "Plot Area (in Sq. Mtr)",
+                  "hi": "Plot Area (in Sq. Mtr)",
+                  "mr": "Plot Area (in Sq. Mtr)"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "EnterPlot Area (in Sq. Mtr)",
+                  "hi": "EnterPlot Area (in Sq. Mtr)",
+                  "mr": "EnterPlot Area (in Sq. Mtr)"
+                }
+              },
+              {
+                "id": "full-name-8351",
+                "type": "number",
+                "label": {
+                  "en": "Total Builtup Area (In sq. Mtr)",
+                  "hi": "Total Builtup Area (In sq. Mtr)",
+                  "mr": "Total Builtup Area (In sq. Mtr)"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Enter Total Builtup Area ",
+                  "hi": "Enter Total Builtup Area ",
+                  "mr": "Enter Total Builtup Area "
+                }
+              },
+              {
+                "id": "full-name-q322",
+                "type": "number",
+                "label": {
+                  "en": "No. of Floors",
+                  "hi": "No. of Floors",
+                  "mr": "No. of Floors"
+                },
+                "required": false,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Enter No. of Floors",
+                  "hi": "Enter No. of Floors",
+                  "mr": "Enter No. of Floors"
+                }
+              },
+              {
+                "id": "full-name-yjuz",
+                "type": "textarea",
+                "label": {
+                  "en": "Floor Wise Builtup Area (In sq. Mtr)",
+                  "hi": "Floor Wise Builtup Area (In sq. Mtr)",
+                  "mr": "Floor Wise Builtup Area (In sq. Mtr)"
+                },
+                "required": true,
+                "colSpan": 12,
+                "placeholder": {
+                  "en": "Floot 1: 500 sq.m, Floor 2: 450 sq.m etc.",
+                  "hi": "Floot 1: 500 sq.m, Floor 2: 450 sq.m etc.",
+                  "mr": "Floot 1: 500 sq.m, Floor 2: 450 sq.m etc."
+                }
+              },
+              {
+                "id": "full-name-svaj",
+                "type": "select",
+                "label": {
+                  "en": "Building Types",
+                  "hi": "Building Types",
+                  "mr": "Building Types"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Select ...",
+                  "hi": "Select ...",
+                  "mr": "Select ..."
+                },
+                "options": [
+                  {
+                    "value": "residential",
+                    "label": {
+                      "en": "Residential",
+                      "hi": "Residential",
+                      "mr": "Residential"
+                    }
+                  },
+                  {
+                    "value": "commercial",
+                    "label": {
+                      "en": "Commercial",
+                      "hi": "Commercial",
+                      "mr": "Commercial"
+                    }
+                  },
+                  {
+                    "value": "industrial",
+                    "label": {
+                      "en": "Industrial",
+                      "hi": "Industrial",
+                      "mr": "Industrial"
+                    }
+                  },
+                  {
+                    "value": "mix-use",
+                    "label": {
+                      "en": "Mix Use",
+                      "hi": "Mix Use",
+                      "mr": "Mix Use"
+                    }
+                  },
+                  {
+                    "value": "institutional",
+                    "label": {
+                      "en": "Institutional",
+                      "hi": "Institutional",
+                      "mr": "Institutional"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom-dropdown-l8g9",
+                "type": "select",
+                "label": {
+                  "en": "Building Height Category",
+                  "hi": "Building Height Category",
+                  "mr": "Building Height Category"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Select ...",
+                  "hi": "Select ...",
+                  "mr": "Select ..."
+                },
+                "options": [
+                  {
+                    "value": "low-rise-15-m",
+                    "label": {
+                      "en": "Low Rise (< 15 m)",
+                      "hi": "Low Rise (< 15 m)",
+                      "mr": "Low Rise (< 15 m)"
+                    }
+                  },
+                  {
+                    "value": "mid-rise-15m-24m",
+                    "label": {
+                      "en": "Mid Rise (15m - 24m)",
+                      "hi": "Mid Rise (15m - 24m)",
+                      "mr": "Mid Rise (15m - 24m)"
+                    }
+                  },
+                  {
+                    "value": "high-rise-24m",
+                    "label": {
+                      "en": "High Rise (> 24m)",
+                      "hi": "High Rise (> 24m)",
+                      "mr": "High Rise (> 24m)"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom-dropdown-539c",
+                "type": "select",
+                "label": {
+                  "en": "Building Capacity",
+                  "hi": "Building Capacity",
+                  "mr": "Building Capacity"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Select ...",
+                  "hi": "Select ...",
+                  "mr": "Select ..."
+                },
+                "options": [
+                  {
+                    "value": "small-50-occupants",
+                    "label": {
+                      "en": "Small (< 50 Occupants)",
+                      "hi": "Small (< 50 Occupants)",
+                      "mr": "Small (< 50 Occupants)"
+                    }
+                  },
+                  {
+                    "value": "medium-50-200-occupants",
+                    "label": {
+                      "en": "Medium (50 - 200 occupants)",
+                      "hi": "Medium (50 - 200 occupants)",
+                      "mr": "Medium (50 - 200 occupants)"
+                    }
+                  },
+                  {
+                    "value": "large-200-occupants",
+                    "label": {
+                      "en": "Large (> 200 occupants)",
+                      "hi": "Large (> 200 occupants)",
+                      "mr": "Large (> 200 occupants)"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "full-name-ub0r",
+                "type": "number",
+                "label": {
+                  "en": "Rating (sq. Mtr)",
+                  "hi": "Rating (sq. Mtr)",
+                  "mr": "Rating (sq. Mtr)"
+                },
+                "required": true,
+                "colSpan": 3,
+                "placeholder": {
+                  "en": "Enter rating",
+                  "hi": "Enter rating",
+                  "mr": "Enter rating"
+                }
+              }
+            ]
+          },
+          {
+            "id": "upload-documents",
+            "title": {
+              "en": "Upload Documents",
+              "hi": "Upload Documents",
+              "mr": "Upload Documents"
+            },
+            "description": {
+              "en": "Group related fields together.",
+              "hi": "Group related fields together.",
+              "mr": "Group related fields together."
+            },
+            "fields": [
+              {
+                "id": "uploaded-file-0fq2",
+                "type": "file",
+                "label": {
+                  "en": "Application in the prescribed format",
+                  "hi": "Application in the prescribed format",
+                  "mr": "Application in the prescribed format"
+                },
+                "required": true,
+                "colSpan": 6,
+                "placeholder": {
+                  "en": "Select document...",
+                  "hi": "Select document...",
+                  "mr": "Select document..."
+                }
+              },
+              {
+                "id": "uploaded-file-bffd",
+                "type": "file",
+                "label": {
+                  "en": "Certificate of no dues",
+                  "hi": "Certificate of no dues",
+                  "mr": "Certificate of no dues"
+                },
+                "required": true,
+                "colSpan": 6,
+                "placeholder": {
+                  "en": "Select document...",
+                  "hi": "Select document...",
+                  "mr": "Select document..."
+                }
+              },
+              {
+                "id": "uploaded-file-ezo6",
+                "type": "file",
+                "label": {
+                  "en": "Application of the architect",
+                  "hi": "Application of the architect",
+                  "mr": "Application of the architect"
+                },
+                "required": true,
+                "colSpan": 6,
+                "placeholder": {
+                  "en": "Select document...",
+                  "hi": "Select document...",
+                  "mr": "Select document..."
+                }
+              }
+            ]
+          }
+        ],
+        "documents": []
+      }
+    }
+  ]
+}

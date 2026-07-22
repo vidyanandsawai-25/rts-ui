@@ -87,8 +87,8 @@ export async function updateConfigValue(id: number, payload: UpdateConfigValueRe
 }
 
 /**
- * Delete config value (Hard delete via /purge)
+ * Delete config value (Hard delete)
  */
 export async function deleteConfigValue(id: number) {
-  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}/purge`);
+  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}`);
 }

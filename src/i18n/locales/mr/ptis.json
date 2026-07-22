@@ -40,6 +40,12 @@
     "changeDetectionLocationUnsetDescription": "या मालमत्तेसाठी डेटाबेसमध्ये जीपीएस निर्देशांक (अक्षांश आणि रेखांश) उपलब्ध नाहीत. एक डायनॅमिक ऐतिहासिक उपग्रह नकाशा लोड केला जाऊ शकत नाही.",
     "changeDetectionComingSoon": "बदल शोधण्याचे तपशील लवकरच येत आहेत.",
     "photoPlan": "फोटो प्लॅन",
+    "drawPlan": "ड्रॉ प्लॅन",
+    "propertyIdRequired": "प्रॉपर्टी आयडी आवश्यक आहे.",
+    "preparingDrawingTool": "ड्रॉइंग टूल तयार करत आहे...",
+    "redirectingDrawingTool": "ड्रॉइंग टूलवर पुनर्निर्देशित करत आहे...",
+    "launchUrlNotFound": "प्रतिसादामध्ये लाँच URL आढळली नाही.",
+    "unexpectedError": "एक अनपेक्षित त्रुटी आली.",
     "showPhotoPlan": "फोटो प्लॅन दाखवा",
     "hidePhotoPlan": "फोटो प्लॅन लपवा",
     "propertyPhoto": "मालमत्ता फोटो",
@@ -202,7 +208,7 @@
     "rateable": "करयोग्य मूल्य",
     "capital": "भांडवली मूल्य",
     "dual": "दुहेरी पद्धत",
-     "reassessment": "पुनर्मूल्यांकन",
+    "reassessment": "पुनर्मूल्यांकन",
     "apartment": "अपार्टमेंट"
   },
   "apartmentTabs": {
@@ -396,7 +402,15 @@
     "taxTotal": "एकूण कर",
     "interest": "व्याज",
     "netTotal": "एकूण देय",
-    "noTaxDetails": "कोणताही कर तपशील उपलब्ध नाही"
+    "noTaxDetails": "कोणताही कर तपशील उपलब्ध नाही",
+    "noMapDetails": "कोणताही नकाशा तपशील उपलब्ध नाही",
+    "latitude": "अक्षांश",
+    "longitude": "रेखांश",
+    "mappingCategory": "मॅपिंग वर्गवारी",
+    "oldPropPartNo": "जुना मालमत्ता क्र.-विभाग क्र.",
+    "oldWardPropPartNo": "जुना प्रभाग-मालमत्ता-विभाग क्र.",
+    "oldPlotAreaSqMtr": "जुने भूखंड क्षेत्रफळ (चौ. मी.)",
+    "oldConstAreaSqMtr": "जुने बांधकाम क्षेत्रफळ (चौ. मी.)"
   },
   "taxes": {
     "generalTax": "सामान्य कर",
@@ -442,7 +456,9 @@
     "showFloorDetails": "मजला तपशील पहा",
     "hideFloorDetails": "मजला तपशील लपवा",
     "showOldTax": "जुना कर पहा",
-    "hideOldTax": "जुना कर लपवा"
+    "hideOldTax": "जुना कर लपवा",
+    "showMapDetails": "नकाशा तपशील दाखवा",
+    "hideMapDetails": "नकाशा तपशील लपवा"
   },
   "loading": {
     "message": "मालमत्ता तपशील लोड होत आहे",
@@ -693,6 +709,7 @@
     "typeOfUseGroupNotFound": "मालमत्तेसाठी वापर गट कॉन्फिगरेशनचा प्रकार सापडला नाही।",
     "propertyNotSearched": "कृपया मालमत्ता एकत्र करण्यापूर्वी प्रथम मालमत्ता शोधा.",
     "propertyNotSearchedCommonUpdate": "कृपया सामान्य तपशील अद्यतन करण्यापूर्वी प्रथम मालमत्ता शोधा.",
+    "propertyIdMissing": "मालमत्ता गहाळ आहे. कृपया प्रथम मालमत्ता शोधा आणि निवडा।",
     "selectPropertyFirst": "कृपया आधी एक मालमत्ता निवडा।",
     "networkError": {
       "title": "सर्व्हरशी कनेक्ट होऊ शकले नाही",
@@ -758,6 +775,8 @@
       "applyOrder": "क्रम",
       "ruleCategory": "वर्ग",
       "ruleScopeName": "व्याप्ती",
+      "floorName": "मजला",
+      "typeOfUseName": "वापराचा प्रकार",
       "ruleName": "नियमाचे नाव",
       "effectType": "प्रभावाचा प्रकार",
       "effectValue": "प्रभावाचा दर",

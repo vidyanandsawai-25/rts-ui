@@ -150,7 +150,18 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
       });
     }
   } else if (dataType === 'datetime') {
-    if (isNaN(Date.parse(defaultValue))) {
+    // Support ISO strings and UI format DD-MM-YYYY HH:mm (normalize before parsing)
+    const ddmmyyyyMatch = defaultValue.match(
+      /^(\d{2})-(\d{2})-(\d{4})(?:\s(\d{2}):(\d{2})(?::(\d{2}))?)?$/
+    );
+
+    const normalized = ddmmyyyyMatch
+      ? `${ddmmyyyyMatch[3]}-${ddmmyyyyMatch[2]}-${ddmmyyyyMatch[1]}T${ddmmyyyyMatch[4] ?? '00'}:${ddmmyyyyMatch[5] ?? '00'}:${ddmmyyyyMatch[6] ?? '00'}`
+      : defaultValue;
+
+    const isValidFormat = !isNaN(Date.parse(normalized));
+      
+    if (!isValidFormat) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Default value must be a valid date and time',

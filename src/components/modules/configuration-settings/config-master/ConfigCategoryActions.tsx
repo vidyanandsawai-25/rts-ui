@@ -48,6 +48,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
       variant: 'delete',
       title: t('modals.deleteCategory.title'),
       description: t('modals.deleteCategory.desc', { name: categoryName }),
+      cancelText: t('confirm.discard.cancel'),
       onConfirm: () => {
         setActiveAction('delete');
         startTransition(async () => {
@@ -118,7 +119,7 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
         ? t('list.enableAllDesc', { category: categoryName })
         : t('list.disableAllDesc', { category: categoryName }),
       confirmText: enable ? t('list.confirmEnable') : t('list.confirmDisable'),
-      cancelText: t('modals.departmentConfig.buttons.cancel'),
+      cancelText: t('confirm.discard.cancel'),
       variant: enable ? 'add' : 'delete',
       onConfirm: () => {
         toastInfo(

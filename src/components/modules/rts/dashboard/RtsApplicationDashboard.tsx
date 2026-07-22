@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getUserMisDashboardAction } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import type { CmsMisDashboardUserApplicationItem } from '@/types/rts/rtsmisdashboard.types';
-import type { RtsServiceApiItem } from '@/types/rts/service.types';
 import { Drawer } from '@/components/common/Drawer';
 import { useTranslations } from 'next-intl';
 import {
@@ -30,16 +29,13 @@ import {
 import type { Column } from '@/components/common/MasterTable';
 import ApplicationDrawerContent from './RtsApplicationDrawerContext';
 
-// import type { CmsApplication } from "@/lib/mock/rts/cms";
-
-interface CmsMulyamapanProps {
-  // data: CmsApplication[];
+interface RtsApplicationDashboardProps {
+  // data: RtsApplication[];
   data: any[];
   masters: {
     departments: Array<{ id: string; name: string }>;
     services: Array<{ id: string; name: string; departmentId: string }>;
   };
-  services: RtsServiceApiItem[];
   locale: string;
 }
 
@@ -60,81 +56,7 @@ interface SlaRecord extends Record<string, unknown> {
   applicationStatus: 'Approved' | 'Pending' | 'Reverted' | 'Rejected';
 }
 
-interface DepartmentTatRecord {
-  key: 'propertyTax' | 'tradeLicense' | 'waterConnection' | 'townPlanning';
-  total: number;
-  pending: number;
-  inProgress: number;
-  needsInfo: number;
-  verification: number;
-  stageDays: {
-    pending: number;
-    inProgress: number;
-    needsInfo: number;
-    verification: number;
-  };
-}
-
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
-
-const DEPARTMENT_TAT_DATA: DepartmentTatRecord[] = [
-  {
-    key: 'propertyTax',
-    total: 6.8,
-    pending: 22,
-    inProgress: 37,
-    needsInfo: 26,
-    verification: 15,
-    stageDays: {
-      pending: 1.5,
-      inProgress: 2.5,
-      needsInfo: 1.8,
-      verification: 1.0,
-    },
-  },
-  {
-    key: 'tradeLicense',
-    total: 9.0,
-    pending: 22,
-    inProgress: 33,
-    needsInfo: 28,
-    verification: 17,
-    stageDays: {
-      pending: 2.0,
-      inProgress: 3.0,
-      needsInfo: 2.5,
-      verification: 1.5,
-    },
-  },
-  {
-    key: 'waterConnection',
-    total: 17.7,
-    pending: 20,
-    inProgress: 34,
-    needsInfo: 28,
-    verification: 18,
-    stageDays: {
-      pending: 3.5,
-      inProgress: 6.0,
-      needsInfo: 5.0,
-      verification: 3.2,
-    },
-  },
-  {
-    key: 'townPlanning',
-    total: 17.5,
-    pending: 23,
-    inProgress: 31,
-    needsInfo: 28,
-    verification: 18,
-    stageDays: {
-      pending: 4.0,
-      inProgress: 5.5,
-      needsInfo: 4.8,
-      verification: 3.2,
-    },
-  },
-];
 
 function normalizeApplicationStatus(
   value: unknown
@@ -170,7 +92,11 @@ function normalizeApplicationStatus(
   return 'Pending';
 }
 
-export default function CmsMulyamapan({ data, masters, services, locale }: CmsMulyamapanProps) {
+export default function RtsApplicationDashboard({
+  data: _data,
+  masters: _masters,
+  locale,
+}: RtsApplicationDashboardProps) {
   const t = useTranslations('rts');
   const tCommon = useTranslations('common');
 
@@ -211,9 +137,6 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
     [locale]
   );
 
-  const formatDays = (value: number | string) =>
-    t('applicationDashboard.units.dayShort', { value });
-
   const slaRecords = useMemo<SlaRecord[]>(() => {
     return dashboardData.map((application, index) => {
       const applicationStatus = normalizeApplicationStatus(application.status);
@@ -238,7 +161,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
       return {
         id: String(index + 1),
         appId: application.applicationNo,
-        citizenName: "-",
+        citizenName: '-',
         serviceName: application.serviceName,
         departmentId: '',
         submittedDate: application.submittedDate,
@@ -306,24 +229,13 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
 
   useEffect(() => {
     setPageNumber(1);
-  }, [applicationType, pageSize, searchTerm, selectedStatus]);
+  }, [searchTerm, pageSize]);
 
   useEffect(() => {
     if (pageNumber > totalPages) {
       setPageNumber(totalPages);
     }
   }, [pageNumber, totalPages]);
-
-  const getOutcomeLabel = (outcome: SlaRecord['outcome']) => {
-    switch (outcome) {
-      case 'Within SLA':
-        return t('applicationDashboard.outcomes.withinSla');
-      case 'SLA breached':
-        return t('applicationDashboard.outcomes.slaBreached');
-      default:
-        return t('applicationDashboard.outcomes.atRisk');
-    }
-  };
 
   const getStatusLabel = (status: SlaRecord['applicationStatus']) => {
     switch (status) {
@@ -384,9 +296,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
           <div>
             <div className="font-semibold text-slate-800 text-sm">{row.citizenName}</div>
 
-            <div className="text-[11px] text-slate-500">
-              Plot No. 12, Shivaji Nagar
-            </div>
+            <div className="text-[11px] text-slate-500">Plot No. 12, Shivaji Nagar</div>
           </div>
         ),
       },
@@ -441,6 +351,8 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
 
               {getStatusLabel(row.applicationStatus)}
             </span>
+
+            <span className="text-[11px] text-slate-500">Junior Engineer</span>
           </div>
         ),
       },
@@ -508,56 +420,17 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
     },
   ];
 
-  const chartLegend = [
-    { colorClass: 'bg-amber-400', label: t('applicationDashboard.graph.stages.pending') },
-    { colorClass: 'bg-[#4b70a6]', label: t('applicationDashboard.graph.stages.inProgress') },
-    { colorClass: 'bg-purple-400', label: t('applicationDashboard.graph.stages.needsInfo') },
-    { colorClass: 'bg-emerald-500', label: t('applicationDashboard.graph.stages.verification') },
-  ];
-
-  const dialogStages = selectedRecord
-    ? [
-        {
-          color: 'bg-amber-400',
-          label: t('applicationDashboard.dialog.stages.clerkAllocation'),
-          days: selectedRecord.pendingDays,
-        },
-        {
-          color: 'bg-[#4b70a6]',
-          label: t('applicationDashboard.dialog.stages.officialScrutiny'),
-          days: selectedRecord.inProgressDays,
-        },
-        {
-          color: 'bg-purple-400',
-          label: t('applicationDashboard.dialog.stages.queryResolution'),
-          days: selectedRecord.needsInfoDays,
-        },
-        {
-          color: 'bg-emerald-500',
-          label: t('applicationDashboard.dialog.stages.finalSignOff'),
-          days: selectedRecord.verificationDays,
-        },
-      ]
-    : [];
-
   const applicationTypeOptions = useMemo(
     () => [
       { label: t('applicationDashboard.filters.allTypes'), value: 'all' },
       ...Array.from(
-        new Map(
-          services
-            .filter((service) => service.isActive)
-            .map((service) => [service.serviceName, service])
-        ).values()
-      ).map((service) => ({
-        label:
-          locale === 'mr' && service.serviceNameLocal
-            ? service.serviceNameLocal
-            : service.serviceName,
-        value: service.serviceName,
+        new Map(slaRecords.map((record) => [record.serviceName, record.serviceName])).values()
+      ).map((serviceName) => ({
+        label: serviceName,
+        value: serviceName,
       })),
     ],
-    [locale, services, t]
+    [slaRecords, t]
   );
 
   const statusOptions = useMemo(
@@ -596,14 +469,14 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((metric) => (
           <Card
             key={metric.key}
             padding="none"
             className={`relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-[4px] ${metric.borderClassName}`}
           >
-            <div className="flex items-center justify-between px-5 py-2">
+            <div className="flex items-center justify-between px-5 py-4">
               {/* Left */}
               <div className="flex flex-col">
                 <span className="text-[13px] font-semibold text-slate-600">{metric.label}</span>
@@ -615,7 +488,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
 
               {/* Right Icon */}
               <div
-                className={`flex size-10 items-center justify-center rounded-xl border ${metric.iconClassName}`}
+                className={`flex h-14 w-14 items-center justify-center rounded-xl border ${metric.iconClassName}`}
               >
                 <metric.icon className="size-5" strokeWidth={2} />
               </div>
@@ -646,11 +519,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
 
             {/* Right */}
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-              size="sm"
-              icon={FileText}
-              variant="primary"
-              className="rounded-lg px-4">
+              <Button size="sm" icon={FileText} variant="primary" className="rounded-lg px-4">
                 {t('applicationDashboard.actions.registerApplication')}
               </Button>
 
@@ -671,7 +540,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
                   {t('applicationDashboard.filters.applicationType')}
                 </Label>
                 <Select
-                  selectSize="sm"
+                  className="w-44"
                   options={applicationTypeOptions}
                   value={applicationType}
                   onChange={(_, value) => setApplicationType(value)}
@@ -683,7 +552,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
                   {tCommon('status.label')}
                 </Label>
                 <Select
-                  selectSize="sm"
+                  className="w-36"
                   options={statusOptions}
                   value={selectedStatus}
                   onChange={(_, value) => setSelectedStatus(value)}
@@ -691,7 +560,7 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
               </div>
             </div>
 
-            <div className="flex items-end gap-3">
+            <div className="flex items-end gap-3 xl:w-[460px]">
               <div className="min-w-0 flex-1 space-y-1 xl:w-[460px]">
                 <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                   {tCommon('actions.search')}
@@ -762,10 +631,19 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
             enabled: true,
             showPageSizeSelector: true,
           }}
-          maxBodyHeightClassName="max-h-auto"
+          maxBodyHeightClassName="max-h-[520px]"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           // theadClassName="!bg-slate-50 !from-slate-50 !via-slate-50 !to-slate-50 hover:!from-slate-50 hover:!via-slate-50 hover:!to-slate-50 [&_th]:!text-slate-700"
-          theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
+          theadClassName="
+  !bg-[#143D7D]
+  [&_tr]:!bg-[#143D7D]
+  [&_th]:!bg-[#143D7D]
+  [&_th]:!text-white
+  [&_th]:font-semibold
+  [&_th]:uppercase
+  [&_th]:tracking-wide
+  [&_th]:text-xs
+  [&_th]:border-none"
           // tableClassName="[&_thead_tr]:border-b [&_thead_tr]:border-slate-200 [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100 [&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-slate-50/70 [&_th]:uppercase"
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[74px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
           footerLeftContent={
@@ -780,78 +658,6 @@ export default function CmsMulyamapan({ data, masters, services, locale }: CmsMu
           footerLeftClassName="text-slate-400"
         />
       </Card>
-
-      {/* <Card padding="sm" className="space-y-4 border-slate-200 shadow-sm">
-        <div>
-          <h2 className="text-sm font-bold text-[#243B7C]">
-            {t("applicationDashboard.graph.title")}
-          </h2>
-          <p className="mt-0.5 text-[12px] text-slate-400">
-            {t("applicationDashboard.graph.description")}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
-          {chartLegend.map((item) => (
-            <div key={item.label} className="flex items-center gap-1.5">
-              <span className={`h-3 w-3 rounded ${item.colorClass}`} />
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-4 pt-2">
-          {DEPARTMENT_TAT_DATA.map((department) => (
-            <div key={department.key} className="space-y-1.5">
-              <div className="flex justify-between text-xs font-bold text-slate-700">
-                <span>
-                  {t(`applicationDashboard.graph.departments.${department.key}`)}
-                </span>
-                <span className="font-extrabold text-slate-800">
-                  {t("applicationDashboard.units.days", {
-                    value: department.total.toFixed(1),
-                  })}
-                </span>
-              </div>
-
-              <div className="flex h-5 w-full overflow-hidden rounded-lg border border-slate-100 shadow-inner">
-                <div
-                  style={{ width: `${department.pending}%` }}
-                  className="bg-amber-400 transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.pending"),
-                    value: department.stageDays.pending,
-                  })}
-                />
-                <div
-                  style={{ width: `${department.inProgress}%` }}
-                  className="bg-[#4b70a6] transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.inProgress"),
-                    value: department.stageDays.inProgress,
-                  })}
-                />
-                <div
-                  style={{ width: `${department.needsInfo}%` }}
-                  className="bg-purple-400 transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.needsInfo"),
-                    value: department.stageDays.needsInfo,
-                  })}
-                />
-                <div
-                  style={{ width: `${department.verification}%` }}
-                  className="bg-emerald-500 transition hover:opacity-90"
-                  title={t("applicationDashboard.graph.stageTooltip", {
-                    stage: t("applicationDashboard.graph.stages.verification"),
-                    value: department.stageDays.verification,
-                  })}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card> */}
 
       {selectedRecord && (
         <Drawer

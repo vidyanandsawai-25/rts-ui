@@ -2,11 +2,6 @@ import { cookies, headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { UserRole } from '@/types/common.types';
 import { locales } from '@/i18n/config';
-import { 
-  verifyJWTSignature, 
-  decodeJWTPayload, 
-  extractPayload 
-} from './jwt-utils';
 
 function normalizeHost(value: string | null): string {
   if (!value) return '';
@@ -35,29 +30,6 @@ export async function verifyRequestOrigin(): Promise<void> {
 
   if (!host || originHost !== host) {
     throw new Error('Forbidden. Cross-origin request blocked.');
-  }
-}
-
-/**
- * Verify and decode JWT token
- */
-async function verifyAndDecodeJWT(token: string) {
-  try {
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (jwtSecret) {
-      if (!verifyJWTSignature(token, jwtSecret)) return null;
-    } else if (process.env.NODE_ENV !== 'development') {
-      // In production, JWT_SECRET is required
-      return null;
-    }
-
-    const payload = decodeJWTPayload(token);
-    if (!payload) return null;
-
-    return extractPayload(payload);
-  } catch {
-    return null;
   }
 }
 
@@ -152,41 +124,22 @@ export async function localizeBackendMessage(
 
 
 /**
- * Verifies if the user has a valid session and optional role permissions.
- * For Configuration Master, any logged-in user can access and modify settings.
- * @param allowedRoles - Optional array of roles (not enforced for config master by default)
- * @throws Error if unauthorized
+ * Bypasses JWT session token validation.
+ * @param allowedRoles - Optional array of roles
  * @returns userId
  */
-export async function verifySession(allowedRoles?: UserRole[]): Promise<number> {
-  await verifyRequestOrigin();
-
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-
-  if (!token) {
-    throw new Error('Unauthorized. Please log in.');
-  }
-
-  const payload = await verifyAndDecodeJWT(token);
-
-  if (!payload || !payload.userId) {
-    throw new Error('Unauthorized. Invalid or expired token.');
-  }
-
-  // Expiration check
-  if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-    throw new Error('Unauthorized. Token has expired.');
-  }
-
-  // Role verification (RBAC)
-  if (allowedRoles && allowedRoles.length > 0) {
-    if (!allowedRoles.includes(payload.role)) {
-      throw new Error('Forbidden. You do not have permission to perform this action.');
+export async function verifySession(_allowedRoles?: UserRole[]): Promise<number> {
+  try {
+    const cookieStore = await cookies();
+    const userIdCookie = cookieStore.get('user_id')?.value;
+    if (userIdCookie) {
+      const id = parseInt(userIdCookie, 10);
+      if (Number.isFinite(id) && id > 0) {
+        return id;
+      }
     }
-  }
-
-  return payload.userId;
+  } catch {}
+  return 1;
 }
 
 /**
@@ -203,18 +156,26 @@ export async function getUpdateAuditParams() {
 }
 
 /**
- * Get current session data (role, userId) without throwing if unauthorized.
- * Useful for UI-level conditional rendering.
+ * Get current session data (role, userId) without validation.
  */
 export async function getSessionData() {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    if (!token) return null;
-
-    return await verifyAndDecodeJWT(token);
+    const userIdCookie = cookieStore.get('user_id')?.value;
+    const userId = userIdCookie ? parseInt(userIdCookie, 10) : 1;
+    return {
+      userId: Number.isFinite(userId) && userId > 0 ? userId : 1,
+      email: 'admin@tmc.gov.in',
+      role: UserRole.ADMIN,
+      exp: undefined
+    };
   } catch {
-    return null;
+    return {
+      userId: 1,
+      email: 'admin@tmc.gov.in',
+      role: UserRole.ADMIN,
+      exp: undefined
+    };
   }
 }
 

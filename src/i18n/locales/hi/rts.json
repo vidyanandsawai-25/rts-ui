@@ -569,5 +569,28 @@
       "departmentHead": "विभाग प्रमुख",
       "administrator": "प्रशासक"
     }
+  },
+  "serviceGrid": {
+    "selectDept": "कृपया विभाग चुनें",
+    "noServices": "इस विभाग के लिए सेवाएँ उपलब्ध नहीं हैं।",
+    "serviceFallback": "सेवा",
+    "serviceDetails": "सेवा विवरण",
+    "searchServices": "सेवा खोजें...",
+    "applyProcess": "आवेदन करें / प्रक्रिया करें",
+    "close": "बंद करें",
+    "invalidServiceUrl": "इस सेवा के लिए अमान्य बाहरी लिंक (URL) है। कृपया व्यवस्थापक से संपर्क करें।",
+    "missingUpic": "इस बाहरी सेवा के लिए नागरिक का यूपिक (UPIC) आईडी होना आवश्यक है।",
+    "missingUpicPlaceholder": "इस सेवा के लिंक में यूपिक (UPIC) प्लेसहोल्डर गायब है। कृपया व्यवस्थापक से संपर्क करें।",
+    "timeLimitSla": "समय सीमा (SLA)",
+    "feesCharges": "शुल्क / प्रभार",
+    "receivingOfficer": "स्वीकृति अधिकारी",
+    "mandatoryDocsRequired": "आवश्यक दस्तावेज़",
+    "noDocsSpecified": "इस सेवा के लिए कोई दस्तावेज़ निर्दिष्ट नहीं हैं।",
+    "free": "निःशुल्क",
+    "days": "दिन",
+    "availableServices": "उपलब्ध सेवाएँ",
+    "servicesFound": "सेवाएँ मिलीं",
+    "clear": "साफ़ करें",
+    "searchResults": "खोज परिणाम"
   }
 }
