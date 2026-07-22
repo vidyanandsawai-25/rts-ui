@@ -11,6 +11,7 @@ interface UseRateValidationProps {
   selectedUseGroup: string;
   assessmentYear: string;
   initialExistingRatesCheck?: boolean;
+  isOpenPlot?: boolean;
 }
 
 /**
@@ -21,6 +22,7 @@ export function useRateValidation({
   selectedUseGroup,
   assessmentYear,
   initialExistingRatesCheck,
+  isOpenPlot = false,
 }: UseRateValidationProps) {
   // Form validation errors
   const [errors, setErrors] = useState<FormErrors>({
@@ -34,7 +36,9 @@ export function useRateValidation({
   const [isCheckingRates, setIsCheckingRates] = useState(false);
 
   // Check if all filters are selected
-  const allFiltersSelected = !!selectedZone && !!selectedUseGroup && !!assessmentYear;
+  const allFiltersSelected = isOpenPlot
+    ? (!!selectedZone && !!assessmentYear)
+    : (!!selectedZone && !!selectedUseGroup && !!assessmentYear);
 
   // Validate a single field
   const validateField = (field: keyof FormErrors, value: string): string => {
@@ -43,7 +47,7 @@ export function useRateValidation({
         case "zone":
           return "Please select a rate section";
         case "useGroup":
-          return "Please select a use group";
+          return isOpenPlot ? "" : "Please select a use group";
         case "assessmentYear":
           return "Please select an assessment year";
         default:
@@ -57,7 +61,7 @@ export function useRateValidation({
   const validateAll = (): boolean => {
     const newErrors: FormErrors = {
       zone: validateField("zone", selectedZone),
-      useGroup: validateField("useGroup", selectedUseGroup),
+      useGroup: isOpenPlot ? "" : validateField("useGroup", selectedUseGroup),
       assessmentYear: validateField("assessmentYear", assessmentYear),
     };
     setErrors(newErrors);
