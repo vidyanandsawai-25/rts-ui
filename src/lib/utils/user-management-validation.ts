@@ -131,8 +131,15 @@ export const userManagementValidations = {
       },
     });
   },
-  validateRole: (data: { name: string }, t: (key: string) => string) => {
+  validateRole: (
+    data: { name: string; departmentId?: number | string },
+    t: (key: string) => string
+  ) => {
     return validateForm(data, {
+      departmentId: (val) => {
+        if (!val) return t('form.errors.departmentRequired');
+        return undefined;
+      },
       name: (val) => {
         if (!val) return t('form.errors.roleNameRequired');
         if (String(val).length > 30) return t('form.errors.roleNameTooLong');

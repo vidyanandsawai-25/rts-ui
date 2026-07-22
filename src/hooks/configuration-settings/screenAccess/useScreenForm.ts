@@ -201,6 +201,8 @@ export function useScreenForm({
         },
         screenGroupId: (val, _data, t) =>
           !val ? t('screenManagement.screens.form.errors.groupRequired') : undefined,
+        departmentMasterId: (val, _data, t) =>
+          !val ? t('screenManagement.screens.form.errors.departmentRequired') : undefined,
         moduleId: (val, _data, t) =>
           !val ? t('screenManagement.screens.form.errors.moduleRequired') : undefined,
         routePath: (val, _data, t, tCommon) => {
