@@ -11,6 +11,7 @@ import {
   ClearButton,
   SelectAllButton,
   SearchInput,
+  Label,
 } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { useQueryTransition } from "@/hooks/useQueryTransition";
@@ -246,13 +247,13 @@ export function ScreenSelectionCard({
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider min-w-[36px] justify-center shrink-0">
                         {badgeCode}
                       </span>
-                      <label
+                      <Label
                         htmlFor={`screen-${screen.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="flex-1 text-sm font-semibold text-slate-700 truncate cursor-pointer"
                       >
                         {screen.screenName}
-                      </label>
+                      </Label>
                     </div>
                   );
                 })}

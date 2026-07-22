@@ -3,6 +3,7 @@
 import { MapPin, Grid, Building2, Home } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
+import { Card } from "@/components/common";
 
 
 const SCOPE_ICONS = [
@@ -32,19 +33,28 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
           const Icon = option.icon;
 
           return (
-            <button
+            <Card
               key={option.id}
+              role="button"
+              tabIndex={0}
+              padding="none"
               onClick={() => onChange(option.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onChange(option.id);
+                }
+              }}
               className={cn(
-                "flex items-center gap-1 p-3 rounded-xl border-2 transition-all bg-white relative",
+                "flex items-center gap-1 p-3 rounded-xl border-2 transition-all cursor-pointer hover:bg-slate-50",
                 isSelected
                   ? "border-blue-600 ring-2 ring-blue-50"
-                  : "border-slate-100 hover:border-slate-300 hover:bg-slate-50"
+                  : "border-slate-100 hover:border-slate-300"
               )}
             >
               <div
                 className={cn(
-                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mb-1",
+                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mb-1 shrink-0",
                   isSelected ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
                 )}
               >
@@ -52,22 +62,22 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
               </div>
               <Icon
                 className={cn(
-                  "w-5 h-5 mb-1",
+                  "w-5 h-5 mb-1 shrink-0",
                   isSelected ? "text-blue-600" : "text-slate-400"
                 )}
               />
               <span
                 className={cn(
-                  "text-sm font-bold text-center leading-tight",
+                  "text-sm font-bold text-center leading-tight whitespace-normal text-left",
                   isSelected ? "text-blue-700" : "text-slate-700"
                 )}
               >
                 {t(`scopeSelectionCard.options.${option.key}.label`)}
               </span>
-              <span className="text-[10px] text-slate-500 mt-0.5 text-center leading-tight">
+              <span className="text-[10px] text-slate-500 mt-0.5 text-center leading-tight whitespace-normal text-left hidden sm:inline-block">
                 {t(`scopeSelectionCard.options.${option.key}.sublabel`)}
               </span>
-            </button>
+            </Card>
           );
         })}
       </div>

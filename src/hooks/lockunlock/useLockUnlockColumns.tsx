@@ -4,6 +4,7 @@ import { Column } from "@/components/common/MasterTable";
 import { Badge, EditButton, ToggleSwitch, Tooltip } from "@/components/common";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
+import { Checkbox } from "@/components/common/checkbox";
 
 interface UseLockUnlockColumnsParams {
   screens: LockedScreen[];
@@ -57,16 +58,11 @@ export function useLockUnlockColumns({
     {
       key: "checkbox",
       label: (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isHeaderChecked()}
           disabled={isPending || isCategoryBulkAction}
-          ref={(el) => {
-            if (el) {
-              el.indeterminate = isHeaderIndeterminate();
-            }
-          }}
-          onChange={() => onSelectAllProperties()}
+          indeterminate={isHeaderIndeterminate()}
+          onCheckedChange={() => onSelectAllProperties()}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !isPending) {
               e.preventDefault();
@@ -80,11 +76,10 @@ export function useLockUnlockColumns({
       width: "5%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isRowChecked(row.propertyId)}
           disabled={isPending || isCategoryBulkAction}
-          onChange={() => onSelectProperty(row.propertyId)}
+          onCheckedChange={() => onSelectProperty(row.propertyId)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !isPending) {
               e.preventDefault();
