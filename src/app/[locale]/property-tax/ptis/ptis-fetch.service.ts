@@ -1,6 +1,5 @@
 'use server';
 
-import { cookies } from 'next/headers';
 import { toPositiveInt, toSafeString } from '@/lib/utils/format';
 import {
   getWardListAction,
@@ -20,9 +19,6 @@ export async function fetchPtisPageData(
   searchParams: Record<string, string | string[] | undefined>,
   locale: string
 ) {
-  const cookieStore = await cookies();
-  const initialMediaPanelVisible = cookieStore.get('ptis_media_panel_visible')?.value === 'true';
-
   const wardNo = toSafeString(searchParams?.wardNo);
   const propertyNo = toSafeString(searchParams?.propertyNo);
   const rawPartitionNo = toSafeString(searchParams?.partitionNo);
@@ -80,7 +76,7 @@ export async function fetchPtisPageData(
         propertyIdParam, resolvedWardId, propertyNo, partitionNo, appartmentTab,
         pageNumber, pageSize, searchTerm, filterWing, filterFlatOrShopNo,
         filterApartmentType, filterPropertyType, sortBy, sortOrder, valuationTab,
-        showDetailsParam, initialMediaPanelVisible
+        showDetailsParam
       );
 
       const [propDetailsRes, propListRes, detailsRes] = await Promise.all([
@@ -112,7 +108,7 @@ export async function fetchPtisPageData(
             resolvedPropertyId, resolvedWardId, propertyNo, partitionNo, appartmentTab,
             pageNumber, pageSize, searchTerm, filterWing, filterFlatOrShopNo,
             filterApartmentType, filterPropertyType, sortBy, sortOrder, valuationTab,
-            showDetailsParam, initialMediaPanelVisible
+            showDetailsParam
           )
         : Promise.resolve(null);
 
@@ -138,7 +134,6 @@ export async function fetchPtisPageData(
     activeTab,
     criticalError,
     resolvedWardId,
-    initialMediaPanelVisible,
     showFloorParam,
     showOldTaxParam,
     showMapDetailsParam,

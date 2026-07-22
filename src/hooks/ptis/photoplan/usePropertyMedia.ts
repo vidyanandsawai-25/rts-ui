@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
@@ -42,8 +43,20 @@ export function usePropertyMedia({
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
+  const prevPropertyIdRef = useRef(propertyId);
   const prevPhotosRef = useRef<PropertyPhotoDto[]>(initialPhotos);
   const prevSlotsRef = useRef<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
+  useEffect(() => {
+    if (propertyId !== prevPropertyIdRef.current) {
+      prevPropertyIdRef.current = propertyId;
+      setFullyLoadedIds(new Set());
+      if (propertyId && propertyMediaCache.has(propertyId)) {
+        setPhotos(propertyMediaCache.get(propertyId)!.photos);
+      } else {
+        setPhotos(initialPhotos);
+      }
+    }
+  }, [propertyId, initialPhotos]);
 
   useEffect(() => {
     if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {

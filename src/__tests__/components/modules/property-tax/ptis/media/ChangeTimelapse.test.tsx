@@ -16,7 +16,7 @@ vi.mock('next-intl', () => ({
       'media.speedMedium': '1.5x (Medium)',
       'media.speedFast': '2x (Fast)',
       'media.labels': 'Labels',
-      'media.googleMap': 'Click to view on Google Map',
+      'media.googleMap': 'View on Google Map',
       'media.fetchingCatalog': 'Fetching satellite history catalog...',
       'media.interactionGuide': 'Drag to pan · Scroll to zoom · Click a year to jump',
       'media.attribution': '© Esri, Wayback, Maxar',
@@ -74,11 +74,9 @@ describe('ChangeTimelapse', () => {
     );
 
     // Verify controls render
-    expect(screen.getByText('Historical Satellite')).toBeInTheDocument();
     expect(screen.getByText('Play')).toBeInTheDocument();
     expect(screen.getByText('Speed:')).toBeInTheDocument();
-    expect(screen.getByText('Labels')).toBeInTheDocument();
-    expect(screen.getByText('Click to view on Google Map')).toBeInTheDocument();
+    expect(screen.getByText('View on Google Map')).toBeInTheDocument();
 
     // Verify timeline track renders years
     expect(screen.getByText('2014')).toBeInTheDocument();

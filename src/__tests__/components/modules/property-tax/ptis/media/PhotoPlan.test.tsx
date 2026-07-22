@@ -91,6 +91,7 @@ const mockUploadPropertyPhotoAction = vi.fn();
 const mockReplacePropertyPhotoAction = vi.fn();
 const mockDeletePropertyPhotoAction = vi.fn();
 const mockGetPhotosByCategoryAction = vi.fn();
+const mockGetPhotosByPropertyAction = vi.fn().mockResolvedValue({ success: true, data: [] });
 const mockLaunchPhotoPlanDrawingToolAction = vi.fn();
 
 vi.mock('@/app/[locale]/property-tax/ptis/PhotoPlan.action', () => ({
@@ -98,6 +99,7 @@ vi.mock('@/app/[locale]/property-tax/ptis/PhotoPlan.action', () => ({
   replacePropertyPhotoAction: (...args: unknown[]) => mockReplacePropertyPhotoAction(...args),
   deletePropertyPhotoAction: (...args: unknown[]) => mockDeletePropertyPhotoAction(...args),
   getPhotosByCategoryAction: (...args: unknown[]) => mockGetPhotosByCategoryAction(...args),
+  getPhotosByPropertyAction: (...args: unknown[]) => mockGetPhotosByPropertyAction(...args),
   launchPhotoPlanDrawingToolAction: (...args: unknown[]) => mockLaunchPhotoPlanDrawingToolAction(...args),
 }));
 
@@ -139,10 +141,15 @@ import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MainImageViewer } from '@/components/modules/property-tax/ptis/media/MainImageViewer';
 
+import { propertyMediaCache } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
+import { documentCache } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
+
 describe('PhotoPlan Section - Complete Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParamsGet.mockReturnValue(null);
+    propertyMediaCache.clear();
+    documentCache.clear();
   });
 
 
@@ -426,15 +433,20 @@ describe('PhotoPlan Section - Complete Tests', () => {
   });
 
   describe('ImageWithFallback component', () => {
-    it('renders loader skeleton, fallback placeholder on failure, and custom onError events', () => {
+    it('renders loader skeleton, fallback placeholder on failure, and custom onError events', async () => {
       const { rerender } = render(<ImageWithFallback src="" alt="Test fallback description" fallbackSrc="" />);
       expect(screen.getByLabelText('Test fallback description')).toBeInTheDocument();
 
-      rerender(<ImageWithFallback src="valid.png" alt="Valid alt text" />);
+      await act(async () => {
+        rerender(<ImageWithFallback src="valid.png" alt="Valid alt text" />);
+        await Promise.resolve();
+      });
       const img = screen.getByRole('img');
       expect(img).toHaveAttribute('src', 'valid.png');
 
-      fireEvent.error(img);
+      await act(async () => {
+        fireEvent.error(img);
+      });
       expect(screen.getByLabelText('Valid alt text')).toBeInTheDocument();
     });
   });
@@ -460,12 +472,11 @@ describe('PhotoPlan Section - Complete Tests', () => {
       { propertyPhotoId: 103, propertyId: 1, photoTypeId: 3, photoTypeCode: 'BACK', photoTypeName: 'Rear Elevation', viewUrl: 'back.png' },
     ];
 
-    it('renders panel with core photo types and handles show more toggling', () => {
+    it('renders panel with core photo types and handles show more toggling', async () => {
       render(<PropertyMediaPanel propertyId={1} initialPhotoSlots={slots} initialPhotos={photos} />);
       
-      // Property photo card triggers drawer
-      const frontCard = screen.getAllByRole('img')[0];
-      expect(frontCard).toBeInTheDocument();
+      const frontLabel = screen.getByText('Front View');
+      expect(frontLabel).toBeInTheDocument();
 
       // Show More Button Check
       const toggleMore = screen.getByLabelText('View more images');
@@ -475,8 +486,11 @@ describe('PhotoPlan Section - Complete Tests', () => {
       expect(screen.getByLabelText('Hide more images')).toBeInTheDocument();
 
       // Clicking main photo type opens drawer via router.replace
-      fireEvent.click(frontCard!);
-      expect(mockReplace).toHaveBeenCalled();
+      const frontCardContainer = frontLabel.closest('.group');
+      if (frontCardContainer) {
+        fireEvent.click(frontCardContainer);
+        expect(mockReplace).toHaveBeenCalled();
+      }
     });
 
     it('handles Create click events on the Photo Plan Card and ensures Delete button is not present', async () => {

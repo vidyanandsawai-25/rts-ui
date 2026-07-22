@@ -30,8 +30,8 @@ export function TimelineTrack({
       {releases.map((rel, i) => (
         <div key={rel.releaseId} className="relative z-10 flex flex-col items-center gap-1.5">
           <span
-            className={`text-[10px] font-bold font-mono tracking-wider transition-colors duration-200 ${
-              i === activeIdx ? 'text-blue-400' : 'text-slate-500'
+            className={`text-sm font-extrabold font-sans tracking-wider transition-colors duration-200 ${
+              i === activeIdx ? 'text-blue-400' : i < activeIdx ? 'text-blue-500 hover:text-blue-300' : 'text-slate-200 hover:text-white'
             }`}
           >
             {rel.year}

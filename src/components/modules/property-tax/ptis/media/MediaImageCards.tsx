@@ -26,6 +26,7 @@ export interface AdditionalImage {
 
 interface MediaImageCardProps {
   src: string;
+  documentGuid?: string;
   alt: string;
   label: string;
   fullSrc?: string;
@@ -43,6 +44,7 @@ interface MediaImageCardProps {
  */
 export function MediaImageCard({
   src,
+  documentGuid,
   alt,
   label,
   fullSrc,
@@ -63,6 +65,7 @@ export function MediaImageCard({
     >
       <ImageWithFallback
         src={src}
+        documentGuid={documentGuid}
         alt={alt}
         className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
         width={400}
