@@ -96,9 +96,10 @@ export async function getLockUnlockPropertiesByCategory(
   if (params.WardId) urlParams.append("WardId", params.WardId.toString());
   if (params.PropertyFrom?.trim()) urlParams.append("PropertyFrom", params.PropertyFrom.trim());
   if (params.PropertyTo?.trim()) urlParams.append("PropertyTo", params.PropertyTo.trim());
-  if (params.PartitionNo?.trim()) urlParams.append("PartitionNo", params.PartitionNo.trim());
+  if (params.PropertyNo) urlParams.append("PropertyNo", params.PropertyNo);
+  if (params.PartitionNo) urlParams.append("PartitionNo", params.PartitionNo);
   if (params.Search?.trim()) urlParams.append("Search", params.Search.trim());
-  if (params.SearchPartitionNo?.trim()) urlParams.append("SearchPartitionNo", params.SearchPartitionNo.trim());
+  if (params.SearchPartitionNo) urlParams.append("SearchPartitionNo", params.SearchPartitionNo);
   if (params.SearchTerm?.trim()) urlParams.append("SearchTerm", params.SearchTerm.trim());
   if (params.SortBy?.trim()) urlParams.append("SortBy", params.SortBy.trim());
   if (params.SortOrder?.trim()) urlParams.append("SortOrder", params.SortOrder.trim());

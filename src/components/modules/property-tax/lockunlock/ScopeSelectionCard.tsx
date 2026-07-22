@@ -2,19 +2,14 @@
 
 import { MapPin, Grid, Building2, Home } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { useTranslations } from "next-intl";
 
-interface ScopeOption {
-  id: number;
-  label: string;
-  sublabel: string;
-  icon: React.ElementType;
-}
 
-const SCOPE_OPTIONS: ScopeOption[] = [
-  { id: 1, label: "Zone / Node", sublabel: "Zone-wise selection", icon: MapPin },
-  { id: 2, label: "Ward / Sector", sublabel: "Multi ward selection", icon: Grid },
-  { id: 3, label: "Building Wise", sublabel: "Building level", icon: Building2 },
-  { id: 4, label: "Property Range", sublabel: "From-to property range", icon: Home },
+const SCOPE_ICONS = [
+  { id: 1, key: "zone", icon: MapPin },
+  { id: 2, key: "ward", icon: Grid },
+  { id: 3, key: "building", icon: Building2 },
+  { id: 4, key: "propertyRange", icon: Home },
 ];
 
 interface ScopeSelectionCardProps {
@@ -23,15 +18,16 @@ interface ScopeSelectionCardProps {
 }
 
 export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectionCardProps) {
+  const t = useTranslations("lockUnlock");
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <h3 className="text-lg font-bold text-slate-800">1. Scope Selection</h3>
-        <p className="text-sm text-slate-500">Choose scope. Only relevant fields appear below.</p>
+        <h3 className="text-lg font-bold text-slate-800">{t("scopeSelectionCard.title")}</h3>
+        <p className="text-sm text-slate-500">{t("scopeSelectionCard.subtitle")}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        {SCOPE_OPTIONS.map((option) => {
+      <div className="grid grid-cols-2 gap-2">
+        {SCOPE_ICONS.map((option) => {
           const isSelected = selectedCategory === option.id;
           const Icon = option.icon;
 
@@ -40,7 +36,7 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
               key={option.id}
               onClick={() => onChange(option.id)}
               className={cn(
-                "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all bg-white relative",
+                "flex items-center gap-1 p-3 rounded-xl border-2 transition-all bg-white relative",
                 isSelected
                   ? "border-blue-600 ring-2 ring-blue-50"
                   : "border-slate-100 hover:border-slate-300 hover:bg-slate-50"
@@ -66,9 +62,11 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
                   isSelected ? "text-blue-700" : "text-slate-700"
                 )}
               >
-                {option.label}
+                {t(`scopeSelectionCard.options.${option.key}.label`)}
               </span>
-              <span className="text-[10px] text-slate-500 mt-0.5 text-center leading-tight">{option.sublabel}</span>
+              <span className="text-[10px] text-slate-500 mt-0.5 text-center leading-tight">
+                {t(`scopeSelectionCard.options.${option.key}.sublabel`)}
+              </span>
             </button>
           );
         })}

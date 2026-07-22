@@ -7,7 +7,8 @@ export function getScreenIds(screensList: (number | LockedScreen)[]): number[] {
   return (screensList || [])
     .map((item: number | LockedScreen) => {
       if (item && typeof item === "object") {
-        return Number((item as LockedScreen).id ?? 0);
+        const obj = item as { id?: number; screenId?: number };
+        return Number(obj.id ?? obj.screenId ?? 0);
       }
       return Number(item);
     })

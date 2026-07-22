@@ -29,7 +29,7 @@ export function getAppConfig() {
     },
     api: {
       baseUrl: runtimeConfig.apiBaseUrl,
-      timeout: 120000,
+      timeout: 30000,
     },
     auth: {
       enabled: runtimeConfig.authEnabled,

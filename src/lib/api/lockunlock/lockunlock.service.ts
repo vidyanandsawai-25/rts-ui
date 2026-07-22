@@ -8,6 +8,7 @@ export {
 // Mutation operations
 export {
   bulkLockUnlockProperties,
+  bulkLockUnlockByCategory,
 } from './lockunlock-mutations.service';
 
 // Utils

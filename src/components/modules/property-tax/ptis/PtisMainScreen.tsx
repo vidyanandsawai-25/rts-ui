@@ -1,6 +1,6 @@
 'use client';
-
-import React, { useState } from 'react';
+ 
+import React, { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -11,11 +11,12 @@ import {
   Building2,
   Calculator,
   GitMerge,
-  IndianRupee
+  IndianRupee,
+  Loader2
 } from 'lucide-react';
-
+ 
 const { TabList, Tab } = Tabs;
-
+ 
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
 import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartmentQC/AppartmentQCSection';
 import { Button } from '@/components/common';
@@ -25,7 +26,7 @@ import type { DualMethodSectionData } from '@/components/modules/property-tax/pt
 import type { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
 import type { PropertyRuleLogItem } from '@/types/rule-engine';
 import { useOptionalPtisNavigation } from './shared/PtisNavigationContext';
-
+ 
 interface PtisMainScreenProps {
   locale: string;
   propertyId?: number;
@@ -50,7 +51,7 @@ interface PtisMainScreenProps {
   hasAppliedRules?: boolean;
   appliedRules?: PropertyRuleLogItem[];
 }
-
+ 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   locale,
   categoryId,
@@ -73,26 +74,27 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('ptis');
-
+ 
   const [isAppliedRulesDrawerOpen, setIsAppliedRulesDrawerOpen] = useState(false);
-
+  const [isTabPending, startTabTransition] = useTransition();
+ 
   // Apartment category logic
   const APARTMENT_CATEGORY_IDS = [1, 6];
-
+ 
   const showApartmentTab =
     categoryId == null ||
     APARTMENT_CATEGORY_IDS.includes(Number(categoryId));
-
+ 
   const requestedTab = ptisParams.tab || 'rateable';
-
+ 
   const activeTab =
     requestedTab === 'apartment' && !showApartmentTab
       ? 'rateable'
       : requestedTab;
-
+ 
   const [activeMainTab, setActiveMainTab] = useState(searchParams.get('appartmentTab') || 'amenities');
   const [activeSubTab, setActiveSubTab] = useState(searchParams.get('subTab') || 'rateable');
-
+ 
   React.useEffect(() => {
     const nextMain = searchParams.get('appartmentTab') || 'amenities';
     const nextSub = searchParams.get('subTab') || 'rateable';
@@ -100,32 +102,34 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     setActiveMainTab((prev) => (prev === nextMain ? prev : nextMain));
     setActiveSubTab((prev) => (prev === nextSub ? prev : nextSub));
   }, [searchParams]);
-
+ 
   const ptisNav = useOptionalPtisNavigation();
-  const isNavigating = ptisNav?.isPending ?? false;
-
+  const isNavigating = (ptisNav?.isPending ?? false) || isTabPending;
+ 
   const updateParams = (
     updates: Record<string, string>,
     replace = false
   ) => {
     const params = new URLSearchParams(searchParams.toString());
-
+ 
     Object.entries(updates).forEach(([key, value]) => {
       params.set(key, value);
     });
-
+ 
     const url = `?${params.toString()}`;
-
-    if (replace) {
-      router.replace(url, { scroll: false });
-    } else {
-      router.push(url);
-    }
+ 
+    startTabTransition(() => {
+      if (replace) {
+        router.replace(url, { scroll: false });
+      } else {
+        router.push(url);
+      }
+    });
   };
-
+ 
   const handleTabChange = (value: string | number) => {
     if (value.toString() === 'apartment') {
-      updateParams({ 
+      updateParams({
         valuationTab: 'apartment',
         appartmentTab: 'amenities',
         subTab: 'rateable',
@@ -137,28 +141,30 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
       updateParams({ valuationTab: value.toString() });
     }
   };
-
+ 
   const updateApartmentParams = (
     appTab: string,
     subTab: string
   ) => {
     setActiveMainTab(appTab);
     setActiveSubTab(subTab);
-
+ 
     const params = new URLSearchParams(searchParams.toString());
     params.set('valuationTab', 'apartment');
     params.set('appartmentTab', appTab);
     params.set('subTab', subTab);
     params.set('pageNumber', '1');
-
-    router.replace(`?${params.toString()}`, { scroll: false });
+ 
+    startTabTransition(() => {
+      router.replace(`?${params.toString()}`, { scroll: false });
+    });
   };
-
+ 
   const handleApartmentMainTabChange = (v: string | number) =>
     updateApartmentParams(v.toString(), 'rateable');
   const handleApartmentSubTabChange = (v: string | number) =>
     updateApartmentParams(activeMainTab, v.toString());
-
+ 
   const tabs = [
     {
       value: 'rateable',
@@ -190,14 +196,22 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
         ]
       : []),
   ];
-
+ 
   return (
     <div
       className={cn(
-        'bg-[#f1f5f9] transition-opacity duration-300',
-        isNavigating && 'opacity-60 pointer-events-none'
+        'relative bg-[#f1f5f9]',
+        isNavigating && 'pointer-events-none'
       )}
     >
+      {isNavigating && (
+        <div className="absolute inset-0 z-50 bg-white/20 backdrop-blur-[1px] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-blue-200 bg-white/35 px-8 py-6 shadow-sm">
+            <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+            <span className="text-base font-semibold text-blue-800">{t('loading.message')}</span>
+          </div>
+        </div>
+      )}
       <div className="w-full px-0 py-0">
         <main className="w-full mx-auto">
           <div className="bg-white rounded-xl shadow-lg border border-indigo-50 overflow-hidden">
@@ -229,7 +243,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                     ))}
                   </TabList>
                 </Tabs>
-
+ 
                 <div className="flex items-center gap-3 shrink-0 ml-auto pl-4">
                   {activeTab === 'apartment' && (
                     <>
@@ -273,7 +287,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                       </Tabs>
                     </>
                   )}
-
+ 
                   {propertyId && hasAppliedRules && (
                     <Button
                       id="applied-rules-tab-btn"
@@ -291,12 +305,12 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                 </div>
               </div>
             </div>
-
+ 
             <div className="bg-white min-h-[200px] p-0.5 sm:p-1">
               {activeTab === 'capital' && capitalSection}
-
+ 
               {activeTab === 'rateable' && rateableSection}
-
+ 
               {activeTab === 'apartment' && showApartmentTab && (
                 <AppartmentQCSection
                   initialData={initialApartmentData}
@@ -307,7 +321,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   activeSubTab={activeSubTab}
                 />
               )}
-
+ 
               {activeTab === 'dual' && (
                 <DualMethodSection
                   propertyId={propertyId}
@@ -321,13 +335,13 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                 />
               )}
               {activeTab === 'reassessment' && reassessmentSection}
-
+ 
               {![
                 'rateable',
                 'capital',
                 'apartment',
                 'dual',
-                'reassessment', 
+                'reassessment',
               ].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[500px] text-gray-400 p-4">
                   <div className="p-1 rounded-full bg-slate-50 border border-slate-100 mb-4 text-4xl opacity-20">
@@ -340,7 +354,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
           </div>
         </main>
       </div>
-
+ 
       <AppliedRulesDrawer
         open={isAppliedRulesDrawerOpen}
         onClose={() =>
@@ -354,5 +368,5 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
     </div>
   );
 };
-
+ 
 export default PtisMainScreen;

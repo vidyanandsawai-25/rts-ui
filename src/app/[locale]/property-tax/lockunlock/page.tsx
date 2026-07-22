@@ -12,7 +12,7 @@ export default async function Page({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<React.ReactElement> {
 
-  let dropdownProperties: { label: string; value: string; propertyId?: number }[] = [];
+  let dropdownProperties: { label: string; value: string; propertyId?: number; propertyNo?: string; partitionNo?: string; }[] = [];
   let properties: LockUnlockPropertyItem[] = [];
   let initialPagination:
     | {
@@ -60,6 +60,8 @@ export default async function Page({
           label: displayValue,
           value: displayValue,
           propertyId: prop.propertyId,
+          propertyNo: prop.propertyNo,
+          partitionNo: prop.partitionNo,
         };
       })
       .filter((option) => {
@@ -82,14 +84,14 @@ export default async function Page({
 
   const pageNum = pageParam ? Number(pageParam) : 1;
   const pageSz = pageSizeParam ? Number(pageSizeParam) : 10;
-  const searchCategory = searchCategoryParam ? Number(searchCategoryParam) : 4;
+  const searchCategory = searchCategoryParam ? Number(searchCategoryParam) : 1;
 
   const normalizedSearch = searchParam ? searchParam.replace(/\s*-\s*/g, "-").trim() : undefined;
 
   // Fetch filtered properties when show=true and valid parameters for the category exist
   if (show) {
     let isValid = false;
-    let queryParams: any = {
+    const queryParams: Record<string, unknown> = {
       SearchCategory: searchCategory,
       SearchTerm: normalizedSearch,
       PageNumber: pageNum,
@@ -105,7 +107,27 @@ export default async function Page({
     } else if (searchCategory === 3 && wardId && propertyNosParam) {
       isValid = true;
       queryParams.WardId = Number(wardId);
-      queryParams.Search = propertyNosParam;
+      
+      const propArray = (propertyNosParam as string).split(",");
+      const basePropertyNos = new Set<string>();
+      const partitions = new Set<string>();
+      
+      for (const propStr of propArray) {
+        const parts = propStr.split("-");
+        const propNo = parts[0];
+        const partition = parts.length > 1 ? parts.slice(1).join("-") : "";
+        if (propNo) basePropertyNos.add(propNo);
+        if (partition) partitions.add(partition);
+      }
+      
+      if (basePropertyNos.size > 0) {
+        queryParams.PropertyNo = Array.from(basePropertyNos).join(",");
+      }
+      if (partitions.size > 0) {
+        const partitionStr = Array.from(partitions).join(",");
+        queryParams.PartitionNo = partitionStr;
+        queryParams.SearchPartitionNo = partitionStr;
+      }
     } else if (searchCategory === 4 && wardId && fromProperty && toProperty) {
       isValid = true;
       queryParams.WardId = Number(wardId);

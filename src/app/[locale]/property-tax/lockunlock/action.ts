@@ -7,7 +7,8 @@ import {
   getLockUnlockScreens,
   getLockUnlockProperties,
   getLockUnlockPropertiesByCategory,
-  bulkLockUnlockProperties
+  bulkLockUnlockProperties,
+  bulkLockUnlockByCategory
 } from "@/lib/api/lockunlock/lockunlock.service";
 import {
   LockedScreen,
@@ -131,6 +132,102 @@ export async function bulkLockUnlockPropertiesAction(
       success: true,
       message: result.message || "Action Completed Successfully",
     };
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred during bulk operation" };
+  }
+}
+
+/**
+ * Server Action to submit a bulk lock/unlock request by category scope.
+ */
+export async function bulkLockUnlockByCategoryAction(
+  payload: {
+    scope: {
+      searchCategory: number;
+      zoneId?: number;
+      wardId?: number;
+      propertyNo?: string;
+      propertyFrom?: string;
+      propertyTo?: string;
+      partitionNo?: string;
+    };
+    screenIds: number[];
+    action: "lock" | "unlock";
+    excludedPropertyIds?: number[];
+  }
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const excludedIds = payload.excludedPropertyIds ?? [];
+
+    if (excludedIds.length === 0) {
+      const result = await bulkLockUnlockByCategory({
+        scope: payload.scope,
+        screenIds: payload.screenIds,
+        action: payload.action,
+      });
+
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/property-tax/lockunlock`, "page");
+      }
+      return { success: true, message: result.message };
+    }
+
+    const queryParams: LockUnlockPropertiesQueryParams = {
+      SearchCategory: payload.scope.searchCategory,
+      PageNumber: 1,
+      PageSize: -1,
+    };
+    if (payload.scope.searchCategory === 1) {
+      queryParams.ZoneId = payload.scope.zoneId;
+    } else if (payload.scope.searchCategory === 2) {
+      queryParams.WardId = payload.scope.wardId;
+    } else if (payload.scope.searchCategory === 3) {
+      queryParams.WardId = payload.scope.wardId;
+      queryParams.PropertyNo = payload.scope.propertyNo;
+    } else if (payload.scope.searchCategory === 4) {
+      queryParams.WardId = payload.scope.wardId;
+      queryParams.PropertyFrom = payload.scope.propertyFrom;
+      queryParams.PropertyTo = payload.scope.propertyTo;
+    }
+    
+    if (payload.scope.partitionNo) {
+      queryParams.PartitionNo = payload.scope.partitionNo;
+    }
+
+    const allProperties = await getLockUnlockPropertiesByCategory(queryParams);
+
+    if (!allProperties || !allProperties.items || allProperties.items.length === 0) {
+      return { success: false, error: "No properties found matching the current scope." };
+    }
+
+    const allPropertyIds = allProperties.items.map((p: LockUnlockPropertyItem) => p.propertyId);
+    const finalPropertyIds = allPropertyIds.filter((id: number) => !excludedIds.includes(id));
+
+    if (finalPropertyIds.length === 0) {
+      return { success: false, error: "No properties selected after applying exclusions." };
+    }
+
+    const result = await bulkLockUnlockProperties({
+      propertyIds: finalPropertyIds,
+      screenIds: payload.screenIds,
+      action: payload.action,
+    });
+
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/lockunlock`, "page");
+    }
+
+    if (result.success === false) {
+      return { success: false, error: result.message || "Failed to Complete Operation" };
+    }
+
+    return { success: true, message: result.message || "Action Completed Successfully" };
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       return { success: false, error: error.responseText };

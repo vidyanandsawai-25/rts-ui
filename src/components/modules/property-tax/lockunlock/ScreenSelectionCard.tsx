@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Layers, Loader2 } from "lucide-react";
+import { Layers } from "lucide-react";
 import {
   CardHeader,
   CardTitle,
@@ -30,7 +30,7 @@ export function ScreenSelectionCard({
   setSelectedScreenIds,
 }: ScreenSelectionCardProps) {
   const t = useTranslations("lockUnlock");
-  const { updateQueries, searchParams, isPending } = useQueryTransition();
+  const { updateQueries, searchParams } = useQueryTransition();
 
   const screenSearchFromUrl = searchParams.get("screenSearch") || "";
   const screenModuleFromUrl = searchParams.get("screenModule") || "ALL";
@@ -127,7 +127,7 @@ export function ScreenSelectionCard({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-1">
       <CardHeader className="mb-0 border border-slate-100 rounded-md bg-slate-50/50 py-3.5 px-6 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
@@ -144,7 +144,7 @@ export function ScreenSelectionCard({
           {t("screenSelectionCard.selectedCount", { count: selectedScreenIds.length })}
         </span>
       </CardHeader>
-      <CardContent className="py-4 space-y-4">
+      <CardContent className="py-4 pb-1 space-y-1">
         {/* Filters Row */}
         <div className="flex flex-col sm:flex-row gap-3">
           <SearchInput
@@ -188,19 +188,14 @@ export function ScreenSelectionCard({
         </div>
 
         {/* Screen List */}
-        <div className="border border-slate-200/80 rounded-xl p-2 bg-slate-50/20 max-h-[300px] overflow-auto custom-scrollbar">
-          {isPending ? (
-            <div className="flex flex-col items-center justify-center py-8 text-slate-400 gap-2">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-              <p className="text-sm">{t("common.loading")}</p>
-            </div>
-          ) : screens.length === 0 ? (
+        <div className="border border-slate-200/80 rounded-xl p-2 bg-slate-50/20 max-h-[220px] overflow-auto custom-scrollbar">
+          {screens.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">{t("screenSelectionCard.noScreens")}</p>
           ) : filteredScreens.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">{t("screenSelectionCard.noScreens")}</p>
           ) : (
-            <div className="min-w-max">
-              <div className="grid grid-cols-1 gap-2">
+            <div className="w-full">
+              <div className={cn("grid gap-2", filteredScreens.length > 3 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
                 {filteredScreens.map((screen) => {
                   const isChecked = selectedScreenIds.includes(screen.id);
                   const badgeCode = getScreenModule(screen.screenCode);
