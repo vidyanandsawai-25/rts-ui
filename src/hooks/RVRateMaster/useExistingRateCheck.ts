@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rvratemaster/action";
-import type { IRateMaster } from "@/types/RVRateMaster";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import type { IRateMaster, RateCategory } from "@/types/RVRateMaster";
 
 interface ExistingRateCheckProps {
   mode: "edit" | "delete" | "add";
@@ -13,6 +13,8 @@ interface ExistingRateCheckProps {
   allFiltersSelected: boolean;
   setExistingRateFound: (found: boolean) => void;
   setIsCheckingRates: (checking: boolean) => void;
+  isOpenPlot?: boolean;
+  rateCategories?: RateCategory[];
 }
 
 /**
@@ -29,6 +31,8 @@ export function useExistingRateCheck({
   allFiltersSelected,
   setExistingRateFound,
   setIsCheckingRates,
+  isOpenPlot = false,
+  rateCategories,
 }: ExistingRateCheckProps) {
   
   useEffect(() => {
@@ -47,7 +51,11 @@ export function useExistingRateCheck({
       setExistingRateFound(false);
       try {
         const existingRates = await getRateMasterByFilters(selectedZone, selectedUseGroup, assessmentYear);
-        const ratesExist = existingRates && existingRates.length > 0;
+        const ratesExist = isOpenPlot
+          ? existingRates?.some(rate => 
+              rateCategories?.some(cat => Number(cat.typeOfUseGroupId) === Number(rate.typeOfUseGroupId))
+            )
+          : existingRates && existingRates.length > 0;
         setExistingRateFound(ratesExist);
       } catch (_error) {
         setExistingRateFound(false);
@@ -57,5 +65,5 @@ export function useExistingRateCheck({
     };
 
     checkExistingRates();
-  }, [mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, allFiltersSelected, setExistingRateFound, setIsCheckingRates]);
+  }, [mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, allFiltersSelected, setExistingRateFound, setIsCheckingRates, isOpenPlot, rateCategories]);
 }

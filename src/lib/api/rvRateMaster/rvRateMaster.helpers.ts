@@ -53,7 +53,8 @@ export function extractValue(val?: string | { value: string }): string {
 export function transformBackendRatesToMatrix(
   backendData: IBackendRateMaster[],
   constructionTypes: RateCategory[],
-  zoneDescriptions: IZoneDescription[]
+  zoneDescriptions: IZoneDescription[],
+  isOpenPlot: boolean = false
 ): IRateMaster[] {
   const taxZoneIdToNo = new Map(zoneDescriptions.map(z => [z.taxZoneId, String(z.zoneNo).trim()]));
   const groupedData = new Map<string, IRateMaster>();
@@ -67,7 +68,9 @@ export function transformBackendRatesToMatrix(
       const rateSectionNo = item.rateSectionNo || String(rateSectionId);
       const yearRangeRVId = item.yearRangeRVId ?? item.yearRangeId;
       // Use a composite key to avoid overwriting data for the same zone with different section/useGroup/year
-      const key = [taxZoneNo, rateSectionNo, typeOfUseGroupId, yearRangeRVId].join('|');
+      const key = isOpenPlot 
+        ? [taxZoneNo, rateSectionNo, yearRangeRVId].join('|')
+        : [taxZoneNo, rateSectionNo, typeOfUseGroupId, yearRangeRVId].join('|');
 
       if (!groupedData.has(key)) {
         const initialRates = constructionTypes.map(ct => ({
@@ -81,7 +84,7 @@ export function transformBackendRatesToMatrix(
           id: String(item.id),
           rateSection: rateSectionNo,
           zoneNo: taxZoneNo,
-          useGroup: typeOfUseGroupId,
+          useGroup: isOpenPlot ? "" : typeOfUseGroupId,
           assessmentYear: `${yearRangeRVId}`,
           rates: initialRates,
         });
@@ -89,8 +92,11 @@ export function transformBackendRatesToMatrix(
 
       const group = groupedData.get(key);
       if (group) {
-        const constructionTypeId = Number(item.constructionTypeId);
-        const construction = constructionTypes.find(ct => Number(ct.constructionId) === constructionTypeId);
+        const matchId = isOpenPlot ? Number(item.typeOfUseGroupId) : Number(item.constructionTypeId);
+        const construction = constructionTypes.find(ct => {
+          const ctId = isOpenPlot ? Number(ct.typeOfUseGroupId) : Number(ct.constructionId);
+          return ctId === matchId;
+        });
 
         if (construction) {
           const constructionCode = construction.constructionCode || construction.constructionId;

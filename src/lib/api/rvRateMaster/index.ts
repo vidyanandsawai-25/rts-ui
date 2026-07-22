@@ -19,5 +19,7 @@ export {
 export {
   getDetailedRates,
   getRateMasterByFilters,
-  getRateMasterPaged
+  getRateMasterPaged,
+  getTypeOfUseDetails,
+  getOpenPlotTypeOfUseDetails
 } from './rvRateMaster.query.service';
