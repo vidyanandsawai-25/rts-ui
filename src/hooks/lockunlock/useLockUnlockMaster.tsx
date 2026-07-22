@@ -137,7 +137,7 @@ export function useLockUnlockMaster({
 
       setPropertyOptions(options);
     } catch (error) {
-      console.error("Failed to fetch properties for dropdown", error);
+      toast.error(t("messages.fetchFailed"));
     } finally {
       setIsLoadingProperties(false);
     }
@@ -385,7 +385,7 @@ export function useLockUnlockMaster({
               const fromIndex = propertyOptions.findIndex(o => o.value === formData.fromProperty);
               const toIndex = propertyOptions.findIndex(o => o.value === formData.toProperty);
               if (toIndex <= fromIndex) {
-                throw new Error(t("messages.validationGreaterProperty", { defaultValue: "Please to property select must grather between the from property" }));
+                throw new Error(t("messages.validationGreaterProperty"));
               }
             }
 
@@ -476,7 +476,7 @@ export function useLockUnlockMaster({
         const fromIndex = propertyOptions.findIndex(o => o.value === formData.fromProperty);
         const toIndex = propertyOptions.findIndex(o => o.value === formData.toProperty);
         if (toIndex <= fromIndex) {
-          toast.error(t("messages.validationGreaterProperty", { defaultValue: "Please to property select must grather between the from property" }));
+          toast.error(t("messages.validationGreaterProperty"));
           return;
         }
       }

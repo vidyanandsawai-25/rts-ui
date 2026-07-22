@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { locales } from "@/i18n/config";
 import { ApiError } from "@/lib/utils/api";
 import {
@@ -69,6 +70,7 @@ export async function bulkLockUnlockPropertiesAction(
       screenIds: number[];
       action: "lock" | "unlock";
     } = { propertyIds: [], screenIds: payload.screenIds, action: payload.action };
+    const t = await getTranslations("lockUnlock");
 
     if (payload.selectAll && payload.filters) {
       const queryParams: LockUnlockPropertiesQueryParams = {
@@ -87,7 +89,7 @@ export async function bulkLockUnlockPropertiesAction(
       if (!allProperties || !allProperties.items || allProperties.items.length === 0) {
         return {
           success: false,
-          error: "No properties found matching the current filters.",
+          error: t("messages.noPropertiesFoundFilters"),
         };
       }
 
@@ -101,7 +103,7 @@ export async function bulkLockUnlockPropertiesAction(
       if (resolvedPayload.propertyIds.length === 0) {
         return {
           success: false,
-          error: "No properties selected after applying exclusions.",
+          error: t("messages.noPropertiesSelectedExclusions"),
         };
       }
     } else {
@@ -111,7 +113,7 @@ export async function bulkLockUnlockPropertiesAction(
     if (resolvedPayload.propertyIds.length === 0) {
       return {
         success: false,
-        error: "At least one property must be selected.",
+        error: t("messages.atLeastOnePropertyRequired"),
       };
     }
 
@@ -124,22 +126,23 @@ export async function bulkLockUnlockPropertiesAction(
     if (result.success === false) {
       return {
         success: false,
-        error: result.message || "Failed to Complete Operation",
+        error: result.message || t("messages.bulkFailed"),
       };
     }
 
     return {
       success: true,
-      message: result.message || "Action Completed Successfully",
+      message: result.message || t("messages.bulkSuccess"),
     };
   } catch (error: unknown) {
+    const t = await getTranslations("lockUnlock");
     if (error instanceof ApiError) {
       return { success: false, error: error.responseText };
     }
     if (error instanceof Error) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "An unexpected error occurred during bulk operation" };
+    return { success: false, error: t("messages.unexpectedErrorBulk") };
   }
 }
 
@@ -163,6 +166,7 @@ export async function bulkLockUnlockByCategoryAction(
   }
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    const t = await getTranslations("lockUnlock");
     const excludedIds = payload.excludedPropertyIds ?? [];
 
     if (excludedIds.length === 0) {
@@ -203,14 +207,14 @@ export async function bulkLockUnlockByCategoryAction(
     const allProperties = await getLockUnlockPropertiesByCategory(queryParams);
 
     if (!allProperties || !allProperties.items || allProperties.items.length === 0) {
-      return { success: false, error: "No properties found matching the current scope." };
+      return { success: false, error: t("messages.noPropertiesFoundFilters") };
     }
 
     const allPropertyIds = allProperties.items.map((p: LockUnlockPropertyItem) => p.propertyId);
     const finalPropertyIds = allPropertyIds.filter((id: number) => !excludedIds.includes(id));
 
     if (finalPropertyIds.length === 0) {
-      return { success: false, error: "No properties selected after applying exclusions." };
+      return { success: false, error: t("messages.noPropertiesSelectedExclusions") };
     }
 
     const result = await bulkLockUnlockProperties({
@@ -224,17 +228,18 @@ export async function bulkLockUnlockByCategoryAction(
     }
 
     if (result.success === false) {
-      return { success: false, error: result.message || "Failed to Complete Operation" };
+      return { success: false, error: result.message || t("messages.bulkFailed") };
     }
 
-    return { success: true, message: result.message || "Action Completed Successfully" };
+    return { success: true, message: result.message || t("messages.bulkSuccess") };
   } catch (error: unknown) {
+    const t = await getTranslations("lockUnlock");
     if (error instanceof ApiError) {
       return { success: false, error: error.responseText };
     }
     if (error instanceof Error) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "An unexpected error occurred during bulk operation" };
+    return { success: false, error: t("messages.unexpectedErrorBulk") };
   }
 }
