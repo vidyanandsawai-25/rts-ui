@@ -228,7 +228,10 @@ export function buildPropertySearchColumns(
         align: "center",
         render: (value, row) => {
           const displayVal = formatDisplayText(String(value ?? ""));
-          if (displayVal.toLowerCase() === "apartment" && viewMode !== "units") {
+          const categoryLower = displayVal.toLowerCase();
+
+          // 1. Apartment category: show Unit count
+          if (categoryLower === "apartment" && viewMode !== "units") {
             const unitCount = row.childUnitCount ?? row.propertyCount ?? 0;
             return (
               <div className="flex flex-col items-center justify-center text-center leading-tight gap-0.5" title={t("apartmentUnits", { count: unitCount })}>
@@ -240,11 +243,16 @@ export function buildPropertySearchColumns(
             );
           }
 
+          // 2. Individual category: do NOT display Flat No or Wing sub-labels
+          if (categoryLower === "individual") {
+            return <span className="font-semibold text-gray-800 text-xs">{displayVal}</span>;
+          }
+
+          // 3. Other categories: parse and display Wing / Flat No if present
           let wing = row.wing ? String(row.wing).trim() : "";
           let flatNo = row.flatNo ? String(row.flatNo).trim() : "";
           const wingFlatNo = row.wingFlatNo ? String(row.wingFlatNo).trim() : "";
 
-          // If individual fields are empty but we have a combined string, try to parse it
           if (!wing && !flatNo && wingFlatNo) {
             if (wingFlatNo.includes("-")) {
               const parts = wingFlatNo.split("-");
@@ -285,7 +293,7 @@ export function buildPropertySearchColumns(
             );
           }
 
-          return <span>{displayVal}</span>;
+          return <span className="font-semibold text-gray-800 text-xs">{displayVal}</span>;
         },
       },
       COLUMN_WIDTHS.category

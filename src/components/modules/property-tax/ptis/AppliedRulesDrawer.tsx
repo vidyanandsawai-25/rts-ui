@@ -66,7 +66,7 @@ export function AppliedRulesDrawer({
           <p className="text-lg font-medium">{t('appliedRules.noAppliedRules')}</p>
         </div>
       ) : (
-        <div className="p-6">
+        <div className="p-4">
           <MasterTable
             columns={columns}
             data={sortedRules as unknown as Record<string, unknown>[]}
