@@ -136,12 +136,12 @@ export function useLockUnlockMaster({
         });
 
       setPropertyOptions(options);
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("messages.fetchFailed"));
     } finally {
       setIsLoadingProperties(false);
     }
-  }, []);
+  }, [t]);
 
 
 
