@@ -11,8 +11,9 @@ import {
   Clock3,
   XCircle,
   Timer,
+  LayoutDashboard,
 } from "lucide-react";
-import { Button, Card, Input, MasterTable } from "@/components/common";
+import { Button, Card, Input, Label, MasterTable } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import {
   FirstPageButton,
@@ -166,6 +167,7 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
   );
   const [selectedDeptId, setSelectedDeptId] = useState("");
   const [selectedServiceDeptId, setSelectedServiceDeptId] = useState<string>("all");
+  const [selectedServiceSource, setSelectedServiceSource] = useState<"all" | "rts" | "aapleSarkar">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [departmentPage, setDepartmentPage] = useState(1);
@@ -282,19 +284,38 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
     [departmentalStats, t]
   );
 
-  const filteredServiceStats = useMemo(() => {
-    if (selectedServiceDeptId === "all") return serviceStats;
+  const serviceSourceOptions = useMemo(
+    () => [
+      { value: "all", label: t("misDashboard.allSources") },
+      { value: "rts", label: t("misDashboard.sourceRts") },
+      { value: "aapleSarkar", label: t("misDashboard.sourceAapleSarkar") },
+    ],
+    [t]
+  );
 
-    const departmentServices = serviceStats.filter(
-      (service) => service.departmentId === selectedServiceDeptId
-    );
+  const filteredServiceStats = useMemo(() => {
+    const departmentServices = selectedServiceDeptId === "all"
+      ? serviceStats
+      : serviceStats.filter(
+        (service) => service.departmentId === selectedServiceDeptId
+      );
 
     // Older MIS responses do not include service department metadata. In that
     // case, retain the complete API list instead of hiding all services.
-    const visibleServices = departmentServices.length > 0 ? departmentServices : serviceStats;
+    const visibleServices = departmentServices.length > 0
+      ? departmentServices
+      : serviceStats;
 
-    return visibleServices.map((service, index) => ({ ...service, srNo: index + 1 }));
-  }, [selectedServiceDeptId, serviceStats]);
+    const sourceFilteredServices = selectedServiceSource === "all"
+      ? visibleServices
+      : visibleServices.filter((service) =>
+        selectedServiceSource === "rts"
+          ? service.rtsApps > 0
+          : service.asApps > 0
+      );
+
+    return sourceFilteredServices.map((service, index) => ({ ...service, srNo: index + 1 }));
+  }, [selectedServiceDeptId, selectedServiceSource, serviceStats]);
 
   const departmentTotalPages = Math.max(
     1,
@@ -324,7 +345,7 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
 
   useEffect(() => {
     setServicePage(1);
-  }, [selectedServiceDeptId]);
+  }, [selectedServiceDeptId, selectedServiceSource]);
 
   useEffect(() => {
     if (servicePage > serviceTotalPages) {
@@ -492,12 +513,17 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
 
   return (
     <div className="space-y-4">
-      <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-        <div>
+      <Card className="flex flex-col justify-between rounded-2xl gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+
+        <div className="flex flex-row items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
+            <LayoutDashboard className="h-5 w-5" />
+          </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
             {t("misDashboard.title")}
           </h1>
         </div>
+
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm">
             <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
@@ -593,22 +619,20 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
             footerLeftContent={
               <span className="text-xs text-slate-500">
                 {locale === "mr"
-                  ? `${departmentalStats.length} पैकी ${
-                      departmentalStats.length === 0
-                        ? 0
-                        : (departmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1
-                    } ते ${Math.min(
-                      departmentPage * DEPARTMENT_PAGE_SIZE,
-                      departmentalStats.length
-                    )} नोंदी दाखवत आहे`
-                  : `Showing ${
-                      departmentalStats.length === 0
-                        ? 0
-                        : (departmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1
-                    } to ${Math.min(
-                      departmentPage * DEPARTMENT_PAGE_SIZE,
-                      departmentalStats.length
-                    )} of ${departmentalStats.length} entries`}
+                  ? `${departmentalStats.length} पैकी ${departmentalStats.length === 0
+                    ? 0
+                    : (departmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1
+                  } ते ${Math.min(
+                    departmentPage * DEPARTMENT_PAGE_SIZE,
+                    departmentalStats.length
+                  )} नोंदी दाखवत आहे`
+                  : `Showing ${departmentalStats.length === 0
+                    ? 0
+                    : (departmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1
+                  } to ${Math.min(
+                    departmentPage * DEPARTMENT_PAGE_SIZE,
+                    departmentalStats.length
+                  )} of ${departmentalStats.length} entries`}
               </span>
             }
             footerRightContent={
@@ -736,10 +760,27 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
               {t("misDashboard.serviceWiseBreakdown")}
             </h2>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
+              {t("misDashboard.filterBySource")}
+            </Label>
+            <div className="min-w-[160px]">
+              <Select
+                options={serviceSourceOptions}
+                value={selectedServiceSource}
+                onChange={(_event, value) =>
+                  setSelectedServiceSource(value as "all" | "rts" | "aapleSarkar")
+                }
+                placeholder={t("misDashboard.allSources")}
+                selectSize="sm"
+                ariaLabel={t("misDashboard.filterBySource")}
+                className="text-[12px] font-semibold text-slate-700"
+              />
+            </div>
+
+            <Label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
               {t("misDashboard.filterByDept")}
-            </label>
+            </Label>
             <div className="min-w-[180px]">
               <Select
                 options={serviceDeptOptions}
@@ -768,22 +809,20 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
             footerLeftContent={
               <span className="text-xs text-slate-500">
                 {locale === "mr"
-                  ? `${filteredServiceStats.length} पैकी ${
-                      filteredServiceStats.length === 0
-                        ? 0
-                        : (servicePage - 1) * SERVICE_PAGE_SIZE + 1
-                    } ते ${Math.min(
-                      servicePage * SERVICE_PAGE_SIZE,
-                      filteredServiceStats.length
-                    )} नोंदी दाखवत आहे`
-                  : `Showing ${
-                      filteredServiceStats.length === 0
-                        ? 0
-                        : (servicePage - 1) * SERVICE_PAGE_SIZE + 1
-                    } to ${Math.min(
-                      servicePage * SERVICE_PAGE_SIZE,
-                      filteredServiceStats.length
-                    )} of ${filteredServiceStats.length} entries`}
+                  ? `${filteredServiceStats.length} पैकी ${filteredServiceStats.length === 0
+                    ? 0
+                    : (servicePage - 1) * SERVICE_PAGE_SIZE + 1
+                  } ते ${Math.min(
+                    servicePage * SERVICE_PAGE_SIZE,
+                    filteredServiceStats.length
+                  )} नोंदी दाखवत आहे`
+                  : `Showing ${filteredServiceStats.length === 0
+                    ? 0
+                    : (servicePage - 1) * SERVICE_PAGE_SIZE + 1
+                  } to ${Math.min(
+                    servicePage * SERVICE_PAGE_SIZE,
+                    filteredServiceStats.length
+                  )} of ${filteredServiceStats.length} entries`}
               </span>
             }
             footerRightContent={
@@ -817,7 +856,7 @@ export default function CmsDashboard({ misDashboardData }: DashboardProps) {
                       d={segment.path}
                       fill={segment.color}
                       stroke="white"
-                      strokeWidth="2"
+                      strokeWidth="0.3"
                       className="cursor-pointer transition-all duration-300 hover:opacity-75"
                     >
                       <title>

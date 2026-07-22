@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Users,
   FileSpreadsheet,
@@ -10,14 +11,22 @@ import {
   Clock3,
   XCircle,
   Timer,
+  LayoutDashboard,
 } from "lucide-react";
-import { Button, Card, Input, MasterTable } from "@/components/common";
+import { Button, Card, Input, Label, MasterTable } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
+import {
+  FirstPageButton,
+  LastPageButton,
+  NextPageButton,
+  PageNumberButton,
+  PrevPageButton,
+} from "@/components/common/ActionButtons";
 import { Select } from "@/components/common/select";
-import type { RtsMisDashboardData } from "@/types/rts-dashboard.types";
+import type { CmsMisDashboardData } from "@/types/rts/rtsmisdashboard.types";
 
 interface DashboardProps {
-  misDashboardData: RtsMisDashboardData;
+  misDashboardData: CmsMisDashboardData;
 }
 
 interface DepartmentalStatsRow extends Record<string, unknown> {
@@ -59,6 +68,85 @@ const PIE_COLORS = [
   "#0F7A3F", "#FF8C00"
 ];
 
+const DEPARTMENT_PAGE_SIZE = 6;
+const SERVICE_PAGE_SIZE = 15;
+
+type PaginationToken = number | "dots";
+
+interface TablePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+function buildPaginationTokens(currentPage: number, totalPages: number): PaginationToken[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const tokens: PaginationToken[] = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) tokens.push("dots");
+  for (let page = start; page <= end; page += 1) tokens.push(page);
+  if (end < totalPages - 1) tokens.push("dots");
+
+  tokens.push(totalPages);
+  return tokens;
+}
+
+function TablePagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: TablePaginationProps) {
+  if (totalPages <= 1) return null;
+
+  const tokens = buildPaginationTokens(currentPage, totalPages);
+
+  return (
+    <div className="flex items-center gap-2">
+      <PrevPageButton
+        disabled={currentPage <= 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      />
+
+      <div className="flex items-center gap-1">
+        <FirstPageButton
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(1)}
+        />
+
+        {tokens.map((token, index) =>
+          token === "dots" ? (
+            <span key={`dots-${index}`} className="px-2 text-slate-400">
+              ...
+            </span>
+          ) : (
+            <PageNumberButton
+              key={token}
+              page={token}
+              active={currentPage === token}
+              onClick={() => onPageChange(token)}
+            />
+          )
+        )}
+
+        <LastPageButton
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(totalPages)}
+        />
+      </div>
+
+      <NextPageButton
+        disabled={currentPage >= totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      />
+    </div>
+  );
+}
+
 function createMisIdentifier(value: string, fallback: string) {
   const normalized = value
     .trim()
@@ -69,21 +157,29 @@ function createMisIdentifier(value: string, fallback: string) {
   return normalized || fallback;
 }
 
-function formatSla(value: number, lang: "en" | "mr") {
-  const normalized = Number.isFinite(value) ? value : 0;
-  return lang === "en" ? `${normalized.toFixed(1)} Days` : `${normalized.toFixed(1)} दिवस`;
-}
 
-export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
-  const [lang, _setLang] = useState<"en" | "mr">("en");
+export default function CmsDashboard({ misDashboardData }: DashboardProps) {
+  const locale = useLocale();
+  const t = useTranslations("rts");
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(locale),
+    [locale]
+  );
   const [selectedDeptId, setSelectedDeptId] = useState("");
   const [selectedServiceDeptId, setSelectedServiceDeptId] = useState<string>("all");
+  const [selectedServiceSource, setSelectedServiceSource] = useState<"all" | "rts" | "aapleSarkar">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [departmentPage, setDepartmentPage] = useState(1);
+  const [servicePage, setServicePage] = useState(1);
+
+  const formatNumber = (value: unknown) =>
+    numberFormatter.format(Number(value ?? 0));
 
   const departmentalStats = useMemo<DepartmentalStatsRow[]>(() => {
     return (misDashboardData.departmentWiseData ?? []).map((department, index) => {
-      const deptName = department.departmentName?.trim() || `Department ${index + 1}`;
+      const deptName = department.departmentName?.trim() ||
+        t("misDashboard.departmentFallback", { number: index + 1 });
       const deptId = department.departmentId != null
         ? String(department.departmentId)
         : `department-${createMisIdentifier(deptName, String(index + 1))}`;
@@ -102,10 +198,12 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
         rejectedApps: Number(department.rejected ?? 0),
         overdueCount: Number(department.overdueCount ?? 0),
         avgSlaValue,
-        avgSla: formatSla(avgSlaValue, lang),
+        avgSla: t("misDashboard.daysValue", {
+          value: avgSlaValue.toFixed(1),
+        }),
       };
     });
-  }, [lang, misDashboardData.departmentWiseData]);
+  }, [misDashboardData.departmentWiseData, t]);
 
   const serviceStats = useMemo<ServiceStatsRow[]>(() => {
     return (misDashboardData.serviceWiseData ?? []).map((service, index) => {
@@ -115,7 +213,7 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
         : apiDepartmentName
           ? `department-${createMisIdentifier(apiDepartmentName, String(index + 1))}`
           : "unmapped";
-      const departmentName = apiDepartmentName || "Other Services";
+      const departmentName = apiDepartmentName || t("misDashboard.otherServices");
       const avgSlaValue = Number(service.sla ?? 0);
 
       return {
@@ -132,16 +230,12 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
         rejectedApps: Number(service.rejected ?? 0),
         overdueCount: Number(service.overdueCount ?? 0),
         avgSlaValue,
-        avgSla: formatSla(avgSlaValue, lang),
+        avgSla: t("misDashboard.daysValue", {
+          value: avgSlaValue.toFixed(1),
+        }),
       };
     });
-  }, [lang, serviceWiseData => misDashboardData.serviceWiseData]);
-
-  useEffect(() => {
-    if (!selectedDeptId && departmentalStats.length > 0) {
-      setSelectedDeptId(departmentalStats[0].deptId);
-    }
-  }, [departmentalStats, selectedDeptId]);
+  }, [misDashboardData.serviceWiseData, t]);
 
   const selectedDept = useMemo(
     () => departmentalStats.find((department) => department.deptId === selectedDeptId) ?? departmentalStats[0] ?? null,
@@ -180,27 +274,84 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
     () => [
       {
         value: "all",
-        label: lang === "en" ? "All Departments" : "सर्व विभाग",
+        label: t("misDashboard.allDepartments"),
       },
       ...departmentalStats.map((department) => ({
         value: department.deptId,
         label: department.deptName,
       })),
     ],
-    [departmentalStats, lang]
+    [departmentalStats, t]
+  );
+
+  const serviceSourceOptions = useMemo(
+    () => [
+      { value: "all", label: t("misDashboard.allSources") },
+      { value: "rts", label: t("misDashboard.sourceRts") },
+      { value: "aapleSarkar", label: t("misDashboard.sourceAapleSarkar") },
+    ],
+    [t]
   );
 
   const filteredServiceStats = useMemo(() => {
-    if (selectedServiceDeptId === "all") return serviceStats;
+    const departmentServices = selectedServiceDeptId === "all"
+      ? serviceStats
+      : serviceStats.filter(
+        (service) => service.departmentId === selectedServiceDeptId
+      );
 
-    const departmentServices = serviceStats.filter(
-      (service) => service.departmentId === selectedServiceDeptId
-    );
+    // Older MIS responses do not include service department metadata. In that
+    // case, retain the complete API list instead of hiding all services.
+    const visibleServices = departmentServices.length > 0
+      ? departmentServices
+      : serviceStats;
 
-    const visibleServices = departmentServices.length > 0 ? departmentServices : serviceStats;
+    const sourceFilteredServices = selectedServiceSource === "all"
+      ? visibleServices
+      : visibleServices.filter((service) =>
+        selectedServiceSource === "rts"
+          ? service.rtsApps > 0
+          : service.asApps > 0
+      );
 
-    return visibleServices.map((service, index) => ({ ...service, srNo: index + 1 }));
-  }, [selectedServiceDeptId, serviceStats]);
+    return sourceFilteredServices.map((service, index) => ({ ...service, srNo: index + 1 }));
+  }, [selectedServiceDeptId, selectedServiceSource, serviceStats]);
+
+  const departmentTotalPages = Math.max(
+    1,
+    Math.ceil(departmentalStats.length / DEPARTMENT_PAGE_SIZE)
+  );
+
+  const serviceTotalPages = Math.max(
+    1,
+    Math.ceil(filteredServiceStats.length / SERVICE_PAGE_SIZE)
+  );
+
+  const paginatedDepartmentStats = useMemo(() => {
+    const startIndex = (departmentPage - 1) * DEPARTMENT_PAGE_SIZE;
+    return departmentalStats.slice(startIndex, startIndex + DEPARTMENT_PAGE_SIZE);
+  }, [departmentPage, departmentalStats]);
+
+  const paginatedServiceStats = useMemo(() => {
+    const startIndex = (servicePage - 1) * SERVICE_PAGE_SIZE;
+    return filteredServiceStats.slice(startIndex, startIndex + SERVICE_PAGE_SIZE);
+  }, [filteredServiceStats, servicePage]);
+
+  useEffect(() => {
+    if (departmentPage > departmentTotalPages) {
+      setDepartmentPage(departmentTotalPages);
+    }
+  }, [departmentPage, departmentTotalPages]);
+
+  useEffect(() => {
+    setServicePage(1);
+  }, [selectedServiceDeptId, selectedServiceSource]);
+
+  useEffect(() => {
+    if (servicePage > serviceTotalPages) {
+      setServicePage(serviceTotalPages);
+    }
+  }, [servicePage, serviceTotalPages]);
 
   const dashboardStats = useMemo(() => {
     const totals = departmentalStats.reduce(
@@ -229,51 +380,41 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
 
   const metrics = [
     {
-      count: String(dashboardStats.total),
-      label: "Total Applications",
-      labelMr: "एकूण अर्ज",
-      detail: "All Submitted",
-      detailMr: "सर्व सादर अर्ज",
+      count: formatNumber(dashboardStats.total),
+      label: t("misDashboard.totalApplications"),
+      detail: t("misDashboard.allSubmitted"),
       icon: FileText,
       iconClassName: "bg-blue-50 text-[#0B5CD5] ring-blue-100",
       detailClassName: "text-[#0B5CD5]",
     },
     {
-      count: String(dashboardStats.pending),
-      label: "Pending Verification",
-      labelMr: "पडताळणी प्रलंबित",
-      detail: "In Progress",
-      detailMr: "प्रक्रियेत",
+      count: formatNumber(dashboardStats.pending),
+      label: t("misDashboard.pendingVerification"),
+      detail: t("misDashboard.inProgress"),
       icon: Clock3,
       iconClassName: "bg-amber-50 text-[#F39C12] ring-amber-100",
       detailClassName: "text-[#C66922]",
     },
     {
-      count: String(dashboardStats.approved),
-      label: "Approved Applications",
-      labelMr: "मंजूर अर्ज",
-      detail: "Completed",
-      detailMr: "पूर्ण झाले",
+      count: formatNumber(dashboardStats.approved),
+      label: t("misDashboard.approvedApplications"),
+      detail: t("misDashboard.completed"),
       icon: CheckCircle2,
       iconClassName: "bg-emerald-50 text-[#27AE60] ring-emerald-100",
       detailClassName: "text-[#0F7A3F]",
     },
     {
-      count: String(dashboardStats.rejected),
-      label: "Rejected Applications",
-      labelMr: "नाकारलेले अर्ज",
-      detail: "Not Approved",
-      detailMr: "मंजूर नाही",
+      count: formatNumber(dashboardStats.rejected),
+      label: t("misDashboard.rejectedApplications"),
+      detail: t("misDashboard.notApproved"),
       icon: XCircle,
       iconClassName: "bg-rose-50 text-[#B22222] ring-rose-100",
       detailClassName: "text-[#B22222]",
     },
     {
-      count: String(dashboardStats.slaViolations),
-      label: "OverDue Applications",
-      labelMr: "SLA उल्लंघन अर्ज",
-      detail: "Requires Attention",
-      detailMr: "लक्ष आवश्यक",
+      count: formatNumber(dashboardStats.slaViolations),
+      label: t("misDashboard.overdueApplications"),
+      detail: t("misDashboard.requiresAttention"),
       icon: Timer,
       iconClassName: "bg-violet-50 text-[#8A2BE2] ring-violet-100",
       detailClassName: "text-[#551A8B]",
@@ -283,7 +424,7 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
   const departmentColumns = useMemo<Column<DepartmentalStatsRow>[]>(() => [
     {
       key: "srNo",
-      label: lang === "en" ? "Sr. No." : "अनु. क्र.",
+      label: t("misDashboard.srNo"),
       align: "center",
       headerClassName: "border-r border-blue-300/60 text-center text-white w-16",
       cellClassName: "border-r border-slate-100",
@@ -295,27 +436,27 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
     },
     {
       key: "deptName",
-      label: lang === "en" ? "Department" : "विभाग",
+      label: t("misDashboard.department"),
       headerClassName: "border-r border-blue-300/60 text-left text-white",
       cellClassName: "border-r border-slate-100",
       render: (_value, row) => <span className={`font-bold ${selectedDeptId === row.deptId ? "text-[#0B5CD5]" : "text-slate-900"}`}>{row.deptName}</span>,
     },
-    { key: "totalServices", label: lang === "en" ? "Total Services" : "एकूण सेवा", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-slate-700">{String(value ?? 0)}</span> },
-    { key: "totalApps", label: lang === "en" ? "Total Applications" : "एकूण अर्ज", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
-    { key: "rtsApps", label: lang === "en" ? "From RTS" : "आरटीएसकडून", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
-    { key: "asApps", label: lang === "en" ? "From Aaple Sarkar" : "आपले सरकारकडून", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "pendingApps", label: lang === "en" ? "Pending" : "प्रलंबित", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "approvedApps", label: lang === "en" ? "Approved" : "मंजूर", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
-    { key: "rejectedApps", label: lang === "en" ? "Rejected" : "नाकारलेले", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
-    { key: "overdueCount", label: lang === "en" ? "OverDue Count" : "ओव्हरड्यू संख्या", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
-    { key: "avgSla", label: lang === "en" ? "Avg. SLA" : "सरासरी SLA", align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
-  ], [lang, selectedDeptId]);
+    { key: "totalServices", label: t("misDashboard.totalServices"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-slate-700">{String(value ?? 0)}</span> },
+    { key: "totalApps", label: t("misDashboard.totalApplications"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
+    { key: "rtsApps", label: t("misDashboard.fromRts"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
+    { key: "asApps", label: t("misDashboard.fromAapleSarkar"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "pendingApps", label: t("misDashboard.pending"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "approvedApps", label: t("misDashboard.approved"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
+    { key: "rejectedApps", label: t("misDashboard.rejected"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
+    { key: "overdueCount", label: t("misDashboard.overdueCount"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
+    { key: "avgSla", label: t("misDashboard.avgSla"), align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
+  ], [t, selectedDeptId]);
 
   const serviceColumns = useMemo<Column<ServiceStatsRow>[]>(() => [
-    { key: "srNo", label: lang === "en" ? "Sr. No." : "अनु. क्र.", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white w-14", cellClassName: "border-r border-slate-100 bg-slate-50/50", render: (value) => <span className="font-extrabold text-slate-900">{String(value ?? 0)}</span> },
+    { key: "srNo", label: t("misDashboard.srNo"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white w-14", cellClassName: "border-r border-slate-100 bg-slate-50/50", render: (value) => <span className="font-extrabold text-slate-900">{String(value ?? 0)}</span> },
     {
       key: "serviceName",
-      label: lang === "en" ? "Service Name" : "सेवेचे नाव",
+      label: t("misDashboard.serviceName"),
       headerClassName: "border-r border-blue-300/60 text-left text-white",
       cellClassName: "border-r border-slate-100",
       render: (_value, row, index) => (
@@ -325,15 +466,15 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
         </div>
       ),
     },
-    { key: "totalApps", label: lang === "en" ? "Total Applications" : "एकूण अर्ज", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
-    { key: "rtsApps", label: lang === "en" ? "Source: RTS" : "स्रोत: आरटीएस", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
-    { key: "asApps", label: lang === "en" ? "Source: Aaple Sarkar" : "स्रोत: आपले सरकार", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "pendingApps", label: lang === "en" ? "Pending" : "प्रलंबित", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
-    { key: "approvedApps", label: lang === "en" ? "Approved" : "मंजूर", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
-    { key: "rejectedApps", label: lang === "en" ? "Rejected" : "नाकारलेले", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
-    { key: "overdueCount", label: lang === "en" ? "OverDue Count" : "ओव्हरड्यू संख्या", align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
-    { key: "avgSla", label: lang === "en" ? "Avg. Processing Time (SLA)" : "सरासरी प्रक्रिया वेळ (SLA)", align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
-  ], [lang]);
+    { key: "totalApps", label: t("misDashboard.totalApplications"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100 bg-slate-50/30", render: (value) => <span className="font-extrabold text-slate-800">{String(value ?? 0)}</span> },
+    { key: "rtsApps", label: t("misDashboard.sourceRts"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#4B0082]">{String(value ?? 0)}</span> },
+    { key: "asApps", label: t("misDashboard.sourceAapleSarkar"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "pendingApps", label: t("misDashboard.pending"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#C66922]">{String(value ?? 0)}</span> },
+    { key: "approvedApps", label: t("misDashboard.approved"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#0F7A3F]">{String(value ?? 0)}</span> },
+    { key: "rejectedApps", label: t("misDashboard.rejected"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-[#B22222]">{String(value ?? 0)}</span> },
+    { key: "overdueCount", label: t("misDashboard.overdueCount"), align: "center", headerClassName: "border-r border-blue-300/60 text-center text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="font-bold text-rose-700">{String(value ?? 0)}</span> },
+    { key: "avgSla", label: t("misDashboard.avgProcessingTime"), align: "center", headerClassName: "text-center text-white", render: (value) => <span className="font-extrabold text-[#008B8B]">{String(value ?? "-")}</span> },
+  ], [t]);
 
   const pieSegments = useMemo(() => {
     const total = filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0);
@@ -372,28 +513,33 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
 
   return (
     <div className="space-y-4">
-      <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-        <div>
+      <Card className="flex flex-col justify-between rounded-2xl gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+
+        <div className="flex flex-row items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
+            <LayoutDashboard className="h-5 w-5" />
+          </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
-            {lang === "en" ? "RTS MIS Dashboard" : "आरटीएस एमआयएस डॅशबोर्ड"}
+            {t("misDashboard.title")}
           </h1>
         </div>
+
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm">
             <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
-              {lang === "en" ? "From" : "पासून"}
+              {t("misDashboard.from")}
             </span>
             <Input
               id="dashboard-date-from"
               type="date"
               value={dateFrom}
               onChange={(event) => setDateFrom(event.target.value)}
-              aria-label={lang === "en" ? "From date" : "सुरुवातीची तारीख"}
+              aria-label={t("misDashboard.fromDate")}
               className="h-8 min-w-[132px] cursor-pointer border-0 bg-transparent px-1 text-[12px] font-semibold text-slate-700 shadow-none focus-visible:ring-0"
             />
             <span className="font-bold text-slate-300">|</span>
             <span className="whitespace-nowrap text-[11px] font-bold text-slate-500">
-              {lang === "en" ? "To" : "पर्यंत"}
+              {t("misDashboard.to")}
             </span>
             <Input
               id="dashboard-date-to"
@@ -401,7 +547,7 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
               min={dateFrom || undefined}
               value={dateTo}
               onChange={(event) => setDateTo(event.target.value)}
-              aria-label={lang === "en" ? "To date" : "शेवटची तारीख"}
+              aria-label={t("misDashboard.toDate")}
               className="h-8 min-w-[132px] cursor-pointer border-0 bg-transparent px-1 text-[12px] font-semibold text-slate-700 shadow-none focus-visible:ring-0"
             />
             {(dateFrom || dateTo) && (
@@ -411,14 +557,16 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
                   setDateFrom("");
                   setDateTo("");
                 }}
-                aria-label={lang === "en" ? "Clear date filter" : "तारीख फिल्टर साफ करा"}
-                title={lang === "en" ? "Clear dates" : "तारखा साफ करा"}
+                aria-label={t("misDashboard.clearDates")}
+                title={t("misDashboard.clearDatesTitle")}
                 className="ml-1 h-7 min-h-0 px-2 text-[10px] font-bold text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
               >
                 ×
               </Button>
             )}
           </div>
+
+
         </div>
       </Card>
 
@@ -434,11 +582,11 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
             </div>
             <div className="min-w-0">
               <div className="text-[10px] font-bold leading-tight text-slate-500">
-                {lang === "en" ? metric.label : metric.labelMr}
+                {metric.label}
               </div>
               <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">{metric.count}</div>
               <div className={`mt-2 text-[11px] font-bold ${metric.detailClassName}`}>
-                {lang === "en" ? metric.detail : metric.detailMr}
+                {metric.detail}
               </div>
             </div>
           </Card>
@@ -450,45 +598,77 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
           <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-1.5">
             <h2 className="flex items-center gap-2 text-sm font-bold text-[#0a3275]">
               <FileSpreadsheet className="h-5 w-5 text-[#0B5CD5]" />
-              {lang === "en" ? "Departmental Service Applications Breakdown" : "विभाग निहाय सेवा अर्ज गोषवारा"}
+              {t("misDashboard.departmentalBreakdown")}
             </h2>
             <span className="animate-pulse rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-[#0F7A3F]">
-              {lang === "en" ? "Click row to visualize" : "पाहण्यासाठी रो वर क्लिक करा"}
+              {t("misDashboard.clickToVisualize")}
             </span>
           </div>
           <MasterTable<DepartmentalStatsRow>
             columns={departmentColumns}
-            data={departmentalStats}
-            emptyText={lang === "en" ? "No data." : "माहिती नाही."}
+            data={paginatedDepartmentStats}
+            pageSize={DEPARTMENT_PAGE_SIZE}
+            emptyText={t("misDashboard.noData")}
             getRowKey={(row) => row.deptId}
             onRowClick={(row) => setSelectedDeptId(row.deptId)}
             rowClassName={(row) => (selectedDeptId === row.deptId ? "bg-blue-50" : "")}
-            maxBodyHeightClassName="max-h-[360px]"
+            maxBodyHeightClassName="h-[315px] max-h-[315px]"
             theadClassName="bg-[#0A3275]"
             tableClassName="border-collapse text-left text-sm"
             containerClassName="gap-0"
+            footerLeftContent={
+              <span className="text-xs text-slate-500">
+                {locale === "mr"
+                  ? `${departmentalStats.length} पैकी ${departmentalStats.length === 0
+                    ? 0
+                    : (departmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1
+                  } ते ${Math.min(
+                    departmentPage * DEPARTMENT_PAGE_SIZE,
+                    departmentalStats.length
+                  )} नोंदी दाखवत आहे`
+                  : `Showing ${departmentalStats.length === 0
+                    ? 0
+                    : (departmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1
+                  } to ${Math.min(
+                    departmentPage * DEPARTMENT_PAGE_SIZE,
+                    departmentalStats.length
+                  )} of ${departmentalStats.length} entries`}
+              </span>
+            }
+            footerRightContent={
+              <TablePagination
+                currentPage={departmentPage}
+                totalPages={departmentTotalPages}
+                onPageChange={setDepartmentPage}
+              />
+            }
+            footerClassName="!bg-white !shadow-none"
           />
         </Card>
 
-        <Card className="flex w-full flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm lg:w-[30%]">
+        <Card className="flex h-[445px] flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm lg:w-[30%]">
           <div className="border-b border-slate-100 pb-1.5">
             <h3 className="flex items-center gap-1.5 text-base font-bold text-slate-800">
               <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0B5CD5]" />
               {selectedDeptStats?.deptName}
             </h3>
             <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              {lang === "en" ? "Interactive Data Visualization" : "परस्परसंवादी डेटा व्हिज्युअलायझेशन"}
+              {t("misDashboard.interactiveVisualization")}
             </p>
           </div>
 
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[13px] font-bold text-[#303031]">
-              <span>{lang === "en" ? "Source Share" : "स्रोत विभागणी"}</span>
-              <span>{selectedDeptStats?.totalApps ?? 0} {lang === "en" ? "Apps" : "अर्ज"}</span>
+              <span>{t("misDashboard.sourceShare")}</span>
+              <span>
+                {t("misDashboard.applicationsCount", {
+                  count: selectedDeptStats?.totalApps ?? 0,
+                })}
+              </span>
             </div>
             {(selectedDeptStats?.totalApps ?? 0) === 0 ? (
               <div className="flex h-8 w-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-[12px] font-bold text-slate-400">
-                {lang === "en" ? "No applications registered" : "कोणतेही अर्ज नाहीत"}
+                {t("misDashboard.noApplicationsRegistered")}
               </div>
             ) : (
               <div className="mb-2 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">
@@ -496,21 +676,27 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
                   <div
                     style={{ width: `${selectedDeptStats?.rtsPct ?? 0}%` }}
                     className="flex h-full items-center justify-center bg-[#0B5CD5] text-[11px] font-extrabold text-white transition-all duration-500"
-                    title={`RTS: ${selectedDeptStats?.rtsApps ?? 0}`}
+                    title={t("misDashboard.sourceTooltip", {
+                      source: t("misDashboard.rts"),
+                      count: selectedDeptStats?.rtsApps ?? 0,
+                    })}
                   >
                     {(selectedDeptStats?.rtsPct ?? 0) > 20 && `${selectedDeptStats?.rtsPct}%`}
                   </div>
                   <div
                     style={{ width: `${selectedDeptStats?.asPct ?? 0}%` }}
                     className="flex h-full items-center justify-center bg-[#F39C12] text-[11px] font-extrabold text-white transition-all duration-500"
-                    title={`Aaple Sarkar: ${selectedDeptStats?.asApps ?? 0}`}
+                    title={t("misDashboard.sourceTooltip", {
+                      source: t("misDashboard.aapleSarkar"),
+                      count: selectedDeptStats?.asApps ?? 0,
+                    })}
                   >
                     {(selectedDeptStats?.asPct ?? 0) > 20 && `${selectedDeptStats?.asPct}%`}
                   </div>
                 </div>
                 <div className="flex items-center justify-between px-0.5 text-[11px] font-bold">
-                  <div className="flex items-center gap-1 text-[#0B5CD5]"><span className="h-1.5 w-1.5 rounded-full bg-[#0B5CD5]" /><span>RTS ({selectedDeptStats?.rtsApps ?? 0})</span></div>
-                  <div className="flex items-center gap-1 text-[#C66922]"><span className="h-1.5 w-1.5 rounded-full bg-[#F39C12]" /><span>Aaple Sarkar ({selectedDeptStats?.asApps ?? 0})</span></div>
+                  <div className="flex items-center gap-1 text-[#0B5CD5]"><span className="h-1.5 w-1.5 rounded-full bg-[#0B5CD5]" /><span>{t("misDashboard.sourceRtsLegend", { count: selectedDeptStats?.rtsApps ?? 0 })}</span></div>
+                  <div className="flex items-center gap-1 text-[#C66922]"><span className="h-1.5 w-1.5 rounded-full bg-[#F39C12]" /><span>{t("misDashboard.sourceAapleSarkarLegend", { count: selectedDeptStats?.asApps ?? 0 })}</span></div>
                 </div>
               </div>
             )}
@@ -518,18 +704,23 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
 
           <div className="space-y-1">
             <span className="block text-[13px] font-bold text-[#0a3275]">
-              {lang === "en" ? "Application Status Distribution" : "अर्ज स्थिती वितरण"}
+              {t("misDashboard.applicationStatusDistribution")}
             </span>
             <div className="mb-2 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">
               {[
-                { label: lang === "en" ? "Approved" : "मंजूर", pct: selectedDeptStats?.approvedPct ?? 0, count: selectedDeptStats?.approvedApps ?? 0, color: "bg-[#27AE60]", text: "text-[#0F7A3F]" },
-                { label: lang === "en" ? "Pending" : "प्रलंबित", pct: selectedDeptStats?.pendingPct ?? 0, count: selectedDeptStats?.pendingApps ?? 0, color: "bg-[#F39C12]", text: "text-[#C66922]" },
-                { label: lang === "en" ? "Rejected" : "नाकारलेले", pct: selectedDeptStats?.rejectedPct ?? 0, count: selectedDeptStats?.rejectedApps ?? 0, color: "bg-[#B22222]", text: "text-[#B22222]" },
+                { label: t("misDashboard.approved"), pct: selectedDeptStats?.approvedPct ?? 0, count: selectedDeptStats?.approvedApps ?? 0, color: "bg-[#27AE60]", text: "text-[#0F7A3F]" },
+                { label: t("misDashboard.pending"), pct: selectedDeptStats?.pendingPct ?? 0, count: selectedDeptStats?.pendingApps ?? 0, color: "bg-[#F39C12]", text: "text-[#C66922]" },
+                { label: t("misDashboard.rejected"), pct: selectedDeptStats?.rejectedPct ?? 0, count: selectedDeptStats?.rejectedApps ?? 0, color: "bg-[#B22222]", text: "text-[#B22222]" },
               ].map((item) => (
                 <div key={item.label} className="space-y-0.5">
                   <div className="flex justify-between text-[11px] font-bold">
                     <span className={item.text}>{item.label}</span>
-                    <span className="text-slate-700">{item.count} ({item.pct}%)</span>
+                    <span className="text-slate-700">
+                      {t("misDashboard.countWithPercentage", {
+                        count: item.count,
+                        percentage: item.pct,
+                      })}
+                    </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div style={{ width: `${item.pct}%` }} className={`${item.color} h-full rounded-full transition-all duration-500`} />
@@ -541,16 +732,20 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
 
           <div className="space-y-1">
             <span className="block text-[13px] font-bold text-[#0a3275]">
-              {lang === "en" ? "SLA Target Efficiency" : "SLA कामगिरी"}
+              {t("misDashboard.slaTargetEfficiency")}
             </span>
             <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2 shadow-sm">
               <div className="space-y-0.5">
-                <div className="text-[12px] font-bold text-slate-600">{lang === "en" ? "SLA Speed Performance" : "SLA वेग कामगिरी"}</div>
-                <div className="text-[11px] font-bold text-slate-400">{lang === "en" ? "Target SLA: 10.0 Days" : "उद्दिष्ट: १०.० दिवस"}</div>
+                <div className="text-[12px] font-bold text-slate-600">{t("misDashboard.slaSpeedPerformance")}</div>
+                <div className="text-[11px] font-bold text-slate-400">{t("misDashboard.targetSla")}</div>
               </div>
-              <div className="flex flex-col items-end justify-center leading-tight">
-                <span className="text-xl font-extrabold text-[#008B8B]">{selectedDeptStats?.avgSlaVal ?? 0}</span>
-                <span className="text-[10px] font-bold text-slate-500">{lang === "en" ? "Days" : "दिवस"}</span>
+              <div className="flex flex-col items-end mb-2 justify-center leading-tight">
+                <span className="text-xl font-extrabold text-[#008B8B]">
+                  {formatNumber(selectedDeptStats?.avgSlaVal ?? 0)}
+                </span>
+                <span className="text-[10px] font-bold text-slate-500">
+                  {t("misDashboard.days")}
+                </span>
               </div>
             </div>
           </div>
@@ -562,49 +757,95 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-[#0B5CD5]" />
             <h2 className="text-sm font-bold text-[#0a3275]">
-              {lang === "en" ? "Service-wise Applications Breakdown" : "सेवा निहाय अर्ज गोषवारा"}
+              {t("misDashboard.serviceWiseBreakdown")}
             </h2>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
-              {lang === "en" ? "Filter by Dept:" : "विभाग निवडा:"}
-            </label>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
+              {t("misDashboard.filterBySource")}
+            </Label>
+            <div className="min-w-[160px]">
+              <Select
+                options={serviceSourceOptions}
+                value={selectedServiceSource}
+                onChange={(_event, value) =>
+                  setSelectedServiceSource(value as "all" | "rts" | "aapleSarkar")
+                }
+                placeholder={t("misDashboard.allSources")}
+                selectSize="sm"
+                ariaLabel={t("misDashboard.filterBySource")}
+                className="text-[12px] font-semibold text-slate-700"
+              />
+            </div>
+
+            <Label className="whitespace-nowrap text-[11px] font-bold text-slate-500">
+              {t("misDashboard.filterByDept")}
+            </Label>
             <div className="min-w-[180px]">
               <Select
                 options={serviceDeptOptions}
                 value={selectedServiceDeptId}
                 onChange={(_event, value) => setSelectedServiceDeptId(value)}
-                placeholder={lang === "en" ? "All Departments" : "सर्व विभाग"}
+                placeholder={t("misDashboard.allDepartments")}
                 selectSize="sm"
-                ariaLabel={lang === "en" ? "Filter services by department" : "विभागानुसार सेवा फिल्टर करा"}
+                ariaLabel={t("misDashboard.filterServicesByDepartment")}
                 className="text-[12px] font-semibold text-slate-700"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row">
+        <div className="flex flex-col justify-evenly gap-4 lg:flex-row">
           <MasterTable<ServiceStatsRow>
             columns={serviceColumns}
-            data={filteredServiceStats}
-            emptyText={lang === "en" ? "No services found for this department." : "विभागासाठी सेवा उपलब्ध नाही."}
+            data={paginatedServiceStats}
+            pageSize={SERVICE_PAGE_SIZE}
+            emptyText={t("misDashboard.noServicesFound")}
             getRowKey={(row) => row.serviceId}
+            // maxBodyHeightClassName="h-[660px] max-h-[660px]"
             theadClassName="bg-[#0A3275]"
             tableClassName="border-collapse text-left text-sm"
             containerClassName="gap-0"
+            footerLeftContent={
+              <span className="text-xs text-slate-500">
+                {locale === "mr"
+                  ? `${filteredServiceStats.length} पैकी ${filteredServiceStats.length === 0
+                    ? 0
+                    : (servicePage - 1) * SERVICE_PAGE_SIZE + 1
+                  } ते ${Math.min(
+                    servicePage * SERVICE_PAGE_SIZE,
+                    filteredServiceStats.length
+                  )} नोंदी दाखवत आहे`
+                  : `Showing ${filteredServiceStats.length === 0
+                    ? 0
+                    : (servicePage - 1) * SERVICE_PAGE_SIZE + 1
+                  } to ${Math.min(
+                    servicePage * SERVICE_PAGE_SIZE,
+                    filteredServiceStats.length
+                  )} of ${filteredServiceStats.length} entries`}
+              </span>
+            }
+            footerRightContent={
+              <TablePagination
+                currentPage={servicePage}
+                totalPages={serviceTotalPages}
+                onPageChange={setServicePage}
+              />
+            }
+            footerClassName="!bg-white !shadow-none"
           />
 
           <div className="flex w-full flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-4 shadow-sm lg:w-[30%]">
             <div className="flex items-center gap-1.5">
               <BarChart3 className="h-4 w-4 text-[#0B5CD5]" />
               <span className="text-[13px] font-bold text-slate-700">
-                {lang === "en" ? "Applications by Service" : "सेवेनुसार अर्ज"}
+                {t("misDashboard.applicationsByService")}
               </span>
             </div>
 
             {filteredServiceStats.length === 0 ? (
               <div className="flex h-48 items-center justify-center text-sm font-bold text-slate-400">
-                {lang === "en" ? "No data" : "माहिती नाही"}
+                {t("misDashboard.noDataShort")}
               </div>
             ) : (
               <div className="flex w-full flex-col items-center gap-3">
@@ -615,19 +856,28 @@ export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
                       d={segment.path}
                       fill={segment.color}
                       stroke="white"
-                      strokeWidth="2"
+                      strokeWidth="0.3"
                       className="cursor-pointer transition-all duration-300 hover:opacity-75"
                     >
-                      <title>{segment.name}: {segment.pct}%</title>
+                      <title>
+                        {t("misDashboard.servicePercentageTooltip", {
+                          service: segment.name,
+                          percentage: segment.pct,
+                        })}
+                      </title>
                     </path>
                   ))}
                   <circle cx="90" cy="90" r="38" fill="white" />
                   <text x="90" y="85" textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">
-                    {lang === "en" ? "Total" : "एकूण"}
+                    {t("misDashboard.total")}
                   </text>
-                  <circle cx="90" cy="90" r="38" fill="white" />
                   <text x="90" y="102" textAnchor="middle" fontSize="16" fontWeight="800" fill="#4b70a6">
-                    {filteredServiceStats.reduce((sum, row) => sum + row.totalApps, 0)}
+                    {formatNumber(
+                      filteredServiceStats.reduce(
+                        (sum, row) => sum + row.totalApps,
+                        0
+                      )
+                    )}
                   </text>
                 </svg>
 

@@ -1,8 +1,23 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Search, Settings2, Edit2, Trash2, HelpCircle } from "lucide-react";
-import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
+import { Settings2, HelpCircle, Form } from "lucide-react";
+import {
+  AddButton,
+  Button,
+  Card,
+  DeleteButton,
+  Drawer,
+  EditButton,
+  Input,
+  Label,
+  MasterTable,
+  SearchInput,
+  Select,
+  StatusBadge,
+  TextArea,
+  useConfirm,
+} from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -58,7 +73,7 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
   const filteredFields = fieldsList.filter(f => {
     const deptMatch = selectedDeptId === "All" || f.departmentId === selectedDeptId;
     const serviceMatch = selectedServiceId === "All" || f.serviceId === selectedServiceId;
-    
+
     const q = searchTerm.toLocaleLowerCase().trim();
     const textMatch =
       !q ||
@@ -107,7 +122,7 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
               t("fields.bulkDeleteSuccess", { count: selectedIds.length })
             );
             setSelectedIds([]);
-          } catch (err) {
+          } catch (_err) {
             toast.error(t("fields.bulkDeleteFailed"));
           }
         });
@@ -167,7 +182,7 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
               })
             );
             setSelectedIds([]);
-          } catch (err) {
+          } catch (_err) {
             toast.error(t("fields.bulkUpdateFailed"));
           }
         });
@@ -253,7 +268,7 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
     if (formType === "select" && formOptionsJson) {
       try {
         JSON.parse(formOptionsJson);
-      } catch (err) {
+      } catch (_err) {
         toast.error(t("fields.invalidOptionsJson"));
         return;
       }
@@ -303,7 +318,7 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
             toast.error(t("fields.fieldSaveFailed"));
           }
         }
-      } catch (err) {
+      } catch (_err) {
         toast.error(t("fields.fieldSaveFailed"));
       }
     });
@@ -323,7 +338,7 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
           } else {
             toast.error(t("fields.fieldDeleteFailed"));
           }
-        } catch (err) {
+        } catch (_err) {
           toast.error(t("fields.fieldDeleteFailed"));
         }
       }
@@ -357,27 +372,38 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
     { key: "fieldType", label: t("fields.fieldType"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className="inline-block rounded-lg bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase text-slate-650">{String(value ?? "")}</span> },
     { key: "fieldGroup", label: t("fields.fieldGroup"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 text-slate-500", render: (value) => String(value || "-") },
     { key: "isRequired", label: t("fields.isRequired"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-rose-100 bg-rose-50 text-rose-600" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? t("fields.required") : t("fields.optional")}</span> },
-    { key: "isActive", label: t("fields.isActive"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100", render: (value) => <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-bold ${value ? "border-teal-100 bg-teal-50 text-teal-700" : "border-slate-100 bg-slate-50 text-slate-400"}`}>{value ? t("fields.active") : t("fields.inactive")}</span> },
+    {
+      key: "isActive",
+      label: t("fields.isActive"),
+      align: "center",
+      headerClassName: "border-r border-blue-300/60 text-white",
+      cellClassName: "border-r border-slate-100",
+      render: (value) => (
+        <StatusBadge
+          value={Boolean(value)}
+          activeLabel={t("fields.active")}
+          inactiveLabel={t("fields.inactive")}
+          className="px-2 py-0.5 text-[10px]"
+        />
+      ),
+    },
     { key: "displayOrder", label: t("fields.displayOrder"), align: "center", headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 font-bold text-slate-600" },
   ];
 
   return (
     <div className="space-y-4">
       {/* Header Panel */}
-      <Card className="flex flex-col justify-between gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-        <div>
+      <Card className="flex flex-col justify-between rounded-2xl gap-4 border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+        <div className="flex flex-row items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
+            <Form className="h-5 w-5" />
+          </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800">
             {t("fields.title")}
           </h1>
         </div>
         <div>
-          <button
-            onClick={handleStartAdd}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#4b70a6] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#3d5e8c]"
-          >
-            <Plus className="h-4 w-4" />
-            {t("fields.addField")}
-          </button>
+          <AddButton onClick={handleStartAdd} label={t("fields.addField")} />
         </div>
       </Card>
 
@@ -385,95 +411,84 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
       <Card className="p-3 border border-slate-200 bg-white shadow-sm">
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.selectDepartment")}</label>
-            <select
+            <Label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.selectDepartment")}</Label>
+            <Select
               value={selectedDeptId}
-              onChange={e => {
-                setSelectedDeptId(e.target.value);
+              options={[
+                { value: "All", label: t("fields.allDepartments") },
+                ...data.departments.map((department) => ({ value: department.id, label: department.name })),
+              ]}
+              onChange={(_, value) => {
+                setSelectedDeptId(value);
                 setSelectedServiceId("All");
                 setPageNumber(1);
               }}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 text-[13px] text-slate-700 focus:border-teal-500 focus:bg-white focus:outline-none"
-            >
-              <option value="All">{t("fields.allDepartments")}</option>
-              {data.departments.map(d => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+              selectSize="sm"
+            />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.selectService")}</label>
-            <select
+            <Label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.selectService")}</Label>
+            <Select
               value={selectedServiceId}
-              onChange={e => {
-                setSelectedServiceId(e.target.value);
+              options={[
+                {
+                  value: "All",
+                  label: selectedDeptId === "All"
+                    ? t("fields.selectDepartmentFirst")
+                    : t("fields.allServices"),
+                },
+                ...filteredServicesForFilter.map((service) => ({ value: service.id, label: service.name })),
+              ]}
+              onChange={(_, value) => {
+                setSelectedServiceId(value);
                 setPageNumber(1);
               }}
               disabled={selectedDeptId === "All"}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 text-[13px] text-slate-700 focus:border-teal-500 focus:bg-white focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="All">
-                {selectedDeptId === "All"
-                  ? t("fields.selectDepartmentFirst")
-                  : t("fields.allServices")}
-              </option>
-              {selectedDeptId !== "All" && filteredServicesForFilter.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              selectSize="sm"
+            />
           </div>
 
           <div className="space-y-1 sm:col-span-2">
-            <label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.search")}</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Search className="h-3.5 w-3.5" />
-              </span>
-              <input
-                type="text"
-                placeholder={t("fields.searchPlaceholder")}
-                value={searchTerm}
-                onChange={e => {
-                  setSearchTerm(e.target.value);
-                  setPageNumber(1);
-                }}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-1.5 pl-9 pr-3 text-[13px] text-slate-700 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none"
-              />
-            </div>
+            <Label className="text-[10px] font-bold text-[#3d3d3d] uppercase">{t("fields.search")}</Label>
+            <SearchInput
+              value={searchTerm}
+              onChange={(value) => {
+                setSearchTerm(value);
+                setPageNumber(1);
+              }}
+              placeholder={t("fields.searchPlaceholder")}
+              className="mb-0 [&_input]:py-1.5 [&_input]:text-[13px]"
+            />
           </div>
         </div>
       </Card>
 
       {/* Main Table */}
-        <MasterTable<FieldTableRow>
-          columns={fieldColumns}
-          data={fieldRows}
-          getRowKey={(field) => field.id}
-          emptyText={t("fields.noFields")}
-          actionLabel={t("fields.actions")}
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={filteredFields.length}
-          totalPages={totalPages}
-          onPageChange={setPageNumber}
-          paginationConfig={{ enabled: true, showPageSizeSelector: false }}
-          maxBodyHeightClassName="max-h-auto"
-          theadClassName={tableHeaderClass}
-          tableClassName={tableClass}
-          containerClassName="gap-0"
-          rowClassName={() => "hover:bg-slate-50/50"}
-          renderActions={(field) => (
-            <div className="flex justify-center gap-2">
-              <button onClick={() => handleStartEdit(field)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50/50 text-[#4b70a6] transition hover:bg-slate-50" title={t("fields.edit")}><Edit2 className="h-3.5 w-3.5" /></button>
-              <button onClick={() => handleDeleteField(field.id, field.fieldLabel)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-rose-50/50 text-rose-600 transition hover:bg-rose-100" title={t("fields.delete")}><Trash2 className="h-3.5 w-3.5" /></button>
-            </div>
-          )}
-        />
+      <MasterTable<FieldTableRow>
+        columns={fieldColumns}
+        data={fieldRows}
+        getRowKey={(field) => field.id}
+        emptyText={t("fields.noFields")}
+        actionLabel={t("fields.actions")}
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={filteredFields.length}
+        totalPages={totalPages}
+        onPageChange={setPageNumber}
+        paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+        maxBodyHeightClassName="max-h-auto"
+        theadClassName={tableHeaderClass}
+        tableClassName={tableClass}
+        containerClassName="gap-0"
+        rowClassName={() => "hover:bg-slate-50/50"}
+        renderActions={(field) => (
+          <div className="flex justify-center gap-2">
+            <EditButton onClick={() => handleStartEdit(field)} title={t("fields.edit")} className="size-10 px-0" />
+            <DeleteButton onClick={() => handleDeleteField(field.id, field.fieldLabel)} title={t("fields.delete")} className="size-10 px-0" />
+          </div>
+        )}
+      />
 
       {/* Configuration Drawer */}
       <Drawer
@@ -492,101 +507,91 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-[13px] text-slate-700">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.departmentName")} *</label>
-              <select
+              <Label required className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.departmentName")}</Label>
+              <Select
                 required
                 value={formDeptId}
-                onChange={e => {
-                  setFormDeptId(e.target.value);
+                options={data.departments.map((department) => ({ value: department.id, label: department.name }))}
+                placeholder={t("fields.selectDepartment")}
+                onChange={(_, value) => {
+                  setFormDeptId(value);
                   setFormServiceId("");
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
-              >
-                <option value="">{t("fields.selectDepartment")}</option>
-                {data.departments.map(d => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
+                selectSize="sm"
+              />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.specificService")} *</label>
-              <select
+              <Label required className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.specificService")}</Label>
+              <Select
                 required
                 value={formServiceId}
-                onChange={e => setFormServiceId(e.target.value)}
+                options={filteredServicesForForm.map((service) => ({ value: service.id, label: service.name }))}
+                placeholder={!formDeptId ? t("fields.selectDepartmentFirst") : t("fields.selectService")}
+                onChange={(_, value) => setFormServiceId(value)}
                 disabled={!formDeptId}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="">
-                  {!formDeptId
-                    ? t("fields.selectDepartmentFirst")
-                    : t("fields.selectService")}
-                </option>
-                {formDeptId && filteredServicesForForm.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                selectSize="sm"
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldCode")} *</label>
-              <input
+              <Label required className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldCode")}</Label>
+              <Input
                 type="text"
                 required
                 placeholder={t("fields.placeholders.fieldCode")}
                 value={formCode}
                 onChange={e => setFormCode(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldLabel")} *</label>
-              <input
+              <Label required className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldLabel")}</Label>
+              <Input
                 type="text"
                 required
                 placeholder={t("fields.placeholders.fieldLabel")}
                 value={formLabel}
                 onChange={e => setFormLabel(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldType")} *</label>
-              <select
+              <Label required className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldType")}</Label>
+              <Select
                 required
                 value={formType}
-                onChange={e => setFormType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-2 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
-              >
-                <option value="text">{t("fields.fieldTypeText")}</option>
-                <option value="number">{t("fields.fieldTypeNumber")}</option>
-                <option value="select">{t("fields.fieldTypeSelect")}</option>
-                <option value="textarea">{t("fields.fieldTypeTextarea")}</option>
-                <option value="checkbox">{t("fields.fieldTypeCheckbox")}</option>
-                <option value="date">{t("fields.fieldTypeDate")}</option>
-                <option value="file">{t("fields.fieldTypeFile")}</option>
-              </select>
+                options={[
+                  { value: "text", label: t("fields.fieldTypeText") },
+                  { value: "number", label: t("fields.fieldTypeNumber") },
+                  { value: "select", label: t("fields.fieldTypeSelect") },
+                  { value: "textarea", label: t("fields.fieldTypeTextarea") },
+                  { value: "checkbox", label: t("fields.fieldTypeCheckbox") },
+                  { value: "date", label: t("fields.fieldTypeDate") },
+                  { value: "file", label: t("fields.fieldTypeFile") },
+                ]}
+                onChange={(_, value) => setFormType(value)}
+                selectSize="sm"
+              />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldGroup")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldGroup")}</Label>
+              <Input
                 type="text"
                 placeholder={t("fields.placeholders.fieldGroup")}
                 value={formGroup}
                 onChange={e => setFormGroup(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
           </div>
@@ -600,9 +605,9 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
                 onChange={e => setFormIsRequired(e.target.checked)}
                 className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-slate-300 rounded"
               />
-              <label htmlFor="formIsRequired" className="text-[11px] font-bold text-slate-700 uppercase cursor-pointer">
+              <Label htmlFor="formIsRequired" className="text-[11px] font-bold text-slate-700 uppercase cursor-pointer">
                 {t("fields.isRequired")}
-              </label>
+              </Label>
             </div>
 
             <div className="flex items-center gap-3">
@@ -613,117 +618,124 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
                 onChange={e => setFormIsActive(e.target.checked)}
                 className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-slate-300 rounded"
               />
-              <label htmlFor="formIsActive" className="text-[11px] font-bold text-slate-700 uppercase cursor-pointer">
+              <Label htmlFor="formIsActive" className="text-[11px] font-bold text-slate-700 uppercase cursor-pointer">
                 {t("fields.isActive")}
-              </label>
+              </Label>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.displayOrder")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.displayOrder")}</Label>
+              <Input
                 type="number"
                 min={1}
                 value={formDisplayOrder}
                 onChange={e => setFormDisplayOrder(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
           </div>
 
           {formType === "select" && (
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1">
+              <Label className="flex items-center gap-1 text-[10px] font-bold uppercase text-slate-450">
                 {t("fields.optionsJson")} *
                 <span title={t("fields.optionsJsonHelp")}>
                   <HelpCircle className="h-3 w-3 text-slate-400" />
                 </span>
-              </label>
-              <textarea
+              </Label>
+              <TextArea
                 required
                 rows={2}
                 placeholder='e.g. [{"label": "Male", "value": "M"}, {"label": "Female", "value": "F"}]'
                 value={formOptionsJson}
                 onChange={e => setFormOptionsJson(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 text-xs font-mono focus:border-teal-500 focus:bg-white focus:outline-none resize-none"
+                className="resize-none border-slate-200 bg-slate-50/50 py-1.5 text-xs font-mono focus:border-teal-500 focus:ring-0"
               />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.defaultValue")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.defaultValue")}</Label>
+              <Input
                 type="text"
                 placeholder={t("fields.placeholders.defaultValue")}
                 value={formDefaultValue}
                 onChange={e => setFormDefaultValue(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.validationRules")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.validationRules")}</Label>
+              <Input
                 type="text"
                 placeholder={t("fields.placeholders.validationRules")}
                 value={formValidationRules}
                 onChange={e => setFormValidationRules(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.minValue")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.minValue")}</Label>
+              <Input
                 type="number"
                 placeholder={t("fields.placeholders.minValue")}
                 value={formMinValue}
                 onChange={e => setFormMinValue(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.maxValue")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.maxValue")}</Label>
+              <Input
                 type="number"
                 placeholder={t("fields.placeholders.maxValue")}
                 value={formMaxValue}
                 onChange={e => setFormMaxValue(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.maxLength")}</label>
-              <input
+              <Label className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.maxLength")}</Label>
+              <Input
                 type="number"
                 placeholder={t("fields.placeholders.maxLength")}
                 value={formMaxLength}
                 onChange={e => setFormMaxLength(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-1.5 focus:border-teal-500 focus:bg-white focus:outline-none"
+                fullWidth
+                className="border-slate-200 bg-slate-50/50 py-1.5 focus:border-teal-500 focus:bg-white focus:ring-0"
               />
             </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 mt-4">
-            <button
+            <Button
               type="button"
               onClick={() => setIsDrawerOpen(false)}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-650 transition"
               disabled={isPending}
+              variant="secondary"
+              size="sm"
             >
               {t("fields.cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-[#4b70a6] text-white hover:bg-[#3d5e8c] text-xs font-bold transition flex items-center gap-1"
-              disabled={isPending}
+              isLoading={isPending}
+              size="sm"
             >
               {isPending ? t("fields.saving") : t("fields.saveField")}
-            </button>
+            </Button>
           </div>
         </form>
       </Drawer>
@@ -736,28 +748,29 @@ export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
           </span>
           <div className="h-4 w-px bg-slate-200" />
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={() => handleBulkSetRequired(true)}
               disabled={isPending}
-              className="inline-flex h-8 px-3 items-center gap-1 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 transition text-[11px] font-bold disabled:opacity-50"
+              variant="success"
+              size="sm"
             >
               {t("fields.makeRequired")}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => handleBulkSetRequired(false)}
               disabled={isPending}
-              className="inline-flex h-8 px-3 items-center gap-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-150 transition text-[11px] font-bold disabled:opacity-50"
+              variant="secondary"
+              size="sm"
             >
               {t("fields.makeOptional")}
-            </button>
-            <button
+            </Button>
+            <DeleteButton
               onClick={handleBulkDelete}
               disabled={isPending}
-              className="inline-flex h-8 px-3 items-center gap-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition text-[11px] font-bold disabled:opacity-50"
+              size="sm"
             >
-              <Trash2 className="h-3.5 w-3.5" />
               {t("fields.delete")}
-            </button>
+            </DeleteButton>
           </div>
         </div>
       )}
