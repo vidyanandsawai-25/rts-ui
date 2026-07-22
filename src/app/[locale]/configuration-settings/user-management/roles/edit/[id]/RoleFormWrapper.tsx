@@ -3,16 +3,17 @@
 import { RoleForm } from '@/components/modules/configuration-settings/user-management/components/RoleForm';
 import { useRoleForm } from '@/hooks/configuration-settings/user-management/useRoleForm';
 import { useRouter } from 'next/navigation';
-import { Role } from '@/types/user-management';
+import { Role, Department } from '@/types/user-management';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useTranslations } from 'next-intl';
 
 interface RoleFormWrapperProps {
   initialData?: Role;
   isEdit?: boolean;
+  departments?: Department[];
 }
 
-export function RoleFormWrapper({ initialData, isEdit }: RoleFormWrapperProps) {
+export function RoleFormWrapper({ initialData, isEdit, departments }: RoleFormWrapperProps) {
   const router = useRouter();
   const { confirm } = useConfirm();
   const tCommon = useTranslations('common');
@@ -28,15 +29,18 @@ export function RoleFormWrapper({ initialData, isEdit }: RoleFormWrapperProps) {
   const hasChanges = () => {
     const base = initialData
       ? {
+          departmentId: initialData.departmentId || '',
           name: initialData.name || '',
           isActive: !!initialData.isActive,
         }
       : {
+          departmentId: '',
           name: '',
           isActive: true,
         };
 
     return (
+      String(roleFormData.departmentId) !== String(base.departmentId) ||
       roleFormData.name.trim() !== base.name.trim() ||
       Boolean(roleFormData.isActive) !== Boolean(base.isActive)
     );
@@ -67,6 +71,7 @@ export function RoleFormWrapper({ initialData, isEdit }: RoleFormWrapperProps) {
       formData={roleFormData}
       setFormData={setRoleFormData}
       onSubmit={handleRoleSubmit}
+      departments={departments}
       isSubmitting={isSubmitting}
       errors={errors}
     />

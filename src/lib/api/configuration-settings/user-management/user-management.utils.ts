@@ -163,11 +163,16 @@ export function mapBackendRoleToRole(br: unknown): Role | null {
 
   const name = d ? (d.userRoleName as string) || (d.name as string) : 'Unspecified Role';
   const isActive = d ? !!((d.isActive as boolean) ?? true) : true;
+  const rawDeptId = d ? (d.departmentId ?? d.departmentID) : undefined;
+  const departmentId = rawDeptId !== undefined && rawDeptId !== null ? Number(rawDeptId) : undefined;
+  const departmentName = d ? (d.departmentName as string) || (d.deptName as string) : undefined;
 
   return {
     id: String(roleId),
     userRoleId: Number(roleId),
     name: name || 'Unspecified Role',
+    departmentId: departmentId,
+    departmentName: departmentName,
     isActive: isActive,
     status: isActive ? 'Active' : 'Inactive',
   };

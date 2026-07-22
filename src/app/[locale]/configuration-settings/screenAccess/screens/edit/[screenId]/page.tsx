@@ -1,7 +1,12 @@
 export const dynamic = 'force-dynamic';
 
 import { ScreenForm } from '@/components/modules/configuration-settings/screenAccess/components/ScreenForm';
-import { getScreenByIdAction, getScreenGroupsAction, getModulesAction } from '../../../action';
+import {
+  getScreenByIdAction,
+  getScreenGroupsAction,
+  getModulesAction,
+  getDepartmentsAction,
+} from '../../../action';
 import { getMasterDataPageSize } from '@/lib/api/configuration-settings/screenAccess/screen-access.services';
 
 export default async function EditScreenPage({ params }: { params: { screenId: string } }) {
@@ -20,10 +25,11 @@ export default async function EditScreenPage({ params }: { params: { screenId: s
   }
 
   // Fetch in parallel for better performance
-  const [screenRes, groupsRes, modulesRes] = await Promise.all([
+  const [screenRes, groupsRes, modulesRes, departmentsRes] = await Promise.all([
     getScreenByIdAction(id),
     getScreenGroupsAction(1, getMasterDataPageSize(), undefined, true),
     getModulesAction(),
+    getDepartmentsAction(),
   ]);
 
   if (!screenRes.success || !screenRes.data) {
@@ -44,6 +50,7 @@ export default async function EditScreenPage({ params }: { params: { screenId: s
       isEdit
       groups={groupsRes.data?.items || []}
       modules={modulesRes.data || []}
+      departments={departmentsRes.data || []}
     />
   );
 }
