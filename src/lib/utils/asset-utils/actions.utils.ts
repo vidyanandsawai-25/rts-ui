@@ -33,7 +33,7 @@ export function parseApiError(
     if (typeof flat === 'string' && ASSET_API_ERROR_MAP[flat]) return ASSET_API_ERROR_MAP[flat];
   } catch { }
 
-  return responseText || defaultKey;
+  return responseText.trim().startsWith('{') ? defaultKey : responseText;
 }
 
 function isRedirectError(e: unknown): boolean {

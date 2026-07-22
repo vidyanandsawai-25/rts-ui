@@ -18,11 +18,12 @@ const mockMessages = {
     header: {
       rateableTab: "Rateable Value",
       capitalTab: "Capital Value",
+      moujaTab: "Mouja Master",
+      openplotTab: "Open Plot Rate Master",
       rateableTitle: "Rateable Value Rate Master",
       rateableDescription: "Manage rateable value rates",
       capitalTitle: "Capital Value Rate Master",
       capitalDescription: "Manage capital value rates",
-      moujaTab: "Mouja Master",
       moujaTitle: "Mouja Rate Master",
       moujaDescription: "Manage mouja rates",
     },
@@ -34,7 +35,7 @@ describe("RateTabsNavigation", () => {
     vi.clearAllMocks();
   });
 
-  it("renders only Rateable Value tab (Capital Value is hidden)", () => {
+  it("renders active tabs (Capital Value is hidden)", () => {
     render(
       <NextIntlClientProvider locale="en" messages={mockMessages}>
         <RateTabsNavigation />
@@ -42,6 +43,7 @@ describe("RateTabsNavigation", () => {
     );
 
     expect(screen.getByText("Rateable Value")).toBeInTheDocument();
+    expect(screen.getByText("Open Plot Rate Master")).toBeInTheDocument();
     // Capital Value tab is intentionally hidden until feature is implemented
     expect(screen.queryByText("Capital Value")).not.toBeInTheDocument();
   });
@@ -67,7 +69,20 @@ describe("RateTabsNavigation", () => {
     const rateableTab = screen.getByText("Rateable Value");
     fireEvent.click(rateableTab);
     // Assert navigation was triggered with the expected URL
-    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rvratemaster");
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rate-master/rvratemaster");
+  });
+
+  it("navigates to Open Plot Rate Master when clicked", () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={mockMessages}>
+        <RateTabsNavigation />
+      </NextIntlClientProvider>
+    );
+
+    const openPlotTab = screen.getByText("Open Plot Rate Master");
+    fireEvent.click(openPlotTab);
+    // Assert navigation was triggered with the expected URL
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rate-master/openplot");
   });
 
   it("renders with proper styling", () => {

@@ -197,7 +197,11 @@ export function SearchSelect({
     if (hasTyped) return search;
     if (forceSearchText !== undefined) return forceSearchText;
     if (!hasOptions) return '';
-    return validOptions.find((o) => o.value === value)?.label ?? '';
+    const valStr = value !== undefined && value !== null ? String(value) : '';
+    const match = validOptions.find(
+      (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
+    );
+    return match?.label ?? '';
   }, [hasOptions, hasTyped, search, forceSearchText, value, validOptions]);
 
   /* ---------------- Close on outside click ---------------- */
@@ -317,14 +321,17 @@ export function SearchSelect({
   /* ---------------- Select option ---------------- */
 
   const handleSelect = (val: string): void => {
-    const selected = validOptions.find((o) => o.value === val);
+    const valStr = String(val);
+    const selected = validOptions.find(
+      (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
+    );
     if (!selected) return;
     didSelectRef.current = true; // Mark that selection happened
     setSearch(selected.label);
     setHasTyped(false);
     setIsOpen(false);
     setHighlightedIndex(-1);
-    onChange(fallbackName, val); // always a string
+    onChange(fallbackName, String(selected.value));
   };
 
   /* ---------------- Input change ---------------- */
@@ -508,7 +515,8 @@ export function SearchSelect({
             </li>
           ) : (
             filteredOptions.map((opt, index) => {
-              const isSelected = opt.value === value;
+              const valStr = value !== undefined && value !== null ? String(value) : '';
+              const isSelected = String(opt.value) === valStr || String(opt.value).toLowerCase() === valStr.toLowerCase();
               const isHighlighted = index === highlightedIndex;
 
               return (

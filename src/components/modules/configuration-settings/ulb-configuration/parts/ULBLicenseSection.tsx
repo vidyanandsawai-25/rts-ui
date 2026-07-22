@@ -83,7 +83,7 @@ export function ULBLicenseSection({
             <UlbInputMd label={t('fields.licenseStartDate')} required type="date" value={formData.licenseStartDate} error={getFieldError('licenseStartDate')} onChange={(e) => onLicenseFieldChange('licenseStartDate', e.target.value)} onBlur={() => onFieldBlur('licenseStartDate')} />
             {isCustomDuration(formData.licenseDuration) ? (
               <div className="flex items-end gap-2">
-                <UlbInputMd label={t('fields.licenseDuration')} required type="number" min={1} max={120} placeholder={t('placeholders.months')} value={formData.licenseDuration === 'custom' ? '' : formData.licenseDuration} error={getFieldError('licenseDuration')} onChange={(e) => onLicenseFieldChange('licenseDuration', e.target.value)} onBlur={() => onFieldBlur('licenseDuration')} fullWidth />
+                <UlbInputMd label={t('fields.licenseDuration')} required type="number" min={1} max={120} maxLength={3} placeholder={t('placeholders.months')} value={formData.licenseDuration === 'custom' ? '' : formData.licenseDuration} error={getFieldError('licenseDuration')} onChange={(e) => onLicenseFieldChange('licenseDuration', e.target.value.slice(0, 3))} onBlur={() => onFieldBlur('licenseDuration')} fullWidth />
                 <Button variant="secondary" size="sm" onClick={() => onLicenseFieldChange('licenseDuration', '12')} className="mb-0.5">
                   <RefreshCw className="h-4 w-4" />
                 </Button>

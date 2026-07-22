@@ -133,36 +133,22 @@ export async function getCommonRemarkById(id: number): Promise<CommonRemark | nu
 }
 
 /**
- * Helper to resolve or create category in CommonRemarkType
+ * Create a new category in CommonRemarkType
  */
-async function resolveOrCreateCategory(remarkType: string, customRemarkType?: string, createdByUserId?: number): Promise<number> {
-  const categories = await getCommonRemarkCategories();
-
-  if (remarkType !== "Other") {
-    const id = Number(remarkType);
-    if (Number.isFinite(id) && id > 0) {
-      return id;
-    }
-    // If remarkType contains categoryName instead of ID (fallback check)
-    const cat = categories.find((c) => c.categoryName.toLowerCase() === remarkType.toLowerCase());
-    if (cat) return cat.id;
-    throw new Error(`Invalid category selection: ${remarkType}`);
-  }
-
+export async function createRemarkCategory(customRemarkType: string, createdByUserId?: number): Promise<RemarkCategory> {
   const customName = (customRemarkType ?? "").trim();
   if (!customName) {
-    throw new Error("Custom Remark Type is required when Other is selected.");
+    throw new ApiError(400, "Custom Remark Type is required", "Validation failed");
   }
 
-  // Check if case-insensitive match already exists
+  const categories = await getCommonRemarkCategories();
   const matched = categories.find(
     (c) => c.categoryName.trim().toLowerCase() === customName.toLowerCase()
   );
   if (matched) {
-    return matched.id;
+    return matched;
   }
 
-  // Create new category
   const catPayload = {
     remarkTypeName: customName,
     isActive: true,
@@ -174,16 +160,38 @@ async function resolveOrCreateCategory(remarkType: string, customRemarkType?: st
     throw createApiError(response.statusCode, response.error, "Failed to create remark type category");
   }
 
-  // Handle nested items/data wrappers in POST response
   const dataObj = response.data;
   const rawItem = (dataObj.items ?? dataObj.data ?? dataObj) as Record<string, unknown> | undefined;
   const resolvedId = Number(rawItem?.id ?? rawItem?.remarkTypeId);
 
   if (Number.isFinite(resolvedId) && resolvedId > 0) {
-    return resolvedId;
+    return {
+      id: resolvedId,
+      categoryCode: String(resolvedId),
+      categoryName: customName,
+    };
   }
 
   throw new Error("Failed to extract ID from created remark type category response");
+}
+
+/**
+ * Helper to resolve or create category in CommonRemarkType
+ */
+async function resolveOrCreateCategory(remarkType: string, customRemarkType?: string, createdByUserId?: number): Promise<number> {
+  if (remarkType !== "Other") {
+    const id = Number(remarkType);
+    if (Number.isFinite(id) && id > 0) {
+      return id;
+    }
+    const categories = await getCommonRemarkCategories();
+    const cat = categories.find((c) => c.categoryName.toLowerCase() === remarkType.toLowerCase());
+    if (cat) return cat.id;
+    throw new Error(`Invalid category selection: ${remarkType}`);
+  }
+
+  const category = await createRemarkCategory(customRemarkType || "", createdByUserId);
+  return category.id;
 }
 
 /**

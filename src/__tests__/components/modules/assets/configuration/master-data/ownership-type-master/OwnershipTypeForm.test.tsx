@@ -1,0 +1,85 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { toast } from "sonner";
+import { OwnershipTypeForm } from "@/components/modules/assets/configuration/master-data/ownership-type-master/OwnershipTypeForm";
+import * as actions from "@/app/[locale]/assets/configuration/master-data/ownership-type/actions";
+
+const mockPush = vi.fn();
+const mockRefresh = vi.fn();
+const mockBack = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush, refresh: mockRefresh, back: mockBack }),
+}));
+
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => "en",
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@/app/[locale]/assets/configuration/master-data/ownership-type/actions", () => ({
+  createOwnershipTypeAction: vi.fn(),
+  updateOwnershipTypeAction: vi.fn(),
+}));
+
+vi.mock("@/components/modules/assets/configuration/master-data/ownership-type-master/FormFieldsSection", () => ({
+  FormFieldsSection: ({ formData, onChange }: any) => (
+    <div data-testid="form-fields">
+      <input data-testid="name-input" name="ownershipTypeName" value={formData.ownershipTypeName || ""} onChange={onChange} />
+      <input data-testid="description-input" name="description" value={formData.description || ""} onChange={onChange} />
+    </div>
+  ),
+}));
+
+vi.mock("@/components/modules/assets/configuration/master-data/ownership-type-master/StatusToggleCard", () => ({
+  StatusToggleCard: () => <div data-testid="status-toggle-card" />,
+}));
+vi.mock("@/components/modules/assets/configuration/master-data/ownership-type-master/MandatoryFieldsNotice", () => ({
+  MandatoryFieldsNotice: () => <div data-testid="mandatory-fields-notice" />,
+}));
+
+vi.mock("@/components/common", () => ({
+  SaveButton: ({ onClick, type, label }: any) => <button data-testid="save-button" onClick={onClick} type={type}>{label}</button>,
+  CancelButton: ({ onClick }: any) => <button data-testid="cancel-button" onClick={onClick}>Cancel</button>,
+}));
+
+vi.mock("@/components/common/Drawer", () => ({
+  Drawer: ({ open, children, footer }: any) => open ? (<div data-testid="drawer"><div data-testid="drawer-content">{children}</div><div data-testid="drawer-footer">{footer}</div></div>) : null,
+}));
+
+describe("OwnershipTypeForm", () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it("submits valid form successfully", async () => {
+    vi.mocked(actions.createOwnershipTypeAction).mockResolvedValue({ success: true, data: {} } as any);
+    render(<OwnershipTypeForm initialData={null} />);
+
+    fireEvent.change(screen.getByTestId("name-input"), { target: { name: "ownershipTypeName", value: "Private" } });
+    fireEvent.change(screen.getByTestId("description-input"), { target: { name: "description", value: "Private Ownership" } });
+
+    fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
+
+    await waitFor(() => {
+      expect(actions.createOwnershipTypeAction).toHaveBeenCalled();
+      expect(toast.success).toHaveBeenCalledWith("messages.createSuccess");
+    });
+  });
+
+  it("validates required fields", async () => {
+    render(<OwnershipTypeForm initialData={null} />);
+
+    // Submit without filling fields
+    fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
+
+    await waitFor(() => {
+      expect(actions.createOwnershipTypeAction).not.toHaveBeenCalled();
+      expect(toast.error).toHaveBeenCalledWith("errors.validationError");
+    });
+  });
+});
