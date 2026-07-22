@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { getCmsApplicationByIdAction, getCmsUsersAction } from "../../../actions";
+import { getRtsApplicationByIdAction, getRtsUsersAction } from "../../../actions";
 import { getRtsWorkflowStages } from "@/lib/api/rts/rts-workflow.service";
-import CmsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
+import RtsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
 type PageProps = {
   params: Promise<{
@@ -10,23 +10,23 @@ type PageProps = {
   }>;
 };
 
-export default async function CmsApplicationDetailsPage({ params }: PageProps) {
+export default async function RtsApplicationDetailsPage({ params }: PageProps) {
   const { id, locale } = await params;
 
-  const app = await getCmsApplicationByIdAction(id);
+  const app = await getRtsApplicationByIdAction(id);
   if (!app) {
     notFound();
   }
 
   // Retrieve matching officers and workflow details
   const [officers, workflowDetails] = await Promise.all([
-    getCmsUsersAction(),
+    getRtsUsersAction(),
     getRtsWorkflowStages(Number(app.serviceId)),
   ]);
 
   return (
     <div className="w-full">
-      <CmsApplicationDetails
+      <RtsApplicationDetails
         application={app}
         formSchema={null}
         officers={officers}

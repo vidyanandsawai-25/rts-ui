@@ -1,4 +1,4 @@
-import { getCmsMastersAction } from "@/app/[locale]/rts/actions";
+import { getRtsMastersAction } from "@/app/[locale]/rts/actions";
 import RtsWorkflowsConfig from "@/components/modules/rts/configuration-settings/RtsWorkflowsConfig";
 
 interface PageProps {
@@ -7,7 +7,7 @@ interface PageProps {
 
 export default async function RtsWorkflowsPage({ params }: PageProps) {
   const { locale } = await params;
-  const masters = await getCmsMastersAction();
+  const masters = await getRtsMastersAction();
 
   // Mock initial workflows list mapped to services for display
   const initialWorkflows = masters.services.slice(0, 10).map((s: { id: string; name: string }, idx: number) => ({

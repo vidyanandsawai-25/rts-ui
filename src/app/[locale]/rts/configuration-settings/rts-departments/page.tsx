@@ -2,21 +2,21 @@
 import RtsDepartmentConfig from "@/components/modules/rts/configuration-settings/RtsDepartmentConfig";
 
 import {
-  getCmsMastersAction,
-  saveCmsDepartmentAction,
-  updateCmsDepartmentAction,
-  deleteCmsDepartmentAction,
+  getRtsMastersAction,
+  saveRtsDepartmentAction,
+  updateRtsDepartmentAction,
+  deleteRtsDepartmentAction,
 } from "@/app/[locale]/rts/actions";
 
 export default async function RtsDepartmentPage() {
-  const { departments } = await getCmsMastersAction();
+  const { departments } = await getRtsMastersAction();
 
   return (
     <RtsDepartmentConfig
       departments={departments}
-      saveDepartment={saveCmsDepartmentAction}
-      updateDepartment={updateCmsDepartmentAction}
-      deleteDepartment={deleteCmsDepartmentAction}
+      saveDepartment={saveRtsDepartmentAction}
+      updateDepartment={updateRtsDepartmentAction}
+      deleteDepartment={deleteRtsDepartmentAction}
     />
   );
 }

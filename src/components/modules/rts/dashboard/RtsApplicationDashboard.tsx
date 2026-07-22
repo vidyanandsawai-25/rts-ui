@@ -19,10 +19,8 @@ import { Button, Card, MasterTable, SearchInput, Select } from "@/components/com
 import type { Column } from "@/components/common/MasterTable";
 import ApplicationDrawerContent from "./RtsApplicationDrawerContext";
 
-// import type { CmsApplication } from "@/lib/mock/rts/cms";
-
-interface CmsMulyamapanProps {
-  // data: CmsApplication[];
+interface RtsApplicationDashboardProps {
+  // data: RtsApplication[];
   data: any[];
   masters: {
     departments: Array<{ id: string; name: string }>;
@@ -78,9 +76,9 @@ function normalizeApplicationStatus(
   return "Pending";
 }
 
-export default function CmsMulyamapan({
+export default function RtsApplicationDashboard({
   locale,
-}: CmsMulyamapanProps) {
+}: RtsApplicationDashboardProps) {
   const t = useTranslations("rts");
 
   const [dashboardData, setDashboardData] = useState<

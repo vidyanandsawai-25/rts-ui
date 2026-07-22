@@ -6,9 +6,9 @@ import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { saveCmsFieldAction, updateCmsFieldAction, deleteCmsFieldAction } from "@/app/[locale]/rts/actions";
+import { saveRtsFieldAction, updateRtsFieldAction, deleteRtsFieldAction } from "@/app/[locale]/rts/actions";
 
-interface CmsField {
+interface RtsField {
   id: string;
   departmentId: string;
   serviceId: string;
@@ -28,23 +28,23 @@ interface CmsField {
   isActive: boolean;
 }
 
-interface CmsFieldsConfigProps {
+interface RtsFieldsConfigProps {
   data: {
-    fields: CmsField[];
+    fields: RtsField[];
     departments: { id: string; name: string }[];
     services: { id: string; name: string; departmentId: string }[];
   };
   locale: string;
 }
 
-type FieldTableRow = Record<string, unknown> & CmsField;
+type FieldTableRow = Record<string, unknown> & RtsField;
 
-export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
+export default function RtsFieldsConfig({ data }: RtsFieldsConfigProps) {
   const t = useTranslations("rts");
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
 
-  const [fieldsList, setFieldsList] = useState<CmsField[]>(data.fields);
+  const [fieldsList, setFieldsList] = useState<RtsField[]>(data.fields);
   const [selectedDeptId, setSelectedDeptId] = useState<string>("All");
   const [selectedServiceId, setSelectedServiceId] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
@@ -101,7 +101,7 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
       onConfirm: async () => {
         startTransition(async () => {
           try {
-            await Promise.all(selectedIds.map(id => deleteCmsFieldAction(id)));
+            await Promise.all(selectedIds.map(id => deleteRtsFieldAction(id)));
             setFieldsList(prev => prev.filter(f => !selectedIds.includes(f.id)));
             toast.success(
               t("fields.bulkDeleteSuccess", { count: selectedIds.length })
@@ -148,8 +148,8 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
                   maxLength: field.maxLength,
                   validationRules: field.validationRules
                 };
-                const res = await updateCmsFieldAction(id, payload);
-                return res.success ? (res.field as CmsField) : null;
+                const res = await updateRtsFieldAction(id, payload);
+                return res.success ? (res.field as RtsField) : null;
               })
             );
 
@@ -177,7 +177,7 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
 
   // Drawer form states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingField, setEditingField] = useState<CmsField | null>(null);
+  const [editingField, setEditingField] = useState<RtsField | null>(null);
 
   const [formDeptId, setFormDeptId] = useState("");
   const [formServiceId, setFormServiceId] = useState("");
@@ -223,7 +223,7 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
     setIsDrawerOpen(true);
   };
 
-  const handleStartEdit = (field: CmsField) => {
+  const handleStartEdit = (field: RtsField) => {
     setEditingField(field);
     setFormDeptId(field.departmentId);
     setFormServiceId(field.serviceId);
@@ -281,11 +281,11 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
         };
 
         if (editingField) {
-          const res = await updateCmsFieldAction(editingField.id, payload);
+          const res = await updateRtsFieldAction(editingField.id, payload);
           if (res.success && res.field) {
             setFieldsList(prev =>
               prev.map(f =>
-                f.id === editingField.id ? (res.field as CmsField) : f
+                f.id === editingField.id ? (res.field as RtsField) : f
               )
             );
             toast.success(t("fields.fieldUpdated"));
@@ -294,9 +294,9 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
             toast.error(t("fields.fieldSaveFailed"));
           }
         } else {
-          const res = await saveCmsFieldAction(payload);
+          const res = await saveRtsFieldAction(payload);
           if (res.success && res.field) {
-            setFieldsList(prev => [...prev, res.field as CmsField]);
+            setFieldsList(prev => [...prev, res.field as RtsField]);
             toast.success(t("fields.fieldCreated"));
             setIsDrawerOpen(false);
           } else {
@@ -316,7 +316,7 @@ export default function CmsFieldsConfig({ data }: CmsFieldsConfigProps) {
       description: t("fields.confirmDeleteField", { name }),
       onConfirm: async () => {
         try {
-          const res = await deleteCmsFieldAction(id);
+          const res = await deleteRtsFieldAction(id);
           if (res.success) {
             setFieldsList(prev => prev.filter(f => f.id !== id));
             toast.success(t("fields.fieldDeleted"));

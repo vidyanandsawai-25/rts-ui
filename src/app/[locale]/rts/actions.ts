@@ -6,10 +6,10 @@ import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { apiClient } from "@/services/api.service";
 import type {
-  CmsApplication,
-  CmsOfficer,
-  CmsTimelineStep
-} from "@/types/rts/cms";
+  RtsApplication,
+  RtsOfficer,
+  RtsTimelineStep
+} from "@/types/rts/rts-application.types";
 
 const DATA_FILE_PATH = path.join(
   process.cwd(),
@@ -20,12 +20,12 @@ const DATA_FILE_PATH = path.join(
   "cmsData.json"
 );
 
-interface CmsDataStructure {
-  applications: CmsApplication[];
+interface RtsDataStructure {
+  applications: RtsApplication[];
   workflows: any[];
   departments: Array<{ id: string; name: string }>;
   services: Array<{ id: string; name: string; departmentId: string }>;
-  officers: CmsOfficer[];
+  officers: RtsOfficer[];
   masters: {
     wards: string[];
     zones: string[];
@@ -35,10 +35,10 @@ interface CmsDataStructure {
   fieldDefinitions?: any[];
 }
 
-async function readCmsData(): Promise<CmsDataStructure> {
+async function readRtsData(): Promise<RtsDataStructure> {
   try {
     const raw = await fs.readFile(DATA_FILE_PATH, "utf8");
-    return JSON.parse(raw) as CmsDataStructure;
+    return JSON.parse(raw) as RtsDataStructure;
   } catch {
     return {
       applications: [],
@@ -51,7 +51,7 @@ async function readCmsData(): Promise<CmsDataStructure> {
   }
 }
 
-async function writeCmsData(data: CmsDataStructure): Promise<void> {
+async function writeRtsData(data: RtsDataStructure): Promise<void> {
   await fs.writeFile(DATA_FILE_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
@@ -67,8 +67,8 @@ function formatDate(date: Date): string {
 }
 
 // 1. Dashboard Stats Action
-export async function getCmsDashboardStatsAction() {
-  const data = await readCmsData();
+export async function getRtsDashboardStatsAction() {
+  const data = await readRtsData();
   const apps = data.applications;
 
   const total = apps.length;
@@ -108,7 +108,7 @@ export async function getCmsDashboardStatsAction() {
 }
 
 // 2. Paginated Inbox Action
-export async function getCmsApplicationsAction(
+export async function getRtsApplicationsAction(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string,
@@ -118,7 +118,7 @@ export async function getCmsApplicationsAction(
   priority?: string,
   assignedOfficerId?: string
 ) {
-  const data = await readCmsData();
+  const data = await readRtsData();
   let filtered = data.applications;
 
   if (searchTerm?.trim()) {
@@ -174,19 +174,19 @@ export async function getCmsApplicationsAction(
 }
 
 // 3. Application Details by ID Action
-export async function getCmsApplicationByIdAction(id: string): Promise<CmsApplication | null> {
-  const data = await readCmsData();
+export async function getRtsApplicationByIdAction(id: string): Promise<RtsApplication | null> {
+  const data = await readRtsData();
   return data.applications.find(a => a.id === id) ?? null;
 }
 
 // 4. Action Decision Submit (Approve/Reject/Forward) Action
-export async function submitCmsAction(
+export async function submitRtsAction(
   applicationId: string,
   actionType: "Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments",
   remarks: string,
   assignToOfficerId?: string
 ) {
-  const data = await readCmsData();
+  const data = await readRtsData();
   const index = data.applications.findIndex(a => a.id === applicationId);
 
   if (index === -1) {
@@ -226,7 +226,7 @@ export async function submitCmsAction(
 
   app.status = nextStatus;
 
-  const newTimelineStep: CmsTimelineStep = {
+  const newTimelineStep: RtsTimelineStep = {
     title: timelineTitle,
     timestamp: formatDate(new Date()),
     officerName: currentOfficerName,
@@ -238,7 +238,7 @@ export async function submitCmsAction(
   app.timeline = [...app.timeline.map(t => (t.status === "current" ? { ...t, status: "completed" as const } : t)), newTimelineStep];
 
   data.applications[index] = app;
-  await writeCmsData(data);
+  await writeRtsData(data);
 
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/inbox`);
@@ -250,7 +250,7 @@ export async function submitCmsAction(
 }
 
 // 7. Masters Config Actions
-export async function getCmsMastersAction() {
+export async function getRtsMastersAction() {
   try {
     const [deptRes, srvRes] = await Promise.all([
       apiClient.get<any>("/RTSDepartment?PageNumber=1&PageSize=-1"),
@@ -283,17 +283,17 @@ export async function getCmsMastersAction() {
     // ONLY fall back to mock data if the API request itself was unsuccessful (failed to reach or unauthorized)
     // If the API request succeeded, but simply returned an empty list, DO NOT overwrite it with mock data.
     if (!deptRes.success) {
-      const data = await readCmsData();
+      const data = await readRtsData();
       departments = data.departments;
     }
     if (!srvRes.success) {
-      const data = await readCmsData();
+      const data = await readRtsData();
       services = data.services;
     }
 
     return { departments, services };
   } catch {
-    const data = await readCmsData();
+    const data = await readRtsData();
     return {
       departments: data.departments,
       services: data.services
@@ -301,7 +301,7 @@ export async function getCmsMastersAction() {
   }
 }
 
-export async function saveCmsDepartmentAction(name: string) {
+export async function saveRtsDepartmentAction(name: string) {
   try {
     const payload = {
       isActive: true,
@@ -322,11 +322,11 @@ export async function saveCmsDepartmentAction(name: string) {
     }
 
     if (!newDept || !newDept.id) {
-      const data = await readCmsData();
+      const data = await readRtsData();
       const nextId = `dept-${Date.now()}`;
       newDept = { id: nextId, name };
       data.departments.push(newDept);
-      await writeCmsData(data);
+      await writeRtsData(data);
     }
 
     for (const locale of locales) {
@@ -335,11 +335,11 @@ export async function saveCmsDepartmentAction(name: string) {
 
     return { success: true, department: newDept };
   } catch {
-    const data = await readCmsData();
+    const data = await readRtsData();
     const nextId = `dept-${Date.now()}`;
     const newDept = { id: nextId, name };
     data.departments.push(newDept);
-    await writeCmsData(data);
+    await writeRtsData(data);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/rts-cms/masters`);
@@ -348,7 +348,7 @@ export async function saveCmsDepartmentAction(name: string) {
   }
 }
 
-export async function saveCmsServiceAction(name: string, departmentId: string) {
+export async function saveRtsServiceAction(name: string, departmentId: string) {
   try {
     const parsedDeptId = /^\d+$/.test(departmentId) ? parseInt(departmentId, 10) : 0;
     const payload = {
@@ -371,11 +371,11 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
     }
 
     if (!newSrv || !newSrv.id) {
-      const data = await readCmsData();
+      const data = await readRtsData();
       const nextId = `service-${Date.now()}`;
       newSrv = { id: nextId, name, departmentId };
       data.services.push(newSrv);
-      await writeCmsData(data);
+      await writeRtsData(data);
     }
 
     for (const locale of locales) {
@@ -384,11 +384,11 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
 
     return { success: true, service: newSrv };
   } catch {
-    const data = await readCmsData();
+    const data = await readRtsData();
     const nextId = `service-${Date.now()}`;
     const newSrv = { id: nextId, name, departmentId };
     data.services.push(newSrv);
-    await writeCmsData(data);
+    await writeRtsData(data);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/rts-cms/masters`);
@@ -397,7 +397,7 @@ export async function saveCmsServiceAction(name: string, departmentId: string) {
   }
 }
 
-export async function updateCmsDepartmentAction(id: string, name: string) {
+export async function updateRtsDepartmentAction(id: string, name: string) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -419,11 +419,11 @@ export async function updateCmsDepartmentAction(id: string, name: string) {
   }
 
   // Fallback to Mock Data
-  const data = await readCmsData();
+  const data = await readRtsData();
   const index = data.departments.findIndex(d => d.id === id);
   if (index !== -1) {
     data.departments[index].name = name;
-    await writeCmsData(data);
+    await writeRtsData(data);
   }
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/masters`);
@@ -431,7 +431,7 @@ export async function updateCmsDepartmentAction(id: string, name: string) {
   return { success: true, department: { id, name } };
 }
 
-export async function deleteCmsDepartmentAction(id: string) {
+export async function deleteRtsDepartmentAction(id: string) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -447,18 +447,18 @@ export async function deleteCmsDepartmentAction(id: string) {
   }
 
   // Fallback to Mock Data
-  const data = await readCmsData();
+  const data = await readRtsData();
   data.departments = data.departments.filter(d => d.id !== id);
   // Remove cascade services
   data.services = data.services.filter(s => s.departmentId !== id);
-  await writeCmsData(data);
+  await writeRtsData(data);
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/masters`);
   }
   return { success: true };
 }
 
-export async function updateCmsServiceAction(id: string, name: string, departmentId: string) {
+export async function updateRtsServiceAction(id: string, name: string, departmentId: string) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -488,12 +488,12 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
   }
 
   // Fallback to Mock Data
-  const data = await readCmsData();
+  const data = await readRtsData();
   const index = data.services.findIndex(s => s.id === id);
   if (index !== -1) {
     data.services[index].name = name;
     data.services[index].departmentId = departmentId;
-    await writeCmsData(data);
+    await writeRtsData(data);
   }
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/masters`);
@@ -501,7 +501,7 @@ export async function updateCmsServiceAction(id: string, name: string, departmen
   return { success: true, service: { id, name, departmentId } };
 }
 
-export async function deleteCmsServiceAction(id: string) {
+export async function deleteRtsServiceAction(id: string) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -517,9 +517,9 @@ export async function deleteCmsServiceAction(id: string) {
   }
 
   // Fallback to Mock Data
-  const data = await readCmsData();
+  const data = await readRtsData();
   data.services = data.services.filter(s => s.id !== id);
-  await writeCmsData(data);
+  await writeRtsData(data);
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/masters`);
   }
@@ -527,18 +527,18 @@ export async function deleteCmsServiceAction(id: string) {
 }
 
 // 8. User Management (RBAC) Actions
-export async function getCmsUsersAction() {
-  const data = await readCmsData();
+export async function getRtsUsersAction() {
+  const data = await readRtsData();
   return data.officers;
 }
 
-export async function saveCmsUserRoleAction(officerId: string, newRole: string) {
-  const data = await readCmsData();
+export async function saveRtsUserRoleAction(officerId: string, newRole: string) {
+  const data = await readRtsData();
   const index = data.officers.findIndex(o => o.id === officerId);
 
   if (index !== -1) {
     data.officers[index].role = newRole;
-    await writeCmsData(data);
+    await writeRtsData(data);
   }
 
   for (const locale of locales) {
@@ -548,7 +548,7 @@ export async function saveCmsUserRoleAction(officerId: string, newRole: string) 
   return { success: true, officer: data.officers[index] };
 }
 
-export async function createCmsUserAction(officer: {
+export async function createRtsUserAction(officer: {
   name: string;
   employeeId: string;
   departmentId: string;
@@ -558,15 +558,15 @@ export async function createCmsUserAction(officer: {
   email: string;
   mobile: string;
 }) {
-  const data = await readCmsData();
+  const data = await readRtsData();
   const nextId = `emp-${101 + data.officers.length}`;
-  const newOfficer: CmsOfficer = {
+  const newOfficer: RtsOfficer = {
     ...officer,
     id: nextId,
     activeCasesCount: 0
   };
   data.officers.push(newOfficer);
-  await writeCmsData(data);
+  await writeRtsData(data);
 
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/users`);
@@ -576,7 +576,7 @@ export async function createCmsUserAction(officer: {
 }
 
 // 9. Form Field Definition Actions
-export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
+export async function getRtsFieldsAction(pageNumber = 1, pageSize = 10) {
   try {
     const [fieldRes, deptRes, srvRes] = await Promise.all([
       apiClient.get<any>("/RTSFieldDefinition?PageNumber=1&PageSize=-1"),
@@ -623,7 +623,7 @@ export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
         name: String(d.departmentName || d.name || "")
       }));
     } else {
-      const data = await readCmsData();
+      const data = await readRtsData();
       departments = data.departments;
     }
 
@@ -636,12 +636,12 @@ export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
         departmentId: String(s.departmentId ?? "")
       }));
     } else {
-      const data = await readCmsData();
+      const data = await readRtsData();
       services = data.services;
     }
 
     if (!fieldRes.success || !fieldRes.data) {
-      const data = await readCmsData();
+      const data = await readRtsData();
       const allFields = data.fieldDefinitions || [];
       const startIndex = (pageNumber - 1) * pageSize;
       fields = allFields.slice(startIndex, startIndex + pageSize);
@@ -655,7 +655,7 @@ export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
 
     return { fields, departments, services, pagination: fieldPagination };
   } catch {
-    const data = await readCmsData();
+    const data = await readRtsData();
     const allFields = data.fieldDefinitions || [];
     const startIndex = (pageNumber - 1) * pageSize;
     return {
@@ -672,7 +672,7 @@ export async function getCmsFieldsAction(pageNumber = 1, pageSize = 10) {
   }
 }
 
-export async function saveCmsFieldAction(field: any) {
+export async function saveRtsFieldAction(field: any) {
   try {
     const payload = {
       isActive: field.isActive ?? true,
@@ -721,7 +721,7 @@ export async function saveCmsFieldAction(field: any) {
     }
 
     if (!newField || !newField.id) {
-      const data = await readCmsData();
+      const data = await readRtsData();
       const nextId = String(Date.now());
       newField = {
         ...payload,
@@ -731,7 +731,7 @@ export async function saveCmsFieldAction(field: any) {
       };
       if (!data.fieldDefinitions) data.fieldDefinitions = [];
       data.fieldDefinitions.push(newField);
-      await writeCmsData(data);
+      await writeRtsData(data);
     }
 
     for (const locale of locales) {
@@ -740,7 +740,7 @@ export async function saveCmsFieldAction(field: any) {
 
     return { success: true, field: newField };
   } catch {
-    const data = await readCmsData();
+    const data = await readRtsData();
     const nextId = String(Date.now());
     const newField = {
       id: nextId,
@@ -763,7 +763,7 @@ export async function saveCmsFieldAction(field: any) {
     };
     if (!data.fieldDefinitions) data.fieldDefinitions = [];
     data.fieldDefinitions.push(newField);
-    await writeCmsData(data);
+    await writeRtsData(data);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/rts-cms/masters/fields`);
@@ -772,7 +772,7 @@ export async function saveCmsFieldAction(field: any) {
   }
 }
 
-export async function updateCmsFieldAction(id: string, field: any) {
+export async function updateRtsFieldAction(id: string, field: any) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -830,7 +830,7 @@ export async function updateCmsFieldAction(id: string, field: any) {
   }
 
   // Fallback to local
-  const data = await readCmsData();
+  const data = await readRtsData();
   if (!data.fieldDefinitions) data.fieldDefinitions = [];
   const index = data.fieldDefinitions.findIndex(f => f.id === id);
   const updatedField = {
@@ -854,7 +854,7 @@ export async function updateCmsFieldAction(id: string, field: any) {
   };
   if (index !== -1) {
     data.fieldDefinitions[index] = updatedField;
-    await writeCmsData(data);
+    await writeRtsData(data);
   }
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/masters/fields`);
@@ -862,7 +862,7 @@ export async function updateCmsFieldAction(id: string, field: any) {
   return { success: true, field: updatedField };
 }
 
-export async function deleteCmsFieldAction(id: string) {
+export async function deleteRtsFieldAction(id: string) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
@@ -878,13 +878,33 @@ export async function deleteCmsFieldAction(id: string) {
   }
 
   // Fallback to local
-  const data = await readCmsData();
+  const data = await readRtsData();
   if (data.fieldDefinitions) {
     data.fieldDefinitions = data.fieldDefinitions.filter(f => f.id !== id);
-    await writeCmsData(data);
+    await writeRtsData(data);
   }
   for (const locale of locales) {
     revalidatePath(`/${locale}/rts-cms/masters/fields`);
   }
   return { success: true };
 }
+
+// ─── Backward-compatibility aliases (deprecated – use Rts* names) ────────────
+export const getCmsDashboardStatsAction = getRtsDashboardStatsAction;
+export const getCmsApplicationsAction = getRtsApplicationsAction;
+export const getCmsApplicationByIdAction = getRtsApplicationByIdAction;
+export const submitCmsAction = submitRtsAction;
+export const getCmsMastersAction = getRtsMastersAction;
+export const saveCmsDepartmentAction = saveRtsDepartmentAction;
+export const saveCmsServiceAction = saveRtsServiceAction;
+export const updateCmsDepartmentAction = updateRtsDepartmentAction;
+export const deleteCmsDepartmentAction = deleteRtsDepartmentAction;
+export const updateCmsServiceAction = updateRtsServiceAction;
+export const deleteCmsServiceAction = deleteRtsServiceAction;
+export const getCmsUsersAction = getRtsUsersAction;
+export const saveCmsUserRoleAction = saveRtsUserRoleAction;
+export const createCmsUserAction = createRtsUserAction;
+export const getCmsFieldsAction = getRtsFieldsAction;
+export const saveCmsFieldAction = saveRtsFieldAction;
+export const updateCmsFieldAction = updateRtsFieldAction;
+export const deleteCmsFieldAction = deleteRtsFieldAction;

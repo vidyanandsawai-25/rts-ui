@@ -5,18 +5,18 @@ import { Plus, Search, Shield, Mail, Phone, Users, Trash, Edit2 } from "lucide-r
 import { Card, Drawer, useConfirm } from "@/components/common";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { createCmsUserAction } from "@/app/[locale]/rts/actions";
-import type { CmsOfficer } from "@/types/rts/cms";
+import { createRtsUserAction } from "@/app/[locale]/rts/actions";
+import type { RtsOfficer } from "@/types/rts/rts-application.types";
 
 interface UserMgmtProps {
-  officers: CmsOfficer[];
+  officers: RtsOfficer[];
   departments: Array<{ id: string; name: string }>;
 }
 
-export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
+export default function RtsUserMgmt({ officers, departments }: UserMgmtProps) {
   const { confirm } = useConfirm();
   const t = useTranslations("rts");
-  const [officersList, setOfficersList] = useState<CmsOfficer[]>(officers);
+  const [officersList, setOfficersList] = useState<RtsOfficer[]>(officers);
   const [selectedDeptId, setSelectedDeptId] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -38,7 +38,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
 
   // Drawer control states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingOfficer, setEditingOfficer] = useState<CmsOfficer | null>(null);
+  const [editingOfficer, setEditingOfficer] = useState<RtsOfficer | null>(null);
 
   // Form states
   const [formName, setFormName] = useState("");
@@ -65,7 +65,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
     setIsDrawerOpen(true);
   };
 
-  const handleStartEdit = (officer: CmsOfficer) => {
+  const handleStartEdit = (officer: RtsOfficer) => {
     setEditingOfficer(officer);
     setFormName(officer.name || "");
     setFormEmpId(officer.employeeId || "");
@@ -115,7 +115,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
       // Creating Mode
       startTransition(async () => {
         try {
-          const res = await createCmsUserAction({
+          const res = await createRtsUserAction({
             name: formName,
             employeeId: formEmpId,
             departmentId: formDeptId,
@@ -127,7 +127,7 @@ export default function CmsUserMgmt({ officers, departments }: UserMgmtProps) {
           });
 
           if (res.success && res.officer) {
-            setOfficersList(prev => [...prev, res.officer as CmsOfficer]);
+            setOfficersList(prev => [...prev, res.officer as RtsOfficer]);
             toast.success(t("users.userCreated"));
             setIsDrawerOpen(false);
             resetForm();

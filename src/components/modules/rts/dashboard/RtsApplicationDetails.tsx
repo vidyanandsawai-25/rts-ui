@@ -19,27 +19,27 @@ import {
 import { Card, Badge } from "@/components/common";
 import { toast } from "sonner";
 import { pickLangText } from "@/lib/utils/rts/lang";
-import { submitCmsAction } from "@/app/[locale]/rts/actions";
-import type { CmsApplication, CmsOfficer } from "@/types/rts/cms";
+import { submitRtsAction } from "@/app/[locale]/rts/actions";
+import type { RtsApplication, RtsOfficer } from "@/types/rts/rts-application.types";
 import type { WorkflowDetails, WorkflowStage } from "@/lib/api/rts/rts-workflow.service";
 
-interface CmsApplicationDetailsProps {
-  application: CmsApplication;
+interface RtsApplicationDetailsProps {
+  application: RtsApplication;
   formSchema: any;
-  officers: CmsOfficer[];
+  officers: RtsOfficer[];
   locale: string;
   workflowDetails?: WorkflowDetails | null;
 }
 
 type TabId = "profile" | "form" | "documents" | "timeline";
 
-export default function CmsApplicationDetails({
+export default function RtsApplicationDetails({
   application,
   formSchema,
   officers,
   locale,
   workflowDetails
-}: CmsApplicationDetailsProps) {
+}: RtsApplicationDetailsProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [isPending, startTransition] = useTransition();
@@ -91,7 +91,7 @@ export default function CmsApplicationDetails({
 
     startTransition(async () => {
       try {
-        const res = await submitCmsAction(application.id, actionType, remarks, forwardOfficerId);
+        const res = await submitRtsAction(application.id, actionType, remarks, forwardOfficerId);
         if (res.success) {
           toast.success(`Application decision [${actionType}] recorded successfully!`);
           router.push(`/${locale}/rts-cms/inbox`);
@@ -491,3 +491,5 @@ export default function CmsApplicationDetails({
     </div>
   );
 }
+
+export const CmsApplicationDetails = RtsApplicationDetails;

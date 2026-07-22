@@ -7,12 +7,12 @@ import { Badge, Button, Card, Drawer, MasterTable, SearchInput, useConfirm } fro
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import {
-  saveCmsDepartmentAction,
-  updateCmsDepartmentAction,
-  deleteCmsDepartmentAction,
-  saveCmsServiceAction,
-  updateCmsServiceAction,
-  deleteCmsServiceAction
+  saveRtsDepartmentAction,
+  updateRtsDepartmentAction,
+  deleteRtsDepartmentAction,
+  saveRtsServiceAction,
+  updateRtsServiceAction,
+  deleteRtsServiceAction
 } from "@/app/[locale]/rts/actions";
 
 interface MasterConfigProps {
@@ -25,7 +25,7 @@ interface MasterConfigProps {
 type DepartmentRow = Record<string, unknown> & { id: string; srNo: number; name: string; status: string };
 type ServiceRow = Record<string, unknown> & { id: string; srNo: number; name: string; departmentName: string; status: string };
 
-export default function CmsMastersConfig({ masters }: MasterConfigProps) {
+export default function RtsMastersConfig({ masters }: MasterConfigProps) {
   const { confirm } = useConfirm();
   const t = useTranslations("rts");
   const [departments, setDepartments] = useState(masters.departments);
@@ -117,7 +117,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
       try {
         if (drawerType === "department") {
           if (drawerMode === "add") {
-            const res = await saveCmsDepartmentAction(formName);
+            const res = await saveRtsDepartmentAction(formName);
             if (res.success && res.department) {
               setDepartments(prev => [...prev, res.department!]);
               toast.success(t("masters.departmentAdded"));
@@ -127,7 +127,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
           } else {
             // Edit
             if (!editingItem) return;
-            const res = await updateCmsDepartmentAction(editingItem.id, formName);
+            const res = await updateRtsDepartmentAction(editingItem.id, formName);
             if (res.success && res.department) {
               setDepartments(prev => prev.map(d => d.id === editingItem.id ? res.department! : d));
               toast.success(t("masters.departmentUpdated"));
@@ -142,7 +142,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
             return;
           }
           if (drawerMode === "add") {
-            const res = await saveCmsServiceAction(formName, formDeptId);
+            const res = await saveRtsServiceAction(formName, formDeptId);
             if (res.success && res.service) {
               setServices(prev => [...prev, res.service!]);
               toast.success(t("masters.serviceAdded"));
@@ -152,7 +152,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
           } else {
             // Edit
             if (!editingItem) return;
-            const res = await updateCmsServiceAction(editingItem.id, formName, formDeptId);
+            const res = await updateRtsServiceAction(editingItem.id, formName, formDeptId);
             if (res.success && res.service) {
               setServices(prev => prev.map(s => s.id === editingItem.id ? res.service! : s));
               toast.success(t("masters.serviceUpdated"));
@@ -181,7 +181,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
       onConfirm: () => {
         startTransition(async () => {
           try {
-            const res = await deleteCmsDepartmentAction(id);
+            const res = await deleteRtsDepartmentAction(id);
             if (res.success) {
               setDepartments(prev => prev.filter(d => d.id !== id));
               // Cascaded local delete for services
@@ -210,7 +210,7 @@ export default function CmsMastersConfig({ masters }: MasterConfigProps) {
       onConfirm: () => {
         startTransition(async () => {
           try {
-            const res = await deleteCmsServiceAction(id);
+            const res = await deleteRtsServiceAction(id);
             if (res.success) {
               setServices(prev => prev.filter(s => s.id !== id));
               toast.success(t("masters.serviceDeleted"));
