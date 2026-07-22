@@ -342,7 +342,6 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
                 rateSectionDescription: basicDetails.rateSectionDescription,
               };
               
-              // Call the action to save it
               return await updatePropertyBasicDetailsAction(locale, sourcePropertyId, updatedPayload, false);
             })());
           }
