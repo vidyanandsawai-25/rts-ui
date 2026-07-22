@@ -67,11 +67,18 @@ function isBooleanLike(value: unknown): boolean {
 function isValidAssessmentYearRangeShape(item: unknown, idField: string): boolean {
   if (typeof item !== "object" || item === null) return false;
   const record = item as Record<string, unknown>;
+  
+  // Handle both lowercase and PascalCase variations
+  const idValue = record[idField] ?? record[idField.charAt(0).toUpperCase() + idField.slice(1)];
+  const fromYearValue = record.fromYear ?? record.FromYear;
+  const toYearValue = record.toYear ?? record.ToYear;
+  const isActiveValue = record.isActive ?? record.IsActive;
+
   return (
-    typeof record[idField] === "number" &&
-    typeof record.fromYear === "number" &&
-    typeof record.toYear === "number" &&
-    isBooleanLike(record.isActive)
+    typeof idValue === "number" &&
+    typeof fromYearValue === "number" &&
+    typeof toYearValue === "number" &&
+    isBooleanLike(isActiveValue)
   );
 }
 
@@ -82,13 +89,21 @@ function normalizeAssessmentYearRange<T extends AssessmentYearRange>(
   item: Record<string, unknown>,
   idField: string
 ): T {
+  // Handle both lowercase and PascalCase variations
+  const idValue = item[idField] ?? item[idField.charAt(0).toUpperCase() + idField.slice(1)];
+  const fromYearValue = item.fromYear ?? item.FromYear;
+  const toYearValue = item.toYear ?? item.ToYear;
+  const isActiveValue = item.isActive ?? item.IsActive;
+  const createdDateValue = item.createdDate ?? item.CreatedDate;
+  const updatedDateValue = item.updatedDate ?? item.UpdatedDate;
+
   const normalized = {
-    [idField]: Number(item[idField]),
-    fromYear: Number(item.fromYear),
-    toYear: Number(item.toYear),
-    isActive: parseBoolean(item.isActive),
-    createdDate: String(item.createdDate ?? ""),
-    updatedDate: item.updatedDate ? String(item.updatedDate) : null,
+    [idField]: Number(idValue),
+    fromYear: Number(fromYearValue),
+    toYear: Number(toYearValue),
+    isActive: parseBoolean(isActiveValue),
+    createdDate: String(createdDateValue ?? ""),
+    updatedDate: updatedDateValue ? String(updatedDateValue) : null,
   };
   return normalized as unknown as T;
 }
