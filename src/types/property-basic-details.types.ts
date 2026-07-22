@@ -96,7 +96,9 @@ export interface PropertyBasicDetailsApiItem {
     totalBuiltupAreaSqMeter: number;
     totalCarpetAreaSqFeet: number;
     totalBuiltupAreaSqFeet: number;
-    plotArea: number | null;
+    plotArea?: number | null;
+    plotAreaSqFeet: number | null;
+    plotAreaSqMeter: number | null;
     plotAreaFtLength: number;
     plotAreaFtWidth: number;
     plotAreaMtrLength: number;
@@ -106,6 +108,7 @@ export interface PropertyBasicDetailsApiItem {
     rateSectionDescription?: string | null;
     latitude?: string | null;
     longitude?: string | null;
+    constructionYear?: string | null;
 }
 
 export interface TypeOfUseApiItem {

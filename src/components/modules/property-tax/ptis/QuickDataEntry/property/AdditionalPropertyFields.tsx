@@ -8,6 +8,7 @@ interface AdditionalPropertyFieldsProps {
     propertyData: PropertyBasicDetailsApiItem | null;
     taxZones: TaxZoneItem[];
     checkFormChanges: () => void;
+    isIndividual: boolean;
     propertyDescriptionOptions: { label: string; value: string }[];
     propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
@@ -18,6 +19,7 @@ export const AdditionalPropertyFields = ({
     propertyData,
     taxZones,
     checkFormChanges,
+    isIndividual,
     propertyDescriptionOptions,
     propertyTypeId,
     handlePropertyDescriptionChange,
@@ -57,7 +59,7 @@ export const AdditionalPropertyFields = ({
     return (
         <>
             {/* Tax Zone No */}
-            <div className="space-y-1.5 col-span-12 md:col-span-3 relative focus-within:z-50">
+            <div className={isIndividual ? 'space-y-1.5 col-span-12 md:col-span-4 relative focus-within:z-50' : 'space-y-1.5 col-span-12 md:col-span-3 relative focus-within:z-50'}>
                 <Label htmlFor="pd-taxzone" className="text-xs font-semibold text-gray-700">
                     {t('property.taxZoneNo')}
                 </Label>

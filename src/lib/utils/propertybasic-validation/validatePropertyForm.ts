@@ -14,14 +14,12 @@ export const validatePropertyForm = (
     categoryId: number | null,
     t: (key: string, values?: Record<string, string | number | Date>) => string
 ) => {
-    const rawPlotArea = formData.get("plotArea");
     const rawResToilets = formData.get("noOfResidentialToilets");
     const rawCommToilets = formData.get("noOfCommercialToilets");
 
     const validationData = {
         categoryId,
         taxZoneId: formData.get("taxZoneId"),
-        plotArea: typeof rawPlotArea === "string" ? translateDevanagariDigits(rawPlotArea) : rawPlotArea,
         noOfResidentialToilets: typeof rawResToilets === "string" ? translateDevanagariDigits(rawResToilets) : rawResToilets,
         noOfCommercialToilets: typeof rawCommToilets === "string" ? translateDevanagariDigits(rawCommToilets) : rawCommToilets,
     };
@@ -29,7 +27,6 @@ export const validatePropertyForm = (
     return validateForm(validationData, {
         categoryId: propertyValidations.required("category", t),
         taxZoneId: propertyValidations.required("taxZoneNo", t),
-        plotArea: propertyValidations.number("plotArea", t),
         noOfResidentialToilets: propertyValidations.number("residentialToilets", t),
         noOfCommercialToilets: propertyValidations.number("commercialToilets", t),
     });
