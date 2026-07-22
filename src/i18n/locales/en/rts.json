@@ -199,31 +199,72 @@
     "status": {
       "approved": "Approved",
       "pending": "Pending",
+      "reverted": "Reverted",
       "rejected": "Rejected"
     },
     "applications": {
       "title": "YOUR APPLICATIONS & SLA TIMELINE",
       "description": "Each municipal service is bound by legal Right to Service delivery timelines.",
-      "searchPlaceholder": "Search by ID or service name...",
-      "empty": "No applications matched the tracking criteria."
+      "searchPlaceholder": "Search by application number, owner name, or survey number...",
+      "empty": "No applications matched the tracking criteria.",
+      "loading": "Loading dashboard..."
     },
     "filters": {
+      "applicationType": "Application Type",
       "allTypes": "All Types",
       "allStatuses": "All Statuses"
     },
     "table": {
+      "applicationNo": "Application No.",
       "applicationAndService": "APPLICATION ID & SERVICE",
       "submittedDate": "SUBMITTED DATE",
+      "applicantOwner": "Applicant / Owner",
+      "applicationTypeWork": "Application Type / Work",
       "slaTimeline": "SLA TIMELINE",
       "statusAndStage": "STATUS & STAGE",
-      "actions": "ACTIONS"
+      "daysPending": "Days Pending",
+      "actions": "ACTIONS",
+      "notAvailable": "Not available",
+      "defaultOfficer": "Junior Engineer"
     },
     "actions": {
       "viewDetails": "View",
       "viewDetailsAria": "View details for {appId}",
       "process": "Process",
       "processAria": "Process application {appId}",
-      "close": "Close"
+      "registerApplication": "Register Application",
+      "downloadRegister": "Download Register",
+      "openFilters": "Open filters"
+    },
+    "drawer": {
+      "applicationDetails": "Application Details",
+      "applicantName": "Applicant Name",
+      "submittedDate": "Submitted Date",
+      "slaTimeline": "SLA Timeline",
+      "slaDeadline": "SLA Deadline",
+      "notAvailable": "Not available",
+      "approvalStages": "Approval Stages",
+      "completion": "25% Done",
+      "submittedDocuments": "Submitted Documents",
+      "downloadDocument": "Download {name}",
+      "stages": {
+        "applicationSubmitted": {
+          "title": "Application Submitted",
+          "status": "Complete",
+          "remark": "System: Application received successfully."
+        },
+        "documentVerification": {
+          "title": "Document Verification",
+          "status": "Pending",
+          "remark": "Pending review."
+        },
+        "finalApproval": { "title": "Final Approval", "status": "Pending", "remark": "Pending." }
+      },
+      "documents": {
+        "identityProof": { "name": "Identity Proof (Aadhaar Card)", "size": "1.2 MB" },
+        "ownershipDeed": { "name": "Property Ownership Deed / Agreement", "size": "3.4 MB" },
+        "fireNoc": { "name": "NOC from Fire Department", "size": "2.1 MB" }
+      }
     },
     "pagination": {
       "showing": "Showing {shown} of {total} applications"

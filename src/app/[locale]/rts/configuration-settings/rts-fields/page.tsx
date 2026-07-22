@@ -1,17 +1,17 @@
-import { getCmsFieldsAction } from "../../actions";
-import CmsFieldsConfig from "@/components/modules/rts/configuration-settings/RtsFieldsConfig";
+import { getRtsFieldsAction } from "../../actions";
+import RtsFieldsConfig from "@/components/modules/rts/configuration-settings/RtsFieldsConfig";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
-export default async function CmsFieldsPage({ params }: PageProps) {
+export default async function RtsFieldsPage({ params }: PageProps) {
   const { locale } = await params;
-  const data = await getCmsFieldsAction();
+  const data = await getRtsFieldsAction();
 
   return (
     <div className="w-full">
-      <CmsFieldsConfig data={data} locale={locale} />
+      <RtsFieldsConfig data={data} locale={locale} />
     </div>
   );
 }

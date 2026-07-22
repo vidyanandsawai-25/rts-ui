@@ -1,0 +1,14 @@
+{
+    "compareFolders.excludeFilter": [
+        "/types\\rts-citizen.types.ts",
+        "/types\\rts",
+        "/lib\\utils\\rts\\lang.ts",
+        "/lib\\api\\rts\\rtsmisdashboard.service.ts",
+        "/lib\\api\\dashboard.ts",
+        "/components\\modules\\rts\\configuration-settings\\RtsServiceConfig.tsx",
+        "/components\\modules\\rts\\configuration-settings\\RtsFieldsConfig.tsx",
+        "/components\\modules\\rts\\configuration-settings\\RtsDepartmentConfig.tsx",
+        "/components\\modules\\rts\\configuration-settings\\RtsUserMgmt.tsx",
+        "/components\\modules\\rts\\forms"
+    ]
+}

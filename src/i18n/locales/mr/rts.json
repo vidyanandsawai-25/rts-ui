@@ -199,6 +199,7 @@
     "status": {
       "approved": "मंजूर",
       "pending": "प्रलंबित",
+      "reverted": "मागे पाठवले",
       "rejected": "नामंजूर",
       "withinSla": "SLA अंतर्गत",
       "slaBreached": "SLA उल्लंघन",
@@ -208,25 +209,65 @@
       "title": "तुमचे अर्ज आणि SLA कालमर्यादा",
       "description": "प्रत्येक महानगरपालिका सेवा कायदेशीर सेवा हक्क वितरण कालमर्यादेने बांधील आहे.",
       "searchPlaceholder": "आयडी किंवा सेवेच्या नावाने शोधा...",
-      "empty": "शोध निकषांशी जुळणारा कोणताही अर्ज आढळला नाही."
+      "empty": "शोध निकषांशी जुळणारा कोणताही अर्ज आढळला नाही.",
+      "loading": "डॅशबोर्ड लोड होत आहे..."
     },
     "filters": {
+      "applicationType": "अर्जाचा प्रकार",
       "allTypes": "सर्व प्रकार",
       "allStatuses": "सर्व स्थिती"
     },
     "table": {
+      "applicationNo": "अर्ज क्रमांक",
       "applicationAndService": "अर्ज आयडी आणि सेवा",
       "submittedDate": "सादर दिनांक",
+      "applicantOwner": "अर्जदार / मालक",
+      "applicationTypeWork": "अर्जाचा प्रकार / काम",
       "slaTimeline": "SLA कालमर्यादा",
       "statusAndStage": "स्थिती आणि टप्पा",
-      "actions": "कृती"
+      "daysPending": "प्रलंबित दिवस",
+      "actions": "कृती",
+      "notAvailable": "उपलब्ध नाही",
+      "defaultOfficer": "कनिष्ठ अभियंता"
     },
     "actions": {
       "viewDetails": "तपशील",
       "viewDetailsAria": "{appId} चे तपशील पहा",
       "process": "प्रक्रिया करा",
       "processAria": "अर्ज {appId} वर प्रक्रिया करा",
-      "close": "बंद करा"
+      "registerApplication": "अर्ज नोंदणी करा",
+      "downloadRegister": "नोंदणी डाउनलोड करा",
+      "openFilters": "फिल्टर उघडा"
+    },
+    "drawer": {
+      "applicationDetails": "अर्जाचा तपशील",
+      "applicantName": "अर्जदाराचे नाव",
+      "submittedDate": "सादर दिनांक",
+      "slaTimeline": "SLA कालमर्यादा",
+      "slaDeadline": "SLA अंतिम तारीख",
+      "notAvailable": "उपलब्ध नाही",
+      "approvalStages": "मंजुरीचे टप्पे",
+      "completion": "25% पूर्ण",
+      "submittedDocuments": "सादर केलेली कागदपत्रे",
+      "downloadDocument": "{name} डाउनलोड करा",
+      "stages": {
+        "applicationSubmitted": {
+          "title": "अर्ज सादर केला",
+          "status": "पूर्ण",
+          "remark": "प्रणाली: अर्ज यशस्वीरित्या प्राप्त झाला."
+        },
+        "documentVerification": {
+          "title": "कागदपत्र पडताळणी",
+          "status": "प्रलंबित",
+          "remark": "पुनरावलोकन प्रलंबित आहे."
+        },
+        "finalApproval": { "title": "अंतिम मंजुरी", "status": "प्रलंबित", "remark": "प्रलंबित." }
+      },
+      "documents": {
+        "identityProof": { "name": "ओळख पुरावा (आधार कार्ड)", "size": "1.2 MB" },
+        "ownershipDeed": { "name": "मालमत्ता मालकी हक्कपत्र / करार", "size": "3.4 MB" },
+        "fireNoc": { "name": "अग्निशमन विभागाचे ना हरकत प्रमाणपत्र", "size": "2.1 MB" }
+      }
     },
     "pagination": {
       "showing": "{total} पैकी {shown} अर्ज दाखवत आहे"

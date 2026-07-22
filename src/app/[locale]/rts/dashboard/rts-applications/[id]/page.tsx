@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { getCmsApplicationByIdAction, getCmsUsersAction } from "../../../actions";
-import { readStoredAdminServiceFormByServiceId } from "@/components/modules/rts/admin/service-builder/data.server";
-import CmsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
+import { getRtsApplicationByIdAction, getRtsUsersAction } from "../../../actions";
+import { getRtsWorkflowStages } from "@/lib/api/rts/rts-workflow.service";
+import RtsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
 type PageProps = {
   params: Promise<{
@@ -10,27 +10,28 @@ type PageProps = {
   }>;
 };
 
-export default async function CmsApplicationDetailsPage({ params }: PageProps) {
+export default async function RtsApplicationDetailsPage({ params }: PageProps) {
   const { id, locale } = await params;
 
-  const app = await getCmsApplicationByIdAction(id);
+  const app = await getRtsApplicationByIdAction(id);
   if (!app) {
     notFound();
   }
 
-  // Retrieve matching dynamic schema config for EAV form rendering
-  const [storedForm, officers] = await Promise.all([
-    readStoredAdminServiceFormByServiceId(app.serviceId),
-    getCmsUsersAction()
+  // Retrieve matching officers and workflow details
+  const [officers, workflowDetails] = await Promise.all([
+    getRtsUsersAction(),
+    getRtsWorkflowStages(Number(app.serviceId)),
   ]);
 
   return (
     <div className="w-full">
-      <CmsApplicationDetails
+      <RtsApplicationDetails
         application={app}
-        formSchema={storedForm?.generatedSchema ?? null}
+        formSchema={null}
         officers={officers}
         locale={locale}
+        workflowDetails={workflowDetails}
       />
     </div>
   );

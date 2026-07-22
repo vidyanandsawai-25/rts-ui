@@ -1,15 +1,15 @@
-import { getCmsUsersAction, getCmsMastersAction } from "../actions";
-import CmsUserMgmt from "@/components/modules/rts/configuration-settings/RtsUserMgmt";
+import { getRtsUsersAction, getRtsMastersAction } from "../actions";
+import RtsUserMgmt from "@/components/modules/rts/configuration-settings/RtsUserMgmt";
 
-export default async function CmsUsersPage() {
+export default async function RtsUsersPage() {
   const [officers, masters] = await Promise.all([
-    getCmsUsersAction(),
-    getCmsMastersAction()
+    getRtsUsersAction(),
+    getRtsMastersAction()
   ]);
 
   return (
     <div className="w-full">
-      <CmsUserMgmt officers={officers} departments={masters.departments} />
+      <RtsUserMgmt officers={officers} departments={masters.departments} />
     </div>
   );
 }

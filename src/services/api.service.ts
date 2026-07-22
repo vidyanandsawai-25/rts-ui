@@ -41,9 +41,11 @@ class ApiClient {
     '/Auth/send-otp',
     '/Auth/resend-otp',
     '/Auth/refresh',
-    '/Auth/ulb-config',
     '/Auth/validate-reset-token',
     '/UlbConfig',
+    '/ApprovalFlowMaster',
+    '/RTSDepartment',
+    '/RTSService',
   ];
 
   constructor() {

@@ -1,12 +1,12 @@
-import { getCmsMastersAction } from "../actions";
-import CmsMastersConfig from "@/components/modules/rts/configuration-settings/RtsMastersConfig";
+import { getRtsMastersAction } from "../actions";
+import RtsMastersConfig from "@/components/modules/rts/configuration-settings/RtsMastersConfig";
 
-export default async function CmsMastersPage() {
-  const masters = await getCmsMastersAction();
+export default async function RtsMastersPage() {
+  const masters = await getRtsMastersAction();
 
   return (
     <div className="w-full">
-      <CmsMastersConfig masters={masters} />
+      <RtsMastersConfig masters={masters} />
     </div>
   );
 }
