@@ -68,11 +68,19 @@ export async function getRoles(): Promise<RoleMasterData[]> {
       const name = String(
         item.userRoleName ?? item.UserRoleName ?? item.roleName ?? item.RoleName ?? `Role ${id}`
       );
+      const deptId = Number(
+        item.departmentId ??
+          item.DepartmentId ??
+          item.departmentMasterId ??
+          item.DepartmentMasterId ??
+          0
+      );
       return {
         roleMasterId: id,
         roleCode: String(item.roleCode ?? item.RoleCode ?? `ROLE_${id}`),
         roleName: name,
         isActive: true,
+        departmentId: deptId > 0 ? deptId : undefined,
       } satisfies RoleMasterData;
     })
     .filter((r) => r.roleMasterId > 0);
