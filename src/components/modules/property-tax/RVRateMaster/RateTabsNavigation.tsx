@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Tabs } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
-import { Calculator } from "lucide-react";
+import { Calculator, LandPlot } from "lucide-react";
 
 export function RateTabsNavigation() {
   const pathname = usePathname();
@@ -22,22 +22,14 @@ export function RateTabsNavigation() {
       headerTitle: t("header.rateableTitle"),
       headerSubtitle: t("header.rateableDescription"),
     },
-    // {
-    //   value: "moujamaster",
-    //   label: t("header.moujaTab"),
-    //   icon: MapPin,
-    //   headerTitle: t("header.moujaTitle"),
-    //   headerSubtitle: t("header.moujaDescription"),
-    // },
-    // The Capital Value tab is intentionally hidden for now.
-    // Uncomment and enable this tab when the /cvratemaster route and feature are implemented in a future PR.
-    // {
-    //   value: "cvratemaster",
-    //   label: t("header.capitalTab"),
-    //   icon: Landmark,
-    //   headerTitle: t("header.capitalTitle"),
-    //   headerSubtitle: t("header.capitalDescription"),
-    // },
+    {
+      value: "openplot",
+      label: t("header.openplotTab"),
+      icon: LandPlot,
+      headerTitle: t("header.openplotTitle"),
+      headerSubtitle: t("header.openplotDescription"),
+    }
+
   ];
 
   const activeValue = tabConfig.find(tab => pathname.includes(`/${tab.value}`))?.value || "rvratemaster";
@@ -56,7 +48,7 @@ export function RateTabsNavigation() {
             variant="pills"
             onChange={(v: string | number) => {
               const tab = tabConfig.find(item => item.value === v);
-              if (tab) router.push(`/${locale}/property-tax/${tab.value}`);
+              if (tab) router.push(`/${locale}/property-tax/rate-master/${tab.value}`);
             }}
           />
         }

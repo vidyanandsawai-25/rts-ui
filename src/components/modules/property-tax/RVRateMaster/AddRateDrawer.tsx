@@ -21,6 +21,7 @@ export default function AddRateDrawer({
   initialExistingRatesCheck,
   rateFrequencyPolicy,
   rateUnitPolicy,
+  isOpenPlot = false,
 }: AddRateDrawerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,17 +35,18 @@ export default function AddRateDrawer({
   const assessmentYearParam = searchParams.get('assessmentYear');
   const filterValues = useMemo(() => ({
     zone: zoneParam || undefined,
-    useGroup: useGroupParam || undefined,
+    useGroup: isOpenPlot ? "ALL" : (useGroupParam || undefined),
     year: yearParam || assessmentYearParam || undefined,
-  }), [zoneParam, useGroupParam, yearParam, assessmentYearParam]);
+  }), [zoneParam, useGroupParam, yearParam, assessmentYearParam, isOpenPlot]);
 
   const handleClose = () => {
-    router.replace(`/${locale}/property-tax/rvratemaster`);
+    const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
+    router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
   };
-  
+
   // For lazy loading, pass empty arrays initially to trigger lazy loading behavior
   const emptyOptions = [] as ISelectOption[];
-  
+
   return (
     <Drawer
       open={true}
@@ -71,7 +73,7 @@ export default function AddRateDrawer({
         id={null}
         mode="add"
         zoneOptions={emptyOptions}
-        useGroupOptions={emptyOptions}
+        useGroupOptions={isOpenPlot ? _useGroups : emptyOptions}
         assessmentYears={emptyOptions}
         assessmentYearRanges={assessmentYearRanges ?? []}
         zoneDescriptions={zoneDescriptions}
@@ -84,6 +86,7 @@ export default function AddRateDrawer({
         initialExistingRatesCheck={initialExistingRatesCheck}
         rateFrequencyPolicy={rateFrequencyPolicy}
         rateUnitPolicy={rateUnitPolicy}
+        isOpenPlot={isOpenPlot}
       />
     </Drawer>
   );

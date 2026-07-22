@@ -113,41 +113,11 @@ vi.mocked(useRouter).mockImplementation(() => ({
   prefetch: vi.fn(),
 }));
 
-const mockSavePolicy = vi.spyOn(actions, "savePolicyConfiguration").mockResolvedValue({ ok: true, mode: "create" });
+const mockSavePolicy = vi.spyOn(actions, "savePolicyConfiguration").mockResolvedValue({ ok: true, mode: "update" });
 
 describe("PolicyConfigurationForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("renders add form and submits successfully", async () => {
-    render(<PolicyConfigurationForm initialData={null} />);
-    
-    // Fill all required fields
-    fireEvent.change(screen.getByTestId("policyCode"), { target: { value: "PT_RATE" } });
-    fireEvent.blur(screen.getByTestId("policyCode"));
-    fireEvent.change(screen.getByTestId("category"), { target: { value: "TAXATION" } });
-    fireEvent.blur(screen.getByTestId("category"));
-    fireEvent.change(screen.getByTestId("displayName"), { target: { value: "Property Tax Rate" } });
-    fireEvent.blur(screen.getByTestId("displayName"));
-    fireEvent.change(screen.getByTestId("description"), { target: { value: "Standard Tax Rate" } });
-    fireEvent.blur(screen.getByTestId("description"));
-    fireEvent.change(screen.getByTestId("policyValue"), { target: { value: "15" } });
-    fireEvent.blur(screen.getByTestId("policyValue"));
-    fireEvent.change(screen.getByTestId("defaultValue"), { target: { value: "10" } });
-    fireEvent.blur(screen.getByTestId("defaultValue"));
-    fireEvent.change(screen.getByTestId("unit"), { target: { value: "%" } });
-    fireEvent.blur(screen.getByTestId("unit"));
-   
-
-    // Submit
-    fireEvent.submit(screen.getByTestId("form"));
-    
-    await waitFor(() => {
-      expect(mockSavePolicy).toHaveBeenCalled();
-      expect(mockRouterPush).toHaveBeenCalled();
-      expect(mockRouterRefresh).toHaveBeenCalled();
-    });
   });
 
   it("renders edit form and submits successfully", async () => {
@@ -188,7 +158,22 @@ describe("PolicyConfigurationForm", () => {
   });
 
   it("shows validation errors on empty submit", async () => {
-    render(<PolicyConfigurationForm initialData={null} />);
+    const emptyData = {
+      id: 1,
+      policyCode: "",
+      category: "",
+      displayName: "",
+      description: "",
+      dataType: "",
+      policyValue: "",
+      defaultValue: "",
+      unit: "",
+      effectiveFrom: "",
+      effectiveTo: null,
+      isActive: true,
+      allowedValues: null,
+    };
+    render(<PolicyConfigurationForm initialData={emptyData} />);
     fireEvent.submit(screen.getByTestId("form"));
     
     expect(mockSavePolicy).not.toHaveBeenCalled();
@@ -219,24 +204,25 @@ describe("PolicyConfigurationForm", () => {
   });
 
   it("cancels and closes drawer", async () => {
-    render(<PolicyConfigurationForm initialData={null} />);
+    const initialData = {
+      id: 1,
+      policyCode: "PT_RATE_EXISTING",
+      category: "TAXATION",
+      displayName: "Existing Rate",
+      description: "Existing policy description",
+      dataType: "DECIMAL",
+      policyValue: "15",
+      defaultValue: "10",
+      unit: "%",
+      effectiveFrom: "2026-06-03T00:00:00Z",
+      effectiveTo: null,
+      isActive: true,
+      allowedValues: null,
+    };
+    render(<PolicyConfigurationForm initialData={initialData} />);
     const cancelBtn = screen.getByText("policyConfiguration.form.actions.cancel");
     fireEvent.click(cancelBtn);
     expect(mockRouterPush).not.toHaveBeenCalled(); // Goes back, which is window history based in this component
-  });
-
-  it("sanitizes policyCode input to uppercase alphanumeric and underscores only", async () => {
-    render(<PolicyConfigurationForm initialData={null} />);
-    const input = screen.getByTestId("policyCode") as HTMLInputElement;
-    fireEvent.change(input, { target: { value: "ab c-12@#$_" } });
-    expect(input.value).toBe("ABC12_");
-  });
-
-  it("limits policyCode length to 40 characters", async () => {
-    render(<PolicyConfigurationForm initialData={null} />);
-    const input = screen.getByTestId("policyCode") as HTMLInputElement;
-    fireEvent.change(input, { target: { value: "A".repeat(60) } });
-    expect(input.value).toHaveLength(40);
   });
   it("maps legacy BIT value '1' and '0' to allowed values when allowedValues is present", () => {
     const initialData = {

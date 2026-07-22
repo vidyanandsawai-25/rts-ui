@@ -139,8 +139,6 @@ describe('DataEntrySameAsDrawer', () => {
     setSearchPropertyNo: vi.fn(),
     wardOptions: [],
     isFetchingWards: false,
-    propertyOptions: [],
-    isFetchingProperties: false,
     sanitizeWardNo: vi.fn((v: string) => v),
     sanitizePropertyNo: vi.fn((v: string) => v),
     handleWardChange: vi.fn(),

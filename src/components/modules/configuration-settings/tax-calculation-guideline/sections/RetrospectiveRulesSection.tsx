@@ -1,77 +1,59 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { NO_DATE_RULE_OPTIONS } from '@/config/tax-calculation-guideline.config';
-import type {
-  NoDateRule,
-  TaxCalculationGuidelineSectionProps,
-} from '@/types/tax-calculation-guideline.types';
-import { TaxNumberInput, TaxSelect } from '../TaxFormField';
+import type { TaxCalculationGuidelineSectionProps } from '@/types/tax-calculation-guideline.types';
+import { DynamicGuidelineField } from '../TaxFormField';
 
 /**
  * Section 5 – Retrospective (No Date) Rules
- * ─ When No Date is Available (dropdown)
- * ─ Lookback Years (number)
- * ─ Default Retrospective Multiplier (number)
+ * Dynamically rendered based on metadata from the API.
  */
-export function RetrospectiveRulesSection({
-  formData,
-  onChange,
-}: TaxCalculationGuidelineSectionProps) {
+export function RetrospectiveRulesSection({ formData, onChangeGuideline }: TaxCalculationGuidelineSectionProps) {
   const t = useTranslations('taxCalculationGuideline');
-  const { retrospectiveRules } = formData;
+  const { dynamicGuidelines = [], generalSettings } = formData;
 
-  const isCertTaxDisabled = !formData.generalSettings.enableCertificateBasedTax;
-  const isRetroDisabled = isCertTaxDisabled || retrospectiveRules.whenNoDateIsAvailable === 'Select';
+  const retrospectiveGuidelines = dynamicGuidelines
+    .filter((g) => g.guidelineGroup === 'RETROSPECTIVE')
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+  const isCertTaxDisabled = !generalSettings.enableCertificateBasedTax;
+
+  // Conditional disable logic
+  const retroToggle = dynamicGuidelines.find((g) => g.guidelineCode === 'ENABLE_RETROSPECTIVE_TAX');
+  const isRetroOff = retroToggle ? (retroToggle.guidelineValue !== 'true' && retroToggle.guidelineValue !== '1') : true;
+
+  const noDateRule = dynamicGuidelines.find((g) => g.guidelineCode === 'NO_DATE_RULE');
+  const isNoDateSelect = noDateRule ? (!noDateRule.guidelineValue || noDateRule.guidelineValue === 'Select') : true;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col">
       <div className="border-b border-slate-100 px-4 py-2 shrink-0">
         <h2 className="text-sm font-bold text-slate-800">{t('sections.retrospectiveRules')}</h2>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 px-4 py-3 flex-1 min-h-0">
-        {/* When No Date is Available */}
-        <div className="min-w-[180px] flex-1">
-          <TaxSelect
-            label={t('fields.whenNoDateIsAvailable')}
-            options={NO_DATE_RULE_OPTIONS.map((opt) => ({
-              ...opt,
-              label: t(`options.noDateRules.${opt.value}`),
-            }))}
-            value={retrospectiveRules.whenNoDateIsAvailable}
-            disabled={isCertTaxDisabled}
-            onChange={(val) =>
-              onChange('retrospectiveRules', 'whenNoDateIsAvailable', val as NoDateRule)
-            }
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-3 pb-4">
+        {retrospectiveGuidelines.map((guideline) => {
+          const code = guideline.guidelineCode;
+          const isToggle = code === 'ENABLE_RETROSPECTIVE_TAX';
+          const isDropdown = code === 'NO_DATE_RULE';
+          
+          // Disable lookback/multiplier if retro calculation is disabled or if noDateRule is Select
+          const isFieldDisabled = isCertTaxDisabled || 
+            (!isToggle && isRetroOff) || 
+            (!isToggle && !isDropdown && isNoDateSelect);
 
-        {/* Lookback Years */}
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-slate-700">{t('fields.lookbackYears')}</span>
-          <TaxNumberInput
-            value={retrospectiveRules.lookbackYears}
-            onChange={(val) => onChange('retrospectiveRules', 'lookbackYears', val)}
-            min={0}
-            max={50}
-            step={1}
-            disabled={isRetroDisabled}
-            className="w-20"
-          />
-        </div>
-
-        {/* Default Retrospective Multiplier */}
-        <TaxNumberInput
-          label={t('fields.defaultRetrospectiveMultiplier')}
-          value={retrospectiveRules.defaultRetrospectiveMultiplier}
-          onChange={(val) => onChange('retrospectiveRules', 'defaultRetrospectiveMultiplier', val)}
-          min={0}
-          max={99}
-          step={0.01}
-          disabled={isRetroDisabled}
-          className="w-28"
-        />
+          return (
+            <div key={guideline.guidelineCode} className="flex flex-col justify-center min-h-0">
+              <DynamicGuidelineField
+                guideline={guideline}
+                value={guideline.guidelineValue}
+                onChange={(val) => onChangeGuideline?.(guideline.guidelineCode!, val)}
+                disabled={isFieldDisabled}
+                t={t}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

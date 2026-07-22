@@ -401,7 +401,15 @@
     "taxTotal": "Tax Total",
     "interest": "Interest",
     "netTotal": "Net Total",
-    "noTaxDetails": "No tax details available"
+    "noTaxDetails": "No tax details available",
+    "noMapDetails": "No map details available",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "mappingCategory": "Map Category",
+    "oldPropPartNo": "Old Prop.No-Part.No",
+    "oldWardPropPartNo": "Old ward-prop-part No",
+    "oldPlotAreaSqMtr": "Old Plot Area (Sq. Mtr)",
+    "oldConstAreaSqMtr": "Old Const. Area (Sq. Mtr)"
   },
   "taxes": {
     "generalTax": "General Tax",
@@ -447,7 +455,9 @@
     "showFloorDetails": "Show Floor Details",
     "hideFloorDetails": "Hide Floor Details",
     "showOldTax": "Show Old Tax",
-    "hideOldTax": "Hide Old Tax"
+    "hideOldTax": "Hide Old Tax",
+    "showMapDetails": "Show Map Details",
+    "hideMapDetails": "Hide Map Details"
   },
   "loading": {
     "message": "Loading Property Details",
@@ -754,6 +764,8 @@
       "applyOrder": "Order",
       "ruleCategory": "Category",
       "ruleScopeName": "Scope",
+      "floorName": "Floor",
+      "typeOfUseName": "Type of Use",
       "ruleName": "Rule Name",
       "effectType": "Effect Type",
       "effectValue": "Effect Rate",

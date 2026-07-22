@@ -179,6 +179,8 @@ export function PropertySearch({
               searchError={searchError}
               zoneOptions={zoneOptions}
               allWardOptions={allWardOptions}
+              criteria={criteria}
+              activeTab={activeTab}
             />
           </CardContent>
         </Card>

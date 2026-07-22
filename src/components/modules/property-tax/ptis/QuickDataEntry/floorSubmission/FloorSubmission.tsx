@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmission';
 import { EditSidebarProps, FloorSubmissionPayload } from '@/types/floor-details.types';
 import FloorTable from './FloorTable';
@@ -100,15 +101,19 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     useOptions,
   } = props;
 
-  const [showDataEntrySameAsDrawer, setShowDataEntrySameAsDrawer] = React.useState(false);
+  const searchParams = useSearchParams();
+  const initShowDrawer = searchParams?.get('dataEntrySameAs') === 'true';
+  const [showDataEntrySameAsDrawer, setShowDataEntrySameAsDrawer] = React.useState(initShowDrawer);
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(true);
-  }, []);
+    updateUrlParams({ dataEntrySameAs: 'true' });
+  }, [updateUrlParams]);
 
   const handleCloseDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(false);
-  }, []);
+    updateUrlParams({ dataEntrySameAs: null });
+  }, [updateUrlParams]);
 
   // Show full-screen loader during save/update/delete operations
   if (isOperationLoading) {
@@ -154,6 +159,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             subTypeData={subTypeData || []}
             setEditingFloorForm={setEditingFloorForm}
             isPlotCategory={isPlotCategory}
+            partitionNo={props.partitionNo}
           />
 
 
