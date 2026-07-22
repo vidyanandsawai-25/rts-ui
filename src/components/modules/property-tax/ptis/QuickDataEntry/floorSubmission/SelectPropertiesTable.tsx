@@ -170,9 +170,13 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         align: 'center',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
         render: (_value, row) => {
-          const wing = row.wing ? String(row.wing).trim() : '-';
+          const wing = row.wing ? String(row.wing).trim() : '';
           const flat = row.flatNo ? String(row.flatNo).trim() : '-';
-          return `${wing} / ${flat}`;
+          
+          if (wing && wing !== '-') {
+            return `${wing}-${flat}`;
+          }
+          return flat;
         }
       },
       {
