@@ -78,7 +78,6 @@ export default getRequestConfig(async ({ locale }) => {
     inventoryModelMessages,
     inventoryNameMessages,
     modulesMessages,
-    rtsMessages,
     reportMessages,
     assetPhotoTypeMessages,
     assetRoomTypeMessages,
@@ -87,6 +86,7 @@ export default getRequestConfig(async ({ locale }) => {
     penaltyRuleMasterMessages,
     owningDepartmentMessages,
     moujaSubzoneMessages,
+    rtsMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -180,20 +180,15 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-      import(`./locales/${validatedLocale}/reassessment.json`)
-        .catch(() => ({}))
-        .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/reassessment.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/addTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-<<<<<<< HEAD
-    import(`./locales/${validatedLocale}/rts.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
-=======
     import(`./locales/${validatedLocale}/inventoryCategory.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -207,17 +202,31 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
->>>>>>> main
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/designation.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetPhotoType.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetRoomType.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/designation.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/gstMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/penaltyRuleMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/owningDepartment.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/moujaSubzone.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/rts.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -235,7 +244,7 @@ export default getRequestConfig(async ({ locale }) => {
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
       ownershipType: ownershipTypeMessages?.ownershipType || ownershipTypeMessages,
-      "ownership-type": ownershipTypeMessages,
+      'ownership-type': ownershipTypeMessages,
       asset: assetMessages,
       ptis: ptisMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
@@ -283,7 +292,8 @@ export default getRequestConfig(async ({ locale }) => {
         taxCalculationGuidelineMessages?.taxCalculationGuideline || taxCalculationGuidelineMessages,
       addTaxes: addTaxesMessages?.addTaxes || addTaxesMessages,
       inventoryCategory: inventoryCategoryMessages?.inventoryCategory || inventoryCategoryMessages,
-      inventoryCondition: inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
+      inventoryCondition:
+        inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
       inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
       inventoryName: inventoryNameMessages?.inventoryName || inventoryNameMessages,
       modules: modulesMessages,

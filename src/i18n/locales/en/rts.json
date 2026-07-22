@@ -282,12 +282,6 @@
       "title": "Department-wise average TAT — all stages",
       "description": "Stacked representation of stage-duration split",
       "stageTooltip": "{stage}: {value} days",
-      "stages": {
-        "pending": "Pending",
-        "inProgress": "In Progress",
-        "needsInfo": "Needs Info",
-        "verification": "Verification"
-      },
       "departments": {
         "propertyTax": "Property Tax",
         "tradeLicense": "Trade License",
