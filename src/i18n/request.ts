@@ -87,6 +87,7 @@ export default getRequestConfig(async ({ locale }) => {
     owningDepartmentMessages,
     municipalAssetMessages,
     moujaSubzoneMessages,
+    mapDashboardMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -213,6 +214,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/municipalAsset.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/mapDashboard.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -291,6 +293,7 @@ export default getRequestConfig(async ({ locale }) => {
       owningDepartment: owningDepartmentMessages,
       municipalAsset: municipalAssetMessages,
       moujaSubzone: moujaSubzoneMessages,
+      mapDashboard: mapDashboardMessages,
     },
   };
 });

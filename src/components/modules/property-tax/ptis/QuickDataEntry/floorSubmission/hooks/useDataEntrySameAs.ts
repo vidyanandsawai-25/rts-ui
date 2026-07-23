@@ -330,7 +330,7 @@ export function useDataEntrySameAs({ isOpen, wardId, propertyNo, partitionNo, in
               totalCarpetAreaSqFeet: basicDetails.totalCarpetAreaSqFeet,
               totalBuiltupAreaSqMeter: basicDetails.totalBuiltupAreaSqMeter,
               totalCarpetAreaSqMeter: basicDetails.totalCarpetAreaSqMeter,
-              plotArea: basicDetails.plotArea,
+              plotArea: basicDetails.plotArea ?? null,
               plotAreaFtLength: basicDetails.plotAreaFtLength,
               plotAreaFtWidth: basicDetails.plotAreaFtWidth,
               plotAreaMtrLength: basicDetails.plotAreaMtrLength,

@@ -15,7 +15,6 @@ import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
 import { getDualMethod } from './DualMethod.action';
-import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
 import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
 
 export async function fetchPropertyDetailsConcurrently(
@@ -34,8 +33,7 @@ export async function fetchPropertyDetailsConcurrently(
   sortBy: string,
   sortOrder: string,
   valuationTab: 'rateable' | 'capital' | 'dual' | 'apartment' | 'reassessment' | undefined,
-  showDetailsParam: boolean,
-  initialMediaPanelVisible: boolean
+  showDetailsParam: boolean
 ) {
   const rateableValuePromise = getRateableValue(propertyId);
   
@@ -92,12 +90,12 @@ export async function fetchPropertyDetailsConcurrently(
     fetchOldFloorDetailsAction(propertyId),
     fetchOldTaxesDetailsAction(propertyId),
     fetchDiscountDetailsOnlyAction(propertyId),
-    initialMediaPanelVisible ? photoPlanService.getPhotoTypesWithStatus(propertyId) : Promise.resolve(null),
-    initialMediaPanelVisible ? photoPlanService.getPhotosByProperty(propertyId) : Promise.resolve(null),
+    Promise.resolve(null),
+    Promise.resolve(null),
     dualMethodPromise,
     taxDetailsPromise,
     ruleLogsPromise,
-    import('@/lib/api/wayback.service').then(m => m.fetchWaybackReleases()).catch(() => null),
+    Promise.resolve(null),
     import('./ptis-detail-actions').then(m => propertyId ? m.fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null)).catch(() => null),
     fetchMappedPropertiesAction(propertyId),
   ]);

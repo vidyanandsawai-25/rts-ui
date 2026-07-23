@@ -65,7 +65,6 @@ export async function mapPtisFetchResults({
   activeTab,
   criticalError,
   resolvedWardId,
-  initialMediaPanelVisible,
   showFloorParam,
   showOldTaxParam,
   showMapDetailsParam,
@@ -83,7 +82,6 @@ export async function mapPtisFetchResults({
   activeTab: string;
   criticalError: string | undefined;
   resolvedWardId: number | undefined;
-  initialMediaPanelVisible: boolean;
   showFloorParam: boolean;
   showOldTaxParam: boolean;
   showMapDetailsParam: boolean;
@@ -189,7 +187,6 @@ export async function mapPtisFetchResults({
     criticalError,
     resolvedPropertyId,
     resolvedWardId,
-    initialMediaPanelVisible,
     propertyDetailsResult,
     rawPropertyData,
     propertyOptions,

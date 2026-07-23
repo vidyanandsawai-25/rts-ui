@@ -2,7 +2,6 @@
 
 import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
 import { deleteDocument } from '@/lib/api/document.service';
-import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { ActionResult } from '@/types/common.types';
 import type { 
@@ -58,6 +57,26 @@ export async function getPhotosByCategoryAction(
   }
 }
 
+export async function getPhotosByPropertyAction(
+  propertyId: number,
+  locale?: string
+): Promise<ActionResult<PropertyPhotoDto[]>> {
+  const t = await getTranslations({ locale: locale || 'en', namespace: 'ptis' });
+  try {
+    const validated = idSchema.parse(propertyId);
+    const result = await photoPlanService.getPhotosByProperty(validated);
+    if (result.success && result.data) {
+      return { success: true, data: result.data };
+    }
+    return { success: false, error: result.error || t('media.failedToRetrieve') || 'Failed to retrieve photos' };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : (t('media.failedToRetrieve') || 'Failed to retrieve photos'),
+    };
+  }
+}
+
 export async function uploadPropertyPhotoAction(
   formData: FormData,
   locale?: string
@@ -93,7 +112,6 @@ export async function uploadPropertyPhotoAction(
     );
 
     if (result.success && result.data) {
-      revalidatePath('/[locale]/property-tax/ptis', 'page');
       return { success: true, data: result.data, message: t('media.photoUploadedSuccess') || 'Photo uploaded successfully' };
     }
     return { success: false, error: result.error || t('media.failedToUpload') || 'Upload failed' };
@@ -137,7 +155,6 @@ export async function replacePropertyPhotoAction(
     );
 
     if (result.success && result.data) {
-      revalidatePath('/[locale]/property-tax/ptis', 'page');
       return { success: true, data: result.data, message: t('media.photoReplacedSuccess') || 'Photo replaced successfully' };
     }
     return { success: false, error: result.error || t('media.failedToReplace') || 'Replace failed' };
@@ -162,7 +179,6 @@ export async function deletePropertyPhotoAction(
     const result = await deleteDocument(documentGuid);
 
     if (result.success) {
-      revalidatePath('/[locale]/property-tax/ptis', 'page');
       return { success: true, data: {}, message: t('media.photoDeletedSuccess') || 'Photo deleted successfully' };
     }
     return { success: false, error: result.error || t('media.failedToDelete') || 'Delete failed' };
@@ -184,7 +200,6 @@ export async function updatePropertyPhotoTypeAction(
   try {
     const result = await photoPlanService.updatePropertyPhotoType(id, photoTypeCode, photoTypeName);
     if (result.success) {
-      revalidatePath('/[locale]/property-tax/ptis', 'page');
       return { success: true, data: {}, message: t('media.renameSuccess') || 'Photo plan name updated successfully' };
     }
     return { success: false, error: result.error || t('media.failedToRename') || 'Failed to rename photo plan' };

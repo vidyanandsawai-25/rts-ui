@@ -8,12 +8,14 @@ import { Drawer } from '@/components/common';
 import { PhotoPlanDrawerBody } from './PhotoPlanDrawerBody';
 import type { PhotoCategory } from './PhotoPlanSidebar';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
+import type { PropertyPhotoDto } from '@/types/photoplan.types';
 
 interface PhotoPlanDrawerProps {
   open: boolean;
   onClose: () => void;
   categories: PhotoCategory[];
   onCategoriesChange: (categories: PhotoCategory[]) => void;
+  onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   wardNo?: string;
   propertyNo?: string;
   partitionNo?: string;
@@ -32,6 +34,7 @@ export function PhotoPlanDrawer({
   onClose,
   categories,
   onCategoriesChange,
+  onPhotosChange,
   wardNo = '',
   propertyNo = '',
   partitionNo = '',
@@ -74,7 +77,7 @@ export function PhotoPlanDrawer({
         <span className="text-sm font-semibold text-blue-900 leading-tight">
           {t('media.additionalImages') || 'Additional Images'}
         </span>
-        <span className="text-[10px] text-blue-500 font-medium">{subtitleText}</span>
+        <span className="text-xs font-bold text-blue-500">{subtitleText}</span>
       </div>
     </div>
   );
@@ -84,6 +87,7 @@ export function PhotoPlanDrawer({
       <PhotoPlanDrawerBody
         categories={categories}
         onCategoriesChange={onCategoriesChange}
+        onPhotosChange={onPhotosChange}
         initialCategoryIndex={initialCategoryIndex}
         propertyId={propertyId}
         fullyLoadedIds={fullyLoadedIds}

@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 
 export interface UsePropertyPhotosQueryResult {
@@ -73,17 +74,15 @@ export function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
   });
 }
 
-/**
- * Hook to manage property photos and photo slots.
- * Fully SSR-based with client-side cache persistence to avoid redundant API calls.
- */
+import { getPhotoSlotsAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
+
 export function usePropertyPhotosQuery(
   propertyId?: number,
   isPanelOpen?: boolean,
+  _isDrawerOpen?: boolean,
   initialPhotoSlots: PropertyPhotoTypeWithStatusDto[] = [],
   initialPhotos: PropertyPhotoDto[] = []
 ): UsePropertyPhotosQueryResult {
-  // Initialize states using cache if available, otherwise fallback to server props
   const [photoSlots, setPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(() => {
     if (propertyId && propertyMediaCache.has(propertyId)) {
       return propertyMediaCache.get(propertyId)!.photoSlots;
@@ -98,61 +97,105 @@ export function usePropertyPhotosQuery(
     return initialPhotos;
   });
 
-  // Track previous inputs for sync in useEffect to avoid render-phase state updates
-  const lastInputsRef = useRef({ propertyId, initialPhotoSlots, initialPhotos, isPanelOpen });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
-    const last = lastInputsRef.current;
-    const isPropChange =
-      propertyId !== last.propertyId ||
-      isPanelOpen !== last.isPanelOpen ||
-      !areSlotsEqual(initialPhotoSlots, last.initialPhotoSlots) ||
-      !arePhotosEqual(initialPhotos, last.initialPhotos);
+    if (!propertyId) {
+      setPhotoSlots([]);
+      setPhotos([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
-    if (isPropChange) {
-      let nextPhotoSlots = initialPhotoSlots;
-      let nextPhotos = initialPhotos;
+    if (propertyMediaCache.has(propertyId)) {
+      const cached = propertyMediaCache.get(propertyId)!;
+      setPhotoSlots(cached.photoSlots);
+      setPhotos(cached.photos);
+    } else {
+      setPhotoSlots(initialPhotoSlots);
+      setPhotos(initialPhotos);
+    }
+  }, [propertyId, initialPhotoSlots, initialPhotos]);
 
-      if (propertyId && !isPanelOpen) {
-        // When panel is closed, props are empty. Retrieve from cache if available.
-        if (propertyMediaCache.has(propertyId)) {
-          const cached = propertyMediaCache.get(propertyId)!;
-          nextPhotoSlots = cached.photoSlots;
-          nextPhotos = cached.photos;
-        }
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!propertyId || !isPanelOpen) return;
+
+    const cacheValid = isCacheValid(propertyId);
+    let isSubscribed = true;
+    
+    if (!cacheValid) {
+      setLoading(true);
+      getPhotoSlotsAction(propertyId)
+        .then((res) => {
+          if (!isSubscribed) return;
+          if (res.success && res.data) {
+            setPhotoSlots(res.data);
+            propertyMediaCache.set(propertyId, {
+              photoSlots: res.data,
+              photos: propertyMediaCache.get(propertyId)?.photos || [],
+              timestamp: Date.now(),
+            });
+            evictOldestCacheEntry();
+          } else {
+            setError(res.error || 'Failed to load photo categories');
+          }
+        })
+        .catch(() => {
+          if (isSubscribed) setError('Failed to load photo categories');
+        })
+        .finally(() => {
+          if (isSubscribed) setLoading(false);
+        });
+    }
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [propertyId, isPanelOpen]);
+
+  const refetch = useCallback(async () => {
+    if (!propertyId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const slotsRes = await getPhotoSlotsAction(propertyId);
+
+      if (slotsRes.success && slotsRes.data) {
+        setPhotoSlots(slotsRes.data);
+      } else {
+        setError(slotsRes.error || 'Failed to load photo categories');
       }
 
-      setPhotoSlots(nextPhotoSlots);
-      setPhotos(nextPhotos);
-
-      lastInputsRef.current = { propertyId, initialPhotoSlots, initialPhotos, isPanelOpen };
-    }
-  }, [propertyId, initialPhotoSlots, initialPhotos, isPanelOpen]);
-
-  // Side-effect: Update the client-side cache when the panel is open and fresh props are loaded
-  useEffect(() => {
-    if (propertyId && isPanelOpen) {
       propertyMediaCache.set(propertyId, {
-        photoSlots: initialPhotoSlots,
-        photos: initialPhotos,
+        photoSlots: slotsRes.success ? (slotsRes.data ?? photoSlots) : photoSlots,
+        photos,
         timestamp: Date.now(),
       });
       evictOldestCacheEntry();
+    } catch {
+      setError('Failed to load photo categories');
+    } finally {
+      setLoading(false);
     }
-  }, [propertyId, isPanelOpen, initialPhotoSlots, initialPhotos]);
-
-  const noopRefetch = useCallback(async () => {
-    // No-op as we rely on server/cookie sync and local cache
-  }, []);
-
-  const isLoading = !!(isPanelOpen && propertyId && !isCacheValid(propertyId) && photoSlots.length === 0);
+  }, [propertyId, photoSlots, photos]);
 
   return {
-    loading: isLoading,
+    loading,
     photoSlots,
     photos,
-    error: null,
-    refetch: noopRefetch,
+    error,
+    refetch,
     setPhotoSlots,
     setPhotos,
   };

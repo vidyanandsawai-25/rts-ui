@@ -58,7 +58,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const workflowStages = workflowStagesResult?.success ? workflowStagesResult.data || [] : [];
   if (pageData.shouldRedirect && pageData.redirectUrl) redirect(pageData.redirectUrl);
   const {
-    criticalError, resolvedPropertyId, resolvedWardId, initialMediaPanelVisible,
+    criticalError, resolvedPropertyId, resolvedWardId,
     propertyDetailsResult, rawPropertyData, propertyOptions, wardOptions,
     kycDetails, societyDetails, buildingPermission, oldDetails, oldFloorTableData,
     oldTaxesData, discountDetails, apartmentData, rateableResult, capitalResult,
@@ -125,7 +125,6 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           propertyId={resolvedPropertyId}
           initialPhotoSlots={initialPhotoSlots}
           initialPhotos={initialPhotos}
-          initialMediaPanelVisible={initialMediaPanelVisible}
           initialLatitude={latitude}
           initialLongitude={longitude}
           initialWaybackReleases={waybackReleases}

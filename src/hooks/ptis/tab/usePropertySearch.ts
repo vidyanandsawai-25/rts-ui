@@ -79,6 +79,11 @@ export function usePropertySearch() {
           subTab: null,
           pageNumber: null,
           searchTerm: null,
+          drawer: null,
+          photoCategoryIndex: null,
+          selectedImageIndex: null,
+          viewMode: null,
+          action: null,
         };
 
         const result = updateUrl(params);
