@@ -17,6 +17,8 @@ export interface PropertyDetailsData {
   wingNo?: string;
   moujaNo?: string;
   moujaDescription?: string;
+  oldCarpetArea?: string;
+  oldBuiltupArea?: string;
 }
 
 export interface KYCDetailsData {

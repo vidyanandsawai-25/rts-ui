@@ -46,6 +46,8 @@ export interface PropertyDetailsData {
   latitude?: string | null;
   longitude?: string | null;
   constructionYear?: string | null;
+  oldCarpetArea?: string;
+  oldBuiltupArea?: string;
 }
 
 export interface KYCDetailsData {
@@ -329,6 +331,10 @@ export interface PropertyBasicDetailsApiResponse {
   latitude?: string | null;
   longitude?: string | null;
   constructionYear?: string | null;
+  oldCarpetAreaSqFeet?: number | null;
+  oldCarpetAreaSqMeter?: number | null;
+  oldBuiltupAreaSqFeet?: number | null;
+  oldBuiltupAreaSqMeter?: number | null;
 }
 
 export interface SocietyDetailsApiResponse {
