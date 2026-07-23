@@ -36,28 +36,21 @@ export function ReportListPanel({
       ) : (
         <div className="flex flex-wrap gap-3 p-4">
           {activeReports.map((report) => (
-            <Card
+            <button
               key={report.id}
-              role="button"
-              tabIndex={0}
-              padding="sm"
+              type="button"
               onClick={() => onSelectReport(report)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectReport(report);
-                }
-              }}
               className="
-                group w-[calc(20%-9.6px)] text-left cursor-pointer
+                group w-[calc(20%-9.6px)] text-left rounded-lg border px-3 py-3
+                border-gray-200 bg-white
                 hover:border-red-200 hover:bg-red-50/30 hover:shadow-sm hover:-translate-y-0.5
-                transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-200
+                transition-all duration-150 focus:outline-none
               "
             >
               <p className="text-xs font-semibold leading-snug text-gray-800 group-hover:text-[#800000] transition-colors">
                 {report.reportName}
               </p>
-            </Card>
+            </button>
           ))}
         </div>
       )}
