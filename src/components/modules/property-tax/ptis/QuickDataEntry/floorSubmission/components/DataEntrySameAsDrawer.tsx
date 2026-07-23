@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MapPin, Hash, Layers } from 'lucide-react';
+import { MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { Drawer, Tabs } from '@/components/common';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
@@ -100,6 +100,10 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                   <Layers className="h-3 w-3 text-white/80" />
                   <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
+                </div>
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                  <Tag className="h-3 w-3 text-white/80" />
+                  <span>{t('floor.selectProperties.type')}: {hook.currentPropertyType || '—'}</span>
                 </div>
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
