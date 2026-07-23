@@ -118,24 +118,25 @@ export default function ServiceGrid({
 
       try {
         new URL(externalUrl);
-        const activeUpicId = upicId?.trim();
+        const activeUpicId =
+          upicId?.trim() ||
+          (typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("upicNo")?.trim()
+            : undefined);
         let destination = externalUrl;
 
-        if (externalUrl.includes("upicNo=")) {
-          if (!activeUpicId) {
-            setApplyError(t("missingUpic"));
-            return;
+        if (activeUpicId) {
+          if (externalUrl.includes("upicNo=")) {
+            destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
+          } else if (/([?&][^?&=]+)=$/.test(externalUrl)) {
+            destination = externalUrl.replace(
+              /([?&][^?&=]+)=$/,
+              `$1=${encodeURIComponent(activeUpicId)}`
+            );
+          } else {
+            const sep = externalUrl.includes("?") ? "&" : "?";
+            destination = `${externalUrl}${sep}upicNo=${encodeURIComponent(activeUpicId)}`;
           }
-          destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
-        } else if (/([?&][^?&=]+)=$/.test(externalUrl)) {
-          if (!activeUpicId) {
-            setApplyError(t("missingUpic"));
-            return;
-          }
-          destination = externalUrl.replace(
-            /([?&][^?&=]+)=$/,
-            `$1=${encodeURIComponent(activeUpicId)}`
-          );
         }
 
         saveDeptServiceContext(service);

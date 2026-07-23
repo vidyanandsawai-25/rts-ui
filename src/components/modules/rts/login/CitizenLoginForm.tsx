@@ -192,9 +192,14 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
       if (res.success) {
         setInfo(t('messages.loginSuccess'));
         let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
-        if (targetUrl.includes('upicNo=')) {
-          const cleanUpic = (upicId || '').trim().toUpperCase();
-          targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+        const cleanUpic = (upicId || '').trim().toUpperCase();
+        if (cleanUpic) {
+          if (targetUrl.includes('upicNo=')) {
+            targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+          } else {
+            const sep = targetUrl.includes('?') ? '&' : '?';
+            targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+          }
         }
         router.push(targetUrl);
         router.refresh();
