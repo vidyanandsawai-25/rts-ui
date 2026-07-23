@@ -37,6 +37,9 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         checkFormChanges
     } = props;
 
+    const selectedCategoryLabel = categoryOptions.find(opt => opt.value === categoryId?.toString())?.label?.toLowerCase();
+    const isIndividual = selectedCategoryLabel === 'individual';
+
     return (
         <div className="grid grid-cols-12 gap-x-4 gap-y-3">
             <BasicPropertyFields
@@ -51,6 +54,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
                 propertyData={propertyData}
                 taxZones={taxZones}
                 checkFormChanges={checkFormChanges}
+                isIndividual={isIndividual}
                 propertyDescriptionOptions={propertyDescriptionOptions}
                 propertyTypeId={propertyTypeId}
                 handlePropertyDescriptionChange={handlePropertyDescriptionChange}
@@ -58,6 +62,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
             <PlotDetailsFields
                 t={t}
                 propertyData={propertyData}
+                isIndividual={isIndividual}
                 moujaOptions={moujaOptions}
                 moujaId={moujaId}
                 handleMoujaChange={handleMoujaChange}

@@ -6,15 +6,29 @@ import { PhotoPlanSidebar, type PhotoCategory } from './PhotoPlanSidebar';
 import { PhotoPlanGrid } from './PhotoPlanGrid';
 import { PhotoPlanViewer } from './PhotoPlanViewer';
 import { PhotoPlanModals } from './PhotoPlanModals';
-import { ChangeDetectionCompare } from './ChangeDetectionCompare';
+import dynamic from 'next/dynamic';
+
+const ChangeDetectionCompare = dynamic(
+  () => import('./ChangeDetectionCompare').then((mod) => mod.ChangeDetectionCompare),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 flex items-center justify-center bg-slate-900">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
+      </div>
+    ),
+  }
+);
 import { usePhotoPlanDrawerState } from '@/hooks/ptis/photoplan/usePhotoPlanDrawerState';
 import { patchCategory } from '@/lib/utils/ptis-photo-plan-localization';
 
 import type { WaybackRelease } from '@/lib/api/wayback.service';
+import type { PropertyPhotoDto } from '@/types/photoplan.types';
 
 interface PhotoPlanDrawerBodyProps {
   categories: PhotoCategory[];
   onCategoriesChange: (categories: PhotoCategory[]) => void;
+  onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   initialCategoryIndex?: number;
   propertyId?: number;
   fullyLoadedIds: Set<number>;
@@ -31,6 +45,7 @@ interface PhotoPlanDrawerBodyProps {
 export function PhotoPlanDrawerBody({
   categories,
   onCategoriesChange,
+  onPhotosChange,
   initialCategoryIndex = 0,
   propertyId,
   fullyLoadedIds,
@@ -55,6 +70,7 @@ export function PhotoPlanDrawerBody({
   } = usePhotoPlanDrawerState({
     categories,
     onCategoriesChange,
+    onPhotosChange,
     propertyId,
     initialCategoryIndex,
     fullyLoadedIds,
@@ -159,7 +175,7 @@ export function PhotoPlanDrawerBody({
                   }
                 }}
                 onAddPhoto={handleAddPhoto} onDeletePhoto={handleDeletePhoto}
-                onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos}
+                onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos && activeCategory?.hasPhoto}
                 error={fetchError} onRetry={loadPhotos}
                 photoCount={activeCategory?.photoCount}
                 hideHeader isCarouselMode={true} className="p-2 px-3"
@@ -184,7 +200,7 @@ export function PhotoPlanDrawerBody({
               }
             }}
             onAddPhoto={handleAddPhoto} onDeletePhoto={handleDeletePhoto}
-            onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos}
+            onReplacePhoto={handleReplacePhoto} isLoading={isLoadingPhotos && activeCategory?.hasPhoto}
             error={fetchError} onRetry={loadPhotos}
             photoCount={activeCategory?.photoCount}
             onDrawPlan={onDrawPlan}

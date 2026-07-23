@@ -11,7 +11,7 @@ import { COLUMN_WIDTHS } from "./RoomTableConfig";
 import { cn } from "@/lib/utils/cn";
 
 
-export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
+export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: boolean }> = (props) => {
     const {
         rooms,
         grandTotal,
@@ -23,6 +23,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
         editingIndex,
         selectedRoomForPlan,
         onOpenOffset,
+        isUtilityCategory,
     } = props;
 
     const t = useTranslations("quickDataEntry");
@@ -30,14 +31,14 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
     const columns = useMemo(() => [
         {
             key: "roomNo",
-            label: t("roomSubmission.table.roomNo"),
+            label: isUtilityCategory ? "NO" : t("roomSubmission.table.roomNo"),
             width: COLUMN_WIDTHS.roomNo,
             align: "center",
             cellClassName: "font-medium text-gray-700",
         },
         {
             key: "utilities",
-            label: t("roomSubmission.table.roomType"),
+            label: isUtilityCategory ? "TYPE" : t("roomSubmission.table.roomType"),
             width: COLUMN_WIDTHS.roomType,
             align: "center",
             render: (_val: unknown, row: RoomData) => (
@@ -66,7 +67,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
         },
         {
             key: "roomCount",
-            label: t("roomSubmission.table.roomCount"),
+            label: isUtilityCategory ? "COUNT" : t("roomSubmission.table.roomCount"),
             width: COLUMN_WIDTHS.roomCount,
             align: "center",
             cellClassName: "text-gray-700",
@@ -133,7 +134,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
             align: "center",
             render: (val: unknown) => <div className="text-center"><span className="font-bold text-indigo-700">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
         }
-    ], [areaUnit, t, onOpenOffset]);
+    ], [areaUnit, t, onOpenOffset, isUtilityCategory]);
 
     const finalColumns = columns;
 

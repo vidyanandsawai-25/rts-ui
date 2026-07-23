@@ -47,7 +47,7 @@ export function useTimelapseState({
   const [loading, setLoading] = useState(!initialWaybackReleases || initialWaybackReleases.length === 0);
   const [showLabels, setShowLabels] = useState(true);
   const [failedReleases, setFailedReleases] = useState<Set<number>>(() => new Set());
-  const [speed, setSpeed] = useState(6000);
+  const [speed, setSpeed] = useState(2000);
 
   const releasesCountRef = useRef(waybackReleases.length);
   useEffect(() => {

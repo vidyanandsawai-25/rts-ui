@@ -5,7 +5,7 @@ import { AssessmentYearRangeConfig } from "@/types/asset-masters/assessment-year
  */
 export const capitalValueConfig: AssessmentYearRangeConfig = {
   type: "CV",
-  endpoint: "asset-management/assessment-year-range-cv",
+  endpoint: "AssessmentYearRange",
   idField: "id",
   routePath: "/assets/configuration/master-data/assessment-year-range/capitalvalue",
   translationNamespace: "assessmentYearRange.capitalValue",

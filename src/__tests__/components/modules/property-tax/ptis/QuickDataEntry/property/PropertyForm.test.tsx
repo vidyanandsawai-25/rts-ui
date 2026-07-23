@@ -24,6 +24,7 @@ vi.mock('next-intl', () => ({
       'property.flatShopNo': 'Flat/Shop No',
       'property.plotNo': 'Plot No',
       'property.plotArea': 'Plot Area',
+      'property.plotAreaWithUnit': 'Plot Area (sq.ft / sq.m)',
       'property.propertyDescription': 'Property Description',
       'property.taxZoneNo': 'Tax Zone No',
       'property.surveyNo': 'Survey No',
@@ -108,6 +109,8 @@ const mockPropertyData = {
   totalCarpetAreaSqFeet: 1000,
   totalBuiltupAreaSqFeet: 1500,
   plotArea: 2000,
+  plotAreaSqFeet: 2000,
+  plotAreaSqMeter: 185.8,
   plotAreaFtLength: 50,
   plotAreaFtWidth: 40,
   plotAreaMtrLength: 15,
@@ -134,7 +137,7 @@ describe('PropertyFormView', () => {
     expect(screen.getByLabelText(/Division/i)).toHaveValue('D1');
     expect(screen.getByDisplayValue('101')).toBeInTheDocument(); // Flat/Shop No
     expect(screen.getByDisplayValue('15')).toBeInTheDocument(); // Plot No
-    expect(screen.getByDisplayValue('2000')).toBeInTheDocument(); // Plot Area
+    expect(screen.getByDisplayValue('2000.00 / 185.80')).toBeInTheDocument(); // Plot Area
     expect(screen.getByDisplayValue('Z03')).toBeInTheDocument(); // Tax Zone No
     expect(screen.getByDisplayValue('45/2')).toBeInTheDocument(); // Survey No
     expect(screen.getByDisplayValue('SZ1')).toBeInTheDocument(); // Sub Zone No
@@ -271,6 +274,9 @@ describe('PropertyFormView', () => {
 
     const buildUpAreaInputs = screen.getAllByLabelText(/Buildup Area/i);
     expect(buildUpAreaInputs[0]).toHaveAttribute('readOnly');
+
+    const plotAreaInputs = screen.getAllByLabelText(/Plot Area/i);
+    expect(plotAreaInputs[0]).toHaveAttribute('readOnly');
   });
 
   it('disables category input when property category is Apartment', () => {
@@ -347,7 +353,7 @@ describe('PropertyFormView', () => {
   });
 
   describe('Edge Cases', () => {
-    it('shows error for negative numbers in numeric fields', async () => {
+    it('renders plot area as read-only field', () => {
       render(
         <PropertyFormView
           MoujaMaster={mockMoujaMaster}
@@ -360,14 +366,7 @@ describe('PropertyFormView', () => {
       );
 
       const plotAreaInput = screen.getByLabelText(/Plot Area/i);
-      fireEvent.change(plotAreaInput, { target: { value: '-100' } });
-
-      const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
-      fireEvent.click(submitBtn);
-
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalled();
-      });
+      expect(plotAreaInput).toHaveAttribute('readOnly');
     });
 
     it('handles special characters in text fields correctly', async () => {
@@ -401,7 +400,7 @@ describe('PropertyFormView', () => {
       });
     });
 
-    it('handles extremely large numeric values', async () => {
+    it('preserves plotArea in payload when submitting other field changes', async () => {
       (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
       render(
         <PropertyFormView
@@ -414,9 +413,8 @@ describe('PropertyFormView', () => {
         />
       );
 
-      const plotAreaInput = screen.getByLabelText(/Plot Area/i);
-      const largeValue = '999999999';
-      fireEvent.change(plotAreaInput, { target: { value: largeValue } });
+      const flatInput = screen.getByLabelText(/Flat\/Shop No/i);
+      fireEvent.change(flatInput, { target: { value: '202' } });
 
       const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
       fireEvent.click(submitBtn);
@@ -426,7 +424,8 @@ describe('PropertyFormView', () => {
           'en',
           mockPropertyData.propertyId,
           expect.objectContaining({
-            plotArea: Number(largeValue),
+            plotArea: 2000,
+            flatOrShopNo: '202',
           })
         );
       });

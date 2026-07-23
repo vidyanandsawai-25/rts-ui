@@ -98,6 +98,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
         const tile = originalCreateTile.call(this, coords, done) as HTMLImageElement;
         tile.setAttribute('fetchpriority', 'high');
         tile.setAttribute('loading', 'eager');
+        tile.setAttribute('decoding', 'async');
         return tile;
       };
       if (initial.showLabels) cachedLabelsLayer.addTo(map);
