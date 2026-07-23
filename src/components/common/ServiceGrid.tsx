@@ -119,22 +119,24 @@ export default function ServiceGrid({
       try {
         new URL(externalUrl);
         const activeUpicId = upicId?.trim();
-        if (!activeUpicId) {
-          setApplyError(t("missingUpic"));
-          return;
-        }
+        let destination = externalUrl;
 
-        // The service master provides the final empty parameter slot for the active UPIC.
-        const upicPlaceholderPattern = /([?&][^?&=]+)=$/;
-        if (!upicPlaceholderPattern.test(externalUrl)) {
-          setApplyError(t("missingUpicPlaceholder"));
-          return;
+        if (externalUrl.includes("upicNo=")) {
+          if (!activeUpicId) {
+            setApplyError(t("missingUpic"));
+            return;
+          }
+          destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
+        } else if (/([?&][^?&=]+)=$/.test(externalUrl)) {
+          if (!activeUpicId) {
+            setApplyError(t("missingUpic"));
+            return;
+          }
+          destination = externalUrl.replace(
+            /([?&][^?&=]+)=$/,
+            `$1=${encodeURIComponent(activeUpicId)}`
+          );
         }
-
-        const destination = externalUrl.replace(
-          upicPlaceholderPattern,
-          `$1=${encodeURIComponent(activeUpicId)}`
-        );
 
         saveDeptServiceContext(service);
         setIsDetailsOpen(false);
