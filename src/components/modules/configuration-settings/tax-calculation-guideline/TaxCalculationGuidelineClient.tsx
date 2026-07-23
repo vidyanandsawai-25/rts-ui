@@ -220,9 +220,9 @@ export default function TaxCalculationGuidelineClient({
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col gap-0 bg-[#f0f4ff]">
-      {/* ── Page Header ───────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between border-b border-slate-200 bg-white px-6 py-4">
+    <div className="flex h-full min-h-screen flex-col gap-0 bg-[#f0f4ff] relative">
+      {/* ── Page Header (Sticky) ───────────────────────────────────────────── */}
+      <div className="sticky top-20 z-20 flex shrink-0 items-start justify-between border-b border-slate-200/90 bg-white/95 backdrop-blur-sm px-6 py-4 shadow-md transition-shadow">
         <div>
           <h1 className="text-xl font-bold text-slate-900">
             {t('title')}
@@ -252,7 +252,7 @@ export default function TaxCalculationGuidelineClient({
       </div>
 
       {/* ── Scrollable body ────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+      <div className="flex-1 px-6 py-5 flex flex-col gap-5">
         {fetchError && (
           <div className="shrink-0 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
