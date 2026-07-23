@@ -276,7 +276,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full bg-slate-50 font-sans pb-4">
+    <div className="w-full bg-slate-50 font-sans pb-1">
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -419,6 +419,30 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </div>
               </div>
 
+              {/* Middle floating micro-badges in empty gap */}
+              <div className="hidden xl:flex flex-col gap-2 items-center justify-center pointer-events-none z-10 px-2">
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg text-[10px] font-black text-white whitespace-nowrap"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                  </span>
+                  <span>{t('२४x७ ऑनलाईन', '24x7 ऑनलाइन', '24x7 Active')}</span>
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.5 }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400/20 backdrop-blur-md border border-amber-300/35 shadow-lg text-[10px] font-black text-amber-200 whitespace-nowrap"
+                >
+                  <span className="text-[11px]">⚡</span>
+                  <span>{t('झटपट मंजुरी', 'त्वरित स्वीकृति', 'Instant SLA')}</span>
+                </motion.div>
+              </div>
+
               {/* Phone mockup */}
               <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }} className="relative shrink-0 ml-2 z-10 self-center">
                 <div className="relative w-[68px] h-[105px] bg-slate-900 rounded-[15px] p-[2px] shadow-2xl border border-slate-800 shrink-0">
@@ -449,7 +473,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       </section>
 
       {/* Main Content */}
-      <div className="w-full space-y-4 py-3 px-3 md:px-5">
+      <div className="w-full space-y-3 py-2 px-3 md:px-5">
 
         {/* Quick Access Links */}
         <div className="space-y-3">
