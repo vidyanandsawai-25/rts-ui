@@ -1,0 +1,34 @@
+{
+  "dashboard": {
+    "title": "मालमत्ता व्यवस्थापन",
+    "marathiTitle": "मालमत्ता व्यवस्थापन",
+    "subtitle": "महानगरपालिका मालमत्ता व्यवस्थापन प्रणाली",
+    "totalCategories": "एकूण श्रेण्या:",
+    "totalAssets": "एकूण नोंदणीकृत मालमत्ता:",
+    "addNewAsset": "नवीन मालमत्ता जोडा",
+    "loading": "श्रेण्या लोड होत आहेत..."
+  },
+  "categoryCard": {
+    "totalValue": "एकूण मूल्य",
+    "assetTypes": "मालमत्ता प्रकार",
+    "totalAssetTypes": "एकूण मालमत्ता प्रकार",
+    "totalRegisteredAssets": "एकूण नोंदणीकृत मालमत्ता",
+    "noTypesFound": "कोणतेही प्रकार आढळले नाहीत",
+    "showMore": "आणखी +{count}",
+    "showLess": "कमी दाखवा",
+    "viewAllAssets": "सर्व मालमत्ता पहा"
+  },
+  "drawer": {
+    "subtitle": "या प्रकारासाठी सर्व नोंदणीकृत मालमत्तांचे तपशीलवार दृश्य.",
+    "assetName": "मालमत्तेचे नाव",
+    "unnamedAsset": "निनावी मालमत्ता",
+    "capitalValue": "भांडवली मूल्य (CV)",
+    "totalAssets": "एकूण मालमत्ता",
+    "totalCv": "एकूण CV",
+    "loadError": "तपशील लोड करण्यात अयशस्वी"
+  },
+  "loading": {
+    "message": "लोड होत आहे...",
+    "description": "कृपया आम्ही मालमत्तेचा डेटा लोड करत असताना प्रतीक्षा करा"
+  }
+}

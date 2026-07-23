@@ -1,7 +1,7 @@
 'use client';
 
 import { Select } from '@/components/common/select';
-import { Button, Card } from '@/components/common';
+import { Button, Card, Badge } from '@/components/common';
 import { useReportForm } from '@/hooks/useReportForm';
 import { ReportParamField } from './ReportParamField';
 import type { ReportGenerationFormProps } from '@/types/report.types';
@@ -72,7 +72,9 @@ export function ReportGenerationForm({
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
-            <span>{copy.generationForm.loadingParameters}</span>
+            <Badge variant="secondary" className="bg-transparent border-none text-gray-500 hover:bg-transparent px-0">
+              {copy.generationForm.loadingParameters}
+            </Badge>
           </div>
         )}
 

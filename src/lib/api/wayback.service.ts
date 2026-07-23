@@ -66,6 +66,18 @@ export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
 const localChangesPromises = new Map<string, Promise<WaybackRelease[]>>();
 const localChangesCache = new Map<string, WaybackRelease[]>();
 
+// Prefetch @esri/wayback-core during idle time so the module is cached
+// before the user opens Change Detection, eliminating dynamic import latency.
+if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+  (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(() => {
+    import('@esri/wayback-core').catch(() => {/* ignore prefetch errors */});
+  });
+} else if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    import('@esri/wayback-core').catch(() => {/* ignore prefetch errors */});
+  }, 2000);
+}
+
 /**
  * Fetches only the sparse Wayback releases where actual imagery changes occurred for the given coordinates.
  */

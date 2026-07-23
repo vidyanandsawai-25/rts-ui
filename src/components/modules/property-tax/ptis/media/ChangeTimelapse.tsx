@@ -45,7 +45,6 @@ export function ChangeTimelapse({
     loading,
     setLoading,
     showLabels,
-    setShowLabels,
     speed,
     setSpeed,
     activeRelease,
@@ -96,10 +95,6 @@ export function ChangeTimelapse({
     });
   }, [setFailedReleases]);
 
-  const handleToggleLabels = React.useCallback(() => {
-    setShowLabels((v) => !v);
-  }, [setShowLabels]);
-
   if (!hasCoords) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center h-full bg-slate-950 text-slate-400 p-8 select-none">
@@ -131,8 +126,6 @@ export function ChangeTimelapse({
         activeRelease={activeRelease}
         speed={speed}
         onSpeedChange={setSpeed}
-        showLabels={showLabels}
-        onToggleLabels={handleToggleLabels}
         lat={lat}
         lng={lng}
         loading={loading}

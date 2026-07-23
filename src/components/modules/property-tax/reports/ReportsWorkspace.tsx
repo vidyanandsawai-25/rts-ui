@@ -2,22 +2,25 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Settings, Clock } from 'lucide-react';
+import { Settings, Clock, Info, Download, X } from 'lucide-react';
+import { Tabs, TabList, Tab, TabPanel, Button } from '@/components/common';
 import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
-import { useConfirm } from '@/components/common';
+
 import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
-import { CATEGORIES, resolveCategoryKey, type Step } from './ReportWorkspaceConfig';
+import { CATEGORIES, type Step } from './ReportWorkspaceConfig';
 import { ReportGenerateView } from './ReportGenerateView';
 import { ReportGeneratingOverlay } from './ReportGeneratingOverlay';
 import { ReportPreviewOverlay } from './ReportPreviewOverlay';
+
 
 export function ReportsWorkspace({
   jobsCopy,
   workspaceCopy,
   paramsCopy,
   reportDefinitions,
+  reportModules,
   zones,
   financialYears,
   fetchWards,
@@ -27,7 +30,7 @@ export function ReportsWorkspace({
   createReportRequest,
 }: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs(initialJobs, fetchJobs);
-  const { confirm } = useConfirm();
+
 
   const [activeView, setActiveView] = useState<'generate' | 'history'>('generate');
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -35,6 +38,7 @@ export function ReportsWorkspace({
   const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(null);
 
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [queuedRequestId, setQueuedRequestId] = useState<string | null>(null);
   const [previewReport, setPreviewReport] = useState<ReportDefinition | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(true);
@@ -101,13 +105,40 @@ export function ReportsWorkspace({
     };
   }, [activeRequestId, isGenerating, refresh, workspaceCopy]);
 
+  const dynamicCategories = useMemo(() => {
+    if (reportModules && reportModules.length > 0) {
+      return reportModules.map((m) => ({
+        id: m.id,
+        key: m.name.toLowerCase(),
+        name: m.name,
+        logoContentType: m.logoContentType,
+        logoBase64: m.logoBase64,
+        color: 'text-[#800000]',
+        bgColor: 'bg-transparent',
+        borderColor: 'border-[#800000]',
+        glowClass: 'shadow-[#800000]/20',
+        iconBg: 'bg-transparent',
+      }));
+    }
+    return CATEGORIES;
+  }, [reportModules]);
+
   const reportsByCategory = useMemo(() => {
-    const map = new Map<string, ReportDefinition[]>(CATEGORIES.map((cat) => [cat.key, []]));
+    const map = new Map<string, ReportDefinition[]>(dynamicCategories.map((cat) => [cat.key, []]));
+    const idToKey = new Map<number, string>(
+      dynamicCategories.filter((cat) => cat.id != null).map((cat) => [cat.id!, cat.key])
+    );
+
     for (const report of reportDefinitions) {
-      map.get(resolveCategoryKey(report))?.push(report);
+      const catKey =
+        (report.moduleId != null && idToKey.get(report.moduleId)) ||
+        dynamicCategories[0]?.key ||
+        'assessment';
+      map.get(catKey)?.push(report);
     }
     return map;
-  }, [reportDefinitions]);
+  }, [reportDefinitions, dynamicCategories]);
+
 
   const handleCategoryClick = (catKey: string) => {
     if (selectedCategory === catKey) {
@@ -129,75 +160,71 @@ export function ReportsWorkspace({
   const handleQueued = (requestId: string) => {
     refresh();
     if (requestId && workspaceCopy) {
-      confirm({
-        variant: 'info',
-        title: workspaceCopy.confirm.title,
-        description: workspaceCopy.confirm.description,
-        confirmText: workspaceCopy.confirm.btnGo,
-        cancelText: workspaceCopy.confirm.btnClose,
-        onConfirm: () => setActiveView('history'),
-      });
+      setQueuedRequestId(requestId);
     }
   };
 
   if (!workspaceCopy || !paramsCopy) return null;
 
-  const hasActiveJobs = jobs.some(
-    (j) => j.status === 'Pending' || j.status === 'Processing' || j.status === 'Retrying'
-  );
+
 
   return (
     <div className="flex flex-col gap-5">
       {/* View Switcher Tabs */}
-      <div className="flex justify-center mb-2">
-        <div className="flex p-1 bg-gray-100 rounded-xl border border-gray-200/80 shadow-sm w-full max-w-sm gap-1">
-          <button
-            type="button"
-            onClick={() => setActiveView('generate')}
-            className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all duration-200 w-1/2 focus:outline-none
-              ${activeView === 'generate' ? 'bg-[#004c8c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
-          >
-            <Settings className="w-3.5 h-3.5" />
+      <Tabs
+        variant="pills"
+        size="sm"
+        fullWidth
+        value={activeView}
+        onChange={(v) => setActiveView(v as 'generate' | 'history')}
+        activeTabClassName="bg-[#004c8c] text-white shadow-sm"
+        className="justify-center mb-2"
+      >
+        <TabList className="w-full max-w-sm mx-auto border border-gray-200/80 shadow-sm gap-1">
+          <Tab value="generate" icon={Settings}>
             {workspaceCopy.tabs.generateReport}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('history')}
-            className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all duration-200 w-1/2 focus:outline-none relative
-              ${activeView === 'history' ? 'bg-[#004c8c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
-          >
-            <Clock className="w-3.5 h-3.5" />
+          </Tab>
+          <Tab value="history" icon={Clock}>
             {workspaceCopy.tabs.myReports}
-            {hasActiveJobs && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
-            )}
-          </button>
-        </div>
-      </div>
+          </Tab>
+        </TabList>
 
-      {/* Active View */}
-      {activeView === 'generate' ? (
-        <ReportGenerateView
-          currentStep={currentStep}
-          selectedCategory={selectedCategory}
-          selectedReport={selectedReport}
-          reportsByCategory={reportsByCategory}
-          workspaceCopy={workspaceCopy}
-          paramsCopy={paramsCopy}
-          zones={zones ?? []}
-          financialYears={financialYears ?? []}
-          fetchWards={fetchWards ?? (() => Promise.resolve([]))}
-          fetchProperties={fetchProperties ?? (() => Promise.resolve([]))}
-          onCategoryClick={handleCategoryClick}
-          onSelectReport={handleSelectReport}
-          onQueued={handleQueued}
-          createReportRequest={createReportRequest}
-        />
-      ) : (
-        <div className="transition-all duration-300">
-          <ReportJobsList jobs={jobs} loading={isLoading} copy={jobsCopy} reportDefinitions={reportDefinitions} />
-        </div>
-      )}
+        {/* Active View */}
+        <TabPanel value="generate" className="mt-4">
+          <ReportGenerateView
+            currentStep={currentStep}
+            selectedCategory={selectedCategory}
+            selectedReport={selectedReport}
+            reportsByCategory={reportsByCategory}
+            categories={dynamicCategories}
+            workspaceCopy={workspaceCopy}
+            paramsCopy={paramsCopy}
+            zones={zones ?? []}
+            financialYears={financialYears ?? []}
+            fetchWards={fetchWards ?? (() => Promise.resolve([]))}
+            fetchProperties={fetchProperties ?? (() => Promise.resolve([]))}
+            onCategoryClick={handleCategoryClick}
+            onSelectReport={handleSelectReport}
+            onQueued={handleQueued}
+            createReportRequest={createReportRequest}
+          />
+        </TabPanel>
+        <TabPanel value="history" className="mt-6">
+          <div className="transition-all duration-300">
+            <ReportJobsList
+              jobs={jobs}
+              loading={isLoading}
+              copy={jobsCopy}
+              reportDefinitions={reportDefinitions}
+              onPreview={(requestId) => {
+                setActiveRequestId(requestId);
+                setPreviewReport(null);
+                setPdfLoading(true);
+              }}
+            />
+          </div>
+        </TabPanel>
+      </Tabs>
 
       {/* Overlays */}
       {isGenerating && (
@@ -216,6 +243,55 @@ export function ReportsWorkspace({
           onPdfLoad={() => setPdfLoading(false)}
           onClose={() => { setActiveRequestId(null); setPreviewReport(null); setActiveView('history'); }}
         />
+      )}
+
+      {queuedRequestId && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setQueuedRequestId(null)} />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative w-[420px] h-[420px] max-w-[92vw] max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-gray-200 flex flex-col"
+          >
+            <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-blue-500" />
+            <Button
+              variant="ghost"
+              onClick={() => setQueuedRequestId(null)}
+              className="absolute right-3 top-3 rounded-full !p-2 text-gray-600 hover:bg-gray-100"
+              aria-label="Close"
+              icon={X}
+            />
+            <div className="p-8 flex-1 flex flex-col items-center justify-center text-center">
+              <div className="h-16 w-16 rounded-2xl border flex items-center justify-center bg-blue-50 border-blue-200 text-blue-700">
+                <Info className="h-8 w-8" />
+              </div>
+              <h3 className="mt-5 text-2xl font-bold text-gray-900 leading-tight">{workspaceCopy.confirm.title}</h3>
+              <div className="mt-3 flex-1 overflow-y-auto w-full max-h-[140px] px-2 text-center scrollbar-thin">
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap inline-block text-left max-w-[360px]">
+                  {workspaceCopy.confirm.description}
+                </p>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 p-5 bg-gray-50/50 flex items-center justify-center gap-3">
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setQueuedRequestId(null);
+                  setActiveView('history');
+                }}
+                icon={Download}
+              >
+                {workspaceCopy.confirm.btnGo}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setQueuedRequestId(null)}
+              >
+                {workspaceCopy.confirm.btnClose}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

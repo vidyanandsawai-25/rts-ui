@@ -6,8 +6,19 @@ import React from 'react';
 // Mock next-intl to avoid translation errors during testing
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
-    if (key === 'media.backToGrid') return 'Back to Grid';
-    return key;
+    const translations: Record<string, string> = {
+      'media.backToGrid': 'Back to Grid',
+      'media.play': 'Play',
+      'media.pause': 'Pause',
+      'media.speed': 'Speed:',
+      'media.speedSlow': '0.5x (Slow)',
+      'media.speedNormal': '1x (Normal)',
+      'media.speedMedium': '1.5x (Medium)',
+      'media.speedFast': '2x (Fast)',
+      'media.googleMap': 'View on Google Map',
+      'media.changeDetection': 'Change Detection',
+    };
+    return translations[key] || key;
   },
   useLocale: () => 'en',
 }));
@@ -69,13 +80,13 @@ describe('ChangeDetectionCompare', () => {
         activeCategory={mockActiveCategory}
         onBackToGrid={handleBackToGrid}
         onImagesChange={handleImagesChange}
+        initialLatitude={19.076}
+        initialLongitude={72.877}
       />
     );
 
-    // Check back to grid button
-    expect(screen.getByText('Back to Grid')).toBeInTheDocument();
-    
-    // Check for Change Detection title/header path
-    expect(screen.getByText('Change Detection')).toBeInTheDocument();
+    // Check for playback controls
+    expect(screen.getByText('Play')).toBeInTheDocument();
+    expect(screen.getByText('Speed:')).toBeInTheDocument();
   });
 });

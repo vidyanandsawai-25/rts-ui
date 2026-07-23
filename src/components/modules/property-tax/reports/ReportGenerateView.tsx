@@ -1,10 +1,11 @@
 'use client';
 
-import { Card } from '@/components/common';
+import { SlidersHorizontal } from 'lucide-react';
+import { Card, Badge } from '@/components/common';
 import { ReportParametersPanel } from './ReportParametersPanel';
 import { Stepper, CategoryCard, EmptyState, ReportListPanel, ReportTabsPanel } from './ReportWorkspaceComponents';
-import { CATEGORIES } from './ReportWorkspaceConfig';
-import type { Step } from './ReportWorkspaceConfig';
+import type { Category, Step } from './ReportWorkspaceConfig';
+import type { FinancialYear } from '@/types/financialYear.types';
 import type {
   ReportDefinition,
   ReportWorkspaceCopy,
@@ -13,13 +14,13 @@ import type {
   WardSummary,
   PropertySummary,
 } from '@/types/report.types';
-import type { FinancialYear } from '@/types/financialYear.types';
 
 interface ReportGenerateViewProps {
   currentStep: Step;
   selectedCategory: string | null;
   selectedReport: ReportDefinition | null;
   reportsByCategory: Map<string, ReportDefinition[]>;
+  categories: Category[];
   workspaceCopy: ReportWorkspaceCopy;
   paramsCopy: ReportParamsPanelCopy;
   zones: ZoneSummary[];
@@ -40,6 +41,7 @@ export function ReportGenerateView({
   selectedCategory,
   selectedReport,
   reportsByCategory,
+  categories,
   workspaceCopy,
   paramsCopy,
   zones,
@@ -52,19 +54,19 @@ export function ReportGenerateView({
   createReportRequest,
 }: ReportGenerateViewProps) {
   const categoryCount = (key: string) => reportsByCategory.get(key)?.length ?? 0;
-  const activeCategoryDef = CATEGORIES.find((c) => c.key === selectedCategory);
+  const activeCategoryDef = categories.find((c) => c.key === selectedCategory);
   const activeReports = selectedCategory ? (reportsByCategory.get(selectedCategory) ?? []) : [];
 
   return (
-    <>
+    <div className="flex flex-col gap-5">
       <Stepper currentStep={currentStep} copy={workspaceCopy} />
 
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <CategoryCard
             key={cat.key}
             category={cat}
-            label={workspaceCopy.categories[cat.key as keyof typeof workspaceCopy.categories]}
+            label={cat.name || cat.key}
             count={categoryCount(cat.key)}
             reportsCountTemplate={workspaceCopy.reportsCount}
             isSelected={selectedCategory === cat.key}
@@ -95,11 +97,12 @@ export function ReportGenerateView({
             workspaceCopy={workspaceCopy}
             onSelectReport={onSelectReport}
           />
-          <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex flex-col bg-white">
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+          <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-300 flex flex-col bg-white">
+            <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-[#800000]" />
+              <Badge variant="secondary" className="bg-transparent border-none px-0 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-transparent">
                 {workspaceCopy.configureParameters}
-              </span>
+              </Badge>
             </div>
             <div className="flex-1 overflow-y-auto">
               <ReportParametersPanel
@@ -116,6 +119,6 @@ export function ReportGenerateView({
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }

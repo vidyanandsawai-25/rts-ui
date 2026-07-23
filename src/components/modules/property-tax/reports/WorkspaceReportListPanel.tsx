@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import { Card } from '@/components/common';
+import { Card, Badge } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 import type { Category } from './ReportWorkspaceConfig';
 
@@ -20,14 +20,14 @@ export function ReportListPanel({
 }: ReportListPanelProps) {
   return (
     <Card padding="none" className="rounded-xl overflow-hidden shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
-        <FileText className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-          {workspaceCopy.categories[activeCategoryDef.key as keyof typeof workspaceCopy.categories]}
-        </span>
-        <span className="ml-1 text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
+      <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
+        <FileText className="w-4 h-4 text-[#800000]" />
+        <Badge variant="secondary" className="bg-transparent border-none px-0 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-transparent">
+          {activeCategoryDef.name || activeCategoryDef.key}
+        </Badge>
+        <Badge variant="secondary" className="bg-transparent border-none px-0 ml-auto text-[10px] text-gray-500 font-bold bg-gray-200/80 rounded-full px-2 py-0.5 hover:bg-gray-200/80">
           {activeReports.length}
-        </span>
+        </Badge>
       </div>
       {activeReports.length === 0 ? (
         <div className="py-12 text-center text-sm text-gray-400">
@@ -36,24 +36,28 @@ export function ReportListPanel({
       ) : (
         <div className="flex flex-wrap gap-3 p-4">
           {activeReports.map((report) => (
-            <button
+            <Card
               key={report.id}
-              type="button"
+              role="button"
+              tabIndex={0}
+              padding="sm"
               onClick={() => onSelectReport(report)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectReport(report);
+                }
+              }}
               className="
-                w-[calc(25%-9px)] text-left rounded-lg border px-3 py-3
-                border-gray-200 bg-white
-                hover:border-blue-300 hover:bg-blue-50/20 hover:shadow-sm
-                transition-all duration-150 focus:outline-none
+                group w-[calc(20%-9.6px)] text-left cursor-pointer
+                hover:border-red-200 hover:bg-red-50/30 hover:shadow-sm hover:-translate-y-0.5
+                transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-200
               "
             >
-              <p className="text-[9px] font-bold uppercase tracking-wider mb-0.5 truncate text-gray-400">
-                {report.reportCode}
-              </p>
-              <p className="text-xs font-semibold leading-snug text-gray-800">
+              <p className="text-xs font-semibold leading-snug text-gray-800 group-hover:text-[#800000] transition-colors">
                 {report.reportName}
               </p>
-            </button>
+            </Card>
           ))}
         </div>
       )}

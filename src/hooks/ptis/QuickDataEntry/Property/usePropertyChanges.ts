@@ -7,7 +7,6 @@ import {
     sanitizePlotNo,
     sanitizeSurveyNo,
     sanitizeSubZoneNo,
-    sanitizePlotArea,
 } from '@/lib/utils/input-sanitization';
 
 interface UsePropertyChangesProps {
@@ -32,7 +31,6 @@ export const usePropertyChanges = ({
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;
         const formData = new FormData(formRef.current);
-        const plotArea = parseOptionalNumber(formData.get("plotArea"));
         const taxZoneIdFromForm = parseOptionalNumber(formData.get("taxZoneId"));
 
         const isChanged =
@@ -42,7 +40,6 @@ export const usePropertyChanges = ({
             String(formData.get("surveyNo") ?? "").trim() !== (propertyData?.surveyNo ?? "") ||
             String(formData.get("subZoneNo") ?? "").trim() !== (propertyData?.subZoneNo ?? "") ||
             String(formData.get("rateSectionDescription") ?? "").trim() !== (propertyData?.rateSectionDescription ?? "") ||
-            plotArea !== (propertyData?.plotArea ?? null) ||
             categoryId !== (propertyData?.categoryId ?? null) ||
             propertyTypeId !== (propertyData?.propertyTypeId ?? null) ||
             moujaId !== (propertyData?.moujaId ?? null);
@@ -51,14 +48,12 @@ export const usePropertyChanges = ({
         const plotNo = sanitizePlotNo(String(formData.get("plotNo") ?? ""));
         const surveyNo = sanitizeSurveyNo(String(formData.get("surveyNo") ?? ""));
         const subZoneNo = sanitizeSubZoneNo(String(formData.get("subZoneNo") ?? ""));
-        const plotAreaStr = sanitizePlotArea(String(formData.get("plotArea") ?? ""));
         const taxZoneId = String(formData.get("taxZoneId") ?? "");
 
         const isValid =
             categoryId !== null &&
             propertyValidators.isValidFlatShopNo(flatOrShopNo) &&
             propertyValidators.isValidPlotNo(plotNo) &&
-            propertyValidators.isValidPlotArea(plotAreaStr) &&
             propertyValidators.isValidSurveyNo(surveyNo) &&
             propertyValidators.isValidSubZoneNo(subZoneNo) &&
             (taxZoneId !== '');
