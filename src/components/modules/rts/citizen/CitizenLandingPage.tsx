@@ -18,6 +18,9 @@ import {
   Laptop,
   Zap,
   Clock,
+  FileCheck,
+  CheckCircle2,
+  Award,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
 import type { DepartmentDTO, ServiceDTO } from '@/types/rts-citizen.types';
@@ -423,6 +426,86 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
       {/* Main Content */}
       <div className="w-full space-y-4 py-3 px-3 md:px-5">
+
+        {/* ─── RTS Portal Impact & Performance Portfolio Banner ───────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1 pb-1"
+        >
+          {/* Card 1: Total Received Applications */}
+          <div className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-blue-700/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-200 shrink-0 group-hover:scale-110 transition-transform">
+              <FileCheck className="w-5 h-5 text-blue-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-black text-blue-200 uppercase tracking-wider truncate">
+                {t('प्राप्त अर्ज', 'प्राप्त आवेदन', 'Received Applications')}
+              </p>
+              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
+                52,480+
+              </h4>
+              <span className="text-[9px] sm:text-[10px] text-blue-300 font-bold block mt-0.5 truncate">
+                {t('पोर्टलवरील एकूण अर्ज', 'पोर्टल पर कुल प्राप्त आवेदन', 'Total registered applications')}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 2: Disposed / Solved Applications */}
+          <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-emerald-600/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-200 shrink-0 group-hover:scale-110 transition-transform">
+              <CheckCircle2 className="w-5 h-5 text-emerald-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-black text-emerald-200 uppercase tracking-wider truncate">
+                {t('निकाली काढलेले अर्ज', 'निवारित आवेदन', 'Disposed Applications')}
+              </p>
+              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
+                51,120+
+              </h4>
+              <span className="text-[9px] sm:text-[10px] text-emerald-300 font-bold block mt-0.5 truncate">
+                {t('वेळेत मंजूर व वितरित', 'समयबद्ध स्वीकृत एवं वितरित', 'Successfully approved & delivered')}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: SLA Delivery Rate */}
+          <div className="bg-gradient-to-br from-amber-700 to-orange-800 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-amber-500/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-200 shrink-0 group-hover:scale-110 transition-transform">
+              <Award className="w-5 h-5 text-amber-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-black text-amber-200 uppercase tracking-wider truncate">
+                {t('SLA पूर्तता दर', 'SLA सफलता दर', 'SLA Success Rate')}
+              </p>
+              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
+                98.4%
+              </h4>
+              <span className="text-[9px] sm:text-[10px] text-amber-200 font-bold block mt-0.5 truncate">
+                {t('वेळबद्ध लोकसेवा नियम', 'समयबद्ध लोक सेवा नियम', 'On-time statutory resolution')}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Active Services */}
+          <div className="bg-gradient-to-br from-purple-900 to-indigo-950 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-purple-600/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-200 shrink-0 group-hover:scale-110 transition-transform">
+              <Zap className="w-5 h-5 text-purple-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-black text-purple-200 uppercase tracking-wider truncate">
+                {t('ऑनलाईन नागरीक सेवा', 'ऑनलाइन सेवाएं', 'Active Services')}
+              </p>
+              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
+                {countDisplay}
+              </h4>
+              <span className="text-[9px] sm:text-[10px] text-purple-300 font-bold block mt-0.5 truncate">
+                {t('२४x७ डिजिटल पोर्टल', '24x7 डिजिटल सेवा पोर्टल', '24x7 Digital e-Governance')}
+              </span>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Quick Access Links */}
         <div className="space-y-3">
