@@ -21,7 +21,7 @@ export interface RtsTimelineStep {
 
 export interface RtsApplication {
   id: string;
-  applicationNo: string;
+  applicationNo?: string;
   serviceId: string;
   serviceName: string;
   departmentId: string;
@@ -39,12 +39,22 @@ export interface RtsApplication {
   remainingDays: number;
   submittedAt: string;
   submissionDate?: string;
+  appliedDate?: string;
+  trackingId?: string;
+  applicantName?: string;
+  mobileNumber?: string;
+  citizenPhone?: string;
+  citizenEmail?: string;
+  aadhaarNumber?: string;
+  address?: string;
+  citizenAddress?: string;
   slaDays?: number;
   source?: string;
   priority?: string;
   fieldValues: Record<string, any>;
   documents: RtsDocument[];
   timeline: RtsTimelineStep[];
+  [key: string]: any;
 }
 
 export interface RtsOfficer {

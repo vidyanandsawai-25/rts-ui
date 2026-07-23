@@ -125,9 +125,9 @@ export async function getRtsApplicationsAction(
     const q = searchTerm.toLowerCase().trim();
     filtered = filtered.filter(
       a =>
-        a.applicationNo.toLowerCase().includes(q) ||
-        a.citizenName.toLowerCase().includes(q) ||
-        a.mobile.includes(q)
+        (a.applicationNo || a.id).toLowerCase().includes(q) ||
+        (a.citizenName || "").toLowerCase().includes(q) ||
+        (a.mobile || "").includes(q)
     );
   }
 

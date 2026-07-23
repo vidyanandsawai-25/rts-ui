@@ -199,31 +199,72 @@
     "status": {
       "approved": "स्वीकृत",
       "pending": "लंबित",
+      "reverted": "वापस भेजा गया",
       "rejected": "अस्वीकृत"
     },
     "applications": {
       "title": "आपके आवेदन और SLA समयरेखा",
       "description": "प्रत्येक नगरपालिका सेवा कानूनी सेवा अधिकार वितरण समयसीमा से बंधी है।",
       "searchPlaceholder": "आईडी या सेवा नाम से खोजें...",
-      "empty": "खोज मानदंड से मेल खाने वाला कोई आवेदन नहीं मिला।"
+      "empty": "खोज मानदंड से मेल खाने वाला कोई आवेदन नहीं मिला।",
+      "loading": "डैशबोर्ड लोड हो रहा है..."
     },
     "filters": {
+      "applicationType": "आवेदन प्रकार",
       "allTypes": "सभी प्रकार",
       "allStatuses": "सभी स्थितियाँ"
     },
     "table": {
+      "applicationNo": "आवेदन क्रमांक",
       "applicationAndService": "आवेदन आईडी और सेवा",
       "submittedDate": "जमा करने की तिथि",
+      "applicantOwner": "आवेदक / मालिक",
+      "applicationTypeWork": "आवेदन प्रकार / कार्य",
       "slaTimeline": "SLA समयरेखा",
       "statusAndStage": "स्थिति और चरण",
-      "actions": "कार्रवाई"
+      "daysPending": "लंबित दिन",
+      "actions": "कार्रवाई",
+      "notAvailable": "उपलब्ध नहीं",
+      "defaultOfficer": "कनिष्ठ अभियंता"
     },
     "actions": {
       "viewDetails": "विवरण",
       "viewDetailsAria": "{appId} का विवरण देखें",
       "process": "प्रक्रिया करें",
       "processAria": "आवेदन {appId} की प्रक्रिया करें",
-      "close": "बंद करें"
+      "registerApplication": "आवेदन पंजीकृत करें",
+      "downloadRegister": "रजिस्टर डाउनलोड करें",
+      "openFilters": "फ़िल्टर खोलें"
+    },
+    "drawer": {
+      "applicationDetails": "आवेदन विवरण",
+      "applicantName": "आवेदक का नाम",
+      "submittedDate": "जमा करने की तिथि",
+      "slaTimeline": "SLA समयरेखा",
+      "slaDeadline": "SLA अंतिम तिथि",
+      "notAvailable": "उपलब्ध नहीं",
+      "approvalStages": "स्वीकृति चरण",
+      "completion": "25% पूर्ण",
+      "submittedDocuments": "जमा किए गए दस्तावेज़",
+      "downloadDocument": "{name} डाउनलोड करें",
+      "stages": {
+        "applicationSubmitted": {
+          "title": "आवेदन जमा किया गया",
+          "status": "पूर्ण",
+          "remark": "सिस्टम: आवेदन सफलतापूर्वक प्राप्त हुआ।"
+        },
+        "documentVerification": {
+          "title": "दस्तावेज़ सत्यापन",
+          "status": "लंबित",
+          "remark": "समीक्षा लंबित है।"
+        },
+        "finalApproval": { "title": "अंतिम स्वीकृति", "status": "लंबित", "remark": "लंबित।" }
+      },
+      "documents": {
+        "identityProof": { "name": "पहचान प्रमाण (आधार कार्ड)", "size": "1.2 MB" },
+        "ownershipDeed": { "name": "संपत्ति स्वामित्व विलेख / करार", "size": "3.4 MB" },
+        "fireNoc": { "name": "अग्निशमन विभाग से अनापत्ति प्रमाणपत्र", "size": "2.1 MB" }
+      }
     },
     "pagination": {
       "showing": "{total} में से {shown} आवेदन दिखाए जा रहे हैं"

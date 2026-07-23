@@ -9,7 +9,7 @@ import type {
   RtsApplication,
   RtsOfficer,
   RtsTimelineStep
-} from "@/lib/mock/rts/rts-applications.types";
+} from "@/types/rts/rts-application.types";
 
 const DATA_FILE_PATH = path.join(
   process.cwd(),
@@ -82,9 +82,9 @@ export async function getRtsApplicationsAction(
     const q = searchTerm.toLowerCase().trim();
     filtered = filtered.filter(
       a =>
-        a.applicationNo.toLowerCase().includes(q) ||
-        a.citizenName.toLowerCase().includes(q) ||
-        a.mobile.includes(q)
+        (a.applicationNo || a.id).toLowerCase().includes(q) ||
+        (a.citizenName || "").toLowerCase().includes(q) ||
+        (a.mobile || "").includes(q)
     );
   }
 

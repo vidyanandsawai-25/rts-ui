@@ -25,7 +25,7 @@ import {
   DownloadButton,
 } from "@/components/common/ActionButtons";
 
-import type { RtsApplication } from "@/lib/mock/rts/rts-applications.types";
+import type { RtsApplication } from "@/types/rts/rts-application.types";
 
 interface RtsApplicationsDashboardProps {
   data: RtsApplication[];
@@ -160,7 +160,7 @@ export default function RtsApplicationsDashboard({
 
       return {
         id: application.id,
-        appId: application.applicationNo,
+        appId: application.applicationNo || application.id,
         citizenName: application.citizenName,
         citizenNameMr: application.citizenName,
         serviceName: application.serviceName,
