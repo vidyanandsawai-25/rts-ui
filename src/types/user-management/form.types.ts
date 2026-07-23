@@ -31,6 +31,8 @@ export interface UserFormData {
 
 export interface RoleFormData {
   name: string;
+  departmentId: number | string;
+  departmentName?: string;
   isActive: boolean;
 }
 

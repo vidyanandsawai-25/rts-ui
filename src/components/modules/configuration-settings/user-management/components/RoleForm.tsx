@@ -1,8 +1,10 @@
 'use client';
 
-import { Label, Input, Button, Drawer, ToggleSwitch, ValidationMessage } from '@/components/common';
+import { useState, useEffect } from 'react';
+import { Label, Input, Button, Drawer, ToggleSwitch, ValidationMessage, Select } from '@/components/common';
 import { useTranslations } from 'next-intl';
-import { RoleFormProps } from '@/types/user-management';
+import { RoleFormProps, Department } from '@/types/user-management';
+import { getDepartmentsAction } from '@/app/[locale]/configuration-settings/user-management/actions';
 
 export function RoleForm({
   isOpen,
@@ -11,10 +13,33 @@ export function RoleForm({
   formData,
   setFormData,
   onSubmit,
+  departments,
   isSubmitting,
   errors,
 }: RoleFormProps) {
   const t = useTranslations('userManagement');
+  const [fetchedDepts, setFetchedDepts] = useState<Department[]>([]);
+
+  useEffect(() => {
+    if (!departments || departments.length === 0) {
+      let isMounted = true;
+      getDepartmentsAction().then((res) => {
+        if (isMounted && res.success && res.data) {
+          setFetchedDepts(res.data);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [departments]);
+
+  const activeDepts = departments && departments.length > 0 ? departments : fetchedDepts;
+
+  const departmentOptions = activeDepts.map((d) => ({
+    label: d.departmentName,
+    value: String(d.id || d.departmentMasterId),
+  }));
 
   return (
     <Drawer
@@ -50,6 +75,28 @@ export function RoleForm({
       }
     >
       <form id="role-form" onSubmit={onSubmit} className="space-y-6 p-6">
+        <div className="space-y-2">
+          <Label>{t('form.departments')} *</Label>
+          <Select
+            required
+            options={departmentOptions}
+            value={formData.departmentId ? String(formData.departmentId) : ''}
+            onChange={(_e, val) => {
+              const selectedDept = activeDepts.find(
+                (d) => String(d.id || d.departmentMasterId) === String(val)
+              );
+              setFormData({
+                ...formData,
+                departmentId: val,
+                departmentName: selectedDept?.departmentName || '',
+              });
+            }}
+            placeholder={t('form.selectDeptPrompt') || 'Select Department'}
+            className="h-10"
+          />
+          {errors?.departmentId && <ValidationMessage message={errors.departmentId} />}
+        </div>
+
         <div className="space-y-2">
           <Label>{t('table.role')} *</Label>
           <Input

@@ -1,12 +1,15 @@
 'use client';
 
-import { Info, Save, RotateCcw } from 'lucide-react';
+import { Info, Save, RotateCcw, Search } from 'lucide-react';
 import { Label } from '@/components/common/label';
 import { Select } from '@/components/common/select';
 import { Card } from '@/components/common/Card';
-import { RoleMasterData } from '@/types/screen-access.types';
+import { RoleMasterData, DepartmentMasterData } from '@/types/screen-access.types';
 
 interface RolePermissionHeaderProps {
+  selectedDept: string;
+  departments: DepartmentMasterData[];
+  onDeptChange: (val: string) => void;
   selectedRole: string;
   roles: RoleMasterData[];
   pendingCount: number;
@@ -14,8 +17,12 @@ interface RolePermissionHeaderProps {
   onRoleChange: (val: string) => void;
   onSave: () => void;
   onCancel: () => void;
+  searchTerm: string;
+  onSearchChange: (val: string) => void;
   translations: {
+    selectDept: string;
     selectRole: string;
+    searchPlaceholder: string;
     pendingChanges: string;
     saveChanges: string;
     cancelChanges: string;
@@ -23,6 +30,9 @@ interface RolePermissionHeaderProps {
 }
 
 export function RolePermissionHeader({
+  selectedDept,
+  departments,
+  onDeptChange,
   selectedRole,
   roles,
   pendingCount,
@@ -30,11 +40,31 @@ export function RolePermissionHeader({
   onRoleChange,
   onSave,
   onCancel,
+  searchTerm,
+  onSearchChange,
   translations,
 }: RolePermissionHeaderProps) {
   return (
     <Card className="p-6 mb-6 border-none shadow-sm flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-6">
+        {/* Select Department */}
+        <div className="space-y-1.5 min-w-[240px]">
+          <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            {translations.selectDept}
+          </Label>
+          <Select
+            value={selectedDept}
+            onChange={(_, val) => onDeptChange(val)}
+            options={departments.map((d) => ({
+              value: String(d.departmentMasterId ?? d.departmentId),
+              label: d.departmentName,
+            }))}
+            ariaLabel={translations.selectDept}
+            className="h-10 border-gray-200"
+          />
+        </div>
+
+        {/* Select Role */}
         <div className="space-y-1.5 min-w-[240px]">
           <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             {translations.selectRole}
@@ -45,7 +75,25 @@ export function RolePermissionHeader({
             options={roles.map((r) => ({ value: String(r.roleMasterId), label: r.roleName }))}
             ariaLabel={translations.selectRole}
             className="h-10 border-gray-200"
+            disabled={!selectedDept || roles.length === 0}
           />
+        </div>
+
+        {/* Search Screens */}
+        <div className="space-y-1.5 min-w-[280px]">
+          <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            {translations.searchPlaceholder}
+          </Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={translations.searchPlaceholder}
+              className="w-full h-10 pl-9 pr-4 text-sm bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all text-gray-800"
+            />
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-4">

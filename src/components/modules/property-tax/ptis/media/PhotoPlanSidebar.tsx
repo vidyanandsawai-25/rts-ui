@@ -68,6 +68,7 @@ export const PhotoPlanSidebar = memo(function PhotoPlanSidebar({
                   {firstImage?.src ? (
                     <ImageWithFallback
                       src={firstImage.src}
+                      documentGuid={firstImage.documentGuid}
                       alt={cat.photoTypeName}
                       className="w-full h-full object-cover"
                       width={80}

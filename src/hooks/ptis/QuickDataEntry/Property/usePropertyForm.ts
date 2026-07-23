@@ -101,7 +101,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
             totalCarpetAreaSqFeet: parseOptionalNumber(formData.get("totalCarpetAreaSqFeet")),
             totalBuiltupAreaSqMeter: parseOptionalNumber(formData.get("totalBuiltupAreaSqMeter")),
             totalCarpetAreaSqMeter: parseOptionalNumber(formData.get("totalCarpetAreaSqMeter")),
-            plotArea: parseOptionalNumber(formData.get("plotArea")),
+            plotArea: propertyData?.plotArea ?? null,
             plotAreaFtWidth: propertyData?.plotAreaFtWidth ?? null,
             plotAreaFtLength: propertyData?.plotAreaFtLength ?? null,
             plotAreaMtrWidth: propertyData?.plotAreaMtrWidth ?? null,

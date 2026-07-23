@@ -59,7 +59,9 @@
             "Subtracttitle": "Subtract from total area",
             "Addareatitle": "Add to total area",
             "roomNo": "Room No",
+            "utilityRoomNo": "NO",
             "roomType": "Room Type",
+            "utilityRoomType": "TYPE",
             "shape": "Shape",
             "area": "Area",
             "roomCount": "RoomCount",
@@ -293,6 +295,10 @@
             "fetchPropertyDetails": "Failed to fetch property details. Please try again later.",
             "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later.",
             "fetchRoomTypes": "Failed to fetch room types. Please try again later."
+        },
+        "validation": {
+            "requiredBeforeApply": "Floor submission is required. Please add at least one floor.",
+            "emptyMessage": "Floor submission is required. Please add at least one floor."
         }
     },
     "property": {
@@ -310,6 +316,9 @@
         "blockNo": "Block No",
         "plotNo": "Plot No",
         "plotArea": "Plot Area (sq.ft)",
+        "plotAreaWithUnit": "Plot Area (sq.ft / sq.m)",
+        "plotAreaSqFeet": "Plot Area (sq.ft)",
+        "plotAreaSqMeter": "Plot Area (sq.m)",
         "residentialToilet": "Residential Toilet",
         "commercialToilet": "Commercial Toilet",
         "upicId": "UPIC ID",
@@ -1573,11 +1582,5 @@
             "general": "An unexpected error occurred while retrieving the document. Please try again.",
             "uploadGeneral": "An error occurred while uploading the document. Please try again."
         }
-    },
-    "floorSubmission": {
-        "validation": {
-            "requiredBeforeApply": "Floor submission is required. Please add at least one floor.",
-            "emptyMessage": "Floor submission is required. Please add at least one floor."
-        }
-    }
+    }   
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useSearchParams } from 'next/navigation';
 import { PropertyMediaPanel } from './media';
 import { MediaPanelToggle } from './MediaPanelToggle';
 import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
@@ -19,11 +20,12 @@ interface PtisLayoutWrapperProps {
   propertyId?: number;
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
-  initialMediaPanelVisible?: boolean;
   initialLatitude?: number;
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
 }
+
+import { useWaybackReleases } from '@/hooks/ptis/useWaybackReleases';
 
 function PtisLayoutWrapperContent({
   children,
@@ -39,14 +41,18 @@ function PtisLayoutWrapperContent({
   initialLatitude,
   initialLongitude,
   initialWaybackReleases = [],
-}: Omit<PtisLayoutWrapperProps, 'initialMediaPanelVisible'>) {
+}: PtisLayoutWrapperProps) {
   const { isPanelVisible } = useMediaPanel();
+  const searchParams = useSearchParams();
+  const isDrawerOpen = searchParams?.get('drawer') === 'photo-plan';
   const { loading, photoSlots, photos, setPhotoSlots, setPhotos } = usePropertyPhotosQuery(
     propertyId,
     isPanelVisible,
+    isDrawerOpen,
     initialPhotoSlots,
     initialPhotos
   );
+  const { waybackReleases } = useWaybackReleases(isPanelVisible);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 w-full items-start overflow-x-clip relative">
@@ -80,7 +86,7 @@ function PtisLayoutWrapperContent({
             loading={loading}
             initialLatitude={initialLatitude}
             initialLongitude={initialLongitude}
-            initialWaybackReleases={initialWaybackReleases}
+            initialWaybackReleases={waybackReleases.length > 0 ? waybackReleases : initialWaybackReleases}
             onPhotosChange={setPhotos}
             onPhotoSlotsChange={setPhotoSlots}
           />
@@ -92,8 +98,7 @@ function PtisLayoutWrapperContent({
 
 /**
  * Wraps the PTIS screen with a sticky PropertyMediaPanel on the right.
- * Supports toggling side-panel visibility with smooth slide/fade transitions
- * and state persistence via SSR-friendly cookies.
+ * Supports on-demand side-panel visibility and smooth slide/fade transitions.
  */
 export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactElement {
   React.useEffect(() => {
@@ -114,7 +119,7 @@ export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactEle
   }, []);
 
   return (
-    <MediaPanelProvider initialVisible={props.initialMediaPanelVisible ?? false}>
+    <MediaPanelProvider initialVisible={false}>
       <PtisLayoutWrapperContent {...props} />
     </MediaPanelProvider>
   );
