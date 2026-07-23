@@ -359,12 +359,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
             className="col-span-12 lg:col-span-5 w-full mt-3 lg:mt-0"
           >
-            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-3.5 sm:p-4 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-0 gap-2 sm:gap-3">
+            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-3 sm:p-3.5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between min-h-0 gap-2.5 sm:gap-3">
               <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute -left-10 -top-10 w-24 h-24 bg-blue-300/15 rounded-full blur-xl pointer-events-none" />
 
               <div className="relative z-20 flex-1 flex flex-col justify-between h-full pr-3 min-h-0">
-                <div className="min-h-[72px] overflow-hidden flex flex-col justify-center">
+                <div className="min-h-[54px] sm:min-h-[58px] overflow-hidden flex flex-col justify-center">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStatIndex}
@@ -420,7 +420,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               </div>
 
               {/* 4-Stage RTS Governance Workflow: e-Filing ➔ Scrutiny ➔ SLA Approval ➔ Certificate & SMS Notification */}
-              <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 pointer-events-none z-10">
+              <div className="flex items-center gap-0.5 sm:gap-1.5 pointer-events-none z-10 w-full sm:w-auto justify-center pt-2 sm:pt-0 border-t sm:border-t-0 border-white/15 shrink-0">
                 
                 {/* Stage 1: Citizen e-Filing */}
                 <motion.div
