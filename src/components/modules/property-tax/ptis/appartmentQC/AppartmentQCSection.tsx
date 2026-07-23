@@ -145,6 +145,25 @@ const AppartmentQCSection = ({
     if (partitionNo) params.set('partitionNo', partitionNo);
     if (row.wardNo) params.set('wardNo', String(row.wardNo));
 
+    // Extract apartment partition from row's propertyNo if available
+    const propertyNoVal = String(row.propertyNo || '');
+    const parts = propertyNoVal.split('-');
+    let apartmentPartitionVal = '';
+    if (parts.length === 3) {
+      apartmentPartitionVal = parts[2];
+    } else if (parts.length === 2) {
+      apartmentPartitionVal = parts[1];
+    }
+    if (apartmentPartitionVal) {
+      params.set('appartmentPartition', apartmentPartitionVal);
+    }
+
+    // Set parent property ID to return back to same property
+    const parentPropertyId = searchParams.get('propertyId');
+    if (parentPropertyId) {
+      params.set('parentPropertyId', parentPropertyId);
+    }
+
     // Set return navigation params
     params.set('returnTab', 'propertydetails');
     params.set('valuationTab', 'apartment');
@@ -153,7 +172,7 @@ const AppartmentQCSection = ({
 
     // Navigate to QuickDataEntry Property page with the property
     router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyIdVal}/Property?${params.toString()}`);
-  }, [router, locale, wardId, propertyNo, partitionNo, activeMainTab, activeSubTab]);
+  }, [router, locale, wardId, propertyNo, partitionNo, activeMainTab, activeSubTab, searchParams]);
 
 
 
