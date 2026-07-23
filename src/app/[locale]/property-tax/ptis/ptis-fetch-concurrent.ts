@@ -61,7 +61,7 @@ export async function fetchPropertyDetailsConcurrently(
   }).catch(() => null);
 
   return Promise.all([
-    wardId && propertyNo
+    wardId && propertyNo && valuationTab === 'apartment'
       ? getApartmentQCDataAction(
           wardId,
           propertyNo,

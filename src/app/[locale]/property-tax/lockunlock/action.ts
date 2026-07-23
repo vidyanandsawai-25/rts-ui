@@ -11,20 +11,33 @@ import {
   bulkLockUnlockProperties,
   bulkLockUnlockByCategory
 } from "@/lib/api/lockunlock/lockunlock.service";
+import { getLockUnlockModules } from "@/lib/api/lockunlock/lockunlock-queries.service";
 import {
   LockedScreen,
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
   BulkLockUnlockPayload,
   LockUnlockPropertyItem,
+  ModuleItem,
 } from "@/types/lockunlock.types";
+
+/**
+ * Server Action to fetch all lock/unlock modules.
+ */
+export async function getLockUnlockModulesAction(pageNumber?: number, pageSize?: number): Promise<ModuleItem[]> {
+  try {
+    return await getLockUnlockModules(pageNumber, pageSize);
+  } catch (error: unknown) {
+    throw error;
+  }
+}
 
 /**
  * Server Action to fetch all lockable screen configurations.
  */
-export async function getLockUnlockScreensAction(): Promise<LockedScreen[]> {
+export async function getLockUnlockScreensAction(moduleId?: number): Promise<LockedScreen[]> {
   try {
-    return await getLockUnlockScreens();
+    return await getLockUnlockScreens(moduleId);
   } catch (error: unknown) {
     throw error;
   }

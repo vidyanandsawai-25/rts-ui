@@ -7,7 +7,7 @@ import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput } from "@/components/common/SearchInput";
 import { WardItem } from "@/types/wardMaster.types";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
+import { LockedScreen, LockUnlockPropertyItem, ModuleItem } from "@/types/lockunlock.types";
 import { useSearchParams } from "next/navigation";
 import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLockUnlockMaster";
 import { TableModal } from "./TableModal";
@@ -23,6 +23,7 @@ export interface LockUnlockMasterProps {
   wards: WardItem[];
   dropdownProperties?: { label: string; value: string; propertyNo?: string; partitionNo?: string; }[];
   screens?: LockedScreen[];
+  modules?: ModuleItem[];
   initialProperties?: LockUnlockPropertyItem[];
   initialPagination?: PaginationState;
 }
@@ -32,6 +33,7 @@ export default function LockUnlockMaster({
   wards,
   dropdownProperties = [],
   screens = [],
+  modules = [],
   initialProperties = [],
   initialPagination,
 }: LockUnlockMasterProps): React.ReactElement {
@@ -128,6 +130,7 @@ export default function LockUnlockMaster({
             <div className="h-px bg-slate-200 w-full my-2" />
             <ScreenSelectionCard
               screens={screens}
+              modules={modules}
               selectedScreenIds={selectedScreenIds}
               setSelectedScreenIds={setSelectedScreenIds}
             />

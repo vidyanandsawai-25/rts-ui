@@ -1,7 +1,7 @@
 import React from "react";
 import LockUnlockMaster from "@/components/modules/property-tax/lockunlock/LockUnlockMaster";
 import { fetchWardsPagedAction, fetchZonesPagedAction } from "@/app/[locale]/property-tax/zone-master/actions";
-import { getLockUnlockScreensAction, fetchLockUnlockPropertiesPagedAction, fetchLockUnlockPropertiesByCategoryAction } from "./action";
+import { getLockUnlockScreensAction, fetchLockUnlockPropertiesPagedAction, fetchLockUnlockPropertiesByCategoryAction, getLockUnlockModulesAction } from "./action";
 import { LockUnlockPropertyItem } from "@/types/lockunlock.types";
 
 export const dynamic = "force-dynamic";
@@ -23,19 +23,24 @@ export default async function Page({
     }
     | undefined;
 
-  const [zonesResult, wardsResult, screensResult] = await Promise.all([
-    fetchZonesPagedAction(1, 100),
-    fetchWardsPagedAction(1, -1),
-    getLockUnlockScreensAction(),
-  ]);
-  const zones = zonesResult.items || [];
-  const wards = wardsResult.items || [];
-  const screens = screensResult || [];
-
   const params = await searchParams;
   const wardId = params?.wardId;
   const fromProperty = params?.fromProperty;
   const toProperty = params?.toProperty;
+  const moduleIdStr = params?.moduleId;
+  
+  const moduleIdParam = moduleIdStr && moduleIdStr !== "ALL" ? parseInt(moduleIdStr as string, 10) : undefined;
+
+  const [zonesResult, wardsResult, screensResult, modulesResult] = await Promise.all([
+    fetchZonesPagedAction(1, 100),
+    fetchWardsPagedAction(1, -1),
+    getLockUnlockScreensAction(moduleIdParam),
+    getLockUnlockModulesAction(1, -1),
+  ]);
+  const zones = zonesResult.items || [];
+  const wards = wardsResult.items || [];
+  const screens = screensResult || [];
+  const modules = modulesResult || [];
 
   // Fetch dropdown properties on the server ONLY if wardId is already in the URL
   if (wardId && typeof wardId === "string") {
@@ -155,6 +160,7 @@ export default async function Page({
           wards={wards}
           dropdownProperties={dropdownProperties}
           screens={screens}
+          modules={modules}
           initialProperties={properties}
           initialPagination={initialPagination}
         />

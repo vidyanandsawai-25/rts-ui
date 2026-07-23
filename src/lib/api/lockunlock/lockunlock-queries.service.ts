@@ -6,6 +6,8 @@ import {
   LockUnlockPropertyItem,
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
+  ModuleItem,
+  ModuleMasterResponse,
 } from "@/types/lockunlock.types";
 
 interface GetScreensResponse {
@@ -14,11 +16,31 @@ interface GetScreensResponse {
 }
 
 /**
+ * Fetches all modules for lock/unlock screens.
+ * GET /api/ModuleMaster
+ */
+export async function getLockUnlockModules(pageNumber: number = 1, pageSize: number = 100): Promise<ModuleItem[]> {
+  const response = await apiClient.get<ModuleMasterResponse>(`/ModuleMaster?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+
+  if (!response.success || !response.data) {
+    const t = await getTranslations("lockUnlock");
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || t("messages.fetchFailed"),
+      "Get modules failed"
+    );
+  }
+
+  return response.data.items || [];
+}
+
+/**
  * Fetches the list of all screen options that can be locked/unlocked.
  * GET /api/LockUnlock/screens
  */
-export async function getLockUnlockScreens(): Promise<LockedScreen[]> {
-  const response = await apiClient.get<LockedScreen[]>("/LockUnlock/screens");
+export async function getLockUnlockScreens(moduleId?: number): Promise<LockedScreen[]> {
+  const url = moduleId ? `/LockUnlock/screens?ModuleId=${moduleId}` : `/LockUnlock/screens`;
+  const response = await apiClient.get<LockedScreen[]>(url);
 
   if (!response.success || !response.data) {
     const t = await getTranslations("lockUnlock");

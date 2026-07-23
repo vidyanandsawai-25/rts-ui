@@ -17,16 +17,18 @@ import { useTranslations } from "next-intl";
 import { useQueryTransition } from "@/hooks/useQueryTransition";
 import { cn } from "@/lib/utils/cn";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
-import { LockedScreen } from "@/types/lockunlock.types";
+import { LockedScreen, ModuleItem } from "@/types/lockunlock.types";
 
 interface ScreenSelectionCardProps {
   screens: LockedScreen[];
+  modules?: ModuleItem[];
   selectedScreenIds: number[];
   setSelectedScreenIds: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export function ScreenSelectionCard({
   screens = [],
+  modules = [],
   selectedScreenIds = [],
   setSelectedScreenIds,
 }: ScreenSelectionCardProps) {
@@ -34,7 +36,7 @@ export function ScreenSelectionCard({
   const { updateQueries, searchParams } = useQueryTransition();
 
   const screenSearchFromUrl = searchParams.get("screenSearch") || "";
-  const screenModuleFromUrl = searchParams.get("screenModule") || "ALL";
+  const moduleIdFromUrl = searchParams.get("moduleId") || "ALL";
 
   const [searchTerm, setSearchTerm] = useState(screenSearchFromUrl);
   const [prevScreenSearchFromUrl, setPrevScreenSearchFromUrl] = useState(screenSearchFromUrl);
@@ -60,7 +62,7 @@ export function ScreenSelectionCard({
     return () => clearTimeout(timer);
   }, [searchTerm, updateQueries]);
 
-  const selectedModule = screenModuleFromUrl;
+  const selectedModuleId = moduleIdFromUrl;
 
   // Helper function to extract a clean group/module prefix from screenCode
   const getScreenModule = (code: string) => {
@@ -74,21 +76,17 @@ export function ScreenSelectionCard({
     return "GENERAL";
   };
 
-  // Generate unique module classifications for dropdown
+  // Generate unique module classifications for dropdown from modules API
   const moduleOptions = useMemo(() => {
-    const modules = new Set<string>();
-    screens.forEach((s) => {
-      modules.add(getScreenModule(s.screenCode));
-    });
-    const options = Array.from(modules).map((m) => ({
-      label: m,
-      value: m,
+    const options = modules.map((m) => ({
+      label: m.moduleCode,
+      value: String(m.id),
     }));
     return [
       { label: t("screenSelectionCard.allTypes") || "All Types", value: "ALL" },
       ...options.sort((a, b) => a.label.localeCompare(b.label)),
     ];
-  }, [screens, t]);
+  }, [modules, t]);
 
   // Derived list of filtered screens based on inputs
   const filteredScreens = useMemo(() => {
@@ -96,12 +94,10 @@ export function ScreenSelectionCard({
       const matchesSearch =
         screen.screenName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         screen.screenCode.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesModule =
-        selectedModule === "ALL" ||
-        getScreenModule(screen.screenCode) === selectedModule;
-      return matchesSearch && matchesModule;
+      
+      return matchesSearch;
     });
-  }, [screens, searchTerm, selectedModule]);
+  }, [screens, searchTerm]);
 
   // Select or Unselect all currently visible filtered screens
   const handleSelectAllFiltered = () => {
@@ -124,7 +120,7 @@ export function ScreenSelectionCard({
     const filteredIds = new Set(filteredScreens.map((s) => s.id));
     setSelectedScreenIds((prev) => prev.filter((id) => !filteredIds.has(id)));
     setSearchTerm("");
-    updateQueries({ screenSearch: null, screenModule: null });
+    updateQueries({ screenSearch: null, moduleId: null });
   };
 
   return (
@@ -161,9 +157,10 @@ export function ScreenSelectionCard({
           <div className="w-full sm:w-[180px]">
             <SearchSelect
               options={moduleOptions}
-              value={selectedModule}
+              value={selectedModuleId}
               onChange={(_, value) => {
-                updateQueries({ screenModule: value === "ALL" ? null : value });
+                setSelectedScreenIds([]);
+                updateQueries({ moduleId: value === "ALL" ? null : value });
               }}
               placeholder={t("screenSelectionCard.typeOfUse")}
               disableSearch={true}
