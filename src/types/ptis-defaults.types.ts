@@ -26,6 +26,8 @@ export const defaultPropertyDetails: PropertyDetailsData = {
   wingNo: '',
   moujaNo: '',
   moujaDescription: '',
+  oldCarpetArea: '',
+  oldBuiltupArea: '',
 };
 
 export const defaultKycDetails: KYCDetailsData = {
