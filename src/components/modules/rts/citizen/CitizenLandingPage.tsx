@@ -419,19 +419,17 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </div>
               </div>
 
-              {/* Middle & Right: Animated Digital Citizen Form Submission Workflow */}
-              <div className="hidden lg:flex items-center gap-2 sm:gap-3 pointer-events-none z-10">
-                {/* 1. Citizen Avatar Filing Form */}
+              {/* 3-Step Animated Digital Citizen e-Governance Workflow */}
+              <div className="hidden lg:flex items-center gap-1.5 sm:gap-2 pointer-events-none z-10">
+                
+                {/* Step 1: Citizen Avatar Filing Form */}
                 <motion.div
                   animate={{ y: [0, -5, 0] }}
                   transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
                   className="relative flex flex-col items-center justify-center shrink-0"
                 >
-                  {/* Backdrop Glow */}
                   <div className="absolute inset-0 bg-amber-400/25 rounded-full blur-xl animate-pulse" />
-
-                  {/* Avatar Frame */}
-                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-1 shadow-2xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
+                  <div className="relative w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-0.5 shadow-2xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
                     <svg className="w-full h-full text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="50" cy="50" r="48" fill="url(#citizenGrad)" />
                       <defs>
@@ -453,64 +451,78 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                       <path d="M49 68L51 68L52 80L50 84L48 80L49 68Z" fill="#E53E3E" />
                     </svg>
                   </div>
-
-                  {/* Laptop Icon / Form Indicator Badge */}
                   <motion.div
-                    animate={{ scale: [1, 1.06, 1] }}
+                    animate={{ scale: [1, 1.05, 1] }}
                     transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
-                    className="absolute -bottom-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/90 flex items-center gap-1 whitespace-nowrap"
+                    className="absolute -bottom-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[7.5px] font-black px-1.5 py-0.5 rounded-full shadow-lg border border-white/90 flex items-center gap-0.5 whitespace-nowrap"
                   >
                     <span>💻</span>
-                    <span>{t('अर्ज भरणे', 'आवेदन पत्र', 'e-Form')}</span>
+                    <span>{t('१. नागरीक अर्ज', '1. नागरिक आवेदन', '1. e-Application')}</span>
                   </motion.div>
                 </motion.div>
 
-                {/* 2. Animated Connecting Data Beam */}
-                <div className="relative flex items-center justify-center w-10 sm:w-14 h-8">
-                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 via-emerald-400 to-white/80 rounded-full opacity-60" />
-                  
-                  {/* Moving Data Packet 1 */}
+                {/* Connecting Beam 1 */}
+                <div className="relative flex items-center justify-center w-6 sm:w-8 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-300 rounded-full opacity-70" />
                   <motion.div
-                    animate={{ x: [-16, 20], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.8, ease: 'linear' }}
-                    className="absolute w-3 h-3 rounded-full bg-emerald-400 border border-white flex items-center justify-center shadow-lg"
-                  >
-                    <span className="text-[7px] text-white font-black">✓</span>
-                  </motion.div>
-
-                  {/* Moving Data Packet 2 */}
-                  <motion.div
-                    animate={{ x: [-16, 20], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', delay: 0.9 }}
+                    animate={{ x: [-10, 12], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.6, ease: 'linear' }}
                     className="absolute w-2.5 h-2.5 rounded-full bg-amber-300 border border-white flex items-center justify-center shadow-md"
                   >
-                    <span className="text-[6px] text-amber-900 font-black">⚡</span>
+                    <span className="text-[6px] text-amber-950 font-black">⚡</span>
                   </motion.div>
                 </div>
 
-                {/* 3. Mobile Phone Mockup with Animated Citizen Form Fields */}
+                {/* Step 2: System Auto-Verification & SLA Processing Node */}
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.3 }}
+                  className="relative flex flex-col items-center justify-center shrink-0"
+                >
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-700 p-0.5 shadow-xl border border-white/80 flex flex-col items-center justify-center text-white relative">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
+                      className="text-amber-300"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+                    </motion.div>
+                  </div>
+                  <div className="absolute -bottom-2 bg-indigo-900/90 text-indigo-100 text-[7.5px] font-black px-1.5 py-0.5 rounded-full shadow border border-indigo-400/40 whitespace-nowrap">
+                    <span>{t('२. पडताळणी', '2. सत्यापन', '2. Auto-Verify')}</span>
+                  </div>
+                </motion.div>
+
+                {/* Connecting Beam 2 */}
+                <div className="relative flex items-center justify-center w-6 sm:w-8 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-purple-400 via-emerald-400 to-white/90 rounded-full opacity-70" />
+                  <motion.div
+                    animate={{ x: [-10, 12], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.6, ease: 'linear', delay: 0.8 }}
+                    className="absolute w-2.5 h-2.5 rounded-full bg-emerald-400 border border-white flex items-center justify-center shadow-md"
+                  >
+                    <span className="text-[6px] text-white font-black">✓</span>
+                  </motion.div>
+                </div>
+
+                {/* Step 3: Mobile Mockup displaying Approved e-Certificate */}
                 <motion.div
                   animate={{ y: [0, -5, 0] }}
                   transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
                   className="relative shrink-0 z-10 self-center"
                 >
                   <div className="relative w-[76px] h-[115px] bg-slate-900 rounded-[16px] p-[2.5px] shadow-2xl border border-slate-800 shrink-0">
-                    {/* Notch */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-9 h-1.5 bg-slate-900 rounded-b-[4px] z-20 flex justify-center items-center gap-0.5">
                       <div className="w-2.5 h-[0.7px] bg-slate-700 rounded-full" />
                     </div>
 
-                    {/* Phone Screen */}
                     <div className="w-full h-full bg-white rounded-[13px] pt-3 px-1 pb-1 flex flex-col justify-between relative overflow-hidden shadow-inner">
-                      
-                      {/* Mini Form Title */}
-                      <div className="bg-blue-600 text-white rounded-[4px] px-1 py-0.5 text-[7px] font-black text-center tracking-tight leading-none shadow-xs">
-                        {t('RTS अर्ज भरत आहे', 'RTS फॉर्म', 'RTS Form')}
+                      <div className="bg-emerald-600 text-white rounded-[4px] px-1 py-0.5 text-[7px] font-black text-center tracking-tight leading-none shadow-xs flex items-center justify-center gap-0.5">
+                        <span>📜</span>
+                        <span>{t('डिजिटल दाखला', 'डिजिटल प्रमाण', 'e-Certificate')}</span>
                       </div>
 
-                      {/* Animated Form Input Fields */}
                       <div className="space-y-1 my-auto">
-                        {/* Field 1: Applicant Name */}
                         <motion.div
                           animate={{ opacity: [0.6, 1, 0.6] }}
                           transition={{ repeat: Infinity, duration: 2 }}
@@ -523,7 +535,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                           <span className="text-[7px] text-emerald-600 font-bold">✓</span>
                         </motion.div>
 
-                        {/* Field 2: UPIC / Property ID */}
                         <motion.div
                           animate={{ opacity: [0.6, 1, 0.6] }}
                           transition={{ repeat: Infinity, duration: 2, delay: 0.4 }}
@@ -536,7 +547,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                           <span className="text-[7px] text-blue-600 font-bold">✓</span>
                         </motion.div>
 
-                        {/* Field 3: Verified Badge */}
                         <motion.div
                           animate={{ opacity: [0.6, 1, 0.6] }}
                           transition={{ repeat: Infinity, duration: 2, delay: 0.8 }}
@@ -550,14 +560,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                         </motion.div>
                       </div>
 
-                      {/* Submitted Badge at bottom of screen */}
-                      <div className="bg-emerald-600 text-white rounded-[3px] py-0.5 px-0.5 text-[6.5px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
+                      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[3px] py-0.5 px-0.5 text-[6.5px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
                         <span>✓</span>
-                        <span>{t('अर्ज मंजूर', 'आवेदन स्वीकृत', 'Approved')}</span>
+                        <span>{t('३. सेवा वितरित', '3. स्वीकृत', '3. Delivered')}</span>
                       </div>
                     </div>
 
-                    {/* Floating Green Success Ring Badge */}
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: [1, 1.15, 1] }}
@@ -568,6 +576,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     </motion.div>
                   </div>
                 </motion.div>
+
               </div>
             </div>
           </motion.div>
