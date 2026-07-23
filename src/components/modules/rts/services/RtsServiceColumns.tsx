@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowUpDown } from "lucide-react";
 import { RtsServiceApiItem } from "@/types/rts/service.types";
 import { StatusBadge } from "@/components/common";
@@ -6,13 +5,13 @@ import { StatusBadge } from "@/components/common";
 export const getRtsServiceColumns = (
   t: any,
   tCommon: any,
-  sortBy?: string,
-  sortOrder?: string,
+  _sortBy?: string,
+  _sortOrder?: string,
   onSort?: (col: string) => void
 ) => [
   {
     key: "serviceName",
-    header: (
+    label: (
       <button
         onClick={() => onSort?.("serviceName")}
         className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
@@ -30,7 +29,7 @@ export const getRtsServiceColumns = (
   },
   {
     key: "serviceNameLocal",
-    header: (
+    label: (
       <span className="font-bold text-slate-800">
         {t("list.table.serviceNameLocal") || "Local Name"}
       </span>
@@ -41,7 +40,7 @@ export const getRtsServiceColumns = (
   },
   {
     key: "sla",
-    header: (
+    label: (
       <button
         onClick={() => onSort?.("sla")}
         className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
@@ -58,7 +57,7 @@ export const getRtsServiceColumns = (
   },
   {
     key: "fees",
-    header: <span className="font-bold text-slate-800">Fees (₹)</span>,
+    label: <span className="font-bold text-slate-800">Fees (₹)</span>,
     render: (row: RtsServiceApiItem) => (
       <span className="text-slate-700 font-mono text-xs">
         {row.isFeesRequired ? `₹${row.fees}` : "Free"}
@@ -67,14 +66,14 @@ export const getRtsServiceColumns = (
   },
   {
     key: "displayOrder",
-    header: <span className="font-bold text-slate-800">Order</span>,
+    label: <span className="font-bold text-slate-800">Order</span>,
     render: (row: RtsServiceApiItem) => (
       <span className="text-slate-500 font-mono text-xs">{row.displayOrder}</span>
     ),
   },
   {
     key: "isActive",
-    header: <span className="font-bold text-slate-800">{tCommon("table.columns.status")}</span>,
+    label: <span className="font-bold text-slate-800">{tCommon("table.columns.status")}</span>,
     render: (row: RtsServiceApiItem) => (
       <StatusBadge
         value={row.isActive}

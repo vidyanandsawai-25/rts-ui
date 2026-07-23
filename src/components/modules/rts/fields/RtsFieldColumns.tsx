@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowUpDown } from "lucide-react";
 import { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
 import { StatusBadge } from "@/components/common";
@@ -6,13 +5,13 @@ import { StatusBadge } from "@/components/common";
 export const getRtsFieldColumns = (
   t: any,
   tCommon: any,
-  sortBy?: string,
-  sortOrder?: string,
+  _sortBy?: string,
+  _sortOrder?: string,
   onSort?: (col: string) => void
 ) => [
   {
     key: "fieldLabel",
-    header: (
+    label: (
       <button
         onClick={() => onSort?.("fieldLabel")}
         className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
@@ -30,7 +29,7 @@ export const getRtsFieldColumns = (
   },
   {
     key: "fieldLabelLocal",
-    header: (
+    label: (
       <span className="font-bold text-slate-800">
         {t("list.table.fieldLabelLocal") || "Local Label"}
       </span>
@@ -41,7 +40,7 @@ export const getRtsFieldColumns = (
   },
   {
     key: "fieldType",
-    header: <span className="font-bold text-slate-800">Type</span>,
+    label: <span className="font-bold text-slate-800">Type</span>,
     render: (row: RtsFieldDefinitionApiItem) => (
       <span className="text-slate-500 font-mono text-xs capitalize bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
         {row.fieldType}
@@ -50,14 +49,14 @@ export const getRtsFieldColumns = (
   },
   {
     key: "fieldGroup",
-    header: <span className="font-bold text-slate-800">Section Group</span>,
+    label: <span className="font-bold text-slate-800">Section Group</span>,
     render: (row: RtsFieldDefinitionApiItem) => (
       <span className="text-slate-600 text-xs font-semibold">{row.fieldGroup || "General"}</span>
     ),
   },
   {
     key: "isRequired",
-    header: <span className="font-bold text-slate-800">Mandatory</span>,
+    label: <span className="font-bold text-slate-800">Mandatory</span>,
     render: (row: RtsFieldDefinitionApiItem) => (
       <span
         className={`text-xs font-bold ${
@@ -70,14 +69,14 @@ export const getRtsFieldColumns = (
   },
   {
     key: "displayOrder",
-    header: <span className="font-bold text-slate-800">Order</span>,
+    label: <span className="font-bold text-slate-800">Order</span>,
     render: (row: RtsFieldDefinitionApiItem) => (
       <span className="text-slate-600 font-mono text-xs">{row.displayOrder}</span>
     ),
   },
   {
     key: "isActive",
-    header: <span className="font-bold text-slate-800">{tCommon("table.columns.status")}</span>,
+    label: <span className="font-bold text-slate-800">{tCommon("table.columns.status")}</span>,
     render: (row: RtsFieldDefinitionApiItem) => (
       <StatusBadge
         value={row.isActive}

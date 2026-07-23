@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createRtsDepartmentAction, updateRtsDepartmentAction } from "@/app/[locale]/rts/departments/action";
 import { RtsDepartmentApiItem } from "@/types/rts/departments.types";
@@ -30,7 +30,6 @@ export function useRtsDepartmentForm({
   onClose,
 }: UseRtsDepartmentFormProps) {
   const router = useRouter();
-  const locale = useLocale();
   const tCommon = useTranslations("common");
   const isEdit = Boolean(editingDepartment);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,7 +117,7 @@ export function useRtsDepartmentForm({
       setIsSubmitting(true);
       try {
         const result = isEdit
-          ? await updateRtsDepartmentAction(formData.id!, formData)
+          ? await updateRtsDepartmentAction(formData.id!, { ...formData, id: formData.id! })
           : await createRtsDepartmentAction(formData);
 
         if (result.success) {

@@ -35,6 +35,7 @@ export interface RtsServiceApiItem {
   fees?: number | null;
   feesRequired?: boolean | null;
   isFeesRequired?: boolean | null;
+  [key: string]: unknown;
 }
 
 export interface RtsServiceQueryParams {

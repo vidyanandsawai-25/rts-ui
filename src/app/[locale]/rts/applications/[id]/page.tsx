@@ -20,14 +20,14 @@ export default async function RtsApplicationDetailsPage({ params }: PageProps) {
   }
 
   // Retrieve real matching dynamic fields config for EAV form rendering
-  const fieldDefinitions = await getRtsFieldDefinitionsByServiceId(app.serviceId).catch(() => []);
+  const fieldDefinitions = await getRtsFieldDefinitionsByServiceId(Number(app.serviceId)).catch(() => []);
   const formSchema = buildOldServiceFormConfigFromRtsFieldDefinitions(String(app.serviceId), fieldDefinitions);
   const officers = await getRtsUsersAction();
 
   return (
     <div className="w-full">
       <RtsApplicationDetails
-        application={app}
+        application={app as any}
         formSchema={formSchema}
         officers={officers}
         locale={locale}

@@ -135,3 +135,18 @@ export async function deleteRtsServiceAction(
     };
   }
 }
+
+export async function fetchRtsServicesByDeptAction(
+  departmentId: number
+): Promise<RtsServiceApiItem[]> {
+  try {
+    const res = await getRtsServicesPaged({
+      DepartmentId: departmentId,
+      PageSize: 100,
+    });
+    return res.items || [];
+  } catch (error) {
+    console.error("[fetchRtsServicesByDeptAction] Error:", error);
+    return [];
+  }
+}

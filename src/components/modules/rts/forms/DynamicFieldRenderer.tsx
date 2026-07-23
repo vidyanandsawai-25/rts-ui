@@ -66,11 +66,6 @@ const resolveAllowRule = (allow?: string) => {
   if (key === "alphanumeric") {
     return { kind: "chars" as const, regex: /[A-Za-z0-9]/g };
   }
-<<<<<<< HEAD
-
-=======
- 
->>>>>>> main
   try {
     if (allow.includes("^") || allow.includes("$")) {
       const charClass = allow.match(/\[[^\]]+\]/);

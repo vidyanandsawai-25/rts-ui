@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createRtsFieldAction, updateRtsFieldAction } from "@/app/[locale]/rts/fields/action";
-import { getRtsServicesByDeptId } from "@/lib/api/rts/rtsservice.service";
+import { fetchRtsServicesByDeptAction } from "@/app/[locale]/rts/services/action";
 import { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
 import { RtsServiceApiItem } from "@/types/rts/service.types";
 
@@ -38,7 +38,6 @@ export function useRtsFieldForm({
   onCancel,
 }: UseRtsFieldFormProps) {
   const router = useRouter();
-  const locale = useLocale();
   const tCommon = useTranslations("common");
   const isEdit = Boolean(editingField);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,7 +68,7 @@ export function useRtsFieldForm({
     if (formData.departmentId > 0) {
       startTransition(async () => {
         try {
-          const list = await getRtsServicesByDeptId(formData.departmentId);
+          const list = await fetchRtsServicesByDeptAction(formData.departmentId);
           setServices(list);
         } catch {
           setServices([]);
@@ -174,7 +173,7 @@ export function useRtsFieldForm({
       setIsSubmitting(true);
       try {
         const result = isEdit
-          ? await updateRtsFieldAction(formData.id!, formData)
+          ? await updateRtsFieldAction(formData.id!, { ...formData, id: formData.id! })
           : await createRtsFieldAction(formData);
 
         if (result.success) {

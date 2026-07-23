@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
@@ -142,7 +142,7 @@ export function RtsDepartmentMaster({
           }
         />
 
-        <MasterTable<RtsDepartmentApiItem>
+        <MasterTable<any>
           columns={columns}
           data={data}
           loading={isPending}

@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
 import { Sparkles } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, Input } from "@/components/common";
-import { StatusToggle } from "@/components/common/StatusToggle";
+import { CancelButton, SaveButton, Input, StatusToggle } from "@/components/common";
 import { RtsServiceApiItem } from "@/types/rts/service.types";
 import { RtsDepartmentApiItem } from "@/types/rts/departments.types";
 import { useRtsServiceForm } from "@/hooks/rts/services/useRtsServiceForm";

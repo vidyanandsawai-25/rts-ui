@@ -50,6 +50,7 @@ export async function createRtsFieldAction(payload: {
 
     await createRtsFieldDefinition({
       ...payload,
+      isRequired: payload.isRequired ?? false,
       createdBy,
     });
 
@@ -89,6 +90,7 @@ export async function updateRtsFieldAction(
 
     await updateRtsFieldDefinition(id, {
       ...payload,
+      isRequired: payload.isRequired ?? false,
       updatedBy,
     });
 

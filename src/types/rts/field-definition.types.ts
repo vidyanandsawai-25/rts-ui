@@ -5,6 +5,7 @@ export interface RtsFieldDefinitionQueryParams {
   // FieldName removed — FieldCode is the unique identifier
   PageNumber?: number;
   PageSize?: number;
+  SearchTerm?: string;
 }
 
 export interface RtsFieldDefinitionApiItem {
@@ -28,6 +29,7 @@ export interface RtsFieldDefinitionApiItem {
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
+  [key: string]: unknown;
 }
 
 export type DynamicRenderFieldType =

@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
 import { Sliders } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, Input } from "@/components/common";
-import { StatusToggle } from "@/components/common/StatusToggle";
+import { CancelButton, SaveButton, Input, StatusToggle } from "@/components/common";
 import { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
 import { RtsDepartmentApiItem } from "@/types/rts/departments.types";
 import { useRtsFieldForm } from "@/hooks/rts/fields/useRtsFieldForm";

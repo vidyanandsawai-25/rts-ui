@@ -156,19 +156,10 @@ export type { FloorDetailsTableColumn } from './FloorDetailsTable';
 
 export { RequiredFieldsNote } from './RequiredFieldsNote';
 export { StatusToggleCard } from './StatusToggleCard';
+export { StatusToggle } from './StatusToggle';
 export { UnauthorizedPage } from './UnauthorizedPage';
 export { DocumentViewerModal } from './DocumentViewerModal';
 export type { DocumentViewerModalProps } from './DocumentViewerModal';
-<<<<<<< HEAD
-export { GooglePlayBadge } from "./GooglePlayBadge";
-export { SocialLinks } from "./SocialLinks";
-export { UserProfileDropdown } from "./UserProfileDropdown";
-export { DatePicker } from "./DatePicker";
-export type { DatePickerProps } from "./DatePicker";
-export { TimePicker } from "./TimePicker";
-export type { TimePickerProps } from "./TimePicker";
-export { LanguageDropdown } from "./LanguageDropdown";
-=======
 export { GooglePlayBadge } from './GooglePlayBadge';
 export { SocialLinks } from './SocialLinks';
 export { UserProfileDropdown } from './UserProfileDropdown';
@@ -184,4 +175,3 @@ export type { TimePickerProps } from './TimePicker';
 
 export { LanguageDropdown } from './LanguageDropdown';
 export { LanguageSelector } from './LanguageSelector';
->>>>>>> main

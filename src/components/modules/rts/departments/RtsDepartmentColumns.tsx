@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowUpDown } from "lucide-react";
 import { RtsDepartmentApiItem } from "@/types/rts/departments.types";
 import { StatusBadge } from "@/components/common";
@@ -6,13 +5,13 @@ import { StatusBadge } from "@/components/common";
 export const getRtsDepartmentColumns = (
   t: any,
   tCommon: any,
-  sortBy?: string,
-  sortOrder?: string,
+  _sortBy?: string,
+  _sortOrder?: string,
   onSort?: (col: string) => void
 ) => [
   {
     key: "departmentName",
-    header: (
+    label: (
       <button
         onClick={() => onSort?.("departmentName")}
         className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
@@ -27,7 +26,7 @@ export const getRtsDepartmentColumns = (
   },
   {
     key: "departmentNameLocal",
-    header: (
+    label: (
       <span className="font-bold text-slate-800">
         {t("list.table.departmentNameLocal") || "Local Name"}
       </span>
@@ -38,7 +37,7 @@ export const getRtsDepartmentColumns = (
   },
   {
     key: "departmentIcon",
-    header: (
+    label: (
       <span className="font-bold text-slate-800">
         {t("list.table.departmentIcon") || "Icon"}
       </span>
@@ -49,7 +48,7 @@ export const getRtsDepartmentColumns = (
   },
   {
     key: "displayOrder",
-    header: (
+    label: (
       <button
         onClick={() => onSort?.("displayOrder")}
         className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
@@ -64,7 +63,7 @@ export const getRtsDepartmentColumns = (
   },
   {
     key: "isActive",
-    header: <span className="font-bold text-slate-800">{tCommon("table.columns.status")}</span>,
+    label: <span className="font-bold text-slate-800">{tCommon("table.columns.status")}</span>,
     render: (row: RtsDepartmentApiItem) => (
       <StatusBadge
         value={row.isActive}

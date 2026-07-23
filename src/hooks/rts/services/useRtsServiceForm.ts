@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createRtsServiceAction, updateRtsServiceAction } from "@/app/[locale]/rts/services/action";
 import { RtsServiceApiItem } from "@/types/rts/service.types";
@@ -36,7 +36,6 @@ export function useRtsServiceForm({
   onClose,
 }: UseRtsServiceFormProps) {
   const router = useRouter();
-  const locale = useLocale();
   const tCommon = useTranslations("common");
   const isEdit = Boolean(editingService);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +69,7 @@ export function useRtsServiceForm({
         description: editingService.description || "",
         serviceUrl: editingService.serviceUrl || "",
         serviceIcon: editingService.serviceIcon || "",
-        sla: editingService.sla || 0,
+        sla: typeof editingService.sla === "number" ? editingService.sla : parseInt(String(editingService.sla || 0), 10) || 0,
         fees: editingService.fees || 0,
         isFeesRequired: editingService.isFeesRequired || false,
         displayOrder: editingService.displayOrder || 0,
@@ -156,7 +155,7 @@ export function useRtsServiceForm({
       setIsSubmitting(true);
       try {
         const result = isEdit
-          ? await updateRtsServiceAction(formData.id!, formData)
+          ? await updateRtsServiceAction(formData.id!, { ...formData, id: formData.id! })
           : await createRtsServiceAction(formData);
 
         if (result.success) {

@@ -22,7 +22,7 @@ type Department = {
   name: LangText;
   icon?: string;
   image: string;
-  displayOrder: number;
+  displayOrder?: number;
   services: unknown[];
 };
 

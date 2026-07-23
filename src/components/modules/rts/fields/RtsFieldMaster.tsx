@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Sliders } from "lucide-react";
@@ -145,7 +145,7 @@ export function RtsFieldMaster({
           }
         />
 
-        <MasterTable<RtsFieldDefinitionApiItem>
+        <MasterTable<any>
           columns={columns}
           data={data}
           loading={isPending}
@@ -172,7 +172,7 @@ export function RtsFieldMaster({
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
                   value={String(pageSize)}
-                  onChange={(e) => handlePageSizeChange(e.target.value)}
+                  onChange={(e: any) => handlePageSizeChange(e.target.value)}
                   options={[10, 20, 30, 40, 50].map((s) => ({
                     label: String(s),
                     value: String(s),

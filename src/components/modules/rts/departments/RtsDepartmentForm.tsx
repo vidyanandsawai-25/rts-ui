@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
 import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, Input } from "@/components/common";
-import { StatusToggle } from "@/components/common/StatusToggle";
+import { CancelButton, SaveButton, Input, StatusToggle } from "@/components/common";
 import { RtsDepartmentApiItem } from "@/types/rts/departments.types";
 import { useRtsDepartmentForm } from "@/hooks/rts/departments/useRtsDepartmentForm";
 
