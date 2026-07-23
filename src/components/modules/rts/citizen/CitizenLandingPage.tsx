@@ -357,9 +357,9 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-            className="hidden lg:block lg:col-span-5"
+            className="col-span-12 lg:col-span-5 w-full mt-3 lg:mt-0"
           >
-            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-4 sm:p-5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-[145px]">
+            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-3.5 sm:p-4 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-0 gap-2 sm:gap-3">
               <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute -left-10 -top-10 w-24 h-24 bg-blue-300/15 rounded-full blur-xl pointer-events-none" />
 
