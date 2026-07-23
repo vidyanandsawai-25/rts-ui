@@ -4,6 +4,10 @@ export interface LockedScreen {
   screenName: string;
   screenNameLocal: string;
   displayOrder: number;
+  moduleId?: number;
+  moduleCode?: string;
+  moduleName?: string;
+  moduleNameLocal?: string;
 }
 
 export interface LockUnlockPropertyItem extends Record<string, unknown> {
@@ -27,10 +31,15 @@ export interface LockUnlockPropertiesResponse {
 }
 
 export interface LockUnlockPropertiesQueryParams {
+  ZoneId?: number;
   WardId?: number;
   FromPropertyNo?: string;
   ToPropertyNo?: string;
+  PropertyFrom?: string;
+  PropertyTo?: string;
+  SearchCategory?: number;
   PartitionNo?: string;
+  PropertyNo?: string;
   Search?: string;
   SearchPartitionNo?: string;
   PageNumber?: number;
@@ -57,3 +66,28 @@ export interface BulkLockUnlockPayload {
   excludedPropertyIds?: number[];
   filters?: BulkLockUnlockFilters;
 }
+
+export interface ModuleItem {
+  id: number;
+  departmentId: number;
+  moduleCode: string;
+  moduleName: string;
+  moduleNameLocal: string;
+  moduleIcon: string;
+  moduleLabel: string;
+  moduleDescription: string;
+  departmentName: string;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
+}
+
+export interface ModuleMasterResponse {
+  items: ModuleItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}

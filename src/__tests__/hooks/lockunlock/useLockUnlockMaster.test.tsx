@@ -36,7 +36,10 @@ const mockT = vi.fn((key: string, _values?: Record<string, unknown>) => {
   };
   if (key === "lockUnlock") return "lockUnlock";
   return (translations[key] as string) || key;
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+}) as any;
+
+mockT.rich = vi.fn((key: string) => key);
 
 vi.mock("next-intl", () => ({
   useTranslations: () => mockT,
@@ -134,9 +137,12 @@ describe("useLockUnlockMaster", () => {
     const { result } = renderHook(() => useLockUnlockMaster(defaultProps));
 
     expect(result.current.formData).toEqual({
+      searchCategory: 1,
+      zoneId: "",
       wardId: "1",
       fromProperty: "",
       toProperty: "",
+      propertyNos: [],
     });
     expect(result.current.selectedScreenIds).toEqual([]);
     expect(result.current.showResults).toBe(false);
@@ -177,13 +183,15 @@ describe("useLockUnlockMaster", () => {
       result.current.handleSelectProperty(101);
     });
 
-    expect(result.current.selectedPropertyIds).toEqual([101]);
+    // When searchCategory is 1 (default), isAllPropertiesSelected is true
+    // so it should add to excludedPropertyIds
+    expect(result.current.excludedPropertyIds).toEqual([101]);
 
     act(() => {
       result.current.handleSelectProperty(101);
     });
 
-    expect(result.current.selectedPropertyIds).toEqual([]);
+    expect(result.current.excludedPropertyIds).toEqual([]);
   });
 
   it("should handle select all properties", () => {
@@ -198,7 +206,7 @@ describe("useLockUnlockMaster", () => {
       result.current.handleSelectAllProperties();
     });
 
-    expect(result.current.isAllPropertiesSelected).toBe(true);
+    expect(result.current.isAllPropertiesSelected).toBe(false);
     expect(result.current.selectedPropertyIds).toEqual([]);
     expect(result.current.excludedPropertyIds).toEqual([]);
 
@@ -206,7 +214,7 @@ describe("useLockUnlockMaster", () => {
       result.current.handleSelectAllProperties();
     });
 
-    expect(result.current.isAllPropertiesSelected).toBe(false);
+    expect(result.current.isAllPropertiesSelected).toBe(true);
     expect(result.current.selectedPropertyIds).toEqual([]);
     expect(result.current.excludedPropertyIds).toEqual([]);
   });
@@ -225,22 +233,26 @@ describe("useLockUnlockMaster", () => {
     });
 
     expect(result.current.formData).toEqual({
+      searchCategory: 1,
+      zoneId: "",
       wardId: "",
       fromProperty: "",
       toProperty: "",
+      propertyNos: [],
     });
     expect(result.current.selectedScreenIds).toEqual([]);
     expect(result.current.showResults).toBe(false);
     expect(result.current.properties).toEqual([]);
     expect(result.current.selectedPropertyIds).toEqual([]);
-    expect(mockPush).toHaveBeenCalledWith(mockPathname);
+    expect(mockPush).toHaveBeenCalledWith(`${mockPathname}?searchCategory=1`);
   });
 
-  it("should handle select change for wardId", () => {
+  it("should handle select change for wardId", async () => {
     const { result } = renderHook(() => useLockUnlockMaster(defaultProps));
 
-    act(() => {
+    await act(async () => {
       result.current.handleSelectChange("wardId", "2");
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.formData.wardId).toBe("2");
