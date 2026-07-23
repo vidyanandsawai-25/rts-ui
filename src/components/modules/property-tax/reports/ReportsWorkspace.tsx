@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Settings, Clock, Info, Download, X } from 'lucide-react';
-import { Tabs, TabList, Tab, TabPanel, Badge, Button } from '@/components/common';
+import { Tabs, TabList, Tab, TabPanel, Button } from '@/components/common';
 import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
@@ -166,9 +166,7 @@ export function ReportsWorkspace({
 
   if (!workspaceCopy || !paramsCopy) return null;
 
-  const hasActiveJobs = jobs.some(
-    (j) => j.status === 'Pending' || j.status === 'Processing' || j.status === 'Retrying'
-  );
+
 
   return (
     <div className="flex flex-col gap-5">

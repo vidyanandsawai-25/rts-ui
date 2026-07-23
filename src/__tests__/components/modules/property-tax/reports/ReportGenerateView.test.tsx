@@ -8,7 +8,8 @@ import { Home, BarChart2 } from 'lucide-react';
 // Mock next/image
 vi.mock('next/image', () => ({
   __esModule: true,
-  default: (props: Record<string, unknown>) => <img {...props} />,
+  // eslint-disable-next-line @next/next/no-img-element
+  default: (props: Record<string, unknown>) => <img alt="" {...props} />,
 }));
 
 // Mock ReportParametersPanel to avoid next-intl context dependency (Label → useTranslations)
