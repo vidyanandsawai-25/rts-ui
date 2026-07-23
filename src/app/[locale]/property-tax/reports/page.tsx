@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { getReportDefinitions, getZones } from '@/lib/api/report.service';
+import { getReportDefinitions, getZones, getReportModules } from '@/lib/api/report.service';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
 import { getWardsByZoneAction, getPropertiesByWardAction, fetchReportJobs, getReportParametersAction, createReportRequestAction } from '@/app/[locale]/property-tax/reports/action';
 import { ReportsWorkspace } from '@/components/modules/property-tax/reports/ReportsWorkspace';
@@ -17,9 +17,10 @@ interface PageProps {
 export default async function ReportsPage({ params }: PageProps) {
   const { locale } = await params;
 
-  const [t, reportDefinitions, zones, financialYears, initialJobs] = await Promise.all([
+  const [t, reportDefinitions, reportModules, zones, financialYears, initialJobs] = await Promise.all([
     getTranslations({ locale, namespace: 'report' }),
     getReportDefinitions().catch(() => []),
+    getReportModules().catch(() => []),
     getZones().catch(() => []),
     getFinancialYearsPaged(1, 100).then((res) => res.items || []).catch(() => []),
     fetchReportJobs(25).catch(() => []),
@@ -41,7 +42,7 @@ export default async function ReportsPage({ params }: PageProps) {
   );
 
   return (
-    <PageContainer className="p-6 w-full flex flex-col gap-6">
+    <PageContainer className="p-6 pt-2 w-full flex flex-col gap-4">
       <TableHeader
         title={copy.pageTitle}
         subtitle={copy.pageSubtitle}
@@ -54,6 +55,7 @@ export default async function ReportsPage({ params }: PageProps) {
         workspaceCopy={workspaceCopy}
         paramsCopy={paramsCopy}
         reportDefinitions={reportDefinitions}
+        reportModules={reportModules}
         zones={zones}
         financialYears={financialYears}
         fetchWards={getWardsByZoneAction}
