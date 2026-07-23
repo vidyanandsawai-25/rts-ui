@@ -419,54 +419,156 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </div>
               </div>
 
-              {/* Middle floating micro-badges in empty gap */}
-              <div className="hidden xl:flex flex-col gap-2 items-center justify-center pointer-events-none z-10 px-2">
+              {/* Middle & Right: Animated Digital Citizen Form Submission Workflow */}
+              <div className="hidden lg:flex items-center gap-2 sm:gap-3 pointer-events-none z-10">
+                {/* 1. Citizen Avatar Filing Form */}
                 <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg text-[10px] font-black text-white whitespace-nowrap"
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                  className="relative flex flex-col items-center justify-center shrink-0"
                 >
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                  </span>
-                  <span>{t('२४x७ ऑनलाईन', '24x7 ऑनलाइन', '24x7 Active')}</span>
+                  {/* Backdrop Glow */}
+                  <div className="absolute inset-0 bg-amber-400/25 rounded-full blur-xl animate-pulse" />
+
+                  {/* Avatar Frame */}
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-1 shadow-2xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
+                    <svg className="w-full h-full text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="50" r="48" fill="url(#citizenGrad)" />
+                      <defs>
+                        <linearGradient id="citizenGrad" x1="0" y1="0" x2="100" y2="100">
+                          <stop offset="0%" stopColor="#1e3c72" />
+                          <stop offset="100%" stopColor="#2a5298" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M30 40C30 26 40 18 50 18C60 18 70 26 70 40C70 42 68 44 68 44C68 44 64 32 50 32C36 32 32 44 32 44C32 44 30 42 30 40Z" fill="#1A202C" />
+                      <ellipse cx="50" cy="46" rx="16" ry="18" fill="#FCE0D1" />
+                      <circle cx="44" cy="44" r="2" fill="#2D3748" />
+                      <circle cx="56" cy="44" r="2" fill="#2D3748" />
+                      <path d="M44 52C44 52 47 56 50 56C53 56 56 52 56 52" stroke="#E53E3E" strokeWidth="2" strokeLinecap="round" />
+                      <rect x="39" y="40" width="10" height="7" rx="2" stroke="#2D3748" strokeWidth="1.5" fill="none" />
+                      <rect x="51" y="40" width="10" height="7" rx="2" stroke="#2D3748" strokeWidth="1.5" fill="none" />
+                      <line x1="49" y1="43" x2="51" y2="43" stroke="#2D3748" strokeWidth="1.5" />
+                      <path d="M26 82C26 66 36 62 50 62C64 62 74 66 74 82V100H26V82Z" fill="#3182CE" />
+                      <path d="M44 62L50 72L56 62" fill="#FFFFFF" />
+                      <path d="M49 68L51 68L52 80L50 84L48 80L49 68Z" fill="#E53E3E" />
+                    </svg>
+                  </div>
+
+                  {/* Laptop Icon / Form Indicator Badge */}
+                  <motion.div
+                    animate={{ scale: [1, 1.06, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                    className="absolute -bottom-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/90 flex items-center gap-1 whitespace-nowrap"
+                  >
+                    <span>💻</span>
+                    <span>{t('अर्ज भरणे', 'आवेदन पत्र', 'e-Form')}</span>
+                  </motion.div>
                 </motion.div>
 
-                <motion.div
-                  animate={{ y: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.5 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400/20 backdrop-blur-md border border-amber-300/35 shadow-lg text-[10px] font-black text-amber-200 whitespace-nowrap"
-                >
-                  <span className="text-[11px]">⚡</span>
-                  <span>{t('झटपट मंजुरी', 'त्वरित स्वीकृति', 'Instant SLA')}</span>
-                </motion.div>
-              </div>
+                {/* 2. Animated Connecting Data Beam */}
+                <div className="relative flex items-center justify-center w-10 sm:w-14 h-8">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 via-emerald-400 to-white/80 rounded-full opacity-60" />
+                  
+                  {/* Moving Data Packet 1 */}
+                  <motion.div
+                    animate={{ x: [-16, 20], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.8, ease: 'linear' }}
+                    className="absolute w-3 h-3 rounded-full bg-emerald-400 border border-white flex items-center justify-center shadow-lg"
+                  >
+                    <span className="text-[7px] text-white font-black">✓</span>
+                  </motion.div>
 
-              {/* Phone mockup */}
-              <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }} className="relative shrink-0 ml-2 z-10 self-center">
-                <div className="relative w-[68px] h-[105px] bg-slate-900 rounded-[15px] p-[2px] shadow-2xl border border-slate-800 shrink-0">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-slate-900 rounded-b-[3px] z-20 flex justify-center items-center gap-0.5">
-                    <div className="w-2 h-[0.5px] bg-slate-700 rounded-full" />
-                  </div>
-                  <div className="w-full h-full bg-white rounded-[13px] pt-2 px-0.5 pb-0.5 flex flex-col gap-1 justify-start relative overflow-hidden shadow-inner">
-                    {[...Array(3)].map((_, idx) => (
-                      <motion.div key={idx} initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 + idx * 0.15, type: 'spring', stiffness: 100 }} className="flex items-center gap-0.5 pb-0.5 border-b border-slate-100 last:border-0 leading-none">
-                        <div className="w-2 h-2 rounded-full bg-[#27ae60] flex items-center justify-center shrink-0">
-                          <svg className="w-1.5 h-1.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12" /></svg>
-                        </div>
-                        <div className="flex-1 space-y-0.5">
-                          <div className="h-[1.5px] bg-slate-200 rounded w-6" />
-                          <div className="h-[1px] bg-slate-150 rounded w-4" />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.1, type: 'spring', bounce: 0.6 }} className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-[#27ae60] to-[#219653] border-2 border-[#073fa8] flex items-center justify-center shadow-lg z-30">
-                    <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5"><polyline points="20 6 9 17 4 12" /></svg>
+                  {/* Moving Data Packet 2 */}
+                  <motion.div
+                    animate={{ x: [-16, 20], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', delay: 0.9 }}
+                    className="absolute w-2.5 h-2.5 rounded-full bg-amber-300 border border-white flex items-center justify-center shadow-md"
+                  >
+                    <span className="text-[6px] text-amber-900 font-black">⚡</span>
                   </motion.div>
                 </div>
-              </motion.div>
+
+                {/* 3. Mobile Phone Mockup with Animated Citizen Form Fields */}
+                <motion.div
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                  className="relative shrink-0 z-10 self-center"
+                >
+                  <div className="relative w-[76px] h-[115px] bg-slate-900 rounded-[16px] p-[2.5px] shadow-2xl border border-slate-800 shrink-0">
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-9 h-1.5 bg-slate-900 rounded-b-[4px] z-20 flex justify-center items-center gap-0.5">
+                      <div className="w-2.5 h-[0.7px] bg-slate-700 rounded-full" />
+                    </div>
+
+                    {/* Phone Screen */}
+                    <div className="w-full h-full bg-white rounded-[13px] pt-3 px-1 pb-1 flex flex-col justify-between relative overflow-hidden shadow-inner">
+                      
+                      {/* Mini Form Title */}
+                      <div className="bg-blue-600 text-white rounded-[4px] px-1 py-0.5 text-[7px] font-black text-center tracking-tight leading-none shadow-xs">
+                        {t('RTS अर्ज भरत आहे', 'RTS फॉर्म', 'RTS Form')}
+                      </div>
+
+                      {/* Animated Form Input Fields */}
+                      <div className="space-y-1 my-auto">
+                        {/* Field 1: Applicant Name */}
+                        <motion.div
+                          animate={{ opacity: [0.6, 1, 0.6] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                          className="bg-emerald-50 border border-emerald-200/80 rounded px-1 py-0.5 flex items-center justify-between"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="h-[2px] bg-emerald-700 rounded w-7" />
+                            <div className="h-[1.5px] bg-emerald-400 rounded w-5" />
+                          </div>
+                          <span className="text-[7px] text-emerald-600 font-bold">✓</span>
+                        </motion.div>
+
+                        {/* Field 2: UPIC / Property ID */}
+                        <motion.div
+                          animate={{ opacity: [0.6, 1, 0.6] }}
+                          transition={{ repeat: Infinity, duration: 2, delay: 0.4 }}
+                          className="bg-blue-50 border border-blue-200/80 rounded px-1 py-0.5 flex items-center justify-between"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="h-[2px] bg-blue-700 rounded w-8" />
+                            <div className="h-[1.5px] bg-blue-400 rounded w-4" />
+                          </div>
+                          <span className="text-[7px] text-blue-600 font-bold">✓</span>
+                        </motion.div>
+
+                        {/* Field 3: Verified Badge */}
+                        <motion.div
+                          animate={{ opacity: [0.6, 1, 0.6] }}
+                          transition={{ repeat: Infinity, duration: 2, delay: 0.8 }}
+                          className="bg-amber-50 border border-amber-200/80 rounded px-1 py-0.5 flex items-center justify-between"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="h-[2px] bg-amber-700 rounded w-6" />
+                            <div className="h-[1.5px] bg-amber-400 rounded w-6" />
+                          </div>
+                          <span className="text-[7px] text-amber-600 font-bold">✓</span>
+                        </motion.div>
+                      </div>
+
+                      {/* Submitted Badge at bottom of screen */}
+                      <div className="bg-emerald-600 text-white rounded-[3px] py-0.5 px-0.5 text-[6.5px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
+                        <span>✓</span>
+                        <span>{t('अर्ज मंजूर', 'आवेदन स्वीकृत', 'Approved')}</span>
+                      </div>
+                    </div>
+
+                    {/* Floating Green Success Ring Badge */}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [1, 1.15, 1] }}
+                      transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                      className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-[#073fa8] flex items-center justify-center shadow-lg z-30"
+                    >
+                      <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5"><polyline points="20 6 9 17 4 12" /></svg>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         </div>
