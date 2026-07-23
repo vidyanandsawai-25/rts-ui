@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Settings, Clock, Info, Download, X } from 'lucide-react';
-import { Tabs, TabList, Tab, TabPanel, Badge } from '@/components/common';
+import { Tabs, TabList, Tab, TabPanel, Badge, Button } from '@/components/common';
 import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
@@ -187,14 +187,7 @@ export function ReportsWorkspace({
             {workspaceCopy.tabs.generateReport}
           </Tab>
           <Tab value="history" icon={Clock}>
-            <Badge
-              variant={hasActiveJobs ? 'warning' : 'secondary'}
-              size="sm"
-              dot={hasActiveJobs}
-              className={hasActiveJobs ? 'animate-pulse' : ''}
-            >
-              {workspaceCopy.tabs.myReports}
-            </Badge>
+            {workspaceCopy.tabs.myReports}
           </Tab>
         </TabList>
 
@@ -263,14 +256,13 @@ export function ReportsWorkspace({
             className="relative w-[420px] h-[420px] max-w-[92vw] max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-gray-200 flex flex-col"
           >
             <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-blue-500" />
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={() => setQueuedRequestId(null)}
-              className="absolute right-3 top-3 rounded-full p-2 hover:bg-gray-100 text-gray-600"
+              className="absolute right-3 top-3 rounded-full !p-2 text-gray-600 hover:bg-gray-100"
               aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
+              icon={X}
+            />
             <div className="p-8 flex-1 flex flex-col items-center justify-center text-center">
               <div className="h-16 w-16 rounded-2xl border flex items-center justify-center bg-blue-50 border-blue-200 text-blue-700">
                 <Info className="h-8 w-8" />
@@ -283,24 +275,22 @@ export function ReportsWorkspace({
               </div>
             </div>
             <div className="border-t border-gray-100 p-5 bg-gray-50/50 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300"
+              <Button
+                variant="primary"
                 onClick={() => {
                   setQueuedRequestId(null);
                   setActiveView('history');
                 }}
+                icon={Download}
               >
-                <Download className="h-4 w-4" />
-                <Badge variant="default" size="sm">{workspaceCopy.confirm.btnGo}</Badge>
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300 focus:ring-gray-300"
+                {workspaceCopy.confirm.btnGo}
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => setQueuedRequestId(null)}
               >
-                <Badge variant="secondary" size="sm">{workspaceCopy.confirm.btnClose}</Badge>
-              </button>
+                {workspaceCopy.confirm.btnClose}
+              </Button>
             </div>
           </div>
         </div>
