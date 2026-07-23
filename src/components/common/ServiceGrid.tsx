@@ -93,7 +93,7 @@ export default function ServiceGrid({
     selectedServiceId == null
       ? undefined
       : list.find((service) => service.id === selectedServiceId) ??
-        departments.flatMap((department) => department.services).find((service) => service.id === selectedServiceId);
+      departments.flatMap((department) => department.services).find((service) => service.id === selectedServiceId);
 
   const saveDeptServiceContext = (service: Service) => {
     const deptToUse =
@@ -118,25 +118,20 @@ export default function ServiceGrid({
 
       try {
         new URL(externalUrl);
-        const activeUpicId =
-          upicId?.trim() ||
-          (typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("upicNo")?.trim()
-            : undefined);
-        let destination = externalUrl;
+        const activeUpicId = upicId?.trim();
+        if (!activeUpicId) {
+          setApplyError(t("missingUpic"));
+          return;
+        }
 
-        if (activeUpicId) {
-          if (externalUrl.includes("upicNo=")) {
-            destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
-          } else if (/([?&][^?&=]+)=$/.test(externalUrl)) {
-            destination = externalUrl.replace(
-              /([?&][^?&=]+)=$/,
-              `$1=${encodeURIComponent(activeUpicId)}`
-            );
-          } else {
-            const sep = externalUrl.includes("?") ? "&" : "?";
-            destination = `${externalUrl}${sep}upicNo=${encodeURIComponent(activeUpicId)}`;
-          }
+        let destination = externalUrl;
+        if (/([?&][^?&=]+)=$/.test(externalUrl)) {
+          destination = externalUrl.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(activeUpicId)}`);
+        } else if (externalUrl.includes("upicNo=")) {
+          destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
+        } else {
+          const sep = externalUrl.includes("?") ? "&" : "?";
+          destination = `${externalUrl}${sep}upicNo=${encodeURIComponent(activeUpicId)}`;
         }
 
         saveDeptServiceContext(service);
@@ -224,25 +219,25 @@ export default function ServiceGrid({
             (selectedService?.__deptId
               ? departments.find((department) => department.id === selectedService.__deptId)
               : departments.find((department) =>
-                  department.services.some((service) => service.id === selectedServiceId)
-                ));
+                department.services.some((service) => service.id === selectedServiceId)
+              ));
 
           const serviceName = selectedService
             ? typeof selectedService.name === "string"
               ? selectedService.name
               : getTransText(
-                  (selectedService.name as any)?.mr || "",
-                  (selectedService.name as any)?.hi || "",
-                  (selectedService.name as any)?.en || selectedService.serviceName || ""
-                )
+                (selectedService.name as any)?.mr || "",
+                (selectedService.name as any)?.hi || "",
+                (selectedService.name as any)?.en || selectedService.serviceName || ""
+              )
             : t("serviceGrid.serviceDetails");
 
           const deptName = selectedDept
             ? getTransText(
-                (selectedDept.name as any)?.mr || "",
-                (selectedDept.name as any)?.hi || "",
-                (selectedDept.name as any)?.en || ""
-              )
+              (selectedDept.name as any)?.mr || "",
+              (selectedDept.name as any)?.hi || "",
+              (selectedDept.name as any)?.en || ""
+            )
             : "";
 
           let transSla = "7 Days";

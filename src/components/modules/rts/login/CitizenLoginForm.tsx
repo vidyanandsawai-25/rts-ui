@@ -191,17 +191,11 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
       const res = await verifyCitizenOtpAction(otp);
       if (res.success) {
         setInfo(t('messages.loginSuccess'));
-        let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
-        const cleanUpic = (upicId || '').trim().toUpperCase();
-        if (cleanUpic) {
-          if (targetUrl.includes('upicNo=')) {
-            targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
-          } else {
-            const sep = targetUrl.includes('?') ? '&' : '?';
-            targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
-          }
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else {
+          router.push(`/${locale}/service/dashboard`);
         }
-        router.push(targetUrl);
         router.refresh();
       } else {
         setError(res.error || t('messages.verifyFailed'));
