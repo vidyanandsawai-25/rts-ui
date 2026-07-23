@@ -351,6 +351,32 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               ))}
             </div>
           </motion.div>
+            {/* Mobile 4-Stage RTS Act Process Strip */}
+            <div className="block lg:hidden mt-3 bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-blue-950/90 text-white rounded-xl p-2.5 border border-blue-400/30 shadow-md">
+              <div className="text-[10px] font-black text-amber-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>{t('सेवा हक्क अधिनियम २०१५ प्रक्रिया', 'लोक सेवा गारंटी प्रक्रिया', 'RTS Act 4-Stage Process')}</span>
+                <span className="text-[9px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-400/40">✓ {t('वेळेत सेवा', 'समयबद्ध', 'SLA Guaranteed')}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1 items-center text-center">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-300 flex items-center justify-center text-xs shadow-xs">💻</div>
+                  <span className="text-[9px] font-black text-amber-200 mt-1 leading-tight">{t('१. ई-अर्ज', '1. ई-आवेदन', '1. e-Filing')}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-sky-400/20 border border-sky-300 flex items-center justify-center text-xs shadow-xs">🔍</div>
+                  <span className="text-[9px] font-black text-sky-200 mt-1 leading-tight">{t('२. छाननी', '2. छानबीन', '2. Scrutiny')}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-purple-400/20 border border-purple-300 flex items-center justify-center text-xs shadow-xs">⏱️</div>
+                  <span className="text-[9px] font-black text-purple-200 mt-1 leading-tight">{t('३. मंजुरी', '3. स्वीकृति', '3. SLA Approval')}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-300 flex items-center justify-center text-xs shadow-xs animate-pulse">📲</div>
+                  <span className="text-[9px] font-black text-emerald-300 mt-1 leading-tight">{t('४. दाखला', '4. प्रमाणपत्र', '4. e-Cert')}</span>
+                </div>
+              </div>
+            </div>
+
 
           {/* Right: animated promo card */}
           <motion.div
@@ -359,12 +385,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
             className="col-span-12 lg:col-span-5 w-full mt-3 lg:mt-0"
           >
-            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-3 sm:p-3.5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between min-h-0 gap-2.5 sm:gap-3">
+            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-4 sm:p-5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-[145px]">
               <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute -left-10 -top-10 w-24 h-24 bg-blue-300/15 rounded-full blur-xl pointer-events-none" />
 
               <div className="relative z-20 flex-1 flex flex-col justify-between h-full pr-3 min-h-0">
-                <div className="min-h-[54px] sm:min-h-[58px] overflow-hidden flex flex-col justify-center">
+                <div className="min-h-[72px] overflow-hidden flex flex-col justify-center">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStatIndex}
@@ -420,7 +446,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               </div>
 
               {/* 4-Stage RTS Governance Workflow: e-Filing ➔ Scrutiny ➔ SLA Approval ➔ Certificate & SMS Notification */}
-              <div className="flex items-center gap-0.5 sm:gap-1.5 pointer-events-none z-10 w-full sm:w-auto justify-center pt-2 sm:pt-0 border-t sm:border-t-0 border-white/15 shrink-0">
+              <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 pointer-events-none z-10">
                 
                 {/* Stage 1: Citizen e-Filing */}
                 <motion.div
