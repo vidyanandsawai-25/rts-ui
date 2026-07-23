@@ -156,6 +156,7 @@ export type { FloorDetailsTableColumn } from './FloorDetailsTable';
 
 export { RequiredFieldsNote } from './RequiredFieldsNote';
 export { StatusToggleCard } from './StatusToggleCard';
+export { WaitingWindow } from './WaitingWindow';
 export { UnauthorizedPage } from './UnauthorizedPage';
 export { DocumentViewerModal } from './DocumentViewerModal';
 export type { DocumentViewerModalProps } from './DocumentViewerModal';

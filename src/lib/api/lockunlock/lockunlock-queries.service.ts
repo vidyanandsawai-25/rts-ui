@@ -6,6 +6,8 @@ import {
   LockUnlockPropertyItem,
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
+  ModuleItem,
+  ModuleMasterResponse,
 } from "@/types/lockunlock.types";
 
 interface GetScreensResponse {
@@ -14,11 +16,31 @@ interface GetScreensResponse {
 }
 
 /**
+ * Fetches all modules for lock/unlock screens.
+ * GET /api/ModuleMaster
+ */
+export async function getLockUnlockModules(pageNumber: number = 1, pageSize: number = 100): Promise<ModuleItem[]> {
+  const response = await apiClient.get<ModuleMasterResponse>(`/ModuleMaster?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+
+  if (!response.success || !response.data) {
+    const t = await getTranslations("lockUnlock");
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || t("messages.fetchFailed"),
+      "Get modules failed"
+    );
+  }
+
+  return response.data.items || [];
+}
+
+/**
  * Fetches the list of all screen options that can be locked/unlocked.
  * GET /api/LockUnlock/screens
  */
-export async function getLockUnlockScreens(): Promise<LockedScreen[]> {
-  const response = await apiClient.get<LockedScreen[]>("/LockUnlock/screens");
+export async function getLockUnlockScreens(moduleId?: number): Promise<LockedScreen[]> {
+  const url = moduleId ? `/LockUnlock/screens?ModuleId=${moduleId}` : `/LockUnlock/screens`;
+  const response = await apiClient.get<LockedScreen[]>(url);
 
   if (!response.success || !response.data) {
     const t = await getTranslations("lockUnlock");
@@ -73,6 +95,50 @@ export async function getLockUnlockProperties(
       response.statusCode ?? 500,
       response.error || t("messages.fetchFailed"),
       "Get properties failed"
+    );
+  }
+
+  return normalizePagedResponse<LockUnlockPropertyItem>(response.data);
+}
+
+/**
+ * Fetches paginated properties with lock status details by category.
+ * GET /api/LockUnlock/properties/search-by-category
+ */
+export async function getLockUnlockPropertiesByCategory(
+  params: LockUnlockPropertiesQueryParams
+): Promise<LockUnlockPropertiesResponse> {
+  const urlParams = new URLSearchParams({
+    PageNumber: params.PageNumber?.toString() ?? "1",
+    PageSize: params.PageSize?.toString() ?? "10",
+  });
+
+  if (params.SearchCategory !== undefined) urlParams.append("SearchCategory", params.SearchCategory.toString());
+  if (params.ZoneId) urlParams.append("ZoneId", params.ZoneId.toString());
+  if (params.WardId) urlParams.append("WardId", params.WardId.toString());
+  if (params.PropertyFrom?.trim()) urlParams.append("PropertyFrom", params.PropertyFrom.trim());
+  if (params.PropertyTo?.trim()) urlParams.append("PropertyTo", params.PropertyTo.trim());
+  if (params.PropertyNo) urlParams.append("PropertyNo", params.PropertyNo);
+  if (params.PartitionNo) urlParams.append("PartitionNo", params.PartitionNo);
+  if (params.Search?.trim()) urlParams.append("Search", params.Search.trim());
+  if (params.SearchPartitionNo) urlParams.append("SearchPartitionNo", params.SearchPartitionNo);
+  if (params.SearchTerm?.trim()) urlParams.append("SearchTerm", params.SearchTerm.trim());
+  if (params.SortBy?.trim()) urlParams.append("SortBy", params.SortBy.trim());
+  if (params.SortOrder?.trim()) urlParams.append("SortOrder", params.SortOrder.trim());
+  if (params.FilterLogic !== undefined && params.FilterLogic !== null) {
+    urlParams.append("FilterLogic", params.FilterLogic.toString());
+  }
+
+  const response = await apiClient.get<LockUnlockPropertiesResponse>(
+    `/LockUnlock/properties/search-by-category?${urlParams.toString()}`
+  );
+
+  if (!response.success || !response.data) {
+    const t = await getTranslations("lockUnlock");
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || t("messages.fetchFailed"),
+      "Get properties by category failed"
     );
   }
 
