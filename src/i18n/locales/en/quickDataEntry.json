@@ -757,7 +757,11 @@
             "propertyWise": "Property-wise",
             "parking": "Parking",
             "close": "Close",
-            "show": "Show"
+            "show": "Show",
+            "propertyWiseDisabledForIndividual": "Property Wise is not available for Individual property",
+            "propertyWiseDisabledForApartment": "Property Wise is not available for Apartment",
+            "typeWiseDisabledForIndividual": "Type Wise is not available for Individual property",
+            "parkingDisabledForIndividual": "Parking is not available for Individual property"
         },
         "selectProperties": {
             "title": "SELECT PROPERTIES",
@@ -766,6 +770,9 @@
             "partitionNo": "Partition No.",
             "type": "Type",
             "carpetArea": "Carpet Area (Sq.Ft / Sq.M)",
+            "builtupArea": "BuildupArea (Sq.Ft / Sq.M)",
+            "parkingCarpetArea": "Parking Carpet Area (Sq.Ft / Sq.M)",
+            "parkingBuiltupArea": "Parking Buildup Area (Sq.Ft / Sq.M)",
             "wing": "Wing",
             "flatNo": "Flat No.",
             "selected": "{count} selected",

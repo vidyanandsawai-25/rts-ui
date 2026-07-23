@@ -757,7 +757,11 @@
       "propertyWise": "संपत्तिवार",
       "parking": "पार्किंग",
       "close": "बंद करें",
-      "show": "दिखाएँ"
+      "show": "दिखाएँ",
+      "propertyWiseDisabledForIndividual": "व्यक्तिगत संपत्ति के लिए संपत्तिवार उपलब्ध नहीं है",
+      "propertyWiseDisabledForApartment": "अपार्टमेंट के लिए संपत्तिवार उपलब्ध नहीं है",
+      "typeWiseDisabledForIndividual": "व्यक्तिगत संपत्ति के लिए प्रकारवार उपलब्ध नहीं है",
+      "parkingDisabledForIndividual": "व्यक्तिगत संपत्ति के लिए पार्किंग उपलब्ध नहीं है"
     },
     "selectProperties": {
       "title": "संपत्तियाँ चुनें",

@@ -43,6 +43,7 @@ interface FloorTableProps {
   selectedFloorType?: 'Construction' | 'OpenPlot';
   isPlotCategory?: boolean;
   partitionNo?: string;
+  isIndividualProperty?: boolean;
 }
 
 const FloorTable: React.FC<FloorTableProps> = ({
@@ -69,12 +70,13 @@ const FloorTable: React.FC<FloorTableProps> = ({
   subTypeData,
   setEditingFloorForm,
   isPlotCategory = false,
-  partitionNo,
+  partitionNo: _partitionNo,
+  isIndividualProperty: _isIndividualProperty = false,
 }) => {
   const isDataEntryDisabled = React.useMemo(() => {
-    const norm = String(partitionNo ?? '').trim();
-    return !norm || norm === '0' || norm === '-';
-  }, [partitionNo]);
+    // Disable button if no floors exist for the selected property; enable when floors exist
+    return !filteredFloors || filteredFloors.length === 0;
+  }, [filteredFloors]);
 
   const columns = useFloorTableColumns({
     t,

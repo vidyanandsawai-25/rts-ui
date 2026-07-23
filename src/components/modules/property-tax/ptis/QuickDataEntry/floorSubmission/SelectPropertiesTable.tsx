@@ -18,6 +18,8 @@ interface SelectPropertiesTableProps {
   sourcePropertyIds?: Set<string | number>;
   hideTypeColumn?: boolean;
   leftHeaderContent?: React.ReactNode;
+  /** 'default' shows CarpetArea + BuildupArea columns; 'parking' shows ParkingCarpetArea + ParkingBuiltupArea columns */
+  variant?: 'default' | 'parking';
 }
 
 type SelectablePropertyRow = Record<string, unknown> &
@@ -28,6 +30,9 @@ type SelectablePropertyRow = Record<string, unknown> &
     propertyDisplay: string;
     typeDisplay: string;
     carpetAreaDisplay: string;
+    builtupAreaDisplay: string;
+    parkingCarpetAreaDisplay: string;
+    parkingBuiltupAreaDisplay: string;
   };
 
 const greenRowClassName =
@@ -62,6 +67,27 @@ function formatCarpetAreaDisplay(property: SelectableProperty): string {
   return `${sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00'} / ${sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00'}`;
 }
 
+function formatBuiltupAreaDisplay(property: SelectableProperty): string {
+  const sqFeet = property.builtupAreaSqFeet;
+  const sqMeter = property.builtupAreaSqMeter;
+  if (sqFeet == null && sqMeter == null) return '-';
+  return `${sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00'} / ${sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00'}`;
+}
+
+function formatParkingCarpetAreaDisplay(property: SelectableProperty): string {
+  const sqFeet = property.parkingCarpetAreaSqFeet;
+  const sqMeter = property.parkingCarpetAreaSqMeter;
+  if (sqFeet == null && sqMeter == null) return '-';
+  return `${sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00'} / ${sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00'}`;
+}
+
+function formatParkingBuiltupAreaDisplay(property: SelectableProperty): string {
+  const sqFeet = property.parkingBuiltupAreaSqFeet;
+  const sqMeter = property.parkingBuiltupAreaSqMeter;
+  if (sqFeet == null && sqMeter == null) return '-';
+  return `${sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00'} / ${sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00'}`;
+}
+
 const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   t,
   properties,
@@ -74,6 +100,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   sourcePropertyIds = new Set(),
   hideTypeColumn = false,
   leftHeaderContent,
+  variant = 'default',
 }) => {
   const selectedCount = selectedIds.size;
   const selectableProperties = React.useMemo(
@@ -94,6 +121,9 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         propertyDisplay: formatPropertyDisplay(property),
         typeDisplay: formatPropertyTypeDisplay(property),
         carpetAreaDisplay: formatCarpetAreaDisplay(property),
+        builtupAreaDisplay: formatBuiltupAreaDisplay(property),
+        parkingCarpetAreaDisplay: formatParkingCarpetAreaDisplay(property),
+        parkingBuiltupAreaDisplay: formatParkingBuiltupAreaDisplay(property),
       })),
     [disabledIds, properties, selectedIds]
   );
@@ -150,7 +180,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       {
         key: 'propertyDisplay',
         label: t('floor.selectProperties.property'),
-        width: '220px',
+        width: '150px',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
       },
       ...(hideTypeColumn
@@ -166,7 +196,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       {
         key: 'wingFlatNo',
         label: `${t('floor.selectProperties.wing')}/${t('floor.selectProperties.flatNo')}`,
-        width: '160px',
+        width: '100px',
         align: 'center',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
         render: (_value, row) => {
@@ -179,14 +209,47 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           return flat;
         }
       },
-      {
-        key: 'carpetAreaDisplay',
-        label: t('floor.selectProperties.carpetArea'),
-        width: '120px',
-        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800'
-      },
+      // Default variant: show CarpetArea + BuildupArea; Parking variant: show ParkingCarpetArea + ParkingBuiltupArea
+      ...(variant === 'parking'
+        ? [
+            {
+              key: 'parkingCarpetAreaDisplay',
+              label: ((): string => {
+                const val = t('floor.selectProperties.parkingCarpetArea');
+                return !val || val.includes('selectProperties') ? 'Parking Carpet Area (Sq.Ft / Sq.M)' : val;
+              })(),
+              width: '180px',
+              cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+            },
+            {
+              key: 'parkingBuiltupAreaDisplay',
+              label: ((): string => {
+                const val = t('floor.selectProperties.parkingBuiltupArea');
+                return !val || val.includes('selectProperties') ? 'Parking Buildup Area (Sq.Ft / Sq.M)' : val;
+              })(),
+              width: '180px',
+              cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+            },
+          ]
+        : [
+            {
+              key: 'carpetAreaDisplay',
+              label: t('floor.selectProperties.carpetArea'),
+              width: '155px',
+              cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+            },
+            {
+              key: 'builtupAreaDisplay',
+              label: ((): string => {
+                const val = t('floor.selectProperties.builtupArea');
+                return !val || val.includes('selectProperties') ? 'BuildupArea (Sq.Ft / Sq.M)' : val;
+              })(),
+              width: '155px',
+              cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+            },
+          ]),
     ],
-    [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t]
+    [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t, variant]
   );
 
   const headerExtra =
