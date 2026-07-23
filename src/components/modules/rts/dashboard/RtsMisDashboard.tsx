@@ -158,7 +158,7 @@ function createMisIdentifier(value: string, fallback: string) {
 }
 
 
-export default function RtsRtsMisDashboard({ misDashboardData }: DashboardProps) {
+export default function RtsMisDashboard({ misDashboardData }: DashboardProps) {
   const locale = useLocale();
   const t = useTranslations("rts");
   const numberFormatter = useMemo(

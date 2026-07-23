@@ -93,7 +93,7 @@ export default function ServiceGrid({
     selectedServiceId == null
       ? undefined
       : list.find((service) => service.id === selectedServiceId) ??
-        departments.flatMap((department) => department.services).find((service) => service.id === selectedServiceId);
+      departments.flatMap((department) => department.services).find((service) => service.id === selectedServiceId);
 
   const saveDeptServiceContext = (service: Service) => {
     const deptToUse =
@@ -118,23 +118,26 @@ export default function ServiceGrid({
 
       try {
         new URL(externalUrl);
-        const activeUpicId = upicId?.trim();
-        if (!activeUpicId) {
-          setApplyError(t("missingUpic"));
-          return;
-        }
+        const activeUpicId =
+          upicId?.trim() ||
+          (typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("upicNo")?.trim()
+            : undefined);
+        let destination = externalUrl;
 
-        // The service master provides the final empty parameter slot for the active UPIC.
-        const upicPlaceholderPattern = /([?&][^?&=]+)=$/;
-        if (!upicPlaceholderPattern.test(externalUrl)) {
-          setApplyError(t("missingUpicPlaceholder"));
-          return;
-        }
+        const expectsUpic = externalUrl.includes("upicNo=") || /([?&][^?&=]+)=$/.test(externalUrl);
 
-        const destination = externalUrl.replace(
-          upicPlaceholderPattern,
-          `$1=${encodeURIComponent(activeUpicId)}`
-        );
+        if (expectsUpic) {
+          if (!activeUpicId) {
+            setApplyError(t("missingUpic"));
+            return;
+          }
+          if (externalUrl.includes("upicNo=")) {
+            destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
+          } else {
+            destination = externalUrl.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(activeUpicId)}`);
+          }
+        }
 
         saveDeptServiceContext(service);
         setIsDetailsOpen(false);
@@ -221,25 +224,25 @@ export default function ServiceGrid({
             (selectedService?.__deptId
               ? departments.find((department) => department.id === selectedService.__deptId)
               : departments.find((department) =>
-                  department.services.some((service) => service.id === selectedServiceId)
-                ));
+                department.services.some((service) => service.id === selectedServiceId)
+              ));
 
           const serviceName = selectedService
             ? typeof selectedService.name === "string"
               ? selectedService.name
               : getTransText(
-                  (selectedService.name as any)?.mr || "",
-                  (selectedService.name as any)?.hi || "",
-                  (selectedService.name as any)?.en || selectedService.serviceName || ""
-                )
+                (selectedService.name as any)?.mr || "",
+                (selectedService.name as any)?.hi || "",
+                (selectedService.name as any)?.en || selectedService.serviceName || ""
+              )
             : t("serviceGrid.serviceDetails");
 
           const deptName = selectedDept
             ? getTransText(
-                (selectedDept.name as any)?.mr || "",
-                (selectedDept.name as any)?.hi || "",
-                (selectedDept.name as any)?.en || ""
-              )
+              (selectedDept.name as any)?.mr || "",
+              (selectedDept.name as any)?.hi || "",
+              (selectedDept.name as any)?.en || ""
+            )
             : "";
 
           let transSla = "7 Days";

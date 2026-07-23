@@ -256,7 +256,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                 )}
               </div>
             </div>
-            
+
             {title ? (
               <h1 className="text-2xl font-bold tracking-tight text-gray-900 leading-tight">
                 {title}
@@ -312,11 +312,10 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                       setMethod('upic');
                       setError(null);
                     }}
-                    className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${
-                      method === 'upic'
+                    className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${method === 'upic'
                         ? 'bg-cyan-600 text-white shadow'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {t('phone.tabUpic')}
                     {method === 'upic' && (
@@ -330,11 +329,10 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                       setMethod('property');
                       setError(null);
                     }}
-                    className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${
-                      method === 'property'
+                    className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${method === 'property'
                         ? 'bg-cyan-600 text-white shadow'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {t('phone.tabProperty')}
                     {method === 'property' && (
@@ -348,11 +346,10 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                       setMethod('mobile');
                       setError(null);
                     }}
-                    className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${
-                      method === 'mobile'
+                    className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${method === 'mobile'
                         ? 'bg-cyan-600 text-white shadow'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {t('phone.tabMobile')}
                     {method === 'mobile' && (
