@@ -20,7 +20,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
-import type { DepartmentDTO, ServiceDTO } from '@/types/rts-citizen.types';
+import type { DepartmentDTO } from '@/types/rts-citizen.types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,22 +50,6 @@ const DEPT_PALETTE = [
   { bannerBg: 'bg-[#FF8C00]', btnColor: 'bg-orange-600 hover:bg-orange-700' },
 ] as const;
 
-// Decorative unsplash images, cycled by index
-const DEPT_IMAGES = [
-  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1542013936693-884638332954?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=500&auto=format&fit=crop&q=80',
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const ICONS = Icons as unknown as Record<string, LucideIcon>;
@@ -79,12 +63,6 @@ function pickLang(v: I18nLabel | string | undefined, lang: string): string {
   if (!v) return '';
   if (typeof v === 'string') return v;
   return v[lang] || v.en || v.hi || v.mr || '';
-}
-
-function formatServiceCount(count: number, locale: string): string {
-  if (locale === 'mr') return `${count} सेवा`;
-  if (locale === 'hi') return `${count} सेवाएं`;
-  return `${count} Service${count !== 1 ? 's' : ''}`;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -157,17 +135,21 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         title: pickLang(dept.name, locale),
         bannerBg: palette.bannerBg,
         btnColor: palette.btnColor,
-        image: DEPT_IMAGES[idx % DEPT_IMAGES.length],
         icon: <IconComp className="w-4 h-4" />,
         iconName: dept.icon,
-        services: (dept.services as unknown as ServiceDTO[]).map((svc) => ({
+        services: ((dept.services || []) as any[]).map((svc) => ({
           id: svc.id,
           name: pickLang(svc.name, locale),
           sla: svc.sla,
           fees: svc.fees,
           feesRequired: svc.feesRequired,
         })),
-        stats: formatServiceCount(dept.services.length, locale),
+        stats:
+          locale === 'mr'
+            ? `${dept.services.length} सेवा`
+            : locale === 'hi'
+            ? `${dept.services.length} सेवाएं`
+            : `${dept.services.length} Service${dept.services.length !== 1 ? 's' : ''}`,
       };
     });
   }, [departments, locale]);
