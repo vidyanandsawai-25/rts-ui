@@ -419,17 +419,17 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </div>
               </div>
 
-              {/* 3-Step Animated Digital Citizen e-Governance Workflow */}
-              <div className="hidden lg:flex items-center gap-1.5 sm:gap-2 pointer-events-none z-10">
+              {/* 4-Stage RTS Governance Workflow: e-Filing ➔ Scrutiny ➔ SLA Approval ➔ Certificate & SMS Notification */}
+              <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 pointer-events-none z-10">
                 
-                {/* Step 1: Citizen Avatar Filing Form */}
+                {/* Stage 1: Citizen e-Filing */}
                 <motion.div
-                  animate={{ y: [0, -5, 0] }}
+                  animate={{ y: [0, -4, 0] }}
                   transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
                   className="relative flex flex-col items-center justify-center shrink-0"
                 >
-                  <div className="absolute inset-0 bg-amber-400/25 rounded-full blur-xl animate-pulse" />
-                  <div className="relative w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-0.5 shadow-2xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 bg-amber-400/30 rounded-full blur-lg animate-pulse" />
+                  <div className="relative w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-0.5 shadow-xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
                     <svg className="w-full h-full text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="50" cy="50" r="48" fill="url(#citizenGrad)" />
                       <defs>
@@ -448,83 +448,122 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                       <line x1="49" y1="43" x2="51" y2="43" stroke="#2D3748" strokeWidth="1.5" />
                       <path d="M26 82C26 66 36 62 50 62C64 62 74 66 74 82V100H26V82Z" fill="#3182CE" />
                       <path d="M44 62L50 72L56 62" fill="#FFFFFF" />
-                      <path d="M49 68L51 68L52 80L50 84L48 80L49 68Z" fill="#E53E3E" />
+                      <path d="M49 68L51 68L52 80L48 80L49 68Z" fill="#E53E3E" />
                     </svg>
                   </div>
                   <motion.div
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
-                    className="absolute -bottom-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[7.5px] font-black px-1.5 py-0.5 rounded-full shadow-lg border border-white/90 flex items-center gap-0.5 whitespace-nowrap"
+                    className="absolute -bottom-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-white/90 flex items-center gap-0.5 whitespace-nowrap"
                   >
                     <span>💻</span>
-                    <span>{t('१. नागरीक अर्ज', '1. नागरिक आवेदन', '1. e-Application')}</span>
+                    <span>{t('१. ई-अर्ज दाखल', '1. ई-आवेदन', '1. e-Filing')}</span>
                   </motion.div>
                 </motion.div>
 
-                {/* Connecting Beam 1 */}
-                <div className="relative flex items-center justify-center w-6 sm:w-8 h-6">
-                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-300 rounded-full opacity-70" />
+                {/* Dynamic Forward Pulse Arrow 1 */}
+                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 to-sky-400 rounded-full opacity-80" />
                   <motion.div
-                    animate={{ x: [-10, 12], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.6, ease: 'linear' }}
-                    className="absolute w-2.5 h-2.5 rounded-full bg-amber-300 border border-white flex items-center justify-center shadow-md"
+                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}
+                    className="absolute text-[9px] text-amber-300 font-bold"
                   >
-                    <span className="text-[6px] text-amber-950 font-black">⚡</span>
+                    ➔
                   </motion.div>
                 </div>
 
-                {/* Step 2: System Auto-Verification & SLA Processing Node */}
+                {/* Stage 2: Official Document Scrutiny */}
                 <motion.div
                   animate={{ y: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.3 }}
+                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.2 }}
                   className="relative flex flex-col items-center justify-center shrink-0"
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-700 p-0.5 shadow-xl border border-white/80 flex flex-col items-center justify-center text-white relative">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 p-0.5 shadow-lg border border-white/80 flex flex-col items-center justify-center text-white relative">
                     <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
-                      className="text-amber-300"
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="text-white flex items-center justify-center"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+                      <svg className="w-5 h-5 text-sky-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                     </motion.div>
                   </div>
-                  <div className="absolute -bottom-2 bg-indigo-900/90 text-indigo-100 text-[7.5px] font-black px-1.5 py-0.5 rounded-full shadow border border-indigo-400/40 whitespace-nowrap">
-                    <span>{t('२. पडताळणी', '2. सत्यापन', '2. Auto-Verify')}</span>
+                  <div className="absolute -bottom-2.5 bg-sky-900/95 text-sky-100 text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-sky-400/50 whitespace-nowrap">
+                    <span>{t('२. कागदपत्र छाननी', '2. दस्तावेज छानबीन', '2. Scrutiny')}</span>
                   </div>
                 </motion.div>
 
-                {/* Connecting Beam 2 */}
-                <div className="relative flex items-center justify-center w-6 sm:w-8 h-6">
-                  <div className="w-full h-[2px] bg-gradient-to-r from-purple-400 via-emerald-400 to-white/90 rounded-full opacity-70" />
+                {/* Dynamic Forward Pulse Arrow 2 */}
+                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-sky-400 to-purple-400 rounded-full opacity-80" />
                   <motion.div
-                    animate={{ x: [-10, 12], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.6, ease: 'linear', delay: 0.8 }}
-                    className="absolute w-2.5 h-2.5 rounded-full bg-emerald-400 border border-white flex items-center justify-center shadow-md"
+                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear', delay: 0.4 }}
+                    className="absolute text-[9px] text-sky-300 font-bold"
                   >
-                    <span className="text-[6px] text-white font-black">✓</span>
+                    ➔
                   </motion.div>
                 </div>
 
-                {/* Step 3: Mobile Mockup displaying Approved e-Certificate */}
+                {/* Stage 3: Designated Officer SLA Approval */}
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.8, ease: 'easeInOut', delay: 0.4 }}
+                  className="relative flex flex-col items-center justify-center shrink-0"
+                >
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-700 to-purple-900 p-0.5 shadow-lg border border-white/80 flex flex-col items-center justify-center text-white relative">
+                    <motion.div
+                      animate={{ rotate: [0, 6, -6, 0] }}
+                      transition={{ repeat: Infinity, duration: 3 }}
+                      className="text-amber-300 flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    </motion.div>
+                  </div>
+                  <div className="absolute -bottom-2.5 bg-purple-950/95 text-purple-100 text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-purple-400/50 whitespace-nowrap flex items-center gap-0.5">
+                    <span>⏱️</span>
+                    <span>{t('३. SLA मंजुरी', '3. SLA स्वीकृति', '3. SLA Approval')}</span>
+                  </div>
+                </motion.div>
+
+                {/* Dynamic Forward Pulse Arrow 3 */}
+                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-purple-400 to-emerald-400 rounded-full opacity-80" />
+                  <motion.div
+                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear', delay: 0.8 }}
+                    className="absolute text-[9px] text-emerald-300 font-bold"
+                  >
+                    ➔
+                  </motion.div>
+                </div>
+
+                {/* Stage 4: Mobile Certificate Delivery & SMS Notification */}
                 <motion.div
                   animate={{ y: [0, -5, 0] }}
                   transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
                   className="relative shrink-0 z-10 self-center"
                 >
-                  <div className="relative w-[76px] h-[115px] bg-slate-900 rounded-[16px] p-[2.5px] shadow-2xl border border-slate-800 shrink-0">
+                  <div className="relative w-[78px] h-[120px] bg-slate-900 rounded-[16px] p-[2.5px] shadow-2xl border border-slate-800 shrink-0">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-9 h-1.5 bg-slate-900 rounded-b-[4px] z-20 flex justify-center items-center gap-0.5">
                       <div className="w-2.5 h-[0.7px] bg-slate-700 rounded-full" />
                     </div>
 
                     <div className="w-full h-full bg-white rounded-[13px] pt-3 px-1 pb-1 flex flex-col justify-between relative overflow-hidden shadow-inner">
-                      <div className="bg-emerald-600 text-white rounded-[4px] px-1 py-0.5 text-[7px] font-black text-center tracking-tight leading-none shadow-xs flex items-center justify-center gap-0.5">
-                        <span>📜</span>
-                        <span>{t('डिजिटल दाखला', 'डिजिटल प्रमाण', 'e-Certificate')}</span>
-                      </div>
+                      {/* Top SMS Notification Banner */}
+                      <motion.div
+                        animate={{ y: [0, -2, 0] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[4px] px-1 py-0.5 text-[6px] font-black text-center tracking-tight leading-none shadow-xs flex items-center justify-center gap-0.5"
+                      >
+                        <span>📲</span>
+                        <span>{t('SMS: दाखला तयार!', 'SMS: प्रमाण तयार!', 'SMS: Certificate Issued!')}</span>
+                      </motion.div>
 
+                      {/* e-Certificate Body preview with seal */}
                       <div className="space-y-1 my-auto">
                         <motion.div
-                          animate={{ opacity: [0.6, 1, 0.6] }}
+                          animate={{ opacity: [0.7, 1, 0.7] }}
                           transition={{ repeat: Infinity, duration: 2 }}
                           className="bg-emerald-50 border border-emerald-200/80 rounded px-1 py-0.5 flex items-center justify-between"
                         >
@@ -532,11 +571,11 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                             <div className="h-[2px] bg-emerald-700 rounded w-7" />
                             <div className="h-[1.5px] bg-emerald-400 rounded w-5" />
                           </div>
-                          <span className="text-[7px] text-emerald-600 font-bold">✓</span>
+                          <span className="text-[7px] text-emerald-600 font-bold">📜</span>
                         </motion.div>
 
                         <motion.div
-                          animate={{ opacity: [0.6, 1, 0.6] }}
+                          animate={{ opacity: [0.7, 1, 0.7] }}
                           transition={{ repeat: Infinity, duration: 2, delay: 0.4 }}
                           className="bg-blue-50 border border-blue-200/80 rounded px-1 py-0.5 flex items-center justify-between"
                         >
@@ -544,11 +583,11 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                             <div className="h-[2px] bg-blue-700 rounded w-8" />
                             <div className="h-[1.5px] bg-blue-400 rounded w-4" />
                           </div>
-                          <span className="text-[7px] text-blue-600 font-bold">✓</span>
+                          <span className="text-[7px] text-blue-600 font-bold">✍️</span>
                         </motion.div>
 
                         <motion.div
-                          animate={{ opacity: [0.6, 1, 0.6] }}
+                          animate={{ opacity: [0.7, 1, 0.7] }}
                           transition={{ repeat: Infinity, duration: 2, delay: 0.8 }}
                           className="bg-amber-50 border border-amber-200/80 rounded px-1 py-0.5 flex items-center justify-between"
                         >
@@ -560,9 +599,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                         </motion.div>
                       </div>
 
-                      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[3px] py-0.5 px-0.5 text-[6.5px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
+                      {/* Delivered Status Badge */}
+                      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[3px] py-0.5 px-0.5 text-[6px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
                         <span>✓</span>
-                        <span>{t('३. सेवा वितरित', '3. स्वीकृत', '3. Delivered')}</span>
+                        <span>{t('४. e-दाखला प्राप्त', '4. e-प्रमाणपत्र', '4. e-Certificate')}</span>
                       </div>
                     </div>
 
