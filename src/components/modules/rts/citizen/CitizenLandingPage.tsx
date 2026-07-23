@@ -15,8 +15,6 @@ import {
   FileEdit,
   UserCheck,
   CreditCard,
-  Laptop,
-  Zap,
   Clock,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
@@ -303,7 +301,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="lg:col-span-8 bg-white/95 backdrop-blur-md p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-white/60 shadow-lg max-w-2xl space-y-2.5 sm:space-y-3.5"
+            className="lg:col-span-7 bg-white/95 backdrop-blur-md p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-white/60 shadow-lg max-w-2xl space-y-2.5 sm:space-y-3.5"
           >
             <span className="inline-block px-2.5 py-1 rounded bg-[#f39c12] text-white text-[11px] sm:text-xs font-black tracking-wider uppercase shadow-sm">
               {t('महाराष्ट्र लोकसेवा हक्क अधिनियम 2015 अंतर्गत', 'महाराष्ट्र लोकसेवा हक्क अधिनियम 2015 के अंतर्गत', 'Under Right to Public Services Act 2015')}
@@ -359,79 +357,66 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-            className="hidden lg:block lg:col-span-4"
+            className="hidden lg:block lg:col-span-5"
           >
-            <div className="bg-gradient-to-br from-[#0b5cd5] to-[#073fa8] text-white rounded-2xl p-4 shadow-lg border border-blue-400/20 relative overflow-hidden flex flex-row items-center justify-between h-[125px]">
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
-              <div className="absolute -left-10 -top-10 w-16 h-16 bg-blue-300/10 rounded-full blur-lg pointer-events-none" />
+            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-4 sm:p-5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-[145px]">
+              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -left-10 -top-10 w-24 h-24 bg-blue-300/15 rounded-full blur-xl pointer-events-none" />
 
-              <div className="relative z-20 flex-1 flex flex-col justify-between h-full max-w-[55%] min-h-0">
-                <div className="min-h-[64px] overflow-hidden flex flex-col justify-center">
+              <div className="relative z-20 flex-1 flex flex-col justify-between h-full pr-3 min-h-0">
+                <div className="min-h-[72px] overflow-hidden flex flex-col justify-center">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStatIndex}
-                      initial={{ y: 12, opacity: 0 }}
+                      initial={{ y: 14, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -12, opacity: 0 }}
+                      exit={{ y: -14, opacity: 0 }}
                       transition={{ duration: 0.35, ease: 'easeOut' }}
-                      className="space-y-0.5"
+                      className="space-y-1"
                     >
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <span className="px-1.5 py-0.2 rounded bg-white/20 text-[9px] font-black text-white uppercase tracking-wider">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="px-2 py-0.5 rounded bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-black text-white uppercase tracking-wider shadow-sm border border-white/20">
                           {currentStat.badge}
                         </span>
                       </div>
-                      <h3 className="text-2xl font-black tracking-tight text-white leading-none block drop-shadow-md">
+                      <h3 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none block drop-shadow-lg">
                         {currentStat.value}
                       </h3>
-                      <span className="text-xs font-extrabold text-white block leading-tight whitespace-nowrap truncate">
+                      <span className="text-xs sm:text-sm font-black text-white block leading-tight truncate">
                         {currentStat.title}
                       </span>
-                      <span className="text-[9px] text-blue-100 block leading-tight whitespace-nowrap truncate">
+                      <span className="text-[10px] sm:text-xs text-blue-100 font-semibold block leading-tight truncate">
                         {currentStat.subtitle}
                       </span>
                     </motion.div>
                   </AnimatePresence>
                 </div>
 
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-3 mt-2.5 pt-1">
                   <button
                     type="button"
                     onClick={handleActionClick}
-                    className="px-3 py-1 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-[10px] sm:text-xs flex items-center gap-1 shadow-sm transition-colors cursor-pointer shrink-0"
+                    className="px-3.5 py-1.5 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-xs flex items-center gap-1.5 shadow-md transition-colors cursor-pointer shrink-0"
                   >
                     <span>{t('सेवा अर्ज करा', 'सेवा आवेदन करें', 'Apply')}</span>
-                    <span className="text-[10px] font-black">&rarr;</span>
+                    <span className="text-xs font-black">&rarr;</span>
                   </button>
 
                   {/* Carousel Dots */}
-                  <div className="flex items-center gap-1 ml-1">
+                  <div className="flex items-center gap-1.5 ml-1">
                     {heroStats.map((_, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => setCurrentStatIndex(idx)}
-                        className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                          idx === currentStatIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                        className={`h-2 rounded-full transition-all cursor-pointer ${
+                          idx === currentStatIndex ? 'w-5 bg-white shadow-sm' : 'w-2 bg-white/40 hover:bg-white/70'
                         }`}
                         aria-label={`Go to stat ${idx + 1}`}
                       />
                     ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Floating icons */}
-              <div className="absolute left-[50%] top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3 sm:gap-5 z-10 pointer-events-none opacity-80">
-                <motion.div animate={{ y: [0, -8, 0], rotate: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
-                  <Laptop className="w-4 h-4 text-blue-100" />
-                </motion.div>
-                <motion.div animate={{ y: [0, 8, 0], scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }} className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f39c12] to-[#d68910] border border-orange-300/50 flex items-center justify-center shadow-lg shadow-orange-900/20">
-                  <Zap className="w-5 h-5 text-white" />
-                </motion.div>
-                <motion.div animate={{ y: [0, -6, 0], rotate: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 0.5 }} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 items-center justify-center shadow-lg hidden sm:flex">
-                  <Clock className="w-4 h-4 text-blue-100" />
-                </motion.div>
               </div>
 
               {/* Phone mockup */}
