@@ -81,7 +81,7 @@
     "modulesSelected": "modules selected",
     "rolesSelected": "roles selected",
     "noModulesForDept": "No modules available for this department",
-    "selectDeptPrompt": "Select a department to view available modules",
+    "selectDeptPrompt": "Select a department",
     "goToDepts": "Go to Departments",
     "errors": {
       "usernameRequired": "Username is required",

@@ -40,6 +40,11 @@ export const BasicPropertyFields = ({
         return originalOptionLabel === 'apartment' || originalOptionLabel === 'multi commercial apartment';
     }, [propertyData, categoryOptions]);
 
+    const isIndividual = useMemo(() => {
+        const selectedOption = categoryOptions.find(opt => opt.value === categoryId?.toString());
+        return selectedOption?.label?.toLowerCase() === 'individual';
+    }, [categoryId, categoryOptions]);
+
     return (
         <>
             {/* Division */}
@@ -77,35 +82,37 @@ export const BasicPropertyFields = ({
             </div>
 
             {/* Flat No / Shop No */}
-            <div className="space-y-1.5 col-span-12 md:col-span-4">
-                <Label htmlFor="pd-flat-shop" className="text-xs font-semibold text-gray-700">
-                    {t('property.flatShopNo')}
-                </Label>
-                <Input
-                    id="pd-flat-shop"
-                    name="flatOrShopNo"
-                    placeholder={t('property.flatShopNoPlaceholder')}
-                    value={flatShopNo}
-                    maxLength={PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                    onChange={(e) => {
-                        const sanitized = sanitizeFlatShopNo(e.target.value);
-                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH);
-                        setFlatShopNo(limited);
-                        if (limited) setShowFlatShopError(true);
-                    }}
-                    onKeyDown={preventEnterSubmit}
-                    onBlur={() => setShowFlatShopError(true)}
-                />
-                {showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo) && (
-                    <span className="text-xs text-red-500">
-                        {t('property.validation.invalidFlatShopNo') || 'Invalid flat/shop number. Only alphanumeric, -, and / allowed (max 10 characters).'}
-                    </span>
-                )}
-            </div>
+            {!isIndividual && (
+                <div className="space-y-1.5 col-span-12 md:col-span-4">
+                    <Label htmlFor="pd-flat-shop" className="text-xs font-semibold text-gray-700">
+                        {t('property.flatShopNo')}
+                    </Label>
+                    <Input
+                        id="pd-flat-shop"
+                        name="flatOrShopNo"
+                        placeholder={t('property.flatShopNoPlaceholder')}
+                        value={flatShopNo}
+                        maxLength={PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH}
+                        className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                            }`}
+                        onChange={(e) => {
+                            const sanitized = sanitizeFlatShopNo(e.target.value);
+                            const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH);
+                            setFlatShopNo(limited);
+                            if (limited) setShowFlatShopError(true);
+                        }}
+                        onKeyDown={preventEnterSubmit}
+                        onBlur={() => setShowFlatShopError(true)}
+                    />
+                    {showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo) && (
+                        <span className="text-xs text-red-500">
+                            {t('property.validation.invalidFlatShopNo') || 'Invalid flat/shop number. Only alphanumeric, -, and / allowed (max 10 characters).'}
+                        </span>
+                    )}
+                </div>
+            )}
         </>
     );
 };

@@ -92,6 +92,7 @@ export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
               onOpenOffset={offsetActions.handleOpenOffset}
               floorData={props.floorData}
               roomTypeData={props.roomTypeData}
+              isUtilityCategory={isUtilityCategory}
             />
           ) : (
             <div className="text-center py-16 text-gray-400">

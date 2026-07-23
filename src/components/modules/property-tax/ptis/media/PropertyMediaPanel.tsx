@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState';
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
@@ -49,6 +49,15 @@ function PropertyMediaPanel({
     useMediaDrawerState();
   const { isPanelVisible, togglePanel } = useMediaPanel();
 
+  // Close the drawer if the propertyId changes (e.g. searching/switching property)
+  const prevPropertyIdRef = useRef(propertyId);
+  useEffect(() => {
+    if (isDrawerOpen && propertyId !== prevPropertyIdRef.current) {
+      closeDrawer();
+    }
+    prevPropertyIdRef.current = propertyId;
+  }, [propertyId, isDrawerOpen, closeDrawer]);
+
   const {
     showMoreImages,
     setShowMoreImages,
@@ -67,6 +76,7 @@ function PropertyMediaPanel({
     cancelImageLeave,
     fullyLoadedIds,
     setFullyLoadedIds,
+    setPhotos,
     t,
   } = usePropertyMedia({
     initialPhotoSlots,
@@ -206,6 +216,7 @@ function PropertyMediaPanel({
           onClose={closeDrawer}
           categories={categories}
           onCategoriesChange={handleCategoriesChange}
+          onPhotosChange={setPhotos}
           wardNo={wardNo}
           propertyNo={propertyNo}
           partitionNo={partitionNo}

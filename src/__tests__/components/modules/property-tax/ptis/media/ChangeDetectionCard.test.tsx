@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ChangeDetectionCard } from '@/components/modules/property-tax/ptis/media/ChangeDetectionCard';
 import React from 'react';
 
@@ -36,7 +36,7 @@ describe('ChangeDetectionCard', () => {
     expect(screen.getByText('Change Detection')).toBeInTheDocument();
   });
 
-  it('renders correctly with custom props', () => {
+  it('renders correctly with custom props', async () => {
     render(
       <ChangeDetectionCard
         beforeImageSrc="/test-before.jpg"
@@ -45,6 +45,10 @@ describe('ChangeDetectionCard', () => {
         afterLabel="2020"
       />
     );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     const images = screen.getAllByRole('img');
     expect(images[0]).toHaveAttribute('src', '/test-before.jpg');

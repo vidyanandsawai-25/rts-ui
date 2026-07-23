@@ -18,6 +18,27 @@ interface ApiItem {
   isActive?: boolean | number;
   [key: string]: unknown;
 }
+
+function mapMasterResponse(res: { items?: unknown[]; totalCount?: number; totalPages?: number; pageNumber?: number; pageSize?: number }, nameField: string, codeField?: string) {
+  return {
+    records: (res.items as unknown as ApiItem[])?.map((item) => ({
+      ...item,
+      id: String(item.id),
+      code: String((codeField ? item[codeField] : item.code) || item.id),
+      name: String(item[nameField] ?? item.name ?? ""),
+      description: item.description ? String(item.description) : undefined,
+      status: (String(item.status ?? "").toLowerCase() === "inactive" || 
+               item.isActive === false || String(item.isActive).toLowerCase() === "false" || 
+               item.isActive === 0 || item["IsActive"] === false || item["IsActive"] === 0) ? 
+               "Inactive" : "Active",
+    })) as MasterDataRecord[] || [],
+    totalCount: res.totalCount ?? 0,
+    totalPages: res.totalPages ?? 1,
+    pageNumber: res.pageNumber ?? 1,
+    pageSize: res.pageSize ?? 10,
+  };
+}
+
 export async function getAssetMasterDataProvider(
   masterId: string,
   _selectedGroup: string,
@@ -31,25 +52,24 @@ export async function getAssetMasterDataProvider(
     let data: { records: MasterDataRecord[]; totalCount: number; totalPages: number; pageNumber: number; pageSize: number } = { records: [], totalCount: 0, totalPages: 1, pageNumber, pageSize };
 
     if (masterId === MASTER_IDS.OWNERSHIP_TYPE) {
-      const res = await ownershipTypeService.getAll({
-        PageNumber: pageNumber,
-        PageSize: pageSize,
-        SearchTerm: searchTerm,
-      });
-      data = {
-        records: (res.items as unknown as ApiItem[])?.map((item) => ({
-          ...item,
-          id: String(item.id),
-          code: (item.code || String(item.id)) as string,
-          name: (item.ownershipTypeName || item.name || "") as string,
-          description: item.description as string,
-          status: (item.status === "Inactive" || item.isActive === false || String(item.isActive) === "false" || item.isActive === 0 || item.IsActive === false || item.IsActive === 0) ? "Inactive" : "Active",
-        })) as MasterDataRecord[] || [],
-        totalCount: res.totalCount,
-        totalPages: res.totalPages,
-        pageNumber: res.pageNumber,
-        pageSize: res.pageSize,
-      };
+      const res = await ownershipTypeService.getAll({ PageNumber: pageNumber, PageSize: pageSize, SearchTerm: searchTerm });
+      data = mapMasterResponse(res, 'ownershipTypeName');
+    } else if (masterId === MASTER_IDS.CATEGORY) {
+      const { assetCategoryService } = await import('./asset-category-crud.service');
+      const res = await assetCategoryService.getAll({ PageNumber: pageNumber, PageSize: pageSize, SearchTerm: searchTerm });
+      data = mapMasterResponse(res, 'categoryName', 'categoryCode');
+    } else if (masterId === MASTER_IDS.TYPE) {
+      const { assetTypeService } = await import('./asset-type-crud.service');
+      const res = await assetTypeService.getAll({ PageNumber: pageNumber, PageSize: pageSize, SearchTerm: searchTerm });
+      data = mapMasterResponse(res, 'typeName', 'typeCode');
+    } else if (masterId === MASTER_IDS.INVENTORY_CATEGORY) {
+      const { inventoryCategoryService } = await import('./inventory-category.service');
+      const res = await inventoryCategoryService.getAll({ PageNumber: pageNumber, PageSize: pageSize, SearchTerm: searchTerm });
+      data = mapMasterResponse(res, 'categoryName', 'categoryCode');
+    } else if (masterId === MASTER_IDS.INVENTORY_MODEL) {
+      const { inventoryModelService } = await import('./inventory-model.service');
+      const res = await inventoryModelService.getAll({ PageNumber: pageNumber, PageSize: pageSize, SearchTerm: searchTerm });
+      data = mapMasterResponse(res, 'modelName', 'modelCode');
     }
 
     return { success: true, data };

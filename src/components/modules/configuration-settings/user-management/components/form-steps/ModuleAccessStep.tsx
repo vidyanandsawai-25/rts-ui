@@ -183,7 +183,28 @@ export function ModuleAccessStep({
 
                     <MultiSelectDropdown
                       options={roles
-                        .filter((role) => role.isActive)
+                        .filter((role) => {
+                          if (!role.isActive) return false;
+
+                          // Filter role by department assignment if departmentId/departmentName is specified
+                          if (role.departmentId !== undefined && role.departmentId !== null) {
+                            const roleDeptId = String(role.departmentId);
+                            const currentDeptId = String(deptId);
+                            const masterDeptId = String(dept?.id || dept?.departmentMasterId || '');
+                            if (roleDeptId !== currentDeptId && roleDeptId !== masterDeptId) {
+                              return false;
+                            }
+                          } else if (role.departmentName && dept?.departmentName) {
+                            if (
+                              role.departmentName.trim().toLowerCase() !==
+                              dept.departmentName.trim().toLowerCase()
+                            ) {
+                              return false;
+                            }
+                          }
+
+                          return true;
+                        })
                         .map((role) => ({
                           label: role.name,
                           value: role.name,

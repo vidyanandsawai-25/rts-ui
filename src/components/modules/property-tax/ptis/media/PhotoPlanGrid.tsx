@@ -121,7 +121,7 @@ export function PhotoPlanGrid({
               >
                 <div className="flex-1 bg-slate-100 overflow-hidden relative">
                   <ImageWithFallback
-                    src={img.src} alt={img.title} width={200} height={150}
+                    src={img.src} documentGuid={img.documentGuid} alt={img.title} width={200} height={150}
                     className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />

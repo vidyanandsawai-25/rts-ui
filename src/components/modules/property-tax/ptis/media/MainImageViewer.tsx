@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -6,82 +7,63 @@ import { useTranslations } from 'next-intl';
 import { Plus, Minus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/common';
 import { useImageViewerZoom } from '@/hooks/ptis/photoplan/useImageViewerZoom';
-import { getDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
 import { ImageLoadingSkeleton, ImageErrorFallback } from './ImageViewerFallbacks';
-import { documentCache } from './ImageWithFallback';
-
-export function isBlobUrl(src: string): boolean {
-  return src.startsWith('blob:') || src.startsWith('data:');
-}
+import { resolveDocumentUrl } from './ImageWithFallback';
 
 interface MainImageViewerProps {
   src: string;
+  documentGuid?: string;
   alt: string;
   rotation: number;
 }
 
-export function MainImageViewer({ src, alt, rotation }: MainImageViewerProps): React.ReactElement {
+export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageViewerProps): React.ReactElement {
   const t = useTranslations('ptis');
+  const [resolvedSrc, setResolvedSrc] = useState<string>('');
   const [hasError, setHasError] = useState(false);
-
-  const getInitialState = useCallback((currentSrc: string) => {
-    if (!currentSrc || !currentSrc.startsWith('/api/documents/')) {
-      return { resolved: currentSrc, loading: false };
-    }
-    const parts = currentSrc.split('/');
-    const guid = parts[3];
-    if (guid && documentCache.has(guid)) {
-      const cached = documentCache.get(guid)!;
-      if (typeof cached === 'string') return { resolved: cached, loading: false };
-    }
-    return { resolved: '', loading: true };
-  }, []);
-
-  const initialState = getInitialState(src);
-  const [resolvedSrc, setResolvedSrc] = useState(initialState.resolved);
-  const [isLoading, setIsLoading] = useState(initialState.loading);
-
-  useEffect(() => {
-    if (!src || !src.startsWith('/api/documents/')) return;
-    const guid = src.split('/')[3];
-    if (!guid) return;
-    let active = true;
-
-    const handleResolve = (url: string) => {
-      if (active) { setResolvedSrc(url); setHasError(false); setIsLoading(false); }
-    };
-    const handleReject = () => {
-      documentCache.delete(guid);
-      if (active) { setHasError(true); setIsLoading(false); }
-    };
-
-    if (documentCache.has(guid)) {
-      const cached = documentCache.get(guid)!;
-      if (typeof cached === 'string') return;
-      cached.then(handleResolve).catch(handleReject);
-      return () => { active = false; };
-    }
-
-    const promise = getDocumentAction(decodeURIComponent(guid), 'view').then((res) => {
-      if (res.success && res.data?.base64) {
-        const dataUrl = `data:${res.data.contentType};base64,${res.data.base64}`;
-        documentCache.set(guid, dataUrl);
-        return dataUrl;
-      }
-      throw new Error();
-    });
-
-    documentCache.set(guid, promise);
-    promise.then(handleResolve).catch(handleReject);
-
-    return () => { active = false; };
-  }, [src, getInitialState]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleLoad = useCallback(() => setIsLoading(false), []);
   const handleError = useCallback(() => {
     setIsLoading(false);
     setHasError(true);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setHasError(false);
+
+    const timer = setTimeout(() => {
+      if (active) {
+        setIsLoading(false);
+        setHasError(true);
+      }
+    }, 4000);
+
+    resolveDocumentUrl(src, documentGuid)
+      .then((url) => {
+        if (active) {
+          setResolvedSrc(url);
+          setHasError(!url);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setHasError(true);
+          setIsLoading(false);
+        }
+      })
+      .finally(() => {
+        clearTimeout(timer);
+      });
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [src, documentGuid]);
 
   const {
     scale, x, y, isDragging, isZooming, containerRef,
@@ -93,11 +75,11 @@ export function MainImageViewer({ src, alt, rotation }: MainImageViewerProps): R
     transition: (isDragging || isZooming) ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
-  if (!src || hasError) {
+  const effectiveSrc = resolvedSrc || src;
+
+  if ((!src && !documentGuid) || (hasError && !isLoading && !effectiveSrc)) {
     return <ImageErrorFallback alt={alt} errorLabel={t('media.imageUnavailable') || 'Image Unavailable'} />;
   }
-
-  const effectiveSrc = resolvedSrc;
 
   return (
     <div
@@ -112,7 +94,7 @@ export function MainImageViewer({ src, alt, rotation }: MainImageViewerProps): R
     >
       <div style={rotateStyle} className="relative flex items-center justify-center w-full h-full pointer-events-none">
         {isLoading && <ImageLoadingSkeleton />}
-        {!isLoading && effectiveSrc && (
+        {!hasError && effectiveSrc && (
           <NextImage
             src={effectiveSrc}
             alt={alt}
@@ -123,7 +105,7 @@ export function MainImageViewer({ src, alt, rotation }: MainImageViewerProps): R
             quality={75}
             onLoad={handleLoad}
             onError={handleError}
-            unoptimized={isBlobUrl(effectiveSrc) || !effectiveSrc.startsWith('/') || effectiveSrc.startsWith('/api/documents/')}
+            unoptimized={effectiveSrc.startsWith('data:') || effectiveSrc.startsWith('blob:') || !effectiveSrc.startsWith('/')}
           />
         )}
       </div>

@@ -51,7 +51,7 @@ export function ChangeDetectionCard({
             alt={`${beforeLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
-            className="object-cover transition-transform duration-500 group-hover/before:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover/before:scale-110"
           />
           {/* Year Badge */}
           <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[2px]">
@@ -67,7 +67,7 @@ export function ChangeDetectionCard({
             alt={`${afterLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
-            className="object-cover transition-transform duration-500 group-hover/after:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover/after:scale-110"
           />
           {/* Year Badge (Emerald highlight to indicate new/updated) */}
           <div className="absolute top-2 left-2 z-10 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">

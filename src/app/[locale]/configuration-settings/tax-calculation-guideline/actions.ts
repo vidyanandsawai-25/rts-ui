@@ -65,7 +65,9 @@ export async function saveTaxCalculationGuidelineAction(
       revalidatePath(`/${locale}/configuration-settings/tax-calculation-guideline`, 'page');
     }
 
-    const isUpdate = Array.isArray(activeDto) ? activeDto.length > 0 : !!activeDto?.id;
+    const isUpdate = Array.isArray(activeDto)
+      ? activeDto.length > 0 && activeDto.some((item) => !!item.id)
+      : !!activeDto?.id;
 
     return {
       success: true,

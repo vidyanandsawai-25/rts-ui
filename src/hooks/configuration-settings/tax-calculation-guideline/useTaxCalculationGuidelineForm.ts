@@ -229,7 +229,9 @@ export function useTaxCalculationGuidelineForm({ initialDto }: UseTaxCalculation
     }
   }, [formData, currentDto, router]);
 
-  const isUpdate = Array.isArray(currentDto) ? currentDto.length > 0 : !!currentDto?.id;
+  const isUpdate = Array.isArray(currentDto)
+    ? currentDto.length > 0 && currentDto.some((item) => !!item.id)
+    : !!currentDto?.id;
 
   return {
     formData,

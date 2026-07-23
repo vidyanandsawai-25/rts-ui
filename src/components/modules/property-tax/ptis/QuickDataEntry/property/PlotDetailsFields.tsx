@@ -8,6 +8,7 @@ import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-v
 interface PlotDetailsFieldsProps {
     t: (key: string) => string;
     propertyData: PropertyBasicDetailsApiItem | null;
+    isIndividual: boolean;
     moujaOptions: { label: string; value: string }[];
     moujaId: number | null;
     handleMoujaChange: (name: string | undefined, value: string) => void;
@@ -16,6 +17,7 @@ interface PlotDetailsFieldsProps {
 export const PlotDetailsFields = ({
     t,
     propertyData,
+    isIndividual,
     moujaOptions,
     moujaId,
     handleMoujaChange,
@@ -53,7 +55,7 @@ export const PlotDetailsFields = ({
             </div>
 
             {/* Sub Zone No */}
-            <div className="space-y-1.5 col-span-12 md:col-span-3">
+            <div className={isIndividual ? 'space-y-1.5 col-span-12 md:col-span-4' : 'space-y-1.5 col-span-12 md:col-span-3'}>
                 <Label htmlFor="pd-subzone" className="text-xs font-semibold text-gray-700">
                     {t('property.subZoneNo')}
                 </Label>
@@ -83,7 +85,7 @@ export const PlotDetailsFields = ({
             </div>
 
             {/* Survey No */}
-            <div className="space-y-1.5 col-span-12 md:col-span-3">
+            <div className={isIndividual ? 'space-y-1.5 col-span-12 md:col-span-4' : 'space-y-1.5 col-span-12 md:col-span-3'}>
                 <Label htmlFor="pd-survey" className="text-xs font-semibold text-gray-700">
                     {t('property.surveyNo')}
                 </Label>
@@ -113,7 +115,7 @@ export const PlotDetailsFields = ({
             </div>
 
             {/* Plot No */}
-            <div className="space-y-1.5 col-span-12 md:col-span-3">
+            <div className={isIndividual ? 'space-y-1.5 col-span-12 md:col-span-4' : 'space-y-1.5 col-span-12 md:col-span-3'}>
                 <Label htmlFor="pd-plot" className="text-xs font-semibold text-gray-700">
                     {t('property.plotNo')}
                 </Label>

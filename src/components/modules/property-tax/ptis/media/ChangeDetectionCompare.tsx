@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { ChangeDetectionHeader } from './ChangeDetectionHeader';
 import type { PhotoCategory } from './PhotoPlanSidebar';
 import { ChangeTimelapse } from './ChangeTimelapse';
 
@@ -23,8 +22,8 @@ interface ChangeDetectionCompareProps {
 }
 
 export function ChangeDetectionCompare({
-  activeCategory,
-  onBackToGrid,
+  activeCategory: _activeCategory,
+  onBackToGrid: _onBackToGrid,
   onImagesChange: _onImagesChange,
   initialLatitude,
   initialLongitude,
@@ -36,11 +35,6 @@ export function ChangeDetectionCompare({
 }: ChangeDetectionCompareProps): React.ReactElement {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-900 select-none relative">
-      <ChangeDetectionHeader
-        photoTypeName={activeCategory.photoTypeName}
-        onBackToGrid={onBackToGrid}
-      />
-
       {/* Main Image Compare Container - uses full height and width */}
       <div className="flex-1 w-full h-full overflow-hidden p-0 relative">
         <ChangeTimelapse
