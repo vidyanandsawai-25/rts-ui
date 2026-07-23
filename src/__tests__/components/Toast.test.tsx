@@ -8,7 +8,6 @@ describe('Toast Component', () => {
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
     vi.useRealTimers();
   });
 
