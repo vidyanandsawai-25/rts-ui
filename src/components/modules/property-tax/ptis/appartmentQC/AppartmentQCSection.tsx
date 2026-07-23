@@ -23,6 +23,7 @@ interface AppartmentQCSectionProps {
   partitionNo?: string;
   activeMainTab: string;
   activeSubTab: string;
+  locale: string;
 }
 
 
@@ -38,6 +39,7 @@ const AppartmentQCSection = ({
   partitionNo,
   activeMainTab,
   activeSubTab,
+  locale,
 }: AppartmentQCSectionProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -129,22 +131,29 @@ const AppartmentQCSection = ({
   const convertedData = useMemo(() => transformApartmentData(activePagedData.items || [], activeMainTab), [activePagedData, activeMainTab]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
-    const basePath = pathname.endsWith('/appartmentQC') ? pathname : pathname + '/appartmentQC';
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
 
-    const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
-    if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
+    // Extract property ID from row - use pdnId (property details ID) as primary
+    // This ensures we open the specific clicked property, not the main property
+    const propertyIdVal = String(row.pdnId || row.id || row.propertyDetailsId || row.propertyId || '');
+    if (!propertyIdVal) return;
 
-    params.delete('parentPropertyId');
-    params.delete('parentPropertyNo');
+    // Set essential params for QuickDataEntry
+    if (wardId) params.set('wardId', wardId);
+    if (propertyNo) params.set('propertyNo', propertyNo);
+    // All apartment units share the parent property's partition number
+    if (partitionNo) params.set('partitionNo', partitionNo);
+    if (row.wardNo) params.set('wardNo', String(row.wardNo));
 
+    // Set return navigation params
     params.set('returnTab', 'propertydetails');
     params.set('valuationTab', 'apartment');
     params.set('appartmentTab', activeMainTab);
     params.set('subTab', activeSubTab);
 
-    router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
-  }, [pathname, router, searchParams, activeMainTab, activeSubTab]);
+    // Navigate to QuickDataEntry Property page with the property
+    router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyIdVal}/Property?${params.toString()}`);
+  }, [router, locale, wardId, propertyNo, partitionNo, activeMainTab, activeSubTab]);
 
 
 
