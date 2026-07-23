@@ -1,4 +1,4 @@
-import RtsMISDashboard from "@/components/modules/rts/dashboard/RtsMisDashboard";
+import RtsMISDashboard from "@/components/modules/rts/dashboard/RtsMISDashboard";
 import { getCmsMisDashboardAction } from "./actions";
 
 export default async function CmsDashboardPage() {

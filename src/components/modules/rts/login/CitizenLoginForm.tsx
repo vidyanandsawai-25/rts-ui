@@ -48,6 +48,24 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const [loadingNodes, setLoadingNodes] = useState(false);
   const [loadingSectors, setLoadingSectors] = useState(false);
 
+  const clearAllInputs = () => {
+    setMobile('');
+    setUpicId('');
+    setNodeId('');
+    setSectorId('');
+    setPropertyNo('');
+    setOtp('');
+    setError(null);
+    setInfo(null);
+    setPropertySuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleMethodChange = (newMethod: LoginMethod) => {
+    setMethod(newMethod);
+    clearAllInputs();
+  };
+
   // Property Suggestions Autocomplete States
   const [propertySuggestions, setPropertySuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -148,15 +166,15 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
     if (method === 'property') {
       if (!nodeId) {
-        setError('Please select a Node.');
+        setError(`Please select a ${t('phone.node') || 'Zone No'}.`);
         return;
       }
       if (!sectorId) {
-        setError('Please select a Sector.');
+        setError(`Please select a ${t('phone.sector') || 'Ward No'}.`);
         return;
       }
       if (!propertyNo.trim()) {
-        setError('Please enter a Property Number.');
+        setError(`Please enter a ${t('phone.property') || 'Property No'}.`);
         return;
       }
     }
@@ -308,10 +326,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                 <div className="flex items-end justify-center gap-2 border-b border-gray-200 pb-0.5">
                   <button
                     type="button"
-                    onClick={() => {
-                      setMethod('upic');
-                      setError(null);
-                    }}
+                    onClick={() => handleMethodChange('upic')}
                     className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${
                       method === 'upic'
                         ? 'bg-cyan-600 text-white shadow'
@@ -326,10 +341,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setMethod('property');
-                      setError(null);
-                    }}
+                    onClick={() => handleMethodChange('property')}
                     className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${
                       method === 'property'
                         ? 'bg-cyan-600 text-white shadow'
@@ -344,10 +356,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setMethod('mobile');
-                      setError(null);
-                    }}
+                    onClick={() => handleMethodChange('mobile')}
                     className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${
                       method === 'mobile'
                         ? 'bg-cyan-600 text-white shadow'
@@ -375,7 +384,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                       label={t('phone.upicLabel')}
                       placeholder={t('phone.upicPh')}
                       value={upicId}
-                      onChange={(e) => setUpicId(e.target.value)}
+                      onChange={(e) => setUpicId(e.target.value.toUpperCase())}
                       fullWidth
                     />
                   )}
@@ -383,10 +392,10 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                   {method === 'property' && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
-                        {/* Node Select */}
+                        {/* Node / Zone No Select */}
                         <div className="flex flex-col">
                           <label className="mb-1.5 text-sm font-medium text-gray-700">
-                            {t('phone.node') || 'Node'}
+                            {t('phone.node') || 'Zone No'}
                           </label>
                           <select
                             value={nodeId}
@@ -394,7 +403,9 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                             disabled={loadingNodes}
                             className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:opacity-50 h-[38px]"
                           >
-                            <option value="">{loadingNodes ? 'Loading...' : 'Select Node'}</option>
+                            <option value="">
+                              {loadingNodes ? 'Loading...' : `Select ${t('phone.node') || 'Zone No'}`}
+                            </option>
                             {nodes.map((n) => (
                               <option key={n.value} value={n.value}>
                                 {n.items}
@@ -403,10 +414,10 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                           </select>
                         </div>
 
-                        {/* Sector Select */}
+                        {/* Sector / Ward No Select */}
                         <div className="flex flex-col">
                           <label className="mb-1.5 text-sm font-medium text-gray-700">
-                            {t('phone.sector') || 'Sector'}
+                            {t('phone.sector') || 'Ward No'}
                           </label>
                           <select
                             value={sectorId}
@@ -416,10 +427,10 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                           >
                             <option value="">
                               {!nodeId
-                                ? 'Select Node first'
+                                ? `Select ${t('phone.node') || 'Zone No'} first`
                                 : loadingSectors
                                   ? 'Loading...'
-                                  : 'Select Sector'}
+                                  : `Select ${t('phone.sector') || 'Ward No'}`}
                             </option>
                             {sectors.map((s) => (
                               <option key={s.value} value={s.value}>

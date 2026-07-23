@@ -1,5 +1,5 @@
 import { getRtsMisDashboardAction } from "./actions";
-import RtsMisDashboard from "@/components/modules/rts/dashboard/RtsMisDashboard";
+import RtsMisDashboard from "@/components/modules/rts/dashboard/RtsMISDashboard";
 
 export default async function RtsMisDashboardPage() {
   const misDashboardData = await getRtsMisDashboardAction();
