@@ -1,8 +1,8 @@
 'use server';
 
-import { getCmsMisDashboardData } from '@/lib/api/rts/rtsmisdashboard.service';
+import { getRtsMisDashboardData } from '@/lib/api/rts/rtsmisdashboard.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
-import type { CmsMisDashboardResponse } from '@/types/rts/rtsmisdashboard.types';
+import type { RtsMisDashboardResponse } from '@/types/rts/rtsmisdashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
 
 export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiItem[]> {
@@ -14,9 +14,9 @@ export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiIt
   }
 }
 
-export async function getUserMisDashboardAction(): Promise<CmsMisDashboardResponse> {
+export async function getUserMisDashboardAction(): Promise<RtsMisDashboardResponse> {
   try {
-    return await getCmsMisDashboardData({
+    return await getRtsMisDashboardData({
       Flag: 'user',
       UpicId: 'AKLMC000010',
     });

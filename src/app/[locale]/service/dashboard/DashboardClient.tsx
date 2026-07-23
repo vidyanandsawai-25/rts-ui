@@ -1,12 +1,12 @@
 "use client";
 
 import DepartmentCarouselClient from "@/components/modules/rts/citizen/DepartmentCarsoulClient";
-import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
 
 type DashboardClientProps = {
   departments: DepartmentDTO[];
-  userApplications: CmsMisDashboardUserApplicationItem[];
+  userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
 };
 

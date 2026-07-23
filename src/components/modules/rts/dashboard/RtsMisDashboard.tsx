@@ -23,10 +23,10 @@ import {
   PrevPageButton,
 } from "@/components/common/ActionButtons";
 import { Select } from "@/components/common/select";
-import type { CmsMisDashboardData } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardData } from "@/types/rts/rtsmisdashboard.types";
 
 interface DashboardProps {
-  misDashboardData: CmsMisDashboardData;
+  misDashboardData: RtsMisDashboardData;
 }
 
 interface DepartmentalStatsRow extends Record<string, unknown> {
@@ -158,7 +158,7 @@ function createMisIdentifier(value: string, fallback: string) {
 }
 
 
-export default function CmsDashboard({ misDashboardData }: DashboardProps) {
+export default function RtsRtsMisDashboard({ misDashboardData }: DashboardProps) {
   const locale = useLocale();
   const t = useTranslations("rts");
   const numberFormatter = useMemo(

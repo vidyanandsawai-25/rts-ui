@@ -598,5 +598,3 @@ export default function RtsApplicationDetails({
     </div>
   );
 }
-
-export const CmsApplicationDetails = RtsApplicationDetails;

@@ -10,8 +10,8 @@
 
 import { cookies } from "next/headers";
 import { getDashboardDepartments } from "@/lib/api/dashboard";
-import { getCmsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
-import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import { getRtsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
 
 export type DashboardData = {
@@ -19,7 +19,7 @@ export type DashboardData = {
 };
 
 export type CitizenDashboardData = DashboardData & {
-  userApplications: CmsMisDashboardUserApplicationItem[];
+  userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
 };
 
@@ -53,7 +53,7 @@ export async function getCitizenDashboardData(): Promise<CitizenDashboardData> {
       return { departments, userApplications: [] };
     }
 
-    const response = await getCmsMisDashboardData({ Flag: "user", UpicId: upicId }).catch(() => ({ status: false, data: { userApplicationDashboardData: [] } }));
+    const response = await getRtsMisDashboardData({ Flag: "user", UpicId: upicId }).catch(() => ({ status: false, data: { userApplicationDashboardData: [] } }));
 
     return {
       departments,
@@ -67,7 +67,7 @@ export async function getCitizenDashboardData(): Promise<CitizenDashboardData> {
 }
 
 /** Loads the logged-in citizen's MIS applications from the server-only profile cookie. */
-export async function getCitizenMisApplications(): Promise<CmsMisDashboardUserApplicationItem[]> {
+export async function getCitizenMisApplications(): Promise<RtsMisDashboardUserApplicationItem[]> {
   try {
     const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
     if (!profileCookie) return [];
@@ -76,7 +76,7 @@ export async function getCitizenMisApplications(): Promise<CmsMisDashboardUserAp
     const upicId = profile.upicId?.trim();
     if (!upicId) return [];
 
-    const response = await getCmsMisDashboardData({ Flag: "user", UpicId: upicId });
+    const response = await getRtsMisDashboardData({ Flag: "user", UpicId: upicId });
     return response.status ? response.data.userApplicationDashboardData ?? [] : [];
   } catch (error) {
     console.error("Failed to load citizen MIS applications:", error);

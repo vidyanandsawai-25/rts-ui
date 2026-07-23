@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getUserMisDashboardAction } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
-import type { CmsMisDashboardUserApplicationItem } from '@/types/rts/rtsmisdashboard.types';
+import type { RtsMisDashboardUserApplicationItem } from '@/types/rts/rtsmisdashboard.types';
 import { Drawer } from '@/components/common/Drawer';
 import { useTranslations } from 'next-intl';
 import {
@@ -100,7 +100,7 @@ export default function RtsApplicationDashboard({
   const t = useTranslations('rts');
   const tCommon = useTranslations('common');
 
-  const [dashboardData, setDashboardData] = useState<CmsMisDashboardUserApplicationItem[]>([]);
+  const [dashboardData, setDashboardData] = useState<RtsMisDashboardUserApplicationItem[]>([]);
 
   const [loading, setLoading] = useState(true);
 

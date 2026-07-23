@@ -20,7 +20,7 @@ import {
 import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Drawer } from "@/components/common/Drawer";
-import type { CmsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
 type Service = {
@@ -48,7 +48,7 @@ export type SearchService = Service & {
 
 type DepartmentCarsoulClientProps = {
   departments: Department[];
-  userApplications: CmsMisDashboardUserApplicationItem[];
+  userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
 };
 
@@ -72,7 +72,7 @@ function allLabels(v: LangText | string | undefined): string[] {
   return [v.en, v.hi, v.mr].filter(Boolean) as string[];
 }
 
-type CitizenApplication = CmsMisDashboardUserApplicationItem & {
+type CitizenApplication = RtsMisDashboardUserApplicationItem & {
   normalizedStatus: "approved" | "rejected" | "pending";
 };
 

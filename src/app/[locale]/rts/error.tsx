@@ -2,11 +2,11 @@
 
 import { ErrorPage } from "@/components/common";
 
-type CmsErrorProps = {
+type RtsErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function CmsError({ error, reset }: CmsErrorProps) {
+export default function RtsError({ error, reset }: RtsErrorProps) {
   return <ErrorPage error={error} reset={reset} />;
 }

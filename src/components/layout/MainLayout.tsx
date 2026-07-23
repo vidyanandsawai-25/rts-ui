@@ -143,9 +143,9 @@ async function SidebarWithData({ locale }: { locale: string }) {
   const { menuItems } = await getLayoutChromeData();
   const pathname = (await headers()).get('x-pathname') || '';
 
-  const isCmsRoute = /\/(rts|rts\/admin)(\/|$)/.test(pathname);
-  if (isCmsRoute) {
-    const cmsMenuItems: MenuItem[] = [
+  const isRtsRoute = /\/(rts|rts\/admin)(\/|$)/.test(pathname);
+  if (isRtsRoute) {
+    const rtsMenuItems: MenuItem[] = [
       {
         name: 'MIS Dashboard',
         nameHi: 'एमआयएस डॅशबोर्ड',
@@ -195,7 +195,7 @@ async function SidebarWithData({ locale }: { locale: string }) {
         ]
       },
     ];
-    return <Sidebar menuItems={cmsMenuItems} locale={locale} />;
+    return <Sidebar menuItems={rtsMenuItems} locale={locale} />;
   }
 
   return <Sidebar menuItems={menuItems} locale={locale} />;

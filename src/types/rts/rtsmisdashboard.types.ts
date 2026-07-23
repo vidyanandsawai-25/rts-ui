@@ -1,4 +1,4 @@
-export interface CmsMisDashboardServiceItem {
+export interface RtsMisDashboardServiceItem {
   serviceName: string;
   departmentId?: string | number;
   departmentName?: string;
@@ -12,7 +12,7 @@ export interface CmsMisDashboardServiceItem {
   sla: number;
 }
 
-export interface CmsMisDashboardDepartmentItem {
+export interface RtsMisDashboardDepartmentItem {
   departmentId?: string | number;
   departmentName: string;
   totalServices: number;
@@ -26,7 +26,7 @@ export interface CmsMisDashboardDepartmentItem {
   sla: number;
 }
 
-export interface CmsMisDashboardUserApplicationItem {
+export interface RtsMisDashboardUserApplicationItem {
   serviceName: string;
   serviceNameLocal: string;
   applicationNo: string;
@@ -35,20 +35,21 @@ export interface CmsMisDashboardUserApplicationItem {
   status: string;
 }
 
-export interface CmsMisDashboardData {
-  serviceWiseData: CmsMisDashboardServiceItem[];
-  departmentWiseData: CmsMisDashboardDepartmentItem[];
-  userApplicationDashboardData: CmsMisDashboardUserApplicationItem[];
+export interface RtsMisDashboardData {
+  serviceWiseData: RtsMisDashboardServiceItem[];
+  departmentWiseData: RtsMisDashboardDepartmentItem[];
+  userApplicationDashboardData: RtsMisDashboardUserApplicationItem[];
 }
 
-export interface CmsMisDashboardResponse {
+export interface RtsMisDashboardResponse {
   status: boolean;
   message: string;
-  data: CmsMisDashboardData;
+  data: RtsMisDashboardData;
 }
-export type CmsMisDashboardFlag = 'admin' | 'user';
 
-export interface CmsMisDashboardRequest {
-  Flag: CmsMisDashboardFlag;
+export type RtsMisDashboardFlag = 'admin' | 'user';
+
+export interface RtsMisDashboardRequest {
+  Flag: RtsMisDashboardFlag;
   UpicId: string;
 }

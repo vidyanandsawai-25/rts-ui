@@ -1,9 +1,9 @@
 "use server";
 
-import { getCmsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
-import type { CmsMisDashboardData } from "@/types/rts/rtsmisdashboard.types";
+import { getRtsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
+import type { RtsMisDashboardData } from "@/types/rts/rtsmisdashboard.types";
 
-export async function getCmsMisDashboardAction(): Promise<CmsMisDashboardData> {
-  const response = await getCmsMisDashboardData();
+export async function getRtsMisDashboardAction(): Promise<RtsMisDashboardData> {
+  const response = await getRtsMisDashboardData();
   return response.data;
 }

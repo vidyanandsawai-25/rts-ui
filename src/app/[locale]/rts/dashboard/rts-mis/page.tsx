@@ -1,8 +1,8 @@
 import RtsMISDashboard from "@/components/modules/rts/dashboard/RtsMisDashboard";
-import { getCmsMisDashboardAction } from "./actions";
+import { getRtsMisDashboardAction } from "./actions";
 
-export default async function CmsDashboardPage() {
-  const misDashboardData = await getCmsMisDashboardAction();
+export default async function RtsMISDashboardPage() {
+  const misDashboardData = await getRtsMisDashboardAction();
 
   return (
     <div className="w-full">

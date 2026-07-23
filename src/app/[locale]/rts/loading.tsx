@@ -1,5 +1,5 @@
 import { LoadingPage } from "@/components/common";
 
-export default function CmsLoading() {
+export default function RtsLoading() {
   return <LoadingPage />;
 }
