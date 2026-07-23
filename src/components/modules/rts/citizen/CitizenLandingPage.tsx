@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -18,9 +18,6 @@ import {
   Laptop,
   Zap,
   Clock,
-  FileCheck,
-  CheckCircle2,
-  Award,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
 import type { DepartmentDTO, ServiceDTO } from '@/types/rts-citizen.types';
@@ -105,6 +102,51 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const t = (mr: string, hi: string, en: string) =>
     locale === 'mr' ? mr : locale === 'hi' ? hi : en;
 
+  const totalServiceCount = useMemo(
+    () => departments.reduce((acc, d) => acc + d.services.length, 0),
+    [departments]
+  );
+  const countDisplay = totalServiceCount > 0 ? `${totalServiceCount}+` : '65+';
+
+  // ── Auto-rotating portfolio stats inside the hero promo blue card ───────────
+  const heroStats = useMemo(() => [
+    {
+      value: countDisplay,
+      title: t('ऑनलाईन नागरीक सेवा', 'ऑनलाइन सेवाएं', 'Online Services'),
+      subtitle: t('तुमची सेवा, आमचे कर्तव्य', 'आपकी सेवा, हमारा कर्तव्य', 'Your service, our duty'),
+      badge: t('२४x७ डिजिटल', '24x7 डिजिटल', '24x7 Digital'),
+    },
+    {
+      value: '52,480+',
+      title: t('प्राप्त नागरीक अर्ज', 'प्राप्त नागरिक आवेदन', 'Received Applications'),
+      subtitle: t('पोर्टलवरील एकूण नोंदणीकृत अर्ज', 'पोर्टल पर कुल प्राप्त आवेदन', 'Total registered applications'),
+      badge: t('एकूण अर्ज', 'कुल आवेदन', 'Total Received'),
+    },
+    {
+      value: '51,120+',
+      title: t('निकाली काढलेले अर्ज', 'निवारित आवेदन', 'Disposed Applications'),
+      subtitle: t('वेळेत मंजूर व सेवा वितरित', 'समयबद्ध स्वीकृत एवं वितरित', 'Approved & delivered'),
+      badge: t('निकाली अर्ज', 'निवारित', 'SLA Disposed'),
+    },
+    {
+      value: '98.4%',
+      title: t('SLA पूर्तता यश दर', 'SLA सफलता दर', 'SLA Success Rate'),
+      subtitle: t('लोकसेवा हक्क कायदा उद्दिष्ट', 'लोक सेवा अधिकार कानून लक्ष्य', 'Statutory SLA resolution'),
+      badge: t('SLA यश दर', 'SLA सफलता', 'SLA Target'),
+    },
+  ], [countDisplay, locale]);
+
+  const [currentStatIndex, setCurrentStatIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentStatIndex((prev) => (prev + 1) % heroStats.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [heroStats.length]);
+
+  const currentStat = heroStats[currentStatIndex];
+
   // ── Build deptCards dynamically from API data ──────────────────────────────
   const deptCards = useMemo(() => {
     return departments.map((dept, idx) => {
@@ -146,12 +188,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
   // Set initial active tab once deptCards are available
   const resolvedActiveTab = activeTab || (deptCards[0]?.id ?? '');
-
-  // Total service count (dynamic)
-  const totalServiceCount = useMemo(
-    () => departments.reduce((sum, d) => sum + d.services.length, 0),
-    [departments]
-  );
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleActionClick = () => {
@@ -244,8 +280,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   // ── Active dept ────────────────────────────────────────────────────────────
   const activeDept = deptCards.find((d) => d.id === resolvedActiveTab) ?? deptCards[0];
 
-  // ── Service count display ──────────────────────────────────────────────────
-  const countDisplay = totalServiceCount > 0 ? `${totalServiceCount}+` : '65+';
   const totalLabel =
     locale === 'mr'
       ? `${totalServiceCount} एकूण सेवा`
@@ -349,37 +383,60 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
               <div className="absolute -left-10 -top-10 w-16 h-16 bg-blue-300/10 rounded-full blur-lg pointer-events-none" />
 
-              <div className="space-y-2 relative z-20 flex-1 flex flex-col justify-between h-full max-w-[50%]">
-                <div className="space-y-0.5">
-                  <motion.h3
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.4, type: 'spring', stiffness: 200, bounce: 0.5 }}
-                    className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200 leading-none block drop-shadow-md"
-                  >
-                    {countDisplay}
-                  </motion.h3>
-                  <motion.span
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-xs font-extrabold text-white block mt-0.5 leading-tight whitespace-nowrap"
-                  >
-                    {t('ऑनलाईन सेवा', 'ऑनलाइन सेवाएं', 'Online Services')}
-                  </motion.span>
-                  <span className="text-[10px] text-blue-100 block leading-tight whitespace-nowrap">
-                    {t('तुमची सेवा, आमचे कर्तव्य', 'आपकी सेवा, हमारा कर्तव्य', 'Your service, our duty')}
-                  </span>
+              <div className="relative z-20 flex-1 flex flex-col justify-between h-full max-w-[55%] min-h-0">
+                <div className="min-h-[64px] overflow-hidden flex flex-col justify-center">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStatIndex}
+                      initial={{ y: 12, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -12, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="space-y-0.5"
+                    >
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <span className="px-1.5 py-0.2 rounded bg-white/20 text-[9px] font-black text-white uppercase tracking-wider">
+                          {currentStat.badge}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-black tracking-tight text-white leading-none block drop-shadow-md">
+                        {currentStat.value}
+                      </h3>
+                      <span className="text-xs font-extrabold text-white block leading-tight whitespace-nowrap truncate">
+                        {currentStat.title}
+                      </span>
+                      <span className="text-[9px] text-blue-100 block leading-tight whitespace-nowrap truncate">
+                        {currentStat.subtitle}
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleActionClick}
-                  className="px-3.5 py-1.5 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-[10px] sm:text-xs flex items-center gap-1 shadow-sm transition-colors cursor-pointer w-fit mt-0.5 shrink-0"
-                >
-                  <span>{t('सेवा अर्ज करा', 'सेवा आवेदन करें', 'Apply')}</span>
-                  <span className="text-[11px] font-black">&rarr;</span>
-                </button>
+                <div className="flex items-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={handleActionClick}
+                    className="px-3 py-1 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-[10px] sm:text-xs flex items-center gap-1 shadow-sm transition-colors cursor-pointer shrink-0"
+                  >
+                    <span>{t('सेवा अर्ज करा', 'सेवा आवेदन करें', 'Apply')}</span>
+                    <span className="text-[10px] font-black">&rarr;</span>
+                  </button>
+
+                  {/* Carousel Dots */}
+                  <div className="flex items-center gap-1 ml-1">
+                    {heroStats.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCurrentStatIndex(idx)}
+                        className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                          idx === currentStatIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                        }`}
+                        aria-label={`Go to stat ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Floating icons */}
@@ -426,86 +483,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
       {/* Main Content */}
       <div className="w-full space-y-4 py-3 px-3 md:px-5">
-
-        {/* ─── RTS Portal Impact & Performance Portfolio Banner ───────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1 pb-1"
-        >
-          {/* Card 1: Total Received Applications */}
-          <div className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-blue-700/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-200 shrink-0 group-hover:scale-110 transition-transform">
-              <FileCheck className="w-5 h-5 text-blue-300" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] sm:text-xs font-black text-blue-200 uppercase tracking-wider truncate">
-                {t('प्राप्त अर्ज', 'प्राप्त आवेदन', 'Received Applications')}
-              </p>
-              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
-                52,480+
-              </h4>
-              <span className="text-[9px] sm:text-[10px] text-blue-300 font-bold block mt-0.5 truncate">
-                {t('पोर्टलवरील एकूण अर्ज', 'पोर्टल पर कुल प्राप्त आवेदन', 'Total registered applications')}
-              </span>
-            </div>
-          </div>
-
-          {/* Card 2: Disposed / Solved Applications */}
-          <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-emerald-600/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-200 shrink-0 group-hover:scale-110 transition-transform">
-              <CheckCircle2 className="w-5 h-5 text-emerald-300" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] sm:text-xs font-black text-emerald-200 uppercase tracking-wider truncate">
-                {t('निकाली काढलेले अर्ज', 'निवारित आवेदन', 'Disposed Applications')}
-              </p>
-              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
-                51,120+
-              </h4>
-              <span className="text-[9px] sm:text-[10px] text-emerald-300 font-bold block mt-0.5 truncate">
-                {t('वेळेत मंजूर व वितरित', 'समयबद्ध स्वीकृत एवं वितरित', 'Successfully approved & delivered')}
-              </span>
-            </div>
-          </div>
-
-          {/* Card 3: SLA Delivery Rate */}
-          <div className="bg-gradient-to-br from-amber-700 to-orange-800 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-amber-500/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-200 shrink-0 group-hover:scale-110 transition-transform">
-              <Award className="w-5 h-5 text-amber-300" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] sm:text-xs font-black text-amber-200 uppercase tracking-wider truncate">
-                {t('SLA पूर्तता दर', 'SLA सफलता दर', 'SLA Success Rate')}
-              </p>
-              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
-                98.4%
-              </h4>
-              <span className="text-[9px] sm:text-[10px] text-amber-200 font-bold block mt-0.5 truncate">
-                {t('वेळबद्ध लोकसेवा नियम', 'समयबद्ध लोक सेवा नियम', 'On-time statutory resolution')}
-              </span>
-            </div>
-          </div>
-
-          {/* Card 4: Active Services */}
-          <div className="bg-gradient-to-br from-purple-900 to-indigo-950 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-purple-600/40 relative overflow-hidden flex items-center gap-3 group hover:scale-[1.02] transition-all">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-200 shrink-0 group-hover:scale-110 transition-transform">
-              <Zap className="w-5 h-5 text-purple-300" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] sm:text-xs font-black text-purple-200 uppercase tracking-wider truncate">
-                {t('ऑनलाईन नागरीक सेवा', 'ऑनलाइन सेवाएं', 'Active Services')}
-              </p>
-              <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-none mt-1">
-                {countDisplay}
-              </h4>
-              <span className="text-[9px] sm:text-[10px] text-purple-300 font-bold block mt-0.5 truncate">
-                {t('२४x७ डिजिटल पोर्टल', '24x7 डिजिटल सेवा पोर्टल', '24x7 Digital e-Governance')}
-              </span>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Quick Access Links */}
         <div className="space-y-3">
