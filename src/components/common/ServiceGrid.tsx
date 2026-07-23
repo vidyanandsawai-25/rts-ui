@@ -118,20 +118,25 @@ export default function ServiceGrid({
 
       try {
         new URL(externalUrl);
-        const activeUpicId = upicId?.trim();
-        if (!activeUpicId) {
-          setApplyError(t("missingUpic"));
-          return;
-        }
-
+        const activeUpicId =
+          upicId?.trim() ||
+          (typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("upicNo")?.trim()
+            : undefined);
         let destination = externalUrl;
-        if (/([?&][^?&=]+)=$/.test(externalUrl)) {
-          destination = externalUrl.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(activeUpicId)}`);
-        } else if (externalUrl.includes("upicNo=")) {
-          destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
-        } else {
-          const sep = externalUrl.includes("?") ? "&" : "?";
-          destination = `${externalUrl}${sep}upicNo=${encodeURIComponent(activeUpicId)}`;
+
+        const expectsUpic = externalUrl.includes("upicNo=") || /([?&][^?&=]+)=$/.test(externalUrl);
+
+        if (expectsUpic) {
+          if (!activeUpicId) {
+            setApplyError(t("missingUpic"));
+            return;
+          }
+          if (externalUrl.includes("upicNo=")) {
+            destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
+          } else {
+            destination = externalUrl.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(activeUpicId)}`);
+          }
         }
 
         saveDeptServiceContext(service);
