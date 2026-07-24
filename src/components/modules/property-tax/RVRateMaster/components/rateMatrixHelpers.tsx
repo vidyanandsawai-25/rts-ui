@@ -30,9 +30,10 @@ export function buildMatrixColumns(
 
   return filteredCategories.map((cat) => {
     const code = (cat.constructionCode || cat.constructionId).trim().toUpperCase();
+    const groupCode = cat.typeOfUseGroupCode ? cat.typeOfUseGroupCode.trim().toUpperCase() : code;
     const associated = cat.associatedUseTypes;
     const hasMultiple = associated && associated.length > 1;
-    const displayCode = hasMultiple ? `${code} (+${associated.length - 1})` : code;
+    const displayCode = groupCode;
 
     const tooltipContent = hasMultiple ? (
       <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">

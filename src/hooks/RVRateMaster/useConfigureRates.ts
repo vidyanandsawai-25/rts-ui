@@ -30,6 +30,7 @@ interface UseConfigureRatesProps {
   currentCategories: RateCategory[];
   onConfigureSelected?: (selectedTypes: ITypeOfUseDetails[]) => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  isOpenPlot?: boolean;
 }
 
 export function useConfigureRates({
@@ -38,6 +39,7 @@ export function useConfigureRates({
   currentCategories,
   onConfigureSelected,
   t,
+  isOpenPlot = false,
 }: UseConfigureRatesProps) {
   const [allUseTypes, setAllUseTypes] = useState<ITypeOfUseDetails[]>([]);
   const [paginatedUseTypes, setPaginatedUseTypes] = useState<ITypeOfUseDetails[]>([]);
@@ -84,7 +86,7 @@ export function useConfigureRates({
     if (open) {
       loadData();
     }
-  }, [open, t]);
+  }, [open, t, isOpenPlot]);
 
   // Handle initialization and URL parameter sync
   useConfigureRatesInitialization({
