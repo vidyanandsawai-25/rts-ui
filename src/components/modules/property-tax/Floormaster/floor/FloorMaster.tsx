@@ -109,22 +109,10 @@ export default function FloorMaster({
             toast.success(t("messages.deleteSuccess"));
             router.refresh();
           } else {
-            let msg = tCommon("errors.deleteError");
-
-            if (result.statusCode === 409 && result.message) {
-              // Show backend message if present
-              msg = result.message;
-            } else if (result.statusCode === 409) {
-              msg = t("messages.deleteInUse");
-            } else if (result.statusCode === 404) {
-              msg = tCommon("errors.notFound");
-            } else if (result.messageKey) {
-              // Translate i18n key from server
-              msg = t(result.messageKey);
-            } else if (result.message) {
-              // Display raw error message from API
-              msg = result.message;
-            }
+            const msg =
+              result.statusCode === 409 ? t("messages.deleteInUse") :
+              result.statusCode === 404 ? tCommon("errors.notFound") :
+              result.message || tCommon("errors.deleteError");
 
             toast.error(msg);
           }

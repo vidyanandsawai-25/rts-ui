@@ -78,7 +78,10 @@ export default function CategoryListDrawer({
             toast.success(t("category.messages.categoryDeleted"));
             router.refresh();
           } else {
-            toast.error(result.message || t("category.messages.deleteFailed"));
+            const finalError = result.statusCode === 409
+              ? t("category.messages.inUseError", { name: category.typeOfUseCategoryName })
+              : (result.message || t("category.messages.deleteFailed"));
+            toast.error(finalError);
           }
         } catch {
           toast.error(t("category.messages.deleteFailed"));
@@ -130,7 +133,7 @@ export default function CategoryListDrawer({
   return (
     <Drawer
       open
-      onClose={() => router.push("/property-tax/typeofusemaster")}
+      onClose={() => router.push(`/${locale}/property-tax/typeofusemaster`)}
       className="border-l-4 border-[#4F6A94]"
       width="lg"
       title={
@@ -162,7 +165,7 @@ export default function CategoryListDrawer({
           <AddButton
             size="md"
             label={t("category.addNew")}
-            onClick={() => router.push("/property-tax/typeofusemaster/category/add")}
+            onClick={() => router.push(`/${locale}/property-tax/typeofusemaster/category/add`)}
           />
         </div>
 
