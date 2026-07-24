@@ -12,27 +12,18 @@
  * @returns React element with the rendered cell
  */
 export function renderCellBox(value: string, className: string, fallback = '-') {
-  return <div className={className}>{value || fallback}</div>;
+  return <span className={className}>{value || fallback}</span>;
 }
 
-/**
- * Renders a cell box with tooltip support for long text.
- * Shows tooltip on hover when the value differs from the fallback.
- *
- * @param value - The value to display
- * @param className - CSS class name for the cell
- * @param fallback - Fallback value when value is empty (default: '-')
- * @returns React element with the rendered cell and tooltip
- */
 export function renderCellBoxWithTooltip(value: string, className: string, fallback = '-') {
   const displayValue = value || fallback;
   return (
-    <div
+    <span
       className={className}
       tabIndex={0}
       title={displayValue !== fallback ? displayValue : undefined}
     >
       {displayValue}
-    </div>
+    </span>
   );
 }

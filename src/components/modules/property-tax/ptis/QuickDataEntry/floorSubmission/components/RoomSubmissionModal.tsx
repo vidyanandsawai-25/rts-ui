@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Layers, MapPin, Hash, Building, DoorOpen } from 'lucide-react';
-import { MasterTable, type Column, Tooltip, Drawer } from '@/components/common';
+import { MasterTable, type Column, Tooltip, Drawer, Button } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import type { FloorData, RoomSubmissionSidebarProps } from '@/types/floor-details.types';
 import RoomWiseSubmission from '../RoomSubmission/RoomWiseSubmission';
@@ -12,7 +12,7 @@ import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utilit
 
 export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps) {
     const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
-    const isOpenPlot = props.floorData?.isOpenPlot === true || 
+    const isOpenPlot = props.floorData?.isOpenPlot === true ||
         props.floorData?.selectedFloorType === 'OpenPlot' ||
         String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
         String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
@@ -181,10 +181,10 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <h2 className="text-base font-bold flex items-center gap-2 text-white shrink-0">
                 <Layers className="w-4 h-4 text-white" />
-                {isOpenPlot 
-                    ? 'OPEN SPACE SUBMISSION' 
-                    : isUtilityCategory 
-                        ? 'UTILITY WISE SUBMISSION' 
+                {isOpenPlot
+                    ? 'OPEN SPACE SUBMISSION'
+                    : isUtilityCategory
+                        ? 'UTILITY WISE SUBMISSION'
                         : t('roomSubmission.title')} ({areaUnit === "sq.m" ? t('roomSubmission.table.sqMeter') : t('roomSubmission.table.sqFeet')})
             </h2>
             <div className="flex flex-wrap items-center gap-2">
@@ -211,7 +211,7 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
             </div>
 
             {/* Unit Toggle Pill - Hidden on UI */}
-            {/*
+
             <div className="flex items-center bg-blue-50/50 rounded-full p-0.5 border border-blue-100 shadow-inner ml-2">
                 <Button
                     type="button"
@@ -239,7 +239,7 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                     {t('roomSubmission.input.buttons.sqft')}
                 </Button>
             </div>
-            */}
+
         </div>
     );
 

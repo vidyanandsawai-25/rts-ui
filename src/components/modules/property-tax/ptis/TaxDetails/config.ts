@@ -54,12 +54,12 @@ export const CELL_CENTER_CLASS = 'text-center';
 /**
  * Styling for number cells (tax amount columns)
  */
-export const NUMBER_CELL_CLASSES = 'border border-blue-300 rounded px-1.5 py-1 text-center bg-white text-[12px] min-w-[70px] shadow-sm font-bold text-slate-800';
+export const NUMBER_CELL_CLASSES = 'text-center text-[12px] font-normal text-slate-800 whitespace-nowrap px-1';
 
 /**
  * Styling for total column cells
  */
-export const TOTAL_CELL_CLASSES = 'border border-indigo-400 rounded px-1.5 py-1 text-center bg-white text-[12px] min-w-[70px] font-black text-indigo-900 shadow-sm';
+export const TOTAL_CELL_CLASSES = 'text-center text-[12px] font-bold text-slate-900 whitespace-nowrap px-1';
 
 /**
  * Default fallback styling for unknown tax types

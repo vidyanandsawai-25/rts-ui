@@ -34,7 +34,7 @@ export const useFloorActions = (params: {
 
   // Lazy Loading Handlers
   const handleOpenDropdown = useCallback(
-    (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => {
+    (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType' | 'loadOpenPlotCategory') => {
       if (searchParams.get(key) === 'true') return;
       startTransition(() => {
         updateUrlParams({ [key]: 'true' });

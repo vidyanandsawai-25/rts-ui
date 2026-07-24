@@ -5,7 +5,7 @@ import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResp
 import { FloorData, RoomTypeResponse } from '@/types/room-details.types';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { normalizeObjectResponse, normalizeArrayResponse, normalizeWrappedResponse, } from '@/lib/utils/action-response-helpers';
-import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, } from './actions';
+import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getOpenPlotCategoryDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, } from './actions';
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 
 // Force dynamic rendering — this page relies on per-request search params.
@@ -79,29 +79,32 @@ export default async function FloorSubmissionPage({
     const knownPropertyId = propertyId || propertyIdSp || undefined;
 
     // ── Phase 1: Dynamic Data Fetching (On-Demand Pattern) ──────────────────
-    // ── Phase 1: Fetch Property Details to get propertyTypeId ───────────────
-    const [quickDataRaw, propertyRaw] = await Promise.all([
+    // ── Phase 1: Fetch Property Details & Basic Details to get propertyTypeId ─────
+    const [quickDataRaw, propertyRaw, propertyBasicDetailsRaw] = await Promise.all([
         hasPropertyKeys ? getQuickDataEntryAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
         hasPropertyKeys ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
+        knownPropertyId ? getPropertyBasicDetailsAction(knownPropertyId) : Promise.resolve(null),
     ]);
 
     const metadataErrors: string[] = [];
 
     const quickData = normalizeObjectResponse(quickDataRaw, (m) => metadataErrors.push(m));
     const propertyData = normalizeObjectResponse(propertyRaw, (m) => metadataErrors.push(m));
+    const propertyBasicDetails = propertyBasicDetailsRaw as PropertyBasicDetailsApiItem | null;
 
     const quickDataPropertyID = quickData ? extractPropertyId(quickData) : undefined;
     const propertyDataPropertyID = propertyData ? extractPropertyId(propertyData) : undefined;
 
     const initialPropertyID: string | number | undefined =
         quickDataPropertyID ?? propertyDataPropertyID ?? knownPropertyId;
+
     let initialPropertyData: Record<string, unknown> | null = quickData ?? propertyData;
 
     // If we only have propertyId and wardNo/propertyNo/partitionNo weren't provided,
     // we fetch the basic details by propertyId on-demand to resolve propertyTypeId
     if (!initialPropertyData && initialPropertyID && initialPropertyID !== 'new') {
         try {
-            const basicDetails = await getPropertyBasicDetails(Number(initialPropertyID));
+            const basicDetails = propertyBasicDetails || (await getPropertyBasicDetails(Number(initialPropertyID)));
             if (basicDetails) {
                 initialPropertyData = basicDetails as unknown as Record<string, unknown>;
             }
@@ -110,34 +113,39 @@ export default async function FloorSubmissionPage({
         }
     }
 
-    const resolvedPropertyTypeId = initialPropertyData ? (initialPropertyData.propertyTypeId ?? initialPropertyData.propertyTypeID) as number : undefined;
+    const resolvedPropertyTypeId = (
+        initialPropertyData?.propertyTypeId ??
+        initialPropertyData?.propertyTypeID ??
+        propertyBasicDetails?.propertyTypeId
+    ) as number | string | undefined;
 
     // ── Phase 2: Fetch Dropdowns & Floor List on-demand ─────────────────────
     const shouldLoadAll = !!floorId;
     const shouldLoadSubType = shouldLoadAll || asString(sp.loadSubType) === 'true';
+    const shouldLoadOpenPlotCategory = shouldLoadAll || asString(sp.loadOpenPlotCategory) === 'true';
     const effectiveUseIdForPrefetch = shouldLoadSubType ? typeOfUseId : undefined;
 
     const [
         floorDataResult,
         constructionTypeDataResult,
         useDataResult,
+        openPlotCategoryDataResult,
         subFloorDataResult,
         subTypeDataResult,
         roomTypeDataResult,
         floorDetailRaw,
         initialFloorsRaw,
-        propertyBasicDetailsRaw,
         _initialPlotAreaResult,
     ] = await Promise.all([
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadUsage) === 'true') ? getTypeOfUseDataAction(resolvedPropertyTypeId) : Promise.resolve([]),
+        shouldLoadOpenPlotCategory ? getOpenPlotCategoryDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
         getRoomTypeDataAction(),
         (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
         (knownPropertyId && !hasPropertyKeys) ? getFloorSubmissionsByOwnerAction(knownPropertyId) : Promise.resolve([]),
-        knownPropertyId ? getPropertyBasicDetailsAction(knownPropertyId) : Promise.resolve(null),
         (initialPropertyID && initialPropertyID !== 'new') ? Promise.resolve(null) : Promise.resolve(null),
     ]);
 
@@ -170,13 +178,16 @@ export default async function FloorSubmissionPage({
 
     const floorData = checkResult<FloorResponse>(floorDataResult, 'Floor data');
     const constructionTypeData = checkResult<ConstructionTypeResponse>(constructionTypeDataResult, 'Construction types');
-    const useData = checkResult<TypeOfUseApiItem>(useDataResult, 'Usage types');
+    const rawUseData = checkResult<TypeOfUseApiItem>(useDataResult, 'Usage types');
+    const openPlotCategoryData = checkResult<TypeOfUseApiItem>(openPlotCategoryDataResult, 'Open Plot Categories');
+
+    // Combine standard usage types and dedicated Open Plot Categories (TypeOfUseCategoryId=3)
+    const useData = [...rawUseData, ...openPlotCategoryData];
     const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult, 'Sub-floor data');
     let subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult, 'Sub-usage types');
     const roomTypeData = checkResult<RoomTypeResponse>(roomTypeDataResult, 'Room types');
 
     // ── Resolve property data & ID ──────────────────────────────────────────
-    const propertyBasicDetails = propertyBasicDetailsRaw as PropertyBasicDetailsApiItem | null;
     if (propertyBasicDetails && initialPropertyData) {
         initialPropertyData = {
             ...initialPropertyData,

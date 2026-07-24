@@ -118,15 +118,10 @@ const FloorTable: React.FC<FloorTableProps> = ({
       sortable: true,
       render: (row: FloorData, index: number) => {
         const cellValue = row[col.key as keyof FloorData];
-        const content = col.render
-          ? (col.render as (val: unknown, r: FloorData, i: number) => React.ReactNode)(cellValue, row, index)
-          : <span className="font-bold text-slate-900">{String(cellValue ?? '-')}</span>;
-
-        return (
-          <div className="px-1 py-1 text-[11px] text-center flex items-center justify-center min-h-[28px] font-bold text-slate-700">
-            {content}
-          </div>
-        );
+        if (col.render) {
+          return (col.render as (val: unknown, r: FloorData, i: number) => React.ReactNode)(cellValue, row, index);
+        }
+        return <span className="font-semibold text-slate-800 text-[12px]">{String(cellValue ?? '-')}</span>;
       },
     }));
 
@@ -138,7 +133,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
         sortable: false,
         render: (row: FloorData) => {
           return (
-            <div className="flex justify-center items-center h-full min-h-[28px]">
+            <div className="flex justify-center items-center">
               {deleteCellRenderer(row)}
             </div>
           );
@@ -293,11 +288,11 @@ const FloorTable: React.FC<FloorTableProps> = ({
           hoverable={true}
           containerClassName="border border-blue-200 shadow-md rounded-xl"
           heightRows={4}
-          theadClassName="bg-[#1e3a8a] text-white"
+          theadClassName="bg-[#1440aa] text-white"
           rowClassName={(row) =>
             viewOnly
-              ? 'cursor-default border-l-4 border-l-transparent'
-              : `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
+              ? 'cursor-default border-l-4 border-l-transparent border-b-2 border-blue-200/90'
+              : `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
           }
         />
       </div>
