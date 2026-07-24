@@ -317,7 +317,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               )}
             </h2>
 
-            <div className="relative w-full max-w-xl bg-white p-1.5 rounded-xl border border-slate-250 shadow-md flex items-center gap-1.5 focus-within:ring-2 focus-within:ring-green-600 focus-within:border-transparent transition-all">
+            <div className="relative w-full max-w-xl bg-white p-1 sm:p-1.5 rounded-xl border border-slate-250 shadow-md flex items-center gap-1 sm:gap-1.5 focus-within:ring-2 focus-within:ring-green-600 focus-within:border-transparent transition-all">
               <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
               <input
                 type="text"
@@ -329,14 +329,14 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               <button
                 type="button"
                 onClick={() => handleServiceClick(searchQuery)}
-                className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-xs sm:text-sm font-black rounded-lg shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-green-700 hover:bg-green-800 text-white text-xs sm:text-sm font-black rounded-lg shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1 sm:gap-1.5"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>{t('शोधा', 'खोजें', 'Search')}</span>
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] sm:text-xs font-bold text-slate-650 bg-white/50 backdrop-blur-sm rounded-lg py-1 px-2.5 border border-slate-200/40 w-fit">
+            <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] sm:text-xs font-bold text-slate-650 bg-white/50 backdrop-blur-sm rounded-lg py-1 px-2 border border-slate-200/40 w-full sm:w-fit">
               {[
                 [t('वेळबद्ध सेवा', 'समयबद्ध सेवा', 'Time-bound Service')],
                 [t('पारदर्शक प्रक्रिया', 'पारदर्शी प्रक्रिया', 'Transparent Process')],
@@ -357,7 +357,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 <span>{t('सेवा हक्क अधिनियम २०१५ प्रक्रिया', 'लोक सेवा गारंटी प्रक्रिया', 'RTS Act 4-Stage Process')}</span>
                 <span className="text-[9px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-400/40">✓ {t('वेळेत सेवा', 'समयबद्ध', 'SLA Guaranteed')}</span>
               </div>
-              <div className="grid grid-cols-4 gap-1 items-center text-center">
+              <div className="grid grid-cols-4 gap-1 items-center text-center w-full">
                 <div className="flex flex-col items-center">
                   <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-300 flex items-center justify-center text-xs shadow-xs">💻</div>
                   <span className="text-[9px] font-black text-amber-200 mt-1 leading-tight">{t('१. ई-अर्ज', '1. ई-आवेदन', '1. e-Filing')}</span>
@@ -669,12 +669,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 key={index}
                 type="button"
                 onClick={handleActionClick}
-                className={`group flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer text-center h-[80px] sm:h-[90px] ${action.colorClass}`}
+                className={`group flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer text-center h-auto min-h-[76px] sm:min-h-[88px] ${action.colorClass}`}
               >
                 <div className={`w-8 h-8 ${action.iconBg} rounded-lg flex items-center justify-center shrink-0 mb-1.5`}>
                   {action.icon}
                 </div>
-                <h4 className="font-extrabold text-slate-800 text-[11px] sm:text-xs leading-tight group-hover:text-blue-900 transition-colors">
+                <h4 className="font-extrabold text-slate-800 text-[10.5px] sm:text-xs leading-snug group-hover:text-blue-900 transition-colors max-w-full px-0.5">
                   {action.label}
                 </h4>
               </button>
@@ -687,7 +687,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           {searchQuery.trim() !== '' ? (
             /* Search Results */
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 bg-blue-900 text-white flex items-center justify-between">
+              <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Search className="w-5 h-5" />
                   <h4 className="font-extrabold text-sm sm:text-base">{t('शोध परिणाम', 'खोज परिणाम', 'Search Results')}</h4>
@@ -759,7 +759,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                       key={dept.id}
                       type="button"
                       onClick={() => setActiveTab(dept.id)}
-                      className={`flex-grow md:flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shrink-0 shadow-sm ${
+                      className={`shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shadow-sm ${
                         isActive
                           ? `${dept.bannerBg} text-white border-transparent scale-[1.02] shadow-md`
                           : 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50'
@@ -788,7 +788,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     <button
                       type="button"
                       onClick={handleActionClick}
-                      className="px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+                      className="w-full sm:w-auto px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer self-stretch sm:self-auto"
                     >
                       <span>{t('सर्व सेवा अर्ज करा', 'सभी सेवाएं आवेदन करें', 'Apply for Services')}</span>
                       <span>&rarr;</span>
@@ -900,7 +900,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
                 <Button variant="secondary" size="md" onClick={() => { setIsDetailsOpen(false); setSelectedServiceId(null); }} className="font-bold">
                   {t('बंद करा', 'बंद करें', 'Close')}
                 </Button>
