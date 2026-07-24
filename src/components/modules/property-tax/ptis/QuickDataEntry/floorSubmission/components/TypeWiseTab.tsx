@@ -11,7 +11,6 @@ import type { SelectableProperty } from '@/types/floor-details.types';
 
 interface TypeWiseTabProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
-  currentPropertyType: string;
   properties: SelectableProperty[];
   selectedIds: Set<string | number>;
   onToggle: (id: string | number) => void;
@@ -50,7 +49,6 @@ interface TypeWiseTabProps {
 
 export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   t,
-  currentPropertyType,
   properties,
   selectedIds,
   onToggle,
@@ -184,16 +182,6 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
 
       {/* ── Type Filter + Change Type Row ───────────────────────────────── */}
       <div className="flex items-center gap-3 mt-3 px-1 flex-wrap">
-
-        {/* Current TYPE (read-only) */}
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="uppercase tracking-wide text-[10px]">
-            {t('floor.selectProperties.type')}
-          </Badge>
-          <span className="h-8 min-w-[40px] px-3 flex items-center justify-center rounded border border-slate-200 bg-slate-100 text-xs font-bold text-slate-600 select-none">
-            {currentPropertyType || '—'}
-          </span>
-        </div>
 
         {/* CHANGE TYPE — auto-filled from dropdown, still manually editable */}
         <div className="flex items-center gap-2">

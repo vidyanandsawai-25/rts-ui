@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MapPin, Hash, Layers } from 'lucide-react';
+import { MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { Drawer, Tabs } from '@/components/common';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
@@ -20,6 +20,11 @@ interface DataEntrySameAsDrawerProps {
   partitionNo?: string;
   initialPropertyID?: string | number;
   hasFloorSubmission?: boolean;
+  /**
+   * categoryName from PropertyCategoryMaster (e.g. "Individual", "Apartment", "Industry", "Plot").
+   * Passed as a string from the parent so the drawer is not tied to hardcoded numeric IDs.
+   */
+  categoryName?: string;
 
   // FloorTable related props
   filteredFloors: FloorData[];
@@ -42,8 +47,55 @@ interface DataEntrySameAsDrawerProps {
   setEditingFloorForm: (val: FloorData) => void;
 }
 
+/**
+ * Compute tab enabled/disabled config based on property category name.
+ *
+ * Rules (from business requirement):
+ *   Individual  → Property Wise ONLY enabled  (Type Wise + Parking disabled)
+ *   Apartment   → Type Wise + Parking enabled  (Property Wise disabled)
+ *   Others      → All tabs enabled
+ */
+function getTabConfig(categoryName: string | undefined) {
+  const name = (categoryName ?? '').trim().toLowerCase();
+
+  if (name === 'individual') {
+    return {
+      propertyWiseDisabled: false,
+      typeWiseDisabled: true,
+      parkingDisabled: true,
+      initialTab: 'property-wise',
+    };
+  }
+
+  if (name === 'apartment') {
+    return {
+      propertyWiseDisabled: true,
+      typeWiseDisabled: false,
+      parkingDisabled: false,
+      initialTab: 'type-wise',
+    };
+  }
+
+  // Industry, Plot, or unknown → all enabled
+  return {
+    propertyWiseDisabled: false,
+    typeWiseDisabled: false,
+    parkingDisabled: false,
+    initialTab: 'type-wise',
+  };
+}
+
+function tabClassName(disabled: boolean) {
+  const base =
+    'justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white';
+  return disabled ? `${base} opacity-40 cursor-not-allowed pointer-events-none` : base;
+}
+
 export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (props) => {
-  const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo, initialPropertyID } = props;
+  const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo, initialPropertyID, categoryName } = props;
+
+  const tabConfig = React.useMemo(() => getTabConfig(categoryName), [categoryName]);
+
   const hook = useDataEntrySameAs({
     isOpen,
     wardId,
@@ -51,8 +103,8 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
     partitionNo,
     initialPropertyID,
     t,
-    localFloors: props.filteredFloors,
-    initialFloors: props.filteredFloors
+    initialTab: tabConfig.initialTab,
+    categoryName,
   });
 
   // Filter properties to display in tables
@@ -101,15 +153,45 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
                   <Layers className="h-3 w-3 text-white/80" />
                   <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
                 </div>
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                  <Tag className="h-3 w-3 text-white/80" />
+                  <span>{t('floor.selectProperties.type')}: {hook.currentPropertyType || '—'}</span>
+                </div>
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
-                <Tabs.Tab value="property-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
+                {/* Property Wise — disabled for Apartment, enabled for Individual */}
+                <Tabs.Tab
+                  value="property-wise"
+                  className={tabClassName(tabConfig.propertyWiseDisabled)}
+                  disabled={tabConfig.propertyWiseDisabled}
+                  title={tabConfig.propertyWiseDisabled
+                    ? (t('floor.dataEntryTabs.propertyWiseDisabledForApartment') || 'Property Wise is not available for Apartment')
+                    : undefined}
+                >
                   {t('floor.dataEntryTabs.propertyWise')}
                 </Tabs.Tab>
-                <Tabs.Tab value="type-wise" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
+
+                {/* Type Wise — disabled for Individual, enabled for Apartment/others */}
+                <Tabs.Tab
+                  value="type-wise"
+                  className={tabClassName(tabConfig.typeWiseDisabled)}
+                  disabled={tabConfig.typeWiseDisabled}
+                  title={tabConfig.typeWiseDisabled
+                    ? (t('floor.dataEntryTabs.typeWiseDisabledForIndividual') || 'Type Wise is not available for Individual property')
+                    : undefined}
+                >
                   {t('floor.dataEntryTabs.typeWise')}
                 </Tabs.Tab>
-                <Tabs.Tab value="parking" className="justify-center py-1.5 text-xs font-bold text-white hover:bg-white/15 hover:text-white data-[state=active]:text-blue-700 data-[state=active]:hover:text-white">
+
+                {/* Parking — disabled for Individual, enabled for Apartment/others */}
+                <Tabs.Tab
+                  value="parking"
+                  className={tabClassName(tabConfig.parkingDisabled)}
+                  disabled={tabConfig.parkingDisabled}
+                  title={tabConfig.parkingDisabled
+                    ? (t('floor.dataEntryTabs.parkingDisabledForIndividual') || 'Parking is not available for Individual property')
+                    : undefined}
+                >
                   {t('floor.dataEntryTabs.parking')}
                 </Tabs.Tab>
               </Tabs.TabList>
@@ -122,7 +204,6 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
               <Tabs.TabPanel value="type-wise" className="mt-0">
                 <TypeWiseTab
                   {...props}
-                  currentPropertyType={hook.currentPropertyType}
                   properties={displayedProperties}
                   selectedIds={hook.selectedPropertyIds}
                   onToggle={hook.handleTogglePropertySelection}
@@ -185,4 +266,3 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
     </>
   );
 };
-

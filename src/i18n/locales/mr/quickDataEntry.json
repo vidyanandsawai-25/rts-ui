@@ -766,7 +766,11 @@
       "propertyWise": "मालमत्तानिहाय",
       "parking": "पार्किंग",
       "close": "बंद करा",
-      "show": "दाखवा"
+      "show": "दाखवा",
+      "propertyWiseDisabledForIndividual": "वैयक्तिक मालमत्तेसाठी मालमत्तानिहाय उपलब्ध नाही",
+      "propertyWiseDisabledForApartment": "अपार्टमेंटसाठी मालमत्तानिहाय उपलब्ध नाही",
+      "typeWiseDisabledForIndividual": "वैयक्तिक मालमत्तेसाठी प्रकारनिहाय उपलब्ध नाही",
+      "parkingDisabledForIndividual": "वैयक्तिक मालमत्तेसाठी पार्किंग उपलब्ध नाही"
     },
     "selectProperties": {
       "title": "मालमत्ता निवडा",

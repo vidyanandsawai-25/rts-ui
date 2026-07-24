@@ -640,6 +640,12 @@ export interface SelectableProperty {
     flatNo: string;
     carpetAreaSqFeet?: number | null;
     carpetAreaSqMeter?: number | null;
+    builtupAreaSqFeet?: number | null;
+    builtupAreaSqMeter?: number | null;
+    parkingCarpetAreaSqFeet?: number | null;
+    parkingCarpetAreaSqMeter?: number | null;
+    parkingBuiltupAreaSqFeet?: number | null;
+    parkingBuiltupAreaSqMeter?: number | null;
 }
 
 export interface DataEntrySameAsItem {

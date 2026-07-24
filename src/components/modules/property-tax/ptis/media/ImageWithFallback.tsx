@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @next/next/no-img-element -- Authenticated documents resolve to base64 data URLs, so Next Image optimization is not applicable. */
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';

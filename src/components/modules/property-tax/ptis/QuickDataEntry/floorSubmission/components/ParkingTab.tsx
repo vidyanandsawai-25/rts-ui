@@ -76,6 +76,7 @@ export const ParkingTab: React.FC<ParkingTabProps> = ({
         disabledIds={disabledIds}
         sourcePropertyIds={sourcePropertyIds}
         hideTypeColumn={false}
+        variant="parking"
       />
 
       <div className="flex justify-end mt-4 px-1">
