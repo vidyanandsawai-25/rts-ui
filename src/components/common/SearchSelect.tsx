@@ -114,6 +114,10 @@ export interface SearchSelectProps {
  */
   autoFocus?: boolean;
   onBlur?: () => void;
+  /**
+   * Optional custom label when the list is empty inside the dropdown.
+   */
+  emptyMessage?: string;
 }
 
 /** Helper to normalize string for forgiving/flexible option matching. */
@@ -149,6 +153,7 @@ export function SearchSelect({
   menuPlacement,
   onBlur,
   strictMode = true,
+  emptyMessage,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -511,7 +516,7 @@ export function SearchSelect({
         >
           {filteredOptions.length === 0 && !isLoading ? (
             <li className="px-3 py-2.5 text-sm text-slate-500 text-center">
-              {t('multiSelect.noOptionsAvailable')}
+              {emptyMessage || t('multiSelect.noOptionsAvailable')}
             </li>
           ) : (
             filteredOptions.map((opt, index) => {
