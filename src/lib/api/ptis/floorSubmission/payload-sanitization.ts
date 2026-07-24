@@ -11,6 +11,7 @@ import {
 } from './renter-payload-sanitization';
 
 import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
+import { isOpenPlotCodeTaxable } from '@/lib/utils/floorSubmission/openplot-category';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ const sanitizeRoomBase = (room: Record<string, unknown>, isUtility?: boolean, is
     noOfRooms: isUtility ? 0 : Number(room.noOfRooms || 1),
     totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
     roomNo: String(room.roomNo || ''),
-    roomType: String(room.roomType || 'Room'),
+    roomType: String(room.roomType || ''),
     roomTypeId: room.roomTypeId && Number(room.roomTypeId) > 0 ? Number(room.roomTypeId) : null,
     shape: String(room.shape || 'Rectangle'),
     outerYesNo: Boolean(room.outerYesNo),
@@ -109,7 +110,19 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
     const constructionTypeIdVal = (rawConstructionTypeId === undefined || rawConstructionTypeId === null || rawConstructionTypeId === "" || rawConstructionTypeId === 0 || rawConstructionTypeId === "0" || String(rawConstructionTypeId).toLowerCase() === "select type" || String(rawConstructionTypeId) === "-Select-")
         ? null
         : parseSafeInt(rawConstructionTypeId);
-    const typeOfUseIdVal = parseSafeInt(payload.typeOfUseId !== undefined ? payload.typeOfUseId : payload.useId);
+    const isActualOpenPlot = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
+
+    const rawOpenPlotCategoryId =
+        payload.selectedOpenPlotCategory?.id ??
+        payload.selectedOpenPlotCategory?.Id ??
+        payload.openPlotCategory?.id ??
+        payload.openPlotCategory?.Id;
+
+    const rawTypeOfUseId = (isActualOpenPlot && rawOpenPlotCategoryId !== undefined)
+        ? rawOpenPlotCategoryId
+        : (payload.typeOfUseId !== undefined ? payload.typeOfUseId : payload.useId);
+
+    const typeOfUseIdVal = parseSafeInt(rawTypeOfUseId);
 
     const rawSubTypeOfUseId = payload.subTypeOfUseId !== undefined ? payload.subTypeOfUseId : payload.subTypId;
     const subTypeOfUseIdVal = (rawSubTypeOfUseId === undefined || rawSubTypeOfUseId === null || rawSubTypeOfUseId === "" || rawSubTypeOfUseId === 0 || rawSubTypeOfUseId === "0" || String(rawSubTypeOfUseId).toLowerCase() === "select subtype" || String(rawSubTypeOfUseId).toLowerCase() === "select sub type" || String(rawSubTypeOfUseId) === "-Select-")
@@ -124,7 +137,11 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
         : String(rawSubFloorDesc);
 
     const constructionTypeDescriptionVal = String(payload.constructionTypeDescription || payload.conTyp || '');
-    const typeOfUseDescriptionVal = String(payload.typeOfUseDescription || payload.use || '');
+    const typeOfUseDescriptionVal = String(
+        (isActualOpenPlot
+            ? (payload.selectedOpenPlotCategory?.description ?? payload.openPlotCategory?.description ?? payload.typeOfUseDescription ?? payload.use)
+            : (payload.typeOfUseDescription || payload.use || '')) || ''
+    );
 
     const rawSubTypeOfUseDesc = payload.subTypeOfUseDescription || payload.subTyp || '';
     const subTypeOfUseDescriptionVal = (subTypeOfUseIdVal === null || !rawSubTypeOfUseDesc || String(rawSubTypeOfUseDesc).toLowerCase() === "select subtype" || String(rawSubTypeOfUseDesc).toLowerCase() === "select sub type" || String(rawSubTypeOfUseDesc) === "-Select-")
@@ -179,7 +196,20 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
         : (payload.isRenter !== undefined
             ? Boolean(payload.isRenter)
             : (payload.renter === 'Yes' || payload.renter === true));
-    const isTaxableVal = payload.isTaxable !== undefined ? (payload.isTaxable === 'Yes' || payload.isTaxable === true) : Boolean(payload.isTaxable);
+    const rawPlotCode = String(
+        payload.selectedOpenPlotCategory?.typeOfUseCode ??
+        payload.selectedOpenPlotCategory?.code ??
+        payload.openPlotCategory?.typeOfUseCode ??
+        payload.openPlotCategory?.code ??
+        payload.typeOfUseCode ??
+        ''
+    ).toUpperCase().trim();
+
+    const isTaxableVal: boolean = isActualOpenPlot
+        ? isOpenPlotCodeTaxable(rawPlotCode)
+        : (payload.isTaxable !== undefined
+            ? (payload.isTaxable === 'Yes' || payload.isTaxable === true || payload.isTaxable === 1 || payload.isTaxable === '1')
+            : Boolean(payload.isTaxable));
 
 
 
@@ -332,7 +362,7 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             noOfRooms: isUtility ? 0 : Number(room.noOfRooms || room.roomCount || 1),
             totalAreaSqMtr: Number(room.totalAreaSqMtr || room.total || room.area || 0),
             roomNo: String(room.roomNo || ''),
-            roomType: String(room.roomType || room.utilities || 'Room'),
+            roomType: String(room.roomType || room.utilities || ''),
             roomTypeId: room.roomTypeId && Number(room.roomTypeId) > 0 ? Number(room.roomTypeId) : null,
             shape: String(room.shape || 'Rectangle'),
             outerYesNo: room.outerYesNo !== undefined ? Boolean(room.outerYesNo) : (room.outer === 'Yes'),

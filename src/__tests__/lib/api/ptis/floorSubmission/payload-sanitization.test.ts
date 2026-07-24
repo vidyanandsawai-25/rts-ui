@@ -338,5 +338,29 @@ describe('Payload Sanitization Tests', () => {
       expect(result.widthMtr).toBeUndefined();
       expect(result.roomWiseSubmissionDetails).toHaveLength(1);
     });
+
+    it('should map selectedOpenPlotCategory.id to typeOfUseId when isOpenPlot is true', () => {
+      const openPlotPayload = {
+        propertyDetailsId: 206094,
+        propertyId: 1024,
+        isOpenPlot: true,
+        selectedOpenPlotCategory: {
+          id: 15111,
+          typeOfUseId: 15111,
+          typeOfUseCode: 'OPI',
+          description: 'खुला भूखंड औद्योगिक',
+          type: 'C',
+          typeOfUseGroupId: 10031,
+          typeOfUseCategoryId: 3,
+          isActive: true
+        }
+      };
+
+      const result = sanitizeRenterPayload(openPlotPayload);
+
+      expect(result.isOpenPlot).toBe(true);
+      expect(result.typeOfUseId).toBe(15111);
+      expect(result.typeOfUseDescription).toBe('खुला भूखंड औद्योगिक');
+    });
   });
 });

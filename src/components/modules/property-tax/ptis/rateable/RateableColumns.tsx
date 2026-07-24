@@ -11,15 +11,15 @@ import { buildExpandedRowsHref } from '@/lib/utils/ptis';
 import { renderCellBox, renderCellBoxWithTooltip } from '@/lib/utils/table-renderers';
 
 const CELL_CLASS =
-  'bg-white rounded border border-gray-300 px-1.5 py-1 text-[12px] text-center cursor-pointer hover:border-blue-400 font-bold whitespace-nowrap';
+  'text-[12px] text-center font-normal text-slate-800 whitespace-nowrap';
 const VALUE_CLASS =
-  'text-[11px] text-center truncate max-w-[100px] outline-none focus-visible:ring-1 focus-visible:ring-blue-400 whitespace-nowrap';
+  'text-[11px] text-center truncate max-w-[120px] outline-none whitespace-nowrap';
 
 const EMERALD_CELL_CLASS =
-  'bg-emerald-50 rounded border border-emerald-300 px-1.5 py-1 text-[12px] text-center font-bold whitespace-nowrap';
+  'text-[12px] text-center font-semibold text-emerald-700 whitespace-nowrap';
 
 const AMBER_CELL_CLASS =
-  'bg-amber-50 rounded border border-amber-300 px-1.5 py-1 text-[12px] text-center font-bold italic whitespace-nowrap';
+  'text-[12px] text-center font-bold text-amber-700 whitespace-nowrap';
 
 export function getRateableDetails(
   rateableData: RateableValueResponse | null
@@ -74,7 +74,23 @@ export function getRateableColumns(
   });
 
   const columns: FloorDetailsTableColumn<RateableRow>[] = [
-    column('taxable', 'taxable', CELL_CLASS),
+    {
+      key: 'taxable',
+      label: t('floorTable.columns.taxable'),
+      tooltip: t('floorTable.tooltips.taxable'),
+      render: (row: RateableRow) => {
+        const val = String(row.taxable ?? '-').trim();
+        const isYes = val === 'Yes' || val === 'true';
+        const isNo = val === 'No' || val === 'false';
+        return (
+          <div className="flex items-center justify-center" title={val}>
+            {isYes && <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shrink-0 inline-block shadow-sm" />}
+            {isNo && <span className="h-3.5 w-3.5 rounded-full bg-rose-500 shrink-0 inline-block shadow-sm" />}
+            {!isYes && !isNo && <span className="text-slate-400 font-bold">-</span>}
+          </div>
+        );
+      },
+    },
     column('floor', 'floor', CELL_CLASS),
     column('subFloor', 'subFloor', CELL_CLASS),
     column('constructionYear', 'constYear', CELL_CLASS),

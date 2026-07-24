@@ -733,6 +733,8 @@
         }
     },
     "floor": {
+        "usedPlotArea": "Used Plot Area",
+        "openPlotCategory": "Category",
         "separatelyUsedPlotArea": "Separately Used Plot Area",
         "construction": "Construction",
         "openPlot": "Open Space",
@@ -1012,7 +1014,8 @@
             "invalidDimensions": "Length and Width must be greater than 0.",
             "areaUpdatedSuccess": "Area updated successfully.",
             "areaAddedSuccess": "Area added successfully.",
-            "failedToSaveArea": "Failed to save area."
+            "failedToSaveArea": "Failed to save area.",
+            "selectOpenPlotCategory": "Please select an Open Plot Category."
         },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",
@@ -1048,6 +1051,8 @@
         "availableRooms": "Available",
         "addFloorDetails": "Add Floor Details",
         "addOpenPlotDetails": "Add Open Plot Details",
+        "openPlotCategory": "Open Plot Category",
+        "selectCategory": "- Select Category -",
         "floorAddedSuccess": "Floor added successfully",
         "floorUpdatedSuccess": "Floor updated successfully",
         "savingPlotArea": "Saving plot area...",
