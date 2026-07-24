@@ -36,6 +36,8 @@ export const defaultPropertyDetails: PropertyDetailsData = {
   ownerName: '',
   rateSectionDescription: '',
   constructionYear: null,
+  oldCarpetArea: '',
+  oldBuiltupArea: '',
 };
 
 /**

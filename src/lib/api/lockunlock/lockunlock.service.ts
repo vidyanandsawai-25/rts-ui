@@ -2,11 +2,13 @@
 export {
   getLockUnlockScreens,
   getLockUnlockProperties,
+  getLockUnlockPropertiesByCategory,
 } from './lockunlock-queries.service';
 
 // Mutation operations
 export {
   bulkLockUnlockProperties,
+  bulkLockUnlockByCategory,
 } from './lockunlock-mutations.service';
 
 // Utils

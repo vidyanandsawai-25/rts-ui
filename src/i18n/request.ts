@@ -77,6 +77,7 @@ export default getRequestConfig(async ({ locale }) => {
     inventoryConditionMessages,
     inventoryModelMessages,
     inventoryNameMessages,
+    automationDashboardMessages,
     modulesMessages,
     reportMessages,
     assetPhotoTypeMessages,
@@ -181,9 +182,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/applicableTaxes.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-      import(`./locales/${validatedLocale}/reassessment.json`)
-        .catch(() => ({}))
-        .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/reassessment.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxCalculationGuideline.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -200,6 +201,9 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/inventoryName.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/automation-dashboard.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
@@ -283,6 +287,7 @@ export default getRequestConfig(async ({ locale }) => {
       inventoryCondition: inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
       inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
       inventoryName: inventoryNameMessages?.inventoryName || inventoryNameMessages,
+      automationDashboard: automationDashboardMessages,
       modules: modulesMessages,
       report: reportMessages,
       assetPhotoType: assetPhotoTypeMessages,

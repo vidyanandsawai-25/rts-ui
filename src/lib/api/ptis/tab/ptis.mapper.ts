@@ -58,6 +58,14 @@ export const ptisMapper = {
       latitude: data.latitude || null,
       longitude: data.longitude || null,
       constructionYear: data.constructionYear || null,
+      oldCarpetArea:
+        data.oldCarpetAreaSqFeet != null || data.oldCarpetAreaSqMeter != null
+          ? `${data.oldCarpetAreaSqFeet != null ? Number(data.oldCarpetAreaSqFeet).toFixed(2) : '0.00'} / ${data.oldCarpetAreaSqMeter != null ? Number(data.oldCarpetAreaSqMeter).toFixed(2) : '0.00'}`
+          : '',
+      oldBuiltupArea:
+        data.oldBuiltupAreaSqFeet != null || data.oldBuiltupAreaSqMeter != null
+          ? `${data.oldBuiltupAreaSqFeet != null ? Number(data.oldBuiltupAreaSqFeet).toFixed(2) : '0.00'} / ${data.oldBuiltupAreaSqMeter != null ? Number(data.oldBuiltupAreaSqMeter).toFixed(2) : '0.00'}`
+          : '',
     };
   },
 

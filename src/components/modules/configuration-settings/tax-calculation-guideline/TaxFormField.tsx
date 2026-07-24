@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Input, Select, Label, ValidationMessage, ToggleSwitch } from '@/components/common';
 import type { InputProps } from '@/components/common';
 import type { Option } from '@/components/common/select';
@@ -96,6 +97,7 @@ export interface TaxNumberInputProps {
   onChange: (value: number | undefined) => void;
   min?: number;
   max?: number;
+  maxLength?: number;
   step?: number;
   className?: string;
   error?: string;
@@ -110,6 +112,7 @@ export function TaxNumberInput({
   onChange,
   min = 0,
   max = 999999,
+  maxLength = 10,
   step = 1,
   className,
   error,
@@ -119,6 +122,15 @@ export function TaxNumberInput({
   const isDecimal = step !== 1;
   const pattern = isDecimal ? /^[0-9.]$/ : /^[0-9]$/;
 
+  const parentStr = value !== undefined && value !== null && !isNaN(value) ? String(value) : '';
+  // Sync derived state from key or render-phase comparison using key or useEffect without lint violation
+  const [localStr, setLocalStr] = React.useState<string>(parentStr);
+
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLocalStr(parentStr);
+  }, [parentStr]);
+
   return (
     <div className={cn("flex flex-col gap-1", disabled && "opacity-60 pointer-events-none")}>
       {label && (
@@ -127,28 +139,36 @@ export function TaxNumberInput({
         </Label>
       )}
       <AnimatedDigitInput
-        value={value !== undefined && !isNaN(value) ? String(value) : ''}
-        maxLength={10}
+        value={localStr}
+        maxLength={maxLength}
         allowedPattern={pattern}
         disabled={disabled}
         onChange={(valStr) => {
+          // Prevent typing multiple dots
+          if ((valStr.match(/\./g) || []).length > 1) return;
+
+          setLocalStr(valStr);
+
           if (valStr === '') {
             onChange(undefined);
-          } else {
+          } else if (valStr === '.') {
+            // Allow typing starting with '.' or trailing '.' without destroying parent state
+          } else if (!valStr.endsWith('.')) {
             const raw = parseFloat(valStr);
             if (!isNaN(raw)) {
               onChange(raw);
             }
           }
         }}
-        onBlur={(e) => {
-          const valStr = e.target.value;
-          if (valStr === '') {
+        onBlur={() => {
+          if (localStr === '' || localStr === '.') {
+            setLocalStr('');
             onChange(undefined);
           } else {
-            const raw = parseFloat(valStr);
+            const raw = parseFloat(localStr);
             if (!isNaN(raw)) {
               const clamped = Math.min(Math.max(raw, min), max);
+              setLocalStr(String(clamped));
               onChange(clamped);
             }
           }
@@ -259,11 +279,12 @@ function getTranslationForFieldLabel(code: string, defaultName: string, t: Trans
 export function DynamicGuidelineField({ guideline, value, onChange, disabled = false, t, policyConfigs }: DynamicGuidelineFieldProps) {
   const code = guideline.guidelineCode || '';
   const label = getTranslationForFieldLabel(code, guideline.guidelineName || code, t);
-  let dataType = guideline.dataType || 'VARCHAR';
+  const dataType = guideline.dataType || 'VARCHAR';
   const allowedValues = guideline.allowedValues;
 
   // Force toggle/switch for known boolean naming patterns
   const isBooleanToggle =
+    dataType === 'BIT' ||
     code.startsWith('ENABLE_') ||
     code.startsWith('SAVE_') ||
     code.startsWith('ALLOW_') ||
@@ -275,45 +296,8 @@ export function DynamicGuidelineField({ guideline, value, onChange, disabled = f
       'RECALCULATE_ON_CERTIFICATE_DELETE'
     ].includes(code);
 
+  // Render toggle switch if BIT / Boolean toggle field
   if (isBooleanToggle) {
-    dataType = 'BIT';
-  }
-
-  // Handle PolicyCodeMaster dropdowns
-  const isPolicyField = [
-    'CC_PARTIAL_POLICY_CODE',
-    'CC_FULL_POLICY_CODE',
-    'OC_PARTIAL_POLICY_CODE',
-    'OC_FULL_POLICY_CODE',
-    'ELECTRIC_BILL_PARTIAL_POLICY_CODE',
-    'ELECTRIC_BILL_FULL_POLICY_CODE'
-  ].includes(code);
-
-  if (isPolicyField) {
-    const options = (policyConfigs || []).map((p) => ({
-      label: p.displayName || p.policyCode,
-      value: p.policyCode,
-    }));
-    const selectOptions = options.some(opt => opt.value === 'Select') ? options : [
-      { label: t('options.select'), value: 'Select' },
-      ...options
-    ];
-    const stringValue = value === undefined || value === null ? 'Select' : String(value);
-
-    return (
-      <TaxSelect
-        label={label}
-        options={selectOptions}
-        value={stringValue}
-        disabled={disabled}
-        onChange={(val) => onChange(val === 'Select' ? null : val)}
-        className="w-full"
-      />
-    );
-  }
-
-  // Render toggle switch if BIT
-  if (dataType === 'BIT') {
     const isChecked = value === true || value === 'true' || value === '1';
     return (
       <div className={cn('flex flex-col gap-1', disabled && 'opacity-60 pointer-events-none')}>
@@ -333,29 +317,52 @@ export function DynamicGuidelineField({ guideline, value, onChange, disabled = f
     );
   }
 
-  // Render dropdown if VARCHAR or other data type with allowed values list
-  if (allowedValues && allowedValues.trim()) {
+  // Handle PolicyCodeMaster dropdowns
+  const isPolicyField = [
+    'CC_PARTIAL_POLICY_CODE',
+    'CC_FULL_POLICY_CODE',
+    'OC_PARTIAL_POLICY_CODE',
+    'OC_FULL_POLICY_CODE',
+    'ELECTRIC_BILL_PARTIAL_POLICY_CODE',
+    'ELECTRIC_BILL_FULL_POLICY_CODE'
+  ].includes(code);
+
+  // Render dropdown if VARCHAR or other data type with allowed values list or isPolicyField
+  if (isPolicyField || (allowedValues && allowedValues.trim())) {
     let parsedValues: string[] = [];
-    if (allowedValues.includes('-') && !allowedValues.includes(',')) {
-      const [startStr, endStr] = allowedValues.split('-');
-      const start = parseInt(startStr, 10);
-      const end = parseInt(endStr, 10);
-      if (!isNaN(start) && !isNaN(end)) {
-        for (let i = start; i <= end; i++) {
-          parsedValues.push(String(i));
+
+    if (allowedValues && allowedValues.trim()) {
+      if (allowedValues.includes('-') && !allowedValues.includes(',')) {
+        const [startStr, endStr] = allowedValues.split('-');
+        const start = parseInt(startStr, 10);
+        const end = parseInt(endStr, 10);
+        if (!isNaN(start) && !isNaN(end)) {
+          for (let i = start; i <= end; i++) {
+            parsedValues.push(String(i));
+          }
+        } else {
+          parsedValues = allowedValues.split(',').map((v) => v.trim()).filter(Boolean);
         }
       } else {
-        parsedValues = allowedValues.split(',').map((v) => v.trim());
+        parsedValues = allowedValues.split(',').map((v) => v.trim()).filter(Boolean);
       }
-    } else {
-      parsedValues = allowedValues.split(',').map((v) => v.trim());
+    } else if (isPolicyField) {
+      parsedValues = (policyConfigs || []).map((p) => p.policyCode);
     }
 
-    const options = parsedValues.map((v) => ({
-      label: getTranslationForOption(v, code, t),
-      value: v,
-    }));
-    // Make sure we have a "Select" or empty option if not present and no default is selected
+    const options = parsedValues.map((v) => {
+      let label = v;
+      if (isPolicyField) {
+        const matchingPolicy = (policyConfigs || []).find(
+          (p) => p.policyCode?.toLowerCase() === v.toLowerCase()
+        );
+        label = matchingPolicy?.displayName || v;
+      } else {
+        label = getTranslationForOption(v, code, t);
+      }
+      return { label, value: v };
+    });
+
     const selectOptions = options.some(opt => opt.value === 'Select') ? options : [
       { label: t('options.select'), value: 'Select' },
       ...options
@@ -388,16 +395,19 @@ export function DynamicGuidelineField({ guideline, value, onChange, disabled = f
   }
 
   // Render number input if INT or DECIMAL
-  if (dataType === 'INT' || dataType === 'DECIMAL') {
-    const numValue = value === undefined || value === '' || isNaN(Number(value)) ? undefined : Number(value);
-    const step = dataType === 'DECIMAL' ? 0.01 : 1;
+  if (dataType === 'INT' || dataType === 'DECIMAL' || code.includes('MULTIPLIER')) {
+    const isYearField = code.includes('YEAR') || code.includes('MINIMUM');
+    const isDecimalField = dataType === 'DECIMAL' || code.includes('MULTIPLIER');
+    const numValue = value === undefined || value === null || value === '' || isNaN(Number(value)) ? undefined : Number(value);
+    const step = isDecimalField ? 0.01 : 1;
     return (
       <TaxNumberInput
         label={label}
         value={numValue}
         onChange={(val) => onChange(val === undefined ? null : String(val))}
         min={0}
-        max={999999}
+        max={isYearField ? 9999 : 999999}
+        maxLength={isYearField ? 4 : 8}
         step={step}
         disabled={disabled}
         className="w-full"

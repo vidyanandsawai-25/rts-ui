@@ -59,7 +59,9 @@
       "Subtracttitle": "एकूण क्षेत्रफळातून वजा करा",
       "Addareatitle": "एकूण क्षेत्रफळात जोडा",
       "roomNo": "कक्ष क्र.",
+      "utilityRoomNo": "क्र.",
       "roomType": "कक्षाचा प्रकार",
+      "utilityRoomType": "प्रकार",
       "shape": "आकार",
       "area": "क्षेत्रफळ",
       "roomCount": "कक्ष गणना",
@@ -759,12 +761,17 @@
     "select": "निवडा",
     "allFloors": "सर्व मजले",
     "dataEntry": "डेटा एंट्री",
+    "atLeastOneFloorRequired": "कृपया डेटा एंट्री बटण सक्षम करण्यासाठी किमान एक मजला जोडा",
     "dataEntryTabs": {
       "typeWise": "प्रकारनिहाय",
       "propertyWise": "मालमत्तानिहाय",
       "parking": "पार्किंग",
       "close": "बंद करा",
-      "show": "दाखवा"
+      "show": "दाखवा",
+      "propertyWiseDisabledForIndividual": "वैयक्तिक मालमत्तेसाठी मालमत्तानिहाय उपलब्ध नाही",
+      "propertyWiseDisabledForApartment": "अपार्टमेंटसाठी मालमत्तानिहाय उपलब्ध नाही",
+      "typeWiseDisabledForIndividual": "वैयक्तिक मालमत्तेसाठी प्रकारनिहाय उपलब्ध नाही",
+      "parkingDisabledForIndividual": "वैयक्तिक मालमत्तेसाठी पार्किंग उपलब्ध नाही"
     },
     "selectProperties": {
       "title": "मालमत्ता निवडा",
@@ -1567,5 +1574,5 @@
       "general": "दस्तऐवज मिळवताना एक अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
       "uploadGeneral": "दस्तऐवज अपलोड करताना एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा."
     }
-  } 
+  }
 }

@@ -15,9 +15,10 @@ export function Stepper({ currentStep, copy }: StepperProps) {
     { label: copy.steps.selectCategory },
     { label: copy.steps.selectReport },
     { label: copy.steps.setParameters },
+    { label: copy.steps.generateReport },
   ];
   return (
-    <Card padding="none" className="rounded-xl px-6 py-4 shadow-sm border border-gray-100">
+    <Card padding="none" className="rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
       <div className="flex items-center w-full">
         {steps.map((step, idx) => {
           const stepNum = (idx + 1) as Step;
@@ -25,16 +26,16 @@ export function Stepper({ currentStep, copy }: StepperProps) {
           const isActive = stepNum === currentStep;
           return (
             <div key={stepNum} className="flex items-center flex-1 last:flex-none">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-300
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all duration-300
                   ${isDone ? 'bg-green-500 border-green-500 text-white' : ''}
                   ${isActive ? 'bg-[#004c8c] border-[#004c8c] text-white shadow-md shadow-blue-100' : ''}
                   ${!isDone && !isActive ? 'bg-white border-gray-300 text-gray-400' : ''}
                 `}>
-                  {isDone ? <Check className="w-3.5 h-3.5" /> : stepNum}
+                  {isDone ? <Check className="w-3 h-3" /> : stepNum}
                 </div>
                 <div className="min-w-0">
-                  <p className={`text-xs font-semibold leading-tight truncate ${isActive ? 'text-[#004c8c]' : isDone ? 'text-green-600' : 'text-gray-400'}`}>
+                  <p className={`text-[11px] font-semibold leading-tight truncate ${isActive ? 'text-[#004c8c]' : isDone ? 'text-green-600' : 'text-gray-400'}`}>
                     {step.label}
                   </p>
                 </div>
