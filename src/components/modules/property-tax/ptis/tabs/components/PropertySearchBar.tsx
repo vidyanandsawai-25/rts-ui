@@ -138,7 +138,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         const parsed = JSON.parse(value);
         setPropertyNo(parsed.propertyNo);
         setPartitionNo(normalizePartition(parsed.partitionNo));
-        setPropertyId(parsed.propertyId?.toString() || null);
+        setPropertyId(parsed.propertyId ? parsed.propertyId.toString() : null);
       } catch {
         setPropertyNo(value);
         setPartitionNo('');
@@ -173,7 +173,20 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   const handleFormSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      onSearch({ wardNo, propertyNo, partitionNo, wardId, propertyId });
+      let finalPropertyNo = propertyNo;
+      let finalPartitionNo = partitionNo;
+      if (propertyNo.includes('-') && !propertyId) {
+        const parts = propertyNo.split('-');
+        finalPropertyNo = parts[0];
+        finalPartitionNo = parts.slice(1).join('-');
+      }
+      onSearch({
+        wardNo,
+        propertyNo: finalPropertyNo,
+        partitionNo: finalPartitionNo,
+        wardId,
+        propertyId,
+      });
     },
     [onSearch, wardNo, propertyNo, partitionNo, wardId, propertyId]
   );
@@ -269,6 +282,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 isLoading={isSearchingProperties}
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
+                emptyMessage={t('search.typeToGetSuggestions')}
                 strictMode={false}
                 onSearchChange={onPropertySearchChange}
               />

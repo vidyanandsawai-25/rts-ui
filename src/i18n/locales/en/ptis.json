@@ -178,6 +178,7 @@
     "success": "Property found successfully",
     "error": "No property found",
     "noOptionsAvailable": "No options available",
+    "typeToGetSuggestions": "Type to get suggestions",
     "noPartition": "-",
     "errors": {
       "fetchWardsFailed": "Failed to load ward list. Please try again.",
