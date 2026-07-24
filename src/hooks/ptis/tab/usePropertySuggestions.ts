@@ -1,0 +1,76 @@
+import { useState, useEffect } from 'react';
+import type { PropertyListItem } from '@/types/ptis.types';
+import { ptisSuggestionsClient } from '@/lib/api/ptis/tab/ptis-suggestions-client';
+
+export function usePropertySuggestions(
+  wardId: number | null | undefined,
+  debouncedSearchText: string,
+  draftPropertyId: string | null | undefined
+) {
+  const [propertiesList, setPropertiesList] = useState<PropertyListItem[]>([]);
+  const [isSearchingProperties, setIsSearchingProperties] = useState(false);
+
+  useEffect(() => {
+    if (!wardId || !debouncedSearchText) {
+      const timer = setTimeout(() => {
+        setPropertiesList((prev) => {
+          const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
+          const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
+          return currentSelected ? [currentSelected] : [];
+        });
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    let active = true;
+    const timer = setTimeout(() => {
+      setIsSearchingProperties(true);
+    }, 0);
+
+    let propNo = debouncedSearchText;
+    let partNo = '';
+    if (debouncedSearchText.includes('-')) {
+      const parts = debouncedSearchText.split('-');
+      propNo = parts[0];
+      partNo = parts.slice(1).join('-');
+    }
+
+    ptisSuggestionsClient.getSuggestions({
+      wardId,
+      propertyNo: propNo,
+      partitionNo: partNo,
+    })
+      .then((res) => {
+        if (!active) return;
+        if (res.success && res.data) {
+          setPropertiesList((prev) => {
+            const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
+            const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
+
+            const merged = [...res.data!];
+            if (currentSelected && !merged.some((p) => p.propertyId === currentSelected.propertyId)) {
+              merged.unshift(currentSelected);
+            }
+            return merged;
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) {
+          setIsSearchingProperties(false);
+        }
+      });
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [debouncedSearchText, wardId, draftPropertyId]);
+
+  return {
+    propertiesList,
+    setPropertiesList,
+    isSearchingProperties,
+  };
+}

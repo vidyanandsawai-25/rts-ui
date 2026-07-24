@@ -60,14 +60,14 @@ export async function fetchWardIdAction(wardNo: string) {
   });
 }
 
-export async function getPropertyListByWardAction(wardId: number) {
+export async function getPropertyListByWardAction(wardId: number, limit?: number) {
   const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
 
-  return createAction(() => ptisService.getPropertyListByWard(wardId));
+  return createAction(() => ptisService.getPropertyListByWard(wardId, limit));
 }
 
 export async function getPropertySuggestionsAction(
@@ -82,6 +82,34 @@ export async function getPropertySuggestionsAction(
   }
 
   return createAction(() => ptisService.getPropertySuggestions(wardNo, wardId, searchText));
+}
+
+import type { PropwiseSuggestionItem } from '@/types/ptis-search.types';
+
+export async function getPropertySuggestionsByPropwiseAction(
+  wardId: number,
+  propertyNo?: string,
+  partitionNo?: string,
+  maxResults = 100
+) {
+  const result = await createAction(() =>
+    ptisService.getPropertySuggestionsByPropwise(wardId, propertyNo, partitionNo, maxResults)
+  );
+
+  if (result.success && result.data && Array.isArray(result.data)) {
+    return {
+      success: true,
+      data: result.data.map((item: PropwiseSuggestionItem) => ({
+        propertyId: item.propertyId,
+        propertyNo: item.propertyNo,
+        partitionNo: item.partitionNo,
+        upicId: item.upicId,
+        displayLabel: item.displayLabel,
+      })),
+    };
+  }
+
+  return result;
 }
 
 export async function searchPropertiesAction(filters: {

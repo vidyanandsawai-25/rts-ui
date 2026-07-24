@@ -4,6 +4,8 @@ import type {
   PropertyListItem,
   PagedResult,
   Ward,
+  PropwiseSuggestionItem,
+  PropwiseSuggestionResponse,
 } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage } from './base-api';
 
@@ -93,6 +95,39 @@ export const ptisSearchService = {
     };
   },
 
+  async getPropertySuggestionsByPropwise(
+    wardId: number,
+    propertyNo?: string,
+    partitionNo?: string,
+    maxResults = 100
+  ): Promise<{
+    success: boolean;
+    data?: PropwiseSuggestionItem[];
+    error?: string;
+  }> {
+    const params = new URLSearchParams();
+    params.append('WardId', wardId.toString());
+    if (propertyNo) params.append('PropertyNo', propertyNo);
+    if (partitionNo) params.append('PartitionNo', partitionNo);
+    params.append('MaxResults', maxResults.toString());
+
+    const response = await fetchWithCertSupport<PropwiseSuggestionResponse>(
+      `/Property/propwisesearch/suggestions?${params.toString()}`
+    );
+
+    if (!response.success || !response.data?.items) {
+      return {
+        success: false,
+        error: getErrorFormattedMessage(response.error, 'No suggestions found'),
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.items,
+    };
+  },
+
   /**
    * Fetches the complete list of active wards.
    */
@@ -127,14 +162,17 @@ export const ptisSearchService = {
   /**
    * Fetches all properties belonging to a specific ward.
    */
-  async getPropertyListByWard(wardId: number): Promise<{
+  async getPropertyListByWard(
+    wardId: number,
+    limit?: number
+  ): Promise<{
     success: boolean;
     data?: PropertyListItem[];
     error?: string;
   }> {
     let allItems: Record<string, unknown>[] = [];
     let pageNumber = 1;
-    let requestedPageSize = 1000;
+    let requestedPageSize = limit ? Math.min(limit, 1000) : 1000;
     let hasNext = true;
 
     while (hasNext) {
@@ -156,6 +194,10 @@ export const ptisSearchService = {
 
       const items = response.data.items as Record<string, unknown>[];
       allItems = allItems.concat(items);
+
+      if (limit && allItems.length >= limit) {
+        break;
+      }
 
       const actualPageSize = response.data.pageSize || items.length;
 
