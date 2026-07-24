@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ArrowUpDown, ArrowUp } from 'lucide-react';
 import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/CommonColumns';
-import { Column } from '@/components/common';
-import { HeaderCell } from '@/components/common/AutomationTable';
+import type { Column, HeaderCell } from '@/components/common/AutomationTable';
 
 export type GeoSequencingData = {
     sr: number | string;
@@ -34,12 +33,12 @@ export const getGeoSequencingSharedColumns = (
     onRowClick?: (id: string) => void,
     linkHref?: (id: string) => string
 ): Column<GeoSequencingData>[] => {
-    
+
     // Customize division/ward label depending on the view
     // getCommonDivisionColumn expects a translation key or we can just let it render what's in the data.
     // The data mapping will put either division or ward number in the 'division' field.
     const divisionColumn = getCommonDivisionColumn<GeoSequencingData>(onRowClick, linkHref);
-    
+
     const baseColumns: Column<GeoSequencingData>[] = [
         getCommonSrColumn<GeoSequencingData>(),
         divisionColumn

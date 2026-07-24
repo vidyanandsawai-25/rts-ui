@@ -174,8 +174,8 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                         containerClassName="h-full"
                         tableClassName="w-full border-collapse text-xs border border-slate-300"
                         theadClassName="sticky top-0 z-20 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)]"
-                        maxBodyHeightClassName="max-h-none"
-                        rowClassName={(row) => row.sr === 'Total' ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 cursor-pointer"}
+                        maxBodyHeightClassName="max-h-none"                       
+                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 cursor-pointer"}
                         loading={false}
                         totalCount={totalCount}
                         pageNumber={pageNumber}

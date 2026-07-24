@@ -42,7 +42,7 @@ vi.mock('next-intl', () => ({
   },
 }));
 
-vi.mock('../../../hooks/useFormattedDate', () => ({
+vi.mock('@/hooks/automation-dashboard/useFormattedDate', () => ({
   useFormattedDate: () => '24-Jul-2026',
 }));
 

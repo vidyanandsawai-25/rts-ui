@@ -1,6 +1,7 @@
 'use client';
 
-import { usePathname, useSearchParams, redirect } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 
@@ -26,14 +27,17 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const locale = useLocale();
+    const router = useRouter();
 
     // Redirect to set workflowStageId for geo-sequencing on initial render
-    if (pathname.includes('/geo-sequencing') && !searchParams.get('workflowStageId')) {
-        const geoCard = workflowCardsData?.find(card => card.stageName === 'GeoSequencing');
-        if (geoCard?.id) {
-            redirect(`${pathname}?workflowStageId=${geoCard.id}`);
+    useEffect(() => {
+        if (pathname.includes('/geo-sequencing') && !searchParams.get('workflowStageId')) {
+            const geoCard = workflowCardsData?.find(card => card.stageName === 'GeoSequencing');
+            if (geoCard?.id) {
+                router.replace(`${pathname}?workflowStageId=${geoCard.id}`);
+            }
         }
-    }
+    }, [pathname, searchParams, workflowCardsData, router]);
 
     const basePath = `/${locale}/property-tax/automation-dashboard`;
 
@@ -46,8 +50,8 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
         switch (stageName) {
             case 'GeoSequencing': return { icon: ClipboardList, value: 'geo-sequencing' };
             case 'InternalSurvey': return { icon: FileSearch, value: 'internal-survey' };
-            case 'DataEntry': return { icon: CheckCircle , value: 'quality-check' };
-            case 'Assessment': return { icon: FileCheck , value: 'assessment' };
+            case 'DataEntry': return { icon: CheckCircle, value: 'quality-check' };
+            case 'Assessment': return { icon: FileCheck, value: 'assessment' };
             case 'ApprovalByULB': return { icon: ThumbsUp, value: 'approval' };
             case 'NoticeDistribution': return { icon: Bell, value: 'notice-distribution' };
             case 'HearingAndAppeal': return { icon: Scale, value: 'hearing-appeals' };
