@@ -88,6 +88,7 @@ export function HistoricalPingPongController({
         const tile = originalCreateTile.call(this, coords, done) as HTMLImageElement;
         tile.setAttribute('fetchpriority', 'high');
         tile.setAttribute('loading', 'eager');
+        tile.setAttribute('decoding', 'async');
         return tile;
       };
 
@@ -156,15 +157,21 @@ export function HistoricalPingPongController({
     const activeIdx = years.indexOf(activeYear);
     if (activeIdx === -1) return;
 
-    const prevYear = activeIdx > 0 ? years[activeIdx - 1] : null;
-    const nextYear = activeIdx < years.length - 1 ? years[activeIdx + 1] : null;
+    // Prefetch ±2 adjacent years for smoother transitions
+    const adjacentYears: number[] = [];
+    for (let offset = -2; offset <= 2; offset++) {
+      const idx = activeIdx + offset;
+      if (idx >= 0 && idx < years.length && idx !== activeIdx) {
+        adjacentYears.push(years[idx]);
+      }
+    }
 
     try {
       getOrCreateLayer(activeYear).setOpacity(1.0).setZIndex(10);
-      if (prevYear !== null) getOrCreateLayer(prevYear).setOpacity(0.0).setZIndex(5);
-      if (nextYear !== null) getOrCreateLayer(nextYear).setOpacity(0.0).setZIndex(5);
+      adjacentYears.forEach((y) => getOrCreateLayer(y).setOpacity(0.0).setZIndex(5));
+      const adjacentSet = new Set([activeYear, ...adjacentYears]);
       cache.forEach((layer, y) => {
-        if (y !== activeYear && y !== prevYear && y !== nextYear) {
+        if (!adjacentSet.has(y)) {
           if (map.hasLayer(layer)) layer.setOpacity(0.0).setZIndex(1);
           if (layerLoadingStateRef.current.get(y)) layerLoadingStateRef.current.set(y, false);
         }
@@ -174,7 +181,7 @@ export function HistoricalPingPongController({
       if (idx !== -1) lruOrderRef.current.splice(idx, 1);
       lruOrderRef.current.push(activeYear);
 
-      while (lruOrderRef.current.length > 25) {
+      while (lruOrderRef.current.length > 15) {
         const oldest = lruOrderRef.current.shift();
         if (oldest !== undefined && oldest !== stateRef.current.activeYear) {
           const oldLayer = cache.get(oldest);
@@ -218,7 +225,7 @@ export function HistoricalPingPongController({
           const startTime = Date.now();
           const check = () => {
             const timePassed = Date.now() - startTime;
-            if (!active || !stateRef.current.playing || !layerLoadingStateRef.current.get(currentYear) || timePassed > 3000) {
+            if (!active || !stateRef.current.playing || !layerLoadingStateRef.current.get(currentYear) || timePassed > 1500) {
               resolve();
             } else {
               setTimeout(check, 100);

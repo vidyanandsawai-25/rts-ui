@@ -1,5 +1,5 @@
 {
-  "pageTitle": "Generate Custom Report",
+  "pageTitle": "Property Tax Report Engine",
   "pageSubtitle": "Select a report type and specify the required filters, then click Get Report to download the PDF.",
   "fields": {
     "reportType": "Report Type"
@@ -38,8 +38,10 @@
     "refresh": "Refresh",
     "empty": "No reports yet. Submit one above and it will appear here.",
     "download": "Download",
+    "preview": "Preview",
+    "previewTitle": "Preview Report",
     "columns": {
-      "report": "Report",
+      "report": "Report Name",
       "status": "Status",
       "requested": "Requested",
       "completed": "Completed",
@@ -73,7 +75,8 @@
     "steps": {
       "selectCategory": "Select Category",
       "selectReport": "Select Report",
-      "setParameters": "Set Parameters"
+      "setParameters": "Set Parameters",
+      "generateReport": "Generate Report"
     },
     "categories": {
       "assessment": "Assessment",
@@ -86,7 +89,7 @@
     "reportsCount": "{count} reports",
     "tabs": {
       "generateReport": "Generate Report",
-      "myReports": "My Reports"
+      "myReports": "Download Report"
     },
     "toast": {
       "generatedSuccess": "Report generated successfully!",
@@ -113,8 +116,8 @@
     },
     "confirm": {
       "title": "Report Creation",
-      "description": "Your report is being created. You can download it by going to the 'My Reports' tab.",
-      "btnGo": "Go to My Reports",
+      "description": "Your report is being generated. You can download it from the 'Download Report' tab.",
+      "btnGo": "Open",
       "btnClose": "Close"
     }
   },
@@ -146,7 +149,7 @@
       "failedToQueue": "Failed to queue report"
     },
     "queuedSuccess": "Report queued! It will appear in the jobs list when ready.",
-    "reportQueued": "Report \"{name}\" queued successfully!",
+    "reportQueued": "Report \"{name}\" request submitted successfully.",
     "buttons": {
       "reset": "Reset",
       "generate": "Generate Report",

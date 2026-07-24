@@ -16,11 +16,17 @@ vi.mock("next-intl", () => ({
 describe("PropertySelectionCard", () => {
   const mockProps = {
     formData: {
-      wardId: "1",
-      fromProperty: "P1",
-      toProperty: "P2",
+      searchCategory: 4,
+      zoneId: "",
+      wardId: "W1",
+      fromProperty: "",
+      toProperty: "",
+      propertyNos: [],
     },
     handleSelectChange: vi.fn(),
+    zoneOptions: [
+      { label: "Zone 1", value: "Z1" },
+    ],
     wardOptions: [{ label: "Ward 1", value: "1" }],
     propertyOptions: [
       { label: "Prop 1", value: "P1" },

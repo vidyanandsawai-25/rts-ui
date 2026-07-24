@@ -1,8 +1,37 @@
 {
   "title": "Lock Property",
   "subtitle": "Administrative control utility for locking or unlocking groups of properties within selected ranges.",
+  "common": {
+    "loading": "Loading..."
+  },
+  "scopeSelectionCard": {
+    "title": "1. Scope Selection",
+    "subtitle": "Choose scope. Only relevant fields appear below.",
+    "options": {
+      "zone": {
+        "label": "Zone / Node",
+        "sublabel": "Zone-wise selection"
+      },
+      "ward": {
+        "label": "Ward / Sector",
+        "sublabel": "Multi ward selection"
+      },
+      "building": {
+        "label": "Building Wise",
+        "sublabel": "Building level"
+      },
+      "propertyRange": {
+        "label": "Property Range",
+        "sublabel": "From-to property range"
+      }
+    }
+  },
   "selectPropertyCard": {
     "title": "Select properties",
+    "zone": "Zone / Node",
+    "selectZone": "Select Zone",
+    "propertyNo": "Property No",
+    "selectProperties": "Select Properties",
     "wardNo": "Ward no",
     "selectWard": "Select Ward",
     "fromProperty": "From property",
@@ -29,9 +58,10 @@
     "propertyMasterTitle": "",
     "lockButton": "Lock Selected Screens",
     "unlockButton": "Unlock Selected Screens",
-    "searchPropertyPlaceholder": "Search by property no...",
+    "searchPropertyPlaceholder": "Search by Property No. or Partition No...",
     "searchButton": "Search",
     "placeholderText": "Please select a ward and property range, then click \"Show\" to view properties.",
+    "noResultsFound": "No properties found for the selected search criteria.",
     "columns": {
       "propertyDetail": "Property No.",
       "screenNames": "Screen Names",
@@ -55,7 +85,7 @@
     "saveChanges": "Save Changes"
   },
   "messages": {
-    "screenRequired": "Please select at least one screen from the Screen selection card to lock.",
+    "screenRequired": "Please select at least one screen from the Screen selection card to {action}.",
     "lockConfirmTitle": "Lock Property",
     "unlockConfirmTitle": "Unlock Property",
     "lockConfirmDescription": "Are you sure you want to lock the selected screens for property {propertyNo}?",
@@ -70,17 +100,31 @@
     "saveFailed": "Failed to update locks.",
     "selectPropertyRequired": "Please select at least one property from the table.",
     "selectScreenRequired": "Please select at least one screen to lock/unlock.",
+    "selectZoneRequired": "Please select a Zone",
+    "selectWardRequired": "Please select a Ward",
+    "selectWardAndPropertyRequired": "Please select a Ward and at least one Property",
+    "selectPropertyDropdownRequired": "Please select at least one Property",
+    "selectFromToPropertyRequired": "Please select From Property and To Property",
     "bulkLockTitle": "Bulk Lock Properties",
     "bulkUnlockTitle": "Bulk Unlock Properties",
-    "bulkConfirmDescription": "Are you sure you want to {action} the selected {screenCount} screen(s) for the {propertyCount} checked properties?",
+    "bulkConfirmDescription": "Are you sure you want to {action} the selected screen(s) for the {propertyCount} checked properties?",
+    "bulkLockUnlockConfirmation": "You are about to <warning>{action}</warning> <highlight>{propertyCount}</highlight> properties. This bulk operation may take several minutes.\nPlease keep this page open until the process completes.\nTo proceed, click <warning>{action}</warning>. To abort, click <highlight>Cancel</highlight>.",
     "bulkSuccess": "Bulk operation completed.",
     "bulkFailed": "Bulk operation failed.",
+    "unexpectedErrorBulk": "An unexpected error occurred during bulk operation.",
+    "noPropertiesFoundFilters": "No properties found matching the current filters.",
+    "noPropertiesSelectedExclusions": "No properties selected after applying exclusions.",
+    "atLeastOnePropertyRequired": "At least one property must be selected.",
+    "processingTitle": "Processing Request",
+    "processingMessage": "Please wait while the properties are being updated. This may take a few moments...",
     "clearedFilters": "Cleared all filters.",
     "validationError": "Please fill in all required fields (Ward no, From property, and To property).",
     "fetchSuccess": "Properties fetched successfully.",
     "fetchNoResults": "No properties found in the selected range.",
     "fetchFailed": "Failed to load properties.",
-    "fetchWardsError": "Error fetching wards:"
+    "fetchWardsError": "Error fetching wards:",
+    "searchValidationError": "Please enter a value to search.",
+    "validationGreaterProperty": "The 'To Property' must be greater than the 'From Property'."
   },
   "error": {
     "title": "Failed to connect to the server. Please try again later.",

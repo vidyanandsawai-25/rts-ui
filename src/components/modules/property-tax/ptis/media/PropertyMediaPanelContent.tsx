@@ -94,6 +94,7 @@ export function PropertyMediaPanelContent({
       <div className="flex-1 overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">
         <MediaImageCard
           src={propertyPhoto?.src || ''}
+          documentGuid={propertyPhoto?.documentGuid}
           fullSrc={propertyPhoto?.fullSrc || ''}
           alt={propertyPhoto?.alt || t('media.propertyPhoto')}
           label={propertyPhoto?.title || t('media.propertyPhoto')}

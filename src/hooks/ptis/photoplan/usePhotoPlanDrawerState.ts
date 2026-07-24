@@ -1,30 +1,39 @@
-import { useState, useCallback, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import { mergeCategories, areCategoriesEqual } from '@/lib/utils/ptis-photo-plan-localization';
 import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 import { usePhotoPlanMutations } from './usePhotoPlanMutations';
 import { useMediaDrawerState } from './useMediaDrawerState';
+import type { PropertyPhotoDto } from '@/types/photoplan.types';
+import { propertyMediaCache, isCacheValid, evictOldestCacheEntry } from './usePropertyPhotosQuery';
+import { getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 
 export interface UsePhotoPlanDrawerStateProps {
   categories: PhotoCategory[];
   onCategoriesChange: (categories: PhotoCategory[]) => void;
+  onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   propertyId?: number;
   initialCategoryIndex?: number;
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
 }
 
-
-
 export function usePhotoPlanDrawerState({
   categories,
   onCategoriesChange,
+  onPhotosChange,
   propertyId,
   initialCategoryIndex = 0,
+  fullyLoadedIds,
+  onFullyLoadedIdsChange,
 }: UsePhotoPlanDrawerStateProps) {
   const { openDrawer } = useMediaDrawerState();
   const searchParams = useSearchParams();
+
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const [selectedCategoryIndex, setSelectedCategoryIndexState] = useState(() =>
     initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0
@@ -58,6 +67,105 @@ export function usePhotoPlanDrawerState({
   );
   const [prevCategories, setPrevCategories] = useState<PhotoCategory[]>(categories);
 
+  const categoriesRef = useRef(categories);
+  useEffect(() => {
+    categoriesRef.current = categories;
+  }, [categories]);
+
+  const loadPhotos = useCallback(async () => {
+    if (!propertyId) return;
+    setIsLoadingPhotos(true);
+    setFetchError(null);
+    try {
+      const res = await getPhotosByPropertyAction(propertyId);
+      if (res.success && res.data) {
+        const fetchedPhotos = res.data;
+        onPhotosChange?.(fetchedPhotos);
+
+        const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+        onFullyLoadedIdsChange?.(allCatIds);
+
+        const cached = propertyMediaCache.get(propertyId);
+        propertyMediaCache.set(propertyId, {
+          photoSlots: cached?.photoSlots || [],
+          photos: fetchedPhotos,
+          timestamp: Date.now(),
+        });
+        evictOldestCacheEntry();
+      } else {
+        setFetchError(res.error || res.message || 'Failed to load photos');
+      }
+    } catch (err) {
+      setFetchError(err instanceof Error ? err.message : 'Failed to load photos');
+    } finally {
+      setIsLoadingPhotos(false);
+    }
+  }, [propertyId, onPhotosChange, onFullyLoadedIdsChange]);
+
+  useEffect(() => {
+    if (!propertyId) return;
+    let isSubscribed = true;
+
+    if (fullyLoadedIds.size === 0) {
+      if (propertyMediaCache.has(propertyId)) {
+        const cached = propertyMediaCache.get(propertyId);
+        if (cached && cached.photos && cached.photos.length > 0 && isCacheValid(propertyId)) {
+          onPhotosChange?.(cached.photos);
+          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+          onFullyLoadedIdsChange?.(allCatIds);
+          return;
+        }
+      }
+
+      setIsLoadingPhotos(true);
+      setFetchError(null);
+      getPhotosByPropertyAction(propertyId)
+        .then((res) => {
+          if (!isSubscribed) return;
+          if (res.success && res.data) {
+            const fetchedPhotos = res.data;
+            onPhotosChange?.(fetchedPhotos);
+
+            const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+            onFullyLoadedIdsChange?.(allCatIds);
+
+            const cachedEntry = propertyMediaCache.get(propertyId);
+            propertyMediaCache.set(propertyId, {
+              photoSlots: cachedEntry?.photoSlots || [],
+              photos: fetchedPhotos,
+              timestamp: Date.now(),
+            });
+            evictOldestCacheEntry();
+          } else {
+            setFetchError(res.error || res.message || 'Failed to load photos');
+          }
+        })
+        .catch((err) => {
+          if (isSubscribed) {
+            setFetchError(err instanceof Error ? err.message : 'Failed to load photos');
+          }
+        })
+        .finally(() => {
+          if (isSubscribed) {
+            setIsLoadingPhotos(false);
+          }
+        });
+    }
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [propertyId, fullyLoadedIds.size, onPhotosChange, onFullyLoadedIdsChange]);
+
+  const prevDrawerPropIdRef = useRef(propertyId);
+  useEffect(() => {
+    if (propertyId !== prevDrawerPropIdRef.current) {
+      prevDrawerPropIdRef.current = propertyId;
+      setSelectedCategoryIndexState(0);
+      setSelectedImageIndexState(null);
+    }
+  }, [propertyId]);
+
   useEffect(() => {
     if (!areCategoriesEqual(categories, prevCategories)) {
       Promise.resolve().then(() => {
@@ -77,9 +185,9 @@ export function usePhotoPlanDrawerState({
     window.history.replaceState(null, '', `${window.location.pathname}?${current.toString()}`);
   }, []);
 
-  const setSelectedImageIndex = useCallback((idx: number | null) => setSelectedImageIndexState(idx), []);
+  const setSelectedImageIndex = useCallback((idx: number | null) => setSelectedImageIndexState(idx), [setSelectedImageIndexState]);
 
-  const setViewMode = useCallback((mode: 'grid' | 'viewer' | 'compare') => setViewModeState(mode), []);
+  const setViewMode = useCallback((mode: 'grid' | 'viewer' | 'compare') => setViewModeState(mode), [setViewModeState]);
 
   const setSelectedCategoryIndex = useCallback((idx: number) => {
     setSelectedCategoryIndexState(idx);
@@ -92,12 +200,12 @@ export function usePhotoPlanDrawerState({
 
     setSelectedImageIndexState(nextImgIdx);
     setViewModeState(nextViewMode);
-  }, [cachedCategories]);
+  }, [cachedCategories, setSelectedCategoryIndexState, setSelectedImageIndexState, setViewModeState]);
 
   const setViewerIndexAndMode = useCallback((idx: number | null, mode: 'grid' | 'viewer' | 'compare') => {
     setSelectedImageIndexState(idx);
     setViewModeState(mode);
-  }, []);
+  }, [setSelectedImageIndexState, setViewModeState]);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -193,8 +301,8 @@ export function usePhotoPlanDrawerState({
     viewMode, setViewMode,
     rotation, setRotation,
     cachedCategories, activeCategory, activeCategoryId,
-    isLoadingPhotos: false, fetchError: null as string | null,
-    loadPhotos: useCallback(async () => {}, []),
+    isLoadingPhotos, fetchError,
+    loadPhotos,
     mutations, isUploading: mutations.isUploading,
     handleNext, handlePrev, handleDownload, openDrawer,
   };

@@ -1,8 +1,16 @@
 import 'server-only';
 import { apiClient } from '@/services/api.service';
-import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, LookupOption } from '@/types/report.types';
+import type {
+  ReportDefinition,
+  ReportParameterDefinition,
+  ZoneSummary,
+  WardSummary,
+  PropertySummary,
+  LookupOption,
+  ReportModule,
+} from '@/types/report.types';
 import type { PagedResponse } from '@/types/common.types';
-
+import { ApiError } from '@/lib/utils/api';
 /**
  * Generic option source for a 'select' report parameter. `key` is the parameter's OptionsSource;
  * `parentValue` is the selected value of its CascadeFromKey parameter (for cascading dropdowns).
@@ -10,22 +18,25 @@ import type { PagedResponse } from '@/types/common.types';
  */
 export async function getReportLookup(key: string, parentValue?: string): Promise<LookupOption[]> {
   const qs = parentValue ? `?parentValue=${encodeURIComponent(parentValue)}` : '';
-  const result = await apiClient.get<LookupOption[]>(`/ReportLookup/${encodeURIComponent(key)}${qs}`);
+  const result = await apiClient.get<LookupOption[]>(
+    `/ReportLookup/${encodeURIComponent(key)}${qs}`
+  );
   if (!result.success || !result.data) return [];
   return result.data;
 }
 
 function normalizeReportDefinition(raw: Record<string, unknown>): ReportDefinition {
   return {
-    id: Number(raw.id ?? raw.Id ?? raw.reportDefinitionId ?? raw.ReportDefinitionId ?? 0),
-    reportCode: String(raw.reportCode ?? raw.ReportCode ?? raw.code ?? raw.Code ?? ''),
-    reportName: String(raw.reportName ?? raw.ReportName ?? raw.name ?? raw.Name ?? ''),
-    category: String(raw.category ?? raw.Category ?? ''),
-    description: String(raw.description ?? raw.Description ?? ''),
-    templateFile: String(raw.templateFile ?? raw.TemplateFile ?? ''),
-    dataProviderCode: String(raw.dataProviderCode ?? raw.DataProviderCode ?? ''),
-    isActive: Boolean(raw.isActive ?? raw.IsActive ?? true),
-    sortOrder: Number(raw.sortOrder ?? raw.SortOrder ?? 0),
+    id: Number(raw.id ?? 0),
+    reportCode: String(raw.reportCode),
+    reportName: String(raw.reportName),
+    category: String(raw.category),
+    description: String(raw.description),
+    templateFile: String(raw.templateFile),
+    dataProviderCode: String(raw.dataProviderCode),
+    isActive: Boolean(raw.isActive),
+    sortOrder: Number(raw.sortOrder),
+    moduleId: raw.moduleId != null ? Number(raw.moduleId) : null,
   };
 }
 
@@ -37,9 +48,20 @@ export async function getReportDefinitions(): Promise<ReportDefinition[]> {
   return (result.data.items ?? []).map(normalizeReportDefinition);
 }
 
-import { ApiError } from '@/lib/utils/api';
+export async function getReportModules(): Promise<ReportModule[]> {
+  const result = await apiClient.get<PagedResponse<Record<string, unknown>>>('/ReportModules');
+  if (!result.success || !result.data) return [];
+  return (result.data.items ?? []).map((m) => ({
+    id: Number(m.id),
+    name: String(m.name),
+    logoContentType: m.logoContentType != null ? String(m.logoContentType) : null,
+    logoBase64: m.logoBase64 != null ? String(m.logoBase64) : null,
+  }));
+}
 
-export async function getReportParameters(reportDefinitionId: number): Promise<ReportParameterDefinition[]> {
+export async function getReportParameters(
+  reportDefinitionId: number
+): Promise<ReportParameterDefinition[]> {
   const result = await apiClient.get<PagedResponse<ReportParameterDefinition>>(
     `/ReportParameterDefinition?ReportDefinitionId=${encodeURIComponent(String(reportDefinitionId))}&IsActive=true&PageSize=-1`
   );

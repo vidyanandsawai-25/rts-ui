@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Layers } from "lucide-react";
 import {
   CardHeader,
@@ -11,21 +11,24 @@ import {
   ClearButton,
   SelectAllButton,
   SearchInput,
+  Label,
 } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { useQueryTransition } from "@/hooks/useQueryTransition";
 import { cn } from "@/lib/utils/cn";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
-import { LockedScreen } from "@/types/lockunlock.types";
+import { LockedScreen, ModuleItem } from "@/types/lockunlock.types";
 
 interface ScreenSelectionCardProps {
   screens: LockedScreen[];
+  modules?: ModuleItem[];
   selectedScreenIds: number[];
   setSelectedScreenIds: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export function ScreenSelectionCard({
   screens = [],
+  modules = [],
   selectedScreenIds = [],
   setSelectedScreenIds,
 }: ScreenSelectionCardProps) {
@@ -33,7 +36,7 @@ export function ScreenSelectionCard({
   const { updateQueries, searchParams } = useQueryTransition();
 
   const screenSearchFromUrl = searchParams.get("screenSearch") || "";
-  const screenModuleFromUrl = searchParams.get("screenModule") || "ALL";
+  const moduleIdFromUrl = searchParams.get("moduleId") || "ALL";
 
   const [searchTerm, setSearchTerm] = useState(screenSearchFromUrl);
   const [prevScreenSearchFromUrl, setPrevScreenSearchFromUrl] = useState(screenSearchFromUrl);
@@ -54,12 +57,12 @@ export function ScreenSelectionCard({
 
     const timer = setTimeout(() => {
       updateQueries({ screenSearch: searchTerm || null });
-    }, 300);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [searchTerm, updateQueries]);
 
-  const selectedModule = screenModuleFromUrl;
+  const selectedModuleId = moduleIdFromUrl;
 
   // Helper function to extract a clean group/module prefix from screenCode
   const getScreenModule = (code: string) => {
@@ -73,21 +76,17 @@ export function ScreenSelectionCard({
     return "GENERAL";
   };
 
-  // Generate unique module classifications for dropdown
+  // Generate unique module classifications for dropdown from modules API
   const moduleOptions = useMemo(() => {
-    const modules = new Set<string>();
-    screens.forEach((s) => {
-      modules.add(getScreenModule(s.screenCode));
-    });
-    const options = Array.from(modules).map((m) => ({
-      label: m,
-      value: m,
+    const options = modules.map((m) => ({
+      label: m.moduleCode,
+      value: String(m.id),
     }));
     return [
       { label: t("screenSelectionCard.allTypes") || "All Types", value: "ALL" },
       ...options.sort((a, b) => a.label.localeCompare(b.label)),
     ];
-  }, [screens, t]);
+  }, [modules, t]);
 
   // Derived list of filtered screens based on inputs
   const filteredScreens = useMemo(() => {
@@ -95,19 +94,24 @@ export function ScreenSelectionCard({
       const matchesSearch =
         screen.screenName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         screen.screenCode.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesModule =
-        selectedModule === "ALL" ||
-        getScreenModule(screen.screenCode) === selectedModule;
-      return matchesSearch && matchesModule;
+      
+      return matchesSearch;
     });
-  }, [screens, searchTerm, selectedModule]);
+  }, [screens, searchTerm]);
 
-  // Select all currently visible filtered screens
+  // Select or Unselect all currently visible filtered screens
   const handleSelectAllFiltered = () => {
     const filteredIds = filteredScreens.map((s) => s.id);
     setSelectedScreenIds((prev) => {
-      const uniqueIds = new Set([...prev, ...filteredIds]);
-      return Array.from(uniqueIds);
+      const allSelected = filteredIds.length > 0 && filteredIds.every((id) => prev.includes(id));
+      if (allSelected) {
+        // Unselect all filtered items
+        return prev.filter((id) => !filteredIds.includes(id));
+      } else {
+        // Select all filtered items
+        const uniqueIds = new Set([...prev, ...filteredIds]);
+        return Array.from(uniqueIds);
+      }
     });
   };
 
@@ -116,27 +120,31 @@ export function ScreenSelectionCard({
     const filteredIds = new Set(filteredScreens.map((s) => s.id));
     setSelectedScreenIds((prev) => prev.filter((id) => !filteredIds.has(id)));
     setSearchTerm("");
-    updateQueries({ screenSearch: null, screenModule: null });
+    updateQueries({ screenSearch: null, moduleId: null });
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-1">
       <CardHeader className="mb-0 border border-slate-100 rounded-md bg-slate-50/50 py-3.5 px-6 flex flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-blue-600" />
-          <CardTitle className="text-sm font-bold text-slate-800">{t("screenSelectionCard.title")}</CardTitle>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <Layers className="w-4 h-4 text-blue-600 shrink-0" />
+            <CardTitle className="text-sm font-bold text-slate-800">
+              {t("screenSelectionCard.title")}
+            </CardTitle>
+          </div>
           <p className="text-xs text-slate-500 font-medium ml-2">
             {t("screenSelectionCard.helperText")}
           </p>
         </div>
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center whitespace-nowrap shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
           {t("screenSelectionCard.selectedCount", { count: selectedScreenIds.length })}
         </span>
       </CardHeader>
-      <CardContent className="py-4 space-y-4">
+      <CardContent className="py-4 pb-1 space-y-1">
         {/* Filters Row */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <SearchInput   
+          <SearchInput
             value={searchTerm}
             onChange={(val) => {
               const sanitized = val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
@@ -149,9 +157,10 @@ export function ScreenSelectionCard({
           <div className="w-full sm:w-[180px]">
             <SearchSelect
               options={moduleOptions}
-              value={selectedModule}
+              value={selectedModuleId}
               onChange={(_, value) => {
-                updateQueries({ screenModule: value === "ALL" ? null : value });
+                setSelectedScreenIds([]);
+                updateQueries({ moduleId: value === "ALL" ? null : value });
               }}
               placeholder={t("screenSelectionCard.typeOfUse")}
               disableSearch={true}
@@ -175,16 +184,16 @@ export function ScreenSelectionCard({
             />
           </div>
         </div>
-  
+
         {/* Screen List */}
-        <div className="border border-slate-200/80 rounded-xl p-2 bg-slate-50/20 max-h-[300px] overflow-auto custom-scrollbar">
+        <div className="border border-slate-200/80 rounded-xl p-2 bg-slate-50/20 max-h-[220px] overflow-auto custom-scrollbar">
           {screens.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">{t("screenSelectionCard.noScreens")}</p>
           ) : filteredScreens.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">{t("screenSelectionCard.noScreens")}</p>
           ) : (
-            <div className="min-w-max">
-              <div className="grid grid-cols-1 gap-2">
+            <div className="w-full">
+              <div className={cn("grid gap-2", filteredScreens.length > 3 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
                 {filteredScreens.map((screen) => {
                   const isChecked = selectedScreenIds.includes(screen.id);
                   const badgeCode = getScreenModule(screen.screenCode);
@@ -235,13 +244,13 @@ export function ScreenSelectionCard({
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider min-w-[36px] justify-center shrink-0">
                         {badgeCode}
                       </span>
-                      <label
+                      <Label
                         htmlFor={`screen-${screen.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="flex-1 text-sm font-semibold text-slate-700 truncate cursor-pointer"
                       >
                         {screen.screenName}
-                      </label>
+                      </Label>
                     </div>
                   );
                 })}

@@ -58,6 +58,8 @@ export function buildJobsCopy(t: Translator): ReportJobsCopy {
     refresh: t('jobs.refresh'),
     empty: t('jobs.empty'),
     download: t('jobs.download'),
+    preview: t('jobs.preview'),
+    previewTitle: t('jobs.previewTitle'),
     columns: {
       report: t('jobs.columns.report'),
       status: t('jobs.columns.status'),
@@ -82,14 +84,7 @@ export function buildWorkspaceCopy(t: Translator): ReportWorkspaceCopy {
       selectCategory: t('workspace.steps.selectCategory'),
       selectReport: t('workspace.steps.selectReport'),
       setParameters: t('workspace.steps.setParameters'),
-    },
-    categories: {
-      assessment: t('workspace.categories.assessment'),
-      amc: t('workspace.categories.amc'),
-      transaction: t('workspace.categories.transaction'),
-      approval: t('workspace.categories.approval'),
-      discount: t('workspace.categories.discount'),
-      others: t('workspace.categories.others'),
+      generateReport: t('workspace.steps.generateReport'),
     },
     tabs: {
       generateReport: t('workspace.tabs.generateReport'),

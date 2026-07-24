@@ -67,13 +67,19 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-sm">
             <div className="flex w-full gap-0 bg-blue-600/10 py-2 text-center text-xs font-bold uppercase tracking-wider">
               {/* Table Headers */}
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomNo }}>{t('roomSubmission.table.roomNo')}</div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomType }}>{t('roomSubmission.table.roomType')}</div>
+              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomNo }}>
+                {isUtilityCategory ? t('roomSubmission.table.utilityRoomNo') : t('roomSubmission.table.roomNo')}
+              </div>
+              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomType }}>
+                {isUtilityCategory ? t('roomSubmission.table.utilityRoomType') : t('roomSubmission.table.roomType')}
+              </div>
               <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.shape }}>{t('roomSubmission.table.shape')}</div>
               <div className="flex flex-col items-center justify-center flex-shrink-0 px-2 font-semibold leading-tight border-r border-white/20" style={{ width: COLUMN_WIDTHS.area }}>
                 {t('roomSubmission.table.area')} <span className="text-[10px] uppercase opacity-80">({areaUnit})</span>
               </div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomCount }}>{t('roomSubmission.table.roomCount')}</div>
+              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomCount }}>
+                {isUtilityCategory ? "COUNT" : t('roomSubmission.table.roomCount')}
+              </div>
               <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.offset }}>{t('roomSubmission.table.offset')}</div>
               <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.outer }}>{t('roomSubmission.table.outer')}</div>
               <div className="flex flex-col items-center justify-center flex-shrink-0 px-2 font-semibold leading-tight border-r border-white/20" style={{ width: COLUMN_WIDTHS.total }}>

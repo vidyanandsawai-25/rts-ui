@@ -172,10 +172,7 @@ export function ConfigKeyFormFields({
               step={formData.dataType === 'decimal' ? 'any' : formData.dataType === 'int' ? 1 : undefined}
               value={formData.defaultValue || ''}
               onChange={(e) => {
-                const sanitized = formData.dataType === 'string'
-                  ? e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '')
-                  : e.target.value;
-                onFieldChange('defaultValue', sanitized);
+                onFieldChange('defaultValue', e.target.value);
               }}
               onKeyDown={(e) => {
                 if (formData.dataType === 'int' && /^[eE+\-.,]$/.test(e.key)) e.preventDefault();
