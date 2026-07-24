@@ -1,0 +1,246 @@
+{
+    "errors": {
+        "fetchMainCards": "मुख्य कार्ड डेटा प्राप्त करने में विफल।",
+        "fetchWorkflowCards": "वर्कफ़्लो कार्ड डेटा प्राप्त करने में विफल।",
+        "fetchGeoSequencingGrid": "जियो-सीक्वेंसिंग ग्रिड डेटा प्राप्त करने में विफल।",
+        "fetchGeoSequencingPropertyDetails": "जियो सीक्वेंसिंग संपत्ति विवरण डेटा प्राप्त करने में विफल।",
+        "fetchGeoSequencingWardWiseSummary": "जियो सीक्वेंसिंग वार्ड-वार सारांश डेटा प्राप्त करने में विफल।",
+        "fetchDataEntryGrid": "डेटा एंट्री ग्रिड डेटा प्राप्त करने में विफल।",
+        "fetchDataEntryWardWiseSummary": "डेटा एंट्री वार्ड-वार सारांश डेटा प्राप्त करने में विफल।",
+        "fetchInternalSurveyGrid": "आंतरिक सर्वेक्षण ग्रिड डेटा प्राप्त करने में विफल।",
+        "fetchInternalSurveyWardWiseSummary": "आंतरिक सर्वेक्षण वार्ड-वार सारांश डेटा प्राप्त करने में विफल।",
+        "fetchAssessmentGrid": "मूल्यांकन ग्रिड डेटा प्राप्त करने में विफल।",
+        "fetchPendingAssessmentProps": "लंबित मूल्यांकन संपत्तियां प्राप्त करने में विफल।"
+    },
+    "summaryCards": {
+        "metrics": {
+            "structure": "संरचना",
+            "unit": "इकाई",
+            "units": "इकाइयां",
+            "demand": "मांग"
+        },
+        "titles": {
+            "previouslyRegistered": "पहले से पंजीकृत संपत्तियां और मांग",
+            "assessmentApproved": "मूल्यांकन स्वीकृत",
+            "additionalRevenue": "अतिरिक्त राजस्व उत्पन्न",
+            "assessed": "मूल्यांकित",
+            "unassessed": "अमूल्यांकित"
+        },
+        "noData": "कोई डेटा नहीं"
+    },
+    "geoSequencing": {
+        "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+        "total": "कुल",
+        "wardWiseSummary": "वार्ड-वार सारांश",
+        "wardWiseTable": "वार्ड-वार तालिका",
+        "stage": "चरण:",
+        "generatedOn": "को उत्पन्न:",
+        "cards": {
+            "totalStructure": "कुल संरचना",
+            "totalUnits": "कुल इकाइयां",
+            "assessed": "मूल्यांकित",
+            "unassessed": "अमूल्यांकित"
+        },
+        "columns": {
+            "sr": "क्र.सं.",
+            "division": "प्रभाग",
+            "wardNo": "वार्ड नं.",
+            "registeredProperties": "पंजीकृत संपत्तियां",
+            "geoSequencingProperties": "जियो-सीक्वेंसिंग संपत्तियां",
+            "propertyType": "संपत्ति का प्रकार",
+            "assessed": "मूल्यांकित",
+            "unassessed": "अमूल्यांकित",
+            "properties": "संपत्तियां",
+            "newlyAssessedFound": "नई मूल्यांकित प्राप्त",
+            "assessmentInprocess": "मूल्यांकन प्रक्रिया में",
+            "structure": "संरचना",
+            "unit": "इकाई",
+            "units": "इकाइयां",
+            "residential": "आवासीय",
+            "nonResidential": "गैर-आवासीय",
+            "mixed": "मिश्रित",
+            "publicUtility": "सार्वजनिक उपयोगिता",
+            "underConstruction": "निर्माणाधीन"
+        },
+        "buttons": {
+            "search": "खोजें",
+            "export": "निर्यात करें",
+            "backToDivisions": "डिवीजन पर वापस जाएं"
+        }
+    },
+    "propertyDetailsDashboard": {
+        "header": {
+            "backToDivisions": "डिवीजनों पर वापस जाएं",
+            "mainProperties": "मुख्य संपत्तियां (अपार्टमेंट छोड़कर)",
+            "stage": "चरण:",
+            "subtitle": "संपत्ति सूची - पूरी जानकारी",
+            "export": "निर्यात करें",
+            "searchPlaceholder": "सभी कॉलमों में खोजें...",
+            "filter": "फ़िल्टर"
+        },
+        "labels": {
+            "totalTax": "कुल टैक्स:",
+            "occupier": "रहने वाला:",
+            "floors": "मंजिलें:",
+            "rv": "आर.वी:",
+            "owner": "मालिक:",
+            "use": "उपयोग:",
+            "cTax": "सी.टैक्स:",
+            "units": "इकाइयां:",
+            "area": "क्षेत्र:",
+            "rTax": "आर.टैक्स:",
+            "shopName": "दुकान का नाम:"
+        },
+        "propertyTypes": {
+            "unassessed": "मूल्यांकन नहीं किया गया",
+            "assessed": "मूल्यांकन किया गया"
+        },
+        "columns": {
+            "address": "पता",
+            "additionalRevenue": "अतिरिक्त राजस्व",
+            "newOldPropertyNo": "नई संपत्ति सं. | पुरानी संपत्ति सं.",
+            "srNo": "क्र. सं.",
+            "propertyType": "संपत्ति का प्रकार",
+            "newRecord": "नया रिकॉर्ड",
+            "oldWardNoConstructionYear": "पुराना वार्ड सं. | निर्माण वर्ष",
+            "propertyDetailsNewVsOld": "संपत्ति विवरण (नया बनाम पुराना)",
+            "propertyDetails": "संपत्ति विवरण",
+            "oldRecord": "पुराना रिकॉर्ड",
+            "actions": "कार्रवाई",
+            "categoryAndDesc": "श्रेणी और विवरण",
+            "image": "छवि",
+            "ownerAndOccupier": "मालिक, रहने वाला और दुकान",
+            "documents": "दस्तावेज़",
+            "mobile": "मोबाइल"
+        }
+    },
+    "internalSurvey": {
+        "total": "कुल",
+        "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+        "emptyMessage": "कोई आंतरिक सर्वेक्षण डेटा उपलब्ध नहीं है",
+        "buttons": {
+            "search": "खोजें",
+            "export": "निर्यात करें",
+            "backToDivisions": "डिवीजन पर वापस जाएं"
+        },
+        "wardWiseSummary": "वार्ड-वार सारांश",
+        "wardWiseTable": "वार्ड-वार तालिका",
+        "stage": "चरण:",
+        "generatedOn": "को उत्पन्न:",
+        "cards": {
+            "totalStructure": "कुल संरचना",
+            "totalUnits": "कुल इकाइयां",
+            "assessed": "मूल्यांकित",
+            "unassessed": "अमूल्यांकित",
+            "photos": "तस्वीरें"
+        },
+        "columns": {
+            "sr": "क्र.सं.",
+            "division": "प्रभाग",
+            "geoSequencingProperties": "जियो-सीक्वेंसिंग संपत्तियां",
+            "surveyProperties": "सर्वेक्षण संपत्तियां",
+            "propertyType": "संपत्ति का प्रकार",
+            "assessedProperties": "मूल्यांकित संपत्तियां",
+            "unassessedProperties": "अमूल्यांकित संपत्तियां",
+            "newlyAssessedFound": "नई मूल्यांकित प्राप्त",
+            "assessmentInprocess": "मूल्यांकन प्रक्रिया में",
+            "photoCount": "फोटो गिनती",
+            "structure": "संरचना",
+            "unit": "इकाई",
+            "units": "इकाइयां",
+            "residential": "आवासीय",
+            "nonResidential": "गैर-आवासीय",
+            "mixedProperty": "मिश्रित संपत्ति",
+            "publicUtility": "सार्वजनिक उपयोगिता",
+            "underConstruction": "निर्माणाधीन"
+        }
+    },
+    "dataEntryQualityCheck": {
+        "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+        "total": "कुल",
+        "wardWiseSummary": "वार्ड-वार सारांश",
+        "stage": "चरण:",
+        "qualityAnalyst": "गुणवत्ता विश्लेषक",
+        "generatedOn": "पर उत्पन्न:",
+        "qualityAnalystWardWiseTable": "गुणवत्ता विश्लेषक - वार्ड-वार तालिका",
+        "cards": {
+            "totalStructure": "कुल संरचना",
+            "totalUnits": "कुल इकाइयाँ",
+            "assessed": "मूल्यांकन किया गया",
+            "unassessed": "मूल्यांकन नहीं किया गया",
+            "photos": "तस्वीरें"
+        },
+        "buttons": {
+            "updateCommonDetails": "सामान्य विवरण अपडेट करें",
+            "backToDivisions": "डिवीजन पर वापस जाएं",
+            "export": "निर्यात करें"
+        },
+        "columns": {
+            "sr": "क्र. सं.",
+            "division": "प्रभाग",
+            "wardNo": "वार्ड नं.",
+            "internalSurvey": "आंतरिक सर्वेक्षण",
+            "dataEntry": "डेटा एंट्री",
+            "photo": "फोटो",
+            "plan": "योजना",
+            "qualityAnalyst": "गुणवत्ता विश्लेषक",
+            "propertyType": "संपत्ति का प्रकार",
+            "assessedProperties": "मूल्यांकित संपत्तियां",
+            "unassessedProperties": "अमूल्यांकित संपत्तियां",
+            "newlyAssessedFound": "नई मूल्यांकित प्राप्त",
+            "assessmentInprocess": "मूल्यांकन प्रक्रिया में",
+            "structure": "संरचना",
+            "unit": "इकाई",
+            "units": "इकाइयां",
+            "completedStructure": "पूर्ण संरचना",
+            "completedUnit": "पूर्ण इकाई",
+            "pendingStructure": "लंबित संरचना",
+            "pendingUnit": "लंबित इकाई",
+            "complete": "पूर्ण",
+            "pending": "लंबित",
+            "typeWise": "प्रकार के अनुसार",
+            "residential": "आवासीय",
+            "nonResidential": "गैर-आवासीय",
+            "mixed": "मिश्रित",
+            "publicUtility": "सार्वजनिक उपयोगिता",
+            "underConstruction": "निर्माणाधीन"
+        }
+    },
+    "sendToApprove": {
+        "title": "मंजूरी के लिए भेजें",
+        "subtitle": "मंजूरी के लिए भेजने के लिए मूल्यांकन चरण से संपत्तियां चुनें",
+        "backToAssessment": "मूल्यांकन पर वापस जाएं",
+        "selected": "चयनित",
+        "updateNoticeNo": "SR नोटिस नंबर अपडेट करें",
+        "sendToApprove": "मंजूरी के लिए भेजें",
+        "searchPlaceholder": "संपत्ति संख्या, मालिक, पता...",
+        "filters": {
+            "search": "खोजें",
+            "surveyType": "सर्वेक्षण प्रकार",
+            "zoneName": "जोन का नाम",
+            "wardNumber": "वार्ड नंबर",
+            "propertyType": "संपत्ति का प्रकार",
+            "billType": "बिल का प्रकार",
+            "propertyDescription": "संपत्ति का विवरण"
+        },
+        "columns": {
+            "zoneWardPropNo": "जोन / वार्ड / संपत्ति संख्या",
+            "oldWardNo": "पुराना वार्ड नंबर",
+            "additional": "अतिरिक्त",
+            "revenueVal": "राजस्व (₹)",
+            "property": "संपत्ति",
+            "type": "प्रकार",
+            "imagePlan": "छवि | योजना",
+            "checklistSub": "टॉगल करने के लिए क्लिक करें - संपादन के लिए पहले पंक्ति चुनें",
+            "qcChecklist": "क्यू.सी. चेकलिस्ट",
+            "siteQc": "साइट क्यू.सी.",
+            "applyTaxes": "टैक्स लागू करें",
+            "officeQc": "कार्यालय क्यू.सी.",
+            "dataUpdated": "डेटा अपडेट किया गया",
+            "addTaxes": "टैक्स जोड़ें",
+            "qcCcBill": "क्यू.सी./सी.सी./बिल",
+            "report": "रिपोर्ट",
+            "location": "स्थान"
+        }
+    }
+}

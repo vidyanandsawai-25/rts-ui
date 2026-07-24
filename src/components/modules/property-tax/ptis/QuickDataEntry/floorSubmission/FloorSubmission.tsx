@@ -105,6 +105,16 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const initShowDrawer = searchParams?.get('dataEntrySameAs') === 'true';
   const [showDataEntrySameAsDrawer, setShowDataEntrySameAsDrawer] = React.useState(initShowDrawer);
 
+  // Derive categoryName from initialPropertyData (comes from PropertyCategoryMaster via API)
+  // Using name instead of numeric ID so it's not tied to hardcoded DB values
+  const categoryName = React.useMemo(() => {
+    const name = props.initialPropertyData?.categoryName;
+    return typeof name === 'string' ? name.trim() : '';
+  }, [props.initialPropertyData]);
+
+  // Individual property: Data Entry Same As button should always be enabled
+  const isIndividualProperty = categoryName.toLowerCase() === 'individual';
+
   const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(true);
     updateUrlParams({ dataEntrySameAs: 'true' });
@@ -160,6 +170,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             setEditingFloorForm={setEditingFloorForm}
             isPlotCategory={isPlotCategory}
             partitionNo={props.partitionNo}
+            isIndividualProperty={isIndividualProperty}
           />
 
 
@@ -324,6 +335,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         propertyNo={props.propertyNo}
         partitionNo={props.partitionNo}
         initialPropertyID={props.initialPropertyID}
+        categoryName={categoryName}
 
         // Pass FloorTable related props to render view-only floor table inside the drawer
         filteredFloors={filteredFloors}

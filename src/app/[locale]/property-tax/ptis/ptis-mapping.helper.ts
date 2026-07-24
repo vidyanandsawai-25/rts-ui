@@ -133,7 +133,7 @@ export async function mapPtisFetchResults({
   const taxDetails = taxDetailsRes || { rateableTaxDetails: undefined, capitalTaxDetails: undefined, rateableTaxError: undefined, capitalTaxError: undefined };
   let rawPropertyData = propertyListResult?.success && propertyListResult.data ? propertyListResult.data : [];
 
-  if (propertyDetailsResult.success && propertyDetailsResult.propertyDetails) {
+  if (propertyDetailsResult.success && propertyDetailsResult.propertyDetails && propertyDetailsResult.propertyId) {
     const details = propertyDetailsResult.propertyDetails;
     const exists = rawPropertyData.some(
       (p) =>

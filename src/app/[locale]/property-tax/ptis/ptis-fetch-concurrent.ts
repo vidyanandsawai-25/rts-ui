@@ -10,6 +10,7 @@ import {
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
   fetchMappedPropertiesAction,
+  fetchTabHeaderInfoAction,
 } from './ptis-detail-actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
@@ -33,33 +34,82 @@ export async function fetchPropertyDetailsConcurrently(
   sortBy: string,
   sortOrder: string,
   valuationTab: 'rateable' | 'capital' | 'dual' | 'apartment' | 'reassessment' | undefined,
-  showDetailsParam: boolean
+  showDetailsParam: boolean,
+  activeTab?: string
 ) {
-  const rateableValuePromise = getRateableValue(propertyId);
-  
-  const capitalValuePromise = valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam)
-    ? getCapitalValue(propertyId)
-    : Promise.resolve(null);
+  const isPropertyTab = !activeTab || activeTab === 'propertydetails';
+  const isKycTab = activeTab === 'kycdetails';
+  const isSocietyTab = activeTab === 'societydetails';
+  const isBuildingTab = activeTab === 'buildingpermission';
+  const isDiscountTab = activeTab === 'discountdetails';
+  const isOldDetailsTab = activeTab === 'olddetails';
 
-  const dualMethodPromise = valuationTab === 'dual'
-    ? getDualMethod(propertyId)
-    : Promise.resolve(null);
+  const rateableValuePromise = isPropertyTab ? getRateableValue(propertyId) : Promise.resolve(null);
 
-  const taxDetailsPromise = fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam);
+  const capitalValuePromise =
+    isPropertyTab && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+      ? getCapitalValue(propertyId)
+      : Promise.resolve(null);
+
+  const dualMethodPromise =
+    isPropertyTab && valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null);
+
+  const taxDetailsPromise = isPropertyTab
+    ? fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam)
+    : Promise.resolve(null);
 
   // Chain the rule logs fetching to run only after all calculation actions resolve.
   // This avoids the race condition where rule logs are queried before calculation creates them.
-  const ruleLogsPromise = Promise.all([
-    rateableValuePromise.catch(() => null),
-    capitalValuePromise.catch(() => null),
-    dualMethodPromise.catch(() => null),
-    taxDetailsPromise.catch(() => null),
-  ]).then(async () => {
-    return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
-  }).catch(() => null);
+  const ruleLogsPromise = isPropertyTab
+    ? Promise.all([
+        rateableValuePromise.catch(() => null),
+        capitalValuePromise.catch(() => null),
+        dualMethodPromise.catch(() => null),
+        taxDetailsPromise.catch(() => null),
+      ])
+        .then(async () => {
+          return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
+        })
+        .catch(() => null)
+    : Promise.resolve(null);
+
+  const kycPromise = isKycTab ? fetchKycDetailsOnlyAction(propertyId) : Promise.resolve(null);
+
+  const societyPromise = isSocietyTab
+    ? fetchSocietyDetailsOnlyAction(propertyId)
+    : Promise.resolve(null);
+
+  const buildingPromise = isBuildingTab
+    ? fetchBuildingPermissionOnlyAction(propertyId)
+    : Promise.resolve(null);
+
+  const oldDetailsPromise = isOldDetailsTab
+    ? fetchOldDetailsOnlyAction(propertyId)
+    : Promise.resolve(null);
+
+  const oldFloorPromise = isOldDetailsTab
+    ? fetchOldFloorDetailsAction(propertyId)
+    : Promise.resolve(null);
+
+  const oldTaxesPromise = isOldDetailsTab
+    ? fetchOldTaxesDetailsAction(propertyId)
+    : Promise.resolve(null);
+
+  const discountPromise = isDiscountTab
+    ? fetchDiscountDetailsOnlyAction(propertyId)
+    : Promise.resolve(null);
+
+  const headerInfoPromise = propertyId
+    ? fetchTabHeaderInfoAction(propertyId).catch(() => null)
+    : Promise.resolve(null);
+
+  const mappedPropertiesPromise =
+    isPropertyTab || isOldDetailsTab
+      ? fetchMappedPropertiesAction(propertyId)
+      : Promise.resolve(null);
 
   return Promise.all([
-    wardId && propertyNo && valuationTab === 'apartment'
+    wardId && propertyNo && (isPropertyTab || isSocietyTab)
       ? getApartmentQCDataAction(
           wardId,
           propertyNo,
@@ -83,20 +133,20 @@ export async function fetchPropertyDetailsConcurrently(
       : Promise.resolve(null),
     rateableValuePromise,
     capitalValuePromise,
-    fetchKycDetailsOnlyAction(propertyId),
-    fetchSocietyDetailsOnlyAction(propertyId),
-    fetchBuildingPermissionOnlyAction(propertyId),
-    fetchOldDetailsOnlyAction(propertyId),
-    fetchOldFloorDetailsAction(propertyId),
-    fetchOldTaxesDetailsAction(propertyId),
-    fetchDiscountDetailsOnlyAction(propertyId),
+    kycPromise,
+    societyPromise,
+    buildingPromise,
+    oldDetailsPromise,
+    oldFloorPromise,
+    oldTaxesPromise,
+    discountPromise,
     Promise.resolve(null),
     Promise.resolve(null),
     dualMethodPromise,
     taxDetailsPromise,
     ruleLogsPromise,
     Promise.resolve(null),
-    import('./ptis-detail-actions').then(m => propertyId ? m.fetchTabHeaderInfoAction(propertyId) : Promise.resolve(null)).catch(() => null),
-    fetchMappedPropertiesAction(propertyId),
+    headerInfoPromise,
+    mappedPropertiesPromise,
   ]);
 }

@@ -176,6 +176,7 @@
     "success": "संपत्ति सफलतापूर्वक मिली",
     "error": "कोई संपत्ति नहीं मिली",
     "noOptionsAvailable": "कोई विकल्प उपलब्ध नहीं है",
+    "typeToGetSuggestions": "सुझाव प्राप्त करने के लिए टाइप करें",
     "noPartition": "-",
     "errors": {
       "fetchWardsFailed": "वार्ड सूची लोड करने में विफल। कृपया पुन: प्रयास करें।",
