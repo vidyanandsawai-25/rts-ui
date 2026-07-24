@@ -131,6 +131,18 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const title = (ulbData?.ulbName ?? '').trim();
   const subTitle = (ulbData?.ulbNameLocal ?? '').trim();
 
+  const handleMethodChange = (newMethod: 'upic' | 'property' | 'mobile') => {
+    setMethod(newMethod);
+    setMobile('');
+    setUpicId('');
+    setNodeId('');
+    setSectorId('');
+    setPropertyNo('');
+    setOtp('');
+    setError(null);
+    setInfo(null);
+  };
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -191,11 +203,17 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
       const res = await verifyCitizenOtpAction(otp);
       if (res.success) {
         setInfo(t('messages.loginSuccess'));
-        if (redirectUrl) {
-          router.push(redirectUrl);
-        } else {
-          router.push(`/${locale}/service/dashboard`);
+        let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
+        const cleanUpic = (upicId || '').trim().toUpperCase();
+        if (cleanUpic) {
+          if (targetUrl.includes('upicNo=')) {
+            targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+          } else {
+            const sep = targetUrl.includes('?') ? '&' : '?';
+            targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+          }
         }
+        router.push(targetUrl);
         router.refresh();
       } else {
         setError(res.error || t('messages.verifyFailed'));
@@ -308,10 +326,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                 <div className="flex items-end justify-center gap-2 border-b border-gray-200 pb-0.5">
                   <button
                     type="button"
-                    onClick={() => {
-                      setMethod('upic');
-                      setError(null);
-                    }}
+                    onClick={() => handleMethodChange('upic')}
                     className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${method === 'upic'
                         ? 'bg-cyan-600 text-white shadow'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -325,10 +340,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setMethod('property');
-                      setError(null);
-                    }}
+                    onClick={() => handleMethodChange('property')}
                     className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${method === 'property'
                         ? 'bg-cyan-600 text-white shadow'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -342,10 +354,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setMethod('mobile');
-                      setError(null);
-                    }}
+                    onClick={() => handleMethodChange('mobile')}
                     className={`relative px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer ${method === 'mobile'
                         ? 'bg-cyan-600 text-white shadow'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -372,7 +381,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                       label={t('phone.upicLabel')}
                       placeholder={t('phone.upicPh')}
                       value={upicId}
-                      onChange={(e) => setUpicId(e.target.value)}
+                      onChange={(e) => setUpicId(e.target.value.toUpperCase())}
                       fullWidth
                     />
                   )}

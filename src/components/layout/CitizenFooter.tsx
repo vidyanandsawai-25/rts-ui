@@ -49,7 +49,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
   };
 
   return (
-    <footer className="bg-white border-t border-slate-200 py-6 sm:py-8 px-3 sm:px-4 md:px-8 text-slate-600 w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] -mx-3 sm:-mx-4 md:-mx-6 mt-4 sm:mt-6 rounded-none shadow-inner shrink-0 overflow-hidden">
+    <footer className="bg-white border border-slate-200 py-6 sm:py-8 px-4 sm:px-6 md:px-8 text-slate-600 w-full mt-6 rounded-2xl shadow-sm shrink-0 overflow-hidden">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
         {/* Column 1: Logo & Brand Description */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-3">

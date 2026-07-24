@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -15,12 +15,10 @@ import {
   FileEdit,
   UserCheck,
   CreditCard,
-  Laptop,
-  Zap,
   Clock,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
-import type { DepartmentDTO, ServiceDTO } from '@/types/rts-citizen.types';
+import type { DepartmentDTO } from '@/types/rts-citizen.types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,22 +48,6 @@ const DEPT_PALETTE = [
   { bannerBg: 'bg-[#FF8C00]', btnColor: 'bg-orange-600 hover:bg-orange-700' },
 ] as const;
 
-// Decorative unsplash images, cycled by index
-const DEPT_IMAGES = [
-  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1542013936693-884638332954?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=500&auto=format&fit=crop&q=80',
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const ICONS = Icons as unknown as Record<string, LucideIcon>;
@@ -79,12 +61,6 @@ function pickLang(v: I18nLabel | string | undefined, lang: string): string {
   if (!v) return '';
   if (typeof v === 'string') return v;
   return v[lang] || v.en || v.hi || v.mr || '';
-}
-
-function formatServiceCount(count: number, locale: string): string {
-  if (locale === 'mr') return `${count} सेवा`;
-  if (locale === 'hi') return `${count} सेवाएं`;
-  return `${count} Service${count !== 1 ? 's' : ''}`;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -102,6 +78,51 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const t = (mr: string, hi: string, en: string) =>
     locale === 'mr' ? mr : locale === 'hi' ? hi : en;
 
+  const totalServiceCount = useMemo(
+    () => departments.reduce((acc, d) => acc + d.services.length, 0),
+    [departments]
+  );
+  const countDisplay = totalServiceCount > 0 ? `${totalServiceCount}+` : '65+';
+
+  // ── Auto-rotating portfolio stats inside the hero promo blue card ───────────
+  const heroStats = useMemo(() => [
+    {
+      value: countDisplay,
+      title: t('ऑनलाईन नागरीक सेवा', 'ऑनलाइन सेवाएं', 'Online Services'),
+      subtitle: t('तुमची सेवा, आमचे कर्तव्य', 'आपकी सेवा, हमारा कर्तव्य', 'Your service, our duty'),
+      badge: t('२४x७ डिजिटल', '24x7 डिजिटल', '24x7 Digital'),
+    },
+    {
+      value: '52,480+',
+      title: t('प्राप्त नागरीक अर्ज', 'प्राप्त नागरिक आवेदन', 'Received Applications'),
+      subtitle: t('पोर्टलवरील एकूण नोंदणीकृत अर्ज', 'पोर्टल पर कुल प्राप्त आवेदन', 'Total registered applications'),
+      badge: t('एकूण अर्ज', 'कुल आवेदन', 'Total Received'),
+    },
+    {
+      value: '51,120+',
+      title: t('निकाली काढलेले अर्ज', 'निवारित आवेदन', 'Disposed Applications'),
+      subtitle: t('वेळेत मंजूर व सेवा वितरित', 'समयबद्ध स्वीकृत एवं वितरित', 'Approved & delivered'),
+      badge: t('निकाली अर्ज', 'निवारित', 'SLA Disposed'),
+    },
+    {
+      value: '98.4%',
+      title: t('SLA पूर्तता यश दर', 'SLA सफलता दर', 'SLA Success Rate'),
+      subtitle: t('लोकसेवा हक्क कायदा उद्दिष्ट', 'लोक सेवा अधिकार कानून लक्ष्य', 'Statutory SLA resolution'),
+      badge: t('SLA यश दर', 'SLA सफलता', 'SLA Target'),
+    },
+  ], [countDisplay, locale]);
+
+  const [currentStatIndex, setCurrentStatIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentStatIndex((prev) => (prev + 1) % heroStats.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [heroStats.length]);
+
+  const currentStat = heroStats[currentStatIndex];
+
   // ── Build deptCards dynamically from API data ──────────────────────────────
   const deptCards = useMemo(() => {
     return departments.map((dept, idx) => {
@@ -112,17 +133,21 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         title: pickLang(dept.name, locale),
         bannerBg: palette.bannerBg,
         btnColor: palette.btnColor,
-        image: DEPT_IMAGES[idx % DEPT_IMAGES.length],
         icon: <IconComp className="w-4 h-4" />,
         iconName: dept.icon,
-        services: (dept.services as unknown as ServiceDTO[]).map((svc) => ({
+        services: ((dept.services || []) as any[]).map((svc) => ({
           id: svc.id,
           name: pickLang(svc.name, locale),
           sla: svc.sla,
           fees: svc.fees,
           feesRequired: svc.feesRequired,
         })),
-        stats: formatServiceCount(dept.services.length, locale),
+        stats:
+          locale === 'mr'
+            ? `${dept.services.length} सेवा`
+            : locale === 'hi'
+            ? `${dept.services.length} सेवाएं`
+            : `${dept.services.length} Service${dept.services.length !== 1 ? 's' : ''}`,
       };
     });
   }, [departments, locale]);
@@ -143,12 +168,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
   // Set initial active tab once deptCards are available
   const resolvedActiveTab = activeTab || (deptCards[0]?.id ?? '');
-
-  // Total service count (dynamic)
-  const totalServiceCount = useMemo(
-    () => departments.reduce((sum, d) => sum + d.services.length, 0),
-    [departments]
-  );
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleActionClick = () => {
@@ -241,8 +260,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   // ── Active dept ────────────────────────────────────────────────────────────
   const activeDept = deptCards.find((d) => d.id === resolvedActiveTab) ?? deptCards[0];
 
-  // ── Service count display ──────────────────────────────────────────────────
-  const countDisplay = totalServiceCount > 0 ? `${totalServiceCount}+` : '65+';
   const totalLabel =
     locale === 'mr'
       ? `${totalServiceCount} एकूण सेवा`
@@ -259,7 +276,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full bg-slate-50 font-sans pb-4">
+    <div className="w-full bg-slate-50 font-sans pb-1">
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -284,7 +301,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="lg:col-span-8 bg-white/95 backdrop-blur-md p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-white/60 shadow-lg max-w-2xl space-y-2.5 sm:space-y-3.5"
+            className="lg:col-span-7 bg-white/95 backdrop-blur-md p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-white/60 shadow-lg max-w-2xl space-y-2.5 sm:space-y-3.5"
           >
             <span className="inline-block px-2.5 py-1 rounded bg-[#f39c12] text-white text-[11px] sm:text-xs font-black tracking-wider uppercase shadow-sm">
               {t('महाराष्ट्र लोकसेवा हक्क अधिनियम 2015 अंतर्गत', 'महाराष्ट्र लोकसेवा हक्क अधिनियम 2015 के अंतर्गत', 'Under Right to Public Services Act 2015')}
@@ -300,7 +317,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               )}
             </h2>
 
-            <div className="relative w-full max-w-xl bg-white p-1.5 rounded-xl border border-slate-250 shadow-md flex items-center gap-1.5 focus-within:ring-2 focus-within:ring-green-600 focus-within:border-transparent transition-all">
+            <div className="relative w-full max-w-xl bg-white p-1 sm:p-1.5 rounded-xl border border-slate-250 shadow-md flex items-center gap-1 sm:gap-1.5 focus-within:ring-2 focus-within:ring-green-600 focus-within:border-transparent transition-all">
               <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
               <input
                 type="text"
@@ -312,14 +329,14 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               <button
                 type="button"
                 onClick={() => handleServiceClick(searchQuery)}
-                className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-xs sm:text-sm font-black rounded-lg shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-green-700 hover:bg-green-800 text-white text-xs sm:text-sm font-black rounded-lg shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1 sm:gap-1.5"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>{t('शोधा', 'खोजें', 'Search')}</span>
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] sm:text-xs font-bold text-slate-650 bg-white/50 backdrop-blur-sm rounded-lg py-1 px-2.5 border border-slate-200/40 w-fit">
+            <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] sm:text-xs font-bold text-slate-650 bg-white/50 backdrop-blur-sm rounded-lg py-1 px-2 border border-slate-200/40 w-full sm:w-fit">
               {[
                 [t('वेळबद्ध सेवा', 'समयबद्ध सेवा', 'Time-bound Service')],
                 [t('पारदर्शक प्रक्रिया', 'पारदर्शी प्रक्रिया', 'Transparent Process')],
@@ -334,99 +351,310 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               ))}
             </div>
           </motion.div>
+            {/* Mobile 4-Stage RTS Act Process Strip */}
+            <div className="block lg:hidden mt-3 bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-blue-950/90 text-white rounded-xl p-2.5 border border-blue-400/30 shadow-md">
+              <div className="text-[10px] font-black text-amber-300 uppercase tracking-wider mb-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <span>{t('सेवा हक्क अधिनियम २०१५ प्रक्रिया', 'लोक सेवा गारंटी प्रक्रिया', 'RTS Act 4-Stage Process')}</span>
+                <span className="text-[9px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-400/40">✓ {t('वेळेत सेवा', 'समयबद्ध', 'SLA Guaranteed')}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1 items-center text-center w-full">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-300 flex items-center justify-center text-xs shadow-xs">💻</div>
+                  <span className="text-[9px] font-black text-amber-200 mt-1 leading-tight">{t('१. ई-अर्ज', '1. ई-आवेदन', '1. e-Filing')}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-sky-400/20 border border-sky-300 flex items-center justify-center text-xs shadow-xs">🔍</div>
+                  <span className="text-[9px] font-black text-sky-200 mt-1 leading-tight">{t('२. छाननी', '2. छानबीन', '2. Scrutiny')}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-purple-400/20 border border-purple-300 flex items-center justify-center text-xs shadow-xs">⏱️</div>
+                  <span className="text-[9px] font-black text-purple-200 mt-1 leading-tight">{t('३. मंजुरी', '3. स्वीकृति', '3. SLA Approval')}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-300 flex items-center justify-center text-xs shadow-xs animate-pulse">📲</div>
+                  <span className="text-[9px] font-black text-emerald-300 mt-1 leading-tight">{t('४. दाखला', '4. प्रमाणपत्र', '4. e-Cert')}</span>
+                </div>
+              </div>
+            </div>
+
 
           {/* Right: animated promo card */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-            className="hidden lg:block lg:col-span-4"
+            className="col-span-12 lg:col-span-5 w-full mt-3 lg:mt-0"
           >
-            <div className="bg-gradient-to-br from-[#0b5cd5] to-[#073fa8] text-white rounded-2xl p-4 shadow-lg border border-blue-400/20 relative overflow-hidden flex flex-row items-center justify-between h-[125px]">
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
-              <div className="absolute -left-10 -top-10 w-16 h-16 bg-blue-300/10 rounded-full blur-lg pointer-events-none" />
+            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-4 sm:p-5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-[145px]">
+              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -left-10 -top-10 w-24 h-24 bg-blue-300/15 rounded-full blur-xl pointer-events-none" />
 
-              <div className="space-y-2 relative z-20 flex-1 flex flex-col justify-between h-full max-w-[50%]">
-                <div className="space-y-0.5">
-                  <motion.h3
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.4, type: 'spring', stiffness: 200, bounce: 0.5 }}
-                    className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200 leading-none block drop-shadow-md"
-                  >
-                    {countDisplay}
-                  </motion.h3>
-                  <motion.span
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-xs font-extrabold text-white block mt-0.5 leading-tight whitespace-nowrap"
-                  >
-                    {t('ऑनलाईन सेवा', 'ऑनलाइन सेवाएं', 'Online Services')}
-                  </motion.span>
-                  <span className="text-[10px] text-blue-100 block leading-tight whitespace-nowrap">
-                    {t('तुमची सेवा, आमचे कर्तव्य', 'आपकी सेवा, हमारा कर्तव्य', 'Your service, our duty')}
-                  </span>
+              <div className="relative z-20 flex-1 flex flex-col justify-between h-full pr-3 min-h-0">
+                <div className="min-h-[72px] overflow-hidden flex flex-col justify-center">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStatIndex}
+                      initial={{ y: 14, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -14, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="space-y-1"
+                    >
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="px-2 py-0.5 rounded bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-black text-white uppercase tracking-wider shadow-sm border border-white/20">
+                          {currentStat.badge}
+                        </span>
+                      </div>
+                      <h3 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none block drop-shadow-lg">
+                        {currentStat.value}
+                      </h3>
+                      <span className="text-xs sm:text-sm font-black text-white block leading-tight truncate">
+                        {currentStat.title}
+                      </span>
+                      <span className="text-[10px] sm:text-xs text-blue-100 font-semibold block leading-tight truncate">
+                        {currentStat.subtitle}
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleActionClick}
-                  className="px-3.5 py-1.5 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-[10px] sm:text-xs flex items-center gap-1 shadow-sm transition-colors cursor-pointer w-fit mt-0.5 shrink-0"
-                >
-                  <span>{t('सेवा अर्ज करा', 'सेवा आवेदन करें', 'Apply')}</span>
-                  <span className="text-[11px] font-black">&rarr;</span>
-                </button>
-              </div>
+                <div className="flex items-center gap-3 mt-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleActionClick}
+                    className="px-3.5 py-1.5 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-xs flex items-center gap-1.5 shadow-md transition-colors cursor-pointer shrink-0"
+                  >
+                    <span>{t('सेवा अर्ज करा', 'सेवा आवेदन करें', 'Apply')}</span>
+                    <span className="text-xs font-black">&rarr;</span>
+                  </button>
 
-              {/* Floating icons */}
-              <div className="absolute left-[50%] top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3 sm:gap-5 z-10 pointer-events-none opacity-80">
-                <motion.div animate={{ y: [0, -8, 0], rotate: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
-                  <Laptop className="w-4 h-4 text-blue-100" />
-                </motion.div>
-                <motion.div animate={{ y: [0, 8, 0], scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }} className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f39c12] to-[#d68910] border border-orange-300/50 flex items-center justify-center shadow-lg shadow-orange-900/20">
-                  <Zap className="w-5 h-5 text-white" />
-                </motion.div>
-                <motion.div animate={{ y: [0, -6, 0], rotate: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 0.5 }} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 items-center justify-center shadow-lg hidden sm:flex">
-                  <Clock className="w-4 h-4 text-blue-100" />
-                </motion.div>
-              </div>
-
-              {/* Phone mockup */}
-              <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }} className="relative shrink-0 ml-2 z-10 self-center">
-                <div className="relative w-[68px] h-[105px] bg-slate-900 rounded-[15px] p-[2px] shadow-2xl border border-slate-800 shrink-0">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-slate-900 rounded-b-[3px] z-20 flex justify-center items-center gap-0.5">
-                    <div className="w-2 h-[0.5px] bg-slate-700 rounded-full" />
-                  </div>
-                  <div className="w-full h-full bg-white rounded-[13px] pt-2 px-0.5 pb-0.5 flex flex-col gap-1 justify-start relative overflow-hidden shadow-inner">
-                    {[...Array(3)].map((_, idx) => (
-                      <motion.div key={idx} initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 + idx * 0.15, type: 'spring', stiffness: 100 }} className="flex items-center gap-0.5 pb-0.5 border-b border-slate-100 last:border-0 leading-none">
-                        <div className="w-2 h-2 rounded-full bg-[#27ae60] flex items-center justify-center shrink-0">
-                          <svg className="w-1.5 h-1.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12" /></svg>
-                        </div>
-                        <div className="flex-1 space-y-0.5">
-                          <div className="h-[1.5px] bg-slate-200 rounded w-6" />
-                          <div className="h-[1px] bg-slate-150 rounded w-4" />
-                        </div>
-                      </motion.div>
+                  {/* Carousel Dots */}
+                  <div className="flex items-center gap-1.5 ml-1">
+                    {heroStats.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCurrentStatIndex(idx)}
+                        className={`h-2 rounded-full transition-all cursor-pointer ${
+                          idx === currentStatIndex ? 'w-5 bg-white shadow-sm' : 'w-2 bg-white/40 hover:bg-white/70'
+                        }`}
+                        aria-label={`Go to stat ${idx + 1}`}
+                      />
                     ))}
                   </div>
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.1, type: 'spring', bounce: 0.6 }} className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-[#27ae60] to-[#219653] border-2 border-[#073fa8] flex items-center justify-center shadow-lg z-30">
-                    <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+              </div>
+
+              {/* 4-Stage RTS Governance Workflow: e-Filing ➔ Scrutiny ➔ SLA Approval ➔ Certificate & SMS Notification */}
+              <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 pointer-events-none z-10">
+                
+                {/* Stage 1: Citizen e-Filing */}
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                  className="relative flex flex-col items-center justify-center shrink-0"
+                >
+                  <div className="absolute inset-0 bg-amber-400/30 rounded-full blur-lg animate-pulse" />
+                  <div className="relative w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-0.5 shadow-xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
+                    <svg className="w-full h-full text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="50" r="48" fill="url(#citizenGrad)" />
+                      <defs>
+                        <linearGradient id="citizenGrad" x1="0" y1="0" x2="100" y2="100">
+                          <stop offset="0%" stopColor="#1e3c72" />
+                          <stop offset="100%" stopColor="#2a5298" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M30 40C30 26 40 18 50 18C60 18 70 26 70 40C70 42 68 44 68 44C68 44 64 32 50 32C36 32 32 44 32 44C32 44 30 42 30 40Z" fill="#1A202C" />
+                      <ellipse cx="50" cy="46" rx="16" ry="18" fill="#FCE0D1" />
+                      <circle cx="44" cy="44" r="2" fill="#2D3748" />
+                      <circle cx="56" cy="44" r="2" fill="#2D3748" />
+                      <path d="M44 52C44 52 47 56 50 56C53 56 56 52 56 52" stroke="#E53E3E" strokeWidth="2" strokeLinecap="round" />
+                      <rect x="39" y="40" width="10" height="7" rx="2" stroke="#2D3748" strokeWidth="1.5" fill="none" />
+                      <rect x="51" y="40" width="10" height="7" rx="2" stroke="#2D3748" strokeWidth="1.5" fill="none" />
+                      <line x1="49" y1="43" x2="51" y2="43" stroke="#2D3748" strokeWidth="1.5" />
+                      <path d="M26 82C26 66 36 62 50 62C64 62 74 66 74 82V100H26V82Z" fill="#3182CE" />
+                      <path d="M44 62L50 72L56 62" fill="#FFFFFF" />
+                      <path d="M49 68L51 68L52 80L48 80L49 68Z" fill="#E53E3E" />
+                    </svg>
+                  </div>
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                    className="absolute -bottom-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-white/90 flex items-center gap-0.5 whitespace-nowrap"
+                  >
+                    <span>💻</span>
+                    <span>{t('१. ई-अर्ज दाखल', '1. ई-आवेदन', '1. e-Filing')}</span>
+                  </motion.div>
+                </motion.div>
+
+                {/* Dynamic Forward Pulse Arrow 1 */}
+                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 to-sky-400 rounded-full opacity-80" />
+                  <motion.div
+                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}
+                    className="absolute text-[9px] text-amber-300 font-bold"
+                  >
+                    ➔
                   </motion.div>
                 </div>
-              </motion.div>
+
+                {/* Stage 2: Official Document Scrutiny */}
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.2 }}
+                  className="relative flex flex-col items-center justify-center shrink-0"
+                >
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 p-0.5 shadow-lg border border-white/80 flex flex-col items-center justify-center text-white relative">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="text-white flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5 text-sky-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </motion.div>
+                  </div>
+                  <div className="absolute -bottom-2.5 bg-sky-900/95 text-sky-100 text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-sky-400/50 whitespace-nowrap">
+                    <span>{t('२. कागदपत्र छाननी', '2. दस्तावेज छानबीन', '2. Scrutiny')}</span>
+                  </div>
+                </motion.div>
+
+                {/* Dynamic Forward Pulse Arrow 2 */}
+                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-sky-400 to-purple-400 rounded-full opacity-80" />
+                  <motion.div
+                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear', delay: 0.4 }}
+                    className="absolute text-[9px] text-sky-300 font-bold"
+                  >
+                    ➔
+                  </motion.div>
+                </div>
+
+                {/* Stage 3: Designated Officer SLA Approval */}
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.8, ease: 'easeInOut', delay: 0.4 }}
+                  className="relative flex flex-col items-center justify-center shrink-0"
+                >
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-700 to-purple-900 p-0.5 shadow-lg border border-white/80 flex flex-col items-center justify-center text-white relative">
+                    <motion.div
+                      animate={{ rotate: [0, 6, -6, 0] }}
+                      transition={{ repeat: Infinity, duration: 3 }}
+                      className="text-amber-300 flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    </motion.div>
+                  </div>
+                  <div className="absolute -bottom-2.5 bg-purple-950/95 text-purple-100 text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-purple-400/50 whitespace-nowrap flex items-center gap-0.5">
+                    <span>⏱️</span>
+                    <span>{t('३. SLA मंजुरी', '3. SLA स्वीकृति', '3. SLA Approval')}</span>
+                  </div>
+                </motion.div>
+
+                {/* Dynamic Forward Pulse Arrow 3 */}
+                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-purple-400 to-emerald-400 rounded-full opacity-80" />
+                  <motion.div
+                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear', delay: 0.8 }}
+                    className="absolute text-[9px] text-emerald-300 font-bold"
+                  >
+                    ➔
+                  </motion.div>
+                </div>
+
+                {/* Stage 4: Mobile Certificate Delivery & SMS Notification */}
+                <motion.div
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                  className="relative shrink-0 z-10 self-center"
+                >
+                  <div className="relative w-[78px] h-[120px] bg-slate-900 rounded-[16px] p-[2.5px] shadow-2xl border border-slate-800 shrink-0">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-9 h-1.5 bg-slate-900 rounded-b-[4px] z-20 flex justify-center items-center gap-0.5">
+                      <div className="w-2.5 h-[0.7px] bg-slate-700 rounded-full" />
+                    </div>
+
+                    <div className="w-full h-full bg-white rounded-[13px] pt-3 px-1 pb-1 flex flex-col justify-between relative overflow-hidden shadow-inner">
+                      {/* Top SMS Notification Banner */}
+                      <motion.div
+                        animate={{ y: [0, -2, 0] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[4px] px-1 py-0.5 text-[6px] font-black text-center tracking-tight leading-none shadow-xs flex items-center justify-center gap-0.5"
+                      >
+                        <span>📲</span>
+                        <span>{t('SMS: दाखला तयार!', 'SMS: प्रमाण तयार!', 'SMS: Certificate Issued!')}</span>
+                      </motion.div>
+
+                      {/* e-Certificate Body preview with seal */}
+                      <div className="space-y-1 my-auto">
+                        <motion.div
+                          animate={{ opacity: [0.7, 1, 0.7] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                          className="bg-emerald-50 border border-emerald-200/80 rounded px-1 py-0.5 flex items-center justify-between"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="h-[2px] bg-emerald-700 rounded w-7" />
+                            <div className="h-[1.5px] bg-emerald-400 rounded w-5" />
+                          </div>
+                          <span className="text-[7px] text-emerald-600 font-bold">📜</span>
+                        </motion.div>
+
+                        <motion.div
+                          animate={{ opacity: [0.7, 1, 0.7] }}
+                          transition={{ repeat: Infinity, duration: 2, delay: 0.4 }}
+                          className="bg-blue-50 border border-blue-200/80 rounded px-1 py-0.5 flex items-center justify-between"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="h-[2px] bg-blue-700 rounded w-8" />
+                            <div className="h-[1.5px] bg-blue-400 rounded w-4" />
+                          </div>
+                          <span className="text-[7px] text-blue-600 font-bold">✍️</span>
+                        </motion.div>
+
+                        <motion.div
+                          animate={{ opacity: [0.7, 1, 0.7] }}
+                          transition={{ repeat: Infinity, duration: 2, delay: 0.8 }}
+                          className="bg-amber-50 border border-amber-200/80 rounded px-1 py-0.5 flex items-center justify-between"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="h-[2px] bg-amber-700 rounded w-6" />
+                            <div className="h-[1.5px] bg-amber-400 rounded w-6" />
+                          </div>
+                          <span className="text-[7px] text-amber-600 font-bold">✓</span>
+                        </motion.div>
+                      </div>
+
+                      {/* Delivered Status Badge */}
+                      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[3px] py-0.5 px-0.5 text-[6px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
+                        <span>✓</span>
+                        <span>{t('४. e-दाखला प्राप्त', '4. e-प्रमाणपत्र', '4. e-Certificate')}</span>
+                      </div>
+                    </div>
+
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [1, 1.15, 1] }}
+                      transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                      className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-[#073fa8] flex items-center justify-center shadow-lg z-30"
+                    >
+                      <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5"><polyline points="20 6 9 17 4 12" /></svg>
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* Main Content */}
-      <div className="w-full space-y-4 py-3 px-3 md:px-5">
+      <div className="w-full space-y-3 py-2 px-3 md:px-5">
 
         {/* Quick Access Links */}
         <div className="space-y-3">
-          <div className="border-b border-slate-200 pb-1.5 flex items-center justify-between">
+          <div className="border-b border-slate-200 pb-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
             <h3 className="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-1.5">
               <span>{t('त्वरित सेवा दुवे', 'त्वरित सेवा लिंक', 'Quick Access Links')}</span>
               <span className="text-slate-400 text-xs font-normal">▼</span>
@@ -441,12 +669,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 key={index}
                 type="button"
                 onClick={handleActionClick}
-                className={`group flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer text-center h-[80px] sm:h-[90px] ${action.colorClass}`}
+                className={`group flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer text-center h-auto min-h-[76px] sm:min-h-[88px] ${action.colorClass}`}
               >
                 <div className={`w-8 h-8 ${action.iconBg} rounded-lg flex items-center justify-center shrink-0 mb-1.5`}>
                   {action.icon}
                 </div>
-                <h4 className="font-extrabold text-slate-800 text-[11px] sm:text-xs leading-tight group-hover:text-blue-900 transition-colors">
+                <h4 className="font-extrabold text-slate-800 text-[10.5px] sm:text-xs leading-snug group-hover:text-blue-900 transition-colors max-w-full px-0.5">
                   {action.label}
                 </h4>
               </button>
@@ -459,7 +687,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           {searchQuery.trim() !== '' ? (
             /* Search Results */
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 bg-blue-900 text-white flex items-center justify-between">
+              <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Search className="w-5 h-5" />
                   <h4 className="font-extrabold text-sm sm:text-base">{t('शोध परिणाम', 'खोज परिणाम', 'Search Results')}</h4>
@@ -531,7 +759,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                       key={dept.id}
                       type="button"
                       onClick={() => setActiveTab(dept.id)}
-                      className={`flex-grow md:flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shrink-0 shadow-sm ${
+                      className={`shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shadow-sm ${
                         isActive
                           ? `${dept.bannerBg} text-white border-transparent scale-[1.02] shadow-md`
                           : 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50'
@@ -560,7 +788,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     <button
                       type="button"
                       onClick={handleActionClick}
-                      className="px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+                      className="w-full sm:w-auto px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer self-stretch sm:self-auto"
                     >
                       <span>{t('सर्व सेवा अर्ज करा', 'सभी सेवाएं आवेदन करें', 'Apply for Services')}</span>
                       <span>&rarr;</span>
@@ -672,7 +900,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
                 <Button variant="secondary" size="md" onClick={() => { setIsDetailsOpen(false); setSelectedServiceId(null); }} className="font-bold">
                   {t('बंद करा', 'बंद करें', 'Close')}
                 </Button>
