@@ -18,43 +18,6 @@ vi.mock('next-intl', () => ({
   }),
 }));
 
-// Mock MasterTable component
-vi.mock('@/components/common/MasterTable', () => ({
-  MasterTable: vi.fn(({ columns, data, loading, getRowKey }) => (
-    <div data-testid="master-table">
-      <table>
-        <thead>
-          <tr>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {columns.map((col: any) => (
-              <th key={col.key}>{col.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={columns.length}>Loading...</td>
-            </tr>
-          ) : (
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            data.map((row: any) => (
-              <tr key={getRowKey(row)} data-testid={`tax-row-${getRowKey(row)}`}>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {columns.map((col: any) => (
-                  <td key={col.key}>
-                    {col.render ? col.render(row[col.key], row) : row[col.key]}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  )),
-}));
-
 describe('TaxDetails Component', () => {
   const mockTaxDetailsData: TaxDetailsData = {
     propertyId: 12345,
@@ -89,12 +52,12 @@ describe('TaxDetails Component', () => {
   describe('Rendering', () => {
     it('should render the component without errors', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-      expect(screen.getByTestId('master-table')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
-    it('should render MasterTable component', () => {
+    it('should render table element', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-      const table = screen.getByTestId('master-table');
+      const table = screen.getByRole('table');
       expect(table).toBeInTheDocument();
     });
 
@@ -125,8 +88,8 @@ describe('TaxDetails Component', () => {
     it('should render only the tax rows present in policies', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      const rows = screen.getAllByTestId(/tax-row-/);
-      expect(rows).toHaveLength(1);
+      const tbodyRows = screen.getAllByRole('row').slice(1);
+      expect(tbodyRows).toHaveLength(1);
     });
 
     it('should render tax row labels correctly', () => {
@@ -168,9 +131,9 @@ describe('TaxDetails Component', () => {
     it('should handle empty tax amounts array gracefully', () => {
       render(<TaxDetails initialTaxDetails={emptyTaxDetailsData} />);
 
-      expect(screen.getByTestId('master-table')).toBeInTheDocument();
-      const rows = screen.getAllByTestId(/tax-row-/);
-      expect(rows).toHaveLength(1); // Should render 1 row for NETTAX
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      const tbodyRows = screen.getAllByRole('row').slice(1);
+      expect(tbodyRows).toHaveLength(1); // Should render 1 row for NETTAX
     });
 
     it('should handle missing policies array', () => {
@@ -180,7 +143,7 @@ describe('TaxDetails Component', () => {
       } as TaxDetailsData;
 
       render(<TaxDetails initialTaxDetails={invalidData} />);
-      expect(screen.getByTestId('master-table')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
     it('should handle undefined tax amounts in policies', () => {
@@ -196,7 +159,7 @@ describe('TaxDetails Component', () => {
       };
 
       render(<TaxDetails initialTaxDetails={dataWithUndefinedAmounts} />);
-      const table = screen.getByTestId('master-table');
+      const table = screen.getByRole('table');
       expect(table).toBeInTheDocument();
     });
   });
@@ -323,28 +286,19 @@ describe('TaxDetails Component', () => {
     });
   });
 
-  describe('MasterTable Integration', () => {
-    it('should pass loading false to MasterTable', () => {
+  describe('Table Integration', () => {
+    it('should render table element without loading text', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      // Verify table is rendered (indirectly confirms loading is false)
-      expect(screen.getByTestId('master-table')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
       expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     });
 
-    it('should render correct row keys', () => {
+    it('should render data rows in table', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
 
-      // Verify row is rendered with correct key
-      expect(screen.getByTestId('tax-row-100')).toBeInTheDocument();
-      expect(screen.queryByTestId('tax-row-101')).not.toBeInTheDocument();
-    });
-
-    it('should pass data array with correct number of rows to MasterTable', () => {
-      render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-
-      const rows = screen.getAllByTestId(/tax-row-/);
-      expect(rows).toHaveLength(1);
+      const tbodyRows = screen.getAllByRole('row').slice(1);
+      expect(tbodyRows).toHaveLength(1);
     });
   });
 
@@ -483,7 +437,7 @@ describe('TaxDetails Component', () => {
       render(<TaxDetails initialTaxDetails={undefined} />);
 
       // Should render the table structure even with undefined data
-      expect(screen.getByTestId('master-table')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
     it('should not throw error when initialTaxDetails is undefined', () => {

@@ -487,7 +487,7 @@
       "constType": "Con Type",
       "use": "Use",
       "subType": "Sub Type Of Use",
-      "noOfRooms": "No of Rooms",
+      "noOfRooms": "Rooms",
       "carpetArea": "Carpet Area (ft/mtr)",
       "carpetSqFt": "Carpet (Sq.Ft)",
       "carpetSqM": "Carpet (Sq.M)",

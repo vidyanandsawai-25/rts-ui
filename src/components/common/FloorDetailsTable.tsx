@@ -347,13 +347,13 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
       className={cn(
         'w-full overflow-x-auto bg-white shadow-sm transition-all duration-200',
         heightRows && 'overflow-y-auto',
-        showBorder && 'border border-blue-200 rounded-xl',
+        showBorder && 'border border-blue-200 rounded-lg',
         containerClassName
       )}
       style={containerStyle}
     >
-      <table className={cn('w-full border-collapse text-left', tableClassName)}>
-        <thead className={cn('bg-[#1e3a8a] text-white sticky top-0 z-20', theadClassName)}>
+      <table className={cn('w-full border-collapse text-left text-[12px]', tableClassName)}>
+        <thead className={cn('bg-[#1440aa] text-white sticky top-0 z-20', theadClassName)}>
           {renderHeader?.()}
           <tr className={headerRowClassName}>
             {/* Optional Expand Control Header */}
@@ -361,12 +361,12 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
               <th
                 className={cn(
                   (onEditClick || getEditHref) ? 'w-[75px] min-w-[75px]' : 'w-[40px] min-w-[40px]',
-                  'px-0.5 py-0.5 border-r border-blue-400/20',
+                  'px-1 py-1.5 border-r border-blue-700/60 text-center align-middle',
                   headerCellClassName
                 )}
               >
                 <div className="flex items-center justify-center">
-                  <div className="inline-flex h-6 w-8 items-center justify-center rounded-md border border-blue-400/30 bg-blue-800/40 shadow-sm">
+                  <div className="inline-flex h-6 w-7 items-center justify-center rounded border border-white/20 bg-white/10 shadow-sm">
                     <ExpandHeaderIcon className="h-3 w-3 text-white" />
                   </div>
                 </div>
@@ -378,7 +378,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
               <th
                 key={col.key}
                 className={cn(
-                  'px-1 py-1 border-r border-blue-400/20',
+                  'px-1.5 py-1.5 border-r border-blue-700/60 font-bold uppercase tracking-wider text-[11px] align-middle text-center',
                   headerCellClassName,
                   col.headerClassName
                 )}
@@ -400,29 +400,29 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                     <div
                       onClick={() => col.sortable !== false && handleSort(col.key)}
                       className={cn(
-                        'inline-flex h-6 w-full items-center justify-center gap-0.5 rounded border border-blue-400/10 bg-black/5 px-1.5 text-[10px] font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
-                        col.sortable !== false && 'cursor-pointer hover:bg-black/15 active:bg-black/25',
+                        'inline-flex h-6 w-full items-center justify-center gap-1 px-1 text-[11px] font-bold text-white transition-colors duration-200 select-none whitespace-nowrap',
+                        col.sortable !== false && 'cursor-pointer hover:opacity-80 active:opacity-60',
                         headerBadgeClassName,
                         col.headerBadgeClassName
                       )}
                     >
                       {typeof col.label === 'string' ? (
-                        <span className="truncate font-bold uppercase tracking-normal">
+                        <span className="truncate font-bold uppercase tracking-wide">
                           {col.label}
                         </span>
                       ) : (
                         col.label
                       )}
                       {col.sortable !== false && (
-                        <span className="inline-flex flex-shrink-0 items-center ml-1">
+                        <span className="inline-flex flex-shrink-0 items-center ml-0.5">
                           {sortConfig.key === col.key ? (
                             sortConfig.direction === 'asc' ? (
-                              <ArrowUp className="h-2.5 w-2.5 text-white opacity-100" />
+                              <ArrowUp className="h-3 w-3 text-white opacity-100 font-bold" />
                             ) : (
-                              <ArrowDown className="h-2.5 w-2.5 text-white opacity-100" />
+                              <ArrowDown className="h-3 w-3 text-white opacity-100 font-bold" />
                             )
                           ) : (
-                            <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60 hover:opacity-100 transition-opacity" />
+                            <ArrowUpDown className="h-3 w-3 text-white opacity-90 hover:opacity-100 transition-opacity" />
                           )}
                         </span>
                       )}
@@ -434,11 +434,11 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
             {/* Toggle Scroll Header (Sticky on the right) */}
             {showScrollButtons && columns.length > 8 && (
-              <th className={cn("w-[40px] min-w-[40px] px-1 py-1 border-l border-blue-400/20 text-center align-middle sticky right-0 z-30 bg-[#1e3a8a]", headerCellClassName)}>
+              <th className={cn("w-[40px] min-w-[40px] px-1 py-1.5 border-l border-blue-700/60 text-center align-middle sticky right-0 z-30 bg-[#1440aa]", headerCellClassName)}>
                 <button
                   type="button"
                   onClick={handleScrollToggle}
-                  className="inline-flex h-6 w-8 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500 hover:bg-blue-600 shadow-sm cursor-pointer transition-colors"
+                  className="inline-flex h-6 w-7 items-center justify-center rounded border border-white/20 bg-white/15 hover:bg-white/25 shadow-sm cursor-pointer transition-colors"
                 >
                   <ChevronRight className={cn("h-3.5 w-3.5 text-white transition-transform duration-300", isScrolledRight && "rotate-180")} />
                 </button>
@@ -466,8 +466,8 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
               const baseRowClass = rowClassName
                 ? rowClassName(row, index)
                 : cn(
-                  'group h-[36px] border-b border-gray-100 transition-colors',
-                  hoverable && 'hover:bg-blue-50/50',
+                  'group h-[34px] border-b-2 border-blue-200/90 transition-colors',
+                  hoverable && 'hover:bg-blue-50/70',
                   bgClass
                 );
               const expandHref = getExpandHref ? getExpandHref(row) : undefined;
@@ -504,11 +504,11 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                     {showExpandColumn && (
                       <td
                         className={cn(
-                          'px-1 py-1 text-center align-middle border-r border-gray-100',
+                          'px-1 py-1 text-center align-middle border-r-2 border-blue-200/90',
                           cellClassName
                         )}
                       >
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1">
                           {expandHref ? (
                             <button
                               onClick={(e) => {
@@ -532,7 +532,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                               data-href={expandHref}
                               aria-label={expandedLabel}
                               aria-expanded={isExpanded}
-                              className="rounded-lg border border-blue-200 p-1 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 shadow-sm cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                              className="rounded border border-blue-300 p-0.5 bg-white hover:bg-blue-50 hover:border-blue-400 shadow-2xs cursor-pointer flex items-center justify-center transition-all duration-200"
                             >
                               {isExpanded ? (
                                 <ChevronDown className="h-3.5 w-3.5 text-blue-600 font-bold" />
@@ -553,7 +553,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                                   router.push(getEditHref(row), { scroll: false });
                                 }
                               }}
-                              className="rounded-lg border border-blue-200 p-1 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 shadow-sm cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                              className="rounded border border-blue-300 p-0.5 bg-white hover:bg-blue-50 hover:border-blue-400 shadow-2xs cursor-pointer flex items-center justify-center transition-all duration-200"
                               title={editTooltip || 'Edit'}
                               aria-label={editTooltip || 'Edit row'}
                             >
@@ -569,7 +569,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                       <td
                         key={`${row.id}-${col.key}`}
                         className={cn(
-                          'px-1.5 py-1 text-center align-middle whitespace-nowrap border-r border-gray-100 last:border-r-0',
+                          'px-1.5 py-1 text-center align-middle whitespace-nowrap border-r border-blue-400 text-[12px] font-normal text-slate-800 last:border-r-0',
                           cellClassName,
                           col.cellClassName
                         )}
@@ -580,11 +580,11 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
                     {/* Toggle Scroll Cell (Sticky on the right) */}
                     {showScrollButtons && columns.length > 8 && (
-                      <td className={cn("px-1 py-1 text-center align-middle border-l border-gray-100 sticky right-0 z-10", bgClass || 'bg-white', cellClassName)}>
+                      <td className={cn("px-1 py-1 text-center align-middle border-l border-blue-300 sticky right-0 z-10", bgClass || 'bg-white', cellClassName)}>
                         <button
                           type="button"
                           onClick={handleScrollToggle}
-                          className="rounded-lg border border-blue-200 p-1 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 shadow-sm cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 mx-auto"
+                          className="rounded border border-blue-300 p-0.5 bg-white hover:bg-blue-50 hover:border-blue-400 shadow-2xs cursor-pointer flex items-center justify-center transition-all duration-200 mx-auto"
                         >
                           <ChevronRight className={cn("h-3.5 w-3.5 text-blue-600 transition-transform duration-300", isScrolledRight && "rotate-180")} />
                         </button>
@@ -594,7 +594,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
                   {/* Expanded Row Content */}
                   {isExpanded && renderExpanded && (
-                    <tr className={cn('border-b border-gray-100', bgClass, expandedRowClassName)}>
+                    <tr className={cn('border-b border-blue-300', bgClass, expandedRowClassName)}>
                       <td colSpan={columns.length + (showExpandColumn ? 1 : 0) + (showScrollButtons && columns.length > 8 ? 1 : 0)} className="p-0">
                         <div className="w-full bg-blue-50/30 p-2 transition-all animate-in fade-in slide-in-from-top-1 duration-200">
                           {renderExpanded(row)}

@@ -47,7 +47,7 @@ export const ExpandedRoomsBreakdown: React.FC<ExpandedRoomsBreakdownProps> = ({ 
               const areaStr = `${formatArea(room.area)} Sq.Ft`;
               return (
                 <tr
-                  key={room.id || idx}
+                  key={room.id ? `room-${room.id}-${idx}` : `room-idx-${idx}`}
                   className="bg-white border-b border-gray-100 hover:bg-blue-50/30 transition-colors"
                 >
                   <td className="p-2 border-r border-gray-100 text-center font-semibold text-blue-900">

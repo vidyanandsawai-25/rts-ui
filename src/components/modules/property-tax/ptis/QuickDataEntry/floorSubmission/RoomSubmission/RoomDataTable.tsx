@@ -36,16 +36,32 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
             align: "center",
             cellClassName: "font-medium text-gray-700",
         },
+        // {
+        //     key: "utilities",
+        //     label: t("roomSubmission.table.roomType"),
+        //     width: COLUMN_WIDTHS.roomType,
+        //     align: "center",
+        //     render: (_val: unknown, row: RoomData) => (
+        //         <div className="px-2 text-gray-900 font-medium truncate text-center">
+        //             {row.utilities || "-"}
+        //         </div>
+        //     )
+        // },
+
         {
             key: "utilities",
             label: isUtilityCategory ? "TYPE" : t("roomSubmission.table.roomType"),
             width: COLUMN_WIDTHS.roomType,
             align: "center",
-            render: (_val: unknown, row: RoomData) => (
-                <div className="px-2 text-gray-900 font-medium truncate text-center">
-                    {row.utilities || "-"}
-                </div>
-            )
+            render: (_val: unknown, row: RoomData) => {
+                const typeVal = row.roomTypeDescription ?? row.utilities ?? row.roomType;
+                const cleanType = (typeVal && typeVal !== "Room") ? String(typeVal) : "";
+                return (
+                    <div className="px-2 text-gray-900 font-medium truncate text-center">
+                        {cleanType || "-"}
+                    </div>
+                );
+            }
         },
         {
             key: "shape",
@@ -145,7 +161,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
                 data={rooms as (RoomData & Record<string, unknown>)[]}
                 maxBodyHeightClassName="max-h-[260px]"
                 emptyText={t("roomSubmission.table.noData")}
-                getRowKey={(row: RoomData) => String(row.tempId || row.roomNo || '')}
+                getRowKey={(row: RoomData, idx: number) => String(row.tempId || (row.id ? `room-${row.id}-${idx}` : `room-${row.roomNo || idx}-${idx}`))}
                 rowClassName={(row: RoomData, idx: number) => cn(
                     "transition-colors hover:bg-blue-50/50 cursor-pointer",
                     idx % 2 === 0 ? "bg-white" : "bg-gray-50/50",

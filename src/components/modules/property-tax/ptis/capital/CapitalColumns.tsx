@@ -9,13 +9,13 @@ import { buildExpandedRowsHref } from '@/lib/utils/ptis';
 import { renderCellBox } from '@/lib/utils/table-renderers';
 
 const CELL_CLASS =
-  'bg-white rounded border border-gray-300 px-1.5 py-1 text-[12px] text-center cursor-pointer hover:border-blue-400 font-bold whitespace-nowrap';
+  'text-[12px] text-center font-normal text-slate-800 whitespace-nowrap';
 
 const FACTOR_CELL_CLASS =
-  'bg-emerald-50 rounded border border-emerald-300 px-1.5 py-1 text-[12px] text-right font-bold italic whitespace-nowrap';
+  'text-[12px] text-right font-medium text-emerald-800 whitespace-nowrap';
 
 const TOTAL_CELL_CLASS =
-  'bg-emerald-100 rounded border border-emerald-300 px-1.5 py-1 text-[12px] text-right font-bold whitespace-nowrap';
+  'text-[12px] text-right font-bold text-slate-900 whitespace-nowrap';
 
 export function getCapitalItems(capitalData: CapitalValueResponse | null): CapitalValueItem[] {
   if (!capitalData) return [];
