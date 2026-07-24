@@ -121,6 +121,9 @@ describe('listServices Server Action', () => {
 
             const tlService = result.services.find(s => s.name === 'Trade License');
             expect(tlService?.link).toBe('/en/trade-license');
+
+            const amService = result.services.find(s => s.name === 'Asset Management');
+            expect(amService?.link).toBe('/en/assets/municipal-Asset');
         });
 
         it('returns localized routes based on locale parameter', async () => {

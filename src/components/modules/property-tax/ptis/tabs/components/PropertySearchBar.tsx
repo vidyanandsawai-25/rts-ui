@@ -136,9 +136,15 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
 
       try {
         const parsed = JSON.parse(value);
-        setPropertyNo(parsed.propertyNo);
-        setPartitionNo(normalizePartition(parsed.partitionNo));
-        setPropertyId(parsed.propertyId ? parsed.propertyId.toString() : null);
+        if (parsed && typeof parsed === 'object') {
+          setPropertyNo(parsed.propertyNo);
+          setPartitionNo(normalizePartition(parsed.partitionNo));
+          setPropertyId(parsed.propertyId ? parsed.propertyId.toString() : null);
+        } else {
+          setPropertyNo(value);
+          setPartitionNo('');
+          setPropertyId(null);
+        }
       } catch {
         setPropertyNo(value);
         setPartitionNo('');
@@ -285,6 +291,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 emptyMessage={t('search.typeToGetSuggestions')}
                 strictMode={false}
                 onSearchChange={onPropertySearchChange}
+                showOptionsOnlyOnType
               />
               <Input type="hidden" name="propertyNo" value={propertyNo} />
             </div>

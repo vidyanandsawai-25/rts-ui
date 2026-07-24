@@ -81,12 +81,13 @@ export const ptisSearchService = {
       `/Property?${params.toString()}`
     );
 
-    if (!response.success || !response.data?.items)
-      return { success: false, error: 'No properties found' };
+    if (!response.success)
+      return { success: false, error: getErrorFormattedMessage(response.error, 'No properties found') };
 
+    const items = response.data?.items || [];
     return {
       success: true,
-      data: response.data.items
+      data: items
         .map((item) => ({
           propertyNo: (item.propertyNo || item.propertyId || '').toString(),
           partitionNo: (item.partitionNo || null)?.toString() || null,
@@ -115,7 +116,7 @@ export const ptisSearchService = {
       `/Property/propwisesearch/suggestions?${params.toString()}`
     );
 
-    if (!response.success || !response.data?.items) {
+    if (!response.success) {
       return {
         success: false,
         error: getErrorFormattedMessage(response.error, 'No suggestions found'),
@@ -124,7 +125,7 @@ export const ptisSearchService = {
 
     return {
       success: true,
-      data: response.data.items,
+      data: response.data?.items || [],
     };
   },
 

@@ -242,6 +242,7 @@
             "createFailed": "Failed to create category. Please try again.",
             "updateFailed": "Failed to update category. Please try again.",
             "deleteFailed": "Failed to delete category. Please try again.",
+            "inUseError": "The category \"{name}\" cannot be deleted because types are currently associated with it. Please remove the associated types before deleting this category.",
             "duplicateCode": "Duplicate category code is not allowed.",
             "duplicateName": "Duplicate category name is not allowed.",
             "codeRequired": "Category Code is required.",
