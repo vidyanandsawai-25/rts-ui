@@ -8,6 +8,15 @@ export interface ReportDefinition {
   dataProviderCode: string;
   isActive: boolean;
   sortOrder: number;
+  /** ID of the module/category this report belongs to (from backend) */
+  moduleId?: number | null;
+}
+
+export interface ReportModule {
+  id: number;
+  name: string;
+  logoContentType: string | null;
+  logoBase64: string | null;
 }
 
 export type ReportParameterType = 'text' | 'number' | 'date' | 'select' | 'boolean';
@@ -79,6 +88,8 @@ export interface ReportJobsCopy {
   refresh: string;
   empty: string;
   download: string;
+  preview: string;
+  previewTitle: string;
   columns: {
     report: string;
     status: string;
@@ -94,14 +105,7 @@ export interface ReportWorkspaceCopy {
     selectCategory: string;
     selectReport: string;
     setParameters: string;
-  };
-  categories: {
-    assessment: string;
-    amc: string;
-    transaction: string;
-    approval: string;
-    discount: string;
-    others: string;
+    generateReport: string;
   };
   tabs: {
     generateReport: string;
@@ -246,6 +250,7 @@ export interface ReportsWorkspaceProps {
   workspaceCopy?: ReportWorkspaceCopy;
   paramsCopy?: ReportParamsPanelCopy;
   reportDefinitions: ReportDefinition[];
+  reportModules?: ReportModule[];
   zones?: ZoneSummary[];
   financialYears?: FinancialYear[];
   /** Server action injected from page.tsx — fetches wards for a given zone */
@@ -263,4 +268,6 @@ export interface ReportJobsListProps {
   loading: boolean;
   copy: ReportJobsCopy;
   reportDefinitions: ReportDefinition[];
+  /** Called when user clicks the Preview button — passes requestId */
+  onPreview?: (requestId: string) => void;
 }
