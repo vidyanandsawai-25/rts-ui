@@ -1,4 +1,4 @@
-import { useState, useCallback, useTransition } from 'react';
+import { useState, useCallback, useTransition, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -10,7 +10,17 @@ export function usePropertySearch() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [manualSearching, setManualSearching] = useState(false);
+  const [isSearchingProperty, setIsSearchingProperty] = useState(false);
+
+  // Turn off searching state when the Next.js page transition is complete
+  useEffect(() => {
+    if (!isPending) {
+      const timer = setTimeout(() => {
+        setIsSearchingProperty(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isPending]);
 
   const updateUrl = useCallback(
     (params: Record<string, string | null>): boolean | 'no-op' => {
@@ -35,13 +45,9 @@ export function usePropertySearch() {
         startTransition(() => {
           router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
         });
-        setManualSearching(false);
 
         return true;
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[usePropertySearch] Navigation error:', error);
-        }
+      } catch (_error) {
         return false;
       }
     },
@@ -65,7 +71,7 @@ export function usePropertySearch() {
         return;
       }
 
-      setManualSearching(true);
+      setIsSearchingProperty(true);
 
       try {
         const params: Record<string, string | null> = {
@@ -89,27 +95,21 @@ export function usePropertySearch() {
         const result = updateUrl(params);
 
         if (result !== true) {
-          setManualSearching(false);
+          setIsSearchingProperty(false);
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.error('[usePropertySearch] Exception during search:', error);
         }
         toast.error(t('search.errors.navigationFailed'));
-        setManualSearching(false);
-      } finally {
-        // If it was a no-op or error before navigation, we clear manual state
-        // Otherwise useTransition will handle it
+        setIsSearchingProperty(false);
       }
     },
     [updateUrl, t]
   );
 
-  // Combine manual searching (validation/local logic) with transition state
-  const isSearching = isPending || manualSearching;
-
   return {
-    isSearching,
+    isSearching: isSearchingProperty,
     handleSearchProperty,
     updateUrl,
   };

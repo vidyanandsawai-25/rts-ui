@@ -77,6 +77,7 @@ export default getRequestConfig(async ({ locale }) => {
     inventoryConditionMessages,
     inventoryModelMessages,
     inventoryNameMessages,
+    automationDashboardMessages,
     modulesMessages,
     reportMessages,
     assetPhotoTypeMessages,
@@ -203,6 +204,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/inventoryName.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/automation-dashboard.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
@@ -286,6 +290,7 @@ export default getRequestConfig(async ({ locale }) => {
         inventoryConditionMessages?.inventoryCondition || inventoryConditionMessages,
       inventoryModel: inventoryModelMessages?.inventoryModel || inventoryModelMessages,
       inventoryName: inventoryNameMessages?.inventoryName || inventoryNameMessages,
+      automationDashboard: automationDashboardMessages,
       modules: modulesMessages,
       rts: rtsMessages,
       report: reportMessages,

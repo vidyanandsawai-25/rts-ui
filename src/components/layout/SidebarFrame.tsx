@@ -90,8 +90,12 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
           if (typeof window !== 'undefined' && window.innerWidth >= 1024) setCollapsed(true);
         }}
         className={`
-          fixed top-20 left-0 bottom-0 z-50 bg-white shadow-xl flex flex-col overflow-hidden
-          transition-all duration-300 ease-in-out border-r border-gray-200
+          fixed top-20 left-0 bottom-0 z-50 shadow-xl flex flex-col overflow-hidden
+          transition-all duration-300 ease-in-out border-r
+          ${pathname.includes('/assets')
+            ? 'bg-gradient-to-b from-[#000428] to-[#004e92] border-white/10'
+            : 'bg-white border-gray-200'
+          }
           ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${collapsed ? 'w-16' : 'w-64 sidebar-expanded-aside'}
         `}

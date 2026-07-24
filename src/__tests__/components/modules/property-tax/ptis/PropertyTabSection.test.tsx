@@ -7,6 +7,10 @@ import type { PropertyDetailsData } from '@/types/ptis.types';
 vi.spyOn(console, 'log').mockImplementation(() => {});
 vi.spyOn(console, 'warn').mockImplementation(() => {});
 
+global.fetch = vi.fn().mockResolvedValue({
+  json: () => Promise.resolve({ success: true, data: [] }),
+});
+
 const mockT = (key: string) => key;
 vi.mock('next-intl', () => ({
   useTranslations: () => mockT,
@@ -35,6 +39,7 @@ vi.mock('@/app/[locale]/property-tax/ptis/actions', () => ({
   getPropertyListByWardAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   getWardSuggestionsAction: vi.fn().mockResolvedValue([]),
   getPropertySuggestionsAction: vi.fn().mockResolvedValue([]),
+  getPropertySuggestionsByPropwiseAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   getPartitionSuggestionsAction: vi.fn().mockResolvedValue([]),
   fetchWardIdAction: vi.fn().mockResolvedValue({ success: false }),
 }));
