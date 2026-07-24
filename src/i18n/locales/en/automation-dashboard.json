@@ -1,0 +1,246 @@
+{
+  "errors": {
+    "fetchMainCards": "Failed to fetch main cards data.",
+    "fetchWorkflowCards": "Failed to fetch workflow cards data.",
+    "fetchGeoSequencingGrid": "Failed to fetch geo sequencing grid data.",
+    "fetchGeoSequencingPropertyDetails": "Failed to fetch geo sequencing property details data.",
+    "fetchDataEntryGrid": "Failed to fetch data entry grid data.",
+    "fetchDataEntryWardWiseSummary": "Failed to fetch data entry ward-wise summary data.",
+    "fetchInternalSurveyGrid": "Failed to fetch internal survey grid data.",
+    "fetchGeoSequencingWardWiseSummary": "Failed to fetch geo sequencing ward-wise summary data.",
+    "fetchInternalSurveyWardWiseSummary": "Failed to fetch internal survey ward-wise summary data.",
+    "fetchAssessmentGrid": "Failed to fetch assessment grid data.",
+    "fetchPendingAssessmentProps": "Failed to fetch pending assessment properties."
+  },
+  "summaryCards": {
+    "metrics": {
+      "structure": "Structure",
+      "unit": "Unit",
+      "units": "Units",
+      "demand": "Demand"
+    },
+    "titles": {
+      "previouslyRegistered": "Previously Registered Properties \u0026 Demand",
+      "assessmentApproved": "Assessment Approved",
+      "additionalRevenue": "Additional Revenue Generated",
+      "assessed": "Assessed",
+      "unassessed": "Unassessed"
+    },
+    "noData": "No data"
+  },
+  "geoSequencing": {
+    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "total": "Total",
+    "wardWiseSummary": "Ward-wise Summary",
+    "wardWiseTable": "WARD-WISE TABLE",
+    "stage": "Stage:",
+    "generatedOn": "Generated on:",
+    "cards": {
+      "totalStructure": "TOTAL STRUCTURE",
+      "totalUnits": "TOTAL UNITS",
+      "assessed": "ASSESSED",
+      "unassessed": "UNASSESSED"
+    },
+    "columns": {
+      "sr": "SR",
+      "division": "DIVISION",
+      "wardNo": "WARD NO.",
+      "registeredProperties": "REGISTERED PROPERTIES",
+      "geoSequencingProperties": "Geo-Sequencing Properties",
+      "propertyType": "Property Type",
+      "assessed": "Assessed",
+      "unassessed": "Unassessed",
+      "properties": "Properties",
+      "newlyAssessedFound": "Newly Assessed Found",
+      "assessmentInprocess": "Assessment Inprocess",
+      "structure": "Structure",
+      "unit": "Unit",
+      "units": "Units",
+      "residential": "Residential",
+      "nonResidential": "Non-Residential",
+      "mixed": "Mixed",
+      "publicUtility": "Public Utility",
+      "underConstruction": "Under Construction"
+    },
+    "buttons": {
+      "search": "Search",
+      "export": "Export",
+      "backToDivisions": "Back to Divisions"
+    }
+  },
+  "propertyDetailsDashboard": {
+    "header": {
+      "backToDivisions": "Back to Divisions",
+      "mainProperties": "Main Properties (Excluding Apartments)",
+      "stage": "Stage:",
+      "subtitle": "मालमत्ता यादी - संपूर्ण माहिती",
+      "export": "Export",
+      "searchPlaceholder": "Search across all columns...",
+      "filter": "Filter"
+    },
+    "labels": {
+      "totalTax": "Total Tax:",
+      "occupier": "Occupier:",
+      "floors": "Floors:",
+      "rv": "RV:",
+      "owner": "Owner:",
+      "use": "Use:",
+      "cTax": "C.Tax:",
+      "units": "Units:",
+      "area": "Area:",
+      "rTax": "R.Tax:",
+      "shopName": "Shop Name:"
+    },
+    "propertyTypes": {
+      "unassessed": "Unassessed",
+      "assessed": "Assessed"
+    },
+    "columns": {
+      "address": "ADDRESS",
+      "additionalRevenue": "ADDITIONAL REVENUE",
+      "newOldPropertyNo": "New Property No. | Old Property No.",
+      "srNo": "Sr. No.",
+      "propertyType": "PROPERTY TYPE",
+      "newRecord": "NEW RECORD",
+      "oldWardNoConstructionYear": "Old Ward No. | Construction Year",
+      "propertyDetailsNewVsOld": "PROPERTY DETAILS (NEW VS OLD)",
+      "propertyDetails": "PROPERTY DETAILS",
+      "oldRecord": "OLD RECORD",
+      "actions": "ACTIONS",
+      "categoryAndDesc": "CATEGORY \u0026 DESC",
+      "image": "Image",
+      "ownerAndOccupier": "OWNER, OCCUPIER \u0026 SHOP",
+      "documents": "DOCUMENTS",
+      "mobile": "MOBILE"
+    }
+  },
+  "internalSurvey": {
+    "total": "Total",
+    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "emptyMessage": "No internal survey data available",
+    "buttons": {
+      "search": "Search",
+      "export": "Export",
+      "backToDivisions": "Back to Divisions"
+    },
+    "wardWiseSummary": "Ward-wise Summary",
+    "wardWiseTable": "WARD-WISE TABLE",
+    "stage": "Stage:",
+    "generatedOn": "Generated on:",
+    "cards": {
+      "totalStructure": "TOTAL STRUCTURE",
+      "totalUnits": "TOTAL UNITS",
+      "assessed": "ASSESSED",
+      "unassessed": "UNASSESSED",
+      "photos": "PHOTOS"
+    },
+    "columns": {
+      "sr": "SR",
+      "division": "DIVISION",
+      "geoSequencingProperties": "Geo-Sequencing Properties",
+      "surveyProperties": "Survey Properties",
+      "propertyType": "Property Type",
+      "assessedProperties": "Assessed Properties",
+      "unassessedProperties": "Unassessed Properties",
+      "newlyAssessedFound": "Newly Assessed Found",
+      "assessmentInprocess": "Assessment Inprocess",
+      "photoCount": "Photo Count",
+      "structure": "Structure",
+      "unit": "Unit",
+      "units": "Units",
+      "residential": "Residential",
+      "nonResidential": "Non-Residential",
+      "mixedProperty": "Mixed Property",
+      "publicUtility": "Public Utility",
+      "underConstruction": "Under Construction"
+    }
+  },
+  "dataEntryQualityCheck": {
+    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "total": "Total",
+    "wardWiseSummary": "Ward-wise Summary",
+    "stage": "Stage:",
+    "qualityAnalyst": "Quality Analyst",
+    "generatedOn": "Generated on:",
+    "qualityAnalystWardWiseTable": "Quality Analyst - Ward-wise Table",
+    "cards": {
+      "totalStructure": "TOTAL STRUCTURE",
+      "totalUnits": "TOTAL UNITS",
+      "assessed": "ASSESSED",
+      "unassessed": "UNASSESSED",
+      "photos": "PHOTOS"
+    },
+    "buttons": {
+      "updateCommonDetails": "Update common details",
+      "backToDivisions": "Back to Divisions",
+      "export": "Export"
+    },
+    "columns": {
+      "sr": "Sr. No",
+      "division": "Division",
+      "wardNo": "Ward No",
+      "internalSurvey": "Internal Survey",
+      "dataEntry": "Data Entry",
+      "photo": "Photo",
+      "plan": "Plan",
+      "qualityAnalyst": "Quality Analyst",
+      "propertyType": "Property Type",
+      "assessedProperties": "Assessed Properties",
+      "unassessedProperties": "Unassessed Properties",
+      "newlyAssessedFound": "Newly Assessed Found",
+      "assessmentInprocess": "Assessment Inprocess",
+      "structure": "Structure",
+      "unit": "Unit",
+      "units": "Units",
+      "completedStructure": "Completed Structure",
+      "completedUnit": "Completed Unit",
+      "pendingStructure": "Pending Structure",
+      "pendingUnit": "Pending Unit",
+      "complete": "Complete",
+      "pending": "Pending",
+      "typeWise": "Type Wise",
+      "residential": "Residential",
+      "nonResidential": "Non-Residential",
+      "mixed": "Mixed",
+      "publicUtility": "Public Utility",
+      "underConstruction": "Under Construction"
+    }
+  },
+  "sendToApprove": {
+    "title": "Send to Approve",
+    "subtitle": "Select properties from the Assessment stage to send for approval",
+    "backToAssessment": "Back to Assessment",
+    "selected": "selected",
+    "updateNoticeNo": "Update SR Notice No",
+    "sendToApprove": "Send to Approve",
+    "searchPlaceholder": "Property No, Owner, Address...",
+    "filters": {
+      "search": "Search",
+      "surveyType": "Survey Type",
+      "zoneName": "Zone Name",
+      "wardNumber": "Ward Number",
+      "propertyType": "Property Type",
+      "billType": "Bill Type",
+      "propertyDescription": "Property Description"
+    },
+    "columns": {
+      "zoneWardPropNo": "Zone / Ward / Property No.",
+      "oldWardNo": "Old Ward No.",
+      "additional": "ADDITIONAL",
+      "revenueVal": "REVENUE (₹)",
+      "property": "PROPERTY",
+      "type": "TYPE",
+      "imagePlan": "Image | Plan",
+      "checklistSub": "Click items to toggle - Select row to edit",
+      "qcChecklist": "QC CHECKLIST",
+      "siteQc": "Site QC",
+      "applyTaxes": "Apply taxes",
+      "officeQc": "Office QC",
+      "dataUpdated": "Data updated",
+      "addTaxes": "Add taxes",
+      "qcCcBill": "QC/CC/Bill",
+      "report": "Report",
+      "location": "Location"
+    }
+  }
+}
