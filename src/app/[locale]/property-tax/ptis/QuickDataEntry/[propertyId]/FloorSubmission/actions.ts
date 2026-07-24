@@ -40,11 +40,14 @@ export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string): Promise<SelectableProperty[]> {
+export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, categoryName?: string): Promise<SelectableProperty[]> {
     try {
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
         params.set('PropertyNo', propertyNo);
+        if (categoryName && categoryName.trim()) {
+            params.set('CategoryName', categoryName.trim());
+        }
         const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`, { cache: 'no-store' });
         if (!response.success || !response.data?.items) {
             return [];
@@ -55,6 +58,14 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 totalCarpetAreaSqMeter?: number | null;
                 carpetAreaSqFeet?: number | null;
                 carpetAreaSqMeter?: number | null;
+                totalBuiltupAreaSqFeet?: number | null;
+                totalBuiltupAreaSqMeter?: number | null;
+                builtupAreaSqFeet?: number | null;
+                builtupAreaSqMeter?: number | null;
+                parkingCarpetAreaSqFeet?: number | null;
+                parkingCarpetAreaSqMeter?: number | null;
+                parkingBuiltupAreaSqFeet?: number | null;
+                parkingBuiltupAreaSqMeter?: number | null;
             };
             const typeLabel = (item.typeLabel || item.typeName || undefined) as string | undefined;
 
@@ -72,6 +83,12 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 flatNo: item.flatOrShopNo || '-',
                 carpetAreaSqFeet: extended.totalCarpetAreaSqFeet ?? extended.carpetAreaSqFeet ?? null,
                 carpetAreaSqMeter: extended.totalCarpetAreaSqMeter ?? extended.carpetAreaSqMeter ?? null,
+                builtupAreaSqFeet: extended.totalBuiltupAreaSqFeet ?? extended.builtupAreaSqFeet ?? null,
+                builtupAreaSqMeter: extended.totalBuiltupAreaSqMeter ?? extended.builtupAreaSqMeter ?? null,
+                parkingCarpetAreaSqFeet: extended.parkingCarpetAreaSqFeet ?? null,
+                parkingCarpetAreaSqMeter: extended.parkingCarpetAreaSqMeter ?? null,
+                parkingBuiltupAreaSqFeet: extended.parkingBuiltupAreaSqFeet ?? null,
+                parkingBuiltupAreaSqMeter: extended.parkingBuiltupAreaSqMeter ?? null,
             };
         });
     } catch (error) {

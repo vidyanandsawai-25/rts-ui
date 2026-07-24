@@ -1,3 +1,4 @@
+
 {
   "commonbuttonmessages": {
     "update": "अपडेट",
@@ -761,12 +762,17 @@
     "select": "चुनें",
     "allFloors": "सभी मंज़िलें",
     "dataEntry": "डेटा प्रविष्टि",
+    "atLeastOneFloorRequired": "कृपया डेटा एंट्री बटन सक्षम करने के लिए कम से कम एक मंज़िल जोड़ें",
     "dataEntryTabs": {
       "typeWise": "प्रकारवार",
       "propertyWise": "संपत्तिवार",
       "parking": "पार्किंग",
       "close": "बंद करें",
-      "show": "दिखाएँ"
+      "show": "दिखाएँ",
+      "propertyWiseDisabledForIndividual": "व्यक्तिगत संपत्ति के लिए संपत्तिवार उपलब्ध नहीं है",
+      "propertyWiseDisabledForApartment": "अपार्टमेंट के लिए संपत्तिवार उपलब्ध नहीं है",
+      "typeWiseDisabledForIndividual": "व्यक्तिगत संपत्ति के लिए प्रकारवार उपलब्ध नहीं है",
+      "parkingDisabledForIndividual": "व्यक्तिगत संपत्ति के लिए पार्किंग उपलब्ध नहीं है"
     },
     "selectProperties": {
       "title": "संपत्तियाँ चुनें",
@@ -1569,5 +1575,5 @@
       "general": "दस्तावेज़ प्राप्त करते समय एक अप्रत्याशित त्रुटि हुई। कृपया पुन: प्रयास करें।",
       "uploadGeneral": "दस्तावेज़ अपलोड करते समय एक त्रुटि हुई। कृपया पुन: प्रयास करें।"
     }
-  } 
+  }
 }

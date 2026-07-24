@@ -1,7 +1,7 @@
 'use client';
 
-import { FileText, Loader2, X, Download } from 'lucide-react';
-import { Button } from '@/components/common';
+import { FileText, Loader2, Download, X } from 'lucide-react';
+import { Button, IconButton, Badge } from '@/components/common';
 import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 
 interface ReportPreviewOverlayProps {
@@ -25,21 +25,18 @@ export function ReportPreviewOverlay({
   const inlineUrl = `${pdfUrl}?inline=true&view=pdf#toolbar=0`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#090d16]/80 backdrop-blur-md p-4 transition-all duration-300">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#090d16]/80 backdrop-blur-md p-4 transition-all duration-300">
       <div className="bg-slate-50 w-full max-w-5xl h-[88vh] rounded-3xl flex flex-col shadow-[0_25px_60px_rgba(0,0,0,0.45)] border border-white/10 overflow-hidden relative transition-all duration-300">
         {/* Header */}
         <div className="bg-white px-6 py-4 border-b border-slate-200/85 flex items-center justify-between shrink-0 shadow-sm">
           <div className="flex items-center gap-3.5">
-            <span className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner border border-rose-100">
+            <Badge variant="secondary" className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner border border-rose-100 hover:bg-rose-50">
               <FileText className="w-5 h-5" />
-            </span>
+            </Badge>
             <div className="min-w-0">
               <h3 className="text-sm font-extrabold text-slate-800 tracking-wide truncate">
                 {report?.reportName || copy.preview.title}
               </h3>
-              <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">
-                {copy.preview.idLabel.replace('{id}', requestId)}
-              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -52,13 +49,13 @@ export function ReportPreviewOverlay({
             >
               {copy.preview.downloadPdf}
             </Button>
-            <button
-              type="button"
+            <IconButton
+              icon={X}
+              variant="danger"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 hover:rotate-90 active:scale-90 transition-all duration-300"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              aria-label="Close preview"
+              className="rounded-xl"
+            />
           </div>
         </div>
 

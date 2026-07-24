@@ -247,8 +247,12 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
   return (
     <header className="fixed inset-x-0 top-0 z-[100] overflow-visible">
       <div
-        className="relative h-20 w-full overflow-visible shadow-2xl border-b border-white/10"
-        style={{ backgroundColor: HEADER_COLORS.background }}
+        className={`relative h-20 w-full overflow-visible shadow-2xl border-b border-white/10 ${
+          pathname.includes('/assets') 
+            ? 'bg-gradient-to-r from-[#000428] to-[#004e92]' 
+            : ''
+        }`}
+        style={pathname.includes('/assets') ? undefined : { backgroundColor: HEADER_COLORS.background }}
       >
         <div
           className="pointer-events-none absolute inset-0 hidden sm:block opacity-30"

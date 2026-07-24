@@ -54,6 +54,7 @@ describe("useLockUnlockColumns", () => {
     selectedPropertyIds: [101],
     excludedPropertyIds: [],
     isAllPropertiesSelected: false,
+    searchCategory: 3,
     properties: mockProperties,
     isPending: false,
     onSelectProperty: vi.fn(),
@@ -101,7 +102,7 @@ describe("useLockUnlockColumns", () => {
     const detailCol = result.current.find((col) => col.key === "propertyDetail");
     expect(detailCol).toBeDefined();
     expect(detailCol).toBeTruthy();
-    expect(detailCol!.width).toBe("40%");
+    expect(detailCol!.width).toBe("10%");
 
     // Test render output for the first property
     const detailColDef = detailCol as NonNullable<typeof detailCol>;
@@ -124,27 +125,27 @@ describe("useLockUnlockColumns", () => {
     const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
     const screenCol = result.current.find((col) => col.key === "lockedScreens");
     expect(screenCol).toBeDefined();
-    expect(screenCol!.width).toBe("20%");
+    expect(screenCol!.width).toBe("30%");
   });
 
   it("should render isLocked column with correct label", () => {
     const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
     const statusCol = result.current.find((col) => col.key === "isLocked");
     expect(statusCol).toBeDefined();
-    expect(statusCol!.width).toBe("16%");
+    expect(statusCol!.width).toBe("5%");
   });
 
   it("should render lockUnlockAction column with correct label", () => {
     const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
     const actionCol = result.current.find((col) => col.key === "lockUnlockAction");
     expect(actionCol).toBeDefined();
-    expect(actionCol!.width).toBe("12%");
+    expect(actionCol!.width).toBe("8%");
   });
 
   it("should render actions column with correct label", () => {
     const { result } = renderHook(() => useLockUnlockColumns(defaultParams));
     const actionCol = result.current.find((col) => col.key === "actions");
     expect(actionCol).toBeDefined();
-    expect(actionCol!.width).toBe("10%");
+    expect(actionCol!.width).toBe("5%");
   });
 });

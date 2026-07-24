@@ -86,6 +86,24 @@ export interface PropertySuggestionResponse {
   partitionNo?: string | null;
 }
 
+export interface PropwiseSuggestionItem {
+  propertyId: number;
+  zoneId?: number;
+  zoneNo?: string;
+  wardId?: number;
+  wardNo?: string;
+  propertyNo: string;
+  partitionNo?: string | null;
+  upicId?: string;
+  displayLabel?: string;
+}
+
+export interface PropwiseSuggestionResponse {
+  success: boolean;
+  message: string;
+  items: PropwiseSuggestionItem[];
+}
+
 export interface WardSuggestionResponse {
   wardNo: string;
   wardId?: string;

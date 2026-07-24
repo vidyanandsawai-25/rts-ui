@@ -16,11 +16,12 @@ import { usePropertyOptions } from '@/hooks/ptis/tab/usePropertyOptions';
 import { usePropertySearch } from '@/hooks/ptis/tab/usePropertySearch';
 import { useSyncedTabData } from '@/hooks/ptis/tab/useSyncedTabData';
 import { usePropertySearchState } from '@/hooks/ptis/tab/usePropertySearchState';
+import { usePropertySuggestions } from '@/hooks/ptis/tab/usePropertySuggestions';
 import { Tabs, TabValue } from '@/components/common/Tabs';
 import type { PtisTabId, PtisInitialData } from '@/types/ptis.types';
 import { PTIS_TABS } from '@/types/ptis.types';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
-
+import { useDebounce } from '@/hooks/useDebounce';
 import { toast } from 'sonner';
 
 interface PropertyTabSectionProps {
@@ -63,22 +64,7 @@ export default function PropertyTabSection({
   // 3. Hook: Search & Navigation Logic
   const { isSearching, handleSearchProperty, updateUrl } = usePropertySearch();
 
-  // 4. State Handlers
-  const onWardChangeCommit = useCallback(
-    (id: number | null, no: string) => {
-      handleWardSelection(id, no);
-      updateUrl({
-        wardNo: no || null,
-        wardId: id ? id.toString() : null,
-        propertyNo: null,
-        partitionNo: null,
-        propertyId: null,
-      });
-    },
-    [handleWardSelection, updateUrl]
-  );
-
-  // 5. Hook: Data Sync (Binds raw API data to UI components)
+  // 4. Hook: Data Sync (Binds raw API data to UI components)
   const {
     data,
     kycDetailsData,
@@ -110,12 +96,43 @@ export default function PropertyTabSection({
     initialData?.mappedPropertiesData
   );
 
-  // 6. Hook: Options Management
+  // 5. Hook: Options Management
   const { wardOptions, isFetchingWardOptions, handleFetchWardList } = useWardOptions(
     initialData?.wardOptions || EMPTY_ARRAY
   );
 
-  const propertiesList = initialData?.rawPropertyData || EMPTY_ARRAY;
+  const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebounce(searchText, 400);
+
+  const { propertiesList, setPropertiesList, isSearchingProperties } = usePropertySuggestions(
+    draft.wardId,
+    debouncedSearchText,
+    draft.propertyId
+  );
+
+  // 6. State Handlers
+  const onWardChangeCommit = useCallback(
+    (id: number | null, no: string) => {
+      handleWardSelection(id, no);
+      setPropertiesList([]);
+      setSearchText('');
+      updateUrl({
+        wardNo: no || null,
+        wardId: id ? id.toString() : null,
+        propertyNo: null,
+        partitionNo: null,
+        propertyId: null,
+      });
+    },
+    [handleWardSelection, updateUrl, setPropertiesList, setSearchText]
+  );
+
+  // Sync state with server-side rawPropertyData changes
+  useEffect(() => {
+    if (initialData?.rawPropertyData) {
+      setPropertiesList(initialData.rawPropertyData);
+    }
+  }, [initialData?.rawPropertyData, setPropertiesList]);
 
   const dynamicPropertyOptions = useMemo<SearchSelectOption[]>(() => {
     return propertiesList.map((p) => {
@@ -227,6 +244,8 @@ export default function PropertyTabSection({
           ownerName={data.ownerName || kycDetailsData.propertyHolderName}
           propertyDescription={data.propertyDescription}
           tabHeaderInfo={initialData?.tabHeaderInfo}
+          onPropertySearchChange={setSearchText}
+          isSearchingProperties={isSearchingProperties}
         />
 
         <PropertyTabHeaders activeTab={localTab} />

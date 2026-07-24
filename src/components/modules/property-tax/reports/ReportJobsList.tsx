@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { MasterTable, Badge, Card } from '@/components/common';
+import { MasterTable, Badge, PreviewButton } from '@/components/common';
 import type { Column } from '@/components/common';
 import type { ReportJob, ReportJobStatus, ReportJobsListProps } from '@/types/report.types';
 
@@ -22,7 +22,7 @@ function formatDate(value: string | null): string {
   return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString();
 }
 
-export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: ReportJobsListProps) {
+export function ReportJobsList({ jobs, loading, copy, reportDefinitions, onPreview }: ReportJobsListProps) {
   const reportNameByCode = useMemo(() => {
     const map = new Map<string, string>();
     for (const d of reportDefinitions) map.set(d.reportCode, d.reportName);
@@ -58,8 +58,7 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: Repor
   ];
 
   return (
-    <Card className="rounded-xl shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{copy.title}</h2>
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
       <MasterTable<ReportJob>
         columns={columns}
         data={jobs}
@@ -68,22 +67,32 @@ export function ReportJobsList({ jobs, loading, copy, reportDefinitions }: Repor
         paginationConfig={{ enabled: false }}
         renderActions={(row) =>
           row.downloadAvailable ? (
-            // Direct link - the proxy returns Content-Disposition: attachment, so the browser
-            // streams the PDF to disk without buffering it in JS memory.
-            <a
-              href={`/api/report-download/${encodeURIComponent(row.reportRequestId)}`}
-              className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-            >
-              {copy.download}
-            </a>
+            <div className="flex items-center gap-2">
+              {/* Preview button */}
+              <PreviewButton
+                size="xs"
+                variant="secondary"
+                onClick={() => onPreview?.(row.reportRequestId)}
+                title={copy.previewTitle}
+              >
+                {copy.preview}
+              </PreviewButton>
+              {/* Download button */}
+              <a
+                href={`/api/report-download/${encodeURIComponent(row.reportRequestId)}`}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#004c8c] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#003a6e] transition-colors shadow-sm"
+              >
+                {copy.download}
+              </a>
+            </div>
           ) : (
-            <span className="text-xs text-gray-400">-</span>
+            <Badge variant="secondary" className="bg-transparent border-none text-gray-400 hover:bg-transparent px-0">-</Badge>
           )
         }
       />
       {!loading && jobs.length === 0 && (
-        <p className="text-sm text-gray-500 text-center py-6">{copy.empty}</p>
+        <p className="text-sm text-gray-500 text-center py-10">{copy.empty}</p>
       )}
-    </Card>
+    </div>
   );
 }

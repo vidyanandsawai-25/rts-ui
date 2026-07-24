@@ -1,9 +1,10 @@
 import { Lock, Unlock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
-import { Badge, EditButton, ToggleSwitch } from "@/components/common";
+import { Badge, EditButton, ToggleSwitch, Tooltip } from "@/components/common";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
+import { Checkbox } from "@/components/common/checkbox";
 
 interface UseLockUnlockColumnsParams {
   screens: LockedScreen[];
@@ -12,6 +13,7 @@ interface UseLockUnlockColumnsParams {
   isAllPropertiesSelected: boolean;
   properties: LockUnlockPropertyItem[];
   isPending: boolean;
+  isCategoryBulkAction?: boolean;
   onSelectProperty: (propertyId: number) => void;
   onSelectAllProperties: () => void;
   onToggleLock: (row: LockUnlockPropertyItem) => void;
@@ -25,6 +27,7 @@ export function useLockUnlockColumns({
   isAllPropertiesSelected,
   properties,
   isPending,
+  isCategoryBulkAction,
   onSelectProperty,
   onSelectAllProperties,
   onToggleLock,
@@ -55,16 +58,11 @@ export function useLockUnlockColumns({
     {
       key: "checkbox",
       label: (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isHeaderChecked()}
-          disabled={isPending}
-          ref={(el) => {
-            if (el) {
-              el.indeterminate = isHeaderIndeterminate();
-            }
-          }}
-          onChange={() => onSelectAllProperties()}
+          disabled={isPending || isCategoryBulkAction}
+          indeterminate={isHeaderIndeterminate()}
+          onCheckedChange={() => onSelectAllProperties()}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !isPending) {
               e.preventDefault();
@@ -78,11 +76,10 @@ export function useLockUnlockColumns({
       width: "5%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isRowChecked(row.propertyId)}
-          disabled={isPending}
-          onChange={() => onSelectProperty(row.propertyId)}
+          disabled={isPending || isCategoryBulkAction}
+          onCheckedChange={() => onSelectProperty(row.propertyId)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !isPending) {
               e.preventDefault();
@@ -97,7 +94,7 @@ export function useLockUnlockColumns({
     {
       key: "propertyDetail",
       label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.propertyDetail")}</span>,
-      width: "40%",
+      width: "10%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
         <span className="text-gray-700 px-2">
@@ -109,7 +106,7 @@ export function useLockUnlockColumns({
     {
       key: "lockedScreens",
       label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.screenNames")}</span>,
-      width: "20%",
+      width: "30%",
       align: "center",
       render: (val: unknown) => {
         const rawItems = (val as (number | LockedScreen)[]) || [];
@@ -125,17 +122,27 @@ export function useLockUnlockColumns({
           const match = screens.find((s) => s.id === Number(item));
           return match ? match.screenName : `Screen ID: ${item}`;
         });
+        
+        const visibleNames = names.slice(0, 2);
+        const hiddenNames = names.slice(2);
+
         return (
-          <div className="flex flex-wrap gap-1 px-2 justify-center w-full">
-            {names.map((name, idx) => (
-              <Badge
-                key={idx}
-                variant="success"
-                size="sm"
-              >
-                {name}
-              </Badge>
-            ))}
+          <div className="px-2 text-center w-full text-xs text-gray-700">
+            <span>{visibleNames.join(", ")}</span>
+            {hiddenNames.length > 0 && (
+              <>
+                <span>, </span>
+                <Tooltip
+                  key="more-screens-tooltip"
+                  placement="top"
+                  content={hiddenNames.join(", ")}
+                >
+                  <span className="text-blue-600 font-semibold cursor-pointer hover:underline inline-block">
+                    +{hiddenNames.length} more...
+                  </span>
+                </Tooltip>
+              </>
+            )}
           </div>
         );
       },
@@ -143,7 +150,7 @@ export function useLockUnlockColumns({
     {
       key: "isLocked",
       label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.status")}</span>,
-      width: "16%",
+      width: "5%",
       align: "center",
       render: (val: unknown) => {
         const isLocked = Boolean(val);
@@ -178,7 +185,7 @@ export function useLockUnlockColumns({
     {
       key: "lockUnlockAction",
       label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.lockUnlock")}</span>,
-      width: "12%",
+      width: "8%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
         <div className="flex items-center justify-center w-full">
@@ -196,7 +203,7 @@ export function useLockUnlockColumns({
     {
       key: "actions",
       label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.actions")}</span>,
-      width: "10%",
+      width: "5%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
         <div className="flex items-center justify-center w-full">
