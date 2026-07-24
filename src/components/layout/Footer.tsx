@@ -1,21 +1,23 @@
+'use client';
+
 import type { UlbMaster } from '@/types/master.types';
-import { getTranslations } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 import { Card } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
-import { decodeCookieValue } from '@/lib/utils/cookie';
+import { getCookieValue } from '@/lib/utils/cookie';
 
 interface FooterProps {
   ulbData?: UlbMaster;
 }
 
 /**
- * Footer (Server Component). Council name prefers `ulb_name` cookie, then `ulbData` prop.
+ * Footer (Client Component). Council name prefers `ulb_name` cookie, then `ulbData` prop.
  */
-export async function Footer({ ulbData }: FooterProps) {
-  const t = await getTranslations('common');
-  const cookieStore = await cookies();
-  const nameFromCookie = decodeCookieValue(cookieStore.get('ulb_name')?.value);
+export function Footer({ ulbData }: FooterProps) {
+  const t = useTranslations('common');
+  const pathname = usePathname() || '';
+  const nameFromCookie = typeof window !== 'undefined' ? getCookieValue('ulb_name') : undefined;
 
   const currentYear = new Date().getFullYear();
   const sanitizedCookieName = nameFromCookie ? sanitizeInput(nameFromCookie) : '';
@@ -23,11 +25,17 @@ export async function Footer({ ulbData }: FooterProps) {
   const ulbDisplayName =
     sanitizedCookieName || sanitizedUlbName || t('app.defaultUlbName');
 
+  const isAssets = pathname.includes('/assets');
+
   return (
     <footer className="relative z-30 mt-auto print:hidden transition-all duration-300">
       <div className="h-0.5 w-full bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-300 opacity-80" />
 
-      <div className="w-full bg-[#4b70a6] text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <div className={`w-full text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transition-colors duration-300 ${
+        isAssets
+          ? 'bg-gradient-to-r from-[#000428] to-[#004e92]'
+          : 'bg-[#4b70a6]'
+      }`}>
         <Card
           padding="none"
           variant="default"
