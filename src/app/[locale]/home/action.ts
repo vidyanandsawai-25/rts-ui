@@ -53,7 +53,10 @@ function mapDepartmentToService(
     const lowerName = name.toLowerCase().trim();
 
     // Dynamically slugify the route segment using department name
-    const routeSegment = lowerName.replace(/[&\s]+/g, '-').replace(/-+/g, '-');
+    let routeSegment = lowerName.replace(/[&\s]+/g, '-').replace(/-+/g, '-');
+    if (routeSegment === 'asset-management' || lowerName.includes('asset management')) {
+        routeSegment = 'assets/municipal-Asset';
+    }
 
     return {
         id: department.departmentId,

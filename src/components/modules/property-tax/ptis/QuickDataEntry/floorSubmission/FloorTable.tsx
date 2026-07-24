@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Layers } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AddButton,
   FloorDetailsTable,
@@ -77,6 +78,17 @@ const FloorTable: React.FC<FloorTableProps> = ({
     // Disable button if no floors exist for the selected property; enable when floors exist
     return !filteredFloors || filteredFloors.length === 0;
   }, [filteredFloors]);
+
+  const handleDataEntrySameAsClick = React.useCallback(() => {
+    if (isDataEntryDisabled) {
+      toast.error(
+        t('floor.atLeastOneFloorRequired')
+          
+      );
+      return;
+    }
+    handleOpenDataEntrySameAs();
+  }, [isDataEntryDisabled, handleOpenDataEntrySameAs, t]);
 
   const columns = useFloorTableColumns({
     t,
@@ -239,13 +251,20 @@ const FloorTable: React.FC<FloorTableProps> = ({
           )}
 
           {!viewOnly && (
-            <AddButton
-              label={t('floor.dataEntry')}
-              size="sm"
-              className="px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center gap-2"
-              onClick={handleOpenDataEntrySameAs}
-              disabled={isDataEntryDisabled}
-            />
+            <div
+              onClick={handleDataEntrySameAsClick}
+              className="inline-block cursor-pointer"
+            >
+              <AddButton
+                label={t('floor.dataEntry')}
+                size="sm"
+                className={`px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg flex items-center gap-2 ${
+                  isDataEntryDisabled ? 'pointer-events-none opacity-60' : 'active:scale-95'
+                }`}
+                onClick={handleDataEntrySameAsClick}
+                disabled={isDataEntryDisabled}
+              />
+            </div>
           )}
 
           {!viewOnly && !isPlotCategory && (
