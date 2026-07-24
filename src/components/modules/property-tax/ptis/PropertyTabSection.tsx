@@ -102,12 +102,13 @@ export default function PropertyTabSection({
   );
 
   const [searchText, setSearchText] = useState('');
-  const debouncedSearchText = useDebounce(searchText, 400);
+  const debouncedSearchText = useDebounce(searchText, 150);
 
   const { propertiesList, setPropertiesList, isSearchingProperties } = usePropertySuggestions(
     draft.wardId,
     debouncedSearchText,
-    draft.propertyId
+    draft.propertyId,
+    initialData?.rawPropertyData || EMPTY_ARRAY
   );
 
   // 6. State Handlers
