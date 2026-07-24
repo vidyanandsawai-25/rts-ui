@@ -27,6 +27,7 @@ describe("UpicLinkCell", () => {
         copyLabel="UPIC ID"
       />
     );
+
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute(
       "href",
