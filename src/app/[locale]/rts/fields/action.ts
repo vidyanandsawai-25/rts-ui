@@ -7,7 +7,7 @@ import {
   createRtsFieldDefinition,
   updateRtsFieldDefinition,
   deleteRtsFieldDefinition,
-} from "@/lib/api/rts/rtsfield-crud.service";
+} from "@/lib/api/rts/rtsfielddefinition.service";
 import { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";

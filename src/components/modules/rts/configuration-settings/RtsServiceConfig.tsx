@@ -486,8 +486,8 @@ export default function RtsServiceConfig({
       <EditButton
         type="button"
         className="size-10 px-0"
-        aria-label={tRts("masters.edit")}
-        title={tRts("masters.edit")}
+        aria-label={t("buttons.edit")}
+        title={t("buttons.edit")}
         onClick={onEdit}
       />
 
@@ -628,7 +628,7 @@ export default function RtsServiceConfig({
             <span className="text-sm font-extrabold text-slate-800">
               {drawerMode === "add"
                 ? tRts("masters.registerNewService")
-                : tRts("masters.editService")}
+                : t("buttons.edit")}
             </span>
           </div>
         }
@@ -690,7 +690,7 @@ export default function RtsServiceConfig({
             >
               {drawerMode === "add"
                 ? t("buttons.save")
-                : tRts("masters.update")}
+                : t("buttons.update")}
             </Button>
           </div>
         </form>

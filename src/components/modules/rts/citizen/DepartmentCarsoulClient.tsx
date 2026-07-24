@@ -7,14 +7,15 @@ import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
 import type { Language } from "@/types/language.type";
-import { 
-  FileText, 
-  CheckCircle2, 
-  Clock, 
+import {
+  FileText,
+  CheckCircle2,
+  Clock,
   AlertCircle,
   AlertTriangle,
   Search,
   Eye,
+  Download,
   LayoutDashboard
 } from "lucide-react";
 import TableHeader from "@/components/common/TableHeader";
@@ -76,6 +77,15 @@ type CitizenApplication = RtsMisDashboardUserApplicationItem & {
   normalizedStatus: "approved" | "rejected" | "pending";
 };
 
+type WorkflowStageStatus = "complete" | "in_progress" | "pending";
+
+type WorkflowStage = {
+  id: string;
+  title: string;
+  description: string;
+  status: WorkflowStageStatus;
+};
+
 function normalizeApplicationStatus(status: string): CitizenApplication["normalizedStatus"] {
   const normalized = status.toLowerCase();
   if (normalized.includes("approved")) return "approved";
@@ -94,6 +104,108 @@ function formatSubmittedDate(value: string, locale: Language): string {
     timeStyle: "short",
   }).format(date);
 }
+
+const staticWorkflowText = {
+  title: "Approval Stages",
+  complete: "Complete",
+  inProgress: "In Progress",
+  pending: "Pending",
+  clerkVerification: "Clerk Verification",
+  clerkDescription: "Application was received and checked by the clerk.",
+  headOfficeVerification: "Head Office Verification",
+  headOfficeDescription: "Documents are under review by the head office.",
+  finalApproval: "Final Approval (Senior Officer)",
+  finalApprovalDescription: "Starts after head office verification is completed.",
+  documentsTitle: "Submitted Documents",
+  documentsSubtitle: "Uploaded by you at the time of application",
+  previewDocument: "Preview document",
+  downloadDocument: "Download document",
+  unavailableDocument: "Document is not available",
+  missing: "Missing - required for approval",
+};
+
+// Replace this object with the workflow-detail API response when it is available.
+const staticWorkflowData: { stages: WorkflowStage[] } = {
+  stages: [
+    {
+      id: "clerk-verification",
+      title: staticWorkflowText.clerkVerification,
+      description: staticWorkflowText.clerkDescription,
+      status: "complete",
+    },
+    {
+      id: "head-office-verification",
+      title: staticWorkflowText.headOfficeVerification,
+      description: staticWorkflowText.headOfficeDescription,
+      status: "in_progress",
+    },
+    {
+      id: "final-approval",
+      title: staticWorkflowText.finalApproval,
+      description: staticWorkflowText.finalApprovalDescription,
+      status: "pending",
+    },
+  ],
+};
+
+const workflowStageStyles: Record<WorkflowStageStatus, {
+  label: string;
+  markerClassName: string;
+  cardClassName: string;
+  badgeClassName: string;
+}> = {
+  complete: {
+    label: staticWorkflowText.complete,
+    markerClassName: "bg-emerald-500 text-white",
+    cardClassName: "border-emerald-100 bg-emerald-50/40",
+    badgeClassName: "bg-emerald-100 text-emerald-700",
+  },
+  in_progress: {
+    label: staticWorkflowText.inProgress,
+    markerClassName: "bg-amber-500 text-white",
+    cardClassName: "border-amber-200 bg-amber-50/50",
+    badgeClassName: "bg-amber-100 text-amber-700",
+  },
+  pending: {
+    label: staticWorkflowText.pending,
+    markerClassName: "bg-slate-200 text-slate-500",
+    cardClassName: "border-slate-200 bg-slate-50",
+    badgeClassName: "bg-slate-200 text-slate-500",
+  },
+};
+
+function WorkflowStageItem({ stage, stepNumber, hasNext }: {
+  stage: WorkflowStage;
+  stepNumber: number;
+  hasNext: boolean;
+}) {
+  const style = workflowStageStyles[stage.status];
+
+  return (
+    <div className="relative flex gap-3">
+      <div className="relative flex w-5 shrink-0 justify-center">
+        {hasNext && <span aria-hidden className="absolute top-5 -bottom-3 w-px bg-slate-200" />}
+        <span className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ring-4 ring-white ${style.markerClassName}`}>
+          {stage.status === "complete" ? <CheckCircle2 size={12} strokeWidth={3} /> : stepNumber}
+        </span>
+      </div>
+      <div className={`min-w-0 flex-1 rounded-lg border px-3 py-2.5 ${style.cardClassName}`}>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-black text-slate-700">{stage.title}</p>
+          <span className={`rounded px-1.5 py-0.5 text-[8px] font-black uppercase ${style.badgeClassName}`}>{style.label}</span>
+        </div>
+        <p className="mt-1 text-[10px] font-medium text-slate-500">{stage.description}</p>
+      </div>
+    </div>
+  );
+}
+
+const staticSubmittedDocuments = [
+  { name: "Identity Proof (Aadhaar Card)", size: "1.2 MB", available: true },
+  { name: "Property Ownership Deed", size: "3.4 MB", available: true },
+  { name: "NOC from Fire Department", size: "2.1 MB", available: true },
+  { name: "School Leaving Original Certificate", size: staticWorkflowText.missing, available: false },
+];
 
 export default function DepartmentCarsoulClient({ departments, userApplications, upicId }: DepartmentCarsoulClientProps) {
   const router = useRouter();
@@ -317,7 +429,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             {/* Drawer Body Content */}
             <div className="p-5 space-y-5">
               {/* SLA & Submitted Info Summary Card */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
+              <section className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
                 <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
                   {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Details"}
                 </h4>
@@ -355,8 +467,83 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     )}
                   </div>
                 </div>
-              </div>
+              </section>
 
+
+              {/* Static until the application workflow API exposes stage history. */}
+              <section className="rounded-xl border border-slate-200 bg-white p-4.5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">
+                    {staticWorkflowText.title}
+                  </h4>
+                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[9px] font-black text-amber-700">
+                    {`${staticWorkflowData.stages.filter((stage) => stage.status === "complete").length} of ${staticWorkflowData.stages.length} Done`}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {staticWorkflowData.stages.map((stage, index) => (
+                    <WorkflowStageItem
+                      key={stage.id}
+                      stage={stage}
+                      stepNumber={index + 1}
+                      hasNext={index < staticWorkflowData.stages.length - 1}
+                    />
+                  ))}
+                </div>
+              </section>
+
+              {/* Static document history until application-detail APIs are available. */}
+              <section className="rounded-xl border border-slate-200 bg-white p-4.5">
+                <div className="mb-3">
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">
+                    {staticWorkflowText.documentsTitle}
+                  </h4>
+                  <p className="mt-0.5 text-[10px] font-medium text-slate-500">
+                    {staticWorkflowText.documentsSubtitle}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {staticSubmittedDocuments.map((document) => (
+                    <div
+                      key={document.name}
+                      className={`flex items-center gap-3 rounded-xl border p-3 ${document.available ? "border-slate-200 bg-white" : "border-slate-150 bg-slate-50/70"
+                        }`}
+                    >
+                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${document.available ? "bg-blue-50 text-blue-600" : "bg-slate-200 text-slate-400"
+                        }`}>
+                        <FileText size={17} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className={`truncate text-[11px] font-black ${document.available ? "text-slate-800" : "text-slate-500"}`}>
+                          {document.name}
+                        </p>
+                        <p className={`mt-0.5 text-[10px] font-semibold ${document.available ? "text-slate-400" : "text-rose-500"}`}>
+                          {document.size}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-1.5">
+                        <button
+                          type="button"
+                          disabled
+                          title={document.available ? staticWorkflowText.previewDocument : staticWorkflowText.unavailableDocument}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled
+                          title={document.available ? staticWorkflowText.downloadDocument : staticWorkflowText.unavailableDocument}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Download size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
           </Drawer>
         )}
@@ -429,7 +616,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     }
     const q = (searchParams.get("q") ?? "").trim();
     if (q) params.set("q", q);
-    
+
     const queryString = params.toString();
     router.replace(`${localePrefix}/service/dashboard${queryString ? `?${queryString}` : ""}`, { scroll: false });
   };
@@ -446,11 +633,10 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             type="button"
             onClick={() => !qNorm && handleDeptChange("")}
             disabled={!!qNorm}
-            className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
-              (!carouselDeptId && !qNorm)
+            className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${(!carouselDeptId && !qNorm)
                 ? 'border-teal-600 bg-teal-600 text-white shadow-md'
                 : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50'
-            } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+              } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
           >
             <span className="whitespace-nowrap">{lang === "mr" ? "डॅशबोर्ड" : lang === "hi" ? "डैशबोर्ड" : "Dashboard"}</span>
           </button>
@@ -464,11 +650,10 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                 type="button"
                 onClick={() => !qNorm && handleDeptChange(department.id)}
                 disabled={!!qNorm}
-                className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
-                  isActive
+                className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${isActive
                     ? 'border-teal-600 bg-teal-600 text-white shadow-md'
                     : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50'
-                } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                  } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
                 <span className="whitespace-nowrap">{label}</span>
               </button>

@@ -1,5 +1,10 @@
-import { getRtsFieldsAction } from "../../actions";
 import RtsFieldsConfig from "@/components/modules/rts/configuration-settings/RtsFieldsConfig";
+import {
+  deleteRtsFieldConfigAction,
+  getRtsFieldConfigData,
+  saveRtsFieldConfigAction,
+  updateRtsFieldConfigAction,
+} from "./actions";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -7,11 +12,17 @@ interface PageProps {
 
 export default async function RtsFieldsPage({ params }: PageProps) {
   const { locale } = await params;
-  const data = await getRtsFieldsAction();
+  const data = await getRtsFieldConfigData();
 
   return (
     <div className="w-full">
-      <RtsFieldsConfig data={data} locale={locale} />
+      <RtsFieldsConfig
+        data={data}
+        locale={locale}
+        saveField={saveRtsFieldConfigAction}
+        updateField={updateRtsFieldConfigAction}
+        deleteField={deleteRtsFieldConfigAction}
+      />
     </div>
   );
 }

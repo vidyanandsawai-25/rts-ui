@@ -30,6 +30,12 @@ export async function getRtsDepartments(
   return response.data;
 }
 
+export async function getRtsDepartmentsPaged(
+  params: RtsDepartmentQueryParams = {}
+): Promise<PagedResponse<RtsDepartmentApiItem>> {
+  return getRtsDepartments(params);
+}
+
 export async function getAllRtsDepartments(): Promise<RtsDepartmentApiItem[]> {
   const response = await getRtsDepartments({
     PageNumber: 1,
@@ -37,4 +43,55 @@ export async function getAllRtsDepartments(): Promise<RtsDepartmentApiItem[]> {
   });
 
   return response.items;
+}
+
+export async function createRtsDepartment(payload: {
+  departmentName: string;
+  departmentNameLocal?: string;
+  departmentIcon?: string;
+  displayOrder?: number;
+  isActive: boolean;
+  createdBy?: number;
+}): Promise<RtsDepartmentApiItem> {
+  const response = await apiClient.post<RtsDepartmentApiItem>("/RTSDepartment", payload);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to create RTS department");
+  }
+  return response.data;
+}
+
+export async function updateRtsDepartment(
+  id: number,
+  payload: {
+    id: number;
+    departmentName: string;
+    departmentNameLocal?: string;
+    departmentIcon?: string;
+    displayOrder?: number;
+    isActive: boolean;
+    updatedBy?: number;
+  }
+): Promise<RtsDepartmentApiItem> {
+  const response = await apiClient.put<RtsDepartmentApiItem>(`/RTSDepartment/${id}`, payload);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to update RTS department");
+  }
+  return response.data;
+}
+
+export async function deleteRtsDepartment(id: number): Promise<void> {
+  const response = await apiClient.delete<unknown>(`/RTSDepartment/${id}`);
+  if (!response.success) {
+    throw new Error(response.error || "Failed to delete RTS department");
+  }
+}
+
+export async function getRtsDepartmentById(id: number): Promise<RtsDepartmentApiItem> {
+  const response = await apiClient.get<RtsDepartmentApiItem>(`/RTSDepartment/${id}`, {
+    cache: "no-store",
+  }, false);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || `Failed to fetch RTS department ${id}`);
+  }
+  return response.data;
 }

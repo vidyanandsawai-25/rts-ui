@@ -7,7 +7,7 @@ import {
   createRtsService,
   updateRtsService,
   deleteRtsService,
-} from "@/lib/api/rts/rtsservice-crud.service";
+} from "@/lib/api/rts/rtsservices.service";
 import { RtsServiceApiItem } from "@/types/rts/service.types";
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";

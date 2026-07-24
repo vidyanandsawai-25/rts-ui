@@ -631,7 +631,7 @@ export default function RtsApplicationDashboard({
             enabled: true,
             showPageSizeSelector: true,
           }}
-          maxBodyHeightClassName="max-h-[520px]"
+          maxBodyHeightClassName="max-h-auto"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           // theadClassName="!bg-slate-50 !from-slate-50 !via-slate-50 !to-slate-50 hover:!from-slate-50 hover:!via-slate-50 hover:!to-slate-50 [&_th]:!text-slate-700"
           theadClassName="
