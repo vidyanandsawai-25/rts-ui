@@ -353,7 +353,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           </motion.div>
             {/* Mobile 4-Stage RTS Act Process Strip */}
             <div className="block lg:hidden mt-3 bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-blue-950/90 text-white rounded-xl p-2.5 border border-blue-400/30 shadow-md">
-              <div className="text-[10px] font-black text-amber-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <div className="text-[10px] font-black text-amber-300 uppercase tracking-wider mb-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <span>{t('सेवा हक्क अधिनियम २०१५ प्रक्रिया', 'लोक सेवा गारंटी प्रक्रिया', 'RTS Act 4-Stage Process')}</span>
                 <span className="text-[9px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-400/40">✓ {t('वेळेत सेवा', 'समयबद्ध', 'SLA Guaranteed')}</span>
               </div>
@@ -654,7 +654,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
         {/* Quick Access Links */}
         <div className="space-y-3">
-          <div className="border-b border-slate-200 pb-1.5 flex items-center justify-between">
+          <div className="border-b border-slate-200 pb-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
             <h3 className="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-1.5">
               <span>{t('त्वरित सेवा दुवे', 'त्वरित सेवा लिंक', 'Quick Access Links')}</span>
               <span className="text-slate-400 text-xs font-normal">▼</span>
