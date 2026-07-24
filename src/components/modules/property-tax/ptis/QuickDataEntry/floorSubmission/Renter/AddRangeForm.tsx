@@ -1,12 +1,57 @@
 "use client";
-import React from 'react';
+import React, { useRef } from 'react';
 
 
 import { Label } from "@/components/common/label";
 import { Input, Select, Button } from "@/components/common";
-import { Plus } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { addDays } from "@/lib/utils/renter/renterUtils";
+
+const toDisplayDate = (val: string) => {
+    if (!val) return '';
+    const ymdMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (ymdMatch) return `${ymdMatch[3]}-${ymdMatch[2]}-${ymdMatch[1]}`;
+    const parts = val.split('-');
+    if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return val;
+};
+
+const toValueDate = (val: string) => {
+    if (!val) return '';
+    const parts = val.split('-');
+    if (
+        parts.length === 3 &&
+        parts[0].length === 2 &&
+        parts[1].length === 2 &&
+        parts[2].length === 4
+    ) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return val;
+};
+
+const formatManualDate = (val: string) => {
+    const digits = val.replace(/\D/g, '').slice(0, 8);
+    let res = '';
+    if (digits.length > 0) res += digits.slice(0, 2);
+    if (digits.length > 2) res += '-' + digits.slice(2, 4);
+    if (digits.length > 4) res += '-' + digits.slice(4, 8);
+    return res;
+};
+
+const triggerDatePicker = (ref: React.RefObject<HTMLInputElement | null>) => {
+    if (ref.current) {
+        try {
+            if (typeof ref.current.showPicker === 'function') ref.current.showPicker();
+            else ref.current.click();
+        } catch (_e) {
+            ref.current.click();
+        }
+    }
+};
 
 const fieldLabelClassName = "text-xs leading-snug tracking-normal !font-semibold text-slate-700";
 
@@ -45,6 +90,9 @@ export const AddRangeForm = ({
     const effectiveMinFrom = minFromDate || agreementStart;
     const minToDate = newRangeData.fromDate ? addDays(newRangeData.fromDate, 1) : effectiveMinFrom;
     
+    const fromDateRef = useRef<HTMLInputElement>(null);
+    const toDateRef = useRef<HTMLInputElement>(null);
+
     return (
         <div className="bg-white border border-dashed border-gray-200 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between mb-2">
@@ -55,38 +103,88 @@ export const AddRangeForm = ({
             </div>
             
             <div className="flex items-start gap-4 flex-wrap lg:flex-nowrap">
-                <div className="flex-1 min-w-[130px] space-y-1.5">
+                <div className="flex-1 min-w-[140px] space-y-1.5 relative">
                     <Label className={fieldLabelClassName}>{t('floor.renterSection.fromDate')} *</Label>
+                    <div className={`flex items-center bg-white border rounded-md px-2.5 h-8 ${errors.fromDate ? 'border-red-400' : 'border-gray-300'}`}>
+                        <Input
+                            type="text"
+                            placeholder="dd-mm-yyyy"
+                            naked
+                            maxLength={10}
+                            value={toDisplayDate(newRangeData.fromDate)}
+                            onChange={(e) => {
+                                const formatted = formatManualDate(e.target.value).slice(0, 10);
+                                setNewRangeData({ ...newRangeData, fromDate: toValueDate(formatted) });
+                                if (formatted.length === 10) {
+                                    markRangeTouched('fromDate');
+                                }
+                            }}
+                            onBlur={() => markRangeTouched('fromDate')}
+                            className="border-none bg-transparent h-7 p-0 text-xs font-bold flex-1 outline-none min-w-0 text-slate-800 placeholder:text-slate-400"
+                        />
+                        <Calendar
+                            className="w-3.5 h-3.5 text-gray-400 cursor-pointer shrink-0 hover:text-blue-600"
+                            tabIndex={-1}
+                            onClick={() => triggerDatePicker(fromDateRef)}
+                        />
+                    </div>
                     <Input
                         type="date"
+                        ref={fromDateRef}
+                        naked
+                        tabIndex={-1}
+                        className="absolute inset-0 opacity-0 pointer-events-none"
+                        min={effectiveMinFrom}
+                        max={agreementEnd}
                         value={newRangeData.fromDate}
                         onChange={(e) => {
                             setNewRangeData({ ...newRangeData, fromDate: e.target.value });
                             markRangeTouched('fromDate');
                         }}
-                        onBlur={() => markRangeTouched('fromDate')}
-                        min={effectiveMinFrom}
-                        max={agreementEnd}
-                        error={errors.fromDate}
-                        className="h-8 text-xs font-bold"
                     />
+                    {errors.fromDate && <p className="text-[10px] text-red-500 font-medium mt-0.5">{errors.fromDate}</p>}
                 </div>
 
-                <div className="flex-1 min-w-[130px] space-y-1.5">
+                <div className="flex-1 min-w-[140px] space-y-1.5 relative">
                     <Label className={fieldLabelClassName}>{t('floor.renterSection.toDate')} *</Label>
+                    <div className={`flex items-center bg-white border rounded-md px-2.5 h-8 ${errors.toDate ? 'border-red-400' : 'border-gray-300'}`}>
+                        <Input
+                            type="text"
+                            placeholder="dd-mm-yyyy"
+                            naked
+                            maxLength={10}
+                            value={toDisplayDate(newRangeData.toDate)}
+                            onChange={(e) => {
+                                const formatted = formatManualDate(e.target.value).slice(0, 10);
+                                setNewRangeData({ ...newRangeData, toDate: toValueDate(formatted) });
+                                if (formatted.length === 10) {
+                                    markRangeTouched('toDate');
+                                }
+                            }}
+                            onBlur={() => markRangeTouched('toDate')}
+                            className="border-none bg-transparent h-7 p-0 text-xs font-bold flex-1 outline-none min-w-0 text-slate-800 placeholder:text-slate-400"
+                        />
+                        <Calendar
+                            className="w-3.5 h-3.5 text-gray-400 cursor-pointer shrink-0 hover:text-blue-600"
+                            tabIndex={-1}
+                            onClick={() => triggerDatePicker(toDateRef)}
+                        />
+                    </div>
                     <Input
                         type="date"
+                        ref={toDateRef}
+                        naked
+                        tabIndex={-1}
+                        className="absolute inset-0 opacity-0 pointer-events-none"
+                        min={minToDate}
+                        max={agreementEnd}
                         value={newRangeData.toDate}
                         onChange={(e) => {
                             setNewRangeData({ ...newRangeData, toDate: e.target.value });
                             markRangeTouched('toDate');
                         }}
-                        onBlur={() => markRangeTouched('toDate')}
-                        min={minToDate}
-                        max={agreementEnd}
-                        error={errors.toDate}
-                        className="h-8 text-xs font-bold"
                     />
+                    {errors.toDate && <p className="text-[10px] text-red-500 font-medium mt-0.5">{errors.toDate}</p>}
                 </div>
 
                 <div className="flex-1 min-w-[150px] space-y-1.5">

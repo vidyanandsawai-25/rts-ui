@@ -4,7 +4,7 @@ import { MasterTable, Button } from "@/components/common";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CustomDateRange } from "@/types/renter/renter.types";
-import { normalizeCalculationMethod } from "@/lib/utils/renter/renterUtils";
+import { normalizeCalculationMethod, formatDateDDMMYYYY } from "@/lib/utils/renter/renterUtils";
 
 interface CustomRangeTableRow {
     id: string;
@@ -51,9 +51,9 @@ export const CustomRangesTable = (props: CustomRangesTableProps) => {
                 const r = row.range;
                 return (
                     <>
-                        {new Date(r.fromDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" })}
+                        {formatDateDDMMYYYY(r.fromDate)}
                         <span className="text-slate-400 mx-1">{`→`}</span>
-                        {new Date(r.toDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" })}
+                        {formatDateDDMMYYYY(r.toDate)}
                     </>
                 );
             },
@@ -126,7 +126,6 @@ export const CustomRangesTable = (props: CustomRangesTableProps) => {
             columns={columns}
             data={props.data}
             headerTitle={`${t('floor.renterSection.activeDateRanges')} (${props.data.length})`}
-            headerExtra={<span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />}
             containerClassName="rounded-xl overflow-hidden shadow-sm border border-gray-200 pt-0"
             tableClassName="text-xs min-w-[520px]"
             getRowKey={(row) => row.id}
