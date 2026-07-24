@@ -204,6 +204,7 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
               <Tabs.TabPanel value="type-wise" className="mt-0">
                 <TypeWiseTab
                   {...props}
+                  currentPropertyType={hook.currentPropertyType}
                   properties={displayedProperties}
                   selectedIds={hook.selectedPropertyIds}
                   onToggle={hook.handleTogglePropertySelection}

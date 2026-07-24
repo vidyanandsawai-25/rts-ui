@@ -45,7 +45,7 @@ export default function EffectPanel({
         });
       }
     }
-  }, [effect, onChange, staticApiOptions]);
+  }, [effect.overrideRate, effect.overrideRateLabel, staticApiOptions]);
 
 
   const options = [
