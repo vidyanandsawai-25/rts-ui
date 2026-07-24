@@ -761,6 +761,7 @@
     "select": "चुनें",
     "allFloors": "सभी मंज़िलें",
     "dataEntry": "डेटा प्रविष्टि",
+    "atLeastOneFloorRequired": "कृपया Data Entry Same As बटन सक्षम करने के लिए कम से कम एक मंज़िल जोड़ें",
     "dataEntryTabs": {
       "typeWise": "प्रकारवार",
       "propertyWise": "संपत्तिवार",

@@ -11,7 +11,7 @@ import type { SelectableProperty } from '@/types/floor-details.types';
 
 interface TypeWiseTabProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
-  currentPropertyType: string;
+  currentPropertyType?: string;
   properties: SelectableProperty[];
   selectedIds: Set<string | number>;
   onToggle: (id: string | number) => void;
@@ -50,7 +50,7 @@ interface TypeWiseTabProps {
 
 export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   t,
-  currentPropertyType,
+  currentPropertyType: _currentPropertyType,
   properties,
   selectedIds,
   onToggle,
