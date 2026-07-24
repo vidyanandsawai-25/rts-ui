@@ -82,8 +82,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
   const handleDataEntrySameAsClick = React.useCallback(() => {
     if (isDataEntryDisabled) {
       toast.error(
-        t('floor.atLeastOneFloorRequired') ||
-          'Please add at least one floor to enable Data Entry Same As button'
+        t('floor.atLeastOneFloorRequired')
+          
       );
       return;
     }
