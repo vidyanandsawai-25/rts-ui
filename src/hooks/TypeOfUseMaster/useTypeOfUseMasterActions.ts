@@ -25,6 +25,7 @@ interface DeleteConfig {
   deleteAction: () => Promise<{ success: boolean; message?: string; statusCode?: number }>;
   successMessage: string;
   errorMessage: string;
+  referencedMessage?: string;
   ignoreNextRedirect?: boolean;
 }
 
@@ -48,7 +49,10 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
           const result = await config.deleteAction();
           
           if (!result.success) {
-            toast.error(result.message || config.errorMessage);
+            const finalError = result.statusCode === 409 && config.referencedMessage
+              ? config.referencedMessage
+              : (result.message || config.errorMessage);
+            toast.error(finalError);
             return;
           }
           
@@ -59,7 +63,10 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
         } catch (error) {
           // Handle unexpected runtime errors that aren't caught by the action itself
           if (error instanceof ApiError) {
-            toast.error(error.responseText || config.errorMessage);
+            const finalError = error.statusCode === 409 && config.referencedMessage
+              ? config.referencedMessage
+              : (error.responseText || config.errorMessage);
+            toast.error(finalError);
           } else if (error instanceof Error) {
             toast.error(error.message || config.errorMessage);
           } else {
@@ -105,6 +112,7 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       deleteAction: () => deleteUseGroup(groupId),
       successMessage: t('messages.groupDeletedSuccess', { name: g.groupName }),
       errorMessage: t('messages.groupDeleteFailed'),
+      referencedMessage: t('messages.deleteGroupReferenced'),
     });
   };
 
@@ -143,6 +151,7 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       deleteAction: () => deleteUseType(typeId),
       successMessage: t('messages.typeDeletedSuccess', { name: useType.description }),
       errorMessage: t('messages.typeDeleteFailed'),
+      referencedMessage: t('messages.deleteTypeReferenced'),
     });
   };
 
@@ -154,6 +163,7 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       deleteAction: () => deleteSubType(String(s.subTypeOfUseId)),
       successMessage: t('messages.subTypeDeletedSuccess', { name: s.description }),
       errorMessage: t('messages.subTypeDeleteFailed'),
+      referencedMessage: t('messages.deleteSubTypeReferenced'),
       ignoreNextRedirect: true,
     });
   };

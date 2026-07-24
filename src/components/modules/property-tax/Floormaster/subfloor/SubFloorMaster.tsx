@@ -99,12 +99,10 @@ export default function SubFloorMaster({
             toast.success(t("messages.deleteSuccess"));
             router.refresh();
           } else {
-            let msg = t("messages.deleteFailed");
-            if (result.messageKey) {
-              msg = t(result.messageKey);
-            } else if (result.message) {
-              msg = result.message;
-            }
+            const msg =
+              result.statusCode === 409 ? t("messages.deleteInUse") :
+              result.messageKey ? t(result.messageKey) :
+              result.message || t("messages.deleteFailed");
             toast.error(msg);
           }
         },

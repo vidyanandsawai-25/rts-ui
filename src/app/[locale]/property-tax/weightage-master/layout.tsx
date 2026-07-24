@@ -9,7 +9,7 @@ interface LayoutProps {
 
 const Layout = async ({ children, params }: LayoutProps) => {
   const { locale } = await params;
-  const t = await getTranslations('weightageMaster');
+  const t = await getTranslations({ locale, namespace: 'weightageMaster' });
 
   const tabLabels = {
     floor: t('tabs.floor'),
