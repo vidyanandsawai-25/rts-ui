@@ -118,6 +118,10 @@ export interface SearchSelectProps {
    * Optional custom label when the list is empty inside the dropdown.
    */
   emptyMessage?: string;
+  /**
+   * Optional prop to hide default options until the user has typed a query.
+   */
+  showOptionsOnlyOnType?: boolean;
 }
 
 /** Helper to normalize string for forgiving/flexible option matching. */
@@ -154,6 +158,7 @@ export function SearchSelect({
   onBlur,
   strictMode = true,
   emptyMessage,
+  showOptionsOnlyOnType = false,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -242,7 +247,17 @@ export function SearchSelect({
     // If search is disabled, always show all options
     if (disableSearch) return validOptions;
 
-    if (!hasTyped) {
+    if (!hasTyped && !search.trim()) {
+      if (showOptionsOnlyOnType) {
+        if (!value) return [];
+        const idx = validOptions.findIndex((opt) => opt.value === value);
+        if (idx >= 0) {
+          const selectedOpt = validOptions[idx];
+          return [selectedOpt];
+        }
+        return [];
+      }
+
       if (!value) return validOptions;
       const idx = validOptions.findIndex((opt) => opt.value === value);
       if (idx >= 0) {
@@ -276,7 +291,7 @@ export function SearchSelect({
 
       return 0;
     });
-  }, [search, hasTyped, validOptions, disableSearch, value]);
+  }, [search, hasTyped, validOptions, disableSearch, value, showOptionsOnlyOnType]);
 
   const prevIsOpen = useRef(isOpen);
   useEffect(() => {
@@ -298,7 +313,7 @@ export function SearchSelect({
         return;
       }
       setIsOpen(false);
-      if (!hasOptions) return;
+      // Removed hasOptions early return to allow committing/clearing raw text in non-strict mode even if validOptions is empty.
       const cleanSearch = normalizeSearchText(search);
       const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
       if (matched) {
@@ -321,7 +336,7 @@ export function SearchSelect({
     } finally {
       onBlur?.();
     }
-  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped, onBlur, strictMode]);
+  }, [validOptions, search, fallbackName, onChange, hasTyped, onBlur, strictMode]);
 
   /* ---------------- Select option ---------------- */
 

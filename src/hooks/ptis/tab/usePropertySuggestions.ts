@@ -5,7 +5,8 @@ import { ptisSuggestionsClient } from '@/lib/api/ptis/tab/ptis-suggestions-clien
 export function usePropertySuggestions(
   wardId: number | null | undefined,
   debouncedSearchText: string,
-  draftPropertyId: string | null | undefined
+  draftPropertyId: string | null | undefined,
+  initialProperties: PropertyListItem[] = []
 ) {
   const [propertiesList, setPropertiesList] = useState<PropertyListItem[]>([]);
   const [isSearchingProperties, setIsSearchingProperties] = useState(false);
@@ -16,7 +17,12 @@ export function usePropertySuggestions(
         setPropertiesList((prev) => {
           const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
           const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
-          return currentSelected ? [currentSelected] : [];
+          
+          const merged = [...initialProperties];
+          if (currentSelected && !merged.some((p) => p.propertyId === currentSelected.propertyId)) {
+            merged.unshift(currentSelected);
+          }
+          return merged;
         });
       }, 0);
       return () => clearTimeout(timer);
@@ -47,11 +53,16 @@ export function usePropertySuggestions(
             const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
             const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
 
-            const merged = [...res.data!];
-            if (currentSelected && !merged.some((p) => p.propertyId === currentSelected.propertyId)) {
-              merged.unshift(currentSelected);
+            // Merge initialProperties + API suggestions and de-duplicate by propertyId
+            const merged = [...initialProperties, ...res.data!];
+            const unique = merged.filter((item, index, self) =>
+              self.findIndex((p) => p.propertyId === item.propertyId) === index
+            );
+
+            if (currentSelected && !unique.some((p) => p.propertyId === currentSelected.propertyId)) {
+              unique.unshift(currentSelected);
             }
-            return merged;
+            return unique;
           });
         }
       })
@@ -66,7 +77,7 @@ export function usePropertySuggestions(
       active = false;
       clearTimeout(timer);
     };
-  }, [debouncedSearchText, wardId, draftPropertyId]);
+  }, [debouncedSearchText, wardId, draftPropertyId, initialProperties]);
 
   return {
     propertiesList,
