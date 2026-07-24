@@ -393,7 +393,7 @@ export default function ReassesmentScreen({
       ========================================== */}
       <div className="bg-white rounded-xl shadow-lg border-2 border-[#2f5597] overflow-hidden">
         {/* HEADER - Separated with blue background */}
-        <div className="flex justify-between bg-gradient-to-r from-[#d9eaf7] via-[#c5ddf5] to-[#d9eaf7] border-b-2 border-[#2f5597] px-6 py-4">
+        <div className="flex justify-between flex-wrap bg-gradient-to-r from-sky-50 to-blue-50 border-b-2 border-[#2f5597] px-6 py-2">
           <h3 className="font-bold text-[#17365d] text-base whitespace-nowrap flex items-center gap-2">
             <FileText className="h-5 w-5 text-[#17365d]" />
             {t('sectionHeaders.taxDetails')}
@@ -411,7 +411,7 @@ export default function ReassesmentScreen({
                 columns={detailedTaxesColumns}
                 data={detailedTaxesData}
                 paginationConfig={{ enabled: false }}
-                tableClassName="w-full text-[11px] font-medium border-separate border-spacing-x-[3px] border-spacing-y-[2px]"
+                tableClassName="w-full text-[11px] p-1 font-medium border-separate border-spacing-x-[3px] border-spacing-y-[2px]"
                 theadClassName={cn(
                   'bg-[#e8eef5] text-black font-bold',
                   '[&_th]:bg-[#dbe5f0] [&_th]:border [&_th]:border-[#a9b8cc] [&_th]:rounded [&_th]:shadow-sm',
