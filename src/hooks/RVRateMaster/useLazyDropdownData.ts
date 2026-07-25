@@ -53,7 +53,6 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
     } catch (error) {
       logger.error("Failed to load zone options", { error: error as Error });
       setZoneOptions([]);
-      setZonesLoaded(true);
     } finally {
       setIsLoadingZones(false);
     }
@@ -71,7 +70,6 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
     } catch (error) {
       logger.error("Failed to load use group options", { error: error as Error });
       setUseGroupOptions([]);
-      setUseGroupsLoaded(true);
     } finally {
       setIsLoadingUseGroups(false);
     }
@@ -89,7 +87,6 @@ export function useLazyDropdownData(): UseLazyDropdownDataReturn {
     } catch (error) {
       logger.error("Failed to load assessment years", { error: error as Error });
       setAssessmentYears([]);
-      setAssessmentYearsLoaded(true);
     } finally {
       setIsLoadingAssessmentYears(false);
     }

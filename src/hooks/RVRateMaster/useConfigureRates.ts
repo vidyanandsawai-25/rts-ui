@@ -39,7 +39,6 @@ export function useConfigureRates({
   currentCategories,
   onConfigureSelected,
   t,
-  isOpenPlot = false,
 }: UseConfigureRatesProps) {
   const [allUseTypes, setAllUseTypes] = useState<ITypeOfUseDetails[]>([]);
   const [paginatedUseTypes, setPaginatedUseTypes] = useState<ITypeOfUseDetails[]>([]);
@@ -86,7 +85,7 @@ export function useConfigureRates({
     if (open) {
       loadData();
     }
-  }, [open, t, isOpenPlot]);
+  }, [open, t]);
 
   // Handle initialization and URL parameter sync
   useConfigureRatesInitialization({

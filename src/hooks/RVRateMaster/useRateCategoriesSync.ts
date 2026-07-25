@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { logger } from "@/lib/utils/logger";
 import { toast } from "sonner";
-import { getRateMasterByFilters, getOpenPlotTypeOfUseDetailsAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getRateMasterByFilters, getOpenPlotTypeOfUseDetailsAction, getTypeOfUseDetailsAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { RateCategory, ITypeOfUseDetails } from "@/types/RVRateMaster";
 
@@ -27,9 +27,10 @@ export function useRateCategoriesSync({
 
   const fetchLatestRateCategories = async () => {
     try {
-      const detailsResult = await getOpenPlotTypeOfUseDetailsAction();
-      const rawDetails = detailsResult.items || [];
-      const details = rawDetails;
+      const detailsResult = isOpenPlot
+        ? await getOpenPlotTypeOfUseDetailsAction()
+        : await getTypeOfUseDetailsAction(1, -1);
+      const details = detailsResult.items || [];
       const opCategory = details.find(t => t.typeOfUseCode === 'OP');
 
       const categoriesList: RateCategory[] = [];
@@ -124,9 +125,10 @@ export function useRateCategoriesSync({
     window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
 
     try {
-      const detailsResult = await getOpenPlotTypeOfUseDetailsAction();
-      const rawDetails = detailsResult.items || [];
-      const details = rawDetails;
+      const detailsResult = isOpenPlot
+        ? await getOpenPlotTypeOfUseDetailsAction()
+        : await getTypeOfUseDetailsAction(1, -1);
+      const details = detailsResult.items || [];
       const opCategory = details.find(t => t.typeOfUseCode === 'OP');
 
       const categoriesList: RateCategory[] = [];
@@ -313,7 +315,9 @@ export function useRateCategoriesSync({
       return;
     }
     try {
-      const detailsResult = await getOpenPlotTypeOfUseDetailsAction();
+      const detailsResult = isOpenPlot
+        ? await getOpenPlotTypeOfUseDetailsAction()
+        : await getTypeOfUseDetailsAction(1, -1);
       const details = detailsResult.items || [];
 
       confirm({
