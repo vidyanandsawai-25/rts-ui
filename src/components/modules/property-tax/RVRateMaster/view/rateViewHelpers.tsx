@@ -69,7 +69,8 @@ export function buildRateColumns(
       seenCodes.add(normalizedCode);
       const associated = typeof cat !== 'string' ? cat.associatedUseTypes : undefined;
       const hasMultiple = associated && associated.length > 1;
-      const displayCode = hasMultiple ? `${normalizedCode} (+${associated.length - 1})` : normalizedCode;
+      const groupCode = typeof cat !== 'string' && cat.typeOfUseGroupCode ? cat.typeOfUseGroupCode.trim().toUpperCase() : normalizedCode;
+      const displayCode = groupCode;
 
       const tooltipContent = hasMultiple ? (
         <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">

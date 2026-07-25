@@ -86,6 +86,8 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
         constructionCode: tu.typeOfUseCode || String(tu.id),
         description: tu.description || "",
         typeOfUseGroupId: tu.typeOfUseGroupId,
+        typeOfUseGroupCode: tu.typeOfUseGroupCode,
+        groupName: tu.groupName,
         associatedUseTypes: associated
       };
     });

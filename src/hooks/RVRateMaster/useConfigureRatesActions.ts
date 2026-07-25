@@ -349,7 +349,8 @@ export function useConfigureRatesActions({
     });
 
     if (distinctSelected.length === 0) {
-      toast.error(t("configureRates.toast.selectAtLeastOne"));
+      toast.info(t("configureRates.toast.useGroupsNotConfigured") || "Use Groups not Configured, so default use groups are shown.");
+      onConfigureSelected?.([]);
       return;
     }
 
