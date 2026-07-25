@@ -916,6 +916,7 @@
             "confirmDeletion": "Confirm Deletion",
             "areYouSureDeleteRange": "Are you sure you want to delete this range?",
             "deleted": "Deleted",
+            "delete": "Delete",
             "renterPropertyDetails": "Renter Property Details",
             "customDateRanges": "Custom Date Ranges",
             "agreementSummary": "Agreement Summary",
