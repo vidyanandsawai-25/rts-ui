@@ -54,6 +54,7 @@ describe('AppartmentQCSection', () => {
     },
     activeMainTab: 'residential',
     activeSubTab: 'rateable',
+    locale: 'en',
   };
 
   beforeEach(() => {
