@@ -1,7 +1,12 @@
 import React from 'react';
 import { Column } from '@/components/common/MasterTable';
 import { cn } from '@/lib/utils/cn';
-import { formatReassessmentCurrency, formatReassessmentNumber } from '@/lib/utils/format';
+import {
+  formatReassessmentCurrency,
+  formatReassessmentNumber,
+  formatReassessmentTaxCurrency,
+  sumReassessmentTaxAmounts,
+} from '@/lib/utils/format';
 import { ReassessmentTaxRow } from '@/types/reassessment.types';
 
 interface TaxColumn {
@@ -135,14 +140,30 @@ export function useReassessmentTaxTable({
     },
   ];
 
+  const oldTaxRow = taxRows.find((row) => row.rowType === 'old');
+  const newTaxRow = taxRows.find((row) => row.rowType === 'additional');
+  const oldCalculatedTotal = oldTaxRow ? sumReassessmentTaxAmounts(oldTaxRow.taxes) : 0;
+  const newCalculatedTotal = newTaxRow ? sumReassessmentTaxAmounts(newTaxRow.taxes) : 0;
+
   // Transform tax rows to table format
   const detailedTaxesData: DynamicTaxRow[] = taxRows.map((row) => {
     const isTotalRow = row.rowType === 'total';
-    const totalTaxVal = isTotalRow ? Math.abs(row.totalTax) : row.totalTax;
+    const isOldRow = row.rowType === 'old';
+    const isNewRow = row.rowType === 'additional';
+    const totalTaxVal = isTotalRow
+      ? oldCalculatedTotal + newCalculatedTotal
+      : sumReassessmentTaxAmounts(row.taxes);
+    const compareWith = isOldRow
+      ? newCalculatedTotal
+      : isNewRow
+        ? oldCalculatedTotal
+        : undefined;
 
     const rowData: DynamicTaxRow = {
       taxes: row.label,
-      totalTax: formatReassessmentCurrency(totalTaxVal),
+      totalTax: isTotalRow
+        ? formatReassessmentCurrency(totalTaxVal)
+        : formatReassessmentTaxCurrency(totalTaxVal, compareWith),
       isTotal: isTotalRow,
       isAdditional: row.rowType === 'additional',
     };

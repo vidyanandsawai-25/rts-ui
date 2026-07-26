@@ -76,6 +76,24 @@ const getDiffValue = (diff: string | number) => {
   return diff.replace(/^[-+]/, '').trim();
 };
 
+const DiffPill = ({
+  difference,
+  unit,
+  className = '',
+}: {
+  difference: string | number;
+  unit?: string;
+  className?: string;
+}) => (
+  <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${getDiffColor(difference)} ${className}`}>
+    {getDiffIcon(difference)}
+    <span>
+      {getDiffValue(difference)}
+      {unit ? ` ${unit}` : ''}
+    </span>
+  </div>
+);
+
 export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
   const t = useTranslations('reassessment');
   const changedStatus = t('summaryCards.changedStatus');
@@ -87,6 +105,7 @@ export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
         const differenceText = String(card.difference);
         const isUseCard = card.color === 'purple';
         const isAreaCard = card.color === 'sky';
+        const isTaxCard = card.color === 'emerald';
         const normalizedDiff = differenceText.trim().toLowerCase();
         const isChangedStatus =
           normalizedDiff === changedStatus.toLowerCase() ||
@@ -98,23 +117,28 @@ export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
             className={`relative rounded-lg border ${colors.border} ${colors.bg} px-2.5 py-1.5 transition-all duration-200 hover:shadow-sm hover:border-gray-300`}
           >
             {/* Label row */}
-            <div className="flex items-center justify-between mb-0.5">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between mb-0.5 gap-1">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <div className={`w-1 h-2.5 rounded-full ${colors.dot} flex-shrink-0`} />
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${colors.text}`}>
                   {card.label}
                 </span>
               </div>
-              
+
               {/* Status pill for use card */}
               {isUseCard && (
-                <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                  isChangedStatus 
-                    ? 'bg-amber-100 text-amber-700 border-amber-200' 
+                <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${
+                  isChangedStatus
+                    ? 'bg-amber-100 text-amber-700 border-amber-200'
                     : 'bg-gray-100 text-gray-600 border-gray-200'
                 }`}>
                   {isChangedStatus ? changedStatus : differenceText}
                 </div>
+              )}
+
+              {/* Difference - top right for tax card only */}
+              {isTaxCard && (
+                <DiffPill difference={card.difference} className="flex-shrink-0" />
               )}
             </div>
 
@@ -143,17 +167,14 @@ export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
                 </span>
               </div>
 
-              {/* Difference - only for non-use cards */}
-              {!isUseCard && (
+              {/* Difference - bottom row for area and RV cards */}
+              {!isUseCard && !isTaxCard && (
                 <>
                   <div className="w-px h-6 bg-gray-200/50 mx-0.5" />
-                  <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${getDiffColor(card.difference)}`}>
-                    {getDiffIcon(card.difference)}
-                    <span>
-                      {getDiffValue(card.difference)}
-                      {isAreaCard && card.unit ? ` ${card.unit}` : ''}
-                    </span>
-                  </div>
+                  <DiffPill
+                    difference={card.difference}
+                    unit={isAreaCard ? card.unit : undefined}
+                  />
                 </>
               )}
             </div>

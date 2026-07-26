@@ -1,5 +1,9 @@
 import { MappedFloorDetail, ReassessmentTaxRow } from '@/types/reassessment.types';
-import { formatReassessmentCurrency } from '@/lib/utils/format';
+import {
+  formatReassessmentCurrency,
+  formatReassessmentTaxCurrency,
+  sumReassessmentTaxAmounts,
+} from '@/lib/utils/format';
 
 export function useReassessmentSummaryCards({
   oldFloorDetails,
@@ -23,8 +27,10 @@ export function useReassessmentSummaryCards({
   const newTotalRV = newFloorDetails.reduce((sum, f) => sum + (f.rv || 0), 0);
   const rvDiff = newTotalRV - oldTotalRV;
 
-  const oldTotalTax = taxRows.find((r) => r.rowType === 'old')?.totalTax || 0;
-  const newTotalTax = taxRows.find((r) => r.rowType === 'additional')?.totalTax || 0;
+  const oldTaxRow = taxRows.find((r) => r.rowType === 'old');
+  const newTaxRow = taxRows.find((r) => r.rowType === 'additional');
+  const oldTotalTax = oldTaxRow ? sumReassessmentTaxAmounts(oldTaxRow.taxes) : 0;
+  const newTotalTax = newTaxRow ? sumReassessmentTaxAmounts(newTaxRow.taxes) : 0;
   const taxDiff = newTotalTax - oldTotalTax;
 
   // Determine if use type changed
@@ -59,8 +65,8 @@ export function useReassessmentSummaryCards({
     },
     {
       label: t('summaryCards.totalTaxLabel'),
-      oldValue: formatReassessmentCurrency(oldTotalTax),
-      newValue: formatReassessmentCurrency(newTotalTax),
+      oldValue: formatReassessmentTaxCurrency(oldTotalTax, newTotalTax),
+      newValue: formatReassessmentTaxCurrency(newTotalTax, oldTotalTax),
       difference: `${taxDiff >= 0 ? '+' : '-'}${formatReassessmentCurrency(Math.abs(taxDiff))}`,
       unit: t('summaryCards.units.rupees'),
       color: 'emerald' as const,

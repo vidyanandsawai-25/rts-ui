@@ -171,17 +171,6 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
     newTaxes[key] = tax.newAmount;
   });
 
-  // Calculate additional revenue (new - old) for each tax
-  const additionalTaxes: { [key: string]: number } = {};
-  let additionalTotalTax = 0;
-  
-  taxHeads.forEach((tax) => {
-    const key = toTaxKey(tax.taxName);
-    const difference = tax.newAmount - tax.oldAmount;
-    additionalTaxes[key] = difference;
-    additionalTotalTax += difference;
-  });
-
   const totalTaxes: { [key: string]: number } = {};
   let totalSumTax = 0;
   taxHeads.forEach((tax) => {
