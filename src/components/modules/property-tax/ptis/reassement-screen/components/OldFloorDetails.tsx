@@ -111,6 +111,42 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     //   ),
     // },
     {
+      key: 'ocCertificateNo',
+      label: t('floorDetails.columns.ocCertificateNo'),
+      width: '160px',
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ocCertificateNo || '-'}</div>
+      ),
+    },
+    {
+      key: 'ocCertificateIssueDate',
+      label: t('floorDetails.columns.ocCertificateIssueDate'),
+      width: '160px',
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ocCertificateIssueDate || '-'}</div>
+      ),
+    },
+    {
+      key: 'ccCertificateNo',
+      label: t('floorDetails.columns.ccCertificateNo'),
+      width: '160px',
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ccCertificateNo || '-'}</div>
+      ),
+    },
+    {
+      key: 'ccCertificateIssueDate',
+      label: t('floorDetails.columns.ccCertificateIssueDate'),
+      width: '160px',
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ccCertificateIssueDate || '-'}</div>
+      ),
+    },
+    {
       key: 'renter',
       label: t('floorDetails.columns.renter'),
       width: '144px',

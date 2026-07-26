@@ -146,6 +146,44 @@ export function formatReassessmentCurrency(value: number): string {
   return `₹${value.toLocaleString('en-IN')}`;
 }
 
+export function sumReassessmentTaxAmounts(taxes: Record<string, number>): number {
+  return Object.values(taxes).reduce(
+    (sum, val) => sum + (Number.isFinite(val) ? val : 0),
+    0
+  );
+}
+
+/**
+ * Formats tax amounts with adaptive precision so small rupee-level
+ * differences remain visible even when values are in Crores/Lakhs.
+ */
+export function formatReassessmentTaxCurrency(value: number, compareWith?: number): string {
+  if (compareWith === undefined || value === compareWith) {
+    return formatReassessmentCurrency(value);
+  }
+
+  const standardFormat = formatReassessmentCurrency(value);
+  if (standardFormat !== formatReassessmentCurrency(compareWith)) {
+    return standardFormat;
+  }
+
+  if (value >= 10000000 && compareWith >= 10000000) {
+    for (let decimals = 3; decimals <= 7; decimals++) {
+      const formatted = `₹${(value / 10000000).toFixed(decimals)}Cr`;
+      const formattedCompare = `₹${(compareWith / 10000000).toFixed(decimals)}Cr`;
+      if (formatted !== formattedCompare) return formatted;
+    }
+  } else if (value >= 100000 && compareWith >= 100000) {
+    for (let decimals = 3; decimals <= 5; decimals++) {
+      const formatted = `₹${(value / 100000).toFixed(decimals)}L`;
+      const formattedCompare = `₹${(compareWith / 100000).toFixed(decimals)}L`;
+      if (formatted !== formattedCompare) return formatted;
+    }
+  }
+
+  return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+}
+
 export function formatReassessmentNumber(value: number): string {
   return value.toLocaleString('en-IN');
 }

@@ -13,6 +13,36 @@ vi.mock("@/lib/utils/format", () => ({
     }
     return `₹${value.toLocaleString('en-IN')}`;
   },
+  formatReassessmentTaxCurrency: (value: number, compareWith?: number) => {
+    if (compareWith === undefined || value === compareWith) {
+      if (value >= 10000000) {
+        return `₹${(value / 10000000).toFixed(2)}Cr`;
+      } else if (value >= 100000) {
+        return `₹${(value / 100000).toFixed(2)}L`;
+      }
+      return `₹${value.toLocaleString('en-IN')}`;
+    }
+
+    const standard = (v: number) => {
+      if (v >= 10000000) return `₹${(v / 10000000).toFixed(2)}Cr`;
+      if (v >= 100000) return `₹${(v / 100000).toFixed(2)}L`;
+      return `₹${v.toLocaleString('en-IN')}`;
+    };
+
+    if (standard(value) !== standard(compareWith)) return standard(value);
+
+    if (value >= 10000000 && compareWith >= 10000000) {
+      for (let decimals = 3; decimals <= 7; decimals++) {
+        const formatted = `₹${(value / 10000000).toFixed(decimals)}Cr`;
+        const formattedCompare = `₹${(compareWith / 10000000).toFixed(decimals)}Cr`;
+        if (formatted !== formattedCompare) return formatted;
+      }
+    }
+
+    return `₹${value.toLocaleString('en-IN')}`;
+  },
+  sumReassessmentTaxAmounts: (taxes: Record<string, number>) =>
+    Object.values(taxes).reduce((sum, val) => sum + val, 0),
 }));
 
 describe("useReassessmentSummaryCards", () => {
@@ -38,6 +68,10 @@ describe("useReassessmentSummaryCards", () => {
       alv: 108000,
       mr: 100,
       rv: 120000,
+      ocCertificateNo: '',
+      ocCertificateIssueDate: '',
+      ccCertificateNo: '',
+      ccCertificateIssueDate: '',
     },
   ];
 
@@ -64,6 +98,10 @@ describe("useReassessmentSummaryCards", () => {
       mr: 120,
       rv: 144000,
       status: "Added",
+      ocCertificateNo: '',
+      ocCertificateIssueDate: '',
+      ccCertificateNo: '',
+      ccCertificateIssueDate: '',
     },
   ];
 
@@ -151,5 +189,35 @@ describe("useReassessmentSummaryCards", () => {
     expect(result.current[3].oldValue).toBe("₹1,500");
     expect(result.current[3].newValue).toBe("₹1,800");
     expect(result.current[3].difference).toBe("+₹300");
+  });
+
+  it("derives total tax from individual tax heads when API totals match", () => {
+    const taxRowsWithStaleTotal: ReassessmentTaxRow[] = [
+      {
+        rowType: "old",
+        label: "Old Tax",
+        taxes: { tax1: 39668200000 },
+        totalTax: 39668200000,
+      },
+      {
+        rowType: "additional",
+        label: "New Tax",
+        taxes: { tax1: 39668199999 },
+        totalTax: 39668200000,
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      useReassessmentSummaryCards({
+        oldFloorDetails: mockOldFloorDetails,
+        newFloorDetails: mockNewFloorDetails,
+        taxRows: taxRowsWithStaleTotal,
+        t: mockT,
+      })
+    );
+
+    expect(result.current[3].oldValue).toBe("₹3966.8200000Cr");
+    expect(result.current[3].newValue).toBe("₹3966.8199999Cr");
+    expect(result.current[3].difference).toBe("-₹1");
   });
 });

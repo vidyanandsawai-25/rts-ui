@@ -94,7 +94,7 @@ describe('useFloorDataHandlers', () => {
         expect(toast.success).toHaveBeenCalledWith('floor.floorAddedSuccess');
         expect(testParams.setIsAddingNewFloor).toHaveBeenCalledWith(false);
         expect(testParams.setSelectedFloor).toHaveBeenCalledWith(null);
-        expect(testParams.router.refresh).toHaveBeenCalled();
+        expect(testParams.router.replace).toHaveBeenCalled();
       });
     });
 
@@ -127,7 +127,7 @@ describe('useFloorDataHandlers', () => {
       await waitFor(() => {
         expect(updateFloorSubmissionNoRedirectAction).toHaveBeenCalled();
         expect(toast.success).toHaveBeenCalledWith('floor.floorUpdatedSuccess');
-        expect(testParams.router.refresh).toHaveBeenCalled();
+        expect(testParams.router.replace).toHaveBeenCalled();
       });
     });
 

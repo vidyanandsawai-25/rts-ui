@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { toast } from 'sonner';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmission';
 import { EditSidebarProps, FloorSubmissionPayload } from '@/types/floor-details.types';
 import FloorTable from './FloorTable';
@@ -69,10 +69,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     alreadyUtilizedOpenSpaceAreaSqM,
     enteredOpenSpaceAreaSqM,
     locale,
-    router,
     localFloors,
   } = useFloorSubmission(props);
 
+  const router = useRouter();
   const [isAddingArea, setIsAddingArea] = React.useState(false);
 
   const openPlotCategoryOptions = React.useMemo(() => {

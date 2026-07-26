@@ -148,7 +148,7 @@ export function useDataEntrySameAs({
       const propertiesPromise =
         Number(wardId) && propertyNo?.trim()
           ? // Pass categoryName so initial load also filters by category
-            fetchDataEntrySameAsAction(Number(wardId), propertyNo.trim(), categoryName)
+          fetchDataEntrySameAsAction(Number(wardId), propertyNo.trim(), categoryName)
           : Promise.resolve([]);
 
       try {
@@ -430,7 +430,6 @@ export function useDataEntrySameAs({
           );
           setSelectableProperties(updatedResults);
         }
-        router.refresh();
       } else {
         if (dataEntrySameAsTab === 'type-wise') {
           setSelectableProperties(originalProperties);
@@ -531,7 +530,6 @@ export function useDataEntrySameAs({
             );
             setSelectableProperties(updatedResults);
           }
-          router.refresh();
         } else {
           toast.error(submissionResult.error || t('floor.selectProperties.unknownError'));
         }
