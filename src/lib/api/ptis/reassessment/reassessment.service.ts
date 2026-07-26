@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from '@/services/api.service';
-import { formatDate } from '@/lib/utils/format';
+import { formatDateToDDMMYYYY } from '@/lib/utils/format';
 import type { ActionResult } from '@/types/common.types';
 import type {
   ReassessmentApiResponse,
@@ -125,11 +125,11 @@ export function mapFloorDetailsToDisplay(
       rv: detail.rateableValue ?? 0,
       ocCertificateNo: detail.ocCertificateNo ?? '',
       ocCertificateIssueDate: detail.ocCertificateIssueDate
-        ? formatDate(detail.ocCertificateIssueDate, 'en-IN')
+        ? formatDateToDDMMYYYY(detail.ocCertificateIssueDate)
         : '',
       ccCertificateNo: detail.ccCertificateNo ?? '',
       ccCertificateIssueDate: detail.ccCertificateIssueDate
-        ? formatDate(detail.ccCertificateIssueDate, 'en-IN')
+        ? formatDateToDDMMYYYY(detail.ccCertificateIssueDate)
         : '',
       maintenance: detail.maintenance,
       yearlyRent: detail.yearlyRent,
