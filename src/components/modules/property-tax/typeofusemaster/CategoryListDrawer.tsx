@@ -77,6 +77,8 @@ export default function CategoryListDrawer({
           if (result.success) {
             toast.success(t("category.messages.categoryDeleted"));
             router.refresh();
+          } else if (result.statusCode === 409) {
+            toast.error(t("category.messages.inUseError", { name: category.typeOfUseCategoryName }));
           } else {
             toast.error(result.message || t("category.messages.deleteFailed"));
           }
