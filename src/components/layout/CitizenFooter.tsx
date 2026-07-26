@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { GooglePlayBadge, SocialLinks } from '@/components/common';
 import type { UlbMaster } from '@/types/master.types';
@@ -14,6 +14,7 @@ interface CitizenFooterProps {
 
 export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
   const locale = useLocale();
+  const t = useTranslations('rts.citizenFooter');
   const router = useRouter();
 
   const getUlbName = () => {
@@ -33,12 +34,8 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
           : 'Akola Municipal Corporation';
     }
     return locale === 'mr'
-      ? (ulbData?.ulbNameLocal || ulbData?.ulbName || '')
-      : (ulbData?.ulbName || ulbData?.ulbNameLocal || '');
-  };
-
-  const getTransText = (mr: string, hi: string, en: string) => {
-    return locale === 'mr' ? mr : locale === 'hi' ? hi : en;
+      ? ulbData?.ulbNameLocal || ulbData?.ulbName || ''
+      : ulbData?.ulbName || ulbData?.ulbNameLocal || '';
   };
 
   const handleActionClick = (path: string) => {
@@ -59,7 +56,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
               {ulbData?.ulbLogo ? (
                 <Image
                   src={ulbData.ulbLogo}
-                  alt="Logo"
+                  alt={t('logoAlt')}
                   width={32}
                   height={32}
                   className="object-contain"
@@ -76,35 +73,43 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
             </h4>
           </div>
           <p className="text-[11px] leading-relaxed text-slate-500 font-medium">
-            {getTransText(
-              'महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५ अंतर्गत नागरिकांना वेळेत आणि पारदर्शक सेवा पुरवण्यासाठी कटिबद्ध.',
-              'महाराष्ट्र लोक सेवा अधिकार अधिनियम 2015 के अंतर्गत नागरिकों को समयबद्ध और पारदर्शी सेवाएं प्रदान करने के लिए प्रतिबद्ध।',
-              'Committed to providing time-bound and transparent services under the Maharashtra Right to Public Services Act 2015.'
-            )}
+            {t('description')}
           </p>
         </div>
 
         {/* Column 2: Essential Policy Links */}
         <div className="space-y-3 text-center sm:text-left flex flex-col items-center sm:items-start w-full">
           <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-1.5 w-full sm:w-auto text-center sm:text-left">
-            {getTransText('धोरणे आणि दुवे', 'नीतियां और लिंक्स', 'Policies & Links')}
+            {t('policiesAndLinks')}
           </h4>
           <div className="flex flex-col items-center sm:items-start space-y-2 text-[11px] font-bold text-slate-500">
-            <button onClick={() => handleActionClick('/service/login')} className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2">
+            <button
+              onClick={() => handleActionClick('/service/login')}
+              className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
-              {getTransText('अटी व शर्ती', 'नियम और शर्तें', 'Terms & Conditions')}
+              {t('terms')}
             </button>
-            <button onClick={() => handleActionClick('/service/login')} className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2">
+            <button
+              onClick={() => handleActionClick('/service/login')}
+              className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
-              {getTransText('गोपनीयता धोरण', 'गोपनीयता नीति', 'Privacy Policy')}
+              {t('privacy')}
             </button>
-            <button onClick={() => handleActionClick('/service/login')} className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2">
+            <button
+              onClick={() => handleActionClick('/service/login')}
+              className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
-              {getTransText('हेल्पडेस्क', 'हेल्पडेस्क', 'Helpdesk')}
+              {t('helpdesk')}
             </button>
-            <button onClick={() => handleActionClick('/service/login')} className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2">
+            <button
+              onClick={() => handleActionClick('/service/login')}
+              className="hover:text-blue-900 transition-colors text-left cursor-pointer bg-transparent border-none p-0 font-bold flex items-center gap-2"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
-              {getTransText('नागरिक सनद', 'नागरिक चार्टर', 'Citizen Charter')}
+              {t('citizenCharter')}
             </button>
           </div>
         </div>
@@ -112,7 +117,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
         {/* Column 3: Contact Details */}
         <div className="space-y-3 text-center sm:text-left flex flex-col items-center sm:items-start w-full">
           <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-1.5 w-full sm:w-auto text-center sm:text-left">
-            {getTransText('संपर्क माहिती', 'संपर्क सूत्र', 'Contact Details')}
+            {t('contactDetails')}
           </h4>
           <div className="flex flex-col items-center sm:items-start space-y-2 text-[11px] font-bold text-slate-500">
             {ulbData?.ulbAddress && (
@@ -124,7 +129,10 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
             {ulbData?.phoneNo && (
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <a href={`tel:${ulbData.phoneNo}`} className="hover:text-blue-900 transition-colors font-bold">
+                <a
+                  href={`tel:${ulbData.phoneNo}`}
+                  className="hover:text-blue-900 transition-colors font-bold"
+                >
                   {ulbData.phoneNo}
                 </a>
               </div>
@@ -132,7 +140,10 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
             {ulbData?.email && (
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <a href={`mailto:${ulbData.email}`} className="hover:text-blue-900 transition-colors font-bold">
+                <a
+                  href={`mailto:${ulbData.email}`}
+                  className="hover:text-blue-900 transition-colors font-bold"
+                >
                   {ulbData.email}
                 </a>
               </div>
@@ -143,7 +154,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
         {/* Column 4: Connect With Us & Play Store */}
         <div className="space-y-3 text-center sm:text-left flex flex-col items-center sm:items-start w-full">
           <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-1.5 w-full sm:w-auto text-center sm:text-left">
-            {getTransText('आमच्याशी जोडा', 'हमसे जुड़ें', 'Connect With Us')}
+            {t('connectWithUs')}
           </h4>
 
           {/* Social Icons Row */}
@@ -159,11 +170,9 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
       {/* Small Copyright Bottom Row */}
       <div className="max-w-7xl mx-auto border-t border-slate-100 mt-6 pt-4 flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-400 font-bold gap-2">
         <span className="text-center sm:text-left">
-          {getUlbName()} &copy; {new Date().getFullYear()}. {getTransText('सर्व हक्क राखीव.', 'सर्वाधिकार सुरक्षित।', 'All Rights Reserved.')}
+          {getUlbName()} &copy; {new Date().getFullYear()}. {t('allRightsReserved')}
         </span>
-        <span className="text-center sm:text-right">
-          {getTransText('महाराष्ट्र शासन लोकसेवा हक्क उपक्रम', 'महाराष्ट्र सरकार लोक सेवा अधिकार पहल', 'Government of Maharashtra Right to Service Initiative')}
-        </span>
+        <span className="text-center sm:text-right">{t('governmentInitiative')}</span>
       </div>
     </footer>
   );

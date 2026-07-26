@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,22 +19,15 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-type LocalizedCopy = {
-  mr: string;
-  hi: string;
-  en: string;
-};
+type JourneyStepKey = 'choose' | 'apply' | 'track' | 'certificate';
 
 type JourneyStep = {
-  title: LocalizedCopy;
-  shortTitle: LocalizedCopy;
-  description: LocalizedCopy;
+  key: JourneyStepKey;
   icon: LucideIcon;
   color: string;
 };
 
 interface CitizenJourneyHeroProps {
-  locale: string;
   serviceCount: number;
   searchQuery: string;
   onSearchChange: (value: string) => void;
@@ -42,297 +36,89 @@ interface CitizenJourneyHeroProps {
 
 const JOURNEY_STEPS: JourneyStep[] = [
   {
-    title: {
-      mr: 'सेवा निवडा',
-      hi: 'सेवा चुनें',
-      en: 'Choose a service',
-    },
-    shortTitle: {
-      mr: 'सेवा शोधा',
-      hi: 'सेवा खोजें',
-      en: 'Choose',
-    },
-    description: {
-      mr: 'विभाग किंवा सेवेच्या नावाने शोधा.',
-      hi: 'विभाग या सेवा के नाम से खोजें।',
-      en: 'Find the right service and check eligibility.',
-    },
+    key: 'choose',
     icon: Search,
     color: 'from-sky-400 to-blue-600',
   },
   {
-    title: {
-      mr: 'ऑनलाइन अर्ज करा',
-      hi: 'ऑनलाइन आवेदन करें',
-      en: 'Apply online',
-    },
-    shortTitle: {
-      mr: 'ई-अर्ज',
-      hi: 'ई-आवेदन',
-      en: 'e-File',
-    },
-    description: {
-      mr: 'अर्ज भरा आणि कागदपत्रे अपलोड करा.',
-      hi: 'फॉर्म भरें और दस्तावेज अपलोड करें।',
-      en: 'Complete the form and upload documents.',
-    },
+    key: 'apply',
     icon: UploadCloud,
     color: 'from-amber-400 to-orange-600',
   },
   {
-    title: {
-      mr: 'SLA स्थिती पाहा',
-      hi: 'SLA स्थिति देखें',
-      en: 'Track the SLA',
-    },
-    shortTitle: {
-      mr: 'ट्रॅक करा',
-      hi: 'ट्रैक करें',
-      en: 'Track',
-    },
-    description: {
-      mr: 'अर्जाची स्थिती आणि उर्वरित वेळ पाहा.',
-      hi: 'आवेदन की स्थिति और शेष समय देखें।',
-      en: 'See application status and remaining time.',
-    },
+    key: 'track',
     icon: Clock3,
     color: 'from-violet-500 to-indigo-700',
   },
   {
-    title: {
-      mr: 'डिजिटल दाखला मिळवा',
-      hi: 'डिजिटल प्रमाणपत्र पाएं',
-      en: 'Get the certificate',
-    },
-    shortTitle: {
-      mr: 'ई-दाखला',
-      hi: 'ई-प्रमाण',
-      en: 'e-Cert',
-    },
-    description: {
-      mr: 'मंजूर दाखला सुरक्षितपणे डाउनलोड करा.',
-      hi: 'स्वीकृत प्रमाणपत्र सुरक्षित रूप से डाउनलोड करें।',
-      en: 'Securely download the approved certificate.',
-    },
+    key: 'certificate',
     icon: BadgeCheck,
     color: 'from-emerald-400 to-teal-600',
   },
 ];
 
-function localized(locale: string, copy: LocalizedCopy): string {
-  if (locale === 'mr') return copy.mr;
-  if (locale === 'hi') return copy.hi;
-  return copy.en;
-}
-
 export function CitizenJourneyHero({
-  locale,
   serviceCount,
   searchQuery,
   onSearchChange,
   onApply,
 }: CitizenJourneyHeroProps) {
+  const t = useTranslations('rts.landing');
   const reduceMotion = useReducedMotion();
   const [activeJourneyIndex, setActiveJourneyIndex] = useState(0);
   const [activeStatIndex, setActiveStatIndex] = useState(0);
 
-  const copy = useMemo(
-    () => ({
-      actBadge: localized(locale, {
-        mr: 'महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५',
-        hi: 'महाराष्ट्र लोक सेवा अधिकार अधिनियम 2015',
-        en: 'Maharashtra Right to Public Services Act 2015',
-      }),
-      eyebrow: localized(locale, {
-        mr: 'अकोल्याचे डिजिटल नागरिक प्रवेशद्वार',
-        hi: 'अकोला का डिजिटल नागरिक प्रवेशद्वार',
-        en: "Akola's digital citizen gateway",
-      }),
-      titleStart: localized(locale, {
-        mr: 'नागरिक सेवा आता',
-        hi: 'नागरिक सेवाएं अब',
-        en: 'Public services made',
-      }),
-      titleAccent: localized(locale, {
-        mr: 'सोप्या, पारदर्शक आणि वेळेत.',
-        hi: 'सरल, पारदर्शी और समयबद्ध।',
-        en: 'simple, transparent and time-bound.',
-      }),
-      subtitle: localized(locale, {
-        mr: 'योग्य सेवा शोधा, ऑनलाइन अर्ज करा, वैधानिक SLA ट्रॅक करा आणि मंजूर दाखला तुमच्या मोबाईलवर मिळवा.',
-        hi: 'सही सेवा खोजें, ऑनलाइन आवेदन करें, वैधानिक SLA ट्रैक करें और स्वीकृत प्रमाणपत्र अपने मोबाइल पर पाएं।',
-        en: 'Find the right service, apply online, track the statutory SLA and receive the approved certificate on your phone.',
-      }),
-      searchPlaceholder: localized(locale, {
-        mr: 'जन्म दाखला, पाणी जोडणी, मालमत्ता कर...',
-        hi: 'जन्म प्रमाणपत्र, जल कनेक्शन, संपत्ति कर...',
-        en: 'Birth certificate, water connection, property tax...',
-      }),
-      searchLabel: localized(locale, {
-        mr: 'सेवा शोधा',
-        hi: 'सेवा खोजें',
-        en: 'Find a service',
-      }),
-      applyLabel: localized(locale, {
-        mr: 'ऑनलाइन अर्ज सुरू करा',
-        hi: 'ऑनलाइन आवेदन शुरू करें',
-        en: 'Start online application',
-      }),
-      exploreLabel: localized(locale, {
-        mr: 'सर्व सेवा पाहा',
-        hi: 'सभी सेवाएं देखें',
-        en: 'Explore all services',
-      }),
-      trust: localized(locale, {
-        mr: 'सुरक्षित पोर्टल • पारदर्शक प्रक्रिया • २४x७ उपलब्ध',
-        hi: 'सुरक्षित पोर्टल • पारदर्शी प्रक्रिया • 24x7 उपलब्ध',
-        en: 'Secure portal • Transparent process • Available 24x7',
-      }),
-      photoLabel: localized(locale, {
-        mr: 'अकोला महानगरपालिका',
-        hi: 'अकोला नगर निगम',
-        en: 'Akola Municipal Corporation',
-      }),
-      photoCaption: localized(locale, {
-        mr: 'तुमच्या नागरी सेवा, आता ऑनलाइन',
-        hi: 'आपकी नागरिक सेवाएं, अब ऑनलाइन',
-        en: 'Your civic services, now online',
-      }),
-      servicesLabel: localized(locale, {
-        mr: 'ऑनलाइन सेवा',
-        hi: 'ऑनलाइन सेवाएं',
-        en: 'Online services',
-      }),
-      digitalLabel: localized(locale, {
-        mr: 'डिजिटल उपलब्धता',
-        hi: 'डिजिटल उपलब्धता',
-        en: 'Digital access',
-      }),
-      slaLabel: localized(locale, {
-        mr: 'SLA पालन',
-        hi: 'SLA अनुपालन',
-        en: 'SLA delivery',
-      }),
-      journeyEyebrow: localized(locale, {
-        mr: 'चार सोपे टप्पे',
-        hi: 'चार आसान चरण',
-        en: 'Four simple steps',
-      }),
-      journeyTitle: localized(locale, {
-        mr: 'सेवा शोधण्यापासून डिजिटल दाखल्यापर्यंत',
-        hi: 'सेवा खोजने से डिजिटल प्रमाणपत्र तक',
-        en: 'From service search to digital certificate',
-      }),
-      slaProtected: localized(locale, {
-        mr: 'SLA संरक्षित',
-        hi: 'SLA संरक्षित',
-        en: 'SLA protected',
-      }),
-      startHere: localized(locale, {
-        mr: 'तुमचा प्रवास येथे सुरू होतो',
-        hi: 'आपकी यात्रा यहां से शुरू होती है',
-        en: 'Your journey starts here',
-      }),
-      applyShort: localized(locale, {
-        mr: 'अर्ज करा',
-        hi: 'आवेदन करें',
-        en: 'Apply',
-      }),
-      certificateReady: localized(locale, {
-        mr: 'दाखला तयार',
-        hi: 'प्रमाणपत्र तैयार',
-        en: 'Certificate ready',
-      }),
-      delivered: localized(locale, {
-        mr: 'सुरक्षितपणे मिळाले',
-        hi: 'सुरक्षित रूप से मिला',
-        en: 'Securely delivered',
-      }),
-      showStat: localized(locale, {
-        mr: 'आकडेवारी दाखवा',
-        hi: 'आंकड़ा दिखाएं',
-        en: 'Show statistic',
-      }),
-    }),
-    [locale]
-  );
+  const copy = {
+    actBadge: t('hero.actBadge'),
+    eyebrow: t('hero.eyebrow'),
+    titleStart: t('hero.titleStart'),
+    titleAccent: t('hero.titleAccent'),
+    subtitle: t('hero.subtitle'),
+    searchPlaceholder: t('hero.searchPlaceholder'),
+    searchLabel: t('hero.searchLabel'),
+    applyLabel: t('hero.applyLabel'),
+    exploreLabel: t('hero.exploreLabel'),
+    trust: t('hero.trust'),
+    photoLabel: t('hero.photoLabel'),
+    photoCaption: t('hero.photoCaption'),
+    digitalLabel: t('hero.digitalLabel'),
+    journeyEyebrow: t('journey.eyebrow'),
+    journeyTitle: t('journey.title'),
+    slaProtected: t('journey.slaProtected'),
+    applyShort: t('hero.applyShort'),
+    certificateReady: t('hero.certificateReady'),
+    delivered: t('hero.delivered'),
+    showStat: t('hero.showStat'),
+  };
 
   const stats = useMemo(
     () => [
       {
         value: `${serviceCount || 65}+`,
-        label: localized(locale, {
-          mr: 'ऑनलाइन सेवा',
-          hi: 'ऑनलाइन सेवाएं',
-          en: 'Online services',
-        }),
-        detail: localized(locale, {
-          mr: 'सर्व सेवा एकाच ठिकाणी',
-          hi: 'सभी सेवाएं एक ही स्थान पर',
-          en: 'Available in one place',
-        }),
-        badge: localized(locale, {
-          mr: '२४×७ डिजिटल',
-          hi: '24×7 डिजिटल',
-          en: '24×7 digital',
-        }),
+        label: t('heroStats.services.label'),
+        detail: t('heroStats.services.detail'),
+        badge: t('heroStats.services.badge'),
       },
       {
         value: '52,480+',
-        label: localized(locale, {
-          mr: 'प्राप्त अर्ज',
-          hi: 'प्राप्त आवेदन',
-          en: 'Applications received',
-        }),
-        detail: localized(locale, {
-          mr: 'नागरिकांकडून ऑनलाइन सादर',
-          hi: 'नागरिकों द्वारा ऑनलाइन जमा',
-          en: 'Submitted online by citizens',
-        }),
-        badge: localized(locale, {
-          mr: 'डिजिटल अर्ज',
-          hi: 'डिजिटल आवेदन',
-          en: 'Digital filing',
-        }),
+        label: t('heroStats.received.label'),
+        detail: t('heroStats.received.detail'),
+        badge: t('heroStats.received.badge'),
       },
       {
         value: '51,120+',
-        label: localized(locale, {
-          mr: 'वितरित अर्ज',
-          hi: 'वितरित आवेदन',
-          en: 'Applications delivered',
-        }),
-        detail: localized(locale, {
-          mr: 'मंजूर आणि नागरिकांना वितरित',
-          hi: 'स्वीकृत और नागरिकों को वितरित',
-          en: 'Approved and delivered',
-        }),
-        badge: localized(locale, {
-          mr: 'SLA पूर्ण',
-          hi: 'SLA पूर्ण',
-          en: 'SLA completed',
-        }),
+        label: t('heroStats.delivered.label'),
+        detail: t('heroStats.delivered.detail'),
+        badge: t('heroStats.delivered.badge'),
       },
       {
         value: '98.4%',
-        label: localized(locale, {
-          mr: 'SLA यश दर',
-          hi: 'SLA सफलता दर',
-          en: 'SLA success rate',
-        }),
-        detail: localized(locale, {
-          mr: 'निर्धारित वेळेत सेवा वितरण',
-          hi: 'निर्धारित समय में सेवा वितरण',
-          en: 'Delivered within the timeline',
-        }),
-        badge: localized(locale, {
-          mr: 'वेळेची हमी',
-          hi: 'समय की गारंटी',
-          en: 'Time guaranteed',
-        }),
+        label: t('heroStats.sla.label'),
+        detail: t('heroStats.sla.detail'),
+        badge: t('heroStats.sla.badge'),
       },
     ],
-    [locale, serviceCount]
+    [serviceCount, t]
   );
 
   useEffect(() => {
@@ -575,10 +361,10 @@ export function CitizenJourneyHero({
 
                         return (
                           <button
-                            key={step.title.en}
+                            key={step.key}
                             type="button"
                             onClick={() => setActiveJourneyIndex(index)}
-                            aria-label={localized(locale, step.title)}
+                            aria-label={t(`journey.steps.${step.key}.title`)}
                             className="group flex min-w-0 flex-col items-center text-center focus-visible:outline-none"
                           >
                             <motion.span
@@ -608,7 +394,7 @@ export function CitizenJourneyHero({
                                 isActive ? 'text-white' : 'text-blue-100/80'
                               }`}
                             >
-                              {localized(locale, step.shortTitle)}
+                              {t(`journey.steps.${step.key}.shortTitle`)}
                             </span>
                           </button>
                         );
@@ -630,10 +416,10 @@ export function CitizenJourneyHero({
                         className="min-w-0"
                       >
                         <p className="text-[9px] font-black text-white sm:text-[10px]">
-                          {localized(locale, activeStep.title)}
+                          {t(`journey.steps.${activeStep.key}.title`)}
                         </p>
                         <p className="mt-0.5 line-clamp-1 text-[7px] font-medium text-blue-100 sm:text-[8px]">
-                          {localized(locale, activeStep.description)}
+                          {t(`journey.steps.${activeStep.key}.description`)}
                         </p>
                       </motion.div>
                     </AnimatePresence>

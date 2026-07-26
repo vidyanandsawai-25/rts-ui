@@ -107,7 +107,24 @@
       "sub": "वेळबद्ध, पारदर्शक आणि नागरिक-केंद्रित सेवा",
       "featureTime": "वेळबद्ध सेवा",
       "featureTrans": "पारदर्शक प्रक्रिया",
-      "featureFirst": "नागरिक प्रथम"
+      "featureFirst": "नागरिक प्रथम",
+      "actBadge": "महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५",
+      "eyebrow": "अकोल्याचे डिजिटल नागरिक सेवा प्रवेशद्वार",
+      "titleStart": "सार्वजनिक सेवा आता",
+      "titleAccent": "सोप्या, पारदर्शक आणि वेळबद्ध.",
+      "subtitle": "योग्य सेवा शोधा, ऑनलाइन अर्ज करा, वैधानिक SLA स्थिती तपासा आणि मंजूर प्रमाणपत्र मोबाईलवर मिळवा.",
+      "searchPlaceholder": "जन्म प्रमाणपत्र, पाणी जोडणी, मालमत्ता कर...",
+      "searchLabel": "सेवा शोधा",
+      "applyLabel": "ऑनलाइन अर्ज सुरू करा",
+      "exploreLabel": "सर्व सेवा पाहा",
+      "trust": "सुरक्षित पोर्टल • पारदर्शक प्रक्रिया • २४×७ उपलब्ध",
+      "photoLabel": "अकोला महानगरपालिका",
+      "photoCaption": "तुमच्या नागरी सेवा, आता ऑनलाइन",
+      "digitalLabel": "डिजिटल प्रवेश",
+      "applyShort": "अर्ज करा",
+      "certificateReady": "प्रमाणपत्र तयार",
+      "delivered": "सुरक्षितपणे वितरित",
+      "showStat": "आकडेवारी दाखवा"
     },
     "search": {
       "placeholder": "सेवा शोधा... (जन्म प्रमाणपत्र, बांधकाम परवाना, व्यापार परवाना, पाणी जोडणी इ.)",
@@ -126,13 +143,13 @@
       "grievanceSub": "नागरी तक्रार नोंदवा"
     },
     "stats": {
-      "title": "RTS Portal Dashboard",
+      "title": "RTS पोर्टल डॅशबोर्ड",
       "moreInfo": "अधिक माहिती",
       "services": "एकूण सेवा",
       "servicesSub": "सर्व उपलब्ध सेवा",
       "online": "ऑनलाईन सेवा",
       "onlineSub": "पूर्णपणे डिजिटल",
-      "processed": "अर्ज प्रक्रिया",
+      "processed": "प्रक्रिया केलेले अर्ज",
       "processedSub": "यशस्वीरीत्या पूर्ण",
       "sla": "SLA पालन",
       "slaSub": "वेळेत सेवा वितरण"
@@ -140,8 +157,8 @@
     "sections": {
       "popular": "लोकप्रिय सेवा",
       "allServices": "सर्व सेवा पहा",
-      "departments": "department-wise सेवा",
-      "howItWorks": "अर्ज प्रक्रिया कशी आहे ?",
+      "departments": "विभागनिहाय सेवा",
+      "howItWorks": "अर्ज प्रक्रिया कशी कार्य करते?",
       "appealTitle": "महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५",
       "appealSub": "आपल्या अर्जाचा निर्णय निश्चित कालावधीत झाला नाही तर नागरिकांना अपील करण्याचा अधिकार आहे.",
       "appealBtn1": "प्रथम अपील दाखल करा",
@@ -149,7 +166,7 @@
       "grievanceTitle": "नागरी तक्रार सेवा",
       "grievanceSub": "आपल्या परिसरातील समस्या नोंदवा, आम्ही लवकर कारवाई करू.",
       "grievancePothole": "रस्त्यांवर खड्डे",
-      "grievanceGutter": "गटर झाकणे",
+      "grievanceGutter": "गटार / मॅनहोल झाकण",
       "grievanceClean": "स्वच्छता",
       "grievanceBtn": "तक्रार नोंदवा",
       "importantLinks": "महत्वपूर्ण दुवे"
@@ -180,11 +197,152 @@
         "sub": "डिजिटल प्रमाणपत्र मिळवा"
       }
     },
+    "heroStats": {
+      "services": {
+        "label": "ऑनलाइन सेवा",
+        "detail": "सर्व सेवा एकाच ठिकाणी",
+        "badge": "२४×७ डिजिटल"
+      },
+      "received": {
+        "label": "प्राप्त अर्ज",
+        "detail": "नागरिकांनी ऑनलाइन सादर केलेले अर्ज",
+        "badge": "डिजिटल अर्ज"
+      },
+      "delivered": {
+        "label": "निकाली काढलेले अर्ज",
+        "detail": "मंजूर करून नागरिकांना वितरित",
+        "badge": "SLA पूर्ण"
+      },
+      "sla": {
+        "label": "SLA यश दर",
+        "detail": "निर्धारित वेळेत सेवा वितरण",
+        "badge": "वेळेची हमी"
+      }
+    },
+    "journey": {
+      "eyebrow": "चार सोपे टप्पे",
+      "title": "सेवा शोधण्यापासून डिजिटल प्रमाणपत्रापर्यंत",
+      "slaProtected": "SLA संरक्षित",
+      "steps": {
+        "choose": {
+          "title": "सेवा निवडा",
+          "shortTitle": "निवडा",
+          "description": "योग्य सेवा शोधा आणि पात्रता तपासा."
+        },
+        "apply": {
+          "title": "ऑनलाइन अर्ज करा",
+          "shortTitle": "ई-अर्ज",
+          "description": "अर्ज भरा आणि कागदपत्रे अपलोड करा."
+        },
+        "track": {
+          "title": "SLA स्थिती तपासा",
+          "shortTitle": "स्थिती पाहा",
+          "description": "अर्जाची स्थिती आणि उर्वरित वेळ पाहा."
+        },
+        "certificate": {
+          "title": "प्रमाणपत्र मिळवा",
+          "shortTitle": "ई-प्रमाणपत्र",
+          "description": "मंजूर प्रमाणपत्र सुरक्षितपणे डाउनलोड करा."
+        }
+      }
+    },
+    "quickAccess": {
+      "eyebrow": "लोकप्रिय ऑनलाइन सुविधा",
+      "title": "त्वरित नागरिक सेवा",
+      "badge": "एका क्लिकमध्ये",
+      "actions": {
+        "apply": {
+          "label": "सेवेसाठी अर्ज करा",
+          "description": "नवीन अर्ज सुरू करा"
+        },
+        "download": {
+          "label": "प्रमाणपत्र डाउनलोड करा",
+          "description": "मंजूर प्रमाणपत्र मिळवा"
+        },
+        "pay": {
+          "label": "शुल्क भरा",
+          "description": "सुरक्षित ऑनलाइन भरणा"
+        },
+        "appeal": {
+          "label": "अपील दाखल करा",
+          "description": "ऑनलाइन अपील नोंदवा"
+        },
+        "grievance": {
+          "label": "तक्रार नोंदवा",
+          "description": "समस्या किंवा विनंती नोंदवा"
+        },
+        "track": {
+          "label": "अर्जाचा मागोवा घ्या",
+          "description": "स्थिती आणि SLA तपासा"
+        }
+      }
+    },
+    "serviceBrowser": {
+      "eyebrow": "नागरी सेवा पाहा",
+      "title": "विभागनिहाय नागरिक सेवा",
+      "subtitle": "विभाग निवडा आणि आवश्यक सेवा थेट उघडा.",
+      "totalServices": "{count} एकूण सेवा",
+      "serviceCount": "{count} सेवा",
+      "searchResults": "शोध परिणाम",
+      "resultsFound": "{count} आढळल्या",
+      "viewAllDepartments": "सर्व विभाग पाहा",
+      "noServices": "कोणतीही सेवा आढळली नाही",
+      "tryDifferentKeyword": "कृपया वेगळा शब्द वापरून पाहा.",
+      "departmentsAriaLabel": "सेवा विभाग",
+      "selectedDepartment": "निवडलेला विभाग",
+      "startApplication": "अर्ज सुरू करा",
+      "slaLabel": "SLA:",
+      "noDepartments": "विभाग उपलब्ध नाहीत",
+      "tryAgainLater": "कृपया नंतर पुन्हा प्रयत्न करा."
+    },
+    "serviceDetails": {
+      "title": "सेवा तपशील",
+      "days": "{count} दिवस",
+      "free": "मोफत",
+      "timeLimit": "कालमर्यादा (SLA)",
+      "fees": "शुल्क / आकार",
+      "receivingOfficer": "स्वीकृती अधिकारी",
+      "mandatoryDocuments": "आवश्यक कागदपत्रे",
+      "noDocuments": "या सेवेसाठी कोणतीही कागदपत्रे नमूद केलेली नाहीत.",
+      "close": "बंद करा",
+      "apply": "अर्ज प्रक्रिया सुरू करा"
+    },
+    "metadata": {
+      "title": "{ulbName} - सेवा हक्क पोर्टल",
+      "description": "{ulbName} - महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५ अंतर्गत वेळबद्ध, पारदर्शक आणि नागरिक-केंद्रित सेवा."
+    },
     "footer": {
-      "followUs": "आमचे सोबत राहा",
+      "followUs": "आमच्याशी जोडलेले राहा",
       "helpline": "RTS हेल्पलाइन",
       "email": "RTS ईमेल सपोर्ट"
     }
+  },
+  "citizenHeader": {
+    "switchPropertyError": "मालमत्ता बदलता आली नाही.",
+    "logoAlt": "महानगरपालिकेचे चिन्ह",
+    "act": "लोकसेवा हक्क अधिनियम",
+    "citizenPortal": "नागरिक पोर्टल",
+    "login": "लॉगिन करा",
+    "applicationsTitle": "माझे अर्ज आणि मागोवा",
+    "propertiesTitle": "माझ्या मालमत्ता",
+    "selectProperty": "पाहण्यासाठी मालमत्ता निवडा:",
+    "holderFallback": "मालमत्ताधारक",
+    "upicId": "यूपीआयसी आयडी:",
+    "propertyNumber": "मालमत्ता क्र.:",
+    "active": "सक्रिय"
+  },
+  "citizenFooter": {
+    "logoAlt": "महानगरपालिकेचे चिन्ह",
+    "description": "महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५ अंतर्गत नागरिकांना वेळबद्ध आणि पारदर्शक सेवा पुरवण्यासाठी कटिबद्ध.",
+    "policiesAndLinks": "धोरणे आणि दुवे",
+    "terms": "अटी व शर्ती",
+    "privacy": "गोपनीयता धोरण",
+    "helpdesk": "मदत कक्ष",
+    "citizenCharter": "नागरिक सनद",
+    "contactDetails": "संपर्क तपशील",
+    "connectWithUs": "आमच्याशी जोडा",
+    "allRightsReserved": "सर्व हक्क राखीव.",
+    "governmentInitiative": "महाराष्ट्र शासन लोकसेवा हक्क उपक्रम"
   },
   "applicationDashboard": {
     "title": "अ‍ॅप्लिकेशन डॅशबोर्ड",

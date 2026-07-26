@@ -4,13 +4,16 @@ import { useTransition, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { User, Landmark } from 'lucide-react';
 
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserProfileDropdown, Drawer } from '@/components/common';
 import { TrackingPanel } from '@/components/modules/rts/dashboard/TrackingPanel';
-import { logoutCitizenAction, switchCitizenPropertyAction } from '@/app/[locale]/service/login/actions';
+import {
+  logoutCitizenAction,
+  switchCitizenPropertyAction,
+} from '@/app/[locale]/service/login/actions';
 import { type CitizenProfile } from '@/types/rts-citizen.types';
 import type { CitizenProperty } from '@/lib/api/citizen-property.service';
 import type { UlbMaster } from '@/types/master.types';
@@ -25,12 +28,18 @@ interface CitizenHeaderProps {
   ulbData?: UlbMaster;
 }
 
-export function CitizenHeader({ profile, properties = [], locale: propLocale, ulbData }: CitizenHeaderProps) {
+export function CitizenHeader({
+  profile,
+  properties = [],
+  locale: propLocale,
+  ulbData,
+}: CitizenHeaderProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPropertiesDrawerOpen, setIsPropertiesDrawerOpen] = useState(false);
   const currentLocale = useLocale();
+  const t = useTranslations('rts.citizenHeader');
   const activeLocale = currentLocale || propLocale;
   const mobile = profile?.mobile;
 
@@ -41,7 +50,7 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
         setIsPropertiesDrawerOpen(false);
         router.refresh();
       } else {
-        alert(res.error || 'Failed to switch property.');
+        alert(res.error || t('switchPropertyError'));
       }
     });
   };
@@ -63,16 +72,16 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
           : 'Akola Municipal Corporation';
     }
     return activeLocale === 'mr'
-      ? (ulbData?.ulbNameLocal || ulbData?.ulbName || '')
-      : (ulbData?.ulbName || ulbData?.ulbNameLocal || '');
+      ? ulbData?.ulbNameLocal || ulbData?.ulbName || ''
+      : ulbData?.ulbName || ulbData?.ulbNameLocal || '';
   };
 
   const getUlbLocalName = () => {
     const rawName = ulbData?.ulbName || '';
     if (rawName.toUpperCase().includes('THANE') || rawName.toUpperCase().includes('AKOLA')) {
-      return activeLocale === 'en' ? (ulbData?.ulbNameLocal || '') : '';
+      return activeLocale === 'en' ? ulbData?.ulbNameLocal || '' : '';
     }
-    return activeLocale !== 'en' ? (ulbData?.ulbName || '') : '';
+    return activeLocale !== 'en' ? ulbData?.ulbName || '' : '';
   };
 
   const handleLogout = () => {
@@ -85,13 +94,6 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
 
   const ulbName = getUlbName();
   const ulbLocalName = getUlbLocalName();
-  const portalSubtitle =
-    activeLocale === 'mr'
-      ? 'लोकसेवा हक्क अधिनियम | नागरिक पोर्टल'
-      : activeLocale === 'hi'
-        ? 'लोक सेवा अधिकार अधिनियम | नागरिक पोर्टल'
-        : 'Right to Service Act | Citizen Portal';
-
   return (
     <header className="fixed inset-x-0 top-0 z-50 overflow-visible">
       {/* ── Same exact height & bg as admin Header ── */}
@@ -99,10 +101,8 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
         className="relative h-16 sm:h-20 w-full overflow-visible shadow-2xl border-b border-white/10"
         style={{ backgroundColor: HEADER_BG }}
       >
-
         {/* ── Content row ── */}
         <div className="relative flex h-full w-full items-center justify-between gap-3 overflow-visible px-3 sm:px-4 md:px-6">
-
           {/* LEFT: Logo + Name (same pattern as admin) */}
           <Link
             href={mobile ? `/${activeLocale}/service/dashboard` : `/${activeLocale}/service`}
@@ -115,7 +115,7 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
                 {ulbData?.ulbLogo ? (
                   <Image
                     src={ulbData.ulbLogo}
-                    alt={ulbName || 'Logo'}
+                    alt={ulbName || t('logoAlt')}
                     width={56}
                     height={56}
                     className="h-full w-full object-contain"
@@ -154,16 +154,15 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
 
               {/* Portal subtitle — hidden on very small mobile */}
               <p className="hidden sm:flex mt-0.5 flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{portalSubtitle.split('|')[0].trim()}</span>
+                <span>{t('act')}</span>
                 <span className="text-yellow-400">|</span>
-                <span className="font-medium text-yellow-300">{portalSubtitle.split('|')[1]?.trim()}</span>
+                <span className="font-medium text-yellow-300">{t('citizenPortal')}</span>
               </p>
             </div>
           </Link>
 
           {/* RIGHT: Language + Auth */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-
             {/* Language Selector */}
             <LanguageSelector />
 
@@ -184,9 +183,7 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
                 type="button"
               >
                 <User className="w-3.5 h-3.5 shrink-0" />
-                <span>
-                  {activeLocale === 'mr' ? 'लॉगिन करा' : activeLocale === 'hi' ? 'लॉग इन' : 'Login'}
-                </span>
+                <span>{t('login')}</span>
               </button>
             )}
           </div>
@@ -200,13 +197,7 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
         title={
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-bold text-gray-800">
-              {activeLocale === 'mr'
-                ? 'माझे अर्ज आणि ट्रॅकिंग'
-                : activeLocale === 'hi'
-                  ? 'मेरे आवेदन और ट्रैकिंग'
-                  : 'My Applications & Tracking'}
-            </h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('applicationsTitle')}</h3>
           </div>
         }
         width="lg"
@@ -223,25 +214,13 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
         title={
           <div className="flex items-center gap-2">
             <Landmark className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-bold text-gray-800">
-              {activeLocale === 'mr'
-                ? 'माझ्या मालमत्ता'
-                : activeLocale === 'hi'
-                  ? 'मेरी संपत्तियां'
-                  : 'My Properties'}
-            </h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('propertiesTitle')}</h3>
           </div>
         }
         width="md"
       >
         <div className="p-4 sm:p-6 bg-slate-50 min-h-full">
-          <p className="text-xs text-gray-500 font-semibold mb-4">
-            {activeLocale === 'mr'
-              ? 'कृपया पाहा आणि मालमत्ता निवडा:'
-              : activeLocale === 'hi'
-                ? 'कृपया देखें और संपत्ति चुनें:'
-                : 'Please select a property to view:'}
-          </p>
+          <p className="text-xs text-gray-500 font-semibold mb-4">{t('selectProperty')}</p>
           <div className="space-y-3">
             {properties.map((prop) => {
               const isSelected = profile && Number(profile.ownerId) === Number(prop.ownerId);
@@ -258,19 +237,15 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-extrabold text-gray-800">
-                      {prop.ownerNameMarathi || 'धारक . .'}
+                      {prop.ownerNameMarathi || t('holderFallback')}
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-semibold">
                       <span className="flex items-center gap-1">
-                        <span className="font-bold text-gray-400">
-                          {activeLocale === 'mr' ? 'यूपीआयसी आयडी:' : activeLocale === 'hi' ? 'यूपीआईसी आईडी:' : 'UPIC ID:'}
-                        </span>
+                        <span className="font-bold text-gray-400">{t('upicId')}</span>
                         <span className="text-gray-700">{prop.upicNo}</span>
                       </span>
                       <span className="flex items-center gap-1">
-                        <span className="font-bold text-gray-400">
-                          {activeLocale === 'mr' ? 'मालमत्ता क्र.:' : activeLocale === 'hi' ? 'संपत्ति क्र.:' : 'Property No:'}
-                        </span>
+                        <span className="font-bold text-gray-400">{t('propertyNumber')}</span>
                         <span className="text-gray-700">{prop.propertyNo}</span>
                       </span>
                     </div>
@@ -282,7 +257,7 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
                   </div>
                   {isSelected && (
                     <span className="shrink-0 inline-flex items-center justify-center bg-blue-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                      {activeLocale === 'mr' ? 'सक्रिय' : activeLocale === 'hi' ? 'सक्रिय' : 'Active'}
+                      {t('active')}
                     </span>
                   )}
                 </button>

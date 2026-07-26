@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -66,18 +66,13 @@ function pickLang(v: I18nLabel | string | undefined, lang: string): string {
 
 export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLandingPageProps) {
   const locale = useLocale();
+  const t = useTranslations('rts.landing');
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-
-
-  const t = (mr: string, hi: string, en: string) =>
-    locale === 'mr' ? mr : locale === 'hi' ? hi : en;
-
   const totalServiceCount = useMemo(
     () => departments.reduce((acc, d) => acc + d.services.length, 0),
     [departments]
@@ -102,15 +97,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           fees: svc.fees,
           feesRequired: svc.feesRequired,
         })),
-        stats:
-          locale === 'mr'
-            ? `${dept.services.length} सेवा`
-            : locale === 'hi'
-            ? `${dept.services.length} सेवाएं`
-            : `${dept.services.length} Service${dept.services.length !== 1 ? 's' : ''}`,
+        stats: t('serviceBrowser.serviceCount', { count: dept.services.length }),
       };
     });
-  }, [departments, locale]);
+  }, [departments, locale, t]);
 
   const requestedDepartment = deptCards.find(
     (department) => String(department.id) === String(searchParams.get('deptId') ?? '')
@@ -130,20 +120,41 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     if (!serviceId) return;
 
     // Check if service requires login (PropertyTax, Trade License, Water Supply)
-    const deptOfService = deptCards.find((d) => d.services.some((s) => String(s.id) === String(serviceId)));
+    const deptOfService = deptCards.find((d) =>
+      d.services.some((s) => String(s.id) === String(serviceId))
+    );
     const deptName = deptOfService ? deptOfService.title : '';
 
     const s = serviceName.toLowerCase();
     const d = deptName.toLowerCase();
 
-    const isPropertyTax = s.includes('property') || s.includes('tax') || d.includes('property') || d.includes('tax') ||
-                          s.includes('मालमत्ता') || s.includes('कर') || d.includes('मालमत्ता') || d.includes('कर');
+    const isPropertyTax =
+      s.includes('property') ||
+      s.includes('tax') ||
+      d.includes('property') ||
+      d.includes('tax') ||
+      s.includes('मालमत्ता') ||
+      s.includes('कर') ||
+      d.includes('मालमत्ता') ||
+      d.includes('कर');
 
-    const isTrade = s.includes('trade') || s.includes('license') || d.includes('trade') || d.includes('license') ||
-                    s.includes('व्यवसाय') || s.includes('व्यापार') || d.includes('व्यवसाय') || d.includes('व्यापार');
+    const isTrade =
+      s.includes('trade') ||
+      s.includes('license') ||
+      d.includes('trade') ||
+      d.includes('license') ||
+      s.includes('व्यवसाय') ||
+      s.includes('व्यापार') ||
+      d.includes('व्यवसाय') ||
+      d.includes('व्यापार');
 
-    const isWater = s.includes('water') || d.includes('water') ||
-                    s.includes('पाणी') || s.includes('जल') || d.includes('पाणी') || d.includes('जल');
+    const isWater =
+      s.includes('water') ||
+      d.includes('water') ||
+      s.includes('पाणी') ||
+      s.includes('जल') ||
+      d.includes('पाणी') ||
+      d.includes('जल');
 
     const requiresLogin = isPropertyTax || isTrade || isWater;
 
@@ -168,48 +179,48 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   // ── Quick Actions ──────────────────────────────────────────────────────────
   const quickActions = [
     {
-      label: t('सेवा अर्ज करा', 'सेवा के लिए आवेदन करें', 'Apply for Service'),
-      description: t('नवीन अर्ज सुरू करा', 'नया आवेदन शुरू करें', 'Start a new request'),
+      label: t('quickAccess.actions.apply.label'),
+      description: t('quickAccess.actions.apply.description'),
       icon: <FileEdit className="w-5 h-5 text-blue-600" />,
       iconBg: 'bg-blue-50',
       accent: 'from-blue-500 to-cyan-500',
       hoverClass: 'hover:border-blue-200 hover:bg-blue-50/50',
     },
     {
-      label: t('प्रमाणपत्र डाउनलोड', 'प्रमाणपत्र डाउनलोड करें', 'Download Certificate'),
-      description: t('मंजूर दाखला मिळवा', 'स्वीकृत प्रमाणपत्र पाएं', 'Get an approved copy'),
+      label: t('quickAccess.actions.download.label'),
+      description: t('quickAccess.actions.download.description'),
       icon: <Download className="w-5 h-5 text-purple-600" />,
       iconBg: 'bg-purple-50',
       accent: 'from-purple-500 to-fuchsia-500',
       hoverClass: 'hover:border-purple-200 hover:bg-purple-50/50',
     },
     {
-      label: t('शुल्क भरा', 'शुल्क भुगतान करें', 'Pay Fees'),
-      description: t('सुरक्षित ऑनलाइन भरणा', 'सुरक्षित ऑनलाइन भुगतान', 'Secure online payment'),
+      label: t('quickAccess.actions.pay.label'),
+      description: t('quickAccess.actions.pay.description'),
       icon: <CreditCard className="w-5 h-5 text-orange-600" />,
       iconBg: 'bg-orange-50',
       accent: 'from-orange-500 to-amber-500',
       hoverClass: 'hover:border-orange-200 hover:bg-orange-50/50',
     },
     {
-      label: t('अपील दाखल करा', 'अपील दर्ज करें', 'File Appeal'),
-      description: t('अपील ऑनलाइन नोंदवा', 'अपील ऑनलाइन दर्ज करें', 'Submit an appeal online'),
+      label: t('quickAccess.actions.appeal.label'),
+      description: t('quickAccess.actions.appeal.description'),
       icon: <Scale className="w-5 h-5 text-red-600" />,
       iconBg: 'bg-red-50',
       accent: 'from-rose-500 to-red-500',
       hoverClass: 'hover:border-rose-200 hover:bg-rose-50/50',
     },
     {
-      label: t('तक्रार नोंदवा', 'शिकायत दर्ज करें', 'Register Grievance'),
-      description: t('तक्रार आणि मदत', 'शिकायत और सहायता', 'Raise an issue or request'),
+      label: t('quickAccess.actions.grievance.label'),
+      description: t('quickAccess.actions.grievance.description'),
       icon: <MessageSquare className="w-5 h-5 text-teal-600" />,
       iconBg: 'bg-teal-50',
       accent: 'from-teal-500 to-emerald-500',
       hoverClass: 'hover:border-teal-200 hover:bg-teal-50/50',
     },
     {
-      label: t('अर्ज ट्रॅक करा', 'आवेदन ट्रैक करें', 'Track Application'),
-      description: t('स्थिती आणि SLA पाहा', 'स्थिति और SLA देखें', 'Check status and SLA'),
+      label: t('quickAccess.actions.track.label'),
+      description: t('quickAccess.actions.track.description'),
       icon: <Search className="w-5 h-5 text-indigo-600" />,
       iconBg: 'bg-indigo-50',
       accent: 'from-indigo-500 to-blue-500',
@@ -220,26 +231,23 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   // ── Active dept ────────────────────────────────────────────────────────────
   const activeDept = deptCards.find((d) => d.id === resolvedActiveTab) ?? deptCards[0];
 
-  const totalLabel =
-    locale === 'mr'
-      ? `${totalServiceCount} एकूण सेवा`
-      : locale === 'hi'
-      ? `${totalServiceCount} कुल सेवाएं`
-      : `${totalServiceCount} Total Services`;
-
-  const sectionTitle = t('विभागानुसार नागरिक सेवा', 'विभाग के अनुसार नागरिक सेवाएं', 'Citizen services by department');
+  const totalLabel = t('serviceBrowser.totalServices', { count: totalServiceCount });
+  const sectionTitle = t('serviceBrowser.title');
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="w-full bg-[radial-gradient(circle_at_top_left,rgba(219,234,254,0.65),transparent_32%),linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] pb-2 font-sans">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}} />
+      `,
+        }}
+      />
 
       <div className="w-full space-y-5">
         <CitizenJourneyHero
-          locale={locale}
           serviceCount={totalServiceCount}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -258,15 +266,18 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </span>
                 <div className="min-w-0">
                   <p className="text-[9px] font-black uppercase tracking-[0.14em] text-blue-600 sm:text-[10px]">
-                    {t('लोकप्रिय ऑनलाइन क्रिया', 'लोकप्रिय ऑनलाइन कार्य', 'Popular online actions')}
+                    {t('quickAccess.eyebrow')}
                   </p>
-                  <h2 id="quick-actions-title" className="truncate text-base font-black text-slate-900 sm:text-lg">
-                    {t('त्वरित सेवा', 'त्वरित सेवाएं', 'Quick citizen access')}
+                  <h2
+                    id="quick-actions-title"
+                    className="truncate text-base font-black text-slate-900 sm:text-lg"
+                  >
+                    {t('quickAccess.title')}
                   </h2>
                 </div>
               </div>
               <span className="hidden rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-black text-blue-800 sm:inline-flex">
-                {t('एका क्लिकमध्ये', 'एक क्लिक में', 'One-click access')}
+                {t('quickAccess.badge')}
               </span>
             </div>
 
@@ -278,9 +289,13 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                   onClick={handleActionClick}
                   className={`group relative flex min-h-[80px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2.5 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-h-[78px] sm:items-start sm:text-left ${action.hoverClass}`}
                 >
-                  <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${action.accent}`} />
+                  <span
+                    className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${action.accent}`}
+                  />
                   <div className="flex w-full items-center justify-center gap-2 sm:justify-between">
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${action.iconBg}`}>
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${action.iconBg}`}
+                    >
                       {action.icon}
                     </span>
                     <Icons.ArrowUpRight className="hidden h-4 w-4 text-slate-300 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-blue-600 sm:block" />
@@ -307,17 +322,16 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </span>
                 <div className="min-w-0">
                   <p className="text-[9px] font-black uppercase tracking-[0.14em] text-emerald-600 sm:text-[10px]">
-                    {t('तुमची नागरी सेवा निवडा', 'अपनी नागरिक सेवा चुनें', 'Explore civic services')}
+                    {t('serviceBrowser.eyebrow')}
                   </p>
-                  <h2 id="department-services-title" className="text-base font-black leading-tight text-slate-900 sm:text-lg">
+                  <h2
+                    id="department-services-title"
+                    className="text-base font-black leading-tight text-slate-900 sm:text-lg"
+                  >
                     {sectionTitle}
                   </h2>
                   <p className="mt-0.5 text-[10px] font-semibold text-slate-500 sm:text-xs">
-                    {t(
-                      'विभाग निवडा आणि उपलब्ध सेवा थेट पाहा.',
-                      'विभाग चुनें और उपलब्ध सेवाएं सीधे देखें।',
-                      'Choose a department and open the service you need.'
-                    )}
+                    {t('serviceBrowser.subtitle')}
                   </p>
                 </div>
               </div>
@@ -332,11 +346,9 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 <div className="mb-3 flex flex-col gap-2 rounded-2xl bg-gradient-to-r from-blue-950 to-blue-800 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
                     <Search className="h-4 w-4 text-cyan-300" />
-                    <h3 className="text-sm font-black">
-                      {t('शोध परिणाम', 'खोज परिणाम', 'Search results')}
-                    </h3>
+                    <h3 className="text-sm font-black">{t('serviceBrowser.searchResults')}</h3>
                     <span className="rounded-full bg-white/15 px-2 py-0.5 text-[9px] font-black">
-                      {filteredServices.length} {t('आढळले', 'मिले', 'found')}
+                      {t('serviceBrowser.resultsFound', { count: filteredServices.length })}
                     </span>
                   </div>
                   <button
@@ -345,7 +357,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-black transition hover:bg-white/20"
                   >
                     <Icons.ArrowLeft className="h-3.5 w-3.5" />
-                    {t('सर्व विभाग पहा', 'सभी विभाग देखें', 'View all departments')}
+                    {t('serviceBrowser.viewAllDepartments')}
                   </button>
                 </div>
 
@@ -382,10 +394,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                       <Search className="h-6 w-6" />
                     </span>
                     <p className="mt-3 text-sm font-black text-slate-700">
-                      {t('कोणत्याही सेवा आढळल्या नाहीत', 'कोई सेवा नहीं मिली', 'No services found')}
+                      {t('serviceBrowser.noServices')}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-slate-400">
-                      {t('कृपया वेगळे शब्द वापरून पहा.', 'कृपया कोई अन्य शब्द आज़माएं।', 'Please try a different keyword.')}
+                      {t('serviceBrowser.tryDifferentKeyword')}
                     </p>
                   </div>
                 )}
@@ -393,7 +405,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             ) : (
               <>
                 <nav
-                  aria-label={t('सेवा विभाग', 'सेवा विभाग', 'Service departments')}
+                  aria-label={t('serviceBrowser.departmentsAriaLabel')}
                   className="no-scrollbar flex w-full gap-2 overflow-x-auto border-b border-slate-100 bg-slate-50/70 px-3 py-3 sm:px-4"
                 >
                   {deptCards.map((dept) => {
@@ -409,9 +421,13 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                             : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-800'
                         }`}
                       >
-                        <span className={isActive ? 'text-white' : 'shrink-0 text-slate-400'}>{dept.icon}</span>
+                        <span className={isActive ? 'text-white' : 'shrink-0 text-slate-400'}>
+                          {dept.icon}
+                        </span>
                         <span className="whitespace-nowrap">{dept.title}</span>
-                        <span className={`rounded-full px-1.5 py-0.5 text-[8px] ${isActive ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                        <span
+                          className={`rounded-full px-1.5 py-0.5 text-[8px] ${isActive ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-400'}`}
+                        >
                           {dept.services.length}
                         </span>
                       </button>
@@ -422,7 +438,9 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 <div className="p-3 sm:p-4">
                   {activeDept ? (
                     <div className="grid gap-3 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)]">
-                      <aside className={`relative overflow-hidden rounded-2xl p-5 text-white ${activeDept.bannerBg}`}>
+                      <aside
+                        className={`relative overflow-hidden rounded-2xl p-5 text-white ${activeDept.bannerBg}`}
+                      >
                         <span className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10" />
                         <span className="absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-black/10" />
                         <div className="relative flex h-full min-h-[190px] flex-col">
@@ -430,16 +448,20 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                             {activeDept.icon}
                           </span>
                           <p className="mt-5 text-[9px] font-black uppercase tracking-[0.14em] text-white/70">
-                            {t('निवडलेला विभाग', 'चयनित विभाग', 'Selected department')}
+                            {t('serviceBrowser.selectedDepartment')}
                           </p>
-                          <h3 className="mt-1 text-lg font-black leading-tight">{activeDept.title}</h3>
-                          <p className="mt-1 text-[11px] font-bold text-white/75">{activeDept.stats}</p>
+                          <h3 className="mt-1 text-lg font-black leading-tight">
+                            {activeDept.title}
+                          </h3>
+                          <p className="mt-1 text-[11px] font-bold text-white/75">
+                            {activeDept.stats}
+                          </p>
                           <button
                             type="button"
                             onClick={handleActionClick}
                             className="mt-auto inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-white px-3 text-[11px] font-black text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-slate-50"
                           >
-                            {t('अर्ज सुरू करा', 'आवेदन शुरू करें', 'Start application')}
+                            {t('serviceBrowser.startApplication')}
                             <Icons.ArrowRight className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -465,7 +487,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                               </span>
                               {item.sla !== undefined && item.sla !== null && (
                                 <span className="mt-0.5 block text-[8px] font-bold uppercase tracking-wide text-slate-400">
-                                  {t('SLA:', 'SLA:', 'SLA:')} {String(item.sla)}
+                                  {t('serviceBrowser.slaLabel')} {String(item.sla)}
                                 </span>
                               )}
                             </span>
@@ -480,10 +502,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                         <Search className="h-6 w-6" />
                       </span>
                       <p className="mt-3 text-sm font-black text-slate-700">
-                        {t('विभाग उपलब्ध नाहीत', 'विभाग उपलब्ध नहीं हैं', 'Departments are not available')}
+                        {t('serviceBrowser.noDepartments')}
                       </p>
                       <p className="mt-1 text-xs font-semibold text-slate-400">
-                        {t('कृपया नंतर पुन्हा प्रयत्न करा.', 'कृपया बाद में पुनः प्रयास करें।', 'Please try again later.')}
+                        {t('serviceBrowser.tryAgainLater')}
                       </p>
                     </div>
                   )}
@@ -495,90 +517,137 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       </div>
 
       {/* Service Details Modal */}
-      {isDetailsOpen && selectedServiceId && (() => {
-        let serviceName = '';
-        let deptName = '';
-        let serviceItem: (typeof deptCards)[number]['services'][number] | null = null;
-        for (const dept of deptCards) {
-          const svc = dept.services.find((s) => s.id === selectedServiceId);
-          if (svc) {
-            serviceName = svc.name;
-            deptName = dept.title;
-            serviceItem = svc;
-            break;
+      {isDetailsOpen &&
+        selectedServiceId &&
+        (() => {
+          let serviceName = '';
+          let deptName = '';
+          let serviceItem: (typeof deptCards)[number]['services'][number] | null = null;
+          for (const dept of deptCards) {
+            const svc = dept.services.find((s) => s.id === selectedServiceId);
+            if (svc) {
+              serviceName = svc.name;
+              deptName = dept.title;
+              serviceItem = svc;
+              break;
+            }
           }
-        }
 
-        let transSla = '7 Days';
-        if (serviceItem?.sla !== undefined && serviceItem?.sla !== null) {
-          transSla = typeof serviceItem.sla === 'number' ? `${serviceItem.sla} ${t('दिवस', 'दिन', 'Days')}` : String(serviceItem.sla);
-        }
+          let transSla = t('serviceDetails.days', { count: 7 });
+          if (serviceItem?.sla !== undefined && serviceItem?.sla !== null) {
+            transSla =
+              typeof serviceItem.sla === 'number'
+                ? t('serviceDetails.days', { count: serviceItem.sla })
+                : String(serviceItem.sla);
+          }
 
-        let transFees = 'Free';
-        if (serviceItem?.feesRequired === false) {
-          transFees = t('मोफत', 'निःशुल्क', 'Free');
-        } else if (serviceItem?.fees !== undefined && serviceItem?.fees !== null) {
-          transFees = `₹${serviceItem.fees}`;
-        }
+          let transFees = t('serviceDetails.free');
+          if (serviceItem?.feesRequired === false) {
+            transFees = t('serviceDetails.free');
+          } else if (serviceItem?.fees !== undefined && serviceItem?.fees !== null) {
+            transFees = `₹${serviceItem.fees}`;
+          }
 
-        const transOfficer = '-';
-        const transDocs: string[] = [];
+          const transOfficer = '-';
+          const transDocs: string[] = [];
 
-        return (
-          <Modal open={isDetailsOpen} onClose={() => { setIsDetailsOpen(false); setSelectedServiceId(null); }} title={serviceName || 'सेवा तपशील'} subtitle={deptName} maxWidth="md">
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 shrink-0"><Clock className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-blue-500 tracking-wider">{t('कालावधी (SLA)', 'समय सीमा (SLA)', 'Time Limit (SLA)')}</p>
-                    <p className="text-sm font-extrabold text-slate-800">{transSla}</p>
+          return (
+            <Modal
+              open={isDetailsOpen}
+              onClose={() => {
+                setIsDetailsOpen(false);
+                setSelectedServiceId(null);
+              }}
+              title={serviceName || t('serviceDetails.title')}
+              subtitle={deptName}
+              maxWidth="md"
+            >
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 shrink-0">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-blue-500 tracking-wider">
+                        {t('serviceDetails.timeLimit')}
+                      </p>
+                      <p className="text-sm font-extrabold text-slate-800">{transSla}</p>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 shrink-0">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-amber-600 tracking-wider">
+                        {t('serviceDetails.fees')}
+                      </p>
+                      <p className="text-sm font-extrabold text-slate-800">{transFees}</p>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0">
+                      <UserCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
+                        {t('serviceDetails.receivingOfficer')}
+                      </p>
+                      <p className="text-sm font-extrabold text-slate-800">{transOfficer}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 shrink-0"><CreditCard className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-amber-600 tracking-wider">{t('शुल्क / आकार', 'शुल्क / प्रभार', 'Fees / Charges')}</p>
-                    <p className="text-sm font-extrabold text-slate-800">{transFees}</p>
-                  </div>
-                </div>
-                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0"><UserCheck className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">{t('स्वीकृती अधिकारी', 'स्वीकृति अधिकारी', 'Receiving Officer')}</p>
-                    <p className="text-sm font-extrabold text-slate-800">{transOfficer}</p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="bg-white p-5 border border-slate-200 rounded-xl space-y-3">
-                <h5 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-blue-600" />
-                  <span>{t('आवश्यक बंधनकारक कागदपत्रे', 'आवश्यक अनिवार्य दस्तावेज', 'Mandatory Documents Required')}</span>
-                </h5>
-                {transDocs.length > 0 ? (
-                  <ul className="space-y-2 text-xs sm:text-sm text-slate-600 font-semibold list-disc pl-5">
-                    {transDocs.map((doc, dIdx) => <li key={dIdx} className="leading-relaxed">{doc}</li>)}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-slate-400 font-semibold italic">
-                    {t('या सेवेसाठी कोणतीही कागदपत्रे नमूद केलेली नाहीत.', 'इस सेवा के लिए कोई दस्तावेज निर्दिष्ट नहीं हैं।', 'No documents specified for this service.')}
-                  </p>
-                )}
-              </div>
+                <div className="bg-white p-5 border border-slate-200 rounded-xl space-y-3">
+                  <h5 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-blue-600" />
+                    <span>{t('serviceDetails.mandatoryDocuments')}</span>
+                  </h5>
+                  {transDocs.length > 0 ? (
+                    <ul className="space-y-2 text-xs sm:text-sm text-slate-600 font-semibold list-disc pl-5">
+                      {transDocs.map((doc, dIdx) => (
+                        <li key={dIdx} className="leading-relaxed">
+                          {doc}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-slate-400 font-semibold italic">
+                      {t('serviceDetails.noDocuments')}
+                    </p>
+                  )}
+                </div>
 
-              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
-                <Button variant="secondary" size="md" onClick={() => { setIsDetailsOpen(false); setSelectedServiceId(null); }} className="font-bold">
-                  {t('बंद करा', 'बंद करें', 'Close')}
-                </Button>
-                <Button variant="primary" size="md" onClick={() => { setIsDetailsOpen(false); setSelectedServiceId(null); handleServiceClick(serviceName, selectedServiceId); }} className="font-extrabold">
-                  {t('अर्ज प्रक्रियेला सुरुवात करा', 'आवेदन प्रक्रिया शुरू करें', 'Apply / Process')} &rarr;
-                </Button>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => {
+                      setIsDetailsOpen(false);
+                      setSelectedServiceId(null);
+                    }}
+                    className="font-bold"
+                  >
+                    {t('serviceDetails.close')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => {
+                      setIsDetailsOpen(false);
+                      setSelectedServiceId(null);
+                      handleServiceClick(serviceName, selectedServiceId);
+                    }}
+                    className="font-extrabold"
+                  >
+                    {t('serviceDetails.apply')} &rarr;
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Modal>
-        );
-      })()}
+            </Modal>
+          );
+        })()}
     </div>
   );
 }
