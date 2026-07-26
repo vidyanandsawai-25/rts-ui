@@ -196,7 +196,6 @@ export const useFloorDataHandlers = (params: {
           }
 
           startTransition(() => {
-            router.refresh();
             if (typeof window !== 'undefined') {
               try {
                 const url = new URL(window.location.href);

@@ -97,11 +97,11 @@ export function TabNavigation() {
           win.__buildingFormHasChanges = false;
           win.__discountFormHasChanges = false;
           win.__socialFormHasChanges = false;
-          router.push(tabHref);
+          router.replace(tabHref);
         }
       });
     } else {
-      router.push(tabHref);
+      router.replace(tabHref);
     }
   };
 
