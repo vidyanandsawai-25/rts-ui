@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -19,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
 import type { DepartmentDTO } from '@/types/rts-citizen.types';
+import { CitizenJourneyHero } from './CitizenJourneyHero';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,6 +67,7 @@ function pickLang(v: I18nLabel | string | undefined, lang: string): string {
 export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLandingPageProps) {
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
@@ -82,46 +82,6 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     () => departments.reduce((acc, d) => acc + d.services.length, 0),
     [departments]
   );
-  const countDisplay = totalServiceCount > 0 ? `${totalServiceCount}+` : '65+';
-
-  // ── Auto-rotating portfolio stats inside the hero promo blue card ───────────
-  const heroStats = useMemo(() => [
-    {
-      value: countDisplay,
-      title: t('ऑनलाईन नागरीक सेवा', 'ऑनलाइन सेवाएं', 'Online Services'),
-      subtitle: t('तुमची सेवा, आमचे कर्तव्य', 'आपकी सेवा, हमारा कर्तव्य', 'Your service, our duty'),
-      badge: t('२४x७ डिजिटल', '24x7 डिजिटल', '24x7 Digital'),
-    },
-    {
-      value: '52,480+',
-      title: t('प्राप्त नागरीक अर्ज', 'प्राप्त नागरिक आवेदन', 'Received Applications'),
-      subtitle: t('पोर्टलवरील एकूण नोंदणीकृत अर्ज', 'पोर्टल पर कुल प्राप्त आवेदन', 'Total registered applications'),
-      badge: t('एकूण अर्ज', 'कुल आवेदन', 'Total Received'),
-    },
-    {
-      value: '51,120+',
-      title: t('निकाली काढलेले अर्ज', 'निवारित आवेदन', 'Disposed Applications'),
-      subtitle: t('वेळेत मंजूर व सेवा वितरित', 'समयबद्ध स्वीकृत एवं वितरित', 'Approved & delivered'),
-      badge: t('निकाली अर्ज', 'निवारित', 'SLA Disposed'),
-    },
-    {
-      value: '98.4%',
-      title: t('SLA पूर्तता यश दर', 'SLA सफलता दर', 'SLA Success Rate'),
-      subtitle: t('लोकसेवा हक्क कायदा उद्दिष्ट', 'लोक सेवा अधिकार कानून लक्ष्य', 'Statutory SLA resolution'),
-      badge: t('SLA यश दर', 'SLA सफलता', 'SLA Target'),
-    },
-  ], [countDisplay, locale]);
-
-  const [currentStatIndex, setCurrentStatIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentStatIndex((prev) => (prev + 1) % heroStats.length);
-    }, 3500);
-    return () => clearInterval(timer);
-  }, [heroStats.length]);
-
-  const currentStat = heroStats[currentStatIndex];
 
   // ── Build deptCards dynamically from API data ──────────────────────────────
   const deptCards = useMemo(() => {
@@ -135,7 +95,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         btnColor: palette.btnColor,
         icon: <IconComp className="w-4 h-4" />,
         iconName: dept.icon,
-        services: ((dept.services || []) as any[]).map((svc) => ({
+        services: (dept.services || []).map((svc) => ({
           id: svc.id,
           name: pickLang(svc.name, locale),
           sla: svc.sla,
@@ -152,22 +112,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     });
   }, [departments, locale]);
 
-  // Synchronize department tab from URL search parameters on mount/change
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const deptId = params.get('deptId');
-      if (deptId && deptCards.length > 0) {
-        const match = deptCards.find((d) => String(d.id) === String(deptId));
-        if (match) {
-          setActiveTab(match.id);
-        }
-      }
-    }
-  }, [deptCards]);
-
-  // Set initial active tab once deptCards are available
-  const resolvedActiveTab = activeTab || (deptCards[0]?.id ?? '');
+  const requestedDepartment = deptCards.find(
+    (department) => String(department.id) === String(searchParams.get('deptId') ?? '')
+  );
+  const resolvedActiveTab = activeTab || requestedDepartment?.id || (deptCards[0]?.id ?? '');
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleActionClick = () => {
@@ -221,39 +169,51 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const quickActions = [
     {
       label: t('सेवा अर्ज करा', 'सेवा के लिए आवेदन करें', 'Apply for Service'),
+      description: t('नवीन अर्ज सुरू करा', 'नया आवेदन शुरू करें', 'Start a new request'),
       icon: <FileEdit className="w-5 h-5 text-blue-600" />,
-      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-blue-50',
+      accent: 'from-blue-500 to-cyan-500',
+      hoverClass: 'hover:border-blue-200 hover:bg-blue-50/50',
     },
     {
       label: t('प्रमाणपत्र डाउनलोड', 'प्रमाणपत्र डाउनलोड करें', 'Download Certificate'),
+      description: t('मंजूर दाखला मिळवा', 'स्वीकृत प्रमाणपत्र पाएं', 'Get an approved copy'),
       icon: <Download className="w-5 h-5 text-purple-600" />,
-      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-purple-50',
+      accent: 'from-purple-500 to-fuchsia-500',
+      hoverClass: 'hover:border-purple-200 hover:bg-purple-50/50',
     },
     {
       label: t('शुल्क भरा', 'शुल्क भुगतान करें', 'Pay Fees'),
+      description: t('सुरक्षित ऑनलाइन भरणा', 'सुरक्षित ऑनलाइन भुगतान', 'Secure online payment'),
       icon: <CreditCard className="w-5 h-5 text-orange-600" />,
-      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-orange-50',
+      accent: 'from-orange-500 to-amber-500',
+      hoverClass: 'hover:border-orange-200 hover:bg-orange-50/50',
     },
     {
       label: t('अपील दाखल करा', 'अपील दर्ज करें', 'File Appeal'),
+      description: t('अपील ऑनलाइन नोंदवा', 'अपील ऑनलाइन दर्ज करें', 'Submit an appeal online'),
       icon: <Scale className="w-5 h-5 text-red-600" />,
-      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-red-50',
+      accent: 'from-rose-500 to-red-500',
+      hoverClass: 'hover:border-rose-200 hover:bg-rose-50/50',
     },
     {
       label: t('तक्रार नोंदवा', 'शिकायत दर्ज करें', 'Register Grievance'),
+      description: t('तक्रार आणि मदत', 'शिकायत और सहायता', 'Raise an issue or request'),
       icon: <MessageSquare className="w-5 h-5 text-teal-600" />,
-      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-teal-50',
+      accent: 'from-teal-500 to-emerald-500',
+      hoverClass: 'hover:border-teal-200 hover:bg-teal-50/50',
     },
     {
       label: t('अर्ज ट्रॅक करा', 'आवेदन ट्रैक करें', 'Track Application'),
+      description: t('स्थिती आणि SLA पाहा', 'स्थिति और SLA देखें', 'Check status and SLA'),
       icon: <Search className="w-5 h-5 text-indigo-600" />,
-      colorClass: 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50',
       iconBg: 'bg-indigo-50',
+      accent: 'from-indigo-500 to-blue-500',
+      hoverClass: 'hover:border-indigo-200 hover:bg-indigo-50/50',
     },
   ];
 
@@ -267,571 +227,278 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       ? `${totalServiceCount} कुल सेवाएं`
       : `${totalServiceCount} Total Services`;
 
-  const sectionTitle =
-    locale === 'mr'
-      ? `विभागनिहाय सेवा (१ ते ${totalServiceCount} सेवा)`
-      : locale === 'hi'
-      ? `विभागवार सेवाएं (1 से ${totalServiceCount} सेवाएं)`
-      : `Department-wise Services (1 to ${totalServiceCount} Services)`;
+  const sectionTitle = t('विभागानुसार नागरिक सेवा', 'विभाग के अनुसार नागरिक सेवाएं', 'Citizen services by department');
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full bg-slate-50 font-sans pb-1">
+    <div className="w-full bg-[radial-gradient(circle_at_top_left,rgba(219,234,254,0.65),transparent_32%),linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] pb-2 font-sans">
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
 
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden bg-slate-50 text-slate-900 shadow-md min-h-[160px] sm:min-h-[200px] md:min-h-[240px] flex items-center border-b border-slate-200 w-full rounded-none">
-        <div className="absolute inset-0 opacity-100 pointer-events-none z-0">
-          <Image
-            src="/images/corporation-building.png"
-            alt="Municipal Corporation Building"
-            fill
-            className="object-cover object-[center_20%]"
-            priority
-            unoptimized
-          />
-        </div>
+      <div className="w-full space-y-5">
+        <CitizenJourneyHero
+          locale={locale}
+          serviceCount={totalServiceCount}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onApply={handleActionClick}
+        />
 
-        <div className="relative z-20 w-full grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 p-3 sm:p-4 md:p-6 items-center overflow-hidden">
-          {/* Left: slogan + search */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="lg:col-span-7 bg-white/95 backdrop-blur-md p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-white/60 shadow-lg max-w-2xl space-y-2.5 sm:space-y-3.5"
+        <main id="citizen-service-browser" className="scroll-mt-24 space-y-5">
+          <section
+            aria-labelledby="quick-actions-title"
+            className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_18px_50px_-34px_rgba(15,23,42,0.5)] sm:rounded-[1.75rem]"
           >
-            <span className="inline-block px-2.5 py-1 rounded bg-[#f39c12] text-white text-[11px] sm:text-xs font-black tracking-wider uppercase shadow-sm">
-              {t('महाराष्ट्र लोकसेवा हक्क अधिनियम 2015 अंतर्गत', 'महाराष्ट्र लोकसेवा हक्क अधिनियम 2015 के अंतर्गत', 'Under Right to Public Services Act 2015')}
-            </span>
-
-            <h2 className="text-base sm:text-xl md:text-2xl lg:text-[28px] font-black tracking-tight leading-tight text-[#0a3275]">
-              {locale === 'mr' ? (
-                <>वेळबद्ध, पारदर्शक आणि <span className="text-[#0f7a3f]">नागरीक केंद्रित सेवा</span></>
-              ) : locale === 'hi' ? (
-                <>समयबद्ध, पारदर्शी और <span className="text-[#0f7a3f]">नागरिक केंद्रित सेवा</span></>
-              ) : (
-                <>Time-bound, Transparent and <span className="text-[#0f7a3f]">Citizen Centric Services</span></>
-              )}
-            </h2>
-
-            <div className="relative w-full max-w-xl bg-white p-1 sm:p-1.5 rounded-xl border border-slate-250 shadow-md flex items-center gap-1 sm:gap-1.5 focus-within:ring-2 focus-within:ring-green-600 focus-within:border-transparent transition-all">
-              <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
-              <input
-                type="text"
-                placeholder={t('सेवा शोधा... (उदा. जन्म प्रमाणपत्र, पाणी जोडणी)', 'सेवा खोजें... (उदा. जन्म प्रमाण पत्र, जल कनेक्शन)', 'Search services... (e.g. Birth Certificate, Water connection)')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none border-none font-bold"
-              />
-              <button
-                type="button"
-                onClick={() => handleServiceClick(searchQuery)}
-                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-green-700 hover:bg-green-800 text-white text-xs sm:text-sm font-black rounded-lg shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1 sm:gap-1.5"
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>{t('शोधा', 'खोजें', 'Search')}</span>
-              </button>
+            <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-3 sm:px-5 sm:pt-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-900/20">
+                  <Icons.Zap className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-[0.14em] text-blue-600 sm:text-[10px]">
+                    {t('लोकप्रिय ऑनलाइन क्रिया', 'लोकप्रिय ऑनलाइन कार्य', 'Popular online actions')}
+                  </p>
+                  <h2 id="quick-actions-title" className="truncate text-base font-black text-slate-900 sm:text-lg">
+                    {t('त्वरित सेवा', 'त्वरित सेवाएं', 'Quick citizen access')}
+                  </h2>
+                </div>
+              </div>
+              <span className="hidden rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-black text-blue-800 sm:inline-flex">
+                {t('एका क्लिकमध्ये', 'एक क्लिक में', 'One-click access')}
+              </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] sm:text-xs font-bold text-slate-650 bg-white/50 backdrop-blur-sm rounded-lg py-1 px-2 border border-slate-200/40 w-full sm:w-fit">
-              {[
-                [t('वेळबद्ध सेवा', 'समयबद्ध सेवा', 'Time-bound Service')],
-                [t('पारदर्शक प्रक्रिया', 'पारदर्शी प्रक्रिया', 'Transparent Process')],
-                [t('नागरिक प्रथम', 'नागरिक प्रथम', 'Citizen First')],
-                [t('अपिलाचा अधिकार', 'अपील का अधिकार', 'Right to Appeal')],
-              ].map(([label], i, arr) => (
-                <span key={i} className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {label}
-                  {i < arr.length - 1 && <span className="text-slate-300 ml-3">•</span>}
-                </span>
+            <div className="grid grid-cols-2 gap-2 px-3 pb-3 sm:grid-cols-3 sm:px-4 lg:grid-cols-6">
+              {quickActions.map((action) => (
+                <button
+                  key={action.label}
+                  type="button"
+                  onClick={handleActionClick}
+                  className={`group relative flex min-h-[80px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2.5 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-h-[78px] sm:items-start sm:text-left ${action.hoverClass}`}
+                >
+                  <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${action.accent}`} />
+                  <div className="flex w-full items-center justify-center gap-2 sm:justify-between">
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${action.iconBg}`}>
+                      {action.icon}
+                    </span>
+                    <Icons.ArrowUpRight className="hidden h-4 w-4 text-slate-300 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-blue-600 sm:block" />
+                  </div>
+                  <h3 className="mt-2 text-[10px] font-black leading-tight text-slate-800 sm:text-[11px]">
+                    {action.label}
+                  </h3>
+                  <p className="mt-1 hidden text-[9px] font-semibold leading-3 text-slate-400 2xl:line-clamp-1">
+                    {action.description}
+                  </p>
+                </button>
               ))}
             </div>
-          </motion.div>
-            {/* Mobile 4-Stage RTS Act Process Strip */}
-            <div className="block lg:hidden mt-3 bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-blue-950/90 text-white rounded-xl p-2.5 border border-blue-400/30 shadow-md">
-              <div className="text-[10px] font-black text-amber-300 uppercase tracking-wider mb-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <span>{t('सेवा हक्क अधिनियम २०१५ प्रक्रिया', 'लोक सेवा गारंटी प्रक्रिया', 'RTS Act 4-Stage Process')}</span>
-                <span className="text-[9px] bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-400/40">✓ {t('वेळेत सेवा', 'समयबद्ध', 'SLA Guaranteed')}</span>
-              </div>
-              <div className="grid grid-cols-4 gap-1 items-center text-center w-full">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-300 flex items-center justify-center text-xs shadow-xs">💻</div>
-                  <span className="text-[9px] font-black text-amber-200 mt-1 leading-tight">{t('१. ई-अर्ज', '1. ई-आवेदन', '1. e-Filing')}</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-sky-400/20 border border-sky-300 flex items-center justify-center text-xs shadow-xs">🔍</div>
-                  <span className="text-[9px] font-black text-sky-200 mt-1 leading-tight">{t('२. छाननी', '2. छानबीन', '2. Scrutiny')}</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-purple-400/20 border border-purple-300 flex items-center justify-center text-xs shadow-xs">⏱️</div>
-                  <span className="text-[9px] font-black text-purple-200 mt-1 leading-tight">{t('३. मंजुरी', '3. स्वीकृति', '3. SLA Approval')}</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-300 flex items-center justify-center text-xs shadow-xs animate-pulse">📲</div>
-                  <span className="text-[9px] font-black text-emerald-300 mt-1 leading-tight">{t('४. दाखला', '4. प्रमाणपत्र', '4. e-Cert')}</span>
-                </div>
-              </div>
-            </div>
+          </section>
 
-
-          {/* Right: animated promo card */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-            className="col-span-12 lg:col-span-5 w-full mt-3 lg:mt-0"
+          <section
+            aria-labelledby="department-services-title"
+            className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_20px_60px_-40px_rgba(15,23,42,0.55)] sm:rounded-[1.75rem]"
           >
-            <div className="bg-gradient-to-br from-[#0b5cd5] via-[#094ebb] to-[#063996] text-white rounded-2xl p-4 sm:p-5 shadow-xl border border-blue-400/30 relative overflow-hidden flex flex-row items-center justify-between min-h-[145px]">
-              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute -left-10 -top-10 w-24 h-24 bg-blue-300/15 rounded-full blur-xl pointer-events-none" />
-
-              <div className="relative z-20 flex-1 flex flex-col justify-between h-full pr-3 min-h-0">
-                <div className="min-h-[72px] overflow-hidden flex flex-col justify-center">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentStatIndex}
-                      initial={{ y: 14, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -14, opacity: 0 }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
-                      className="space-y-1"
-                    >
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="px-2 py-0.5 rounded bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-black text-white uppercase tracking-wider shadow-sm border border-white/20">
-                          {currentStat.badge}
-                        </span>
-                      </div>
-                      <h3 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none block drop-shadow-lg">
-                        {currentStat.value}
-                      </h3>
-                      <span className="text-xs sm:text-sm font-black text-white block leading-tight truncate">
-                        {currentStat.title}
-                      </span>
-                      <span className="text-[10px] sm:text-xs text-blue-100 font-semibold block leading-tight truncate">
-                        {currentStat.subtitle}
-                      </span>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-
-                <div className="flex items-center gap-3 mt-2.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleActionClick}
-                    className="px-3.5 py-1.5 bg-white text-[#0a4ebb] hover:bg-slate-50 font-black rounded-lg text-xs flex items-center gap-1.5 shadow-md transition-colors cursor-pointer shrink-0"
-                  >
-                    <span>{t('सेवा अर्ज करा', 'सेवा आवेदन करें', 'Apply')}</span>
-                    <span className="text-xs font-black">&rarr;</span>
-                  </button>
-
-                  {/* Carousel Dots */}
-                  <div className="flex items-center gap-1.5 ml-1">
-                    {heroStats.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setCurrentStatIndex(idx)}
-                        className={`h-2 rounded-full transition-all cursor-pointer ${
-                          idx === currentStatIndex ? 'w-5 bg-white shadow-sm' : 'w-2 bg-white/40 hover:bg-white/70'
-                        }`}
-                        aria-label={`Go to stat ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
+            <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+                  <Icons.LayoutGrid className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-[0.14em] text-emerald-600 sm:text-[10px]">
+                    {t('तुमची नागरी सेवा निवडा', 'अपनी नागरिक सेवा चुनें', 'Explore civic services')}
+                  </p>
+                  <h2 id="department-services-title" className="text-base font-black leading-tight text-slate-900 sm:text-lg">
+                    {sectionTitle}
+                  </h2>
+                  <p className="mt-0.5 text-[10px] font-semibold text-slate-500 sm:text-xs">
+                    {t(
+                      'विभाग निवडा आणि उपलब्ध सेवा थेट पाहा.',
+                      'विभाग चुनें और उपलब्ध सेवाएं सीधे देखें।',
+                      'Choose a department and open the service you need.'
+                    )}
+                  </p>
                 </div>
               </div>
-
-              {/* 4-Stage RTS Governance Workflow: e-Filing ➔ Scrutiny ➔ SLA Approval ➔ Certificate & SMS Notification */}
-              <div className="hidden lg:flex items-center gap-1 sm:gap-1.5 pointer-events-none z-10">
-                
-                {/* Stage 1: Citizen e-Filing */}
-                <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-                  className="relative flex flex-col items-center justify-center shrink-0"
-                >
-                  <div className="absolute inset-0 bg-amber-400/30 rounded-full blur-lg animate-pulse" />
-                  <div className="relative w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 p-0.5 shadow-xl border-2 border-white/90 flex items-center justify-center overflow-hidden">
-                    <svg className="w-full h-full text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="50" cy="50" r="48" fill="url(#citizenGrad)" />
-                      <defs>
-                        <linearGradient id="citizenGrad" x1="0" y1="0" x2="100" y2="100">
-                          <stop offset="0%" stopColor="#1e3c72" />
-                          <stop offset="100%" stopColor="#2a5298" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M30 40C30 26 40 18 50 18C60 18 70 26 70 40C70 42 68 44 68 44C68 44 64 32 50 32C36 32 32 44 32 44C32 44 30 42 30 40Z" fill="#1A202C" />
-                      <ellipse cx="50" cy="46" rx="16" ry="18" fill="#FCE0D1" />
-                      <circle cx="44" cy="44" r="2" fill="#2D3748" />
-                      <circle cx="56" cy="44" r="2" fill="#2D3748" />
-                      <path d="M44 52C44 52 47 56 50 56C53 56 56 52 56 52" stroke="#E53E3E" strokeWidth="2" strokeLinecap="round" />
-                      <rect x="39" y="40" width="10" height="7" rx="2" stroke="#2D3748" strokeWidth="1.5" fill="none" />
-                      <rect x="51" y="40" width="10" height="7" rx="2" stroke="#2D3748" strokeWidth="1.5" fill="none" />
-                      <line x1="49" y1="43" x2="51" y2="43" stroke="#2D3748" strokeWidth="1.5" />
-                      <path d="M26 82C26 66 36 62 50 62C64 62 74 66 74 82V100H26V82Z" fill="#3182CE" />
-                      <path d="M44 62L50 72L56 62" fill="#FFFFFF" />
-                      <path d="M49 68L51 68L52 80L48 80L49 68Z" fill="#E53E3E" />
-                    </svg>
-                  </div>
-                  <motion.div
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
-                    className="absolute -bottom-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-white/90 flex items-center gap-0.5 whitespace-nowrap"
-                  >
-                    <span>💻</span>
-                    <span>{t('१. ई-अर्ज दाखल', '1. ई-आवेदन', '1. e-Filing')}</span>
-                  </motion.div>
-                </motion.div>
-
-                {/* Dynamic Forward Pulse Arrow 1 */}
-                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
-                  <div className="w-full h-[2px] bg-gradient-to-r from-amber-400 to-sky-400 rounded-full opacity-80" />
-                  <motion.div
-                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}
-                    className="absolute text-[9px] text-amber-300 font-bold"
-                  >
-                    ➔
-                  </motion.div>
-                </div>
-
-                {/* Stage 2: Official Document Scrutiny */}
-                <motion.div
-                  animate={{ y: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.2 }}
-                  className="relative flex flex-col items-center justify-center shrink-0"
-                >
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 p-0.5 shadow-lg border border-white/80 flex flex-col items-center justify-center text-white relative">
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ repeat: Infinity, duration: 2 }}
-                      className="text-white flex items-center justify-center"
-                    >
-                      <svg className="w-5 h-5 text-sky-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    </motion.div>
-                  </div>
-                  <div className="absolute -bottom-2.5 bg-sky-900/95 text-sky-100 text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-sky-400/50 whitespace-nowrap">
-                    <span>{t('२. कागदपत्र छाननी', '2. दस्तावेज छानबीन', '2. Scrutiny')}</span>
-                  </div>
-                </motion.div>
-
-                {/* Dynamic Forward Pulse Arrow 2 */}
-                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
-                  <div className="w-full h-[2px] bg-gradient-to-r from-sky-400 to-purple-400 rounded-full opacity-80" />
-                  <motion.div
-                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear', delay: 0.4 }}
-                    className="absolute text-[9px] text-sky-300 font-bold"
-                  >
-                    ➔
-                  </motion.div>
-                </div>
-
-                {/* Stage 3: Designated Officer SLA Approval */}
-                <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ repeat: Infinity, duration: 3.8, ease: 'easeInOut', delay: 0.4 }}
-                  className="relative flex flex-col items-center justify-center shrink-0"
-                >
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-700 to-purple-900 p-0.5 shadow-lg border border-white/80 flex flex-col items-center justify-center text-white relative">
-                    <motion.div
-                      animate={{ rotate: [0, 6, -6, 0] }}
-                      transition={{ repeat: Infinity, duration: 3 }}
-                      className="text-amber-300 flex items-center justify-center"
-                    >
-                      <svg className="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                    </motion.div>
-                  </div>
-                  <div className="absolute -bottom-2.5 bg-purple-950/95 text-purple-100 text-[7px] font-black px-1.5 py-0.5 rounded-full shadow border border-purple-400/50 whitespace-nowrap flex items-center gap-0.5">
-                    <span>⏱️</span>
-                    <span>{t('३. SLA मंजुरी', '3. SLA स्वीकृति', '3. SLA Approval')}</span>
-                  </div>
-                </motion.div>
-
-                {/* Dynamic Forward Pulse Arrow 3 */}
-                <div className="relative flex items-center justify-center w-5 sm:w-6 h-6">
-                  <div className="w-full h-[2px] bg-gradient-to-r from-purple-400 to-emerald-400 rounded-full opacity-80" />
-                  <motion.div
-                    animate={{ x: [-6, 8], opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.4, ease: 'linear', delay: 0.8 }}
-                    className="absolute text-[9px] text-emerald-300 font-bold"
-                  >
-                    ➔
-                  </motion.div>
-                </div>
-
-                {/* Stage 4: Mobile Certificate Delivery & SMS Notification */}
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-                  className="relative shrink-0 z-10 self-center"
-                >
-                  <div className="relative w-[78px] h-[120px] bg-slate-900 rounded-[16px] p-[2.5px] shadow-2xl border border-slate-800 shrink-0">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-9 h-1.5 bg-slate-900 rounded-b-[4px] z-20 flex justify-center items-center gap-0.5">
-                      <div className="w-2.5 h-[0.7px] bg-slate-700 rounded-full" />
-                    </div>
-
-                    <div className="w-full h-full bg-white rounded-[13px] pt-3 px-1 pb-1 flex flex-col justify-between relative overflow-hidden shadow-inner">
-                      {/* Top SMS Notification Banner */}
-                      <motion.div
-                        animate={{ y: [0, -2, 0] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[4px] px-1 py-0.5 text-[6px] font-black text-center tracking-tight leading-none shadow-xs flex items-center justify-center gap-0.5"
-                      >
-                        <span>📲</span>
-                        <span>{t('SMS: दाखला तयार!', 'SMS: प्रमाण तयार!', 'SMS: Certificate Issued!')}</span>
-                      </motion.div>
-
-                      {/* e-Certificate Body preview with seal */}
-                      <div className="space-y-1 my-auto">
-                        <motion.div
-                          animate={{ opacity: [0.7, 1, 0.7] }}
-                          transition={{ repeat: Infinity, duration: 2 }}
-                          className="bg-emerald-50 border border-emerald-200/80 rounded px-1 py-0.5 flex items-center justify-between"
-                        >
-                          <div className="space-y-0.5">
-                            <div className="h-[2px] bg-emerald-700 rounded w-7" />
-                            <div className="h-[1.5px] bg-emerald-400 rounded w-5" />
-                          </div>
-                          <span className="text-[7px] text-emerald-600 font-bold">📜</span>
-                        </motion.div>
-
-                        <motion.div
-                          animate={{ opacity: [0.7, 1, 0.7] }}
-                          transition={{ repeat: Infinity, duration: 2, delay: 0.4 }}
-                          className="bg-blue-50 border border-blue-200/80 rounded px-1 py-0.5 flex items-center justify-between"
-                        >
-                          <div className="space-y-0.5">
-                            <div className="h-[2px] bg-blue-700 rounded w-8" />
-                            <div className="h-[1.5px] bg-blue-400 rounded w-4" />
-                          </div>
-                          <span className="text-[7px] text-blue-600 font-bold">✍️</span>
-                        </motion.div>
-
-                        <motion.div
-                          animate={{ opacity: [0.7, 1, 0.7] }}
-                          transition={{ repeat: Infinity, duration: 2, delay: 0.8 }}
-                          className="bg-amber-50 border border-amber-200/80 rounded px-1 py-0.5 flex items-center justify-between"
-                        >
-                          <div className="space-y-0.5">
-                            <div className="h-[2px] bg-amber-700 rounded w-6" />
-                            <div className="h-[1.5px] bg-amber-400 rounded w-6" />
-                          </div>
-                          <span className="text-[7px] text-amber-600 font-bold">✓</span>
-                        </motion.div>
-                      </div>
-
-                      {/* Delivered Status Badge */}
-                      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-[3px] py-0.5 px-0.5 text-[6px] font-black text-center leading-none flex items-center justify-center gap-0.5 shadow-xs">
-                        <span>✓</span>
-                        <span>{t('४. e-दाखला प्राप्त', '4. e-प्रमाणपत्र', '4. e-Certificate')}</span>
-                      </div>
-                    </div>
-
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: [1, 1.15, 1] }}
-                      transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                      className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-[#073fa8] flex items-center justify-center shadow-lg z-30"
-                    >
-                      <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5"><polyline points="20 6 9 17 4 12" /></svg>
-                    </motion.div>
-                  </div>
-                </motion.div>
-
-              </div>
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-blue-900 px-3 py-1.5 text-[10px] font-black text-white sm:text-xs">
+                <Icons.CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+                {totalLabel}
+              </span>
             </div>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <div className="w-full space-y-3 py-2 px-3 md:px-5">
-
-        {/* Quick Access Links */}
-        <div className="space-y-3">
-          <div className="border-b border-slate-200 pb-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
-            <h3 className="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span>{t('त्वरित सेवा दुवे', 'त्वरित सेवा लिंक', 'Quick Access Links')}</span>
-              <span className="text-slate-400 text-xs font-normal">▼</span>
-            </h3>
-            <span className="text-xs bg-blue-50 text-blue-900 px-2.5 py-0.5 rounded-lg font-black">
-              {t('पोर्टल क्रिया', 'पोर्टल क्रियाएं', 'Portal Actions')}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
-            {quickActions.map((action, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={handleActionClick}
-                className={`group flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border shadow-sm transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer text-center h-auto min-h-[76px] sm:min-h-[88px] ${action.colorClass}`}
-              >
-                <div className={`w-8 h-8 ${action.iconBg} rounded-lg flex items-center justify-center shrink-0 mb-1.5`}>
-                  {action.icon}
-                </div>
-                <h4 className="font-extrabold text-slate-800 text-[10.5px] sm:text-xs leading-snug group-hover:text-blue-900 transition-colors max-w-full px-0.5">
-                  {action.label}
-                </h4>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Department Browser / Search Results */}
-        <section className="space-y-3">
-          {searchQuery.trim() !== '' ? (
-            /* Search Results */
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Search className="w-5 h-5" />
-                  <h4 className="font-extrabold text-sm sm:text-base">{t('शोध परिणाम', 'खोज परिणाम', 'Search Results')}</h4>
-                </div>
-                <div className="flex items-center gap-2">
+            {searchQuery.trim() !== '' ? (
+              <div className="p-3 sm:p-4">
+                <div className="mb-3 flex flex-col gap-2 rounded-2xl bg-gradient-to-r from-blue-950 to-blue-800 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-cyan-300" />
+                    <h3 className="text-sm font-black">
+                      {t('शोध परिणाम', 'खोज परिणाम', 'Search results')}
+                    </h3>
+                    <span className="rounded-full bg-white/15 px-2 py-0.5 text-[9px] font-black">
+                      {filteredServices.length} {t('आढळले', 'मिले', 'found')}
+                    </span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs font-black rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-black transition hover:bg-white/20"
                   >
-                    <span>&larr;</span>
-                    <span>{t('विभाग पहा', 'विभाग देखें', 'View Departments')}</span>
+                    <Icons.ArrowLeft className="h-3.5 w-3.5" />
+                    {t('सर्व विभाग पहा', 'सभी विभाग देखें', 'View all departments')}
                   </button>
-                  <span className="text-xs bg-white/20 text-white px-3 py-1 rounded-lg font-black">
-                    {filteredServices.length} {t('आढळले', 'मिले', 'Found')}
-                  </span>
                 </div>
-              </div>
-              <div className="p-5 bg-white min-h-[150px]">
+
                 {filteredServices.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-                    {filteredServices.map((item, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => { setSelectedServiceId(item.id); setIsDetailsOpen(true); }}
-                        className="flex flex-col justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-green-50/20 hover:border-green-300 transition-all cursor-pointer group"
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filteredServices.map((item) => (
+                      <button
+                        key={`${item.dept.id}-${item.id}`}
+                        type="button"
+                        onClick={() => {
+                          setSelectedServiceId(item.id);
+                          setIsDetailsOpen(true);
+                        }}
+                        className="group flex min-h-[64px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-left transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50/50 hover:shadow-md"
                       >
-                        <div className="flex items-start gap-2.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0 group-hover:scale-125 transition-transform" />
-                          <span className="text-xs sm:text-[13px] font-bold text-slate-700 leading-snug group-hover:text-green-950 transition-colors">{item.service}</span>
-                        </div>
-                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          <span>{item.dept.icon}</span>
-                          <span>{item.dept.title}</span>
-                        </div>
-                      </div>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm ring-1 ring-slate-100">
+                          {item.dept.icon}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="line-clamp-2 text-[11px] font-black leading-4 text-slate-800 sm:text-xs">
+                            {item.service}
+                          </span>
+                          <span className="mt-0.5 block truncate text-[9px] font-bold text-slate-400">
+                            {item.dept.title}
+                          </span>
+                        </span>
+                        <Icons.ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-600" />
+                      </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2.5 text-slate-400">
-                      <Search className="w-6 h-6" />
-                    </div>
-                    <p className="text-sm font-extrabold text-slate-700">{t('कोणत्याही सेवा आढळल्या नाहीत', 'कोई सेवा नहीं मिली', 'No services found')}</p>
-                    <p className="text-xs text-slate-400 mt-1">{t('कृपया वेगळे शब्द वापरून पहा.', 'कृपया कोई अन्य शब्द आज़माएं।', 'Please try with different keywords.')}</p>
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 py-12 text-center">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                      <Search className="h-6 w-6" />
+                    </span>
+                    <p className="mt-3 text-sm font-black text-slate-700">
+                      {t('कोणत्याही सेवा आढळल्या नाहीत', 'कोई सेवा नहीं मिली', 'No services found')}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-slate-400">
+                      {t('कृपया वेगळे शब्द वापरून पहा.', 'कृपया कोई अन्य शब्द आज़माएं।', 'Please try a different keyword.')}
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
-          ) : (
-            /* Tabbed Department Browser */
-            <div className="space-y-3">
-              <div className="border-b border-slate-200 pb-1.5 flex items-center justify-between">
-                <h3 className="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-1.5">
-                  <span>{sectionTitle}</span>
-                  <span className="text-slate-400 text-xs font-normal">▼</span>
-                </h3>
-                <span className="text-xs bg-blue-50 text-blue-900 px-2.5 py-0.5 rounded-lg font-black">
-                  {totalLabel}
-                </span>
-              </div>
+            ) : (
+              <>
+                <nav
+                  aria-label={t('सेवा विभाग', 'सेवा विभाग', 'Service departments')}
+                  className="no-scrollbar flex w-full gap-2 overflow-x-auto border-b border-slate-100 bg-slate-50/70 px-3 py-3 sm:px-4"
+                >
+                  {deptCards.map((dept) => {
+                    const isActive = dept.id === resolvedActiveTab;
+                    return (
+                      <button
+                        key={dept.id}
+                        type="button"
+                        onClick={() => setActiveTab(dept.id)}
+                        className={`flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black shadow-sm transition-all duration-200 sm:px-4 sm:text-xs ${
+                          isActive
+                            ? `${dept.bannerBg} scale-[1.02] border-transparent text-white shadow-md`
+                            : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-800'
+                        }`}
+                      >
+                        <span className={isActive ? 'text-white' : 'shrink-0 text-slate-400'}>{dept.icon}</span>
+                        <span className="whitespace-nowrap">{dept.title}</span>
+                        <span className={`rounded-full px-1.5 py-0.5 text-[8px] ${isActive ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                          {dept.services.length}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </nav>
 
-              {/* Department Tabs */}
-              <div className="flex gap-2 overflow-x-auto pb-2.5 pt-1.5 no-scrollbar w-full">
-                {deptCards.map((dept) => {
-                  const isActive = dept.id === resolvedActiveTab;
-                  return (
-                    <button
-                      key={dept.id}
-                      type="button"
-                      onClick={() => setActiveTab(dept.id)}
-                      className={`shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border text-[11px] sm:text-xs font-extrabold cursor-pointer transition-all duration-200 shadow-sm ${
-                        isActive
-                          ? `${dept.bannerBg} text-white border-transparent scale-[1.02] shadow-md`
-                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-350 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className={isActive ? 'text-white' : 'text-slate-500 shrink-0'}>{dept.icon}</span>
-                      <span className="whitespace-nowrap">{dept.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Active Tab Panel */}
-              {activeDept && (
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className={`px-5 py-3 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${activeDept.bannerBg}`}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center text-white shrink-0">
-                        {activeDept.icon}
-                      </div>
-                      <div>
-                        <h4 className="font-extrabold text-sm sm:text-base leading-tight">{activeDept.title}</h4>
-                        <p className="text-[10px] text-white/80 font-bold mt-0.5">{activeDept.stats}</p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleActionClick}
-                      className="w-full sm:w-auto px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer self-stretch sm:self-auto"
-                    >
-                      <span>{t('सर्व सेवा अर्ज करा', 'सभी सेवाएं आवेदन करें', 'Apply for Services')}</span>
-                      <span>&rarr;</span>
-                    </button>
-                  </div>
-
-                  <div className="p-4 bg-white">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {activeDept.services.map((item, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => { setSelectedServiceId(item.id); setIsDetailsOpen(true); }}
-                          className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-blue-50/20 hover:border-blue-200/50 transition-all cursor-pointer group"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0 group-hover:scale-125 transition-transform" />
-                          <span className="text-xs sm:text-[13px] font-bold text-slate-700 leading-snug group-hover:text-blue-900 transition-colors">{item.name}</span>
+                <div className="p-3 sm:p-4">
+                  {activeDept ? (
+                    <div className="grid gap-3 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)]">
+                      <aside className={`relative overflow-hidden rounded-2xl p-5 text-white ${activeDept.bannerBg}`}>
+                        <span className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10" />
+                        <span className="absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-black/10" />
+                        <div className="relative flex h-full min-h-[190px] flex-col">
+                          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white ring-1 ring-white/20 backdrop-blur-sm">
+                            {activeDept.icon}
+                          </span>
+                          <p className="mt-5 text-[9px] font-black uppercase tracking-[0.14em] text-white/70">
+                            {t('निवडलेला विभाग', 'चयनित विभाग', 'Selected department')}
+                          </p>
+                          <h3 className="mt-1 text-lg font-black leading-tight">{activeDept.title}</h3>
+                          <p className="mt-1 text-[11px] font-bold text-white/75">{activeDept.stats}</p>
+                          <button
+                            type="button"
+                            onClick={handleActionClick}
+                            className="mt-auto inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-white px-3 text-[11px] font-black text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-slate-50"
+                          >
+                            {t('अर्ज सुरू करा', 'आवेदन शुरू करें', 'Start application')}
+                            <Icons.ArrowRight className="h-3.5 w-3.5" />
+                          </button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+                      </aside>
 
-              {/* Empty state when no departments from DB */}
-              {deptCards.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-200">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3 text-slate-400">
-                    <Search className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-extrabold text-slate-700">{t('विभाग लोड होत नाही', 'विभाग लोड नहीं हो रहे', 'Departments not available')}</p>
-                  <p className="text-xs text-slate-400 mt-1">{t('कृपया नंतर पुन्हा प्रयत्न करा.', 'कृपया बाद में पुनः प्रयास करें।', 'Please try again later.')}</p>
+                      <div className="grid content-start grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        {activeDept.services.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedServiceId(item.id);
+                              setIsDetailsOpen(true);
+                            }}
+                            className="group flex min-h-[58px] items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/65 p-2.5 text-left transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60 hover:shadow-md"
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm ring-1 ring-slate-100">
+                              <FileEdit className="h-3.5 w-3.5" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="line-clamp-2 text-[10px] font-black leading-4 text-slate-700 group-hover:text-blue-900 sm:text-[11px]">
+                                {item.name}
+                              </span>
+                              {item.sla !== undefined && item.sla !== null && (
+                                <span className="mt-0.5 block text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                                  {t('SLA:', 'SLA:', 'SLA:')} {String(item.sla)}
+                                </span>
+                              )}
+                            </span>
+                            <Icons.ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 py-14 text-center">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                        <Search className="h-6 w-6" />
+                      </span>
+                      <p className="mt-3 text-sm font-black text-slate-700">
+                        {t('विभाग उपलब्ध नाहीत', 'विभाग उपलब्ध नहीं हैं', 'Departments are not available')}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-slate-400">
+                        {t('कृपया नंतर पुन्हा प्रयत्न करा.', 'कृपया बाद में पुनः प्रयास करें।', 'Please try again later.')}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
-        </section>
+              </>
+            )}
+          </section>
+        </main>
       </div>
 
       {/* Service Details Modal */}
       {isDetailsOpen && selectedServiceId && (() => {
         let serviceName = '';
         let deptName = '';
-        let serviceItem: any = null;
+        let serviceItem: (typeof deptCards)[number]['services'][number] | null = null;
         for (const dept of deptCards) {
           const svc = dept.services.find((s) => s.id === selectedServiceId);
           if (svc) { 

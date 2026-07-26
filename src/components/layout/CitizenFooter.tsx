@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { GooglePlayBadge, SocialLinks } from '@/components/common';
+import type { UlbMaster } from '@/types/master.types';
 
 interface CitizenFooterProps {
-  ulbData?: any;
+  ulbData?: UlbMaster;
   isLoggedIn?: boolean;
 }
 
@@ -49,7 +50,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
   };
 
   return (
-    <footer className="bg-white border border-slate-200 py-6 sm:py-8 px-4 sm:px-6 md:px-8 text-slate-600 w-full mt-6 rounded-2xl shadow-sm shrink-0 overflow-hidden">
+    <footer className="mt-6 w-full shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white px-4 py-6 text-slate-600 shadow-sm sm:px-6 sm:py-8 md:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
         {/* Column 1: Logo & Brand Description */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-3">

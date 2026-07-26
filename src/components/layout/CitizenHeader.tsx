@@ -12,15 +12,17 @@ import { UserProfileDropdown, Drawer } from '@/components/common';
 import { TrackingPanel } from '@/components/modules/rts/dashboard/TrackingPanel';
 import { logoutCitizenAction, switchCitizenPropertyAction } from '@/app/[locale]/service/login/actions';
 import { type CitizenProfile } from '@/types/rts-citizen.types';
+import type { CitizenProperty } from '@/lib/api/citizen-property.service';
+import type { UlbMaster } from '@/types/master.types';
 
 /** Matching landing page theme deep navy (#0a3275) */
 const HEADER_BG = '#0a3275';
 
 interface CitizenHeaderProps {
   profile?: CitizenProfile;
-  properties?: any[];
+  properties?: CitizenProperty[];
   locale: string;
-  ulbData?: any;
+  ulbData?: UlbMaster;
 }
 
 export function CitizenHeader({ profile, properties = [], locale: propLocale, ulbData }: CitizenHeaderProps) {
@@ -260,11 +262,15 @@ export function CitizenHeader({ profile, properties = [], locale: propLocale, ul
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-semibold">
                       <span className="flex items-center gap-1">
-                        <span className="font-bold text-gray-400">UPIC ID:</span>
+                        <span className="font-bold text-gray-400">
+                          {activeLocale === 'mr' ? 'यूपीआयसी आयडी:' : activeLocale === 'hi' ? 'यूपीआईसी आईडी:' : 'UPIC ID:'}
+                        </span>
                         <span className="text-gray-700">{prop.upicNo}</span>
                       </span>
                       <span className="flex items-center gap-1">
-                        <span className="font-bold text-gray-400">Property No:</span>
+                        <span className="font-bold text-gray-400">
+                          {activeLocale === 'mr' ? 'मालमत्ता क्र.:' : activeLocale === 'hi' ? 'संपत्ति क्र.:' : 'Property No:'}
+                        </span>
                         <span className="text-gray-700">{prop.propertyNo}</span>
                       </span>
                     </div>
