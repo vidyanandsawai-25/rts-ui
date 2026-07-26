@@ -244,6 +244,12 @@ export function FloorDetailsReassessmentTable({
 
   const hasScrollButton = showScrollButtons && columns.length > 8;
 
+  // Decide where to insert the sticky scroll-toggle column.
+  // If there are many columns, put it near the middle so it remains visible
+  // and useful after adding/removing columns. For moderate counts keep it
+  // at the 8th column for backwards compatibility.
+  const scrollToggleIndex = columns.length > 8 ? Math.floor(columns.length / 2) : 7;
+
   const isAnyScrolling = autoScrollController
     ? autoScrollController.activeScrollerId !== null
     : isAutoScrolling;
@@ -304,7 +310,7 @@ export function FloorDetailsReassessmentTable({
                     )}
                   </th>
 
-                  {hasScrollButton && idx === 7 && (
+                  {hasScrollButton && idx === scrollToggleIndex && (
                     <th
                       className={cn(
                         'w-[32px] min-w-[32px] px-1 py-[3px] text-center align-middle sticky z-30 bg-[#e8eef5]',
@@ -387,7 +393,7 @@ export function FloorDetailsReassessmentTable({
                           {col.render(row[col.key as keyof MappedFloorDetail], row, index)}
                         </td>
 
-                        {hasScrollButton && idx === 7 && (
+                        {hasScrollButton && idx === scrollToggleIndex && (
                           <td
                             className={cn(
                               'px-1 py-[2px] text-center align-middle sticky z-10 bg-white',
