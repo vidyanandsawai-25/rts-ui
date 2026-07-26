@@ -21,7 +21,7 @@ export function LeftPanel({
   return (
     <div className="col-span-12 lg:col-span-2">
       <div className="bg-white rounded-2xl border shadow-sm h-155 flex flex-col p-2 space-y-6">
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5 [&_label]:text-xs [&_label]:min-h-[32px]">
           <Input
             label={t("min")}
             required
@@ -58,13 +58,13 @@ export function LeftPanel({
           />
         </div>
 
-        <AddButton 
+        <AddButton
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onAddRange();
           }}
-          disabled={saving} 
+          disabled={saving}
           className="w-full text-xs py-1.5"
           label={t("addRange")}
         />
@@ -83,11 +83,10 @@ export function LeftPanel({
                   e.stopPropagation();
                   onSelectRange(r.id);
                 }}
-                className={`w-full p-2 text-center rounded-lg border transition-all text-xs ${
-                  selectedRangeId === r.id
-                    ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                    : "bg-gray-50 text-gray-700 border-gray-100 hover:bg-gray-100"
-                }`}
+                className={`w-full p-2 text-center rounded-lg border transition-all text-xs ${selectedRangeId === r.id
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                  : "bg-gray-50 text-gray-700 border-gray-100 hover:bg-gray-100"
+                  }`}
               >
                 <div className="font-semibold">{r.min} - {r.max}</div>
               </button>

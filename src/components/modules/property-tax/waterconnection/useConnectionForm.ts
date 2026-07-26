@@ -112,8 +112,6 @@ export function useConnectionForm({
       const e: Record<string, string> = {};
       if (!data.connectionNo.trim()) {
         e.connectionNo = t("form.validation.connectionNoRequired");
-      } else if (/[a-z]/.test(data.connectionNo)) {
-        e.connectionNo = "Only uppercase letters (A–Z) are allowed.";
       } else if (!/^[A-Z0-9\-]+$/.test(data.connectionNo)) {
         e.connectionNo = t("form.validation.connectionNoInvalidChars");
       } else if (data.connectionNo.trim().length > 20) {
@@ -122,8 +120,6 @@ export function useConnectionForm({
 
       if (!data.meterNo.trim()) {
         e.meterNo = t("form.validation.meterNoRequired");
-      } else if (/[a-z]/.test(data.meterNo)) {
-        e.meterNo = "Only uppercase letters (A–Z) are allowed.";
       } else if (!/^[A-Z0-9\-]+$/.test(data.meterNo)) {
         e.meterNo = t("form.validation.meterNoInvalidChars");
       } else if (data.meterNo.trim().length > 20) {
@@ -160,21 +156,11 @@ export function useConnectionForm({
     const { name, value } = e.target;
     let sanitizedValue = value;
     if (name === "connectionNo" || name === "meterNo") {
-      // Allow only alphanumeric and dash
-      sanitizedValue = value.replace(/[^a-zA-Z0-9\-]/g, "");
+      // Allow only alphanumeric and dash, automatically convert letters to uppercase
+      sanitizedValue = value.replace(/[^a-zA-Z0-9\-]/g, "").toUpperCase();
     }
     setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
-    
-    if (name === "connectionNo" || name === "meterNo") {
-      if (/[a-z]/.test(sanitizedValue)) {
-        setErrors((prev) => ({ ...prev, [name]: "Only uppercase letters (A–Z) are allowed." }));
-        setTouched((prev) => ({ ...prev, [name]: true }));
-      } else {
-        setErrors((prev) => ({ ...prev, [name]: "" }));
-      }
-    } else {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
