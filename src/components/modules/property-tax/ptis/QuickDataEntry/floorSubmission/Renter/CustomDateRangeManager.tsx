@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, memo, useMemo } from "react";
+import React, { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { Calendar, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { validateDateRange, getNextCustomRangeFromDate, parseDateOnly } from "@/lib/utils/renter/renterUtils";
@@ -8,7 +8,7 @@ import { calculateRangeTotal } from "./CustomDateRangeUtils";
 import { AddRangeForm } from "./AddRangeForm";
 import { CustomRangesTable } from "./CustomRangesTable";
 import { CustomRangesSummary } from "./CustomRangesSummary";
-import { Button } from "@/components/common";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useTranslations } from "next-intl";
 import { RenterFormData, CustomDateRange } from "@/types/renter/renter.types";
 
@@ -36,6 +36,7 @@ const EMPTY_RANGE: NewRangeData = {
 
 export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDateRangeManagerProps) => {
     const t = useTranslations('quickDataEntry');
+    const { confirm } = useConfirm();
     const AGREEMENT_FROM_DATE = formData?.renterDetails?.agreementDateFrom || '';
     const AGREEMENT_TO_DATE = formData?.renterDetails?.agreementDateTo || '';
     const originalBaseRent = parseFloat(String(formData?.renterDetails?.rentAmount ?? "0"));
@@ -47,7 +48,6 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
     const [newRangeData, setNewRangeData] = useState<NewRangeData>(EMPTY_RANGE);
     const [dateRangeErrors, setDateRangeErrors] = useState<Record<string, string>>({ fromDate: '', toDate: '', incrementValue: '', general: '' });
     const [hasValidationError, setHasValidationError] = useState(false);
-    const [deleteConfirmRangeId, setDeleteConfirmRangeId] = useState<string | null>(null);
 
     // ─── Touch and Real-time Validation States for Range Form ───────────────
     const [rangeTouched, setRangeTouched] = useState<Record<string, boolean>>({});
@@ -164,6 +164,26 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
         toast.success(t('floor.renterSection.add'));
     };
 
+    const handleDeleteRange = useCallback((id: string) => {
+        confirm({
+            variant: "delete",
+            title: `${t('floor.renterSection.confirmDeletion')}?`,
+            description: t('floor.renterSection.areYouSureDeleteRange'),
+            confirmText: t('floor.renterSection.delete'),
+            cancelText: t('floor.renterSection.cancel'),
+            onConfirm: () => {
+                setFormData(prev => ({
+                    ...prev,
+                    renterDetails: {
+                        ...prev.renterDetails,
+                        customDateRanges: (prev.renterDetails?.customDateRanges || []).filter(r => r.id !== id)
+                    }
+                }));
+                toast.success(t('floor.renterSection.deleted'));
+            }
+        });
+    }, [confirm, setFormData, t]);
+
     return (
         <div className={`space-y-4 bg-white/60 border border-gray-200 rounded-xl p-4 shadow-sm ${hasValidationError ? "ring-2 ring-red-400 border-red-300" : ""}`}>
             <div className="flex items-center justify-between">
@@ -176,36 +196,8 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
             <AddRangeForm newRangeData={newRangeData} setNewRangeData={setNewRangeData} onAdd={handleAddRange} agreementStart={AGREEMENT_FROM_DATE} agreementEnd={AGREEMENT_TO_DATE} minFromDate={minFromDate} errors={dateRangeErrors} hasValidationError={hasValidationError} markRangeTouched={markRangeTouched} />
             {customDateRanges.length > 0 && (
                 <div className="space-y-3">
-                    <CustomRangesTable data={activeRangesTableData} onDelete={setDeleteConfirmRangeId} />
+                    <CustomRangesTable data={activeRangesTableData} onDelete={handleDeleteRange} />
                     <CustomRangesSummary summaryData={summaryData} />
-                </div>
-            )}
-            {deleteConfirmRangeId && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirmRangeId(null)}>
-                    <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold mb-4">{t('floor.renterSection.confirmDeletion')}?</h3>
-                        <p className="text-sm text-slate-500 mb-6">{t('floor.renterSection.areYouSureDeleteRange')}</p>
-                        <div className="flex gap-3">
-                            <Button variant="secondary" className="flex-1" onClick={() => setDeleteConfirmRangeId(null)}>
-                                {t('floor.renterSection.cancel')}
-                            </Button>
-                            <Button className="flex-1 bg-red-600 text-white" onClick={() => { 
-                                setFormData(prev => {
-                                    return {
-                                        ...prev, 
-                                        renterDetails: { 
-                                            ...prev.renterDetails, 
-                                            customDateRanges: prev.renterDetails.customDateRanges.filter(r => r.id !== deleteConfirmRangeId) 
-                                        }
-                                    };
-                                });
-                                setDeleteConfirmRangeId(null); 
-                                toast.success(t('floor.renterSection.deleted')); 
-                            }}>
-                                {t('floor.table.delete')}
-                            </Button>
-                        </div>
-                    </div>
                 </div>
             )}
         </div>

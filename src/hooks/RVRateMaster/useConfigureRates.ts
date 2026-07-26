@@ -30,6 +30,7 @@ interface UseConfigureRatesProps {
   currentCategories: RateCategory[];
   onConfigureSelected?: (selectedTypes: ITypeOfUseDetails[]) => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  isOpenPlot?: boolean;
 }
 
 export function useConfigureRates({

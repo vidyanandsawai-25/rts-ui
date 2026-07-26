@@ -4,12 +4,12 @@ import { useTranslations } from 'next-intl';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, Check, Loader2 } from 'lucide-react';
 
-export interface SearchSelectOption {
+export interface PTISSearchSelectOption {
   label: string;
   value: string;
 }
 
-export interface SearchSelectProps {
+export interface PTISSearchSelectProps {
   /**
    * Optional custom placeholder text when loading.
    */
@@ -27,7 +27,7 @@ export interface SearchSelectProps {
    * Optional name for the input. If not provided, a default will be used.
    */
   name?: string;
-  options: SearchSelectOption[];
+  options: PTISSearchSelectOption[];
   value: string;
   onChange: (name: string, value: string) => void;
   placeholder?: string;
@@ -129,7 +129,7 @@ function normalizeSearchText(str: string): string {
   return str.toLowerCase().replace(/[\s-]/g, '');
 }
 
-export function SearchSelect({
+export function PTISSearchSelect({
   id,
   name,
   options = [],
@@ -159,7 +159,7 @@ export function SearchSelect({
   strictMode = true,
   emptyMessage,
   showOptionsOnlyOnType = false,
-}: SearchSelectProps): React.ReactElement {
+}: PTISSearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
   const fallbackName = name || id || 'search-select';
@@ -243,11 +243,11 @@ export function SearchSelect({
 
   /* ---------------- Filter options ---------------- */
 
-  const filteredOptions = useMemo<SearchSelectOption[]>(() => {
+  const filteredOptions = useMemo<PTISSearchSelectOption[]>(() => {
     // If search is disabled, always show all options
     if (disableSearch) return validOptions;
 
-    if (!hasTyped) {
+    if (!hasTyped && !search.trim()) {
       if (showOptionsOnlyOnType) {
         if (!value) return [];
         const idx = validOptions.findIndex((opt) => opt.value === value);
@@ -514,9 +514,9 @@ export function SearchSelect({
           id={`${accessibleId}-listbox`}
           role="listbox"
           className={`
-            absolute left-0 right-0 z-[9999]
+            absolute left-0 right-0 z-[9999] 
             max-h-56 overflow-auto overscroll-contain
-            rounded-md border-2 border-slate-300 bg-white
+            rounded-md border-2 border-slate-300 bg-white 
             shadow-xl shadow-slate-300/60
             ring-1 ring-slate-200
             animate-in fade-in-0 zoom-in-95 duration-150
@@ -573,4 +573,4 @@ export function SearchSelect({
   );
 }
 
-SearchSelect.displayName = 'SearchSelect';
+PTISSearchSelect.displayName = 'PTISSearchSelect';

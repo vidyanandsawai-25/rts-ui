@@ -3,9 +3,9 @@
 import React, { useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Search, Loader2 } from 'lucide-react';
-import { Button, Input, SearchSelect, Tooltip } from '@/components/common';
+import { Button, Input, PTISSearchSelect, Tooltip } from '@/components/common';
 import { Label } from '@/components/common/label';
-import type { SearchSelectOption } from '@/components/common';
+import type { PTISSearchSelectOption } from '@/components/common';
 import { normalizePartition } from '@/lib/utils/format';
 import {
   buildPropertyOptionKey,
@@ -26,14 +26,14 @@ export interface PropertySearchBarProps {
   propertyId: string | null;
   setPropertyId: (val: string | null) => void;
 
-  wardOptions: SearchSelectOption[];
+  wardOptions: PTISSearchSelectOption[];
   isFetchingWardOptions: boolean;
   onFetchWardList: () => void;
 
-  propertyOptions: SearchSelectOption[];
+  propertyOptions: PTISSearchSelectOption[];
   propertyOptionValueMap: Map<string, string>;
 
-  partitionOptions: SearchSelectOption[];
+  partitionOptions: PTISSearchSelectOption[];
   partitionValueMap: Map<string, PartitionOptionValue>;
 
   isSearching: boolean;
@@ -249,7 +249,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
               {t('search.wardNo')}:
             </Label>
             <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
-              <SearchSelect
+              <PTISSearchSelect
                 id="wardNo"
                 options={wardOptions}
                 value={wardValue}
@@ -276,7 +276,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
               {t('search.propertyNo')}:
             </Label>
             <div className="w-24 sm:w-28 lg:w-38 relative [&_ul]:top-full [&_ul]:!z-30">
-              <SearchSelect
+              <PTISSearchSelect
                 id="propertyNo"
                 options={propertyOptions}
                 value={propertySelectValue}
@@ -306,7 +306,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
               {t('search.partitionNo')}:
             </Label>
             <div className="w-16 sm:w-25 relative [&_ul]:top-full [&_ul]:!z-30">
-              <SearchSelect
+              <PTISSearchSelect
                 id="partitionNo"
                 options={partitionOptions}
                 value={partitionSelectValue}

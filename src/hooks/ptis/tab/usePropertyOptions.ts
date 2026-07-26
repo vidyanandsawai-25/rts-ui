@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { normalizePartition } from '@/lib/utils/format';
-import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/common/PTISSearchSelect';
 import type { PropertyListItem } from '@/types/ptis.types';
 
 /** Separator used in composite option-value keys to prevent key collisions. */
