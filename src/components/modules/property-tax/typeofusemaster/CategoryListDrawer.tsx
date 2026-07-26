@@ -77,11 +77,10 @@ export default function CategoryListDrawer({
           if (result.success) {
             toast.success(t("category.messages.categoryDeleted"));
             router.refresh();
+          } else if (result.statusCode === 409) {
+            toast.error(t("category.messages.inUseError", { name: category.typeOfUseCategoryName }));
           } else {
-            const finalError = result.statusCode === 409
-              ? t("category.messages.inUseError", { name: category.typeOfUseCategoryName })
-              : (result.message || t("category.messages.deleteFailed"));
-            toast.error(finalError);
+            toast.error(result.message || t("category.messages.deleteFailed"));
           }
         } catch {
           toast.error(t("category.messages.deleteFailed"));
@@ -125,7 +124,7 @@ export default function CategoryListDrawer({
         size="sm"
         title={t("buttons.delete") + " " + t("category.title")}
         onClick={() => handleDelete(row)}
-        disabled={isDeleting}
+        disabled={isDeleting || !row.isActive}
       />
     </div>
   );
