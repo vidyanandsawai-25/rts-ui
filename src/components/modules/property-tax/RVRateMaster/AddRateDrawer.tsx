@@ -6,12 +6,12 @@ import { useTranslations, useLocale } from "next-intl";
 import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import RateMasterForm from "./RateMasterForm";
-import { AddRateDrawerProps, ISelectOption } from "@/types/RVRateMaster";
+import { AddRateDrawerProps } from "@/types/RVRateMaster";
 
 export default function AddRateDrawer({
-  zones: _zones, // Not used, server data is replaced by lazy loading
-  useGroups: _useGroups, // Not used, server data is replaced by lazy loading
-  assessmentYears: _assessmentYears, // Not used, server data is replaced by lazy loading
+  zones,
+  useGroups,
+  assessmentYears,
   assessmentYearRanges,
   zoneDescriptions,
   allZones,
@@ -44,9 +44,6 @@ export default function AddRateDrawer({
     router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
   };
 
-  // For lazy loading, pass empty arrays initially to trigger lazy loading behavior
-  const emptyOptions = [] as ISelectOption[];
-
   return (
     <Drawer
       open={true}
@@ -72,9 +69,9 @@ export default function AddRateDrawer({
       <RateMasterForm
         id={null}
         mode="add"
-        zoneOptions={emptyOptions}
-        useGroupOptions={isOpenPlot ? _useGroups : emptyOptions}
-        assessmentYears={emptyOptions}
+        zoneOptions={zones}
+        useGroupOptions={useGroups}
+        assessmentYears={assessmentYears}
         assessmentYearRanges={assessmentYearRanges ?? []}
         zoneDescriptions={zoneDescriptions}
         allZones={allZones || zoneDescriptions} // Use all zones if provided, otherwise fallback to paginated zones

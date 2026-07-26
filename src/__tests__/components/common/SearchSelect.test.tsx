@@ -219,4 +219,64 @@ describe('SearchSelect', () => {
       expect(onChange).toHaveBeenCalledWith('test-select', '1001-am1');
     });
   });
+
+  it('hides default options when showOptionsOnlyOnType is true and input is not typed', async () => {
+    const { rerender } = render(
+      <SearchSelect
+        id="test-select"
+        name="test-select"
+        options={options}
+        value=""
+        onChange={() => { }}
+        showOptionsOnlyOnType
+      />
+    );
+
+    const input = screen.getByRole('combobox');
+    fireEvent.focus(input);
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    // Dropdown should be empty (or show emptyMessage) because hasTyped is false and value is empty
+    expect(screen.queryAllByRole('option')).toHaveLength(0);
+
+    // Now select a value, rerender, and check if it shows only the selected option
+    rerender(
+      <SearchSelect
+        id="test-select"
+        name="test-select"
+        options={options}
+        value="opt1"
+        onChange={() => { }}
+        showOptionsOnlyOnType
+      />
+    );
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getAllByRole('option')[0]).toHaveTextContent('Option 1');
+
+    // Type in input, it should filter and show matching options
+    fireEvent.change(input, { target: { value: 'Option' } });
+    expect(screen.getAllByRole('option')).toHaveLength(2);
+  });
+
+  it('commits raw search value on blur in non-strict mode even if options list is empty', async () => {
+    const onChange = vi.fn();
+    render(
+      <SearchSelect
+        id="test-select"
+        name="test-select"
+        options={[]}
+        value=""
+        onChange={onChange}
+        strictMode={false}
+      />
+    );
+
+    const input = screen.getByRole('combobox');
+    fireEvent.change(input, { target: { value: 'unmatched-value' } });
+    fireEvent.blur(input);
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith('test-select', 'unmatched-value');
+    });
+  });
 });

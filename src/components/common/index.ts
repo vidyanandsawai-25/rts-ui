@@ -126,6 +126,9 @@ export type { LoadingPageProps } from './LoadingPage';
 export { SearchSelect } from './SearchSelect';
 export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
 
+export { PTISSearchSelect } from './PTISSearchSelect';
+export type { PTISSearchSelectProps, PTISSearchSelectOption } from './PTISSearchSelect';
+
 export { MatrixGrid } from './MatrixGrid';
 export type { MatrixGridProps, MatrixColumn, MatrixRow } from './MatrixGrid';
 

@@ -43,12 +43,14 @@ export const useFloorTableColumns = ({
         headerClassName: 'whitespace-nowrap',
         render: (value: unknown) => {
           const isYes = value === 'Yes' || value === true || value === 'true';
+          const isNo = value === 'No' || value === false || value === 'false';
+          const titleText = isYes ? t('floor.yes') : isNo ? t('floor.no') : String(value ?? '-');
           return (
-            <span
-              className={`px-2 py-0.5 rounded text-[10px] font-semibold ${isYes ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-            >
-              {isYes ? t('floor.yes') : t('floor.no')}
-            </span>
+            <div className="flex items-center justify-center" title={titleText}>
+              {isYes && <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shrink-0 inline-block shadow-sm" />}
+              {isNo && <span className="h-3.5 w-3.5 rounded-full bg-rose-500 shrink-0 inline-block shadow-sm" />}
+              {!isYes && !isNo && <span className="text-slate-400 font-bold">-</span>}
+            </div>
           );
         },
       },

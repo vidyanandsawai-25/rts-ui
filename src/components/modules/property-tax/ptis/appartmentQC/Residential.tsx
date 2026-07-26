@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useTransition, useMemo } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams, usePathname, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import CommonPropertyTable from "./CommonPropertyTable";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ interface ResidentialProps {
   initialSearchTerm: string;
   wardId?: number | string;
   propertyNo?: string;
+  partitionNo?: string;
   error?: string;
 }
 
@@ -33,11 +34,14 @@ const Residential = ({
   initialSearchTerm,
   wardId = '',
   propertyNo = '',
+  partitionNo = '',
   error,
 }: ResidentialProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
+  const locale = params.locale as string;
   const [isPending, startTransition] = useTransition();
   const activeTab = searchParams.get("subTab") || "rateable";
   const sortBy = searchParams.get("sortBy") || "";
@@ -66,22 +70,28 @@ const Residential = ({
   }, [pathname, router, searchParams]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
-    const basePath = pathname.split('/appartmentQC')[0] + '/appartmentQC';
-    const params = new URLSearchParams(searchParams.toString());
+    const urlParams = new URLSearchParams();
     
-    const propertyIdVal = String(row.id || row.propertyDetailsId || row.propertyId || '');
-    if (propertyIdVal) params.set('editPropertyId', propertyIdVal);
+    // Use pdnId (property details ID) as primary identifier for the specific unit
+    const propertyIdVal = String(row.pdnId || row.id || row.propertyDetailsId || row.propertyId || '');
+    if (!propertyIdVal) return;
     
-    params.delete('parentPropertyId');
-    params.delete('parentPropertyNo');
+    // Set essential params for QuickDataEntry
+    if (wardId) urlParams.set('wardId', String(wardId));
+    if (propertyNo) urlParams.set('propertyNo', propertyNo);
+    // All apartment units share the parent property's partition number
+    if (partitionNo) urlParams.set('partitionNo', partitionNo);
+    if (row.wardNo) urlParams.set('wardNo', String(row.wardNo));
     
-    params.set('returnTab', 'propertydetails');
-    params.set('valuationTab', 'apartment');
-    params.set('appartmentTab', 'residential');
-    params.set('subTab', activeTab);
+    // Set return navigation params
+    urlParams.set('returnTab', 'propertydetails');
+    urlParams.set('valuationTab', 'apartment');
+    urlParams.set('appartmentTab', 'residential');
+    urlParams.set('subTab', activeTab);
 
-    router.push(`${basePath}/appartmentQCDrawer/Property?${params.toString()}`);
-  }, [pathname, router, searchParams, activeTab]);
+    // Navigate to QuickDataEntry Property page with the property
+    router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyIdVal}/Property?${urlParams.toString()}`);
+  }, [router, locale, wardId, propertyNo, partitionNo, activeTab]);
 
   const handleSort = useCallback((columnKey: string) => {
     const nextSortOrder = sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";

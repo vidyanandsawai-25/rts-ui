@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FloorData, RoomData } from "@/types/room-details.types";
 import { RenterDetailItem, RenterMastItem } from "@/types/renter/renter-details.types";
 import { LookupData } from "@/types/common-details.types";
@@ -11,6 +12,7 @@ import {
   getSubTypeDescription,
 } from "./floor-descriptions";
 import { INITIAL_SHAPE_PARAMETERS } from "@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/RoomSubmission/constants/room-submission.constants";
+import { isOpenPlotCodeTaxable } from "./openplot-category";
 
 /**
  * Normalizes offset/minus room data from API response back to UI-friendly structure.
@@ -201,7 +203,23 @@ export function normalizeFloorData(
     width: w !== undefined && w !== null ? String(w) : '',
     builtupAreaSqFt: getString(raw.builtupAreaSqFt) || getString(raw.builtupAreaSqFeet) || '0.00',
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
-    isTaxable: (raw.isTaxable === 'Yes' || raw.isTaxable === true) ? 'Yes' : 'No',
+    isTaxable: (() => {
+      if (isOpenPlotVal) {
+        const rawPlotCode = String(
+          raw.typeOfUseCode ||
+          (raw.selectedOpenPlotCategory as any)?.typeOfUseCode ||
+          (raw.openPlotCategory as any)?.typeOfUseCode ||
+          ''
+        ).toUpperCase().trim();
+        if (rawPlotCode) {
+          return isOpenPlotCodeTaxable(rawPlotCode) ? 'Yes' : 'No';
+        }
+        if (useDesc.includes('शेती') || useDesc.includes('करमुक्त')) {
+          return 'No';
+        }
+      }
+      return (raw.isTaxable === 'Yes' || raw.isTaxable === true || raw.isTaxable === 1 || raw.isTaxable === '1') ? 'Yes' : 'No';
+    })(),
 
     // Renter details root level mappings for forms/UI state
     renterName: getString(raw.renterName) || getString(raw.renterNameEnglish) || getString(firstRenter?.renterName) || getString(firstRenter?.renterNameEnglish) || '',

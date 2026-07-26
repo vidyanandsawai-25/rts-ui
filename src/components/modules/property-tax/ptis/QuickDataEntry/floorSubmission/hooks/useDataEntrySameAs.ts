@@ -567,6 +567,8 @@ export function useDataEntrySameAs({
     searchPropertyNo,
     locale,
     categoryName,
+    changeTypeInput,
+    currentPropertyType,
   ]);
 
   return {

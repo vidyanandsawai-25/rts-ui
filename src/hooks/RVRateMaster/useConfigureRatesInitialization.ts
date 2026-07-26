@@ -207,3 +207,4 @@ export function useConfigureRatesInitialization({
     loadPaginatedData();
   }, [open, pageNumber, pageSize, debouncedSearch, allUseTypes, setPaginatedUseTypes, setTotalCount, setTotalPages, setIsListLoading, t]);
 }
+

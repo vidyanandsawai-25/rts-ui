@@ -95,18 +95,37 @@ export const renterSubmissionSchema = z.object({
     renterMast: z.array(renterMastItemSchema).optional().default([]),
 });
 
+const zodBooleanPreprocess = (defaultValue: boolean) =>
+    z.preprocess((val) => {
+        if (typeof val === 'boolean') return val;
+        if (val === 'Yes' || val === 'true' || val === '1' || val === 1) return true;
+        if (val === 'No' || val === 'false' || val === '0' || val === 0) return false;
+        return val;
+    }, z.boolean().default(defaultValue));
+
+const safeNumberPreprocess = (defaultValue: number = 0, isPositive: boolean = false, customMessage?: string) =>
+    z.preprocess((val) => {
+        if (val === undefined || val === null || val === '') return isPositive ? 0 : defaultValue;
+        const num = Number(val);
+        return isNaN(num) ? (isPositive ? 0 : defaultValue) : num;
+    }, isPositive ? z.number().positive(customMessage || 'floor.errors.invalidNumber') : z.number().nonnegative().default(defaultValue));
+
+const safeNullableNumberPreprocess = () =>
+    z.preprocess((val) => {
+        if (val === undefined || val === null || val === '') return null;
+        const num = Number(val);
+        return isNaN(num) ? null : num;
+    }, z.number().nullable().optional());
+
 export const floorSubmissionSchema = z.object({
-    isActive: z.boolean().default(true),
-    propertyId: z.coerce.number()
-        .positive('floor.errors.propertyIdRequired'),
-    propertyDetailsId: z.coerce.number()
-        .nonnegative().default(0),
-    floorId: z.coerce.number().nullable().optional(),
+    isActive: zodBooleanPreprocess(true),
+    propertyId: safeNumberPreprocess(0, true, 'floor.errors.propertyIdRequired'),
+    propertyDetailsId: safeNumberPreprocess(0),
+    floorId: safeNullableNumberPreprocess(),
     floorDescription: z.string()
         .transform(val => (val || '').trim())
         .default(''),
-    subFloorId: z.coerce.number()
-        .nonnegative().default(0),
+    subFloorId: safeNumberPreprocess(0),
     subFloorDescription: z.string().default(''),
     constructionYear: z.string().default(''),
     assessmentYear: z.string()
@@ -118,55 +137,49 @@ export const floorSubmissionSchema = z.object({
             const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
             return year >= 1700 && year <= currentFinancialStartYear;
         }, { message: 'floor.errors.assessmentYearInvalid' }),
-    constructionTypeId: z.coerce.number().nullable().optional(),
+    constructionTypeId: safeNullableNumberPreprocess(),
     constructionTypeDescription: z.string()
         .transform(val => (val || '').trim())
         .default(''),
-    typeOfUseId: z.coerce.number().nullable().optional(),
-    typeOfUseCategoryId: z.coerce.number().nullable().optional(),
+    typeOfUseId: safeNullableNumberPreprocess(),
+    typeOfUseCategoryId: safeNullableNumberPreprocess(),
     typeOfUseDescription: z.string()
         .transform(val => (val || '').trim())
         .default(''),
-    subTypeOfUseId: z.coerce.number()
-        .nonnegative().default(0),
+    subTypeOfUseId: safeNumberPreprocess(0),
     subTypeOfUseDescription: z.string().default(''),
-    carpetAreaSqFeet: z.coerce.number()
-        .positive('floor.errors.carpetAreaRequired'),
-    carpetAreaSqMeter: z.coerce.number()
-        .nonnegative().default(0),
-    builtupAreaSqMeter: z.coerce.number()
-        .nonnegative().default(0),
-    builtupAreaSqFeet: z.coerce.number()
-        .nonnegative().default(0),
-    noOfRooms: z.coerce.number()
-        .int()
-        .nonnegative().default(0),
-    renterYesNo: z.boolean().default(false),
+    carpetAreaSqFeet: safeNumberPreprocess(0, true, 'floor.errors.carpetAreaRequired'),
+    carpetAreaSqMeter: safeNumberPreprocess(0),
+    builtupAreaSqMeter: safeNumberPreprocess(0),
+    builtupAreaSqFeet: safeNumberPreprocess(0),
+    noOfRooms: z.preprocess((val) => {
+        if (val === undefined || val === null || val === '') return 0;
+        const num = Number(val);
+        return isNaN(num) ? 0 : num;
+    }, z.number().int().nonnegative().default(0)),
+    renterYesNo: zodBooleanPreprocess(false),
     renterName: z.string().default(''),
     renterNameEnglish: z.string().default(''),
-    rentYearly: z.coerce.number()
-        .nonnegative().default(0),
+    rentYearly: safeNumberPreprocess(0),
     agreementFromDate: z.string().optional().nullable(),
     agreementToDate: z.string().optional().nullable(),
     agreementDate: z.string().optional().nullable(),
-    rentMonthly: z.coerce.number()
-        .nonnegative().default(0),
-    isTaxable: z.boolean().default(true),
+    rentMonthly: safeNumberPreprocess(0),
+    isTaxable: zodBooleanPreprocess(true),
     taxLiability: z.string().default(''),
     occupancyDate: z.string().optional().nullable(),
-    occupancyApplyOrNot: z.boolean().default(false),
+    occupancyApplyOrNot: zodBooleanPreprocess(false),
     occupancyNumber: z.string().default(''),
-    nonCalculateRentMonthly: z.coerce.number()
-        .nonnegative().default(0),
+    nonCalculateRentMonthly: safeNumberPreprocess(0),
     renterDetails: z.array(renterDetailItemSchema).optional().default([]),
     renterMast: z.array(renterMastItemSchema).optional().default([]),
     roomWiseSubmissionDetails: z.array(roomSchema).optional().default([]),
-    createdBy: z.coerce.number().optional(),
-    updatedBy: z.coerce.number().optional(),
+    createdBy: safeNumberPreprocess(0),
+    updatedBy: safeNumberPreprocess(0),
     selectedFloorType: z.enum(['Construction', 'OpenPlot']).optional(),
     length: z.union([z.string(), z.number()]).optional().nullable(),
     width: z.union([z.string(), z.number()]).optional().nullable(),
-    isOpenPlot: z.boolean().default(false),
+    isOpenPlot: zodBooleanPreprocess(false),
 }).superRefine((data, ctx) => {
     // If it's an OpenPlot or isOpenPlot is true, bypass construction/floor fields validation
     if (data.selectedFloorType !== 'OpenPlot' && !data.isOpenPlot) {

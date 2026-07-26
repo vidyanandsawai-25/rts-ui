@@ -146,13 +146,14 @@
     "confirmDelete": "Delete",
     "cancel": "Cancel",
     "configureUseTypeTitle": "Configure Use Type",
-    "configureUseTypeDescription": "Do you want to configure different use types for - {descriptionList}?",
+    "configureUseTypeDescription": "Do you want to configure different use groups for Type Of Use with OP, Parking as its Category?",
     "confirmYes": "Yes",
     "confirmNo": "No"
   },
   "configureRates": {
-    "title": "Configure Open Plot Rates",
+    "title": "Configure Use Groups",
     "description": "Configure and map use groups for different types of use",
+    "infoTip": "Only Open Plot use groups can be configured (created/updated). Link to an existing group or click <btn1>+ Create New Group</btn1>, then click <btn2>Configure</btn2>.",
     "saveButton": "Configure",
     "closeButton": "Close",
     "selectTypesOfUse": "Select Types of Use",
@@ -185,7 +186,8 @@
       "failedToConfigure": "Failed to configure group",
       "invalidSelection": "Please select Type of Use having Use Groups for Open Plot.",
       "duplicateGroup": "Please select Type of Use having distinct Use group",
-      "selectAtLeastOne": "Please select at least one Type of Use to configure."
+      "selectAtLeastOne": "Please select at least one Type of Use to configure.",
+      "useGroupsNotConfigured": "Use Groups not Configured, so default use groups are shown."
     },
     "validation": {
       "codeRequired": "Group ID Code is required",

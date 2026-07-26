@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import RenterDetailsForm from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/Renter/RenterDetailsForm';

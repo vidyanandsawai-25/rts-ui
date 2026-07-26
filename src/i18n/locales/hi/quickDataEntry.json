@@ -734,6 +734,8 @@
     }
   },
   "floor": {
+    "usedPlotArea": "उपयोग किया गया प्लॉट क्षेत्र",
+    "openPlotCategory": "श्रेणी",
     "separatelyUsedPlotArea": "अलग से उपयोग किया गया प्लॉट क्षेत्र",
     "construction": "निर्माण",
     "openPlot": "खुली जगह",
@@ -834,6 +836,8 @@
     "editOpenPlotDetails": "खुला भूखंड विवरण संपादित करें",
     "addFloorDetails": "मंजिल विवरण जोड़ें",
     "addOpenPlotDetails": "खुले भूखंड का विवरण जोड़ें",
+    "openPlotCategory": "खुला भूखंड श्रेणी",
+    "selectCategory": "- श्रेणी चुनें -",
     "floorLabel": "मंज़िल",
     "floor": "मंज़िल",
     "subFloor": "उप मंज़िल",
@@ -913,6 +917,7 @@
       "confirmDeletion": "हटाने की पुष्टि करें",
       "areYouSureDeleteRange": "क्या आप वाकई इस श्रेणी को हटाना चाहते हैं?",
       "deleted": "हटाया गया",
+      "delete": "हटाएं",
       "renterPropertyDetails": "किरायेदार संपत्ति विवरण",
       "customDateRanges": "कस्टम तिथि सीमाएं",
       "agreementSummary": "समझौता सारांश",
@@ -1007,7 +1012,12 @@
       "lengthRequired": "लंबाई आवश्यक है और शून्य से अधिक होनी चाहिए",
       "widthRequired": "चौड़ाई आवश्यक है और शून्य से अधिक होनी चाहिए",
       "unnecessaryLength": "निर्माण मंज़िल के लिए लंबाई खाली रखें",
-      "unnecessaryWidth": "निर्माण मंज़िल के लिए चौड़ाई खाली रखें"
+      "unnecessaryWidth": "निर्माण मंज़िल के लिए चौड़ाई खाली रखें",
+      "invalidDimensions": "लंबाई और चौड़ाई 0 से अधिक होनी चाहिए।",
+      "areaUpdatedSuccess": "क्षेत्रफल सफलतापूर्वक अपडेट किया गया।",
+      "areaAddedSuccess": "क्षेत्रफल सफलतापूर्वक जोड़ा गया।",
+      "failedToSaveArea": "क्षेत्रफल सहेजने में विफल।",
+      "selectOpenPlotCategory": "कृपया एक खुला प्लॉट श्रेणी चुनें।"
     },
     "deleteConfirmTitle": "क्या आप सुनिश्चित हैं?",
     "deleteConfirmText": "क्या आप इस मंज़िल को हटाना चाहते हैं?",

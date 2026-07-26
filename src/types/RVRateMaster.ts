@@ -36,6 +36,8 @@ export type RateCategory = {
   constructionCode?: string; // constructionCode for display in table headers
   description?: string; // Full description for tooltips
   typeOfUseGroupId?: number; // Optional group ID for open plot mode
+  typeOfUseGroupCode?: string;
+  groupName?: string;
   associatedUseTypes?: { code: string; description: string }[]; // Associated types of use for open plot
 };
 

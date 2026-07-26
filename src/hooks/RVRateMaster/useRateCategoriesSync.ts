@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { logger } from "@/lib/utils/logger";
 import { toast } from "sonner";
-import { getTypeOfUseDetailsAction, getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { getRateMasterByFilters, getOpenPlotTypeOfUseDetailsAction, getTypeOfUseDetailsAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { RateCategory, ITypeOfUseDetails } from "@/types/RVRateMaster";
 
@@ -27,7 +27,9 @@ export function useRateCategoriesSync({
 
   const fetchLatestRateCategories = async () => {
     try {
-      const detailsResult = await getTypeOfUseDetailsAction(1, -1);
+      const detailsResult = isOpenPlot
+        ? await getOpenPlotTypeOfUseDetailsAction()
+        : await getTypeOfUseDetailsAction(1, -1);
       const details = detailsResult.items || [];
       const opCategory = details.find(t => t.typeOfUseCode === 'OP');
 
@@ -50,6 +52,8 @@ export function useRateCategoriesSync({
           constructionCode: opCategory.typeOfUseCode || String(opCategory.id),
           description: opCategory.description || "",
           typeOfUseGroupId: opCategory.typeOfUseGroupId,
+          typeOfUseGroupCode: opCategory.typeOfUseGroupCode,
+          groupName: opCategory.groupName,
           associatedUseTypes: getAssociatedTypes(opCategory.typeOfUseGroupId)
         });
         if (opCategory.typeOfUseGroupId) {
@@ -57,8 +61,31 @@ export function useRateCategoriesSync({
         }
       }
 
+      // Always process OpenSpace types to ensure they are included in the categories list
+      if (isOpenPlot) {
+        const openSpaceTypes = details.filter(t => t.typeOfUseCategoryCode === 'OpenPlot');
+        openSpaceTypes.forEach(tu => {
+          const groupId = tu.typeOfUseGroupId;
+          if (groupId && groupId > 0) {
+            if (!seenGroupIds.has(groupId)) {
+              seenGroupIds.add(groupId);
+              categoriesList.push({
+                constructionId: String(tu.id),
+                constructionCode: tu.typeOfUseCode || String(tu.id),
+                description: tu.description || "",
+                typeOfUseGroupId: groupId,
+                typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                groupName: tu.groupName,
+                associatedUseTypes: getAssociatedTypes(groupId)
+              });
+            }
+          }
+        });
+      }
+
       details.forEach(tu => {
         if (tu.typeOfUseCode === 'OP') return;
+        if (tu.typeOfUseCategoryCode === 'OpenPlot') return; // already processed
 
         const groupId = tu.typeOfUseGroupId;
         if (groupId && groupId > 0) {
@@ -69,6 +96,8 @@ export function useRateCategoriesSync({
               constructionCode: tu.typeOfUseCode || String(tu.id),
               description: tu.description || "",
               typeOfUseGroupId: groupId,
+              typeOfUseGroupCode: tu.typeOfUseGroupCode,
+              groupName: tu.groupName,
               associatedUseTypes: getAssociatedTypes(groupId)
             });
           }
@@ -96,7 +125,9 @@ export function useRateCategoriesSync({
     window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
 
     try {
-      const detailsResult = await getTypeOfUseDetailsAction(1, -1);
+      const detailsResult = isOpenPlot
+        ? await getOpenPlotTypeOfUseDetailsAction()
+        : await getTypeOfUseDetailsAction(1, -1);
       const details = detailsResult.items || [];
       const opCategory = details.find(t => t.typeOfUseCode === 'OP');
 
@@ -145,6 +176,8 @@ export function useRateCategoriesSync({
                   constructionCode: code,
                   description: tu.description || "",
                   typeOfUseGroupId: groupId,
+                  typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                  groupName: tu.groupName,
                   associatedUseTypes: getAssociatedTypes(groupId)
                 });
               }
@@ -154,6 +187,8 @@ export function useRateCategoriesSync({
                 constructionCode: code,
                 description: tu.description || "",
                 typeOfUseGroupId: groupId,
+                typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                groupName: tu.groupName,
                 associatedUseTypes: getAssociatedTypes(groupId)
               });
             }
@@ -161,8 +196,14 @@ export function useRateCategoriesSync({
         };
 
         if (opCategory) processType(opCategory);
+
+        // Always include OpenPlot types
+        const openSpaceTypes = details.filter(t => t.typeOfUseCategoryCode === 'OpenPlot');
+        openSpaceTypes.forEach(t => processType(t));
+
         selectedTypes.forEach(tu => {
           if (tu.typeOfUseCode === 'OP') return;
+          if (tu.typeOfUseCategoryCode === 'OpenPlot') return; // already processed
           processType(tu);
         });
 
@@ -187,6 +228,8 @@ export function useRateCategoriesSync({
                   constructionCode: code,
                   description: tu.description || "",
                   typeOfUseGroupId: groupId,
+                  typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                  groupName: tu.groupName,
                   associatedUseTypes: getAssociatedTypes(groupId)
                 });
               }
@@ -196,14 +239,18 @@ export function useRateCategoriesSync({
                 constructionCode: code,
                 description: tu.description || "",
                 typeOfUseGroupId: groupId,
+                typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                groupName: tu.groupName,
                 associatedUseTypes: getAssociatedTypes(groupId)
               });
             }
           };
 
           if (opCategory) processAllType(opCategory);
+          openSpaceTypes.forEach(t => processAllType(t));
           selectedTypes.forEach(tu => {
             if (tu.typeOfUseCode === 'OP') return;
+            if (tu.typeOfUseCategoryCode === 'OpenPlot') return; // already processed
             processAllType(tu);
           });
 
@@ -216,7 +263,9 @@ export function useRateCategoriesSync({
             constructionId: String(opCategory.id),
             constructionCode: opCategory.typeOfUseCode || String(opCategory.id),
             description: opCategory.description || "",
-            typeOfUseGroupId: opCategory.typeOfUseGroupId
+            typeOfUseGroupId: opCategory.typeOfUseGroupId,
+            typeOfUseGroupCode: opCategory.typeOfUseGroupCode,
+            groupName: opCategory.groupName
           });
           if (opCategory.typeOfUseGroupId) {
             seenGroupIds.add(opCategory.typeOfUseGroupId);
@@ -234,7 +283,9 @@ export function useRateCategoriesSync({
                 constructionId: String(tu.id),
                 constructionCode: tu.typeOfUseCode || String(tu.id),
                 description: tu.description || "",
-                typeOfUseGroupId: groupId
+                typeOfUseGroupId: groupId,
+                typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                groupName: tu.groupName
               });
             }
           } else {
@@ -242,7 +293,9 @@ export function useRateCategoriesSync({
               constructionId: String(tu.id),
               constructionCode: tu.typeOfUseCode || String(tu.id),
               description: tu.description || "",
-              typeOfUseGroupId: groupId
+              typeOfUseGroupId: groupId,
+              typeOfUseGroupCode: tu.typeOfUseGroupCode,
+              groupName: tu.groupName
             });
           }
         });
@@ -262,14 +315,14 @@ export function useRateCategoriesSync({
       return;
     }
     try {
-      const detailsResult = await getTypeOfUseDetailsAction(1, -1);
+      const detailsResult = isOpenPlot
+        ? await getOpenPlotTypeOfUseDetailsAction()
+        : await getTypeOfUseDetailsAction(1, -1);
       const details = detailsResult.items || [];
-      const opExcluded = details.filter(t => t.typeOfUseCode !== 'OP');
-      const descriptionList = opExcluded.map(t => t.description || t.typeOfUseCode).join(', ');
 
       confirm({
         title: t('dialogs.configureUseTypeTitle'),
-        description: t('dialogs.configureUseTypeDescription', { descriptionList }),
+        description: t('dialogs.configureUseTypeDescription'),
         confirmText: t('dialogs.confirmYes'),
         cancelText: t('dialogs.confirmNo'),
         onConfirm: () => {
@@ -280,22 +333,57 @@ export function useRateCategoriesSync({
         },
         onCancel: () => {
           setHasConfiguredRates(true);
-          const opCategory = details.find(t => t.typeOfUseCode === 'OP');
-          if (opCategory) {
-            const associated = details
-              .filter(t => t.typeOfUseGroupId === opCategory.typeOfUseGroupId)
-              .map(t => ({
-                code: t.typeOfUseCode || "",
-                description: t.description || ""
-              }));
-            const opCategories = [{
-              constructionId: String(opCategory.id),
-              constructionCode: opCategory.typeOfUseCode || String(opCategory.id),
-              description: opCategory.description || "",
-              typeOfUseGroupId: opCategory.typeOfUseGroupId,
-              associatedUseTypes: isOpenPlot ? associated : undefined
-            }];
+          if (isOpenPlot) {
+            const opTypes = details.filter(t => t.typeOfUseCategoryCode === 'OpenPlot');
+            
+            // Sort 'OP' to the front so it takes priority for duplicate group IDs
+            opTypes.sort((a, b) => {
+              if (a.typeOfUseCode === 'OP') return -1;
+              if (b.typeOfUseCode === 'OP') return 1;
+              return 0;
+            });
+
+            const distinctGroupIds = new Set<number>();
+            const opCategories = opTypes
+              .filter(tu => {
+                const groupId = tu.typeOfUseGroupId;
+                if (groupId && !distinctGroupIds.has(groupId)) {
+                  distinctGroupIds.add(groupId);
+                  return true;
+                }
+                return false;
+              })
+              .map(tu => {
+                const associated = opTypes
+                  .filter(item => item.typeOfUseGroupId === tu.typeOfUseGroupId)
+                  .map(item => ({
+                    code: item.typeOfUseCode || "",
+                    description: item.description || ""
+                  }));
+                return {
+                  constructionId: String(tu.id),
+                  constructionCode: tu.typeOfUseCode || String(tu.id),
+                  description: tu.description || "",
+                  typeOfUseGroupId: tu.typeOfUseGroupId,
+                  typeOfUseGroupCode: tu.typeOfUseGroupCode,
+                  groupName: tu.groupName,
+                  associatedUseTypes: associated
+                };
+              });
             setLocalRateCategories(opCategories);
+          } else {
+            const opCategory = details.find(t => t.typeOfUseCode === 'OP');
+            if (opCategory) {
+              const opCategories = [{
+                constructionId: String(opCategory.id),
+                constructionCode: opCategory.typeOfUseCode || String(opCategory.id),
+                description: opCategory.description || "",
+                typeOfUseGroupId: opCategory.typeOfUseGroupId,
+                typeOfUseGroupCode: opCategory.typeOfUseGroupCode,
+                groupName: opCategory.groupName,
+              }];
+              setLocalRateCategories(opCategories);
+            }
           }
         }
       });
