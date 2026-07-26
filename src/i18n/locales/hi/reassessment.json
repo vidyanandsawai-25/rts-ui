@@ -39,6 +39,10 @@
       "alv": "वार्षिक किराया मूल्य",
       "mr": "मरम्मत और रखरखाव",
       "rv": "मूल्यांकन मूल्य",
+      "ocCertificateNo": "OC प्रमाणपत्र संख्या",
+      "ocCertificateIssueDate": "OC जारी करने की तारीख",
+      "ccCertificateNo": "CC प्रमाणपत्र संख्या",
+      "ccCertificateIssueDate": "CC जारी करने की तारीख",
       "status": "स्थिति"
     },
     "statuses": {

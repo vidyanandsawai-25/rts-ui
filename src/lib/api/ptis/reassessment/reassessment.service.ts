@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '@/services/api.service';
+import { formatDate } from '@/lib/utils/format';
 import type { ActionResult } from '@/types/common.types';
 import type {
   ReassessmentApiResponse,
@@ -116,6 +117,14 @@ export function mapFloorDetailsToDisplay(
       alv: detail.annualRentalValue ?? 0,
       mr: detail.maintenance ?? 0,
       rv: detail.rateableValue ?? 0,
+      ocCertificateNo: detail.ocCertificateNo ?? '',
+      ocCertificateIssueDate: detail.ocCertificateIssueDate
+        ? formatDate(detail.ocCertificateIssueDate, 'en-IN')
+        : '',
+      ccCertificateNo: detail.ccCertificateNo ?? '',
+      ccCertificateIssueDate: detail.ccCertificateIssueDate
+        ? formatDate(detail.ccCertificateIssueDate, 'en-IN')
+        : '',
       status,
       bgClass,
     };

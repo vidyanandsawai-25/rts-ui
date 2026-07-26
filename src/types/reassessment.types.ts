@@ -39,6 +39,10 @@ export interface ReassessmentFloorDetail {
   monthlyRate: number | null;
   yearlyRate: number | null;
   yearlyRent: number | null;
+  ocCertificateNo: string | null;
+  ocCertificateIssueDate: string | null;
+  ccCertificateNo: string | null;
+  ccCertificateIssueDate: string | null;
 }
 
 /**
@@ -99,6 +103,10 @@ export interface MappedFloorDetail extends Record<string, unknown> {
   alv: number;
   mr: number;
   rv: number;
+  ocCertificateNo: string;
+  ocCertificateIssueDate: string;
+  ccCertificateNo: string;
+  ccCertificateIssueDate: string;
   status?: 'Unchanged' | 'Added' | 'Removed';
   bgClass?: string;
 }

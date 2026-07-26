@@ -39,6 +39,10 @@
       "alv": "वार्षिक भाडे मूल्य",
       "mr": "दुरुस्ती आणि देखभाल",
       "rv": "मूल्यांकन मूल्य",
+      "ocCertificateNo": "OC प्रमाणपत्र क्रमांक",
+      "ocCertificateIssueDate": "OC जारी करण्याची तारीख",
+      "ccCertificateNo": "CC प्रमाणपत्र क्रमांक",
+      "ccCertificateIssueDate": "CC जारी करण्याची तारीख",
       "status": "स्थिती"
     },
     "statuses": {

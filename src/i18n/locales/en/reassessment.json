@@ -39,6 +39,10 @@
       "alv": "ALV",
       "mr": "M&R",
       "rv": "RV",
+      "ocCertificateNo": "OC Certificate No",
+      "ocCertificateIssueDate": "OC Issue Date",
+      "ccCertificateNo": "CC Certificate No",
+      "ccCertificateIssueDate": "CC Issue Date",
       "status": "Status"
     },
     "statuses": {
