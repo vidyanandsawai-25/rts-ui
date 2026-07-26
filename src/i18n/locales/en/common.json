@@ -345,6 +345,7 @@
     "keyboardShortcuts": "ESC: Close | ←/→: Navigate | +/-: Zoom | R: Rotate | 0: Reset",
     "tapToNavigate": "Tap or swipe to navigate",
     "loading": "Loading image...",
+    "errorIcon": "Error icon",
     "zoomLevel": "Zoom level",
     "loadError": "Failed to load image. Please try again."
   }

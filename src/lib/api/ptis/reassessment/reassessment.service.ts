@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '@/services/api.service';
+import { formatDateToDDMMYYYY } from '@/lib/utils/format';
 import type { ActionResult } from '@/types/common.types';
 import type {
   ReassessmentApiResponse,
@@ -122,6 +123,14 @@ export function mapFloorDetailsToDisplay(
       alv: detail.annualRentalValue ?? 0,
       mr: detail.maintenance ?? 0,
       rv: detail.rateableValue ?? 0,
+      ocCertificateNo: detail.ocCertificateNo ?? '',
+      ocCertificateIssueDate: detail.ocCertificateIssueDate
+        ? formatDateToDDMMYYYY(detail.ocCertificateIssueDate)
+        : '',
+      ccCertificateNo: detail.ccCertificateNo ?? '',
+      ccCertificateIssueDate: detail.ccCertificateIssueDate
+        ? formatDateToDDMMYYYY(detail.ccCertificateIssueDate)
+        : '',
       maintenance: detail.maintenance,
       yearlyRent: detail.yearlyRent,
       status,
@@ -162,15 +171,13 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
     newTaxes[key] = tax.newAmount;
   });
 
-  // Calculate additional revenue (new - old) for each tax
-  const additionalTaxes: { [key: string]: number } = {};
-  let additionalTotalTax = 0;
-
+  const totalTaxes: { [key: string]: number } = {};
+  let totalSumTax = 0;
   taxHeads.forEach((tax) => {
     const key = toTaxKey(tax.taxName);
-    const difference = tax.newAmount - tax.oldAmount;
-    additionalTaxes[key] = difference;
-    additionalTotalTax += difference;
+    const sum = tax.oldAmount + tax.newAmount;
+    totalTaxes[key] = sum;
+    totalSumTax += sum;
   });
 
   // Calculate totals by summing individual tax values for validation
@@ -195,9 +202,9 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
     {
       rowType: 'total',
       label: 'Total Tax',
-      taxes: additionalTaxes,
-      // Calculate difference: use API totals if available, otherwise use sum of differences
-      totalTax: totalTax ? (totalTax.newAmount - totalTax.oldAmount) : additionalTotalTax,
+      taxes: totalTaxes,
+      // Use API-provided totals if available, otherwise use sum of old + new
+      totalTax: totalTax ? totalTax.oldAmount + totalTax.newAmount : totalSumTax,
     },
   ];
 

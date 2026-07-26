@@ -51,6 +51,10 @@
       "alv": "वार्षिक किराया मूल्य",
       "mr": "मरम्मत और रखरखाव",
       "rv": "मूल्यांकन मूल्य",
+      "ocCertificateNo": "OC संख्या",
+      "ocCertificateIssueDate": "OC तारीख",
+      "ccCertificateNo": "CC संख्या",
+      "ccCertificateIssueDate": "CC तारीख",
       "maintenance": "रखरखाव",
       "yearlyRent": "वार्षिक किराया",
       "status": "स्थिति"
