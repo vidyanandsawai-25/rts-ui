@@ -19,21 +19,21 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
   const getUlbName = () => {
     const rawName = ulbData?.ulbName || '';
     if (rawName.toUpperCase().includes('THANE')) {
-      return locale === 'mr' 
-        ? 'ठाणे महानगरपालिका' 
-        : locale === 'hi' 
-          ? 'ठाणे नगर निगम' 
+      return locale === 'mr'
+        ? 'ठाणे महानगरपालिका'
+        : locale === 'hi'
+          ? 'ठाणे नगर निगम'
           : 'Thane Municipal Corporation';
     }
     if (rawName.toUpperCase().includes('AKOLA')) {
-      return locale === 'mr' 
-        ? 'अकोला महानगरपालिका' 
-        : locale === 'hi' 
-          ? 'अकोला नगर निगम' 
+      return locale === 'mr'
+        ? 'अकोला महानगरपालिका'
+        : locale === 'hi'
+          ? 'अकोला नगर निगम'
           : 'Akola Municipal Corporation';
     }
-    return locale === 'mr' 
-      ? (ulbData?.ulbNameLocal || ulbData?.ulbName || '') 
+    return locale === 'mr'
+      ? (ulbData?.ulbNameLocal || ulbData?.ulbName || '')
       : (ulbData?.ulbName || ulbData?.ulbNameLocal || '');
   };
 
@@ -145,7 +145,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
           <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-1.5 w-full sm:w-auto text-center sm:text-left">
             {getTransText('आमच्याशी जोडा', 'हमसे जुड़ें', 'Connect With Us')}
           </h4>
-          
+
           {/* Social Icons Row */}
           <SocialLinks className="justify-center sm:justify-start pt-0.5" />
 

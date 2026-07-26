@@ -42,7 +42,7 @@ export const OffsetHistoryTable: React.FC<OffsetHistoryTableProps> = ({
                 <div className="max-h-[140px] overflow-y-auto">
                     {offsetList.map((offset, idx) => (
                         <div
-                            key={offset.id || idx}
+                            key={offset.id ? `offset-${offset.id}-${idx}` : `offset-idx-${idx}`}
                             className="grid grid-cols-[1fr_2fr_2.5fr_3fr_2fr_1fr] gap-0 text-center py-2 border-b border-gray-200 text-xs hover:bg-gray-50 items-center"
                         >
                             <div className="text-gray-600">{idx + 1}</div>

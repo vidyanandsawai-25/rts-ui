@@ -182,9 +182,11 @@ export const RentManagementCard = React.memo(({
                             placeholder="e.g. 5"
                             className={`h-10 bg-white rounded-md font-medium text-slate-950 focus:ring-4 focus:ring-blue-50/50 transition-all pr-8 text-xs w-full ${fieldErrors.incrementValue ? errorBorderClassName : 'border-gray-200'}`}
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
-                            {"%"}
-                        </span>
+                        {renterDetails?.incrementType !== "Fixed" && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
+                                {"%"}
+                            </span>
+                        )}
                     </div>
                     {fieldErrors.incrementValue && <p className={errorClassName}>{fieldErrors.incrementValue}</p>}
                 </div>
@@ -206,7 +208,14 @@ export const RentManagementCard = React.memo(({
                     <SummaryItem label={t('floor.renterSection.baseRent')} value={`₹ ${parseFloat(String(renterDetails?.rentAmount || "0")).toLocaleString("en-IN")}`} />
                 </div>
                 <div className="lg:col-span-2">
-                    <SummaryItem label={t('floor.renterSection.increment')} value={`${renterDetails?.incrementValue || "0"}%`} highlight />
+                    <SummaryItem 
+                        label={renterDetails?.incrementType === "Fixed" ? "Fixed Amount Increment" : t('floor.renterSection.increment')} 
+                        value={renterDetails?.incrementType === "Fixed" 
+                            ? `₹ ${parseFloat(String(renterDetails?.incrementValue || "0")).toLocaleString("en-IN")}`
+                            : `${renterDetails?.incrementValue || "0"}%`
+                        } 
+                        highlight 
+                    />
                 </div>
                 <div className="lg:col-span-2">
                     <SummaryItem label={t('floor.renterSection.type')} value={renterDetails?.incrementType?.toLowerCase()?.includes("percent") ? t('floor.renterSection.percentage') : t('floor.renterSection.fixedAmount')} />

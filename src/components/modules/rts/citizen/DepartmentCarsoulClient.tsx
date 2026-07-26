@@ -7,10 +7,10 @@ import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
 import type { Language } from "@/types/language.type";
-import { 
-  FileText, 
-  CheckCircle2, 
-  Clock, 
+import {
+  FileText,
+  CheckCircle2,
+  Clock,
   AlertCircle,
   AlertTriangle,
   Search,
@@ -429,7 +429,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     }
     const q = (searchParams.get("q") ?? "").trim();
     if (q) params.set("q", q);
-    
+
     const queryString = params.toString();
     router.replace(`${localePrefix}/service/dashboard${queryString ? `?${queryString}` : ""}`, { scroll: false });
   };

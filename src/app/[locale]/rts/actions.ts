@@ -261,8 +261,8 @@ export async function getRtsMastersAction() {
     let services = [];
 
     if (deptRes.success && deptRes.data) {
-      const rawDepts = Array.isArray(deptRes.data) 
-        ? deptRes.data 
+      const rawDepts = Array.isArray(deptRes.data)
+        ? deptRes.data
         : (deptRes.data.items || []);
       departments = rawDepts.map((d: any) => ({
         id: String(d.id ?? d.rtsDepartmentId ?? ""),
@@ -311,7 +311,7 @@ export async function saveRtsDepartmentAction(name: string) {
       deptIcon: "Building"
     };
     const res = await apiClient.post<any>("/RTSDepartment", payload);
-    
+
     let newDept;
     if (res.success && res.data) {
       const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
@@ -359,7 +359,7 @@ export async function saveRtsServiceAction(name: string, departmentId: string) {
       name
     };
     const res = await apiClient.post<any>("/RTSService", payload);
-    
+
     let newSrv;
     if (res.success && res.data) {
       const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);

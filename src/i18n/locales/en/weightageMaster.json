@@ -5,7 +5,7 @@
     "tabs": {
       "floor": "Floor Weightage",
       "nature": "Nature & Type of Building",
-      "subType": "User Category",
+      "subType": "Use Category",
       "age": "Age Of Building"
     },
     "common": {

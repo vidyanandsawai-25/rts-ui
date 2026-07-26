@@ -10,6 +10,7 @@ vi.mock('next-intl', () => ({
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
+  useParams: () => ({ locale: 'en' }),
   usePathname: () => '/test',
   useSearchParams: () => ({
     get: vi.fn((key) => key === 'subTab' ? 'rateable' : null),

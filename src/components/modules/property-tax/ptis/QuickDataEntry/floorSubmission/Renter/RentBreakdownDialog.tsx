@@ -62,7 +62,7 @@ export const RentBreakdownDialog = ({ isOpen, onClose, fy, progression }: RentBr
                     ) : (
                         fyPeriods.map((p, idx) => (
                             <div 
-                                key={idx}
+                                key={`rent-period-${p.date.getTime()}-${idx}`}
                                 className={`group flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${
                                     p.isIncrementMonth 
                                         ? "bg-blue-50/50 border-blue-100 hover:bg-blue-50 shadow-sm" 

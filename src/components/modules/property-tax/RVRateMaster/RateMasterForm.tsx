@@ -223,6 +223,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
         isMatrixVisible={showMatrix}
         currentCategories={localRateCategories}
         onConfigureSelected={handleConfigureSelected}
+        isOpenPlot={isOpenPlot}
       />
     </div>
   );

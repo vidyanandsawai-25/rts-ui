@@ -19,7 +19,9 @@ export const ptisSuggestionsClient = {
     if (params.partitionNo) searchParams.append('partitionNo', params.partitionNo);
 
     try {
-      const res = await fetch(`/api/ptis/suggestions?${searchParams.toString()}`);
+      const res = await fetch(`/api/ptis/suggestions?${searchParams.toString()}`, {
+        cache: 'no-store',
+      });
       const result = await res.json();
       if (result.success && result.data) {
         const suggestions: PropertyListItem[] = result.data.map((item: SuggestionPayloadItem) => ({

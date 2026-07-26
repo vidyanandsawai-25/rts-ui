@@ -189,6 +189,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
           ...room,
           area: convertAreaUnit(Number(room.area || 0), oldUnit, newUnit),
           total: convertAreaUnit(Number(room.total || 0), oldUnit, newUnit),
+          carpetArea: room.carpetArea !== undefined ? convertAreaUnit(Number(room.carpetArea || 0), oldUnit, newUnit) : undefined,
           length: isManualArea
             ? (room.length ? convertAreaUnit(parseFloat(String(room.length)), oldUnit, newUnit).toString() : "")
             : (room.length ? convertDimension(String(room.length), targetDimUnit) : ""),

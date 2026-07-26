@@ -24,10 +24,10 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
       redirect(`/${locale}/service/login?error=session_expired`);
     }
   }
-  
+
   // Extract mobile number from the cookie: local_mobile_timestamp
   const mobile = isLoggedIn ? (sessionCookie.split('_')[1] || '') : '';
-  
+
   const profileCookie = cookieStore.get('rts_citizen_profile')?.value;
   let profile = undefined;
   if (profileCookie) {

@@ -20,7 +20,7 @@ import { usePropertySuggestions } from '@/hooks/ptis/tab/usePropertySuggestions'
 import { Tabs, TabValue } from '@/components/common/Tabs';
 import type { PtisTabId, PtisInitialData } from '@/types/ptis.types';
 import { PTIS_TABS } from '@/types/ptis.types';
-import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/common/PTISSearchSelect';
 import { useDebounce } from '@/hooks/useDebounce';
 import { toast } from 'sonner';
 
@@ -102,12 +102,13 @@ export default function PropertyTabSection({
   );
 
   const [searchText, setSearchText] = useState('');
-  const debouncedSearchText = useDebounce(searchText, 400);
+  const debouncedSearchText = useDebounce(searchText, 150);
 
   const { propertiesList, setPropertiesList, isSearchingProperties } = usePropertySuggestions(
     draft.wardId,
     debouncedSearchText,
-    draft.propertyId
+    draft.propertyId,
+    initialData?.rawPropertyData || EMPTY_ARRAY
   );
 
   // 6. State Handlers

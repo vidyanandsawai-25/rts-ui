@@ -51,6 +51,8 @@ function QuickDataEntryContent({
     const rateableExpands = searchParams.getAll("rateableExpand");
     const capitalExpands = searchParams.getAll("capitalExpand");
     const dualExpands = searchParams.getAll("dualExpand");
+    const parentPropertyId = searchParams.get("parentPropertyId") || "";
+    const appartmentPartition = searchParams.get("appartmentPartition") || "";
 
     const pathSegments = pathname?.split('/').filter(Boolean) || [];
     const qdeIndex = pathSegments.findIndex((segment) => segment.toLowerCase() === 'quickdataentry');
@@ -63,7 +65,11 @@ function QuickDataEntryContent({
     const handleClose = () => {
         const doClose = () => {
             const params = new URLSearchParams();
-            if (propertyId) params.set('propertyId', propertyId);
+            if (parentPropertyId) {
+                params.set('propertyId', parentPropertyId);
+            } else if (propertyId) {
+                params.set('propertyId', propertyId);
+            }
             if (wardNo) params.set('wardNo', wardNo);
             if (wardId) params.set('wardId', wardId);
             if (propertyNo) params.set('propertyNo', propertyNo);
@@ -73,6 +79,8 @@ function QuickDataEntryContent({
             if (appartmentTab) params.set('appartmentTab', appartmentTab);
             if (subTab) params.set('subTab', subTab);
             if (showDetails) params.set('showDetails', showDetails);
+            if (appartmentPartition) params.set('appartmentPartition', appartmentPartition);
+            if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
             rateableExpands.forEach(v => params.append('rateableExpand', v));
             capitalExpands.forEach(v => params.append('capitalExpand', v));
             dualExpands.forEach(v => params.append('dualExpand', v));
@@ -165,7 +173,7 @@ function QuickDataEntryContent({
                 </div>
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                     <Layers className="h-3 w-3 text-white/80" />
-                    <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
+                    <span>{t('roomSubmission.info.partition')}: {appartmentPartition || partitionNo || '—'}</span>
                 </div>
                 {categoryName && (
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">

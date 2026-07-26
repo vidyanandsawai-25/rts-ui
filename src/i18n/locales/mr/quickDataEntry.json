@@ -733,6 +733,8 @@
     }
   },
   "floor": {
+    "usedPlotArea": "वापरलेले भूखंड क्षेत्र",
+    "openPlotCategory": "वर्ग",
     "separatelyUsedPlotArea": "स्वतंत्रपणे वापरलेले भूखंड क्षेत्रफळ",
     "construction": "बांधकाम",
     "openPlot": "खुली जागा",
@@ -833,6 +835,8 @@
     "editOpenPlotDetails": "खुला भूखंड तपशील संपादित करा",
     "addFloorDetails": "मजल्याचे तपशील जोडा",
     "addOpenPlotDetails": "खुल्या भूखंडाचे तपशील जोडा",
+    "openPlotCategory": "खुला भूखंड वर्ग",
+    "selectCategory": "- वर्ग निवडा -",
     "floorLabel": "मजला",
     "floor": "मजला",
     "subFloor": "उप मजला",
@@ -912,6 +916,7 @@
       "confirmDeletion": "हटवण्याची पुष्टी करा",
       "areYouSureDeleteRange": "तुम्हाला खात्री आहे की तुम्ही ही श्रेणी हटवू इच्छिता?",
       "deleted": "हटवले",
+      "delete": "हटवा",
       "renterPropertyDetails": "भाडेकरू मालमत्ता तपशील",
       "customDateRanges": "कस्टम तारीख श्रेणी",
       "agreementSummary": "करार सारांश",
@@ -1006,7 +1011,12 @@
       "lengthRequired": "लांबी आवश्यक आहे आणि शून्यापेक्षा जास्त असावी",
       "widthRequired": "रुंदी आवश्यक आहे आणि शून्यापेक्षा जास्त असावी",
       "unnecessaryLength": "बांधकाम मजल्यासाठी लांबी रिकामी ठेवा",
-      "unnecessaryWidth": "बांधकाम मजल्यासाठी रुंदी रिकामी ठेवा"
+      "unnecessaryWidth": "बांधकाम मजल्यासाठी रुंदी रिकामी ठेवा",
+      "invalidDimensions": "लांबी आणि रुंदी ० पेक्षा जास्त असणे आवश्यक आहे.",
+      "areaUpdatedSuccess": "क्षेत्रफळ यशस्वीरित्या अद्यतनित केले.",
+      "areaAddedSuccess": "क्षेत्रफळ यशस्वीरित्या जोडले.",
+      "failedToSaveArea": "क्षेत्रफळ जतन करण्यात अयशस्वी.",
+      "selectOpenPlotCategory": "कृपया एक खुली जागा वर्ग निवडा."
     },
     "deleteConfirmTitle": "तुम्हाला खात्री आहे?",
     "deleteConfirmText": "तुम्हाला हा मजला हटवायचा आहे?",

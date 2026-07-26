@@ -119,10 +119,10 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
 
   const isPropertyTax = s.includes("property") || s.includes("tax") || d.includes("property") || d.includes("tax") ||
                         s.includes("मालमत्ता") || s.includes("कर") || d.includes("मालमत्ता") || d.includes("कर");
-                        
+
   const isTrade = s.includes("trade") || s.includes("license") || d.includes("trade") || d.includes("license") ||
                   s.includes("व्यवसाय") || s.includes("व्यापार") || d.includes("व्यवसाय") || d.includes("व्यापार");
-                  
+
   const isWater = s.includes("water") || d.includes("water") ||
                   s.includes("पाणी") || s.includes("जल") || d.includes("पाणी") || d.includes("जल");
 

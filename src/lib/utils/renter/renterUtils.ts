@@ -211,6 +211,19 @@ export const formatIsoDate = (date: Date): string => {
     return `${y}-${m}-${d}`;
 };
 
+/**
+ * Formats a date string (YYYY-MM-DD or ISO) or Date object to DD-MM-YYYY format.
+ */
+export const formatDateDDMMYYYY = (dateStrOrObj: string | Date | null | undefined): string => {
+    if (!dateStrOrObj) return "";
+    const date = typeof dateStrOrObj === "string" ? parseDateOnly(dateStrOrObj) ?? new Date(dateStrOrObj) : dateStrOrObj;
+    if (isNaN(date.getTime())) return "";
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+};
+
 export const addDays = (dateStr: string, days: number): string => {
     const d = parseDateOnly(dateStr);
     if (!d) return dateStr;

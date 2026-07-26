@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import React from 'react';
@@ -13,6 +14,14 @@ import { LoadingPage } from '@/components/common';
 import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { RoomAPIResponse, FloorData } from '@/types/room-details.types';
 import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+
+import { validateOpenPlotForm } from '@/lib/validations/validateOpenPlotForm';
+
+import {
+  OpenPlotCategoryItem,
+  filterOpenPlotCategories,
+  isOpenPlotCodeTaxable,
+} from '@/lib/utils/floorSubmission/openplot-category';
 
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const {
@@ -66,6 +75,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   const [isAddingArea, setIsAddingArea] = React.useState(false);
 
+  const openPlotCategoryOptions = React.useMemo(() => {
+    return filterOpenPlotCategories(props.useData);
+  }, [props.useData]);
+
+  const [selectedOpenPlotCategory, setSelectedOpenPlotCategory] = React.useState<OpenPlotCategoryItem | null>(null);
+
   const openPlotRecord = React.useMemo(() => {
     const floors = ((localFloors && localFloors.length > 0) ? localFloors : (props.initialFloors || [])) as FloorData[];
     return floors.find(
@@ -75,6 +90,24 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         String(f.floor) === '77'
     ) as FloorData | undefined;
   }, [localFloors, props.initialFloors]);
+
+  // Auto-select previously saved TypeOfUseId during Edit mode
+  React.useEffect(() => {
+    if (openPlotRecord) {
+      const rawId = Number(
+        (openPlotRecord as any).typeOfUseId ||
+        (openPlotRecord as any).useId ||
+        (openPlotRecord as any).use ||
+        0
+      );
+      const matched = openPlotCategoryOptions.find(
+        (c) => Number(c.id || c.typeOfUseId) === rawId
+      );
+      if (matched) {
+        setSelectedOpenPlotCategory(matched);
+      }
+    }
+  }, [openPlotRecord, openPlotCategoryOptions]);
 
   const dynamicPlotArea = React.useMemo(() => {
     if (openPlotRecord) {
@@ -188,6 +221,24 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                 setSelectedFloorType(type);
                 handleAddFloor();
               }}
+              openPlotCategories={openPlotCategoryOptions}
+              selectedOpenPlotCategory={selectedOpenPlotCategory}
+              onChangeOpenPlotCategory={(cat) => {
+                setSelectedOpenPlotCategory(cat);
+                if (cat && (selectedFloorType === 'OpenPlot' || editingFloorForm?.isOpenPlot)) {
+                  const isTaxable = isOpenPlotCodeTaxable(cat.typeOfUseCode);
+                  setEditingFloorForm((prev) => ({
+                    ...prev,
+                    typeOfUseId: cat.id,
+                    use: String(cat.id),
+                    typeOfUseDescription: cat.description,
+                    isTaxable: isTaxable ? 'Yes' : 'No',
+                    taxLiability: isTaxable ? 'Taxable' : 'NonTaxable',
+                  }));
+                }
+              }}
+              handleOpenDropdown={handleOpenDropdown}
+              menuPlacement={Boolean(selectedFloor || isAddingNewFloor) ? 'bottom' : 'top'}
               onLoad={(_sqFt, sqM) => {
                 setPlotAreaSqM(parseFloat(sqM) || 0);
                 // onLoad should only set the plot area. It should not modify form state on initial mount.
@@ -196,15 +247,24 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                 setPlotAreaSqM(parseFloat(sqM) || 0);
               }}
               onApply={async (_sqFt: string, _sqM: string, len?: string, wid?: string) => {
-                const plotLength = parseFloat(len || '0');
-                const plotWidth = parseFloat(wid || '0');
-
-                if (isNaN(plotLength) || plotLength <= 0 || isNaN(plotWidth) || plotWidth <= 0) {
-                  toast.error(t('floor.errors.invalidDimensions') || "Length and Width must be greater than 0.");
+                const validation = validateOpenPlotForm(selectedOpenPlotCategory, len, wid);
+                if (!validation.isValid) {
+                  let msg = validation.errorMessage || 'Validation failed';
+                  if (validation.errorKey) {
+                    try {
+                      const translated = t(validation.errorKey);
+                      if (translated && !translated.startsWith('quickDataEntry.') && !translated.startsWith('MISSING_MESSAGE')) {
+                        msg = translated;
+                      }
+                    } catch (_err) {
+                      // Fall back to validation.errorMessage
+                    }
+                  }
+                  toast.error(msg);
                   return;
                 }
 
-                const areaSqMeter = plotLength * plotWidth;
+                const { plotLength, plotWidth, areaSqMeter } = validation;
                 const areaSqFeet = convertSqMToSqFt(areaSqMeter);
                 const currentYear = new Date().getFullYear().toString();
 
@@ -217,15 +277,25 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                   const lastRoomRecord = roomsList.length > 0 ? roomsList[roomsList.length - 1] : null;
                   const roomRecordId = Number(lastRoomRecord?.id || lastRoomRecord?.roomWiseSubmissionId || 0);
 
+                  const isCategoryTaxable = isOpenPlotCodeTaxable(selectedOpenPlotCategory?.typeOfUseCode);
+
+                  const propId = Number(props.initialPropertyID || props.initialPropertyData?.propertyId || 0);
+
                   const completePayload = {
                     ...(props.initialPropertyData || {}),
+                    propertyId: propId,
                     id: openPlotRecord?.id || 0,
                     propertyDetailsId: openPlotRecord?.id || 0,
                     isOpenPlot: true,
                     selectedFloorType: 'OpenPlot',
                     floorId: 77,
                     constructionTypeId: 11,
-                    typeOfUseId: 10,
+                    typeOfUseId: selectedOpenPlotCategory?.id,
+                    typeOfUseDescription: selectedOpenPlotCategory?.description || '',
+                    selectedOpenPlotCategory: selectedOpenPlotCategory,
+                    openPlotCategory: selectedOpenPlotCategory,
+                    isTaxable: isCategoryTaxable ? 'Yes' : 'No',
+                    taxLiability: isCategoryTaxable ? 'Taxable' : 'NonTaxable',
                     constructionYear: currentYear,
                     assessmentYear: currentYear,
                     length: plotLength,
@@ -239,6 +309,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                         ...(lastRoomRecord || {}),
                         id: roomRecordId,
                         roomWiseSubmissionId: roomRecordId,
+                        propertyId: propId,
                         propertyDetailsId: openPlotRecord?.id || 0,
                         roomNo: String(lastRoomRecord?.roomNo || '1'),
                         roomType: String(lastRoomRecord?.roomType || 'OpenPlot'),

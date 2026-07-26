@@ -10,6 +10,7 @@ import {
     getFloorSubmissionsByOwner,
     getFloorData,
     getTypeOfUseData,
+    getOpenPlotCategoryData,
     getConstructionTypeData,
     getSubTypeOfUseData,
     getSubFloorData,
@@ -134,6 +135,14 @@ export async function getConstructionTypeDataAction() {
 export async function getTypeOfUseDataAction(propertyTypeId?: string | number) {
     try {
         return await getTypeOfUseData(propertyTypeId);
+    } catch (_error) {
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchUsageTypes" };
+    }
+}
+
+export async function getOpenPlotCategoryDataAction() {
+    try {
+        return await getOpenPlotCategoryData();
     } catch (_error) {
         return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchUsageTypes" };
     }

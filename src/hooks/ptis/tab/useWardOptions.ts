@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { getWardListAction } from '@/app/[locale]/property-tax/ptis/actions';
-import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/common/PTISSearchSelect';
 import type { Ward } from '@/types/ptis.types';
 
 export function useWardOptions(initialWardOptions: SearchSelectOption[]) {

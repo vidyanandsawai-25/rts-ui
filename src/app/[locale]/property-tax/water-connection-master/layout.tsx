@@ -7,8 +7,9 @@ import { WaterConnectionToolbar } from "@/components/modules/property-tax/WaterC
 
 async function WaterConnectionLayoutContent({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
-  const t = await getTranslations("waterConnectionMaster");
+  locale,
+}: Readonly<{ children: React.ReactNode; locale: string }>) {
+  const t = await getTranslations({ locale, namespace: "waterConnectionMaster" });
 
   return (
     <PageContainer>
@@ -25,8 +26,19 @@ async function WaterConnectionLayoutContent({
   );
 }
 
-type LayoutProps = { children: React.ReactNode };
+interface LayoutProps {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}
 
-export default function WaterConnectionMasterLayout(props: LayoutProps) {
-  return <WaterConnectionLayoutContent>{props.children}</WaterConnectionLayoutContent>;
+export default async function WaterConnectionMasterLayout({
+  children,
+  params,
+}: Readonly<LayoutProps>) {
+  const { locale } = await params;
+  return (
+    <WaterConnectionLayoutContent locale={locale}>
+      {children}
+    </WaterConnectionLayoutContent>
+  );
 }

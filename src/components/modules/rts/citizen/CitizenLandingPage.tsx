@@ -138,10 +138,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
     const isPropertyTax = s.includes('property') || s.includes('tax') || d.includes('property') || d.includes('tax') ||
                           s.includes('मालमत्ता') || s.includes('कर') || d.includes('मालमत्ता') || d.includes('कर');
-                          
+
     const isTrade = s.includes('trade') || s.includes('license') || d.includes('trade') || d.includes('license') ||
                     s.includes('व्यवसाय') || s.includes('व्यापार') || d.includes('व्यवसाय') || d.includes('व्यापार');
-                    
+
     const isWater = s.includes('water') || d.includes('water') ||
                     s.includes('पाणी') || s.includes('जल') || d.includes('पाणी') || d.includes('जल');
 
@@ -501,14 +501,14 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         let serviceItem: (typeof deptCards)[number]['services'][number] | null = null;
         for (const dept of deptCards) {
           const svc = dept.services.find((s) => s.id === selectedServiceId);
-          if (svc) { 
-            serviceName = svc.name; 
-            deptName = dept.title; 
+          if (svc) {
+            serviceName = svc.name;
+            deptName = dept.title;
             serviceItem = svc;
-            break; 
+            break;
           }
         }
-        
+
         let transSla = '7 Days';
         if (serviceItem?.sla !== undefined && serviceItem?.sla !== null) {
           transSla = typeof serviceItem.sla === 'number' ? `${serviceItem.sla} ${t('दिवस', 'दिन', 'Days')}` : String(serviceItem.sla);

@@ -87,4 +87,3 @@ export async function logoutRtsCitizenSession(
     return { success: false, message: err.message || "Network error" };
   }
 }
-

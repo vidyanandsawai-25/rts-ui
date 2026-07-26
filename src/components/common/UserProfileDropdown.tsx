@@ -91,7 +91,7 @@ export function UserProfileDropdown({
             {profile.name ? profile.name.trim().charAt(0) : 'C'}
           </span>
         </div>
-        
+
         {/* User Info displayed on header */}
         <div className="hidden sm:flex flex-col items-start leading-tight text-left">
           <span className="text-[11px] font-extrabold text-yellow-300 tracking-wide truncate max-w-[120px]">
@@ -119,7 +119,7 @@ export function UserProfileDropdown({
               </div>
               <span className="text-sm font-extrabold text-gray-800 truncate">{profile.name}</span>
             </div>
-            
+
             {/* Citizen Details list */}
             <div className="pt-2.5 space-y-2 text-[11px] text-gray-600 font-semibold">
               <div className="flex items-center gap-2">

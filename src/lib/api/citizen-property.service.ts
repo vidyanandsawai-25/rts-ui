@@ -19,7 +19,7 @@ export async function fetchCitizenPropertiesFromApi(
 ): Promise<CitizenProperty[]> {
   try {
     const url = 'https://akolamc.in/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails';
-    
+
     const payload: any = {
       searchType,
       TD: '',
@@ -35,7 +35,7 @@ export async function fetchCitizenPropertiesFromApi(
       payload.newWardNo = parts[0] || '';
       payload.newPropertyNo = parts[1] || '';
       payload.partitionNo = parts[2] || '';
-      
+
       payload.NewWardNo = parts[0] || '';
       payload.NewPropertyNo = parts[1] || '';
       payload.PartitionNo = parts[2] || '';
