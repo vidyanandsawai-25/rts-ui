@@ -103,6 +103,17 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     showDetailsParam,
   });
 
+  // Only fetch reassessment data when the reassessment tab is active
+  const isReassessmentTabActive = valuationTab === 'reassessment';
+  const reassessmentSection = isReassessmentTabActive ? (
+    <ReassessmentPage 
+      params={params}
+      wardId={resolvedWardId} 
+      propertyNo={propertyNo} 
+      partitionNo={partitionNo} 
+    />
+  ) : null;
+
   return (
     <PtisNavigationProvider properties={rawPropertyData}>
       <div className="flex flex-col gap-6 pb-24">
@@ -154,14 +165,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               capitalSection={valuationSections.capitalSection}
               dualRateableSection={valuationSections.dualRateableSection}
               dualCapitalSection={valuationSections.dualCapitalSection}
-              reassessmentSection={
-                <ReassessmentPage 
-                  params={params}
-                  wardId={resolvedWardId} 
-                  propertyNo={propertyNo} 
-                  partitionNo={partitionNo} 
-                />
-              }
+              reassessmentSection={reassessmentSection}
             />
           </div>
         </PtisLayoutWrapper>

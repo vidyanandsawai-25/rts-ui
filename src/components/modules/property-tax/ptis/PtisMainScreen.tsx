@@ -319,6 +319,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = ({
                   partitionNo={partitionNo}
                   activeMainTab={activeMainTab}
                   activeSubTab={activeSubTab}
+                  locale={locale}
                 />
               )}
  

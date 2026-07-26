@@ -20,9 +20,9 @@ import type { SharedAutoScrollController } from '@/hooks/ptis/reassessment/useSh
 export function getFloorDetailCellClasses(status: string | undefined): string {
   return cn(
     'h-[20px] rounded px-1 py-0 border border-gray-300 shadow-sm hover:border-blue-500 hover:shadow transition-all duration-150 cursor-pointer text-[11px] leading-[18px] text-center text-gray-900',
-    status === 'Unchanged' && 'bg-green-200',
-    status === 'Added' && 'bg-red-300',
-    status === 'Removed' && 'bg-yellow-200'
+    status === 'Unchanged' && 'bg-yellow-200',
+    status === 'Added' && 'bg-green-200',
+    status === 'Removed' && 'bg-red-300'
   );
 }
 

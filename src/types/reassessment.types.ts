@@ -15,7 +15,7 @@ export interface ReassessmentPhoto {
  * Floor detail structure for both old and new floor details
  */
 export interface ReassessmentFloorDetail {
-  type: 'NEW' | 'OLD';
+  type?: 'NEW' | 'OLD';
   changeStatus?: string | null;
   floorCode: string;
   constructionCode: string;
@@ -26,11 +26,11 @@ export interface ReassessmentFloorDetail {
   carpetAreaSqFeet: number;
   builtupAreaSqMeter: number;
   builtupAreaSqFeet: number;
-  isRenter: boolean;
-  renterName: string | null;
+  isRenter?: boolean;
+  renterName?: string | null;
   taxLiability: string | null;
-  rentMonthly: number | null;
-  finalYearlyRent: number | null;
+  rentMonthly?: number | null;
+  finalYearlyRent?: number | null;
   financialYear: string | null;
   rateableValue: number | null;
   annualRentalValue: number | null;
@@ -83,6 +83,8 @@ export interface ReassessmentApiResponse {
  * Mapped floor detail for UI display
  */
 export interface MappedFloorDetail extends Record<string, unknown> {
+  type?: 'NEW' | 'OLD';
+  changeStatus?: string | null;
   floor: string;
   conYear: string;
   asstYear: string;
@@ -92,12 +94,16 @@ export interface MappedFloorDetail extends Record<string, unknown> {
   carpetAreaSqM: number;
   builtUpAreaSqFt: number;
   builtUpAreaSqM: number;
+  isRenter?: boolean;
+  renterName?: string | null;
   rate: number;
   yearlyRate: number;
   financialYear: string;
   renter: string;
   taxLiability: string;
   rentMy: number;
+  rentMonthly?: number | null;
+  finalYearlyRent?: number | null;
   rentalValue: number;
   depreciation: number;
   alv: number;
@@ -107,6 +113,8 @@ export interface MappedFloorDetail extends Record<string, unknown> {
   ocCertificateIssueDate: string;
   ccCertificateNo: string;
   ccCertificateIssueDate: string;
+  maintenance?: number | null;
+  yearlyRent?: number | null;
   status?: 'Unchanged' | 'Added' | 'Removed';
   bgClass?: string;
 }

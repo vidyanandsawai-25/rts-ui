@@ -137,15 +137,19 @@ export function useReassessmentTaxTable({
 
   // Transform tax rows to table format
   const detailedTaxesData: DynamicTaxRow[] = taxRows.map((row) => {
+    const isTotalRow = row.rowType === 'total';
+    const totalTaxVal = isTotalRow ? Math.abs(row.totalTax) : row.totalTax;
+
     const rowData: DynamicTaxRow = {
       taxes: row.label,
-      totalTax: formatReassessmentCurrency(row.totalTax),
-      isTotal: row.rowType === 'total',
+      totalTax: formatReassessmentCurrency(totalTaxVal),
+      isTotal: isTotalRow,
       isAdditional: row.rowType === 'additional',
     };
 
     Object.entries(row.taxes).forEach(([key, value]) => {
-      rowData[key] = value;
+      const numVal = typeof value === 'number' ? value : 0;
+      rowData[key] = isTotalRow ? Math.abs(numVal) : value;
     });
 
     return rowData;
