@@ -16,6 +16,17 @@ interface CitizenLoginFormProps {
   ulbData?: any;
 }
 
+function buildPropertySearchValue(sectorId: string, propertyNo: string) {
+  const sector = sectorId.trim();
+  const property = propertyNo.trim();
+
+  if (!sector || property.toUpperCase().startsWith(`${sector.toUpperCase()}-`)) {
+    return property;
+  }
+
+  return `${sector}-${property}`;
+}
+
 export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const t = useTranslations('rts.login');
   const router = useRouter();
@@ -177,7 +188,8 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
       const res = await sendCitizenOtpAction(method, {
         mobile,
         upicId,
-        propertyNo: method === 'property' ? `${nodeId}-${sectorId}-${propertyNo}` : undefined
+        propertyNo:
+          method === 'property' ? buildPropertySearchValue(sectorId, propertyNo) : undefined,
       });
       if (res.success && res.txnId) {
         setMaskedPhone(res.maskedPhone || '');
@@ -228,7 +240,8 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
       const res = await sendCitizenOtpAction(method, {
         mobile,
         upicId,
-        propertyNo: method === 'property' ? `${sectorId}-${propertyNo}` : undefined
+        propertyNo:
+          method === 'property' ? buildPropertySearchValue(sectorId, propertyNo) : undefined,
       });
       if (res.success) {
         setInfo(t('messages.otpResent'));

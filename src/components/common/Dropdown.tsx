@@ -5,10 +5,13 @@ import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
 
+import { Tooltip } from "./Tooltip";
+
 /* ---------------- TYPES ---------------- */
 interface Option {
   label: string;
   value: string;
+  tooltip?: string;
 }
 
 interface MultiSelectDropdownStyles {
@@ -209,29 +212,40 @@ export function MultiSelectDropdown({
               </p>
             )}
 
-            {filteredOptions.map((opt) => (
-              <label
-                key={opt.value}
-                className={cn(
-                  `flex items-center gap-2 px-2 py-1.5
-                   rounded cursor-pointer hover:bg-blue-50`,
-                  styles?.option
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={value.includes(opt.value)}
-                  onChange={() => toggleValue(opt.value)}
+            {filteredOptions.map((opt) => {
+              const labelContent = (
+                <label
+                  key={opt.value}
                   className={cn(
-                    "w-4 h-4 accent-blue-600",
-                    styles?.checkbox
+                    `flex items-center gap-2 px-2 py-1.5
+                     rounded cursor-pointer hover:bg-blue-50`,
+                    styles?.option
                   )}
-                />
-                <span className="text-sm text-gray-700">
-                  {opt.label}
-                </span>
-              </label>
-            ))}
+                >
+                  <input
+                    type="checkbox"
+                    checked={value.includes(opt.value)}
+                    onChange={() => toggleValue(opt.value)}
+                    className={cn(
+                      "w-4 h-4 accent-blue-600",
+                      styles?.checkbox
+                    )}
+                  />
+                  <span className="text-sm text-gray-700">
+                    {opt.label}
+                  </span>
+                </label>
+              );
+
+              if (opt.tooltip) {
+                return (
+                  <Tooltip key={opt.value} content={opt.tooltip} placement="right">
+                    {labelContent}
+                  </Tooltip>
+                );
+              }
+              return labelContent;
+            })}
           </div>
         </div>
       )}
