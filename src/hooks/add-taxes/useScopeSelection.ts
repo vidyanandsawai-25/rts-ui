@@ -117,7 +117,7 @@ export function useScopeSelection(
   selectionData: Record<string, string[]>,
   _currentScopeData: ScopeOptionItem | undefined,
   _propertyTypeOptions: { value: string; label: string }[],
-  isInitialized: boolean,
+  _isInitialized: boolean,
   onStartExecution: ((jobId: string, totalCount: number, scheduledTime?: string) => void) | undefined,
   actions: {
     fetchAllWardsAction: () => Promise<WardsActionResponse | null>;
@@ -1002,38 +1002,7 @@ export function useScopeSelection(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedScope, searchParams.get('wardid'), selectionData, fetchedBuildings]);
 
-  useEffect(() => {
-    if (!isInitialized) {
-      return;
-    }
-    // Avoid race conditions when changing scope
-    if (selectedScope !== searchParams.get('scope')) {
-      return;
-    }
 
-    const params = new URLSearchParams(searchParams.toString());
-    let hasChanges = false;
-
-    // Clean up selection query parameters from the URL to prevent IIS 404 URL limit overflow
-    const paramsToDelete = [
-      'zoneid', 'wardid', 'propertyid', 'propertyno', 'PropertyTypeId', 
-      'propertyTypeId', 'propertytypeid', 'TypeOfUseGroupId', 'PropertyTypeCode', 
-      'propertyTypeCode', 'typeOfUseGroupCode', 'assessmentStatusIds', 
-      'fromPropertyId', 'fromPropertyNo', 'toPropertyId', 'toPropertyNo', 
-      'searchText', 'SearchText', 'wardno'
-    ];
-
-    for (const param of paramsToDelete) {
-      if (params.has(param)) {
-        params.delete(param);
-        hasChanges = true;
-      }
-    }
-
-    if (hasChanges) {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  }, [selectedScope, searchParams, pathname, router, isInitialized]);
 
   return {
     isValidated, setIsValidated,

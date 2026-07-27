@@ -682,7 +682,7 @@ export function ImageViewer({
             {showDownload && (
               <button
                 onClick={handleDownload}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white hidden transition-colors"
                 aria-label={t("imageViewer.download")}
                 data-testid="download-button"
               >

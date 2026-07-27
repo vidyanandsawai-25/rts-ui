@@ -131,6 +131,21 @@ export default function AddTaxesConsole({
     setCurrentTab(nextTab);
     const params = new URLSearchParams(window.location.search);
     params.set('tab', nextTab);
+
+    const selectionParamsToClear = [
+      'zoneid', 'wardid', 'propertyid', 'propertyno', 'PropertyTypeId',
+      'propertyTypeId', 'propertytypeid', 'TypeOfUseGroupId', 'PropertyTypeCode',
+      'propertyTypeCode', 'typeOfUseGroupCode', 'assessmentStatusIds',
+      'fromPropertyId', 'fromPropertyNo', 'toPropertyId', 'toPropertyNo',
+      'searchText', 'SearchText', 'wardno'
+    ];
+
+    if (nextTab !== 'manual') {
+      for (const key of selectionParamsToClear) {
+        params.delete(key);
+      }
+    }
+
     if (nextTab !== 'excel') {
       params.delete('excelPage');
       params.delete('excelPageSize');

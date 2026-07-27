@@ -179,14 +179,19 @@ export function useAddTaxesState(
     const currentScope = searchParams.get('scope');
     const currentFy = searchParams.get('financeYearId') || searchParams.get('financeYear');
 
-    if (!currentScope || !currentFy) {
-      const params = new URLSearchParams(searchParams.toString());
-      if (!currentScope) params.set('scope', selectedScope);
-      if (!currentFy && defaultFinanceYearId) params.set('financeYearId', defaultFinanceYearId);
-      params.delete('financeYear');
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  }, [searchParams, selectedScope, defaultFinanceYearId, pathname, router]);
+    const nextScope = currentScope || selectedScope;
+    const nextFy = currentFy || financeYearId || defaultFinanceYearId;
+
+    if (!nextScope || !nextFy) return;
+    if (currentScope === nextScope && currentFy === nextFy && !searchParams.get('financeYear')) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('scope', nextScope);
+    params.set('financeYearId', nextFy);
+    params.delete('financeYear');
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, selectedScope, financeYearId, defaultFinanceYearId, pathname, router]);
 
   const updateUrlParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -205,7 +210,6 @@ export function useAddTaxesState(
   const handleScopeChange = (val: Scope) => {
     setSelectedScope(val);
     setSelectionData({}); // clear selections on scope change
-    setIsInitialized(false);
     
     // Clear all other query params except scope and financeYearId to avoid race conditions
     const params = new URLSearchParams();

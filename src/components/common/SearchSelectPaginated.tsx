@@ -138,7 +138,10 @@ export function SearchSelectPaginated({
       const match = validOptions.find(
         (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
       );
-      return match?.label ?? valStr;
+      if (match?.label) return match.label;
+      if (forceSearchText !== undefined && forceSearchText.trim() !== '') return forceSearchText;
+      if (search.trim() !== '') return search;
+      return '';
     }
     if (forceSearchText !== undefined && forceSearchText.trim() !== '') return forceSearchText;
     return search;

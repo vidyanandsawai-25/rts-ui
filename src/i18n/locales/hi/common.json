@@ -299,7 +299,8 @@
     "loadMoreOptions": "अधिक विकल्प लोड करें...",
     "loadError": "विकल्प लोड करने में विफल। कृपया पुनः प्रयास करें।",
     "loadingOptions": "विकल्प लोड हो रहे हैं...",
-    "selectOption": "विकल्प चुनें"
+    "selectOption": "विकल्प चुनें",
+    "fetchingMatchingOptions": "मिलान वाले विकल्प लोड किए जा रहे हैं..."
   },
   "Grid": {
     "action": "कार्रवाई",

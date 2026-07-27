@@ -298,7 +298,8 @@
     "loadMoreOptions": "अधिक पर्याय लोड करा...",
     "loadError": "पर्याय लोड करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
     "loadingOptions": "पर्याय लोड करत आहे...",
-    "selectOption": "पर्याय निवडा"
+    "selectOption": "पर्याय निवडा",
+    "fetchingMatchingOptions": "जुळणारे पर्याय लोड करत आहे..."
   },
   "Grid": {
     "action": "कृती",

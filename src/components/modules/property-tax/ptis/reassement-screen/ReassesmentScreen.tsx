@@ -99,7 +99,7 @@ export default function ReassesmentScreen({
   // Prepare images for viewer
   const viewerImages = useMemo((): ImageViewerImage[] => {
     const images: ImageViewerImage[] = [];
-    
+
     const oldPropertyPhoto = photos.find((p) => p.type === 'OLD_PROPERTY_PHOTO');
     const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
     const newPropertyPhoto = photos.find((p) => p.type === 'NEW_PROPERTY_PHOTO');
@@ -142,7 +142,7 @@ export default function ReassesmentScreen({
 
   // Handler to open image viewer
   const handleImageClick = (photoType: string) => {
-    const imageIndex = viewerImages.findIndex((img) => 
+    const imageIndex = viewerImages.findIndex((img) =>
       img.title === t(`photoLabels.${photoType}`)
     );
     if (imageIndex !== -1) {
@@ -187,7 +187,7 @@ export default function ReassesmentScreen({
                   const hasOldPlanPhoto = !!oldPlanPhoto;
                   return (
                     <>
-                      <div 
+                      <div
                         className={cn(
                           "relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-gray-100 flex items-center justify-center transition-transform",
                           hasOldPropertyPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
@@ -203,12 +203,12 @@ export default function ReassesmentScreen({
                         } : undefined}
                       >
                         {oldPropertyPhoto ? (
-                           <ImageWithFallback
-                             src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
-                             alt={t('photoLabels.oldPropertyPhoto')}
-                             fill
-                             className="object-cover"
-                           />
+                          <ImageWithFallback
+                            src={getViewDocumentUrl(oldPropertyPhoto.documentGuid)}
+                            alt={t('photoLabels.oldPropertyPhoto')}
+                            fill
+                            className="object-cover"
+                          />
                         ) : (
                           <span className="text-gray-400 text-xs">{t('photoLabels.oldPropertyPhoto')}</span>
                         )}
@@ -218,12 +218,12 @@ export default function ReassesmentScreen({
                         {oldPropertyPhoto && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
-                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                              {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
                             </span>
                           </div>
                         )}
                       </div>
-                      <div 
+                      <div
                         className={cn(
                           "relative group rounded-lg overflow-hidden border-2 border-[#6366f1] aspect-[16/8] bg-[#0f2342] flex items-center justify-center transition-transform",
                           hasOldPlanPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
@@ -239,12 +239,12 @@ export default function ReassesmentScreen({
                         } : undefined}
                       >
                         {oldPlanPhoto ? (
-                           <ImageWithFallback
-                             src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
-                             alt={t('photoLabels.oldPlanPhoto')}
-                             fill
-                             className="object-cover"
-                           />
+                          <ImageWithFallback
+                            src={getViewDocumentUrl(oldPlanPhoto.documentGuid)}
+                            alt={t('photoLabels.oldPlanPhoto')}
+                            fill
+                            className="object-cover"
+                          />
                         ) : (
                           <span className="text-gray-300 text-xs">{t('photoLabels.oldPlanPhoto')}</span>
                         )}
@@ -254,7 +254,7 @@ export default function ReassesmentScreen({
                         {oldPlanPhoto && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
-                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                              {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
                             </span>
                           </div>
                         )}
@@ -300,7 +300,7 @@ export default function ReassesmentScreen({
                   const hasNewPlanPhoto = !!newPlanPhoto;
                   return (
                     <>
-                      <div 
+                      <div
                         className={cn(
                           "relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-gray-100 flex items-center justify-center transition-transform",
                           hasNewPropertyPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
@@ -316,12 +316,12 @@ export default function ReassesmentScreen({
                         } : undefined}
                       >
                         {newPropertyPhoto ? (
-                           <ImageWithFallback
-                             src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
-                             alt={t('photoLabels.newPropertyPhoto')}
-                             fill
-                             className="object-cover"
-                           />
+                          <ImageWithFallback
+                            src={getViewDocumentUrl(newPropertyPhoto.documentGuid)}
+                            alt={t('photoLabels.newPropertyPhoto')}
+                            fill
+                            className="object-cover"
+                          />
                         ) : (
                           <span className="text-gray-400 text-xs">{t('photoLabels.newPropertyPhoto')}</span>
                         )}
@@ -331,12 +331,12 @@ export default function ReassesmentScreen({
                         {newPropertyPhoto && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
-                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                              {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
                             </span>
                           </div>
                         )}
                       </div>
-                      <div 
+                      <div
                         className={cn(
                           "relative group rounded-lg overflow-hidden border-2 border-[#ec4899] aspect-[16/8] bg-[#0f2342] flex items-center justify-center transition-transform",
                           hasNewPlanPhoto ? "cursor-pointer hover:scale-101" : "cursor-default"
@@ -352,12 +352,12 @@ export default function ReassesmentScreen({
                         } : undefined}
                       >
                         {newPlanPhoto ? (
-                           <ImageWithFallback
-                             src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
-                             alt={t('photoLabels.newPlanPhoto')}
-                             fill
-                             className="object-cover"
-                           />
+                          <ImageWithFallback
+                            src={getViewDocumentUrl(newPlanPhoto.documentGuid)}
+                            alt={t('photoLabels.newPlanPhoto')}
+                            fill
+                            className="object-cover"
+                          />
                         ) : (
                           <span className="text-gray-300 text-xs">{t('photoLabels.newPlanPhoto')}</span>
                         )}
@@ -367,7 +367,7 @@ export default function ReassesmentScreen({
                         {newPlanPhoto && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">
-                               {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
+                              {t('photoLabels.clickToView', { defaultValue: 'Click to view' })}
                             </span>
                           </div>
                         )}
@@ -437,6 +437,7 @@ export default function ReassesmentScreen({
           <RetrospectiveDetailsButton
             onClick={() => setShowRetroModal(true)}
             label={t('buttons.retrospectiveDetails')}
+            hidden
             className="font-bold active:scale-98 shadow-sm"
           />
           <Section129Button

@@ -127,7 +127,7 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
       }
     };
     fetchJobs();
-  }, [appliedJobCode, appliedStatus, appliedDate, pageNumber, pageSize, financeYearId]);
+  }, [appliedJobCode, appliedStatus, appliedDate, pageNumber, pageSize, financeYearId, actions]);
 
   // Load Modal Details on demand
   useEffect(() => {

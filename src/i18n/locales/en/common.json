@@ -307,7 +307,8 @@
     "loadMoreOptions": "Load more options...",
     "loadError": "Failed to load options. Please try again.",
     "loadingOptions": "Loading options...",
-    "selectOption": "Select option"
+    "selectOption": "Select option",
+    "fetchingMatchingOptions": "Fetching matching options..."
   },
   "Grid": {
     "action": "Action",
