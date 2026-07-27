@@ -2,8 +2,9 @@
 "use server";
 
 import { ApiError } from '@/lib/utils/api';
-import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, previewOperation, getAuditList, getAuditDetail, getImportTemplate } from '@/lib/api/add-taxes/operations.service';
-import { InitOperationsResponse, ScopeOptionsResponse, ExecuteOperationPayload, SearchPropertiesResponse, JobPropertyItem, OperationPreviewPayload, ImportTemplateResponse } from '@/types/addTaxes.types';
+import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, getJobStatus, previewOperation, getAuditList, getAuditDetail, getImportTemplate, exportProperties } from '@/lib/api/add-taxes/operations.service';
+import { InitOperationsResponse, ScopeOptionsResponse, ExecuteOperationPayload, SearchPropertiesResponse, OperationPreviewPayload, ImportTemplateResponse } from '@/types/addTaxes.types';
+import type { JobPropertyPaginatedResponse } from '@/types/addTaxes.types';
 import { createLogger } from '@/lib/utils/server-logger';
 
 import { fetchZonesAction, getAllWardsForLinkAction } from "../zone-master/actions";
@@ -11,9 +12,9 @@ import { getPropertyTypesPaged } from '@/lib/api/property-type-crud.service';
 
 const logger = createLogger('AddTaxesActions');
 
-export async function initOperationsAction(): Promise<InitOperationsResponse | null> {
+export async function initOperationsAction(financeYearId?: string | number): Promise<InitOperationsResponse | null> {
     try {
-        const result = await initOperations();
+        const result = await initOperations(financeYearId);
         return result;
     } catch (error) {
         if (error instanceof ApiError) {
@@ -74,6 +75,21 @@ export async function searchPropertiesAction(zoneId: string | number | null, war
     }
 }
 
+export async function searchPropertiesByCategoryAction(searchCategory: number = 2, wardId?: string | number, pageNumber: number = 1, pageSize: number = 100, propertyFrom?: string, propertyTo?: string, zoneId?: string | number): Promise<any> {
+    try {
+        const { searchPropertiesByCategory } = await import('@/lib/api/add-taxes/operations.service');
+        const result = await searchPropertiesByCategory(searchCategory, wardId, pageNumber, pageSize, propertyFrom, propertyTo, zoneId);
+        return result;
+    } catch (error) {
+        if (error instanceof ApiError) {
+            logger.error(`[searchPropertiesByCategoryAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
+        } else {
+            logger.error("[searchPropertiesByCategoryAction] Error:", undefined, error);
+        }
+        return null;
+    }
+}
+
 export async function getEligibleCountAction(payload: any): Promise<any> {
     try {
         const result = await getEligibleCount(payload);
@@ -108,9 +124,9 @@ export async function executeOperationAction(payload: ExecuteOperationPayload): 
     }
 }
 
-export async function getJobPropertiesAction(jobId: string): Promise<JobPropertyItem[] | null> {
+export async function getJobPropertiesAction(jobId: string, pageNumber: number = 1, pageSize: number = 10): Promise<JobPropertyPaginatedResponse | null> {
     try {
-        const result = await getJobProperties(jobId);
+        const result = await getJobProperties(jobId, pageNumber, pageSize);
         return result;
     } catch (error) {
         if (error instanceof ApiError) {
@@ -193,5 +209,33 @@ export async function fetchAssessmentStatusesAction() {
             logger.error("[fetchAssessmentStatusesAction] Error:", undefined, error);
         }
         return { data: [], error: (error as Error).message };
+    }
+}
+
+export async function exportPropertiesAction(status: string, financeYearId: string | number) {
+    try {
+        const result = await exportProperties(status, financeYearId);
+        return { success: true, data: result };
+    } catch (error) {
+        logger.error('[exportPropertiesAction] Error:', undefined, error);
+        let errorMsg = 'Failed to export properties';
+        if (error instanceof ApiError) {
+            errorMsg = error.responseText || error.message || errorMsg;
+        }
+        return { success: false, error: errorMsg };
+    }
+}
+
+export async function getJobStatusAction(jobId: string) {
+    try {
+        const result = await getJobStatus(jobId);
+        return { success: true, data: result };
+    } catch (error) {
+        logger.error('[getJobStatusAction] Error:', undefined, error);
+        let errorMsg = 'Failed to fetch job status';
+        if (error instanceof ApiError) {
+            errorMsg = error.responseText || error.message || errorMsg;
+        }
+        return { success: false, error: errorMsg };
     }
 }

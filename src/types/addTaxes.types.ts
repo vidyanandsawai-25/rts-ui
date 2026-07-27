@@ -20,6 +20,7 @@ export interface AddTaxesStats {
 export interface FinanceYearOption {
   value: number;
   label: string;
+  isActive?: boolean;
 }
 
 export interface OperationsPermissions {
@@ -125,6 +126,7 @@ export interface OperationScope {
   propertyTypeIds?: number[];
   assessmentStatusIds?: number[];
   building?: string | string[];
+  partitionNos?: string[];
   fromPropertyNo?: string;
   toPropertyNo?: string;
   propertyIds?: number[];
@@ -197,6 +199,16 @@ export interface JobPropertyItem {
   amount: number;
   status: string;
   message: string;
+}
+
+export interface JobPropertyPaginatedResponse {
+  items: JobPropertyItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }
 
 export interface OperationPreviewRecord {

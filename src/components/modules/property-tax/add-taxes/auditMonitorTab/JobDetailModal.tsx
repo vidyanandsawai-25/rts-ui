@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Modal } from '@/components/common/Modal';
 import { MasterTable } from '@/components/common/MasterTable';
 import { Loader2 } from 'lucide-react';
@@ -6,11 +5,41 @@ import { DashboardCard } from '@/components/common/DashboardCard';
 import { Badge } from '@/components/common/Badge';
 import { getDetailColumns } from './AuditMonitorColumns';
 import { JobPropertyItem } from '@/types/addTaxes.types';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+
 import { useTranslations } from 'next-intl';
 
+import { useState, useEffect } from 'react';
+
+type JobPropertyRow = JobPropertyItem & Record<string, unknown>;
+
+interface JobDetailSummary {
+  totalSelected?: number;
+  TotalSelected?: number;
+  successfullyAdded?: number;
+  SuccessfullyAdded?: number;
+  skippedRecords?: number;
+  SkippedRecords?: number;
+  failed?: number;
+  Failed?: number;
+}
+
+interface JobDetailItem {
+  jobId?: string;
+  JobId?: string;
+  operation?: string;
+  Operation?: string;
+  startedBy?: string;
+  StartedBy?: string;
+  doneBy?: string;
+  duration?: string;
+  Duration?: string;
+  financeYear?: string;
+  FinanceYear?: string;
+  summary?: JobDetailSummary;
+}
+
 export interface JobDetailModalProps {
-  selectedJobDetails: any | null;
+  selectedJobDetails: JobDetailItem | null;
   onClose: () => void;
   detailProperties: JobPropertyItem[];
   isDetailLoading: boolean;
@@ -23,19 +52,19 @@ export function JobDetailModal({
   isDetailLoading,
 }: JobDetailModalProps) {
   const t = useTranslations('addTaxes');
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const detailPage = Number(searchParams.get('detailPage')) || 1;
-  const detailPageSize = Number(searchParams.get('detailPageSize')) || 10;
+  const [detailPage, setDetailPage] = useState(1);
+  const [detailPageSize, setDetailPageSize] = useState(10);
 
-  const updateDetailParams = (page: number, size: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('detailPage', String(page));
-    params.set('detailPageSize', String(size));
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  // Reset page when modal details changes
+  useEffect(() => {
+    if (selectedJobDetails) {
+      const timer = setTimeout(() => {
+        setDetailPage(1);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedJobDetails]);
 
   if (!selectedJobDetails) return null;
 
@@ -57,7 +86,7 @@ export function JobDetailModal({
     <Modal
       open={!!selectedJobDetails}
       onClose={onClose}
-      title={t('audit.jobDetail.title', { jobId: selectedJobDetails.jobId || selectedJobDetails.JobId })}
+      title={t('audit.jobDetail.title', { jobId: selectedJobDetails.jobId || selectedJobDetails.JobId || '' })}
       subtitle={
         <div className="flex flex-wrap gap-2 mt-1">
           <Badge variant="default" size="sm">
@@ -98,15 +127,18 @@ export function JobDetailModal({
               <p className="text-sm font-medium">{t('audit.jobDetail.loadingText')}</p>
             </div>
           ) : (
-            <MasterTable
+            <MasterTable<JobPropertyRow>
               columns={propertiesArray.length > 0 ? getDetailColumns(t) : []}
-              data={paginatedProperties as any[]}
+              data={paginatedProperties as JobPropertyRow[]}
               pageNumber={detailPage}
               pageSize={detailPageSize}
               totalCount={propertiesArray.length}
               totalPages={Math.ceil(propertiesArray.length / detailPageSize)}
-              onPageChange={(p) => updateDetailParams(p, detailPageSize)}
-              onPageSizeChange={(s) => updateDetailParams(1, s)}
+              onPageChange={setDetailPage}
+              onPageSizeChange={(s) => {
+                setDetailPageSize(s);
+                setDetailPage(1);
+              }}
               paginationConfig={{
                 enabled: true,
                 showPageSizeSelector: true,

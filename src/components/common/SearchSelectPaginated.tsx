@@ -9,127 +9,45 @@ export interface SearchSelectOption {
   value: string;
 }
 
-export interface SearchSelectProps {
-  /**
-   * Optional custom placeholder text when loading.
-   */
+export interface SearchSelectPaginatedProps {
   loadingPlaceholder?: string;
-
-  /**
-   * Optional custom placeholder text when no options are available.
-   */
   noOptionsPlaceholder?: string;
-  /**
-   * Optional id for the input. If not provided, a default will be used.
-   */
   id?: string;
-  /**
-   * Optional name for the input. If not provided, a default will be used.
-   */
   name?: string;
   options: SearchSelectOption[];
   value: string;
   onChange: (name: string, value: string) => void;
   placeholder?: string;
   className?: string;
-
-  /* ---------------- Optional configuration ---------------- */
-
-  /**
-   * If true, typing is disabled. The component acts as a conventional select
-   * but with the improved aesthetics.
-   */
   disableSearch?: boolean;
-
-  /**
-   * Optional callback triggered when the user types in the input.
-   * Useful for triggering external API searches.
-   */
   onInputFocus?: () => void;
-
-  /**
-   * Optional callback triggered when the search query changes (for remote suggestions).
-   */
   onSearchChange?: (searchText: string) => void;
-
-  /**
-   * Optional force display text. Overrides label search logic.
-   * Useful when the selected label is not yet in the options list.
-   */
   forceSearchText?: string;
-
-  /**
-   * If true, shows a spinner.
-   */
   isLoading?: boolean;
-
-  /**
-   * If true, clears the input when it looses focus and no direct match is found.
-   */
   strictMode?: boolean;
-
-  /**
-   * If true, marks the input as required.
-   */
   required?: boolean;
-
-  /**
-   * If true, disables the input.
-   */
   disabled?: boolean;
-
-  /**
-   * Optional icon to show inside the input.
-   */
   icon?: React.ReactNode;
-
-  /**
-   * Accessibility label.
-   */
   label?: string;
-
-  /**
-   * Optional callback for sanitizing the search input.
-   */
   sanitizeInput?: (val: string) => string;
-
-  /**
-   * Mobile input mode hint.
-   */
   inputMode?: 'text' | 'search' | 'none' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal';
-
-  /**
-   * Direction/placement of the menu dropdown. Defaults to 'bottom'.
-   */
   menuPlacement?: 'top' | 'bottom';
   tabIndex?: number;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onEnter?: () => void;
-  /**
-   * Optional validation error message.
-   */
   error?: string;
-  /**
-   * Optional autoFocus prop to focus the input on mount.
-   */
   autoFocus?: boolean;
   onBlur?: () => void;
-  /**
-   * Optional custom label when the list is empty inside the dropdown.
-   */
-  emptyMessage?: string;
-  /**
-   * Optional prop to hide default options until the user has typed a query.
-   */
-  showOptionsOnlyOnType?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: (searchQuery?: string) => void;
+  isLoadingMore?: boolean;
 }
 
-/** Helper to normalize string for forgiving/flexible option matching. */
 function normalizeSearchText(str: string): string {
   return str.toLowerCase().replace(/[\s-]/g, '');
 }
 
-export function SearchSelect({
+export function SearchSelectPaginated({
   id,
   name,
   options = [],
@@ -157,29 +75,29 @@ export function SearchSelect({
   menuPlacement,
   onBlur,
   strictMode = true,
-  emptyMessage,
-  showOptionsOnlyOnType = false,
-}: SearchSelectProps): React.ReactElement {
-  // Fallback id and name for backward compatibility
+  hasMore = false,
+  onLoadMore,
+  isLoadingMore = false,
+}: SearchSelectPaginatedProps): React.ReactElement {
   const fallbackId = id || name || 'search-select';
   const fallbackName = name || id || 'search-select';
 
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [hasTyped, setHasTyped] = useState(false);
+  const [isFocusedState, setIsFocusedState] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
   const activePlacement = menuPlacement || placement;
-  // Accessible id for aria attributes and listbox
   const accessibleId = name || id || 'search-select';
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const dropdownRef = useRef<HTMLUListElement>(null);
-  // Tracks whether the input is currently focused so the auto-open effect works correctly
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const isFocused = useRef<boolean>(false);
-  // Tracks whether a selection was just made to prevent blur from clearing
   const didSelectRef = useRef<boolean>(false);
+  const isClickingInsideRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (menuPlacement) return;
@@ -190,7 +108,7 @@ export function SearchSelect({
       const rect = wrapperRef.current.getBoundingClientRect();
       const spaceAbove = rect.top;
       const spaceBelow = window.innerHeight - rect.bottom;
-      const dropdownHeight = Math.min(dropdownRef.current?.scrollHeight ?? 240, 240);
+      const dropdownHeight = Math.min(dropdownRef.current?.scrollHeight ?? 260, 260);
 
       if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
         setPlacement('top');
@@ -210,25 +128,21 @@ export function SearchSelect({
     };
   }, [isOpen, menuPlacement]);
 
-  /* ---------------- Safety checks ---------------- */
-
-  const validOptions = useMemo(() => (Array.isArray(options) ? options : []), [options]);
+  const validOptions = useMemo(() => Array.isArray(options) ? options : [], [options]);
   const hasOptions = validOptions.length > 0;
 
-  /* ---------------- Derived display value ---------------- */
-
   const displayValue = useMemo<string>(() => {
-    if (hasTyped) return search;
-    if (forceSearchText !== undefined) return forceSearchText;
-    if (!hasOptions) return '';
+    if (hasTyped && isFocusedState) return search;
     const valStr = value !== undefined && value !== null ? String(value) : '';
-    const match = validOptions.find(
-      (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
-    );
-    return match?.label ?? '';
-  }, [hasOptions, hasTyped, search, forceSearchText, value, validOptions]);
-
-  /* ---------------- Close on outside click ---------------- */
+    if (valStr !== '') {
+      const match = validOptions.find(
+        (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
+      );
+      return match?.label ?? valStr;
+    }
+    if (forceSearchText !== undefined && forceSearchText.trim() !== '') return forceSearchText;
+    return search;
+  }, [hasTyped, isFocusedState, search, forceSearchText, value, validOptions]);
 
   useEffect((): (() => void) => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -240,8 +154,6 @@ export function SearchSelect({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  /* ---------------- Scroll highlighted into view ---------------- */
 
   useEffect(() => {
     if (isOpen && highlightedIndex >= 0 && listRef.current) {
@@ -255,23 +167,11 @@ export function SearchSelect({
     }
   }, [highlightedIndex, isOpen]);
 
-  /* ---------------- Filter options ---------------- */
-
   const filteredOptions = useMemo<SearchSelectOption[]>(() => {
-    // If search is disabled, always show all options
     if (disableSearch) return validOptions;
 
-    if (!hasTyped) {
-      if (showOptionsOnlyOnType) {
-        if (!value) return [];
-        const idx = validOptions.findIndex((opt) => opt.value === value);
-        if (idx >= 0) {
-          const selectedOpt = validOptions[idx];
-          return [selectedOpt];
-        }
-        return [];
-      }
-
+    const activeQuery = hasTyped ? search : (forceSearchText || '');
+    if (!activeQuery) {
       if (!value) return validOptions;
       const idx = validOptions.findIndex((opt) => opt.value === value);
       if (idx >= 0) {
@@ -282,13 +182,11 @@ export function SearchSelect({
       return validOptions;
     }
 
-    const cleanSearch = normalizeSearchText(search);
-
+    const cleanSearch = normalizeSearchText(activeQuery);
     const matches = validOptions.filter((opt) =>
       normalizeSearchText(opt.label).includes(cleanSearch)
     );
 
-    // Sort: exact matches first, then starts-with, then substring matches
     return [...matches].sort((a, b) => {
       const normA = normalizeSearchText(a.label);
       const normB = normalizeSearchText(b.label);
@@ -305,7 +203,18 @@ export function SearchSelect({
 
       return 0;
     });
-  }, [search, hasTyped, validOptions, disableSearch, value, showOptionsOnlyOnType]);
+  }, [search, hasTyped, validOptions, disableSearch, value, forceSearchText]);
+
+  // Auto-fetch next pages when searching and local options return 0 matches but hasMore is true
+  useEffect(() => {
+    const activeQuery = hasTyped ? search : (forceSearchText || '');
+    if (hasTyped && activeQuery && activeQuery.trim() !== '' && filteredOptions.length === 0 && hasMore && !isLoadingMore && !isLoading && onLoadMore) {
+      const timer = setTimeout(() => {
+        onLoadMore(activeQuery);
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [hasTyped, search, forceSearchText, filteredOptions.length, hasMore, isLoadingMore, isLoading, onLoadMore]);
 
   const prevIsOpen = useRef(isOpen);
   useEffect(() => {
@@ -316,33 +225,35 @@ export function SearchSelect({
     prevIsOpen.current = isOpen;
   }, [isOpen, value, filteredOptions]);
 
-  /* ---------------- Validate and clear on blur ---------------- */
-
-  const handleBlur = useCallback((): void => {
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>): void => {
     try {
-      // If a selection was just made, skip the blur clearing logic
+      if (isClickingInsideRef.current) {
+        return;
+      }
+      if (e.relatedTarget && wrapperRef.current?.contains(e.relatedTarget as Node)) {
+        return;
+      }
       if (didSelectRef.current) {
         didSelectRef.current = false;
         setIsOpen(false);
+        setIsFocusedState(false);
         return;
       }
       setIsOpen(false);
-      // Removed hasOptions early return to allow committing/clearing raw text in non-strict mode even if validOptions is empty.
+      setIsFocusedState(false);
+      if (!hasOptions) return;
       const cleanSearch = normalizeSearchText(search);
       const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
       if (matched) {
-        // If user typed a match and blurred, commit it
         if (hasTyped) {
           onChange(fallbackName, matched.value);
           setHasTyped(false);
         }
       } else {
         if (strictMode) {
-          // Restore previous selected value in the input if search did not match
           setSearch('');
           setHasTyped(false);
         } else if (hasTyped) {
-          // If not strict mode and user typed, commit the raw search value!
           onChange(fallbackName, search);
           setHasTyped(false);
         }
@@ -350,9 +261,7 @@ export function SearchSelect({
     } finally {
       onBlur?.();
     }
-  }, [validOptions, search, fallbackName, onChange, hasTyped, onBlur, strictMode]);
-
-  /* ---------------- Select option ---------------- */
+  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped, onBlur, strictMode]);
 
   const handleSelect = (val: string): void => {
     const valStr = String(val);
@@ -360,7 +269,7 @@ export function SearchSelect({
       (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
     );
     if (!selected) return;
-    didSelectRef.current = true; // Mark that selection happened
+    didSelectRef.current = true;
     setSearch(selected.label);
     setHasTyped(false);
     setIsOpen(false);
@@ -368,10 +277,7 @@ export function SearchSelect({
     onChange(fallbackName, String(selected.value));
   };
 
-  /* ---------------- Input change ---------------- */
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    // If search is disabled, don't allow typing (read-only behavior)
     if (disableSearch) return;
     let val = e.target.value;
     if (sanitizeInput) val = sanitizeInput(val);
@@ -381,8 +287,6 @@ export function SearchSelect({
     setHighlightedIndex(-1);
     onSearchChange?.(val);
   };
-
-  /* ---------------- Keyboard navigation ---------------- */
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (!hasOptions) return;
@@ -401,7 +305,9 @@ export function SearchSelect({
       case 'Enter':
         e.preventDefault();
         const selectedOption =
-          highlightedIndex >= 0 ? filteredOptions[highlightedIndex] : filteredOptions[0];
+          highlightedIndex >= 0
+            ? filteredOptions[highlightedIndex]
+            : filteredOptions[0];
         if (selectedOption) {
           handleSelect(selectedOption.value);
           onEnter?.();
@@ -436,14 +342,26 @@ export function SearchSelect({
     }
   };
 
-  /* ---------------- Render ---------------- */
-
-  const t = useTranslations('common');
+  const t = useTranslations("common");
 
   return (
-    <div ref={wrapperRef} className={`relative w-full ${isOpen ? 'z-50' : ''}`}>
+    <div
+      ref={wrapperRef}
+      className={`relative w-full ${isOpen ? 'z-50' : ''}`}
+      onMouseDown={() => {
+        isClickingInsideRef.current = true;
+      }}
+      onMouseUp={() => {
+        setTimeout(() => {
+          isClickingInsideRef.current = false;
+        }, 0);
+      }}
+    >
       {label && (
-        <label htmlFor={fallbackId} className="block text-sm font-medium mb-1.5 text-slate-700">
+        <label
+          htmlFor={fallbackId}
+          className="block text-sm font-medium mb-1.5 text-slate-700"
+        >
           {label}
           {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -451,6 +369,7 @@ export function SearchSelect({
 
       <div className="relative group">
         <input
+          ref={inputRef}
           id={fallbackId}
           type="text"
           name={fallbackName}
@@ -460,7 +379,8 @@ export function SearchSelect({
             isLoading
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
               : !hasOptions && !value && !forceSearchText
-                ? noOptionsPlaceholder || t('multiSelect.noOptionsAvailable')
+                ? noOptionsPlaceholder ||
+                t('multiSelect.noOptionsAvailable')
                 : placeholder
           }
           required={required}
@@ -477,6 +397,7 @@ export function SearchSelect({
           inputMode={inputMode}
           onFocus={() => {
             isFocused.current = true;
+            setIsFocusedState(true);
             onInputFocus?.();
             if (!disabled) {
               setIsOpen(true);
@@ -509,7 +430,6 @@ export function SearchSelect({
           `}
         />
 
-        {/* Right side icon area */}
         <div className="absolute right-0 top-0 h-full flex items-center pr-2.5 pointer-events-none">
           {isLoading ? (
             <Loader2 className="h-4 w-4 text-slate-400 animate-spin" />
@@ -521,73 +441,121 @@ export function SearchSelect({
         </div>
       </div>
 
-      {/* Dropdown */}
       {isOpen && (
-        <ul
-          ref={(node) => {
-            listRef.current = node;
-            dropdownRef.current = node;
-          }}
+        <div
+          ref={dropdownRef}
           id={`${accessibleId}-listbox`}
           role="listbox"
           className={`
-            absolute left-0 right-0 z-[9999]
-            max-h-56 overflow-auto overscroll-contain
-            rounded-md border-2 border-slate-300 bg-white
+            absolute left-0 right-0 z-[9999] 
+            rounded-md border-2 border-slate-300 bg-white 
             shadow-xl shadow-slate-300/60
             ring-1 ring-slate-200
             animate-in fade-in-0 zoom-in-95 duration-150
+            flex flex-col overflow-hidden
             ${activePlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
           `}
         >
-          {filteredOptions.length === 0 && !isLoading ? (
-            <li className="px-3 py-2.5 text-sm text-slate-500 text-center">
-              {emptyMessage || t('multiSelect.noOptionsAvailable')}
-            </li>
-          ) : (
-            filteredOptions.map((opt, index) => {
-              const valStr = value !== undefined && value !== null ? String(value) : '';
-              const isSelected =
-                String(opt.value) === valStr ||
-                String(opt.value).toLowerCase() === valStr.toLowerCase();
-              const isHighlighted = index === highlightedIndex;
-
-              return (
-                <li
-                  key={opt.value}
-                  id={`${accessibleId}-option-${index}`}
-                  role="option"
-                  aria-selected={isSelected}
-                  onMouseDown={() => handleSelect(opt.value)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`
-                    relative flex items-center justify-between
-                    px-3 py-2 text-sm cursor-pointer
-                    transition-colors duration-100
-                    ${isHighlighted ? 'bg-blue-600 text-white' : ''}
-                    ${isSelected && !isHighlighted ? 'bg-blue-50 text-blue-600' : ''}
-                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-100 text-slate-700' : ''}
-                  `}
-                >
-                  <span
-                    className={`truncate ${isSelected && !isHighlighted ? 'font-semibold text-blue-600' : isHighlighted ? 'text-white font-medium' : 'text-slate-700'}`}
-                  >
-                    {opt.label}
-                  </span>
-                  {isSelected && (
-                    <Check
-                      className={`h-4 w-4 flex-shrink-0 ml-2 ${isHighlighted ? 'text-white' : 'text-blue-600'}`}
-                    />
-                  )}
+          <ul
+            ref={listRef}
+            onMouseDown={() => {
+              isClickingInsideRef.current = true;
+            }}
+            onMouseUp={() => {
+              setTimeout(() => {
+                isClickingInsideRef.current = false;
+              }, 0);
+            }}
+            onScroll={(e) => {
+              if (hasMore && !isLoadingMore && onLoadMore) {
+                const target = e.currentTarget;
+                if (target.scrollHeight - target.scrollTop - target.clientHeight < 30) {
+                  onLoadMore();
+                }
+              }
+            }}
+            className="max-h-56 overflow-auto overscroll-contain"
+          >
+            {filteredOptions.length === 0 ? (
+              isLoading || isLoadingMore ? (
+                <li className="px-3 py-3 text-sm text-blue-600 text-center flex items-center justify-center gap-2 font-medium">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span>{t('multiSelect.fetchingMatchingOptions') || 'Fetching matching options...'}</span>
                 </li>
-              );
-            })
+              ) : (
+                <li className="px-3 py-2.5 text-sm text-slate-500 text-center">
+                  {t('multiSelect.noOptionsAvailable')}
+                </li>
+              )
+            ) : (
+              filteredOptions.map((opt, index) => {
+                const valStr = value !== undefined && value !== null ? String(value) : '';
+                const isSelected = String(opt.value) === valStr || String(opt.value).toLowerCase() === valStr.toLowerCase();
+                const isHighlighted = index === highlightedIndex;
+
+                return (
+                  <li
+                    key={opt.value}
+                    id={`${accessibleId}-option-${index}`}
+                    role="option"
+                    aria-selected={isSelected}
+                    onMouseDown={() => handleSelect(opt.value)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={`
+                      relative flex items-center justify-between
+                      px-3 py-2 text-sm cursor-pointer
+                      transition-colors duration-100
+                      ${isHighlighted ? 'bg-blue-600 text-white' : ''}
+                      ${isSelected && !isHighlighted ? 'bg-blue-50 text-blue-600' : ''}
+                      ${!isHighlighted && !isSelected ? 'hover:bg-slate-100 text-slate-700' : ''}
+                    `}
+                  >
+                    <span className={`truncate ${isSelected && !isHighlighted ? 'font-semibold text-blue-600' : isHighlighted ? 'text-white font-medium' : 'text-slate-700'}`}>
+                      {opt.label}
+                    </span>
+                    {isSelected && (
+                      <Check className={`h-4 w-4 flex-shrink-0 ml-2 ${isHighlighted ? 'text-white' : 'text-blue-600'}`} />
+                    )}
+                  </li>
+                );
+              })
+            )}
+          </ul>
+          {hasMore && (
+            <div
+              className="px-3 py-2.5 text-sm text-center border-t border-slate-100 bg-slate-50 flex items-center justify-center cursor-pointer select-none"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                isClickingInsideRef.current = true;
+                inputRef.current?.focus();
+                if (!isLoadingMore && onLoadMore) {
+                  const activeQuery = hasTyped ? search : (forceSearchText || '');
+                  onLoadMore(activeQuery);
+                }
+                setTimeout(() => {
+                  isClickingInsideRef.current = false;
+                }, 200);
+              }}
+            >
+              {isLoadingMore ? (
+                <div className="flex items-center justify-center gap-2 text-blue-600 py-0.5">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="text-xs font-medium text-slate-600">{t('multiSelect.loadingOptions') || 'Loading options...'}</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-700 py-0.5">
+                  <Loader2 className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="text-xs font-semibold text-blue-600 hover:underline">{t('multiSelect.loadMoreOptions') || 'Load More Options'}</span>
+                </div>
+              )}
+            </div>
           )}
-        </ul>
+        </div>
       )}
       {error && <span className="text-[13px] text-red-600 mt-1 block">{error}</span>}
     </div>
   );
 }
 
-SearchSelect.displayName = 'SearchSelect';
+SearchSelectPaginated.displayName = 'SearchSelectPaginated';

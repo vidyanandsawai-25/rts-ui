@@ -38,7 +38,13 @@
     "minLength": "किमान {count} वर्ण आवश्यक आहेत",
     "maxLength": "कमाल {count} वर्णांची परवानगी आहे",
     "invalidFormat": "अवैध स्वरूप",
-    "submissionIdRequired": "सबमिशन आयडी आवश्यक आहे"
+    "submissionIdRequired": "सबमिशन आयडी आवश्यक आहे",
+    "codeAllZeros": "कोड शून्य असू शकत नाही",
+    "codeFormat": "कोडसाठी अवैध स्वरूप",
+    "nameAllZeros": "नाव शून्य असू शकत नाही",
+    "nameFormat": "नावासाठी अवैध स्वरूप",
+    "descriptionAllZeros": "वर्णन शून्य असू शकत नाही",
+    "descriptionFormat": "वर्णनासाठी अवैध स्वरूप"
   },
   "form": {
     "validation": {
@@ -286,7 +292,13 @@
     "clearAll": "सर्व काढा",
     "noOptions": "कोणतेही पर्याय सापडले नाहीत",
     "noOptionsAvailable": "कोणतेही पर्याय उपलब्ध नाहीत",
-    "search": "शोधा..."
+    "search": "शोधा...",
+    "searchPlaceholder": "पर्याय शोधा...",
+    "loading": "पर्याय लोड करत आहे...",
+    "loadMoreOptions": "अधिक पर्याय लोड करा...",
+    "loadError": "पर्याय लोड करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+    "loadingOptions": "पर्याय लोड करत आहे...",
+    "selectOption": "पर्याय निवडा"
   },
   "Grid": {
     "action": "कृती",
@@ -304,14 +316,6 @@
     "mandatory": "* चिन्ह असलेली सर्व क्षेत्रे अनिवार्य आहेत"
   },
   "searchPlaceholder": "मालमत्ता शोधा...",
-  "validation": {
-    "codeAllZeros": "कोड शून्य असू शकत नाही",
-    "codeFormat": "कोडसाठी अवैध स्वरूप",
-    "nameAllZeros": "नाव शून्य असू शकत नाही",
-    "nameFormat": "नावासाठी अवैध स्वरूप",
-    "descriptionAllZeros": "वर्णन शून्य असू शकत नाही",
-    "descriptionFormat": "वर्णनासाठी अवैध स्वरूप"
-  },
   "imageViewer": {
     "title": "प्रतिमा दर्शक",
     "zoomOut": "झूम आउट करा",

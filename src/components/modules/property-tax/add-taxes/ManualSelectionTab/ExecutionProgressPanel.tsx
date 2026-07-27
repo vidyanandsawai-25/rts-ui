@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/common/Card';
@@ -13,9 +12,15 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { getJobPropertiesAction } from '@/app/[locale]/property-tax/add-taxes/actions';
+import { getJobPropertiesAction, getJobStatusAction } from '@/app/[locale]/property-tax/add-taxes/actions';
 import { getProgressPanelColumns } from './ExecutionProgressPanelColumns';
 import { logger } from '@/lib/utils/logger';
+import type { JobPropertyItem } from '@/types/addTaxes.types';
+
+interface JobPropertiesResult {
+  items?: JobPropertyItem[];
+  totalCount?: number;
+}
 
 interface ExecutionProgressPanelProps {
   jobId: string;
@@ -30,8 +35,10 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
   const [added, setAdded] = useState(0);
   const [failed, setFailed] = useState(0);
   const [status, setStatus] = useState<'InProgress' | 'Completed'>('InProgress');
+  const [totalJobRecords, setTotalJobRecords] = useState(totalRecords);
+  const [totalLogCount, setTotalLogCount] = useState(0);
 
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<JobPropertyItem[]>([]);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,28 +71,38 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
 
     const fetchProgress = async () => {
       try {
-        const response = await getJobPropertiesAction(numericJobId);
+        // Fetch overall status first from status API
+        const statusRes = await getJobStatusAction(numericJobId);
         if (!isSubscribed) return;
 
-        if (response) {
-          setLogs(response);
+        if (statusRes?.success && statusRes.data) {
+          const statusData = statusRes.data;
+          setProcessed(statusData.processed);
+          setAdded(statusData.success);
+          setFailed(statusData.failed);
+          if (statusData.total > 0) {
+            setTotalJobRecords(statusData.total);
+          }
 
-          const totalProcessed = response.length;
-          setProcessed(totalProcessed);
-
-          const successItems = response.filter(x => x.status !== 'Failed').length;
-          setAdded(successItems);
-
-          const failedItems = response.filter(x => x.status === 'Failed').length;
-          setFailed(failedItems);
-
-          if (totalProcessed >= totalRecords) {
+          const backendStatus = statusData.status?.toLowerCase();
+          if (['completed', 'success'].includes(backendStatus)) {
             setStatus('Completed');
             onComplete?.();
+          } else {
+            setStatus('InProgress');
           }
         }
+
+        // Fetch logs for the master table
+        const propertiesRes = await getJobPropertiesAction(numericJobId, pageNumber, pageSize) as JobPropertiesResult | null;
+        if (!isSubscribed) return;
+
+        if (propertiesRes && propertiesRes.items) {
+          setLogs(propertiesRes.items);
+          setTotalLogCount(propertiesRes.totalCount || 0);
+        }
       } catch (e) {
-        logger.error('Failed to fetch job properties progress', { error: e as Error });
+        logger.error('Failed to fetch job progress details', { error: e as Error });
       }
     };
 
@@ -96,17 +113,12 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
       isSubscribed = false;
       clearInterval(interval);
     };
-  }, [jobId, totalRecords, onComplete]);
+  }, [jobId, onComplete, pageNumber, pageSize]);
 
-  const percentage = totalRecords > 0 ? Math.floor((processed / totalRecords) * 100) : 0;
-  const pending = Math.max(0, totalRecords - processed);
+  const percentage = totalJobRecords > 0 ? Math.min(100, Math.floor((processed / totalJobRecords) * 100)) : 0;
+  const pending = Math.max(0, totalJobRecords - processed);
 
   const columns = getProgressPanelColumns(t);
-
-  const paginatedLogs = useMemo(() => {
-    const start = (pageNumber - 1) * pageSize;
-    return logs.slice(start, start + pageSize);
-  }, [logs, pageNumber, pageSize]);
 
   return (
     <Card className="border border-blue-200 bg-[#F4F8FE] mb-6 overflow-hidden p-2 py-4 mb-0">
@@ -152,7 +164,7 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
         <div className="px-4 pb-4 pt-2 border-t border-blue-100 bg-white">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <div className="text-sm font-bold text-gray-900">{t('progressPanel.propertiesProcessed', { processed, total: totalRecords })}</div>
+              <div className="text-sm font-bold text-gray-900">{t('progressPanel.propertiesProcessed', { processed, total: totalJobRecords })}</div>
               <div className="text-xs text-gray-500 mt-0.5">{t('progressPanel.expandListNotice')}</div>
             </div>
           </div>
@@ -161,7 +173,7 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
           <div className="grid grid-cols-5 gap-4 mb-2">
             <DashboardCard
               label={t('progressPanel.stats.total')}
-              value={totalRecords}
+              value={totalJobRecords}
               valueColor="text-gray-800"
             />
             <DashboardCard
@@ -189,12 +201,12 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
           {/* MasterTable */}
           <MasterTable
             columns={columns}
-            data={paginatedLogs}
-            totalCount={logs.length}
+            data={logs}
+            totalCount={totalLogCount}
             loading={status === 'InProgress' && logs.length === 0}
             pageNumber={pageNumber}
             pageSize={pageSize}
-            totalPages={Math.ceil(logs.length / pageSize)}
+            totalPages={Math.ceil(totalLogCount / pageSize)}
             onPageChange={setPageNumber}
             onPageSizeChange={setPageSize}
             paginationConfig={{ enabled: true, showPageSizeSelector: true }}

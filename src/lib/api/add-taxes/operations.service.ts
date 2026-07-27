@@ -11,10 +11,10 @@ import {
   EligibleCountResponse,
   ExecuteOperationPayload,
   ExecuteOperationResponse,
-  JobPropertyItem,
   OperationPreviewPayload,
   OperationPreviewResponse,
   ImportTemplateResponse,
+  JobPropertyPaginatedResponse,
 } from "@/types/addTaxes.types";
 import {
   isSearchPropertyItemShape,
@@ -25,13 +25,45 @@ import {
 
 const logger = createLogger("AddTaxesService");
 
+interface SearchByCategoryItem {
+  propertyId: number;
+  propertyNo: string;
+  partitionNo?: string | null;
+}
+
+interface SearchByCategoryResponse {
+  items?: {
+    items: SearchByCategoryItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious?: boolean;
+    hasNext?: boolean;
+  };
+}
+
+interface JobStatusResponse {
+  jobId: string;
+  status: string;
+  total: number;
+  processed: number;
+  success: number;
+  failed: number;
+  pending: number;
+  percentage: number;
+}
+
 /**
  * Initialize property tax operations.
  * API: GET /api/property-tax/operations/init
  */
-export async function initOperations(): Promise<InitOperationsResponse> {
+export async function initOperations(financeYearId?: string | number): Promise<InitOperationsResponse> {
   try {
-    const response = await apiClient.get<InitOperationsResponse>("/property-tax/operations/init");
+    const url = financeYearId !== undefined && financeYearId !== null
+      ? `/property-tax/operations/init?financeYearId=${encodeURIComponent(String(financeYearId))}`
+      : "/property-tax/operations/init";
+    const response = await apiClient.get<InitOperationsResponse>(url);
     if (!response.success) {
       throw new ApiError(
         response.statusCode ?? 500,
@@ -124,6 +156,57 @@ export async function searchProperties(
 }
 
 /**
+ * Search properties by category (e.g. WardWise SearchCategory=2).
+ * API: GET /api/Property/search-by-category?SearchCategory=2&WardId={wardId}&PageNumber=1&PageSize=100
+ */
+export async function searchPropertiesByCategory(
+  searchCategory: number = 2,
+  wardId?: string | number,
+  pageNumber: number = 1,
+  pageSize: number = 100,
+  propertyFrom?: string,
+  propertyTo?: string,
+  zoneId?: string | number
+): Promise<SearchByCategoryResponse> {
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append("SearchCategory", String(searchCategory));
+    if (wardId !== undefined && wardId !== null && wardId !== '') {
+      queryParams.append("WardId", String(wardId));
+    }
+    if (zoneId !== undefined && zoneId !== null && zoneId !== '') {
+      queryParams.append("ZoneId", String(zoneId));
+    }
+    if (propertyFrom) {
+      queryParams.append("PropertyFrom", propertyFrom);
+    }
+    if (propertyTo) {
+      queryParams.append("PropertyTo", propertyTo);
+    }
+    queryParams.append("PageNumber", String(pageNumber));
+    queryParams.append("PageSize", String(pageSize));
+
+    const response = await apiClient.get<SearchByCategoryResponse>(
+      `/Property/search-by-category?${queryParams.toString()}`
+    );
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to search properties by category",
+        "Search properties by category failed"
+      );
+    }
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data;
+  } catch (error) {
+    logger.error("Error searching properties by category", undefined, error);
+    throw error;
+  }
+}
+
+/**
  * Get eligible properties count.
  * API: POST /api/property-tax/operations/eligible-count
  */
@@ -193,11 +276,13 @@ export async function executeOperation(
  * API: GET /property-tax/operations/jobs/{jobId}/properties
  */
 export async function getJobProperties(
-  jobId: string
-): Promise<JobPropertyItem[]> {
+  jobId: string,
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<JobPropertyPaginatedResponse> {
   try {
-    const response = await apiClient.get<{ items: JobPropertyItem[] }>(
-      `/property-tax/operations/jobs/${jobId}/properties?PageSize=-1`
+    const response = await apiClient.get<JobPropertyPaginatedResponse>(
+      `/property-tax/operations/jobs/${jobId}/properties?PageNumber=${pageNumber}&PageSize=${pageSize}`
     );
     if (!response.success) {
       throw new ApiError(
@@ -206,9 +291,40 @@ export async function getJobProperties(
         "Get job properties failed"
       );
     }
-    return response.data?.items || [];
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data;
   } catch (error) {
     logger.error("Error fetching job properties", undefined, error);
+    throw error;
+  }
+}
+
+/**
+ * Get job runtime status.
+ * API: GET /property-tax/operations/jobs/{jobId}/status
+ */
+export async function getJobStatus(
+  jobId: string
+): Promise<JobStatusResponse> {
+  try {
+    const response = await apiClient.get<JobStatusResponse>(
+      `/property-tax/operations/jobs/${jobId}/status`
+    );
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch job status",
+        "Get job status failed"
+      );
+    }
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    return response.data;
+  } catch (error) {
+    logger.error("Error fetching job status", undefined, error);
     throw error;
   }
 }
@@ -248,8 +364,7 @@ export async function previewOperation(
  */
 export async function getAuditList(
   queryParams: Record<string, string | number | undefined>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Audit list payload format is dynamic and handled generically
-): Promise<any> {
+): Promise<unknown> {
   try {
     const params = new URLSearchParams();
     for (const key in queryParams) {
@@ -257,8 +372,7 @@ export async function getAuditList(
         params.append(key, String(queryParams[key]));
       }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API returns dynamic list data
-    const response = await apiClient.get<any>(
+    const response = await apiClient.get<unknown>(
       `/property-tax/operations/audit?${params.toString()}`
     );
     if (!response.success) {
@@ -320,6 +434,51 @@ export async function getImportTemplate(): Promise<ImportTemplateResponse> {
     return response.data;
   } catch (error) {
     logger.error("Error fetching import template", undefined, error);
+    throw error;
+  }
+}
+
+/**
+ * Export properties excel/csv by status and financeYearId.
+ * API: GET /property-tax/operations/export-properties?status={status}&financeYearId={financeYearId}
+ */
+export async function exportProperties(
+  status: string,
+  financeYearId: string | number
+): Promise<{ base64: string; fileName: string }> {
+  try {
+    const params = new URLSearchParams();
+    params.append("status", status);
+    params.append("financeYearId", String(financeYearId));
+
+    const endpoint = `/property-tax/operations/export-properties?${params.toString()}`;
+    logger.info("exportProperties: Requesting export via apiClient.fetch", { endpoint, status, financeYearId });
+
+    const response = await apiClient.fetch(endpoint);
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => response.statusText);
+      throw new ApiError(
+        response.status,
+        `Failed to export properties (${response.status}): ${errText || response.statusText}`,
+        "Export properties failed"
+      );
+    }
+
+    const contentDisposition = response.headers.get("content-disposition");
+    let fileName = `property_tax_properties_${status.toLowerCase()}.csv`;
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (match && match[1]) {
+        fileName = match[1].replace(/['"]/g, "");
+      }
+    }
+
+    const fileBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(fileBuffer).toString("base64");
+    return { base64, fileName };
+  } catch (error) {
+    logger.error("Error exporting properties", undefined, error);
     throw error;
   }
 }

@@ -38,6 +38,9 @@ export interface ModalProps {
    COMPONENT
 ========================= */
 
+let activeModalCount = 0;
+let originalBodyOverflow = "";
+
 export function Modal({
   open,
   onClose,
@@ -60,8 +63,11 @@ export function Modal({
 
     lastActiveElement.current = document.activeElement as HTMLElement;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (activeModalCount === 0) {
+      originalBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
+    activeModalCount++;
 
     const modal = modalRef.current;
     if (!modal) return;
@@ -97,7 +103,10 @@ export function Modal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      activeModalCount = Math.max(0, activeModalCount - 1);
+      if (activeModalCount === 0) {
+        document.body.style.overflow = originalBodyOverflow;
+      }
       document.removeEventListener("keydown", handleKeyDown);
       lastActiveElement.current?.focus();
     };

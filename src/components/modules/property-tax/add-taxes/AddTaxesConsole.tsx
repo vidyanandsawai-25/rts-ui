@@ -7,10 +7,12 @@ import { Tabs } from '@/components/common/Tabs';
 import { Button } from '@/components/common/ActionButton';
 import { Select } from '@/components/common/select';
 import { DashboardCard } from '@/components/common/DashboardCard';
-import { CheckCircle, FileText, BookOpen, Loader2 } from 'lucide-react';
+import { CheckCircle, FileText, BookOpen } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/utils/logger';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAddTaxesState } from '@/hooks/add-taxes/useAddTaxesState';
 import { ScopeSelectionPanel } from './ManualSelectionTab/ScopeSelectionPanel';
@@ -45,42 +47,59 @@ export function AddTaxesActions() {
   );
 }
 
+const DEFAULT_SCOPE_OPTIONS: ScopeOptionItem[] = [
+  { id: 1, name: 'ZoneNode', displayName: 'Zone / Node', description: 'Zone-wise selection', scopeType: 'zone', options: ['Zone', 'Property Type', 'Assessment Status'] },
+  { id: 2, name: 'WardSector', displayName: 'Ward / Sector', description: 'Multi ward selection', scopeType: 'ward', options: ['Zone', 'Ward', 'Property Type', 'Assessment Status'] },
+  { id: 3, name: 'BuildingWise', displayName: 'Building Wise', description: 'Building level', scopeType: 'building', options: ['Zone', 'Ward', 'Property No'] },
+  { id: 4, name: 'PropertyWise', displayName: 'Property Wise', description: 'Property level', scopeType: 'property', options: ['UPIC Id', 'Mobile No'] },
+  { id: 5, name: 'PropertyRange', displayName: 'Property Range', description: 'From-to property range', scopeType: 'range', options: ['Ward', 'Property Type', 'Assessment Status', 'From Property', 'To Property'] }
+];
+
+export interface AddTaxesActionsProps {
+  initOperationsAction: (financeYearId?: string | number) => Promise<any>;
+  getScopeOptionsAction: () => Promise<any>;
+  fetchAllZonesAction: () => Promise<any>;
+  fetchAllWardsAction: () => Promise<any>;
+  fetchAllPropertyTypesAction: () => Promise<any>;
+  searchPropertiesAction: (zoneId: string | number | null, wardId: string | number) => Promise<any>;
+  searchPropertiesByCategoryAction: (searchCategory?: number, wardId?: string | number, pageNumber?: number, pageSize?: number, propertyFrom?: string, propertyTo?: string, zoneId?: string | number) => Promise<any>;
+  getEligibleCountAction: (payload: any) => Promise<any>;
+  executeOperationAction: (payload: any) => Promise<any>;
+  previewOperationAction: (payload: any) => Promise<any>;
+  fetchAssessmentStatusesAction: () => Promise<any>;
+  getAuditListAction: (payload: any) => Promise<any>;
+  getAuditDetailAction: (jobId: string) => Promise<any>;
+  getJobPropertiesAction: (jobId: string, pageNumber: number, pageSize: number, status?: string) => Promise<any>;
+  getImportTemplateAction: () => Promise<any>;
+}
+
 interface AddTaxesConsoleProps {
   initData: InitOperationsResponse | null;
   scopeOptions?: ScopeOptionItem[];
-  zoneOptions?: { value: string; label: string }[];
-  propertyTypeOptions?: { value: string; label: string }[];
-  allJobCodes?: string[];
-  filteredJobs?: any[];
-  totalCount?: number;
-  totalPages?: number;
-  pageNumber?: number;
-  pageSize?: number;
-  auditStats?: {
-    total: number;
-    completed: number;
-    running: number;
-    failed: number;
-  };
-  selectedJobDetails?: any | null;
-  detailProperties?: any[];
+  actions: AddTaxesActionsProps;
 }
 
 export default function AddTaxesConsole({
   initData,
   scopeOptions = [],
-  zoneOptions = [],
-  propertyTypeOptions = [],
-  allJobCodes = [],
-  filteredJobs = [],
-  totalCount = 0,
-  totalPages = 0,
-  pageNumber = 1,
-  pageSize = 10,
-  auditStats,
-  selectedJobDetails = null,
-  detailProperties = [],
+  actions: actionsProp,
 }: AddTaxesConsoleProps) {
+  const rawScopeOptions = (scopeOptions && scopeOptions.length > 0) ? scopeOptions : DEFAULT_SCOPE_OPTIONS;
+  const effectiveScopeOptions = rawScopeOptions.map(s => {
+    if (s.scopeType === 'range') {
+      const opts = s.options || [];
+      const hasPt = opts.some(o => o.toLowerCase().includes('property type'));
+      const hasAs = opts.some(o => o.toLowerCase().includes('assessment status'));
+      if (!hasPt || !hasAs) {
+        return {
+          ...s,
+          options: ['Ward', 'Property Type', 'Assessment Status', 'From Property', 'To Property']
+        };
+      }
+    }
+    return s;
+  });
+
   const {
     t,
     selectedScope,
@@ -94,17 +113,63 @@ export default function AddTaxesConsole({
     stats,
     financeYearOptions,
     scopes,
-    actions,
+    actions: eligibilityActions,
     isInitialized,
-  } = useAddTaxesState(initData, scopeOptions);
+    isFinanceYearActive,
+  } = useAddTaxesState(initData, effectiveScopeOptions, actionsProp);
 
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
 
   const [activeJob, setActiveJob] = useState<{ jobId: string; total: number; scheduledTime?: string } | null>(null);
   const [showProgress, setShowProgress] = useState(false);
+
+  const [currentTab, setCurrentTab] = useState(searchParams.get('tab') || 'manual');
+
+  const handleTabChange = (val: string | number) => {
+    const nextTab = String(val);
+    setCurrentTab(nextTab);
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', nextTab);
+    if (nextTab !== 'excel') {
+      params.delete('excelPage');
+      params.delete('excelPageSize');
+    }
+    if (nextTab !== 'manual') {
+      params.delete('previewPage');
+      params.delete('previewPageSize');
+    }
+    window.history.pushState(null, '', `${window.location.pathname}?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    const checkActiveJobs = async () => {
+      try {
+        const res = await actionsProp.getAuditListAction({ PageSize: 50 });
+        if (res?.items) {
+          const inProgressJob = res.items.find((j: any) =>
+            ['inprogress', 'running', 'pending', 'started'].includes(j.status?.toLowerCase())
+          );
+          if (inProgressJob) {
+            const parts = inProgressJob.records?.split('/') || [];
+            const total = parts[1] ? Number(parts[1].trim()) : 0;
+            setActiveJob({ jobId: inProgressJob.jobId, total });
+            setShowProgress(true);
+          } else {
+            setActiveJob(null);
+          }
+        } else {
+          setActiveJob(null);
+        }
+      } catch (err) {
+        logger.error('Failed to check active jobs', { error: err as Error });
+      }
+    };
+
+    checkActiveJobs();
+    const interval = setInterval(checkActiveJobs, 10000);
+    return () => clearInterval(interval);
+  }, [actionsProp]);
 
   useEffect(() => {
     if (!activeJob) {
@@ -137,22 +202,72 @@ export default function AddTaxesConsole({
     return () => clearTimeout(timer);
   }, [activeJob, t]);
 
-  const currentTab = searchParams.get('tab') || 'manual';
+  useEffect(() => {
+    if (!isFinanceYearActive && currentTab !== 'audit') {
+      const timer = setTimeout(() => {
+        handleTabChange('audit');
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isFinanceYearActive, currentTab]);
 
-  const handleTabChange = (val: any) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', String(val));
-    if (val !== 'excel') {
-      params.delete('excelPage');
-      params.delete('excelPageSize');
+  const [exportingStatus, setExportingStatus] = useState<string | null>(null);
+
+  const handleExportProperties = async (status: string) => {
+    if (exportingStatus) return;
+
+    if (!financeYearId) {
+      toast.error(
+        t('messages.financeYearRequiredForExport', { fallback: 'Please select a finance year before exporting.' })
+      );
+      return;
     }
-    if (val !== 'manual') {
-      params.delete('previewPage');
-      params.delete('previewPageSize');
+
+    setExportingStatus(status);
+
+    const toastId = toast.loading(
+      t('messages.exportingDownloading', { fallback: 'Export downloading, please wait...' })
+    );
+
+    try {
+      const downloadUrl = `${pathname}/export-excel?status=${encodeURIComponent(status)}&financeYearId=${encodeURIComponent(financeYearId)}`;
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error(`Export failed with status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get('content-disposition');
+      let fileName = `property_tax_properties_${status.toLowerCase()}.csv`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (match && match[1]) {
+          fileName = match[1].replace(/['"]/g, '');
+        }
+      }
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast.success(
+        t('messages.exportCompleted', { fallback: 'Export download completed' }),
+        { id: toastId }
+      );
+    } catch (_error) {
+      toast.error(
+        t('messages.exportFailed', { fallback: 'Failed to export properties' }),
+        { id: toastId }
+      );
+    } finally {
+      setExportingStatus(null);
     }
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    });
   };
 
   const mappedFinanceYearOptions = financeYearOptions.map(opt => ({
@@ -162,7 +277,7 @@ export default function AddTaxesConsole({
 
 
   return (
-    <div className="relative w-full">
+    <div className={cn("relative w-full", !isFinanceYearActive && "min-h-[450px]")}>
       <div className="flex flex-col gap-4">
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -183,16 +298,22 @@ export default function AddTaxesConsole({
             label={t('stats.totalProperties')}
             value={stats.totalProperties}
             valueColor="text-gray-900"
+            onExportExcel={() => handleExportProperties('all')}
+            isExporting={exportingStatus === 'all'}
           />
           <DashboardCard
             label={t('stats.eligibleRecords')}
             value={stats.eligibleRecords}
             valueColor="text-blue-600"
+            onExportExcel={() => handleExportProperties('Eligible')}
+            isExporting={exportingStatus === 'Eligible'}
           />
           <DashboardCard
             label={t('stats.skippedLocked')}
             value={stats.skippedRecords}
             valueColor="text-orange-500"
+            onExportExcel={() => handleExportProperties('Skipped')}
+            isExporting={exportingStatus === 'Skipped'}
           />
           <DashboardCard
             label={t('stats.runningJobs')}
@@ -213,83 +334,68 @@ export default function AddTaxesConsole({
         </div>
 
         {/* Processing Job */}
-        {activeJob && showProgress && (
+        {isFinanceYearActive && activeJob && showProgress && (
           <ExecutionProgressPanel
             jobId={activeJob.jobId}
             totalRecords={activeJob.total}
-            onComplete={() => setActiveJob(null)}
+            onComplete={() => { }}
           />
         )}
 
         {/* Main Tabs */}
         <Tabs value={currentTab} onChange={handleTabChange} className="w-full">
           <Tabs.TabList scrollable={false}>
-            <Tabs.Tab value="manual">{t('tabs.manualSelection')}</Tabs.Tab>
-            <Tabs.Tab value="excel">{t('tabs.excelImport')}</Tabs.Tab>
+            {isFinanceYearActive && (
+              <>
+                <Tabs.Tab value="manual">{t('tabs.manualSelection')}</Tabs.Tab>
+                <Tabs.Tab value="excel">{t('tabs.excelImport')}</Tabs.Tab>
+              </>
+            )}
             <Tabs.Tab value="audit">{t('tabs.auditMonitor')}</Tabs.Tab>
           </Tabs.TabList>
 
-          {isPending ? (
-            <div className="flex items-center justify-center min-h-[40vh] bg-white rounded-lg border border-gray-200 mt-6 shadow-sm">
-              <div className="flex flex-col items-center space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-900">{t('loading.message')}</h2>
-                <p className="text-gray-500 text-xs">{t('loading.description')}</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <Tabs.TabPanel value="manual">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-0">
-                  {/* Left Panel - Scope Selection */}
-                  <ScopeSelectionPanel
-                    scopes={scopes}
-                    selectedScope={selectedScope}
-                    handleScopeChange={handleScopeChange}
-                    selectionData={selectionData}
-                    handleSelectionChange={handleSelectionChange}
-                    scopeOptions={scopeOptions}
-                    zoneOptions={zoneOptions}
-                    propertyTypeOptions={propertyTypeOptions}
-                    onStartExecution={(jobId, total, scheduledTime) => setActiveJob({ jobId, total, scheduledTime })}
-                    isInitialized={isInitialized}
-                    financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}
-                  />
-
-                  {/* Right Panel - Validate Eligibility */}
-                  <ValidateEligibilityPanel
-                    actions={actions}
-                    selectedAction={selectedAction}
-                    setSelectedAction={setSelectedAction}
-                  />
-                </div>
-              </Tabs.TabPanel>
-
-              <Tabs.TabPanel value="excel">
-                <ExcelImportTab
+          {isFinanceYearActive && (
+            <Tabs.TabPanel value="manual">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-0">
+                {/* Left Panel - Scope Selection */}
+                <ScopeSelectionPanel
+                  scopes={scopes}
+                  selectedScope={selectedScope}
+                  handleScopeChange={handleScopeChange}
+                  selectionData={selectionData}
+                  handleSelectionChange={handleSelectionChange}
+                  scopeOptions={effectiveScopeOptions}
                   onStartExecution={(jobId, total, scheduledTime) => setActiveJob({ jobId, total, scheduledTime })}
-                  financeYearId={financeYearId}
-                  zoneOptions={zoneOptions}
-                  scopeOptions={scopeOptions}
+                  isInitialized={isInitialized}
                   financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}
+                  actions={actionsProp}
                 />
-              </Tabs.TabPanel>
 
-              <Tabs.TabPanel value="audit">
-                <AuditMonitorTab
-                  allJobCodes={allJobCodes}
-                  filteredJobs={filteredJobs}
-                  totalCount={totalCount}
-                  totalPages={totalPages}
-                  pageNumber={pageNumber}
-                  pageSize={pageSize}
-                  stats={auditStats || { total: 0, completed: 0, running: 0, failed: 0 }}
-                  selectedJobDetails={selectedJobDetails}
-                  detailProperties={detailProperties}
+                {/* Right Panel - Validate Eligibility */}
+                <ValidateEligibilityPanel
+                  actions={eligibilityActions}
+                  selectedAction={selectedAction}
+                  setSelectedAction={setSelectedAction}
                 />
-              </Tabs.TabPanel>
-            </>
+              </div>
+            </Tabs.TabPanel>
           )}
+
+          {isFinanceYearActive && (
+            <Tabs.TabPanel value="excel">
+              <ExcelImportTab
+                onStartExecution={(jobId, total, scheduledTime) => setActiveJob({ jobId, total, scheduledTime })}
+                financeYearId={financeYearId}
+                scopeOptions={scopeOptions}
+                financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}
+                actions={actionsProp}
+              />
+            </Tabs.TabPanel>
+          )}
+
+          <Tabs.TabPanel value="audit">
+            <AuditMonitorTab financeYearId={financeYearId} actions={actionsProp} />
+          </Tabs.TabPanel>
         </Tabs>
       </div>
 
