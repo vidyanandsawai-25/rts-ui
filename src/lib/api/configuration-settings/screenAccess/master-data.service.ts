@@ -6,8 +6,8 @@ import { getMasterDataPageSize } from './screen-access.services';
 import { parseBoolean } from '@/lib/utils/type-guards';
 
 export async function getDepartments(): Promise<DepartmentMasterData[]> {
-  const url = `/DepartmentMaster?PageSize=${getMasterDataPageSize()}&IsActive=true`;
-  const response = await apiClient.get<PagedResponse<unknown>>(url);
+  const url = `/user-department-allocations/my-allocations`;
+  const response = await apiClient.get<{ items: unknown[] }>(url);
 
   if (!response.success) {
     throw new ApiError(
