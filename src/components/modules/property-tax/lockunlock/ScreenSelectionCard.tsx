@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardContent,
   Checkbox,
-  SearchSelect,
+  MultiSelectDropdown,
   ClearButton,
   SelectAllButton,
   SearchInput,
@@ -62,7 +62,10 @@ export function ScreenSelectionCard({
     return () => clearTimeout(timer);
   }, [searchTerm, updateQueries]);
 
-  const selectedModuleId = moduleIdFromUrl;
+  const selectedModuleIds = useMemo(() => {
+    if (!moduleIdFromUrl || moduleIdFromUrl === "ALL") return [];
+    return moduleIdFromUrl.split(",");
+  }, [moduleIdFromUrl]);
 
   // Helper function to extract a clean group/module prefix from screenCode
   const getScreenModule = (code: string) => {
@@ -78,15 +81,14 @@ export function ScreenSelectionCard({
 
   // Generate unique module classifications for dropdown from modules API
   const moduleOptions = useMemo(() => {
-    const options = modules.map((m) => ({
-      label: m.moduleCode,
-      value: String(m.id),
-    }));
-    return [
-      { label: t("screenSelectionCard.allTypes") || "All Types", value: "ALL" },
-      ...options.sort((a, b) => a.label.localeCompare(b.label)),
-    ];
-  }, [modules, t]);
+    return modules
+      .map((m) => ({
+        label: m.moduleName || m.moduleCode,
+        value: String(m.id),
+        tooltip: m.moduleDescription || m.moduleName,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [modules]);
 
   // Derived list of filtered screens based on inputs
   const filteredScreens = useMemo(() => {
@@ -155,15 +157,14 @@ export function ScreenSelectionCard({
             showClear={true}
           />
           <div className="w-full sm:w-[180px]">
-            <SearchSelect
+            <MultiSelectDropdown
               options={moduleOptions}
-              value={selectedModuleId}
-              onChange={(_, value) => {
+              value={selectedModuleIds}
+              onChange={(values) => {
                 setSelectedScreenIds([]);
-                updateQueries({ moduleId: value === "ALL" ? null : value });
+                updateQueries({ moduleId: values.length > 0 ? values.join(",") : null });
               }}
-              placeholder={t("screenSelectionCard.typeOfUse")}
-              disableSearch={true}
+              placeholder={t("screenSelectionCard.typeOfUse") || "All Types"}
             />
           </div>
           {/* Bulk Selection Actions */}
@@ -242,7 +243,7 @@ export function ScreenSelectionCard({
                         />
                       </div>
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider min-w-[36px] justify-center shrink-0">
-                        {badgeCode}
+                        {screen.moduleName || screen.moduleCode || badgeCode}
                       </span>
                       <Label
                         htmlFor={`screen-${screen.id}`}

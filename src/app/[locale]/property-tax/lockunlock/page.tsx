@@ -29,7 +29,7 @@ export default async function Page({
   const toProperty = params?.toProperty;
   const moduleIdStr = params?.moduleId;
   
-  const moduleIdParam = moduleIdStr && moduleIdStr !== "ALL" ? parseInt(moduleIdStr as string, 10) : undefined;
+  const moduleIdParam = moduleIdStr && moduleIdStr !== "ALL" ? (moduleIdStr as string) : undefined;
 
   const [zonesResult, wardsResult, screensResult, modulesResult] = await Promise.all([
     fetchZonesPagedAction(1, 100),
