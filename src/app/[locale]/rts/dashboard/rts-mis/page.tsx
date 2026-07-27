@@ -1,12 +1,15 @@
 import RtsMisDashboard from "@/components/modules/rts/dashboard/RtsMisDashboard";
-import { getRtsMisDashboardAction } from "./actions";
+import { getRtsMisDepartmentServicesAction } from "./actions";
 
 export default async function RtsMISDashboardPage() {
-  const misDashboardData = await getRtsMisDashboardAction();
+  const misDashboardData = await getRtsMisDepartmentServicesAction(0, "");
 
   return (
     <div className="w-full">
-      <RtsMisDashboard misDashboardData={misDashboardData} />
+      <RtsMisDashboard
+        misDashboardData={misDashboardData}
+        getDepartmentServices={getRtsMisDepartmentServicesAction}
+      />
     </div>
   );
 }

@@ -306,6 +306,15 @@
     }
   },
   "misDashboard": {
+    "applicationShare": "Application Share",
+    "service": "Service",
+    "other": "Other",
+    "expandDepartment": "Expand {department}",
+    "collapseDepartment": "Collapse {department}",
+    "departmentServiceDetails": "Services for {department}",
+    "loadingServices": "Loading services...",
+    "serviceLoadFailed": "Unable to load services for this department.",
+    "retry": "Retry",
     "title": "MIS Dashboard",
     "from": "From",
     "to": "To",

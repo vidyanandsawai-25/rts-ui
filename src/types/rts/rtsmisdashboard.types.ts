@@ -13,12 +13,14 @@ export interface RtsMisDashboardServiceItem {
 }
 
 export interface RtsMisDashboardDepartmentItem {
-  departmentId?: string | number;
+  departmentId: string | number;
   departmentName: string;
   totalServices: number;
   totalApplications: number;
   fromAapleSarkar: number;
   fromRTS: number;
+  rtsOnline: number;
+  rtsOffline: number;
   pending: number;
   approved: number;
   rejected: number;
@@ -47,9 +49,15 @@ export interface RtsMisDashboardResponse {
   data: RtsMisDashboardData;
 }
 
-export type RtsMisDashboardFlag = 'admin' | 'user';
+export type RtsMisDashboardFlag = 'Admin' | 'User';
+
+// Retained while existing callers migrate to the API's title-cased values.
+export type RtsMisDashboardInputFlag = RtsMisDashboardFlag | 'admin' | 'user';
 
 export interface RtsMisDashboardRequest {
-  Flag: RtsMisDashboardFlag;
+  Flag: RtsMisDashboardInputFlag;
   UpicId: string;
+  // The backend contract uses this spelling, so preserve it in the request type.
+  DeparmentId?: number;
+  DeparmentName?: string;
 }

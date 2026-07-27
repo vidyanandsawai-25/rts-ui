@@ -315,6 +315,15 @@
     }
   },
   "misDashboard": {
+    "applicationShare": "अर्जाचा वाटा",
+    "service": "सेवा",
+    "other": "इतर",
+    "expandDepartment": "{department} विस्तारित करा",
+    "collapseDepartment": "{department} आकुंचित करा",
+    "departmentServiceDetails": "{department} मधील सेवा",
+    "loadingServices": "सेवा लोड होत आहेत...",
+    "serviceLoadFailed": "या विभागाच्या सेवा लोड करता आल्या नाहीत.",
+    "retry": "पुन्हा प्रयत्न करा",
     "title": "MIS डॅशबोर्ड",
     "from": "पासून",
     "to": "पर्यंत",
