@@ -189,7 +189,7 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
             payload.builtupAreaSqFeet !== undefined ? payload.builtupAreaSqFeet
                 : (payload.builtupAreaSqFt || 0)
         ) || 0);
-    const noOfRoomsVal = Number(payload.noOfRooms !== undefined ? payload.noOfRooms : (payload.rooms || 0));
+    const noOfRoomsVal = isActualOpenPlot ? 0 : Number(payload.noOfRooms !== undefined ? payload.noOfRooms : (payload.rooms || 0));
 
     const renterYesNoVal = payload.renterYesNo !== undefined
         ? Boolean(payload.renterYesNo)

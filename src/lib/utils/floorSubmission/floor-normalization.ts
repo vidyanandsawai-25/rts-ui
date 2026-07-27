@@ -172,7 +172,10 @@ export function normalizeFloorData(
   let l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
   let w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
 
-  const isOpenPlotVal = raw.isOpenPlot === true || String(raw.selectedFloorType).toLowerCase() === 'openplot' || String(floorId) === '77';
+  const rawIsOpenPlot = raw.isOpenPlot !== undefined ? raw.isOpenPlot : (raw as any).IsOpenPlot;
+  const isActualOpenPlot = rawIsOpenPlot === true || String(rawIsOpenPlot).toLowerCase() === 'true' || rawIsOpenPlot === 1 || String(rawIsOpenPlot) === '1';
+
+  const isOpenPlotVal = isActualOpenPlot || String(raw.selectedFloorType).toLowerCase() === 'openplot' || String(floorId) === '77';
   if (isOpenPlotVal) {
     const rooms = (raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as Record<string, unknown>[];
     if (rooms && rooms.length > 0) {
@@ -187,6 +190,7 @@ export function normalizeFloorData(
   // 3. Return a clean, normalized object
   return {
     ...raw, // Preserve original fields for safety
+    isOpenPlot: isActualOpenPlot,
     id: getNumber(raw.id) || getNumber(raw.propertyDetailsId) || 0,
     floor: floorDesc || floorId,
     subFloor: subFloorDesc || subFloorId,
@@ -196,7 +200,7 @@ export function normalizeFloorData(
     use: useDesc || typeOfUseId,
     subTyp: subTypeDesc || subTypeOfUseId,
     renter: (raw.renter === 'Yes' || raw.renter === true || raw.isRenter === true || raw.renterYesNo === true || raw.renterYesNO === true) ? 'Yes' : 'No',
-    rooms: getString(raw.rooms) || getString(raw.noOfRooms) || '',
+    rooms: isActualOpenPlot ? '0' : (getString(raw.rooms) || getString(raw.noOfRooms) || ''),
     areaSqFt: getString(raw.areaSqFt) || getString(raw.carpetAreaSqFeet) || '',
     areaSqM: getString(raw.areaSqM) || getString(raw.carpetAreaSqMeter) || '',
     length: l !== undefined && l !== null ? String(l) : '',

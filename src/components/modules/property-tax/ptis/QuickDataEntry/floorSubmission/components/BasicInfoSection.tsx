@@ -152,46 +152,44 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
       </FieldWrapper>
 
       {/* Floor */}
-      {selectedFloorType !== 'OpenPlot' && (
-        <FieldWrapper label={t('floor.floorLabel')} htmlFor="floor-floor" required error={formErrors.floorId || formErrors.floor}>
-          <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
-            <SearchSelect
-              id="floor-floor"
-              name="floorId"
-              options={[
-                { label: t('floor.selectFloor'), value: "" },
-                ...getSelectOptions(
-                  normalizeToStringArray(floorOptions),
-                  floorLookup,
-                  'floorId',
-                  'description',
-                  'floorCode',
-                  editingFloorForm.floorId,
-                  getFloorDescription
-                )
-              ]}
-              value={String(editingFloorForm.floorId ?? '')}
-              onChange={(_name, value) => {
-                const desc = getFloorDescription(value, floorLookup);
-                setEditingFloorForm((prev: FloorData) => ({
-                  ...prev,
-                  floorId: value,
-                  floor: desc || value,
-                  floorDescription: desc || value
-                }));
-                // Simple required validation: if value is empty, show error
-                if (!value) {
-                  setFormErrors((prev) => ({ ...prev, floorId: t('floor.errors.floorRequired') || 'Floor selection is required' }));
-                } else {
-                  setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
-                }
-              }}
-              placeholder={t('floor.selectFloor')}
-              className="h-9 text-sm"
-            />
-          </div>
-        </FieldWrapper>
-      )}
+      <FieldWrapper label={t('floor.floorLabel')} htmlFor="floor-floor" required error={formErrors.floorId || formErrors.floor}>
+        <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
+          <SearchSelect
+            id="floor-floor"
+            name="floorId"
+            options={[
+              { label: t('floor.selectFloor'), value: "" },
+              ...getSelectOptions(
+                normalizeToStringArray(floorOptions),
+                floorLookup,
+                'floorId',
+                'description',
+                'floorCode',
+                editingFloorForm.floorId || (selectedFloorType === 'OpenPlot' ? '77' : undefined),
+                getFloorDescription
+              )
+            ]}
+            value={String(editingFloorForm.floorId || (selectedFloorType === 'OpenPlot' ? '77' : ''))}
+            onChange={(_name, value) => {
+              const desc = getFloorDescription(value, floorLookup);
+              setEditingFloorForm((prev: FloorData) => ({
+                ...prev,
+                floorId: value,
+                floor: desc || value,
+                floorDescription: desc || value
+              }));
+              // Simple required validation: if value is empty, show error
+              if (!value) {
+                setFormErrors((prev) => ({ ...prev, floorId: t('floor.errors.floorRequired') || 'Floor selection is required' }));
+              } else {
+                setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
+              }
+            }}
+            placeholder={t('floor.selectFloor')}
+            className="h-9 text-sm"
+          />
+        </div>
+      </FieldWrapper>
 
       {/* Sub Floor */}
       {selectedFloorType !== 'OpenPlot' && (

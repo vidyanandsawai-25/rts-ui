@@ -117,7 +117,7 @@ export const mapFormToPayload = (params: {
     createdBy: 0,
     propertyId: Number(propertyId || 0),
     propertyDetailsId: propDetailsId,
-    ...(selectedFloorType !== 'OpenPlot' && floorId ? { floorId } : {}),
+    ...(floorId ? { floorId } : {}),
     floorDescription,
     subFloorId,
     subFloorDescription,
@@ -143,7 +143,7 @@ export const mapFormToPayload = (params: {
       Boolean(params.isPlotCategory && isOpenSpace)
         ? parseFloat(String(formData.areaSqFt || 0))
         : parseFloat(String(formData.builtupAreaSqFt || 0)),
-    noOfRooms: isUtility ? 0 : parseInt(String(formData.rooms)) || 0,
+    noOfRooms: (isOpenSpace || selectedFloorType === 'OpenPlot' || formData.selectedFloorType === 'OpenPlot' || isUtility) ? 0 : (parseInt(String(formData.rooms)) || 0),
     isTaxable: formData.isTaxable === 'Yes' || formData.isTaxable === true,
     taxLiability: String(formData.taxLiability || ''),
     occupancyDate: formData.occupancyDate || null,

@@ -794,7 +794,6 @@
             "selectType": "Filter by Type",
             "allTypes": "All Types",
             "applyTypesButton": "Apply Types",
-
             "loading": "Loading properties...",
             "selectAll": "Select all properties",
             "selectProperty": "Select property {propertyNo}",
@@ -835,7 +834,8 @@
         "selectConTypFirst": "Select construction first",
         "searchFloors": "Search floors...",
         "editFloorDetails": "Edit Floor Details",
-        "editOpenPlotDetails": "Edit Open Plot Details",
+        "editOpenPlotDetails": "Edit Open Space Details",
+        "addOpenPlotDetails": "Add Open Space Details",
         "selectUseFirst": "Select use first",
         "floorLabel": "Floor",
         "floor": "Floor",
@@ -1051,7 +1051,7 @@
         "noSubtypesAvailable": "No subtypes available for the selected usage.",
         "availableRooms": "Available",
         "addFloorDetails": "Add Floor Details",
-        "addOpenPlotDetails": "Add Open Plot Details",
+        "addOpenPlotDetails": "Add Open Space Details",
         "openPlotCategory": "Open Plot Category",
         "selectCategory": "- Select Category -",
         "floorAddedSuccess": "Floor added successfully",
@@ -1596,5 +1596,5 @@
             "general": "An unexpected error occurred while retrieving the document. Please try again.",
             "uploadGeneral": "An error occurred while uploading the document. Please try again."
         }
-    }   
+    }
 }

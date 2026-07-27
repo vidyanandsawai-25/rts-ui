@@ -175,6 +175,27 @@ describe('useFloorSubmission', () => {
     expect(filtered.length).toBeGreaterThan(0);
   });
 
+  it('should exclude records where isOpenPlot is true across various format types', () => {
+    const mockFloors = [
+      { id: 1, floor: 'Ground Floor', conTyp: 'RCC', use: 'Residential', isOpenPlot: false },
+      { id: 2, floor: 'First Floor', conTyp: 'PCC', use: 'Commercial', isOpenPlot: true },
+      { id: 3, floor: 'Second Floor', conTyp: 'RCC', use: 'Residential' },
+      { id: 4, floor: 'Third Floor', conTyp: 'Open Plot', use: 'Commercial', IsOpenPlot: true },
+      { id: 5, floor: 'Fourth Floor', conTyp: 'PCC', use: 'Commercial', isOpenPlot: 'true' },
+      { id: 6, floor: 'Fifth Floor', conTyp: 'PCC', use: 'Commercial', isOpenPlot: 1 },
+    ];
+
+    vi.mocked(useFloorFormState).mockReturnValue({
+      ...(useFloorFormState as unknown as () => ReturnType<typeof useFloorFormState>)(),
+      localFloors: mockFloors,
+    } as unknown as ReturnType<typeof useFloorFormState>);
+
+    const { result } = renderHook(() => useFloorSubmission(mockProps));
+
+    expect(result.current.filteredFloors).toHaveLength(2);
+    expect(result.current.filteredFloors.map((f) => f.id)).toEqual([1, 3]);
+  });
+
   describe('handleAddFloor', () => {
     it('should reset form and set adding state', () => {
       const mockSetEditingFloorForm = vi.fn();

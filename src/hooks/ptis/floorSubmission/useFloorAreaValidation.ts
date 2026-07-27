@@ -15,19 +15,16 @@ interface UseFloorAreaValidationProps {
 }
 
 export const isRecordOpenPlot = (floor: FloorData) => {
-  return (
-    floor.isOpenPlot === true ||
-    floor.isOpenPlot === 'true' ||
-    floor.selectedFloorType === 'OpenPlot' ||
-    String(floor.floorId) === '77' ||
-    String(floor.floor) === '77' ||
-    ((!floor.floorId || floor.floorId === '0' || floor.floor === '0') &&
-      (!floor.constructionTypeId ||
-        floor.constructionTypeId === '0' ||
-        !floor.conTyp ||
-        String(floor.conTyp).toLowerCase().includes('open plot') ||
-        String(floor.conTyp).toLowerCase() === 'op'))
-  );
+  if (!floor) return false;
+  if (floor.isOpenPlot === true || floor.isOpenPlot === 'true') return true;
+  if (floor.selectedFloorType === 'OpenPlot') return true;
+  if (String(floor.floorId) === '77' || String(floor.floor) === '77') return true;
+
+  const conCodeOrDesc = String(
+    floor.conTyp || floor.constructionTypeDescription || floor.constructionTypeId || ''
+  ).toLowerCase().trim();
+
+  return conCodeOrDesc === 'op' || conCodeOrDesc.includes('open plot');
 };
 
 export const isActualOpenPlotRecord = (floor: FloorData) => {

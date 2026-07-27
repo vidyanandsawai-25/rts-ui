@@ -147,10 +147,10 @@ export const AddFloorDrawer: React.FC<AddFloorDrawerProps> = ({
       <span className="text-sm font-bold text-slate-800">
         {isEditMode
           ? selectedFloorType === 'OpenPlot'
-            ? (t('floor.editOpenPlotDetails') || 'Edit Open Plot Details')
+            ? (t('floor.editOpenPlotDetails') || 'Edit Open Space Details')
             : (t('floor.editFloorDetails') || 'Edit Floor Details')
           : selectedFloorType === 'OpenPlot'
-            ? (t('floor.addOpenPlotDetails') || 'Add Open Plot Details')
+            ? (t('floor.addOpenPlotDetails') || 'Add Open Space Details')
             : (t('floor.addFloorDetails') || 'Add Floor Details')}
       </span>
     </div>
@@ -313,8 +313,8 @@ export const AddFloorDrawer: React.FC<AddFloorDrawerProps> = ({
               </div>
             )}
 
-            {/* Form Sections Grid (Unified 2-column layout) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Form Sections Grid (Unified 4-column layout for OpenPlot, 2-column for Construction) */}
+            <div className={selectedFloorType === 'OpenPlot' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
               <BasicInfoSection
                 t={t}
                 editingFloorForm={editingFloorForm}

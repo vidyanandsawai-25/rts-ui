@@ -96,8 +96,8 @@ const FloorForm: React.FC<FloorFormProps & {
           <h3 className="text-sm font-bold text-blue-800 flex items-center gap-2">
             <Edit2 className="w-4 h-4" />
             {isAddingNewFloor
-              ? (selectedFloorType === 'OpenPlot' ? (t('floor.addOpenPlotDetails') || 'Add Open Plot Details') : (t('floor.addFloorDetails') || 'Add Floor Details'))
-              : (selectedFloorType === 'OpenPlot' ? (t('floor.editOpenPlotDetails') || 'Edit Open Plot Details') : (t('floor.editFloorDetails') || 'Edit Floor Details'))}
+              ? (selectedFloorType === 'OpenPlot' ? (t('floor.addOpenPlotDetails') || 'Add Open Space Details') : (t('floor.addFloorDetails') || 'Add Floor Details'))
+              : (selectedFloorType === 'OpenPlot' ? (t('floor.editOpenPlotDetails') || 'Edit Open Space Details') : (t('floor.editFloorDetails') || 'Edit Floor Details'))}
           </h3>
           <IconButton
             icon={X}
@@ -108,7 +108,7 @@ const FloorForm: React.FC<FloorFormProps & {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+        <div className={selectedFloorType === 'OpenPlot' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4' : 'grid grid-cols-1 md:grid-cols-3 gap-4'}>
           <BasicInfoSection
             t={t}
             editingFloorForm={editingFloorForm}
@@ -173,7 +173,7 @@ const FloorForm: React.FC<FloorFormProps & {
           />
 
           {selectedFloorType === 'OpenPlot' && isOpenSpaceAreaExceeded && (
-            <div className="md:col-span-3 bg-red-50 border-2 border-red-200 text-red-700 rounded-xl p-4 text-xs font-semibold space-y-2 whitespace-pre-line shadow-sm">
+            <div className={`${selectedFloorType === 'OpenPlot' ? 'md:col-span-4' : 'md:col-span-3'} bg-red-50 border-2 border-red-200 text-red-700 rounded-xl p-4 text-xs font-semibold space-y-2 whitespace-pre-line shadow-sm`}>
               <span className="font-bold text-sm block text-red-800">
                 Open Space Area cannot exceed the available remaining area ({parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2))} Sq.M).
               </span>
@@ -207,7 +207,7 @@ const FloorForm: React.FC<FloorFormProps & {
             </div>
           )}
 
-          <div className="mt-4 flex justify-end md:col-span-3">
+          <div className={`mt-4 flex justify-end ${selectedFloorType === 'OpenPlot' ? 'md:col-span-4' : 'md:col-span-3'}`}>
             <Button
               id="floor-save-btn"
               onClick={onSave}
