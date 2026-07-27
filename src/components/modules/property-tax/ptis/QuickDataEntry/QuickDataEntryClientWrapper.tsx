@@ -9,14 +9,7 @@ import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
-const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
-    property: 'propertydetails',
-    kyc: 'kycdetails',
-    society: 'societydetails',
-    building: 'buildingpermission',
-    discount: 'discountdetails',
-    olddetails: 'olddetails',
-};
+import { QDE_TO_MAIN_MAP } from '@/lib/utils/qde-tab-mapping';
 
 export function QuickDataEntryClientWrapper({ children, categoryName, propertyDescription }: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
     return (
@@ -51,33 +44,49 @@ function QuickDataEntryContent({
     const rateableExpands = searchParams.getAll("rateableExpand");
     const capitalExpands = searchParams.getAll("capitalExpand");
     const dualExpands = searchParams.getAll("dualExpand");
+    const parentPropertyId = searchParams.get("parentPropertyId") || "";
+    const appartmentPartition = searchParams.get("appartmentPartition") || "";
 
     const pathSegments = pathname?.split('/').filter(Boolean) || [];
     const qdeIndex = pathSegments.findIndex((segment) => segment.toLowerCase() === 'quickdataentry');
-    const qdeTabSegment = qdeIndex >= 0 ? (pathSegments[qdeIndex + 2] || '').toLowerCase() : '';
-    const derivedReturnTab = RETURN_TAB_BY_QDE_SEGMENT[qdeTabSegment] || '';
-    const resolvedReturnTab = returnTab || derivedReturnTab;
+    const remainingSegments = qdeIndex >= 0 ? pathSegments.slice(qdeIndex + 2) : [];
+    const matchedSegment = remainingSegments.map(s => s.toLowerCase()).find(s => QDE_TO_MAIN_MAP[s]);
+    const derivedReturnTab = (matchedSegment ? QDE_TO_MAIN_MAP[matchedSegment] : '') || '';
+    const resolvedReturnTab = returnTab || derivedReturnTab || 'olddetails';
 
     const { confirm } = useConfirm();
 
     const handleClose = () => {
         const doClose = () => {
-            const params = new URLSearchParams();
-            if (propertyId) params.set('propertyId', propertyId);
-            if (wardNo) params.set('wardNo', wardNo);
-            if (wardId) params.set('wardId', wardId);
-            if (propertyNo) params.set('propertyNo', propertyNo);
-            if (partitionNo) params.set('partitionNo', partitionNo);
-            if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
-            if (valuationTab) params.set('valuationTab', valuationTab);
-            if (appartmentTab) params.set('appartmentTab', appartmentTab);
-            if (subTab) params.set('subTab', subTab);
-            if (showDetails) params.set('showDetails', showDetails);
-            rateableExpands.forEach(v => params.append('rateableExpand', v));
-            capitalExpands.forEach(v => params.append('capitalExpand', v));
-            dualExpands.forEach(v => params.append('dualExpand', v));
+            const win = typeof window !== 'undefined' ? (window as unknown as { __ptisHasSavedChanges?: boolean }) : {};
+            const hasSavedChanges = !!win.__ptisHasSavedChanges;
 
-            router.push(`/${locale}/property-tax/ptis?${params}`);
+            const isSameOriginReferrer = typeof document !== 'undefined' && document.referrer && new URL(document.referrer, window.location.href).origin === window.location.origin;
+
+            if (!hasSavedChanges && isSameOriginReferrer && typeof window !== 'undefined' && window.history.length > 1) {
+                router.back();
+            } else {
+                if (typeof window !== 'undefined') {
+                    (window as unknown as { __ptisHasSavedChanges?: boolean }).__ptisHasSavedChanges = false;
+                }
+                const params = new URLSearchParams();
+                if (propertyId) params.set('propertyId', propertyId);
+                if (wardNo) params.set('wardNo', wardNo);
+                if (wardId) params.set('wardId', wardId);
+                if (propertyNo) params.set('propertyNo', propertyNo);
+                if (partitionNo) params.set('partitionNo', partitionNo);
+                if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+                if (valuationTab) params.set('valuationTab', valuationTab);
+                if (appartmentTab) params.set('appartmentTab', appartmentTab);
+                if (subTab) params.set('subTab', subTab);
+                if (showDetails) params.set('showDetails', showDetails);
+                if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
+                rateableExpands.forEach(v => params.append('rateableExpand', v));
+                capitalExpands.forEach(v => params.append('capitalExpand', v));
+                dualExpands.forEach(v => params.append('dualExpand', v));
+
+                router.push(`/${locale}/property-tax/ptis?${params}`);
+            }
         };
 
         const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
@@ -85,7 +94,7 @@ function QuickDataEntryContent({
         const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
 
         if (hasBuildingChanges || hasDiscountChanges) {
-            const title = hasBuildingChanges 
+            const title = hasBuildingChanges
                 ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
                 : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
 
@@ -165,7 +174,7 @@ function QuickDataEntryContent({
                 </div>
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                     <Layers className="h-3 w-3 text-white/80" />
-                    <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
+                    <span>{t('roomSubmission.info.partition')}: {appartmentPartition || partitionNo || '—'}</span>
                 </div>
                 {categoryName && (
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">

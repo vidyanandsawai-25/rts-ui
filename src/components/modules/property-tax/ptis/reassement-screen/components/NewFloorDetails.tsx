@@ -21,9 +21,6 @@ export function NewFloorDetails({ data, scrollContainerRef, autoScrollController
   const formatNumberish = (val: unknown): string =>
     typeof val === 'number' ? val.toLocaleString() : '-';
 
-  const formatTaxLiability = (val: unknown): string =>
-    typeof val === 'string' || typeof val === 'number' ? String(val) : '-';
-
   const newColumns: FloorDetailsReassessmentTableColumn[] = [
     {
       key: 'floor',
@@ -35,6 +32,13 @@ export function NewFloorDetails({ data, scrollContainerRef, autoScrollController
         <div className={getFloorDetailCellClasses(row.status)}>{row.floor}</div>
       ),
     },
+    // {
+    //   key: 'type',
+    //   label: t('floorDetails.columns.type'),
+    //   width: '80px',
+    //   align: 'center',
+    //   render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.type ?? '-'}</div>,
+    // },
     {
       key: 'conYear',
       label: t('floorDetails.columns.conYear'),
@@ -75,55 +79,71 @@ export function NewFloorDetails({ data, scrollContainerRef, autoScrollController
     },
     {
       key: 'carpetAreaSqFt',
-      label: t('floorDetails.columns.carpetArea'),
-      width: '128px',
+      label: t('floorDetails.columns.carpetAreaSqFtM'),
+      width: '144px',
       align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>
-          {row.carpetAreaSqFt} / {row.carpetAreaSqM}
-        </div>
-      ),
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.carpetAreaSqFt} / {row.carpetAreaSqM}</div>,
     },
     {
       key: 'builtUpAreaSqFt',
-      label: t('floorDetails.columns.builtUpArea'),
-      width: '128px',
+      label: t('floorDetails.columns.builtUpAreaSqFtM'),
+      width: '144px',
       align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
-      render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>
-          {row.builtUpAreaSqFt} / {row.builtUpAreaSqM}
-        </div>
-      ),
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.builtUpAreaSqFt} / {row.builtUpAreaSqM}</div>,
     },
     {
       key: 'rate',
-      label: t('floorDetails.columns.rate'),
-      width: '96px',
+      label: t('floorDetails.columns.rateYearlyRate'),
+      width: '144px',
       align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.rate} / {row.yearlyRate}</div>,
+    },
+    // {
+    //   key: 'financialYear',
+    //   label: t('floorDetails.columns.financialYear'),
+    //   width: '96px',
+    //   align: 'center',
+    //   render: (_val, row) => (
+    //     <div className={getFloorDetailCellClasses(row.status)}>{row.financialYear}</div>
+    //   ),
+    // },
+    {
+      key: 'ocCertificateNo',
+      label: t('floorDetails.columns.ocCertificateNo'),
+      width: '160px',
+      align: 'center',
       render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>{row.rate}</div>
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ocCertificateNo || '-'}</div>
       ),
     },
     {
-      key: 'yearlyRate',
-      label: t('floorDetails.columns.yearlyRate'),
-      width: '96px',
+      key: 'ocCertificateIssueDate',
+      label: t('floorDetails.columns.ocCertificateIssueDate'),
+      width: '160px',
       align: 'center',
-      cellClassName: 'text-emerald-700 font-mono',
       render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>{row.yearlyRate}</div>
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ocCertificateIssueDate || '-'}</div>
       ),
     },
     {
-      key: 'financialYear',
-      label: t('floorDetails.columns.financialYear'),
-      width: '96px',
+      key: 'ccCertificateNo',
+      label: t('floorDetails.columns.ccCertificateNo'),
+      width: '160px',
       align: 'center',
       render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>{row.financialYear}</div>
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ccCertificateNo || '-'}</div>
+      ),
+    },
+    {
+      key: 'ccCertificateIssueDate',
+      label: t('floorDetails.columns.ccCertificateIssueDate'),
+      width: '160px',
+      align: 'center',
+      render: (_val, row) => (
+        <div className={getFloorDetailCellClasses(row.status)}>{row.ccCertificateIssueDate || '-'}</div>
       ),
     },
     {
@@ -133,30 +153,51 @@ export function NewFloorDetails({ data, scrollContainerRef, autoScrollController
       align: 'center',
       cellClassName: 'text-emerald-700',
       render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>{row.renter}</div>
+        <div className={getFloorDetailCellClasses(row.status)}>{row.renter || t('floorDetails.values.selfOccupied')}</div>
       ),
     },
     {
-      key: 'taxLiability',
-      label: t('floorDetails.columns.taxLiability'),
-      width: '128px',
+      key: 'isRenter',
+      label: t('floorDetails.columns.isRenter'),
+      width: '96px',
       align: 'center',
-      cellClassName: 'font-mono',
-      render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>
-          {formatTaxLiability(row.taxLiability)}
-        </div>
-      ),
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.isRenter == null ? '-' : row.isRenter ? t('floorDetails.values.yes') : t('floorDetails.values.no')}</div>,
     },
     {
-      key: 'rentMy',
-      label: t('floorDetails.columns.rentMy'),
+      key: 'renterName',
+      label: t('floorDetails.columns.renterName'),
+      width: '144px',
+      align: 'center',
+      cellClassName: 'text-emerald-700',
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.renterName ?? '-'}</div>,
+    },
+    // {
+    //   key: 'taxLiability',
+    //   label: t('floorDetails.columns.taxLiability'),
+    //   width: '128px',
+    //   align: 'center',
+    //   cellClassName: 'font-mono',
+    //   render: (_val, row) => (
+    //     <div className={getFloorDetailCellClasses(row.status)}>
+    //       {formatTaxLiability(row.taxLiability)}
+    //     </div>
+    //   ),
+    // },
+    {
+      key: 'rentMonthly',
+      label: t('floorDetails.columns.rentMonthly'),
       width: '112px',
       align: 'center',
       cellClassName: 'font-mono',
-      render: (_val, row) => (
-        <div className={getFloorDetailCellClasses(row.status)}>{row.rentMy}</div>
-      ),
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{row.rentMonthly ?? '-'}</div>,
+    },
+    {
+      key: 'finalYearlyRent',
+      label: t('floorDetails.columns.finalYearlyRent'),
+      width: '128px',
+      align: 'center',
+      cellClassName: 'font-mono',
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{formatNumberish(row.finalYearlyRent)}</div>,
     },
     {
       key: 'rentalValue',
@@ -194,13 +235,21 @@ export function NewFloorDetails({ data, scrollContainerRef, autoScrollController
     },
     {
       key: 'mr',
-      label: t('floorDetails.columns.mr'),
+      label: t('floorDetails.columns.maintenance'),
       width: '96px',
       align: 'center',
       cellClassName: 'font-mono',
       render: (_val, row) => (
         <div className={getFloorDetailCellClasses(row.status)}>{row.mr}</div>
       ),
+    },
+    {
+      key: 'yearlyRent',
+      label: t('floorDetails.columns.yearlyRent'),
+      width: '128px',
+      align: 'center',
+      cellClassName: 'font-mono',
+      render: (_val, row) => <div className={getFloorDetailCellClasses(row.status)}>{formatNumberish(row.yearlyRent)}</div>,
     },
     {
       key: 'rv',

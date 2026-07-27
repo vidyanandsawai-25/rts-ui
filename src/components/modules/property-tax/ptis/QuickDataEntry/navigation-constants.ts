@@ -11,14 +11,8 @@ export const TABS: Tab[] = [
   { label: 'OldDetails', href: 'OldDetails/old-taxation', icon: Building2 },
 ];
 
-export const RETURN_TAB_BY_QDE_HREF: Record<string, string> = {
-  Property: 'propertydetails',
-  Kyc: 'kycdetails',
-  Society: 'societydetails',
-  Building: 'buildingpermission',
-  Discount: 'discountdetails',
-  'OldDetails/old-taxation': 'olddetails',
-};
+import { RETURN_TAB_BY_QDE_HREF } from '@/lib/utils/qde-tab-mapping';
+export { RETURN_TAB_BY_QDE_HREF };
 
 export const TAB_GRADIENT_CLASSES = {
   activeClass: 'from-blue-500 to-blue-600 border-blue-700',

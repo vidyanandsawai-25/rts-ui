@@ -107,7 +107,24 @@
       "sub": "Time-bound, Transparent, and Citizen-Centric Services",
       "featureTime": "Time-bound Service",
       "featureTrans": "Transparent Process",
-      "featureFirst": "Citizen First"
+      "featureFirst": "Citizen First",
+      "actBadge": "Maharashtra Right to Public Services Act 2015",
+      "eyebrow": "Akola's digital citizen gateway",
+      "titleStart": "Public services made",
+      "titleAccent": "simple, transparent and time-bound.",
+      "subtitle": "Find the right service, apply online, track the statutory SLA and receive the approved certificate on your phone.",
+      "searchPlaceholder": "Birth certificate, water connection, property tax...",
+      "searchLabel": "Find a service",
+      "applyLabel": "Start online application",
+      "exploreLabel": "Explore all services",
+      "trust": "Secure portal • Transparent process • Available 24×7",
+      "photoLabel": "Akola Municipal Corporation",
+      "photoCaption": "Your civic services, now online",
+      "digitalLabel": "Digital access",
+      "applyShort": "Apply",
+      "certificateReady": "Certificate ready",
+      "delivered": "Securely delivered",
+      "showStat": "Show statistic"
     },
     "search": {
       "placeholder": "Search services... (e.g. Birth Certificate, Construction permit, Trade license, Water connection...)",
@@ -180,11 +197,152 @@
         "sub": "Download your signed certificate"
       }
     },
+    "heroStats": {
+      "services": {
+        "label": "Online services",
+        "detail": "Available in one place",
+        "badge": "24×7 digital"
+      },
+      "received": {
+        "label": "Applications received",
+        "detail": "Submitted online by citizens",
+        "badge": "Digital filing"
+      },
+      "delivered": {
+        "label": "Applications delivered",
+        "detail": "Approved and delivered",
+        "badge": "SLA completed"
+      },
+      "sla": {
+        "label": "SLA success rate",
+        "detail": "Delivered within the timeline",
+        "badge": "Time guaranteed"
+      }
+    },
+    "journey": {
+      "eyebrow": "Four simple steps",
+      "title": "From service search to digital certificate",
+      "slaProtected": "SLA protected",
+      "steps": {
+        "choose": {
+          "title": "Choose a service",
+          "shortTitle": "Choose",
+          "description": "Find the right service and check eligibility."
+        },
+        "apply": {
+          "title": "Apply online",
+          "shortTitle": "e-File",
+          "description": "Complete the form and upload documents."
+        },
+        "track": {
+          "title": "Track the SLA",
+          "shortTitle": "Track",
+          "description": "See application status and remaining time."
+        },
+        "certificate": {
+          "title": "Get the certificate",
+          "shortTitle": "e-Cert",
+          "description": "Securely download the approved certificate."
+        }
+      }
+    },
+    "quickAccess": {
+      "eyebrow": "Popular online actions",
+      "title": "Quick citizen access",
+      "badge": "One-click access",
+      "actions": {
+        "apply": {
+          "label": "Apply for Service",
+          "description": "Start a new request"
+        },
+        "download": {
+          "label": "Download Certificate",
+          "description": "Get an approved copy"
+        },
+        "pay": {
+          "label": "Pay Fees",
+          "description": "Secure online payment"
+        },
+        "appeal": {
+          "label": "File Appeal",
+          "description": "Submit an appeal online"
+        },
+        "grievance": {
+          "label": "Register Grievance",
+          "description": "Raise an issue or request"
+        },
+        "track": {
+          "label": "Track Application",
+          "description": "Check status and SLA"
+        }
+      }
+    },
+    "serviceBrowser": {
+      "eyebrow": "Explore civic services",
+      "title": "Citizen services by department",
+      "subtitle": "Choose a department and open the service you need.",
+      "totalServices": "{count} Total Services",
+      "serviceCount": "{count} Services",
+      "searchResults": "Search results",
+      "resultsFound": "{count} found",
+      "viewAllDepartments": "View all departments",
+      "noServices": "No services found",
+      "tryDifferentKeyword": "Please try a different keyword.",
+      "departmentsAriaLabel": "Service departments",
+      "selectedDepartment": "Selected department",
+      "startApplication": "Start application",
+      "slaLabel": "SLA:",
+      "noDepartments": "Departments are not available",
+      "tryAgainLater": "Please try again later."
+    },
+    "serviceDetails": {
+      "title": "Service Details",
+      "days": "{count} Days",
+      "free": "Free",
+      "timeLimit": "Time Limit (SLA)",
+      "fees": "Fees / Charges",
+      "receivingOfficer": "Receiving Officer",
+      "mandatoryDocuments": "Mandatory Documents Required",
+      "noDocuments": "No documents specified for this service.",
+      "close": "Close",
+      "apply": "Apply / Process"
+    },
+    "metadata": {
+      "title": "{ulbName} - Right to Service Portal",
+      "description": "{ulbName} - Time-bound, transparent, and citizen-centric services under the Maharashtra Right to Public Services Act 2015."
+    },
     "footer": {
       "followUs": "Follow Us",
       "helpline": "RTS Helpline",
       "email": "RTS Email Support"
     }
+  },
+  "citizenHeader": {
+    "switchPropertyError": "Failed to switch property.",
+    "logoAlt": "Municipal corporation logo",
+    "act": "Right to Service Act",
+    "citizenPortal": "Citizen Portal",
+    "login": "Login",
+    "applicationsTitle": "My Applications & Tracking",
+    "propertiesTitle": "My Properties",
+    "selectProperty": "Please select a property to view:",
+    "holderFallback": "Property holder",
+    "upicId": "UPIC ID:",
+    "propertyNumber": "Property No:",
+    "active": "Active"
+  },
+  "citizenFooter": {
+    "logoAlt": "Municipal corporation logo",
+    "description": "Committed to providing time-bound and transparent services under the Maharashtra Right to Public Services Act 2015.",
+    "policiesAndLinks": "Policies & Links",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "helpdesk": "Helpdesk",
+    "citizenCharter": "Citizen Charter",
+    "contactDetails": "Contact Details",
+    "connectWithUs": "Connect With Us",
+    "allRightsReserved": "All Rights Reserved.",
+    "governmentInitiative": "Government of Maharashtra Right to Service Initiative"
   },
   "applicationDashboard": {
     "title": "Application Dashboard",

@@ -26,25 +26,23 @@ export const RoomSubmissionHeader: React.FC<RoomSubmissionHeaderProps> = (props)
             {t("floor.floorLabel")} {floorNumber}
           </div>
         )}
-        {/* Unit Toggle Pill - Hidden on UI */}
-        {/*
+        {/* Unit Toggle Pill */}
         <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/20 ml-2">
-          <Button
-            variant="ghost" size="xs"
+          {/* <button
+            type="button"
             onClick={() => areaUnit !== "sq.m" && handleToggleUnit()}
-            className={`px-3 py-1 rounded-full text-[10px] font-bold ${areaUnit === "sq.m" ? "bg-white text-blue-600" : "text-white hover:bg-white/20"}`}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${areaUnit === "sq.m" ? "bg-white text-blue-600" : "text-white hover:bg-white/20"}`}
           >
             {t("roomSubmission.input.buttons.sqm")}
-          </Button>
-          <Button
-            variant="ghost" size="xs"
+          </button>
+          <button
+            type="button"
             onClick={() => areaUnit !== "sq.ft" && handleToggleUnit()}
-            className={`px-3 py-1 rounded-full text-[10px] font-bold ${areaUnit === "sq.ft" ? "bg-white text-blue-600" : "text-white hover:bg-white/20"}`}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${areaUnit === "sq.ft" ? "bg-white text-blue-600" : "text-white hover:bg-white/20"}`}
           >
             {t("roomSubmission.input.buttons.sqft")}
-          </Button>
+          </button> */}
         </div>
-        */}
       </div>
       <h2 className="text-white text-lg font-bold flex-1 text-center">{t("roomSubmission.title")}</h2>
       {maxRooms && (

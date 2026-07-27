@@ -82,6 +82,21 @@ export async function getTypeOfUseData(propertyTypeId?: string | number): Promis
 }
 
 /**
+ * Fetches Open Plot Category data from API (/TypeOfUse?TypeOfUseCategoryId=4)
+ */
+export async function getOpenPlotCategoryData(): Promise<TypeOfUseApiItem[]> {
+    const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(
+        "/TypeOfUse?TypeOfUseCategoryId=4&pageNumber=1&pageSize=-1",
+        "Failed to fetch open plot categories"
+    );
+    return rawItems.map(item => ({
+        ...item,
+        typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
+        typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null ? item.typeOfUseCategoryId : 4
+    }));
+}
+
+/**
  * Generates dropdown options for type of use
  */
 export async function getTypeOfUseOptions(): Promise<string[]> {

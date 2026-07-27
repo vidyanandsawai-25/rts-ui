@@ -20,9 +20,9 @@ import type { SharedAutoScrollController } from '@/hooks/ptis/reassessment/useSh
 export function getFloorDetailCellClasses(status: string | undefined): string {
   return cn(
     'h-[20px] rounded px-1 py-0 border border-gray-300 shadow-sm hover:border-blue-500 hover:shadow transition-all duration-150 cursor-pointer text-[11px] leading-[18px] text-center text-gray-900',
-    status === 'Unchanged' && 'bg-green-200',
-    status === 'Added' && 'bg-red-300',
-    status === 'Removed' && 'bg-yellow-200'
+    status === 'Unchanged' && 'bg-yellow-200',
+    status === 'Added' && 'bg-green-200',
+    status === 'Removed' && 'bg-red-300'
   );
 }
 
@@ -244,6 +244,12 @@ export function FloorDetailsReassessmentTable({
 
   const hasScrollButton = showScrollButtons && columns.length > 8;
 
+  // Decide where to insert the sticky scroll-toggle column.
+  // If there are many columns, put it near the middle so it remains visible
+  // and useful after adding/removing columns. For moderate counts keep it
+  // at the 8th column for backwards compatibility.
+  const scrollToggleIndex = columns.length > 8 ? Math.floor(columns.length / 2) : 7;
+
   const isAnyScrolling = autoScrollController
     ? autoScrollController.activeScrollerId !== null
     : isAutoScrolling;
@@ -304,7 +310,7 @@ export function FloorDetailsReassessmentTable({
                     )}
                   </th>
 
-                  {hasScrollButton && idx === 7 && (
+                  {hasScrollButton && idx === scrollToggleIndex && (
                     <th
                       className={cn(
                         'w-[32px] min-w-[32px] px-1 py-[3px] text-center align-middle sticky z-30 bg-[#e8eef5]',
@@ -387,7 +393,7 @@ export function FloorDetailsReassessmentTable({
                           {col.render(row[col.key as keyof MappedFloorDetail], row, index)}
                         </td>
 
-                        {hasScrollButton && idx === 7 && (
+                        {hasScrollButton && idx === scrollToggleIndex && (
                           <td
                             className={cn(
                               'px-1 py-[2px] text-center align-middle sticky z-10 bg-white',

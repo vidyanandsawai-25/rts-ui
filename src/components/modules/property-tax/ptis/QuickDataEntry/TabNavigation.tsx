@@ -25,6 +25,8 @@ export function TabNavigation() {
   const rateableExpands = searchParams.getAll('rateableExpand');
   const capitalExpands = searchParams.getAll('capitalExpand');
   const dualExpands = searchParams.getAll('dualExpand');
+  const appartmentPartition = searchParams.get('appartmentPartition') || '';
+  const parentPropertyId = searchParams.get('parentPropertyId') || '';
 
   // Check if we have search parameters that can resolve authoritative property ID
   const hasPropertyKeys = wardNo && propertyNo && partitionNo;
@@ -40,6 +42,8 @@ export function TabNavigation() {
   if (appartmentTab) params.set('appartmentTab', appartmentTab);
   if (subTab) params.set('subTab', subTab);
   if (showDetails) params.set('showDetails', showDetails);
+  if (appartmentPartition) params.set('appartmentPartition', appartmentPartition);
+  if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
   rateableExpands.forEach(v => params.append('rateableExpand', v));
   capitalExpands.forEach(v => params.append('capitalExpand', v));
   dualExpands.forEach(v => params.append('dualExpand', v));
@@ -93,11 +97,11 @@ export function TabNavigation() {
           win.__buildingFormHasChanges = false;
           win.__discountFormHasChanges = false;
           win.__socialFormHasChanges = false;
-          router.push(tabHref);
+          router.replace(tabHref);
         }
       });
     } else {
-      router.push(tabHref);
+      router.replace(tabHref);
     }
   };
 
@@ -134,6 +138,8 @@ export function TabNavigation() {
             if (appartmentTab) tabParams.set('appartmentTab', appartmentTab);
             if (subTab) tabParams.set('subTab', subTab);
             if (showDetails) tabParams.set('showDetails', showDetails);
+            if (appartmentPartition) tabParams.set('appartmentPartition', appartmentPartition);
+            if (parentPropertyId) tabParams.set('parentPropertyId', parentPropertyId);
             rateableExpands.forEach(v => tabParams.append('rateableExpand', v));
             capitalExpands.forEach(v => tabParams.append('capitalExpand', v));
             dualExpands.forEach(v => tabParams.append('dualExpand', v));

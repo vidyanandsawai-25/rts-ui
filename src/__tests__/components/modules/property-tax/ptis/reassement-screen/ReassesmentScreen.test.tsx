@@ -116,6 +116,10 @@ describe("ReassesmentScreen", () => {
       alv: 108000,
       mr: 100,
       rv: 120000,
+      ocCertificateNo: '',
+      ocCertificateIssueDate: '',
+      ccCertificateNo: '',
+      ccCertificateIssueDate: '',
     },
   ];
 
@@ -142,6 +146,10 @@ describe("ReassesmentScreen", () => {
       mr: 120,
       rv: 144000,
       status: "Added",
+      ocCertificateNo: '',
+      ocCertificateIssueDate: '',
+      ccCertificateNo: '',
+      ccCertificateIssueDate: '',
     },
   ];
 

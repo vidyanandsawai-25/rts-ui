@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '@/services/api.service';
+import { formatDateToDDMMYYYY } from '@/lib/utils/format';
 import type { ActionResult } from '@/types/common.types';
 import type {
   ReassessmentApiResponse,
@@ -90,12 +91,14 @@ export function mapFloorDetailsToDisplay(
       status === 'Added'
         ? 'bg-emerald-50/40 text-emerald-950'
         : status === 'Removed'
-        ? 'bg-rose-50/40 text-rose-950'
-        : status === 'Unchanged'
-        ? 'bg-blue-50/40 text-blue-950'
-        : undefined;
+          ? 'bg-rose-50/40 text-rose-950'
+          : status === 'Unchanged'
+            ? 'bg-blue-50/40 text-blue-950'
+            : undefined;
 
     return {
+      type: detail.type ?? type,
+      changeStatus: detail.changeStatus,
       floor: detail.floorCode,
       conYear: detail.constructionYear,
       asstYear: detail.assessmentYear,
@@ -105,17 +108,31 @@ export function mapFloorDetailsToDisplay(
       carpetAreaSqM: Math.round((detail.carpetAreaSqMeter ?? 0) * 100) / 100,
       builtUpAreaSqFt: Math.round((detail.builtupAreaSqFeet ?? 0) * 100) / 100,
       builtUpAreaSqM: Math.round((detail.builtupAreaSqMeter ?? 0) * 100) / 100,
+      isRenter: detail.isRenter,
+      renterName: detail.renterName,
       rate: detail.monthlyRate ?? 0,
       yearlyRate: detail.yearlyRate ?? 0,
       financialYear: detail.financialYear ?? '',
-      renter: detail.isRenter && detail.renterName ? detail.renterName : 'Self Occupied',
+      renter: detail.isRenter && detail.renterName ? detail.renterName : '',
       taxLiability: detail.taxLiability ?? '',
       rentMy: detail.rentMonthly ?? 0,
+      rentMonthly: detail.rentMonthly,
+      finalYearlyRent: detail.finalYearlyRent,
       rentalValue: detail.finalYearlyRent ?? detail.yearlyRent ?? 0,
       depreciation: detail.depreciation ?? 0,
       alv: detail.annualRentalValue ?? 0,
       mr: detail.maintenance ?? 0,
       rv: detail.rateableValue ?? 0,
+      ocCertificateNo: detail.ocCertificateNo ?? '',
+      ocCertificateIssueDate: detail.ocCertificateIssueDate
+        ? formatDateToDDMMYYYY(detail.ocCertificateIssueDate)
+        : '',
+      ccCertificateNo: detail.ccCertificateNo ?? '',
+      ccCertificateIssueDate: detail.ccCertificateIssueDate
+        ? formatDateToDDMMYYYY(detail.ccCertificateIssueDate)
+        : '',
+      maintenance: detail.maintenance,
+      yearlyRent: detail.yearlyRent,
       status,
       bgClass,
     };
@@ -154,21 +171,19 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
     newTaxes[key] = tax.newAmount;
   });
 
-  // Calculate additional revenue (new - old) for each tax
-  const additionalTaxes: { [key: string]: number } = {};
-  let additionalTotalTax = 0;
-  
+  const totalTaxes: { [key: string]: number } = {};
+  let totalSumTax = 0;
   taxHeads.forEach((tax) => {
     const key = toTaxKey(tax.taxName);
-    const difference = tax.newAmount - tax.oldAmount;
-    additionalTaxes[key] = difference;
-    additionalTotalTax += difference;
+    const sum = tax.oldAmount + tax.newAmount;
+    totalTaxes[key] = sum;
+    totalSumTax += sum;
   });
 
   // Calculate totals by summing individual tax values for validation
   const oldTotalCalculated = Object.values(oldTaxes).reduce((sum, val) => sum + val, 0);
   const newTotalCalculated = Object.values(newTaxes).reduce((sum, val) => sum + val, 0);
-  
+
   const rows: ReassessmentTaxRow[] = [
     {
       rowType: 'old',
@@ -187,9 +202,9 @@ export function mapTaxSummaryToRows(taxSummary: ReassessmentTaxSummary[]): {
     {
       rowType: 'total',
       label: 'Total Tax',
-      taxes: additionalTaxes,
-      // Calculate difference: use API totals if available, otherwise use sum of differences
-      totalTax: totalTax ? (totalTax.newAmount - totalTax.oldAmount) : additionalTotalTax,
+      taxes: totalTaxes,
+      // Use API-provided totals if available, otherwise use sum of old + new
+      totalTax: totalTax ? totalTax.oldAmount + totalTax.newAmount : totalSumTax,
     },
   ];
 
@@ -229,7 +244,7 @@ export function mapRetrospectiveToTable(data: RetrospectiveTaxData): {
   rows: MappedRetrospectiveRow[];
 } {
   const taxTotalIndex = data.taxHeadNames.findIndex((name) => name === 'TaxTotal');
-  
+
   const columns = data.taxHeadNames
     .map((name, index) => ({ name, index }))
     .filter((item) => item.name !== 'TaxTotal')
@@ -263,14 +278,14 @@ export function mapRetrospectiveToTable(data: RetrospectiveTaxData): {
  */
 function buildReassessmentQueryString(params: ReassessmentParams): string {
   const queryParts: string[] = [];
-  
+
   queryParts.push(`WardId=${params.wardId}`);
   queryParts.push(`PropertyNo=${encodeURIComponent(params.propertyNo)}`);
-  
+
   if (params.partitionNo && params.partitionNo !== '0') {
     queryParts.push(`PartitionNo=${encodeURIComponent(params.partitionNo)}`);
   }
-  
+
   return queryParts.join('&');
 }
 
@@ -311,7 +326,7 @@ export async function getPropertyReassessment(
     }
 
     const apiData = response.data;
-    
+
     if (!apiData?.success || !apiData.items) {
       return {
         success: false,

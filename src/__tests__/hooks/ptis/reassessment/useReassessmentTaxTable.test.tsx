@@ -7,6 +7,9 @@ import { ReassessmentTaxRow } from "@/types/reassessment.types";
 vi.mock("@/lib/utils/format", () => ({
   formatReassessmentCurrency: (num: number) => `₹${num.toLocaleString()}`,
   formatReassessmentNumber: (num: number) => num.toLocaleString(),
+  formatReassessmentTaxCurrency: (num: number) => `₹${num.toLocaleString()}`,
+  sumReassessmentTaxAmounts: (taxes: Record<string, number>) =>
+    Object.values(taxes).reduce((sum, val) => sum + val, 0),
 }));
 
 describe("useReassessmentTaxTable", () => {

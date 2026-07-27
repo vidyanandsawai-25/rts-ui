@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { footerService, FooterAction } from '@/lib/api/footer.service';
 import { z } from 'zod';
 import { getTranslations } from 'next-intl/server';
+import { MAIN_TO_QDE_MAP } from '@/lib/utils/qde-tab-mapping';
 
 export type ActionResult<T> =
   | { success: true; data: T; message?: string }
@@ -150,32 +151,13 @@ export async function handleFooterAction(
         handleExpand('capitalExpand', capitalExpand);
         handleExpand('dualExpand', dualExpand);
 
-        let targetPath = '';
-        if (tab === 'kycdetails') {
-          params.set('propertyId', String(propertyId));
-          params.set('returnTab', 'kycdetails');
-          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`;
-        } else if (tab === 'societydetails') {
-          params.set('propertyId', String(propertyId));
-          params.set('returnTab', 'societydetails');
-          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`;
-        } else if (tab === 'buildingpermission') {
-          params.set('propertyId', String(propertyId));
-          params.set('returnTab', 'buildingpermission');
-          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`;
-        } else if (tab === 'discountdetails') {
-          params.set('propertyId', String(propertyId));
-          params.set('returnTab', 'discountdetails');
-          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`;
-        } else if (tab === 'olddetails') {
-          params.set('propertyId', String(propertyId));
-          params.set('returnTab', 'olddetails');
-          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/old-taxation`;
-        } else {
-          params.set('returnTab', 'propertydetails');
-          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`;
-        }
+        const activeTabKey = tab || 'propertydetails';
+        const config = MAIN_TO_QDE_MAP[activeTabKey] || MAIN_TO_QDE_MAP.propertydetails;
 
+        params.set('propertyId', String(propertyId));
+        params.set('returnTab', config.mainTabId);
+
+        const targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/${config.qdePath}`;
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
         redirect(`${targetPath}${suffix}`);

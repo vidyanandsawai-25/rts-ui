@@ -146,8 +146,8 @@ export async function getRtsMastersAction() {
     let services = [];
 
     if (deptRes.success && deptRes.data) {
-      const rawDepts = Array.isArray(deptRes.data) 
-        ? deptRes.data 
+      const rawDepts = Array.isArray(deptRes.data)
+        ? deptRes.data
         : (deptRes.data.items || []);
       departments = rawDepts.map((d: any) => ({
         id: String(d.id ?? d.rtsDepartmentId ?? ""),

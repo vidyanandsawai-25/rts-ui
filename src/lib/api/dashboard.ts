@@ -73,4 +73,3 @@ export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
     })
     .filter((department) => department.services.length > 0);
 }
-

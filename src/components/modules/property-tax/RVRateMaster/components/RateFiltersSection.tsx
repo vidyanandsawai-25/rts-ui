@@ -160,11 +160,11 @@ export function RateFiltersSection({
 
       {/* Configure Rates button for open plot */}
       {isOpenPlot && mode === "add" && (
-        <div className="flex items-end h-10 mb-[2px]">
+        <div className="flex items-end h-8 mb-[2px]">
           <Button
             type="button"
             variant="primary"
-            size="md"
+            size="sm"
             onClick={onConfigureRates}
             className="cursor-pointer"
           >

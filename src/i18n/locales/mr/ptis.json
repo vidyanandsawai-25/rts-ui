@@ -488,7 +488,7 @@
       "constType": "बांधकाम प्रकार",
       "use": "वापर",
       "subType": "उप-प्रकार",
-      "noOfRooms": "खोल्यांची संख्या",
+      "noOfRooms": "खोल्या",
       "carpetArea": "कार्पेट क्षेत्रफळ (ft/mtr)",
       "carpetSqFt": "कार्पेट (चौ. फूट)",
       "carpetSqM": "कार्पेट (चौ. मीटर)",

@@ -1171,12 +1171,12 @@ export default function DynamicServiceFormClient({
 
       MySwal.fire({
         icon: "success",
-        title: language === "en" 
-          ? "Application Submitted!" 
-          : language === "hi" 
-            ? "आवेदन सबमिट हुआ!" 
+        title: language === "en"
+          ? "Application Submitted!"
+          : language === "hi"
+            ? "आवेदन सबमिट हुआ!"
             : "अर्ज यशस्वीरित्या सादर झाला!",
-        html: language === "en" 
+        html: language === "en"
           ? `<div class="space-y-3 p-2">
                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
                <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>

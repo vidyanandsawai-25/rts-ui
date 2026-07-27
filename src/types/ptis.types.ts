@@ -1,4 +1,4 @@
-import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/common/PTISSearchSelect';
 import type { DiscountData, BuildingPermissionData } from './ptis-core.types';
 export const PTIS_TABS = [
   'propertydetails',

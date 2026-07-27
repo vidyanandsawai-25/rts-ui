@@ -30,10 +30,10 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
       setError('Please enter a valid 10-digit phone number');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
-    
+
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
@@ -46,15 +46,15 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
       setError('Please enter the 6-digit OTP');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
-    
+
     // Simulate OTP verification
     setTimeout(() => {
       setIsLoading(false);
       if (otp === '123456') {
-        
+
         router.push(`/${language}/dashboard`);
       } else {
         setError('Invalid OTP. Please try again.');
@@ -65,7 +65,7 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
   const handleResendOtp = async () => {
     setIsLoading(true);
     setError('');
-    
+
     // Simulate resend OTP
     setTimeout(() => {
       setIsLoading(false);
@@ -75,7 +75,7 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-red">
-      
+
       {/* Content Container */}
       <div className="relative z-10 flex-1 flex items-center justify-center p-4">
         <motion.div
@@ -105,7 +105,7 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
                         height={50}
                         className="w-full h-full object-contain p-0.5"
                       />
-                      
+
                     </span>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          Verify & login 
+                          Verify & login
                           <ArrowRight className="w-5 h-5" />
                         </div>
                       )}

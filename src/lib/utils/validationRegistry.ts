@@ -36,7 +36,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     // Allow typing spaces/dots; pattern blocks them (validation error instead of stripping).
     allow: "^[A-Za-z\\p{L}\\p{M}\\s.]+$",
     inputMode: "text",
-    
+
   },
 
   EMAIL: {
@@ -46,7 +46,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     inputMode: "email",
     // Uses custom validator already present in DynamicServiceFormClient.tsx
     customValidate: "noTempEmail" as CustomValidate,
-    
+
   },
 
   MOBILE: {
@@ -107,7 +107,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 50,
     allow: "letters",
-    
+
     inputMode: "text",
   },
 
@@ -145,7 +145,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Allowed: letters, numbers, spaces, -, /, and .",
     maxLength: 10,
     allow: "[\\p{L}\\p{M}0-9\\s/\\-.]",
-    
+
     inputMode: "text",
   },
   WARD_NO: {
@@ -176,7 +176,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
   message: "Allowed: letters, numbers, spaces, -, and /.",
   maxLength: 20,
   allow: "[\\p{L}\\p{M}0-9\\s/\\-]",
-  // 
+  //
   inputMode: "text",
 },
 
@@ -191,7 +191,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Allowed: letters, numbers, spaces, -, and /.",
     maxLength: 15,
     allow: "[\\p{L}\\p{M}0-9\\s/\\-]",
-    
+
     inputMode: "text",
   },
 
@@ -219,7 +219,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Use letters, digits, spaces, and ,.'/()&- only.",
     maxLength: 100,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s,.'/()&-]",
-    // 
+    //
     inputMode: "text",
   },
 
@@ -229,7 +229,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "letters",
-   // 
+   //
     inputMode: "text",
   },
   LANDMARK_FLEX: {
@@ -254,7 +254,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     maxLength: 250,
     allow: "[\\p{L}\\p{M}0-9\\s/\\-\\.,]",
     inputMode: "text",
-    
+
   },
 
   PINCODE: {
@@ -273,7 +273,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 5,
     maxLength: 50,
     allow: "[A-Za-z0-9\\s/\\-()]",
-    
+
     inputMode: "text",
   },
 
@@ -383,7 +383,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 50,
     allow: "letters",
-    
+
     inputMode: "text",
   },
 
@@ -391,7 +391,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Please enter a description.",
     minLength: 10,
     maxLength: 500,
-    
+
     inputMode: "text",
   },
 
@@ -401,7 +401,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 50,
     allow: "[\\p{L}\\p{M}0-9\\s/\\-]",
-   // 
+   //
     inputMode: "text",
   },
 
@@ -452,7 +452,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z\\p{L}\\p{M}\\s.'\\-]",
-    
+
     inputMode: "text",
   },
 
@@ -462,7 +462,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.'()/\\-]",
-    
+
     inputMode: "text",
   },
 
@@ -472,7 +472,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Allowed: letters, numbers, spaces, / - ( ) only.",
     maxLength: 30,
     allow: "[A-Za-z0-9\\s/\\-()]",
-    
+
     inputMode: "text",
   },
 
@@ -537,7 +537,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Enter valid size description.",
     maxLength: 50,
     allow: "[A-Za-z0-9\\s./\\-\"']",
-    
+
     inputMode: "text",
   },
 
@@ -561,7 +561,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
 
   // ---------------- Counts (People & Connections) ----------------
   COUNT_INTEGER: {
-    // Covers: totalPerson, requiredNoOfTapConnection, existingTapConnectionsNumber, 
+    // Covers: totalPerson, requiredNoOfTapConnection, existingTapConnectionsNumber,
     // totalTenants, septicLichpitCount, totalResidentialPeople, totalRenterCount
     pattern: "^\\d+$",
     message: "Enter a valid whole number.",
@@ -583,7 +583,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "letters",
-    
+
     inputMode: "text",
   },
 
@@ -614,7 +614,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Enter valid Plot/Hissa Number.",
     maxLength: 20,
     allow: "[A-Za-z0-9/\\-\\s]",
-    
+
     inputMode: "text",
   },
 
@@ -624,8 +624,8 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Please provide specific details.",
     minLength: 5,
     maxLength: 500,
-    allow: "[\\p{L}\\p{M}0-9\\s.,/\\-()@#&]", 
-    
+    allow: "[\\p{L}\\p{M}0-9\\s.,/\\-()@#&]",
+
     inputMode: "text",
   },
 
@@ -634,8 +634,8 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Please provide connection details (max 500 chars).",
     minLength: 5,
     maxLength: 500,
-    allow: "[\\p{L}\\p{M}0-9\\s.,/\\-()@#&]", 
-    
+    allow: "[\\p{L}\\p{M}0-9\\s.,/\\-()@#&]",
+
     inputMode: "text",
   },
   /// NOC |
@@ -647,7 +647,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s&.,'()/\\-]",
-    
+
     inputMode: "text",
   },
 
@@ -658,7 +658,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z\\p{L}\\p{M}\\s.'&-]",
-    
+
     inputMode: "text",
   },
 
@@ -669,7 +669,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z\\p{L}\\p{M}\\s.'-]",
-    
+
     inputMode: "text",
   },
 
@@ -745,8 +745,8 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Please specify details of hazardous materials (max 500 chars).",
     minLength: 2,
     maxLength: 500,
-    allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.,;:%/\\-()@#&]", 
-    
+    allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.,;:%/\\-()@#&]",
+
     inputMode: "text",
   },
 
@@ -756,26 +756,26 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 5,
     maxLength: 300,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.,/\\-()]",
-    
+
     inputMode: "text",
   },
-  
+
   MAP_DETAILS_TEXT: {
     // Covers: buildingDetailsAsMap
     message: "Provide details matching the approved map.",
     minLength: 10,
     maxLength: 1000, // Longer limit for detailed map descriptions
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.,;:%/\\-()@#&]",
-    
+
     inputMode: "text",
   },WORKING_HOURS: {
     // Covers: workingHours (e.g., "09:00 AM to 06:00 PM", "24 Hours")
     message: "Enter valid working hours (e.g., 9 AM - 6 PM).",
-    pattern: "^[\\p{L}\\p{M}0-9\\s:\\-\\.]+$", 
+    pattern: "^[\\p{L}\\p{M}0-9\\s:\\-\\.]+$",
     minLength: 3,
     maxLength: 50,
     allow: "[\\p{L}\\p{M}0-9\\s:\\-\\.]",
-    
+
     inputMode: "text",
   },
 
@@ -788,7 +788,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[\\p{L}\\p{M}0-9\\s,&\\-\\/]",
-    
+
     inputMode: "text",
   },
 
@@ -801,7 +801,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[\\p{L}\\p{M}0-9\\s\\(\\)\\-\\.,]",
-    
+
     inputMode: "text",
   },
 
@@ -826,7 +826,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 1,
     maxLength: 100,
     allow: "letters",
-    
+
     inputMode: "text",
   },
 
@@ -837,7 +837,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     pattern: "^([01]?[0-9]|2[0-3]):[0-5][0-9]$",
     exactLength: 5,
     allow: "[0-9:]",
-    
+
     inputMode: "text",
   },
 
@@ -888,7 +888,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     pattern: "^[0-9]{12}$|^[0-9]{4}-[0-9]{4}-[0-9]{4}$",
     maxLength: 14,
     allow: "[0-9\\-]",
-    
+
     inputMode: "numeric",
   },
 
@@ -907,7 +907,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     pattern: "^[A-Za-z0-9\\/\\-\\s]{1,30}$",
     maxLength: 30,
     allow: "[A-Za-z0-9/\\-\\s]",
-    
+
     inputMode: "text",
   },
 
@@ -917,7 +917,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     pattern: "^[A-Za-z0-9\\/\\-\\.\\s]{1,50}$",
     maxLength: 50,
     allow: "[A-Za-z0-9/\\-\\.\\s]",
-    
+
     inputMode: "text",
   },
 
@@ -929,7 +929,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.,'&\\-()]",
-    
+
     inputMode: "text",
   },
 
@@ -940,7 +940,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 2,
     maxLength: 100,
     allow: "[A-Za-z\\p{L}\\p{M}\\s.\\-]",
-    
+
     inputMode: "text",
   },
 
@@ -952,7 +952,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     minLength: 5,
     maxLength: 250,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s,./\\-()#:]",
-    
+
     inputMode: "text",
   },
 
@@ -962,7 +962,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     pattern: "^[A-Za-z\\p{L}\\p{M}\\s\\.\\-]{2,50}$",
     maxLength: 50,
     allow: "[A-Za-z\\p{L}\\p{M}\\s.\\-]",
-    
+
     inputMode: "text",
   },
 
@@ -981,7 +981,7 @@ export const VALIDATION_RULES: Record<string, ValidationRule> = {
     message: "Remarks allows alphanumeric and punctuation.",
     maxLength: 500,
     allow: "[A-Za-z0-9\\p{L}\\p{M}\\s.,;:\\-()?!]",
-    
+
     inputMode: "text",
   },
 

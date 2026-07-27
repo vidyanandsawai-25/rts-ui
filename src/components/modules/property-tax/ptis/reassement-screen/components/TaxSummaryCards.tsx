@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 
 interface SummaryCardData {
   label: string;
@@ -17,60 +18,94 @@ interface TaxSummaryCardsProps {
 
 const colorMap = {
   sky: {
-    label: 'text-blue-600',
-    newValue: 'text-blue-600',
+    text: 'text-blue-700',
+    lightText: 'text-blue-600',
+    bg: 'bg-blue-100/80',
+    border: 'border-blue-200',
+    dot: 'bg-blue-500',
   },
   purple: {
-    label: 'text-purple-600',
-    newValue: 'text-purple-600',
+    text: 'text-purple-700',
+    lightText: 'text-purple-600',
+    bg: 'bg-purple-100/80',
+    border: 'border-purple-200',
+    dot: 'bg-purple-500',
   },
   amber: {
-    label: 'text-orange-600',
-    newValue: 'text-orange-600',
+    text: 'text-orange-700',
+    lightText: 'text-orange-600',
+    bg: 'bg-orange-100/80',
+    border: 'border-orange-200',
+    dot: 'bg-orange-500',
   },
   emerald: {
-    label: 'text-emerald-600',
-    newValue: 'text-emerald-600',
+    text: 'text-emerald-700',
+    lightText: 'text-emerald-600',
+    bg: 'bg-emerald-100/80',
+    border: 'border-emerald-200',
+    dot: 'bg-emerald-500',
   },
 };
 
 const getDiffColor = (diff: string | number) => {
   if (typeof diff === 'number') {
-    if (diff > 0) return 'text-emerald-600';
-    if (diff < 0) return 'text-rose-600';
-    return 'text-gray-500';
+    if (diff > 0) return 'text-emerald-600 bg-emerald-100 border-emerald-200';
+    if (diff < 0) return 'text-rose-600 bg-rose-100 border-rose-200';
+    return 'text-gray-500 bg-gray-100 border-gray-200';
   }
-
   const normalized = diff.trim();
-  if (normalized.startsWith('+')) return 'text-emerald-600';
-  if (normalized.startsWith('-')) return 'text-rose-600';
-  return 'text-gray-500';
+  if (normalized.startsWith('+')) return 'text-emerald-600 bg-emerald-100 border-emerald-200';
+  if (normalized.startsWith('-')) return 'text-rose-600 bg-rose-100 border-rose-200';
+  return 'text-gray-500 bg-gray-100 border-gray-200';
 };
 
-const getDiffArrow = (diff: string | number) => {
+const getDiffIcon = (diff: string | number) => {
   if (typeof diff === 'number') {
-    if (diff > 0) return '↑ ';
-    if (diff < 0) return '↓ ';
-    return '';
+    if (diff > 0) return <ArrowUp className="w-3 h-3" />;
+    if (diff < 0) return <ArrowDown className="w-3 h-3" />;
+    return <Minus className="w-3 h-3" />;
   }
-
   const normalized = diff.trim();
-  if (normalized.startsWith('+')) return '↑ ';
-  if (normalized.startsWith('-')) return '↓ ';
-  return '';
+  if (normalized.startsWith('+')) return <ArrowUp className="w-3 h-3" />;
+  if (normalized.startsWith('-')) return <ArrowDown className="w-3 h-3" />;
+  return <Minus className="w-3 h-3" />;
 };
+
+const getDiffValue = (diff: string | number) => {
+  if (typeof diff === 'number') return Math.abs(diff);
+  return diff.replace(/^[-+]/, '').trim();
+};
+
+const DiffPill = ({
+  difference,
+  unit,
+  className = '',
+}: {
+  difference: string | number;
+  unit?: string;
+  className?: string;
+}) => (
+  <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${getDiffColor(difference)} ${className}`}>
+    {getDiffIcon(difference)}
+    <span>
+      {getDiffValue(difference)}
+      {unit ? ` ${unit}` : ''}
+    </span>
+  </div>
+);
 
 export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
   const t = useTranslations('reassessment');
   const changedStatus = t('summaryCards.changedStatus');
 
   return (
-    <div className="flex flex-wrap items-center justify-start gap-2.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
       {cards.map((card, index) => {
         const colors = colorMap[card.color];
         const differenceText = String(card.difference);
         const isUseCard = card.color === 'purple';
         const isAreaCard = card.color === 'sky';
+        const isTaxCard = card.color === 'emerald';
         const normalizedDiff = differenceText.trim().toLowerCase();
         const isChangedStatus =
           normalizedDiff === changedStatus.toLowerCase() ||
@@ -79,42 +114,70 @@ export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
         return (
           <div
             key={`${card.label}-${index}`}
-            className="flex items-center gap-2 rounded-lg border border-blue-100 bg-white p-1.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md"
+            className={`relative rounded-lg border ${colors.border} ${colors.bg} px-2.5 py-1.5 transition-all duration-200 hover:shadow-sm hover:border-gray-300`}
           >
-            {isUseCard ? (
-              <>
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-purple-600 font-extrabold text-[10px]">{card.label}</span>
-                  <span className="text-[8px] xl:text-[9px] font-black px-1 py-0.5 rounded-sm uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200 leading-none mt-0.5">
-                    {isChangedStatus ? changedStatus : differenceText}
-                  </span>
-                </div>
-                <div className="border-l border-gray-200 h-7 mx-0.5" />
-                <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
-                  <span>{t('summaryCards.oldLabel')}:{' '}<span className="font-semibold text-gray-700">{card.oldValue}</span></span>
-                  <span>{t('summaryCards.newLabel')}:{' '}<span className="font-semibold text-purple-600">{card.newValue}</span></span>
-                </div>
-              </>
-            ) : (
-              <>
-                <span className={`font-extrabold text-xs ${colors.label}`}>{card.label}</span>
-                <div className="border-l border-gray-200 h-7 mx-0.5" />
-                <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
-                  <span>{t('summaryCards.oldLabel')}:{' '}<span className="font-semibold text-gray-700">{card.oldValue}{isAreaCard && card.unit ? ' ' + card.unit : ''}</span></span>
-                  <span>{t('summaryCards.newLabel')}:{' '}<span className={`font-semibold ${colors.newValue}`}>{card.newValue}{isAreaCard && card.unit ? ' ' + card.unit : ''}</span></span>
-                </div>
-                <div className="border-l border-gray-200 h-7 mx-0.5" />
-                <span
-                  className={`font-extrabold text-[10px] xl:text-xs flex items-center shrink-0 ${getDiffColor(card.difference)}`}
-                >
-                  {getDiffArrow(card.difference)}
-                  {typeof card.difference === 'number'
-                    ? Math.abs(card.difference)
-                    : differenceText.replace(/^[-+]/, '')}
-                  {isAreaCard && card.unit ? ' ' + card.unit : ''}
+            {/* Label row */}
+            <div className="flex items-center justify-between mb-0.5 gap-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className={`w-1 h-2.5 rounded-full ${colors.dot} flex-shrink-0`} />
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${colors.text}`}>
+                  {card.label}
                 </span>
-              </>
-            )}
+              </div>
+
+              {/* Status pill for use card */}
+              {isUseCard && (
+                <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${
+                  isChangedStatus
+                    ? 'bg-amber-100 text-amber-700 border-amber-200'
+                    : 'bg-gray-100 text-gray-600 border-gray-200'
+                }`}>
+                  {isChangedStatus ? changedStatus : differenceText}
+                </div>
+              )}
+
+              {/* Difference - top right for tax card only */}
+              {isTaxCard && (
+                <DiffPill difference={card.difference} className="flex-shrink-0" />
+              )}
+            </div>
+
+            {/* Values row */}
+            <div className="flex items-center gap-1">
+              {/* Old */}
+              <div className="flex items-center gap-1 flex-1 min-w-0">
+                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                  {t('summaryCards.oldLabel')}:
+                </span>
+                <span className="text-xs font-semibold text-gray-800 truncate">
+                  {card.oldValue}{isAreaCard && card.unit ? ` ${card.unit}` : ''}
+                </span>
+              </div>
+
+              {/* Arrow */}
+              <span className="text-gray-400 text-[10px]">→</span>
+
+              {/* New */}
+              <div className="flex items-center gap-1 flex-1 min-w-0">
+                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                  {t('summaryCards.newLabel')}:
+                </span>
+                <span className={`text-xs font-bold ${colors.text} truncate`}>
+                  {card.newValue}{isAreaCard && card.unit ? ` ${card.unit}` : ''}
+                </span>
+              </div>
+
+              {/* Difference - bottom row for area and RV cards */}
+              {!isUseCard && !isTaxCard && (
+                <>
+                  <div className="w-px h-6 bg-gray-200/50 mx-0.5" />
+                  <DiffPill
+                    difference={card.difference}
+                    unit={isAreaCard ? card.unit : undefined}
+                  />
+                </>
+              )}
+            </div>
           </div>
         );
       })}
