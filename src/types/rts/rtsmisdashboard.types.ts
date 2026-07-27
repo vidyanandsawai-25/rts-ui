@@ -1,36 +1,38 @@
 export interface RtsMisDashboardServiceItem {
   serviceName: string;
-  departmentId?: string | number;
+  departmentId?: number;
   departmentName?: string;
-  totalApplications: number;
-  aapleSarkarApplications: number;
-  rtsApplications: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-  overdueCount: number;
-  sla: number;
+  totalApplications: number | null;
+  pending: number | null;
+  approved: number | null;
+  rejected: number | null;
+  overdueCount: number | null;
+  sla: number | null;
+  // Older deployments can include source counts; the updated API may omit them.
+  aapleSarkarApplications?: number | null;
+  rtsApplications?: number | null;
 }
 
 export interface RtsMisDashboardDepartmentItem {
-  departmentId: string | number;
+  departmentId: number;
   departmentName: string;
-  totalServices: number;
-  totalApplications: number;
-  fromAapleSarkar: number;
-  fromRTS: number;
-  rtsOnline: number;
-  rtsOffline: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-  overdueCount: number;
-  sla: number;
+  totalServices: number | null;
+  totalApplications: number | null;
+  pending: number | null;
+  approved: number | null;
+  rejected: number | null;
+  overdueCount: number | null;
+  sla: number | null;
+  // Older deployments can include source counts; the updated API may omit them.
+  fromAapleSarkar?: number | null;
+  fromRTS?: number | null;
+  rtsOnline?: number | null;
+  rtsOffline?: number | null;
 }
 
 export interface RtsMisDashboardUserApplicationItem {
   serviceName: string;
-  serviceNameLocal: string;
+  serviceNameLocal?: string | null;
   applicationNo: string;
   sla: number;
   submittedDate: string;
@@ -49,15 +51,23 @@ export interface RtsMisDashboardResponse {
   data: RtsMisDashboardData;
 }
 
-export type RtsMisDashboardFlag = 'Admin' | 'User';
+export type RtsMisDashboardFlag = 'admin' | 'user';
 
-// Retained while existing callers migrate to the API's title-cased values.
-export type RtsMisDashboardInputFlag = RtsMisDashboardFlag | 'admin' | 'user';
+export type RtsMisDashboardInputFlag = RtsMisDashboardFlag | 'Admin' | 'User';
+
+// These values are case-sensitive backend contract values.
+export type RtsMisDashboardModuleName = '' | 'RTS' | 'AapleSarkar' | 'Offline';
 
 export interface RtsMisDashboardRequest {
-  Flag: RtsMisDashboardInputFlag;
+  Flag: RtsMisDashboardFlag;
   UpicId: string;
   // The backend contract uses this spelling, so preserve it in the request type.
-  DeparmentId?: number;
-  DeparmentName?: string;
+  DeparmentId: number;
+  DeparmentName: string;
+  ModuleName: RtsMisDashboardModuleName;
 }
+
+export type RtsMisDashboardRequestInput =
+  Partial<Omit<RtsMisDashboardRequest, 'Flag'>> & {
+    Flag?: RtsMisDashboardInputFlag;
+  };

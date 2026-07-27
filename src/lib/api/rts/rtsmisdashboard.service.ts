@@ -1,6 +1,7 @@
 'use server';
 
 import type {
+  RtsMisDashboardRequestInput,
   RtsMisDashboardRequest,
   RtsMisDashboardResponse,
 } from '@/types/rts/rtsmisdashboard.types';
@@ -9,11 +10,14 @@ const RTS_MIS_DASHBOARD_URL =
   'https://onesolutionakola.tabamc.in/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData';
 
 export async function getRtsMisDashboardData(
-  payload: RtsMisDashboardRequest = { Flag: 'Admin', UpicId: '' }
+  payload: RtsMisDashboardRequestInput = {}
 ): Promise<RtsMisDashboardResponse> {
   const requestPayload: RtsMisDashboardRequest = {
-    ...payload,
-    Flag: payload.Flag.toLowerCase() === 'user' ? 'User' : 'Admin',
+    Flag: payload.Flag?.toLowerCase() === 'user' ? 'user' : 'admin',
+    UpicId: payload.UpicId ?? '',
+    DeparmentId: payload.DeparmentId ?? 0,
+    DeparmentName: payload.DeparmentName?.trim() ?? '',
+    ModuleName: payload.ModuleName ?? '',
   };
 
   const response = await fetch(RTS_MIS_DASHBOARD_URL, {

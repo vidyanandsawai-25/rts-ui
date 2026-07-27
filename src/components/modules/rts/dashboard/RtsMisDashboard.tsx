@@ -1,11 +1,12 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
+  ChevronRight,
   Clock3,
+  CornerDownRight,
   FileSpreadsheet,
   FileText,
   LayoutDashboard,
@@ -14,7 +15,9 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { Button, Card, Input } from "@/components/common";
+import { Button, Card, Input, MasterTable } from "@/components/common";
+import type { Column } from "@/components/common";
+import { Select } from "@/components/common/select";
 import {
   FirstPageButton,
   LastPageButton,
@@ -24,13 +27,15 @@ import {
 } from "@/components/common/ActionButtons";
 import type {
   RtsMisDashboardData,
+  RtsMisDashboardModuleName,
 } from "@/types/rts/rtsmisdashboard.types";
 
 interface DashboardProps {
   misDashboardData: RtsMisDashboardData;
   getDepartmentServices: (
     departmentId: number,
-    departmentName: string
+    departmentName: string,
+    moduleName: RtsMisDashboardModuleName
   ) => Promise<RtsMisDashboardData>;
 }
 
@@ -64,7 +69,25 @@ interface ServiceRow {
   sla: number;
 }
 
-const DEPARTMENT_PAGE_SIZE = 10;
+interface MisTableRow extends Record<string, unknown> {
+  id: string;
+  kind: "department" | "service" | "loading" | "error" | "empty";
+  srNo: number | null;
+  name: string;
+  totalServices: number | null;
+  totalApplications: number | null;
+  fromRts: number | null;
+  fromAapleSarkar: number | null;
+  pending: number | null;
+  approved: number | null;
+  rejected: number | null;
+  overdue: number | null;
+  sla: number | null;
+  department?: DepartmentRow;
+  error?: string;
+}
+
+const DEPARTMENT_PAGE_SIZE = 15;
 const PIE_COLORS = ["#0B5CD5", "#F39C12", "#27AE60", "#B22222", "#8A2BE2", "#008B8B", "#64748B"];
 const DONUT_CIRCUMFERENCE = 2 * Math.PI * 42;
 
@@ -76,6 +99,13 @@ interface PieDataPoint {
 
 type PaginationToken = number | "dots";
 type PieChartView = "department" | "service";
+type ApplicationSource = "rts" | "aapleSarkar" | "offline";
+
+function getModuleName(applicationSource: ApplicationSource): RtsMisDashboardModuleName {
+  if (applicationSource === "rts") return "RTS";
+  if (applicationSource === "aapleSarkar") return "AapleSarkar";
+  return "Offline";
+}
 
 function getPaginationTokens(currentPage: number, totalPages: number): PaginationToken[] {
   if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -103,25 +133,39 @@ function TablePagination({
 
   return (
     <div className="flex items-center gap-2">
+      <FirstPageButton disabled={currentPage === 1} onClick={() => onPageChange(1)} />
       <PrevPageButton disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)} />
-      <div className="flex items-center gap-1">
-        <FirstPageButton disabled={currentPage === 1} onClick={() => onPageChange(1)} />
-        {getPaginationTokens(currentPage, totalPages).map((token, index) =>
-          token === "dots" ? (
-            <span key={`dots-${index}`} className="px-2 text-slate-400">...</span>
-          ) : (
-            <PageNumberButton key={token} page={token} active={currentPage === token} onClick={() => onPageChange(token)} />
-          )
-        )}
-        <LastPageButton disabled={currentPage === totalPages} onClick={() => onPageChange(totalPages)} />
-      </div>
+      {getPaginationTokens(currentPage, totalPages).map((token, index) =>
+        token === "dots" ? (
+          <span key={`dots-${index}`} className="px-2 text-slate-400">...</span>
+        ) : (
+          <PageNumberButton key={token} page={token} active={currentPage === token} onClick={() => onPageChange(token)} />
+        )
+      )}
       <NextPageButton disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)} />
+      <LastPageButton disabled={currentPage === totalPages} onClick={() => onPageChange(totalPages)} />
     </div>
   );
 }
 
 function createIdentifier(value: string, fallback: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || fallback;
+}
+
+function getDepartmentNameKey(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function toAlphabeticalLabel(index: number) {
+  let value = index;
+  let label = "";
+
+  do {
+    label = String.fromCharCode(97 + (value % 26)) + label;
+    value = Math.floor(value / 26) - 1;
+  } while (value >= 0);
+
+  return `${label}.`;
 }
 
 function buildPieData(
@@ -196,25 +240,39 @@ function DonutChart({
 export default function RtsMisDashboard({ misDashboardData, getDepartmentServices }: DashboardProps) {
   const locale = useLocale();
   const t = useTranslations("rts");
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [departmentPage, setDepartmentPage] = useState(1);
+  const [applicationSource, setApplicationSource] = useState<ApplicationSource>("rts");
+  const [pieChartView, setPieChartView] = useState<PieChartView>("department");
+  const [expandedDepartmentId, setExpandedDepartmentId] = useState<string | null>(null);
+  const [sourceDashboardData, setSourceDashboardData] = useState<RtsMisDashboardData | null>(null);
+  const [isSourceLoading, setIsSourceLoading] = useState(false);
   const [servicesByDepartment, setServicesByDepartment] = useState<Record<string, ServiceRow[]>>({});
   const [loadingDepartmentId, setLoadingDepartmentId] = useState<string | null>(null);
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
   const activeServiceRequests = useRef(new Set<string>());
+  const previousApplicationSource = useRef(applicationSource);
 
   const formatNumber = (value: number) => numberFormatter.format(value);
+  const moduleName = getModuleName(applicationSource);
+  const dashboardData = sourceDashboardData ?? misDashboardData;
+  const initialDepartmentIdsByName = useMemo(() => new Map(
+    (misDashboardData.departmentWiseData ?? [])
+      .filter((department) => department.departmentId != null && department.departmentName?.trim())
+      .map((department) => [
+        getDepartmentNameKey(department.departmentName ?? ""),
+        Number(department.departmentId),
+      ])
+  ), [misDashboardData.departmentWiseData]);
 
   const departments = useMemo<DepartmentRow[]>(() => (
-    misDashboardData.departmentWiseData ?? []
+    dashboardData.departmentWiseData ?? []
   ).map((department, index) => {
     const name = department.departmentName?.trim() || t("misDashboard.departmentFallback", { number: index + 1 });
-    const id = String(department.departmentId ?? `department-${createIdentifier(name, String(index + 1))}`);
+    const departmentId = department.departmentId ?? initialDepartmentIdsByName.get(getDepartmentNameKey(name));
+    const id = String(departmentId ?? `department-${createIdentifier(name, String(index + 1))}`);
 
     return {
       srNo: index + 1,
@@ -231,16 +289,15 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
       overdue: Number(department.overdueCount ?? 0),
       sla: Number(department.sla ?? 0),
     };
-  }), [misDashboardData.departmentWiseData, t]);
+  }), [dashboardData.departmentWiseData, initialDepartmentIdsByName, t]);
 
-  const departmentSlug = (searchParams.get("department") ?? "").trim().toLowerCase();
-  const chartParam = (searchParams.get("chart") ?? "").trim().toLowerCase();
-  const pieChartView: PieChartView = chartParam === "services" ? "service" : "department";
   const expandedDepartment = useMemo(
-    () => departments.find((department) => department.slug === departmentSlug) ?? null,
-    [departments, departmentSlug]
+    () => departments.find((department) => department.id === expandedDepartmentId) ?? null,
+    [departments, expandedDepartmentId]
   );
   const selectedDepartment = expandedDepartment ?? departments[0] ?? null;
+
+  const filteredDepartments = departments;
 
   const totals = useMemo(() => departments.reduce(
     (current, department) => ({
@@ -253,14 +310,15 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     { total: 0, pending: 0, approved: 0, rejected: 0, overdue: 0 }
   ), [departments]);
 
-  const departmentTotalPages = Math.max(1, Math.ceil(departments.length / DEPARTMENT_PAGE_SIZE));
-  const currentDepartmentPage = expandedDepartment
-    ? Math.ceil(expandedDepartment.srNo / DEPARTMENT_PAGE_SIZE)
+  const departmentTotalPages = Math.max(1, Math.ceil(filteredDepartments.length / DEPARTMENT_PAGE_SIZE));
+  const expandedDepartmentIndex = filteredDepartments.findIndex((department) => department.id === expandedDepartment?.id);
+  const currentDepartmentPage = expandedDepartmentIndex >= 0
+    ? Math.floor(expandedDepartmentIndex / DEPARTMENT_PAGE_SIZE) + 1
     : Math.min(departmentPage, departmentTotalPages);
   const paginatedDepartments = useMemo(() => {
     const start = (currentDepartmentPage - 1) * DEPARTMENT_PAGE_SIZE;
-    return departments.slice(start, start + DEPARTMENT_PAGE_SIZE);
-  }, [currentDepartmentPage, departments]);
+    return filteredDepartments.slice(start, start + DEPARTMENT_PAGE_SIZE);
+  }, [currentDepartmentPage, filteredDepartments]);
 
   const fetchDepartmentServices = useCallback(async (department: DepartmentRow) => {
     if (servicesByDepartment[department.id] || activeServiceRequests.current.has(department.id)) return;
@@ -279,7 +337,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     });
 
     try {
-      const response = await getDepartmentServices(numericId, department.name);
+      const response = await getDepartmentServices(numericId, department.name, moduleName);
       const mappedServices = (response.serviceWiseData ?? []).map((service, index): ServiceRow => ({
         srNo: index + 1,
         id: `${department.id}-${createIdentifier(service.serviceName, String(index + 1))}`,
@@ -300,14 +358,35 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
       activeServiceRequests.current.delete(department.id);
       setLoadingDepartmentId((current) => current === department.id ? null : current);
     }
-  }, [getDepartmentServices, servicesByDepartment, t]);
+  }, [getDepartmentServices, moduleName, servicesByDepartment, t]);
 
   const fetchDepartmentServicesRef = useRef(fetchDepartmentServices);
-  const expandedDepartmentId = expandedDepartment?.id;
 
   useEffect(() => {
     fetchDepartmentServicesRef.current = fetchDepartmentServices;
   }, [fetchDepartmentServices]);
+
+  useEffect(() => {
+    if (previousApplicationSource.current === applicationSource) return;
+    previousApplicationSource.current = applicationSource;
+
+    let cancelled = false;
+
+    void getDepartmentServices(1, "Property Tax", moduleName)
+      .then((data) => {
+        if (!cancelled) setSourceDashboardData(data);
+      })
+      .catch(() => {
+        if (!cancelled) setSourceDashboardData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsSourceLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationSource, getDepartmentServices, moduleName]);
 
   useEffect(() => {
     if (!expandedDepartmentId) return;
@@ -320,29 +399,13 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     return () => window.clearTimeout(requestTimer);
   }, [departments, expandedDepartmentId]);
 
-  const updateDepartmentRoute = (department: DepartmentRow | null) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (department) params.set("department", department.slug);
-    else params.delete("department");
-
-    const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  };
-
-  const updateChartRoute = (chart: PieChartView) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("chart", chart === "service" ? "services" : "departments");
-
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
   const toggleDepartment = (department: DepartmentRow) => {
-    updateDepartmentRoute(expandedDepartment?.id === department.id ? null : department);
+    setExpandedDepartmentId((current) => current === department.id ? null : department.id);
   };
 
   const changeDepartmentPage = (page: number) => {
     setDepartmentPage(page);
-    if (expandedDepartment) updateDepartmentRoute(null);
+    setExpandedDepartmentId(null);
   };
 
   const metrics = [
@@ -366,31 +429,119 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   const servicePieData = useMemo(() => {
     const rows = expandedDepartment
       ? (servicesByDepartment[expandedDepartment.id] ?? []).map((service) => ({
-          label: service.name,
-          value: service.totalApplications,
-        }))
-      : (misDashboardData.serviceWiseData ?? []).map((service) => ({
-          label: service.serviceName,
-          value: Number(service.totalApplications ?? 0),
-        }));
+        label: service.name,
+        value: service.totalApplications,
+      }))
+      : (dashboardData.serviceWiseData ?? []).map((service) => ({
+        label: service.serviceName,
+        value: Number(service.totalApplications ?? 0),
+      }));
 
     return buildPieData(rows, t("misDashboard.other"));
-  }, [expandedDepartment, misDashboardData.serviceWiseData, servicesByDepartment, t]);
+  }, [dashboardData.serviceWiseData, expandedDepartment, servicesByDepartment, t]);
   const activePieData = pieChartView === "department" ? departmentPieData : servicePieData;
   const activePieTotal = activePieData.reduce((total, item) => total + item.value, 0);
   const isServicePieLoading = pieChartView === "service" && loadingDepartmentId === expandedDepartment?.id;
 
-  const departmentHeaders = [
-    t("misDashboard.srNo"), t("misDashboard.department"), t("misDashboard.totalServices"), t("misDashboard.totalApplications"),
-    t("misDashboard.fromRts"), t("misDashboard.fromAapleSarkar"), t("misDashboard.pending"), t("misDashboard.approved"),
-    t("misDashboard.rejected"), t("misDashboard.overdueCount"), t("misDashboard.avgSla"),
-  ];
+  const tableRows = useMemo<MisTableRow[]>(() => {
+    return paginatedDepartments.flatMap((department) => {
+      const rows: MisTableRow[] = [{
+        id: department.id,
+        kind: "department",
+        srNo: department.srNo,
+        name: department.name,
+        totalServices: department.totalServices,
+        totalApplications: department.totalApplications,
+        fromRts: department.fromRts,
+        fromAapleSarkar: department.fromAapleSarkar,
+        pending: department.pending,
+        approved: department.approved,
+        rejected: department.rejected,
+        overdue: department.overdue,
+        sla: department.sla,
+        department,
+      }];
 
-  const serviceHeaders = [
-    t("misDashboard.srNo"), t("misDashboard.serviceName"), t("misDashboard.totalApplications"), t("misDashboard.sourceRts"),
-    t("misDashboard.sourceAapleSarkar"), t("misDashboard.pending"), t("misDashboard.approved"), t("misDashboard.rejected"),
-    t("misDashboard.overdueCount"), t("misDashboard.avgProcessingTime"),
-  ];
+      if (expandedDepartment?.id !== department.id) return rows;
+
+      const services = servicesByDepartment[department.id];
+      const error = serviceErrors[department.id];
+      if (loadingDepartmentId === department.id || (!services && !error)) {
+        rows.push({ id: `${department.id}-loading`, kind: "loading", srNo: null, name: t("misDashboard.loadingServices"), totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null });
+      } else if (error) {
+        rows.push({ id: `${department.id}-error`, kind: "error", srNo: null, name: "", totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null, department, error });
+      } else if (services.length === 0) {
+        rows.push({ id: `${department.id}-empty`, kind: "empty", srNo: null, name: t("misDashboard.noServicesFound"), totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null });
+      } else {
+        rows.push(...services.map((service) => ({
+          id: service.id,
+          kind: "service" as const,
+          srNo: service.srNo,
+          name: service.name,
+          totalServices: null,
+          totalApplications: service.totalApplications,
+          fromRts: service.fromRts,
+          fromAapleSarkar: service.fromAapleSarkar,
+          pending: service.pending,
+          approved: service.approved,
+          rejected: service.rejected,
+          overdue: service.overdue,
+          sla: service.sla,
+        })));
+      }
+
+      return rows;
+    });
+  }, [expandedDepartment, loadingDepartmentId, paginatedDepartments, serviceErrors, servicesByDepartment, t]);
+
+  const tableColumns = useMemo<Column<MisTableRow>[]>(() => {
+    const numberCell = (value: unknown) => value === null ? "" : numberFormatter.format(Number(value));
+    const metricColumn = (key: keyof MisTableRow, label: string, width: string, cellClassName = ""): Column<MisTableRow> => ({
+      key,
+      label,
+      width,
+      align: "center",
+      headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold",
+      cellClassName: `text-center font-bold ${cellClassName}`,
+      render: (value, row) => row.kind === "department" || row.kind === "service" ? numberCell(value) : "",
+    });
+
+    return [
+      {
+        key: "srNo", label: t("misDashboard.srNo"), width: "56px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold", render: (value, row) => {
+          if (row.kind === "department") return String(value ?? "");
+          if (row.kind === "service") return toAlphabeticalLabel(Number(value) - 1);
+          return "";
+        }
+      },
+      {
+        key: "name", label: "Departments and Services", width: "220px", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "font-bold text-slate-900", render: (_value, row) => {
+          if (row.kind === "service") return <span className="flex items-start gap-2 break-words pl-2 text-left leading-5 text-slate-700"><CornerDownRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-400" /><span>{row.name}</span></span>;
+          if (row.kind === "loading" || row.kind === "empty") return <span className="block break-words pl-5 text-slate-500">{row.name}</span>;
+          if (row.kind === "error" && row.department) return <div className="flex items-center gap-3 pl-5 text-rose-600"><span>{row.error}</span><Button type="button" size="sm" className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" onClick={() => fetchDepartmentServices(row.department!)}>{t("misDashboard.retry")}</Button></div>;
+          const isExpanded = expandedDepartment?.id === row.id;
+          return (
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-white text-[#0B5CD5] shadow-sm">
+                <ChevronRight className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+              </span>
+              <span className="min-w-0 flex-1 break-words leading-5">{row.name}</span>
+              <span title={`${row.totalServices ?? 0} ${t("misDashboard.totalServices")}`} className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-1.5 text-[10px] font-extrabold text-[#0B5CD5]">{row.totalServices ?? 0}</span>
+            </div>
+          );
+        }
+      },
+      // metricColumn("totalServices", t("misDashboard.totalServices")),
+      metricColumn("totalApplications", t("misDashboard.totalApplications"), "120px", "font-extrabold"),
+      // metricColumn("fromRts", t("misDashboard.fromRts"), "95px", "text-[#4B0082]"),
+      // metricColumn("fromAapleSarkar", t("misDashboard.fromAapleSarkar"), "120px", "text-[#C66922]"),
+      metricColumn("pending", t("misDashboard.pending"), "90px", "text-[#C66922]"),
+      metricColumn("approved", t("misDashboard.approved"), "90px", "text-[#0F7A3F]"),
+      metricColumn("rejected", t("misDashboard.rejected"), "90px", "text-[#B22222]"),
+      metricColumn("overdue", t("misDashboard.overdueCount"), "105px", "text-rose-700"),
+      { key: "sla", label: t("misDashboard.avgSla"), width: "95px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold text-[#008B8B]", render: (value, row) => row.kind === "department" || row.kind === "service" ? t("misDashboard.daysValue", { value: Number(value).toFixed(1) }) : "" },
+    ];
+  }, [expandedDepartment, fetchDepartmentServices, numberFormatter, t]);
 
   return (
     <div className="space-y-4">
@@ -420,74 +571,86 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <Card className="w-full overflow-hidden border border-slate-200 bg-white p-4 shadow-sm lg:w-[70%]">
-          <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-[#0a3275]"><FileSpreadsheet className="h-5 w-5 text-[#0B5CD5]" />{t("misDashboard.departmentalBreakdown")}</h2>
-            <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-[#0F7A3F]">{t("misDashboard.clickToVisualize")}</span>
+          <div className="mb-3 flex flex-col gap-2 border-b border-slate-100 pb-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-[#0a3275]"><FileSpreadsheet className="h-5 w-5 text-[#0B5CD5]" />{t("misDashboard.departmentServiceBreakdown")}</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-auto flex flex-row">
+                <p className="text-[11px] font-bold text-slate-500">{t("misDashboard.applicationSource")}: </p>
+                <Select
+                  value={applicationSource}
+                  options={[
+                    { value: "rts", label: "RTS" },
+                    { value: "aapleSarkar", label: "AapleSarkar" },
+                    { value: "offline", label: "Offline" }
+                  ]}
+                  onChange={(_event, value) => {
+                    const nextSource = value as ApplicationSource;
+                    if (nextSource === applicationSource) return;
+                    setDepartmentPage(1);
+                    setServicesByDepartment({});
+                    setServiceErrors({});
+                    setLoadingDepartmentId(null);
+                    setSourceDashboardData(null);
+                    setIsSourceLoading(true);
+                    setExpandedDepartmentId(null);
+                    setApplicationSource(nextSource);
+                  }}
+                  ariaLabel={t("misDashboard.applicationSource")}
+                  // label={}
+                  selectSize="sm"
+                />
+              </div>
+              <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-[#0F7A3F]">{t("misDashboard.clickToVisualize")}</span>
+            </div>
           </div>
-          <div className="relative h-[500px] overflow-auto rounded-t-lg border border-slate-100">
-            <table className="w-full border-collapse text-left text-sm text-slate-900">
-              <thead className="bg-[#0A3275] text-white"><tr>{departmentHeaders.map((header) => <th key={header} className="sticky top-0 z-30 border-r border-blue-300/60 bg-[#0A3275] px-3 py-3 text-center text-[11px] font-bold last:border-r-0">{header}</th>)}</tr></thead>
-              <tbody>
-                {paginatedDepartments.map((department) => {
-                  const isExpanded = expandedDepartment?.id === department.id;
-                  const isSelected = isExpanded;
-                  const services = servicesByDepartment[department.id];
-                  const error = serviceErrors[department.id];
-                  return (
-                    <Fragment key={department.id}>
-                      <tr
-                        role="button"
-                        tabIndex={0}
-                        aria-expanded={isExpanded}
-                        aria-label={isExpanded ? t("misDashboard.collapseDepartment", { department: department.name }) : t("misDashboard.expandDepartment", { department: department.name })}
-                        onClick={() => toggleDepartment(department)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            toggleDepartment(department);
-                          }
-                        }}
-                        className={`${isSelected ? "bg-blue-50/70" : "bg-white"} cursor-pointer hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#0B5CD5]`}
-                      >
-                        <td className="border-r border-b border-slate-100 px-3 py-3 text-center font-extrabold">{department.srNo}</td>
-                        <td className="border-r border-b border-slate-100 px-3 py-2 font-bold text-slate-900">{department.name}</td>
-                        <td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold">{department.totalServices}</td><td className="border-r border-b border-slate-100 bg-slate-50/30 px-3 py-3 text-center font-extrabold">{department.totalApplications}</td><td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold text-[#4B0082]">{department.fromRts}</td><td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold text-[#C66922]">{department.fromAapleSarkar}</td><td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold text-[#C66922]">{department.pending}</td><td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold text-[#0F7A3F]">{department.approved}</td><td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold text-[#B22222]">{department.rejected}</td><td className="border-r border-b border-slate-100 px-3 py-3 text-center font-bold text-rose-700">{department.overdue}</td><td className="border-b border-slate-100 px-3 py-3 text-center font-extrabold text-[#008B8B]">{t("misDashboard.daysValue", { value: department.sla.toFixed(1) })}</td>
-                      </tr>
-                      {isExpanded && <tr><td colSpan={11} className="border-b border-slate-200 bg-slate-50 p-4"><div className="rounded-xl border border-blue-100 bg-white p-3 shadow-sm"><div className="mb-3 flex items-center justify-between gap-3"><h3 className="text-sm font-bold text-[#0a3275]">{t("misDashboard.departmentServiceDetails", { department: department.name })}</h3><span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#0B5CD5]">{department.totalServices} {t("misDashboard.totalServices")}</span></div>{loadingDepartmentId === department.id ? <div className="flex h-24 items-center justify-center text-sm font-bold text-slate-500">{t("misDashboard.loadingServices")}</div> : error ? <div className="flex flex-col items-center justify-center gap-3 py-5 text-sm font-bold text-rose-600"><span>{error}</span><Button type="button" size="sm" className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" onClick={() => fetchDepartmentServices(department)}>{t("misDashboard.retry")}</Button></div> : <div className="overflow-x-auto rounded-lg border border-slate-100"><table className="min-w-[850px] w-full border-collapse text-left text-sm text-slate-900"><thead className="bg-[#0A3275] text-white"><tr>{serviceHeaders.map((header) => <th key={header} className="border-r border-blue-300/60 bg-[#0A3275] px-3 py-2.5 text-center text-[10px] font-bold last:border-r-0">{header}</th>)}</tr></thead><tbody>{services?.map((service) => <tr key={service.id} className="bg-white"><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-extrabold">{service.srNo}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 font-bold text-slate-900">{service.name}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-extrabold">{service.totalApplications}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-bold text-[#4B0082]">{service.fromRts}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-bold text-[#C66922]">{service.fromAapleSarkar}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-bold text-[#C66922]">{service.pending}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-bold text-[#0F7A3F]">{service.approved}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-bold text-[#B22222]">{service.rejected}</td><td className="border-r border-b border-slate-100 px-3 py-2.5 text-center font-bold text-rose-700">{service.overdue}</td><td className="border-b border-slate-100 px-3 py-2.5 text-center font-extrabold text-[#008B8B]">{t("misDashboard.daysValue", { value: service.sla.toFixed(1) })}</td></tr>)}</tbody></table>{services?.length === 0 && <div className="p-6 text-center text-sm font-bold text-slate-400">{t("misDashboard.noServicesFound")}</div>}</div>}</div></td></tr>}
-                    </Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-            {paginatedDepartments.length === 0 && <div className="p-8 text-center text-sm font-bold text-slate-400">{t("misDashboard.noData")}</div>}
-          </div>
-          <div className="mt-3 flex justify-end"><TablePagination currentPage={currentDepartmentPage} totalPages={departmentTotalPages} onPageChange={changeDepartmentPage} /></div>
+          <MasterTable<MisTableRow>
+            columns={tableColumns}
+            data={tableRows}
+            loading={isSourceLoading}
+            getRowKey={(row) => row.id}
+            emptyText={t("misDashboard.noData")}
+            maxBodyHeightClassName="h-[645px] max-h-[645px]"
+            tableClassName="table-fixed border-collapse text-left text-sm text-slate-900"
+            containerClassName="gap-0"
+            theadClassName="bg-[#0A3275]"
+            rowClassName={(row) => {
+              if (row.kind === "service") return "cursor-default bg-slate-50/90 hover:!bg-slate-100";
+              if (row.kind === "loading" || row.kind === "empty") return "cursor-default bg-slate-50 text-slate-500";
+              if (row.kind === "error") return "cursor-default bg-rose-50/60";
+              return expandedDepartment?.id === row.id ? "bg-blue-50/70 hover:!bg-blue-100/70" : "bg-white";
+            }}
+            onRowClick={(row) => {
+              if (row.kind === "department" && row.department) toggleDepartment(row.department);
+            }}
+            footerRightContent={<TablePagination currentPage={currentDepartmentPage} totalPages={departmentTotalPages} onPageChange={changeDepartmentPage} />}
+            footerClassName="!border-t-0 !bg-white !px-0 !pb-0 !shadow-none"
+          />
         </Card>
 
         <div className="w-full space-y-4 lg:w-[30%]">
-        <Card className="flex h-[325px] flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="border-b border-slate-100 pb-1.5"><h3 className="flex items-center gap-1.5 text-base font-bold text-slate-800"><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0B5CD5]" />{selectedDepartment?.name}</h3><p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("misDashboard.interactiveVisualization")}</p></div>
-          <div className="space-y-1"><span className="block text-[13px] font-bold text-[#0a3275]">{t("misDashboard.applicationStatusDistribution")}</span><div className="space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">{approvalDistribution.map((item) => { const percentage = selectedDepartment && selectedDepartment.totalApplications > 0 ? Math.round((item.value / selectedDepartment.totalApplications) * 100) : 0; return <div key={item.label} className="space-y-0.5"><div className="flex justify-between text-[11px] font-bold"><span className={item.text}>{item.label}</span><span className="text-slate-800">{t("misDashboard.countWithPercentage", { count: item.value, percentage })}</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100"><div style={{ width: `${percentage}%` }} className={`${item.color} h-full rounded-full`} /></div></div>; })}</div></div>
-          <div className="space-y-1"><span className="block text-[13px] font-bold text-[#0a3275]">{t("misDashboard.slaTargetEfficiency")}</span><div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2"><div><div className="text-[12px] font-bold text-slate-600">{t("misDashboard.slaSpeedPerformance")}</div><div className="text-[11px] font-bold text-slate-400">{t("misDashboard.targetSla")}</div></div><div className="text-right"><div className="text-xl font-extrabold text-[#008B8B]">{formatNumber(selectedDepartment?.sla ?? 0)}</div><div className="text-[10px] font-bold text-slate-500">{t("misDashboard.days")}</div></div></div></div>
-        </Card>
-        <Card className="border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-            <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0a3275]"><PieChart className="h-4 w-4 text-[#0B5CD5]" />{t("misDashboard.applicationShare")}</h3>
-            <div role="tablist" aria-label={t("misDashboard.applicationShare")} className="flex rounded-lg bg-slate-100 p-0.5">
-              <button type="button" role="tab" aria-selected={pieChartView === "department"} onClick={() => updateChartRoute("department")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "department" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.department")}</button>
-              <button type="button" role="tab" aria-selected={pieChartView === "service"} onClick={() => updateChartRoute("service")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "service" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.service")}</button>
+          <Card className="flex h-[325px] flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="border-b border-slate-100 pb-1.5"><h3 className="flex items-center gap-1.5 text-base font-bold text-slate-800"><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0B5CD5]" />{selectedDepartment?.name}</h3><p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("misDashboard.interactiveVisualization")}</p></div>
+            <div className="space-y-1"><span className="block text-[13px] font-bold text-[#0a3275]">{t("misDashboard.applicationStatusDistribution")}</span><div className="space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">{approvalDistribution.map((item) => { const percentage = selectedDepartment && selectedDepartment.totalApplications > 0 ? Math.round((item.value / selectedDepartment.totalApplications) * 100) : 0; return <div key={item.label} className="space-y-0.5"><div className="flex justify-between text-[11px] font-bold"><span className={item.text}>{item.label}</span><span className="text-slate-800">{t("misDashboard.countWithPercentage", { count: item.value, percentage })}</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100"><div style={{ width: `${percentage}%` }} className={`${item.color} h-full rounded-full`} /></div></div>; })}</div></div>
+            <div className="space-y-1"><span className="block text-[13px] font-bold text-[#0a3275]">{t("misDashboard.slaTargetEfficiency")}</span><div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2"><div><div className="text-[12px] font-bold text-slate-600">{t("misDashboard.slaSpeedPerformance")}</div><div className="text-[11px] font-bold text-slate-400">{t("misDashboard.targetSla")}</div></div><div className="text-right"><div className="text-xl font-extrabold text-[#008B8B]">{formatNumber(selectedDepartment?.sla ?? 0)}</div><div className="text-[10px] font-bold text-slate-500">{t("misDashboard.days")}</div></div></div></div>
+          </Card>
+          <Card className="border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+              <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0a3275]"><PieChart className="h-4 w-4 text-[#0B5CD5]" />{t("misDashboard.applicationShare")}</h3>
+              <div role="tablist" aria-label={t("misDashboard.applicationShare")} className="flex rounded-lg bg-slate-100 p-0.5">
+                <button type="button" role="tab" aria-selected={pieChartView === "department"} onClick={() => setPieChartView("department")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "department" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.department")}</button>
+                <button type="button" role="tab" aria-selected={pieChartView === "service"} onClick={() => setPieChartView("service")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "service" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.service")}</button>
+              </div>
             </div>
-          </div>
-          <DonutChart
-            data={activePieData}
-            total={activePieTotal}
-            totalLabel={t("misDashboard.total")}
-            noDataLabel={t("misDashboard.noData")}
-            loading={isServicePieLoading}
-            loadingLabel={t("misDashboard.loadingServices")}
-            formatNumber={formatNumber}
-          />
-        </Card>
+            <DonutChart
+              data={activePieData}
+              total={activePieTotal}
+              totalLabel={t("misDashboard.total")}
+              noDataLabel={t("misDashboard.noData")}
+              loading={isServicePieLoading}
+              loadingLabel={t("misDashboard.loadingServices")}
+              formatNumber={formatNumber}
+            />
+          </Card>
         </div>
       </div>
     </div>
