@@ -38,8 +38,8 @@ export async function getLockUnlockModules(pageNumber: number = 1, pageSize: num
  * Fetches the list of all screen options that can be locked/unlocked.
  * GET /api/LockUnlock/screens
  */
-export async function getLockUnlockScreens(moduleId?: number): Promise<LockedScreen[]> {
-  const url = moduleId ? `/LockUnlock/screens?ModuleId=${moduleId}` : `/LockUnlock/screens`;
+export async function getLockUnlockScreens(moduleIds?: string): Promise<LockedScreen[]> {
+  const url = moduleIds ? `/LockUnlock/screens?ModuleIds=${moduleIds}` : `/LockUnlock/screens`;
   const response = await apiClient.get<LockedScreen[]>(url);
 
   if (!response.success || !response.data) {

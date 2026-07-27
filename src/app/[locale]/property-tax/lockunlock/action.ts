@@ -35,9 +35,9 @@ export async function getLockUnlockModulesAction(pageNumber?: number, pageSize?:
 /**
  * Server Action to fetch all lockable screen configurations.
  */
-export async function getLockUnlockScreensAction(moduleId?: number): Promise<LockedScreen[]> {
+export async function getLockUnlockScreensAction(moduleIds?: string): Promise<LockedScreen[]> {
   try {
-    return await getLockUnlockScreens(moduleId);
+    return await getLockUnlockScreens(moduleIds);
   } catch (error: unknown) {
     throw error;
   }
