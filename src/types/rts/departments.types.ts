@@ -1,4 +1,4 @@
-export type SupportedLanguage = "en" | "hi" | "mr";
+export type SupportedLanguage = 'en' | 'hi' | 'mr';
 
 export type I18nText = {
   en: string;
@@ -36,6 +36,7 @@ export interface RtsDepartmentApiItem {
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
+  [key: string]: unknown;
 }
 
 export interface RtsDepartmentQueryParams {
