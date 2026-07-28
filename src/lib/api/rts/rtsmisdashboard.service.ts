@@ -1,29 +1,38 @@
 'use server';
 
 import type {
-  CmsMisDashboardRequest,
-  CmsMisDashboardResponse,
+  RtsMisDashboardRequestInput,
+  RtsMisDashboardRequest,
+  RtsMisDashboardResponse,
 } from '@/types/rts/rtsmisdashboard.types';
 
-const CMS_MIS_DASHBOARD_URL =
+const RTS_MIS_DASHBOARD_URL =
   'https://onesolutionakola.tabamc.in/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData';
 
-export async function getCmsMisDashboardData(
-  payload: CmsMisDashboardRequest = { Flag: 'admin', UpicId: '' }
-): Promise<CmsMisDashboardResponse> {
-  const response = await fetch(CMS_MIS_DASHBOARD_URL, {
+export async function getRtsMisDashboardData(
+  payload: RtsMisDashboardRequestInput = {}
+): Promise<RtsMisDashboardResponse> {
+  const requestPayload: RtsMisDashboardRequest = {
+    Flag: payload.Flag?.toLowerCase() === 'user' ? 'user' : 'admin',
+    UpicId: payload.UpicId ?? '',
+    DeparmentId: payload.DeparmentId ?? 0,
+    DeparmentName: payload.DeparmentName?.trim() ?? '',
+    ModuleName: payload.ModuleName ?? '',
+  };
+
+  const response = await fetch(RTS_MIS_DASHBOARD_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(requestPayload),
     cache: 'no-store',
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch CMS MIS dashboard data: ${response.status}`);
+    throw new Error(`Failed to fetch RTS MIS dashboard data: ${response.status}`);
   }
 
-  return (await response.json()) as CmsMisDashboardResponse;
+  return (await response.json()) as RtsMisDashboardResponse;
 }

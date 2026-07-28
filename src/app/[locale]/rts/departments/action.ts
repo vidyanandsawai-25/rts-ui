@@ -7,7 +7,7 @@ import {
   createRtsDepartment,
   updateRtsDepartment,
   deleteRtsDepartment,
-} from "@/lib/api/rts/rtsdepartment-crud.service";
+} from "@/lib/api/rts/rtsdepartment.service";
 import { RtsDepartmentApiItem } from "@/types/rts/departments.types";
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";

@@ -35,6 +35,12 @@ export async function getRtsFieldDefinitions(
   return response.data;
 }
 
+export async function getRtsFieldDefinitionsPaged(
+  params: RtsFieldDefinitionQueryParams = {}
+): Promise<PagedResponse<RtsFieldDefinitionApiItem>> {
+  return getRtsFieldDefinitions(params);
+}
+
 export async function getAllRtsFieldDefinitions(
   params: Omit<RtsFieldDefinitionQueryParams, "PageNumber" | "PageSize"> = {}
 ): Promise<RtsFieldDefinitionApiItem[]> {
@@ -45,6 +51,81 @@ export async function getAllRtsFieldDefinitions(
   });
 
   return response.items;
+}
+
+export async function createRtsFieldDefinition(payload: {
+  departmentId: number;
+  serviceId: number;
+  fieldCode: string;
+  fieldLabel: string;
+  fieldLabelLocal?: string;
+  fieldType: string;
+  fieldGroup?: string;
+  isRequired: boolean;
+  displayOrder?: number;
+  validationRules?: string;
+  defaultValue?: string;
+  minValue?: number;
+  maxValue?: number;
+  maxLength?: number;
+  optionsJson?: string;
+  isActive: boolean;
+  createdBy?: number;
+}): Promise<RtsFieldDefinitionApiItem> {
+  const response = await apiClient.post<RtsFieldDefinitionApiItem>("/RTSFieldDefinition", payload);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to create RTS field definition");
+  }
+  return response.data;
+}
+
+export async function updateRtsFieldDefinition(
+  id: number,
+  payload: {
+    id: number;
+    departmentId: number;
+    serviceId: number;
+    fieldCode: string;
+    fieldLabel: string;
+    fieldLabelLocal?: string;
+    fieldType: string;
+    fieldGroup?: string;
+    isRequired: boolean;
+    displayOrder?: number;
+    validationRules?: string;
+    defaultValue?: string;
+    minValue?: number;
+    maxValue?: number;
+    maxLength?: number;
+    optionsJson?: string;
+    isActive: boolean;
+    updatedBy?: number;
+  }
+): Promise<RtsFieldDefinitionApiItem> {
+  const response = await apiClient.put<RtsFieldDefinitionApiItem>(`/RTSFieldDefinition/${id}`, payload);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to update RTS field definition");
+  }
+  return response.data;
+}
+
+export async function deleteRtsFieldDefinition(id: number): Promise<void> {
+  const response = await apiClient.delete<unknown>(`/RTSFieldDefinition/${id}`);
+  if (!response.success) {
+    throw new Error(response.error || "Failed to delete RTS field definition");
+  }
+}
+
+export async function getRtsFieldDefinitionById(id: number): Promise<RtsFieldDefinitionApiItem> {
+  const response = await apiClient.get<RtsFieldDefinitionApiItem>(`/RTSFieldDefinition/${id}`, {
+    cache: "no-store",
+  }, false);
+
+  if (!response.success || !response.data) {
+    throw new Error(response.error || `Failed to fetch RTS field definition ${id}`);
+  }
+
+  return response.data;
 }
 
 export async function getRtsFieldDefinitionsByServiceId(

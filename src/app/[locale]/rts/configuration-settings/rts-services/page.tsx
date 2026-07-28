@@ -1,22 +1,21 @@
 import RtsServiceConfig from "@/components/modules/rts/configuration-settings/RtsServiceConfig";
-
 import {
-  getRtsMastersAction,
-  saveRtsServiceAction,
-  updateRtsServiceAction,
-  deleteRtsServiceAction,
-} from "@/app/[locale]/rts/actions";
+  deleteRtsServiceConfigAction,
+  getRtsServiceConfigData,
+  saveRtsServiceConfigAction,
+  updateRtsServiceConfigAction,
+} from "./actions";
 
 export default async function RtsServicePage() {
-  const { departments, services } = await getRtsMastersAction();
+  const { departments, services } = await getRtsServiceConfigData();
 
   return (
     <RtsServiceConfig
       departments={departments}
       services={services}
-      saveService={saveRtsServiceAction}
-      updateService={updateRtsServiceAction}
-      deleteService={deleteRtsServiceAction}
+      saveService={saveRtsServiceConfigAction}
+      updateService={updateRtsServiceConfigAction}
+      deleteService={deleteRtsServiceConfigAction}
     />
   );
 }

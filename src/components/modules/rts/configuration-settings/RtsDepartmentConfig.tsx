@@ -545,7 +545,7 @@ export default function RtsDepartmentConfig({
             >
               {drawerMode === "add"
                 ? t("buttons.save")
-                : tRts("masters.update")}
+                : t("buttons.update")}
             </Button>
           </div>
         </form>

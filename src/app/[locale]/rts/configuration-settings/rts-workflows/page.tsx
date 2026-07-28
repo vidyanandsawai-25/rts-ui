@@ -9,14 +9,15 @@ export default async function RtsWorkflowsPage({ params }: PageProps) {
   const { locale } = await params;
   const masters = await getRtsMastersAction();
 
-  // Mock initial workflows list mapped to services for display
-  const initialWorkflows = masters.services.slice(0, 10).map((s: { id: string; name: string }, idx: number) => ({
-    id: idx + 1,
-    serviceId: Number(s.id),
-    flowName: `${s.name} Approval Flow`,
-    isActive: true,
-    stagesCount: 2,
-  }));
+  const initialWorkflows = masters.services.slice(0, 10).map(
+    (service: { id: string; name: string }, index: number) => ({
+      id: index + 1,
+      serviceId: Number(service.id),
+      flowName: `${service.name} Approval Flow`,
+      isActive: true,
+      stagesCount: 2,
+    })
+  );
 
   return (
     <div className="w-full">

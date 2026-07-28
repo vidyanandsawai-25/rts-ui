@@ -31,6 +31,12 @@ export async function getRtsServices(
   return response.data;
 }
 
+export async function getRtsServicesPaged(
+  params: RtsServiceQueryParams = {}
+): Promise<PagedResponse<RtsServiceApiItem>> {
+  return getRtsServices(params);
+}
+
 export async function getAllRtsServices(): Promise<RtsServiceApiItem[]> {
   const response = await getRtsServices({
     PageNumber: 1,
@@ -48,6 +54,59 @@ export async function getServicesByDepartment(departmentId: number): Promise<Rts
   });
 
   return response.items;
+}
+
+export async function createRtsService(payload: {
+  departmentId: number;
+  serviceName: string;
+  serviceNameLocal?: string;
+  description?: string;
+  serviceUrl?: string;
+  serviceIcon?: string;
+  displayOrder?: number;
+  isActive: boolean;
+  createdBy?: number;
+  sla?: number;
+  fees?: number;
+  isFeesRequired?: boolean;
+}): Promise<RtsServiceApiItem> {
+  const response = await apiClient.post<RtsServiceApiItem>("/RTSService", payload);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to create RTS service");
+  }
+  return response.data;
+}
+
+export async function updateRtsService(
+  id: number,
+  payload: {
+    id: number;
+    departmentId: number;
+    serviceName: string;
+    serviceNameLocal?: string;
+    description?: string;
+    serviceUrl?: string;
+    serviceIcon?: string;
+    displayOrder?: number;
+    isActive: boolean;
+    updatedBy?: number;
+    sla?: number;
+    fees?: number;
+    isFeesRequired?: boolean;
+  }
+): Promise<RtsServiceApiItem> {
+  const response = await apiClient.put<RtsServiceApiItem>(`/RTSService/${id}`, payload);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to update RTS service");
+  }
+  return response.data;
+}
+
+export async function deleteRtsService(id: number): Promise<void> {
+  const response = await apiClient.delete<unknown>(`/RTSService/${id}`);
+  if (!response.success) {
+    throw new Error(response.error || "Failed to delete RTS service");
+  }
 }
 
 export async function getRtsServiceById(id: number): Promise<RtsServiceApiItem> {

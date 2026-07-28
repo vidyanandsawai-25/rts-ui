@@ -30,7 +30,7 @@ export type DepartmentDTO = {
   /**
    * Department card image.
    * Use a local public path: "/images/departments/property-tax.svg"
-   * or a CDN URL. Team will populate from DB/CMS.
+   * or a CDN URL. Team will populate from DB/Rts.
    */
   image: string;
 

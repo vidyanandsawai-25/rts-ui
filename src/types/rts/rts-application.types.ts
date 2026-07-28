@@ -70,9 +70,3 @@ export interface RtsOfficer {
   activeCasesCount?: number;
   status?: string;
 }
-
-// Backward compatibility aliases
-export type CmsDocument = RtsDocument;
-export type CmsTimelineStep = RtsTimelineStep;
-export type CmsApplication = RtsApplication;
-export type CmsOfficer = RtsOfficer;

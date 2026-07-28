@@ -1,12 +1,15 @@
-import RtsMISDashboard from "@/components/modules/rts/dashboard/RtsMISDashboard";
-import { getCmsMisDashboardAction } from "./actions";
+import RtsMisDashboard from "@/components/modules/rts/dashboard/RtsMisDashboard";
+import { getRtsMisDepartmentServicesAction } from "./actions";
 
-export default async function CmsDashboardPage() {
-  const misDashboardData = await getCmsMisDashboardAction();
+export default async function RtsMISDashboardPage() {
+  const misDashboardData = await getRtsMisDepartmentServicesAction(1, "Property Tax", "RTS");
 
   return (
     <div className="w-full">
-      <RtsMISDashboard misDashboardData={misDashboardData} />
+      <RtsMisDashboard
+        misDashboardData={misDashboardData}
+        getDepartmentServices={getRtsMisDepartmentServicesAction}
+      />
     </div>
   );
 }
