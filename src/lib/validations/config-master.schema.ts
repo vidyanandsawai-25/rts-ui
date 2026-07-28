@@ -9,26 +9,6 @@ export const AuditSchema = z.object({
   updatedBy: z.number().optional(),
 });
 
-/**
- * Safe Catastrophic-Backtracking-Resistant Description Validation
- */
-const isValidDescription = (val: string): boolean => {
-  if (val === '') return true;
-  const firstChar = val.charAt(0);
-  const lastChar = val.charAt(val.length - 1);
-  const letterOrNumberRegex = /^[\p{L}\p{M}\p{N}]$/u;
-  if (!letterOrNumberRegex.test(firstChar) || !letterOrNumberRegex.test(lastChar)) {
-    return false;
-  }
-  const allowedCharsRegex = /^[\p{L}\p{M}\p{N}\s\/,.\-()&]*$/u;
-  if (!allowedCharsRegex.test(val)) {
-    return false;
-  }
-  if (/\s{2,}/.test(val)) {
-    return false;
-  }
-  return true;
-};
 
 /**
  * Config Category Schemas
@@ -78,9 +58,8 @@ export const ConfigKeyBaseSchema = z.object({
     .regex(TEXT_ALLOWED, 'modals.addKey.form.validation.nameAlphanumeric'),
   description: z.string()
     .trim()
-    .max(500, 'Description cannot exceed 500 characters')
+    .max(255, 'Description cannot exceed 255 characters')
     .refine(val => !/[<>]/.test(val), 'Description cannot contain HTML tags or angle brackets')
-    .refine(val => isValidDescription(val), 'Description contains invalid characters')
     .optional()
     .or(z.literal('')),
   dataType: z.enum(['string', 'int', 'decimal', 'boolean', 'datetime'], {

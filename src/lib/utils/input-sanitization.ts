@@ -25,8 +25,8 @@ export const sanitizeTextInput = (input: string): string => {
     .replace(/javascript:/gi, '')
     // Remove on* event handlers
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    // Block invalid special characters - only allow letters, numbers, spaces, and basic punctuation
-    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\'\-\/()&]/g, '')
+    // Block invalid special characters - only allow letters, numbers, underscores, spaces, and basic punctuation
+    .replace(/[^a-zA-Z0-9_\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\'\-\/()&]/g, '')
     // Remove multiple consecutive spaces
     .replace(/\s+/g, ' ')
     .trim();

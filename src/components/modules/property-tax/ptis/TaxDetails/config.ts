@@ -39,32 +39,32 @@ export const TAX_ROW_LABELS = {
 /**
  * Base styling classes for tax labels (badges)
  */
-export const TAX_LABEL_CLASSES = 'px-2 py-1 rounded-md shadow-sm border text-center text-[12px] font-black tracking-wide';
+export const TAX_LABEL_CLASSES = 'px-1.5 py-0.5 rounded-md shadow-2xs border text-center text-[11px] font-bold tracking-tight uppercase transition-all whitespace-nowrap inline-flex items-center justify-center';
 
 /**
  * Header text styling for table columns
  */
-export const HEADER_TEXT_CLASSES = 'text-white text-[11px] font-bold uppercase tracking-tight py-2';
+export const HEADER_TEXT_CLASSES = 'text-white text-[10.5px] font-bold tracking-tight py-2 uppercase';
 
 /**
  * Center alignment class for cells
  */
-export const CELL_CENTER_CLASS = 'text-center';
+export const CELL_CENTER_CLASS = 'text-center px-0.5';
 
 /**
  * Styling for number cells (tax amount columns)
  */
-export const NUMBER_CELL_CLASSES = 'text-center text-[12px] font-normal text-slate-800 whitespace-nowrap px-1';
+export const NUMBER_CELL_CLASSES = 'border border-blue-200 rounded-md px-1.5 py-0.5 text-center bg-white text-[12px] min-w-[50px] shadow-2xs font-semibold text-slate-800 hover:border-blue-300 transition-colors';
 
 /**
  * Styling for total column cells
  */
-export const TOTAL_CELL_CLASSES = 'text-center text-[12px] font-bold text-slate-900 whitespace-nowrap px-1';
+export const TOTAL_CELL_CLASSES = 'border border-emerald-300 rounded-md px-1.5 py-0.5 text-center bg-emerald-50/80 text-[12px] min-w-[60px] font-bold text-emerald-800 shadow-2xs hover:border-emerald-400 transition-colors';
 
 /**
  * Default fallback styling for unknown tax types
  */
-export const DEFAULT_TAX_ROW_STYLE = 'bg-gray-50 border-gray-300 text-gray-700';
+export const DEFAULT_TAX_ROW_STYLE = 'bg-blue-50/90 text-blue-900 border-blue-200';
 
 // ==================== Tax Row Style Themes ====================
 
@@ -72,10 +72,10 @@ export const DEFAULT_TAX_ROW_STYLE = 'bg-gray-50 border-gray-300 text-gray-700';
  * Color theme configuration for each tax row type
  */
 export const TAX_ROW_STYLE_THEMES = {
-  [TAX_ROW_LABELS.NET_TAXES]: 'bg-slate-100 text-slate-700 border-slate-300',
-  [TAX_ROW_LABELS.RETAIN]: 'bg-blue-50 text-blue-700 border-blue-200',
-  [TAX_ROW_LABELS.HEARING]: 'bg-purple-50 text-purple-700 border-purple-200',
-  [TAX_ROW_LABELS.ALL_TAXES]: 'bg-rose-50 text-rose-700 border-rose-200',
+  [TAX_ROW_LABELS.NET_TAXES]: 'bg-blue-50/90 text-blue-900 border-blue-200',
+  [TAX_ROW_LABELS.RETAIN]: 'bg-blue-50/90 text-blue-900 border-blue-200',
+  [TAX_ROW_LABELS.HEARING]: 'bg-purple-50/90 text-purple-900 border-purple-200',
+  [TAX_ROW_LABELS.ALL_TAXES]: 'bg-rose-50/90 text-rose-900 border-rose-200',
 } as const;
 
 // ==================== Helper Functions ====================
@@ -91,30 +91,26 @@ export function getTaxRowStyleByLabel(labelKey: string): string {
   
   const key = labelKey.toUpperCase().replace(/_/g, '');
   if (key === 'NETTAX' || key === 'NETTAXES') {
-    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.NET_TAXES];
+    return 'bg-blue-50/90 text-blue-900 border-blue-200';
+  }
+  if (key.includes('OC') || key.includes('OCCUPANCY')) {
+    return 'bg-blue-50/90 text-blue-900 border-blue-200';
+  }
+  if (key.includes('CC') || key.includes('COMMENCEMENT')) {
+    return 'bg-purple-50/90 text-purple-900 border-purple-200';
+  }
+  if (key.includes('ELECTRIC') || key.includes('EB')) {
+    return 'bg-amber-50/90 text-amber-900 border-amber-200';
   }
   if (key === 'RETAIN') {
-    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.RETAIN];
+    return 'bg-blue-50/90 text-blue-900 border-blue-200';
   }
   if (key === 'HEARING') {
-    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.HEARING];
+    return 'bg-purple-50/90 text-purple-900 border-purple-200';
   }
   if (key === 'ALLTAXES') {
-    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.ALL_TAXES];
+    return 'bg-rose-50/90 text-rose-900 border-rose-200';
   }
   
-  // Deterministic fallback using only the 4 defined theme colors
-  const fallbackThemes = [
-    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.HEARING],
-    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.RETAIN],
-    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.NET_TAXES],
-    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.ALL_TAXES],
-  ];
-  
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = key.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % fallbackThemes.length;
-  return fallbackThemes[index];
+  return 'bg-blue-50/90 text-blue-900 border-blue-200';
 }

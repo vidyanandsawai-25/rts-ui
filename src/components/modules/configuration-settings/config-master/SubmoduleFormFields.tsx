@@ -1,7 +1,7 @@
 'use client';
 
 import { Label } from '@/components/common/label';
-import { Input, ValidationMessage, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
+import { Input, ValidationMessage, StatusToggleCard } from '@/components/common';
 import { TextArea } from '@/components/common/Textarea';
 import { useTranslations } from 'next-intl';
 
@@ -32,8 +32,6 @@ export function SubmoduleFormFields({
 
   return (
     <div className="p-6 space-y-4">
-      <RequiredFieldsNote text={t('modals.addSubmodule.form.requiredFields')} />
-      
       {/* Module Code */}
       <div className="space-y-2">
         <Label htmlFor="moduleCode" required>
@@ -43,7 +41,7 @@ export function SubmoduleFormFields({
           id="moduleCode"
           value={formData.moduleCode || ''}
           onChange={(e) => {
-            const val = e.target.value.replace(/[^A-Za-z0-9]/g, '');
+            const val = e.target.value.replace(/[^A-Za-z0-9_]/g, '');
             onChange('moduleCode', val);
           }}
           placeholder={t('modals.addSubmodule.form.placeholders.code')}

@@ -153,6 +153,7 @@ export interface FloorAPIResponse {
     width?: number | string | null;
     lengthMtr?: number | string | null;
     widthMtr?: number | string | null;
+    propertyCertificates?: unknown[];
 }
 
 export interface FloorDetailsProps {

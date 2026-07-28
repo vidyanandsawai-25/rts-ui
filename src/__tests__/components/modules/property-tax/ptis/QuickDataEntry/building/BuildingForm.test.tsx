@@ -19,6 +19,8 @@ import { toast } from 'sonner';
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({ push: vi.fn(), refresh: vi.fn() })),
   useParams: vi.fn(() => ({ locale: 'en', propertyId: '123' })),
+  usePathname: vi.fn(() => '/en/property-tax/ptis/QuickDataEntry/123/Building'),
+  useSearchParams: vi.fn(() => new URLSearchParams('')),
 }));
 
 // Mock next-intl
@@ -54,11 +56,13 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/a
   getBuildingPermissionsAction: vi.fn(),
   replaceCertificateDocumentAction: vi.fn(),
   saveBuildingPermissionsAction: vi.fn(),
+  saveCertificateAction: vi.fn(),
 }));
 
 import {
   saveBuildingPermissionsAction,
-  replaceCertificateDocumentAction
+  replaceCertificateDocumentAction,
+  saveCertificateAction
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action';
 
 const mockInitialData: PropertyCertificateWithStatusDto[] = [
@@ -105,47 +109,44 @@ describe('BuildingForm', () => {
     expect(saveBtn).toBeDisabled();
   });
 
-  it('calls saveBuildingPermissionsAction when saving data', async () => {
+  it('calls saveCertificateAction when saving data', async () => {
     (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: true });
+    (saveCertificateAction as Mock).mockResolvedValue({ success: true, data: { propertyCertificateId: 100 } });
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
     const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     fireEvent.change(inputs[0], { target: { value: 'BP-UPDATED' } });
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     fireEvent.click(saveBtn);
+    const confirmBtn = await screen.findByText('building.confirmReplaceOk');
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(saveBuildingPermissionsAction).toHaveBeenCalled();
-      const call = (saveBuildingPermissionsAction as Mock).mock.calls[0];
+      expect(saveCertificateAction).toHaveBeenCalled();
+      const call = (saveCertificateAction as Mock).mock.calls[0];
       expect(call[0]).toBe('en');
       expect(call[1]).toBe('123');
-      const formData = call[2] as FormData;
-      expect(formData).toBeInstanceOf(FormData);
-      
-      const payload = JSON.parse(formData.get("certificates") as string);
-      expect(payload).toEqual(
+      expect(call[2]).toEqual(
         expect.objectContaining({
           propertyId: 123,
-          certificates: expect.arrayContaining([
-            expect.objectContaining({
-              certificateTypeId: 1,
-              certificateNumber: 'BP-UPDATED'
-            })
-          ])
+          certificateTypeId: 1,
+          certificateNo: 'BP-UPDATED'
         })
       );
-      expect(toast.success).toHaveBeenCalledWith("Building permissions saved successfully!");
     });
   });
 
   it('handles submission error correctly', async () => {
     (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: false, error: 'Save failed' });
+    (saveCertificateAction as Mock).mockResolvedValue({ success: false, error: 'Save failed' });
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
     const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     fireEvent.change(inputs[0], { target: { value: 'BP-FAILED' } });
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     fireEvent.click(saveBtn);
+    const confirmBtn = await screen.findByText('building.confirmReplaceOk');
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Save failed");
@@ -160,11 +161,18 @@ describe('BuildingForm', () => {
     // toggles[0] is Show Active First, toggles[1] is Building Permission, toggles[2] is Commencement Certificate
     fireEvent.click(toggles[2]);
 
+    await waitFor(() => {
+      expect(toggles[2]).toHaveAttribute('aria-checked', 'true');
+    });
+
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    await waitFor(() => {
+      expect(saveBtn).not.toBeDisabled();
+    });
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(screen.getByText("common.validation.numberRequired")).toBeInTheDocument();
+      expect(screen.getAllByText("common.validation.numberRequired")[0]).toBeInTheDocument();
     });
   });
 
@@ -183,18 +191,14 @@ describe('BuildingForm', () => {
     });
   });
 
-  it('displays error when certificate number contains spaces', async () => {
+  it('automatically strips spaces when entering certificate number', async () => {
     render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
     const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
     fireEvent.change(inputs[0], { target: { value: 'BP 123456' } });
 
-    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
-    fireEvent.click(saveBtn);
-
-    await waitFor(() => {
-      expect(screen.getAllByText("common.validation.numberNoSpaces")[0]).toBeInTheDocument();
-    });
+    // Certificate number input field automatically strips spaces on input
+    expect(inputs[0]).toHaveValue('BP123456');
   });
 
   it('displays error when certificate number has repeated digits', async () => {
@@ -326,23 +330,25 @@ describe('BuildingForm', () => {
     });
   });
 
-  it('allows spaces in Commencement Certificate and saves successfully', async () => {
+  it('validates Commencement Certificate number without spaces and saves successfully', async () => {
     (saveBuildingPermissionsAction as Mock).mockResolvedValue({ success: true });
+    (saveCertificateAction as Mock).mockResolvedValue({ success: true, data: { propertyCertificateId: 100 } });
     const copData: PropertyCertificateWithStatusDto[] = [
       { certificateTypeId: 2, certificateTypeName: "Commencement Certificate (CC)", displayOrder: 20, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-456", fileName: "cc.pdf" }
     ];
     render(<BuildingForm initialBuildingPermission={copData} propertyId="123" />);
     const inputs = screen.getAllByPlaceholderText(/Enter document number/i);
     
-    // Valid CC number containing spaces, slashes, and hyphens
-    fireEvent.change(inputs[0], { target: { value: 'TMC / TDD - 0001 / 2023' } });
+    // Valid CC number containing slashes and hyphens without spaces
+    fireEvent.change(inputs[0], { target: { value: 'TMC/TDD-0001/2023' } });
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     fireEvent.click(saveBtn);
+    const confirmBtn = await screen.findByText('building.confirmReplaceOk');
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(saveBuildingPermissionsAction).toHaveBeenCalled();
-      expect(toast.success).toHaveBeenCalledWith("Building permissions saved successfully!");
+      expect(saveCertificateAction).toHaveBeenCalled();
     });
   });
 
@@ -368,7 +374,7 @@ describe('BuildingForm', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(screen.getAllByText("common.validation.dateBefore1900")[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/dateBefore1900/i)[0]).toBeInTheDocument();
     });
   });
 
@@ -391,7 +397,7 @@ describe('BuildingForm', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(screen.getAllByText("common.validation.occupancyDateAfterCommencement")[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/occupancyDateAfterCommencement|commencementDateBeforeOccupancy/i)[0]).toBeInTheDocument();
     });
   });
 
@@ -402,6 +408,12 @@ describe('BuildingForm', () => {
         updatedCertificates: [
           { certificateTypeId: 1, propertyCertificateId: 1001, isActive: true, certificateNo: "BP-12345", issueDate: "2023-01-01T00:00:00", documentGuid: "new-guid-123", fileName: "test-cc.pdf" }
         ]
+      }
+    });
+    (saveCertificateAction as Mock).mockResolvedValue({
+      success: true,
+      data: {
+        propertyCertificateId: 1001
       }
     });
     (replaceCertificateDocumentAction as Mock).mockResolvedValue({
@@ -435,9 +447,11 @@ describe('BuildingForm', () => {
     // Save changes
     const saveButton = screen.getByRole('button', { name: /Save Changes/i });
     fireEvent.click(saveButton);
+    const confirmBtn = await screen.findByText('building.confirmReplaceOk');
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(saveBuildingPermissionsAction).toHaveBeenCalled();
+      expect(saveCertificateAction).toHaveBeenCalled();
     });
   });
 

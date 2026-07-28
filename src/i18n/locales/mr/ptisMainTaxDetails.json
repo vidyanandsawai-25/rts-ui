@@ -1,5 +1,7 @@
 {
   "title": "कर तपशील",
+  "taxDetails": "कर तपशील",
+  "arrearsTaxes": "थकबाकी",
   "oldTotalCv": "जुने एकूण सीव्ही",
   "oldTotalTax": "जुना एकूण कर",
   "totalCv": "एकूण सीव्ही",
@@ -12,5 +14,23 @@
   "allTaxes": "सर्व कर",
   "taxes": "कर",
   "totalTaxes": "एकूण कर",
-  "noTaxDetailsAvailable": "कोणतेही कर तपशील उपलब्ध नाहीत"
+  "noTaxDetailsAvailable": "कोणतेही कर तपशील उपलब्ध नाहीत",
+  "noArrearsTaxDetailsAvailable": "कोणतेही थकीत कर तपशील उपलब्ध नाहीत",
+  "generalTax": "सामान्य कर",
+  "stateEducationTax": "राज्य शिक्षण कर",
+  "stateEmploymentTax": "राज्य रोजगार कर",
+  "treeCess": "वृक्ष कर",
+  "specialWaterCess": "विशेष पाणी कर",
+  "roadCess": "रस्ता कर",
+  "fireCess": "अग्निशमन कर",
+  "lightCess": "दिवाबत्ती कर",
+  "waterBenefitCess": "जल लाभ कर",
+  "sewageDisposalCess": "मलनिस्सारण कर",
+  "specialEducationTax": "विशेष शिक्षण कर",
+  "commencementCertificate": "प्रारंभ प्रमाणपत्र",
+  "partialCommencementCertificate": "अंशतः प्रारंभ प्रमाणपत्र",
+  "occupancyCertificate": "भोगवटा प्रमाणपत्र",
+  "partialOccupancyCertificate": "अंशतः भोगवटा प्रमाणपत्र",
+  "electricBill": "वीज बिल",
+  "partialElectricBill": "अंशतः वीज बिल"
 }

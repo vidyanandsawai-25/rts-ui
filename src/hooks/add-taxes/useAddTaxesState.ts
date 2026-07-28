@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { InitOperationsResponse, ScopeOptionItem, ScopeItem, Scope, Action } from '@/types/addTaxes.types';
+import { logger } from '@/lib/utils/logger';
+import { InitOperationsResponse, ScopeOptionItem, ScopeItem, Scope, Action, FinanceYearOption } from '@/types/addTaxes.types';
 import {
   Globe,
   MapPin,
@@ -31,7 +32,11 @@ function isSelectionDataEqual(a: Record<string, string[]>, b: Record<string, str
   return true;
 }
 
-export function useAddTaxesState(initData: InitOperationsResponse | null, scopeOptions: ScopeOptionItem[]) {
+export function useAddTaxesState(
+  initData: InitOperationsResponse | null,
+  scopeOptions: ScopeOptionItem[],
+  clientActions: { initOperationsAction: (financeYearId?: string | number) => Promise<InitOperationsResponse | null> }
+) {
   const t = useTranslations('addTaxes');
   const router = useRouter();
   const pathname = usePathname();
@@ -47,6 +52,7 @@ export function useAddTaxesState(initData: InitOperationsResponse | null, scopeO
   // Sync selectionData from URL parameters on mount or when scope/searchParams change
   useEffect(() => {
     if (!scopeOptions || scopeOptions.length === 0) return;
+    if (isInitialized) return;
 
     const urlScope = searchParams.get('scope');
     if (urlScope && urlScope !== selectedScope) {
@@ -106,28 +112,86 @@ export function useAddTaxesState(initData: InitOperationsResponse | null, scopeO
     }
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedScope, scopeOptions, searchParams]);
+  }, [selectedScope, scopeOptions, searchParams, isInitialized]);
 
   const handleSelectionChange = (key: string, values: string[]) => {
-    setSelectionData(prev => ({ ...prev, [key]: values }));
+    setSelectionData(prev => {
+      const next = { ...prev, [key]: values };
+      const prevKeys = Object.keys(prev);
+
+      const isZone = key.toLowerCase().includes('zone');
+      if (isZone) {
+        for (const k of prevKeys) {
+          const lowerKey = k.toLowerCase();
+          if (lowerKey.includes('ward')) {
+            next[k] = [];
+          }
+          if (lowerKey.includes('building') || lowerKey.includes('property no') || lowerKey.includes('from') || lowerKey.includes('to')) {
+            next[k] = [];
+          }
+        }
+      }
+
+      const isWard = key.toLowerCase().includes('ward');
+      if (isWard) {
+        for (const k of prevKeys) {
+          const lowerKey = k.toLowerCase();
+          if (lowerKey.includes('building') || lowerKey.includes('property no') || lowerKey.includes('from') || lowerKey.includes('to')) {
+            next[k] = [];
+          }
+        }
+      }
+
+      return next;
+    });
   };
 
   const defaultFinanceYearId = initData?.financeYears?.[0]?.value !== undefined ? String(initData.financeYears[0].value) : '';
   const urlFinanceYearId = searchParams.get('financeYearId') || searchParams.get('financeYear');
   const [financeYearId, setFinanceYearId] = useState<string>(urlFinanceYearId || defaultFinanceYearId);
 
+  const [currentInitData, setCurrentInitData] = useState<InitOperationsResponse | null>(initData);
+  const [isLoadingInit, setIsLoadingInit] = useState(false);
+
+  useEffect(() => {
+    if (!financeYearId) return;
+    let active = true;
+    const fetchInitData = async () => {
+      setIsLoadingInit(true);
+      try {
+        const data = await clientActions.initOperationsAction(financeYearId);
+        if (data && active) {
+          setCurrentInitData(data);
+        }
+      } catch (err) {
+        logger.error("Failed to load init data for finance year", { error: err as Error });
+      } finally {
+        if (active) setIsLoadingInit(false);
+      }
+    };
+    fetchInitData();
+    return () => {
+      active = false;
+    };
+  }, [financeYearId, clientActions]);
+
   useEffect(() => {
     const currentScope = searchParams.get('scope');
     const currentFy = searchParams.get('financeYearId') || searchParams.get('financeYear');
 
-    if (!currentScope || !currentFy) {
-      const params = new URLSearchParams(searchParams.toString());
-      if (!currentScope) params.set('scope', selectedScope);
-      if (!currentFy && defaultFinanceYearId) params.set('financeYearId', defaultFinanceYearId);
-      params.delete('financeYear');
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  }, [searchParams, selectedScope, defaultFinanceYearId, pathname, router]);
+    const nextScope = currentScope || selectedScope;
+    const nextFy = currentFy || financeYearId || defaultFinanceYearId;
+
+    if (!nextScope || !nextFy) return;
+    if (currentScope === nextScope && currentFy === nextFy && !searchParams.get('financeYear')) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('scope', nextScope);
+    params.set('financeYearId', nextFy);
+    params.delete('financeYear');
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, selectedScope, financeYearId, defaultFinanceYearId, pathname, router]);
 
   const updateUrlParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -146,7 +210,6 @@ export function useAddTaxesState(initData: InitOperationsResponse | null, scopeO
   const handleScopeChange = (val: Scope) => {
     setSelectedScope(val);
     setSelectionData({}); // clear selections on scope change
-    setIsInitialized(false);
     
     // Clear all other query params except scope and financeYearId to avoid race conditions
     const params = new URLSearchParams();
@@ -157,15 +220,19 @@ export function useAddTaxesState(initData: InitOperationsResponse | null, scopeO
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const stats = initData?.summary || {
+  const stats = currentInitData?.summary || {
     totalProperties: 0,
     eligibleRecords: 0,
     skippedRecords: 0,
     runningJobs: 0
   };
 
-  const permissions = initData?.permissions || {};
-  const financeYearOptions = initData?.financeYears || [{ label: '2026-27', value: '2026-27' }];
+  const permissions = currentInitData?.permissions || {};
+  const financeYearOptions = currentInitData?.financeYears || ([] as FinanceYearOption[]);
+
+  const selectedFyOption = financeYearOptions.find(opt => String(opt.value) === String(financeYearId));
+  const isFinanceYearActive = selectedFyOption ? selectedFyOption.isActive !== false : true;
+  const financeYearLabel = selectedFyOption ? selectedFyOption.label : '';
 
   const iconMap: Record<string, LucideIcon> = {
     all: Globe,
@@ -227,6 +294,9 @@ export function useAddTaxesState(initData: InitOperationsResponse | null, scopeO
     scopes,
     actions,
     scopeOptions,
-    isInitialized
+    isInitialized,
+    isFinanceYearActive,
+    financeYearLabel,
+    isLoadingInit
   };
 }

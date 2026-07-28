@@ -38,7 +38,7 @@ export function ModuleAccessStep({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 px-2 overflow-visible">
-      <div className="flex-1 overflow-y-auto pr-2 py-2">
+      <div className="flex-1 overflow-y-auto pr-2 pt-2 pb-32">
         <div className="space-y-4">
           {formData.departmentIds.map((deptId: string) => {
             const dept = departments.find(
@@ -48,10 +48,10 @@ export function ModuleAccessStep({
             const deptModules = modules.filter((m) => {
               const mDeptId = String(
                 m.departmentMasterId ||
-                  m.departmentId ||
-                  m.departmentID ||
-                  m.departmentMasterID ||
-                  ''
+                m.departmentId ||
+                m.departmentID ||
+                m.departmentMasterID ||
+                ''
               );
 
               if (mDeptId !== String(deptId)) {
@@ -69,8 +69,8 @@ export function ModuleAccessStep({
             });
 
             return (
-              <Card key={deptId} className="overflow-hidden border-2 border-slate-200 shadow-sm">
-                <div className="bg-slate-50 px-4 py-3 border-b flex items-center justify-between">
+              <Card key={deptId} className="overflow-visible border-2 border-slate-200 shadow-sm">
+                <div className="bg-slate-50 px-4 py-3 border-b flex items-center justify-between rounded-t-lg">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-white border-slate-300">
                       {dept?.departmentCode}
@@ -119,19 +119,17 @@ export function ModuleAccessStep({
                           <div
                             key={moduleId}
                             onClick={() => toggleModule(deptId, moduleId)}
-                            className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${
-                              isSelected
+                            className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${isSelected
                                 ? 'border-indigo-500 bg-indigo-50 shadow-sm ring-1 ring-indigo-500/20'
                                 : 'border-slate-100 hover:border-indigo-200 hover:bg-slate-50'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-3">
                               <div
-                                className={`p-2 rounded-lg transition-colors ${
-                                  isSelected
+                                className={`p-2 rounded-lg transition-colors ${isSelected
                                     ? 'bg-indigo-500 text-white'
                                     : 'bg-slate-100 text-slate-500'
-                                }`}
+                                  }`}
                               >
                                 <Layers className="w-4 h-4" />
                               </div>
@@ -154,11 +152,10 @@ export function ModuleAccessStep({
                             </div>
 
                             <div
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                                isSelected
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected
                                   ? 'border-indigo-500 bg-indigo-500 text-white'
                                   : 'border-slate-200'
-                              }`}
+                                }`}
                             >
                               {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
                             </div>
@@ -172,7 +169,7 @@ export function ModuleAccessStep({
                     )}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-slate-100 h-[350px] overflow-y-auto">
+                  <div className="mt-4 pt-4 border-t border-slate-100">
                     <div className="flex items-center gap-2 mb-2">
                       <Shield className="w-3.5 h-3.5 text-blue-600" />
 

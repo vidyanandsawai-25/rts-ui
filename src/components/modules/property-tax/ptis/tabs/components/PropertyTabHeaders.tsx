@@ -2,15 +2,22 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Building2, UserCheck, Users, History, Percent, FileText } from 'lucide-react';
+import { Building2, UserCheck, Users, History, Percent, FileText, ChevronsDown, ChevronsUp } from 'lucide-react';
 import { Tabs } from '@/components/common/Tabs';
+import { Tooltip } from '@/components/common/Tooltip';
 import type { PtisTabId } from '@/types/ptis.types';
 
 interface PropertyTabHeadersProps {
   activeTab: PtisTabId;
+  isBuildingPermissionExpanded?: boolean;
+  onToggleBuildingPermissionExpand?: () => void;
 }
 
-export const PropertyTabHeaders: React.FC<PropertyTabHeadersProps> = ({ activeTab }) => {
+export const PropertyTabHeaders: React.FC<PropertyTabHeadersProps> = ({
+  activeTab,
+  isBuildingPermissionExpanded,
+  onToggleBuildingPermissionExpand,
+}) => {
   const t = useTranslations('ptis');
 
   return (
@@ -47,9 +54,36 @@ export const PropertyTabHeaders: React.FC<PropertyTabHeadersProps> = ({ activeTa
           value="buildingpermission"
           className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
         >
-          <span className="inline-flex items-center">
+          <span className="inline-flex items-center gap-1.5">
             <FileText className="h-4 w-4" />
-            <span className="ml-2">{t('tabs.buildingPermission')}</span>
+            <span>{t('tabs.buildingPermission')}</span>
+            {activeTab === 'buildingpermission' && onToggleBuildingPermissionExpand && (
+              <Tooltip content={isBuildingPermissionExpanded ? 'Collapse' : 'Expand'} placement="top">
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleBuildingPermissionExpand();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onToggleBuildingPermissionExpand();
+                    }
+                  }}
+                  className="p-0.5 ml-1 rounded hover:bg-blue-100/50 text-current transition-colors cursor-pointer inline-flex items-center justify-center border-0 bg-transparent"
+                  aria-label={isBuildingPermissionExpanded ? 'Collapse' : 'Expand'}
+                >
+                  {isBuildingPermissionExpanded ? (
+                    <ChevronsUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronsDown className="h-3.5 w-3.5" />
+                  )}
+                </span>
+              </Tooltip>
+            )}
           </span>
         </Tabs.Tab>
         <Tabs.Tab

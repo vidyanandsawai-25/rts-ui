@@ -55,7 +55,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
             align: "center",
             render: (_val: unknown, row: RoomData) => {
                 const typeVal = row.roomTypeDescription ?? row.utilities ?? row.roomType;
-                const cleanType = (typeVal && typeVal !== "Room") ? String(typeVal) : "";
+                const cleanType = (typeVal && typeVal !== "Room" && typeVal !== "Residential") ? String(typeVal) : "";
                 return (
                     <div className="px-2 text-gray-900 font-medium truncate text-center">
                         {cleanType || "-"}

@@ -35,6 +35,7 @@ export interface ConfigItem {
   ulbId?: number;
   moduleId?: number | null;
   departmentId?: number;
+  createdDate?: string | null;
   updatedDate?: string | null;
 }
 

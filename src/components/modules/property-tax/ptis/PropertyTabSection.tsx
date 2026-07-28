@@ -168,6 +168,7 @@ export default function PropertyTabSection({
 
   const [localTab, setLocalTab] = useState<PtisTabId>(activeTab);
   const [prevActiveTab, setPrevActiveTab] = useState<PtisTabId>(activeTab);
+  const [isBuildingPermissionExpanded, setIsBuildingPermissionExpanded] = useState(false);
 
   // Sync local state with URL changes during render phase to avoid cascading effects
   if (activeTab !== prevActiveTab) {
@@ -249,7 +250,11 @@ export default function PropertyTabSection({
           isSearchingProperties={isSearchingProperties}
         />
 
-        <PropertyTabHeaders activeTab={localTab} />
+        <PropertyTabHeaders
+          activeTab={localTab}
+          isBuildingPermissionExpanded={isBuildingPermissionExpanded}
+          onToggleBuildingPermissionExpand={() => setIsBuildingPermissionExpanded((prev) => !prev)}
+        />
 
         <div className="p-0">
           <Tabs.TabPanel value="propertydetails" className="mt-0 pt-0">
@@ -266,6 +271,7 @@ export default function PropertyTabSection({
               data={buildingPermissionData}
               onFieldChange={() => {}}
               readOnly={true}
+              isExpanded={isBuildingPermissionExpanded}
             />
           </Tabs.TabPanel>
           <Tabs.TabPanel value="discountdetails" className="mt-0 pt-0">

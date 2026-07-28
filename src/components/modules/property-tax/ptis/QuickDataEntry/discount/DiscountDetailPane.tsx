@@ -63,7 +63,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     };
     if (!data) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-full bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-gray-400 mb-3" />
                 <p className="text-sm font-bold text-gray-500">
                     {t("discount.selectDiscountPrompt") || "Select a discount attribute from the sidebar to edit details"}
@@ -86,7 +86,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
     if (!isActiveDiscount(data) && !hasAnyData) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-full bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-blue-500 mb-3" />
                 <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
                 <p className="text-sm font-semibold text-gray-500 max-w-sm">
@@ -111,7 +111,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     }`;
 
     return (
-        <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+        <div className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
         }`}>
             <div className="space-y-5 overflow-y-auto pr-1">

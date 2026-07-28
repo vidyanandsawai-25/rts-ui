@@ -8,6 +8,7 @@ import { EditSidebarProps } from '@/types/floor-details.types';
 import { FloorData } from '@/types/room-details.types';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
 import { ConstructionTypeResponse } from '@/types/floor-details.types';
+import { LookupData } from '@/types/common-details.types';
 
 import { useFloorAreaValidation, isRecordOpenPlot } from './useFloorAreaValidation';
 
@@ -186,8 +187,22 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
           }));
         }
       }
+
+      // Auto-default floorId to '77' if not set
+      if (isAddingNewFloor && !editingFloorForm.floorId) {
+        const openPlotFloor = (props.floorData as LookupData[])?.find(
+          (f) => String(f.floorId || f.id) === '77'
+        );
+        const floorDesc = openPlotFloor ? String(openPlotFloor.description || 'Open Plot') : 'Open Plot';
+        setEditingFloorForm(prev => ({
+          ...prev,
+          floorId: '77',
+          floor: prev.floor || floorDesc,
+          floorDescription: prev.floorDescription || floorDesc,
+        }));
+      }
     }
-  }, [selectedFloorType, props.constructionTypeData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);
+  }, [selectedFloorType, isAddingNewFloor, editingFloorForm.floorId, props.constructionTypeData, props.floorData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);
 
   // Auto-populate remaining area for new Open Space records immediately on opening the tab
   useEffect(() => {
@@ -282,27 +297,15 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   const filteredFloors = useMemo(() => {
     const search = floorSearch.toLowerCase();
     return localFloors.filter((f) => {
-      // Hide Open Plot record from the table if all conditions are met
-      // if (
-      //   (f.isOpenPlot === true || String(f.isOpenPlot) === 'true') &&
-      //   (f.typeOfUseId === 10 || Number(f.typeOfUseId) === 10 || String(f.typeOfUseId) === '10') &&
-      //   f.typeOfUseDescription === "खुला भूखंड"
-      // ) {
-      //   return false;
-      // }
+      // Business Rule: Check only the isOpenPlot property for each record.
+      // If isOpenPlot === true (or 'true' / 1 / IsOpenPlot), the record must not be displayed in the Floor Details table.
+      const rawIsOpenPlot = f.isOpenPlot !== undefined ? f.isOpenPlot : (f as any).IsOpenPlot;
+      const isOpenPlot = rawIsOpenPlot === true || String(rawIsOpenPlot).toLowerCase() === 'true' || rawIsOpenPlot === 1 || String(rawIsOpenPlot) === '1';
 
-      const isActualOpenPlot =
-        f.isOpenPlot === true ||
-        String(f.isOpenPlot) === 'true' ||
-        String(f.floorId) === '77' ||
-        String(f.floor).toLowerCase() === 'open plot' ||
-        String(f.floorDescription).toLowerCase() === 'open plot';
-
-      if (isPlotCategory) {
-        if (!isActualOpenPlot) return false;
-      } else {
-        if (isActualOpenPlot) return false;
+      if (isOpenPlot) {
+        return false;
       }
+
       return (
         !search ||
         (f.floor || '').toLowerCase().includes(search) ||
@@ -310,7 +313,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
         (f.use || '').toLowerCase().includes(search)
       );
     });
-  }, [localFloors, floorSearch, isPlotCategory]);
+  }, [localFloors, floorSearch]);
 
   const subTypeOptionsFromData = useMemo(() =>
     (props.subTypeData || []).map(st => st.searchKey ? `${st.searchKey} - ${st.description}` : st.description),

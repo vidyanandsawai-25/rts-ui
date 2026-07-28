@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, useConfirm, useToast } from '@/components/common';
+import { useToast } from '@/components/common';
 import {
   createModuleAction,
   updateModuleAction,
@@ -37,158 +37,131 @@ interface SubmoduleFormProps {
     isActive: boolean;
   } | null;
   isEdit: boolean;
+  onStateChange: (state: { isDirty: boolean; isPending: boolean }) => void;
 }
 
-/**
- * FORM CONTENT COMPONENT
- * Handles its own state to avoid useEffect reset patterns that trigger linting errors.
- * Re-mounts via key={isOpen} in the parent to naturally reset state.
- */
-export function SubmoduleForm({
-  initialData,
-  departmentId,
-  onSuccess,
-  onClose,
-  isEdit,
-}: SubmoduleFormProps) {
-  const t = useTranslations('configMaster');
-  const tCommon = useTranslations('common');
-  const router = useRouter();
-  const { confirm } = useConfirm();
-  const { success: toastSuccess, error: toastError } = useToast();
-  const [isPending, startTransition] = useTransition();
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+export const SubmoduleForm = forwardRef<{ handleClose: () => void }, SubmoduleFormProps>(
+  function SubmoduleForm({
+    initialData,
+    departmentId,
+    onSuccess,
+    onClose,
+    isEdit,
+    onStateChange,
+  }, ref) {
+    const t = useTranslations('configMaster');
+    const router = useRouter();
+    const { success: toastSuccess, error: toastError } = useToast();
+    const [isPending, startTransition] = useTransition();
+    const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
-  const derivedFormState = useMemo(() => {
-    if (!isEdit || !initialData) return initialFormState;
-    return {
-      moduleCode: initialData.moduleCode,
-      moduleName: initialData.moduleName,
-      moduleDescription: initialData.moduleDescription,
-      isActive: initialData.isActive,
-    };
-  }, [isEdit, initialData]);
+    const derivedFormState = useMemo(() => {
+      if (!isEdit || !initialData) return initialFormState;
+      return {
+        moduleCode: initialData.moduleCode,
+        moduleName: initialData.moduleName,
+        moduleDescription: initialData.moduleDescription,
+        isActive: initialData.isActive,
+      };
+    }, [isEdit, initialData]);
 
-  const [formData, setFormData] = useState<FormState>(derivedFormState);
+    const [formData, setFormData] = useState<FormState>(derivedFormState);
 
-  const isDirty = useMemo(() => 
-    JSON.stringify(formData) !== JSON.stringify(derivedFormState), 
-  [formData, derivedFormState]);
+    const isDirty = useMemo(() => 
+      JSON.stringify(formData) !== JSON.stringify(derivedFormState), 
+    [formData, derivedFormState]);
 
-  const handleClose = (): void => {
-    if (isPending) return;
-    if (isDirty) {
-      confirm({
-        variant: 'warning',
-        title: t('confirm.discard.title'),
-        description: t('confirm.discard.description'),
-        confirmText: t('confirm.discard.confirm'),
-        cancelText: t('confirm.discard.cancel'),
-        onConfirm: onClose,
-      });
-      return;
-    }
-    onClose();
-  };
+    useEffect(() => {
+      onStateChange({ isDirty, isPending });
+    }, [isDirty, isPending, onStateChange]);
 
-  const validateForm = (): boolean => {
-    const validationData = {
-      ...formData,
-      departmentId,
-      moduleNameLocal: null,
-      moduleIcon: null,
-      moduleLabel: null,
-    };
-    const schema = isEdit ? UpdateModuleMasterSchema : CreateModuleMasterSchema;
-    const validation = schema.safeParse(validationData);
-    if (!validation.success) {
-      const fieldErrors = validation.error.flatten().fieldErrors;
-      const newErrors: Partial<Record<keyof FormState, string>> = {};
-      Object.entries(fieldErrors).forEach(([key, msgs]) => {
-        if (Array.isArray(msgs) && msgs.length > 0) {
-          newErrors[key as keyof FormState] = msgs[0];
-        }
-      });
-      setErrors(newErrors);
-      return false;
-    }
-    setErrors({});
-    return true;
-  };
-
-  const handleSubmit = async (): Promise<void> => {
-    if (!validateForm()) return;
-    if (isEdit && !isDirty) {
-      onClose();
-      return;
-    }
-    
-    startTransition(async () => {
-      try {
-        // Only send form fields + departmentId - audit fields (createdBy/updatedBy) are set server-side
-        const payload = { 
-          ...formData, 
-          departmentId,
-          moduleNameLocal: null, 
-          moduleIcon: null, 
-          moduleLabel: null 
-        };
-        const result = isEdit && initialData 
-          ? await updateModuleAction(initialData.moduleId, payload) 
-          : await createModuleAction(payload);
-
-        if (result.success) {
-          toastSuccess(isEdit ? t('messages.submoduleUpdated') : t('messages.submoduleCreated'));
-          router.refresh();
-          onSuccess?.();
-          onClose();
-        } else {
-          if (result.validationErrors) {
-            const mappedErrors: Partial<Record<keyof FormState, string>> = {};
-            Object.entries(result.validationErrors).forEach(([key, msgs]) => {
-              if (Array.isArray(msgs) && msgs.length > 0) {
-                mappedErrors[key as keyof FormState] = msgs[0];
-              }
-            });
-            setErrors(mappedErrors);
+    const validateForm = (): boolean => {
+      const validationData = {
+        ...formData,
+        departmentId,
+        moduleNameLocal: null,
+        moduleIcon: null,
+        moduleLabel: null,
+      };
+      const schema = isEdit ? UpdateModuleMasterSchema : CreateModuleMasterSchema;
+      const validation = schema.safeParse(validationData);
+      if (!validation.success) {
+        const fieldErrors = validation.error.flatten().fieldErrors;
+        const newErrors: Partial<Record<keyof FormState, string>> = {};
+        Object.entries(fieldErrors).forEach(([key, msgs]) => {
+          if (Array.isArray(msgs) && msgs.length > 0) {
+            newErrors[key as keyof FormState] = msgs[0];
           }
-          toastError(result.error || (isEdit ? t('messages.submoduleUpdateFailed') : t('messages.submoduleCreateFailed')));
-        }
-      } catch {
-        toastError(t('messages.unexpectedError'));
+        });
+        setErrors(newErrors);
+        return false;
       }
-    });
-  };
+      setErrors({});
+      return true;
+    };
 
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-          <SubmoduleFormFields 
-            formData={formData} 
-            errors={errors} 
-            isPending={isPending} 
-            isEdit={isEdit}
-            onChange={(f, v) => setFormData(p => ({ ...p, [f]: v }))} 
-          />
-        </form>
-      </div>
-      <div className="border-t border-slate-100 p-6 flex items-center justify-end gap-3 bg-slate-50/50">
-        <Button variant="secondary" onClick={handleClose} disabled={isPending} className="cursor-pointer">
-          {tCommon('actions.cancel')}
-        </Button>
-        <Button 
-          variant="primary" 
-          onClick={handleSubmit} 
-          disabled={isPending || (isEdit && !isDirty)} 
-          isLoading={isPending} 
-          className="bg-violet-600 hover:bg-violet-700 text-white cursor-pointer"
-        >
-          {isPending 
-            ? (isEdit ? t('modals.editSubmodule.buttons.saving') : t('modals.addSubmodule.buttons.creating')) 
-            : (isEdit ? t('modals.editSubmodule.buttons.save') : t('modals.addSubmodule.buttons.create'))}
-        </Button>
-      </div>
-    </div>
-  );
-}
+    const handleSubmit = async (e?: React.FormEvent): Promise<void> => {
+      e?.preventDefault();
+      if (!validateForm()) return;
+      if (isEdit && !isDirty) {
+        onClose();
+        return;
+      }
+      
+      startTransition(async () => {
+        try {
+          const payload = { 
+            ...formData, 
+            departmentId,
+            moduleNameLocal: null, 
+            moduleIcon: null, 
+            moduleLabel: null 
+          };
+          const result = isEdit && initialData 
+            ? await updateModuleAction(initialData.moduleId, payload) 
+            : await createModuleAction(payload);
+
+          if (result.success) {
+            toastSuccess(isEdit ? t('messages.submoduleUpdated') : t('messages.submoduleCreated'));
+            router.refresh();
+            onSuccess?.();
+            onClose();
+          } else {
+            if (result.validationErrors) {
+              const mappedErrors: Partial<Record<keyof FormState, string>> = {};
+              Object.entries(result.validationErrors).forEach(([key, msgs]) => {
+                if (Array.isArray(msgs) && msgs.length > 0) {
+                  mappedErrors[key as keyof FormState] = msgs[0];
+                }
+              });
+              setErrors(mappedErrors);
+            }
+            toastError(result.error || (isEdit ? t('messages.submoduleUpdateFailed') : t('messages.submoduleCreateFailed')));
+          }
+        } catch {
+          toastError(t('messages.unexpectedError'));
+        }
+      });
+    };
+
+    useImperativeHandle(ref, () => ({
+      handleClose: () => {
+        setFormData(derivedFormState);
+        setErrors({});
+        onClose();
+      }
+    }));
+
+    return (
+      <form id="submodule-form" onSubmit={handleSubmit} className="light">
+        <SubmoduleFormFields 
+          formData={formData} 
+          errors={errors} 
+          isPending={isPending} 
+          isEdit={isEdit}
+          onChange={(f, v) => setFormData(p => ({ ...p, [f]: v }))} 
+        />
+      </form>
+    );
+  }
+);

@@ -110,7 +110,9 @@
     },
     "status": {
       "failed": "Failed",
-      "added": "Added"
+      "added": "Added",
+      "pending": "Pending",
+      "skipped": "Skipped"
     }
   },
   "reviewModal": {
@@ -224,7 +226,7 @@
   },
   "userManual": {
     "title": "User Manual",
-    "desc1": "This screen supports Add Tax, Quarterly Add, Remove Tax and Quarterly Remove.",
+    "desc1": "This screen supports Add Tax operation",
     "desc2": "Use the scope cards to switch between All Properties, Zone, Ward, Building, Property and Range modes."
   },
   "messages": {
@@ -250,7 +252,15 @@
     "failedFetchCalculation": "Failed to fetch calculation results",
     "errorCalculating": "Error occurred while calculating eligible properties",
     "scheduledJobStarted": "Scheduled job {jobId} has started executing.",
-    "invalidRange": "to property should be greater than from property select proper range."
+    "invalidRange": "The 'To property' must be greater than the 'From property'. Please select a valid range.",
+    "exportSuccess": "Export completed successfully",
+    "exportCompleted": "Export completed successfully",
+    "exportingStarted": "Export download started...",
+    "exportingDownloading": "Export downloading, please wait...",
+    "exportFailed": "Failed to export properties",
+    "previewExportInProgress": "Exporting preview ({downloadType})...",
+    "previewExportSuccess": "Preview export ({downloadType}) completed successfully.",
+    "previewExportFailed": "Failed to download preview export file."
   },
   "schedule": {
     "title": "Schedule Job Execution",
@@ -264,11 +274,11 @@
     "stats": {
       "totalJobs": "Total Jobs",
       "totalJobsSub": "All bulk tax operations",
-      "completed": "Completed",
+      "completed": "Completed Jobs",
       "completedSub": "Successfully processed",
-      "running": "Running",
+      "running": "Running Jobs",
       "runningSub": "Currently executing",
-      "failed": "Failed",
+      "failed": "Failed Jobs",
       "failedSub": "Require review"
     },
     "filters": {
@@ -320,6 +330,14 @@
       "durationLabel": "Duration:",
       "financialYearLabel": "Financial Year:",
       "loadingText": "Loading job properties..."
+    },
+    "emptyState": {
+      "noData": "No data available"
     }
+  },
+  "inactiveFinanceYear": {
+    "title": "Operation Restricted",
+    "message": "For finance year \"{financeYear}\" you cannot do add taxes.",
+    "subtext": "Please select current finance year to perform tax operation."
   }
 }

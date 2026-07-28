@@ -18,7 +18,7 @@ interface ConfigItemRowProps {
   locale: string;
 }
 
-export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowProps) {
+export function ConfigItemRow({ item, searchTerm = '' }: ConfigItemRowProps) {
   const t = useTranslations('configMaster');
   const router = useRouter();
   const { success, error: toastError } = useToast();
@@ -50,7 +50,7 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
   return (
     <Card
       className={cn(
-        'group relative flex flex-col md:flex-row md:items-center justify-between p-4 sm:p-5 transition-all duration-300 gap-4 overflow-visible',
+        'group relative flex flex-col md:flex-row md:items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-300 gap-3 overflow-visible',
         item.isEnabled
           ? 'bg-emerald-50/10 border-emerald-100/50'
           : 'bg-white border-slate-100 shadow-sm'
@@ -72,7 +72,7 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span
               className={cn(
-                'font-bold text-sm sm:text-base tracking-tight transition-colors line-clamp-2 flex-1',
+                'font-bold text-sm sm:text-base tracking-tight transition-colors',
                 item.isEnabled ? 'text-slate-900' : 'text-slate-500'
               )}
               title={item.name}
@@ -83,7 +83,7 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
               variant={item.isEnabled ? 'success' : 'secondary'}
               size="sm"
               className={cn(
-                'h-4 py-0 px-1.5 text-[8px] font-black uppercase tracking-widest',
+                'h-4 py-0 px-1.5 text-[8px] font-black uppercase tracking-widest shrink-0',
                 !item.isEnabled && 'bg-slate-100 text-slate-400 border-slate-200'
               )}
             >
@@ -92,18 +92,18 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
           </div>
 
           {item.description && (
-            <div className="text-[11px] sm:text-xs font-medium text-slate-500 line-clamp-1 mb-2">
+            <div className="text-[11px] sm:text-xs font-medium text-slate-500 break-words [overflow-wrap:anywhere] leading-relaxed mb-2">
               {highlightText(item.description, searchTerm)}
             </div>
           )}
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+              <div className="flex items-center gap-2 bg-indigo-50/60 px-2.5 py-1 rounded-lg border border-indigo-100/80">
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
                   {t('list.currentValue') || 'Value'}
                 </span>
-                <span className="text-xs font-bold text-indigo-600">
+                <span className="text-xs font-bold text-indigo-700 break-all">
                   {(() => {
                     const val = item.value || item.defaultValue || '';
                     const control = (item.controlType || '').toLowerCase();
@@ -118,21 +118,21 @@ export function ConfigItemRow({ item, searchTerm = '', locale }: ConfigItemRowPr
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400/70">
-                <Calendar className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 <span className="uppercase tracking-tight">
-                  {item.updatedDate
-                    ? new Date(item.updatedDate).toLocaleDateString(locale, {
-                        month: '2-digit',
-                        day: '2-digit',
-                      }) +
-                      ' ' +
-                      new Date(item.updatedDate).toLocaleTimeString(locale, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })
-                    : '—'}
+                  {(() => {
+                    const dateStr = item.updatedDate || item.createdDate;
+                    if (!dateStr) return '—';
+                    const parsedDate = new Date(dateStr);
+                    if (isNaN(parsedDate.getTime())) return '—';
+                    const day = String(parsedDate.getDate()).padStart(2, '0');
+                    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+                    const year = parsedDate.getFullYear();
+                    const hours = String(parsedDate.getHours()).padStart(2, '0');
+                    const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+                    return `${day}/${month}/${year} ${hours}:${minutes}`;
+                  })()}
                 </span>
               </div>
             </div>

@@ -1,34 +1,53 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { fetchAllWardsAction, getImportTemplateAction } from '@/app/[locale]/property-tax/add-taxes/actions';
+import { logger } from '@/lib/utils/logger';
 import { ScopeOptionItem } from '@/types/addTaxes.types';
+import type {
+  ImportTemplateResponse,
+  EligibleCountPayload,
+  ExecuteOperationPayload,
+  OperationPreviewPayload,
+  OperationPreviewResponse,
+} from '@/types/addTaxes.types';
+import type { WardItem } from '@/types/wardMaster.types';
 import { useExcelImportState } from './useExcelImportState';
 import { useExcelImportActions } from './useExcelImportActions';
+
+interface ExcelImportActionResponses {
+  fetchAllWardsAction: () => Promise<{ data?: WardItem[] } | null>;
+  getImportTemplateAction: () => Promise<ImportTemplateResponse | null>;
+  getEligibleCountAction: (payload: EligibleCountPayload) => Promise<{ eligible?: number; total?: number; skipped?: number; error?: string } | null>;
+  executeOperationAction: (payload: ExecuteOperationPayload) => Promise<{ items?: { jobId: string; summary: { total: number } }; error?: string } | null>;
+  previewOperationAction: (payload: OperationPreviewPayload) => Promise<(OperationPreviewResponse & { error?: string }) | { error: string } | null>;
+}
 
 interface UseExcelImportProps {
   onStartExecution: (jobId: string, totalCount: number, scheduledTime?: string) => void;
   financeYearId: string;
   zoneOptions: { value: string; label: string }[];
   scopeOptions: ScopeOptionItem[];
+  actions: ExcelImportActionResponses;
 }
 
 export function useExcelImport({
   onStartExecution,
   financeYearId,
   zoneOptions,
-  scopeOptions
+  scopeOptions,
+  actions
 }: UseExcelImportProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const state = useExcelImportState();
-  const actions = useExcelImportActions({
+  const excelActions = useExcelImportActions({
     state,
     onStartExecution,
     financeYearId,
     zoneOptions,
-    scopeOptions
+    scopeOptions,
+    actions
   });
 
   const setPageNumber = (page: number) => {
@@ -60,27 +79,27 @@ export function useExcelImport({
   useEffect(() => {
     const initData = async () => {
       try {
-        const template = await getImportTemplateAction();
+        const template = await actions.getImportTemplateAction();
         if (template) state.setTemplateConfig(template);
-        const wardsRes = await fetchAllWardsAction();
+        const wardsRes = await actions.fetchAllWardsAction();
         if (wardsRes?.data) state.setFetchedWards(wardsRes.data);
       } catch (err) {
-        console.error('Failed to initialize Excel import tab configurations', err);
+        logger.error('Failed to initialize Excel import tab configurations', { error: err as Error });
       }
     };
     initData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [actions]);
 
   useEffect(() => {
     if (state.isPreviewModalOpen) {
       const timer = setTimeout(() => {
-        actions.handlePreview(actions.previewPage, actions.previewPageSize);
+        excelActions.handlePreview(excelActions.previewPage, excelActions.previewPageSize);
       }, 0);
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actions.previewPage, actions.previewPageSize, state.isPreviewModalOpen]);
+  }, [excelActions.previewPage, excelActions.previewPageSize, state.isPreviewModalOpen]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -95,7 +114,7 @@ export function useExcelImport({
     e.preventDefault();
     state.setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      actions.processFile(e.dataTransfer.files[0]);
+      excelActions.processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -121,25 +140,25 @@ export function useExcelImport({
     setIsPreviewModalOpen: state.setIsPreviewModalOpen,
     previewData: state.previewData,
     isPreviewLoading: state.isPreviewLoading,
-    pageNumber: actions.pageNumber,
-    pageSize: actions.pageSize,
-    previewPage: actions.previewPage,
-    previewPageSize: actions.previewPageSize,
+    pageNumber: excelActions.pageNumber,
+    pageSize: excelActions.pageSize,
+    previewPage: excelActions.previewPage,
+    previewPageSize: excelActions.previewPageSize,
     setPageNumber,
     setPageSize,
     setPreviewPage,
     setPreviewPageSize,
-    handleDownloadTemplate: actions.handleDownloadTemplate,
-    processFile: actions.processFile,
+    handleDownloadTemplate: excelActions.handleDownloadTemplate,
+    processFile: excelActions.processFile,
     handleDragOver,
     handleDragLeave,
     handleDrop,
     handleRemoveFile,
-    handleCalculateEligible: actions.handleCalculateEligible,
-    executeJob: actions.executeJob,
-    handlePreview: actions.handlePreview,
-    mockCurrentScopeData: actions.mockCurrentScopeData,
-    tableColumns: actions.tableColumns,
-    paginatedRows: actions.paginatedRows
+    handleCalculateEligible: excelActions.handleCalculateEligible,
+    executeJob: excelActions.executeJob,
+    handlePreview: excelActions.handlePreview,
+    mockCurrentScopeData: excelActions.mockCurrentScopeData,
+    tableColumns: excelActions.tableColumns,
+    paginatedRows: excelActions.paginatedRows
   };
 }

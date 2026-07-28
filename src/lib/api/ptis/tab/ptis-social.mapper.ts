@@ -1,6 +1,7 @@
 import type {
   DiscountData,
   BuildingPermissionData,
+  BuildingPermissionItem,
   PropertySocialDetailItem,
 } from '@/types/ptis.types';
 
@@ -149,29 +150,93 @@ export const ptisSocialMapper = {
 
   mapBuildingPermissionDetails: (data: unknown): BuildingPermissionData => {
     const rawData = safeRecord(data);
-    const rawItems = Array.isArray(rawData?.items) ? rawData.items : [];
+    const itemsMap = new Map<string, BuildingPermissionItem>();
 
-    // Filter to only include active items
-    const activeItems = rawItems.filter(
-      (item): item is Record<string, unknown> =>
-        !!item && typeof item === 'object' && 'isActive' in item && Boolean(item.isActive)
-    );
+    const addCert = (rec: Record<string, unknown>, floorId: number | null = null, floorDesc: string | null = null) => {
+      const typeId = Number(rec.certificateTypeId);
+      if (!typeId) return;
 
-    return {
-      items: activeItems.map((item) => ({
-        certificateTypeId: Number(item.certificateTypeId),
-        certificateTypeName: String(item.certificateTypeName || ''),
-        displayOrder: Number(item.displayOrder || 0),
-        hasCertificate: Boolean(item.hasCertificate),
-        propertyCertificateId:
-          item.propertyCertificateId != null ? Number(item.propertyCertificateId) : null,
-        isActive: Boolean(item.isActive),
-        certificateNo: item.certificateNo != null ? String(item.certificateNo) : null,
-        issueDate: item.issueDate ? String(item.issueDate) : null,
-        documentGuid: item.documentGuid ? String(item.documentGuid) : null,
-        fileName: item.fileName ? String(item.fileName) : null,
-        documentViewUrl: item.documentGuid ? getViewDocumentUrl(String(item.documentGuid)) : null,
-      })),
+      const certNo = rec.certificateNo != null ? String(rec.certificateNo) : null;
+      const issueDate = rec.issueDate ? String(rec.issueDate) : null;
+      const docGuid = rec.documentGuid ? String(rec.documentGuid) : null;
+      const hasCert = Boolean(rec.hasCertificate);
+      const isActive = rec.isActive !== undefined ? Boolean(rec.isActive) : true;
+
+      const hasAttachedData = hasCert || !!(certNo?.trim() || issueDate?.trim() || docGuid?.trim());
+
+      const propCertId = rec.propertyCertificateId != null ? Number(rec.propertyCertificateId) : null;
+      
+      // Each attached certificate in DB has a unique propertyCertificateId (e.g. 57, 58, 59, 60, 61).
+      // Use propertyCertificateId if available to prevent overwriting multiple certificates of the same type across floors or property-level.
+      const uniqueKey = propCertId 
+        ? `id-${propCertId}` 
+        : `type-${typeId}-floor-${floorId ?? 'prop'}-${docGuid || certNo || issueDate || (hasCert ? 'hasCert' : 'noCert')}`;
+
+      itemsMap.set(uniqueKey, {
+        certificateTypeId: typeId,
+        certificateTypeName: String(rec.certificateTypeName || ''),
+        displayOrder: Number(rec.displayOrder || 0),
+        hasCertificate: hasCert || hasAttachedData,
+        propertyCertificateId: propCertId,
+        isActive: isActive,
+        certificateNo: certNo,
+        issueDate: issueDate,
+        documentGuid: docGuid,
+        fileName: rec.fileName ? String(rec.fileName) : null,
+        documentViewUrl: docGuid ? getViewDocumentUrl(docGuid) : null,
+        propertyDetailsId: floorId,
+        floorDescription: floorDesc,
+      });
     };
+
+    // 1. Process property-level certificates (types-with-status) FIRST
+    const propCertsRaw = rawData?.propertyCertificates ?? data;
+    const propRecord = safeRecord(propCertsRaw);
+    const rawItems = Array.isArray(propRecord?.items)
+      ? propRecord.items
+      : Array.isArray(propCertsRaw)
+      ? propCertsRaw
+      : [];
+
+    for (const item of rawItems) {
+      const rec = safeRecord(item);
+      if (rec) {
+        const propCertId = rec.propertyCertificateId != null ? Number(rec.propertyCertificateId) : null;
+        const hasContent = Boolean(rec.hasCertificate || rec.certificateNo || rec.issueDate || rec.documentGuid);
+        if (propCertId || hasContent) {
+          addCert(rec, null, null);
+        }
+      }
+    }
+
+    // 2. Process floor-level types-with-status SECOND
+    // Note: Floor-level cards must ONLY be added if there is a distinct floor certificate record
+    // in ptis.PropertyCertificates for that floor (i.e. rec.propertyCertificateId != null or rec.documentGuid != null).
+    // If rec.propertyCertificateId is null, the floor is merely inheriting property-wide values for tax calculations,
+    // so we do NOT duplicate the property-wide card across all floors.
+    if (Array.isArray(rawData?.floorCertificatesWithStatus)) {
+      for (const floorGroup of rawData.floorCertificatesWithStatus) {
+        const fg = safeRecord(floorGroup);
+        if (fg) {
+          const fId = fg.propertyDetailsId != null ? Number(fg.propertyDetailsId) : null;
+          const fDesc = fg.floorDescription ? String(fg.floorDescription) : null;
+          const certs = Array.isArray(fg.certificates) ? fg.certificates : [];
+
+          for (const cert of certs) {
+            const rec = safeRecord(cert);
+            if (rec) {
+              const propCertId = rec.propertyCertificateId != null ? Number(rec.propertyCertificateId) : null;
+              const docGuid = rec.documentGuid ? String(rec.documentGuid) : null;
+              // Only add floor card if there is an ACTUAL floor-specific certificate entity or attached document for this floor
+              if (propCertId != null || docGuid != null) {
+                addCert(rec, fId, fDesc);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return { items: Array.from(itemsMap.values()) };
   },
 };

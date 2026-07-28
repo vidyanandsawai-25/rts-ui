@@ -67,10 +67,13 @@ export interface FloorData {
     renterDetails?: RenterDetailItem[];
     renterMast?: RenterMastItem[];
     isTaxable?: boolean | string;
+    isOpenPlot?: boolean | string | number;
+    IsOpenPlot?: boolean | string | number;
     constructionYear?: string;
     assessmentYear?: string;
     roomData?: RoomData[];
     typeOfUseCategoryId?: number | string | null;
+    updateBuildingPermission?: string;
     [key: string]: unknown;
 }
 

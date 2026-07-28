@@ -89,7 +89,7 @@ export const SocialSidebar: React.FC<SocialSidebarProps> = ({
     };
 
     return (
-        <div className="flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border-r border-blue-100 pr-2">
+        <div className="flex flex-col min-h-[300px] lg:h-full border-r border-blue-100 pr-2">
             {/* Search and Filters */}
             <div className="space-y-3 mb-4">
                 <SearchInput

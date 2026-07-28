@@ -10,13 +10,31 @@ import { ExcelGuide } from './ExcelGuide';
 import { ExcelUploader } from './ExcelUploader';
 import { ExcelPreviewTable } from './ExcelPreviewTable';
 import { ExcelPreviewModal } from './ExcelPreviewModal';
+import { useState, useEffect } from 'react';
+import { logger } from '@/lib/utils/logger';
+
+interface ZoneOptionResponseItem {
+  id: string | number;
+  description?: string;
+  zoneNo?: string;
+}
+
+interface ExcelTabActions {
+  fetchAllZonesAction: () => Promise<{ items?: ZoneOptionResponseItem[] } | null>;
+  fetchAllWardsAction: () => Promise<{ data?: import('@/types/wardMaster.types').WardItem[] } | null>;
+  getImportTemplateAction: () => Promise<import('@/types/addTaxes.types').ImportTemplateResponse | null>;
+  getEligibleCountAction: (payload: import('@/types/addTaxes.types').EligibleCountPayload) => Promise<{ eligible?: number; total?: number; skipped?: number; error?: string } | null>;
+  executeOperationAction: (payload: import('@/types/addTaxes.types').ExecuteOperationPayload) => Promise<{ items?: { jobId: string; summary: { total: number } }; error?: string } | null>;
+  previewOperationAction: (payload: import('@/types/addTaxes.types').OperationPreviewPayload) => Promise<(import('@/types/addTaxes.types').OperationPreviewResponse & { error?: string }) | { error: string } | null>;
+}
 
 interface ExcelImportTabProps {
   onStartExecution: (jobId: string, totalCount: number, scheduledTime?: string) => void;
   financeYearId: string;
-  zoneOptions: { value: string; label: string }[];
+  zoneOptions?: { value: string; label: string }[];
   scopeOptions: ScopeOptionItem[];
   financeYear?: string;
+  actions: ExcelTabActions;
 }
 
 export default function ExcelImportTab({
@@ -24,10 +42,31 @@ export default function ExcelImportTab({
   financeYearId,
   zoneOptions = [],
   scopeOptions = [],
-  financeYear
+  financeYear,
+  actions
 }: ExcelImportTabProps) {
   const t = useTranslations('addTaxes');
   const tCommon = useTranslations('common');
+
+  const [localZoneOptions, setLocalZoneOptions] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    const loadZones = async () => {
+      try {
+        const res = await actions.fetchAllZonesAction();
+        const zoneOpts = res?.items
+          ? res.items.map((z: ZoneOptionResponseItem) => ({
+            value: String(z.id),
+            label: z.description && z.zoneNo ? `${z.zoneNo} — ${z.description}` : (z.description || z.zoneNo || ''),
+          }))
+          : [];
+        setLocalZoneOptions(zoneOpts);
+      } catch (err) {
+        logger.error("Failed to load zone options inside ExcelImportTab", { error: err as Error });
+      }
+    };
+    loadZones();
+  }, [actions]);
 
   const {
     file,
@@ -68,12 +107,13 @@ export default function ExcelImportTab({
   } = useExcelImport({
     onStartExecution,
     financeYearId,
-    zoneOptions,
-    scopeOptions
+    zoneOptions: localZoneOptions.length > 0 ? localZoneOptions : zoneOptions,
+    scopeOptions,
+    actions
   });
 
   return (
-    <div className="flex flex-col gap-6 mt-6">
+    <div className="flex flex-col gap-6 mt-0">
       {/* Download and Upload Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <ExcelGuide
@@ -145,11 +185,10 @@ export default function ExcelImportTab({
               <div className="text-[10px] text-gray-400 lowercase">{t('executionValidation.eligibleRecordsSub')}</div>
             </div>
             <button
-              className={`text-white rounded-lg px-6 py-3 flex items-center justify-between gap-4 transition-colors ${
-                calculatedStats.eligible === 0 || isValidating
-                  ? 'bg-[#6B9DF2] opacity-60 cursor-not-allowed'
-                  : 'bg-[#2563EB] hover:bg-blue-700'
-              }`}
+              className={`text-white rounded-lg px-6 py-3 flex items-center justify-between gap-4 transition-colors ${calculatedStats.eligible === 0 || isValidating
+                ? 'bg-[#6B9DF2] opacity-60 cursor-not-allowed'
+                : 'bg-[#2563EB] hover:bg-blue-700'
+                }`}
               disabled={calculatedStats.eligible === 0 || isValidating}
               onClick={() => setIsReviewModalOpen(true)}
             >

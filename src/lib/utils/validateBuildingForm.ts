@@ -25,6 +25,7 @@ interface ValidateBuildingFormOptions {
     skipDocumentValidation?: boolean;
     skipNumberDateValidation?: boolean;
     onlyCertificateTypeId?: number;
+    activeCertificateTypeId?: number;
 }
 
 export const validateBuildingForm = (
@@ -75,30 +76,51 @@ export const validateBuildingForm = (
         }
     });
 
-    // Cross-field validation: Occupancy date > Commencement date
-    const ccItem = Object.values(state).find(
-        (item) => item.enabled && mapTypeNameToKey(item.certificateTypeName || "") === "commencementCertificate"
-    );
-    const ocItem = Object.values(state).find(
-        (item) => item.enabled && mapTypeNameToKey(item.certificateTypeName || "") === "occupancyCertificate"
-    );
+    // Cross-field validation: Occupancy date > Commencement date (floorwise & propertywide logic)
+    // Only perform date comparison if BOTH Commencement Certificate and Occupancy Certificate are enabled in the active scope
+    const ccItem = Object.values(state).find((item) => {
+        if (!item.enabled) return false;
+        const key = mapTypeNameToKey(item.certificateTypeName || "");
+        const code = (item.certificateTypeCode || "").toUpperCase();
+        return key === "commencementCertificate" || key === "buildCompletionCertificate" || code === "CC";
+    });
+    const ocItem = Object.values(state).find((item) => {
+        if (!item.enabled) return false;
+        const key = mapTypeNameToKey(item.certificateTypeName || "");
+        const code = (item.certificateTypeCode || "").toUpperCase();
+        return key === "occupancyCertificate" || code === "OC";
+    });
 
-    if (ccItem && ocItem && ccItem.date && ocItem.date) {
+    if (ccItem && ocItem && ccItem.date && ccItem.date.trim() && ocItem.date && ocItem.date.trim()) {
         const ccDate = parseDateString(ccItem.date);
         const ocDate = parseDateString(ocItem.date);
-        if (ccDate && ocDate && ocDate <= ccDate) {
+        if (ccDate && ocDate && ocDate.getTime() < ccDate.getTime()) {
             isValid = false;
-            
-            if (!fieldErrors[ocItem.certificateTypeId]) {
-                fieldErrors[ocItem.certificateTypeId] = {};
+
+            // Target the error to the currently active/edited certificate so selection remains on that certificate
+            let targetCert = ocItem;
+            const currentEditingTypeId = options.onlyCertificateTypeId ?? options.activeCertificateTypeId;
+            if (currentEditingTypeId !== undefined) {
+                if (currentEditingTypeId === ccItem.certificateTypeId) {
+                    targetCert = ccItem;
+                } else if (currentEditingTypeId === ocItem.certificateTypeId) {
+                    targetCert = ocItem;
+                }
             }
-            fieldErrors[ocItem.certificateTypeId].date = t("validation.occupancyDateAfterCommencement");
-            errors[ocItem.certificateTypeId] = t("validation.occupancyDateAfterCommencement");
-            
-            if (!incompleteCertificates.some((c) => c.id === ocItem.certificateTypeId)) {
+
+            const isCC = targetCert.certificateTypeId === ccItem.certificateTypeId;
+            const errorKey = isCC ? "validation.commencementDateBeforeOccupancy" : "validation.occupancyDateAfterCommencement";
+
+            if (!fieldErrors[targetCert.certificateTypeId]) {
+                fieldErrors[targetCert.certificateTypeId] = {};
+            }
+            fieldErrors[targetCert.certificateTypeId].date = t(errorKey);
+            errors[targetCert.certificateTypeId] = t(errorKey);
+
+            if (!incompleteCertificates.some((c) => c.id === targetCert.certificateTypeId)) {
                 incompleteCertificates.push({
-                    id: ocItem.certificateTypeId,
-                    name: ocItem.certificateTypeName || "Occupancy Certificate (OC)",
+                    id: targetCert.certificateTypeId,
+                    name: targetCert.certificateTypeName || (isCC ? "Commencement Certificate (CC)" : "Occupancy Certificate (OC)"),
                 });
             }
         }
@@ -106,3 +128,4 @@ export const validateBuildingForm = (
 
     return { isValid, errors, incompleteCertificates, fieldErrors };
 };
+

@@ -19,11 +19,10 @@ export function ScopeSelectionPanel({
   selectionData,
   handleSelectionChange,
   scopeOptions,
-  zoneOptions = [],
-  propertyTypeOptions = [],
   onStartExecution,
   isInitialized,
-  financeYear
+  financeYear,
+  actions
 }: ScopeSelectionPanelProps) {
   const t = useTranslations('addTaxes');
   const currentScopeData = scopeOptions.find(s => s.scopeType === selectedScope);
@@ -36,6 +35,8 @@ export function ScopeSelectionPanel({
     eligibleCount,
     fetchedWards, fetchWards,
     fetchedBuildings, fetchBuildings,
+    hasMoreBuildings, loadMoreBuildings, isLoadingMoreBuildings, isFetchingBuildings,
+    fetchedToBuildings, hasMoreToBuildings, loadMoreToBuildings, isLoadingMoreToBuildings, isFetchingToBuildings,
     handleCalculateEligible,
     executeJob,
     isPreviewModalOpen, setIsPreviewModalOpen,
@@ -45,8 +46,12 @@ export function ScopeSelectionPanel({
     previewPage, setPreviewPage,
     previewPageSize, setPreviewPageSize,
     fetchedAssessmentStatuses,
-    fetchAssessmentStatuses
-  } = useScopeSelection(selectedScope, selectionData, currentScopeData, propertyTypeOptions, isInitialized, onStartExecution);
+    fetchAssessmentStatuses,
+    isExportingPreview,
+    handleDownloadPreviewExport,
+    fetchedZones, fetchZones,
+    fetchedPropertyTypes, fetchPropertyTypes
+  } = useScopeSelection(selectedScope, selectionData, currentScopeData, [], isInitialized, onStartExecution, actions);
 
   const previewColumns: Column<any>[] = [
     { key: 'zone', label: t('preview.columns.zone'), width: '15%' },
@@ -100,12 +105,23 @@ export function ScopeSelectionPanel({
         optionsToRender={optionsToRender}
         selectionData={selectionData}
         handleSelectionChange={handleSelectionChange}
-        zoneOptions={zoneOptions}
+        zoneOptions={fetchedZones}
+        fetchZones={fetchZones}
         fetchedWards={fetchedWards}
         fetchWards={fetchWards}
-        propertyTypeOptions={propertyTypeOptions}
+        propertyTypeOptions={fetchedPropertyTypes}
+        fetchPropertyTypes={fetchPropertyTypes}
         fetchedBuildings={fetchedBuildings}
         fetchBuildings={fetchBuildings}
+        hasMoreBuildings={hasMoreBuildings}
+        loadMoreBuildings={loadMoreBuildings}
+        isLoadingMoreBuildings={isLoadingMoreBuildings}
+        isFetchingBuildings={isFetchingBuildings}
+        fetchedToBuildings={fetchedToBuildings}
+        hasMoreToBuildings={hasMoreToBuildings}
+        loadMoreToBuildings={loadMoreToBuildings}
+        isLoadingMoreToBuildings={isLoadingMoreToBuildings}
+        isFetchingToBuildings={isFetchingToBuildings}
         isCalculating={isCalculating}
         isValidated={isValidated}
         eligibleCount={eligibleCount}
@@ -146,26 +162,27 @@ export function ScopeSelectionPanel({
         {previewData && (
           <div className="flex flex-col gap-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <DashboardCard
                 label={t('preview.totalSelected')}
                 value={previewData.totalSelected}
                 valueColor="text-slate-800"
+                onExportExcel={() => handleDownloadPreviewExport('all')}
+                isExporting={isExportingPreview?.all}
               />
               <DashboardCard
                 label={t('preview.eligible')}
                 value={previewData.eligible}
                 valueColor="text-green-700"
+                onExportExcel={() => handleDownloadPreviewExport('eligible')}
+                isExporting={isExportingPreview?.eligible}
               />
               <DashboardCard
                 label={t('preview.skipped')}
                 value={previewData.skipped}
                 valueColor="text-red-700"
-              />
-              <DashboardCard
-                label={t('preview.requiresApproval')}
-                value={previewData.requiresApproval}
-                valueColor="text-orange-700"
+                onExportExcel={() => handleDownloadPreviewExport('skipped')}
+                isExporting={isExportingPreview?.skipped}
               />
             </div>
 

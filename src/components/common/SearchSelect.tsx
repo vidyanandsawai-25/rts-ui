@@ -175,6 +175,7 @@ export function SearchSelect({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const dropdownRef = useRef<HTMLUListElement>(null);
   // Tracks whether the input is currently focused so the auto-open effect works correctly
   const isFocused = useRef<boolean>(false);
   // Tracks whether a selection was just made to prevent blur from clearing
@@ -182,18 +183,31 @@ export function SearchSelect({
 
   useEffect(() => {
     if (menuPlacement) return;
+    if (!isOpen) return;
 
-    if (isOpen && wrapperRef.current) {
+    const updatePlacement = () => {
+      if (!wrapperRef.current) return;
       const rect = wrapperRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
       const spaceBelow = window.innerHeight - rect.bottom;
-      if (spaceBelow < 250 && rect.top > 250) {
+      const dropdownHeight = Math.min(dropdownRef.current?.scrollHeight ?? 240, 240);
+
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
         setPlacement('top');
       } else {
         setPlacement('bottom');
       }
-    } else {
-      setPlacement('bottom');
-    }
+    };
+
+    const frame = window.requestAnimationFrame(updatePlacement);
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
+    };
   }, [isOpen, menuPlacement]);
 
   /* ---------------- Safety checks ---------------- */
@@ -510,7 +524,10 @@ export function SearchSelect({
       {/* Dropdown */}
       {isOpen && (
         <ul
-          ref={listRef}
+          ref={(node) => {
+            listRef.current = node;
+            dropdownRef.current = node;
+          }}
           id={`${accessibleId}-listbox`}
           role="listbox"
           className={`

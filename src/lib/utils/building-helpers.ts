@@ -76,6 +76,7 @@ export const mapApiToBuildingState = (
             propertyCertificateId: item.propertyCertificateId || null,
             fileName: sanitizeString(item.fileName) || undefined,
             certificateTypeName: item.certificateTypeName,
+            certificateTypeCode: item.certificateTypeCode,
             displayOrder: item.displayOrder
         };
     });
@@ -95,11 +96,12 @@ export const mapBuildingStateToApi = (
         }
 
         const isDeleted = !item.enabled || (!item.documentGuid && !item.pendingFile);
+        const normalizedNumber = item.number ? item.number.replace(/\s+/g, "") : null;
 
         certificates.push({
             certificateTypeId: item.certificateTypeId,
             isEnabled: item.enabled && !isDeleted,
-            certificateNumber: isDeleted ? null : (item.number ? item.number : null),
+            certificateNumber: isDeleted ? null : normalizedNumber,
             certificateDate: isDeleted ? null : (item.date ? `${item.date}T00:00:00` : null),
             propertyCertificateId: item.propertyCertificateId || null,
             existingDocumentGuid: isDeleted ? null : (item.documentGuid === "pending" ? null : (item.documentGuid || null)),

@@ -27,10 +27,10 @@ export const mapApiToDiscountState = (
             dataType: attr.dataType,
             intValue: attr.intValue ?? null,
             decimalValue: attr.decimalValue ?? null,
-            bitValue: isBitType ? bitValue : attr.bitValue ?? null,
+            bitValue: bitValue,
             enabled: isBitType
                 ? bitValue
-                : (attr.intValue !== null || attr.decimalValue !== null || attr.textValue !== null || attr.dateValue !== null),
+                : (bitValue === true || attr.intValue !== null || attr.decimalValue !== null || attr.textValue !== null || attr.dateValue !== null),
             dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
             isUploading: false,
         };
@@ -76,7 +76,7 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
             discountAttributes.push({
                 propertySocialDetailId: item.propertySocialDetailId ?? null,
                 socialAttributeId: item.id,
-                bitValue: isBitType ? enabled : null,
+                bitValue: enabled,
                 intValue,
                 decimalValue,
                 textValue,

@@ -36,6 +36,8 @@
     "satelliteTitle": "जीआईएस / सैटेलाइट दृश्य",
     "satelliteView": "जीआईएस / सैटेलाइट दृश्य",
     "changeDetection": "परिवर्तन का पता लगाना",
+    "changeDetectionLocationUnset": "परिवर्तन का पता लगाने का स्थान सेट नहीं है",
+    "changeDetectionLocationUnsetDescription": "इस संपत्ति के लिए डेटाबेस में जीपीएस निर्देशांक (अक्षांश और देशांतर) उपलब्ध नहीं हैं। डायनामिक ऐतिहासिक उपग्रह मानचित्र लोड नहीं किया जा सकता।",
     "changeDetectionComingSoon": "परिवर्तन का पता लगाने की जानकारी जल्द ही आ रही है।",
     "photoPlan": "फोटो प्लान",
     "drawPlan": "ड्रॉ प्लान",
@@ -193,6 +195,9 @@
       "partitionNoMax": "विभाजन नंबर अधिकतम 10 अक्षर का होना चाहिए",
       "partitionNoPattern": "विभाजन नंबर में केवल अक्षर और अंक होने चाहिए"
     }
+  },
+  "building": {
+    "noDocumentAttached": "इस प्रमाणपत्र के लिए कोई दस्तावेज़ संलग्न नहीं है।"
   },
   "tabs": {
     "propertyDetails": "संपत्ति विवरण",

@@ -199,15 +199,31 @@ describe('CreateConfigKeySchema Validations', () => {
     }
   });
 
-  it('rejects HTML tags in description', () => {
+  it('rejects HTML tags and angle brackets in description', () => {
     const result = CreateConfigKeySchema.safeParse({
       ...baseData,
       description: 'Permitted login attempts <script>alert("hack")</script>',
     });
     expect(result.success).toBe(false);
+  });
+
+  it('accepts special characters without angle brackets in description', () => {
+    const result = CreateConfigKeySchema.safeParse({
+      ...baseData,
+      description: 'Permitted login attempts &!@#$%^&*()_+~`|}{[]:;?,./',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects description exceeding 255 characters', () => {
+    const result = CreateConfigKeySchema.safeParse({
+      ...baseData,
+      description: 'a'.repeat(256),
+    });
+    expect(result.success).toBe(false);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
-      expect(errors.description?.[0]).toContain('cannot contain HTML tags');
+      expect(errors.description?.[0]).toContain('cannot exceed 255 characters');
     }
   });
 });

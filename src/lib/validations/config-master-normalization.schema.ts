@@ -49,8 +49,8 @@ export const ConfigKeyResponseSchema = z.preprocess((data: unknown) => {
     defaultValue: d.defaultValue ?? d.DefaultValue ?? '',
     isActive: d.isActive ?? d.IsActive,
     isEnabled: d.isActive ?? d.IsActive,
-    createdDate: d.createdDate ?? d.CreatedDate ?? '',
-    updatedDate: d.updatedDate ?? d.UpdatedDate ?? null,
+    createdDate: (d.createdDate ?? d.CreatedDate ?? d.createdOn ?? d.CreatedOn ?? d.createdAt ?? d.CreatedAt ?? '') as string,
+    updatedDate: (d.updatedDate ?? d.UpdatedDate ?? d.modifiedDate ?? d.ModifiedDate ?? d.lastModifiedDate ?? d.LastModifiedDate ?? d.updatedOn ?? d.UpdatedOn ?? d.modifiedOn ?? d.ModifiedOn ?? d.updatedAt ?? d.UpdatedAt ?? null) as string | null,
   }
 }, z.object({
   id: z.string(),

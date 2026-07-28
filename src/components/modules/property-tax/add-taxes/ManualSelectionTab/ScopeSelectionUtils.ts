@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Scope, ScopeOptionItem, ScopeItem } from '@/types/addTaxes.types';
+import type { AddTaxesActionsProps } from '../AddTaxesConsole';
 
 export interface ScopeSelectionPanelProps {
   scopes: ScopeItem[];
@@ -15,6 +16,7 @@ export interface ScopeSelectionPanelProps {
   onPreview?: () => Promise<void>;
   isPreviewLoading?: boolean;
   financeYear?: string;
+  actions: AddTaxesActionsProps;
 }
 
 export const getFieldConfig = (
@@ -30,7 +32,23 @@ export const getFieldConfig = (
   hasWardField: boolean,
   t: any,
   assessmentStatusOptions?: { value: string; label: string }[],
-  fetchAssessmentStatuses?: () => void
+  fetchAssessmentStatuses?: () => void,
+  selectedScope?: Scope,
+  buildingPagination?: {
+    hasMore?: boolean;
+    onLoadMore?: () => void;
+    isLoadingMore?: boolean;
+    isFetching?: boolean;
+  },
+  toBuildingPagination?: {
+    hasMore?: boolean;
+    onLoadMore?: () => void;
+    isLoadingMore?: boolean;
+    isFetching?: boolean;
+  },
+  fetchedToBuildings?: { value: string; label: string }[],
+  fetchZones?: () => void,
+  fetchPropertyTypes?: () => void
 ) => {
   const opt = option.toLowerCase();
   if (opt.includes('assessment status')) {
@@ -44,7 +62,7 @@ export const getFieldConfig = (
     };
   }
 
-  if (opt.includes('zone')) return { label: t('dynamicFields.labels.zoneNode'), placeholder: t('dynamicFields.placeholders.selectZoneNode'), required: true, inputType: 'multiselect', fallbackOptions: zoneOptions.length > 0 ? zoneOptions : [{ value: '1', label: 'Zone 1' }, { value: '2', label: 'Zone 2' }] };
+  if (opt.includes('zone')) return { label: t('dynamicFields.labels.zoneNode'), placeholder: t('dynamicFields.placeholders.selectZoneNode'), required: true, inputType: selectedScope === 'building' ? 'searchselect' : 'multiselect', fallbackOptions: zoneOptions, onOpen: fetchZones };
 
   if (opt.includes('ward')) {
     let selectedZoneIds: string[] = [];
@@ -65,7 +83,7 @@ export const getFieldConfig = (
       label: t('dynamicFields.labels.wardSector'),
       placeholder: t('dynamicFields.placeholders.selectWardSector'),
       required: true,
-      inputType: 'multiselect',
+      inputType: selectedScope === 'building' || selectedScope === 'range' ? 'searchselect' : 'multiselect',
       fallbackOptions: filteredWards,
       disabled: disabled,
       onOpen: fetchWards
@@ -97,8 +115,9 @@ export const getFieldConfig = (
       placeholder: t('dynamicFields.placeholders.selectPropertyType'),
       required: true,
       inputType: 'multiselect',
-      fallbackOptions: propertyTypeOptions.length > 0 ? propertyTypeOptions : [{ value: 'select-all', label: 'Select All' }, { value: '1', label: 'Residential' }, { value: '2', label: 'Commercial' }],
-      disabled: disabled
+      fallbackOptions: propertyTypeOptions,
+      disabled: disabled,
+      onOpen: fetchPropertyTypes
     };
   }
 
@@ -115,6 +134,22 @@ export const getFieldConfig = (
     }
     const disabled = (hasZoneField && selectedZoneIds.length === 0) || selectedWardIds.length === 0;
 
+    if (selectedScope === 'building') {
+      return {
+        label: t('dynamicFields.labels.building'),
+        placeholder: disabled ? t('dynamicFields.placeholders.noOptionsAvailable') : t('dynamicFields.placeholders.selectBuilding'),
+        required: true,
+        inputType: 'searchselectpaginated',
+        fallbackOptions: disabled ? [] : fetchedBuildings,
+        disabled: disabled,
+        onOpen: () => fetchBuildings(selectedZoneIds.length > 0 ? selectedZoneIds : null, selectedWardIds),
+        hasMore: buildingPagination?.hasMore,
+        onLoadMore: buildingPagination?.onLoadMore,
+        isLoadingMore: buildingPagination?.isLoadingMore,
+        isLoading: buildingPagination?.isFetching
+      };
+    }
+
     return {
       label: t('dynamicFields.labels.building'),
       placeholder: t('dynamicFields.placeholders.selectBuilding'),
@@ -128,6 +163,7 @@ export const getFieldConfig = (
 
   if (opt.includes('search') || opt.includes('specific')) return { label: t('dynamicFields.labels.searchProperty'), placeholder: t('dynamicFields.placeholders.searchByUPIC'), required: true, inputType: 'text', fallbackOptions: [] };
   if (opt.includes('from') || opt.includes('to')) {
+    const isTo = opt.includes('to');
     let selectedWardIds: string[] = [];
     for (const key in selectionData) {
       if (key.toLowerCase().includes('ward') && selectionData[key]) {
@@ -135,15 +171,21 @@ export const getFieldConfig = (
       }
     }
     const disabled = selectedWardIds.length === 0;
+    const optionsToUse = isTo && fetchedToBuildings && fetchedToBuildings.length > 0 ? fetchedToBuildings : fetchedBuildings;
+    const paginationToUse = isTo && toBuildingPagination ? toBuildingPagination : buildingPagination;
 
     return {
-      label: opt.includes('from') ? t('dynamicFields.labels.fromPropertyNo') : t('dynamicFields.labels.toPropertyNo'),
+      label: isTo ? t('dynamicFields.labels.toPropertyNo') : t('dynamicFields.labels.fromPropertyNo'),
       placeholder: disabled ? t('dynamicFields.placeholders.noOptionsAvailable') : t('dynamicFields.placeholders.selectPropertyNo'),
       required: true,
-      inputType: 'searchselect',
-      fallbackOptions: disabled ? [] : fetchedBuildings,
+      inputType: 'searchselectpaginated',
+      fallbackOptions: disabled ? [] : optionsToUse,
       disabled: disabled,
-      onOpen: () => fetchBuildings(null, selectedWardIds)
+      onOpen: () => fetchBuildings(null, selectedWardIds),
+      hasMore: paginationToUse?.hasMore,
+      onLoadMore: paginationToUse?.onLoadMore,
+      isLoadingMore: paginationToUse?.isLoadingMore,
+      isLoading: paginationToUse?.isFetching
     };
   }
   const fallbackLabelKey = `dynamicFields.labels.${opt}`;

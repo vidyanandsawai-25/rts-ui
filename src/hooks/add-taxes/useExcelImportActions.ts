@@ -2,17 +2,37 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import {
-  getImportTemplateAction,
-  getEligibleCountAction,
-  executeOperationAction,
-  previewOperationAction
-} from '@/app/[locale]/property-tax/add-taxes/actions';
 import { ScopeOptionItem } from '@/types/addTaxes.types';
 import { autoDetectScopeType, mapExcelDataToPayload } from '@/components/modules/property-tax/add-taxes/excelImportTab/ExcelImportUtils';
 import { ExcelImportState } from './useExcelImportState';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
+import type {
+  ImportTemplateResponse,
+  EligibleCountPayload,
+  ExecuteOperationPayload,
+  OperationPreviewPayload,
+  OperationPreviewResponse,
+} from '@/types/addTaxes.types';
+
+interface EligibleCountResult {
+  eligible?: number;
+  total?: number;
+  skipped?: number;
+  error?: string;
+}
+
+interface ExecuteResult {
+  items?: {
+    jobId: string;
+    summary: {
+      total: number;
+    };
+  };
+  error?: string;
+}
+
+type PreviewResult = (OperationPreviewResponse & { error?: string }) | { error: string };
 
 interface UseExcelImportActionsProps {
   state: ExcelImportState;
@@ -20,6 +40,12 @@ interface UseExcelImportActionsProps {
   financeYearId: string;
   zoneOptions: { value: string; label: string }[];
   scopeOptions: ScopeOptionItem[];
+  actions: {
+    getImportTemplateAction: () => Promise<ImportTemplateResponse | null>;
+    getEligibleCountAction: (payload: EligibleCountPayload) => Promise<EligibleCountResult | null>;
+    executeOperationAction: (payload: ExecuteOperationPayload) => Promise<ExecuteResult | null>;
+    previewOperationAction: (payload: OperationPreviewPayload) => Promise<PreviewResult | null>;
+  };
 }
 
 export function useExcelImportActions({
@@ -27,7 +53,8 @@ export function useExcelImportActions({
   onStartExecution,
   financeYearId,
   zoneOptions,
-  scopeOptions
+  scopeOptions,
+  actions
 }: UseExcelImportActionsProps) {
   const searchParams = useSearchParams();
   const t = useTranslations('addTaxes');
@@ -40,7 +67,7 @@ export function useExcelImportActions({
   const handleDownloadTemplate = async () => {
     state.setIsDownloading(true);
     try {
-      const data = state.templateConfig || await getImportTemplateAction();
+      const data = state.templateConfig || await actions.getImportTemplateAction();
       const columns = data?.columns || [
         { key: "Zone", header: "Zone", dataType: "string", required: false },
         { key: "Ward", header: "Ward", dataType: "string", required: false },
@@ -113,9 +140,13 @@ export function useExcelImportActions({
         scope: scopeData,
         operation: 'addTax'
       };
-      const result = await getEligibleCountAction(payload);
+      const result = await actions.getEligibleCountAction(payload);
       if (result && !result.error) {
-        state.setCalculatedStats(result);
+        state.setCalculatedStats({
+          eligible: result.eligible ?? 0,
+          total: result.total ?? state.rows.length,
+          skipped: result.skipped ?? 0,
+        });
         toast.success(t('messages.eligibleCalculated'));
       } else {
         state.setCalculatedStats({ eligible: 0, total: state.rows.length, skipped: state.rows.length });
@@ -144,7 +175,7 @@ export function useExcelImportActions({
           ...(scheduledDateTime ? { scheduledDateTime } : {})
         }
       };
-      const response = await executeOperationAction(payload);
+      const response = await actions.executeOperationAction(payload);
       if (response && response.items && response.items.jobId) {
         state.setIsReviewModalOpen(false);
         if (isScheduled) {
@@ -183,8 +214,8 @@ export function useExcelImportActions({
         scope: scopeData,
         operation: 'addTax'
       };
-      const result = await previewOperationAction(payload);
-      if (result && !result.error) {
+      const result = await actions.previewOperationAction(payload);
+      if (result && 'records' in result) {
         state.setPreviewData(result);
         state.setIsPreviewModalOpen(true);
       } else {

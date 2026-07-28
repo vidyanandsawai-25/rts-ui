@@ -42,7 +42,13 @@
     "alphanumericUnderscore": "{label} must be alphanumeric (underscores and hyphens allowed)",
     "invalidFormat": "Invalid format",
     "mustBeNumber": "Must be a valid number",
-    "submissionIdRequired": "Submission ID is required"
+    "submissionIdRequired": "Submission ID is required",
+    "codeAllZeros": "Code cannot be all zeros",
+    "codeFormat": "Invalid format (only alphanumeric and hyphens allowed)",
+    "nameAllZeros": "Name cannot be all zeros",
+    "nameFormat": "Invalid format for name",
+    "descriptionAllZeros": "Description cannot be all zeros",
+    "descriptionFormat": "Invalid format for description"
   },
   "form": {
     "validation": {
@@ -295,7 +301,14 @@
     "clearAll": "Clear All",
     "noOptions": "No options found",
     "noOptionsAvailable": "No options available",
-    "search": "Search..."
+    "search": "Search...",
+    "searchPlaceholder": "Search options...",
+    "loading": "Loading options...",
+    "loadMoreOptions": "Load more options...",
+    "loadError": "Failed to load options. Please try again.",
+    "loadingOptions": "Loading options...",
+    "selectOption": "Select option",
+    "fetchingMatchingOptions": "Fetching matching options..."
   },
   "Grid": {
     "action": "Action",
@@ -322,14 +335,6 @@
   "rateUnitSqMeter": "(₹/Sq.mtr)",
   "rateUnitSqFeet": "(₹/Sq.ft)",
   "searchPlaceholder": "Search properties...",
-  "validation": {
-    "codeAllZeros": "Code cannot be all zeros",
-    "codeFormat": "Invalid format (only alphanumeric and hyphens allowed)",
-    "nameAllZeros": "Name cannot be all zeros",
-    "nameFormat": "Invalid format for name",
-    "descriptionAllZeros": "Description cannot be all zeros",
-    "descriptionFormat": "Invalid format for description"
-  },
   "imageViewer": {
     "title": "Image viewer",
     "zoomOut": "Zoom out",
