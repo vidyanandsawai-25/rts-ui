@@ -7,8 +7,10 @@ import { User, Settings, Lock, Globe, ChevronDown, LogOut, Router, Loader2, Aler
 import { useTranslations } from 'next-intl';
 import type { UlbMaster } from '@/types/master.types';
 import type { MenuItem } from '@/types/menu.types';
+import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { Badge, Button, Card, Tooltip } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
+import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
 import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
 import { logoutAction } from '@/app/[locale]/login/actions';
 
@@ -67,9 +69,16 @@ interface HeaderProps {
   /** Best-effort client IP from request headers (server layout). */
   clientIp?: string;
   menuItems?: MenuItem[];
+  screens?: UserScreenAccess[];
 }
 
-export function Header({ ulbData, userDisplayName, clientIp, menuItems }: HeaderProps) {
+export function Header({
+  ulbData,
+  userDisplayName,
+  clientIp,
+  menuItems,
+  screens,
+}: HeaderProps) {
   const t = useTranslations('common');
   const tLogin = useTranslations('login');
   const router = useRouter();
@@ -122,6 +131,11 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
   const headerDetails = t('app.assessmentSystem');
+  const activeScreenContext = useMemo(
+    () => resolveActiveScreenContext(screens, pathname),
+    [screens, pathname]
+  );
+  const departmentName = activeScreenContext?.departmentName || t('app.departmentName');
 
   const activeMenuName = useMemo(() => {
     if (!menuItems || menuItems.length === 0) return null;
@@ -296,7 +310,7 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
               ) : null}
 
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{t('app.departmentName')}</span>
+                <span>{departmentName}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
                 <span className="font-medium text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>
