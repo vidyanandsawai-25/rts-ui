@@ -73,6 +73,7 @@ export interface FloorData {
     assessmentYear?: string;
     roomData?: RoomData[];
     typeOfUseCategoryId?: number | string | null;
+    updateBuildingPermission?: string;
     [key: string]: unknown;
 }
 

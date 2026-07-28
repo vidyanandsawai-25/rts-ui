@@ -53,18 +53,41 @@ export function TabNavigation() {
   const { confirm } = useConfirm();
 
   const handleTabClick = (tabHref: string) => {
-    const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
+    const win = typeof window !== 'undefined' ? (window as unknown as {
+        __buildingFormHasChanges?: boolean;
+        __discountFormHasChanges?: boolean;
+        __socialFormHasChanges?: boolean;
+        __buildingFormIncompleteDetails?: string[] | null;
+        __showBuildingUnsavedChangesModal?: ((onDiscard: () => void) => void) | null;
+    }) : {} as Record<string, never>;
     const hasBuildingChanges = !!win.__buildingFormHasChanges;
     const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
+
+    const onDiscard = () => {
+      win.__buildingFormHasChanges = false;
+      win.__discountFormHasChanges = false;
+      win.__socialFormHasChanges = false;
+      router.push(tabHref);
+    };
+
+    if (hasBuildingChanges && win.__showBuildingUnsavedChangesModal) {
+      win.__showBuildingUnsavedChangesModal(onDiscard);
+      return;
+    }
 
     if (hasBuildingChanges || hasDiscountChanges) {
       const title = hasBuildingChanges 
           ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
           : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
 
-      const description = hasBuildingChanges
+      let description = hasBuildingChanges
           ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
           : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+
+      if (hasBuildingChanges && win.__buildingFormIncompleteDetails && Array.isArray(win.__buildingFormIncompleteDetails)) {
+          const incompleteMsg = t('building.incompleteFloorsWarning') || 'The following floor(s) have incomplete certificate information:';
+          description = `${description}\n\n⚠️ ${incompleteMsg}\n• ${win.__buildingFormIncompleteDetails.join('\n• ')}`;
+      }
 
       const continueButton = hasBuildingChanges
           ? (t('building.continueButton') || 'Continue Editing')

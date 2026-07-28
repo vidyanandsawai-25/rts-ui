@@ -39,9 +39,10 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
     const traverse = (attrs: SocialAttributeHierarchyDto[], parentId?: number | null) => {
         for (const attr of attrs) {
             const isBitType = attr.dataType.toUpperCase() === "BIT";
+            const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined || !parentId;
             let initialBitValue = attr.bitValue ?? null;
 
-            if (isBitType) {
+            if (isBitType || isRootAttr) {
                 initialBitValue = attr.bitValue ?? false;
             } else {
                 const hasValue = 

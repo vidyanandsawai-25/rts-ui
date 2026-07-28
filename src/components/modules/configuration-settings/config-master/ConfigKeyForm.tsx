@@ -22,11 +22,6 @@ const initialFormState: FormState = {
   isActive: true,
 };
 
-/**
- * FORM CONTENT COMPONENT
- * Handles its own state to avoid useEffect reset patterns that trigger linting errors.
- * Re-mounts via key={isOpen} in the parent to naturally reset state.
- */
 export interface ConfigKeyFormRef {
   handleClose: () => void;
 }
@@ -55,7 +50,7 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
     }
     return {
       categoryId: initialData.categoryId?.toString() || categoryId?.toString() || '',
-      configCode: initialData.configCode || '',
+      configCode: (initialData.configCode || '').toUpperCase(),
       configName: initialData.name || '',
       description: initialData.description || '',
       dataType: initialData.dataType || 'string',
@@ -184,7 +179,7 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
           />
         </form>
       </div>
-      <div className="border-t border-[#DCEAFF] px-6 py-4 flex items-center justify-end gap-3 bg-white shrink-0">
+      <div className="border-t border-[#DCEAFF] px-6 py-4 flex items-center justify-end gap-3 bg-[#ffffff] shrink-0">
         <Button variant="secondary" onClick={handleClose} disabled={isPending} className="cursor-pointer">
           {t('modals.addKey.buttons.cancel')}
         </Button>

@@ -70,7 +70,7 @@ export function ConfigKeyFormFields({
           id="configCode"
           value={formData.configCode || ''}
           onChange={(e) => {
-            const sanitized = e.target.value.replace(/[^A-Za-z0-9_]/g, '');
+            const sanitized = e.target.value.replace(/[^A-Za-z0-9_]/g, '').toUpperCase();
             onFieldChange('configCode', sanitized);
           }}
           placeholder={t('modals.addKey.form.placeholders.code')}
@@ -113,8 +113,7 @@ export function ConfigKeyFormFields({
           id="description"
           value={formData.description || ''}
           onChange={(e) => {
-            const sanitized = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
-            onFieldChange('description', sanitized);
+            onFieldChange('description', e.target.value);
           }}
           placeholder={t('modals.addKey.form.placeholders.description')}
           className={errors.description ? 'border-red-500' : ''}

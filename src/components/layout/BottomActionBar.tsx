@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, Fragment } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { FooterAction } from '@/lib/api/footer.service';
 import { FooterPagination } from './FooterPagination';
@@ -141,7 +141,7 @@ export function BottomActionBar({
                 workflowStages={workflowStages}
                 currentWorkflowStageId={currentWorkflowStageId}
               />
-              {centerContent}
+              {centerContent && <Fragment key="center-content-wrapper">{centerContent}</Fragment>}
             </div>
             <div className="absolute right-0 top-0 bottom-0 w-3 bg-gradient-to-l from-white/95 to-transparent pointer-events-none z-10" />
           </div>
@@ -155,7 +155,7 @@ export function BottomActionBar({
               clickedCommand={clickedCommand}
               iconOnly={true}
             />
-            {rightContent}
+            {rightContent && <Fragment key="right-content-wrapper">{rightContent}</Fragment>}
           </div>
         </div>
       </div>

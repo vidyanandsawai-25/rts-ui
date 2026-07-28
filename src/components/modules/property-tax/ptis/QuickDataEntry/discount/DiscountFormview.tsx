@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Tabs } from "@/components/common";
+import { Tabs, SaveButton } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { useDiscountForm } from "@/hooks/useDiscountForm";
 import { DiscountPane } from "./DiscountPane";
@@ -80,6 +80,11 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     const [searchTerm, setSearchTerm] = useState("");
     const [showActiveFirst, setShowActiveFirst] = useState(false);
 
+    const handleToggleEnabledWrapped = useCallback((id: number, checked: boolean) => {
+        handleToggleEnabled(id, checked);
+        setSelectedId(id);
+    }, [handleToggleEnabled]);
+
     const filteredDiscounts = useMemo(() => {
         return getFilteredDiscounts(discountData, searchTerm, showActiveFirst, t);
     }, [discountData, searchTerm, showActiveFirst, t]);
@@ -132,6 +137,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     }, [handleSave, discountData]);
 
     return (
+        <>
         <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="sm" className="w-full p-4">
             <Tabs.TabList className="mb-4 bg-slate-100 p-1.5 rounded-xl max-w-md border border-slate-200">
                 <Tabs.Tab value="discount" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
@@ -143,7 +149,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
             </Tabs.TabList>
 
             {/* Discount Information Tab */}
-            <Tabs.TabPanel value="discount" className="mt-0">
+            <Tabs.TabPanel value="discount" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
                 <DiscountPane
                     discountData={discountData}
                     incompleteDiscounts={incompleteDiscounts}
@@ -155,32 +161,37 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                     filteredDiscounts={filteredDiscounts}
                     activeSelectedId={activeSelectedId}
                     setSelectedId={setSelectedId}
-                    handleToggleEnabled={handleToggleEnabled}
+                    handleToggleEnabled={handleToggleEnabledWrapped}
                     validationErrors={validationErrors}
                     selectedDiscount={selectedDiscount}
                     handleInputChange={handleInputChange}
                     handleFileUpload={handleFileUpload}
                     handleFileDelete={handleFileDelete}
-                    handleSaveClick={handleSaveClick}
-                    hasChanges={hasChanges}
-                    isSaving={isSaving}
                     t={t}
                 />
             </Tabs.TabPanel>
 
             {/* Social Information Tab */}
-            <Tabs.TabPanel value="social" className="mt-0">
-                <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-2 md:p-3">
-                    <h3 className="text-base font-bold text-blue-800 mb-3 pb-1.5 border-b border-blue-200">
-                        {t("discount.socialTitle")}
-                    </h3>
-                    <SocialDetailsForm
-                        initialSocialData={initialSocialData}
-                        propertyId={propertyId}
-                    />
-                </div>
+            <Tabs.TabPanel value="social" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
+                <SocialDetailsForm
+                    initialSocialData={initialSocialData}
+                    propertyId={propertyId}
+                />
             </Tabs.TabPanel>
         </Tabs>
+
+        {/* Fixed Save Button - bottom right */}
+        {activeTab === "discount" && (
+            <div className="fixed bottom-4 right-6 z-50">
+                <SaveButton
+                    onClick={handleSaveClick}
+                    disabled={!hasChanges || isSaving}
+                    isLoading={isSaving}
+                    label={t("common.saveChanges") || "Save Changes"}
+                />
+            </div>
+        )}
+        </>
     );
 };
 

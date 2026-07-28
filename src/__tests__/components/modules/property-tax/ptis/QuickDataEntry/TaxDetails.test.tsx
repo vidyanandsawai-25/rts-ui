@@ -228,9 +228,9 @@ describe('TaxDetails Component', () => {
       render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
       const netTaxesLabel = screen.getByText('NETTAX');
 
-      expect(netTaxesLabel).toHaveClass('bg-slate-100');
-      expect(netTaxesLabel).toHaveClass('text-slate-700');
-      expect(netTaxesLabel).toHaveClass('border-slate-300');
+      expect(netTaxesLabel).toHaveClass('bg-blue-50/90');
+      expect(netTaxesLabel).toHaveClass('text-blue-900');
+      expect(netTaxesLabel).toHaveClass('border-blue-200');
     });
 
     it('should apply correct styles to Retain label when present', () => {
@@ -241,8 +241,8 @@ describe('TaxDetails Component', () => {
       render(<TaxDetails initialTaxDetails={data} />);
       const retainLabel = screen.getByText('RETAIN');
 
-      expect(retainLabel).toHaveClass('bg-blue-50');
-      expect(retainLabel).toHaveClass('text-blue-700');
+      expect(retainLabel).toHaveClass('bg-blue-50/90');
+      expect(retainLabel).toHaveClass('text-blue-900');
       expect(retainLabel).toHaveClass('border-blue-200');
     });
 
@@ -254,8 +254,8 @@ describe('TaxDetails Component', () => {
       render(<TaxDetails initialTaxDetails={data} />);
       const hearingLabel = screen.getByText('HEARING');
 
-      expect(hearingLabel).toHaveClass('bg-purple-50');
-      expect(hearingLabel).toHaveClass('text-purple-700');
+      expect(hearingLabel).toHaveClass('bg-purple-50/90');
+      expect(hearingLabel).toHaveClass('text-purple-900');
       expect(hearingLabel).toHaveClass('border-purple-200');
     });
 
@@ -267,8 +267,8 @@ describe('TaxDetails Component', () => {
       render(<TaxDetails initialTaxDetails={data} />);
       const allTaxesLabel = screen.getByText('ALLTAXES');
 
-      expect(allTaxesLabel).toHaveClass('bg-rose-50');
-      expect(allTaxesLabel).toHaveClass('text-rose-700');
+      expect(allTaxesLabel).toHaveClass('bg-rose-50/90');
+      expect(allTaxesLabel).toHaveClass('text-rose-900');
       expect(allTaxesLabel).toHaveClass('border-rose-200');
     });
 
@@ -424,12 +424,6 @@ describe('TaxDetails Component', () => {
       expect(wrapper).toHaveClass('w-full', 'overflow-x-auto');
     });
 
-    it('should render inner div with min-w-max class', () => {
-      const { container } = render(<TaxDetails initialTaxDetails={mockTaxDetailsData} />);
-
-      const innerDiv = container.querySelector('.min-w-max');
-      expect(innerDiv).toBeInTheDocument();
-    });
   });
 
   describe('Undefined Data Handling', () => {

@@ -39,7 +39,7 @@ export function CategoryFormFields({
           placeholder={t('modals.addCategory.form.placeholders.code')}
           value={formData.categoryCode}
           onChange={(e) => {
-            const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '');
+            const sanitized = e.target.value.replace(/[^A-Za-z0-9_]/g, '').toUpperCase();
             onChange('categoryCode', sanitized);
           }}
           className={errors.categoryCode ? 'border-red-500' : ''}

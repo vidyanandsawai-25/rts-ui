@@ -34,8 +34,8 @@ export function ConfigurationMasterContent({
   const tCommon = useTranslations('common');
 
   return (
-    <div className="flex-1 px-4 sm:px-6 py-6 overflow-x-hidden">
-      <div className="max-w-500 mx-auto space-y-8">
+    <div className="flex-1 px-2 sm:px-3 py-2 sm:py-2.5 overflow-x-hidden">
+      <div className="max-w-500 mx-auto space-y-3.5">
         {fetchError && (
           <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-start gap-3 animate-in fade-in duration-300">
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
@@ -48,7 +48,7 @@ export function ConfigurationMasterContent({
           </div>
         )}
 
-        <section className="space-y-6">
+        <section className="space-y-2.5">
           <ConfigurationCards
             categories={categories}
             activeCategoryId={activeCategoryId}
@@ -60,7 +60,7 @@ export function ConfigurationMasterContent({
         </section>
 
         <main className="min-h-150">
-          <Card className="border-0 shadow-sm bg-white overflow-visible">
+          <Card padding="none" className="p-2 sm:p-3 border-0 shadow-sm bg-white overflow-visible">
             <CardContent className="p-0 sm:p-1 overflow-visible">
               {displayItems.length > 0 ? (
                 <ConfigurationList

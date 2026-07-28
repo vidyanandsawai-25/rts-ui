@@ -94,7 +94,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     return (
-        <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+        <div className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
         }`}>
             <div className="space-y-5 overflow-y-auto pr-1">

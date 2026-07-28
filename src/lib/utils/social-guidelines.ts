@@ -159,13 +159,14 @@ export function mapSocialStateToApi(
         const init = initialFlatData[attr.socialAttributeId];
         const existingId = attr.id ?? init?.id ?? null;
         const isBitType = attr.dataType.toUpperCase() === "BIT";
+        const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
 
         // If not enabled and never saved in the database, do nothing
         if (!isEnabled && !existingId) {
             return;
         }
 
-        const apiBitValue = isBitType
+        const apiBitValue = (isBitType || isRootAttr)
             ? (isEnabled ? (attr.bitValue ?? false) : false)
             : null;
 
@@ -185,7 +186,7 @@ export function mapSocialStateToApi(
         const apiRemark = isEnabled ? attr.remark : null;
 
         const isDirty = !init ||
-            (isBitType ? apiBitValue !== init.bitValue : false) ||
+            ((isBitType || isRootAttr) ? apiBitValue !== init.bitValue : false) ||
             apiIntValue !== init.intValue ||
             apiDecimalValue !== init.decimalValue ||
             apiTextValue !== init.textValue ||

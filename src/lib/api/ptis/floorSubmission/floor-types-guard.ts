@@ -251,6 +251,7 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
             (data.renterMast && (data.renterMast as any[])[0]?.agreementDate)
         ),
         roomData: (data.roomWiseSubmissionDetails || data.propertyRooms || []).map((r, i) => mapRoomDataToUi(r, i)),
+        propertyCertificates: data.propertyCertificates || [],
     };
 }
 

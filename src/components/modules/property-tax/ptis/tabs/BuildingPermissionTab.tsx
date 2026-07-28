@@ -18,14 +18,22 @@ export interface BuildingPermissionTabProps {
   data?: BuildingPermissionData;
   onFieldChange?: (field: string, value: string | boolean) => void;
   readOnly?: boolean;
+  isExpanded?: boolean;
 }
 
-const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) => {
+const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data, isExpanded = false }) => {
   const t = useTranslations('ptis');
   const locale = useLocale();
   const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
   const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string; label?: string } | null>(null);
-  const items = (data?.items || []).filter((item) => item.isActive);
+
+  // Filter for items that have actual certificate data (number, date, or document) or hasCertificate=true
+  const items = React.useMemo(() => {
+    return (data?.items || []).filter((item) => {
+      const hasContent = !!(item.certificateNo?.trim() || item.issueDate?.trim() || item.documentGuid?.trim());
+      return item.hasCertificate || hasContent;
+    });
+  }, [data?.items]);
 
   const closeViewer = React.useCallback(() => {
     if (viewerData?.url) {
@@ -44,9 +52,9 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
-        <AlertCircle className="h-8 w-8 text-slate-400 mb-2" />
-        <p className="text-sm font-medium">{t('noDataAvailable') || 'No data available'}</p>
+      <div className="flex flex-col items-center justify-center p-6 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+        <AlertCircle className="h-7 w-7 text-slate-400 mb-1.5" />
+        <p className="text-xs font-semibold">{t('noDataAvailable') || 'No attached certificates available'}</p>
       </div>
     );
   }
@@ -64,60 +72,79 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
       }
     }
 
+    const scopeName = item.floorDescription
+      ? item.floorDescription
+      : item.propertyDetailsId
+      ? `Floor #${item.propertyDetailsId}`
+      : null;
+
+    const cardKey = item.propertyCertificateId 
+      ? String(item.propertyCertificateId) 
+      : `${item.certificateTypeId}-${item.propertyDetailsId || 'property'}`;
+
     return (
       <FieldShell
-        key={item.certificateTypeId}
-        className="relative transition-all hover:shadow-md min-w-0 mt-1 mb-1 ml-1 snap-start"
-        label={item.certificateTypeName}
+        key={cardKey}
+        className="relative transition-all hover:shadow-md min-w-[200px] mt-1 mb-1 snap-start border border-blue-100 bg-blue-50/20"
+        label={<span className="font-bold text-blue-900">{item.certificateTypeName}</span>}
       >
-        <div className="flex flex-col gap-1 p-0 min-w-0 mt-1 mb-1">
-          <div className="flex items-center gap-1 min-w-0 justify-start pl-2">
-            <span className="text-xs font-semibold text-blue-800 shrink-0 select-none pl-1">
-              {t('fields.numberLabel') || 'No'}
+        <div className="flex flex-col gap-1 p-0.5 min-w-0 mt-0.5 mb-0.5">
+          <div className="flex items-center gap-1 min-w-0 justify-start pl-1">
+            <span className="text-xs font-bold text-blue-900 shrink-0 select-none">
+              {t('fields.numberLabel') || 'No:'}
             </span>
-            <div className="w-[70%] min-w-0">
+            <div className="w-[70%] min-w-0 font-extrabold text-slate-900 text-xs truncate">
               <ValueDisplay value={item.certificateNo || '-'} />
             </div>
           </div>
-          <div className="flex items-center min-w-0 gap-1 pl-1">
-            <span className="text-xs font-semibold text-blue-800 shrink-0 select-none">
-              {t('fields.dateLabel') || 'Date'}
+          <div className="flex items-center min-w-0 gap-1.5 pl-1 pr-1">
+            <span className="text-xs font-bold text-blue-900 shrink-0 select-none">
+              {t('fields.dateLabel') || 'Date:'}
             </span>
-            <div className="w-[70%] min-w-0">
+            <div className="w-[45%] min-w-0 font-extrabold text-slate-900 text-xs shrink-0">
               <ValueDisplay value={formattedDate} />
             </div>
+            {scopeName && (
+              <div className="ml-auto min-w-0 truncate">
+                <span className="inline-block px-1.5 py-0.5 text-xs font-extrabold bg-blue-100 text-blue-900 rounded truncate max-w-full">
+                  {scopeName}
+                </span>
+              </div>
+            )}
           </div>
-          {item.documentGuid && (
-            <button
-              type="button"
-              disabled={activeViewingGuid !== null}
-              onClick={async (e) => {
-                e.stopPropagation();
-                setActiveViewingGuid(item.documentGuid!);
-                try {
-                  const res = await getDocumentBlobUrl(item.documentGuid!, locale);
-                  setViewerData({
-                    isOpen: true,
-                    url: res.url,
-                    name: item.fileName || "Document",
-                    label: item.certificateTypeName
-                  });
-                } catch (err: unknown) {
-                  toast.error(err instanceof Error ? err.message : "Failed to view document");
-                } finally {
-                  setActiveViewingGuid(null);
-                }
-              }}
-              className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center border-0 bg-transparent disabled:opacity-50"
-              title={t('actions.viewDocument') || 'View Document'}
-            >
-              {activeViewingGuid === item.documentGuid ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Eye className="h-3.5 w-3.5" />
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            disabled={activeViewingGuid !== null}
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (!item.documentGuid) {
+                toast.info(t('building.noDocumentAttached') || 'No document file attached for this certificate.');
+                return;
+              }
+              setActiveViewingGuid(item.documentGuid);
+              try {
+                const res = await getDocumentBlobUrl(item.documentGuid, locale);
+                setViewerData({
+                  isOpen: true,
+                  url: res.url,
+                  name: item.fileName || "Document",
+                  label: item.certificateTypeName
+                });
+              } catch (err: unknown) {
+                toast.error(err instanceof Error ? err.message : "Failed to view document");
+              } finally {
+                setActiveViewingGuid(null);
+              }
+            }}
+            className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center border-0 bg-transparent disabled:opacity-50"
+            title={t('actions.viewDocument') || 'View Document'}
+          >
+            {Boolean(item.documentGuid && activeViewingGuid === item.documentGuid) ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+            ) : (
+              <Eye className="h-3.5 w-3.5 text-blue-600" />
+            )}
+          </button>
         </div>
       </FieldShell>
     );
@@ -125,7 +152,11 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
 
   return (
     <>
-      <div className="max-h-[105px] overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div
+        className={`transition-all duration-300 overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full ${
+          isExpanded ? 'max-h-[205px]' : 'max-h-[102px]'
+        }`}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           {items.map(renderCard)}
         </div>

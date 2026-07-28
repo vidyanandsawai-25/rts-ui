@@ -17,7 +17,10 @@ export const SubmissionApiErrors: React.FC<SubmissionApiErrorsProps> = ({ apiErr
           let resolved = err;
           try {
             if (!err.includes(' ') && err.includes('.')) {
-              resolved = t(err);
+              const cleanKey = err.startsWith('quickDataEntry.')
+                ? err.replace('quickDataEntry.', '')
+                : err;
+              resolved = t(cleanKey);
             }
           } catch {
             resolved = err;

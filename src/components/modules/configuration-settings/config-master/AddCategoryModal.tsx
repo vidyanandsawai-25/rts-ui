@@ -32,7 +32,7 @@ export default function AddCategoryModal({
   const isEdit = !!initialData;
 
   const [formData, setFormData] = useState({
-    categoryCode: initialData?.code || '',
+    categoryCode: (initialData?.code || '').toUpperCase(),
     categoryName: initialData?.name || '',
     displayOrder: initialData?.displayOrder?.toString() || '1',
     isActive: initialData?.isActive ?? true,
@@ -41,7 +41,7 @@ export default function AddCategoryModal({
 
   const resetForm = (): void => {
     setFormData({
-      categoryCode: initialData?.code || '',
+      categoryCode: (initialData?.code || '').toUpperCase(),
       categoryName: initialData?.name || '',
       displayOrder: initialData?.displayOrder?.toString() || '1',
       isActive: initialData?.isActive ?? true,
@@ -152,6 +152,7 @@ export default function AddCategoryModal({
       open={isOpen}
       onClose={handleClose}
       width="sm"
+      className="config-drawer"
       title={
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm shrink-0">
@@ -168,7 +169,7 @@ export default function AddCategoryModal({
         </div>
       }
       footer={
-        <div className="flex flex-row items-center justify-end gap-3 w-full border-t border-slate-100 p-4">
+        <div className="flex flex-row items-center justify-center gap-3 w-full border-t border-slate-100 p-4">
           <Button variant="secondary" onClick={handleClose} disabled={isPending} className="flex-1 sm:flex-none sm:px-6 cursor-pointer">
             {t('modals.addCategory.buttons.cancel')}
           </Button>

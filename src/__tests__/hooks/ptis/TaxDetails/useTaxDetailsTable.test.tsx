@@ -21,7 +21,7 @@ vi.mock('next-intl', () => ({
 
 // Mock the column utility to isolate hook logic testing
 vi.mock('@/components/modules/property-tax/ptis/TaxDetails/TaxDetailsColumns', () => ({
-  getTaxDetailsColumns: vi.fn((_names, t) => [
+  getTaxDetailsFloorColumns: vi.fn((_names, t) => [
     {
       key: 'taxes',
       label: t('taxes'),

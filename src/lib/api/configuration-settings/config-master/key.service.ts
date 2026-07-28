@@ -64,7 +64,8 @@ export const getAllConfigKeys = cache(async (params: {
               totalUsers: 0
             },
             hasTag: false,
-            updatedDate: (itemData.updatedDate as string) ?? (itemData.UpdatedDate as string)
+            createdDate: parsed.createdDate || (itemData.createdDate as string) || (itemData.CreatedDate as string) || null,
+            updatedDate: parsed.updatedDate || (itemData.updatedDate as string) || (itemData.UpdatedDate as string) || (itemData.modifiedDate as string) || (itemData.ModifiedDate as string) || (itemData.lastModifiedDate as string) || (itemData.LastModifiedDate as string) || (itemData.updatedOn as string) || (itemData.UpdatedOn as string) || null
           };
         } catch (parseError) {
           throw parseError;

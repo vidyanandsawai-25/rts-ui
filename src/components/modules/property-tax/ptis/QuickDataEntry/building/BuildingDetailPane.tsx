@@ -1,34 +1,78 @@
 "use client";
 
 import React from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { Input, ValidationMessage, Label } from "@/components/common";
-import { CertificateData } from "@/types/building-permission.types";
+import { CertificateData, FloorCertificateDto } from "@/types/building-permission.types";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 import { DocumentAttachment } from "./DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { getCertificateLengthRule } from "@/lib/validation/building/validation-rules";
+import FloorTable from "../floorSubmission/FloorTable";
+import type { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from "@/types/floor-details.types";
+import type { FloorData } from "@/types/room-details.types";
 
 interface BuildingDetailPaneProps {
     data: CertificateData | null | undefined;
+    propertyWideCert?: CertificateData | null;
     onInputChange: (field: "number" | "date", value: string) => void;
     onFileUpload: (file: File) => void;
     onFileDelete?: (certificateTypeId: number) => void;
     validationError?: string;
     fieldErrors?: { number?: string; date?: string; document?: string };
-    t: (key: string, values?: Record<string, string | number>) => string;
+    t: (key: string, values?: Record<string, string | number | Date>) => string;
+    floorData?: FloorResponse[];
+    constructionTypeData?: ConstructionTypeResponse[];
+    useData?: TypeOfUseApiItem[];
+    subFloorData?: SubFloorResponse[];
+    subTypeData?: SubTypeOfUseResponse[];
+    initialFloors?: FloorData[];
+    activeScope?: string;
+    activeFloorId?: string | number | null;
+    onScopeChange?: (scope: "Property" | "Floor", floorDetailsId: number | null) => void | Promise<void>;
+    floors?: FloorCertificateDto[];
+        isFloorLoading?: boolean;
+    cameFromFloor?: boolean;
+    onDeleteCertificate?: () => void;
+    isSaving?: boolean;
 }
 
 export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     data,
+    propertyWideCert,
     onInputChange,
     onFileUpload,
     onFileDelete,
     validationError,
     fieldErrors,
     t,
+    floorData = [],
+    constructionTypeData = [],
+    useData = [],
+    subFloorData = [],
+    subTypeData = [],
+    initialFloors = [],
+    activeScope = 'Property',
+    activeFloorId = null,
+    onScopeChange,
+    isFloorLoading = false,
+    onDeleteCertificate,
+    isSaving = false,
 }) => {
     const { confirm } = useConfirm();
+
+    const displayData = React.useMemo(() => {
+        if (activeScope === "Floor" && data && !data.enabled && propertyWideCert) {
+            return {
+                ...data,
+                number: propertyWideCert.number || "",
+                date: propertyWideCert.date || "",
+                documentGuid: propertyWideCert.documentGuid || "",
+                fileName: propertyWideCert.fileName || "",
+            };
+        }
+        return data;
+    }, [activeScope, data, propertyWideCert]);
 
     const maxDate = React.useMemo(() => {
         const d = new Date();
@@ -38,6 +82,19 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     const lengthRule = React.useMemo(() => {
         return getCertificateLengthRule(data?.certificateTypeName || undefined);
     }, [data?.certificateTypeName]);
+
+    const isUpdateCase = React.useMemo(() => {
+        if (!displayData) return false;
+        return typeof displayData.propertyCertificateId === "number" && displayData.propertyCertificateId > 0;
+    }, [displayData]);
+
+    const isCertificateFilled = React.useMemo(() => {
+        if (!displayData) return false;
+        const hasFile = !!(displayData.documentGuid || displayData.fileName || displayData.pendingFile);
+        const hasNumber = !!displayData.number?.trim();
+        const hasDate = !!displayData.date?.trim();
+        return hasFile && hasNumber && hasDate;
+    }, [displayData]);
 
     const handleFileUploadWithConfirm = (file: File) => {
         if (data && data.documentGuid) {
@@ -67,7 +124,45 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
         }
     };
 
-    if (!data) {
+    const handleDeleteCertificateWithConfirm = () => {
+        if (onDeleteCertificate && displayData) {
+            const hasNum = !!displayData.number?.trim();
+            const hasDt = !!displayData.date?.trim();
+            const detailsList: string[] = [];
+            if (hasNum) detailsList.push(`${t("building.number") || "Number"}: ${displayData.number}`);
+            if (hasDt) detailsList.push(`${t("building.date") || "Date"}: ${displayData.date}`);
+
+            confirm({
+                title: t("building.confirmDeleteCertificateTitle") || "Delete Certificate & Data",
+                description: (
+                    <span className="flex flex-col gap-1 items-center text-center -my-1">
+                        <span className="text-xs text-gray-700 font-medium leading-snug">
+                            {t("building.confirmToggleOffWarning") || "You have an attached certificate with details:"}
+                        </span>
+                        <span className="bg-blue-50 border border-blue-200 rounded-xl py-1.5 px-3 text-center my-0.5 shadow-2xs w-full max-w-[340px] flex flex-col gap-0.5 items-center">
+                            <span className="font-bold text-blue-950 block text-xs leading-tight">
+                                {displayName}
+                            </span>
+                            {detailsList.map((detail, idx) => (
+                                <span key={idx} className="text-xs text-blue-800 font-semibold block leading-tight">
+                                    {detail}
+                                </span>
+                            ))}
+                        </span>
+                        <span className="text-xs text-gray-700 font-medium leading-snug">
+                            {t("building.confirmDeleteCertificateDesc") || "Are you sure you want to delete this certificate and all its associated data?"}
+                        </span>
+                    </span>
+                ) as unknown as string,
+                confirmText: t("building.confirmDeleteCertificateOk") || "Yes, Delete",
+                cancelText: t("building.confirmDeleteCertificateCancel") || "No, Cancel",
+                variant: "delete",
+                onConfirm: onDeleteCertificate
+            });
+        }
+    };
+
+    if (!data || !displayData) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-gray-400 mb-3" />
@@ -85,110 +180,187 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
 
     const hasAnyData = !!(data.number?.trim() || data.date?.trim() || data.documentGuid?.trim());
 
-    if (!data.enabled && !hasAnyData) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                <AlertCircle size={36} className="text-blue-500 mb-3" />
-                <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
-                <p className="text-sm font-semibold text-gray-500 max-w-sm">
-                    {t("building.enableCertificatePrompt") || "This certificate type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
-                </p>
-            </div>
-        );
-    }
-
     const isDisabled = !data.enabled;
     const isNumberInvalid = fieldErrors ? !!fieldErrors.number : !!validationError && (
-        !data.number?.trim() || /\s/.test(data.number) || validationError.includes("Certificate Number")
+        !displayData.number?.trim() || /\s/.test(displayData.number) || validationError.includes("Certificate Number")
     );
-    const isDateInvalid = fieldErrors ? !!fieldErrors.date : !!validationError && !data.date?.trim();
-    const isDocumentInvalid = fieldErrors ? !!fieldErrors.document : !!validationError && !data.documentGuid?.trim();
+    const isDateInvalid = fieldErrors ? !!fieldErrors.date : !!validationError && !displayData.date?.trim();
+    const isDocumentInvalid = fieldErrors ? !!fieldErrors.document : !!validationError && !displayData.documentGuid?.trim();
 
     return (
-        <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+        <div className={`flex flex-col h-auto min-h-full border rounded-xl shadow-sm pt-3 px-4 pb-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
         }`}>
             <div>
-                {isDisabled && (
-                    <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-amber-50 border border-amber-200 rounded-lg">
-                        <AlertCircle size={16} className="text-amber-600 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-amber-800">
-                            {t("building.disabledWithDataNote") || "This document is currently disabled. Toggle it active to edit details."}
-                        </span>
+                <div className="pb-2 border-b border-blue-50 mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-col">
+                        <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                        {activeScope === "Floor" && activeFloorId !== null && (
+                            <span className="text-xs font-bold text-blue-600 mt-1">
+                                {t("building.selectedFloor") || "Selected Floor"}: {
+                                    (() => {
+                                        const selectedFloorObj = initialFloors.find(f =>
+                                            Number(f.id) === Number(activeFloorId) ||
+                                            Number((f as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number(activeFloorId)
+                                        );
+                                        return selectedFloorObj 
+                                            ? `${selectedFloorObj.floor || ""}${selectedFloorObj.subFloor ? ` - ${selectedFloorObj.subFloor}` : ""}`
+                                            : `Floor #${activeFloorId}`;
+                                    })()
+                                }
+                            </span>
+                        )}
                     </div>
-                )}
-                <div className="pb-4 border-b border-blue-50 mb-6">
-                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
-                        {t("building.editingCertificate") || "Document Details"}
-                    </span>
-                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                    {activeScope === "Floor" && onScopeChange && (
+                        <button
+                            type="button"
+                            disabled={isSaving}
+                            onClick={() => !isSaving && onScopeChange("Property", null)}
+                            className={`px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg transition-colors ${
+                                isSaving ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:bg-blue-100 cursor-pointer"
+                            }`}
+                        >
+                            {t("building.clearSelection") || "Clear Selection"}
+                        </button>
+                    )}
                 </div>
 
-                <div className="mt-4 space-y-2 mb-6">
-                    <Label className="text-sm font-bold text-blue-800">{t("building.documentAttachment") || "Document Attachment"}<span className="text-red-500 ml-0.5">*</span></Label>
-                    <DocumentAttachment
-                        documentGuid={data.documentGuid}
-                        fileName={data.fileName}
-                        isUploading={data.isUploading}
-                        isDeleting={data.isDeleting}
-                        isDisabled={isDisabled}
-                        isDocumentInvalid={isDocumentInvalid}
-                        documentError={fieldErrors?.document || validationError}
-                        onFileUpload={handleFileUploadWithConfirm}
-                        onFileDelete={onFileDelete ? handleFileDeleteWithConfirm : undefined}
+                {/* Floor details table relocation */}
+                <div className="mb-3">
+                    <FloorTable
                         t={t}
-                        label={displayName}
-                        pendingFile={data.pendingFile}
+                        filteredFloors={initialFloors}
+                        floorSearch=""
+                        setFloorSearch={() => {}}
+                        selectedFloor={activeFloorId !== null ? initialFloors.find(f =>
+                            Number(f.id) === Number(activeFloorId) ||
+                            Number((f as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number(activeFloorId)
+                        ) || null : null}
+                        setSelectedFloor={() => {}}
+                        isAddingNewFloor={false}
+                        setIsAddingNewFloor={() => {}}
+                        handleAddFloor={() => {}}
+                        handleOpenDataEntrySameAs={() => {}}
+                        viewOnly={true}
+                        updateUrlParams={() => {}}
+                        handleDeleteFloor={() => {}}
+                        startTransition={(fn) => fn()}
+                        setFormErrors={() => {}}
+                        floorLookup={floorData}
+                        subFloorLookup={subFloorData}
+                        constructionLookup={constructionTypeData}
+                        useLookup={useData}
+                        subTypeData={subTypeData}
+                        setEditingFloorForm={() => {}}
+                        onRowClick={(floor: FloorData) => {
+                            if (isSaving) return;
+                            const targetId = floor.id ?? (floor as unknown as { propertyDetailsId?: number }).propertyDetailsId;
+                            if (onScopeChange && targetId !== undefined && targetId !== null) {
+                                onScopeChange("Floor", Number(targetId));
+                            }
+                        }}
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1.5">
-                        <Label className="text-sm font-bold text-blue-800">{t("building.certificateNumber")}<span className="text-red-500 ml-0.5">*</span></Label>
-                        <Input
-                            value={data.number}
-                            onChange={(e) => onInputChange("number", e.target.value)}
-                            placeholder={t("building.certificateNumberPlaceholder")}
-                            disabled={isDisabled}
-                            maxLength={lengthRule.max}
-                            className={`h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
-                                isDisabled
-                                    ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
-                                    : isNumberInvalid 
-                                        ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500" 
-                                        : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
-                            }`}
-                        />
-                        {isNumberInvalid && <ValidationMessage message={fieldErrors?.number || validationError} />}
-                    </div>
+                <hr className="border-slate-200 mb-3" />
 
-                    <div className="space-y-1.5">
-                        <Label className="text-sm font-bold text-blue-800">{t("building.certificateDate")}<span className="text-red-500 ml-0.5">*</span></Label>
-                        <Input
-                            type="date"
-                            max={maxDate}
-                            value={data.date}
-                            onChange={(e) => onInputChange("date", e.target.value)}
-                            placeholder={t("building.certificateDatePlaceholder")}
-                            disabled={isDisabled}
-                            className={`h-10 text-sm placeholder:text-gray-400 [&::-webkit-datetime-edit]:text-gray-800 focus:ring-1 shadow-sm transition-colors font-semibold ${
-                                isDisabled
-                                    ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
-                                    : isDateInvalid 
-                                        ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500 cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
-                                        : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300 cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                            }`}
-                        />
-                        {isDateInvalid && <ValidationMessage message={fieldErrors?.date || validationError} />}
+                {isFloorLoading ? (
+                    <div className="flex flex-col items-center justify-center py-10 bg-slate-50 border border-slate-200 rounded-xl">
+                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-2" />
+                        <p className="text-xs font-semibold text-slate-500">
+                            {t("building.loadingFloorDetails") || "Loading floor details..."}
+                        </p>
                     </div>
-                </div>
+                ) : (!data.enabled && !hasAnyData && !propertyWideCert) ? (
+                    <div className="flex flex-col items-center justify-center p-4 bg-gray-50 border border-gray-200 rounded-xl text-center my-1">
+                        <AlertCircle size={28} className="text-blue-500 mb-2" />
+                        <p className="text-xs font-semibold text-gray-500 max-w-md">
+                            {t("building.enableCertificatePrompt") || "This certificate type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="mt-2.5 space-y-1.5 mb-3">
+                            <Label className="text-sm font-bold text-blue-800">{t("building.documentAttachment", { name: displayName || "Document" }) || "Document Attachment"}<span className="text-red-500 ml-0.5">*</span></Label>
+                            <DocumentAttachment
+                                documentGuid={displayData.documentGuid}
+                                fileName={displayData.fileName}
+                                isUploading={displayData.isUploading}
+                                isDeleting={displayData.isDeleting}
+                                isDisabled={isDisabled}
+                                isDocumentInvalid={isDocumentInvalid}
+                                documentError={fieldErrors?.document || validationError}
+                                onFileUpload={handleFileUploadWithConfirm}
+                                onFileDelete={onFileDelete ? handleFileDeleteWithConfirm : undefined}
+                                t={t}
+                                label={displayName}
+                                pendingFile={displayData.pendingFile}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label className="text-sm font-bold text-blue-800">{t("building.certificateNumber", { name: displayName || "Document" })}<span className="text-red-500 ml-0.5">*</span></Label>
+                                <Input
+                                    value={displayData.number}
+                                    onChange={(e) => onInputChange("number", e.target.value.replace(/\s+/g, ""))}
+                                    onKeyDown={(e) => { if (e.key === " ") e.preventDefault(); }}
+                                    placeholder={t("building.certificateNumberPlaceholder", { name: displayName || "document" })}
+                                    disabled={isDisabled}
+                                    maxLength={lengthRule.max}
+                                    className={`h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
+                                        isDisabled
+                                            ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
+                                            : isNumberInvalid 
+                                                ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500" 
+                                                : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
+                                    }`}
+                                />
+                                {isNumberInvalid && <ValidationMessage message={fieldErrors?.number || validationError} />}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label className="text-sm font-bold text-blue-800">{t("building.certificateDate", { name: displayName || "Document" })}<span className="text-red-500 ml-0.5">*</span></Label>
+                                <Input
+                                    type="date"
+                                    max={maxDate}
+                                    value={displayData.date}
+                                    onChange={(e) => onInputChange("date", e.target.value)}
+                                    placeholder={t("building.certificateDatePlaceholder", { name: displayName || "document" })}
+                                    disabled={isDisabled}
+                                    className={`h-10 text-sm placeholder:text-gray-400 [&::-webkit-datetime-edit]:text-gray-800 focus:ring-1 shadow-sm transition-colors font-semibold ${
+                                        isDisabled
+                                            ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
+                                            : isDateInvalid 
+                                                ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500 cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
+                                                : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300 cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                                    }`}
+                                />
+                                {isDateInvalid && <ValidationMessage message={fieldErrors?.date || validationError} />}
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
-            <div className="pt-4 border-t border-blue-50 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    {t("building.verifyDetailsNote") || "Verify document details & file attachment before saving changes."}
-                </span>
+            <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                        {t("building.verifyDetailsNote") || "Verify document details & file attachment before saving changes."}
+                    </span>
+                </div>
+                {onDeleteCertificate && isCertificateFilled && isUpdateCase && !isDisabled && (
+                    <button
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={handleDeleteCertificateWithConfirm}
+                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {t("building.deleteCertificate") || "Delete Certificate & Data"}
+                    </button>
+                )}
             </div>
         </div>
     );

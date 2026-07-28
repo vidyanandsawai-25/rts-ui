@@ -70,7 +70,7 @@ export async function createConfigKeyAction(formData: FormData): Promise<ActionR
       categoryId: parseInt(formData.get('categoryId') as string),
       configCode: (formData.get('configCode') as string || '').replace(/[^A-Za-z0-9_]/g, ''),
       configName: sanitizeTextInput(formData.get('configName') as string),
-      description: sanitizeTextInput(formData.get('description') as string),
+      description: sanitizeTextInput(formData.get('description') as string || ''),
       dataType: formData.get('dataType'),
       controlType: formData.get('controlType'),
       defaultValue: formData.get('defaultValue') as string,
@@ -130,7 +130,7 @@ export async function updateConfigKeyAction(
       ...data,
       configCode: data.configCode ? data.configCode.replace(/[^A-Za-z0-9_]/g, '') : undefined,
       configName: data.configName ? sanitizeTextInput(data.configName) : undefined,
-      description: data.description ? sanitizeTextInput(data.description) : undefined,
+      description: data.description !== undefined ? String(data.description).replace(/[<>]/g, '') : undefined,
       defaultValue: data.defaultValue !== undefined ? String(data.defaultValue) : undefined,
       updatedBy: userId,
     });

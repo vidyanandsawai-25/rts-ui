@@ -224,6 +224,7 @@ export function normalizeFloorData(
       }
       return (raw.isTaxable === 'Yes' || raw.isTaxable === true || raw.isTaxable === 1 || raw.isTaxable === '1') ? 'Yes' : 'No';
     })(),
+    updateBuildingPermission: raw.updateBuildingPermission ? String(raw.updateBuildingPermission) : ((raw.propertyCertificates && Array.isArray(raw.propertyCertificates) && raw.propertyCertificates.length > 0) ? 'Yes' : 'No'),
 
     // Renter details root level mappings for forms/UI state
     renterName: getString(raw.renterName) || getString(raw.renterNameEnglish) || getString(firstRenter?.renterName) || getString(firstRenter?.renterNameEnglish) || '',

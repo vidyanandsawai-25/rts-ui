@@ -9,7 +9,7 @@ interface SocialSelectPromptProps {
 
 export const SocialSelectPrompt: React.FC<SocialSelectPromptProps> = ({ t }) => {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-full bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
             <AlertCircle size={36} className="text-gray-400 mb-3" />
             <p className="text-sm font-bold text-gray-500">
                 {t("discount.selectDiscountPrompt") || "Select a social attribute from the sidebar to edit details"}
@@ -28,7 +28,7 @@ export const SocialDisabledPrompt: React.FC<SocialDisabledPromptProps> = ({
     t,
 }) => {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-full bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
             <AlertCircle size={36} className="text-blue-500 mb-3" />
             <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
             <p className="text-sm font-semibold text-gray-500 max-w-sm">

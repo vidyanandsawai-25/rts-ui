@@ -38,6 +38,11 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     const [searchTerm, setSearchTerm] = React.useState("");
     const [showActiveFirst, setShowActiveFirst] = React.useState(false);
 
+    const handleToggleEnabledWrapped = React.useCallback((id: number, checked: boolean) => {
+        handleToggleEnabled(id, checked);
+        setSelectedId(id);
+    }, [handleToggleEnabled]);
+
     // List of root attributes
     const rootAttributes = React.useMemo(() => {
         if (!initialSocialData?.socialAttributes) return [];
@@ -125,7 +130,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     }, [incompleteAttributes, socialData]);
 
     return (
-        <div className="w-full">
+        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-2.5 md:p-3 w-full h-full">
             {/* Validation Error Banner */}
             {activeIncompleteAttributes.length > 0 && (
                 <SocialValidationErrorBanner
@@ -135,9 +140,9 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 />
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:overflow-hidden">
                 {/* Left Sidebar */}
-                <div className="lg:col-span-5 xl:col-span-4">
+                <div className="lg:col-span-5 xl:col-span-4 h-auto lg:h-full lg:overflow-hidden">
                     <SocialSidebar
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
@@ -147,7 +152,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         socialData={socialData}
                         selectedId={activeSelectedId}
                         onSelect={setSelectedId}
-                        onToggleEnabled={handleToggleEnabled}
+                        onToggleEnabled={handleToggleEnabledWrapped}
                         validationErrors={validationErrors}
                         t={t as unknown as {
                             (key: string, values?: Record<string, string | number | Date>): string;
@@ -157,7 +162,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 </div>
 
                 {/* Right Detail Pane */}
-                <div className="lg:col-span-7 xl:col-span-8">
+                <div className="lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1">
                     <SocialDetailPane
                         data={selectedAttribute}
                         hierarchyData={selectedHierarchy}
@@ -175,8 +180,8 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 </div>
             </div>
 
-            {/* Save Button Section */}
-            <div className="flex justify-end mt-3 pt-2 border-t border-blue-100">
+            {/* Fixed Save Button - bottom right */}
+            <div className="fixed bottom-4 right-6 z-50">
                 <SaveButton
                     onClick={handleSaveClick}
                     disabled={!hasChanges || isSaving}

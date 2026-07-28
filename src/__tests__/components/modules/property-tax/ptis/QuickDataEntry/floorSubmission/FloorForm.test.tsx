@@ -12,12 +12,32 @@ vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/c
   AreaSection: () => <div data-testid="area-section">Area</div>,
 }));
 
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
+}));
+
 vi.mock('@/components/common', () => ({
   Button: ({ label, children, onClick, disabled, isLoading }: { label?: string; children?: React.ReactNode; onClick: () => void; disabled?: boolean; isLoading?: boolean }) => (
     <button onClick={onClick} disabled={disabled || isLoading}>{children || label}</button>
   ),
   IconButton: ({ onClick, icon: Icon }: { onClick: () => void; icon: React.ComponentType }) => (
     <button onClick={onClick} data-testid="icon-button"><Icon /></button>
+  ),
+  SearchSelect: ({ id, name, options, value, onChange }: { id: string; name: string; options: { label: string; value: string }[]; value: string; onChange: (name: string, value: string) => void }) => (
+    <select
+      id={id}
+      name={name}
+      value={value}
+      onChange={(e) => onChange(name, e.target.value)}
+      data-testid="search-select"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   ),
 }));
 
