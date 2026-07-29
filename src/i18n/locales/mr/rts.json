@@ -380,6 +380,7 @@
       "allStatuses": "सर्व स्थिती"
     },
     "table": {
+                  "remark": "Remark",
                   "applicationNo": "अर्ज क्रमांक",
                   "applicationDate": "अर्जाची तारीख",
                   "applicantName": "अर्जदाराचे नाव",

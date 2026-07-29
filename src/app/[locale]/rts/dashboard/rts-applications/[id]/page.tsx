@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import {
   getApplicationDetailAction,
   submitApplicationActionAction,
-} from "../actions";
+} from "./actions";
 import RtsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
 type PageProps = {
@@ -13,9 +13,14 @@ type PageProps = {
 };
 
 export default async function RtsApplicationDetailsPage({ params }: PageProps) {
-  const { id: applicationNo, locale } = await params;
+  const { id, locale } = await params;
+  const applicationId = Number(id);
 
-  const data = await getApplicationDetailAction(applicationNo);
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    notFound();
+  }
+
+  const data = await getApplicationDetailAction(applicationId);
   if (!data) {
     notFound();
   }

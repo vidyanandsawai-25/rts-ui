@@ -1,10 +1,16 @@
 import RtsApplicationDashboard from "@/components/modules/rts/dashboard/RtsApplicationDashboard";
-import { getRtsApplicationsDashboardAction } from "./actions";
+import {
+  getRtsApplicationFilterOptionsAction,
+  getRtsApplicationsDashboardAction,
+} from "./actions";
 
 export default async function RtsApplicationsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
 
-  const dashboardData = await getRtsApplicationsDashboardAction();
+  const [dashboardData, filterOptions] = await Promise.all([
+    getRtsApplicationsDashboardAction(),
+    getRtsApplicationFilterOptionsAction(),
+  ]);
 
   return (
     <div className="w-full">
@@ -12,6 +18,9 @@ export default async function RtsApplicationsPage({ params }: { params: Promise<
         kpis={dashboardData.kpis}
         rows={dashboardData.rows}
         locale={locale}
+        error={dashboardData.error}
+        departments={filterOptions.departments}
+        services={filterOptions.services}
       />
     </div>
   );

@@ -4,11 +4,13 @@ import { apiClient } from "@/services/api.service";
 import { getAppConfig } from "@/config/app.config";
 import { serverFetch } from "@/lib/utils/server-fetch";
 import { cookies } from "next/headers";
-import {
-  getMockApplicationHeader,
-  isRtsMockModeEnabled,
-  seedMockApplication,
-} from "./rts-workflow-mock-store";
+import type {
+  RtsApplicationApiDashboard,
+  RtsApplicationApiDetail,
+  RtsApplicationApiListItem,
+  RtsApplicationsApiListPayload,
+  RtsApplicationsApiListResponse,
+} from "@/types/rts/rts-application.types";
 
 export interface RtsApplicationFieldValuePayload {
   isActive?: boolean;
@@ -66,67 +68,13 @@ export interface CreateRtsApplicationResponse {
   correlationId: string | null;
 }
 
-export interface RtsApplicationApplicantDetail {
-  fieldLabel: string;
-  fieldValue: string | null;
-}
-
-export interface RtsApplicationListItem {
-  id: number;
-  departmentId: number;
-  serviceId: number;
-  applicationNo: string;
-  applicationStatus: string;
-  createdDate: string;
-  updatedDate: string | null;
-  assignedTo: number | string;
-  action?: number;
-  sessionId?: string;
-  ownerId?: number;
-  departmentName: string;
-  citizenName: string | null;
-  serviceName: string;
-  sla: string;
-  remainingDays: number | null;
-  dueDays: number | null;
-  overdueDays: number | null;
-  applicantDetails: RtsApplicationApplicantDetail[];
-}
-
-export interface RtsApplicationDashboardSummary {
-  totalApplications: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-  reverted: number;
-  todayApplications: number;
-  overdueApplications: number;
-  dueToday: number;
-  inProgress: number;
-}
-
-export interface RtsApplicationsListPayload {
-  dashboard: RtsApplicationDashboardSummary;
-  applications: RtsApplicationListItem[];
-}
-
-export interface RtsApplicationsListResponse {
-  items: RtsApplicationsListPayload[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
-
 export interface GetRtsApplicationsParams {
   pageNumber?: number;
   pageSize?: number;
   departmentId?: number;
   serviceId?: number;
   applicationNo?: string;
-  status?: string;
+  applicationStatus?: string;
 }
 
 
@@ -195,37 +143,20 @@ export async function createRtsApplication(
     throw new Error(response.error || "Failed to create RTS application");
   }
 
-  // POST /RTSApplication is real and works; seed the (dev-only) mock workflow
-  // store with what was actually submitted so it can be viewed/processed
-  // immediately — see rts-workflow-mock-store.ts for why this exists.
-  seedMockApplication(response.data.items);
-
   return response.data;
 }
 
-/**
- * GET /RTSApplication/{no} does not exist on the backend yet (only POST is
- * implemented — confirmed against the live swagger spec). Falls back to the
- * dev-only mock store so the application-details page is testable in the
- * meantime; see rts-workflow-mock-store.ts.
- */
-export async function getRtsApplicationByNo(
-  applicationNo: string
-): Promise<CreateRtsApplicationResponseItem> {
-  const response = await apiClient.get<CreateRtsApplicationResponseItem>(
-    `/RTSApplication/${encodeURIComponent(applicationNo)}`,
+export async function getRtsApplicationById(applicationId: number): Promise<RtsApplicationApiDetail> {
+  const response = await apiClient.get<RtsApplicationApiDetail>(
+    `/RTSApplication/${applicationId}`,
     { cache: "no-store" }
   );
 
-  if (response.success && response.data) {
-    return response.data;
+  if (!response.success || !response.data) {
+    throw new Error(response.error || `Failed to fetch RTS application ${applicationId}`);
   }
 
-  if (isRtsMockModeEnabled()) {
-    return getMockApplicationHeader(applicationNo);
-  }
-
-  throw new Error(response.error || `Failed to fetch RTS application ${applicationNo}`);
+  return response.data;
 }
 
 /**
@@ -234,8 +165,8 @@ export async function getRtsApplicationByNo(
 export async function getRtsApplications(
   params: GetRtsApplicationsParams = {}
 ): Promise<{
-  dashboard: RtsApplicationDashboardSummary;
-  applications: RtsApplicationListItem[];
+  dashboard: RtsApplicationApiDashboard | null;
+  applications: RtsApplicationApiListItem[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;
@@ -247,12 +178,12 @@ export async function getRtsApplications(
   if (params.departmentId != null) queryParams.set("DepartmentId", String(params.departmentId));
   if (params.serviceId != null) queryParams.set("ServiceId", String(params.serviceId));
   if (params.applicationNo) queryParams.set("ApplicationNo", params.applicationNo);
-  if (params.status) queryParams.set("Status", params.status);
+  if (params.applicationStatus) queryParams.set("ApplicationStatus", params.applicationStatus);
 
   const queryString = queryParams.toString();
   const endpoint = `/RTSApplication${queryString ? `?${queryString}` : ""}`;
 
-  const response = await apiClient.get<RtsApplicationsListResponse>(endpoint, {
+  const response = await apiClient.get<RtsApplicationsApiListResponse>(endpoint, {
     cache: "no-store",
   });
 
@@ -263,25 +194,15 @@ export async function getRtsApplications(
   const data = response.data;
   const firstItem = Array.isArray(data.items)
     ? data.items[0]
-    : (data.items as unknown as RtsApplicationsListPayload);
+    : (data.items as unknown as RtsApplicationsApiListPayload);
 
   return {
-    dashboard: firstItem?.dashboard ?? {
-      totalApplications: 0,
-      pending: 0,
-      approved: 0,
-      rejected: 0,
-      reverted: 0,
-      todayApplications: 0,
-      overdueApplications: 0,
-      dueToday: 0,
-      inProgress: 0,
-    },
+    dashboard: firstItem?.dashboard ?? null,
     applications: firstItem?.applications ?? [],
-    totalCount: data.totalCount ?? 0,
-    pageNumber: data.pageNumber ?? 1,
-    pageSize: data.pageSize ?? 10,
-    totalPages: data.totalPages ?? 1,
+    totalCount: data.totalCount,
+    pageNumber: data.pageNumber,
+    pageSize: data.pageSize,
+    totalPages: data.totalPages,
   };
 }
 

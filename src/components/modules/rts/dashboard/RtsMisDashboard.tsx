@@ -87,7 +87,7 @@ interface MisTableRow extends Record<string, unknown> {
   error?: string;
 }
 
-const DEPARTMENT_PAGE_SIZE = 15;
+const DEPARTMENT_PAGE_SIZE = 10;
 const PIE_COLORS = ["#0B5CD5", "#F39C12", "#27AE60", "#B22222", "#8A2BE2", "#008B8B", "#64748B"];
 const DONUT_CIRCUMFERENCE = 2 * Math.PI * 42;
 
@@ -175,8 +175,8 @@ function buildPieData(
   const sortedRows = rows
     .filter((row) => row.value > 0)
     .sort((first, second) => second.value - first.value);
-  const topRows = sortedRows.slice(0, 6);
-  const otherValue = sortedRows.slice(6).reduce((total, row) => total + row.value, 0);
+  const topRows = sortedRows.slice(0, 3);
+  const otherValue = sortedRows.slice(3).reduce((total, row) => total + row.value, 0);
   const visibleRows = otherValue > 0 ? [...topRows, { label: otherLabel, value: otherValue }] : topRows;
 
   return visibleRows.map((row, index) => ({
@@ -203,18 +203,18 @@ function DonutChart({
   formatNumber: (value: number) => string;
 }) {
   if (loading) {
-    return <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{loadingLabel}</div>;
+    return <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{loadingLabel}</div>;
   }
 
   if (total === 0) {
-    return <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{noDataLabel}</div>;
+    return <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{noDataLabel}</div>;
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 w-full h-auto">
       <div className="flex justify-center">
-        <svg viewBox="0 0 180 180" className="h-40 w-40" role="img" aria-label={totalLabel}>
-          <circle cx="90" cy="90" r="42" fill="none" stroke="#E2E8F0" strokeWidth="24" />
+        <svg viewBox="0 0 180 180" className="h-48 w-full" role="img" aria-label={totalLabel}>
+          <circle cx="90" cy="90" r="42" fill="none" stroke="#E2E8F0" strokeWidth="28" />
           {data.map((item, index) => {
             const length = (item.value / total) * DONUT_CIRCUMFERENCE;
             const offset = data.slice(0, index).reduce(
@@ -227,7 +227,7 @@ function DonutChart({
           <text x="90" y="102" textAnchor="middle" className="fill-slate-900 text-[18px] font-extrabold">{formatNumber(total)}</text>
         </svg>
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-0.8">
         {data.map((item) => {
           const percentage = Math.round((item.value / total) * 100);
           return <div key={item.label} className="flex items-center gap-2 text-[11px] font-bold text-slate-700"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} /><span className="min-w-0 flex-1 truncate">{item.label}</span><span className="shrink-0 text-slate-900">{formatNumber(item.value)} ({percentage}%)</span></div>;
@@ -240,6 +240,7 @@ function DonutChart({
 export default function RtsMisDashboard({ misDashboardData, getDepartmentServices }: DashboardProps) {
   const locale = useLocale();
   const t = useTranslations("rts");
+  const tCommon = useTranslations("common");
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -319,6 +320,13 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     const start = (currentDepartmentPage - 1) * DEPARTMENT_PAGE_SIZE;
     return filteredDepartments.slice(start, start + DEPARTMENT_PAGE_SIZE);
   }, [currentDepartmentPage, filteredDepartments]);
+  const departmentPageStart = filteredDepartments.length === 0
+    ? 0
+    : (currentDepartmentPage - 1) * DEPARTMENT_PAGE_SIZE + 1;
+  const departmentPageEnd = Math.min(
+    currentDepartmentPage * DEPARTMENT_PAGE_SIZE,
+    filteredDepartments.length
+  );
 
   const fetchDepartmentServices = useCallback(async (department: DepartmentRow) => {
     if (servicesByDepartment[department.id] || activeServiceRequests.current.has(department.id)) return;
@@ -525,8 +533,8 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-white text-[#0B5CD5] shadow-sm">
                 <ChevronRight className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
               </span>
-              <span className="min-w-0 flex-1 break-words leading-5">{row.name}</span>
-              <span title={`${row.totalServices ?? 0} ${t("misDashboard.totalServices")}`} className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-1.5 text-[10px] font-extrabold text-[#0B5CD5]">{row.totalServices ?? 0}</span>
+              <span className="min-w-0 break-words leading-5">{row.name}</span>
+              <span title={`${row.totalServices ?? 0} ${t("misDashboard.totalServices")}`} className="inline-flex h-5 min-w-5 ml-3 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-1.5 text-[10px] font-extrabold text-[#0B5CD5]">{row.totalServices ?? 0}</span>
             </div>
           );
         }
@@ -569,14 +577,15 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
         ))}
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-        <Card className="w-full overflow-hidden border border-slate-200 bg-white p-4 shadow-sm lg:w-[70%]">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start">
+        <Card className="w-full overflow-hidden border border-slate-200 bg-white p-4 shadow-sm lg:w-[80%]">
           <div className="mb-3 flex flex-col gap-2 border-b border-slate-100 pb-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="flex items-center gap-2 text-sm font-bold text-[#0a3275]"><FileSpreadsheet className="h-5 w-5 text-[#0B5CD5]" />{t("misDashboard.departmentServiceBreakdown")}</h2>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="w-auto flex flex-row">
-                <p className="text-[11px] font-bold text-slate-500">{t("misDashboard.applicationSource")}: </p>
+              <div className="w-auto flex flex-row items-center">
+                <p className="text-[11px] w-auto text-right font-bold text-slate-500">{t("misDashboard.applicationSource")}: </p>
                 <Select
+                  className="ml-1 w-[150px]"
                   value={applicationSource}
                   options={[
                     { value: "rts", label: "RTS" },
@@ -609,7 +618,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
             loading={isSourceLoading}
             getRowKey={(row) => row.id}
             emptyText={t("misDashboard.noData")}
-            maxBodyHeightClassName="h-[645px] max-h-[645px]"
+            maxBodyHeightClassName="h-[442px]"
             tableClassName="table-fixed border-collapse text-left text-sm text-slate-900"
             containerClassName="gap-0"
             theadClassName="bg-[#0A3275]"
@@ -622,20 +631,121 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
             onRowClick={(row) => {
               if (row.kind === "department" && row.department) toggleDepartment(row.department);
             }}
+
+            paginationConfig={{
+              enabled: true,
+              showPageSizeSelector: false
+            }}
+            footerLeftContent={
+              <span className="whitespace-nowrap my-1.5">
+                {tCommon("table.showingEntries", {
+                  start: departmentPageStart,
+                  end: departmentPageEnd,
+                  total: filteredDepartments.length,
+                })}
+              </span>
+            }
             footerRightContent={<TablePagination currentPage={currentDepartmentPage} totalPages={departmentTotalPages} onPageChange={changeDepartmentPage} />}
-            footerClassName="!border-t-0 !bg-white !px-0 !pb-0 !shadow-none"
+            footerClassName="!border-t-0 !bg-white !shadow-none"
           />
         </Card>
 
-        <div className="w-full space-y-4 lg:w-[30%]">
-          <Card className="flex h-[325px] flex-col gap-3 self-start border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="border-b border-slate-100 pb-1.5"><h3 className="flex items-center gap-1.5 text-base font-bold text-slate-800"><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0B5CD5]" />{selectedDepartment?.name}</h3><p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("misDashboard.interactiveVisualization")}</p></div>
-            <div className="space-y-1"><span className="block text-[13px] font-bold text-[#0a3275]">{t("misDashboard.applicationStatusDistribution")}</span><div className="space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2">{approvalDistribution.map((item) => { const percentage = selectedDepartment && selectedDepartment.totalApplications > 0 ? Math.round((item.value / selectedDepartment.totalApplications) * 100) : 0; return <div key={item.label} className="space-y-0.5"><div className="flex justify-between text-[11px] font-bold"><span className={item.text}>{item.label}</span><span className="text-slate-800">{t("misDashboard.countWithPercentage", { count: item.value, percentage })}</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100"><div style={{ width: `${percentage}%` }} className={`${item.color} h-full rounded-full`} /></div></div>; })}</div></div>
-            <div className="space-y-1"><span className="block text-[13px] font-bold text-[#0a3275]">{t("misDashboard.slaTargetEfficiency")}</span><div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2"><div><div className="text-[12px] font-bold text-slate-600">{t("misDashboard.slaSpeedPerformance")}</div><div className="text-[11px] font-bold text-slate-400">{t("misDashboard.targetSla")}</div></div><div className="text-right"><div className="text-xl font-extrabold text-[#008B8B]">{formatNumber(selectedDepartment?.sla ?? 0)}</div><div className="text-[10px] font-bold text-slate-500">{t("misDashboard.days")}</div></div></div></div>
+        <div className="w-full space-y-2 lg:w-[20%]">
+          <Card className="flex h-[238px] flex-col gap-2 self-start border border-slate-200 bg-white p-3 shadow-sm">
+
+            {/* Main header */}
+            <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2">
+
+              {/* Department */}
+              <div className="min-w-0 pt-1">
+                <h3 className="flex items-center gap-0.5 text-base font-bold text-slate-800">
+                  {/* <span className="size-2.5 shrink-0 rounded-full bg-[#0B5CD5]" /> */}
+
+                  <span>
+                    {selectedDepartment?.name}
+                  </span>
+                </h3>
+
+                <p className=" text-[10px] font-bold uppercase truncate leading-4 tracking-wider text-slate-400">
+                  {t("misDashboard.interactiveVisualization")}
+                </p>
+              </div>
+
+              {/* SLA panel */}
+              <div className="w-[108px] rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-2 py-2 shadow-sm">
+                <p className="text-center text-[8px] font-bold uppercase tracking-wide text-slate-500">
+                  {t("misDashboard.slaTargetEfficiency")}
+                </p>
+
+                <div className="mt-1 flex items-center justify-center gap-y-1 gap-x-1">
+
+                  {/* Gauge */}
+                  {/* <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-cyan-50">
+                    <Gauge className="size-5 text-[#008B8B]" strokeWidth={2.2} />
+                  </div> */}
+
+                  {/* Divider */}
+                  {/* <div className="h-9 w-px bg-slate-200" /> */}
+
+                  {/* Value */}
+                  {/* <div className="flex items-end gap-1"> */}
+                  <span className="text-[16px] font-extrabold leading-none text-[#008B8B]">
+                    {formatNumber(selectedDepartment?.sla ?? 0)}
+                  </span>
+
+                  <span className="text-[11px] font-bold text-slate-500">
+                    {t("misDashboard.days")}
+                  </span>
+                  {/* </div> */}
+                </div>
+              </div>
+            </div>
+
+            {/* Application status */}
+            <div className="space-y-0.5">
+              <span className="block text-[13px] font-bold text-[#0a3275]">
+                {t("misDashboard.applicationStatusDistribution")}
+              </span>
+
+              <div className="space-y-1 rounded-xl border border-slate-100 bg-slate-50/50 p-1.5">
+                {approvalDistribution.map((item) => {
+                  const percentage =
+                    selectedDepartment?.totalApplications > 0
+                      ? Math.round(
+                        (item.value / selectedDepartment.totalApplications) * 100
+                      )
+                      : 0;
+
+                  return (
+                    <div key={item.label} className="space-y-0.5">
+                      <div className="flex justify-between text-[11px] font-bold">
+                        <span className={item.text}>
+                          {item.label}
+                        </span>
+
+                        <span className="text-slate-800">
+                          {t("misDashboard.countWithPercentage", {
+                            count: item.value,
+                            percentage,
+                          })}
+                        </span>
+                      </div>
+
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className={`${item.color} h-full rounded-full transition-all duration-500`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </Card>
-          <Card className="border border-slate-200 bg-white p-4 shadow-sm">
+          <Card className="h-[340px] border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-              <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0a3275]"><PieChart className="h-4 w-4 text-[#0B5CD5]" />{t("misDashboard.applicationShare")}</h3>
+              <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0a3275] truncate"><PieChart className="h-4 w-4 text-[#0B5CD5]" />{t("misDashboard.applicationShare")}</h3>
               <div role="tablist" aria-label={t("misDashboard.applicationShare")} className="flex rounded-lg bg-slate-100 p-0.5">
                 <button type="button" role="tab" aria-selected={pieChartView === "department"} onClick={() => setPieChartView("department")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "department" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.department")}</button>
                 <button type="button" role="tab" aria-selected={pieChartView === "service"} onClick={() => setPieChartView("service")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "service" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.service")}</button>

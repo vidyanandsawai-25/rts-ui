@@ -377,6 +377,7 @@
       "allStatuses": "All Statuses"
     },
     "table": {
+                  "remark": "Remark",
                   "applicationNo": "Application No.",
                   "applicationDate": "Application Date",
                   "applicantName": "Applicant Name",

@@ -8,13 +8,13 @@ import { useTranslations } from 'next-intl';
 import {
   getApplicationDetailAction,
   type RtsApplicationDetailData,
-} from '@/app/[locale]/rts/dashboard/rts-applications/actions';
+} from '@/app/[locale]/rts/dashboard/rts-applications/[id]/actions';
 
 interface DrawerRecord {
-  appId: string;
-  citizenName: string;
+  applicationId: number;
+  citizenName: string | null;
   submittedDate: string;
-  slaLimit: number;
+  slaLimit: string | number | null;
 }
 
 interface Props {
@@ -35,7 +35,7 @@ export default function ApplicationDrawerContent({ record, onClose }: Props) {
     async function loadDetail() {
       setLoading(true);
       try {
-        const data = await getApplicationDetailAction(record.appId);
+        const data = await getApplicationDetailAction(record.applicationId);
         if (!cancelled) setDetail(data);
       } finally {
         if (!cancelled) setLoading(false);
@@ -47,7 +47,7 @@ export default function ApplicationDrawerContent({ record, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [record.appId]);
+  }, [record.applicationId]);
 
   const documentAnswers = (detail?.answerGroups ?? []).flatMap((group) =>
     group.answers.filter((answer) => answer.documentGuid)
@@ -73,7 +73,9 @@ export default function ApplicationDrawerContent({ record, onClose }: Props) {
                 {t('applicationDashboard.drawer.applicantName')}
               </div>
 
-              <div className="font-bold text-slate-800">{record.citizenName}</div>
+              <div className="font-bold text-slate-800">
+                {record.citizenName ?? t('applicationDashboard.drawer.notAvailable')}
+              </div>
             </div>
 
             <div>
@@ -90,7 +92,7 @@ export default function ApplicationDrawerContent({ record, onClose }: Props) {
               </div>
 
               <div className="font-bold text-blue-600">
-                {t('applicationDashboard.units.days', { value: record.slaLimit })}
+                {record.slaLimit ?? t('applicationDashboard.drawer.notAvailable')}
               </div>
             </div>
 
