@@ -192,30 +192,60 @@ export default function PropertyTabSection({
     (value: boolean) => {
       if (value !== showOldFloorInfo) {
         setShowOldFloorInfo(value);
-        updateUrl({ showFloor: value ? 'true' : null });
+        if (value) {
+          setShowOldTaxInfo(false);
+          setShowOldMapInfo(false);
+          updateUrl({
+            showFloor: 'true',
+            showOldTax: null,
+            showMapDetails: null,
+          });
+        } else {
+          updateUrl({ showFloor: null });
+        }
       }
     },
-    [showOldFloorInfo, setShowOldFloorInfo, updateUrl]
+    [showOldFloorInfo, setShowOldFloorInfo, setShowOldTaxInfo, setShowOldMapInfo, updateUrl]
   );
 
   const handleShowTaxInfoChange = useCallback(
     (value: boolean) => {
       if (value !== showOldTaxInfo) {
         setShowOldTaxInfo(value);
-        updateUrl({ showOldTax: value ? 'true' : null });
+        if (value) {
+          setShowOldFloorInfo(false);
+          setShowOldMapInfo(false);
+          updateUrl({
+            showOldTax: 'true',
+            showFloor: null,
+            showMapDetails: null,
+          });
+        } else {
+          updateUrl({ showOldTax: null });
+        }
       }
     },
-    [showOldTaxInfo, setShowOldTaxInfo, updateUrl]
+    [showOldTaxInfo, setShowOldTaxInfo, setShowOldFloorInfo, setShowOldMapInfo, updateUrl]
   );
 
   const handleShowMapInfoChange = useCallback(
     (value: boolean) => {
       if (value !== showOldMapInfo) {
         setShowOldMapInfo(value);
-        updateUrl({ showMapDetails: value ? 'true' : null });
+        if (value) {
+          setShowOldFloorInfo(false);
+          setShowOldTaxInfo(false);
+          updateUrl({
+            showMapDetails: 'true',
+            showFloor: null,
+            showOldTax: null,
+          });
+        } else {
+          updateUrl({ showMapDetails: null });
+        }
       }
     },
-    [showOldMapInfo, setShowOldMapInfo, updateUrl]
+    [showOldMapInfo, setShowOldMapInfo, setShowOldFloorInfo, setShowOldTaxInfo, updateUrl]
   );
 
   return (

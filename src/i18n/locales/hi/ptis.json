@@ -413,6 +413,7 @@
     "mappingCategory": "मानचित्रण श्रेणी",
     "oldPropPartNo": "पुराना संपत्ति क्र.-अनुभाग क्र.",
     "oldWardPropPartNo": "पुराना वार्ड-संपत्ति-अनुभाग नं",
+    "wardPropPartNo": "वार्ड-संपत्ति-अनुभाग नं",
     "oldPlotAreaSqMtr": "पुराना भूखंड क्षेत्रफल (वर्ग मीटर)",
     "oldConstAreaSqMtr": "पुराना निर्माण क्षेत्रफल (वर्ग मीटर)"
   },

@@ -48,6 +48,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
     if (oldDetailsData?.oldConstructionYear || oldDetailsData?.oldCarpetAreaSqMeter) {
       return [
         {
+          wardPropPartNo: '',
           floor: '0',
           subFloor: '',
           assessmentYear: '',
@@ -65,6 +66,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
 
   // ✅ SOLUTION: Define columns inside component to access handlers via closure
   const oldFloorColumns: Column<Record<string, unknown>>[] = [
+    { key: 'wardPropPartNo', label: t('fields.wardPropPartNo') },
     { key: 'floor', label: t('fields.floor') },
     { key: 'subFloor', label: t('fields.subFloor') },
     { key: 'assessmentYear', label: t('fields.assmtYear') },

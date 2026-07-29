@@ -91,6 +91,7 @@ export async function getOldFloorDetails(propertyId: string | number): Promise<{
   return {
     success: true,
     data: items.map((item: OldFloorDetailsApiResponse) => ({
+      wardPropPartNo: '',
       floor: item.floor || '',
       subFloor: '', // Not available in API response
       assessmentYear: '', // Not available in API response

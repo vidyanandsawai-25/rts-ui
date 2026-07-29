@@ -413,6 +413,7 @@
     "mappingCategory": "Map Category",
     "oldPropPartNo": "Old Prop.No-Part.No",
     "oldWardPropPartNo": "Old ward-prop-part No",
+    "wardPropPartNo": "Ward-prop-part No",
     "oldPlotAreaSqMtr": "Old Plot Area (Sq. Mtr)",
     "oldConstAreaSqMtr": "Old Const. Area (Sq. Mtr)"
   },

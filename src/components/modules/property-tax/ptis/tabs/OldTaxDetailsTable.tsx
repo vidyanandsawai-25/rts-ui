@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { ValueDisplay } from './components/ValueDisplay';
 import type { OldTaxesData } from '@/types/ptis.types';
 
 interface OldTaxDetailsTableProps {
@@ -25,107 +24,41 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
   }
 
   return (
-    <div className="mt-0.5 space-y-1">
-      {oldTaxesData.taxYears.map((yearData, yearIdx: number) => (
-        <div
-          key={yearIdx}
-          className="bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 rounded p-1 shadow-sm border border-blue-200"
-        >
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-1">
-            {/* Year Field */}
-            <div className="relative">
-              <div
-                id={`tax-year-${yearIdx}-label`}
-                className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-              >
-                {t('fields.year')}
-              </div>
-              <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                <ValueDisplay
-                  aria-labelledby={`tax-year-${yearIdx}-label`}
-                  value={yearData.year || ''}
-                  className="font-semibold px-0.5 h-6"
-                />
-              </div>
-            </div>
+    <div className="mt-0.5 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded border border-blue-100 p-1 shadow-inner">
+      <div className="divide-y divide-blue-100/50">
+        {oldTaxesData.taxYears.map((yearData, yearIdx: number) => {
+          const wardNo = yearData.oldWardNo?.toString() ?? '';
+          const propertyNo = yearData.oldPropertyNo ?? '';
+          const partitionNo = yearData.oldPartitionNo?.toString() ?? '';
+          const wardPropPartNo = [wardNo, propertyNo, partitionNo].filter(Boolean).join(' - ');
 
-            {/* Dynamic Taxes */}
-            {yearData.taxes
-              .filter((tax) => Number(tax.taxAmount) !== 0)
-              .map((tax) => (
-                <div key={tax.taxId} className="relative">
-                  <div
-                    id={`tax-${yearIdx}-${tax.taxId}-label`}
-                    title={tax.taxName}
-                    className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none truncate max-w-full"
-                  >
-                    {tax.taxName}
-                  </div>
-                  <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                    <ValueDisplay
-                      aria-labelledby={`tax-${yearIdx}-${tax.taxId}-label`}
-                      value={tax.taxAmount ?? 0}
-                    />
-                  </div>
-                </div>
+          const activeTaxes = yearData.taxes.filter(
+            (tax) => Number(tax.taxAmount) !== 0
+          );
+
+          return (
+            <div
+              key={yearIdx}
+              className="py-1.5 px-2 text-xs text-slate-700 leading-relaxed font-medium hover:bg-white/60 transition-colors rounded-sm"
+            >
+              <span className="font-bold text-indigo-700">{t('fields.wardPropPartNo')}: </span>
+              <span className="font-semibold text-slate-900">{wardPropPartNo || '-'}</span>
+              <span className="text-slate-400 font-normal">, </span>
+
+              <span className="font-bold text-blue-700">{t('fields.year')} = </span>
+              <span className="font-semibold text-slate-950">{yearData.yearCode || yearData.year}</span>
+
+              {activeTaxes.map((tax) => (
+                <React.Fragment key={tax.taxId}>
+                  <span className="text-slate-400 font-normal">, </span>
+                  <span className="text-slate-600 font-semibold">{tax.taxName} = </span>
+                  <span className="text-slate-900 font-bold tabular-nums">{tax.taxAmount}</span>
+                </React.Fragment>
               ))}
-
-            {/* Tax Total */}
-            {/* {Number(yearData.taxTotal) !== 0 && (
-              <div className="relative">
-                <div
-                  id={`tax-total-${yearIdx}-label`}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-                >
-                  {t('fields.taxTotal')}
-                </div>
-                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                  <ValueDisplay
-                    aria-labelledby={`tax-total-${yearIdx}-label`}
-                    value={yearData.taxTotal ?? 0}
-                  />
-                </div>
-              </div>
-            )} */}
-
-            {/* Interest */}
-            {/* {Number(yearData.interest) !== 0 && (
-              <div className="relative">
-                <div
-                  id={`tax-interest-${yearIdx}-label`}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-                >
-                  {t('fields.interest')}
-                </div>
-                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                  <ValueDisplay
-                    aria-labelledby={`tax-interest-${yearIdx}-label`}
-                    value={yearData.interest ?? 0}
-                  />
-                </div>
-              </div>
-            )} */}
-
-            {/* Net Total */}
-            {/* {Number(yearData.netTotal) !== 0 && (
-              <div className="relative">
-                <div
-                  id={`tax-net-total-${yearIdx}-label`}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-                >
-                  {t('fields.netTotal')}
-                </div>
-                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                  <ValueDisplay
-                    aria-labelledby={`tax-net-total-${yearIdx}-label`}
-                    value={yearData.netTotal ?? 0}
-                  />
-                </div>
-              </div>
-            )} */}
-          </div>
-        </div>
-      ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
