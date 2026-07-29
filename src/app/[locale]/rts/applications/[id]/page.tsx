@@ -1,9 +1,4 @@
-import { notFound } from "next/navigation";
-import {
-  getApplicationDetailAction,
-  submitApplicationActionAction,
-} from "../../dashboard/rts-applications/actions";
-import RtsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
+import { redirect } from 'next/navigation';
 
 type PageProps = {
   params: Promise<{
@@ -13,20 +8,6 @@ type PageProps = {
 };
 
 export default async function RtsApplicationDetailsPage({ params }: PageProps) {
-  const { id: applicationNo, locale } = await params;
-
-  const data = await getApplicationDetailAction(applicationNo);
-  if (!data) {
-    notFound();
-  }
-
-  return (
-    <div className="w-full">
-      <RtsApplicationDetails
-        data={data}
-        locale={locale}
-        submitAction={submitApplicationActionAction}
-      />
-    </div>
-  );
+  const { id, locale } = await params;
+  redirect(`/${locale}/rts/dashboard/rts-applications/${encodeURIComponent(id)}`);
 }
