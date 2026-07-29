@@ -1,8 +1,15 @@
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { type BadgeThemeColor } from './TaxBadge';
 import { getTranslations } from 'next-intl/server';
 import { TaxDetailsContainer } from './TaxDetailsContainer';
-import { formatIndianNumber } from '@/lib/utils/format';
+import {
+  formatCurrencyValue,
+  formatAreaUnit,
+} from '@/lib/utils/propertyComparison.utils';
+import { Expand, ArrowLeftRight, PieChart, Receipt, Calculator } from 'lucide-react';
+import { VarianceDiffBadge } from './VarianceDiffBadge';
+import { Tooltip } from '@/components/common/Tooltip';
 
 /**
  * Represents a single badge in the summary footer (maintained for prop compatibility)
@@ -16,158 +23,222 @@ export interface SummaryBadge {
 export interface ValuationSummaryFooterProps {
   title: string;
   badges?: SummaryBadge[];
+  comparisonData?: PropertyComparisonResponse | null;
   initialTaxDetails?: TaxDetailsData;
   locale?: string;
 }
 
 /**
  * ValuationSummaryFooter Component
- * Displays a clean title, metrics cards for Area, Change of Use, RV, and Tax,
- * and the tabbed TaxDetails section.
+ * Displays comparison metrics cards in ONE single horizontal line.
+ * Uses the custom common Tooltip component to show complete formatted values on hover.
  */
 export async function ValuationSummaryFooter({
   title,
   badges,
+  comparisonData,
   initialTaxDetails,
   locale = 'en',
 }: ValuationSummaryFooterProps) {
   const tVal = await getTranslations({ locale, namespace: 'ptis.modules.PtisTaxDetails' });
 
-  // Find badges by matching translated labels to avoid sequence mismatch issues
+  // 1. AREA DATA
+  const areaUnit = formatAreaUnit(comparisonData?.area?.unit);
+  const oldArea = comparisonData?.area ? comparisonData.area.old : 0;
+  const newArea = comparisonData?.area ? comparisonData.area.new : 0;
+  const areaDiff = comparisonData?.area ? comparisonData.area.change : (newArea - oldArea);
+
+  // 2. CHANGE OF USE DATA
+  const oldUseType = comparisonData?.changeOfUse?.oldUse ?? 'N/A';
+  const newUseType = comparisonData?.changeOfUse?.newUse ?? 'Mix';
+  const hasChangedUse = comparisonData?.changeOfUse != null
+    ? comparisonData.changeOfUse.hasChanged
+    : (oldUseType !== newUseType && oldUseType !== 'N/A');
+
+  // 3. BADGE FALLBACK CALCULATIONS (when comparisonData is absent)
   const oldValRVBadge = badges?.find(
     item => item.label === tVal('oldTotalRv') || item.label === tVal('oldTotalCv')
   );
   const newValRVBadge = badges?.find(
     item => item.label === tVal('totalRv') || item.label === tVal('totalCv')
   );
-  const oldValALVBadge = badges?.find(
-    item => item.label === tVal('oldTotalAlv')
-  );
-  const newValALVBadge = badges?.find(
-    item => item.label === tVal('totalAlv')
-  );
-  const oldTaxBadge = badges?.find(
-    item => item.label === tVal('oldTotalTax')
-  );
-  const newTaxBadge = badges?.find(
-    item => item.label === tVal('totalTax')
-  );
+  const oldValALVBadge = badges?.find(item => item.label === tVal('oldTotalAlv'));
+  const newValALVBadge = badges?.find(item => item.label === tVal('totalAlv'));
+  const oldTaxBadge = badges?.find(item => item.label === tVal('oldTotalTax'));
+  const newTaxBadge = badges?.find(item => item.label === tVal('totalTax'));
 
-  const oldValRV = Number(oldValRVBadge?.value ?? 0);
-  const newValRV = Number(newValRVBadge?.value ?? 0);
-  const valDiffRV = newValRV - oldValRV;
+  // 4. ALV DATA
+  const oldValALV = comparisonData?.alv ? comparisonData.alv.old : Number(oldValALVBadge?.value ?? 0);
+  const newValALV = comparisonData?.alv ? comparisonData.alv.new : Number(newValALVBadge?.value ?? 0);
+  const valDiffALV = comparisonData?.alv ? comparisonData.alv.change : (newValALV - oldValALV);
 
-  const oldValALV = Number(oldValALVBadge?.value ?? 0);
-  const newValALV = Number(newValALVBadge?.value ?? 0);
-  const valDiffALV = newValALV - oldValALV;
-
-  const oldTax = Number(oldTaxBadge?.value ?? 0);
-  const newTax = Number(newTaxBadge?.value ?? 0);
-  const taxDiff = newTax - oldTax;
-
-  const isCV = oldValRVBadge?.label === tVal('oldTotalCv');
+  // 5. RV/CV DATA
+  const isCV = oldValRVBadge?.label === tVal('oldTotalCv') || Boolean(comparisonData?.cv);
   const valLabel = isCV ? tVal('cv') : tVal('rv');
-  const hasALVCard = Boolean(oldValALVBadge || newValALVBadge);
+  const rvOrCvData = comparisonData?.rv || comparisonData?.cv;
+  const oldValRV = rvOrCvData ? rvOrCvData.old : Number(oldValRVBadge?.value ?? 0);
+  const newValRV = rvOrCvData ? rvOrCvData.new : Number(newValRVBadge?.value ?? 0);
+  const valDiffRV = rvOrCvData ? rvOrCvData.change : (newValRV - oldValRV);
 
-  // Static simplified data matching specifications
-  const oldArea = 0;
-  const newArea = 0;
-  const areaDiff = 0;
+  // 6. TAX DATA
+  const oldTax = comparisonData?.tax ? comparisonData.tax.old : Number(oldTaxBadge?.value ?? 0);
+  const newTax = comparisonData?.tax ? comparisonData.tax.new : Number(newTaxBadge?.value ?? 0);
+  const taxDiff = comparisonData?.tax ? comparisonData.tax.change : (newTax - oldTax);
 
-  const oldUseType: string = 'N/A';
-  const newUseType: string = 'Mix';
-
-  // Simple formatting helper
-  const formatCurrency = (val: number) => {
-    const decimals = Number.isInteger(val) ? 0 : 2;
-    return '₹' + formatIndianNumber(val, decimals, decimals);
-  };
-
-  const getDiffColor = (diff: number) => {
-    if (diff > 0) return 'text-emerald-600';
-    if (diff < 0) return 'text-rose-600';
-    return 'text-gray-500';
-  };
-
-  const getDiffArrow = (diff: number) => {
-    if (diff > 0) return '↑ ';
-    if (diff < 0) return '↓ ';
-    return '';
-  };
+  // ALV Card is hidden unless explicitly present with non-zero values in comparison data
+  const hasALVCard = Boolean(
+    comparisonData?.alv && (comparisonData.alv.old !== 0 || comparisonData.alv.new !== 0)
+  );
 
   const metricsCards = (
-    <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto">
+    <div className="flex flex-nowrap items-center justify-between gap-2.5 w-full overflow-x-auto py-0.5">
       {/* Card 1: Area */}
-      <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-blue-100 p-2.5 px-4 min-w-[170px] shadow-sm transition-all duration-200 hover:shadow-md">
-        <span className="text-blue-600 font-extrabold text-sm">{tVal('area')}</span>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <div className="flex flex-col text-[11px] xl:text-[12px] text-gray-500 leading-tight">
-          <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{oldArea}{' '}{tVal('m2Unit')}</span></span>
-          <span>{tVal('newLabel')}{' '}<span className="font-semibold text-blue-600">{newArea}{' '}{tVal('m2Unit')}</span></span>
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-blue-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[210px]">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8.5 h-8.5 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-inner">
+            <Expand className="w-4 h-4 stroke-[2.5]" />
+          </div>
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-blue-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('area')}</span>
+            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+              <Tooltip content={`Old Area: ${oldArea.toLocaleString('en-IN')} ${areaUnit}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('oldLabel')}{' '}
+                  <span className="font-bold text-gray-800">
+                    {oldArea.toLocaleString('en-IN')} {areaUnit}
+                  </span>
+                </span>
+              </Tooltip>
+              <Tooltip content={`New Area: ${newArea.toLocaleString('en-IN')} ${areaUnit}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('newLabel')}{' '}
+                  <span className="font-bold text-blue-600">
+                    {newArea.toLocaleString('en-IN')} {areaUnit}
+                  </span>
+                </span>
+              </Tooltip>
+            </div>
+          </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <span className="text-emerald-600 font-extrabold text-xs xl:text-sm flex items-center shrink-0">
-          {getDiffArrow(areaDiff) || '↑ '}{areaDiff.toLocaleString('en-IN')}{' '}{tVal('m2Unit')}
-        </span>
+        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <VarianceDiffBadge diff={areaDiff} unit={areaUnit} />
       </div>
 
       {/* Card 2: Change of Use */}
-      <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-blue-100 p-2.5 px-4 min-w-[160px] shadow-sm transition-all duration-200 hover:shadow-md">
-        <div className="flex flex-col items-start leading-tight">
-          <span className="text-purple-600 font-extrabold text-xs">{tVal('changeOfUse')}</span>
-          <span className="text-[9px] xl:text-[10px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200 leading-none mt-0.5">
-            {oldUseType !== newUseType ? tVal('yes') : tVal('no')}
-          </span>
-        </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <div className="flex flex-col text-[11px] xl:text-[12px] text-gray-500 leading-tight">
-          <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{oldUseType}</span></span>
-          <span>{tVal('newLabel')}{' '}<span className="font-semibold text-purple-600">{newUseType}</span></span>
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-purple-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[230px]">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8.5 h-8.5 rounded-full bg-purple-50/80 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/60 shadow-inner">
+            <ArrowLeftRight className="w-4 h-4 stroke-[2.5]" />
+          </div>
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-purple-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('changeOfUse')}</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-[9px] xl:text-[9.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-200 leading-none shrink-0">
+                {hasChangedUse ? tVal('yes') : tVal('no')}
+              </span>
+              <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+                <Tooltip content={`Old Use: ${oldUseType}`} placement="top">
+                  <span className="whitespace-nowrap cursor-help">
+                    {tVal('oldLabel')}{' '}
+                    <span className="font-bold text-gray-800">{oldUseType}</span>
+                  </span>
+                </Tooltip>
+                <Tooltip content={`New Use: ${newUseType}`} placement="top">
+                  <span className="whitespace-nowrap cursor-help">
+                    {tVal('newLabel')}{' '}
+                    <span className="font-bold text-purple-600">{newUseType}</span>
+                  </span>
+                </Tooltip>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Card 3: ALV (shown when ALV badges are passed) */}
+      {/* Card 3: ALV (renders conditionally if non-zero ALV present) */}
       {hasALVCard && (
-        <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-blue-100 p-2.5 px-4 min-w-[170px] shadow-sm transition-all duration-200 hover:shadow-md">
-          <span className="text-indigo-600 font-extrabold text-sm">ALV</span>
-          <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-          <div className="flex flex-col text-[11px] xl:text-[12px] text-gray-500 leading-tight">
-            <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{formatCurrency(oldValALV)}</span></span>
-            <span>{tVal('newLabel')}{' '}<span className="font-semibold text-indigo-600">{formatCurrency(newValALV)}</span></span>
+        <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-indigo-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[220px]">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8.5 h-8.5 rounded-full bg-indigo-50/80 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100/60 shadow-inner">
+              <PieChart className="w-4 h-4 stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col min-w-0 leading-tight">
+              <span className="text-indigo-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">ALV</span>
+              <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+                <Tooltip content={`Old ALV: ${formatCurrencyValue(oldValALV)}`} placement="top">
+                  <span className="whitespace-nowrap cursor-help">
+                    {tVal('oldLabel')}{' '}
+                    <span className="font-bold text-gray-800">{formatCurrencyValue(oldValALV)}</span>
+                  </span>
+                </Tooltip>
+                <Tooltip content={`New ALV: ${formatCurrencyValue(newValALV)}`} placement="top">
+                  <span className="whitespace-nowrap cursor-help">
+                    {tVal('newLabel')}{' '}
+                    <span className="font-bold text-indigo-600">{formatCurrencyValue(newValALV)}</span>
+                  </span>
+                </Tooltip>
+              </div>
+            </div>
           </div>
-          <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-          <span className={`font-extrabold text-xs xl:text-sm flex items-center shrink-0 ${getDiffColor(valDiffALV)}`}>
-            {getDiffArrow(valDiffALV)}{formatCurrency(Math.abs(valDiffALV))}
-          </span>
+          <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+          <VarianceDiffBadge diff={valDiffALV} isCurrency />
         </div>
       )}
 
       {/* Card 4: RV/CV */}
-      <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-blue-100 p-2.5 px-4 min-w-[170px] shadow-sm transition-all duration-200 hover:shadow-md">
-        <span className="text-orange-600 font-extrabold text-sm">{valLabel}</span>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <div className="flex flex-col text-[11px] xl:text-[12px] text-gray-500 leading-tight">
-          <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{formatCurrency(oldValRV)}</span></span>
-          <span>{tVal('newLabel')}{' '}<span className="font-semibold text-orange-600">{formatCurrency(newValRV)}</span></span>
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-orange-500 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[220px]">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8.5 h-8.5 rounded-xl bg-orange-50/80 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100/60 shadow-inner">
+            <Receipt className="w-4 h-4 stroke-[2.5]" />
+          </div>
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-orange-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{valLabel}</span>
+            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+              <Tooltip content={`Old ${valLabel}: ${formatCurrencyValue(oldValRV)}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('oldLabel')}{' '}
+                  <span className="font-bold text-gray-800">{formatCurrencyValue(oldValRV)}</span>
+                </span>
+              </Tooltip>
+              <Tooltip content={`New ${valLabel}: ${formatCurrencyValue(newValRV)}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('newLabel')}{' '}
+                  <span className="font-bold text-orange-600">{formatCurrencyValue(newValRV)}</span>
+                </span>
+              </Tooltip>
+            </div>
+          </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <span className={`font-extrabold text-xs xl:text-sm flex items-center shrink-0 ${getDiffColor(valDiffRV)}`}>
-          {getDiffArrow(valDiffRV)}{formatCurrency(Math.abs(valDiffRV))}
-        </span>
+        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <VarianceDiffBadge diff={valDiffRV} isCurrency />
       </div>
 
       {/* Card 5: Tax */}
-      <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-blue-100 p-2.5 px-4 min-w-[170px] shadow-sm transition-all duration-200 hover:shadow-md">
-        <span className="text-emerald-600 font-extrabold text-sm">{tVal('tax')}</span>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <div className="flex flex-col text-[11px] xl:text-[12px] text-gray-500 leading-tight">
-          <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{formatCurrency(oldTax)}</span></span>
-          <span>{tVal('newLabel')}{' '}<span className="font-semibold text-emerald-600">{formatCurrency(newTax)}</span></span>
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-emerald-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[220px]">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8.5 h-8.5 rounded-xl bg-emerald-50/80 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/60 shadow-inner">
+            <Calculator className="w-4 h-4 stroke-[2.5]" />
+          </div>
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-emerald-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('tax')}</span>
+            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+              <Tooltip content={`Old Tax: ${formatCurrencyValue(oldTax)}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('oldLabel')}{' '}
+                  <span className="font-bold text-gray-800">{formatCurrencyValue(oldTax)}</span>
+                </span>
+              </Tooltip>
+              <Tooltip content={`New Tax: ${formatCurrencyValue(newTax)}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('newLabel')}{' '}
+                  <span className="font-bold text-emerald-600">{formatCurrencyValue(newTax)}</span>
+                </span>
+              </Tooltip>
+            </div>
+          </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5"></div>
-        <span className={`font-extrabold text-xs xl:text-sm flex items-center shrink-0 ${getDiffColor(taxDiff)}`}>
-          {getDiffArrow(taxDiff)}{formatCurrency(Math.abs(taxDiff))}
-        </span>
+        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <VarianceDiffBadge diff={taxDiff} isCurrency />
       </div>
     </div>
   );

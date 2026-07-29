@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { ToastNotifier } from '@/components/common';
 import type { OldDetailsData } from '@/types/ptis.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
+import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { CapitalTaxTable } from './components/CapitalTaxTable';
 import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/shared/ValuationSummaryFooter';
 import { getCapitalValue } from '@/app/[locale]/property-tax/ptis/CapitalValue.action';
@@ -14,6 +15,7 @@ interface Props {
   oldDetails: OldDetailsData;
   searchParams: Record<string, string | string[] | undefined>;
   capitalData?: CapitalValueResponse | null;
+  comparisonData?: PropertyComparisonResponse | null;
   hasFetchedData?: boolean;
   error?: string;
   showInlineError?: boolean;
@@ -27,6 +29,7 @@ export async function CapitalTaxDetailsSection({
   oldDetails,
   searchParams,
   capitalData: initialData,
+  comparisonData,
   hasFetchedData = false,
   error: initialError,
   showInlineError = true,
@@ -34,7 +37,6 @@ export async function CapitalTaxDetailsSection({
   taxDetailsError,
   locale,
 }: Props) {
-
   const ptisT = await getTranslations({ locale, namespace: 'ptis' });
 
   const { data: capitalData, error, message, warning } = await resolveValuationData<CapitalValueResponse>({
@@ -71,6 +73,7 @@ export async function CapitalTaxDetailsSection({
       <CapitalTaxTable locale={locale} capitalData={capitalData} searchParams={searchParams} propertyId={propertyId} />
       <ValuationSummaryFooter
         title={t('title')}
+        comparisonData={comparisonData}
         badges={[
           { label: t('oldTotalCv'), value: Number(oldDetails.oldCV) || 0, color: 'blue' },
           { label: t('oldTotalTax'), value: Number(oldDetails.oldTotalTax) || 0, color: 'blue' },
