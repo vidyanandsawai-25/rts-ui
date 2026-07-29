@@ -157,19 +157,19 @@ export function CitizenJourneyHero({
       aria-labelledby="citizen-hero-title"
       className="w-full overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_24px_70px_-38px_rgba(15,23,42,0.55)] sm:rounded-[2rem]"
     >
-      <div className="relative lg:min-h-[500px] xl:min-h-[550px] 2xl:min-h-[610px]">
-        <div className="relative h-[190px] overflow-hidden bg-sky-100 sm:h-[240px] lg:absolute lg:inset-0 lg:h-auto">
+      <div className="relative xl:min-h-[550px] 2xl:min-h-[610px]">
+        <div className="relative h-[190px] overflow-hidden bg-sky-100 sm:h-[240px] md:h-[270px] xl:absolute xl:inset-0 xl:h-auto">
           <Image
             src="/images/corporation-building.png"
             alt={copy.photoLabel}
             fill
             priority
             unoptimized
-            sizes="(max-width: 1023px) 100vw, 1600px"
-            className="object-cover object-center lg:object-[center_48%]"
+            sizes="(max-width: 1279px) 100vw, 1600px"
+            className="object-cover object-center xl:object-[center_48%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-white/5 lg:bg-gradient-to-r lg:from-white/10 lg:via-transparent lg:to-slate-950/5" />
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white sm:p-5 lg:hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-white/5 xl:bg-gradient-to-r xl:from-white/10 xl:via-transparent xl:to-slate-950/5" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white sm:p-5 xl:hidden">
             <div>
               <p className="text-xs font-black sm:text-sm">{copy.photoLabel}</p>
               <p className="mt-0.5 text-[10px] font-semibold text-white/80 sm:text-xs">
@@ -182,19 +182,19 @@ export function CitizenJourneyHero({
           </div>
         </div>
 
-        <div className="relative z-10 grid min-w-0 lg:min-h-[500px] lg:grid-cols-[minmax(0,0.88fr)_minmax(540px,1.12fr)] xl:min-h-[550px] 2xl:min-h-[610px] 2xl:grid-cols-[minmax(640px,0.72fr)_minmax(940px,1.28fr)]">
+        <div className="relative z-10 grid min-w-0 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:min-h-[550px] xl:grid-cols-[minmax(0,0.88fr)_minmax(540px,1.12fr)] 2xl:min-h-[610px] 2xl:grid-cols-[minmax(640px,0.72fr)_minmax(940px,1.28fr)]">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="min-w-0 bg-white p-5 sm:p-7 lg:m-4 lg:mr-0 lg:self-center lg:rounded-[1.75rem] lg:border lg:border-white/80 lg:bg-white/95 lg:p-6 lg:shadow-[0_24px_70px_-34px_rgba(15,23,42,0.55)] lg:backdrop-blur-md xl:m-5 xl:mr-0 xl:p-7 2xl:m-7 2xl:mr-0 2xl:bg-white/92 2xl:p-9"
+            className="min-w-0 bg-white p-5 sm:p-7 md:flex md:flex-col md:justify-center md:border-r md:border-slate-100 md:p-5 lg:p-7 xl:m-5 xl:mr-0 xl:self-center xl:rounded-[1.75rem] xl:border xl:border-white/80 xl:bg-white/95 xl:p-7 xl:shadow-[0_24px_70px_-34px_rgba(15,23,42,0.55)] xl:backdrop-blur-md 2xl:m-7 2xl:mr-0 2xl:bg-white/92 2xl:p-9"
           >
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex max-w-full items-start gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[9px] font-black uppercase leading-4 tracking-[0.09em] text-amber-800 sm:text-[10px]">
                 <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>{copy.actBadge}</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-[10px] font-extrabold text-blue-800 lg:hidden 2xl:inline-flex">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-[10px] font-extrabold text-blue-800 xl:hidden 2xl:inline-flex">
                 <Sparkles className="h-3.5 w-3.5 text-cyan-600" />
                 {copy.eyebrow}
               </span>
@@ -202,7 +202,7 @@ export function CitizenJourneyHero({
 
             <h1
               id="citizen-hero-title"
-              className="mt-4 max-w-2xl text-[2.15rem] font-black leading-[1.03] tracking-[-0.045em] text-[#082f6a] sm:text-[2.8rem] lg:text-[2.65rem] xl:text-[2.85rem] 2xl:text-[3.2rem]"
+              className="mt-4 max-w-2xl text-[2.15rem] font-black leading-[1.03] tracking-[-0.045em] text-[#082f6a] sm:text-[2.8rem] md:text-[2.25rem] lg:text-[2.45rem] xl:text-[2.85rem] 2xl:text-[3.2rem]"
             >
               {copy.titleStart}{' '}
               <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-600 bg-clip-text text-transparent">
@@ -231,7 +231,7 @@ export function CitizenJourneyHero({
                 type="submit"
                 className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 text-xs font-black text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:from-emerald-700 hover:to-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:px-5 sm:text-sm"
               >
-                <span className="hidden sm:inline">{copy.searchLabel}</span>
+                <span className="hidden sm:inline md:hidden lg:inline">{copy.searchLabel}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </form>
@@ -240,7 +240,7 @@ export function CitizenJourneyHero({
               <button
                 type="button"
                 onClick={onApply}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#0b4fc1] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:-translate-y-0.5 hover:bg-[#083f9c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#0b4fc1] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:-translate-y-0.5 hover:bg-[#083f9c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 md:px-3 md:text-xs lg:px-4 lg:text-sm"
               >
                 <FileText className="h-4 w-4" />
                 {copy.applyLabel}
@@ -249,7 +249,7 @@ export function CitizenJourneyHero({
               <button
                 type="button"
                 onClick={scrollToServices}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-extrabold text-blue-900 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-extrabold text-blue-900 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 md:px-3 md:text-xs lg:px-4 lg:text-sm"
               >
                 <Search className="h-4 w-4 text-emerald-600" />
                 {copy.exploreLabel}
@@ -266,7 +266,7 @@ export function CitizenJourneyHero({
             initial={reduceMotion ? false : { opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.65, delay: 0.1, ease: 'easeOut' }}
-            className="min-w-0 bg-gradient-to-b from-slate-50 to-white p-3 pb-4 sm:p-5 lg:flex lg:items-end lg:bg-none lg:bg-transparent lg:p-5 lg:pl-4 xl:p-6 xl:pl-5"
+            className="min-w-0 bg-gradient-to-b from-slate-50 to-white p-3 pb-4 sm:p-5 md:flex md:items-center md:p-4 lg:p-5 xl:items-end xl:bg-none xl:bg-transparent xl:p-6 xl:pl-5"
           >
             <div
               id="citizen-journey"
