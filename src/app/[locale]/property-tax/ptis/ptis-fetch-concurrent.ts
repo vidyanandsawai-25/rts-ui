@@ -57,8 +57,13 @@ export async function fetchPropertyDetailsConcurrently(
   const dualMethodPromise =
     propertyId && valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null);
 
+  // Chain taxDetails fetching to run after calculation actions resolve, as the calculation generates the tax details.
   const taxDetailsPromise = propertyId
-    ? fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam)
+    ? Promise.all([
+        rateableValuePromise.catch(() => null),
+        capitalValuePromise.catch(() => null),
+        dualMethodPromise.catch(() => null),
+      ]).then(() => fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam))
     : Promise.resolve(null);
 
   // PropertyComparison API call is triggered exclusively on Rateable tab during SSR
