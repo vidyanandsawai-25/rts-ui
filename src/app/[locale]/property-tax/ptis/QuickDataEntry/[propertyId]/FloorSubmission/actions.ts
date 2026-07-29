@@ -33,7 +33,8 @@ import { type ActionResult } from '@/types/common.types';
 import {
     FloorSubmissionPayload,
     type SelectableProperty,
-    type DataEntrySameAsResponse
+    type DataEntrySameAsResponse,
+    type DataEntrySameAsItem
 } from '@/types/floor-details.types';
 import { apiClient } from '@/services/api.service';
 
@@ -41,20 +42,43 @@ export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, categoryName?: string): Promise<SelectableProperty[]> {
+const sameAsCache = new Map<string, { data: SelectableProperty[]; timestamp: number }>();
+const SAME_AS_CACHE_TTL = 30000; // 30 seconds
+
+export async function clearDataEntrySameAsCache(): Promise<void> {
+    sameAsCache.clear();
+}
+
+export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, _categoryName?: string): Promise<SelectableProperty[]> {
+    const cacheKey = `${wardId}-${propertyNo}`;
+    const cached = sameAsCache.get(cacheKey);
+    if (cached && cached.data && cached.data.length > 0 && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
+        return cached.data;
+    }
+
     try {
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
         params.set('PropertyNo', propertyNo);
-        if (categoryName && categoryName.trim()) {
-            params.set('CategoryName', categoryName.trim());
-        }
         const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`, { cache: 'no-store' });
-        if (!response.success || !response.data?.items) {
+        
+        const raw = (response?.data ?? response) as unknown;
+        const rawObj = raw as Record<string, unknown>;
+        const items: DataEntrySameAsItem[] = Array.isArray(raw)
+            ? (raw as DataEntrySameAsItem[])
+            : Array.isArray(rawObj?.items)
+            ? (rawObj.items as DataEntrySameAsItem[])
+            : Array.isArray((response as unknown as Record<string, unknown>)?.items)
+            ? ((response as unknown as Record<string, unknown>).items as DataEntrySameAsItem[])
+            : [];
+
+        if (!items || !items.length) {
             return [];
         }
-        return response.data.items.map((item) => {
+        const results = items.map((item) => {
             const extended = item as typeof item & {
+                propertyCategoryName?: string | null;
+                categoryName?: string | null;
                 totalCarpetAreaSqFeet?: number | null;
                 totalCarpetAreaSqMeter?: number | null;
                 carpetAreaSqFeet?: number | null;
@@ -69,15 +93,18 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 parkingBuiltupAreaSqMeter?: number | null;
             };
             const typeLabel = (item.typeLabel || item.typeName || undefined) as string | undefined;
+            const catName = item.propertyCategoryName || item.categoryName || extended.propertyCategoryName || extended.categoryName || undefined;
 
             return {
                 id: `${item.propertyId}-${item.propertyFloorId ?? ''}-${item.propertyDetailsId ?? ''}-${item.wingName || ''}-${item.flatOrShopNo || ''}`,
+                propertyId: item.propertyId,
                 propertyFloorId: item.propertyFloorId ?? null,
                 propertyDetailsId: item.propertyDetailsId ?? null,
                 wardId: item.wardId,
-                wardNo: '-',
+                wardNo: item.wardNo || '-',
                 propertyNo: item.propertyNo || '-',
                 partitionNo: item.partitionNo || '-',
+                categoryName: catName ? String(catName) : '-',
                 type: item.type ?? '-',
                 typeLabel,
                 wing: item.wingName || '-',
@@ -92,8 +119,11 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 parkingBuiltupAreaSqMeter: extended.parkingBuiltupAreaSqMeter ?? null,
             };
         });
-    } catch (error) {
-        console.error("Error in fetchDataEntrySameAsAction:", error);
+        if (results.length > 0) {
+            sameAsCache.set(cacheKey, { data: results, timestamp: Date.now() });
+        }
+        return results;
+    } catch (_error) {
         return [];
     }
 }
@@ -113,7 +143,7 @@ export async function getPropertyBasicDetailsAction(propertyId: number | string)
     }
 }
 
-/**
+/*
  * Individual fetchers for SSR lookups
  */
 export async function getFloorDataAction() {
@@ -345,6 +375,7 @@ export async function applyDataEntrySameAsAction(payload: ApplyDataEntrySameAsPa
             };
         }
         const data = await applyDataEntrySameAs(payload);
+        await clearDataEntrySameAsCache();
         return { success: true, data };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };

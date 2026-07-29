@@ -152,6 +152,7 @@ export function ImageWithFallback({
     <div className="relative w-full h-full overflow-hidden" style={style}>
       {isLoading && <ImageSkeleton className={`w-full h-full ${className}`} />}
       {effectiveSrc && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={effectiveSrc}
           alt={alt}
