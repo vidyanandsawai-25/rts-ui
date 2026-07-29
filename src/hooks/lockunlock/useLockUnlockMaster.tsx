@@ -731,7 +731,7 @@ export function useLockUnlockMaster({
 
   const handleBulkAction = (action: "lock" | "unlock") => {
     const isScopeZoneOrWard = formData.searchCategory === 1 || formData.searchCategory === 2;
-    const isBulkCategoryAction = isScopeZoneOrWard || ((formData.searchCategory === 3 || formData.searchCategory === 4) && (isAllPropertiesSelected || selectedPropertyIds.length === 0));
+    const isBulkCategoryAction = isScopeZoneOrWard || ((formData.searchCategory === 3 || formData.searchCategory === 4) && isAllPropertiesSelected);
     const hasSelection = isBulkCategoryAction || selectedPropertyIds.length > 0;
 
     if (!hasSelection) {
