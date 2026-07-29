@@ -16,7 +16,7 @@ export function OwningDepartmentMaster(props: OwningDepartmentMasterProps) {
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,
@@ -32,7 +32,7 @@ export function OwningDepartmentMaster(props: OwningDepartmentMasterProps) {
       <div className="space-y-4">
         <OwningDepartmentHeader
           search={search}
-          setSearch={setSearch}
+          handleSearchChange={handleSearchChange}
           locale={locale}
           t={t}
         />

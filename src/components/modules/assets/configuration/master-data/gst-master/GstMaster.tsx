@@ -7,7 +7,6 @@ import { MasterTable } from "@/components/common/MasterTable";
 import { AddButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import type { GstMasterProps, GstMaster } from "@/types/asset-masters/gst-master.types";
 import { useGstMasterList } from "@/hooks/asset-masters/gst-master/useGstMasterList";
-import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 export function GstMaster(props: GstMasterProps) {
   const {
@@ -17,7 +16,7 @@ export function GstMaster(props: GstMasterProps) {
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,
@@ -42,7 +41,7 @@ export function GstMaster(props: GstMasterProps) {
           <div className="flex w-full max-w-xl items-center gap-3">
             <SearchInput
               value={search}
-              onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ""))}
+              onChange={handleSearchChange}
               placeholder={t("searchPlaceholder")}
               className="mb-0 w-full"
             />

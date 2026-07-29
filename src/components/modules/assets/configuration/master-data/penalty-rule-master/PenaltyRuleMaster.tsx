@@ -6,7 +6,6 @@ import { PageContainer, SearchInput, Select } from "@/components/common";
 import { MasterTable } from "@/components/common/MasterTable";
 import { AddButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { usePenaltyRuleMasterList } from "@/hooks/asset-masters/penalty-rule-master/usePenaltyRuleMasterList";
-import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 import type { PenaltyRuleProps, PenaltyRule } from "@/types/asset-masters/penalty-rule-master.types";
 
 export function PenaltyRuleMaster(props: PenaltyRuleProps) {
@@ -17,7 +16,7 @@ export function PenaltyRuleMaster(props: PenaltyRuleProps) {
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,
@@ -42,7 +41,7 @@ export function PenaltyRuleMaster(props: PenaltyRuleProps) {
           <div className="flex w-full max-w-xl items-center gap-3">
             <SearchInput
               value={search}
-              onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ""))}
+              onChange={handleSearchChange}
               placeholder={t("searchPlaceholder")}
               className="mb-0 w-full"
             />
