@@ -46,6 +46,7 @@ interface FloorTableProps {
   partitionNo?: string;
   onRowClick?: (row: FloorData) => void;
   isIndividualProperty?: boolean;
+  isBuildingPermissionView?: boolean;
 }
 
 const FloorTable: React.FC<FloorTableProps> = ({
@@ -75,6 +76,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
   partitionNo: _partitionNo,
   isIndividualProperty: _isIndividualProperty = false,
   onRowClick,
+  isBuildingPermissionView = false,
 }) => {
   const isDataEntryDisabled = React.useMemo(() => {
     // Disable button if no floors exist for the selected property; enable when floors exist
@@ -115,7 +117,12 @@ const FloorTable: React.FC<FloorTableProps> = ({
 
   // Adapt the custom MasterTable columns to be compatible with FloorDetailsTable and style cells cleanly
   const adaptedColumns = React.useMemo<FloorDetailsTableColumn<FloorData>[]>(() => {
-    const baseCols: FloorDetailsTableColumn<FloorData>[] = columns.map((col) => ({
+    const buildingPermissionKeys = ['floor', 'subFloor', 'conYr', 'asstYr', 'conTyp', 'use', 'ccDate', 'ocDate'];
+    const targetCols = isBuildingPermissionView
+      ? columns.filter((col) => buildingPermissionKeys.includes(col.key))
+      : columns;
+
+    const baseCols: FloorDetailsTableColumn<FloorData>[] = targetCols.map((col) => ({
       ...col,
       sortable: true,
       render: (row: FloorData, index: number) => {
@@ -171,7 +178,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
     }
 
     return baseCols;
-  }, [columns, t, deleteCellRenderer, viewOnly, onRowClick, selectedFloor]);
+  }, [columns, t, deleteCellRenderer, viewOnly, onRowClick, selectedFloor, isBuildingPermissionView]);
 
   /**
    * Handle row click to edit or select a floor
@@ -315,7 +322,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           expandedRowIds={expandedRowIds}
           getExpandHref={(row) => `#floor-${row.id}`}
           renderExpanded={renderExpandedRooms}
-          tableClassName="w-full min-w-[1200px]"
+          tableClassName={isBuildingPermissionView ? "w-full" : "w-full min-w-[1200px]"}
           emptyMessage={viewOnly ? t('floorSubmission.validation.emptyMessage') : t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}

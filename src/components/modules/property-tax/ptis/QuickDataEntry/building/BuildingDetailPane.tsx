@@ -52,6 +52,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     subFloorData = [],
     subTypeData = [],
     initialFloors = [],
+    floors = [],
     activeScope = 'Property',
     activeFloorId = null,
     onScopeChange,
@@ -95,6 +96,20 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
         const hasDate = !!displayData.date?.trim();
         return hasFile && hasNumber && hasDate;
     }, [displayData]);
+
+    const floorsWithCertDates = React.useMemo(() => {
+        return (initialFloors || []).map((f) => {
+            const fId = f.id ?? (f as unknown as { propertyDetailsId?: number }).propertyDetailsId;
+            const certFloor = (floors || []).find(
+                (fc) => fc.propertyDetailsId === Number(fId)
+            );
+            return {
+                ...f,
+                ccDate: certFloor?.ccDate || (f as unknown as { ccDate?: string }).ccDate || null,
+                ocDate: certFloor?.ocDate || (f as unknown as { ocDate?: string }).ocDate || null,
+            };
+        });
+    }, [initialFloors, floors]);
 
     const handleFileUploadWithConfirm = (file: File) => {
         if (data && data.documentGuid) {
@@ -229,7 +244,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                 <div className="mb-3">
                     <FloorTable
                         t={t}
-                        filteredFloors={initialFloors}
+                        filteredFloors={floorsWithCertDates}
                         floorSearch=""
                         setFloorSearch={() => {}}
                         selectedFloor={activeFloorId !== null ? initialFloors.find(f =>
@@ -252,6 +267,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         useLookup={useData}
                         subTypeData={subTypeData}
                         setEditingFloorForm={() => {}}
+                        isBuildingPermissionView={true}
                         onRowClick={(floor: FloorData) => {
                             if (isSaving) return;
                             const targetId = floor.id ?? (floor as unknown as { propertyDetailsId?: number }).propertyDetailsId;

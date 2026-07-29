@@ -60,11 +60,13 @@ export const useFloorTableColumns = ({
         tooltip: t('floor.floorLabel'),
         cellClassName: 'max-w-[100px]',
         headerClassName: 'whitespace-nowrap',
-        render: (val: unknown) => {
-          const text = getFloorDescription(String(val ?? ''), floorLookup) || String(val ?? '');
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const text = (rowRecord.floorDescription as string) ||
+            getFloorDescription(String(val ?? ''), floorLookup) || String(val ?? '');
           return (
             <Tooltip placement="bottom" content={text}>
-              <span className="block truncate cursor-default">{text}</span>
+              <span className="block truncate cursor-default font-semibold text-slate-800 text-[12px]">{text}</span>
             </Tooltip>
           );
         },
@@ -75,11 +77,13 @@ export const useFloorTableColumns = ({
         tooltip: t('floor.subFloor'),
         cellClassName: 'max-w-[150px]',
         headerClassName: 'whitespace-nowrap',
-        render: (val: unknown) => {
-          const text = getSubFloorDescription(String(val ?? ''), subFloorLookup) || String(val ?? '');
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const text = (rowRecord.subFloorDescription as string) ||
+            getSubFloorDescription(String(val ?? ''), subFloorLookup) || String(val ?? '');
           return (
             <Tooltip placement="bottom" content={text}>
-              <span className="block truncate cursor-default">{text}</span>
+              <span className="block truncate cursor-default font-semibold text-slate-800 text-[12px]">{text}</span>
             </Tooltip>
           );
         },
@@ -90,6 +94,11 @@ export const useFloorTableColumns = ({
         tooltip: t('floor.constructionYear'),
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const text = String((rowRecord.constructionYear as string) || val || '-');
+          return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
+        },
       },
       {
         key: 'asstYr',
@@ -97,6 +106,11 @@ export const useFloorTableColumns = ({
         tooltip: t('floor.assessmentYear'),
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const text = String((rowRecord.assessmentYear as string) || val || '-');
+          return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
+        },
       },
       {
         key: 'conTyp',
@@ -104,11 +118,13 @@ export const useFloorTableColumns = ({
         tooltip: t('floor.constructionType'),
         cellClassName: 'max-w-[150px]',
         headerClassName: 'whitespace-nowrap',
-        render: (val: unknown) => {
-          const text = getConstructionDescription(String(val ?? ''), constructionLookup) || String(val ?? '');
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const text = (rowRecord.constructionTypeDescription as string) ||
+            getConstructionDescription(String(val ?? ''), constructionLookup) || String(val ?? '');
           return (
             <Tooltip placement="bottom" content={text}>
-              <span className="block truncate cursor-default">{text}</span>
+              <span className="block truncate cursor-default font-semibold text-slate-800 text-[12px]">{text}</span>
             </Tooltip>
           );
         },
@@ -119,13 +135,61 @@ export const useFloorTableColumns = ({
         tooltip: t('property.use'),
         cellClassName: 'max-w-[100px]',
         headerClassName: 'whitespace-nowrap',
-        render: (val: unknown) => {
-          const text = getUseDescription(String(val ?? ''), useLookup) || String(val ?? '');
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const text = (rowRecord.typeOfUseDescription as string) ||
+            getUseDescription(String(val ?? ''), useLookup) || String(val ?? '');
           return (
             <Tooltip placement="bottom" content={text}>
-              <span className="block truncate cursor-default">{text}</span>
+              <span className="block truncate cursor-default font-semibold text-slate-800 text-[12px]">{text}</span>
             </Tooltip>
           );
+        },
+      },
+      {
+        key: 'ccDate',
+        label: (() => { try { return t('building.ccDate') || 'CC Date'; } catch (_e) { return 'CC Date'; } })(),
+        tooltip: (() => { try { return t('building.ccDate') || 'CC Date'; } catch (_e) { return 'CC Date'; } })(),
+        cellClassName: 'whitespace-nowrap',
+        headerClassName: 'whitespace-nowrap',
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const raw = (rowRecord.ccDate as string) || (rowRecord.ccIssueDate as string) || val;
+          const str = raw ? String(raw).trim() : '';
+          let text = '-';
+          if (str && str !== '-' && str.toLowerCase() !== 'null' && str.toLowerCase() !== 'undefined') {
+            const dateOnly = str.split('T')[0];
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+              const [yyyy, mm, dd] = dateOnly.split('-');
+              text = `${dd}-${mm}-${yyyy}`;
+            } else {
+              text = str;
+            }
+          }
+          return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
+        },
+      },
+      {
+        key: 'ocDate',
+        label: (() => { try { return t('building.ocDate') || 'OC Date'; } catch (_e) { return 'OC Date'; } })(),
+        tooltip: (() => { try { return t('building.ocDate') || 'OC Date'; } catch (_e) { return 'OC Date'; } })(),
+        cellClassName: 'whitespace-nowrap',
+        headerClassName: 'whitespace-nowrap',
+        render: (val: unknown, row: FloorData) => {
+          const rowRecord = row as unknown as Record<string, unknown>;
+          const raw = (rowRecord.ocDate as string) || (rowRecord.ocIssueDate as string) || val;
+          const str = raw ? String(raw).trim() : '';
+          let text = '-';
+          if (str && str !== '-' && str.toLowerCase() !== 'null' && str.toLowerCase() !== 'undefined') {
+            const dateOnly = str.split('T')[0];
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+              const [yyyy, mm, dd] = dateOnly.split('-');
+              text = `${dd}-${mm}-${yyyy}`;
+            } else {
+              text = str;
+            }
+          }
+          return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
         },
       },
       {

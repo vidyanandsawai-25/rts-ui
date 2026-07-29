@@ -175,7 +175,7 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
 
   return (
     <div
-      className="w-full tax-details-container overflow-x-auto max-h-[300px] overflow-y-auto"
+      className="w-full overflow-x-auto tax-details-container"
       data-testid="master-table"
     >
       {activeTab === 'current' ? (
@@ -185,8 +185,9 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
           emptyMessage={t('noTaxDetailsAvailable')}
           showExpandColumn={false}
           showScrollButtons={false}
+          containerClassName="max-h-[300px] overflow-y-auto relative"
           tableClassName="w-full border-collapse"
-          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs"
+          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs sticky top-0 z-20"
         />
       ) : (
         <FloorDetailsTable<PendingTaxRow>
@@ -195,8 +196,9 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
           emptyMessage={t('noArrearsTaxDetailsAvailable')}
           showExpandColumn={false}
           showScrollButtons={false}
+          containerClassName="max-h-[300px] overflow-y-auto relative"
           tableClassName="w-full border-collapse"
-          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs"
+          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs sticky top-0 z-20"
         />
       )}
     </div>

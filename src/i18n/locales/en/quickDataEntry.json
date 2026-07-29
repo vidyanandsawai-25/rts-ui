@@ -632,6 +632,8 @@
         "possessionCertificate": "Possession Certificate",
         "buildingPermit": "Building Permit",
         "buildCompletionCertificate": "Build Completion Certificate",
+        "ccDate": "CC Date",
+        "ocDate": "OC Date",
         "title": "Building Permissions & Documents",
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
