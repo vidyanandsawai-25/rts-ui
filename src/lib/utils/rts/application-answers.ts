@@ -1,5 +1,5 @@
 import type { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
-import type { CreateRtsApplicationFieldValueResponse } from "@/lib/api/rts/rtsapplication.service";
+import type { RtsApplicationApiDetail } from "@/types/rts/rts-application.types";
 
 export interface ApplicationAnswerItem {
   fieldDefinitionId: number;
@@ -51,7 +51,7 @@ function parseOptionLabel(optionsJson: string | null, rawValue: string): string 
 }
 
 function resolveDisplayValue(
-  fieldValue: CreateRtsApplicationFieldValueResponse,
+  fieldValue: RtsApplicationApiDetail["fieldValues"][number],
   fieldDef: RtsFieldDefinitionApiItem | undefined
 ): string {
   if (fieldValue.documentGuid) return "Attached document";
@@ -82,7 +82,7 @@ function resolveDisplayValue(
  */
 export function buildApplicationAnswerGroups(
   fieldDefinitions: RtsFieldDefinitionApiItem[],
-  fieldValues: CreateRtsApplicationFieldValueResponse[]
+  fieldValues: RtsApplicationApiDetail["fieldValues"]
 ): ApplicationAnswerGroup[] {
   const defsById = new Map<number, RtsFieldDefinitionApiItem>();
   for (const def of fieldDefinitions) defsById.set(def.id, def);

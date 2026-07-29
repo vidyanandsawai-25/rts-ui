@@ -1,4 +1,4 @@
-import type { RtsApplicationApplicantDetail } from "@/lib/api/rts/rtsapplication.service";
+import type { RtsApplicationApiApplicantDetail } from "@/types/rts/rts-application.types";
 
 const MS_PER_DAY = 86_400_000;
 
@@ -22,7 +22,7 @@ export function isSameCalendarDay(isoDate: string, reference: Date): boolean {
  * Derives applicant name from real RTS API `applicantDetails` shape or `citizenName`.
  */
 export function deriveApplicantName(
-  applicantDetails?: RtsApplicationApplicantDetail[] | null,
+  applicantDetails?: RtsApplicationApiApplicantDetail[] | null,
   citizenName?: string | null,
   applicationNo?: string
 ): string {

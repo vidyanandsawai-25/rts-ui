@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 
 import {
-  Badge,
   Button,
   Card,
   Drawer,
@@ -25,6 +24,7 @@ import {
   MasterTable,
   SearchInput,
   Select,
+  StatusBadge,
   ViewButton,
 } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';
@@ -33,26 +33,30 @@ import type {
   AdminApplicationGridRow,
   ApplicationsDashboardKpis,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
+import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
+import type { RtsServiceApiItem } from '@/types/rts/service.types';
 
 interface RtsApplicationDashboardProps {
-  kpis: ApplicationsDashboardKpis;
+  kpis: ApplicationsDashboardKpis | null;
   rows: AdminApplicationGridRow[];
   locale: string;
+  error: string | null;
+  departments: RtsDepartmentApiItem[];
+  services: RtsServiceApiItem[];
 }
 
-type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string };
+type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: number };
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
-function statusBadgeVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
-  const normalized = status.toLowerCase();
-  if (normalized === 'approved') return 'success';
-  if (normalized === 'rejected') return 'destructive';
-  if (normalized === 'returned') return 'warning';
-  return 'secondary';
-}
-
-export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsApplicationDashboardProps) {
+export default function RtsApplicationDashboard({
+  kpis,
+  rows = [],
+  locale,
+  error,
+  departments,
+  services,
+}: RtsApplicationDashboardProps) {
   const t = useTranslations('rts');
   const tCommon = useTranslations('common');
   const router = useRouter();
@@ -71,31 +75,36 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
   );
 
   const gridRows = useMemo<GridRow[]>(
-    () => rows.map((row) => ({ ...row, id: row.applicationNo })),
+    () => rows.map((row) => ({ ...row, id: row.applicationId })),
     [rows]
   );
 
   const deptOptions = useMemo(() => {
-    const unique = Array.from(new Set(gridRows.map((row) => row.departmentName))).sort();
     return [
       { label: 'All Departments', value: 'all' },
-      ...unique.map((name) => ({ label: name, value: name })),
+      ...departments.map((department) => ({
+        label: department.departmentName,
+        value: String(department.id),
+      })),
     ];
-  }, [gridRows]);
+  }, [departments]);
 
   const serviceOptions = useMemo(() => {
     const unique = Array.from(
       new Set(
-        gridRows
-          .filter((row) => selectedDept === 'all' || row.departmentName === selectedDept)
-          .map((row) => row.serviceName)
+        services
+          .filter((service) => selectedDept === 'all' || service.departmentId === Number(selectedDept))
+          .map((service) => service)
       )
-    ).sort();
+    ).sort((first, second) => first.serviceName.localeCompare(second.serviceName));
     return [
       { label: 'All Services', value: 'all' },
-      ...unique.map((name) => ({ label: name, value: name })),
+      ...unique.map((service) => ({
+        label: service.serviceName,
+        value: String(service.id),
+      })),
     ];
-  }, [gridRows, selectedDept]);
+  }, [selectedDept, services]);
 
   const statusOptions = useMemo(() => {
     const unique = Array.from(new Set(gridRows.map((row) => row.currentStatus)));
@@ -115,10 +124,10 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       const matchesSearch =
         !query ||
         row.applicationNo.toLocaleLowerCase(locale).includes(query) ||
-        row.applicantName.toLocaleLowerCase(locale).includes(query) ||
-        row.serviceName.toLocaleLowerCase(locale).includes(query);
-      const matchesDept = selectedDept === 'all' || row.departmentName === selectedDept;
-      const matchesService = selectedService === 'all' || row.serviceName === selectedService;
+        row.applicantName?.toLocaleLowerCase(locale).includes(query) ||
+        row.serviceName?.toLocaleLowerCase(locale).includes(query);
+      const matchesDept = selectedDept === 'all' || row.departmentId === Number(selectedDept);
+      const matchesService = selectedService === 'all' || row.serviceId === Number(selectedService);
       const matchesStatus = selectedStatus === 'all' || row.currentStatus === selectedStatus;
 
       return matchesSearch && matchesDept && matchesService && matchesStatus;
@@ -138,7 +147,8 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
   };
 
   const formatDate = useCallback(
-    (value: string) => {
+    (value: string | null) => {
+      if (!value) return t('applicationDashboard.table.na');
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return t('applicationDashboard.table.na');
       return date.toLocaleDateString(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN');
@@ -157,7 +167,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'total',
       icon: FileText,
       label: t('applicationDashboard.cards.totalApplications'),
-      value: kpis.total,
+      value: kpis?.totalApplications ?? null,
       borderClassName: 'border-l-[#2563EB]',
       valueClassName: 'text-slate-900',
       iconClassName: 'bg-blue-50 border-blue-100 text-[#2563EB]',
@@ -166,7 +176,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'pending',
       icon: Clock3,
       label: t('applicationDashboard.cards.pending'),
-      value: kpis.pending,
+      value: kpis?.pending ?? null,
       borderClassName: 'border-l-[#F59E0B]',
       valueClassName: 'text-[#F59E0B]',
       iconClassName: 'bg-amber-50 border-amber-100 text-[#F59E0B]',
@@ -175,7 +185,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'approved',
       icon: CheckCircle2,
       label: t('applicationDashboard.cards.approved'),
-      value: kpis.approved,
+      value: kpis?.approved ?? null,
       borderClassName: 'border-l-[#10B981]',
       valueClassName: 'text-[#10B981]',
       iconClassName: 'bg-emerald-50 border-emerald-100 text-[#10B981]',
@@ -184,7 +194,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'rejected',
       icon: TriangleAlert,
       label: t('applicationDashboard.cards.rejected'),
-      value: kpis.rejected,
+      value: kpis?.rejected ?? null,
       borderClassName: 'border-l-[#EF4444]',
       valueClassName: 'text-[#EF4444]',
       iconClassName: 'bg-rose-50 border-rose-100 text-[#EF4444]',
@@ -193,7 +203,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'overdue',
       icon: AlertOctagon,
       label: t('applicationDashboard.cards.overdueApplications'),
-      value: kpis.overdue,
+      value: kpis?.overdueApplications ?? null,
       borderClassName: 'border-l-[#DC2626]',
       valueClassName: 'text-[#DC2626]',
       iconClassName: 'bg-red-50 border-red-100 text-[#DC2626]',
@@ -202,7 +212,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'reverted',
       icon: RotateCcw,
       label: t('applicationDashboard.cards.reverted'),
-      value: kpis.reverted,
+      value: kpis?.reverted ?? null,
       borderClassName: 'border-l-violet-500',
       valueClassName: 'text-violet-600',
       iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
@@ -211,7 +221,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'today',
       icon: CalendarClock,
       label: t('applicationDashboard.cards.todaysApplications'),
-      value: kpis.today,
+      value: kpis?.todayApplications ?? null,
       borderClassName: 'border-l-cyan-500',
       valueClassName: 'text-cyan-600',
       iconClassName: 'bg-cyan-50 border-cyan-100 text-cyan-600',
@@ -220,7 +230,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
       key: 'dueToday',
       icon: TimerReset,
       label: t('applicationDashboard.cards.dueToday'),
-      value: kpis.dueToday,
+      value: kpis?.dueToday ?? null,
       borderClassName: 'border-l-orange-500',
       valueClassName: 'text-orange-600',
       iconClassName: 'bg-orange-50 border-orange-100 text-orange-600',
@@ -252,25 +262,29 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
         label: `${t('applicationDashboard.table.serviceName')} / ${t('applicationDashboard.table.department')}`,
         render: (_value, row) => (
           <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-slate-800">{row.serviceName}</span>
-            <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">{row.departmentName}</span>
+            <span className="font-semibold text-slate-800">{row.serviceName ?? t('applicationDashboard.table.na')}</span>
+            <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">{row.departmentName ?? t('applicationDashboard.table.na')}</span>
           </div>
         ),
       },
       {
         key: 'currentStatus',
-        label: `${t('applicationDashboard.table.currentStatus')} / Stage`,
+        label: t('applicationDashboard.table.currentStatus'),
         align: 'center',
-        render: (_value, row) => (
-          <div className="flex flex-col items-center gap-1">
-            <Badge variant={statusBadgeVariant(row.currentStatus)} size="sm">
-              {row.currentStatus.charAt(0).toUpperCase() + row.currentStatus.slice(1)}
-            </Badge>
-            <span className="text-[11px] font-bold text-violet-600 uppercase tracking-wider mt-0.5">
-              {row.currentStageName}
-            </span>
-          </div>
-        ),
+        render: (_value, row) => {
+          const status = row.currentStatus.trim();
+          const normalizedStatus = status.toLocaleLowerCase();
+
+          return (
+            <div className="flex items-center justify-center">
+              <StatusBadge
+                variant={normalizedStatus === 'pending' ? 'pending' : 'info'}
+                label={status}
+                className="px-2 py-0.5 text-[10px]"
+              />
+            </div>
+          );
+        },
       },
       {
         key: 'remainingDays',
@@ -286,30 +300,19 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
         key: 'lastUpdatedDate',
         label: t('applicationDashboard.table.lastUpdatedDate'),
         align: 'center',
-        render: (_value, row) => formatDate(row.lastUpdatedDate),
+        render: (_value, row) => formatDate(row.lastUpdatedDate ?? row.applicationDate),
       },
       {
         key: 'assignedTo',
         label: t('applicationDashboard.table.assignedTo'),
-        render: (_value, row) => (
-          <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-slate-800">{row.assignedToName}</span>
-            {row.assignedToRole && (
-              <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
-                {row.assignedToRole}
-              </span>
-            )}
-          </div>
-        ),
+        align: 'center',
+        render: (_value, row) => row.assignedTo ?? t('applicationDashboard.table.na'),
       },
       {
-        key: 'remarks',
-        label: 'Remarks',
-        render: (_value, row) => (
-          <span className="text-slate-500 font-medium truncate max-w-[180px] block" title={row.remarks}>
-            {row.remarks}
-          </span>
-        ),
+        key: 'remark',
+        label: t('applicationDashboard.table.remark'),
+        align: 'center',
+        render: (_value, row) => row.remark?.trim() || '-',
       },
     ],
     [t, formatDate, formatDays]
@@ -334,7 +337,10 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
         {kpiCards.map((metric) => {
-          const percentage = kpis.total > 0 ? Math.round((metric.value / kpis.total) * 100) : 0;
+          const percentage =
+            kpis && metric.value !== null && kpis.totalApplications > 0
+              ? Math.round((metric.value / kpis.totalApplications) * 100)
+              : null;
 
           return (
             <Card
@@ -350,11 +356,13 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
 
                   <div className="mt-2.5 flex items-baseline gap-1">
                     <span className={`text-xl font-extrabold leading-none ${metric.valueClassName}`}>
-                      {numberFormatter.format(metric.value)}
+                      {metric.value === null
+                        ? t('applicationDashboard.table.na')
+                        : numberFormatter.format(metric.value)}
                     </span>
                     {metric.key !== 'total' && (
                       <span className="text-[13px] font-bold text-slate-400">
-                        ({percentage}%)
+                        {percentage === null ? t('applicationDashboard.table.na') : `(${percentage}%)`}
                       </span>
                     )}
                   </div>
@@ -371,9 +379,9 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
         })}
       </div>
 
-      {!kpis.isLive && (
+      {error && (
         <p className="text-[11px] font-semibold text-red-500">
-          {t('applicationDashboard.cards.liveUnavailable')}
+          {error}
         </p>
       )}
 
@@ -395,7 +403,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
           <div className="flex flex-wrap items-center gap-3 lg:justify-end">
             <div className="w-full sm:w-44 space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
-                Department
+                {t('applicationDashboard.table.department')}
               </Label>
               <Select
                 selectSize="sm"
@@ -410,7 +418,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
 
             <div className="w-full sm:w-44 space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
-                Service
+                {t('applicationDashboard.table.serviceName')}
               </Label>
               <Select
                 selectSize="sm"
@@ -481,7 +489,7 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
                 variant="primary"
                 size="xs"
                 onClick={() =>
-                  router.push(`/${locale}/rts/dashboard/rts-applications/${row.applicationNo}`)
+                  router.push(`/${locale}/rts/dashboard/rts-applications/${row.applicationId}`)
                 }
                 title={t('applicationDashboard.actions.processAria', {
                   appId: row.applicationNo,
@@ -534,17 +542,19 @@ export default function RtsApplicationDashboard({ kpis, rows, locale }: RtsAppli
                 <div className="text-[11px] font-bold uppercase tracking-wide text-slate-700">
                   {selectedRow.applicationNo}
                 </div>
-                <div className="text-lg font-bold text-slate-800">{selectedRow.serviceName}</div>
+                <div className="text-lg font-bold text-slate-800">
+                  {selectedRow.serviceName ?? t('applicationDashboard.table.na')}
+                </div>
               </div>
             </div>
           }
         >
           <ApplicationDrawerContent
             record={{
-              appId: selectedRow.applicationNo,
+              applicationId: selectedRow.applicationId,
               citizenName: selectedRow.applicantName,
               submittedDate: formatDate(selectedRow.applicationDate),
-              slaLimit: selectedRow.expectedSlaDays,
+              slaLimit: selectedRow.sla,
             }}
             onClose={() => setSelectedRow(null)}
           />

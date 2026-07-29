@@ -377,6 +377,7 @@
       "allStatuses": "सभी स्थितियाँ"
     },
     "table": {
+                  "remark": "Remark",
                   "applicationNo": "आवेदन क्रमांक",
                   "applicationDate": "आवेदन तिथि",
                   "applicantName": "आवेदक का नाम",
