@@ -52,6 +52,15 @@ vi.mock('@/lib/api/departmentMaster.service', () => ({
   },
 }));
 
+vi.mock('@/lib/utils/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 describe('Grievance Category Master Server Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();

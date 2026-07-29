@@ -122,7 +122,7 @@ export default async function FloorSubmissionPage({
     // ── Phase 2: Fetch Dropdowns & Floor List on-demand ─────────────────────
     const shouldLoadAll = !!floorId;
     const shouldLoadSubType = shouldLoadAll || asString(sp.loadSubType) === 'true';
-    const shouldLoadOpenPlotCategory = shouldLoadAll || asString(sp.loadOpenPlotCategory) === 'true';
+    // const shouldLoadOpenPlotCategory = shouldLoadAll || asString(sp.loadOpenPlotCategory) === 'true';
     const effectiveUseIdForPrefetch = shouldLoadSubType ? typeOfUseId : undefined;
 
     const [
@@ -140,7 +140,8 @@ export default async function FloorSubmissionPage({
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadUsage) === 'true') ? getTypeOfUseDataAction(resolvedPropertyTypeId) : Promise.resolve([]),
-        shouldLoadOpenPlotCategory ? getOpenPlotCategoryDataAction() : Promise.resolve([]),
+        // shouldLoadOpenPlotCategory ? getOpenPlotCategoryDataAction() : Promise.resolve([]),
+        getOpenPlotCategoryDataAction(),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
         getRoomTypeDataAction(),

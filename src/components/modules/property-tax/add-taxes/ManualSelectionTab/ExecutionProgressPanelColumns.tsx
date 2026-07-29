@@ -31,11 +31,30 @@ export const getProgressPanelColumns = (t: (key: string) => string): Column<any>
     key: 'status', 
     label: t('progressPanel.columns.status'), 
     width: '10%',
-    render: (val) => (
-      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${val === 'Failed' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-        {val === 'Failed' ? t('progressPanel.status.failed') : t('progressPanel.status.added')}
-      </span>
-    )
+    render: (val) => {
+      let label = val;
+      let colorClass = 'bg-gray-100 text-gray-700';
+
+      if (val === 'Failed') {
+        label = t('progressPanel.status.failed');
+        colorClass = 'bg-red-50 text-red-600';
+      } else if (val === 'Pending') {
+        label = t('progressPanel.status.pending');
+        colorClass = 'bg-orange-50 text-orange-600';
+      } else if (val === 'Success' || val === 'Added') {
+        label = t('progressPanel.status.added');
+        colorClass = 'bg-green-50 text-green-600';
+      } else if (val === 'Skipped') {
+        label = t('progressPanel.status.skipped');
+        colorClass = 'bg-gray-50 text-gray-500';
+      }
+      
+      return (
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colorClass}`}>
+          {label}
+        </span>
+      );
+    }
   },
   { 
     key: 'message', 

@@ -26,7 +26,8 @@
       "select": "Select..."
     },
     "messages": {
-      "fromFloorGreaterError": "From floor cannot be greater than To floor"
+      "fromFloorGreaterError": "From floor cannot be greater than To floor",
+      "noRecordsFound": "No records found"
     }
   }
 }

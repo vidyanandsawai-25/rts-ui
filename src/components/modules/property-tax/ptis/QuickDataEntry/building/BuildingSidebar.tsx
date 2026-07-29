@@ -84,9 +84,9 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
     };
 
     return (
-        <div className="flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border-r border-blue-100 pr-2">
+        <div className="flex flex-col h-full min-h-0 border-r border-blue-100 pr-2">
             {/* Search and Filters */}
-            <div className="space-y-3 mb-4">
+            <div className="space-y-3 mb-3 flex-shrink-0">
                 <SearchInput
                     value={searchTerm}
                     onChange={onSearchChange}
@@ -113,7 +113,7 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
             </div>
 
             {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-blue-100">
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-blue-100">
                 {certificates.length === 0 ? (
                     <div className="text-center py-8 text-sm font-semibold text-gray-400">
                         {t("building.noCertificatesFound") || "No certificates found"}

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { getRtsApplicationByIdAction, getRtsUsersAction } from "../actions";
-import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
-import { buildOldServiceFormConfigFromRtsFieldDefinitions } from "@/lib/utils/rts/rts-field-definition-mapper";
+import {
+  getApplicationDetailAction,
+  submitApplicationActionAction,
+} from "../../dashboard/rts-applications/actions";
 import RtsApplicationDetails from "@/components/modules/rts/dashboard/RtsApplicationDetails";
 
 type PageProps = {
@@ -12,25 +13,19 @@ type PageProps = {
 };
 
 export default async function RtsApplicationDetailsPage({ params }: PageProps) {
-  const { id, locale } = await params;
+  const { id: applicationNo, locale } = await params;
 
-  const app = await getRtsApplicationByIdAction(id);
-  if (!app) {
+  const data = await getApplicationDetailAction(applicationNo);
+  if (!data) {
     notFound();
   }
-
-  // Retrieve real matching dynamic fields config for EAV form rendering
-  const fieldDefinitions = await getRtsFieldDefinitionsByServiceId(Number(app.serviceId)).catch(() => []);
-  const formSchema = buildOldServiceFormConfigFromRtsFieldDefinitions(String(app.serviceId), fieldDefinitions);
-  const officers = await getRtsUsersAction();
 
   return (
     <div className="w-full">
       <RtsApplicationDetails
-        application={app as any}
-        formSchema={formSchema}
-        officers={officers}
+        data={data}
         locale={locale}
+        submitAction={submitApplicationActionAction}
       />
     </div>
   );

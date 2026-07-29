@@ -5,11 +5,17 @@ import {
   replaceCertificateDocument,
   deleteCertificateDocument,
   bulkSaveCertificates,
+  getFloorCertificates,
+  saveCertificate,
+  deletePropertyCertificate,
 } from "@/lib/api/building.service";
 import { 
   PropertyCertificateWithStatusDto, 
   PropertyCertificateUploadResponseDto, 
-  PropertyCertificateBulkSaveDto 
+  PropertyCertificateBulkSaveDto,
+  FloorCertificatesResponseDto,
+  SaveCertificateResponseDto,
+  SaveCertificateRequestDto
 } from "@/types/building-permission.types";
 import { revalidatePath } from "next/cache";
 import { ApiResponse } from "@/types/common.types";
@@ -70,13 +76,43 @@ async function cleanBuildingApiError(
 }
 
 export async function getBuildingPermissionsAction(
-  propertyId: string
+  propertyId: string,
+  propertyDetailsId?: number | null
 ): Promise<ApiResponse<PropertyCertificateWithStatusDto[]>> {
   try {
-    return await getCertificateTypesWithStatus(propertyId);
+    return await getCertificateTypesWithStatus(propertyId, propertyDetailsId);
   } catch (error: unknown) {
     logger.error("getBuildingPermissionsAction failed", { propertyId, error: error as Error });
     return handleActionError(error, "building.errors.notFound", undefined, "quickDataEntry", cleanBuildingApiError);
+  }
+}
+
+export async function getFloorCertificatesAction(
+  propertyId: string,
+  selectedPropertyDetailsId?: number | null
+): Promise<ApiResponse<FloorCertificatesResponseDto>> {
+  try {
+    return await getFloorCertificates(propertyId, selectedPropertyDetailsId);
+  } catch (error: unknown) {
+    logger.error("getFloorCertificatesAction failed", { propertyId, error: error as Error });
+    return handleActionError(error, "building.errors.notFound", undefined, "quickDataEntry", cleanBuildingApiError);
+  }
+}
+
+export async function saveCertificateAction(
+  locale: string,
+  propertyId: string,
+  data: SaveCertificateRequestDto
+): Promise<ApiResponse<SaveCertificateResponseDto>> {
+  try {
+    const result = await saveCertificate(data);
+    if (result.success) {
+      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+    }
+    return result;
+  } catch (error: unknown) {
+    logger.error("saveCertificateAction failed", { propertyId, error: error as Error });
+    return handleActionError(error, "building.saveError", undefined, "quickDataEntry", cleanBuildingApiError);
   }
 }
 
@@ -113,44 +149,93 @@ export async function saveBuildingPermissionsAction(
     const payloadStr = formData.get("certificates") as string;
     const payload = JSON.parse(payloadStr) as PropertyCertificateBulkSaveDto;
 
-    const initialResponse = await getCertificateTypesWithStatus(propertyId);
-    const initialCerts = initialResponse.success && initialResponse.data ? initialResponse.data : [];
-
-    // Delete any removed documents
-    for (const cert of payload.certificates) {
-      const initialCert = initialCerts.find(c => c.certificateTypeId === cert.certificateTypeId);
-      const oldGuid = initialCert?.documentGuid;
-      const file = formData.get(`file_${cert.certificateTypeId}`) as File | null;
-
-      if (oldGuid && !file && (cert.markedForDeletion || !cert.isEnabled || !cert.existingDocumentGuid)) {
-        await deleteCertificateDocument(oldGuid);
+    // Group certificates by propertyDetailsId to fetch their baseline statuses concurrently
+    const detailsIds = Array.from(new Set(payload.certificates.map(c => c.propertyDetailsId ?? null)));
+    const initialCertsMap = new Map<number | null, PropertyCertificateWithStatusDto[]>();
+    const statusResponses = await Promise.all(
+      detailsIds.map(dId => getCertificateTypesWithStatus(propertyId, dId))
+    );
+    detailsIds.forEach((dId, idx) => {
+      const res = statusResponses[idx];
+      if (res.success && res.data) {
+        initialCertsMap.set(dId, res.data);
       }
-    }
+    });
 
-    const response = await bulkSaveCertificates(payload);
-    if (!response.success || !response.data?.updatedCertificates) {
-      return { success: false, error: await cleanBuildingApiError(response.error, locale) };
-    }
-
-    const updatedCerts = response.data.updatedCertificates;
-
+    // Process removals in parallel
+    const deleteTasks: Promise<unknown>[] = [];
+    const certificatesToSave = [];
     for (const cert of payload.certificates) {
+      const scopedCerts = initialCertsMap.get(cert.propertyDetailsId ?? null) || [];
+      const initialCert = scopedCerts.find(c => c.certificateTypeId === cert.certificateTypeId);
+      const oldGuid = initialCert?.documentGuid;
+      const certId = initialCert?.propertyCertificateId;
       const file = formData.get(`file_${cert.certificateTypeId}`) as File | null;
-      if (file) {
-        const match = updatedCerts.find(c => c.certificateTypeId === cert.certificateTypeId);
-        const propertyCertificateId = match?.propertyCertificateId || cert.propertyCertificateId;
-        if (!propertyCertificateId) {
-          throw new Error("Certificate not initialized or found.");
+
+      if (!file && (cert.markedForDeletion || !cert.isEnabled || !cert.existingDocumentGuid)) {
+        if (certId) {
+          deleteTasks.push(deletePropertyCertificate(Number(propertyId), cert.certificateTypeId, cert.propertyDetailsId ?? null));
+          continue;
+        } else if (oldGuid) {
+          deleteTasks.push(deleteCertificateDocument(oldGuid));
         }
-        const uploadResult = await replaceCertificateDocument(
-          propertyCertificateId,
-          file,
-          Number(propertyId),
-          cert.certificateTypeId
-        );
-        if (!uploadResult.success) {
-          throw new Error(uploadResult.error || "Upload failed");
+      }
+      certificatesToSave.push(cert);
+    }
+
+    if (deleteTasks.length > 0) {
+      await Promise.all(deleteTasks);
+    }
+
+    payload.certificates = certificatesToSave;
+
+    if (payload.certificates.length > 0) {
+      const response = await bulkSaveCertificates(payload);
+      if (!response.success || !response.data?.updatedCertificates) {
+        return { success: false, error: await cleanBuildingApiError(response.error, locale) };
+      }
+
+      // Build a lookup map from the bulk save response to avoid N+1 re-fetches
+      const certLookup = new Map<number, number>();
+      for (const updated of response.data.updatedCertificates) {
+        if (updated.certificateTypeId && updated.propertyCertificateId) {
+          certLookup.set(updated.certificateTypeId, updated.propertyCertificateId);
         }
+      }
+
+      // Upload files concurrently
+      const uploadTasks = payload.certificates.map(async (cert) => {
+        const file = formData.get(`file_${cert.certificateTypeId}`) as File | null;
+        if (file) {
+          let propertyCertificateId: number | null = certLookup.get(cert.certificateTypeId) ?? null;
+
+          // Fallback: fetch only if lookup map didn't contain the ID
+          if (!propertyCertificateId) {
+            const detailRes = await getCertificateTypesWithStatus(propertyId, cert.propertyDetailsId);
+            if (detailRes.success && detailRes.data) {
+              const scopedMatch = detailRes.data.find(c => c.certificateTypeId === cert.certificateTypeId);
+              propertyCertificateId = scopedMatch?.propertyCertificateId || null;
+            }
+          }
+
+          if (!propertyCertificateId) {
+            throw new Error("Certificate not initialized or found.");
+          }
+
+          const uploadResult = await replaceCertificateDocument(
+            propertyCertificateId,
+            file,
+            Number(propertyId),
+            cert.certificateTypeId
+          );
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error || "Upload failed");
+          }
+        }
+      });
+
+      if (uploadTasks.length > 0) {
+        await Promise.all(uploadTasks);
       }
     }
 
@@ -177,6 +262,25 @@ export async function deleteCertificateDocumentAction(
     return result;
   } catch (error: unknown) {
     logger.error("deleteCertificateDocumentAction failed", { documentGuid, error: error as Error });
+    return handleActionError(error, "building.deleteError", undefined, "quickDataEntry", cleanBuildingApiError);
+  }
+}
+
+export async function deletePropertyCertificateAction(
+  propertyId: number,
+  certificateTypeId: number,
+  propertyDetailsId: number | null,
+  locale: string,
+  frontendPropertyIdString: string
+): Promise<ApiResponse<void>> {
+  try {
+    const result = await deletePropertyCertificate(propertyId, certificateTypeId, propertyDetailsId);
+    if (result.success) {
+      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${frontendPropertyIdString}/Building`, 'page');
+    }
+    return result;
+  } catch (error: unknown) {
+    logger.error("deletePropertyCertificateAction failed", { propertyId, certificateTypeId, error: error as Error });
     return handleActionError(error, "building.deleteError", undefined, "quickDataEntry", cleanBuildingApiError);
   }
 }

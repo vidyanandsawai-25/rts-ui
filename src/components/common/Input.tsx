@@ -33,9 +33,12 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
  * ```
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, helperText, fullWidth = false, naked = false, id, disabled, required, ...props }, ref) => {
+  ({ className, label, error, helperText, fullWidth = false, naked = false, id, disabled, required, value, ...props }, ref) => {
     const generatedId = useId();
     const inputId = id || `input-${generatedId}`;
+
+    const isControlled = 'value' in props || value !== undefined;
+    const normalizedValue = isControlled ? (value ?? '') : undefined;
 
     // Naked mode: render just the input element with minimal/no default styling
     // Consumers have full control over appearance via className
@@ -47,6 +50,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           required={required}
           className={className}
           disabled={disabled}
+          {...(isControlled ? { value: normalizedValue } : {})}
           {...props}
         />
       );
@@ -77,6 +81,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={
             error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
           }
+          {...(isControlled ? { value: normalizedValue } : {})}
           {...props}
         />
         {error && (

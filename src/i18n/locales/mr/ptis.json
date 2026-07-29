@@ -197,6 +197,9 @@
       "partitionNoPattern": "विभाजन क्रमांकात फक्त अक्षरे आणि अंक असावेत"
     }
   },
+  "building": {
+    "noDocumentAttached": "या प्रमाणपत्रासाठी कोणतीही दस्तऐवज फाईल जोडलेली नाही."
+  },
   "tabs": {
     "propertyDetails": "मालमत्ता तपशील",
     "kycDetails": "केवायसी तपशील",

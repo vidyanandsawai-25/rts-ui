@@ -1015,7 +1015,7 @@ export default function RtsFieldsConfig({
                             <input type="checkbox" id={`${cardId}-active`} checked={field.isActive} onChange={e => updateDraftField(index, { isActive: e.target.checked })} className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
                             <Label htmlFor={`${cardId}-active`} className="cursor-pointer text-[11px] font-semibold text-slate-700">{t("fields.isActive")}</Label>
                           </div>
-                          
+
                         </div>
 
                         {(field.fieldType === "select" || field.fieldType === "checkbox") && (

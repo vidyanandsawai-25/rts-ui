@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type ReactNode, useState, useMemo, useRef, startTransition } from 'react';
+import React, { type ReactNode, useState, useMemo, useRef, useCallback, useEffect, startTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, ChevronRight, Pencil, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -233,6 +233,37 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScrolledRight, setIsScrolledRight] = useState(false);
+  const [hasHorizontalScroll, setHasHorizontalScroll] = useState(false);
+
+  const checkScrollable = useCallback(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const isScrollable = container.scrollWidth > container.clientWidth + 2;
+    setHasHorizontalScroll(isScrollable);
+  }, []);
+
+  useEffect(() => {
+    checkScrollable();
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        checkScrollable();
+      });
+      resizeObserver.observe(container);
+    }
+
+    window.addEventListener('resize', checkScrollable);
+    return () => {
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener('resize', checkScrollable);
+    };
+  }, [checkScrollable, data, columns]);
+
+  const shouldShowScrollButton = showScrollButtons && columns.length > 8 && hasHorizontalScroll;
 
   const handleScrollToggle = () => {
     if (!containerRef.current) return;
@@ -433,7 +464,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
             ))}
 
             {/* Toggle Scroll Header (Sticky on the right) */}
-            {showScrollButtons && columns.length > 8 && (
+            {shouldShowScrollButton && (
               <th className={cn("w-[40px] min-w-[40px] px-1 py-1.5 border-l border-blue-700/60 text-center align-middle sticky right-0 z-30 bg-[#1440aa]", headerCellClassName)}>
                 <button
                   type="button"
@@ -451,7 +482,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
           {(!data || data.length === 0) ? (
             <tr className="h-[120px] bg-gray-50/30">
               <td
-                colSpan={columns.length + (showExpandColumn ? 1 : 0) + (showScrollButtons && columns.length > 8 ? 1 : 0)}
+                colSpan={columns.length + (showExpandColumn ? 1 : 0) + (shouldShowScrollButton ? 1 : 0)}
                 className="px-6 py-10 text-center align-middle"
               >
                 <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
@@ -579,7 +610,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                     ))}
 
                     {/* Toggle Scroll Cell (Sticky on the right) */}
-                    {showScrollButtons && columns.length > 8 && (
+                    {shouldShowScrollButton && (
                       <td className={cn("px-1 py-1 text-center align-middle border-l border-blue-300 sticky right-0 z-10", bgClass || 'bg-white', cellClassName)}>
                         <button
                           type="button"
@@ -595,7 +626,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                   {/* Expanded Row Content */}
                   {isExpanded && renderExpanded && (
                     <tr className={cn('border-b border-blue-300', bgClass, expandedRowClassName)}>
-                      <td colSpan={columns.length + (showExpandColumn ? 1 : 0) + (showScrollButtons && columns.length > 8 ? 1 : 0)} className="p-0">
+                      <td colSpan={columns.length + (showExpandColumn ? 1 : 0) + (shouldShowScrollButton ? 1 : 0)} className="p-0">
                         <div className="w-full bg-blue-50/30 p-2 transition-all animate-in fade-in slide-in-from-top-1 duration-200">
                           {renderExpanded(row)}
                         </div>

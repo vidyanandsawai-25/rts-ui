@@ -6,6 +6,7 @@ import { Service } from "@/types/home/home.types";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user-profile.types";
 import type { Department } from "@/types/departmentActivation.types";
+import type { UserScreenAccess } from "@/types/user-screen-access.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
 import { userScreenAccessService } from "@/lib/api/user-screen-access.service";
@@ -47,15 +48,22 @@ function mapDepartmentToService(
     iconName: string,
     locale: string,
     moduleId?: number,
-    moduleName?: string
+    moduleName?: string,
+    routeSegment?: string
 ): Service {
     const name = department.departmentName;
-    const lowerName = name.toLowerCase().trim();
+    const routeSource = moduleName?.trim() || name;
+    const lowerRouteSource = routeSource.toLowerCase();
 
-    // Dynamically slugify the route segment using department name
-    let routeSegment = lowerName.replace(/[&\s]+/g, '-').replace(/-+/g, '-');
-    if (routeSegment === 'asset-management' || lowerName.includes('asset management')) {
-        routeSegment = 'assets/municipal-Asset';
+    // Screen metadata is the source of truth. The slug is only a safe fallback
+    // when a user has no viewable screen metadata for the selected module.
+    let resolvedRouteSegment =
+        routeSegment || lowerRouteSource.replace(/[&\s]+/g, '-').replace(/-+/g, '-');
+    if (
+        resolvedRouteSegment === 'asset-management' ||
+        lowerRouteSource.includes('asset management')
+    ) {
+        resolvedRouteSegment = 'assets';
     }
 
     return {
@@ -64,10 +72,50 @@ function mapDepartmentToService(
         title: department.departmentName,
         subtext: `Access ${department.departmentName} services`,
         icon: iconName || getIconByDepartmentName(department.departmentName),
-        link: `/${locale}/${routeSegment}`,
+        link: `/${locale}/${resolvedRouteSegment}`,
         moduleId,
         moduleName,
     };
+}
+
+/**
+ * Selects the project route root that owns most viewable screens for a module.
+ * Route metadata is stable even when a department's display name is edited.
+ */
+function resolveModuleRouteSegment(
+    screens: UserScreenAccess[],
+    departmentId: number,
+    moduleId?: number
+): string | undefined {
+    const rootCounts = new Map<string, number>();
+
+    for (const screen of screens) {
+        if (
+            screen.departmentId !== departmentId ||
+            (moduleId != null && screen.moduleId !== moduleId) ||
+            !screen.canView ||
+            screen.haveNoAccess ||
+            !screen.routePath
+        ) {
+            continue;
+        }
+
+        const routeWithoutQuery = screen.routePath.split(/[?#]/, 1)[0] ?? '';
+        const segments = routeWithoutQuery.split('/').filter(Boolean);
+        const firstSegment = segments[0]?.toLowerCase();
+        const routeRoot =
+            firstSegment === 'en' || firstSegment === 'mr' || firstSegment === 'hi'
+                ? segments[1]?.toLowerCase()
+                : firstSegment;
+        if (!routeRoot) continue;
+
+        rootCounts.set(routeRoot, (rootCounts.get(routeRoot) ?? 0) + 1);
+    }
+
+    return [...rootCounts.entries()]
+        .sort(([firstRoot, firstCount], [secondRoot, secondCount]) =>
+            secondCount - firstCount || firstRoot.localeCompare(secondRoot)
+        )[0]?.[0];
 }
 
 /**
@@ -83,10 +131,15 @@ export async function listServices(locale: string): Promise<ListServicesResponse
             return { services: [], error: "User not authenticated" };
         }
 
-        // Fetch both user profile and globally active departments list in parallel
-        const [profileResponse, departmentsResponse] = await Promise.all([
+        const authToken = cookieStore.get('auth_token')?.value;
+
+        // Fetch profile, activation state and navigation metadata in parallel.
+        const [profileResponse, departmentsResponse, screensResponse] = await Promise.all([
             getUserProfileCached(userId),
-            departmentActivationService.getDepartments(1, 1000).catch(() => ({ success: false, data: [] }))
+            departmentActivationService.getDepartments(1, 1000).catch(() => ({ success: false, data: [] })),
+            userScreenAccessService
+                .getScreensForUser(userId, authToken)
+                .catch(() => ({ success: false, data: [] as UserScreenAccess[] }))
         ]);
 
         if (!profileResponse.success || !profileResponse.data) {
@@ -137,6 +190,10 @@ export async function listServices(locale: string): Promise<ListServicesResponse
                 });
             }
         }
+        const accessibleScreens =
+            screensResponse.success && Array.isArray(screensResponse.data)
+                ? screensResponse.data
+                : [];
 
         // Map departments to services using dynamic icon resolved from global list
         const services = uniqueDepartments
@@ -149,7 +206,12 @@ export async function listServices(locale: string): Promise<ListServicesResponse
                     iconName,
                     locale,
                     moduleInfo?.moduleId,
-                    moduleInfo?.moduleName
+                    moduleInfo?.moduleName,
+                    resolveModuleRouteSegment(
+                        accessibleScreens,
+                        dept.departmentId,
+                        moduleInfo?.moduleId
+                    )
                 );
             });
 

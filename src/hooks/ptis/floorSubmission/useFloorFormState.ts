@@ -41,6 +41,7 @@ export const INITIAL_FORM_STATE: FloorData = {
   nonCalculateRentMonthly: 0,
   taxLiability: '',
   roomWiseSubmissionDetails: [],
+  updateBuildingPermission: 'No',
 };
 
 export const useFloorFormState = () => {

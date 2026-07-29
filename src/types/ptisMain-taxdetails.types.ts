@@ -6,13 +6,24 @@ export interface TaxAmountItem {
   taxAmount: number;
 }
 
+export interface PendingYearItem {
+  pendingYearId: number;
+  yearCode: string;
+  taxAmounts: TaxAmountItem[];
+  taxTotal: number;
+}
+
 /**
  * Represents a policy with tax amounts array and total
  */
 export interface TaxPolicy {
   policyCode: string;
+  policyName?: string;
+  yearCode?: string;
+  pendingYearId?: number;
   taxAmounts: TaxAmountItem[];
   taxTotal: number;
+  pendingYears?: PendingYearItem[];
 }
 
 /**
@@ -59,14 +70,25 @@ export interface PtisMainTaxDetailsApiResponse {
   };
 }
 
-/**
- * Represents a row in the tax details table
- * Contains fixed fields plus dynamic tax name columns
- */
 export interface TaxRow {
   id: number;
   taxes: string;
   labelKey?: string;
+  yearCode?: string;
+  pendingYearId?: number;
   totalTax: string;
-  [key: string]: string | number | undefined;
+  taxBreakdown?: Array<{ taxName: string; amount: number; percentage: number; taxId: number }>;
+  pendingYears?: PendingYearItem[];
+  [key: string]: unknown;
 }
+
+export interface PendingTaxRow {
+  id: string;
+  policyCode: string;
+  yearCode: string;
+  taxTotal: number;
+  taxAmounts: TaxAmountItem[];
+  isNetTax?: boolean;
+}
+
+export type PendingYearTaxDetail = PendingYearItem;

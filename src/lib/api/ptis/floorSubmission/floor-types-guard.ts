@@ -176,7 +176,13 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
     // Helper to check for 'undefined' or 'null' strings
     const isValid = (val: unknown) => val && s(val).toLowerCase() !== 'undefined' && s(val).toLowerCase() !== 'null';
 
+    const rawIsOpenPlot = (data as any).isOpenPlot ?? (data as any).IsOpenPlot ?? apiData.isOpenPlot ?? apiData.IsOpenPlot;
+    const isActualOpenPlot = rawIsOpenPlot === true || String(rawIsOpenPlot).toLowerCase() === 'true' || rawIsOpenPlot === 1 || String(rawIsOpenPlot) === '1';
+
     return {
+        ...apiData,
+        isOpenPlot: isActualOpenPlot,
+        IsOpenPlot: isActualOpenPlot,
         id: data.propertyDetailsId ?? data.id,
         ownerID: data.ownerID ?? data.ownerId ?? data.propertyId,
         floor: isValid(data.floorDescription) ? s(data.floorDescription) : s(data.floorID ?? data.floorId ?? ''),
@@ -195,7 +201,7 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
         subTypeOfUseId: Number(data.subTypeOfUseId || 0),
         subTypeOfUseDescription: isValid(data.subTypeOfUseDescription) ? s(data.subTypeOfUseDescription) : '',
         renter: parseBoolean(data.isRenter ?? data.renterYesNO ?? data.renterYesNo) ? ('Yes' as const) : ('No' as const),
-        rooms: String(data.noOfRooms || 0),
+        rooms: isActualOpenPlot ? '0' : String(data.noOfRooms || 0),
         areaSqFt: String(carpetAreaSqFtVal),
         areaSqM: String(carpetAreaSqMVal),
         builtupAreaSqFt: String(builtupAreaSqFtVal),
@@ -245,6 +251,7 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
             (data.renterMast && (data.renterMast as any[])[0]?.agreementDate)
         ),
         roomData: (data.roomWiseSubmissionDetails || data.propertyRooms || []).map((r, i) => mapRoomDataToUi(r, i)),
+        propertyCertificates: data.propertyCertificates || [],
     };
 }
 

@@ -26,7 +26,8 @@
       "select": "चुनें..."
     },
     "messages": {
-      "fromFloorGreaterError": "मंजिल से, मंजिल तक से अधिक नहीं हो सकती"
+      "fromFloorGreaterError": "मंजिल से, मंजिल तक से अधिक नहीं हो सकती",
+      "noRecordsFound": "कोई रिकॉर्ड नहीं मिला"
     }
   }
 }

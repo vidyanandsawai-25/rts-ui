@@ -75,11 +75,15 @@ export const validateDocumentNumber = (
         return { key: "validation.numberRepeated" };
     }
 
+    if (/\s/.test(trimmedNumber)) {
+        return { key: "validation.numberNoSpaces" };
+    }
+
     const typeKey = mapTypeNameToKey(typeName || "");
     const isCOP = typeKey === "commencementCertificate" || typeKey === "occupancyCertificate" || typeKey === "possessionCertificate";
 
     if (isCOP) {
-        const copRegex = /^[A-Za-z0-9\/\-\s]{5,50}$/;
+        const copRegex = /^[A-Za-z0-9\/\-]{5,50}$/;
         if (!copRegex.test(trimmedNumber)) {
             return { key: "validation.numberInvalidCOP" };
         }
@@ -94,9 +98,6 @@ export const validateDocumentNumber = (
             return { key: "validation.numberInvalidElectric" };
         }
     } else {
-        if (/\s/.test(trimmedNumber)) {
-            return { key: "validation.numberNoSpaces" };
-        }
         const rule = getCertificateLengthRule(typeName);
         if (trimmedNumber.length < rule.min || trimmedNumber.length > rule.max) {
             return { key: "validation.numberLength", params: { min: rule.min, max: rule.max } };
@@ -108,8 +109,8 @@ export const validateDocumentNumber = (
         return { key: "building.errors.allZeros" };
     }
 
-    // Character checks (allow spaces only for COP)
-    const allowedCharsRegex = isCOP ? /^[a-zA-Z0-9\-_/\s]+$/ : /^[a-zA-Z0-9\-_/]+$/;
+    // Character checks (disallow spaces for all certificate types)
+    const allowedCharsRegex = /^[a-zA-Z0-9\-_/]+$/;
     if (!allowedCharsRegex.test(trimmedNumber)) {
         return { key: "building.errors.invalidCharacters" };
     }
@@ -128,11 +129,14 @@ export const parseDateString = (dateStr: string | null | undefined): Date | null
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
-    const dateObj = new Date(year, month, day);
-    const dateIsValid = !isNaN(dateObj.getTime()) && 
-                        dateObj.getFullYear() === year && 
-                        dateObj.getMonth() === month && 
-                        dateObj.getDate() === day;
+    if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+
+    const utcTime = Date.UTC(year, month, day);
+    const dateObj = new Date(utcTime);
+    const dateIsValid = !isNaN(utcTime) && 
+                        dateObj.getUTCFullYear() === year && 
+                        dateObj.getUTCMonth() === month && 
+                        dateObj.getUTCDate() === day;
     return dateIsValid ? dateObj : null;
 };
 
@@ -149,11 +153,11 @@ export const validateDocumentDate = (
     }
 
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    if (dateObj > today) {
+    const todayTime = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    if (dateObj.getTime() > todayTime) {
         return { key: "validation.dateFuture" };
     }
-    if (dateObj < new Date(1900, 0, 1)) {
+    if (dateObj.getTime() < Date.UTC(1900, 0, 1)) {
         return { key: "validation.dateBefore1900" };
     }
 

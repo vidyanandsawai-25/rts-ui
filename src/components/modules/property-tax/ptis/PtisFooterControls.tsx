@@ -226,7 +226,7 @@ export function PtisFooterDropdowns({
   };
 
   return (
-    <>
+    <div className="flex items-center gap-1.5 sm:gap-2">
       <FooterSelect
         label={t('footerControls.policy.label')}
         placeholder={t('footerControls.policy.placeholder')}
@@ -280,6 +280,6 @@ export function PtisFooterDropdowns({
         ownerName={ownerName}
         workflowStages={workflowStages}
       />
-    </>
+    </div>
   );
 }

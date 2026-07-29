@@ -1,3 +1,6 @@
+import type { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from '@/types/floor-details.types';
+import type { FloorData } from '@/types/room-details.types';
+
 export type CertificateData = {
     enabled: boolean;
     number: string;
@@ -9,6 +12,7 @@ export type CertificateData = {
     propertyCertificateId?: number | null;
     fileName?: string;
     certificateTypeName?: string;
+    certificateTypeCode?: string;
     displayOrder?: number;
     pendingFile?: File;
 };
@@ -47,9 +51,15 @@ export interface BuildingPermissionApiResponse {
     items: BuildingPermissionItems;
 }
 
+export enum CertificateScope {
+    Property = 0,
+    Floor = 1
+}
+
 export interface PropertyCertificateWithStatusDto {
     certificateTypeId: number;
     certificateTypeName: string;
+    certificateTypeCode?: string;
     displayOrder: number;
     hasCertificate: boolean;
     propertyCertificateId: number | null;
@@ -58,6 +68,62 @@ export interface PropertyCertificateWithStatusDto {
     issueDate: string | null;
     documentGuid: string | null;
     fileName: string | null;
+    propertyDetailsId?: number | null;
+}
+
+export interface FloorCertificateDto {
+    propertyDetailsId: number;
+    propertyId: number;
+    floorDescription?: string | null;
+    subFloorDescription?: string | null;
+    constructionYear?: string | null;
+    assessmentYear?: string | null;
+    constructionTypeDescription?: string | null;
+    typeOfUseDescription?: string | null;
+    subTypeOfUseDescription?: string | null;
+    carpetAreaSqFeet?: number | null;
+    carpetAreaSqMeter?: number | null;
+    builtupAreaSqFeet?: number | null;
+    builtupAreaSqMeter?: number | null;
+    isSelected: boolean;
+    certificateApplicable: boolean;
+    ccDate?: string | null;
+    ocDate?: string | null;
+    electricBillDate?: string | null;
+    ccCertificateNo?: string | null;
+    ocCertificateNo?: string | null;
+    electricBillNo?: string | null;
+}
+
+export interface FloorCertificatesResponseDto {
+    propertyId: number;
+    selectedPropertyDetailsId?: number | null;
+    selectedFloor?: FloorCertificateDto | null;
+    otherFloors: FloorCertificateDto[];
+    propertyWiseCertificates: PropertyCertificateWithStatusDto[];
+}
+
+export interface SaveCertificateRequestDto {
+    propertyId: number;
+    propertyDetailsId?: number | null;
+    certificateScope: CertificateScope;
+    certificateTypeId: number;
+    certificateNo?: string | null;
+    certificateIssueDate?: string | null;
+    isPrimaryDocument?: boolean;
+}
+
+export interface SaveCertificateResponseDto {
+    propertyCertificateId: number;
+    propertyId: number;
+    propertyDetailsId?: number | null;
+    certificateScope: CertificateScope;
+    certificateTypeId: number;
+    certificateNo?: string | null;
+    certificateIssueDate?: string | null;
+    documentGuid?: string | null;
+    documentBindingId?: number | null;
+    taxRecalculationTriggered: boolean;
 }
 
 export interface PropertyCertificateUploadResponseDto {
@@ -80,6 +146,7 @@ export interface PropertyCertificateItemDto {
     certificateNumber?: string | null;
     certificateDate?: string | null;
     propertyCertificateId?: number | null;
+    propertyDetailsId?: number | null;
     existingDocumentGuid?: string | null;
     hasNewDocument: boolean;
     markedForDeletion?: boolean | null;
@@ -101,5 +168,12 @@ export interface PropertyCertificateBulkSaveResponseDto {
 
 export interface BuildingFormProps {
     initialBuildingPermission: PropertyCertificateWithStatusDto[] | null;
+    initialFloorCertificates?: FloorCertificatesResponseDto | null;
     propertyId: string;
+    floorData?: FloorResponse[];
+    constructionTypeData?: ConstructionTypeResponse[];
+    useData?: TypeOfUseApiItem[];
+    subFloorData?: SubFloorResponse[];
+    subTypeData?: SubTypeOfUseResponse[];
+    initialFloors?: FloorData[];
 }

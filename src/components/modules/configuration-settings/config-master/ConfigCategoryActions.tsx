@@ -158,7 +158,7 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
         icon={isPending && activeAction === 'enable' ? undefined : CheckCircle2}
         disabled={isPending}
         isLoading={isPending && activeAction === 'enable'}
-        className="h-8 text-[10px] sm:text-xs gap-1.5 text-emerald-600 border-emerald-500/30 hover:bg-emerald-50 bg-white font-black uppercase tracking-widest px-3 rounded-lg border-2 shadow-sm shadow-emerald-100/50 cursor-pointer"
+        className="h-8 text-[10px] sm:text-xs gap-1.5 !text-[#1d4ed8] border-blue-500/30 hover:bg-blue-50 bg-white font-black uppercase tracking-widest px-3 rounded-lg border-2 shadow-sm shadow-blue-100/50 cursor-pointer"
         onClick={() => handleBulkToggle(true)}
       >
         {t('list.enableAll') || 'Enable'}

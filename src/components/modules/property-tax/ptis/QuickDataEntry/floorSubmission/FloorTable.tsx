@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Layers } from 'lucide-react';
+import { Layers, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AddButton,
@@ -44,6 +44,7 @@ interface FloorTableProps {
   selectedFloorType?: 'Construction' | 'OpenPlot';
   isPlotCategory?: boolean;
   partitionNo?: string;
+  onRowClick?: (row: FloorData) => void;
   isIndividualProperty?: boolean;
 }
 
@@ -73,6 +74,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
   isPlotCategory = false,
   partitionNo: _partitionNo,
   isIndividualProperty: _isIndividualProperty = false,
+  onRowClick,
 }) => {
   const isDataEntryDisabled = React.useMemo(() => {
     // Disable button if no floors exist for the selected property; enable when floors exist
@@ -139,19 +141,43 @@ const FloorTable: React.FC<FloorTableProps> = ({
           );
         },
       });
+    } else if (onRowClick) {
+      baseCols.push({
+        key: 'select-floor-action',
+        label: '',
+        sortable: false,
+        render: (row: FloorData) => {
+          const isSelected = selectedFloor?.id === row.id;
+          return (
+            <div className="flex justify-center items-center h-full min-h-[28px]">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRowClick(row);
+                }}
+                className={`flex items-center justify-center w-6 h-6 rounded-full border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
+                    : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
+                }`}
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          );
+        },
+      });
     }
 
     return baseCols;
-  }, [columns, t, deleteCellRenderer, viewOnly]);
+  }, [columns, t, deleteCellRenderer, viewOnly, onRowClick, selectedFloor]);
 
   /**
-   * Handle row click to edit a floor
-   * Extracts floor data, normalizes IDs, and updates form state
+   * Handle row click to edit or select a floor
    */
   const handleFloorRowClick = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (viewOnly) return;
-
       const target = e.target as HTMLElement;
       const tr = target.closest('tbody tr');
       if (!tr) return;
@@ -164,7 +190,6 @@ const FloorTable: React.FC<FloorTableProps> = ({
       if (expandLink && (expandLink.getAttribute('aria-label') === 'Expand row' || expandLink.querySelector('svg'))) {
         const tbody = tr.closest('tbody');
         if (tbody) {
-          // Filter out expanded child rows
           const rowsOnly = Array.from(tbody.children).filter(
             (child) => !child.classList.contains('border-b') || child.querySelector('td')?.getAttribute('colspan') === null
           );
@@ -192,6 +217,13 @@ const FloorTable: React.FC<FloorTableProps> = ({
 
       const floor = filteredFloors[rowIndex];
 
+      if (onRowClick) {
+        onRowClick(floor);
+        return;
+      }
+
+      if (viewOnly) return;
+
       startTransition(() => {
         setFormErrors({});
         updateUrlParams({
@@ -208,6 +240,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
     },
     [
       filteredFloors,
+      onRowClick,
+      viewOnly,
       startTransition,
       setFormErrors,
       updateUrlParams,
@@ -215,7 +249,6 @@ const FloorTable: React.FC<FloorTableProps> = ({
       setSelectedFloor,
       setIsAddingNewFloor,
       toggleRowExpansion,
-      viewOnly,
     ]
   );
 
@@ -278,7 +311,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           data={filteredFloors as (FloorData & { id: string | number })[]}
           columns={adaptedColumns as unknown as FloorDetailsTableColumn<FloorData & { id: string | number }>[]}
           showExpandColumn={false}
-          showScrollButtons={false}
+          showScrollButtons={true}
           expandedRowIds={expandedRowIds}
           getExpandHref={(row) => `#floor-${row.id}`}
           renderExpanded={renderExpandedRooms}
@@ -288,12 +321,23 @@ const FloorTable: React.FC<FloorTableProps> = ({
           hoverable={true}
           containerClassName="border border-blue-200 shadow-md rounded-xl"
           heightRows={4}
-          theadClassName="bg-[#1440aa] text-white"
-          rowClassName={(row) =>
-            viewOnly
-              ? 'cursor-default border-l-4 border-l-transparent border-b-2 border-blue-200/90'
-              : `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${selectedFloor?.id === row.id && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`
-          }
+          theadClassName="bg-[#1e3a8a] text-white"
+          rowClassName={(row) => {
+            const isSelected = selectedFloor
+              ? (Number(selectedFloor.id) === Number(row.id) ||
+                 Number((selectedFloor as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number((row as unknown as { propertyDetailsId?: number }).propertyDetailsId) ||
+                 Number((selectedFloor as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number(row.id) ||
+                 Number(selectedFloor.id) === Number((row as unknown as { propertyDetailsId?: number }).propertyDetailsId))
+              : false;
+
+            if (viewOnly && !onRowClick) {
+              return 'cursor-default border-l-4 border-l-transparent border-b-2 border-blue-200/90';
+            }
+
+            return `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${
+              isSelected && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600 font-bold' : 'border-l-4 border-l-transparent'
+            }`;
+          }}
         />
       </div>
     </div>

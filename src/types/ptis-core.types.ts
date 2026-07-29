@@ -74,6 +74,8 @@ export interface BuildingPermissionItem {
   documentGuid: string | null;
   fileName: string | null;
   documentViewUrl?: string | null;
+  propertyDetailsId?: number | null;
+  floorDescription?: string | null;
 }
 
 export interface BuildingPermissionData {

@@ -13,10 +13,13 @@ import {
 import { resolveIcon } from '@/lib/utils/icon-mapping';
 import { locales } from '@/i18n/config';
 import type { MenuItem } from '@/types/menu.types';
+import type { UserScreenAccess } from '@/types/user-screen-access.types';
+import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
 import { SidebarFrame } from './SidebarFrame';
 
 export interface SidebarProps {
   menuItems: MenuItem[];
+  screens?: UserScreenAccess[];
   locale: string;
 }
 
@@ -29,12 +32,18 @@ function withLocale(locale: string, href: string): string {
 /**
  * App sidebar: interactive and updates highlighting instantly on client-side routing.
  */
-export function Sidebar({ menuItems, locale }: SidebarProps) {
+export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
   const pathname = usePathname();
   const localePattern = new RegExp(`^/(${locales.join('|')})`);
   const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
 
   const t = useTranslations('common');
+  const activeScreenContext = useMemo(
+    () => resolveActiveScreenContext(screens, pathname),
+    [screens, pathname]
+  );
+  const brandTitle = activeScreenContext?.moduleName || t('sidebar.brandTitle');
+  const brandSubtitle = activeScreenContext?.departmentName || t('sidebar.brandSubtitle');
 
   // Helper to extract the department segment (e.g. 'configuration-settings', 'property-tax')
   const getDepartment = (path: string): string => {
@@ -153,9 +162,9 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
         </div>
         <div className="sidebar-expandable-label flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
           <span className={`text-[17px] font-bold leading-tight whitespace-nowrap ${isAssetRoute ? 'text-white' : 'text-gray-800'}`}>
-            {t('sidebar.brandTitle')}
+            {brandTitle}
           </span>
-          <span className={`text-[12px] font-medium whitespace-nowrap ${isAssetRoute ? 'text-slate-300' : 'text-gray-500'}`}>{t('sidebar.brandSubtitle')}</span>
+          <span className={`text-[12px] font-medium whitespace-nowrap ${isAssetRoute ? 'text-slate-300' : 'text-gray-500'}`}>{brandSubtitle}</span>
         </div>
       </div>
 

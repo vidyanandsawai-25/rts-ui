@@ -33,11 +33,18 @@
   },
   "validation": {
     "required": "यह फ़ील्ड आवश्यक है",
+    "fieldRequired": "{field} आवश्यक है",
     "invalidEmail": "अमान्य ईमेल पता",
     "minLength": "कम से कम {count} वर्ण आवश्यक हैं",
     "maxLength": "अधिकतम {count} वर्ण की अनुमति है",
     "invalidFormat": "अमान्य प्रारूप",
-    "submissionIdRequired": "सबमिशन आईडी आवश्यक है"
+    "submissionIdRequired": "सबमिशन आईडी आवश्यक है",
+    "codeAllZeros": "कोड शून्य नहीं हो सकता",
+    "codeFormat": "कोड के लिए अमान्य प्रारूप",
+    "nameAllZeros": "नाम शून्य नहीं हो सकता",
+    "nameFormat": "नाम के लिए अमान्य प्रारूप",
+    "descriptionAllZeros": "विवरण शून्य नहीं हो सकता",
+    "descriptionFormat": "विवरण के लिए अमान्य प्रारूप"
   },
   "form": {
     "validation": {
@@ -286,7 +293,14 @@
     "clearAll": "सभी हटाएं",
     "noOptions": "कोई विकल्प नहीं मिला",
     "noOptionsAvailable": "कोई विकल्प उपलब्ध नहीं है",
-    "search": "खोजें..."
+    "search": "खोजें...",
+    "searchPlaceholder": "विकल्प खोजें...",
+    "loading": "विकल्प लोड हो रहे हैं...",
+    "loadMoreOptions": "अधिक विकल्प लोड करें...",
+    "loadError": "विकल्प लोड करने में विफल। कृपया पुनः प्रयास करें।",
+    "loadingOptions": "विकल्प लोड हो रहे हैं...",
+    "selectOption": "विकल्प चुनें",
+    "fetchingMatchingOptions": "मिलान वाले विकल्प लोड किए जा रहे हैं..."
   },
   "Grid": {
     "action": "कार्रवाई",
@@ -304,14 +318,6 @@
     "mandatory": "* चिह्नित फ़ील्ड अनिवार्य हैं"
   },
   "searchPlaceholder": "संपत्तियां खोजें...",
-  "validation": {
-    "codeAllZeros": "कोड शून्य नहीं हो सकता",
-    "codeFormat": "कोड के लिए अमान्य प्रारूप",
-    "nameAllZeros": "नाम शून्य नहीं हो सकता",
-    "nameFormat": "नाम के लिए अमान्य प्रारूप",
-    "descriptionAllZeros": "विवरण शून्य नहीं हो सकता",
-    "descriptionFormat": "विवरण के लिए अमान्य प्रारूप"
-  },
   "imageViewer": {
     "title": "छवि दर्शक",
     "zoomOut": "ज़ूम आउट करें",

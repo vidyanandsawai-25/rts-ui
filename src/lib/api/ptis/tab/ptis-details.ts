@@ -228,21 +228,75 @@ export const ptisDetailsService = {
     error?: string;
   }> {
     try {
-      const response = await fetchWithCertSupport<unknown>(
-        `/property-certificates/types-with-status/${propertyId}`
-      );
+      const [propertyCertsRes, floorCertsRes] = await Promise.all([
+        fetchWithCertSupport<unknown>(`/property-certificates/types-with-status/${propertyId}`).catch(() => null),
+        fetchWithCertSupport<unknown>(`/property-certificates/floor-certificates?propertyId=${propertyId}`).catch(() => null)
+      ]);
 
-      if (!response.success) {
-        return {
-          success: false,
-          error: getErrorFormattedMessage(response.error, 'Building permission details not found'),
-        };
+      const rawPropData = propertyCertsRes && 'success' in propertyCertsRes && propertyCertsRes.success ? propertyCertsRes.data : null;
+      const rawFloorData = floorCertsRes && 'success' in floorCertsRes && floorCertsRes.success ? floorCertsRes.data : null;
+
+      // Unwrap API wrapper if present (favoring 'items' or 'data')
+      const propertyData = extractData(rawPropData) ?? rawPropData;
+      const floorData = extractData(rawFloorData) ?? rawFloorData;
+
+      // Extract floor IDs from floorData
+      const floorIds: number[] = [];
+      const floorMap = new Map<number, string>();
+      const safeFloorObj = (floorData && typeof floorData === 'object') ? (floorData as Record<string, unknown>) : null;
+      if (safeFloorObj) {
+        const sel = safeFloorObj.selectedFloor as Record<string, unknown> | null;
+        if (sel?.propertyDetailsId != null) {
+          const fId = Number(sel.propertyDetailsId);
+          floorIds.push(fId);
+          if (sel.floorDescription) floorMap.set(fId, String(sel.floorDescription));
+        }
+
+        const oth = Array.isArray(safeFloorObj.otherFloors) ? safeFloorObj.otherFloors : [];
+        for (const f of oth) {
+          const fObj = f as Record<string, unknown>;
+          if (fObj?.propertyDetailsId != null) {
+            const fId = Number(fObj.propertyDetailsId);
+            if (!floorIds.includes(fId)) floorIds.push(fId);
+            if (fObj.floorDescription) floorMap.set(fId, String(fObj.floorDescription));
+          }
+        }
       }
 
-      const rawData = response.data;
-      if (!rawData) return { success: false, error: 'Building permission details not found' };
+      // Concurrently fetch types-with-status for each floor to obtain full document GUIDs
+      const floorTypeResponses = floorIds.length > 0
+        ? await Promise.all(
+            floorIds.map((fId) =>
+              fetchWithCertSupport<unknown>(`/property-certificates/types-with-status/${propertyId}?propertyDetailsId=${fId}`).catch(() => null)
+            )
+          )
+        : [];
 
-      return { success: true, data: ptisMapper.mapBuildingPermissionDetails(rawData) };
+      const floorCertificatesWithStatus = floorTypeResponses
+        .map((res, index) => {
+          const fId = floorIds[index];
+          const raw = res && 'success' in res && res.success ? res.data : null;
+          const extracted = extractData(raw) ?? raw;
+          return {
+            propertyDetailsId: fId,
+            floorDescription: floorMap.get(fId) || null,
+            certificates: Array.isArray(extracted) ? extracted : [],
+          };
+        })
+        .filter((item) => item.certificates.length > 0);
+
+      if (!propertyData && !floorData) {
+        return { success: false, error: 'Building permission details not found' };
+      }
+
+      return {
+        success: true,
+        data: ptisMapper.mapBuildingPermissionDetails({
+          propertyCertificates: propertyData,
+          floorCertificates: floorData,
+          floorCertificatesWithStatus,
+        }),
+      };
     } catch (error: unknown) {
       return {
         success: false,

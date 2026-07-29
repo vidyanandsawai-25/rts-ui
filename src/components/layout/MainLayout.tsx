@@ -140,69 +140,21 @@ const getLayoutChromeData = cache(async () => {
   };
 });
 async function SidebarWithData({ locale }: { locale: string }) {
-  const { menuItems } = await getLayoutChromeData();
-  const pathname = (await headers()).get('x-pathname') || '';
-
-  const isRtsRoute = /\/(rts|rts\/admin)(\/|$)/.test(pathname);
-  if (isRtsRoute) {
-    const rtsMenuItems: MenuItem[] = [
-      {
-        name: 'MIS Dashboard',
-        nameHi: 'एमआयएस डॅशबोर्ड',
-        iconName: 'LayoutDashboard',
-        href: '/rts/dashboard/rts-mis',
-      },
-      {
-        name: 'Application Dashboard',
-        nameHi: ' अ‍ॅप्लिकेशन डॅशबोर्ड',
-        iconName: 'Hourglass',
-        href: '/rts/dashboard/rts-applications',
-      },
-      {
-        name: 'Configuration Settings',
-        nameHi: 'कॉन्फिगरेशन सेटिंग्ज',
-        iconName: 'Database',
-        href: '/rts/configuration-settings',
-        subItems: [
-          {
-            name: 'Deptments',
-            href: '/rts/configuration-settings/rts-departments',
-          },
-          {
-            name: 'Services',
-            href: '/rts/configuration-settings/rts-services',
-          },
-          {
-            name: 'Form Field Definition',
-            href: '/rts/configuration-settings/rts-fields',
-          },
-          {
-            name: 'Approval Workflows',
-            href: '/rts/configuration-settings/rts-workflows',
-          }
-        ]
-      },
-      {
-        name: 'User Access Control',
-        nameHi: 'प्रवेश नियंत्रण',
-        iconName: 'Users',
-        href: '/rts/users',
-        subItems: [
-          {
-            name: 'Users Registry',
-            href: '/rts/users',
-          },
-        ]
-      },
-    ];
-    return <Sidebar menuItems={rtsMenuItems} locale={locale} />;
-  }
-
-  return <Sidebar menuItems={menuItems} locale={locale} />;
+  const { menuItems, rawScreens } = await getLayoutChromeData();
+  return <Sidebar menuItems={menuItems} screens={rawScreens} locale={locale} />;
 }
 async function HeaderWithRequestContext() {
-  const { ulbData, userDisplayName, clientIp, menuItems } = await getLayoutChromeData();
-  return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} menuItems={menuItems} />;
+  const { ulbData, userDisplayName, clientIp, menuItems, rawScreens } =
+    await getLayoutChromeData();
+  return (
+    <Header
+      ulbData={ulbData}
+      userDisplayName={userDisplayName}
+      clientIp={clientIp}
+      menuItems={menuItems}
+      screens={rawScreens}
+    />
+  );
 }
 async function FooterWithUlb() {
   const { ulbData } = await getLayoutChromeData();

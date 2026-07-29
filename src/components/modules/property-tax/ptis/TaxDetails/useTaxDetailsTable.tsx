@@ -1,15 +1,17 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import type { Column } from '@/components/common/MasterTable';
+import type { FloorDetailsTableColumn } from '@/components/common/FloorDetailsTable';
 import type { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
 import { getTaxRowStyleByLabel } from './config';
-import { getTaxDetailsColumns } from './TaxDetailsColumns';
+import { getTaxDetailsFloorColumns } from './TaxDetailsColumns';
 
 /**
  * Custom hook to handle business logic for TaxDetails table.
  * Handles optional tax details data and generates empty structure when not provided.
  */
-export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
+export const useTaxDetailsTable = (
+  initialTaxDetails?: TaxDetailsData,
+) => {
   const t = useTranslations('ptisMainTaxDetails');
 
   // Utility to get tax label style based on label key
@@ -26,8 +28,9 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
     const uniquePolicies: typeof policies = [];
 
     policies.forEach((policy) => {
-      if (policy && policy.policyCode) {
-        const upperCode = policy.policyCode.toUpperCase();
+      const code = (policy?.policyCode || policy?.policyName || 'NETTAX').trim();
+      if (policy && code) {
+        const upperCode = code.toUpperCase();
         if (!seenPolicyCodes.has(upperCode)) {
           seenPolicyCodes.add(upperCode);
           uniquePolicies.push(policy);
@@ -36,12 +39,24 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
     });
 
     return uniquePolicies.map((policy, index) => {
+      const code = (policy.policyCode || policy.policyName || 'NETTAX').trim();
+      const taxBreakdown = policy.taxAmounts.map((item, taxIdx) => ({
+        taxId: (item as unknown as { taxId?: number }).taxId ?? (taxIdx + 1),
+        taxName: item.taxName,
+        percentage: (item as unknown as { percentage?: number }).percentage ?? 0,
+        amount: Number(item.taxAmount || 0),
+      }));
+
       // Use Object.create(null) to prevent prototype pollution from API-provided taxName keys
       const row: TaxRow = Object.assign(Object.create(null), {
         id: 100 + index,
-        taxes: policy.policyCode,
-        labelKey: policy.policyCode,
+        taxes: code,
+        labelKey: code,
+        yearCode: policy.yearCode,
+        pendingYearId: policy.pendingYearId,
         totalTax: String(policy.taxTotal || 0),
+        taxBreakdown,
+        pendingYears: policy.pendingYears,
       });
 
       policy.taxAmounts.forEach((item) => {
@@ -54,13 +69,13 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
   }, [initialTaxDetails]);
 
   // Generate table columns using the utility
-  const taxColumns = useMemo<Column<TaxRow>[]>(() => {
+  const taxColumns = useMemo<FloorDetailsTableColumn<TaxRow>[]>(() => {
     const policies = initialTaxDetails?.policies || [];
     const allTaxNames = Array.from(
       new Set(policies.flatMap((p) => p.taxAmounts.map((a) => a.taxName)))
     );
 
-    return getTaxDetailsColumns(allTaxNames, t, getTaxLabelStyle);
+    return getTaxDetailsFloorColumns(allTaxNames, t, getTaxLabelStyle);
   }, [initialTaxDetails, getTaxLabelStyle, t]);
 
   return {

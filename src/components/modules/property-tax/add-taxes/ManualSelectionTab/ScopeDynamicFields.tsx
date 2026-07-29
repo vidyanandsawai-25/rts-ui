@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { MultiSelect } from '@/components/common/MultiSelect';
 import { Select } from '@/components/common/select';
 import { SearchSelect } from '@/components/common/SearchSelect';
-import { Label } from '@/components/common/label';
+import { SearchSelectPaginated } from '@/components/common/SearchSelectPaginated';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/ActionButton';
 import { Info, Calculator } from 'lucide-react';
@@ -22,12 +22,23 @@ interface ScopeDynamicFieldsProps {
   propertyTypeOptions: { value: string; label: string }[];
   fetchedBuildings: { value: string; label: string }[];
   fetchBuildings: (zones: string[] | null, wards: string[]) => void;
+  hasMoreBuildings?: boolean;
+  loadMoreBuildings?: () => void;
+  isLoadingMoreBuildings?: boolean;
+  isFetchingBuildings?: boolean;
+  fetchedToBuildings?: { value: string; label: string }[];
+  hasMoreToBuildings?: boolean;
+  loadMoreToBuildings?: () => void;
+  isLoadingMoreToBuildings?: boolean;
+  isFetchingToBuildings?: boolean;
   isCalculating: boolean;
   isValidated: boolean;
   eligibleCount: number | null;
   handleCalculateEligible: () => void;
   assessmentStatusOptions?: { value: string; label: string }[];
   fetchAssessmentStatuses?: () => void;
+  fetchZones?: () => void;
+  fetchPropertyTypes?: () => void;
 }
 
 export function ScopeDynamicFields({
@@ -42,12 +53,23 @@ export function ScopeDynamicFields({
   propertyTypeOptions,
   fetchedBuildings,
   fetchBuildings,
+  hasMoreBuildings,
+  loadMoreBuildings,
+  isLoadingMoreBuildings,
+  isFetchingBuildings,
+  fetchedToBuildings,
+  hasMoreToBuildings,
+  loadMoreToBuildings,
+  isLoadingMoreToBuildings,
+  isFetchingToBuildings,
   isCalculating,
   isValidated,
   eligibleCount,
   handleCalculateEligible,
   assessmentStatusOptions = [],
-  fetchAssessmentStatuses
+  fetchAssessmentStatuses,
+  fetchZones,
+  fetchPropertyTypes
 }: ScopeDynamicFieldsProps) {
   const t = useTranslations('addTaxes');
   const [isToFieldBlurred, setIsToFieldBlurred] = useState(false);
@@ -107,7 +129,23 @@ export function ScopeDynamicFields({
             hasWard,
             t,
             assessmentStatusOptions,
-            fetchAssessmentStatuses
+            fetchAssessmentStatuses,
+            selectedScope,
+            {
+              hasMore: hasMoreBuildings,
+              onLoadMore: loadMoreBuildings,
+              isLoadingMore: isLoadingMoreBuildings,
+              isFetching: isFetchingBuildings
+            },
+            {
+              hasMore: hasMoreToBuildings,
+              onLoadMore: loadMoreToBuildings,
+              isLoadingMore: isLoadingMoreToBuildings,
+              isFetching: isFetchingToBuildings
+            },
+            fetchedToBuildings,
+            fetchZones,
+            fetchPropertyTypes
           );
 
           const isFullWidth = config.inputType === 'text' || config.label.toLowerCase().includes('search');
@@ -115,16 +153,16 @@ export function ScopeDynamicFields({
             <div key={option} className={isFullWidth ? "col-span-1 md:col-span-2 lg:col-span-3" : ""}>
               {config.inputType === 'multiselect' ? (
                 <>
-                  <Label required={config.required} className="mb-1 text-xs text-gray-700 font-semibold">
-                    {config.label}
-                  </Label>
                   <MultiSelect
+                    label={config.label}
+                    required={config.required}
                     options={config.fallbackOptions}
                     value={selectionData[option] || []}
                     onChange={(vals) => handleSelectionChange(option, vals)}
                     placeholder={config.placeholder}
                     disabled={config.disabled}
                     onOpen={config.onOpen}
+                    selectSize="sm"
                   />
                 </>
               ) : config.inputType === 'select' ? (
@@ -136,6 +174,33 @@ export function ScopeDynamicFields({
                   value={(selectionData[option] || [])[0] || ''}
                   onChange={(e) => handleSelectionChange(option, [e.target.value])}
                   disabled={config.disabled}
+                  selectSize="sm"
+                />
+              ) : config.inputType === 'searchselectpaginated' ? (
+                <SearchSelectPaginated
+                  label={config.label}
+                  required
+                  options={config.fallbackOptions}
+                  value={selectionData[option]?.[0] || ''}
+                  onChange={(_name, val) => {
+                    handleSelectionChange(option, val ? [val] : []);
+                    if (option.toLowerCase().includes('to')) {
+                      setIsToFieldBlurred(true);
+                    }
+                  }}
+                  placeholder={config.placeholder}
+                  disabled={config.disabled}
+                  onInputFocus={config.onOpen}
+                  error={option.toLowerCase().includes('to') ? (rangeError || undefined) : undefined}
+                  onBlur={() => {
+                    if (option.toLowerCase().includes('to')) {
+                      setIsToFieldBlurred(true);
+                    }
+                  }}
+                  hasMore={config.hasMore}
+                  onLoadMore={config.onLoadMore}
+                  isLoadingMore={config.isLoadingMore}
+                  isLoading={config.isLoading}
                 />
               ) : config.inputType === 'searchselect' ? (
                 <>
@@ -169,6 +234,7 @@ export function ScopeDynamicFields({
                   value={selectionData[option]?.[0] || ''}
                   onChange={(e) => handleSelectionChange(option, [e.target.value])}
                   fullWidth
+                  className="h-9 rounded-md border-slate-200 hover:border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               )}
             </div>

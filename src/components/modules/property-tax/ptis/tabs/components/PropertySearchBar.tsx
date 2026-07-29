@@ -262,8 +262,8 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
                 onInputFocus={onFetchWardList}
               />
-              <Input type="hidden" name="wardNo" value={wardNo} />
-              <Input type="hidden" name="wardId" value={wardValue} />
+              <Input type="hidden" name="wardNo" value={wardNo ?? ''} />
+              <Input type="hidden" name="wardId" value={wardValue ?? ''} />
             </div>
           </div>
 
@@ -293,7 +293,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 onSearchChange={onPropertySearchChange}
                 showOptionsOnlyOnType
               />
-              <Input type="hidden" name="propertyNo" value={propertyNo} />
+              <Input type="hidden" name="propertyNo" value={propertyNo ?? ''} />
             </div>
           </div>
 
@@ -320,7 +320,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
                 strictMode={false}
               />
-              <Input type="hidden" name="partitionNo" value={partitionNo} />
+              <Input type="hidden" name="partitionNo" value={partitionNo ?? ''} />
             </div>
           </div>
 

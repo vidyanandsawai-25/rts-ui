@@ -44,23 +44,23 @@ export async function fetchPropertyDetailsConcurrently(
   const isDiscountTab = activeTab === 'discountdetails';
   const isOldDetailsTab = activeTab === 'olddetails';
 
-  const rateableValuePromise = isPropertyTab ? getRateableValue(propertyId) : Promise.resolve(null);
+  const rateableValuePromise = propertyId ? getRateableValue(propertyId) : Promise.resolve(null);
 
   const capitalValuePromise =
-    isPropertyTab && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+    isPropertyTab && propertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
       ? getCapitalValue(propertyId)
       : Promise.resolve(null);
 
   const dualMethodPromise =
-    isPropertyTab && valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null);
+    propertyId && valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null);
 
-  const taxDetailsPromise = isPropertyTab
+  const taxDetailsPromise = propertyId
     ? fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam)
     : Promise.resolve(null);
 
   // Chain the rule logs fetching to run only after all calculation actions resolve.
   // This avoids the race condition where rule logs are queried before calculation creates them.
-  const ruleLogsPromise = isPropertyTab
+  const ruleLogsPromise = propertyId
     ? Promise.all([
         rateableValuePromise.catch(() => null),
         capitalValuePromise.catch(() => null),

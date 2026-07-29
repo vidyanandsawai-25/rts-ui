@@ -58,25 +58,27 @@ export const DualMethodComparisonTable: React.FC<DualMethodComparisonTableProps>
 
   const rows = buildComparisonRows(dualMethodData, taxNames, labels, taxKeyMap);
 
-  const headerText = 'text-[#1e293b] text-[10px] font-bold py-2 whitespace-nowrap px-3';
+  const HEADER_TEXT_CLASSES = 'text-white text-[10.5px] font-bold tracking-tight py-2 uppercase';
+  const CELL_CENTER_CLASS = 'text-center px-0.5';
+  const NUMBER_CELL_CLASSES = 'border border-blue-200 rounded-md px-1.5 py-0.5 text-center bg-white text-[12px] min-w-[50px] shadow-2xs font-semibold text-slate-800 hover:border-blue-300 transition-colors';
+  const TOTAL_CELL_CLASSES = 'border border-emerald-300 rounded-md px-1.5 py-0.5 text-center bg-emerald-50/80 text-[12px] min-w-[60px] font-bold text-emerald-800 shadow-2xs hover:border-emerald-400 transition-colors';
 
   const columns: FloorDetailsTableColumn<ComparisonRow>[] = [
     {
       key: 'label',
       label: t('comparisonTable.taxes'),
-      headerClassName: cn(
-        headerText,
-        'sticky left-0 z-30 bg-[#F1F5F9] w-[130px] border-r border-slate-200'
-      ),
-      cellClassName: 'sticky left-0 bg-white z-10 border-r border-slate-100',
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky left-0 z-20 bg-[#1e3a8a] min-w-[115px] w-[115px] border-r border-blue-700/60`,
+      cellClassName: `${CELL_CENTER_CLASS} sticky left-0 z-10 bg-white min-w-[115px] w-[115px] border-r border-blue-200`,
       render: (row) => (
-        <div
-          className={cn(
-            'px-2 py-0.5 rounded-full border text-center text-[12px] font-bold tracking-tight whitespace-nowrap min-w-[100px] mx-auto',
-            row.colorClass
-          )}
-        >
-          {row.label}
+        <div className="w-full flex items-center justify-center px-0.5">
+          <div
+            className={cn(
+              'px-1.5 py-0.5 rounded-md shadow-2xs border text-center text-[11px] font-bold tracking-tight uppercase transition-all whitespace-nowrap inline-flex items-center justify-center w-full',
+              row.colorClass
+            )}
+          >
+            {row.label}
+          </div>
         </div>
       ),
     },
@@ -89,47 +91,47 @@ export const DualMethodComparisonTable: React.FC<DualMethodComparisonTableProps>
     columns.push({
       key,
       label: translatedLabel.toUpperCase(),
-      headerClassName: cn(headerText, 'text-center min-w-[90px] border-r border-slate-200'),
-      cellClassName: 'text-center border-r border-slate-100 ',
-      render: (row) => (
-        <div className="text-center text-[12px] whitespace-nowrap text-[#2563eb] font-semibold">
-          {formatIndianNumber(row[key] as number)}
-        </div>
-      ),
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
+      cellClassName: CELL_CENTER_CLASS,
+      render: (row) => {
+        const num = Number(row[key] ?? 0);
+        const decimals = Number.isInteger(num) ? 0 : 2;
+        return (
+          <div className={NUMBER_CELL_CLASSES}>
+            {formatIndianNumber(num, decimals, decimals)}
+          </div>
+        );
+      },
     });
   });
 
   columns.push({
     key: 'totalTax',
     label: t('comparisonTable.totalTax'),
-    headerClassName: cn(
-      headerText,
-      'text-center sticky right-0 z-30 bg-[#F1F5F9] border-l border-slate-200 min-w-[100px]'
-    ),
-    cellClassName: 'text-center sticky right-0 bg-white z-10 border-l border-slate-100',
-    render: (row) => (
-      <div className="text-center text-[12px] whitespace-nowrap font-black text-[#1e3a8a]">
-        {formatIndianNumber(row.totalTax)}
-      </div>
-    ),
+    headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky right-0 z-20 bg-[#1e3a8a] min-w-[85px] w-[85px] border-l border-blue-700/60`,
+    cellClassName: `${CELL_CENTER_CLASS} sticky right-0 z-10 bg-white min-w-[85px] w-[85px] border-l border-blue-200`,
+    render: (row) => {
+      const num = Number(row.totalTax ?? 0);
+      const decimals = Number.isInteger(num) ? 0 : 2;
+      return (
+        <div className={TOTAL_CELL_CLASSES}>
+          {formatIndianNumber(num, decimals, decimals)}
+        </div>
+      );
+    },
   });
 
   return (
-    <div className="mx-0 mt-0">
-      <div className="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
-        <FloorDetailsTable<ComparisonRow>
-          data={rows}
-          columns={columns}
-          showExpandColumn={false}
-          striped={false}
-          hoverable={true}
-          showBorder={false}
-          containerClassName="border-none"
-          theadClassName="bg-[#F1F5F9] border-b border-slate-200"
-          headerBadgeClassName="text-[10px] h-8 bg-slate-200/50 border-slate-300 text-slate-700"
-          emptyMessage={t('comparisonTable.emptyMessage')}
-        />
-      </div>
+    <div className="w-full tax-details-container overflow-x-auto max-h-[300px] overflow-y-auto" data-testid="master-table">
+      <FloorDetailsTable<ComparisonRow>
+        data={rows}
+        columns={columns}
+        showExpandColumn={false}
+        showScrollButtons={false}
+        tableClassName="w-full border-collapse"
+        theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs"
+        emptyMessage={t('comparisonTable.emptyMessage')}
+      />
     </div>
   );
 };

@@ -29,9 +29,12 @@ export interface Option {
  * @property error - If true, applies error styling.
  */
 interface MultiSelectProps {
+  label?: string;
+  required?: boolean;
   options: Option[];
   value: string[];
   onChange: (selected: string[]) => void;
+  selectSize?: 'sm' | 'md';
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -52,16 +55,20 @@ interface MultiSelectProps {
  * @param options - Array of selectable options.
  * @param value - Array of selected option values.
  * @param onChange - Callback when selection changes.
+ * @param label - Label text for the multi-select component.
  * @param placeholder - Placeholder text when no selection.
  * @param disabled - If true, disables the component.
  * @param className - Additional CSS classes for the wrapper.
  */
 export function MultiSelect({
+  label,
+  required,
   options,
   value,
   onChange,
   placeholder,
   disabled = false,
+  selectSize = 'md',
   className = "",
   id,
   name,
@@ -73,6 +80,7 @@ export function MultiSelect({
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Generate a unique and stable ID for the dropdown for aria-controls
   const reactId = useId();
@@ -81,6 +89,11 @@ export function MultiSelect({
   const optionsRefs = useRef<{ items: Array<HTMLDivElement | null>; selectAll?: HTMLDivElement | null }>({ items: [] });
 
   const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
+
+  const sizeClasses = {
+    sm: 'h-9 px-3 text-sm',
+    md: 'h-10 px-4 text-base',
+  };
 
   const closeDropdown = useCallback(() => {
     setIsOpen(false);
@@ -92,16 +105,35 @@ export function MultiSelect({
   const openDropdown = useCallback(() => {
     setIsOpen(true);
     if (onOpen) onOpen();
-    if (wrapperRef.current) {
+  }, [onOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePlacement = () => {
+      if (!wrapperRef.current) return;
       const rect = wrapperRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
       const spaceBelow = window.innerHeight - rect.bottom;
-      if (spaceBelow < 340 && rect.top > 340) {
+      const dropdownHeight = Math.min(dropdownRef.current?.scrollHeight ?? 320, 320);
+
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
         setPlacement('top');
       } else {
         setPlacement('bottom');
       }
-    }
-  }, [onOpen]);
+    };
+
+    const frame = window.requestAnimationFrame(updatePlacement);
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
+    };
+  }, [isOpen]);
 
   // Close dropdown on outside click
   const handleClickOutside = useCallback((event: MouseEvent) => {
@@ -117,7 +149,7 @@ export function MultiSelect({
 
   useEffect(() => {
     if (isOpen) {
-      const timer = setTimeout(() => searchInputRef.current?.focus(), 50);
+      const timer = setTimeout(() => searchInputRef.current?.focus({ preventScroll: true }), 50);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -251,6 +283,12 @@ export function MultiSelect({
 
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
+      {label && (
+        <label className="block text-sm font-medium mb-1.5 text-slate-700">
+          {label}
+          {required && <span className="ml-0.5 text-red-500">*</span>}
+        </label>
+      )}
       {/* Trigger Button */}
       <button
         type="button"
@@ -279,6 +317,7 @@ export function MultiSelect({
           focus:outline-none focus:ring-2 focus:ring-blue-500
           ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'hover:border-gray-400'}
           ${isOpen ? 'border-blue-500' : error ? 'border-red-500' : 'border-gray-300'}
+          ${sizeClasses[selectSize]}
         `}
       >
         <div className="flex items-center justify-between">
@@ -299,6 +338,7 @@ export function MultiSelect({
       {/* Dropdown */}
       {isOpen && !disabled && (
         <div
+          ref={dropdownRef}
           id={dropdownId}
           className={`absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-hidden flex flex-col ${placement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}`}
         >

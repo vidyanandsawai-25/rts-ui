@@ -196,6 +196,9 @@
       "partitionNoPattern": "Partition number must contain only letters and numbers"
     }
   },
+  "building": {
+    "noDocumentAttached": "No document file attached for this certificate."
+  },
   "tabs": {
     "propertyDetails": "Property Details",
     "kycDetails": "KYC Details",

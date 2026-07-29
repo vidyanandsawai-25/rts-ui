@@ -504,3 +504,19 @@ div[role="dialog"] [role="combobox"]:focus {
   box-shadow: 0 0 0 4px rgba(0, 183, 255, 0.4) !important;
   border-color: rgb(0, 162, 255) !important;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.config-drawer div.flex-1.overflow-y-auto::-webkit-scrollbar {
+  display: none;
+}
+.config-drawer div.flex-1.overflow-y-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

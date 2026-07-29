@@ -3,12 +3,11 @@
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { Drawer } from '@/components/common/Drawer';
 import { useTranslations } from 'next-intl';
+import { ReactNode, useState, useEffect } from 'react';
 import { FileText, MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
-import { ReactNode } from 'react';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-
 import { QDE_TO_MAIN_MAP } from '@/lib/utils/qde-tab-mapping';
 
 export function QuickDataEntryClientWrapper({ children, categoryName, propertyDescription }: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
@@ -56,10 +55,61 @@ function QuickDataEntryContent({
 
     const { confirm } = useConfirm();
 
+    const [isFormSaving, setIsFormSaving] = useState(false);
+
+    useEffect(() => {
+        const handleSavingState = (e: Event) => {
+            const customEvent = e as CustomEvent<{ isSaving: boolean }>;
+            setIsFormSaving(!!customEvent.detail?.isSaving);
+        };
+        window.addEventListener('ntis:form-saving-state', handleSavingState);
+        return () => {
+            window.removeEventListener('ntis:form-saving-state', handleSavingState);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isFormSaving) return;
+
+        const blockMouseEvent = (e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        };
+
+        window.addEventListener('click', blockMouseEvent, true);
+        window.addEventListener('mousedown', blockMouseEvent, true);
+        window.addEventListener('pointerdown', blockMouseEvent, true);
+
+        return () => {
+            window.removeEventListener('click', blockMouseEvent, true);
+            window.removeEventListener('mousedown', blockMouseEvent, true);
+            window.removeEventListener('pointerdown', blockMouseEvent, true);
+        };
+    }, [isFormSaving]);
+
     const handleClose = () => {
+        const win = typeof window !== 'undefined' ? (window as unknown as {
+            __buildingFormIsSaving?: boolean;
+            __buildingFormHasChanges?: boolean;
+            __discountFormHasChanges?: boolean;
+            __socialFormHasChanges?: boolean;
+            __buildingFormIncompleteDetails?: string[] | null;
+            __showBuildingUnsavedChangesModal?: ((onDiscard: () => void) => void) | null;
+        }) : {} as Record<string, never>;
+
+        const isSavingActive = isFormSaving || (typeof window !== 'undefined' && (
+            !!(window as unknown as { __buildingFormIsSaving?: boolean }).__buildingFormIsSaving ||
+            !!(window as unknown as { __isQuickDataEntrySaving?: boolean }).__isQuickDataEntrySaving
+        ));
+
+        if (isSavingActive) {
+            return;
+        }
+
         const doClose = () => {
-            const win = typeof window !== 'undefined' ? (window as unknown as { __ptisHasSavedChanges?: boolean }) : {};
-            const hasSavedChanges = !!win.__ptisHasSavedChanges;
+            const winObj = typeof window !== 'undefined' ? (window as unknown as { __ptisHasSavedChanges?: boolean }) : {};
+            const hasSavedChanges = !!winObj.__ptisHasSavedChanges;
 
             const isSameOriginReferrer = typeof document !== 'undefined' && document.referrer && new URL(document.referrer, window.location.href).origin === window.location.origin;
 
@@ -89,18 +139,34 @@ function QuickDataEntryContent({
             }
         };
 
-        const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __discountFormHasChanges?: boolean; __socialFormHasChanges?: boolean }) : {};
         const hasBuildingChanges = !!win.__buildingFormHasChanges;
         const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
+
+        const onDiscard = () => {
+            win.__buildingFormHasChanges = false;
+            win.__discountFormHasChanges = false;
+            win.__socialFormHasChanges = false;
+            doClose();
+        };
+
+        if (hasBuildingChanges && win.__showBuildingUnsavedChangesModal) {
+            win.__showBuildingUnsavedChangesModal(onDiscard);
+            return;
+        }
 
         if (hasBuildingChanges || hasDiscountChanges) {
             const title = hasBuildingChanges
                 ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
                 : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
 
-            const description = hasBuildingChanges
+            let description = hasBuildingChanges
                 ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
                 : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+
+            if (hasBuildingChanges && win.__buildingFormIncompleteDetails && Array.isArray(win.__buildingFormIncompleteDetails)) {
+                const incompleteMsg = t('building.incompleteFloorsWarning') || 'The following floor(s) have incomplete certificate information:';
+                description = `${description}\n\n⚠️ ${incompleteMsg}\n• ${win.__buildingFormIncompleteDetails.join('\n• ')}`;
+            }
 
             const continueButton = hasBuildingChanges
                 ? (t('building.continueButton') || 'Continue Editing')
@@ -144,6 +210,7 @@ function QuickDataEntryContent({
     };
 
     const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
+    const isBusy = isFormSaving || (typeof window !== 'undefined' && !!(window as unknown as { __buildingFormIsSaving?: boolean }).__buildingFormIsSaving);
 
     const drawerClassName = cn(
         "quick-data-entry-wrapper",
@@ -194,12 +261,33 @@ function QuickDataEntryContent({
 
     return (
         <div className={drawerClassName}>
+            {isBusy && (
+                <div
+                    className="fixed inset-0 z-[99999] bg-transparent cursor-wait select-none pointer-events-auto"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                    onTouchStart={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                />
+            )}
             <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl" hideHeader={isRenterPage}>
-                <div className="flex h-full flex-col overflow-hidden border-slate-300 bg-white shadow-sm">
+                <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)]">
                     {!isRenterPage && (
                         <TabNavigation />
                     )}
-                    <div className="flex-1">
+                    <div className="flex-1 flex flex-col">
                         {children}
                     </div>
                 </div>

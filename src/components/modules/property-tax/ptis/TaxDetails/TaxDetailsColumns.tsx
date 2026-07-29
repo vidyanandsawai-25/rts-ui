@@ -1,37 +1,59 @@
-import type { Column } from '@/components/common/MasterTable';
+import type { FloorDetailsTableColumn } from '@/components/common/FloorDetailsTable';
 import { formatIndianNumber } from '@/lib/utils/format';
-import type { TaxRow } from '@/types/ptisMain-taxdetails.types';
+import type { TaxRow, PendingTaxRow, PendingYearTaxDetail, TaxAmountItem } from '@/types/ptisMain-taxdetails.types';
 import {
   TAX_LABEL_CLASSES,
   HEADER_TEXT_CLASSES,
   CELL_CENTER_CLASS,
   NUMBER_CELL_CLASSES,
   TOTAL_CELL_CLASSES,
+  getTaxRowStyleByLabel,
 } from './config';
 
 /**
- * Returns the column configuration for the TaxDetails table.
- * 
- * @param allTaxNames - Array of unique tax names found in the data
- * @param t - Translation function
- * @param getTaxLabelStyle - Function to get styling classes for tax labels
- * @returns Array of column definitions
+ * Returns column definitions for Current TaxDetails rows using FloorDetailsTableColumn
  */
-export function getTaxDetailsColumns(
+function getTaxColumnLabel(taxName: string, t: (key: string) => string): string {
+  const camelKey = taxName
+    .trim()
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) =>
+      index === 0 ? letter.toLowerCase() : letter.toUpperCase()
+    )
+    .replace(/\s+/g, '');
+
+  try {
+    const hasFn = (t as unknown as { has?: (k: string) => boolean }).has;
+    const hasKey = typeof hasFn === 'function' ? hasFn(camelKey) : true;
+
+    if (hasKey) {
+      const translated = t(camelKey);
+      if (translated && translated !== camelKey) {
+        return translated;
+      }
+    }
+  } catch {
+    // Fallback to raw taxName if translation lookup throws
+  }
+
+  return taxName;
+}
+
+export function getTaxDetailsFloorColumns(
   allTaxNames: string[],
   t: (key: string) => string,
   getTaxLabelStyle: (taxType: string) => string
-): Column<TaxRow>[] {
-  const columns: Column<TaxRow>[] = [
+): FloorDetailsTableColumn<TaxRow>[] {
+  const columns: FloorDetailsTableColumn<TaxRow>[] = [
     {
-      key: 'taxes' as keyof TaxRow,
+      key: 'taxes',
       label: t('taxes'),
-      width: '125px',
-      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
-      cellClassName: CELL_CENTER_CLASS,
-      render: (_v, row) => (
-        <div className={`${TAX_LABEL_CLASSES} ${getTaxLabelStyle(row.labelKey || row.taxes)}`}>
-          {row.taxes}
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky left-0 z-20 bg-[#1e3a8a] min-w-[95px] w-[95px] border-r border-blue-700/60`,
+      cellClassName: `${CELL_CENTER_CLASS} sticky left-0 z-10 bg-white min-w-[95px] w-[95px] border-r border-blue-200`,
+      render: (row: TaxRow) => (
+        <div className="w-full flex items-center justify-center px-0.5">
+          <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxLabelStyle(row.labelKey || row.taxes)}`}>
+            {row.taxes}
+          </div>
         </div>
       ),
     },
@@ -40,11 +62,11 @@ export function getTaxDetailsColumns(
   // Dynamic tax amount columns
   allTaxNames.forEach((taxName) => {
     columns.push({
-      key: taxName as keyof TaxRow,
-      label: taxName,
+      key: taxName,
+      label: getTaxColumnLabel(taxName, t),
       headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
       cellClassName: CELL_CENTER_CLASS,
-      render: (_v, row) => {
+      render: (row: TaxRow) => {
         const num = Number(row[taxName] ?? 0);
         const decimals = Number.isInteger(num) ? 0 : 2;
         return (
@@ -56,14 +78,154 @@ export function getTaxDetailsColumns(
     });
   });
 
-  // Total tax column
+  // Total Tax column (Sticky right)
   columns.push({
-    key: 'totalTax' as keyof TaxRow,
+    key: 'totalTax',
     label: t('totalTax'),
-    headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
-    cellClassName: CELL_CENTER_CLASS,
-    render: (_v, row) => {
-      const num = Number(row.totalTax);
+    headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky right-0 z-20 bg-[#1e3a8a] min-w-[85px] w-[85px] border-l border-blue-700/60`,
+    cellClassName: `${CELL_CENTER_CLASS} sticky right-0 z-10 bg-white min-w-[85px] w-[85px] border-l border-blue-200`,
+    render: (row: TaxRow) => {
+      const num = Number(row.totalTax ?? 0);
+      const decimals = Number.isInteger(num) ? 0 : 2;
+      return (
+        <div className={TOTAL_CELL_CLASSES}>
+          {formatIndianNumber(num, decimals, decimals)}
+        </div>
+      );
+    },
+  });
+
+  return columns;
+}
+
+/**
+ * Returns column definitions for Arrears/Pending TaxDetails rows using FloorDetailsTableColumn
+ */
+export function getPendingTaxDetailsFloorColumns(
+  allTaxNames: string[],
+  t: (key: string) => string,
+  _getTaxLabelStyle?: (taxType: string) => string
+): FloorDetailsTableColumn<PendingTaxRow>[] {
+  const columns: FloorDetailsTableColumn<PendingTaxRow>[] = [
+    {
+      key: 'taxes',
+      label: t('taxes'),
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky left-0 z-20 bg-[#1e3a8a] min-w-[115px] w-[115px] border-r border-blue-700/60`,
+      cellClassName: `${CELL_CENTER_CLASS} sticky left-0 z-10 bg-white min-w-[115px] w-[115px] border-r border-blue-200`,
+      render: (row: PendingTaxRow) => (
+        <div className="w-full flex items-center justify-center gap-1 px-0.5">
+          {row.isNetTax ? (
+            <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxRowStyleByLabel('NETTAX')}`}>
+              NETTAX
+            </div>
+          ) : (
+            <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxRowStyleByLabel(row.policyCode)}`}>
+              {row.policyCode} ({row.yearCode})
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  allTaxNames.forEach((taxName) => {
+    columns.push({
+      key: taxName,
+      label: getTaxColumnLabel(taxName, t),
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
+      cellClassName: CELL_CENTER_CLASS,
+      render: (row: PendingTaxRow) => {
+        const taxMatch = row.taxAmounts.find(
+          (tItem: TaxAmountItem) => tItem.taxName.trim().toLowerCase() === taxName.trim().toLowerCase()
+        );
+        const num = Number(taxMatch?.taxAmount ?? 0);
+        const decimals = Number.isInteger(num) ? 0 : 2;
+        return (
+          <div className={NUMBER_CELL_CLASSES}>
+            {formatIndianNumber(num, decimals, decimals)}
+          </div>
+        );
+      },
+    });
+  });
+
+  columns.push({
+    key: 'totalTax',
+    label: t('totalTax'),
+    headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky right-0 z-20 bg-[#1e3a8a] min-w-[85px] w-[85px] border-l border-blue-700/60`,
+    cellClassName: `${CELL_CENTER_CLASS} sticky right-0 z-10 bg-white min-w-[85px] w-[85px] border-l border-blue-200`,
+    render: (row: PendingTaxRow) => {
+      const num = Number(row.taxTotal);
+      const decimals = Number.isInteger(num) ? 0 : 2;
+      return (
+        <div className={TOTAL_CELL_CLASSES}>
+          {formatIndianNumber(num, decimals, decimals)}
+        </div>
+      );
+    },
+  });
+
+  return columns;
+}
+
+/**
+ * Returns column definitions for Expanded Retrospective Pending Year rows using FloorDetailsTableColumn
+ */
+export function getRetroPendingYearFloorColumns(
+  allTaxNames: string[],
+  t: (key: string) => string,
+  _getTaxLabelStyle?: (taxType: string) => string
+): FloorDetailsTableColumn<PendingYearTaxDetail & { id: string }>[] {
+  const columns: FloorDetailsTableColumn<PendingYearTaxDetail & { id: string }>[] = [
+    {
+      key: 'taxes',
+      label: t('taxes'),
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky left-0 z-20 bg-[#1e3a8a] min-w-[115px] w-[115px] border-r border-blue-700/60`,
+      cellClassName: `${CELL_CENTER_CLASS} sticky left-0 z-10 bg-white min-w-[115px] w-[115px] border-r border-blue-200`,
+      render: (row) => {
+        const itemPolicyCode =
+          (row as unknown as { policyCode?: string; PolicyCode?: string }).policyCode ||
+          (row as unknown as { policyCode?: string; PolicyCode?: string }).PolicyCode;
+
+        return (
+          <div className="w-full flex items-center justify-center px-0.5">
+            <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxRowStyleByLabel(itemPolicyCode || '')}`}>
+              {itemPolicyCode ? `${itemPolicyCode} (${row.yearCode})` : row.yearCode}
+            </div>
+          </div>
+        );
+      },
+    },
+  ];
+
+  allTaxNames.forEach((taxName) => {
+    columns.push({
+      key: taxName,
+      label: getTaxColumnLabel(taxName, t),
+      headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
+      cellClassName: CELL_CENTER_CLASS,
+      render: (row) => {
+        const taxMatch = row.taxAmounts.find(
+          (tItem: TaxAmountItem) => tItem.taxName.trim().toLowerCase() === taxName.trim().toLowerCase()
+        );
+        const num = Number(taxMatch?.taxAmount ?? 0);
+        const decimals = Number.isInteger(num) ? 0 : 2;
+        return (
+          <div className={NUMBER_CELL_CLASSES}>
+            {formatIndianNumber(num, decimals, decimals)}
+          </div>
+        );
+      },
+    });
+  });
+
+  columns.push({
+    key: 'totalTax',
+    label: t('totalTax'),
+    headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS} sticky right-0 z-20 bg-[#1e3a8a] min-w-[85px] w-[85px] border-l border-blue-700/60`,
+    cellClassName: `${CELL_CENTER_CLASS} sticky right-0 z-10 bg-white min-w-[85px] w-[85px] border-l border-blue-200`,
+    render: (row) => {
+      const num = Number(row.taxTotal);
       const decimals = Number.isInteger(num) ? 0 : 2;
       return (
         <div className={TOTAL_CELL_CLASSES}>

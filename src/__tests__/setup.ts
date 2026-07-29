@@ -5,6 +5,20 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
 
+// DOM shims for jsdom
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'scrollTo', {
+    value: vi.fn(),
+    writable: true,
+  });
+  if (typeof HTMLElement !== 'undefined') {
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      value: vi.fn(),
+      writable: true,
+    });
+  }
+}
+
 // Mock server-only for tests
 vi.mock('server-only', () => ({}));
 
