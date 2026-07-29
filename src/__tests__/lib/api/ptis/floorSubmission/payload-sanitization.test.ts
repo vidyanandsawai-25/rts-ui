@@ -313,7 +313,7 @@ describe('Payload Sanitization Tests', () => {
       expect(result.width).toBeUndefined();
       expect(result.lengthMtr).toBeUndefined();
       expect(result.widthMtr).toBeUndefined();
-      expect(result.roomWiseSubmissionDetails).toEqual([]);
+      expect(result.roomWiseSubmissionDetails).toHaveLength(1);
       expect(result.roomWiseMinusData).toEqual([]);
     });
 
@@ -361,6 +361,26 @@ describe('Payload Sanitization Tests', () => {
       expect(result.isOpenPlot).toBe(true);
       expect(result.typeOfUseId).toBe(15111);
       expect(result.typeOfUseDescription).toBe('खुला भूखंड औद्योगिक');
+    });
+
+    it('should preserve explicit isTaxable="No" when provided for Open Plot floors', () => {
+      const openPlotPayload = {
+        propertyDetailsId: 206094,
+        propertyId: 1024,
+        isOpenPlot: true,
+        isTaxable: 'No',
+        selectedOpenPlotCategory: {
+          id: 15111,
+          typeOfUseId: 15111,
+          typeOfUseCode: 'OPC',
+          description: 'OPC - खुला भूखंड अनिवासी',
+        }
+      };
+
+      const result = sanitizeRenterPayload(openPlotPayload);
+
+      expect(result.isOpenPlot).toBe(true);
+      expect(result.isTaxable).toBe(false);
     });
   });
 });

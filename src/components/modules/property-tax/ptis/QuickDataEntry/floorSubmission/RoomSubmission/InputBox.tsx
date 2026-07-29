@@ -46,9 +46,9 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
   }, [isUtilityCategory, formData.roomCount, handleInputChange]);
 
   const isActualUpdate =
-    Boolean(isEditMode && 
-    editingIndex !== null && editingIndex !== undefined && rooms[editingIndex] &&
-    (Number(rooms[editingIndex].area || 0) > 0 || (rooms[editingIndex].utilities && rooms[editingIndex].utilities !== '-Select-')));
+    Boolean(isEditMode &&
+      editingIndex !== null && editingIndex !== undefined && rooms[editingIndex] &&
+      (Number(rooms[editingIndex].area || 0) > 0 || (rooms[editingIndex].utilities && rooms[editingIndex].utilities !== '-Select-')));
 
   const calculatedArea = useMemo(() => calculateArea(), [calculateArea]);
   const adjustedArea = useMemo(() => formData.outer === 'Yes' ? calculatedArea * 0.8 : calculatedArea, [formData.outer, calculatedArea]);
@@ -92,58 +92,58 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
 
         <div className="items-start w-full p-2 bg-white border-t border-gray-200">
           <div className="flex gap-0">
-            <RoomTypeShapeFields 
-              formData={formData} 
-              handleInputChange={handleInputChange} 
-              isEditMode={isInputEnabled} 
-              validationErrors={validationErrors} 
-              focusRefs={focusRefs!} 
-              t={t} 
+            <RoomTypeShapeFields
+              formData={formData}
+              handleInputChange={handleInputChange}
+              isEditMode={isInputEnabled}
+              validationErrors={validationErrors}
+              focusRefs={focusRefs!}
+              t={t}
               roomTypeData={roomTypeData}
               isUtilityCategory={isUtilityCategory}
             />
 
-            <DimensionAreaFields 
-              formData={formData} 
-              handleInputChange={handleInputChange} 
-              isEditMode={isInputEnabled} 
-              validationErrors={validationErrors} 
-              focusRefs={focusRefs!} 
-              t={t} 
-              areaUnit={areaUnit} 
-              calculatedArea={calculatedArea} 
-              adjustedArea={adjustedArea} 
+            <DimensionAreaFields
+              formData={formData}
+              handleInputChange={handleInputChange}
+              isEditMode={isInputEnabled}
+              validationErrors={validationErrors}
+              focusRefs={focusRefs!}
+              t={t}
+              areaUnit={areaUnit}
+              calculatedArea={calculatedArea}
+              adjustedArea={adjustedArea}
               isUtilityCategory={isUtilityCategory}
             />
 
-            <OffsetOuterFields 
-              formData={formData} 
-              handleInputChange={handleInputChange} 
-              isEditMode={isInputEnabled} 
-              focusRefs={focusRefs!} 
-              t={t} 
-              offsetModalOpen={Boolean(offsetModalOpen)} 
-              setOffsetModalOpen={setOffsetModalOpen} 
-              setOffsetList={setOffsetList} 
-              setOffsetData={setOffsetData} 
-              setSelectedOperation={setSelectedOperation} 
-              setSelectedShape={setSelectedShape} 
-              currentRoomOffsets={currentRoomOffsets} 
-              setCurrentRoomOffsets={setCurrentRoomOffsets} 
-              calculatedArea={calculatedArea} 
+            <OffsetOuterFields
+              formData={formData}
+              handleInputChange={handleInputChange}
+              isEditMode={isInputEnabled}
+              focusRefs={focusRefs!}
+              t={t}
+              offsetModalOpen={Boolean(offsetModalOpen)}
+              setOffsetModalOpen={setOffsetModalOpen}
+              setOffsetList={setOffsetList}
+              setOffsetData={setOffsetData}
+              setSelectedOperation={setSelectedOperation}
+              setSelectedShape={setSelectedShape}
+              currentRoomOffsets={currentRoomOffsets}
+              setCurrentRoomOffsets={setCurrentRoomOffsets}
+              calculatedArea={calculatedArea}
             />
 
-            <TotalActionFields 
-              isEditMode={isInputEnabled} 
+            <TotalActionFields
+              isEditMode={isInputEnabled}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              t={t as any} 
-              totalAreaValue={totalAreaValue} 
-              isActualUpdate={isActualUpdate} 
-              handleUpdateRoom={handleUpdateRoom} 
-              handleAddRoom={handleAddRoom} 
-              maxRooms={maxRooms} 
-              availableRooms={availableRooms} 
-              rooms={rooms} 
+              t={t as any}
+              totalAreaValue={totalAreaValue}
+              isActualUpdate={isActualUpdate}
+              handleUpdateRoom={handleUpdateRoom}
+              handleAddRoom={handleAddRoom}
+              maxRooms={maxRooms}
+              availableRooms={availableRooms}
+              rooms={rooms}
               isUtilityCategory={isUtilityCategory}
             />
           </div>

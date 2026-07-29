@@ -205,11 +205,9 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
         ''
     ).toUpperCase().trim();
 
-    const isTaxableVal: boolean = isActualOpenPlot
-        ? isOpenPlotCodeTaxable(rawPlotCode)
-        : (payload.isTaxable !== undefined
-            ? (payload.isTaxable === 'Yes' || payload.isTaxable === true || payload.isTaxable === 1 || payload.isTaxable === '1')
-            : Boolean(payload.isTaxable));
+    const isTaxableVal: boolean = (payload.isTaxable !== undefined && payload.isTaxable !== null && payload.isTaxable !== '')
+        ? (payload.isTaxable === 'Yes' || payload.isTaxable === true || payload.isTaxable === 1 || payload.isTaxable === '1')
+        : (isActualOpenPlot ? isOpenPlotCodeTaxable(rawPlotCode) : Boolean(payload.isTaxable));
 
 
 
@@ -265,7 +263,7 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
     const rawParentId = Number(payload.propertyDetailsId || 0);
     const parentPropertyDetailsId = rawParentId > 0 && rawParentId < 1_000_000_000_000 ? rawParentId : 1;
     const isUtility = checkIsUtilityCategory(payload.typeOfUseCategoryId);
-    const isActualOpenPlot = payload.isOpenPlot === true;
+    const isActualOpenPlot = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
     const isStructurallyOpenPlotOrSpace = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
     const sanitizeRoom = (room: Record<string, unknown>) => ({
         ...sanitizeRoomBase(room, isUtility, isActualOpenPlot),
@@ -283,7 +281,7 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
         renterDetails: sanitizedRenterDetails,
         renterMast: sanitizedRenterMast,
         renters: sanitizedRenterMast,
-        roomWiseSubmissionDetails: (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoom),
+        roomWiseSubmissionDetails: (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || (payload as unknown as Record<string, unknown>).roomData || []) as Record<string, unknown>[]).map(sanitizeRoom),
         roomWiseMinusData: isStructurallyOpenPlotOrSpace ? [] : undefined
     } as unknown as FloorSubmissionPayload;
 }
@@ -292,7 +290,7 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
     const rawParentId = Number(payload.propertyDetailsId || (payload as any).id || 0);
     const parentPropertyDetailsId = rawParentId > 0 && rawParentId < 1_000_000_000_000 ? rawParentId : 1;
     const isUtility = checkIsUtilityCategory(payload.typeOfUseCategoryId);
-    const isActualOpenPlot = payload.isOpenPlot === true;
+    const isActualOpenPlot = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
     const isStructurallyOpenPlotOrSpace = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
     const sanitizeRoomUpdate = (room: Record<string, unknown>) => ({
         ...sanitizeRoomBase(room, isUtility, isActualOpenPlot),
@@ -436,8 +434,8 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             renterYesNo: base.renterYesNo,
         }),
         ...sanitizeRenterRowsFromData(data, parentPropertyDetailsId, isUpdate),
-        roomWiseSubmissionDetails: base.isOpenPlot ? [] : uniqueRooms.map(sanitizeRoom),
-        roomWiseMinusData: base.isOpenPlot ? [] : undefined,
+        roomWiseSubmissionDetails: uniqueRooms.map(sanitizeRoom),
+        roomWiseMinusData: (data.isOpenPlot === true || data.selectedFloorType === 'OpenPlot') ? [] : undefined,
         ...(data.renterCustomIncrements ? { renterCustomIncrements: data.renterCustomIncrements } : {}),
         ...(data.renterTableEntries ? { renterTableEntries: data.renterTableEntries } : {}),
         ...(data.grandTotal !== undefined ? { grandTotal: Number(data.grandTotal) } : {}),

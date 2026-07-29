@@ -217,6 +217,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               isLoading={isAddingArea}
               buttonText={openPlotRecord ? (t('floor.updateArea') || 'Update Area') : (t('floor.applyArea') || 'Add Area')}
               selectedFloorType={selectedFloorType}
+              isPlotCategory={isPlotCategory}
               onChangeFloorType={(type) => {
                 setSelectedFloorType(type);
                 handleAddFloor();

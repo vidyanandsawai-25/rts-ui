@@ -77,8 +77,8 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
         />
       </div>
 
-      <div 
-        className="flex flex-col justify-center flex-shrink-0 px-1" 
+      <div
+        className="flex flex-col justify-center flex-shrink-0 px-1"
         style={{ width: COLUMN_WIDTHS.shape }}
         onKeyDownCapture={(e) => {
           if (e.key === 'Tab' && !e.shiftKey) {

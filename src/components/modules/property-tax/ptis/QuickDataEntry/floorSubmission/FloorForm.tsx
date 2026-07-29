@@ -156,56 +156,54 @@ const FloorForm: React.FC<FloorFormProps & {
             isPlotCategory={isPlotCategory}
           />
 
-          {selectedFloorType !== 'OpenPlot' && (
-            <div className={isAddingNewFloor ? "w-full" : "grid grid-cols-2 gap-3"}>
-              <RenterSection
-                t={t}
-                editingFloorForm={editingFloorForm}
-                setEditingFloorForm={setEditingFloorForm}
-                formErrors={formErrors}
-                setFormErrors={setFormErrors}
-                handleOpenRenterManagement={handleOpenRenterManagement}
-                isOperationLoading={isOperationLoading}
-              />
+          <div className={isAddingNewFloor || selectedFloorType === 'OpenPlot' ? "w-full" : "grid grid-cols-2 gap-3"}>
+            <RenterSection
+              t={t}
+              editingFloorForm={editingFloorForm}
+              setEditingFloorForm={setEditingFloorForm}
+              formErrors={formErrors}
+              setFormErrors={setFormErrors}
+              handleOpenRenterManagement={handleOpenRenterManagement}
+              isOperationLoading={isOperationLoading}
+            />
 
-              {!isAddingNewFloor && (
-                <FieldWrapper label={t('floor.updateBuildingPermission') || 'Update Building Permission?'} htmlFor="floor-update-building-permission">
-                  <SearchSelect
-                    id="floor-update-building-permission"
-                    name="updateBuildingPermission"
-                    menuPlacement="top"
-                    options={[
-                      { label: t('floor.no') || 'No', value: 'No' },
-                      { label: t('floor.yes') || 'Yes', value: 'Yes' },
-                    ]}
-                    value={editingFloorForm.updateBuildingPermission || 'No'}
-                    onChange={(_name, value) => {
-                      setEditingFloorForm({ ...editingFloorForm, updateBuildingPermission: value });
-                      if (value === 'Yes') {
-                        const floorDetailsId = editingFloorForm.propertyDetailsId || editingFloorForm.id;
-                        
-                        const pathSegments = pathname.split('/').filter(Boolean);
-                        const qdeIndex = pathSegments.indexOf('QuickDataEntry');
-                        const baseTabPath =
-                          qdeIndex !== -1 && pathSegments[qdeIndex + 1]
-                            ? `/${pathSegments.slice(0, qdeIndex + 2).join('/')}`
-                            : `/${pathSegments.slice(0, -1).join('/')}`;
-                        
-                        const tabPath = `${baseTabPath}/Building`;
-                        const searchParamsObj = new URLSearchParams(searchParams.toString());
-                        searchParamsObj.set('activeScope', 'Floor');
-                        searchParamsObj.set('activeFloorId', String(floorDetailsId || ''));
-                        
-                        router.push(`${tabPath}?${searchParamsObj.toString()}`);
-                      }
-                    }}
-                    placeholder={t('floor.select') || 'Select'}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </FieldWrapper>
-              )}
-            </div>
-          )}
+            {!isAddingNewFloor && selectedFloorType !== 'OpenPlot' && (
+              <FieldWrapper label={t('floor.updateBuildingPermission') || 'Update Building Permission?'} htmlFor="floor-update-building-permission">
+                <SearchSelect
+                  id="floor-update-building-permission"
+                  name="updateBuildingPermission"
+                  menuPlacement="top"
+                  options={[
+                    { label: t('floor.no') || 'No', value: 'No' },
+                    { label: t('floor.yes') || 'Yes', value: 'Yes' },
+                  ]}
+                  value={editingFloorForm.updateBuildingPermission || 'No'}
+                  onChange={(_name, value) => {
+                    setEditingFloorForm({ ...editingFloorForm, updateBuildingPermission: value });
+                    if (value === 'Yes') {
+                      const floorDetailsId = editingFloorForm.propertyDetailsId || editingFloorForm.id;
+                      
+                      const pathSegments = pathname.split('/').filter(Boolean);
+                      const qdeIndex = pathSegments.indexOf('QuickDataEntry');
+                      const baseTabPath =
+                        qdeIndex !== -1 && pathSegments[qdeIndex + 1]
+                          ? `/${pathSegments.slice(0, qdeIndex + 2).join('/')}`
+                          : `/${pathSegments.slice(0, -1).join('/')}`;
+                      
+                      const tabPath = `${baseTabPath}/Building`;
+                      const searchParamsObj = new URLSearchParams(searchParams.toString());
+                      searchParamsObj.set('activeScope', 'Floor');
+                      searchParamsObj.set('activeFloorId', String(floorDetailsId || ''));
+                      
+                      router.push(`${tabPath}?${searchParamsObj.toString()}`);
+                    }
+                  }}
+                  placeholder={t('floor.select') || 'Select'}
+                  className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+              </FieldWrapper>
+            )}
+          </div>
 
           <AreaSection
             t={t}

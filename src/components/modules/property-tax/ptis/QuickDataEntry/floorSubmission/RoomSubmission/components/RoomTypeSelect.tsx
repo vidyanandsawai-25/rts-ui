@@ -26,7 +26,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
             const code = item.roomTypeCode || String(itemId);
             return {
                 label: name || code,
-                value: code || String(itemId)
+                value: name || code || String(itemId)
             };
         }) || []),
     ];
@@ -50,7 +50,11 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
             );
         });
 
-        return matched?.roomTypeCode || value;
+        if (matched) {
+            return matched.roomTypeName || matched.description || matched.roomTypeCode || value;
+        }
+
+        return value;
     }, [value, roomTypeDetails]);
 
     return (
@@ -74,7 +78,8 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
                     );
                 });
                 const resolvedId = matched ? (matched.roomTypeId || matched.id || matched.ID || 0) : 0;
-                onChange(newVal, Number(resolvedId));
+                const finalValue = matched ? (matched.roomTypeName || matched.description || matched.roomTypeCode || newVal) : newVal;
+                onChange(finalValue, Number(resolvedId));
             }}
             disabled={disabled || isLoading}
             placeholder={isLoading ? t("floor.loading") : t("roomSubmission.input.roomTypes.select")}

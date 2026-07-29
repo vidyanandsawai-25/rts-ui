@@ -208,6 +208,9 @@ export function normalizeFloorData(
     builtupAreaSqFt: getString(raw.builtupAreaSqFt) || getString(raw.builtupAreaSqFeet) || '0.00',
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
     isTaxable: (() => {
+      if (raw.isTaxable !== undefined && raw.isTaxable !== null && raw.isTaxable !== '') {
+        return (raw.isTaxable === 'Yes' || raw.isTaxable === true || raw.isTaxable === 1 || raw.isTaxable === '1') ? 'Yes' : 'No';
+      }
       if (isOpenPlotVal) {
         const rawPlotCode = String(
           raw.typeOfUseCode ||
@@ -222,7 +225,7 @@ export function normalizeFloorData(
           return 'No';
         }
       }
-      return (raw.isTaxable === 'Yes' || raw.isTaxable === true || raw.isTaxable === 1 || raw.isTaxable === '1') ? 'Yes' : 'No';
+      return 'Yes';
     })(),
     updateBuildingPermission: raw.updateBuildingPermission ? String(raw.updateBuildingPermission) : ((raw.propertyCertificates && Array.isArray(raw.propertyCertificates) && raw.propertyCertificates.length > 0) ? 'Yes' : 'No'),
 

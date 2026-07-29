@@ -90,7 +90,6 @@ export const useFloorSync = (params: {
     setEditingFloorForm,
     setLocalFloors,
     setSelectedFloor,
-    selectedFloor,
     INITIAL_FORM_STATE,
   } = params;
 
@@ -332,11 +331,9 @@ export const useFloorSync = (params: {
     if (isPlot && hasNoFloorIdInUrl) {
       if (props.initialFloors.length === 0) {
         setIsAddingNewFloor(true);
-      } else {
-        setIsAddingNewFloor(false);
       }
     }
-  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, isAddingNewFloor, selectedFloor, setIsAddingNewFloor]);
+  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, setIsAddingNewFloor]);
 
   return { mappedInitialFloors };
 };

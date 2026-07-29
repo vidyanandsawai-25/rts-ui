@@ -130,6 +130,28 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
     });
   };
 
+  const currentFloorValue = React.useMemo(() => {
+    if (editingFloorForm.floorId !== undefined && editingFloorForm.floorId !== null && String(editingFloorForm.floorId) !== '') {
+      return String(editingFloorForm.floorId);
+    }
+    if (editingFloorForm.floor) {
+      const rawFloor = String(editingFloorForm.floor).trim();
+      const found = (floorLookup || []).find((f: Record<string, unknown>) => {
+        const idStr = String(f.floorId || f.id || f.ID || '');
+        const descStr = String(f.description || f.floorDescription || '').trim();
+        const codeStr = String(f.floorCode || f.code || '').trim();
+        return idStr === rawFloor || descStr === rawFloor || codeStr === rawFloor || (codeStr && descStr && `${codeStr} - ${descStr}` === rawFloor);
+      });
+      if (found) {
+        return String(found.floorId || found.id || found.ID);
+      }
+    }
+    if (isAddingNewFloor && selectedFloorType === 'OpenPlot') {
+      return '77';
+    }
+    return '';
+  }, [editingFloorForm.floorId, editingFloorForm.floor, floorLookup, isAddingNewFloor, selectedFloorType]);
+
   return (
     <>
       {/* Is Taxable Dropdown */}
@@ -137,6 +159,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
         <SearchSelect
           id="floor-is-taxable"
           name="isTaxable"
+          menuPlacement="top"
           options={[
             { label: t('floor.yes'), value: 'Yes' },
             { label: t('floor.no'), value: 'No' },
@@ -157,6 +180,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
           <SearchSelect
             id="floor-floor"
             name="floorId"
+            menuPlacement="top"
             options={[
               { label: t('floor.selectFloor'), value: "" },
               ...getSelectOptions(
@@ -165,11 +189,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
                 'floorId',
                 'description',
                 'floorCode',
-                editingFloorForm.floorId || (selectedFloorType === 'OpenPlot' ? '77' : undefined),
+                currentFloorValue || undefined,
                 getFloorDescription
               )
             ]}
-            value={String(editingFloorForm.floorId || (selectedFloorType === 'OpenPlot' ? '77' : ''))}
+            value={currentFloorValue}
             onChange={(_name, value) => {
               const desc = getFloorDescription(value, floorLookup);
               setEditingFloorForm((prev: FloorData) => ({

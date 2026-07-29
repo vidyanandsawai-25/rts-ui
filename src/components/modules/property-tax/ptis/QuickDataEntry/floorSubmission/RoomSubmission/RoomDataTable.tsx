@@ -24,7 +24,13 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
         selectedRoomForPlan,
         onOpenOffset,
         isUtilityCategory,
+        floorData,
     } = props;
+
+    const isOpenSpaceSection =
+        floorData?.selectedFloorType === 'OpenPlot' ||
+        floorData?.isOpenPlot === true ||
+        String(floorData?.floorId) === '77';
 
     const t = useTranslations("quickDataEntry");
 
@@ -93,39 +99,42 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
             label: t("roomSubmission.table.offset"),
             width: COLUMN_WIDTHS.offset,
             align: "center",
-            render: (val: unknown, row: RoomData, idx: number) => (
-                <div className="flex justify-center">
-                    <Tooltip placement="top" content={row.offsets && row.offsets.length > 0
-                        ? t("offsetTooltip", {
-                            details: row.offsets.map((off: OffsetData) => {
-                                // Normalize shape to match translation keys (remove spaces, lowercase first char only)
-                                const normalizedShape = off.shape
-                                    ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
-                                    : "";
-                                return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
-                            }).join(", ")
-                        })
-                        : t("offsetTooltipEmpty")}
-                    >
-                        <div
-                            className="flex justify-center items-center gap-1 cursor-pointer hover:scale-110 transition-transform"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (onOpenOffset) onOpenOffset(idx);
-                            }}
+            render: (val: unknown, row: RoomData, idx: number) => {
+                const hasOffset = val === "Yes" || row.offsetMinus === "Yes" || row.minusYesNo === true || (row.offsets && row.offsets.length > 0);
+                return (
+                    <div className="flex justify-center">
+                        <Tooltip placement="top" content={row.offsets && row.offsets.length > 0
+                            ? t("offsetTooltip", {
+                                details: row.offsets.map((off: OffsetData) => {
+                                    // Normalize shape to match translation keys (remove spaces, lowercase first char only)
+                                    const normalizedShape = off.shape
+                                        ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
+                                        : "";
+                                    return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
+                                }).join(", ")
+                            })
+                            : t("offsetTooltipEmpty")}
                         >
-                            {val === "Yes" ? (
-                                <div className="flex items-center text-red-500 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 font-bold">
-                                    {row.offsets?.length || 0}
-                                    <Info className="w-2.5 h-2.5 ml-1" />
-                                </div>
-                            ) : (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-100">{t("floor.no")}</span>
-                            )}
-                        </div>
-                    </Tooltip>
-                </div>
-            )
+                            <div
+                                className="flex justify-center items-center gap-1 cursor-pointer hover:scale-110 transition-transform"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onOpenOffset) onOpenOffset(idx);
+                                }}
+                            >
+                                {hasOffset ? (
+                                    <div className="flex items-center text-red-500 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 font-bold">
+                                        {row.offsets?.length || 0}
+                                        <Info className="w-2.5 h-2.5 ml-1" />
+                                    </div>
+                                ) : (
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-100">{t("floor.no")}</span>
+                                )}
+                            </div>
+                        </Tooltip>
+                    </div>
+                );
+            }
         },
         {
             key: "outer",
@@ -221,14 +230,16 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
                                 {(grandTotal ?? 0).toFixed(2)} {areaUnit}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-blue-600 uppercase">
-                                {t("roomSubmission.table.totalBuiltupArea")}
-                            </span>
-                            <span className="text-[12px] font-bold text-blue-700">
-                                {(builtupGrandTotal ?? 0).toFixed(2)} {areaUnit}
-                            </span>
-                        </div>
+                        {!isOpenSpaceSection && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-blue-600 uppercase">
+                                    {t("roomSubmission.table.totalBuiltupArea")}
+                                </span>
+                                <span className="text-[12px] font-bold text-blue-700">
+                                    {(builtupGrandTotal ?? 0).toFixed(2)} {areaUnit}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 }
             >
