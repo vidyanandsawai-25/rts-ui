@@ -202,14 +202,11 @@ export default async function FloorSubmissionPage({
         };
     }
 
-    // ── Floor List (already fetched in Phase 1 if propertyId was known) ─────
+    // ── Floor List (already fetched in Phase 2 if propertyId was known) ─────
     let finalFloorsRaw = initialFloorsRaw;
-    if (initialPropertyID && (
-        !knownPropertyId ||
-        hasPropertyKeys ||
-        String(knownPropertyId) !== String(initialPropertyID)
-    )) {
-        finalFloorsRaw = await getFloorSubmissionsByOwnerAction(initialPropertyID);
+    const targetPropertyID = initialPropertyID ?? knownPropertyId;
+    if (targetPropertyID && (!finalFloorsRaw || (Array.isArray(finalFloorsRaw) && finalFloorsRaw.length === 0))) {
+        finalFloorsRaw = await getFloorSubmissionsByOwnerAction(targetPropertyID);
     }
 
     const initialFloors: unknown[] = normalizeArrayResponse(finalFloorsRaw, (m) => metadataErrors.push(m));

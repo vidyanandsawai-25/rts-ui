@@ -28,6 +28,7 @@ type SelectablePropertyRow = Record<string, unknown> &
     disabled: boolean;
     selection: string;
     propertyDisplay: string;
+    categoryDisplay: string;
     typeDisplay: string;
     carpetAreaDisplay: string;
     builtupAreaDisplay: string;
@@ -38,17 +39,19 @@ type SelectablePropertyRow = Record<string, unknown> &
 const greenRowClassName =
   '!bg-green-100 [&>td]:!bg-green-100 hover:!bg-green-200 hover:[&>td]:!bg-green-200';
 
-function formatPropertyPart(value: unknown): string {
-  const text = String(value ?? '').trim();
-  return text || '-';
-}
 
 function formatPropertyDisplay(property: SelectableProperty): string {
-  return [
-    formatPropertyPart(property.wardNo),
-    formatPropertyPart(property.propertyNo),
-    formatPropertyPart(property.partitionNo),
-  ].join('-');
+  const ward = String(property.wardNo ?? '').trim() || '-';
+  const prop = String(property.propertyNo ?? '').trim() || '-';
+  const part = String(property.partitionNo ?? '').trim();
+  const hasValidPartition = part && part !== '-';
+
+  return hasValidPartition ? `${ward}-${prop}-${part}` : `${ward}-${prop}`;
+}
+
+function formatCategoryDisplay(property: SelectableProperty): string {
+  const cat = String(property.categoryName ?? '').trim();
+  return cat && cat !== '-' ? cat : '-';
 }
 
 function formatPropertyTypeDisplay(property: SelectableProperty): string {
@@ -119,6 +122,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         disabled: disabledIds.has(property.id),
         selection: String(property.id),
         propertyDisplay: formatPropertyDisplay(property),
+        categoryDisplay: formatCategoryDisplay(property),
         typeDisplay: formatPropertyTypeDisplay(property),
         carpetAreaDisplay: formatCarpetAreaDisplay(property),
         builtupAreaDisplay: formatBuiltupAreaDisplay(property),
@@ -181,6 +185,13 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         key: 'propertyDisplay',
         label: t('floor.selectProperties.property'),
         width: '150px',
+        cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
+      },
+      {
+        key: 'categoryDisplay',
+        label: 'Category',
+        width: '110px',
+        align: 'center',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
       },
       ...(hideTypeColumn
@@ -286,7 +297,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         rowClassName={(row) => {
           const isSource = sourcePropertyIds.has(row.id);
           if (isSource) {
-            return greenRowClassName + ' font-bold border-l-4';
+            return greenRowClassName + ' font-bold border-l-4 border-l-green-600 bg-green-100 !bg-green-100 [&>td]:!bg-green-100';
           }
           if (row.disabled) {
             return 'opacity-60 bg-slate-50 cursor-not-allowed border-l-4 border-l-transparent';

@@ -160,40 +160,37 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
                 {/* Property Wise — disabled for Apartment, enabled for Individual */}
-                <Tabs.Tab
-                  value="property-wise"
-                  className={tabClassName(tabConfig.propertyWiseDisabled)}
-                  disabled={tabConfig.propertyWiseDisabled}
-                  title={tabConfig.propertyWiseDisabled
-                    ? (t('floor.dataEntryTabs.propertyWiseDisabledForApartment') || 'Property Wise is not available for Apartment')
-                    : undefined}
-                >
-                  {t('floor.dataEntryTabs.propertyWise')}
-                </Tabs.Tab>
+                {!tabConfig.propertyWiseDisabled && (
+                  <Tabs.Tab
+                    value="property-wise"
+                    className={tabClassName(tabConfig.propertyWiseDisabled)}
+                    disabled={tabConfig.propertyWiseDisabled}
+                  >
+                    {t('floor.dataEntryTabs.propertyWise')}
+                  </Tabs.Tab>
+                )}
 
                 {/* Type Wise — disabled for Individual, enabled for Apartment/others */}
-                <Tabs.Tab
-                  value="type-wise"
-                  className={tabClassName(tabConfig.typeWiseDisabled)}
-                  disabled={tabConfig.typeWiseDisabled}
-                  title={tabConfig.typeWiseDisabled
-                    ? (t('floor.dataEntryTabs.typeWiseDisabledForIndividual') || 'Type Wise is not available for Individual property')
-                    : undefined}
-                >
-                  {t('floor.dataEntryTabs.typeWise')}
-                </Tabs.Tab>
+                {!tabConfig.typeWiseDisabled && (
+                  <Tabs.Tab
+                    value="type-wise"
+                    className={tabClassName(tabConfig.typeWiseDisabled)}
+                    disabled={tabConfig.typeWiseDisabled}
+                  >
+                    {t('floor.dataEntryTabs.typeWise')}
+                  </Tabs.Tab>
+                )}
 
                 {/* Parking — disabled for Individual, enabled for Apartment/others */}
-                <Tabs.Tab
-                  value="parking"
-                  className={tabClassName(tabConfig.parkingDisabled)}
-                  disabled={tabConfig.parkingDisabled}
-                  title={tabConfig.parkingDisabled
-                    ? (t('floor.dataEntryTabs.parkingDisabledForIndividual') || 'Parking is not available for Individual property')
-                    : undefined}
-                >
-                  {t('floor.dataEntryTabs.parking')}
-                </Tabs.Tab>
+                {!tabConfig.parkingDisabled && (
+                  <Tabs.Tab
+                    value="parking"
+                    className={tabClassName(tabConfig.parkingDisabled)}
+                    disabled={tabConfig.parkingDisabled}
+                  >
+                    {t('floor.dataEntryTabs.parking')}
+                  </Tabs.Tab>
+                )}
               </Tabs.TabList>
             </div>
           )}

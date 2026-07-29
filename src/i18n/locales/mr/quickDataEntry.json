@@ -837,6 +837,7 @@
       "sourcePropertyNotFound": "स्त्रोत मालमत्ता {partitionNo} आढळली नाही.",
       "selectDestinationProperty": "कृपया किमान एक गंतव्य मालमत्ता निवडा.",
       "invalidPropertyType": "अवैध मालमत्ता प्रकार. कृपया ड्रॉपडाउनमधून वैध प्रकार निवडा.",
+      "enterTypeFirst": "कृपया आधी प्रकार प्रविष्ट करा.",
       "sourcePropertySubmissionWarning": "निवडलेला मालमत्ता प्रकार स्त्रोत मालमत्ता प्रकारापेक्षा भिन्न आहे, आपण पुढे जाऊ इच्छिता?",
       "warningTitle": "चेतावणी",
       "noDestinationProcessed": "कोणत्याही गंतव्य मालमत्तेवर प्रक्रिया झाली नाही.",
