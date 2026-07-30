@@ -50,8 +50,21 @@ export default function PropertyMapping({ initialMappingData, initialSearchParam
   const locale = useMemo(() => pathname.split("/").filter(Boolean)[0] || "en", [pathname]);
 
   const handleBack = () => {
-    if (queryPropertyId) {
-      router.push(`/${locale}/property-tax/ptis?propertyId=${queryPropertyId}&tab=olddetails`);
+    const queryWardNo = searchParams.get("wardNo");
+    const queryPropertyNo = searchParams.get("propertyNo");
+    const queryPartitionNo = searchParams.get("partitionNo");
+    const queryWardId = searchParams.get("wardId");
+
+    if (queryPropertyId || queryWardNo || queryPropertyNo) {
+      const backParams = new URLSearchParams();
+      if (queryWardNo) backParams.set("wardNo", queryWardNo);
+      if (queryPropertyNo) backParams.set("propertyNo", queryPropertyNo);
+      if (queryPartitionNo) backParams.set("partitionNo", queryPartitionNo);
+      if (queryWardId) backParams.set("wardId", queryWardId);
+      if (queryPropertyId) backParams.set("propertyId", queryPropertyId);
+      backParams.set("tab", "olddetails");
+
+      router.push(`/${locale}/property-tax/ptis?${backParams.toString()}`);
     } else {
       router.back();
     }

@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
 import { MasterTable, Column, Button } from "@/components/common";
 import { MappingLink } from "@/types/property-mapping";
 
@@ -12,6 +14,18 @@ export function ActiveMappingsRegister({
   onDisconnectMapping,
 }: ActiveMappingsRegisterProps) {
   const t = useTranslations("propertyMapping");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [mappings.length]);
+
+  const totalCount = mappings.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const paginatedData = mappings.slice(startIndex, startIndex + pageSize);
 
   const columns: Column<MappingLink>[] = [
     {
@@ -64,7 +78,7 @@ export function ActiveMappingsRegister({
       </h3>
       <MasterTable
         columns={columns}
-        data={mappings}
+        data={paginatedData}
         emptyText={t("confirmedMappingsTab.emptyText")}
         renderActions={(row) => (
           <Button
@@ -78,7 +92,16 @@ export function ActiveMappingsRegister({
         )}
         actionLabel={t("confirmedMappingsTab.columns.action")}
         getRowKey={(row) => row.id}
-        paginationConfig={{ enabled: false }}
+        pageNumber={safePage}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+        onPageSizeChange={(s) => {
+          setPageSize(s);
+          setPage(1);
+        }}
+        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
       />
     </div>
   );

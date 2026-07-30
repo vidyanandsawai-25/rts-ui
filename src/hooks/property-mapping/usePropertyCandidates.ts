@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { NewProperty, OldPropertyCandidate, FloorTab, FloorDetail, MappingLink } from "@/types/property-mapping";
-import { getFloorKey } from "@/components/modules/property-tax/property-mapping/mappingScoreCalculator";
+import { getFloorKey, calculateMatchScore } from "@/components/modules/property-tax/property-mapping/mappingScoreCalculator";
 
 interface UsePropertyCandidatesProps {
   currentNewProperty: NewProperty | undefined;
@@ -12,6 +12,42 @@ interface UsePropertyCandidatesProps {
   searchQuery: string;
   activeFloorDataMap: Record<string, FloorDetail[]>;
   mappings: MappingLink[];
+}
+
+function getCandidateWithDynamicScore(cand: OldPropertyCandidate, currentNewProperty: NewProperty): OldPropertyCandidate {
+  const newPropertyRef = {
+    propNo: currentNewProperty.propNo || "",
+    owner: currentNewProperty.owner || "",
+    address: currentNewProperty.address || "",
+    builtUpArea: currentNewProperty.builtUpArea || 0,
+    floors: currentNewProperty.floors || "",
+    tax: currentNewProperty.tax || 0,
+    cts: currentNewProperty.cts || "",
+    rv: currentNewProperty.rv || 0,
+    use: currentNewProperty.use || "",
+    ward: currentNewProperty.ward || "",
+    zone: currentNewProperty.zone || "",
+    plotNo: currentNewProperty.plotNo || "",
+    constructionYear: currentNewProperty.constructionYear || ""
+  };
+
+  const dynamicScore = calculateMatchScore(newPropertyRef, {
+    propNo: cand.propNo || "",
+    owner: cand.owner || "",
+    address: cand.address || "",
+    area: cand.area || 0,
+    floors: cand.floors || "",
+    tax: cand.tax || 0,
+    cts: cand.cts,
+    rv: cand.rv,
+    use: cand.use,
+    ward: cand.ward,
+    zone: cand.zone,
+    plotNo: cand.plotNo,
+    constructionYear: cand.constructionYear
+  });
+
+  return { ...cand, score: dynamicScore };
 }
 
 export function usePropertyCandidates({
@@ -39,12 +75,12 @@ export function usePropertyCandidates({
         merged.push(ac);
       }
     });
-    return merged;
+    return merged.map(c => getCandidateWithDynamicScore(c, currentNewProperty));
   }, [candidates, currentNewProperty, autoSearchedCandidates]);
 
   const manualCandidates = useMemo(() => {
     if (!currentNewProperty || !searchQuery.trim()) return [];
-    return serverSearchedCandidates;
+    return serverSearchedCandidates.map(c => getCandidateWithDynamicScore(c, currentNewProperty));
   }, [currentNewProperty, searchQuery, serverSearchedCandidates]);
 
   const activeCandidates = useMemo(() => {

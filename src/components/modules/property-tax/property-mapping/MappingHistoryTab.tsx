@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { AuditHistory } from "@/types/property-mapping";
 
@@ -8,6 +10,18 @@ interface AuditTrailProps {
 
 export function AuditTrail({ historyList }: AuditTrailProps) {
   const t = useTranslations("propertyMapping");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [historyList.length]);
+
+  const totalCount = historyList.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const paginatedData = historyList.slice(startIndex, startIndex + pageSize);
 
   const columns: Column<AuditHistory>[] = [
     {
@@ -56,10 +70,19 @@ export function AuditTrail({ historyList }: AuditTrailProps) {
       </h3>
       <MasterTable
         columns={columns}
-        data={historyList}
+        data={paginatedData}
         emptyText={t("historyTab.emptyText")}
         getRowKey={(row) => row.id}
-        paginationConfig={{ enabled: false }}
+        pageNumber={safePage}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+        onPageSizeChange={(s) => {
+          setPageSize(s);
+          setPage(1);
+        }}
+        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
       />
     </div>
   );

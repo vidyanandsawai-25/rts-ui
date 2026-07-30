@@ -18,6 +18,20 @@ interface UsePropertyMappingHandlersProps {
   showToast: (msg: string, type?: "success" | "error" | "info") => void;
 }
 
+const formatNewPropertyDisplayNo = (p: NewProperty) => {
+  if (p.fullPropNo) return p.fullPropNo as string;
+  const parts = [p.ward, p.propNo, p.partitionNo && p.partitionNo !== "0" ? p.partitionNo : null].filter(Boolean);
+  return parts.length > 0 ? parts.join(" - ") : p.propNo;
+};
+
+const formatCandidateDisplayNo = (c: OldPropertyCandidate) => {
+  const wardStr = c.ward ? (c.ward.toLowerCase().startsWith("ward") ? c.ward : `Ward ${c.ward}`) : "";
+  const propStr = c.propNo || "";
+  const partitionStr = c.partitionNo && c.partitionNo !== "0" ? ` / ${c.partitionNo}` : "";
+  const fullProp = `${propStr}${partitionStr}`;
+  return wardStr ? `${wardStr} - ${fullProp}` : fullProp;
+};
+
 export function usePropertyMappingHandlers({
   currentNewProperty,
   selectedCandidates,
@@ -111,36 +125,39 @@ export function usePropertyMappingHandlers({
   const handleConfirmMapping = () => {
     if (!currentNewProperty || !validationStatus.isValid) return;
 
-    const enteredRemark = window.prompt(t("dialogs.remarkPrompt"), currentNewProperty.remark || "");
-    if (enteredRemark === null) return;
-
-    const updatedRemark = enteredRemark.trim();
+    const updatedRemark = (currentNewProperty.remark || "").trim();
     const timestamp = new Date().toLocaleString("en-IN", {
       day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
     });
     const newPropNo = currentNewProperty.propNo;
     const oldPropNos = selectedCandidates.map((c) => c.propNo);
 
+    const displayNewPropNo = formatNewPropertyDisplayNo(currentNewProperty);
+    const displayOldPropNos = selectedCandidates.map(formatCandidateDisplayNo).join(", ");
+
     const executeMerge = () => {
+      const defaultRemark = selectedCandidates.length === 0 ? t("auditDefaultRemarks.newSurvey") : t("auditDefaultRemarks.mappingConfirmed");
+      const finalRemark = updatedRemark || defaultRemark;
+
       if (selectedCandidates.length === 0) {
         setMappings((prev) => prev.filter((m) => m.newPropNo !== newPropNo));
         setHistoryList((prev) => [
           ...prev,
-          { id: `H-${Date.now()}`, time: timestamp, action: "Unmapped", newPropNo, oldPropNos: [], user: "Verification Officer", reason: updatedRemark || t("auditDefaultRemarks.newSurvey") },
+          { id: `H-${Date.now()}`, time: timestamp, action: "Unmapped", newPropNo, oldPropNos: [], user: "Verification Officer", reason: finalRemark },
         ]);
-        setNewProperties((prev) => prev.map((p, idx) => (idx === selectedNewIndex ? { ...p, remark: updatedRemark, status: "Unmapped" } : p)));
-        showToast(t("toasts.markedUnmapped", { propNo: newPropNo }), "info");
+        setNewProperties((prev) => prev.map((p, idx) => (idx === selectedNewIndex ? { ...p, remark: finalRemark, status: "Unmapped" } : p)));
+        showToast(t("toasts.markedUnmapped", { propNo: displayNewPropNo }), "info");
       } else {
         const newMapping: MappingLink = {
-          id: `MAP-${Date.now().toString().slice(-4)}`, newPropNo, oldPropNos, mapType: inferredMappingType, confidence: 98, note: updatedRemark, mappedBy: "Verification Officer", mappedAt: timestamp, status: "Mapped",
+          id: `MAP-${Date.now().toString().slice(-4)}`, newPropNo, oldPropNos, mapType: inferredMappingType, confidence: 98, note: finalRemark, mappedBy: "Verification Officer", mappedAt: timestamp, status: "Mapped",
         };
         setMappings((prev) => [...prev.filter((m) => m.newPropNo !== newPropNo), newMapping]);
         setHistoryList((prev) => [
           ...prev,
-          { id: `H-${Date.now()}`, time: timestamp, action: "Mapped", newPropNo, oldPropNos, user: "Verification Officer", reason: updatedRemark || t("auditDefaultRemarks.mappingConfirmed") },
+          { id: `H-${Date.now()}`, time: timestamp, action: "Mapped", newPropNo, oldPropNos, user: "Verification Officer", reason: finalRemark },
         ]);
-        setNewProperties((prev) => prev.map((p, idx) => (idx === selectedNewIndex ? { ...p, remark: updatedRemark, status: "Mapped" } : p)));
-        showToast(t("toasts.mappingConfirmed", { propNo: newPropNo }), "success");
+        setNewProperties((prev) => prev.map((p, idx) => (idx === selectedNewIndex ? { ...p, remark: finalRemark, status: "Mapped" } : p)));
+        showToast(t("toasts.mappingConfirmed", { propNo: displayNewPropNo }), "success");
       }
 
       if (selectedNewIndex < newProperties.length - 1) {
@@ -152,7 +169,7 @@ export function usePropertyMappingHandlers({
       confirm({
         variant: "warning",
         title: t("dialogs.markUnmapped.title"),
-        description: t("dialogs.markUnmapped.description", { newPropNo }),
+        description: t("dialogs.markUnmapped.description", { newPropNo: displayNewPropNo }),
         confirmText: t("dialogs.markUnmapped.confirmText"),
         cancelText: t("dialogs.markUnmapped.cancelText"),
         onConfirm: executeMerge,
@@ -161,7 +178,7 @@ export function usePropertyMappingHandlers({
       confirm({
         variant: "info",
         title: t("dialogs.confirmMerge.title"),
-        description: t("dialogs.confirmMerge.description", { newPropNo, oldPropNos: oldPropNos.join(", ") }),
+        description: t("dialogs.confirmMerge.description", { newPropNo: displayNewPropNo, oldPropNos: displayOldPropNos }),
         confirmText: t("dialogs.confirmMerge.confirmText"),
         cancelText: t("dialogs.confirmMerge.cancelText"),
         onConfirm: executeMerge,
@@ -174,10 +191,13 @@ export function usePropertyMappingHandlers({
       day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
     });
 
+    const targetProp = newProperties.find((p) => p.propNo === newPropNo);
+    const displayPropNo = targetProp ? formatNewPropertyDisplayNo(targetProp) : newPropNo;
+
     confirm({
       variant: "delete",
       title: t("dialogs.unmapProperty.title"),
-      description: t("dialogs.unmapProperty.description", { mId, newPropNo }),
+      description: t("dialogs.unmapProperty.description", { mId, newPropNo: displayPropNo }),
       confirmText: t("dialogs.unmapProperty.confirmText"),
       cancelText: t("dialogs.unmapProperty.cancelText"),
       onConfirm: () => {
@@ -187,7 +207,7 @@ export function usePropertyMappingHandlers({
           { id: `H-${Date.now()}`, time: timestamp, action: "Unmapped", newPropNo, oldPropNos: [], user: "Verification Officer", reason: t("auditDefaultRemarks.unmapManual") },
         ]);
         setNewProperties((prev) => prev.map((p) => (p.propNo === newPropNo ? { ...p, status: "Needs verification" } : p)));
-        showToast(t("toasts.unmapped", { propNo: newPropNo }), "info");
+        showToast(t("toasts.unmapped", { propNo: displayPropNo }), "info");
       },
     });
   };

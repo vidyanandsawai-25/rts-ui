@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { NewProperty, OldPropertyCandidate, FloorDetail, MappingLink, AuditHistory, MappedPropertyApiResponse } from "@/types/property-mapping";
-import { getFloorKey } from "@/components/modules/property-tax/property-mapping/mappingScoreCalculator";
+import { getFloorKey, calculateMatchScore } from "@/components/modules/property-tax/property-mapping/mappingScoreCalculator";
 
 export function usePropertyMappingState(
   initialMappingData: MappedPropertyApiResponse | null | undefined,
@@ -72,9 +72,34 @@ export function usePropertyMappingState(
     if (initialMappingData?.items?.length) {
       const first = initialMappingData.items[0];
       const newInfo = first.newPropertyInfo;
+      const newDetails = first.newPropertyDetails || [];
       const ownerName = newInfo?.ownerName || newInfo?.ownerNameEnglish || first.oldOwnerName || first.oldOccupierName || "";
       const addressVal = newInfo?.address || newInfo?.addressEnglish || first.oldAddress || "";
       const ctsVal = newInfo?.csn || first.oldCSN || "";
+
+      const builtUpAreaVal = newDetails.filter(d => !d.isOpenPlot).reduce((sum, d) => sum + d.builtupAreaSqFeet, 0);
+      const nonOpenPlotFloors = newDetails.filter(d => !d.isOpenPlot);
+      const floorLabels = nonOpenPlotFloors.map(d => d.floorDescription || d.floorCode).filter(Boolean);
+      const floorsText = floorLabels.length > 0 ? floorLabels.join(", ") : "";
+      const transRecord = first.transMastRecords?.[0] || null;
+      const rvVal = transRecord?.calculationValue ?? 0;
+      const taxVal = transRecord?.taxAmount ?? 0;
+
+      const newPropRef = {
+        propNo: newInfo?.propertyNo || "",
+        owner: ownerName,
+        address: addressVal,
+        builtUpArea: builtUpAreaVal,
+        floors: floorsText,
+        tax: taxVal,
+        cts: ctsVal,
+        rv: rvVal,
+        use: newInfo?.propertyTypeDescription || first.oldUseType || "",
+        ward: newInfo?.wardNo || "",
+        zone: newInfo?.taxZoneNo || "",
+        plotNo: newInfo?.plotNo || "",
+        constructionYear: newDetails[0]?.constructionYear || ""
+      };
 
       return initialMappingData.items
         .filter(item => Boolean(item.oldPropertyNo))
@@ -83,6 +108,22 @@ export function usePropertyMappingState(
           const itemTax = itemTrans?.taxAmount ?? (item.oldTotalTax || 0);
           const itemRv = itemTrans?.calculationValue ?? (item.oldRV || 0);
           const candCarpetArea = (item.propertyDetailsOld || []).reduce((sum, d) => sum + (d.oldCarpetAreaSqFeet || 0), 0);
+
+          const candScore = calculateMatchScore(newPropRef, {
+            propNo: item.oldPropertyNo || "",
+            owner: item.oldOwnerName || item.oldOccupierName || ownerName,
+            address: item.oldAddress || addressVal,
+            area: item.oldConstructionArea || 0,
+            floors: item.oldFloor || "",
+            tax: itemTax,
+            cts: item.oldCSN || ctsVal,
+            rv: itemRv,
+            use: item.oldUseType || "",
+            ward: item.oldWardNo || "",
+            zone: item.oldZoneNo || "",
+            plotNo: item.oldPlotNo || "",
+            constructionYear: item.oldConstructionYear ? String(item.oldConstructionYear) : (item.oldAssessmentYear ? String(item.oldAssessmentYear) : "")
+          });
 
           return {
             id: String(item.propertyId) + "-initial-" + idx,
@@ -102,7 +143,7 @@ export function usePropertyMappingState(
               { text: `Zone ${item.oldZoneNo || ""}`, type: "good" as const },
               { text: `Category ${item.mappingCategory || "ONE_TO_ONE"}`, type: "good" as const }
             ],
-            score: 100,
+            score: candScore,
             isHardConflict: false,
             belongsToNewId: newInfo?.propertyNo || "",
             cts: item.oldCSN || ctsVal,

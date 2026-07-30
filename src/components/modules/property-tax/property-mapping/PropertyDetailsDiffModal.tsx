@@ -288,11 +288,9 @@ export function DiffModal({
           );
         }
 
-        const varianceLabel = row.isMatch && row.variancePct !== undefined ? ` (${row.variancePct}%)` : "";
-
         return row.isMatch ? (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-            {t("diffModal.matchStatus.matched")}{varianceLabel}
+            {t("diffModal.matchStatus.matched")}
           </span>
         ) : (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">

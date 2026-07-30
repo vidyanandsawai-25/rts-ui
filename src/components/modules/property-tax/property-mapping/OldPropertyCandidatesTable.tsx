@@ -72,11 +72,18 @@ export function CandidatesTable({
   const table12Data = is12Occupied ? unlinkedAuto : unlinkedManual;
   const table13Data = is12Occupied ? unlinkedManual : [];
 
+  const [page11, setPage11] = useState(1);
+  const [pageSize11, setPageSize11] = useState(10);
+
   const [page12, setPage12] = useState(1);
-  const [pageSize12, setPageSize12] = useState(5);
+  const [pageSize12, setPageSize12] = useState(10);
 
   const [page13, setPage13] = useState(1);
-  const [pageSize13, setPageSize13] = useState(5);
+  const [pageSize13, setPageSize13] = useState(10);
+
+  useEffect(() => {
+    setPage11(1);
+  }, [linkedCandidates.length]);
 
   useEffect(() => {
     setPage12(1);
@@ -85,6 +92,12 @@ export function CandidatesTable({
   useEffect(() => {
     setPage13(1);
   }, [table13Data.length]);
+
+  const totalCount11 = linkedCandidates.length;
+  const totalPages11 = Math.max(1, Math.ceil(totalCount11 / pageSize11));
+  const safePage11 = Math.min(page11, totalPages11);
+  const startIndex11 = (safePage11 - 1) * pageSize11;
+  const paginated11 = linkedCandidates.slice(startIndex11, startIndex11 + pageSize11);
 
   const totalCount12 = table12Data.length;
   const totalPages12 = Math.max(1, Math.ceil(totalCount12 / pageSize12));
@@ -315,7 +328,7 @@ export function CandidatesTable({
 
         <MasterTable
           columns={columns}
-          data={linkedCandidates}
+          data={paginated11}
           emptyText={t("candidatesTable.step1.emptyText")}
           renderActions={(row) => (
             <Button
@@ -333,7 +346,16 @@ export function CandidatesTable({
           )}
           actionLabel={t("candidatesTable.columns.action")}
           getRowKey={(row) => row.id}
-          paginationConfig={{ enabled: false }}
+          pageNumber={safePage11}
+          pageSize={pageSize11}
+          totalCount={totalCount11}
+          totalPages={totalPages11}
+          onPageChange={(page) => setPage11(page)}
+          onPageSizeChange={(size) => {
+            setPageSize11(size);
+            setPage11(1);
+          }}
+          paginationConfig={{ enabled: true, showPageSizeSelector: true }}
           tableClassName="min-w-[900px]"
           rowClassName={() => {
             return `transition-all duration-200 hover:bg-slate-50/70 bg-emerald-50/10`;

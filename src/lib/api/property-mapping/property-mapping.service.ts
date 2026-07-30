@@ -6,12 +6,12 @@ import { MappedPropertyApiResponse, SearchOldPropertiesApiResponse, SearchOldPro
 
 /**
  * Fetches mapped property details by PropertyId.
- * API: GET /api/PropertyMapMaster/mapped-properties?PropertyId={PropertyId}
+ * API: GET /api/PropertyMapMaster/mapped-properties?PropertyId={PropertyId}&PageSize={pageSize}
  */
-export async function getMappedPropertiesAction(propertyId: number): Promise<MappedPropertyApiResponse | null> {
+export async function getMappedPropertiesAction(propertyId: number, pageSize: number = -1): Promise<MappedPropertyApiResponse | null> {
   try {
     const response = await apiClient.get<MappedPropertyApiResponse>(
-      `/PropertyMapMaster/mapped-properties?PropertyId=${propertyId}`
+      `/PropertyMapMaster/mapped-properties?PropertyId=${propertyId}&PageSize=${pageSize}`
     );
     return handleApiResponse(response, `Fetch mapped properties for ${propertyId} failed`);
   } catch (error) {
@@ -36,6 +36,10 @@ export async function searchOldPropertiesAction(params: SearchOldPropertiesParam
     if (params.oldOccupierName) queryParts.push(`OldOccupierName=${encodeURIComponent(params.oldOccupierName)}`);
     if (params.oldBuilderName) queryParts.push(`OldBuilderName=${encodeURIComponent(params.oldBuilderName)}`);
     if (params.oldConstructionYear) queryParts.push(`OldConstructionYear=${encodeURIComponent(params.oldConstructionYear)}`);
+
+    const pageSize = params.pageSize ?? -1;
+    queryParts.push(`PageSize=${pageSize}`);
+    if (params.pageNumber !== undefined) queryParts.push(`PageNumber=${params.pageNumber}`);
 
     const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
     const response = await apiClient.get<SearchOldPropertiesApiResponse>(

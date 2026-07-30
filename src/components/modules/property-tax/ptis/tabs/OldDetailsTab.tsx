@@ -268,8 +268,17 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
                 <Button
                   size="sm"
                   onClick={() => {
+                    const currentWardNo = searchParams.get('wardNo') || '';
+                    const currentPropertyNo = searchParams.get('propertyNo') || '';
+                    const currentPartitionNo = searchParams.get('partitionNo') || '';
+                    const currentWardId = searchParams.get('wardId') || '';
+
                     const params = new URLSearchParams({
                       propertyId: String(propertyId || ''),
+                      wardNo: String(currentWardNo),
+                      propertyNo: String(currentPropertyNo),
+                      partitionNo: String(currentPartitionNo),
+                      wardId: String(currentWardId),
                       propNo: String(oldDetailsData?.oldPropertyNo || ''),
                       zone: String(oldDetailsData?.oldZoneName || ''),
                       ward: String(oldDetailsData?.oldWardNo || ''),

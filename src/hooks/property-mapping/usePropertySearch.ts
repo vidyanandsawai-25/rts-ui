@@ -34,7 +34,7 @@ export function usePropertySearch(
 
     setIsManualSearching(true);
     try {
-      const res = await searchOldPropertiesAction({ searchTerm: cleanTerm });
+      const res = await searchOldPropertiesAction({ searchTerm: cleanTerm, pageSize: -1 });
       if (res && res.oldPropertySuggestions) {
         const mappedSuggestions = res.oldPropertySuggestions.map((item, idx) => {
           const newPropertyRef = {
@@ -162,13 +162,13 @@ export function usePropertySearch(
     autoSearchedPropNos.current.add(currentNewProperty.propNo);
     setIsAutoSearching(true);
     try {
-      const params: SearchOldPropertiesParams = {};
+      const params: SearchOldPropertiesParams = { pageSize: -1 };
       if (currentNewProperty.owner) params.oldOwnerName = currentNewProperty.owner;
       if (currentNewProperty.mobile) params.oldMobileNo = currentNewProperty.mobile;
       if (currentNewProperty.address) params.oldAddress = currentNewProperty.address;
       if (currentNewProperty.constructionYear) params.oldConstructionYear = currentNewProperty.constructionYear;
 
-      if (Object.keys(params).length === 0) {
+      if (Object.keys(params).length <= 1) {
         setAutoSearchedCandidates([]);
         return;
       }

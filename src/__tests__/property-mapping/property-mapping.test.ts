@@ -65,7 +65,7 @@ describe("Property Mapping API Service Actions (Real Function Behavior)", () => 
     vi.mocked(apiClient.get).mockResolvedValueOnce(mockApiResponse as unknown as ApiResponse<MappedPropertyApiResponse>);
 
     const result = await getMappedPropertiesAction(101);
-    expect(apiClient.get).toHaveBeenCalledWith("/PropertyMapMaster/mapped-properties?PropertyId=101");
+    expect(apiClient.get).toHaveBeenCalledWith("/PropertyMapMaster/mapped-properties?PropertyId=101&PageSize=-1");
     expect(result).not.toBeNull();
     expect(result?.items[0].oldPropertyNo).toBe("OLD-101");
   });
@@ -94,7 +94,7 @@ describe("Property Mapping API Service Actions (Real Function Behavior)", () => 
     vi.mocked(apiClient.get).mockResolvedValueOnce(mockSearchResponse as unknown as ApiResponse<SearchOldPropertiesApiResponse>);
 
     const result = await searchOldPropertiesAction({ searchTerm: "John" });
-    expect(apiClient.get).toHaveBeenCalledWith("/PropertyMapMaster/search?SearchTerm=John");
+    expect(apiClient.get).toHaveBeenCalledWith("/PropertyMapMaster/search?SearchTerm=John&PageSize=-1");
     expect(result).not.toBeNull();
     expect(result?.oldPropertySuggestions[0].oldOwnerName).toBe("John Doe");
   });

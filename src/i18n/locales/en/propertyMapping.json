@@ -6,6 +6,13 @@
     "loadingSubtitle": "Loading mapped candidate list from Thane Municipal Corporation API...",
     "pendingCount": "Pending",
 
+    "error": {
+      "title": "Property Mapping Error",
+      "description": "An error occurred while processing property mapping data.",
+      "goHome": "Back to Home",
+      "tryAgain": "Try Again"
+    },
+
     "tabs": {
       "workspace": "Verify Properties",
       "confirmed": "Confirmed Mappings",
@@ -199,19 +206,19 @@
       "remarkPrompt": "Enter remarks explaining the mapping check:",
       "confirmMerge": {
         "title": "Confirm Property Merge?",
-        "description": "Are you sure you want to merge survey property {newPropNo} with historical records: {oldPropNos}?",
+        "description": "Are you sure you want to merge survey property {newPropNo} with old property records: {oldPropNos}?",
         "confirmText": "Confirm Merge",
         "cancelText": "Cancel"
       },
       "markUnmapped": {
         "title": "Verify as Unmapped Property?",
-        "description": "Are you sure you want to mark new survey property {newPropNo} as Unmapped? No legacy old record will be linked.",
+        "description": "Are you sure you want to mark new survey property {newPropNo} as Unmapped? No old property record will be linked.",
         "confirmText": "Mark Unmapped",
         "cancelText": "Cancel"
       },
       "unmapProperty": {
         "title": "Unmap Property?",
-        "description": "Are you sure you want to unmap property link {mId} for survey property {newPropNo}? This will disconnect the mapped legacy records.",
+        "description": "Are you sure you want to unmap property link {mId} for survey property {newPropNo}? This will disconnect the mapped old property records.",
         "confirmText": "Unmap Property",
         "cancelText": "Cancel"
       }
@@ -237,7 +244,7 @@
       "columns": {
         "mappingLinkId": "Mapping Link ID",
         "newSurveyProperty": "New Survey Property",
-        "legacyOldProperties": "Legacy Old Properties",
+        "legacyOldProperties": "Old Property Records",
         "relationshipType": "Relationship Type",
         "confidence": "Confidence",
         "verifiedBy": "Verified By",
@@ -256,7 +263,7 @@
         "timestamp": "Timestamp",
         "action": "Action",
         "newPropertyNo": "New Property No.",
-        "linkedLegacyRecords": "Linked Legacy Old Records",
+        "linkedLegacyRecords": "Linked Old Property Records",
         "officer": "Officer",
         "auditRemarks": "Reconciliation Audit Remarks"
       }
@@ -264,7 +271,7 @@
 
     "diffModal": {
       "title": "Parameters Comparison",
-      "subtitle": "Compare new GIS survey parameters against legacy Corporation record.",
+      "subtitle": "Compare new GIS survey parameters against existing Corporation record.",
       "closeButton": "Close Comparison",
       "columns": {
         "parameters": "Parameters",
@@ -312,7 +319,7 @@
 
     "waitingWindow": {
       "title": "Searching Properties",
-      "message": "Finding historical corporation records..."
+      "message": "Finding corporation property records..."
     }
   }
 }

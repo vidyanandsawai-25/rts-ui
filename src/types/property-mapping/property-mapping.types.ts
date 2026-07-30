@@ -309,6 +309,8 @@ export interface SearchOldPropertiesParams {
   oldOccupierName?: string;
   oldBuilderName?: string;
   oldConstructionYear?: string;
+  pageSize?: number;
+  pageNumber?: number;
 }
 
 export interface SearchOldPropertiesApiResponse {
