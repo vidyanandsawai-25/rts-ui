@@ -1,6 +1,5 @@
 import { useTranslations } from 'next-intl';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface KarakarniDocumentProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectedProperty: any;

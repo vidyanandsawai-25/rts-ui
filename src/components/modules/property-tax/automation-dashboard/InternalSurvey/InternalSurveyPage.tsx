@@ -43,18 +43,20 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData }) =
     const columns = useMemo(() => {
         return getInternalSurveyColumns(
             t,
-            (divisionStr) => {
-                const zoneId = divisionStr.split(' ')[0];
+            (divisionStr, row) => {
+                const zoneId = row.zoneId ?? divisionStr.split(' ')[0];
+                const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
+                const query = `?returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
                 router.push(`${basePath}/internal-survey/ward-wise-summary/${zoneId}${query}`);
             },
             undefined,
             (row, columnKey) => {
                 if (row.sr === t('internalSurvey.total') || !row.division) return;
-                const zoneId = row.division.split(' ')[0];
+                const zoneId = row.zoneId ?? row.division.split(' ')[0];
+                const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
+                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );
@@ -67,7 +69,9 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData }) =
 
         const mappedData: InternalSurveyTableRow[] = (serverData.divisionData || []).map((data, index) => ({
             sr: (index + 1).toString(),
-            division: data.divisionId ? `${data.divisionId} - ${data.divisionName}` : data.divisionName,
+            division: data.zoneNo ? `${data.zoneNo} - ${data.divisionName}` : data.divisionName,
+            zoneId: data.divisionId ?? undefined,
+            zoneNo: data.zoneNo,
             isTotal: false,
             geoStruct: data.geoSequencingProperties?.structure ?? 0,
             geoUnit: data.geoSequencingProperties?.unit ?? 0,
@@ -120,21 +124,16 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData }) =
     }, [serverData, t]);
 
     return (
-        <div className="flex flex-col gap-4 w-full pb-4">
-            <TopBar t={t} />
-
-            <div className="flex-1 w-full bg-white rounded-lg shadow-sm border border-slate-200">
-                <AutomationTable<InternalSurveyTableRow>
-                    data={tableData}
-                    columns={columns}
-                    headerRows={headerRows}
-                    loading={!serverData}
-                    rowClassName={(row) => row.sr === t('internalSurvey.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors hover:bg-transparent"}
-                    emptyText={t('internalSurvey.emptyMessage')}
-                    containerClassName="max-h-[calc(100vh-220px)]"
-                />
-            </div>
-        </div>
+        <AutomationTable<InternalSurveyTableRow>
+            data={tableData}
+            columns={columns}
+            headerRows={headerRows}
+            headerExtra={<TopBar t={t} />}
+            loading={!serverData}
+            rowClassName={(row) => row.sr === t('internalSurvey.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors hover:bg-transparent"}
+            emptyText={t('internalSurvey.emptyMessage')}
+            containerClassName="h-full"
+        />
     );
 };
 

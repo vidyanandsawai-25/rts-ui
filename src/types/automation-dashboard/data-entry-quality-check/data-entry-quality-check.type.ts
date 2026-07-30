@@ -46,6 +46,7 @@ export interface DataEntryAssessmentStatusBreakdown {
 export interface DataEntryGridData {
   divisionId: number | null;
   divisionName: string;
+  zoneNo?: string;
   structure: number;
   unit: number;
   internalSurvey: DataEntryStructureUnitProp;
@@ -73,6 +74,7 @@ export interface DataEntryGridResponse {
 export interface DataEntryWardData {
   wardId: number | null;
   wardNo: string;
+  zoneNo?: string;
   structure: number;
   unit: number;
   internalSurvey: DataEntryStructureUnitProp;

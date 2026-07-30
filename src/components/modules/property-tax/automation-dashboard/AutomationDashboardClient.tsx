@@ -1,7 +1,5 @@
 'use client';
-
-import { useEffect } from 'react';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 import {
@@ -24,20 +22,8 @@ import { WorkflowTabButton } from './StageNavigationCard/TabCardStyles';
 export function ClientWrapper({ children, workflowCardsData, serverData }: Props) {
 
     const pathname = usePathname();
-    const searchParams = useSearchParams();
     const locale = useLocale();
     const router = useRouter();
-
-    useEffect(() => {
-        // Redirect to set workflowStageId for geo-sequencing on initial render
-        if (pathname.includes('/geo-sequencing') && !searchParams.get('workflowStageId')) {
-            const geoCard = workflowCardsData?.find(card => card.stageName === 'GeoSequencing');
-            if (geoCard?.id) {
-                router.replace(`${pathname}?workflowStageId=${geoCard.id}`);
-            }
-        }
-    }, [pathname, searchParams, workflowCardsData, router]);
-
     const basePath = `/${locale}/property-tax/automation-dashboard`;
 
     const isIsolatedView = pathname.includes('/ward-wise-summary') ||
@@ -50,8 +36,8 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
         switch (stageName) {
             case 'GeoSequencing': return { icon: ClipboardList, value: 'geo-sequencing' };
             case 'InternalSurvey': return { icon: FileSearch, value: 'internal-survey' };
-            case 'DataEntry': return { icon: CheckCircle , value: 'quality-check' };
-            case 'Assessment': return { icon: FileCheck , value: 'assessment' };
+            case 'DataEntry': return { icon: CheckCircle, value: 'quality-check' };
+            case 'Assessment': return { icon: FileCheck, value: 'assessment' };
             case 'ApprovalByULB': return { icon: ThumbsUp, value: 'approval-by-ulb' };
             case 'NoticeDistribution': return { icon: Bell, value: 'notice-distribution' };
             case 'HearingAndAppeal': return { icon: Scale, value: 'hearing-appeals' };
@@ -92,18 +78,22 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
                         className="grid gap-2 w-full no-scrollbar"
                         style={{ gridTemplateColumns: `repeat(${rawTabs.length}, minmax(0, 1fr))` }}
                     >
-                        {rawTabs.map((tab) => {
+                        {rawTabs.map((tab, index) => {
                             const isActive = activeTab === tab.value;
                             const Icon = tab.icon;
                             const colors = getTabColors(tab.value);
+                            const isClickable = index < 3;
 
                             return (
                                 <div
                                     key={tab.value}
-                                    onClick={() => router.push(`${basePath}/${tab.value}?workflowStageId=${tab.id}`)}
-                                    className="min-w-0 w-full h-full text-left outline-none transition-transform active:scale-[0.98] block cursor-pointer"
+                                    title={!isClickable ? "Work in Progress" : undefined}
+                                    onClick={() => isClickable && router.push(`${basePath}/${tab.value}?workflowStageId=${tab.id}`)}
+                                    className={`min-w-0 w-full h-full text-left outline-none block ${isClickable ? 'cursor-pointer transition-transform active:scale-[0.98]' : 'cursor-not-allowed grayscale opacity-50'}`}
                                 >
-                                    <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} />
+                                    <div className={`w-full h-full ${!isClickable ? 'pointer-events-none' : ''}`}>
+                                        <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} />
+                                    </div>
                                 </div>
                             );
                         })}

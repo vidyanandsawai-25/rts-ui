@@ -51,6 +51,7 @@ describe('GeoSequencingPage Component', () => {
     zones: [
       {
         zoneId: 13,
+        zoneNo: '13',
         zoneName: 'Central Zone',
         registeredProperties: 1000,
         geoSequencedProperties: { structureCount: 500, unitCount: 900 },
@@ -71,6 +72,7 @@ describe('GeoSequencingPage Component', () => {
     ],
     totalRow: {
       zoneId: 0,
+      zoneNo: 'Total',
       zoneName: 'Total',
       registeredProperties: 1000,
       geoSequencedProperties: { structureCount: 500, unitCount: 900 },

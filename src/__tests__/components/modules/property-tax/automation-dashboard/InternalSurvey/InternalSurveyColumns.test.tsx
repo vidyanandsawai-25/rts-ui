@@ -65,7 +65,7 @@ describe('InternalSurveyColumns', () => {
     render(<>{node}</>);
 
     fireEvent.click(screen.getByText('10 - Division A'));
-    expect(onRowClick).toHaveBeenCalledWith('10');
+    expect(onRowClick).toHaveBeenCalledWith('10', baseRow);
   });
 
   it('returns two header rows with expected grouped column counts', () => {

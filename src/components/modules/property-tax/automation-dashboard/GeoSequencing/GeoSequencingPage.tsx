@@ -16,6 +16,7 @@ import {
 
 interface GeoSequencingPageProps {
     serverData?: GeoSequencingItems | null;
+    defaultWorkflowStageId?: string;
 }
 
 const TopBar = ({ t }: { t: (key: string) => string }) => {
@@ -38,24 +39,34 @@ const TopBar = ({ t }: { t: (key: string) => string }) => {
     );
 };
 
-const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
+const GeoSequencingPage = ({ serverData, defaultWorkflowStageId }: GeoSequencingPageProps) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const t = useTranslations('automationDashboard');
     const locale = useLocale();
-    const workflowStageId = searchParams.get('workflowStageId') || '';
+    const workflowStageId = searchParams.get('workflowStageId') || defaultWorkflowStageId || '';
     const basePath = `/${locale}/property-tax/automation-dashboard`;
 
     const columns = useMemo(() => {
         return getGeoSequencingSharedColumns(
             t,
             'zone',
-            (zoneId) => {
+            (zoneCode, row) => {
+                const targetZoneId = row.zoneId ?? zoneCode;
+                const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                router.push(`${basePath}/geo-sequencing/ward-wise-summary/${zoneId}${query}`);
+                const query = `?returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                router.push(`${basePath}/geo-sequencing/ward-wise-summary/${targetZoneId}${query}`);
             },
-            undefined // Pass undefined to use onClick instead of Link to avoid page refreshes
+            undefined,
+            (row, columnKey) => {
+                if (row.isTotal || !row.division) return;
+                const zoneId = row.zoneId ?? row.division.split(' ')[0];
+                const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
+                const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
+            }
         );
     }, [t, router, basePath, workflowStageId, locale]);
     const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'zone'), [t]);
@@ -65,7 +76,9 @@ const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
 
         const mappedZones: GeoSequencingData[] = serverData.zones.map((zone, index) => ({
             sr: index + 1,
-            division: `${zone.zoneId} - ${zone.zoneName}`,
+            division: zone.zoneNo ? `${zone.zoneNo} - ${zone.zoneName}` : zone.zoneName,
+            zoneId: zone.zoneId,
+            zoneNo: zone.zoneNo,
             registered: zone.registeredProperties ?? 0,
             geoStruct: zone.geoSequencedProperties?.structureCount ?? 0,
             geoUnit: zone.geoSequencedProperties?.unitCount ?? 0,
@@ -117,15 +130,7 @@ const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
             headerExtra={<TopBar t={t} />}
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
-            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors cursor-pointer hover:bg-transparent"}
-            onRowClick={(row) => {
-                if (row.sr === t('geoSequencing.total') || !row.division) return;
-                // Extract zone id, e.g. "13" from "13 - Some Zone"
-                const zoneId = row.division.split(' ')[0];
-                const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=geoSequencing&source=division&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
-            }}
+            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors border-b border-slate-200 hover:bg-transparent"}
         />
     );
 };

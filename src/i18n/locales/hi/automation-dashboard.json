@@ -11,8 +11,9 @@
     "fetchInternalSurveyWardWiseSummary": "आंतरिक सर्वेक्षण वार्ड-वार सारांश डेटा प्राप्त करने में विफल।",
     "fetchAssessmentGrid": "मूल्यांकन ग्रिड डेटा प्राप्त करने में विफल।",
     "fetchPendingAssessmentProps": "लंबित मूल्यांकन संपत्तियां प्राप्त करने में विफल।",
-    "fetchPropertyTypeMaster": "संपत्ति प्रकार मास्टर विवरण प्राप्त करने में विफल।",
-    "fetchApprovalByUlbDetails": "यूएलबी द्वारा स्वीकृति विवरण प्राप्त करने में विफल।"
+    "fetchPropertyTypeMaster": "प्रॉपर्टी टाइप मास्टर डिटेल्स प्राप्त करने में विफल।",
+    "fetchApprovalByUlbDetails": "यूएलबी डिटेल्स द्वारा अप्रूवल प्राप्त करने में विफल।",
+    "fetchPropertyAssessmentStatus": "संपत्ति मूल्यांकन स्थिति विवरण प्राप्त करने में विफल।"
   },
   "summaryCards": {
     "metrics": {
@@ -103,9 +104,10 @@
       "zero": "0",
       "owner": "Owner:",
       "occupier": "Occupier:",
-      "shopName": "Shop Name:",
-      "floors": "Floors",
-      "units": "Units"
+      "shopName": "दुकान का नाम:",
+      "floors": "मंज़िलें",
+      "units": "इकाइयाँ",
+      "wings": "Wings"
     },
     "propertyTypes": {
       "unassessed": "मूल्यांकन नहीं किया गया",

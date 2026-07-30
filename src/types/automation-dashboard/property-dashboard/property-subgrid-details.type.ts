@@ -23,6 +23,7 @@ export interface PropertySubGridProperty {
   flatOrShopName: string;
   assessmentStatus: string;
   floorCount: number | string;
+  wingName?: string | null;
   propertyDetailsCount: number;
   documentGuid: string | null;
   planDocumentGuid: string | null;
@@ -89,6 +90,24 @@ export interface PropertyTypeMasterItem {
 
 export interface PropertyTypeMasterResponseItems {
     items: PropertyTypeMasterItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}
+
+export interface PropertyAssessmentStatusItem {
+    id: number;
+    statusName: string;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+}
+
+export interface PropertyAssessmentStatusResponseItems {
+    items: PropertyAssessmentStatusItem[];
     totalCount: number;
     pageNumber: number;
     pageSize: number;

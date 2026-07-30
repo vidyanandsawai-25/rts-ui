@@ -117,12 +117,31 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
     {
       key: 'propertyNo',
       label: t('columns.propertyDetails'),
-      render: (_, row) => (
-        <div className="flex flex-col text-[11px] leading-tight">
-          <div className="font-bold text-black">{row.propertyNo || '-'} <span className="text-black font-bold">{'| -'}</span></div>
-          <div className="mt-1 text-xs text-indigo-600 font-bold">{'-'} <span className="text-xs text-indigo-600 font-bold">{'| -'}</span></div>
-        </div>
-      )
+      render: (_, row) => {
+        let wingsList: string[] = [];
+        if (row.wingName) {
+            wingsList = row.wingName.split(',').map(w => w.trim()).filter(Boolean);
+        }
+
+        return (
+          <div className="flex flex-col text-[11px] leading-tight">
+            <div className="font-bold text-black">{row.propertyNo || '-'} <span className="text-black font-bold">{'| -'}</span></div>
+            <div className="mt-1 text-xs text-indigo-600 font-bold">{'-'} <span className="text-xs text-indigo-600 font-bold">{'| -'}</span></div>
+            {wingsList.length > 0 && (
+              <div className="mt-2">
+                <div className="text-[9px] font-bold text-indigo-700 tracking-wider uppercase mb-1">{t('labels.wings')}</div>
+                <div className="flex flex-wrap gap-1">
+                  {wingsList.map((wingText, idx) => (
+                    <span key={idx} className="px-1.5 py-0.5 border border-indigo-200 bg-white rounded text-indigo-700 font-semibold text-[10px] shadow-sm">
+                      {wingText}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'category',

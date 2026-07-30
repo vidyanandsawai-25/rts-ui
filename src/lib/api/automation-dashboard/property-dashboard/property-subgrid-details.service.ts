@@ -8,7 +8,9 @@ import {
     WardResponseItems,
     WardItem,
     PropertyTypeMasterResponseItems,
-    PropertyTypeMasterItem
+    PropertyTypeMasterItem,
+    PropertyAssessmentStatusResponseItems,
+    PropertyAssessmentStatusItem
 } from "@/types/automation-dashboard/property-dashboard/property-subgrid-details.type";
 
 export async function automationGetPropertySubGridDetails(
@@ -88,4 +90,18 @@ export async function getPropertyTypeMaster(
     const t = await getTranslations("automationDashboard");
 
     return handleApiResponse(response, t("errors.fetchPropertyTypeMaster") || "Failed to fetch property type master details").items ?? null;
+}
+
+export async function getPropertyAssessmentStatus(
+    pageNumber: number = 1,
+    pageSize: number = -1
+): Promise<PropertyAssessmentStatusItem[] | null> {
+    const params = new URLSearchParams();
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+
+    const response = await apiClient.get<PropertyAssessmentStatusResponseItems>(`/PropertyAssessmentStatus?${params.toString()}`,{cache: "force-cache"});
+    const t = await getTranslations("automationDashboard");
+
+    return handleApiResponse(response, t("errors.fetchPropertyAssessmentStatus") || "Failed to fetch property assessment status details").items ?? null;
 }

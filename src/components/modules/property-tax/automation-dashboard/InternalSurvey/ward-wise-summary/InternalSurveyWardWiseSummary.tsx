@@ -61,7 +61,26 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
         router.push(`${window.location.pathname}?${currentParams.toString()}`);
     };
 
-    const columns = useMemo(() => getInternalSurveyColumns(t), [t]);
+    const zoneNo = searchParams.get('zoneNo');
+    const columns = useMemo(() => getInternalSurveyColumns(
+        t,
+        (divisionStr, row) => {
+            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+            const pathId = row.wardId ? row.wardId : divisionStr.split(' - ')[0];
+            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
+        },
+        undefined,
+        (row, columnKey) => {
+            if (row.isTotal || !row.division) return;
+            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+            const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
+            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
+        }
+    ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
     const headerRows = useMemo(() => getInternalSurveyHeaderRows(t), [t]);
 
     const tableData = useMemo(() => {
@@ -74,6 +93,7 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
         const mappedWards: InternalSurveyTableRow[] = summaryData.wardData.map((ward: InternalSurveyWardWiseData, index: number) => ({
             sr: startSr + index + 1,
             division: ward.wardNo,
+            wardId: ward.wardId ?? undefined,
             geoStruct: ward.geoSequencingProperties?.structure ?? 0,
             geoUnit: ward.geoSequencingProperties?.unit ?? 0,
             surveyStruct: ward.surveyProperties?.structure ?? 0,
@@ -154,7 +174,8 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-[16px] font-bold text-slate-800">
-                            {zoneId} {summaryData?.zoneName ? `- ${summaryData.zoneName}` : ''} - {t('internalSurvey.wardWiseSummary')}
+                            {zoneNo ? `${zoneNo} - ` : ''}
+                            {summaryData?.zoneName ? summaryData.zoneName : ''} - {t('internalSurvey.wardWiseSummary')}
                         </h1>
                         <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
                             <span>{t('internalSurvey.stage')} {formattedStage}</span>
@@ -197,8 +218,10 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
                         onRowClick={(row) => {
                             if (row.isTotal || !row.division) return;
                             const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                            const query = `?stage=internalSurvey&source=ward&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                            router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
+                            const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
+                            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+                            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
                         }}
                     />
                 </div>

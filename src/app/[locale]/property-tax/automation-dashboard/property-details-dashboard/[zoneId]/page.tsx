@@ -1,7 +1,14 @@
 
 
 import PropertyMainDashboardClient from "@/components/modules/property-tax/automation-dashboard/PropertyDetailsDashboard/PropertyMainDashboardClient";
-import { getGeoSequencingPropertyDetailsAction, getPropertyTypeMasterAction, getWardsAction } from "./action";
+import {
+    getGeoSequencingPropertyDetailsAction,
+    getPropertyAssessmentStatusAction,
+    getPropertyTypeMasterAction,
+    getWardsAction,
+    getWardWisePropertySubGridDetailsAction
+} from "./action";
+import { PropertySubGridDetailsItems } from "@/types/automation-dashboard/property-dashboard/property-subgrid-details.type";
 
 interface PageProps {
     searchParams: Promise<
@@ -17,6 +24,9 @@ interface PageProps {
             searchTerm?: string;
             sortBy?: string;
             sortOrder?: string;
+            wardWise?: string;
+            source?: string;
+            zoneId?: string;
         }>;
     params: Promise<
         {
@@ -28,7 +38,6 @@ const page = async ({ searchParams, params }: PageProps) => {
     const search = await searchParams;
     const pathParams = await params;
 
-    const zoneId = pathParams.zoneId;
     const workflowStageId = search.workflowStageId;
 
     // pagination params
@@ -36,7 +45,6 @@ const page = async ({ searchParams, params }: PageProps) => {
     const pageSize = search.pageSize ? parseInt(search.pageSize, 10) : 10;
 
     // filter/sort params
-    const wardId = search.wardId;
     const propertyDescription = search.propertyDescription;
     const propertyTypeId = search.propertyTypeId;
     const assessmentTypeId = search.assessmentTypeId;
@@ -44,32 +52,54 @@ const page = async ({ searchParams, params }: PageProps) => {
     const sortBy = search.sortBy;
     const sortOrder = search.sortOrder;
 
-    const [geoSequencingRes, wardsRes, propertytype] = await Promise.all([
+    const isWardWise = search.wardWise === 'true' || search.source === 'ward';
+
+    // If navigated from Ward Wise Summary, the path parameter is actually the wardId
+    const actualZoneId = isWardWise && search.zoneId ? search.zoneId : pathParams.zoneId;
+    const actualWardId = isWardWise ? pathParams.zoneId : search.wardId;
+
+    const [geoSequencingRes, wardsRes, propertytype, assessmentStatusRes] = await Promise.all([
         workflowStageId
-            ? getGeoSequencingPropertyDetailsAction(
-                zoneId,
-                workflowStageId,
-                pageNumber,
-                pageSize,
-                wardId,
-                propertyDescription,
-                propertyTypeId,
-                assessmentTypeId,
-                searchTerm,
-                sortBy,
-                sortOrder
-            )
+            ? isWardWise
+                ? getWardWisePropertySubGridDetailsAction(
+                    actualZoneId,
+                    workflowStageId,
+                    pageNumber,
+                    pageSize,
+                    actualWardId,
+                    propertyDescription,
+                    propertyTypeId,
+                    assessmentTypeId,
+                    searchTerm,
+                    sortBy,
+                    sortOrder
+                )
+                : getGeoSequencingPropertyDetailsAction(
+                    actualZoneId,
+                    workflowStageId,
+                    pageNumber,
+                    pageSize,
+                    actualWardId,
+                    propertyDescription,
+                    propertyTypeId,
+                    assessmentTypeId,
+                    searchTerm,
+                    sortBy,
+                    sortOrder
+                )
             : Promise.resolve({ success: true, data: null }),
 
         getWardsAction(1, -1),
-        getPropertyTypeMasterAction(1, -1)
+        getPropertyTypeMasterAction(1, -1),
+        getPropertyAssessmentStatusAction(1,-1)
     ]);
 
     return (
         <PropertyMainDashboardClient
-            serverData={geoSequencingRes?.data || null}
+            serverData={geoSequencingRes?.data as PropertySubGridDetailsItems || null}
             wardsData={wardsRes?.data || null}
             propertyType={propertytype?.data || null}
+            assessmentStatus={assessmentStatusRes?.data || null}
         />
     )
 }

@@ -26,11 +26,14 @@ export type InternalSurveyTableRow = {
     inprocessUnit: number | string;
     photoCount: number | string;
     isTotal?: boolean;
+    wardId?: number;
+    zoneId?: number;
+    zoneNo?: string;
 };
 
 export const getInternalSurveyColumns = (
     _t: any,
-    onRowClick?: (id: string) => void,
+    onRowClick?: (id: string, row: InternalSurveyTableRow) => void,
     linkHref?: (id: string) => string,
     onPropertyCellClick?: (row: InternalSurveyTableRow, key: string) => void
 ): Column<InternalSurveyTableRow>[] => {

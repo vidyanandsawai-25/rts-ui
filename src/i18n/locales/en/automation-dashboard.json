@@ -12,7 +12,8 @@
     "fetchAssessmentGrid": "Failed to fetch assessment grid data.",
     "fetchPendingAssessmentProps": "Failed to fetch pending assessment properties.",
     "fetchPropertyTypeMaster": "Failed to fetch property type master details.",
-    "fetchApprovalByUlbDetails": "Failed to fetch approval by ULB details."
+    "fetchApprovalByUlbDetails": "Failed to fetch approval by ULB details.",
+    "fetchPropertyAssessmentStatus": "Failed to fetch property assessment status details."
   },
   "summaryCards": {
     "metrics": {
@@ -105,7 +106,8 @@
       "occupier": "Occupier:",
       "shopName": "Shop Name:",
       "floors": "Floors",
-      "units": "Units"
+      "units": "Units",
+      "wings": "Wings"
     },
     "propertyTypes": {
       "unassessed": "Unassessed",
@@ -229,6 +231,7 @@
     }
   },
   "dataEntryQualityCheck": {
+    "emptyMessage": "No data entry quality check data available",
     "searchPlaceholder": "Search Property No, Notice No, Owner Name",
     "total": "Total",
     "wardWiseSummary": "Ward-wise Summary",

@@ -28,6 +28,7 @@ interface PropertyDashboardHeaderProps {
     selectedWard: string;
     setSelectedWard: (val: string) => void;
     wardOptions: { value: string; label: string }[];
+    isWardDisabled?: boolean;
 
     selectedDescription: string;
     setSelectedDescription: (val: string) => void;
@@ -61,6 +62,7 @@ export const PropertyDashboardHeader = ({
     selectedWard,
     setSelectedWard,
     wardOptions,
+    isWardDisabled,
 
     selectedDescription,
     setSelectedDescription,
@@ -167,11 +169,12 @@ export const PropertyDashboardHeader = ({
                         </label>
                         <SearchSelect
                             id="filter-zone"
-                            name="zone"
+                            name="zone"                            
                             options={zoneOptions}
-                            value={selectedZone}
+                            value={selectedZone}                            
                             onChange={(_, val) => setSelectedZone(val)}
                             placeholder={t('filters.selectZone')}
+                            disabled={true}
                         />
                     </div>
                     <div>
@@ -185,6 +188,7 @@ export const PropertyDashboardHeader = ({
                             value={selectedWard}
                             onChange={(_, val) => setSelectedWard(val)}
                             placeholder={t('filters.selectWard')}
+                            disabled={isWardDisabled}
                         />
                     </div>
                     <div>

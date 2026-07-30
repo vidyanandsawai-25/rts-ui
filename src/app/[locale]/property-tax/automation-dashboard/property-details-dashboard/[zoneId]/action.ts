@@ -1,7 +1,9 @@
 'use server';
 
-import { automationGetPropertySubGridDetails, getWards, getPropertyTypeMaster } from "@/lib/api/automation-dashboard/property-dashboard/property-subgrid-details.service";
-import { PropertySubGridDetailsItems, WardItem, PropertyTypeMasterItem } from "@/types/automation-dashboard/property-dashboard/property-subgrid-details.type";
+import { automationGetPropertySubGridDetails, getWards, getPropertyTypeMaster, getPropertyAssessmentStatus } from "@/lib/api/automation-dashboard/property-dashboard/property-subgrid-details.service";
+import { PropertySubGridDetailsItems, WardItem, PropertyTypeMasterItem, PropertyAssessmentStatusItem } from "@/types/automation-dashboard/property-dashboard/property-subgrid-details.type";
+import { automationGetWardWisePropertySubGridDetails } from "@/lib/api/automation-dashboard/ward-wise-property-dashboard/ward-wise-property-subgrid-details.service";
+import { WardWisePropertySubGridDetailsItems } from "@/types/automation-dashboard/ward-wise-property-dashboard/ward-wise-property-subgrid-details.type";
 import { createLogger } from "@/lib/utils/server-logger";
 import { ApiError } from "@/lib/utils/api";
 import { getTranslations } from "next-intl/server";
@@ -37,7 +39,7 @@ export async function getGeoSequencingPropertyDetailsAction(
     sortBy?: string,
     sortOrder?: string
 ): Promise<ActionResult<PropertySubGridDetailsItems>> {
-    try {
+    try {            
         logger.info("getGeoSequencingPropertyDetailsAction: Fetching property details", { zoneId, workflowStageId, pageNumber, pageSize });
         const data = await automationGetPropertySubGridDetails(
             zoneId,
@@ -112,5 +114,78 @@ export async function getPropertyTypeMasterAction(
         }
         const t = await getTranslations("automationDashboard");
         return { success: false, error: t("errors.fetchPropertyTypeMaster") || "Failed to fetch property type master details", statusCode: 500 };
+    }
+}
+
+/**
+ * Server action to fetch the ward-wise property subgrid details.
+ * 
+ * @param zoneId The zone ID.
+ * @param workflowStageId The workflow stage ID.
+ * @param pageNumber The page number.
+ * @param pageSize The page size.
+ * @returns An object containing success status, data, and optional error message.
+ */
+export async function getWardWisePropertySubGridDetailsAction(
+    zoneId: string | number,
+    workflowStageId: string | number,
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    wardId?: string | number,
+    propertyDescription?: string,
+    propertyTypeId?: string | number,
+    assessmentTypeId?: string | number,
+    searchTerm?: string,
+    sortBy?: string,
+    sortOrder?: string
+): Promise<ActionResult<WardWisePropertySubGridDetailsItems>> {
+    try {      
+        logger.info("getWardWisePropertySubGridDetailsAction: Fetching property details", { zoneId, workflowStageId, pageNumber, pageSize });
+        const data = await automationGetWardWisePropertySubGridDetails(
+            zoneId,
+            workflowStageId,
+            pageNumber,
+            pageSize,
+            wardId,
+            propertyDescription,
+            propertyTypeId,
+            assessmentTypeId,
+            searchTerm,
+            sortBy,
+            sortOrder
+        );
+        return { success: true, data };
+    } catch (error) {
+        logger.error("Failed to fetch ward-wise property subgrid details", { zoneId, workflowStageId }, error);
+        if (error instanceof ApiError) {
+            return { success: false, error: error.message, statusCode: error.statusCode };
+        }
+        const t = await getTranslations("automationDashboard");
+        return { success: false, error: t("errors.fetchGeoSequencingPropertyDetails") || "Failed to fetch property subgrid details", statusCode: 500 };
+    }
+}
+
+/**
+ * Server action to fetch property assessment status details.
+ * 
+ * @param pageNumber The page number.
+ * @param pageSize The page size.
+ * @returns An object containing success status, data, and optional error message.
+ */
+export async function getPropertyAssessmentStatusAction(
+    pageNumber: number = 1,
+    pageSize: number = -1
+): Promise<ActionResult<PropertyAssessmentStatusItem[]>> {
+    try {
+        logger.info("getPropertyAssessmentStatusAction: Fetching property assessment status details", { pageNumber, pageSize });
+        const data = await getPropertyAssessmentStatus(pageNumber, pageSize);
+        return { success: true, data };
+    } catch (error) {
+        logger.error("Failed to fetch property assessment status details", {}, error);
+        if (error instanceof ApiError) {
+            return { success: false, error: error.message, statusCode: error.statusCode };
+        }
+        const t = await getTranslations("automationDashboard");
+        return { success: false, error: t("errors.fetchPropertyAssessmentStatus") || "Failed to fetch property assessment status details", statusCode: 500 };
     }
 }

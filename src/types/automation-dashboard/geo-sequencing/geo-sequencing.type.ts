@@ -21,6 +21,7 @@ export interface AssessmentStatusBreakdown {
 export interface GeoSequencingZone {
   zoneId: number;
   zoneName: string;
+  zoneNo: string;
   registeredProperties: number;
   geoSequencedProperties: CountBreakdown;
   propertyTypeBreakdown: PropertyTypeBreakdown;
@@ -69,7 +70,7 @@ export interface GeoSequencingProperty {
   propertyDetailsCount: number;
   documentGuid: string | null;
   propertyDetailsComparison: PropertyDetailsComparison;
-} 
+}
 
 export interface GeoSequencingWard {
   wardId: number;

@@ -62,15 +62,27 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
         router.push(`${window.location.pathname}?${currentParams.toString()}`);
     };
 
+    const zoneNo = searchParams.get('zoneNo');
     const columns = useMemo(() => getGeoSequencingSharedColumns(
         t,
         'ward',
-        (_wardNo) => {
+        (_wardNo, row) => {
             const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-            const query = `?stage=geoSequencing&source=ward&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-            router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
+            const pathId = row.wardId ? row.wardId : _wardNo.split(' - ')[0];
+            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+            const query = `?stage=geoSequencing&source=ward&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
+        },
+        undefined,
+        (row, columnKey) => {
+            if (row.isTotal || !row.division) return;
+            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+            const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
+            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
-    ), [t, locale, zoneId, workflowStageId, basePath, router]);
+    ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
     const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward'), [t]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
@@ -83,6 +95,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
         const mappedWards: GeoSequencingData[] = summaryData.wardData.map((ward: GeoSequencingWard, index: number) => ({
             sr: startSr + index + 1,
             division: ward.wardNo,
+            wardId: ward.wardId,
             geoStruct: ward.geoSequencedProperties?.structureCount ?? 0,
             geoUnit: ward.geoSequencedProperties?.unitCount ?? 0,
             propRes: ward.propertyTypeBreakdown?.residential ?? 0,
@@ -155,7 +168,8 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-[16px] font-bold text-slate-800">
-                            {zoneId} {summaryData?.zoneName ? `- ${summaryData.zoneName}` : ''} - {t('geoSequencing.wardWiseSummary')}
+                            {zoneNo ? `${zoneNo} - ` : ''}
+                            {summaryData?.zoneName ? summaryData.zoneName : ''} - {t('geoSequencing.wardWiseSummary')}
                         </h1>
                         <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
                             <span>{t('geoSequencing.stage')} {formattedStage}</span>
@@ -183,7 +197,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                         tableClassName="w-full border-collapse text-xs border border-slate-300"
                         theadClassName="sticky top-0 z-20 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)]"
                         maxBodyHeightClassName="max-h-none"
-                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200"}
                         loading={false}
                         totalCount={totalCount}
                         pageNumber={pageNumber}
@@ -194,12 +208,6 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                         paginationConfig={{
                             enabled: true,
                             showPageSizeSelector: true
-                        }}
-                        onRowClick={(row) => {
-                            if (row.isTotal || !row.division) return;
-                            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                            const query = `?stage=geoSequencing&source=ward&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                            router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
                         }}
                     />
                 </div>

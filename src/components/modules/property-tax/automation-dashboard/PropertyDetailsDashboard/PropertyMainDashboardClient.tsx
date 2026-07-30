@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -8,12 +8,13 @@ import Link from 'next/link';
 import { getPropertyDashboardColumns, getPropertyDashboardHeaderRows } from './PropertyDashboardColumns';
 import { PropertyDashboardHeader } from './PropertyDashboardHeader';
 import { DocumentViewerModal } from '@/components/common';
-import { PropertySubGridDetailsItems, PropertySubGridProperty, WardItem, PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { PropertySubGridDetailsItems, PropertySubGridProperty, WardItem, PropertyTypeMasterItem, PropertyAssessmentStatusItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
 interface PropertyMainDashboardProps {
     serverData?: PropertySubGridDetailsItems | null;
     wardsData?: WardItem[] | null;
     propertyType?: PropertyTypeMasterItem[] | null;
+    assessmentStatus?: PropertyAssessmentStatusItem[] | null;
 }
 
 export const propertyTypeOptions = [
@@ -26,13 +27,7 @@ export const propertyTypeOptions = [
     { value: '6', label: 'UnderConstruction' }
 ];
 
-export const assessmentTypeOptions = [
-    { value: 'All', label: 'All' },
-    { value: 'Assessed', label: 'Assessed' },
-    { value: 'Unassessed', label: 'Unassessed' }
-];
-
-const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: PropertyMainDashboardProps) => {
+const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, assessmentStatus }: PropertyMainDashboardProps) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const locale = useLocale();
@@ -40,9 +35,27 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
     const params = useParams();
     const pathZoneId = params?.zoneId as string;
 
-    const stage = searchParams.get('stage') || 'geoSequencing';
-    const workflowStageId = searchParams.get('workflowStageId');
+    const stage = serverData?.workflowStageName || searchParams.get('stage') || 'geoSequencing';
+    const workflowStageId = serverData?.workflowStageId?.toString() || searchParams.get('workflowStageId');
     const source = searchParams.get('source') || 'division';
+
+    const zoneNo = searchParams.get('zoneNo');
+
+    const displayDivision = useMemo(() => {
+        let name = '';
+        if (serverData && 'wardNo' in serverData && typeof serverData.wardNo === 'string') {
+            name = serverData.wardNo;
+        } else if (serverData && 'zoneName' in serverData && typeof serverData.zoneName === 'string') {
+            name = serverData.zoneName;
+        } else {
+            name = pathZoneId || '';
+        }
+
+        if (zoneNo && name && !name.startsWith(`${zoneNo} - `)) {
+            return `${zoneNo} - ${name}`;
+        }
+        return name;
+    }, [serverData, pathZoneId, zoneNo]);
 
     const backUrl = useMemo(() => {
         const returnUrl = searchParams.get('returnUrl');
@@ -56,10 +69,21 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const isWardWise = searchParams.get('wardWise') === 'true' || searchParams.get('source') === 'ward';
+
+    const actualZoneId = searchParams.get('zoneId') || pathZoneId;
+
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [selectedZone, setSelectedZone] = useState('All');
-    
-    const selectedWard = searchParams.get('wardId') || 'All';
+    const [selectedZone, setSelectedZone] = useState(serverData?.zoneId?.toString() || actualZoneId);
+
+    useEffect(() => {
+        if (serverData && 'zoneId' in serverData && serverData.zoneId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSelectedZone(serverData.zoneId.toString());
+        }
+    }, [serverData]);
+
+    const selectedWard = isWardWise ? pathZoneId : (searchParams.get('wardId') || 'All');
     const setSelectedWard = (val: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('wardId', val);
@@ -67,19 +91,64 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
         router.push(`?${params.toString()}`);
     };
 
-    const [selectedDescription, setSelectedDescription] = useState('All');
-    const [selectedPropertyType, setSelectedPropertyType] = useState('All');
-    const [selectedAssessmentType, setSelectedAssessmentType] = useState('All');
+    const selectedDescription = searchParams.get('propertyDescription') || 'All';
+    const setSelectedDescription = (val: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (val && val !== 'All') params.set('propertyDescription', val);
+        else params.delete('propertyDescription');
+        params.set('pageNumber', '1');
+        router.push(`?${params.toString()}`);
+    };
 
-    const zoneOptions = [
-        { value: 'All', label: 'All Zones' },
-        { value: pathZoneId || 'MU', label: pathZoneId || 'MU' }
-    ];
+    const selectedPropertyType = searchParams.get('propertyTypeId') || 'All';
+    const setSelectedPropertyType = (val: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (val && val !== 'All') params.set('propertyTypeId', val);
+        else params.delete('propertyTypeId');
+        params.set('pageNumber', '1');
+        router.push(`?${params.toString()}`);
+    };
 
-    const wardOptions = useMemo(() => {
-        const mapped = (wardsData || [])?.map((item) => ({ label: item?.wardNo, value: String(item?.id) }));
-        return [{ value: 'All', label: 'All Ward' }]?.concat(mapped);
-    }, [wardsData]);
+    const selectedAssessmentType = searchParams.get('assessmentTypeId') || 'All';
+    const setSelectedAssessmentType = (val: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (val && val !== 'All') params.set('assessmentTypeId', val);
+        else params.delete('assessmentTypeId');
+        params.set('pageNumber', '1');
+        router.push(`?${params.toString()}`);
+    };
+
+    const zoneOptions = useMemo(() => {
+        let label = actualZoneId;
+        if (serverData && 'zoneName' in serverData && typeof serverData.zoneName === 'string') {
+            label = serverData.zoneName;
+        }
+        return [{ value: serverData?.zoneId?.toString() || actualZoneId, label: label }];
+    }, [serverData, actualZoneId]);
+
+    const formattedWardsData = useMemo(() => {
+        if (!wardsData) return [{ value: 'All', label: 'All Wards' }];
+        const mapped = wardsData.map(ward => ({
+            value: ward.id.toString(),
+            label: ward.wardNo
+        }));
+
+        if (isWardWise) {
+            const currentWard = mapped.find(w => w.value === pathZoneId);
+            return currentWard ? [currentWard] : [{ value: pathZoneId, label: displayDivision }];
+        }
+
+        return [{ value: 'All', label: 'All Wards' }]?.concat(mapped);
+    }, [wardsData, isWardWise, pathZoneId, displayDivision]);
+
+    const formattedAssessmentStatus = useMemo(() => {
+        if (!assessmentStatus) return [{ value: 'All', label: 'All' }];
+        const mapped = assessmentStatus.map(status => ({
+            value: status.id.toString(),
+            label: status.statusName
+        }));
+        return [{ value: 'All', label: 'All' }]?.concat(mapped);
+    }, [assessmentStatus]);
 
     const descriptionOptions = useMemo(() => {
         const mapped = (propertyType || [])?.map((item) => ({ label: item?.propertyDescription, value: String(item?.id) }));
@@ -87,16 +156,15 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
     }, [propertyType]);
 
     const handleClearFilters = () => {
-        setSelectedZone('All');
-        setSelectedDescription('All');
-        setSelectedPropertyType('All');
-        setSelectedAssessmentType('All');
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('wardId');
+        params.delete('propertyDescription');
+        params.delete('propertyTypeId');
+        params.delete('assessmentTypeId');
+        params.set('pageNumber', '1');
+        router.push(`?${params.toString()}`);
+        setSelectedZone(serverData?.zoneId?.toString() || actualZoneId);
         setSearchTerm('');
-
-        const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
-        currentParams.delete('wardId');
-        currentParams.set('pageNumber', '1');
-        router.push(`?${currentParams.toString()}`);
     };
 
     const headerRows = getPropertyDashboardHeaderRows(t);
@@ -175,7 +243,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
         <div className="flex h-full flex-col gap-4 overflow-hidden bg-gray-50 p-2">
             <PropertyDashboardHeader
                 backUrl={backUrl}
-                division={pathZoneId || ''}
+                division={displayDivision}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 stage={stage}
@@ -191,7 +259,8 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
 
                 selectedWard={selectedWard}
                 setSelectedWard={setSelectedWard}
-                wardOptions={wardOptions}
+                wardOptions={formattedWardsData}
+                isWardDisabled={isWardWise}
 
                 selectedDescription={selectedDescription}
                 setSelectedDescription={setSelectedDescription}
@@ -203,7 +272,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType }: Pr
 
                 selectedAssessmentType={selectedAssessmentType}
                 setSelectedAssessmentType={setSelectedAssessmentType}
-                assessmentTypeOptions={assessmentTypeOptions}
+                assessmentTypeOptions={formattedAssessmentStatus}
             />
 
             {/* Main Table */}

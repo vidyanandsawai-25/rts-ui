@@ -19,6 +19,7 @@ export interface PropertyTypeProp {
 export interface InternalSurveyGridData {
   divisionId: number | null;
   divisionName: string;
+  zoneNo: string;
   geoSequencingProperties: StructureUnitProp;
   surveyProperties: StructureUnitProp;
   propertyType: PropertyTypeProp;
@@ -57,6 +58,7 @@ export interface InternalSurveyWardWiseData {
 
 export interface InternalSurveyWardWiseItems {
   zoneId: number;
+  zoneNo?: string;
   zoneName: string;
   pageNumber: number;
   pageSize: number;

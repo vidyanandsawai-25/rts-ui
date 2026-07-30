@@ -11,8 +11,9 @@
     "fetchInternalSurveyWardWiseSummary": "अंतर्गत सर्वेक्षण प्रभाग-निहाय सारांश डेटा प्राप्त करण्यात अयशस्वी.",
     "fetchAssessmentGrid": "मूल्यांकन ग्रिड डेटा प्राप्त करण्यात अयशस्वी.",
     "fetchPendingAssessmentProps": "प्रलंबित मूल्यांकन मालमत्ता प्राप्त करण्यात अयशस्वी.",
-    "fetchPropertyTypeMaster": "मालमत्ता प्रकार मास्टर तपशील मिळविण्यात अयशस्वी.",
-    "fetchApprovalByUlbDetails": "यूएलबी द्वारे मान्यता तपशील मिळविण्यात अयशस्वी."
+    "fetchPropertyTypeMaster": "प्रॉपर्टी प्रकार मास्टर तपशील मिळवण्यात अयशस्वी.",
+    "fetchApprovalByUlbDetails": "ULB द्वारे मंजुरीचे तपशील मिळवण्यात अयशस्वी.",
+    "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील मिळवण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -103,9 +104,10 @@
       "zero": "0",
       "owner": "Owner:",
       "occupier": "Occupier:",
-      "shopName": "Shop Name:",
-      "floors": "Floors",
-      "units": "Units"
+      "shopName": "दुकानाचे नाव:",
+      "floors": "मजले",
+      "units": "युनिट्स",
+      "wings": "Wings"
     },
     "propertyTypes": {
       "unassessed": "मूल्यांकन न झालेले",

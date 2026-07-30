@@ -31,6 +31,7 @@ describe('InternalSurveyPage', () => {
     divisionData: [
       {
         divisionId: 13,
+        zoneNo: '13',
         divisionName: 'Central',
         geoSequencingProperties: { structure: 101, unit: 102 },
         surveyProperties: { structure: 103, unit: 104 },
@@ -50,6 +51,7 @@ describe('InternalSurveyPage', () => {
     ],
     totalRow: {
       divisionId: null,
+      zoneNo: 'Total',
       divisionName: 'Total',
       geoSequencingProperties: { structure: 201, unit: 202 },
       surveyProperties: { structure: 203, unit: 204 },
@@ -88,7 +90,7 @@ describe('InternalSurveyPage', () => {
 
     expect(pushMock).toHaveBeenCalledTimes(1);
     expect(pushMock).toHaveBeenCalledWith(
-      '/en/property-tax/automation-dashboard/internal-survey/ward-wise-summary/13?returnUrl=%2Fen%2Fproperty-tax%2Fautomation-dashboard%2Finternal-survey%3FworkflowStageId%3D9&workflowStageId=9'
+      '/en/property-tax/automation-dashboard/internal-survey/ward-wise-summary/13?returnUrl=%2Fen%2Fproperty-tax%2Fautomation-dashboard%2Finternal-survey%3FworkflowStageId%3D9&workflowStageId=9&zoneNo=13'
     );
   });
 
@@ -101,7 +103,7 @@ describe('InternalSurveyPage', () => {
 
     expect(pushMock).toHaveBeenCalledTimes(1);
     expect(pushMock).toHaveBeenCalledWith(
-      '/en/property-tax/automation-dashboard/property-details-dashboard/13?stage=internalSurvey&source=division&column=geoStruct&returnUrl=%2Fen%2Fproperty-tax%2Fautomation-dashboard%2Finternal-survey%3FworkflowStageId%3D9&workflowStageId=9'
+      '/en/property-tax/automation-dashboard/property-details-dashboard/13?stage=internalSurvey&source=division&column=geoStruct&returnUrl=%2Fen%2Fproperty-tax%2Fautomation-dashboard%2Finternal-survey%3FworkflowStageId%3D9&workflowStageId=9&zoneNo=13'
     );
   });
 

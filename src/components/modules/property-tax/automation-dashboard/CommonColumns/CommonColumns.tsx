@@ -14,7 +14,7 @@ export const getCommonSrColumn = <T extends { sr: string | number, isTotal?: boo
 });
 
 export const getCommonDivisionColumn = <T extends { sr: string | number, division: string, isTotal?: boolean }>(
-    onDivisionClick?: (divisionCode: string) => void,
+    onDivisionClick?: (divisionCode: string, row: T) => void,
     divisionLinkHref?: (divisionCode: string) => string
 ): Column<T> => ({
     key: 'division' as keyof T,
@@ -52,7 +52,7 @@ export const getCommonDivisionColumn = <T extends { sr: string | number, divisio
                     onClick={(e) => {
                         e.stopPropagation();
                         if (onDivisionClick && code) {
-                            onDivisionClick(code);
+                            onDivisionClick(code, row);
                         }
                     }}
                 >
