@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { createSubZoneAction, updateSubZoneAction } from "@/app/[locale]/assets/configuration/master-data/mouja-subzone/action";
 import { SubZoneFormModel, SubZoneDetails } from "@/types/asset-masters/mouja-subzone.types";
-import { sanitizeSubZoneFieldValue, validateSubZoneForm } from "./validation";
+import { sanitizeSubZoneFieldValue, validateSubZoneForm, getErrorMessage } from "./validation";
 
 interface UseSubZoneFormProps {
   id: number | null;
@@ -65,15 +65,19 @@ export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = (
   const mapApiError = useCallback((res: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
     if (res.errors) {
       for (const val of Object.values(res.errors)) {
-        if (val && t(`apiErrors.${val}` as never) !== `apiErrors.${val}`) return t(`apiErrors.${val}` as never);
+        if (val) {
+          const cleanVal = val.replace(/\.$/, "");
+          const translationKey = `apiErrors.${cleanVal}` as never;
+          try {
+            const translated = t(translationKey);
+            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
+              return translated;
+            }
+          } catch {}
+        }
       }
     }
-    if (res.message) {
-      const cleanMsg = res.message.replace(/\.$/, "");
-      if (t(`apiErrors.${cleanMsg}` as never) !== `apiErrors.${cleanMsg}`) return t(`apiErrors.${cleanMsg}` as never);
-    }
-    const errorMap: Record<number, string> = { 409: t("apiErrors.duplicateRecord"), 404: t("apiErrors.notFound"), 401: tCommon("errors.unauthorized"), 403: tCommon("errors.unauthorized") };
-    return errorMap[res.statusCode ?? 0] || t("apiErrors.operationFailed");
+    return getErrorMessage(res.message, res.statusCode, t, tCommon, t("list.subZoneTitle"));
   }, [t, tCommon]);
 
   const closeAndRoute = useCallback(() => {
@@ -94,7 +98,7 @@ export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = (
     const v = validate(formData);
     setErrors(v);
     if (Object.keys(v).length > 0) {
-      toast.error(tCommon("errors.fixErrors"));
+      toast.error(t("form.validation.fixErrors"));
       return;
     }
     setIsSubmitting(true);

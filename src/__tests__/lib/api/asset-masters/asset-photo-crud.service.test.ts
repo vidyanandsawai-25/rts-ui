@@ -37,7 +37,7 @@ describe("AssetPhotoType API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await getAssetPhotoTypes();
-      expect(apiClient.get).toHaveBeenCalledWith("/master/asset-photo-types?MarkedForDeletion=false");
+      expect(apiClient.get).toHaveBeenCalledWith("/asset-management/photo-type?MarkedForDeletion=false");
       expect(result).toEqual(mockApiResponse.data.items);
     });
   });
@@ -60,7 +60,7 @@ describe("AssetPhotoType API Service", () => {
 
       const result = await getAssetPhotoPaged(1, 10, "query", "photoTypeCode", "asc");
       expect(apiClient.get).toHaveBeenCalledWith(
-        expect.stringContaining("/master/asset-photo-types?PageNumber=1&PageSize=10&MarkedForDeletion=false&SearchTerm=query&SortBy=photoTypeCode&SortOrder=asc")
+        expect.stringContaining("/asset-management/photo-type?PageNumber=1&PageSize=10&MarkedForDeletion=false&SearchTerm=query&SortBy=photoTypeCode&SortOrder=asc")
       );
       expect(result).toEqual(mockApiResponse.data);
     });
@@ -84,7 +84,7 @@ describe("AssetPhotoType API Service", () => {
       });
 
       const result = await getAssetPhotoTypeById(1);
-      expect(apiClient.get).toHaveBeenCalledWith("/master/asset-photo-types/1");
+      expect(apiClient.get).toHaveBeenCalledWith("/asset-management/photo-type/1");
       expect(result).toEqual(mockItem);
     });
   });
@@ -105,7 +105,7 @@ describe("AssetPhotoType API Service", () => {
       };
 
       await createAssetPhotoType(data);
-      expect(apiClient.post).toHaveBeenCalledWith("/master/asset-photo-types", {
+      expect(apiClient.post).toHaveBeenCalledWith("/asset-management/photo-type", {
         photoTypeCode: "CODE",
         photoTypeName: "Name",
         description: "Desc",
@@ -137,7 +137,7 @@ describe("AssetPhotoType API Service", () => {
       };
 
       await updateAssetPhotoType(data);
-      expect(apiClient.put).toHaveBeenCalledWith("/master/asset-photo-types/10", {
+      expect(apiClient.put).toHaveBeenCalledWith("/asset-management/photo-type/10", {
         id: 10,
         photoTypeCode: "CODE",
         photoTypeName: "Name",
@@ -157,7 +157,7 @@ describe("AssetPhotoType API Service", () => {
     it("should send delete request for correct ID", async () => {
       vi.mocked(apiClient.delete).mockResolvedValue({ success: true });
       await deleteAssetPhotoType(15);
-      expect(apiClient.delete).toHaveBeenCalledWith("/master/asset-photo-types/15");
+      expect(apiClient.delete).toHaveBeenCalledWith("/asset-management/photo-type/15");
     });
   });
 

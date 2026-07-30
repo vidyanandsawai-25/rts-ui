@@ -96,11 +96,13 @@
   },
   "apiErrors": {
     "duplicateRecord": "Please check Photo Type Code - duplicates not allowed.",
+    "A record with the same details already exists": "A record with the same details already exists.",
     "validationError": "Invalid data provided. Please check all fields.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "notFound": "Asset photo type not found.",
     "inUse": "Cannot deactivate/delete this Asset Photo Type because it is referenced by other asset records.",
-    "operationFailed": "Operation failed. Please try again later."
+    "operationFailed": "Operation failed. Please try again later.",
+    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
   },
   "success": {
     "created": "New asset photo type created successfully: {code}",

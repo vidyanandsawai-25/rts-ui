@@ -73,10 +73,12 @@
   },
   "apiErrors": {
     "duplicateRecord": "Please check Designation Code - duplicates not allowed.",
+    "A record with the same details already exists": "A record with the same details already exists.",
     "notFound": "Designation not found.",
     "inUse": "Cannot deactivate/delete this Designation because it is referenced by other records.",
     "invalidData": "Invalid data provided. Please check all fields.",
-    "operationFailed": "Operation failed. Please try again later."
+    "operationFailed": "Operation failed. Please try again later.",
+    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
   },
   "success": {
     "created": "New designation created successfully: {code}",

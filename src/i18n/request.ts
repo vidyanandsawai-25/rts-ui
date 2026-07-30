@@ -88,6 +88,7 @@ export default getRequestConfig(async ({ locale }) => {
     owningDepartmentMessages,
     municipalAssetMessages,
     moujaSubzoneMessages,
+    assetTypeOfUseMessages,
     mapDashboardMessages,
     propertyMappingMessages,
   ] = await Promise.all([
@@ -219,6 +220,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/municipalAsset.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetTypeOfUse.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/mapDashboard.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/propertyMapping.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
@@ -300,6 +302,7 @@ export default getRequestConfig(async ({ locale }) => {
       owningDepartment: owningDepartmentMessages,
       municipalAsset: municipalAssetMessages,
       moujaSubzone: moujaSubzoneMessages,
+      assetTypeOfUse: assetTypeOfUseMessages,
       mapDashboard: mapDashboardMessages,
       propertyMapping: propertyMappingMessages?.propertyMapping || propertyMappingMessages,
     },

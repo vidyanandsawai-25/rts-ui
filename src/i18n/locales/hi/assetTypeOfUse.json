@@ -1,0 +1,192 @@
+{
+  "title": "उपयोग प्रकार मास्टर",
+  "seq": "अनुक्रम",
+  "selectIcon": "आइकन चुनें",
+  "residential": "आवासीय",
+  "commercial": "व्यावसायिक",
+  "industrial": "औद्योगिक",
+  "nontaxable": "गैर-करयोग्य",
+  "subtitle": "उपयोग समूह, प्रकार और उप-प्रकार कॉन्फ़िगर करें",
+  "errors": {
+    "typeOfUseCodeRequired": "उपयोग प्रकार कोड आवश्यक है",
+    "typeOfUseCodeMaxLength": "उपयोग प्रकार कोड की अधिकतम लंबाई 20 वर्ण है",
+    "typeOfUseCodeFormat": "अमान्य कोड स्वरूप",
+    "groupCodeRequired": "समूह कोड आवश्यक है",
+    "groupCodeMaxLength": "अधिकतम 10 वर्णों की अनुमति है",
+    "groupCodeFormat": "अमान्य कोड स्वरूप",
+    "groupNameRequired": "समूह का नाम आवश्यक है",
+    "groupNameMaxLength": "अधिकतम 50 वर्णों की अनुमति है",
+    "groupNameFormat": "अमान्य नाम स्वरूप",
+    "descriptionMaxLength": "विवरण की अधिकतम लंबाई 100 वर्ण है",
+    "descriptionFormat": "अमान्य विवरण स्वरूप",
+    "unauthorized": "अनधिकृत",
+    "deleteError": "समूह हटाने में विफल",
+    "fixErrors": "कृपया सत्यापन त्रुटियों को ठीक करें",
+    "mustBeActive": "सहेजने के लिए सक्रिय होना आवश्यक है",
+    "groupIconRequired": "समूह आइकन आवश्यक है",
+    "subTypeNameFormat": "अवैध उप-प्रकार नाम प्रारूप"
+  },
+  "apiErrors": {
+    "duplicateRecord": "रिकॉर्ड पहले से मौजूद है",
+    "A record with the same details already exists": "समान विवरण वाला रिकॉर्ड पहले से मौजूद है।",
+    "notFound": "रिकॉर्ड नहीं मिला",
+    "operationFailed": "ऑपरेशन विफल रहा",
+    "TypeOfUseGroup_Code_Required": "समूह कोड आवश्यक है",
+    "TypeOfUseGroup_Code_MaxLen_10": "समूह कोड की अधिकतम लंबाई 10 वर्ण है",
+    "TypeOfUseGroup_GroupName_Required": "समूह का नाम आवश्यक है",
+    "TypeOfUseGroup_GroupName_MaxLen_50": "समूह के नाम की अधिकतम लंबाई 50 वर्ण है",
+    "TypeOfUseGroup_GroupIcon_Required": "समूह आइकन आवश्यक है",
+    "TypeOfUseGroup_GroupIcon_MaxLen_50": "समूह आइकन की अधिकतम लंबाई 50 वर्ण है",
+    "AssetTypeOfUse_AssetCategoryId_Required": "मालमत्ता श्रेणी आवश्यक है",
+    "AssetTypeOfUse_AssetTypeId_Required": "मालमत्ता प्रकार आवश्यक है",
+    "AssetTypeOfUse_TypeOfUseGroupId_Required": "समूह आवश्यक है",
+    "AssetTypeOfUse_TypeOfUseCode_Required": "उपयोग प्रकार कोड आवश्यक है",
+    "AssetTypeOfUse_TypeOfUseCode_MaxLen_20": "उपयोग प्रकार कोड की अधिकतम लंबाई 20 वर्ण है",
+    "AssetTypeOfUse_Description_Required": "उपयोग प्रकार का नाम आवश्यक है",
+    "AssetTypeOfUse_Description_MaxLen_100": "उपयोग प्रकार के नाम की अधिकतम लंबाई १०० वर्ण है",
+    "AssetSubTypeOfUse_TypeOfUseId_Required": "उपयोग प्रकार आवश्यक है",
+    "AssetSubTypeOfUse_Description_Required": "उप-प्रकार विवरण आवश्यक है",
+    "AssetSubTypeOfUse_Description_MaxLen_100": "उप-प्रकार विवरण की अधिकतम लंबाई 100 वर्ण है",
+    "Cannot deactivate/delete this TypeOfUseGroupMaster because it is referenced in: Asset Type Of Use Master": "उपयोग प्रकार तालिका (Asset Type Of Use Master) में संदर्भित होने के कारण इस उपयोग समूह को निष्क्रिय या हटाया नहीं जा सकता।",
+    "Cannot deactivate/delete this AssetTypeOfUseMaster because it is referenced in: Asset Sub Type Of Use Master": "उप-उपयोग प्रकार तालिका (Asset Sub Type Of Use Master) में संदर्भित होने के कारण इस उपयोग प्रकार को निष्क्रिय या हटाया नहीं जा सकता।",
+    "inUseGroup": "अन्य अभिलेखों में संदर्भित होने के कारण इस उपयोग समूह को निष्क्रिय या हटाया नहीं जा सकता।",
+    "inUseType": "अन्य अभिलेखों में संदर्भित होने के कारण इस उपयोग प्रकार को निष्क्रिय या हटाया नहीं जा सकता।",
+    "inUseSubType": "अन्य अभिलेखों में संदर्भित होने के कारण इस उप-उपयोग प्रकार को निष्क्रिय या हटाया नहीं जा सकता।",
+    "referencedIn": "{tables} तालिका में संदर्भित होने के कारण इस {entity} को निष्‍क्र‍िय या हटाया नहीं जा सकता।",
+    "inUse": "अन्य तालिकाओं में संदर्भित होने के कारण इस रिकॉर्ड को हटाया नहीं जा सकता।"
+  },
+  "messages": {
+    "addingTo": "{name} में जोड़ रहे हैं",
+    "categoryRequired": "श्रेणी आवश्यक है",
+    "typeRequired": "प्रकार आवश्यक है",
+    "groupRequired": "समूह आवश्यक है",
+    "descriptionRequired": "उपयोग प्रकार का नाम आवश्यक है",
+    "descriptionMaxLength": "उपयोग प्रकार के नाम की अधिकतम लंबाई १०० वर्ण है",
+    "subTypeNameRequired": "उप-प्रकार का नाम आवश्यक है",
+    "subTypeNameMaxLength": "उप-प्रकार के नाम की अधिकतम लंबाई 100 वर्ण है",
+    "sequenceNonNegative": "अनुक्रम 0 या उससे अधिक होना चाहिए",
+    "typeCreated": "उपयोग प्रकार सफलतापूर्वक बनाया गया",
+    "typeUpdated": "उपयोग प्रकार सफलतापूर्वक अपडेट किया गया",
+    "typeDeleted": "उपयोग प्रकार सफलतापूर्वक हटा दिया गया",
+    "subTypeCreated": "उप-प्रकार सफलतापूर्वक बनाया गया",
+    "subTypeUpdated": "उप-प्रकार सफलतापूर्वक अपडेट किया गया",
+    "subTypeDeleted": "उप-उपयोग प्रकार सफलतापूर्वक हटा दिया गया",
+    "groupCreated": "समूह सफलतापूर्वक बनाया गया",
+    "groupUpdated": "समूह सफलतापूर्वक अपडेट किया गया",
+    "groupDeleted": "समूह सफलतापूर्वक हटा दिया गया",
+    "subTypeNameLabel": "उप-प्रकार का नाम"
+  },
+  "status": {
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "toggleDescription": "स्थिति बदलें"
+  },
+  "loading": {
+    "message": "उपयोग प्रकार डेटा लोड हो रहा है...",
+    "description": "कृपया जानकारी लोड होने तक प्रतीक्षा करें"
+  },
+  "error": {
+    "title": "उपयोग प्रकार डेटा लोड करने में विफल",
+    "description": "जानकारी लोड करते समय त्रुटि हुई। कृपया पुनः प्रयास करें।",
+    "errorId": "त्रुटि आईडी: {id}",
+    "goHome": "होमपेज पर जाएं",
+    "tryAgain": "पुनः प्रयास करें"
+  },
+  "list": {
+    "selectGroupNotice": "उपयोग प्रकार देखने के लिए कृपया सूची से एक उपयोग समूह चुनें।",
+    "selectTypeNotice": "उप-उपयोग प्रकार देखने के लिए कृपया सूची से एक उपयोग प्रकार चुनें।"
+  },
+  "type": {
+    "title": "उपयोग प्रकार",
+    "searchPlaceholder": "कोड/विवरण खोजें...",
+    "addButton": "उपयोग प्रकार जोड़ें",
+    "add": "उपयोग प्रकार जोड़ें",
+    "edit": "उपयोग प्रकार संपादित करें",
+    "options": {
+      "residential": "R - आवासीय (Residential)",
+      "commercial": "C - व्यावसायिक (Commercial)",
+      "industrial": "I - औद्योगिक (Industrial)",
+      "nontaxable": "N - करमुक्त (Non-taxable)"
+    },
+    "fields": {
+      "category": "मालमत्ता श्रेणी",
+      "assetType": "मालमत्ता प्रकार",
+      "code": {
+        "label": "कोड"
+      },
+      "description": {
+        "label": "उपयोग प्रकार का नाम"
+      },
+      "sequence": "अनुक्रम",
+      "type": {
+        "label": "प्रकार"
+      },
+      "typeId": "उपयोग प्रकार कोड",
+      "useTypeGroup": "उपयोग प्रकार समूह",
+      "selectType": "प्रकार आवश्यक है"
+    },
+    "placeholders": {
+      "typeId": "उपयोग प्रकार कोड दर्ज करें",
+      "description": "उपयोग प्रकार का नाम दर्ज करें"
+    },
+    "selectType": "प्रकार आवश्यक है",
+    "deleteConfirmDescription": "क्या आप वाकई इस उपयोग प्रकार को हटाना चाहते हैं?"
+  },
+  "subtype": {
+    "title": "उप-उपयोग प्रकार",
+    "searchPlaceholder": "उप-प्रकार खोजें...",
+    "addButton": "उप-उपयोग प्रकार जोड़ें",
+    "add": "उप-उपयोग प्रकार जोड़ें",
+    "edit": "उप-उपयोग प्रकार संपादित करें",
+    "addSubtitle": "नया उप-उपयोग प्रकार बनाएं",
+    "editSubtitle": "मौजूदा उप-उपयोग प्रकार अपडेट करें",
+    "fields": {
+      "description": {
+        "label": "उप-प्रकार का नाम"
+      },
+      "sequence": {
+        "label": "अनुक्रम"
+      }
+    },
+    "placeholders": {
+      "subTypeEnglish": "उप-प्रकार का नाम दर्ज करें"
+    },
+    "deleteConfirmDescription": "क्या आप वाकई इस उप-उपयोग प्रकार को हटाना चाहते हैं?"
+  },
+  "group": {
+    "allGroups": "सभी समूह",
+    "title": "उपयोग समूह",
+    "typeOfUseGroups": "उपयोग प्रकार समूह",
+    "groupsCount": "{count} समूह",
+    "codeLabel": "कोड: {code}",
+    "addSubtitle": "नया उपयोग समूह बनाएं",
+    "add": "उपयोग समूह जोड़ें",
+    "edit": "उपयोग समूह संपादित करें",
+    "editSubtitle": "मौजूदा उपयोग समूह अपडेट करें",
+    "deleteConfirmDescription": "क्या आप वाकई इस समूह को हटाना चाहते हैं?",
+    "form": {
+      "addTitle": "उपयोग समूह जोड़ें",
+      "editTitle": "उपयोग समूह संपादित करें",
+      "subtitle": "उपयोग समूह कॉन्फ़िगर करें"
+    },
+    "fields": {
+      "groupId": "समूह कोड",
+      "status": "सक्रिय स्थिति",
+      "code": {
+        "label": "समूह कोड",
+        "placeholder": "समूह कोड दर्ज करें"
+      },
+      "name": {
+        "label": "समूह का नाम",
+        "placeholder": "समूह का नाम दर्ज करें"
+      },
+      "icon": {
+        "label": "समूह आइकन",
+        "placeholder": "समूह आइकन दर्ज करें (जैसे home, building)"
+      }
+    }
+  },
+  "subType": {
+    "title": "उपयोग के उप-प्रकार"
+  }
+}

@@ -93,6 +93,29 @@ export const mapAssetPhotoApiError = (
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const rawMsg = (result.message || "").replace(/\.$/, "");
+  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
+  if (match) {
+    const entity = match[1];
+    const tables = match[2];
+    
+    let entityName = t("list.title");
+    const lowerEntity = entity.toLowerCase();
+    
+    if (lowerEntity.includes("photo")) {
+      try { entityName = t("list.title"); } catch {}
+    }
+    
+    try {
+      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
+      if (translation && translation !== "apiErrors.referencedIn") {
+        return translation;
+      }
+    } catch {}
+
+    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
+  }
+
   const errorMap: Record<number, string> = {
     409: t("apiErrors.duplicateRecord"),
     404: t("apiErrors.notFound"),
@@ -114,3 +137,48 @@ export const mapAssetPhotoApiError = (
   if (code >= 500) return tCommon("errors.serverError");
   return result.message || t("apiErrors.operationFailed");
 };
+
+export function getErrorMessage(
+  message: string | undefined,
+  statusCode: number | undefined,
+  t: (key: string, values?: Record<string, string>) => string,
+  tCommon: (key: string) => string,
+  fallbackEntityName: string
+): string {
+  const rawMsg = (message || "").replace(/\.$/, "");
+  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
+  if (match) {
+    const entity = match[1];
+    const tables = match[2];
+    
+    let entityName = fallbackEntityName;
+    const lowerEntity = entity.toLowerCase();
+    
+    if (lowerEntity.includes("photo")) {
+      try { entityName = t("list.title"); } catch {}
+    }
+    
+    try {
+      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
+      if (translation && translation !== "apiErrors.referencedIn") {
+        return translation;
+      }
+    } catch {}
+
+    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
+  }
+  
+  try {
+    const key = `apiErrors.${rawMsg}`;
+    const translated = t(key as never);
+    if (translated && translated !== key && !translated.includes(key)) {
+      return translated;
+    }
+  } catch {}
+
+  return statusCode === 409
+    ? (t("apiErrors.inUse") || "Record is in use.")
+    : (t("apiErrors.operationFailed") || tCommon("errors.generic") || tCommon("errors.deleteError"));
+}
+
+

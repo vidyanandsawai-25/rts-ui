@@ -109,22 +109,22 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
   // Fetch Sub-Zones corresponding to the selected/defaulted Mouja
   const subZonesResult = Number.isFinite(numericMoujaId) && numericMoujaId > 0
     ? await fetchSubZonesPagedServerAction(
-        sanitized.subZonePn,
-        sanitized.subZonePs,
-        numericMoujaId,
-        sanitized.subZoneSearch,
-        sanitized.subZoneSortBy,
-        sanitized.subZoneSortOrder
-      )
+      sanitized.subZonePn,
+      sanitized.subZonePs,
+      numericMoujaId,
+      sanitized.subZoneSearch,
+      sanitized.subZoneSortBy,
+      sanitized.subZoneSortOrder
+    )
     : {
-        items: [],
-        totalCount: 0,
-        pageNumber: 1,
-        pageSize: sanitized.subZonePs,
-        totalPages: 1,
-        hasPrevious: false,
-        hasNext: false,
-      };
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: sanitized.subZonePs,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    };
 
   return (
     <MoujaSubZoneMaster

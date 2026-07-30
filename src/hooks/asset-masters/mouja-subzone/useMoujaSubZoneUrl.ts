@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 function safeNum(v: string | null, fallback: number) {
   const n = Number(v);
@@ -10,7 +9,7 @@ function safeNum(v: string | null, fallback: number) {
 export function useMoujaSubZoneUrl() {
   const router = useRouter();
   const sp = useSearchParams();
-  const locale = useLocale();
+  const pathname = usePathname();
 
   const urlMoujaId = sp.get("moujaId") ?? "";
   const urlMoujaSearch = sp.get("moujaSearch") ?? "";
@@ -77,9 +76,9 @@ export function useMoujaSubZoneUrl() {
         params.set("subZoneSortOrder", subZoneSortOrder || "asc");
       }
 
-      return `/${locale}/assets/configuration/master-data/mouja-subzone?${params.toString()}`;
+      return `${pathname}?${params.toString()}`;
     },
-    [sp, locale]
+    [sp, pathname]
   );
 
   const pushUrl = useCallback(
