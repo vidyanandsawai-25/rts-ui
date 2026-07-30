@@ -50,7 +50,7 @@ export async function fetchPropertyDetailsConcurrently(
   const rateableValuePromise = propertyId ? getRateableValue(propertyId) : Promise.resolve(null);
 
   const capitalValuePromise =
-    isPropertyTab && propertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+    propertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
       ? getCapitalValue(propertyId)
       : Promise.resolve(null);
 
@@ -66,9 +66,9 @@ export async function fetchPropertyDetailsConcurrently(
       ]).then(() => fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam))
     : Promise.resolve(null);
 
-  // PropertyComparison API call is triggered exclusively on Rateable tab during SSR
+  // PropertyComparison API call is triggered on Rateable tab during SSR
   const comparisonPromise =
-    isPropertyTab && propertyId && isRateableTab
+    propertyId && isRateableTab
       ? getPropertyComparisonAction(propertyId)
       : Promise.resolve(null);
 

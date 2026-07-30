@@ -5,11 +5,13 @@ import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.type
 interface AreaDetailsFieldsProps {
     t: (key: string) => string;
     propertyData: PropertyBasicDetailsApiItem | null;
+    isPlotCategory?: boolean;
 }
 
 export const AreaDetailsFields = ({
     t,
     propertyData,
+    isPlotCategory = false,
 }: AreaDetailsFieldsProps) => {
     const formatAreaValue = (sqFeet: number | null | undefined, sqMeter: number | null | undefined) => {
         if (sqFeet == null && sqMeter == null) return '';
@@ -46,41 +48,48 @@ export const AreaDetailsFields = ({
                 />
             </div>
 
-            {/* Total Carpet Area */}
-            <div className="space-y-1.5 col-span-12 md:col-span-4">
-                <Label htmlFor="pd-carpetarea" className="text-xs font-semibold text-gray-700">
-                    {t('property.totalCarpetAreaWithUnit')}
-                </Label>
-                <Input
-                    readOnly
-                    id="pd-carpetarea"
-                    type="text"
-                    placeholder="0.00 / 0.00"
-                    defaultValue={carpetAreaVal}
-                    onKeyDown={preventEnterSubmit}
-                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                />
-                <input type="hidden" name="totalCarpetAreaSqFeet" value={propertyData?.totalCarpetAreaSqFeet != null ? Number(propertyData.totalCarpetAreaSqFeet).toFixed(2) : ''} />
-                <input type="hidden" name="totalCarpetAreaSqMeter" value={propertyData?.totalCarpetAreaSqMeter != null ? Number(propertyData.totalCarpetAreaSqMeter).toFixed(2) : ''} />
-            </div>
+            {/* Total Carpet Area & Buildup Area - Hidden for Plot Category */}
+            {!isPlotCategory && (
+                <>
+                    {/* Total Carpet Area */}
+                    <div className="space-y-1.5 col-span-12 md:col-span-4">
+                        <Label htmlFor="pd-carpetarea" className="text-xs font-semibold text-gray-700">
+                            {t('property.totalCarpetAreaWithUnit')}
+                        </Label>
+                        <Input
+                            readOnly
+                            id="pd-carpetarea"
+                            type="text"
+                            placeholder="0.00 / 0.00"
+                            defaultValue={carpetAreaVal}
+                            onKeyDown={preventEnterSubmit}
+                            className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                        />
+                    </div>
 
-            {/* Buildup Area */}
-            <div className="space-y-1.5 col-span-12 md:col-span-4">
-                <Label htmlFor="pd-builduparea" className="text-xs font-semibold text-gray-700">
-                    {t('property.buildupAreaWithUnit')}
-                </Label>
-                <Input
-                    readOnly
-                    id="pd-builduparea"
-                    type="text"
-                    placeholder="0.00 / 0.00"
-                    defaultValue={buildupAreaVal}
-                    onKeyDown={preventEnterSubmit}
-                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                />
-                <input type="hidden" name="totalBuiltupAreaSqFeet" value={propertyData?.totalBuiltupAreaSqFeet != null ? Number(propertyData.totalBuiltupAreaSqFeet).toFixed(2) : ''} />
-                <input type="hidden" name="totalBuiltupAreaSqMeter" value={propertyData?.totalBuiltupAreaSqMeter != null ? Number(propertyData.totalBuiltupAreaSqMeter).toFixed(2) : ''} />
-            </div>
+                    {/* Buildup Area */}
+                    <div className="space-y-1.5 col-span-12 md:col-span-4">
+                        <Label htmlFor="pd-builduparea" className="text-xs font-semibold text-gray-700">
+                            {t('property.buildupAreaWithUnit')}
+                        </Label>
+                        <Input
+                            readOnly
+                            id="pd-builduparea"
+                            type="text"
+                            placeholder="0.00 / 0.00"
+                            defaultValue={buildupAreaVal}
+                            onKeyDown={preventEnterSubmit}
+                            className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                        />
+                    </div>
+                </>
+            )}
+
+            {/* Hidden Form Inputs for Server Submission */}
+            <input type="hidden" name="totalCarpetAreaSqFeet" value={propertyData?.totalCarpetAreaSqFeet != null ? Number(propertyData.totalCarpetAreaSqFeet).toFixed(2) : ''} />
+            <input type="hidden" name="totalCarpetAreaSqMeter" value={propertyData?.totalCarpetAreaSqMeter != null ? Number(propertyData.totalCarpetAreaSqMeter).toFixed(2) : ''} />
+            <input type="hidden" name="totalBuiltupAreaSqFeet" value={propertyData?.totalBuiltupAreaSqFeet != null ? Number(propertyData.totalBuiltupAreaSqFeet).toFixed(2) : ''} />
+            <input type="hidden" name="totalBuiltupAreaSqMeter" value={propertyData?.totalBuiltupAreaSqMeter != null ? Number(propertyData.totalBuiltupAreaSqMeter).toFixed(2) : ''} />
         </>
     );
 };

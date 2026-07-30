@@ -126,7 +126,7 @@ export default function TaxCalculationGuidelineClient({
  
     return false;
   };
- 
+
   // Map backend GuidelineGroup strings (e.g., "General Settings", "CC & OC Rules") to internal section keys
   const GROUP_KEY_MAP: Record<string, string> = {
     'General Settings': 'GENERAL',
@@ -158,7 +158,7 @@ export default function TaxCalculationGuidelineClient({
     'Validation': 'VALIDATION',
     'VALIDATION': 'VALIDATION',
   };
- 
+
   // Group guidelines by mapped section key
   const groupedGuidelines: Record<string, typeof dynamicGuidelines> = {};
   for (const item of dynamicGuidelines) {
@@ -194,7 +194,7 @@ export default function TaxCalculationGuidelineClient({
         : cfg.cols === 3
           ? 'grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3'
           : 'grid-cols-1 sm:grid-cols-2';
- 
+
     const isToggleCode = (code: string, dataType?: string | null) =>
       dataType === 'BIT' ||
       code.startsWith('ENABLE_') ||
@@ -214,7 +214,7 @@ export default function TaxCalculationGuidelineClient({
             {t.has(titleKey) ? t(titleKey) : groupKey}
           </h2>
         </div>
- 
+
         <div className={`grid ${colClass} gap-x-4 gap-y-4 px-4 py-4`}>
           {guidelines.map((guideline) => {
             const spanFull =
@@ -300,7 +300,7 @@ export default function TaxCalculationGuidelineClient({
             {renderGroupSection('OC', 'sections.ocRules')}
             {renderGroupSection('RETROSPECTIVE', 'sections.retrospectiveRules')}
           </div>
- 
+
           {/* Right Column */}
           <div className="flex flex-col gap-5">
             {renderGroupSection('DATE_PRIORITY', 'sections.datePriority')}
@@ -308,7 +308,7 @@ export default function TaxCalculationGuidelineClient({
             {renderGroupSection('CC', 'sections.ccRules')}
           </div>
         </div>
- 
+
         {/* ── Dynamic unmapped groups (if any custom group is added in DB) ── */}
         {(() => {
           const knownGroups = new Set([
@@ -318,7 +318,7 @@ export default function TaxCalculationGuidelineClient({
           ]);
           const unmappedGroups = Object.keys(groupedGuidelines).filter((g) => !knownGroups.has(g));
           if (unmappedGroups.length === 0) return null;
- 
+
           return (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
               {unmappedGroups.map((group) => (
@@ -329,7 +329,7 @@ export default function TaxCalculationGuidelineClient({
             </div>
           );
         })()}
- 
+
         {/* ── Collapsible Advanced Settings ───────────────────────────────── */}
         <details className="group bg-white border border-slate-200 rounded-xl shadow-sm transition-all duration-300">
           <summary className="flex items-center justify-between px-5 py-3.5 font-bold text-sm text-slate-800 cursor-pointer list-none select-none">

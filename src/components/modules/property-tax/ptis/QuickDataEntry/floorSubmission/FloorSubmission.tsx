@@ -220,6 +220,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             isPlotCategory={isPlotCategory}
             partitionNo={props.partitionNo}
             isIndividualProperty={isIndividualProperty}
+            plotAreaSqM={plotAreaSqM}
             categoryName={categoryName}
             propertyDescription={propertyDescription}
             hasWing={hasWing}

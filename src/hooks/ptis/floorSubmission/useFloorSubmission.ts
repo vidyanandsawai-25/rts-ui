@@ -255,12 +255,18 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
     selectedFloorType: selectedFloorType,
     // validation fields
+    plotAreaSqM,
     isOpenSpaceAreaExceeded,
     isFloorAreaExceeded,
     availableRemainingOpenSpaceAreaSqM,
     availableRemainingConstructionAreaSqM,
     isGroundFloorAreaExceeded,
     isOpenSpaceNegative,
+    totalOpenSpaceAreaSqM,
+    totalConstructionAreaSqM,
+    alreadyUtilizedOpenSpaceAreaSqM,
+    enteredFloorAreaSqM,
+    enteredOpenSpaceAreaSqM,
   });
 
   const { handleSave, handleDeleteFloor, handleOpenRenterManagement, isSaving, isDeleting } = handlers;

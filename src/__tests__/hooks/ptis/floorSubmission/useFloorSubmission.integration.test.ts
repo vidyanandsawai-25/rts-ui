@@ -17,8 +17,14 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/components/common', () => ({
   useConfirm: vi.fn(() => ({
-    confirm: vi.fn((options) => {
-      if (options.onConfirm) options.onConfirm();
+    confirm: vi.fn(async (options) => {
+      if (options && options.onConfirm) {
+        try {
+          await options.onConfirm();
+        } catch (e) {
+          console.error('Error in mock onConfirm:', e);
+        }
+      }
     }),
   })),
 }));
@@ -64,10 +70,16 @@ import {
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 
 describe('useFloorSubmission - Integration Tests', () => {
-  const mockProps = createMockEditSidebarProps();
+  let mockProps: ReturnType<typeof createMockEditSidebarProps>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockProps = createMockEditSidebarProps({
+      initialPropertyData: {
+        plotAreaSqMeter: 1000,
+        plotAreaSqFeet: 10764,
+      },
+    });
     Object.defineProperty(window, 'location', {
       value: {
         search: '',
@@ -124,19 +136,32 @@ describe('useFloorSubmission - Integration Tests', () => {
 
       // Step 2: Update form data
       act(() => {
-        result.current.setEditingFloorForm(prev => ({
-          ...prev,
-          floor: '1',
+        result.current.setEditingFloorForm({
+          id: undefined,
+          floor: 'Ground Floor',
+          floorId: '1',
+          subFloor: 'None',
+          subFloorId: '1',
           conYr: '2020',
           asstYr: '2021',
-          conTyp: '1',
-          use: '1',
+          conTyp: 'RCC',
+          constructionTypeId: '1',
+          use: 'Residential',
+          typeOfUseId: '1',
+          subTyp: 'Apartment',
+          subTypeOfUseId: '1',
           rooms: '3',
           areaSqFt: '1000',
-        }));
+          areaSqM: '92.9',
+          builtupAreaSqFt: '1200',
+          builtupAreaSqM: '111.5',
+          renter: 'No',
+          isTaxable: 'Yes',
+          roomData: [],
+        });
       });
 
-      expect(result.current.editingFloorForm.floor).toBe('1');
+      expect(result.current.editingFloorForm.floor).toBe('Ground Floor');
       expect(result.current.editingFloorForm.rooms).toBe('3');
 
       // Step 3: Save floor

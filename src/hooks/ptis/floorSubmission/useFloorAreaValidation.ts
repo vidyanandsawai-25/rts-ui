@@ -14,28 +14,89 @@ interface UseFloorAreaValidationProps {
   initialFloors?: FloorData[];
 }
 
+/**
+ * Checks if a floor record is an Open Space / Open Plot record
+ * (e.g. conTyp === 'op', selectedFloorType === 'OpenPlot', floorId === 77).
+ */
 export const isRecordOpenPlot = (floor: FloorData) => {
   if (!floor) return false;
-  if (floor.isOpenPlot === true || floor.isOpenPlot === 'true') return true;
   if (floor.selectedFloorType === 'OpenPlot') return true;
-  if (String(floor.floorId) === '77' || String(floor.floor) === '77') return true;
+  if (floor.isOpenPlot === true || floor.isOpenPlot === 'true') return true;
 
   const conCodeOrDesc = String(
     floor.conTyp || floor.constructionTypeDescription || floor.constructionTypeId || ''
   ).toLowerCase().trim();
 
-  return conCodeOrDesc === 'op' || conCodeOrDesc.includes('open plot');
+  if (conCodeOrDesc === 'op' || conCodeOrDesc.includes('open plot')) return true;
+
+  const floorStr = String(floor.floorId || floor.floor || '').toLowerCase().trim();
+  if (floorStr === '77' || floorStr.includes('op') || floorStr.includes('open plot')) return true;
+
+  return false;
 };
 
-export const isActualOpenPlotRecord = (floor: FloorData) => {
-  return (
-    floor.isOpenPlot === true ||
-    floor.isOpenPlot === 'true' ||
-    String(floor.floorId) === '77' ||
-    String(floor.floor) === '77'
-  );
+/**
+ * Checks if a floor record is specifically "G - तळमजला" (Ground Floor).
+ * Cumulative ground coverage (Ground Floor + Open Space) is ONLY validated for "G - तळमजla".
+ */
+export const isGroundFloorRecord = (floor: FloorData) => {
+  if (!floor) return false;
+  if (isRecordOpenPlot(floor)) return false;
+
+  const floorIdStr = String(floor.floorId || '').trim().toLowerCase();
+  const floorCodeStr = String(floor.floorCode || floor.code || '').trim().toLowerCase();
+  const floorNameStr = String(floor.floorDescription || floor.floorName || floor.floor || '').toLowerCase().trim();
+
+  // "1 - पहिला मजला" / "First Floor" is 1st Floor, NOT Ground Floor!
+  if (
+    floorNameStr.includes('पहिला') ||
+    floorNameStr.includes('first') ||
+    floorNameStr.startsWith('1 -') ||
+    floorNameStr.startsWith('1-')
+  ) {
+    return false;
+  }
+
+  // "2 - दुसरा मजला", "3 - तिसरा मजला", etc. are Upper Floors
+  if (
+    floorNameStr.includes('दुसरा') ||
+    floorNameStr.includes('तिसरा') ||
+    floorNameStr.includes('second') ||
+    floorNameStr.includes('third') ||
+    floorNameStr.startsWith('2 -') ||
+    floorNameStr.startsWith('2-') ||
+    floorNameStr.startsWith('3 -') ||
+    floorNameStr.startsWith('3-')
+  ) {
+    return false;
+  }
+
+  // Ground Floor is identified by '0', 'g', or Marathi "G - तळमजला" / "ground"
+  if (floorIdStr === '0' || floorIdStr === 'g' || floorCodeStr === 'g') return true;
+
+  if (
+    floorNameStr === 'g' ||
+    floorNameStr.startsWith('g -') ||
+    floorNameStr.startsWith('g-') ||
+    floorNameStr.includes('ground') ||
+    floorNameStr.includes('talamajla') ||
+    floorNameStr.includes('तळमजला')
+  ) {
+    return true;
+  }
+
+  return false;
 };
 
+/**
+ * useFloorAreaValidation Hook
+ *
+ * Enforces plot area validations:
+ * 1. Single Floor Limit (Applies to ALL floors including 1st floor, 2nd floor, etc.):
+ *    No individual floor's built-up area can exceed Total Plot Area.
+ * 2. Ground Plot Coverage Limit (Applies to "G - तळमजला" + Open Space):
+ *    Ground Floor Built-up Area + Open Space Area ≤ Total Plot Area.
+ */
 export const useFloorAreaValidation = ({
   localFloors,
   selectedFloor,
@@ -46,121 +107,190 @@ export const useFloorAreaValidation = ({
   floorLookup: _floorLookup,
   initialFloors,
 }: UseFloorAreaValidationProps) => {
-
-
   // Use initialFloors if localFloors is not yet populated to avoid flash of incorrect calculations
   const activeFloors = useMemo(() => {
     return localFloors.length > 0 ? localFloors : (initialFloors || []);
   }, [localFloors, initialFloors]);
 
-  // 1. Calculate already utilized Construction Area (excluding the currently edited one)
-  const alreadyUtilizedConstructionAreaSqM = useMemo(() => {
-    const constructionFloors = activeFloors.filter(
-      (f) => !isRecordOpenPlot(f) && !isActualOpenPlotRecord(f) && (!selectedFloor || f.id !== selectedFloor.id)
+  // Identify the Master Property Plot Header Record (the non-user record holding total property plot area 1000 Sq M)
+  const masterPlotRecordId = useMemo(() => {
+    const master = activeFloors.find(
+      (f) =>
+        (f.isOpenPlot === true || String(f.floorId) === '77' || String(f.floor) === '77') &&
+        (Number(f.carpetAreaSqMeter || f.builtupAreaSqMeter || 0) === plotAreaSqM || plotAreaSqM > 0)
     );
-    return constructionFloors.reduce((sum, f) => sum + (parseFloat(String(f.builtupAreaSqM || f.areaSqM || '0')) || 0), 0);
-  }, [activeFloors, selectedFloor]);
+    return master?.id;
+  }, [activeFloors, plotAreaSqM]);
 
-  // 2. Entered Construction Area from form (if editing/adding a Construction record)
+  // 1. Calculate already utilized Ground Floor Construction Area ("G - तळमजला" only)
+  const alreadyUtilizedGroundFloorAreaSqM = useMemo(() => {
+    const groundFloors = activeFloors.filter(
+      (f) =>
+        !isRecordOpenPlot(f) &&
+        isGroundFloorRecord(f) &&
+        f.id !== masterPlotRecordId &&
+        (!selectedFloor || f.id !== selectedFloor.id)
+    );
+    const sum = groundFloors.reduce((s, f) => {
+      const area = parseFloat(String(f.builtupAreaSqM || f.areaSqM || '0')) || 0;
+      return s + area;
+    }, 0);
+    return Math.round(sum * 10000) / 10000;
+  }, [activeFloors, selectedFloor, masterPlotRecordId]);
+
+  // Total Construction Area of ALL floors (for display metrics)
+  const totalAllFloorsConstructionAreaSqM = useMemo(() => {
+    const constructionFloors = activeFloors.filter(
+      (f) =>
+        !isRecordOpenPlot(f) &&
+        f.id !== masterPlotRecordId &&
+        (!selectedFloor || f.id !== selectedFloor.id)
+    );
+    const sum = constructionFloors.reduce((s, f) => {
+      const area = parseFloat(String(f.builtupAreaSqM || f.areaSqM || '0')) || 0;
+      return s + area;
+    }, 0);
+    return Math.round(sum * 10000) / 10000;
+  }, [activeFloors, selectedFloor, masterPlotRecordId]);
+
+  // 2. Calculate already utilized Open Space Area (excluding master plot record & currently edited floor)
+  const alreadyUtilizedOpenSpaceAreaSqM = useMemo(() => {
+    const openSpaceFloors = activeFloors.filter(
+      (f) =>
+        isRecordOpenPlot(f) &&
+        f.id !== masterPlotRecordId &&
+        (!selectedFloor || f.id !== selectedFloor.id)
+    );
+    const sum = openSpaceFloors.reduce((s, f) => {
+      const area = parseFloat(String(f.areaSqM || f.builtupAreaSqM || '0')) || 0;
+      return s + area;
+    }, 0);
+    return Math.round(sum * 10000) / 10000;
+  }, [activeFloors, selectedFloor, masterPlotRecordId]);
+
+  // Is current active form editing/adding "G - तळमजला" (Ground Floor)?
+  const isEditingGroundFloor = useMemo(() => {
+    return isGroundFloorRecord(editingFloorForm);
+  }, [editingFloorForm]);
+
+  // 3. Entered Ground Floor Construction Area from active form (0 if editing an Upper Floor like 1 - पहिला मजला)
+  const enteredGroundFloorAreaSqM = useMemo(() => {
+    if (!selectedFloor && !isAddingNewFloor) return 0;
+    if (selectedFloorType === 'Construction' && isEditingGroundFloor) {
+      const area = parseFloat(String(editingFloorForm.builtupAreaSqM || editingFloorForm.areaSqM || '0')) || 0;
+      return Math.round(area * 10000) / 10000;
+    }
+    return 0;
+  }, [editingFloorForm, selectedFloorType, selectedFloor, isAddingNewFloor, isEditingGroundFloor]);
+
+  // Entered Construction Area (any floor)
   const enteredConstructionAreaSqM = useMemo(() => {
     if (!selectedFloor && !isAddingNewFloor) return 0;
     if (selectedFloorType === 'Construction') {
-      return parseFloat(String(editingFloorForm.builtupAreaSqM || editingFloorForm.areaSqM || '0')) || 0;
+      const area = parseFloat(String(editingFloorForm.builtupAreaSqM || editingFloorForm.areaSqM || '0')) || 0;
+      return Math.round(area * 10000) / 10000;
     }
     return 0;
   }, [editingFloorForm, selectedFloorType, selectedFloor, isAddingNewFloor]);
 
-  // 3. Real-time Total Construction Area (includes form value if active)
-  const totalConstructionAreaSqM = useMemo(() => {
-    return alreadyUtilizedConstructionAreaSqM + enteredConstructionAreaSqM;
-  }, [alreadyUtilizedConstructionAreaSqM, enteredConstructionAreaSqM]);
-
-  // 4. Open Space Area calculation: Open Space Area = Sum of all saved Open Space entries
-  const totalOpenSpaceAreaSqM = useMemo(() => {
-    const openSpaceFloors = activeFloors.filter(
-      (f) => isRecordOpenPlot(f) && !isActualOpenPlotRecord(f) && (!selectedFloor || f.id !== selectedFloor.id)
-    );
-    let sum = openSpaceFloors.reduce((s, f) => s + (parseFloat(String(f.areaSqM || f.builtupAreaSqM || '0')) || 0), 0);
-    if (selectedFloorType === 'OpenPlot' && (selectedFloor || isAddingNewFloor)) {
-      // If we are currently editing/adding an Open Space record (selectedFloorType === 'OpenPlot' but not the actual open plot record)
-      const editingIsActualOpenPlot = editingFloorForm.isOpenPlot === true || String(editingFloorForm.floorId) === '77';
-      if (!editingIsActualOpenPlot) {
-        sum += parseFloat(String(editingFloorForm.areaSqM || editingFloorForm.builtupAreaSqM || '0')) || 0;
-      }
-    }
-    return sum;
-  }, [activeFloors, selectedFloor, editingFloorForm, selectedFloorType, isAddingNewFloor]);
-
-  // 5. Remaining Area for the Summary Section: Remaining Area = Total Plot Area - Utilized Area - Open Space Area
-  const remainingAvailablePlotAreaSqM = useMemo(() => {
-    const rawRemaining = plotAreaSqM - totalConstructionAreaSqM - totalOpenSpaceAreaSqM;
-    // Round to 4 decimal places to prevent floating-point precision issues (e.g. 1000 - 529.2 - 470.8 = -5.68e-14)
-    return Math.round(rawRemaining * 10000) / 10000;
-  }, [plotAreaSqM, totalConstructionAreaSqM, totalOpenSpaceAreaSqM]);
-
-  // 6. Max available area for the currently edited Construction record
-  const availableRemainingConstructionAreaSqM = useMemo(() => {
-    const savedOpenSpaceArea = activeFloors
-      .filter((f) => isRecordOpenPlot(f) && (!selectedFloor || f.id !== selectedFloor.id))
-      .reduce((sum, f) => sum + (parseFloat(String(f.areaSqM || f.builtupAreaSqM || '0')) || 0), 0);
-    return Math.max(0, plotAreaSqM - alreadyUtilizedConstructionAreaSqM - savedOpenSpaceArea);
-  }, [plotAreaSqM, alreadyUtilizedConstructionAreaSqM, activeFloors, selectedFloor]);
-
-  // 7. Validation: Total Ground Floor Construction Area cannot exceed Total Plot Area
-  const isFloorAreaExceeded = useMemo(() => {
-    return false;
-  }, []);
-
-  // 8. Remaining Open Space Validation: Open Space Area < 0
-  const isOpenSpaceNegative = useMemo(() => {
-    return false;
-  }, []);
-
-  // 10. Already Utilized Open Space Area
-  const alreadyUtilizedOpenSpaceAreaSqM = useMemo(() => {
-    const openPlots = activeFloors.filter(
-      (f) => isRecordOpenPlot(f) && (!selectedFloor || f.id !== selectedFloor.id)
-    );
-    return openPlots.reduce((sum, f) => sum + (parseFloat(String(f.areaSqM || f.builtupAreaSqM || '0')) || 0), 0);
-  }, [activeFloors, selectedFloor]);
-
-  // 11. Entered Open Space Area
+  // 4. Entered Open Space Area from active form
   const enteredOpenSpaceAreaSqM = useMemo(() => {
     if (!selectedFloor && !isAddingNewFloor) return 0;
     if (selectedFloorType === 'OpenPlot') {
-      return parseFloat(String(editingFloorForm.areaSqM || editingFloorForm.builtupAreaSqM || '0')) || 0;
+      const area = parseFloat(String(editingFloorForm.areaSqM || editingFloorForm.builtupAreaSqM || '0')) || 0;
+      return Math.round(area * 10000) / 10000;
     }
     return 0;
   }, [editingFloorForm, selectedFloorType, selectedFloor, isAddingNewFloor]);
 
-  // 12. Available Remaining Open Space Area
-  const availableRemainingOpenSpaceAreaSqM = useMemo(() => {
-    return Math.max(0, plotAreaSqM - alreadyUtilizedConstructionAreaSqM - alreadyUtilizedOpenSpaceAreaSqM);
-  }, [plotAreaSqM, alreadyUtilizedConstructionAreaSqM, alreadyUtilizedOpenSpaceAreaSqM]);
+  // 5. Total Ground Construction Area (saved Ground Floor + current active Ground Floor)
+  const totalGroundConstructionAreaSqM = useMemo(() => {
+    return Math.round((alreadyUtilizedGroundFloorAreaSqM + enteredGroundFloorAreaSqM) * 10000) / 10000;
+  }, [alreadyUtilizedGroundFloorAreaSqM, enteredGroundFloorAreaSqM]);
 
-  // 13. Open Space Area Exceeded Validation
-  const isOpenSpaceAreaExceeded = useMemo(() => {
+  // 6. Total Open Space Area (saved Open Space + current active Open Space)
+  const totalOpenSpaceAreaSqM = useMemo(() => {
+    return Math.round((alreadyUtilizedOpenSpaceAreaSqM + enteredOpenSpaceAreaSqM) * 10000) / 10000;
+  }, [alreadyUtilizedOpenSpaceAreaSqM, enteredOpenSpaceAreaSqM]);
+
+  // 7. Grand Total Ground Utilized Area = Ground Floor Construction + Open Space Area
+  const grandTotalGroundUtilizedAreaSqM = useMemo(() => {
+    return Math.round((totalGroundConstructionAreaSqM + totalOpenSpaceAreaSqM) * 10000) / 10000;
+  }, [totalGroundConstructionAreaSqM, totalOpenSpaceAreaSqM]);
+
+  // 8. Remaining Available Plot Area for Ground Coverage
+  const remainingAvailablePlotAreaSqM = useMemo(() => {
+    const rawRemaining = plotAreaSqM - grandTotalGroundUtilizedAreaSqM;
+    return Math.max(0, Math.round(rawRemaining * 10000) / 10000);
+  }, [plotAreaSqM, grandTotalGroundUtilizedAreaSqM]);
+
+  // 9. Available Remaining Ground Construction Area
+  const availableRemainingConstructionAreaSqM = useMemo(() => {
+    const maxAvail = plotAreaSqM - alreadyUtilizedGroundFloorAreaSqM - alreadyUtilizedOpenSpaceAreaSqM;
+    return Math.max(0, Math.round(maxAvail * 10000) / 10000);
+  }, [plotAreaSqM, alreadyUtilizedGroundFloorAreaSqM, alreadyUtilizedOpenSpaceAreaSqM]);
+
+  // 10. Available Remaining Open Space Area
+  const availableRemainingOpenSpaceAreaSqM = useMemo(() => {
+    const maxAvail = plotAreaSqM - alreadyUtilizedGroundFloorAreaSqM - alreadyUtilizedOpenSpaceAreaSqM;
+    return Math.max(0, Math.round(maxAvail * 10000) / 10000);
+  }, [plotAreaSqM, alreadyUtilizedGroundFloorAreaSqM, alreadyUtilizedOpenSpaceAreaSqM]);
+
+  // 11. Construction Validation
+  const isFloorAreaExceeded = useMemo(() => {
+    if (selectedFloorType !== 'Construction') return false;
+    if (!selectedFloor && !isAddingNewFloor) return false;
+
+    const roundedPlotArea = Math.round(plotAreaSqM * 10000) / 10000;
+    if (roundedPlotArea <= 0) return true;
+
+    // Rule 1: Individual floor built-up area cannot exceed Total Plot Area (applies to ALL floors including 1st Floor, 2nd Floor, etc.)
+    if (enteredConstructionAreaSqM > roundedPlotArea) return true;
+
+    // Rule 2: Cumulative Ground Coverage (Ground Floor + Open Space) cannot exceed Total Plot Area (applies to Ground Floor ONLY)
+    if (isEditingGroundFloor && grandTotalGroundUtilizedAreaSqM > roundedPlotArea) return true;
+
     return false;
-  }, []);
+  }, [selectedFloorType, selectedFloor, isAddingNewFloor, isEditingGroundFloor, plotAreaSqM, enteredConstructionAreaSqM, grandTotalGroundUtilizedAreaSqM]);
+
+  // 12. Open Space Validation: Open Space Area + Ground Floor Area ("G - तळमजला") ≤ Total Plot Area
+  const isOpenSpaceAreaExceeded = useMemo(() => {
+    if (selectedFloorType !== 'OpenPlot') return false;
+    if (!selectedFloor && !isAddingNewFloor) return false;
+
+    const roundedPlotArea = Math.round(plotAreaSqM * 10000) / 10000;
+    if (roundedPlotArea <= 0) return true;
+    if (enteredOpenSpaceAreaSqM > roundedPlotArea) return true;
+    if (grandTotalGroundUtilizedAreaSqM > roundedPlotArea) return true;
+
+    return false;
+  }, [selectedFloorType, selectedFloor, isAddingNewFloor, plotAreaSqM, enteredOpenSpaceAreaSqM, grandTotalGroundUtilizedAreaSqM]);
 
   const isAreaExceeded = useMemo(() => {
-    return false;
-  }, []);
+    return isFloorAreaExceeded || isOpenSpaceAreaExceeded;
+  }, [isFloorAreaExceeded, isOpenSpaceAreaExceeded]);
+
+  const isPlotAreaZeroOrNegative = useMemo(() => {
+    return plotAreaSqM <= 0;
+  }, [plotAreaSqM]);
 
   return {
-    totalConstructionAreaSqM,
+    totalConstructionAreaSqM: totalAllFloorsConstructionAreaSqM,
     totalOpenSpaceAreaSqM,
+    grandTotalUtilizedAreaSqM: grandTotalGroundUtilizedAreaSqM,
     remainingAvailablePlotAreaSqM,
     availableRemainingOpenSpaceAreaSqM,
     availableRemainingConstructionAreaSqM,
+    alreadyUtilizedConstructionAreaSqM: alreadyUtilizedGroundFloorAreaSqM,
+    alreadyUtilizedOpenSpaceAreaSqM,
     isOpenSpaceAreaExceeded,
     isFloorAreaExceeded,
     isAreaExceeded,
+    isPlotAreaZeroOrNegative,
     enteredFloorAreaSqM: enteredConstructionAreaSqM,
-    alreadyUtilizedOpenSpaceAreaSqM,
     enteredOpenSpaceAreaSqM,
-    currentTotalGroundFloorAreaSqM: totalConstructionAreaSqM,
+    currentTotalGroundFloorAreaSqM: totalGroundConstructionAreaSqM,
     isGroundFloorAreaExceeded: isFloorAreaExceeded,
-    isOpenSpaceNegative,
+    isOpenSpaceNegative: false,
   };
 };

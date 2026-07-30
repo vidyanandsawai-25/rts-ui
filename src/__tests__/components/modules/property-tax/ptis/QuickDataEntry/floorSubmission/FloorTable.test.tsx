@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FloorTable from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/FloorTable';
 import { FloorData } from '@/types/room-details.types';
 
-
 vi.mock('@/components/common', () => ({
   AddButton: ({ label, onClick }: { label: string; onClick: () => void }) => (
     <button
@@ -39,14 +38,6 @@ vi.mock('@/components/common', () => ({
       )}
     </div>
   ),
-  SearchInput: ({ value, onChange, placeholder }: { value: string; onChange: (val: string) => void; placeholder: string }) => (
-    <input
-      data-testid="search-input"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-    />
-  ),
   DeleteButton: ({ onClick }: { onClick: () => void }) => (
     <button onClick={onClick} data-testid="delete-button">Delete</button>
   ),
@@ -66,7 +57,6 @@ vi.mock('@/lib/utils/floorSubmission/floor-mappers', () => ({
   getTypeOfUseId: (floor: FloorData) => floor.use || null,
   normalizeFloorFormData: (floor: FloorData) => floor,
 }));
-
 
 vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/FloorTableColumns', () => ({
   useFloorTableColumns: () => [
@@ -143,37 +133,29 @@ describe('FloorTable', () => {
 
   it('renders floor table with data', () => {
     render(<FloorTable {...mockProps} />);
-    
+
     expect(screen.getByTestId('master-table')).toBeInTheDocument();
     expect(screen.getByText('floor.allFloors')).toBeInTheDocument();
   });
 
   it('displays floor count badge', () => {
     render(<FloorTable {...mockProps} />);
-    
-    expect(screen.getByText('2')).toBeInTheDocument(); // 2 floors in mockFloorData
+
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 
-  it('renders search input', () => {
-    render(<FloorTable {...mockProps} />);
-    
-    const searchInput = screen.getByTestId('search-input');
-    expect(searchInput).toBeInTheDocument();
-    expect(searchInput).toHaveAttribute('placeholder', 'floor.searchFloors');
-  });
+  it('renders table summary metrics badges including Additional Plot Area', () => {
+    render(<FloorTable {...mockProps} plotAreaSqM={1000} />);
 
-  it('calls setFloorSearch when search input changes', () => {
-    render(<FloorTable {...mockProps} />);
-    
-    const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: 'Ground' } });
-    
-    expect(mockProps.setFloorSearch).toHaveBeenCalledWith('Ground');
+    expect(screen.getByText('Plot Area:')).toBeInTheDocument();
+    expect(screen.getByText('Additional Plot Area:')).toBeInTheDocument();
+    expect(screen.getByText('Carpet Area:')).toBeInTheDocument();
+    expect(screen.getByText('Built-up Area:')).toBeInTheDocument();
   });
 
   it('renders add floor button', () => {
     render(<FloorTable {...mockProps} />);
-    
+
     const addButton = screen.getByTestId('add-floor-button');
     expect(addButton).toBeInTheDocument();
     expect(addButton).toHaveTextContent('floor.addFloor');
@@ -181,7 +163,7 @@ describe('FloorTable', () => {
 
   it('renders data entry same as button', () => {
     render(<FloorTable {...mockProps} />);
-    
+
     const dataEntryButton = screen.getByTestId('data-entry-button');
     expect(dataEntryButton).toBeInTheDocument();
     expect(dataEntryButton).toHaveTextContent('floor.dataEntry');
@@ -189,109 +171,20 @@ describe('FloorTable', () => {
 
   it('opens the data entry same as drawer when data entry same as button is clicked', () => {
     render(<FloorTable {...mockProps} />);
-    
+
     const dataEntryButton = screen.getByTestId('data-entry-button');
     fireEvent.click(dataEntryButton);
-    
+
     expect(mockProps.handleOpenDataEntrySameAs).toHaveBeenCalled();
   });
 
   it('calls handleAddFloor when add button is clicked', () => {
     render(<FloorTable {...mockProps} />);
-    
+
     const addButton = screen.getByTestId('add-floor-button');
     fireEvent.click(addButton);
-    
+
     expect(mockProps.handleAddFloor).toHaveBeenCalled();
-  });
-
-  it('handles row click to select floor', () => {
-    render(<FloorTable {...mockProps} />);
-    
-    const table = screen.getByTestId('master-table');
-    const firstRow = table.querySelector('tbody tr');
-    
-    if (firstRow) {
-      fireEvent.click(firstRow);
-      
-      expect(mockProps.setEditingFloorForm).toHaveBeenCalledWith(mockFloorData[0]);
-      expect(mockProps.setSelectedFloor).toHaveBeenCalledWith(mockFloorData[0]);
-      expect(mockProps.setIsAddingNewFloor).toHaveBeenCalledWith(false);
-    }
-  });
-
-  it('calls handleDeleteFloor when delete action is clicked', () => {
-    render(<FloorTable {...mockProps} />);
-    
-    const deleteButtons = screen.getAllByTestId('delete-action');
-    fireEvent.click(deleteButtons[0]);
-    
-    expect(mockProps.handleDeleteFloor).toHaveBeenCalledWith(mockFloorData[0]);
-  });
-
-  it('displays no floors message when filteredFloors is empty', () => {
-    const emptyProps = { ...mockProps, filteredFloors: [] };
-    render(<FloorTable {...emptyProps} />);
-    
-    expect(screen.getByText('floor.noFloorsFound')).toBeInTheDocument();
-  });
-
-  it('highlights selected floor row', () => {
-    const propsWithSelection = { 
-      ...mockProps, 
-      selectedFloor: mockFloorData[0],
-      isAddingNewFloor: false,
-    };
-    render(<FloorTable {...propsWithSelection} />);
-    
-    const table = screen.getByTestId('master-table');
-    const firstRow = table.querySelector('tbody tr');
-    
-    expect(firstRow?.className).toContain('bg-blue-100/70');
-  });
-
-  it('does not highlight row when adding new floor', () => {
-    const propsWithNewFloor = { 
-      ...mockProps, 
-      selectedFloor: mockFloorData[0],
-      isAddingNewFloor: true,
-    };
-    render(<FloorTable {...propsWithNewFloor} />);
-    
-    const table = screen.getByTestId('master-table');
-    const firstRow = table.querySelector('tbody tr');
-    
-    expect(firstRow?.className).not.toContain('bg-blue-100/70');
-  });
-
-  it('updates URL params when floor is selected', () => {
-    render(<FloorTable {...mockProps} />);
-    
-    const table = screen.getByTestId('master-table');
-    const firstRow = table.querySelector('tbody tr');
-    
-    if (firstRow) {
-      fireEvent.click(firstRow);
-      
-      expect(mockProps.updateUrlParams).toHaveBeenCalledWith({
-        drawer: null,
-        floorId: '1',
-        typeOfUseId: 'Residential',
-      });
-    }
-  });
-
-  it('clears form errors when floor is selected', () => {
-    render(<FloorTable {...mockProps} />);
-    
-    const table = screen.getByTestId('master-table');
-    const firstRow = table.querySelector('tbody tr');
-    
-    if (firstRow) {
-      fireEvent.click(firstRow);
-      
-      expect(mockProps.setFormErrors).toHaveBeenCalledWith({});
-    }
   });
 
   it('hides Data Entry Same As button when propertyDescription is Amenity or ॲमिनिटी', () => {

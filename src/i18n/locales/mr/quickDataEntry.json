@@ -1053,6 +1053,8 @@
     "deleteConfirmText": "तुम्हाला हा मजला हटवायचा आहे?",
     "deleteConfirmButton": "होय, हटवा!",
     "floorDeletedSuccess": "मजला यशस्वीरित्या हटवला",
+    "floorAddSuccess": "मजला यशस्वीरित्या जोडला गेला",
+    "floorUpdateSuccess": "मजला यशस्वीरित्या अद्यतनित केला गेला",
     "asstYrError": "मूल्यांकन वर्ष बांधकाम वर्षापेक्षा कमी असू शकत नाही",
     "asstYrValidationTitle": "मूल्यांकन वर्ष बांधकाम वर्षापेक्षा कमी असू शकत नाही",
     "asstYrValidationMessage": "मूल्यांकन वर्ष ({asstYr}) बांधकाम वर्ष ({conYr}) पेक्षा कमी असू शकत नाही",
@@ -1103,6 +1105,17 @@
     "openSpaceNegative": "मोकळी जागा क्षेत्र ऋणात्मक असू शकत नाही. कृपया तळमजला बांधकाम क्षेत्र कमी करा.",
     "openSpaceAreaExceeded": "मोकळी जागा क्षेत्र उपलब्ध शिल्लक क्षेत्र ({area} चौ.मी.) पेक्षा जास्त असू शकत नाही.",
     "floorAreaExceeded": "मजला बांधकाम क्षेत्र उपलब्ध शिल्लक क्षेत्र ({area} चौ.मी.) पेक्षा जास्त असू शकत नाही.",
+    "ok": "ठीक आहे",
+    "errors": {
+      "areaExceededTitle": "भूखंड क्षेत्राची मर्यादा ओलांडली",
+      "assessmentYearInvalid": "आकारणी वर्ष ४ अंकी असावे (१७०० ते चालू वर्ष)",
+      "constructionYearInvalid": "बांधकाम वर्ष ४ अंकी असावे (१७०० ते चालू वर्ष)",
+      "constructionYearRequired": "बांधकाम वर्ष आवश्यक आहे",
+      "assessmentYearRequired": "आकारणी वर्ष आवश्यक आहे",
+      "floorRequired": "मजला निवडणे आवश्यक आहे",
+      "roomCountMismatch": "खोल्यांच्या संख्येत विसंगती आढळली. कृपया माहिती अद्ययावत करा.",
+      "openPlotConstructionTypeNotFound": "मास्टर डेटामध्ये मोकळा भूखंड बांधकाम प्रकार आढळला नाही."
+    },
     "unexpectedError": "एक अनपेक्षित त्रुटी आली.",
     "roomSubmissionModal": {
       "title": "खोली सबमिशन सुविधा",

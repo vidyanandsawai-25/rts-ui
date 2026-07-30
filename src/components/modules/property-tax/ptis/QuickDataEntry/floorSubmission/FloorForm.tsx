@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React from 'react';
@@ -73,17 +72,17 @@ const FloorForm: React.FC<FloorFormProps & {
   onSave,
   selectedFloorType = 'Construction',
   isPlotCategory = false,
-  isAreaExceeded = false,
-  plotAreaSqM = 0,
-  isOpenSpaceAreaExceeded = false,
-  isFloorAreaExceeded = false,
-  totalOpenSpaceAreaSqM = 0,
-  totalConstructionAreaSqM = 0,
-  availableRemainingOpenSpaceAreaSqM = 0,
-  availableRemainingConstructionAreaSqM = 0,
-  enteredFloorAreaSqM = 0,
-  alreadyUtilizedOpenSpaceAreaSqM = 0,
-  enteredOpenSpaceAreaSqM = 0,
+  isAreaExceeded: _isAreaExceeded = false,
+  plotAreaSqM: _plotAreaSqM = 0,
+  isOpenSpaceAreaExceeded: _isOpenSpaceAreaExceeded = false,
+  isFloorAreaExceeded: _isFloorAreaExceeded = false,
+  totalOpenSpaceAreaSqM: _totalOpenSpaceAreaSqM = 0,
+  totalConstructionAreaSqM: _totalConstructionAreaSqM = 0,
+  availableRemainingOpenSpaceAreaSqM: _availableRemainingOpenSpaceAreaSqM = 0,
+  availableRemainingConstructionAreaSqM: _availableRemainingConstructionAreaSqM = 0,
+  enteredFloorAreaSqM: _enteredFloorAreaSqM = 0,
+  alreadyUtilizedOpenSpaceAreaSqM: _alreadyUtilizedOpenSpaceAreaSqM = 0,
+  enteredOpenSpaceAreaSqM: _enteredOpenSpaceAreaSqM = 0,
 }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -217,47 +216,12 @@ const FloorForm: React.FC<FloorFormProps & {
             selectedFloorType={selectedFloorType}
           />
 
-          {selectedFloorType === 'OpenPlot' && isOpenSpaceAreaExceeded && (
-            <div className={`${selectedFloorType === 'OpenPlot' ? 'md:col-span-4' : 'md:col-span-3'} bg-red-50 border-2 border-red-200 text-red-700 rounded-xl p-4 text-xs font-semibold space-y-2 whitespace-pre-line shadow-sm`}>
-              <span className="font-bold text-sm block text-red-800">
-                Open Space Area cannot exceed the available remaining area ({parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2))} Sq.M).
-              </span>
-              <div>
-                <p>Plot Area: {parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Total Construction Area: {parseFloat(Number(totalConstructionAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Already Utilized Open Space Area: {parseFloat(Number(alreadyUtilizedOpenSpaceAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Attempted Open Space Area: {parseFloat(Number(enteredOpenSpaceAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Remaining Area for Open Space: {parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2))} Sq M</p>
-              </div>
-              <p className="text-red-600 font-bold mt-1">
-                Please enter an Open Space area less than or equal to the remaining area.
-              </p>
-            </div>
-          )}
-
-          {selectedFloorType === 'Construction' && isFloorAreaExceeded && (
-            <div className="md:col-span-3 bg-red-50 border-2 border-red-200 text-red-700 rounded-xl p-4 text-xs font-semibold space-y-2 whitespace-pre-line shadow-sm">
-              <span className="font-bold text-sm block text-red-800">
-                Floor Built-up Area cannot exceed the available remaining area ({parseFloat(Number(availableRemainingConstructionAreaSqM || 0).toFixed(2))} Sq.M).
-              </span>
-              <div>
-                <p>Plot Area: {parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Already Utilized Open Space Area: {parseFloat(Number(totalOpenSpaceAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Entered Floor Built-up Area: {parseFloat(Number(enteredFloorAreaSqM || 0).toFixed(2))} Sq M</p>
-                <p>Remaining Area: {parseFloat(Number(availableRemainingConstructionAreaSqM || 0).toFixed(2))} Sq M</p>
-              </div>
-              <p className="text-red-600 font-bold mt-1">
-                Please enter a Construction area less than or equal to the remaining area.
-              </p>
-            </div>
-          )}
-
           <div className={`mt-4 flex justify-end ${selectedFloorType === 'OpenPlot' ? 'md:col-span-4' : 'md:col-span-3'}`}>
             <Button
               id="floor-save-btn"
               onClick={onSave}
               isLoading={isOperationLoading}
-              disabled={isOperationLoading || !isFormValid || isAreaExceeded}
+              disabled={isOperationLoading || !isFormValid}
               className="px-6 h-9 text-xs font-bold shadow-md rounded-lg transition-all duration-300 flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:bg-blue-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:pointer-events-none"
               onKeyDown={(e) => {
                 if (e.key === 'Tab' && !e.shiftKey) {
@@ -271,7 +235,7 @@ const FloorForm: React.FC<FloorFormProps & {
             >
               {isAddingNewFloor ? t('floor.add') : t('floor.updateFloor')}
             </Button>
-            {(isOperationLoading || !isFormValid || isAreaExceeded) && (
+            {(isOperationLoading || !isFormValid) && (
               <span
                 tabIndex={0}
                 onFocus={(e) => {

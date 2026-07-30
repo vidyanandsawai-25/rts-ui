@@ -74,31 +74,51 @@ export function usePlotAreaCalculator({
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  const initialLen = initialPlotArea?.length;
+  const initialWid = initialPlotArea?.width;
+  const initialTotal = initialPlotArea?.totalPlotArea;
+
+  const prevInitialRef = React.useRef<{
+    length?: number | string | null;
+    width?: number | string | null;
+    totalPlotArea?: number | string | null;
+  } | null>(null);
+
   React.useEffect(() => {
     if (initialPlotArea) {
-      const lenVal = initialPlotArea.length;
-      const widVal = initialPlotArea.width;
-      const totalVal = initialPlotArea.totalPlotArea;
+      const isSameAsPrev =
+        prevInitialRef.current &&
+        prevInitialRef.current.length === initialLen &&
+        prevInitialRef.current.width === initialWid &&
+        prevInitialRef.current.totalPlotArea === initialTotal;
 
-      const len = lenVal !== null && lenVal !== undefined ? String(lenVal) : '0';
-      const wid = widVal !== null && widVal !== undefined ? String(widVal) : '0';
-      const totalArea = totalVal !== null && totalVal !== undefined ? Number(totalVal) : 0;
+      if (!isSameAsPrev) {
+        prevInitialRef.current = {
+          length: initialLen,
+          width: initialWid,
+          totalPlotArea: initialTotal,
+        };
 
-      setLength(len);
-      setWidth(wid);
+        const len = initialLen !== null && initialLen !== undefined ? String(initialLen) : '0';
+        const wid = initialWid !== null && initialWid !== undefined ? String(initialWid) : '0';
+        const totalArea = initialTotal !== null && initialTotal !== undefined ? Number(initialTotal) : 0;
 
-      const sqFt = convertSqMToSqFt(totalArea);
+        setLength(len);
+        setWidth(wid);
 
-      if (onLoadRef.current) {
-        onLoadRef.current(
-          sqFt > 0 ? sqFt.toFixed(2) : '0.00',
-          totalArea > 0 ? totalArea.toFixed(2) : '0.00',
-          len,
-          wid
-        );
+        const sqFt = convertSqMToSqFt(totalArea);
+
+        if (onLoadRef.current) {
+          onLoadRef.current(
+            sqFt > 0 ? sqFt.toFixed(2) : '0.00',
+            totalArea > 0 ? totalArea.toFixed(2) : '0.00',
+            len,
+            wid
+          );
+        }
       }
     }
-  }, [initialPlotArea]);
+  }, [initialPlotArea, initialLen, initialWid, initialTotal]);
 
   const { totalSqFt, totalSqM, numericSqM } = React.useMemo(() => {
     const l = parseFloat(length) || 0;

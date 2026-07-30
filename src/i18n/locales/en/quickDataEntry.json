@@ -1063,6 +1063,8 @@
         "deleteConfirmText": "You want to delete this floor?",
         "deleteConfirmButton": "Yes, delete it!",
         "floorDeletedSuccess": "Floor deleted successfully",
+        "floorAddSuccess": "Floor added successfully",
+        "floorUpdateSuccess": "Floor updated successfully",
         "asstYrError": "Asst Year cannot be less than Con Year",
         "asstYrValidationTitle": "Assessment Year cannot be less than Construction Year",
         "asstYrValidationMessage": "Assessment Year ({asstYr}) cannot be less than Construction Year ({conYr})",
@@ -1117,6 +1119,17 @@
         "openSpaceNegative": "Open Space Area cannot be negative. Please reduce the Ground Floor Construction Area.",
         "openSpaceAreaExceeded": "Open Space Area cannot exceed the available remaining area ({area} Sq.M).",
         "floorAreaExceeded": "Floor Built-up Area cannot exceed the available remaining area ({area} Sq.M).",
+        "ok": "OK",
+        "errors": {
+            "areaExceededTitle": "Plot Area Limit Exceeded",
+            "assessmentYearInvalid": "Assessment year must be 4 digits (1700 - current year)",
+            "constructionYearInvalid": "Construction year must be 4 digits (1700 - current year)",
+            "constructionYearRequired": "Construction Year is required",
+            "assessmentYearRequired": "Assessment Year is required",
+            "floorRequired": "Floor selection is required",
+            "roomCountMismatch": "Expected details for {enteredRooms} rooms, but found {roomDetailsCount}. Please update room details.",
+            "openPlotConstructionTypeNotFound": "Construction Type for Open Plot (op) not found in master data."
+        },
         "unexpectedError": "An unexpected error occurred.",
         "roomSubmissionModal": {
             "title": "Room Submission Feature",
