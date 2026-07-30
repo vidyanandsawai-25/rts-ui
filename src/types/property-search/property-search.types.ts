@@ -264,6 +264,10 @@ export interface LookupInputProps {
 export interface UpicLinkCellProps {
   upicId: string;
   propertyId: number;
+  wardNo?: string;
+  wardId?: number;
+  propertyNo?: string;
+  partitionNo?: string;
   locale: string;
   copyLabel: string;
 }

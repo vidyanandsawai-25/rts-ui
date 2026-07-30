@@ -184,14 +184,24 @@ export function buildPropertySearchColumns(
         key: "upicId",
         label: t("columns.upicId"),
         tooltip: t("columns.upicId"),
-        render: (value, row) => (
-          <UpicLinkCell
-            upicId={String(value ?? "")}
-            propertyId={row.propertyId}
-            locale={locale}
-            copyLabel={t("columns.upicId")}
-          />
-        ),
+        render: (value, row) => {
+          const displayWard = row.ward?.trim() || "";
+          const wardOpt = allWardOptions.find(
+            (opt) => opt.label.startsWith(`${displayWard} - `) || opt.label === displayWard
+          );
+          return (
+            <UpicLinkCell
+              upicId={String(value ?? "")}
+              propertyId={row.propertyId}
+              wardNo={row.ward}
+              wardId={row.wardId ? Number(row.wardId) : wardOpt?.id}
+              propertyNo={row.propertyNo}
+              partitionNo={row.partitionNo}
+              locale={locale}
+              copyLabel={t("columns.upicId")}
+            />
+          );
+        },
       },
       COLUMN_WIDTHS.upicId
     ),

@@ -163,8 +163,16 @@ export async function mapPtisFetchResults({
   let shouldRedirect = false;
   let redirectUrl = '';
 
-  if (resolvedPropertyId && (!propertyIdParam || propertyIdParam !== resolvedPropertyId)) {
-    shouldRedirect = true;
+  const hasMissingParams = Boolean(resolvedPropertyId) && (!searchParams?.propertyNo || !searchParams?.wardNo);
+  const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
+
+  if (resolvedPropertyId && (isIdMismatch || hasMissingParams)) {
+    const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
+    const finalPropNo = matchedProp?.propertyNo || propertyDetailsResult.propertyDetails?.propertyNo;
+    const finalPartNo = matchedProp?.partitionNo ?? propertyDetailsResult.propertyDetails?.partitionNo;
+    const finalWardNo = propertyDetailsResult.wardNo || propertyDetailsResult.propertyDetails?.wardNo;
+    const finalWardId = resolvedWardId || propertyDetailsResult.wardId;
+
     const newParams = new URLSearchParams();
     if (searchParams) {
       Object.entries(searchParams).forEach(([k, v]) => {
@@ -173,12 +181,20 @@ export async function mapPtisFetchResults({
     }
     newParams.set('propertyId', resolvedPropertyId.toString());
 
-    const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
-    if (matchedProp) {
-      newParams.set('propertyNo', matchedProp.propertyNo);
-      newParams.set('partitionNo', normalizePartition(matchedProp.partitionNo));
+    if (finalPropNo && !searchParams?.propertyNo) {
+      newParams.set('propertyNo', finalPropNo);
+    }
+    if (finalPartNo !== undefined && finalPartNo !== null && searchParams?.partitionNo === undefined) {
+      newParams.set('partitionNo', normalizePartition(finalPartNo));
+    }
+    if (finalWardNo && !searchParams?.wardNo) {
+      newParams.set('wardNo', finalWardNo);
+    }
+    if (finalWardId && !searchParams?.wardId) {
+      newParams.set('wardId', finalWardId.toString());
     }
 
+    shouldRedirect = true;
     redirectUrl = `/${locale}/property-tax/ptis?${newParams.toString()}`;
   }
 
