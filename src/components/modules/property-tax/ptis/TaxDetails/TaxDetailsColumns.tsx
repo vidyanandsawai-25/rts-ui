@@ -114,15 +114,9 @@ export function getPendingTaxDetailsFloorColumns(
       cellClassName: `${CELL_CENTER_CLASS} sticky left-0 z-10 bg-white min-w-[115px] w-[115px] border-r border-blue-200`,
       render: (row: PendingTaxRow) => (
         <div className="w-full flex items-center justify-center gap-1 px-0.5">
-          {row.isNetTax ? (
-            <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxRowStyleByLabel('NETTAX')}`}>
-              NETTAX
-            </div>
-          ) : (
-            <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxRowStyleByLabel(row.policyCode)}`}>
-              {row.policyCode} ({row.yearCode})
-            </div>
-          )}
+          <div className={`w-full ${TAX_LABEL_CLASSES} ${getTaxRowStyleByLabel(row.policyCode)}`}>
+            {row.yearCode ? `${row.policyCode} (${row.yearCode})` : row.policyCode}
+          </div>
         </div>
       ),
     },

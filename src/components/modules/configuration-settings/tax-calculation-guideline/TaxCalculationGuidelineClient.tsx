@@ -1,5 +1,5 @@
 'use client';
-
+ 
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { Settings, Award, Zap, RotateCcw, Disc, ShieldCheck, Database, SlidersHorizontal, Layers, Calculator, RefreshCw } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useTaxCalculationGuidelineForm } from '@/hooks/configuration-settings/t
 import type { TaxCalculationGuidelineModuleProps } from '@/types/tax-calculation-guideline.types';
 import { DynamicGuidelineField } from './TaxFormField';
 import { TaxGuidelineNoteFooter } from './TaxGuidelineNoteFooter';
-
+ 
 /** Visual config per section group key. */
 const SECTION_CONFIGS: Record<string, {
   gradient: string;
@@ -38,8 +38,8 @@ const SECTION_CONFIGS: Record<string, {
   // PARTIAL_POLICY: { gradient: 'from-violet-500 to-purple-600', icon: <Layers className="w-4 h-4" />, cols: 4 },
   // PERSISTENCE: { gradient: 'from-amber-500 to-orange-600', icon: <Database className="w-4 h-4" />, cols: 2 },
   // RECALCULATION: { gradient: 'from-rose-500 to-red-600', icon: <RefreshCw className="w-4 h-4" />, cols: 2 },
-
-
+ 
+ 
   GENERAL: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Settings className="w-4 h-4" />, cols: 2 },
   DATE_PRIORITY: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Award className="w-4 h-4" />, cols: 2 },
   CC_OC: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Settings className="w-4 h-4" />, cols: 4 },
@@ -54,8 +54,9 @@ const SECTION_CONFIGS: Record<string, {
   PARTIAL_POLICY: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Layers className="w-4 h-4" />, cols: 4 },
   PERSISTENCE: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <Database className="w-4 h-4" />, cols: 2 },
   RECALCULATION: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <RefreshCw className="w-4 h-4" />, cols: 2 },
+  RECALCULATE: { gradient: "from-[#4F73A8] to-[#5D7FB3]", icon: <RefreshCw className="w-4 h-4" />, cols: 2 },
 };
-
+ 
 /**
  * Client orchestrator for the CC / OC / Electric Bill – Tax Calculation
  * Guideline configuration screen.
@@ -72,16 +73,16 @@ export default function TaxCalculationGuidelineClient({
   const { formData, isSaving, isUpdate, onChangeGuideline, handleUpdate } = useTaxCalculationGuidelineForm({
     initialDto,
   });
-
+ 
   const { dynamicGuidelines = [], generalSettings } = formData;
-
+ 
   const isCertTaxDisabled = !generalSettings.enableCertificateBasedTax;
-
+ 
   // Determine if a field should be disabled conditionally based on business rules
   const isFieldDisabled = (code: string) => {
     if (code === 'ENABLE_CERTIFICATE_BASED_TAX') return false;
     if (isCertTaxDisabled) return true;
-
+ 
     // CC & OC Rules conditional disable
     if ([
       'IGNORE_CC_TO_OC_IF_WITHIN_VALUE', 'IGNORE_CC_TO_OC_IF_WITHIN_TYPE', 'CC_OC_GAP_COMPARISON',
@@ -93,7 +94,7 @@ export default function TaxCalculationGuidelineClient({
       const isSplitOff = splitVal !== 'true' && splitVal !== '1';
       return isSplitOff;
     }
-
+ 
     // Electric Bill Rules conditional disable
     if ([
       'ELECTRIC_BILL_CERTIFICATE_CODES', 'ELECTRIC_BILL_ADD_MONTHS', 'ELECTRIC_BILL_MULTIPLIER',
@@ -103,7 +104,7 @@ export default function TaxCalculationGuidelineClient({
       const isEbDisabled = !ebDateRule || ebDateRule === 'Select' || ebDateRule === 'NO_TAX';
       return isEbDisabled;
     }
-
+ 
     // Retrospective Rules conditional disable
     if ([
       'NO_DATE_RULE', 'LOOKBACK_YEARS', 'RETROSPECTIVE_CURRENT_YEAR_COUNT',
@@ -113,7 +114,7 @@ export default function TaxCalculationGuidelineClient({
       const isRetroOff = retroVal !== 'true' && retroVal !== '1';
       return isRetroOff;
     }
-
+ 
     // Proration Rules conditional disable
     if ([
       'PRORATION_METHOD', 'CURRENT_YEAR_PRORATION_START_RULE'
@@ -122,52 +123,78 @@ export default function TaxCalculationGuidelineClient({
       const isProrationOff = prorationVal !== 'true' && prorationVal !== '1';
       return isProrationOff;
     }
-
+ 
     return false;
   };
-
-  // Group guidelines by GuidelineGroup
+ 
+  // Map backend GuidelineGroup strings (e.g., "General Settings", "CC & OC Rules") to internal section keys
+  const GROUP_KEY_MAP: Record<string, string> = {
+    'General Settings': 'GENERAL',
+    'GENERAL': 'GENERAL',
+    'Certificate Date Priority': 'DATE_PRIORITY',
+    'DATE_PRIORITY': 'DATE_PRIORITY',
+    'CC & OC Rules': 'CC_OC',
+    'CC_OC': 'CC_OC',
+    'Tax Multipliers': 'CC_OC',
+    'Electric Bill Rules': 'ELECTRIC_BILL',
+    'ELECTRIC_BILL': 'ELECTRIC_BILL',
+    'CC Rules': 'CC',
+    'CC': 'CC',
+    'OC Rules': 'OC',
+    'OC': 'OC',
+    'Retrospective Rules': 'RETROSPECTIVE',
+    'RETROSPECTIVE': 'RETROSPECTIVE',
+    'Finance Year Settings': 'GENERAL',
+    'Current Year Proration': 'PRORATION',
+    'PRORATION': 'PRORATION',
+    'Tax Persistence': 'PERSISTENCE',
+    'PERSISTENCE': 'PERSISTENCE',
+    'Recalculation Triggers': 'RECALCULATE',
+    'RECALCULATION': 'RECALCULATE',
+    'Policy Codes': 'PARTIAL_POLICY',
+    'PARTIAL_POLICY': 'PARTIAL_POLICY',
+    'Scope Settings': 'SCOPE',
+    'SCOPE': 'SCOPE',
+    'Validation': 'VALIDATION',
+    'VALIDATION': 'VALIDATION',
+  };
+ 
+  // Group guidelines by mapped section key
   const groupedGuidelines: Record<string, typeof dynamicGuidelines> = {};
   for (const item of dynamicGuidelines) {
     if (item.isActive === false) continue;
     if (!item.guidelineCode) continue;
-    const group = item.guidelineGroup;
-    if (!group || group.trim() === '') continue;
+    const rawGroup = item.guidelineGroup;
+    if (!rawGroup || rawGroup.trim() === '') continue;
+    const group = GROUP_KEY_MAP[rawGroup.trim()] || rawGroup.trim();
     if (!groupedGuidelines[group]) {
       groupedGuidelines[group] = [];
     }
     groupedGuidelines[group].push(item);
   }
-
+ 
   // Sort each group's items by DisplayOrder
   for (const group of Object.keys(groupedGuidelines)) {
     groupedGuidelines[group].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
-
+ 
   const renderGroupSection = (groupKey: string, titleKey: string) => {
     const guidelines = groupedGuidelines[groupKey] || [];
     if (guidelines.length === 0) return null;
-
+ 
     const cfg = SECTION_CONFIGS[groupKey] ?? {
-      gradient: 'from-slate-500 to-slate-600',
+      gradient: 'from-[#4F73A8] to-[#5D7FB3]',
       icon: <Settings className="w-4 h-4" />,
       cols: 2 as const,
     };
-
+ 
     const colClass =
       cfg.cols === 4
         ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
         : cfg.cols === 3
-          // 3-col only at 2xl (≥1536 px) where the half-width outer container
-          // is ~740 px wide, giving each inner field ~235 px — enough for
-          // most dropdowns without truncation.
           ? 'grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3'
           : 'grid-cols-1 sm:grid-cols-2';
-
-    /**
-     * Returns true if the guideline field is a toggle/BIT type.
-     * Used to apply col-span-2 in sections where colSpanToggle is set.
-     */
+ 
     const isToggleCode = (code: string, dataType?: string | null) =>
       dataType === 'BIT' ||
       code.startsWith('ENABLE_') ||
@@ -178,24 +205,22 @@ export default function TaxCalculationGuidelineClient({
         'DO_NOT_UPDATE_NETTAX', 'RECALCULATE_ON_CERTIFICATE_SAVE',
         'RECALCULATE_ON_CERTIFICATE_DELETE',
       ].includes(code);
-
+ 
     return (
       <div key={groupKey} className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        {/* ── Gradient header — rounded-t-xl clips gradient corners without clipping dropdown popups ── */}
         <div className={`bg-gradient-to-r ${cfg.gradient} px-4 py-2.5 flex items-center gap-2 rounded-t-xl`}>
           <span className="text-white opacity-90">{cfg.icon}</span>
-          <h2 className="text-sm font-bold text-white tracking-wide">{t(titleKey)}</h2>
+          <h2 className="text-sm font-bold text-white tracking-wide">
+            {t.has(titleKey) ? t(titleKey) : groupKey}
+          </h2>
         </div>
-
-        {/* ── Field grid ──────────────────────────────────────────────────── */}
+ 
         <div className={`grid ${colClass} gap-x-4 gap-y-4 px-4 py-4`}>
           {guidelines.map((guideline) => {
-            // Span toggle across both columns when the section requests it,
-            // so that the non-toggle policy-code pairs flow cleanly below.
             const spanFull =
               cfg.colSpanToggle === true &&
               isToggleCode(guideline.guidelineCode!, guideline.dataType);
-
+ 
             return (
               <div
                 key={guideline.guidelineCode}
@@ -216,9 +241,9 @@ export default function TaxCalculationGuidelineClient({
       </div>
     );
   };
-
+ 
   // ─── Render ────────────────────────────────────────────────────────────────
-
+ 
   return (
     <div className="flex h-full min-h-screen flex-col gap-0 bg-[#f0f4ff] relative">
       {/* ── Page Header (Sticky) ───────────────────────────────────────────── */}
@@ -250,7 +275,7 @@ export default function TaxCalculationGuidelineClient({
           />
         </div>
       </div>
-
+ 
       {/* ── Scrollable body ────────────────────────────────────────────────── */}
       <div className="flex-1 px-6 py-5 flex flex-col gap-5">
         {fetchError && (
@@ -265,27 +290,46 @@ export default function TaxCalculationGuidelineClient({
             </span>
           </div>
         )}
-
+ 
         {/* ── Two-column main grid ─────────────────────────────────────────── */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          {/* Left Column – General → CC/OC → CC → OC */}
+          {/* Left Column */}
           <div className="flex flex-col gap-5">
             {renderGroupSection('GENERAL', 'sections.generalSettings')}
             {renderGroupSection('CC_OC', 'sections.ccOcRules')}
             {renderGroupSection('OC', 'sections.ocRules')}
             {renderGroupSection('RETROSPECTIVE', 'sections.retrospectiveRules')}
-
           </div>
-
-          {/* Right Column – Date Priority → Electric Bill → Retrospective */}
+ 
+          {/* Right Column */}
           <div className="flex flex-col gap-5">
             {renderGroupSection('DATE_PRIORITY', 'sections.datePriority')}
             {renderGroupSection('ELECTRIC_BILL', 'sections.electricBillRules')}
             {renderGroupSection('CC', 'sections.ccRules')}
-
           </div>
         </div>
-
+ 
+        {/* ── Dynamic unmapped groups (if any custom group is added in DB) ── */}
+        {(() => {
+          const knownGroups = new Set([
+            'GENERAL', 'DATE_PRIORITY', 'CC_OC', 'CC', 'OC', 'ELECTRIC_BILL',
+            'RETROSPECTIVE', 'SCOPE', 'VALIDATION', 'PRORATION', 'PERSISTENCE',
+            'RECALCULATE', 'RECALCULATION', 'PARTIAL_POLICY'
+          ]);
+          const unmappedGroups = Object.keys(groupedGuidelines).filter((g) => !knownGroups.has(g));
+          if (unmappedGroups.length === 0) return null;
+ 
+          return (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              {unmappedGroups.map((group) => (
+                <div key={group}>
+                  {renderGroupSection(group, group)}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+ 
         {/* ── Collapsible Advanced Settings ───────────────────────────────── */}
         <details className="group bg-white border border-slate-200 rounded-xl shadow-sm transition-all duration-300">
           <summary className="flex items-center justify-between px-5 py-3.5 font-bold text-sm text-slate-800 cursor-pointer list-none select-none">
@@ -303,13 +347,13 @@ export default function TaxCalculationGuidelineClient({
               </div>
               <div className="flex flex-col gap-5">
                 {renderGroupSection('PERSISTENCE', 'sections.persistenceSettings')}
-                {renderGroupSection('RECALCULATION', 'sections.recalculationSettings')}
+                {renderGroupSection('RECALCULATE', 'sections.recalculationSettings') || renderGroupSection('RECALCULATION', 'sections.recalculationSettings')}
                 {renderGroupSection('PARTIAL_POLICY', 'sections.partialPolicy')}
               </div>
             </div>
           </div>
         </details>
-
+ 
         <div className="shrink-0">
           <TaxGuidelineNoteFooter />
         </div>

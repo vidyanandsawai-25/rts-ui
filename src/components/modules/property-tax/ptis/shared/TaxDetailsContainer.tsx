@@ -2,7 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { CheckCircle2, Clock } from 'lucide-react';
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import { Tabs, TabList, Tab, Badge, Tooltip } from '@/components/common';
 import TaxDetails from '../TaxDetails/TaxDetails';
 
 interface TaxDetailsContainerProps {
@@ -32,59 +34,66 @@ export function TaxDetailsContainer({
 
   return (
     <div className="overflow-hidden rounded-xl border border-blue-200 bg-white shadow-md">
-      {/* 1. Header Bar: Tabs on Left (replacing title), Metric Cards on Right */}
-      <div className="bg-gradient-to-r from-slate-50 via-blue-50/30 to-slate-50 px-3 pt-2 pb-0 flex flex-wrap items-center justify-between gap-3 border-b border-blue-200/80">
-        <div className="flex items-center gap-1.5 -mb-px">
-          <button
-            type="button"
-            onClick={() => setActiveTab('current')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 text-[13px] font-semibold tracking-wide rounded-t-lg border-t-2 border-x transition-all ${
-              activeTab === 'current'
-                ? 'bg-[#1e3a8a] text-white border-t-blue-500 border-x-blue-900 shadow-xs'
-                : 'bg-slate-200/80 text-slate-700 border-transparent hover:bg-slate-300 hover:text-slate-900'
-            }`}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t('taxDetails')}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('pending')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 text-[13px] font-semibold tracking-wide rounded-t-lg border-t-2 border-x transition-all ${
-              activeTab === 'pending'
-                ? 'bg-[#1e3a8a] text-white border-t-blue-500 border-x-blue-900 shadow-xs'
-                : 'bg-slate-200/80 text-slate-700 border-transparent hover:bg-slate-300 hover:text-slate-900'
-            }`}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t('arrearsTaxes')}
-            {pendingCount > 0 && (
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
-                  activeTab === 'pending'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-slate-300 text-slate-800'
+      <Tabs
+        value={activeTab}
+        onChange={(val) => setActiveTab(val as 'current' | 'pending')}
+        variant="line"
+      >
+        {/* 1. Header Bar: Tabs on Left (replacing title), Metric Cards on Right */}
+        <div className="bg-gradient-to-r from-slate-50 via-blue-50/30 to-slate-50 px-2.5 pt-1.5 pb-0 flex flex-wrap items-end justify-between gap-2 border-b border-blue-200/80">
+          <TabList className="border-b-0 p-0 bg-transparent flex items-end gap-2.5 -mb-px" scrollable={false}>
+            <Tooltip content="Current Taxes" placement="top">
+              <Tab
+                value="current"
+                icon={CheckCircle2}
+                className={`inline-flex flex-row items-center justify-center gap-2.5 px-7 py-2.5 min-w-[170px] sm:min-w-[190px] text-[13.5px] font-semibold tracking-wide rounded-t-lg border-b-0 whitespace-nowrap transition-all ${
+                  activeTab === 'current'
+                    ? 'bg-[#1e3a8a] text-white border-t-2 border-t-blue-500 border-x border-x-[#1e3a8a] shadow-xs'
+                    : 'bg-slate-200/90 text-slate-700 border-t-2 border-t-transparent border-x border-x-transparent hover:bg-slate-300/80 hover:text-slate-900'
                 }`}
               >
-                {pendingCount}
-              </span>
-            )}
-          </button>
+                {t('taxDetails')}
+              </Tab>
+            </Tooltip>
+
+            <Tooltip content="Previous Taxes" placement="top">
+              <Tab
+                value="pending"
+                icon={Clock}
+                className={`inline-flex flex-row items-center justify-center gap-2.5 px-7 py-2.5 min-w-[170px] sm:min-w-[190px] text-[13.5px] font-semibold tracking-wide rounded-t-lg border-b-0 whitespace-nowrap transition-all ${
+                  activeTab === 'pending'
+                    ? 'bg-[#1e3a8a] text-white border-t-2 border-t-blue-500 border-x border-x-[#1e3a8a] shadow-xs'
+                    : 'bg-slate-200/90 text-slate-700 border-t-2 border-t-transparent border-x border-x-transparent hover:bg-slate-300/80 hover:text-slate-900'
+                }`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <span>{t('arrearsTaxes')}</span>
+                  {pendingCount > 0 && (
+                    <Badge
+                      size="sm"
+                      className={`px-2 py-0.5 rounded-full text-[10.5px] font-semibold border-transparent transition-colors shrink-0 ${
+                        activeTab === 'pending'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-slate-300 text-slate-800'
+                      }`}
+                    >
+                      {pendingCount}
+                    </Badge>
+                  )}
+                </span>
+              </Tab>
+            </Tooltip>
+          </TabList>
+
+          {/* Summary Metrics Cards */}
+          <div className="flex items-center gap-2 pb-1 pt-0.5">
+            {metricsCards}
+          </div>
         </div>
 
-        {/* Summary Metrics Cards */}
-        <div className="flex items-center gap-2.5 pb-2">
-          {metricsCards}
-        </div>
-      </div>
-
-      {/* 2. Tax Details Table */}
-      <TaxDetails initialTaxDetails={initialTaxDetails} activeTab={activeTab} />
+        {/* 2. Tax Details Table */}
+        <TaxDetails initialTaxDetails={initialTaxDetails} activeTab={activeTab} />
+      </Tabs>
     </div>
   );
 }
