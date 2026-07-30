@@ -46,12 +46,22 @@ export function usePhotoPlanMutations({
     else { setSelectedImageIndex?.(idx); setViewMode?.(mode); }
   }, [setViewerIndexAndMode, setSelectedImageIndex, setViewMode]);
 
+  const refreshAfterMediaMutation = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('ptis:media-updated', {
+        detail: { propertyId },
+      })
+    );
+  }, [propertyId]);
+
   const activeCategory = categories[selectedCategoryIndex];
 
   const { isDeleting, handleDeletePhoto } = usePhotoPlanDelete({
     propertyId, categories, onCategoriesChange,
     selectedCategoryIndex, selectedImageIndex, viewMode,
     setViewerIndexAndModeValue, locale, t,
+    onMutationSuccess: refreshAfterMediaMutation,
   });
 
   const isUploading = isAdding || isReplacing || isDeleting;
@@ -95,6 +105,7 @@ export function usePhotoPlanMutations({
         const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
+        refreshAfterMediaMutation();
         setViewerIndexAndModeValue(index, 'viewer');
         return true;
       }
@@ -106,7 +117,7 @@ export function usePhotoPlanMutations({
     } finally {
       setIsReplacing(false);
     }
-  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, locale, t, setViewerIndexAndModeValue, propertyId]);
+  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, locale, t, setViewerIndexAndModeValue, propertyId, refreshAfterMediaMutation]);
 
   const handleSaveEditedPhoto = useCallback(async (index: number, file: File): Promise<boolean> => {
     if (isUploading || !activeCategory) return false;
@@ -167,6 +178,7 @@ export function usePhotoPlanMutations({
         const updatedImages = sortByOrder([...activeCategory.images, newImg]);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updatedImages));
         toast.success(t('media.photoUploadedSuccess') || 'Photo uploaded successfully');
+        refreshAfterMediaMutation();
         const targetPhotoId = res.data.propertyPhotoId;
         const newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
         if (newImgIndex !== -1) setViewerIndexAndModeValue(newImgIndex, 'viewer');
@@ -177,7 +189,7 @@ export function usePhotoPlanMutations({
       setIsAdding(false);
     }
     setIsNamingOpen(false);
-  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, propertyId, isUploading, t, locale, setViewerIndexAndModeValue, isReplacement, activeIndexToReplace, executeReplaceApi]);
+  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, propertyId, isUploading, t, locale, setViewerIndexAndModeValue, isReplacement, activeIndexToReplace, executeReplaceApi, refreshAfterMediaMutation]);
 
   const replaceImage = activeIndexToReplace !== null ? activeCategory?.images[activeIndexToReplace] : null;
 
