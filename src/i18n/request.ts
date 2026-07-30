@@ -91,6 +91,7 @@ export default getRequestConfig(async ({ locale }) => {
     assetTypeOfUseMessages,
     mapDashboardMessages,
     propertyMappingMessages,
+    assetRegisterMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -223,6 +224,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/assetTypeOfUse.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/mapDashboard.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/propertyMapping.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetRegister.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -305,6 +307,8 @@ export default getRequestConfig(async ({ locale }) => {
       assetTypeOfUse: assetTypeOfUseMessages,
       mapDashboard: mapDashboardMessages,
       propertyMapping: propertyMappingMessages?.propertyMapping || propertyMappingMessages,
+      assetRegister: assetRegisterMessages,
     },
   };
 });
+

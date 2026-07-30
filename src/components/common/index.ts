@@ -81,6 +81,8 @@ export { Drawer } from './Drawer';
 export { MultiSelectDropdown } from './Dropdown';
 export { MultiSelect } from './MultiSelect';
 export type { Option as MultiSelectOption } from './MultiSelect';
+export { MultiSelectWithIcons } from './MultiSelectWithIcons';
+export type { IconOption } from './MultiSelectWithIcons';
 
 export { MasterTable } from './MasterTable';
 export type { Column, MasterTableProps } from './MasterTable';
