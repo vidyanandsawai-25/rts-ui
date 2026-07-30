@@ -9,6 +9,7 @@ import type {
   MappedPropertyItem,
 } from '@/types/ptis.types';
 import React from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { OldTaxDetailsTable } from './OldTaxDetailsTable';
 import { Tooltip } from '@/components/common/Tooltip';
@@ -39,6 +40,12 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
   mappedPropertiesData = [],
 }) => {
   const t = useTranslations('ptis');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const propertyId = searchParams.get('propertyId') || '';
+  const segments = pathname.split('/').filter(Boolean);
+  const locale = segments[0] || 'en';
 
   // ✅ Check if we have data in oldDetailsData that should be shown in the table if table is empty
   const tableData = React.useMemo(() => {
@@ -257,6 +264,26 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
                   className="h-5 min-h-[20px] max-h-[35px] px-1.5 mb-3 text-xs sm:text-sm bg-orange-600 hover:bg-orange-700 leading-none flex-1"
                 >
                   {showOldTaxInfo ? t('actions.hideOldTax') : t('actions.showOldTax')}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const params = new URLSearchParams({
+                      propertyId: String(propertyId || ''),
+                      propNo: String(oldDetailsData?.oldPropertyNo || ''),
+                      zone: String(oldDetailsData?.oldZoneName || ''),
+                      ward: String(oldDetailsData?.oldWardNo || ''),
+                      area: String(oldDetailsData?.oldPlotArea || ''),
+                      tax: String(oldDetailsData?.oldTotalTax || ''),
+                      rv: String(oldDetailsData?.oldRV || ''),
+                      cv: String(oldDetailsData?.oldCV || ''),
+                      floors: String(oldDetailsData?.oldConstructionArea || '')
+                    }).toString();
+                    router.push(`/${locale}/property-tax/property-mapping?${params}`);
+                  }}
+                  className="h-5 min-h-[20px] max-h-[35px] px-1.5 mb-3 text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 leading-none flex-1"
+                >
+                  {t('actions.propertyMapping')}
                 </Button>
               </div>
             </div>

@@ -463,7 +463,8 @@
     "showOldTax": "पुराना कर दिखाएं",
     "hideOldTax": "पुराना कर छुपाएं",
     "showMapDetails": "मानचित्र विवरण दिखाएं",
-    "hideMapDetails": "मानचित्र विवरण छुपाएं"
+    "hideMapDetails": "मानचित्र विवरण छुपाएं",
+    "propertyMapping": "संपत्ति मैपिंग"
   },
   "loading": {
     "message": "संपत्ति विवरण लोड हो रहा है",

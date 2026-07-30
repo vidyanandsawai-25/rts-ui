@@ -463,7 +463,8 @@
     "showOldTax": "Show Old Tax",
     "hideOldTax": "Hide Old Tax",
     "showMapDetails": "Show Map Details",
-    "hideMapDetails": "Hide Map Details"
+    "hideMapDetails": "Hide Map Details",
+    "propertyMapping": "Property Mapping"
   },
   "loading": {
     "message": "Loading Property Details",

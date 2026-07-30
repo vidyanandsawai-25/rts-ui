@@ -464,7 +464,8 @@
     "showOldTax": "जुना कर पहा",
     "hideOldTax": "जुना कर लपवा",
     "showMapDetails": "नकाशा तपशील दाखवा",
-    "hideMapDetails": "नकाशा तपशील लपवा"
+    "hideMapDetails": "नकाशा तपशील लपवा",
+    "propertyMapping": "मालमत्ता मॅपिंग"
   },
   "loading": {
     "message": "मालमत्ता तपशील लोड होत आहे",
