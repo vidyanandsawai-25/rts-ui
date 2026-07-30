@@ -10,7 +10,9 @@
     "fetchGeoSequencingWardWiseSummary": "Failed to fetch geo sequencing ward-wise summary data.",
     "fetchInternalSurveyWardWiseSummary": "Failed to fetch internal survey ward-wise summary data.",
     "fetchAssessmentGrid": "Failed to fetch assessment grid data.",
-    "fetchPendingAssessmentProps": "Failed to fetch pending assessment properties."
+    "fetchPendingAssessmentProps": "Failed to fetch pending assessment properties.",
+    "fetchPropertyTypeMaster": "Failed to fetch property type master details.",
+    "fetchApprovalByUlbDetails": "Failed to fetch approval by ULB details."
   },
   "summaryCards": {
     "metrics": {
@@ -20,7 +22,7 @@
       "demand": "Demand"
     },
     "titles": {
-      "previouslyRegistered": "Previously Registered Properties \u0026 Demand",
+      "previouslyRegistered": "Previously Registered Properties & Demand",
       "assessmentApproved": "Assessment Approved",
       "additionalRevenue": "Additional Revenue Generated",
       "assessed": "Assessed",
@@ -73,23 +75,37 @@
       "backToDivisions": "Back to Divisions",
       "mainProperties": "Main Properties (Excluding Apartments)",
       "stage": "Stage:",
-      "subtitle": "Property list - complete information",
+      "subtitle": "मालमत्ता यादी - संपूर्ण माहिती",
       "export": "Export",
       "searchPlaceholder": "Search across all columns...",
       "filter": "Filter"
     },
+    "filters": {
+      "zone": "ZONE",
+      "selectZone": "Select Zone",
+      "ward": "WARD",
+      "selectWard": "Select Ward",
+      "propertyDescriptions": "PROPERTY DESCRIPTIONS",
+      "selectDescription": "Select Description",
+      "propertyType": "PROPERTY TYPE",
+      "selectPropertyType": "Select Property Type",
+      "assessmentType": "ASSESSMENT TYPE",
+      "selectAssessmentType": "Select Assessment Type"
+    },
     "labels": {
-      "totalTax": "Total Tax:",
-      "occupier": "Occupier:",
-      "floors": "Floors:",
-      "rv": "RV:",
+      "na": "N/A",
+      "area": "Area",
+      "use": "Use",
+      "rv": "RV",
+      "cTax": "C.Tax",
+      "rTax": "R.Tax",
+      "totalTax": "Total Tax",
+      "zero": "0",
       "owner": "Owner:",
-      "use": "Use:",
-      "cTax": "C.Tax:",
-      "units": "Units:",
-      "area": "Area:",
-      "rTax": "R.Tax:",
-      "shopName": "Shop Name:"
+      "occupier": "Occupier:",
+      "shopName": "Shop Name:",
+      "floors": "Floors",
+      "units": "Units"
     },
     "propertyTypes": {
       "unassessed": "Unassessed",
@@ -107,11 +123,68 @@
       "propertyDetails": "PROPERTY DETAILS",
       "oldRecord": "OLD RECORD",
       "actions": "ACTIONS",
-      "categoryAndDesc": "CATEGORY \u0026 DESC",
+      "categoryAndDesc": "CATEGORY & DESC",
       "image": "Image",
-      "ownerAndOccupier": "OWNER, OCCUPIER \u0026 SHOP",
+      "ownerAndOccupier": "OWNER, OCCUPIER & SHOP",
       "documents": "DOCUMENTS",
       "mobile": "MOBILE"
+    },
+    "actions": {
+      "report": "Report",
+      "tracking": "Tracking"
+    },
+    "report": {
+      "propertyDetails": "Property Details",
+      "municipalCorporation": "Municipal Corporation",
+      "propertyAssessmentRecord": "PROPERTY ASSESSMENT RECORD (KARAKARNI)",
+      "documentId": "DOCUMENT ID",
+      "verified": "VERIFIED",
+      "newPropertyNumber": "New Property Number",
+      "oldPropertyNumber": "Old Property Number",
+      "wardNumber": "Ward Number",
+      "constructionYear": "Construction Year",
+      "assessmentTaxSummary": "Assessment & Tax Summary",
+      "recordType": "Record Type",
+      "usage": "Usage",
+      "arv": "ARV (₹)",
+      "totalTax": "Total Tax (₹)",
+      "oldRecord": "Old Record",
+      "newRecord": "New Record",
+      "ownershipInfo": "Ownership Information",
+      "primaryOwner": "Primary Owner",
+      "occupier": "Occupier",
+      "additionalRevenue": "Additional Revenue",
+      "netIncrease": "Net Increase in Revenue",
+      "propertyTypeStatus": "Property Type Status",
+      "revenueSurveyOffice": "Revenue & Survey Office",
+      "additionalCertificate": "ADDITIONAL LAND AND AREA CERTIFICATE",
+      "certificateNo": "CERTIFICATE NO",
+      "official": "OFFICIAL",
+      "verificationText": "This document serves as verification of the structural configuration and site dimensions surveyed at the subject property address:",
+      "verificationSubtext": "The assessment was performed under the active automation guidelines for property taxation registers.",
+      "technicalSpecifications": "Technical Specifications",
+      "structuralCategory": "Structural Category",
+      "regionalCategory": "Regional Category Description",
+      "totalFloorsListed": "Total Floors Listed",
+      "totalUnitsEvaluated": "Total Units Evaluated",
+      "floors": "Floors",
+      "units": "Units",
+      "noticeDeclaration": "Notice & Declaration:",
+      "noticeText": "All parameters indicated are derived from the latest geospatial and ward-level field surveys. Discrepancies may be reported to the Chief Assessor for verification.",
+      "authorizedSignature": "Authorized signature is digitally encrypted.",
+      "digitalStampId": "DIGITAL STAMP ID:",
+      "noDocument": "No Document Available",
+      "noDocumentText": "There is no electronic document mapped to this property yet. Please contact the administrator to upload the required files.",
+      "documentViews": "DOCUMENT VIEWS",
+      "karakarni": "Karakarni",
+      "additionalDocument": "Additional Document",
+      "systemName": "Property Document Management System"
+    },
+    "common": {
+      "download": "Download",
+      "newTab": "New Tab",
+      "maximize": "Maximize",
+      "close": "Close"
     }
   },
   "internalSurvey": {
@@ -242,5 +315,15 @@
       "report": "Report",
       "location": "Location"
     }
+  },
+  "tracking": {
+    "title": "Property Tracking",
+    "completed": "Completed",
+    "current": "Current",
+    "internalSurvey": "Internal Survey",
+    "completedStatus": "COMPLETED",
+    "pendingStatus": "PENDING",
+    "approvedBy": "Approved By:",
+    "submittedBy": "Submitted By:"
   }
 }

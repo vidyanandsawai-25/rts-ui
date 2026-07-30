@@ -1,4 +1,4 @@
- 
+
 'use client';
 
 import { useMemo } from 'react';
@@ -62,7 +62,15 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
         router.push(`${window.location.pathname}?${currentParams.toString()}`);
     };
 
-    const columns = useMemo(() => getGeoSequencingSharedColumns(t, 'ward'), [t]);
+    const columns = useMemo(() => getGeoSequencingSharedColumns(
+        t,
+        'ward',
+        (_wardNo) => {
+            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+            const query = `?stage=geoSequencing&source=ward&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
+            router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
+        }
+    ), [t, locale, zoneId, workflowStageId, basePath, router]);
     const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward'), [t]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
@@ -114,7 +122,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                 inprocessStruct: total.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
                 inprocessUnit: total.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
             });
-        }   
+        }
         return mappedWards;
     }, [summaryData, t]);
 
@@ -125,7 +133,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
             totalUnits: summaryData.totalRow.geoSequencedProperties?.unitCount ?? 0,
             assessed: summaryData.totalRow.assessmentStatusBreakdown?.assessed?.structureCount ?? 0,
             unassessed: summaryData.totalRow.assessmentStatusBreakdown?.unassessed?.structureCount ?? 0,
-            formattedStage : formattedStage
+            formattedStage: formattedStage
         };
     }, [summaryData, formattedStage]);
 
@@ -165,7 +173,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
             <WardWiseSummaryCards data={summaryCardsData} />
 
             {/* Ward-wise Table */}
-            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1">              
+            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1">
                 <div className="flex-1 p-0 overflow-auto max-h-[70vh] transition-all duration-300 border-t border-slate-200 [&_thead>tr:first-child]:bg-gradient-to-r [&_thead>tr:first-child]:from-indigo-100 [&_thead>tr:first-child]:to-purple-100 [&_thead>tr:first-child]:shadow-sm [&_thead>tr:nth-child(2)]:bg-gradient-to-r [&_thead>tr:nth-child(2)]:from-indigo-50 [&_thead>tr:nth-child(2)]:to-purple-50 [&_th]:border [&_th]:border-slate-300 [&_td]:border [&_td]:border-slate-300">
                     <AutomationTable<GeoSequencingData>
                         data={tableData}
@@ -174,7 +182,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                         containerClassName="h-full"
                         tableClassName="w-full border-collapse text-xs border border-slate-300"
                         theadClassName="sticky top-0 z-20 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)]"
-                        maxBodyHeightClassName="max-h-none"                       
+                        maxBodyHeightClassName="max-h-none"
                         rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 cursor-pointer"}
                         loading={false}
                         totalCount={totalCount}

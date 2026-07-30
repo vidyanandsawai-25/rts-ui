@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useLocale } from 'next-intl';
 
 import {
@@ -29,8 +28,8 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
     const locale = useLocale();
     const router = useRouter();
 
-    // Redirect to set workflowStageId for geo-sequencing on initial render
     useEffect(() => {
+        // Redirect to set workflowStageId for geo-sequencing on initial render
         if (pathname.includes('/geo-sequencing') && !searchParams.get('workflowStageId')) {
             const geoCard = workflowCardsData?.find(card => card.stageName === 'GeoSequencing');
             if (geoCard?.id) {
@@ -44,15 +43,16 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
     const isIsolatedView = pathname.includes('/ward-wise-summary') ||
         pathname.includes('/property-details-dashboard') ||
         pathname.includes('/quality-check/update-common-details') ||
-        pathname.includes('/send-to-approve');
+        pathname.includes('/send-to-approve') ||
+        pathname.includes('/pending-structures-ward-wise');
 
     const getStageConfig = (stageName: string) => {
         switch (stageName) {
             case 'GeoSequencing': return { icon: ClipboardList, value: 'geo-sequencing' };
             case 'InternalSurvey': return { icon: FileSearch, value: 'internal-survey' };
-            case 'DataEntry': return { icon: CheckCircle, value: 'quality-check' };
-            case 'Assessment': return { icon: FileCheck, value: 'assessment' };
-            case 'ApprovalByULB': return { icon: ThumbsUp, value: 'approval' };
+            case 'DataEntry': return { icon: CheckCircle , value: 'quality-check' };
+            case 'Assessment': return { icon: FileCheck , value: 'assessment' };
+            case 'ApprovalByULB': return { icon: ThumbsUp, value: 'approval-by-ulb' };
             case 'NoticeDistribution': return { icon: Bell, value: 'notice-distribution' };
             case 'HearingAndAppeal': return { icon: Scale, value: 'hearing-appeals' };
             case 'BillDistribution': return { icon: FileText, value: 'bills-distribution' };
@@ -98,13 +98,13 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
                             const colors = getTabColors(tab.value);
 
                             return (
-                                <Link
+                                <div
                                     key={tab.value}
-                                    href={`${basePath}/${tab.value}?workflowStageId=${tab.id}`}
-                                    className="min-w-0 w-full h-full text-left outline-none transition-transform active:scale-[0.98] block"
+                                    onClick={() => router.push(`${basePath}/${tab.value}?workflowStageId=${tab.id}`)}
+                                    className="min-w-0 w-full h-full text-left outline-none transition-transform active:scale-[0.98] block cursor-pointer"
                                 >
                                     <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} />
-                                </Link>
+                                </div>
                             );
                         })}
                     </div>

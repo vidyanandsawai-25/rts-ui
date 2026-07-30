@@ -117,7 +117,7 @@ const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
             headerExtra={<TopBar t={t} />}
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
-            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors cursor-pointer"}
+            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors cursor-pointer hover:bg-transparent"}
             onRowClick={(row) => {
                 if (row.sr === t('geoSequencing.total') || !row.division) return;
                 // Extract zone id, e.g. "13" from "13 - Some Zone"

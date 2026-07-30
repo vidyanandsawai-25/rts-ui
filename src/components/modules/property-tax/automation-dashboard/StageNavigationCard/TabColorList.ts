@@ -24,7 +24,7 @@ export const getTabColors = (value: string) => {
                 bgActive: '#eff6ff',
                 iconTextInactive: '#3b82f6',
             };
-        case 'approval':
+        case 'approval-by-ulb':
             return {
                 iconBgActive: '#22c55e',
                 bgActive: '#f0fdf4',

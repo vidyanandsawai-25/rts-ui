@@ -117,8 +117,8 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
       icon: IndianRupee,
       content: (
         <StandardMetrics
-          value1={formatIndianNumber(prev.structureCount ?? 0)}
-           value2={formatIndianNumber(prev.unitCount ?? 0)}
+          value1={formatIndianNumber(prev.structureCount ?? prev.propertyCount)}
+          value2={formatIndianNumber(prev.propertyCount ?? prev.unitCount)}
           value3={formatCurrencyIA(prev.demand)}
           demandColor="text-purple-600"
           t={t}

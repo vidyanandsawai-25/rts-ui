@@ -13,7 +13,7 @@ export async function automationGetGeoSequencingGrid(workflowStageId?: string | 
         ? `/AutomationDashboard/GeoSequencingGrid?workflowStageId=${workflowStageId}`
         : `/AutomationDashboard/GeoSequencingGrid`;
 
-    const response = await apiClient.get<GeoSequencingGridResponse>(url);
+    const response = await apiClient.get<GeoSequencingGridResponse>(url,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
     return handleApiResponse(response, t("errors.fetchGeoSequencingGrid") || "Failed to fetch geo sequencing grid data").items ?? null;
@@ -37,7 +37,7 @@ export async function automationGetGeoSequencingWardWiseSummary(
 
     const response = await apiClient.get<GeoSequencingWardWiseResponse>(
         `/AutomationDashboard/GeoSequencingWardWiseSummary?${params.toString()}`
-    );
+    ,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
     return handleApiResponse(response, t("errors.fetchGeoSequencingWardWiseSummary") || "Failed to fetch geo sequencing ward-wise summary data").items ?? null;

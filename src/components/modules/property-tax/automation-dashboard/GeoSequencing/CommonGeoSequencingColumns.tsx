@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ArrowUpDown, ArrowUp } from 'lucide-react';
+import { formatIndianNumber } from '@/lib/utils/numberUtils';
 import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/CommonColumns';
 import type { Column, HeaderCell } from '@/components/common/AutomationTable';
 
@@ -50,7 +51,7 @@ export const getGeoSequencingSharedColumns = (
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-emerald-950 border-r border-slate-300',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         });
     }
 
@@ -60,105 +61,105 @@ export const getGeoSequencingSharedColumns = (
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-blue-900 border-r border-slate-300 cursor-pointer hover:bg-blue-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'geoUnit',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-blue-900 border-r border-slate-300 cursor-pointer hover:bg-blue-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'propRes',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-purple-950 border-r border-slate-300 cursor-pointer hover:bg-purple-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'propNonRes',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-purple-950 border-r border-slate-300 cursor-pointer hover:bg-purple-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'propMixed',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-purple-950 border-r border-slate-300 cursor-pointer hover:bg-purple-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'propPublic',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-purple-950 border-r border-slate-300 cursor-pointer hover:bg-purple-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'propUnder',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-purple-950 border-r border-slate-300 cursor-pointer hover:bg-purple-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'assessStruct',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-green-950 border-r border-slate-300 cursor-pointer hover:bg-green-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'assessUnit',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-green-950 border-r border-slate-300 cursor-pointer hover:bg-green-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'unassessStruct',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-orange-950 border-r border-slate-300 cursor-pointer hover:bg-orange-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'unassessUnit',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-orange-950 border-r border-slate-300 cursor-pointer hover:bg-orange-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'newlyStruct',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-emerald-950 border-r border-slate-300 cursor-pointer hover:bg-emerald-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'newlyUnit',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-emerald-950 border-r border-slate-300 cursor-pointer hover:bg-emerald-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'inprocessStruct',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-orange-950 border-r border-slate-300 cursor-pointer hover:bg-orange-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         },
         {
             key: 'inprocessUnit',
             label: '',
             align: 'center',
             cellClassName: 'p-3 text-center font-bold text-orange-950 border-r border-slate-300 cursor-pointer hover:bg-orange-50 transition-colors',
-            render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
+            render: (value) => formatIndianNumber(value)
         }
     );
 

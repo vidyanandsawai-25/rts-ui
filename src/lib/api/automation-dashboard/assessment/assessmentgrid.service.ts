@@ -30,7 +30,7 @@ export async function automationGetPendingAssessmentProps(
 
   const response = await apiClient.get<PendingAssessmentResponse>(
     `/AutomationDashboard/GetPendingAssessmentProps?${params.toString()}`
-  );
+  ,{ cache: "force-cache" });
   const t = await getTranslations("automationDashboard");
 
   return handleApiResponse(response, t("errors.fetchPendingAssessmentProps") || "Failed to fetch pending assessment properties").items ?? null;

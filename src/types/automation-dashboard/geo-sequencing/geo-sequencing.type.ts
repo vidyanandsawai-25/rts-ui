@@ -69,22 +69,7 @@ export interface GeoSequencingProperty {
   propertyDetailsCount: number;
   documentGuid: string | null;
   propertyDetailsComparison: PropertyDetailsComparison;
-}
-
-export interface GeoSequencingPropertyDetailsItems {
-  zoneId: number;
-  zoneName: string;
-  properties: GeoSequencingProperty[];
-  totalCount: number;
-}
-
-export interface GeoSequencingPropertyDetailsResponse {
-  success: boolean;
-  message: string;
-  items: GeoSequencingPropertyDetailsItems;
-  errors: unknown | null;
-  correlationId?: string | null;
-}
+} 
 
 export interface GeoSequencingWard {
   wardId: number;

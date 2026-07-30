@@ -85,7 +85,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
 
         /* ---- render -------------------------------------------------- */
         const checkboxContent = (
-            <>
+            <div className="relative inline-flex items-center justify-center shrink-0">
                 <input
                     ref={inputRef}
                     type="checkbox"
@@ -96,7 +96,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                     disabled={disabled}
                     tabIndex={-1}
                     aria-hidden="true"
-                    className="sr-only"
+                    className="absolute opacity-0 w-0 h-0 pointer-events-none"
                 />
                 <button
                     ref={ref}
@@ -124,7 +124,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                         <Check className="h-3.5 w-3.5" />
                     ) : null}
                 </button>
-            </>
+            </div>
         );
 
         if (label) {

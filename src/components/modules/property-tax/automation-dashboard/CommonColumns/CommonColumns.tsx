@@ -23,7 +23,7 @@ export const getCommonDivisionColumn = <T extends { sr: string | number, divisio
     cellClassName: '!p-0 border-r border-slate-300 border-l-2 border-l-transparent group-hover:border-l-indigo-500',
     render: (val, row) => {
         if (row.isTotal) {
-            return <div className="text-black font-bold text-center w-full block p-2">{row.sr}</div>;
+            return <div className="text-black font-bold text-center w-full block p-3">{row.sr}</div>;
         }
         if (val !== '') {
             const code = typeof val === 'string' ? val.split(' - ')[0] : '';
@@ -38,7 +38,7 @@ export const getCommonDivisionColumn = <T extends { sr: string | number, divisio
                 return (
                     <Link
                         href={divisionLinkHref(code)}
-                        className="flex items-center gap-2 w-full h-full p-2 cursor-pointer hover:bg-indigo-50/50 transition-colors"
+                        className="flex items-center gap-2 w-full h-full p-3 cursor-pointer hover:bg-indigo-50/50 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {content}
@@ -48,7 +48,7 @@ export const getCommonDivisionColumn = <T extends { sr: string | number, divisio
 
             return (
                 <div
-                    className="flex items-center gap-2 w-full h-full p-2 cursor-pointer hover:bg-indigo-50/50 transition-colors"
+                    className="flex items-center gap-2 w-full h-full p-3 cursor-pointer hover:bg-indigo-50/50 transition-colors"
                     onClick={(e) => {
                         e.stopPropagation();
                         if (onDivisionClick && code) {
