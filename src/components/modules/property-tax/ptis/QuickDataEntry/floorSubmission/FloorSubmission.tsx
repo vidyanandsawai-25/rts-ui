@@ -145,8 +145,25 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     return typeof name === 'string' ? name.trim() : '';
   }, [props.initialPropertyData]);
 
+  const propertyDescription = React.useMemo(() => {
+    const description = props.initialPropertyData?.propertyDescription;
+    return typeof description === 'string' ? description.trim() : '';
+  }, [props.initialPropertyData]);
+
   // Individual property: Data Entry Same As button should always be enabled
   const isIndividualProperty = categoryName.toLowerCase() === 'individual';
+
+  // Wing property: Data Entry Same As button should be hidden when the property has a wingNo or wing partition (e.g., 'C', 'A', 'B', 'A1', 'A-1')
+  const hasWing = React.useMemo(() => {
+    const wingNo = props.initialPropertyData?.wingNo || props.initialPropertyData?.wingName;
+    const hasWingData = Boolean(wingNo && String(wingNo).trim() !== '' && String(wingNo).trim() !== '-' && String(wingNo).trim() !== '0');
+
+    const rawPartition = props.partitionNo || (props.initialPropertyData as Record<string, unknown> | undefined)?.partitionNo || '';
+    const partition = String(rawPartition).trim().toUpperCase();
+    const isWingPartition = /^[A-Z]$/.test(partition) || /^[A-Z][0-9-]/i.test(partition);
+
+    return hasWingData || isWingPartition;
+  }, [props.initialPropertyData, props.partitionNo]);
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(true);
@@ -177,7 +194,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         {/* Render API errors if any */}
         <SubmissionApiErrors apiErrors={props.apiErrors} t={t} />
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
           {/* All Floors Table Section */}
           <FloorTable
             t={t}
@@ -204,6 +220,9 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             isPlotCategory={isPlotCategory}
             partitionNo={props.partitionNo}
             isIndividualProperty={isIndividualProperty}
+            categoryName={categoryName}
+            propertyDescription={propertyDescription}
+            hasWing={hasWing}
           />
 
 

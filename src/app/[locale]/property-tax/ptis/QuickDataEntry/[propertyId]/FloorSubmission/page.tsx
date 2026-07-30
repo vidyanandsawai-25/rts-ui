@@ -194,11 +194,21 @@ export default async function FloorSubmissionPage({
             ...initialPropertyData,
             categoryId: propertyBasicDetails.categoryId,
             categoryName: propertyBasicDetails.categoryName,
+            propertyTypeId: propertyBasicDetails.propertyTypeId,
+            propertyDescription: propertyBasicDetails.propertyDescription,
+            wingNo: propertyBasicDetails.wingNo,
+            wingId: propertyBasicDetails.wingId,
+            wingName: propertyBasicDetails.wingName,
         };
     } else if (propertyBasicDetails) {
         initialPropertyData = {
             categoryId: propertyBasicDetails.categoryId,
             categoryName: propertyBasicDetails.categoryName,
+            propertyTypeId: propertyBasicDetails.propertyTypeId,
+            propertyDescription: propertyBasicDetails.propertyDescription,
+            wingNo: propertyBasicDetails.wingNo,
+            wingId: propertyBasicDetails.wingId,
+            wingName: propertyBasicDetails.wingName,
         };
     }
 

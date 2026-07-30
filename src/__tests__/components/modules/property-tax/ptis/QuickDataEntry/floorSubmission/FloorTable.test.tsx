@@ -293,4 +293,19 @@ describe('FloorTable', () => {
       expect(mockProps.setFormErrors).toHaveBeenCalledWith({});
     }
   });
+
+  it('hides Data Entry Same As button when propertyDescription is Amenity or ॲमिनिटी', () => {
+    render(<FloorTable {...mockProps} propertyDescription="ॲमिनिटी" />);
+    expect(screen.queryByTestId('data-entry-button')).toBeNull();
+  });
+
+  it('hides Data Entry Same As button when partitionNo is AAM10', () => {
+    render(<FloorTable {...mockProps} partitionNo="AAM10" />);
+    expect(screen.queryByTestId('data-entry-button')).toBeNull();
+  });
+
+  it('hides Data Entry Same As button when property has a wing (hasWing is true)', () => {
+    render(<FloorTable {...mockProps} hasWing={true} />);
+    expect(screen.queryByTestId('data-entry-button')).toBeNull();
+  });
 });

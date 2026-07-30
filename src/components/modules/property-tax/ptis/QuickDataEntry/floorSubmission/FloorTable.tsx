@@ -46,6 +46,12 @@ interface FloorTableProps {
   partitionNo?: string;
   onRowClick?: (row: FloorData) => void;
   isIndividualProperty?: boolean;
+  /** categoryName from PropertyCategoryMaster (e.g. "Amenity", "Individual", "Apartment") */
+  categoryName?: string;
+  /** propertyDescription from PropertyCategoryMaster (e.g. "Amenity" or "ॲमिनिटी") */
+  propertyDescription?: string;
+  /** true when the current property belongs to a wing — Data Entry Same As should be hidden */
+  hasWing?: boolean;
   isBuildingPermissionView?: boolean;
 }
 
@@ -73,13 +79,30 @@ const FloorTable: React.FC<FloorTableProps> = ({
   subTypeData,
   setEditingFloorForm,
   isPlotCategory = false,
-  partitionNo: _partitionNo,
+  partitionNo,
   isIndividualProperty: _isIndividualProperty = false,
   onRowClick,
+  categoryName,
+  propertyDescription,
+  hasWing = false,
   isBuildingPermissionView = false,
 }) => {
+  // Amenity properties do not support Data Entry Same As — always hide the button.
+  // Check categoryName, propertyDescription (English & Marathi), and partitionNo pattern (e.g. AAM10, B-AM1).
+  const isAmenityProperty = React.useMemo(() => {
+    const cat = (categoryName ?? '').trim().toLowerCase();
+    const desc = (propertyDescription ?? '').trim().toLowerCase();
+    const part = (partitionNo ?? '').trim().toUpperCase();
+
+    const byCategoryName = cat.includes('amenity') || cat.includes('ॲमिनिटी') || cat.includes('अॅमिनिटी');
+    const byPropertyDescription = desc.includes('amenity') || desc.includes('ॲमिनिटी') || desc.includes('अॅमिनिटी') || desc.includes('अमेनिटी');
+    const byPartitionNo = part.includes('AM');
+
+    return byCategoryName || byPropertyDescription || byPartitionNo;
+  }, [categoryName, propertyDescription, partitionNo]);
+
   const isDataEntryDisabled = React.useMemo(() => {
-    // Disable button if no floors exist for the selected property; enable when floors exist
+    // The action is disabled only when the selected property has no floors.
     return !filteredFloors || filteredFloors.length === 0;
   }, [filteredFloors]);
 
@@ -87,7 +110,6 @@ const FloorTable: React.FC<FloorTableProps> = ({
     if (isDataEntryDisabled) {
       toast.error(
         t('floor.atLeastOneFloorRequired')
-          
       );
       return;
     }
@@ -285,7 +307,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
             />
           )}
 
-          {!viewOnly && (
+          {!viewOnly && !isAmenityProperty && !hasWing && (
             <div
               onClick={handleDataEntrySameAsClick}
               className="inline-block cursor-pointer"
