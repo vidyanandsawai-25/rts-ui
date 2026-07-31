@@ -23,6 +23,8 @@ export const WAYBACK_STATIC_TILE_URL = (
 ): string =>
   `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${releaseId}/${z}/${y}/${x}`;
 
+const TARGET_YEARS = [2015, 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+
 export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
   try {
     const { getWaybackItems } = await import('@esri/wayback-core');
@@ -39,7 +41,7 @@ export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
       const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
       const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
       const year = parseInt(dateStr.slice(0, 4), 10);
-      if (isNaN(year)) return;
+      if (isNaN(year) || !TARGET_YEARS.includes(year)) return;
 
       if (!byYear[year] || dateStr > byYear[year].date) {
         byYear[year] = {
@@ -50,14 +52,27 @@ export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
       }
     });
 
-    return Object.values(byYear).sort((a, b) => a.year - b.year);
+    const result = Object.values(byYear).sort((a, b) => a.year - b.year);
+    if (result.length > 0) return result;
   } catch {
-    return [];
+    // Fallback below
   }
+
+  return [
+    { releaseId: 28163, date: '2015-12-16', year: 2015 },
+    { releaseId: 25521, date: '2017-11-16', year: 2017 },
+    { releaseId: 4756, date: '2019-12-12', year: 2019 },
+    { releaseId: 29260, date: '2020-12-16', year: 2020 },
+    { releaseId: 26120, date: '2021-12-21', year: 2021 },
+    { releaseId: 45134, date: '2022-12-14', year: 2022 },
+    { releaseId: 56102, date: '2023-12-07', year: 2023 },
+    { releaseId: 16453, date: '2024-12-12', year: 2024 },
+    { releaseId: 13192, date: '2025-12-18', year: 2025 },
+    { releaseId: 32246, date: '2026-06-30', year: 2026 },
+  ];
 }
 
-const localChangesPromises = new Map<string, Promise<WaybackRelease[]>>();
-const localChangesCache = new Map<string, WaybackRelease[]>();
+
 
 // Prefetch @esri/wayback-core during idle time so the module is cached
 // before the user opens Change Detection, eliminating dynamic import latency.
@@ -71,116 +86,6 @@ if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
   }, 2000);
 }
 
-/**
- * Fetches only the sparse Wayback releases where actual imagery changes occurred for the given coordinates.
- */
-export async function fetchLocalChanges(lat: number, lng: number): Promise<WaybackRelease[]> {
-  if (!lat || !lng || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return [];
-  }
-
-  const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)}`;
-
-  // 1. Check in-memory results cache
-  if (localChangesCache.has(cacheKey)) {
-    return localChangesCache.get(cacheKey)!;
-  }
-
-  // 2. Check if a request is already in progress for these coordinates
-  if (localChangesPromises.has(cacheKey)) {
-    return localChangesPromises.get(cacheKey)!;
-  }
-
-  // 3. Check sessionStorage cache
-  if (typeof window !== 'undefined') {
-    try {
-      const cached = sessionStorage.getItem(`wayback_local_${cacheKey}`);
-      if (cached) {
-        const parsed = JSON.parse(cached) as WaybackRelease[];
-        localChangesCache.set(cacheKey, parsed);
-        return parsed;
-      }
-    } catch {
-      // Ignore sessionStorage read errors
-    }
-  }
-
-  // 4. Create and cache the promise to deduplicate active requests
-  const promise = (async () => {
-    try {
-      const { getWaybackItems, long2tile, lat2tile } = await import('@esri/wayback-core');
-      const allItems = await getWaybackItems();
-
-      const level = 16;
-      const column = long2tile(lng, level);
-      const row = lat2tile(lat, level);
-
-      const tilemapUrl = `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tilemap/${level}/${row}/${column}`;
-      const res = await fetch(tilemapUrl);
-      if (!res.ok) throw new Error(`Tilemap fetch failed with status ${res.status}`);
-
-      const tilemapData = await res.json();
-      const selectReleases = new Set<number>(
-        Array.isArray(tilemapData.select) ? tilemapData.select.map((n: unknown) => Number(n)) : []
-      );
-
-      const matchedItems = selectReleases.size > 0
-        ? allItems.filter((item: { releaseNum: number }) => selectReleases.has(item.releaseNum))
-        : allItems;
-
-      interface IWaybackItem {
-        itemTitle?: string;
-        releaseDatetime: string | number | Date;
-        releaseNum: number;
-      }
-
-      const byYear: Record<number, WaybackRelease> = {};
-      matchedItems.forEach((i: IWaybackItem) => {
-        const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
-        const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
-        const year = parseInt(dateStr.slice(0, 4), 10);
-        if (isNaN(year)) return;
-
-        if (!byYear[year] || dateStr > byYear[year].date) {
-          byYear[year] = {
-            releaseId: i.releaseNum,
-            date: dateStr,
-            year,
-          };
-        }
-      });
-
-      const result = Object.values(byYear).sort((a, b) => a.year - b.year);
-
-      // Save to results cache
-      localChangesCache.set(cacheKey, result);
-
-      // Limit memory cache size to prevent leaks (FIFO eviction)
-      if (localChangesCache.size > 100) {
-        const oldestKey = localChangesCache.keys().next().value;
-        if (oldestKey !== undefined) {
-          localChangesCache.delete(oldestKey);
-        }
-      }
-
-      if (typeof window !== 'undefined' && result.length > 0) {
-        try {
-          sessionStorage.setItem(`wayback_local_${cacheKey}`, JSON.stringify(result));
-        } catch {
-          // Ignore sessionStorage write errors
-        }
-      }
-
-      return result;
-    } catch {
-      // Ignore fetching errors
-      return [];
-    } finally {
-      // Clean up the promise once resolved/completed
-      localChangesPromises.delete(cacheKey);
-    }
-  })();
-
-  localChangesPromises.set(cacheKey, promise);
-  return promise;
+export async function fetchLocalChanges(_lat: number, _lng: number): Promise<WaybackRelease[]> {
+  return fetchWaybackReleases();
 }

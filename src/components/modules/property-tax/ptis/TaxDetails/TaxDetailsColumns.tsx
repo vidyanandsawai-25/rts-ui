@@ -49,11 +49,28 @@ function getTaxColumnLabel(taxName: string, t: (key: string) => string): string 
   return taxName;
 }
 
+function ensureTotalTaxLast(allTaxNames: string[]): string[] {
+  const nonTotal: string[] = [];
+  const total: string[] = [];
+
+  allTaxNames.forEach((name) => {
+    const lower = name.trim().toLowerCase();
+    if (lower === 'totaltax' || lower === 'taxtotal' || lower === 'total tax' || lower === 'total') {
+      total.push(name);
+    } else {
+      nonTotal.push(name);
+    }
+  });
+
+  return [...nonTotal, ...total];
+}
+
 export function getTaxDetailsFloorColumns(
   allTaxNames: string[],
   t: (key: string) => string,
   getTaxLabelStyle: (taxType: string) => string
 ): FloorDetailsTableColumn<TaxRow>[] {
+  const orderedTaxNames = ensureTotalTaxLast(allTaxNames);
   const columns: FloorDetailsTableColumn<TaxRow>[] = [
     {
       key: 'taxes',
@@ -71,7 +88,7 @@ export function getTaxDetailsFloorColumns(
   ];
 
   // Dynamic tax amount columns
-  allTaxNames.forEach((taxName) => {
+  orderedTaxNames.forEach((taxName) => {
     columns.push({
       key: taxName,
       label: getTaxColumnLabel(taxName, t),
@@ -107,6 +124,7 @@ export function getPendingTaxDetailsFloorColumns(
   t: (key: string) => string,
   _getTaxLabelStyle?: (taxType: string) => string
 ): FloorDetailsTableColumn<PendingTaxRow>[] {
+  const orderedTaxNames = ensureTotalTaxLast(allTaxNames);
   const columns: FloorDetailsTableColumn<PendingTaxRow>[] = [
     {
       key: 'taxes',
@@ -123,7 +141,7 @@ export function getPendingTaxDetailsFloorColumns(
     },
   ];
 
-  allTaxNames.forEach((taxName) => {
+  orderedTaxNames.forEach((taxName) => {
     columns.push({
       key: taxName,
       label: getTaxColumnLabel(taxName, t),
@@ -155,6 +173,7 @@ export function getRetroPendingYearFloorColumns(
   t: (key: string) => string,
   _getTaxLabelStyle?: (taxType: string) => string
 ): FloorDetailsTableColumn<PendingYearTaxDetail & { id: string }>[] {
+  const orderedTaxNames = ensureTotalTaxLast(allTaxNames);
   const columns: FloorDetailsTableColumn<PendingYearTaxDetail & { id: string }>[] = [
     {
       key: 'taxes',
@@ -177,7 +196,7 @@ export function getRetroPendingYearFloorColumns(
     },
   ];
 
-  allTaxNames.forEach((taxName) => {
+  orderedTaxNames.forEach((taxName) => {
     columns.push({
       key: taxName,
       label: getTaxColumnLabel(taxName, t),
