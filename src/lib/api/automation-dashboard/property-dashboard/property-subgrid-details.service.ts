@@ -12,7 +12,9 @@ import {
     PropertyAssessmentStatusResponseItems,
     PropertyAssessmentStatusItem,
     ZoneItem,
-    ZoneResponseItems
+    ZoneResponseItems,
+    PropertyTrackingStageStatusResponse,
+    PropertyTrackingStageStatusItem
 } from "@/types/automation-dashboard/property-dashboard/property-subgrid-details.type";
 
 export async function automationGetPropertySubGridDetails(
@@ -120,4 +122,19 @@ export async function getZones(
     const t = await getTranslations("automationDashboard");
 
     return handleApiResponse(response, t("errors.fetchZones") || "Failed to fetch zones").items ?? null;
+}
+
+export async function getPropertyTrackingStageStatus(
+    propertyId: string | number
+): Promise<PropertyTrackingStageStatusItem[] | null> {
+    const params = new URLSearchParams();
+    params.append("propertyId", propertyId.toString());
+
+    const response = await apiClient.get<PropertyTrackingStageStatusResponse>(
+        `/AutomationDashboard/TrackStageStatus?${params.toString()}`,
+        { cache: "no-store" }
+    );
+    const t = await getTranslations("automationDashboard");
+
+    return handleApiResponse(response, t("errors.fetchPropertyTrackingStatus") || "Failed to fetch property tracking stage status").items ?? null;
 }

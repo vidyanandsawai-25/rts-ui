@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
 import { MapPin, Building2, Search, Send, FileText, Check, User, X, Network } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { PropertyTrackingStageStatusItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 export interface TrackingStage {
     stage: string;
@@ -27,7 +28,21 @@ interface TrackingPropertyData {
     owner?: string;
 }
 
-export const PropertyTrackingDrawer = () => {
+interface PropertyTrackingDrawerProps {
+    propertyId?: string;
+    propertyNo?: string;
+    ownerName?: string;
+    initialStageItems?: PropertyTrackingStageStatusItem[];
+    initialError?: string | null;
+}
+
+export const PropertyTrackingDrawer = ({
+    propertyId: propPropertyId,
+    propertyNo: propPropertyNo,
+    ownerName: propOwnerName,
+    initialStageItems,
+    initialError
+}: PropertyTrackingDrawerProps) => {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -35,15 +50,23 @@ export const PropertyTrackingDrawer = () => {
     const t = useTranslations('automationDashboard.tracking');
 
     const pathZoneId = params?.zoneId as string;
-    const propertyId = params?.propertyId as string;
+    const routePropertyId = params?.trackingId as string;
+    const propertyId = propPropertyId || routePropertyId;
     const stage = searchParams.get('stage') || 'geoSequencing';
     const workflowStageId = searchParams.get('workflowStageId');
+
+    const stageItems = useMemo(() => initialStageItems || [], [initialStageItems]);
+    const isLoading = false;
+    const error = initialError || null;
 
     // Find the property data dynamically
     const selectedProperty: TrackingPropertyData | null = useMemo(() => {
         if (!propertyId) return null;
-        return {} as TrackingPropertyData; // Replaced dummyPropertyData
-    }, [propertyId]);
+        return {
+            propertyNo: { new: propPropertyNo || searchParams.get('propertyNo') || String(propertyId), old: undefined },
+            owner: propOwnerName || searchParams.get('ownerName') || '-'
+        };
+    }, [propertyId, propOwnerName, propPropertyNo, searchParams]);
     const source = searchParams.get('source') || 'division';
 
     const handleClose = () => {
@@ -53,42 +76,30 @@ export const PropertyTrackingDrawer = () => {
         router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}?zoneId=${pathZoneId}&stage=${stage}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${sourceParam}${returnUrlParam}`);
     };
 
-    // Tracking stages data matching the screenshot
-    const trackingStages: TrackingStage[] = [
-        {
-            stage: 'Geo-sequencing',
-            status: 'Completed',
-            date: '5 Jun 2025 • 12:40 pm',
-            submittedBy: 'AMAR SHRIRAM DATIR',
-        },
-        {
-            stage: 'Internal Survey',
-            status: 'Pending',
-            date: '- - -',
-            submittedBy: '-',
-        },
-        {
-            stage: 'Quality Analyst',
-            status: 'Pending',
-            date: '- - -',
-            submittedBy: '-',
-        },
-        {
-            stage: 'Submitted',
-            status: 'Pending',
-            date: '- - -',
-            submittedBy: '-',
-        },
-        {
-            stage: 'ULB',
-            status: 'Pending',
-            date: '- - -',
-            approvedBy: '-',
-        },
-    ];
+    const trackingStages: TrackingStage[] = useMemo(() => {
+        const firstPendingIndex = stageItems.findIndex((item) => item.isCompleted !== 1);
+
+        return stageItems.map((item, index) => {
+            let status: TrackingStage['status'] = 'Pending';
+            if (item.isCompleted === 1) {
+                status = 'Completed';
+            } else if (index === firstPendingIndex) {
+                status = 'In Progress';
+            }
+
+            return {
+                stage: item.stageName,
+                status,
+                date: '- - -',
+                submittedBy: '-'
+            };
+        });
+    }, [stageItems]);
 
     const completedCount = trackingStages.filter(s => s.status === 'Completed').length;
     const totalCount = trackingStages.length;
+    const currentStage = trackingStages.find((s) => s.status === 'In Progress')?.stage || '-';
+    const progressWidth = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
     return (
         <Drawer
@@ -108,9 +119,9 @@ export const PropertyTrackingDrawer = () => {
                             <div className="flex flex-col">
                                 <h3 className="text-slate-800 font-bold text-lg leading-tight">{t('title')}</h3>
                                 <span className="text-slate-400 text-xs mt-1 font-medium flex items-center gap-1.5">
-                                    <span>{selectedProperty?.propertyNo.new || 'MUMAJOR1-2'}</span>
+                                    <span>{selectedProperty?.propertyNo.new || '-'}</span>
                                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                    <span>{selectedProperty?.owner || 'The Holder'}</span>
+                                    <span>{selectedProperty?.owner || '-'}</span>
                                 </span>
                             </div>
                         </div>
@@ -131,15 +142,15 @@ export const PropertyTrackingDrawer = () => {
                     {/* Progress Bar Section */}
                     <div className="mt-6">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-extrabold text-slate-400 tracking-wider">PROGRESS</span>
+                            <span className="text-[10px] font-extrabold text-slate-400 tracking-wider">{t('progress')}</span>
                             <span className="text-blue-600 bg-blue-50 border border-blue-100 text-[11px] font-semibold rounded-full px-2.5 py-0.5">
-                                {t('current')}: {t('internalSurvey')}
+                                {t('current')}: {currentStage}
                             </span>
                         </div>
                         <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-[#10B981] rounded-full transition-all duration-500"
-                                style={{ width: `${(completedCount / totalCount) * 100}%` }}
+                                style={{ width: `${progressWidth}%` }}
                             />
                         </div>
                     </div>
@@ -149,26 +160,33 @@ export const PropertyTrackingDrawer = () => {
                 <div className="flex-1 overflow-y-auto px-6 py-4">
                     <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
                         <div className="flex flex-col">
-                            {trackingStages.map((stage, idx) => {
+                            {isLoading ? (
+                                <div className="text-center text-sm text-slate-500 py-8">{t('loading')}</div>
+                            ) : error ? (
+                                <div className="text-center text-sm text-red-500 py-8">{error}</div>
+                            ) : trackingStages.length === 0 ? (
+                                <div className="text-center text-sm text-slate-500 py-8">{t('noTrackingData')}</div>
+                            ) : trackingStages.map((stage, idx) => {
                                 const isCompleted = stage.status === 'Completed';
+                                const isInProgress = stage.status === 'In Progress';
                                 const isLast = idx === trackingStages.length - 1;
 
                                 return (
                                     <div key={idx} className="flex relative">
                                         {/* Left: Icon & Wavy Connecting Line */}
-                                        <div className="w-16 flex flex-col items-center flex-shrink-0 relative">
+                                        <div className="w-16 flex flex-col items-center shrink-0 relative">
                                             {/* Circular Icon Container */}
                                             <div className={cn(
                                                 "w-10 h-10 rounded-full border-2 flex items-center justify-center bg-white shadow-sm z-10 transition-colors duration-300 relative",
                                                 isCompleted ? "border-emerald-400 bg-emerald-50 text-emerald-500" :
-                                                    idx === 1 ? "border-blue-400 bg-blue-50 text-blue-600" : // Highlight current stage
+                                                    isInProgress ? "border-blue-400 bg-blue-50 text-blue-600" :
                                                         "border-slate-200 bg-slate-50 text-slate-300"
                                             )}>
-                                                {idx === 0 && <MapPin className="w-5 h-5" />}
-                                                {idx === 1 && <Building2 className="w-5 h-5" />}
-                                                {idx === 2 && <Search className="w-5 h-5" />}
-                                                {idx === 3 && <Send className="w-5 h-5" />}
-                                                {idx === 4 && <FileText className="w-5 h-5" />}
+                                                {idx % 5 === 0 && <MapPin className="w-5 h-5" />}
+                                                {idx % 5 === 1 && <Building2 className="w-5 h-5" />}
+                                                {idx % 5 === 2 && <Search className="w-5 h-5" />}
+                                                {idx % 5 === 3 && <Send className="w-5 h-5" />}
+                                                {idx % 5 === 4 && <FileText className="w-5 h-5" />}
 
                                                 {/* Checkmark Badge on Completed */}
                                                 {isCompleted && (
@@ -204,10 +222,10 @@ export const PropertyTrackingDrawer = () => {
                                                 <span className={cn(
                                                     "text-[10px] font-extrabold px-2 py-0.5 rounded tracking-wider uppercase",
                                                     isCompleted ? "bg-emerald-100 text-emerald-700" :
-                                                        idx === 1 ? "bg-blue-100 text-blue-700" :
+                                                        isInProgress ? "bg-blue-100 text-blue-700" :
                                                             "bg-slate-100 text-slate-500"
                                                 )}>
-                                                    {isCompleted ? t('completedStatus') : t('pendingStatus')}
+                                                    {isCompleted ? t('completedStatus') : isInProgress ? t('inProgressStatus') : t('pendingStatus')}
                                                 </span>
                                             </div>
 

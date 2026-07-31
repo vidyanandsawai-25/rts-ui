@@ -15,7 +15,9 @@
     "fetchApprovalByUlbDetails": "ULB द्वारे मंजुरीचे तपशील मिळवण्यात अयशस्वी.",
     "fetchBuildingWiseData": "इमारत-निहाय डेटा आणण्यात अयशस्वी.",
     "fetchPropertyWiseData": "मालमत्ता-निहाय डेटा आणण्यात अयशस्वी.",
-    "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील आणण्यात अयशस्वी."
+    "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील आणण्यात अयशस्वी.",
+     "fetchZones": "झोन डेटा आणण्यात अयशस्वी.",
+     "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -380,8 +382,12 @@
     "title": "मालमत्ता ट्रॅकिंग",
     "completed": "पूर्ण",
     "current": "सध्याचे",
+    "progress": "प्रगती",
+    "loading": "लोड होत आहे...",
+    "noTrackingData": "ट्रॅकिंग डेटा उपलब्ध नाही.",
     "internalSurvey": "अंतर्गत सर्वेक्षण",
     "completedStatus": "पूर्ण",
+    "inProgressStatus": "प्रगतीत",
     "pendingStatus": "प्रलंबित",
     "approvedBy": "द्वारे मंजूर:",
     "submittedBy": "द्वारे सादर:"

@@ -18,9 +18,6 @@ const renderClickableCell = (value: unknown, row: AssessmentRow, locale: string,
     );
 };
 
-
-
-
 const SortIcon = () => (
     <ArrowUpDown className="inline-block ml-1 w-3 h-3 text-slate-400 opacity-60" />
 );

@@ -15,7 +15,9 @@
     "fetchApprovalByUlbDetails": "यूएलबी डिटेल्स द्वारा अप्रूवल प्राप्त करने में विफल।",
     "fetchBuildingWiseData": "भवन-वार डेटा प्राप्त करने में विफल।",
     "fetchPropertyWiseData": "संपत्ति-वार डेटा प्राप्त करने में विफल।",
-    "fetchPropertyAssessmentStatus": "संपत्ति मूल्यांकन स्थिति विवरण प्राप्त करने में विफल।"
+    "fetchPropertyAssessmentStatus": "संपत्ति मूल्यांकन स्थिति विवरण प्राप्त करने में विफल।",
+    "fetchZones": "जोन डेटा प्राप्त करने में विफल।",
+    "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रैकिंग स्टेटस प्राप्त करने में विफल।"
   },
   "summaryCards": {
     "metrics": {
@@ -325,8 +327,12 @@
     "title": "प्रॉपर्टी ट्रैकिंग",
     "completed": "पूर्ण",
     "current": "वर्तमान",
+    "progress": "प्रगति",
+    "loading": "लोड हो रहा है...",
+    "noTrackingData": "कोई ट्रैकिंग डेटा उपलब्ध नहीं है।",
     "internalSurvey": "आंतरिक सर्वेक्षण",
     "completedStatus": "पूर्ण",
+    "inProgressStatus": "प्रगति पर",
     "pendingStatus": "लंबित",
     "approvedBy": "द्वारा अनुमोदित:",
     "submittedBy": "द्वारा प्रस्तुत:"

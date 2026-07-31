@@ -134,3 +134,18 @@ export interface ZoneResponseItems {
     hasPrevious: boolean;
     hasNext: boolean;
 }
+
+export interface PropertyTrackingStageStatusItem {
+    workflowStageId: number;
+    stageName: string;
+    displayOrder: number;
+    isCompleted: number;
+}
+
+export interface PropertyTrackingStageStatusResponse {
+    success: boolean;
+    message: string;
+    items: PropertyTrackingStageStatusItem[];
+    errors: unknown | null;
+    correlationId?: string | null;
+}

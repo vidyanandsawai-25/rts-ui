@@ -22,6 +22,12 @@ interface PageProps {
     searchParams: Promise<{
         pageNumber?: string;
         pageSize?: string;
+        SearchTerm?: string;
+        surveyType?: string;
+        zoneName?: string;
+        wardNumber?: string;
+        propertyType?: string;
+        propertyDescription?: string;
     }>;
 }
 
@@ -29,33 +35,59 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
     const search = await searchParams;
     const pageNumber = search.pageNumber ? parseInt(search.pageNumber, 10) : 1;
     const pageSize = search.pageSize ? parseInt(search.pageSize, 10) : 10;
+    const SearchTerm = search.SearchTerm || '';
+    const surveyType = search.surveyType || 'All';
+    const zoneName = search.zoneName || 'All';
+    const wardNumber = search.wardNumber || 'All';
+    const propertyType = search.propertyType || 'All';
 
+    // 1. Fetch metadata first (Zones, Wards, Property Types, Survey Types)
     const [
-        response,
         zonesRes,
         wardsRes,
         propTypeRes,
         surveyTypeRes
     ] = await Promise.all([
-        getPendingAssessmentPropsAction(pageNumber, pageSize),
         getZonesAction(-1, -1),
         getWardsAction(-1, -1),
         getPropertyTypeMasterAction(-1, -1),
         getPropertyAssessmentStatusAction(-1, -1)
     ]);
 
+    const zones = zonesRes.success && zonesRes.data ? zonesRes.data : [];
+    const wards = wardsRes.success && wardsRes.data ? wardsRes.data : [];
+
+    const selectedZoneObj = zones.find(z => z.id.toString() === zoneName);
+    const zoneNo = selectedZoneObj ? selectedZoneObj.zoneNo : undefined;
+
+    const selectedWardObj = wards.find(w => w.id.toString() === wardNumber);
+    const wardNo = selectedWardObj ? selectedWardObj.wardNo : undefined;
+
+    // 2. Fetch pending assessment properties with all queries mapped
+    const response = await getPendingAssessmentPropsAction({
+        pageNumber,
+        pageSize,
+        searchTerm: SearchTerm,
+        surveyTypeId: surveyType,
+        zoneId: zoneName,
+        zoneNo,
+        wardId: wardNumber,
+        wardNo,
+        propertyTypeId: propertyType
+    });
+
     const serverData = response.success ? (response.data ?? null) : null;
 
-    const zoneOptions = (zonesRes.success && zonesRes.data ? zonesRes.data : []).map(z => ({ value: z.id.toString(), label: z.zoneNo || '' }));
-    const wardOptions = (wardsRes.success && wardsRes.data ? wardsRes.data : []).map(w => ({ value: w.id.toString(), label: w.wardNo || w.description || '' }));
+    const zoneOptions = zones.map(z => ({ value: z.id.toString(), label: z.zoneNo || '' }));
+    const wardOptions = wards.map(w => ({ value: w.id.toString(), label: w.wardNo || w.description || '' }));
     const propDescOptions = (propTypeRes.success && propTypeRes.data ? propTypeRes.data : []).map(p => ({ value: p.id.toString(), label: p.propertyDescription || p.type || '' }));
     const surveyTypeOptions = (surveyTypeRes.success && surveyTypeRes.data ? surveyTypeRes.data : []).map(s => ({ value: s.id.toString(), label: s.statusName || '' }));
 
     // Add 'All' options at the top
-    zoneOptions.unshift({ value: 'all', label: 'All Zones' });
-    wardOptions.unshift({ value: 'all', label: 'All Wards' });
-    propDescOptions.unshift({ value: 'all', label: 'All Descriptions' });
-    surveyTypeOptions.unshift({ value: 'all', label: 'All Survey Types' });
+    zoneOptions.unshift({ value: 'All', label: 'All Zones' });
+    wardOptions.unshift({ value: 'All', label: 'All Wards' });
+    propDescOptions.unshift({ value: 'All', label: 'All Descriptions' });
+    surveyTypeOptions.unshift({ value: 'All', label: 'All Survey Types' });
 
     return (
         <SendToApproveDashboard 
@@ -67,6 +99,7 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
             propertyTypeOptions={propertyTypeStaticOptions}
             propertyDescriptionOptions={propDescOptions}
             surveyTypeOptions={surveyTypeOptions}
+            initialSearchTerm={SearchTerm}
         />
     );
 }

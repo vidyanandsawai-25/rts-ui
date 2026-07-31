@@ -1,6 +1,10 @@
 'use server';
 
-import { automationGetAssessmentGrid, automationGetPendingAssessmentProps } from "@/lib/api/automation-dashboard/assessment/assessmentgrid.service";
+import { 
+    automationGetAssessmentGrid, 
+    automationGetPendingAssessmentProps,
+    FetchPendingAssessmentPropsParams 
+} from "@/lib/api/automation-dashboard/assessment/assessmentgrid.service";
 import { AssessmentGridItems, AssessmentGridType, PendingAssessmentItems } from "@/types/automation-dashboard/assessment/assessmentgrid.type";
 import { 
     getZones, 
@@ -60,15 +64,14 @@ export async function getAssessmentGridAction(
  * @returns An object containing success status, data, and optional error message.
  */
 export async function getPendingAssessmentPropsAction(
-    pageNumber: number = 1,
-    pageSize: number = 10
+    params: FetchPendingAssessmentPropsParams = { pageNumber: 1, pageSize: 10 }
 ): Promise<ActionResult<PendingAssessmentItems>> {
     try {
-        logger.info("getPendingAssessmentPropsAction: Fetching pending assessment properties", { pageNumber, pageSize });
-        const data = await automationGetPendingAssessmentProps(pageNumber, pageSize);
+        logger.info("getPendingAssessmentPropsAction: Fetching pending assessment properties", params as unknown as Record<string, string | number | boolean>);
+        const data = await automationGetPendingAssessmentProps(params);
         return { success: true, data };
     } catch (error) {
-        logger.error("Failed to fetch pending assessment properties", { pageNumber, pageSize }, error);
+        logger.error("Failed to fetch pending assessment properties", params as unknown as Record<string, string | number | boolean>, error);
         if (error instanceof ApiError) {
             return { success: false, error: error.message, statusCode: error.statusCode };
         }

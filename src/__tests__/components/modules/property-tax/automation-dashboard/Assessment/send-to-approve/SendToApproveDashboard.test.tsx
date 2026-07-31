@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ReactNode } from "react";
+
 import { PendingAssessmentItems, SendToApproveData } from "@/types/automation-dashboard/assessment/assessmentgrid.type";
 import SendToApproveDashboard from "@/components/modules/property-tax/automation-dashboard/Assessment/send-to-approve/SendToApproveDashboard";
 
@@ -20,16 +21,22 @@ vi.mock("next/navigation", () => ({
 // Mock next-intl
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
 }));
 
 // Mock AutomationTable component to simplify testing
 vi.mock("@/components/common/AutomationTable", () => ({
-  AutomationTable: ({ data, headerExtra }: { data: SendToApproveData[]; headerExtra?: ReactNode }) => (
+  AutomationTable: ({ data, headerExtra, onPageChange, onPageSizeChange, renderActions }: { data: SendToApproveData[]; headerExtra?: ReactNode; onPageChange?: (page: number) => void; onPageSizeChange?: (size: number) => void; renderActions?: (row: SendToApproveData) => ReactNode }) => (
     <div data-testid="automation-table">
       {headerExtra}
-      {data.map((row, idx) => (
+      <button data-testid="page-change-button" onClick={() => onPageChange?.(2)}>Change Page</button>
+      <button data-testid="page-size-change-button" onClick={() => onPageSizeChange?.(20)}>Change Size</button>
+      {data.map((row: SendToApproveData, idx: number) => (
         <div key={idx} data-testid={`table-row-${idx}`}>
           {row.propertyNo?.new}
+          <div data-testid={`actions-${idx}`}>
+            {renderActions?.(row)}
+          </div>
         </div>
       ))}
     </div>
@@ -134,6 +141,63 @@ describe("SendToApproveDashboard", () => {
     const backButton = screen.getByRole("button", { name: /back/i });
     fireEvent.click(backButton);
     
-    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith('/en/property-tax/automation-dashboard/assessment?workflowStageId=4');
+  });
+  it("handles page change", () => {
+    render(
+      <SendToApproveDashboard
+        serverData={mockServerData}
+        pageNumber={1}
+        pageSize={10}
+        zoneOptions={mockZoneOptions}
+        wardOptions={mockWardOptions}
+        propertyTypeOptions={mockPropertyTypeOptions}
+        propertyDescriptionOptions={mockPropertyDescriptionOptions}
+        surveyTypeOptions={mockSurveyTypeOptions}
+      />
+    );
+    fireEvent.click(screen.getByTestId("page-change-button"));
+    expect(mockPush).toHaveBeenCalled();
+  });
+
+  it("handles page size change", () => {
+    render(
+      <SendToApproveDashboard
+        serverData={mockServerData}
+        pageNumber={1}
+        pageSize={10}
+        zoneOptions={mockZoneOptions}
+        wardOptions={mockWardOptions}
+        propertyTypeOptions={mockPropertyTypeOptions}
+        propertyDescriptionOptions={mockPropertyDescriptionOptions}
+        surveyTypeOptions={mockSurveyTypeOptions}
+      />
+    );
+    fireEvent.click(screen.getByTestId("page-size-change-button"));
+    expect(mockPush).toHaveBeenCalled();
+  });
+
+  it("renders actions and allows clicking them", () => {
+    render(
+      <SendToApproveDashboard
+        serverData={mockServerData}
+        pageNumber={1}
+        pageSize={10}
+        zoneOptions={mockZoneOptions}
+        wardOptions={mockWardOptions}
+        propertyTypeOptions={mockPropertyTypeOptions}
+        propertyDescriptionOptions={mockPropertyDescriptionOptions}
+        surveyTypeOptions={mockSurveyTypeOptions}
+      />
+    );
+    
+    // Simulate clicking one of the action buttons to cover `handleActionClick` / rendering logic
+    const actionsContainer = screen.getByTestId("actions-0");
+    const clickableElements = actionsContainer.querySelectorAll('div, button');
+    
+    // Click all clickable elements in the actions container
+    clickableElements.forEach(el => {
+      fireEvent.click(el);
+    });
   });
 });

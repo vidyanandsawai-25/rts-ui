@@ -15,7 +15,9 @@
     "fetchApprovalByUlbDetails": "Failed to fetch approval by ULB details.",
     "fetchBuildingWiseData": "Failed to fetch building-wise data.",
     "fetchPropertyWiseData": "Failed to fetch property-wise data.",
-    "fetchPropertyAssessmentStatus": "Failed to fetch property assessment status details."
+    "fetchPropertyAssessmentStatus": "Failed to fetch property assessment status details.",
+    "fetchZones": "Failed to fetch zones.",
+    "fetchPropertyTrackingStatus": "Failed to fetch property tracking status."
   },
   "summaryCards": {
     "metrics": {
@@ -380,8 +382,12 @@
     "title": "Property Tracking",
     "completed": "Completed",
     "current": "Current",
+    "progress": "PROGRESS",
+    "loading": "Loading...",
+    "noTrackingData": "No tracking data found.",
     "internalSurvey": "Internal Survey",
     "completedStatus": "COMPLETED",
+    "inProgressStatus": "IN PROGRESS",
     "pendingStatus": "PENDING",
     "approvedBy": "Approved By:",
     "submittedBy": "Submitted By:"

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/common/ActionButton';
 import { SearchInput } from '@/components/common/SearchInput';
 import { SearchSelect } from '@/components/common/SearchSelect';
@@ -26,32 +26,33 @@ interface SendToApproveDashboardProps {
     propertyTypeOptions: OptionType[];
     propertyDescriptionOptions: OptionType[];
     surveyTypeOptions: OptionType[];
+    initialSearchTerm?: string;
 }
 
-export default function SendToApproveDashboard({ 
-    serverData, 
-    pageNumber, 
+export default function SendToApproveDashboard({
+    serverData,
+    pageNumber,
     pageSize,
     zoneOptions,
     wardOptions,
     propertyTypeOptions,
     propertyDescriptionOptions,
-    surveyTypeOptions
+    surveyTypeOptions,
+    initialSearchTerm
 }: SendToApproveDashboardProps) {
-    const router = useRouter(); 
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const t = useTranslations('automationDashboard');
-    const [searchTerm, setSearchTerm] = useState('');
+    const locale = useLocale();
+    const [searchTerm, setSearchTerm] = useState(initialSearchTerm || '');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-    // We would normally read these from useSearchParams(), but for now we'll initialize from URL on client side
-    // or just default to 'all' if not present
-    const [filters, setFilters] = useState({
-        surveyType: 'all',
-        zoneName: 'all',
-        wardNumber: 'all',
-        propertyType: 'All', // from static options
-        propertyDescription: 'all'
-    });
+    const selectedSurveyType = searchParams.get('surveyType') || 'All';
+    const selectedZoneName = searchParams.get('zoneName') || 'All';
+    const selectedWardNumber = searchParams.get('wardNumber') || 'All';
+    const selectedPropertyType = searchParams.get('propertyType') || 'All';
+    const selectedPropertyDescription = searchParams.get('propertyDescription') || 'All';
 
     const [viewerDocumentGuid, setViewerDocumentGuid] = useState<string | null>(null);
     const [viewerPropertyNo, setViewerPropertyNo] = useState<string>('');
@@ -59,18 +60,41 @@ export default function SendToApproveDashboard({
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const [viewerType, setViewerType] = useState<'plan' | 'image'>('image');
 
+    const triggerSearch = () => {
+        const currentParams = new URLSearchParams(searchParams.toString());
+        if (searchTerm) {
+            currentParams.set('SearchTerm', searchTerm);
+        } else {
+            currentParams.delete('SearchTerm');
+        }
+        currentParams.set('pageNumber', '1');
+        router.push(`${pathname}?${currentParams.toString()}`);
+    };
+
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        const currentParams = new URLSearchParams(searchParams.toString());
+        if (value) {
+            currentParams.set('SearchTerm', value);
+        } else {
+            currentParams.delete('SearchTerm');
+        }
+        currentParams.set('pageNumber', '1');
+        router.push(`${pathname}?${currentParams.toString()}`);
+    };
+
     const handlePageChange = (newPageNumber: number) => {
-        const currentParams = new URLSearchParams(window.location.search);
+        const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('pageNumber', newPageNumber.toString());
         currentParams.set('pageSize', pageSize.toString());
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`${pathname}?${currentParams.toString()}`);
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        const currentParams = new URLSearchParams(window.location.search);
+        const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('pageNumber', '1');
         currentParams.set('pageSize', newSize.toString());
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`${pathname}?${currentParams.toString()}`);
     };
 
     const handleSelectRow = (id: string, checked: boolean) => {
@@ -145,14 +169,16 @@ export default function SendToApproveDashboard({
     };
 
     const handleFilterChange = (name: string, value: string) => {
-        setFilters(prev => ({ ...prev, [name]: value }));
-        
         // Push filter changes to the URL
-        const currentParams = new URLSearchParams(window.location.search);
-        currentParams.set(name, value);
+        const currentParams = new URLSearchParams(searchParams.toString());
+        if (value && value !== 'All') {
+            currentParams.set(name, value);
+        } else {
+            currentParams.delete(name);
+        }
         // Reset to page 1 on filter change
         currentParams.set('pageNumber', '1');
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`${pathname}?${currentParams.toString()}`);
     };
 
     const handleDocumentClick = (guid: string, propertyNo: string, wardNo: string, isPlan: boolean) => {
@@ -179,7 +205,7 @@ export default function SendToApproveDashboard({
                         <Button
                             variant="secondary"
                             icon={ArrowLeft}
-                            onClick={() => router.back()}
+                            onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/assessment?workflowStageId=4`)}
                             className="group h-9 px-4 text-xs font-semibold flex items-center gap-2 text-slate-700 bg-white border border-slate-300 shadow-sm hover:bg-slate-50 transition-all duration-300 rounded-md"
                         >
                             {t('sendToApprove.backToAssessment')}
@@ -211,8 +237,8 @@ export default function SendToApproveDashboard({
                             icon={Send}
                             disabled={selectedIds.length === 0}
                             className={`h-9 px-4 text-xs font-semibold flex items-center gap-2 shadow-sm rounded-md transition-colors border-none ${selectedIds.length > 0
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                    : 'bg-blue-300 text-white cursor-not-allowed'
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                : 'bg-blue-300 text-white cursor-not-allowed'
                                 }`}
                         >
                             {`${t('sendToApprove.sendToApprove')} (${selectedIds.length})`}
@@ -226,7 +252,8 @@ export default function SendToApproveDashboard({
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.search')}</label>
                         <SearchInput
                             value={searchTerm}
-                            onChange={setSearchTerm}
+                            onChange={handleSearchChange}
+                            onEnter={triggerSearch}
                             placeholder={t('sendToApprove.searchPlaceholder')}
                             className="w-full h-8 mb-0 text-xs"
                         />
@@ -235,7 +262,7 @@ export default function SendToApproveDashboard({
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.surveyType')}</label>
                         <SearchSelect
                             name="surveyType"
-                            value={filters.surveyType}
+                            value={selectedSurveyType}
                             onChange={handleFilterChange}
                             options={surveyTypeOptions}
                             className="h-8 text-xs font-bold text-slate-800"
@@ -245,7 +272,7 @@ export default function SendToApproveDashboard({
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.zoneName')}</label>
                         <SearchSelect
                             name="zoneName"
-                            value={filters.zoneName}
+                            value={selectedZoneName}
                             onChange={handleFilterChange}
                             options={zoneOptions}
                             className="h-8 text-xs font-bold text-slate-800"
@@ -255,7 +282,7 @@ export default function SendToApproveDashboard({
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.wardNumber')}</label>
                         <SearchSelect
                             name="wardNumber"
-                            value={filters.wardNumber}
+                            value={selectedWardNumber}
                             onChange={handleFilterChange}
                             options={wardOptions}
                             className="h-8 text-xs font-bold text-slate-800"
@@ -265,17 +292,17 @@ export default function SendToApproveDashboard({
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.propertyType')}</label>
                         <SearchSelect
                             name="propertyType"
-                            value={filters.propertyType}
+                            value={selectedPropertyType}
                             onChange={handleFilterChange}
                             options={propertyTypeOptions}
                             className="h-8 text-xs font-bold text-slate-800"
                         />
-                    </div>                  
+                    </div>
                     <div className="min-w-0">
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.propertyDescription')}</label>
                         <SearchSelect
                             name="propertyDescription"
-                            value={filters.propertyDescription}
+                            value={selectedPropertyDescription}
                             onChange={handleFilterChange}
                             options={propertyDescriptionOptions}
                             className="h-8 text-xs font-bold text-slate-800"

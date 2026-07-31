@@ -4,6 +4,8 @@ import { PropertyWiseItem } from '@/types/automation-dashboard/approval-by-ulb/a
 import { Check, X } from 'lucide-react';
 import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
 
+const COLUMN_TEXT_SIZE_CLASS = 'text-[11px]';
+
 export const getBuildingwisePropertyHeaderRows = (): HeaderCell[][] => {
   return [
     [
@@ -34,13 +36,13 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
     {
       key: 'wardNo',
       label: 'Ward No',
-      render: (_, row) => <div className="text-center">{row.wardNo}</div>
+      render: (_, row) => <div className={`text-center ${COLUMN_TEXT_SIZE_CLASS}`}>{row.wardNo}</div>
     },
     {
       key: 'newPropertyNo',
       label: 'New Property No & Old Property No',
       render: (_, row) => (
-        <div className="flex flex-col text-center text-[11px]">
+        <div className={`flex flex-col text-center ${COLUMN_TEXT_SIZE_CLASS}`}>
           <span className="font-semibold text-black">{row.newPropertyNo}</span>
           <span className="text-slate-500 mt-0.5">{t('approvalByULB.buildingWiseProperty.oldLabel')}{row.oldPropertyNo || t('approvalByULB.buildingWiseProperty.newLabel')}</span>
         </div>
@@ -49,13 +51,13 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
     {
       key: 'description',
       label: 'Description',
-      render: (_, row) => <div className="text-center text-[11px]">{row.description}</div>
+      render: (_, row) => <div className={`text-center ${COLUMN_TEXT_SIZE_CLASS}`}>{row.description}</div>
     },
     {
       key: 'ownerName',
       label: 'Owner Name & Occupier Name',
       render: (_, row) => (
-        <div className="flex flex-col text-[11px] text-left">
+        <div className={`flex flex-col text-left ${COLUMN_TEXT_SIZE_CLASS}`}>
           <span className="text-slate-500">{t('approvalByULB.buildingWiseProperty.ownerLabel')}<span className="text-black font-semibold">{row.ownerName}</span></span>
           <span className="text-slate-500 mt-1">{t('approvalByULB.buildingWiseProperty.occupierLabel')}<span className="text-black font-semibold">{row.occupierName}</span></span>
         </div>
@@ -64,13 +66,13 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
     {
       key: 'address',
       label: 'Address',
-      render: (_, row) => <div className="text-[10px] text-left uppercase text-slate-700">{row.address}</div>
+      render: (_, row) => <div className={`text-left uppercase text-slate-700 ${COLUMN_TEXT_SIZE_CLASS}`}>{row.address}</div>
     },
     {
       key: 'societyName',
       label: 'Society Name & Builder Name',
       render: (_, row) => (
-        <div className="flex flex-col text-[10px] text-left">
+        <div className={`flex flex-col text-left ${COLUMN_TEXT_SIZE_CLASS}`}>
           <span className="text-slate-500">{t('approvalByULB.buildingWiseProperty.societyLabel')}<span className="text-black font-semibold">{row.societyName || t('approvalByULB.buildingWiseProperty.na')}</span></span>
           <span className="text-slate-500 mt-1">{t('approvalByULB.buildingWiseProperty.builderLabel')}<span className="text-black font-semibold">{row.builderName || t('approvalByULB.buildingWiseProperty.na')}</span></span>
         </div>
@@ -80,7 +82,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       key: 'wingNo',
       label: 'Wing No & Flat No',
       render: (_, row) => (
-        <div className="flex flex-col text-[10px] text-left">
+        <div className={`flex flex-col text-left ${COLUMN_TEXT_SIZE_CLASS}`}>
           <span className="text-slate-500">{t('approvalByULB.buildingWiseProperty.wingLabel')}<span className="text-black font-semibold">{row.wingNo || t('approvalByULB.buildingWiseProperty.na')}</span></span>
           <span className="text-slate-500 mt-1">{t('approvalByULB.buildingWiseProperty.flatLabel')}<span className="text-black font-semibold">{row.flatNo || t('approvalByULB.buildingWiseProperty.na')}</span></span>
         </div>
@@ -90,7 +92,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       key: 'oldRecord',
       label: 'Old Record',
       render: (_, row) => (
-        <div className="flex flex-col text-[10px] text-left leading-tight gap-0.5">
+        <div className={`flex flex-col text-left leading-tight gap-0.5 ${COLUMN_TEXT_SIZE_CLASS}`}>
           <span>{t('approvalByULB.buildingWiseProperty.areaLabel')}<span className="text-black">{row.oldRecord?.area || t('approvalByULB.buildingWiseProperty.na')}</span></span>
           <span>{t('approvalByULB.buildingWiseProperty.useLabel')}<span className="text-black">{row.oldRecord?.use || t('approvalByULB.buildingWiseProperty.notAvailable')}</span></span>
           <span>{t('approvalByULB.buildingWiseProperty.yearLabel')}<span className="text-black">{row.oldRecord?.year || t('approvalByULB.buildingWiseProperty.na')}</span></span>
@@ -103,7 +105,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       key: 'newRecord',
       label: 'New Record',
       render: (_, row) => (
-        <div className="flex flex-col text-[10px] text-left leading-tight gap-0.5">
+        <div className={`flex flex-col text-left leading-tight gap-0.5 ${COLUMN_TEXT_SIZE_CLASS}`}>
           <span>{t('approvalByULB.buildingWiseProperty.areaLabel')}<span className="text-black">{row.newRecord?.area || t('approvalByULB.buildingWiseProperty.na')}</span></span>
           <span>{t('approvalByULB.buildingWiseProperty.useLabel')}<span className="text-black">{row.newRecord?.use || t('approvalByULB.buildingWiseProperty.na')}</span></span>
           <span>{t('approvalByULB.buildingWiseProperty.yearLabel')}<span className="text-black">{row.newRecord?.year || t('approvalByULB.buildingWiseProperty.na')}</span></span>
@@ -115,32 +117,48 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
     {
       key: 'propertyType',
       label: 'Property Type',
-      render: (_, row) => <div className="text-center text-[11px] text-slate-700">{row.propertyType || t('approvalByULB.buildingWiseProperty.unassessed')}</div>
+      render: (_, row) => <div className={`text-center text-slate-700 ${COLUMN_TEXT_SIZE_CLASS}`}>{row.propertyType || t('approvalByULB.buildingWiseProperty.unassessed')}</div>
     },
     {
       key: 'totalDemand',
       label: 'Total Demand',
-      render: (_, row) => <div className="text-center font-semibold text-[11px] text-slate-700">{t('approvalByULB.buildingWiseProperty.currencySymbol')}{row.totalDemand?.toLocaleString('en-IN') || 0}</div>
+      render: (_, row) => <div className={`text-center font-semibold text-slate-700 ${COLUMN_TEXT_SIZE_CLASS}`}>{t('approvalByULB.buildingWiseProperty.currencySymbol')}{row.totalDemand?.toLocaleString('en-IN') || 0}</div>
     },
     {
       key: 'documents',
       label: 'DOCUMENTS Image',
-      render: () => (
+      render: (_, _row) => {        
+        const imageUrl = 'df9f9f30-86c6-4da4-84e8-31e2faa2492e'
+
+        return (
         <div className="flex justify-center">
-          <div className="h-8 w-8 bg-slate-200 rounded object-cover cursor-pointer hover:opacity-80 transition-opacity" title="View Document">        
+          <div className="h-9 w-9 rounded overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center">
+            {imageUrl ? (              
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={imageUrl}
+                alt="Document"
+                className="h-full w-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span className={`text-slate-500 ${COLUMN_TEXT_SIZE_CLASS}`}>{t('approvalByULB.buildingWiseProperty.na')}</span>
+            )}
           </div>
         </div>
-      )
-    },
+      );
+      }
+    }, 
     {
       key: 'actions',
       label: 'ACTIONS',
       render: (_, row) => (
-        <div className="flex flex-col items-center justify-center gap-1.5 py-1">
-          <button className="h-5 w-[60px] rounded-full text-[10px] flex items-center justify-center font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors cursor-pointer select-none">
+        <div className={`flex flex-col items-center justify-center gap-1.5 py-1 ${COLUMN_TEXT_SIZE_CLASS}`}>
+          <button className="h-5 w-15 rounded-full flex items-center justify-center font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors cursor-pointer select-none">
             {t('approvalByULB.buildingWiseProperty.report')}
           </button>
-          <button className="h-5 w-[60px] rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center justify-center cursor-pointer select-none">
+          <button className="h-5 w-15 rounded-full font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center justify-center cursor-pointer select-none">
             {t('approvalByULB.buildingWiseProperty.tracking')}
           </button>
           <div
@@ -159,7 +177,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       label: 'Clerk',
       render: (_, row) => (
         <div className="flex justify-center items-center">
-            {row.clerkSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
+          {row.clerkSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
         </div>
       )
     },
@@ -168,7 +186,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       label: 'Tax Insp.',
       render: (_, row) => (
         <div className="flex justify-center items-center">
-            {row.taxInspectorSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
+          {row.taxInspectorSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
         </div>
       )
     },
@@ -177,7 +195,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       label: 'Asst. Comm.',
       render: (_, row) => (
         <div className="flex justify-center items-center">
-            {row.assistantCommissionerSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
+          {row.assistantCommissionerSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
         </div>
       )
     },
@@ -186,7 +204,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       label: 'Dy. Comm.',
       render: (_, row) => (
         <div className="flex justify-center items-center">
-            {row.deputyCommissionerSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
+          {row.deputyCommissionerSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
         </div>
       )
     },
@@ -195,7 +213,7 @@ export const getBuildingwisePropertyColumns = (t: (key: string) => string): Colu
       label: 'Addl. Comm.',
       render: (_, row) => (
         <div className="flex justify-center items-center">
-            {row.additionalCommissionerSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
+          {row.additionalCommissionerSign ? <Check size={14} className="text-green-500" /> : <X size={14} className="text-red-500" />}
         </div>
       )
     }

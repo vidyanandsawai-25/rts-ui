@@ -26,6 +26,8 @@ const mockMessages = {
       capitalDescription: "Manage capital value rates",
       moujaTitle: "Mouja Rate Master",
       moujaDescription: "Manage mouja rates",
+      openplotTitle: "Open Plot Title",
+      openplotDescription: "Open Plot Description",
     },
   },
 };

@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import Link from 'next/link';
+
 import { getPropertyDashboardColumns, getPropertyDashboardHeaderRows } from './PropertyDashboardColumns';
 import { PropertyDashboardHeader } from './PropertyDashboardHeader';
 import { DocumentViewerModal } from '@/components/common';
@@ -216,18 +216,18 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
         const returnUrlParam = searchParams.get('returnUrl') ? `&returnUrl=${encodeURIComponent(searchParams.get('returnUrl')!)}` : '';
         return (
             <div className="flex flex-col items-center justify-center gap-1.5 py-1">
-                <Link
-                    href={`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyReport/${row.propertyId}?zoneId=${pathZoneId}&stage=${stage}${sourceParam}${workflowStageIdParam}${returnUrlParam}`}
+                <button
+                    onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyReport/${row.propertyId}?zoneId=${pathZoneId}&stage=${stage}${sourceParam}${workflowStageIdParam}${returnUrlParam}`)}
                     className="h-7 w-[70px] rounded-full text-xs flex items-center justify-center font-bold bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors cursor-pointer select-none"
                 >
                     {t('actions.report')}
-                </Link>
-                <Link
-                    href={`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyTracking/${row.propertyId}?zoneId=${pathZoneId}&stage=${stage}${sourceParam}${workflowStageIdParam}${returnUrlParam}`}
+                </button>
+                <button
+                    onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyTracking/${row.propertyId}?zoneId=${pathZoneId}&stage=${stage}${sourceParam}${workflowStageIdParam}${returnUrlParam}`)}
                     className="h-6 w-[70px] rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-colors flex items-center justify-center cursor-pointer select-none"
                 >
                     {t('actions.tracking')}
-                </Link>
+                </button>
                 <div
                     className="h-8 w-8 mt-0.5 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full animate-shimmer cursor-pointer"
                     title="Location"
