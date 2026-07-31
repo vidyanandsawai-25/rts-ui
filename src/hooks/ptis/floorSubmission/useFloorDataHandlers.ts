@@ -33,6 +33,7 @@ export const useFloorDataHandlers = (params: {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   INITIAL_FORM_STATE: FloorData;
   selectedFloorType?: 'Construction' | 'OpenPlot';
+  resetRestoredSessionFormRef?: () => void;
   // Area validation fields
   plotAreaSqM?: number;
   isOpenSpaceAreaExceeded?: boolean;
@@ -52,6 +53,7 @@ export const useFloorDataHandlers = (params: {
     setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, localFloors, setLocalFloors, setFormErrors,
     startTransition,
     router, locale, propertyId, confirm, t, INITIAL_FORM_STATE, selectedFloorType,
+    resetRestoredSessionFormRef,
     plotAreaSqM = 0,
     isOpenSpaceAreaExceeded = false,
     isFloorAreaExceeded = false,
@@ -87,13 +89,6 @@ export const useFloorDataHandlers = (params: {
     INITIAL_FORM_STATE,
   });
 
-  const handleOpenRenterManagement = useCallback((_floor?: FloorData) => {
-    if (!selectedFloor && isAddingNewFloor) {
-      toast.error(t('floor.saveFloorBeforeRenterManagement') || 'Please save the floor before managing renter details');
-      return;
-    }
-    toast.info(t('floor.renterManagementNotAvailable') || 'Renter management is not available from this screen yet');
-  }, [selectedFloor, isAddingNewFloor, t]);
 
   const getSafeTranslation = useCallback((key: string, fallback: string) => {
     try {
@@ -115,7 +110,7 @@ export const useFloorDataHandlers = (params: {
   }, [t]);
 
   const handleSave = useCallback(async () => {
-    if (isSavingRef.current) return;
+    if (isSaving || isSavingRef.current) return;
 
     if (selectedFloorType === 'OpenPlot' && isOpenSpaceAreaExceeded) {
       const availArea = parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2));
@@ -126,7 +121,7 @@ export const useFloorDataHandlers = (params: {
         title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
         description: msg,
         confirmText: getSafeTranslation('floor.ok', 'OK'),
-        onConfirm: () => {},
+        onConfirm: () => { },
       });
       return;
     }
@@ -140,7 +135,7 @@ export const useFloorDataHandlers = (params: {
         title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
         description: msg,
         confirmText: getSafeTranslation('floor.ok', 'OK'),
-        onConfirm: () => {},
+        onConfirm: () => { },
       });
       return;
     }
@@ -152,7 +147,7 @@ export const useFloorDataHandlers = (params: {
         title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
         description: msg,
         confirmText: getSafeTranslation('floor.ok', 'OK'),
-        onConfirm: () => {},
+        onConfirm: () => { },
       });
       return;
     }
@@ -164,7 +159,7 @@ export const useFloorDataHandlers = (params: {
         title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
         description: msg,
         confirmText: getSafeTranslation('floor.ok', 'OK'),
-        onConfirm: () => {},
+        onConfirm: () => { },
       });
       return;
     }
@@ -172,9 +167,9 @@ export const useFloorDataHandlers = (params: {
     const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
     const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
       ? editingFloorForm.roomWiseSubmissionDetails.filter((r: any) => {
-          const area = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0);
-          return area > 0;
-        }).length
+        const area = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0);
+        return area > 0;
+      }).length
       : 0;
 
     if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {
@@ -208,7 +203,7 @@ export const useFloorDataHandlers = (params: {
       description: isAddingNewFloor ? t('floor.addConfirmText') : t('floor.updateConfirmText'),
       confirmText: isAddingNewFloor ? t('floor.addConfirmButton') : t('floor.updateConfirmButton'),
       onConfirm: async () => {
-
+        if (isSavingRef.current) return;
         isSavingRef.current = true;
         setIsSaving(true);
         const previousFloors = [...localFloors];
@@ -247,17 +242,19 @@ export const useFloorDataHandlers = (params: {
           const isEditing = !isAddingNewFloor && (selectedFloor?.id || editingFloorForm.id);
           const response = isEditing
             ? await updateFloorSubmissionNoRedirectAction(
-                Number(selectedFloor?.id || editingFloorForm.id),
-                payload,
-                locale,
-                propertyId
-              )
+              Number(selectedFloor?.id || editingFloorForm.id),
+              payload,
+              locale,
+              propertyId
+            )
             : await submitFloorSubmissionNoRedirectAction(payload, locale, propertyId);
 
           if (!response || !response.success) {
             setLocalFloors(previousFloors);
             const serverMsg = parseServerError(response?.error, t);
             toast.error(serverMsg);
+            setIsSaving(false);
+            isSavingRef.current = false;
             return;
           }
 
@@ -267,7 +264,20 @@ export const useFloorDataHandlers = (params: {
               : t('floor.floorUpdateSuccess') || 'Floor updated successfully'
           );
 
-          // Reset selection state and update URL silently
+          // Clear temporary renter session data & in-memory cached session form
+          try {
+            sessionStorage.removeItem('renter_data_new');
+            if (selectedFloor?.id) {
+              sessionStorage.removeItem(`renter_data_${selectedFloor.id}`);
+            }
+            sessionStorage.removeItem('editingFloorForm');
+          } catch (_e) { }
+
+          if (resetRestoredSessionFormRef) {
+            resetRestoredSessionFormRef();
+          }
+
+          // Reset selection state and update URL silently inside transition
           startTransition(() => {
             setSelectedFloor(null);
             setIsAddingNewFloor(true);
@@ -276,12 +286,15 @@ export const useFloorDataHandlers = (params: {
 
             // Trigger quiet router refresh
             router.refresh();
+
+            // Reset isSaving after transition completes
+            setIsSaving(false);
+            isSavingRef.current = false;
           });
         } catch (error) {
           setLocalFloors(previousFloors);
           const catchMsg = parseServerError(error, t);
           toast.error(catchMsg);
-        } finally {
           setIsSaving(false);
           isSavingRef.current = false;
         }
@@ -294,6 +307,28 @@ export const useFloorDataHandlers = (params: {
     constructionLookup, isAddingNewFloor, localFloors, props, floorLookup, selectedFloor, locale, propertyId, setLocalFloors,
     startTransition, setSelectedFloor, setIsAddingNewFloor, setEditingFloorForm, INITIAL_FORM_STATE, router
   ]);
+
+  const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
+    const currentForm = formToUse || editingFloorForm;
+    if (!currentForm.floor) {
+      setFormErrors((prev) => ({ ...prev, floor: t('floor.selectFloorFirst') || 'Please select floor first' }));
+      toast.error(t('floor.selectFloorFirst') || 'Please select floor first');
+      return;
+    }
+
+    try {
+      sessionStorage.setItem('editingFloorForm', JSON.stringify(currentForm));
+    } catch {
+      // Session staging is best-effort before navigating to renter screen.
+    }
+
+    const floorIdParam = currentForm.id ? String(currentForm.id) : 'new';
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    params.set('floorId', floorIdParam);
+    const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?${params.toString()}`;
+    router.push(renterManagementUrl);
+  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
+
 
   return {
     handleSave,

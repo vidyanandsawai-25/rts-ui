@@ -8,6 +8,7 @@ import {
   SearchSelect,
 } from '@/components/common';
 import { FloorFormProps } from '@/types/floor-details.types';
+import { FloorData } from '@/types/room-details.types';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { LookupData } from '@/types/common-details.types';
 import {
@@ -31,6 +32,7 @@ import { FieldWrapper } from './components/SectionField';
 
 const FloorForm: React.FC<FloorFormProps & {
   selectedFloorType?: 'Construction' | 'OpenPlot';
+  selectedFloor?: FloorData | null;
   isPlotCategory?: boolean;
   isAreaExceeded?: boolean;
   plotAreaSqM?: number;
@@ -45,6 +47,7 @@ const FloorForm: React.FC<FloorFormProps & {
   enteredOpenSpaceAreaSqM?: number;
 }> = ({
   t,
+  selectedFloor,
   isAddingNewFloor,
   editingFloorForm,
   setEditingFloorForm,
@@ -102,7 +105,7 @@ const FloorForm: React.FC<FloorFormProps & {
         <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-blue-200">
           <h3 className="text-sm font-bold text-blue-800 flex items-center gap-2">
             <Edit2 className="w-4 h-4" />
-            {isAddingNewFloor
+            {(!selectedFloor && isAddingNewFloor)
               ? (selectedFloorType === 'OpenPlot' ? (t('floor.addOpenPlotDetails') || 'Add Open Space Details') : (t('floor.addFloorDetails') || 'Add Floor Details'))
               : (selectedFloorType === 'OpenPlot' ? (t('floor.editOpenPlotDetails') || 'Edit Open Space Details') : (t('floor.editFloorDetails') || 'Edit Floor Details'))}
           </h3>
@@ -147,9 +150,9 @@ const FloorForm: React.FC<FloorFormProps & {
             subTypeData={subTypeData}
             startTransition={startTransition}
             updateUrlParams={updateUrlParams}
-            getConstructionDescription={(val: string, lookup: LookupData[]): string => val ? (getConstructionDescription(val, lookup) || String(editingFloorForm.constructionTypeDescription || '')) : ''}
-            getUseDescription={(val: string, lookup: LookupData[]): string => val ? (getUseDescription(val, lookup) || String(editingFloorForm.typeOfUseDescription || '')) : ''}
-            getSubTypeDescription={(val: string, lookup: LookupData[]): string => val ? (getSubTypeDescription(val, lookup) || String(editingFloorForm.subTypeOfUseDescription || '')) : ''}
+            getConstructionDescription={(val: string, lookup: LookupData[]): string => val ? (getConstructionDescription(val, lookup) || String(editingFloorForm.constructionDescription || '')) : ''}
+            getUseDescription={(val: string, lookup: LookupData[]): string => val ? (getUseDescription(val, lookup) || String(editingFloorForm.usageDescription || '')) : ''}
+            getSubTypeDescription={(val: string, lookup: LookupData[]): string => val ? (getSubTypeDescription(val, lookup) || String(editingFloorForm.subTypeDescription || '')) : ''}
             handleOpenDropdown={handleOpenDropdown}
             selectedFloorType={selectedFloorType}
             isPlotCategory={isPlotCategory}
@@ -181,19 +184,19 @@ const FloorForm: React.FC<FloorFormProps & {
                     setEditingFloorForm({ ...editingFloorForm, updateBuildingPermission: value });
                     if (value === 'Yes') {
                       const floorDetailsId = editingFloorForm.propertyDetailsId || editingFloorForm.id;
-                      
+
                       const pathSegments = pathname.split('/').filter(Boolean);
                       const qdeIndex = pathSegments.indexOf('QuickDataEntry');
                       const baseTabPath =
                         qdeIndex !== -1 && pathSegments[qdeIndex + 1]
                           ? `/${pathSegments.slice(0, qdeIndex + 2).join('/')}`
                           : `/${pathSegments.slice(0, -1).join('/')}`;
-                      
+
                       const tabPath = `${baseTabPath}/Building`;
                       const searchParamsObj = new URLSearchParams(searchParams.toString());
                       searchParamsObj.set('activeScope', 'Floor');
                       searchParamsObj.set('activeFloorId', String(floorDetailsId || ''));
-                      
+
                       router.push(`${tabPath}?${searchParamsObj.toString()}`);
                     }
                   }}
@@ -233,7 +236,7 @@ const FloorForm: React.FC<FloorFormProps & {
                 }
               }}
             >
-              {isAddingNewFloor ? t('floor.add') : t('floor.updateFloor')}
+              {(!selectedFloor && isAddingNewFloor) ? t('floor.add') : (t('floor.updateFloor') || 'Update')}
             </Button>
             {(isOperationLoading || !isFormValid) && (
               <span

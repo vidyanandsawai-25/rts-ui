@@ -9,7 +9,6 @@ import { normalizeFloorData } from '@/lib/utils/floorSubmission/floor-normalizat
 import { getCookieValue } from '@/lib/utils/cookie';
 import { ReadonlyURLSearchParams } from 'next/navigation';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
-import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 
 
 function getRenterDataFromStorage(floorId: string | number | null | undefined, initialPropertyID?: string | number): any {
@@ -90,6 +89,7 @@ export const useFloorSync = (params: {
     setEditingFloorForm,
     setLocalFloors,
     setSelectedFloor,
+    selectedFloor,
     INITIAL_FORM_STATE,
   } = params;
 
@@ -123,6 +123,11 @@ export const useFloorSync = (params: {
       ? (initialFloorDetails as Record<string, unknown>).id as string | number | undefined
       : undefined;
   }, [initialFloorDetails]);
+
+  const selectedFloorRef = useRef(selectedFloor);
+  useEffect(() => {
+    selectedFloorRef.current = selectedFloor;
+  }, [selectedFloor]);
 
   useEffect(() => {
     if (initialFloorDetails) {
@@ -168,7 +173,7 @@ export const useFloorSync = (params: {
       }
     } else {
       hasSyncedRef.current = null;
-      if (!isAddingNewFloor && (!currentFloorIdUrl || currentFloorIdUrl === 'new')) {
+      if (!isAddingNewFloor && !selectedFloorRef.current && (!currentFloorIdUrl || currentFloorIdUrl === 'new')) {
         setEditingFloorForm(INITIAL_FORM_STATE);
         setSelectedFloor(null);
       }
@@ -286,6 +291,8 @@ export const useFloorSync = (params: {
     }
   }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors, initialPropertyID]);
 
+  // Plot area auto-population disabled to keep Open Space form blank
+  /*
   useEffect(() => {
     const isPropertyCategoryPlot = checkIsPlotCategory(props.initialPropertyData?.categoryName as string | undefined);
     const isPlot = isPropertyCategoryPlot;
@@ -323,17 +330,22 @@ export const useFloorSync = (params: {
     props.initialPropertyData?.categoryName,
     setEditingFloorForm,
   ]);
+  */
 
   // Auto open Add Open Plot Details form when category is Plot and no records exist
   useEffect(() => {
     const isPlot = checkIsPlotCategory(props.initialPropertyData?.categoryName as string | undefined);
     const hasNoFloorIdInUrl = !currentFloorIdUrl || currentFloorIdUrl === 'new';
-    if (isPlot && hasNoFloorIdInUrl) {
+    if (isPlot && hasNoFloorIdInUrl && !selectedFloor) {
       if (props.initialFloors.length === 0) {
         setIsAddingNewFloor(true);
       }
     }
-  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, setIsAddingNewFloor]);
+  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, setIsAddingNewFloor, selectedFloor]);
 
-  return { mappedInitialFloors };
+  const resetRestoredSessionFormRef = () => {
+    restoredSessionFormRef.current = null;
+  };
+
+  return { mappedInitialFloors, resetRestoredSessionFormRef };
 };

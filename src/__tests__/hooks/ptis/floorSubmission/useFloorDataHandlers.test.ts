@@ -242,28 +242,32 @@ describe('useFloorDataHandlers', () => {
       const { result } = renderHook(() => useFloorDataHandlers(getDefaultParams({
         selectedFloor: null,
         isAddingNewFloor: true,
+        editingFloorForm: { ...createMockFloorData(), floor: '' },
       })));
 
       await act(async () => {
         result.current.handleOpenRenterManagement();
       });
 
-      expect(toast.error).toHaveBeenCalledWith('floor.saveFloorBeforeRenterManagement');
+      expect(toast.error).toHaveBeenCalledWith('floor.selectFloorFirst');
     });
 
-    it('should show toast info when floor is selected', async () => {
-      const selectedFloor = createMockFloorData({ id: 1 });
+    it('should navigate to renter management screen when floor is selected', async () => {
+      const selectedFloor = createMockFloorData({ id: 1, floor: '1' });
 
       const { result } = renderHook(() => useFloorDataHandlers(getDefaultParams({
         selectedFloor,
         isAddingNewFloor: false,
+        editingFloorForm: selectedFloor,
       })));
 
       await act(async () => {
         result.current.handleOpenRenterManagement();
       });
 
-      expect(toast.info).toHaveBeenCalledWith('floor.renterManagementNotAvailable');
+      expect(testParams.router.push).toHaveBeenCalledWith(
+        expect.stringContaining('/property-tax/ptis/QuickDataEntry/123/FloorSubmission/Renter?floorId=1')
+      );
     });
   });
 

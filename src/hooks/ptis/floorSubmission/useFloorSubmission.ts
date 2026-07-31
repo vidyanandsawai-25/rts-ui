@@ -123,6 +123,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     selectedFloorType,
   });
   const mappedInitialFloors = syncResult?.mappedInitialFloors || [];
+  const resetRestoredSessionFormRef = syncResult?.resetRestoredSessionFormRef;
 
   // Area validations & computations extracted to useFloorAreaValidation hook
   const {
@@ -204,18 +205,15 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     }
   }, [selectedFloorType, isAddingNewFloor, editingFloorForm.floorId, props.constructionTypeData, props.floorData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);
 
-  // Auto-populate remaining area for new Open Space records immediately on opening the tab
+  // Auto-population disabled to keep Open Space form blank on select/open
+  /*
   useEffect(() => {
     if (!isAddingNewFloor) {
       hasAutoPopulatedOpenSpaceRef.current = false;
       return;
     }
-
     if (selectedFloorType === 'OpenPlot' && isAddingNewFloor) {
-      if (hasAutoPopulatedOpenSpaceRef.current) {
-        return;
-      }
-
+      if (hasAutoPopulatedOpenSpaceRef.current) return;
       const currentArea = parseFloat(String(editingFloorForm.areaSqM || '0')) || 0;
       const currentLen = parseFloat(String(editingFloorForm.length || '0')) || 0;
       if (currentArea === 0 && currentLen === 0 && availableRemainingOpenSpaceAreaSqM > 0) {
@@ -230,6 +228,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
       }
     }
   }, [selectedFloorType, isAddingNewFloor, availableRemainingOpenSpaceAreaSqM, setEditingFloorForm, editingFloorForm.areaSqM, editingFloorForm.length]);
+  */
 
   // 2. URL and Navigation already initialized at the top of the hook
 
@@ -254,6 +253,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     t: t,
     INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
     selectedFloorType: selectedFloorType,
+    resetRestoredSessionFormRef,
     // validation fields
     plotAreaSqM,
     isOpenSpaceAreaExceeded,

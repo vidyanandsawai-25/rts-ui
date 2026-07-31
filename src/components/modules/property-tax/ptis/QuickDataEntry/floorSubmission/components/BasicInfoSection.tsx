@@ -38,6 +38,8 @@ export const BasicInfoSection: React.FC<
     return () => clearTimeout(timer);
   }, [editingFloorForm.id, isAddingNewFloor, selectedFloorType]);
 
+
+
   const handleYearValueChange = (
     field: 'conYr' | 'asstYr',
     value: string,

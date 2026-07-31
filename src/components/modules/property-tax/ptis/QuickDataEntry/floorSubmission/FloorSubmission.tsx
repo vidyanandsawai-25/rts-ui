@@ -382,6 +382,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             <div className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
+                selectedFloor={selectedFloor}
                 isAddingNewFloor={isAddingNewFloor}
                 editingFloorForm={editingFloorForm}
                 setEditingFloorForm={setEditingFloorForm}
