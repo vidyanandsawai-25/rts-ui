@@ -23,6 +23,7 @@ interface PtisLayoutWrapperProps {
   initialLatitude?: number;
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
+  initialVisible?: boolean;
 }
 
 import { useWaybackReleases } from '@/hooks/ptis/useWaybackReleases';
@@ -52,7 +53,7 @@ function PtisLayoutWrapperContent({
     initialPhotoSlots,
     initialPhotos
   );
-  const { waybackReleases } = useWaybackReleases(isPanelVisible);
+  const { waybackReleases } = useWaybackReleases(isPanelVisible || isDrawerOpen);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 w-full items-start overflow-x-clip relative">
@@ -119,7 +120,7 @@ export function PtisLayoutWrapper(props: PtisLayoutWrapperProps): React.ReactEle
   }, []);
 
   return (
-    <MediaPanelProvider initialVisible={false}>
+    <MediaPanelProvider initialVisible={props.initialVisible ?? false}>
       <PtisLayoutWrapperContent {...props} />
     </MediaPanelProvider>
   );

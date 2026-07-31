@@ -47,7 +47,7 @@ function PropertyMediaPanel({
 }: PropertyMediaPanelProps): React.ReactElement {
   const { isDrawerOpen, drawerInitialCategoryIndex, openDrawer, closeDrawer } =
     useMediaDrawerState();
-  const { isPanelVisible, togglePanel } = useMediaPanel();
+  const { togglePanel } = useMediaPanel();
 
   // Close the drawer if the propertyId changes (e.g. searching/switching property)
   const prevPropertyIdRef = useRef(propertyId);
@@ -210,7 +210,7 @@ function PropertyMediaPanel({
         </button>
       </div>
 
-      {isDrawerOpen && isPanelVisible && (
+      {isDrawerOpen && (
         <PhotoPlanDrawer
           open={isDrawerOpen}
           onClose={closeDrawer}

@@ -139,8 +139,34 @@ export async function mapPtisFetchResults({
 
   const waybackReleases = Array.isArray(waybackReleasesRes) ? waybackReleasesRes : [];
 
-  const latitude = typeof searchParams?.latitude === 'string' ? parseFloat(searchParams.latitude) : undefined;
-  const longitude = typeof searchParams?.longitude === 'string' ? parseFloat(searchParams.longitude) : undefined;
+  const parseCoord = (val: unknown): number | undefined => {
+    if (typeof val === 'number' && Number.isFinite(val) && val !== 0) return val;
+    if (typeof val === 'string' && val.trim() !== '') {
+      const parsed = parseFloat(val);
+      if (Number.isFinite(parsed) && parsed !== 0) return parsed;
+    }
+    return undefined;
+  };
+
+  const searchLatParam = searchParams?.latitude ?? searchParams?.lat;
+  const searchLngParam = searchParams?.longitude ?? searchParams?.lng;
+
+  const rawPropObj = propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown> | undefined;
+  const rawDataObj = (Array.isArray(rawPropertyData) ? rawPropertyData[0] : rawPropertyData) as unknown as Record<string, unknown> | undefined;
+
+  const latitude =
+    parseCoord(searchLatParam) ??
+    parseCoord(rawPropObj?.latitude) ??
+    parseCoord(rawPropObj?.Latitude) ??
+    parseCoord(rawDataObj?.latitude) ??
+    parseCoord(rawDataObj?.Latitude);
+
+  const longitude =
+    parseCoord(searchLngParam) ??
+    parseCoord(rawPropObj?.longitude) ??
+    parseCoord(rawPropObj?.Longitude) ??
+    parseCoord(rawDataObj?.longitude) ??
+    parseCoord(rawDataObj?.Longitude);
 
   const mappedPropertiesData = mappedPropertiesResult?.success && Array.isArray(mappedPropertiesResult.data)
     ? mappedPropertiesResult.data

@@ -39,7 +39,12 @@ interface PtisPageProps {
   >;
 }
 
+import { cookies } from 'next/headers';
+import { getMediaPanelVisibleFromCookieStore } from '@/lib/utils/cookie';
+
 export default async function PtisPage({ params, searchParams }: PtisPageProps) {
+  const cookieStore = await cookies();
+  const isMediaPanelVisible = getMediaPanelVisibleFromCookieStore(cookieStore);
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const { locale } = resolvedParams;
@@ -140,6 +145,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           initialLatitude={latitude}
           initialLongitude={longitude}
           initialWaybackReleases={waybackReleases}
+          initialVisible={isMediaPanelVisible}
         >
           <div className="flex flex-col gap-2 w-full">
             <PropertyTabSection
