@@ -96,6 +96,11 @@ export function ScopeDynamicFields({
 
   if (!currentScopeData || !optionsToRender || optionsToRender.length === 0) return null;
 
+  const isFormValid = optionsToRender.every(option => {
+    const values = selectionData[option] || [];
+    return values.length > 0 && values.some(v => v !== undefined && v !== null && v.trim() !== '');
+  });
+
   return (
     <div className="bg-[#F9FAFB] border border-[#F3F4F6] rounded-xl p-5 mb-2">
       <div className="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-wider">
@@ -247,7 +252,7 @@ export function ScopeDynamicFields({
               size="sm"
               icon={Calculator}
               onClick={handleCalculateEligible}
-              disabled={isCalculating}
+              disabled={isCalculating || !isFormValid}
               className="h-[38px] px-5 flex-shrink-0"
             >
               {isCalculating ? '...' : t('dynamicFields.calculateEligible')}
@@ -270,7 +275,7 @@ export function ScopeDynamicFields({
               size="sm"
               icon={Calculator}
               onClick={handleCalculateEligible}
-              disabled={isCalculating || (selectedScope === 'range' && hasRangeError)}
+              disabled={isCalculating || !isFormValid || (selectedScope === 'range' && hasRangeError)}
               className="flex-shrink-0"
             >
               {isCalculating ? '...' : (selectedScope === 'range' ? t('dynamicFields.calculateRange') : t('dynamicFields.calculateEligible'))}

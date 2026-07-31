@@ -9,7 +9,7 @@ export const autoDetectScopeType = (dataRows: Record<string, unknown>[]) => {
   const headers = Object.keys(sampleRow).map(normalizeKey);
 
   const hasPropertyWise = headers.includes('upicid') || headers.includes('mobileno');
-  const hasBuildingWise = headers.includes('zone') || headers.includes('ward') || headers.includes('propertyno');
+  const hasBuildingWise = headers.includes('zone') || headers.includes('ward') || headers.includes('propertyno') || headers.includes('propertynumber') || headers.includes('propertynopartitionno');
 
   if (hasPropertyWise && !hasBuildingWise) {
     return 'property';
@@ -28,6 +28,7 @@ export const mapExcelDataToPayload = (
   const zoneIds: number[] = [];
   const wardIds: number[] = [];
   const building: string[] = [];
+  const partitionNos: string[] = [];
   const upicIds: string[] = [];
   const mobileNumbers: string[] = [];
 
@@ -35,6 +36,7 @@ export const mapExcelDataToPayload = (
     let rawZone = "";
     let rawWard = "";
     let rawPropNo = "";
+    let rawPropNoPartitionNo = "";
     let rawUpicId = "";
     let rawMobile = "";
 
@@ -43,6 +45,7 @@ export const mapExcelDataToPayload = (
       if (norm === 'zone') rawZone = String(row[k]).trim();
       else if (norm === 'ward') rawWard = String(row[k]).trim();
       else if (norm === 'propertyno' || norm === 'propertynumber') rawPropNo = String(row[k]).trim();
+      else if (norm === 'propertynopartitionno') rawPropNoPartitionNo = String(row[k]).trim();
       else if (norm === 'upicid' || norm === 'upic') rawUpicId = String(row[k]).trim();
       else if (norm === 'mobileno' || norm === 'mobile') rawMobile = String(row[k]).trim();
     });
@@ -75,14 +78,44 @@ export const mapExcelDataToPayload = (
       }
     }
 
-    if (rawPropNo) building.push(rawPropNo);
+    if (rawPropNo) {
+      if (rawPropNo.includes('-')) {
+        const parts = rawPropNo.split('-');
+        const pNo = parts[0]?.trim();
+        const pPart = parts[1]?.trim();
+        if (pNo) building.push(pNo);
+        if (pPart) partitionNos.push(pPart);
+      } else {
+        building.push(rawPropNo);
+      }
+    }
+
+    if (rawPropNoPartitionNo) {
+      const parts = rawPropNoPartitionNo.split('-');
+      const pNo = parts[0]?.trim();
+      const pPart = parts[1]?.trim();
+      if (pNo) building.push(pNo);
+      if (pPart) partitionNos.push(pPart);
+    }
+
     if (rawUpicId) upicIds.push(rawUpicId);
     if (rawMobile) mobileNumbers.push(rawMobile);
   });
 
+  // If zoneIds is empty, resolve parent zones from wardIds
+  if (zoneIds.length === 0 && wardIds.length > 0) {
+    wardIds.forEach(wId => {
+      const w = fetchedWards.find(x => Number(x.id) === wId);
+      if (w && w.zoneId) {
+        zoneIds.push(Number(w.zoneId));
+      }
+    });
+  }
+
   const uniqueZoneIds = Array.from(new Set(zoneIds)).filter(Boolean);
   const uniqueWardIds = Array.from(new Set(wardIds)).filter(Boolean);
   const uniqueBuilding = Array.from(new Set(building)).filter(Boolean);
+  const uniquePartitionNos = Array.from(new Set(partitionNos)).filter(Boolean);
   const uniqueUpicIds = Array.from(new Set(upicIds)).filter(Boolean);
   const uniqueMobileNumbers = Array.from(new Set(mobileNumbers)).filter(Boolean);
 
@@ -92,6 +125,9 @@ export const mapExcelDataToPayload = (
     scope.zoneIds = uniqueZoneIds;
     scope.wardIds = uniqueWardIds;
     scope.building = uniqueBuilding;
+    if (uniquePartitionNos.length > 0) {
+      scope.partitionNos = uniquePartitionNos;
+    }
   } else {
     scope.upicIds = uniqueUpicIds;
     scope.mobileNumbers = uniqueMobileNumbers;

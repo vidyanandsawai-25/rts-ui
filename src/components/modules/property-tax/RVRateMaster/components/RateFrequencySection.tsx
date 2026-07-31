@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, CalendarDays, Ruler, Square } from "lucide-react";
+import { Calendar, CalendarDays, Ruler, Square, Check } from "lucide-react";
 import { DownloadButton, UploadButton } from "@/components/common/ActionButtons";
 import { Tabs } from '@/components/common/Tabs';
 import { Input } from "@/components/common";
@@ -82,21 +82,34 @@ export function RateFrequencySection({
             variant="pills"
             size="sm"
             className="mb-0 w-fit"
+            activeTabClassName="!bg-emerald-50 !text-emerald-700 !border-emerald-300 shadow-sm"
             tabListClassName={`gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-none mb-0 w-fit ${isFrequencyReadOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
             items={[
               {
                 value: "Monthly",
-                label: <><CalendarDays size={18} /> {t('options.monthly')}</>,
+                label: (
+                  <>
+                    <CalendarDays size={18} />
+                    {t('options.monthly')}
+                    {rateFrequency === "Monthly" && <Check size={14} className="text-emerald-600 stroke-[3px] ml-1 flex-shrink-0" />}
+                  </>
+                ),
                 content: null,
                 disabled: false,
-                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px]",
+                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px] border border-transparent",
               },
               {
                 value: "Yearly",
-                label: <><Calendar size={18} /> {t('options.yearly')}</>,
+                label: (
+                  <>
+                    <Calendar size={18} />
+                    {t('options.yearly')}
+                    {rateFrequency === "Yearly" && <Check size={14} className="text-emerald-600 stroke-[3px] ml-1 flex-shrink-0" />}
+                  </>
+                ),
                 content: null,
                 disabled: false,
-                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px]",
+                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px] border border-transparent",
               },
             ]}
           />
@@ -114,21 +127,34 @@ export function RateFrequencySection({
             variant="pills"
             size="sm"
             className="mb-0 w-fit"
+            activeTabClassName="!bg-emerald-50 !text-emerald-700 !border-emerald-300 shadow-sm"
             tabListClassName={`gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-none mb-0 w-fit ${isUnitReadOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
             items={[
               {
                 value: "SqMeter",
-                label: <><Square size={18} /> {t('options.sqMeter')}</>,
+                label: (
+                  <>
+                    <Square size={18} />
+                    {t('options.sqMeter')}
+                    {rateUnit === "SqMeter" && <Check size={14} className="text-emerald-600 stroke-[3px] ml-1 flex-shrink-0" />}
+                  </>
+                ),
                 content: null,
                 disabled: false,
-                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px]",
+                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px] border border-transparent",
               },
               {
                 value: "SqFeet",
-                label: <><Ruler size={18} /> {t('options.sqFeet')}</>,
+                label: (
+                  <>
+                    <Ruler size={18} />
+                    {t('options.sqFeet')}
+                    {rateUnit === "SqFeet" && <Check size={14} className="text-emerald-600 stroke-[3px] ml-1 flex-shrink-0" />}
+                  </>
+                ),
                 content: null,
                 disabled: false,
-                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px]",
+                className: "!px-4 !py-1 rounded-md text-xs font-semibold transition-all duration-200 flex items-center gap-1 min-w-[90px] border border-transparent",
               },
             ]}
           />

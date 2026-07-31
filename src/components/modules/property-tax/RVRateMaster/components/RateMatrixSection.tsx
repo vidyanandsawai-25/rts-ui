@@ -176,7 +176,7 @@ export function RateMatrixSection({
 
       {/* Table Section */}
       <div className="bg-white p-0">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
           <MatrixGrid
             columns={matrixColumns}
             metaColumns={matrixMetaColumns}
@@ -248,7 +248,7 @@ export function RateMatrixSection({
             totalPages={matrixTotalPages}
             onPageChange={(page) => onPaginationChange(page, matrixPageSize)}
             onPageSizeChange={(size) => onPaginationChange(1, size)}
-            pageSizeOptions={[5, 10, 20, 50]}
+            pageSizeOptions={[100, 150, 200]}
           />
         </div>
       </div>

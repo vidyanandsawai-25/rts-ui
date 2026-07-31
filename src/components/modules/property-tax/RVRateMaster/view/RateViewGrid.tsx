@@ -204,7 +204,7 @@ export function RateViewGrid({
                 totalPages={totalPages}
                 onPageChange={onPageChange}
                 onPageSizeChange={onPageSizeChange}
-                pageSizeOptions={[5, 10, 20, 50]}
+                pageSizeOptions={[50, 100, 150, 200, 250]}
               />
             </div>
           </>

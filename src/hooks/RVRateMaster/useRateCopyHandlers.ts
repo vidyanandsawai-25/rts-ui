@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 import type { ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 type MatrixRow = {
   id: number;
@@ -45,6 +47,8 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
     tempMultipliers, sourceUseGroup, handleCopyRates, t,
     isOpenPlot = false,
   } = props;
+
+  const { confirm } = useConfirm();
 
   const handleGenerateMatrix = async () => {
     if (!selectedZone) {
@@ -127,16 +131,99 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
     setShowMultipliersInline(false);
   };
 
-  const handleApplyMultipliers = () => {
-    setMultipliers({ ...tempMultipliers });
-    const changedMultipliers = Object.entries(tempMultipliers)
-      .filter(([_, value]) => value > 0 && value !== 1.0)
-      .map(([key]) => useGroupOptions.find(opt => opt.value === key)?.label || key);
-    if (changedMultipliers.length > 0) {
-      toast.success(t('messages.multiplierAdded', { groups: changedMultipliers.join(', ') }));
+  const handleApplyMultipliers = async () => {
+    const changedMultiplierEntries = Object.entries(tempMultipliers).filter(
+      ([useGroupId, value]) => value > 0 && value !== 1.0 && useGroupId !== selectedUseGroup
+    );
+
+    if (changedMultiplierEntries.length === 0) {
+      setMultipliers({ ...tempMultipliers });
+      const changedMultipliers = Object.entries(tempMultipliers)
+        .filter(([_, value]) => value > 0 && value !== 1.0)
+        .map(([key]) => useGroupOptions.find(opt => opt.value === key)?.label || key);
+      if (changedMultipliers.length > 0) {
+        toast.success(t('messages.multiplierAdded', { groups: changedMultipliers.join(', ') }));
+        handleCloseMultipliersSection();
+      } else {
+        toast.info(t('messages.noMultipliersChanged'));
+      }
+      return;
+    }
+
+    try {
+      // Check which of the multiplier groups already have rates configured
+      const checkPromises = changedMultiplierEntries.map(async ([useGroupId]) => {
+        try {
+          const existingRates = await getRateMasterByFilters(selectedZone, useGroupId, assessmentYear);
+          const exists = isOpenPlot
+            ? existingRates?.some(rate =>
+              rateCategories?.some(cat => Number(cat.typeOfUseGroupId) === Number(rate.typeOfUseGroupId))
+            )
+            : existingRates && existingRates.length > 0;
+          return { useGroupId, exists };
+        } catch {
+          return { useGroupId, exists: false };
+        }
+      });
+
+      const checkResults = await Promise.all(checkPromises);
+      const conflictingGroupIds = checkResults.filter(r => r.exists).map(r => r.useGroupId);
+
+      if (conflictingGroupIds.length > 0) {
+        const conflictingLabels = conflictingGroupIds.map(
+          id => useGroupOptions.find(opt => opt.value === id)?.label || id
+        );
+
+        confirm({
+          title: t('dialogs.confirmMultiplierUpdateTitle') || 'Confirm Multiplier Update',
+          description: t('dialogs.confirmMultiplierUpdateDescription', { groups: conflictingLabels.join(', ') }) || `Rates are already present for usegroups in multiplier -(${conflictingLabels.join(', ')}) , do you want to update existing rates ?`,
+          confirmText: t('dialogs.confirmYes') || 'Yes',
+          cancelText: t('dialogs.confirmNo') || 'No',
+          onConfirm: () => {
+            // Yes: proceed with adding rates as present currently as it is (no change)
+            setMultipliers({ ...tempMultipliers });
+            const changedMultipliers = Object.entries(tempMultipliers)
+              .filter(([_, value]) => value > 0 && value !== 1.0)
+              .map(([key]) => useGroupOptions.find(opt => opt.value === key)?.label || key);
+            toast.success(t('messages.multiplierAdded', { groups: changedMultipliers.join(', ') }));
+            handleCloseMultipliersSection();
+          },
+          onCancel: () => {
+            // No: Remove only conflicting groups' multipliers (set to 1.0) and keep the rest
+            const updatedMultipliers = { ...tempMultipliers };
+            conflictingGroupIds.forEach(id => {
+              updatedMultipliers[id] = 1.0;
+            });
+            setMultipliers(updatedMultipliers);
+
+            const remainingMultipliers = Object.entries(updatedMultipliers)
+              .filter(([key, value]) => value > 0 && value !== 1.0 && key !== selectedUseGroup)
+              .map(([key]) => useGroupOptions.find(opt => opt.value === key)?.label || key);
+
+            if (remainingMultipliers.length > 0) {
+              toast.info(t('messages.multiplierConflictRemovedSuccess', {
+                removed: conflictingLabels.join(', '),
+                groups: remainingMultipliers.join(', ')
+              }) || `Conflicting multipliers for ${conflictingLabels.join(', ')} removed. Added multipliers for ${remainingMultipliers.join(', ')}.`);
+            } else {
+              toast.info(t('messages.multipliersCleared') || 'Multipliers cleared. Showing only selected use group.');
+            }
+            handleCloseMultipliersSection();
+          }
+        });
+      } else {
+        // No conflicts, apply normally
+        setMultipliers({ ...tempMultipliers });
+        const changedMultipliers = Object.entries(tempMultipliers)
+          .filter(([_, value]) => value > 0 && value !== 1.0)
+          .map(([key]) => useGroupOptions.find(opt => opt.value === key)?.label || key);
+        toast.success(t('messages.multiplierAdded', { groups: changedMultipliers.join(', ') }));
+        handleCloseMultipliersSection();
+      }
+    } catch (_err) {
+      // Fallback
+      setMultipliers({ ...tempMultipliers });
       handleCloseMultipliersSection();
-    } else {
-      toast.info(t('messages.noMultipliersChanged'));
     }
   };
 

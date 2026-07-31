@@ -206,6 +206,7 @@ vi.mock('lucide-react', async (importOriginal) => {
     FileSearch: createIcon('FileSearch'),
     FileSpreadsheet: createIcon('FileSpreadsheet'),
     LandPlot: createIcon('LandPlot'),
+    SquareParking: createIcon('SquareParking'),
 
     // Arrow icons
     ArrowUp: createIcon('ArrowUp'),

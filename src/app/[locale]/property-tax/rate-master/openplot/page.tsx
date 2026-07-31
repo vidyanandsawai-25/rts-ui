@@ -27,7 +27,7 @@ const OpenPlotRateMasterPageServer = async ({ searchParams }: PageProps) => {
 
   // For zone pagination: pageSize refers to number of ZONES, not records
   const zonePage = Number(params?.page) || 1;
-  const zonePageSize = Number(params?.pageSize) || 10;
+  const zonePageSize = Number(params?.pageSize) || 50;
 
   // Fetch all master data and typeofuse details in one call
   const [
