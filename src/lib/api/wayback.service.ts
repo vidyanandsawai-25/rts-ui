@@ -9,7 +9,7 @@ export interface WaybackRelease {
  * Uses `{z}`, `{y}`, `{x}` placeholders that Leaflet substitutes automatically.
  */
 export const WAYBACK_MAP_TILE_URL = (releaseId: number): string =>
-  `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/${releaseId}/{z}/{y}/{x}`;
+  `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${releaseId}/{z}/{y}/{x}`;
 
 /**
  * Direct tile URL for static image previews (e.g. Change Detection card thumbnails).
@@ -25,39 +25,32 @@ export const WAYBACK_STATIC_TILE_URL = (
 
 export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(
-      'https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json',
-      { cache: 'force-cache', signal: controller.signal }
-    );
-    clearTimeout(timeoutId);
-    if (!res.ok) return [];
+    const { getWaybackItems } = await import('@esri/wayback-core');
+    const items = await getWaybackItems();
 
-    const config: Record<string, { itemTitle?: string }> = await res.json();
-    const dateRx = /(\d{4}-\d{2}-\d{2})/;
-    const byYear: Record<number, { releaseId: number; date: string }> = {};
+    interface IWaybackItem {
+      itemTitle?: string;
+      releaseDatetime: string | number | Date;
+      releaseNum: number;
+    }
 
-    Object.entries(config).forEach(([key, value]) => {
-      const releaseId = parseInt(key, 10);
-      if (isNaN(releaseId)) return;
-      const match = dateRx.exec(value.itemTitle ?? '');
-      if (!match) return;
-      const date = match[1];
-      const year = parseInt(date.slice(0, 4), 10);
-      if (isNaN(year) || year < 2015) return;
-      if (!byYear[year] || date > byYear[year].date) {
-        byYear[year] = { releaseId, date };
+    const byYear: Record<number, WaybackRelease> = {};
+    items.forEach((i: IWaybackItem) => {
+      const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
+      const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
+      const year = parseInt(dateStr.slice(0, 4), 10);
+      if (isNaN(year)) return;
+
+      if (!byYear[year] || dateStr > byYear[year].date) {
+        byYear[year] = {
+          releaseId: i.releaseNum,
+          date: dateStr,
+          year,
+        };
       }
     });
 
-    return Object.entries(byYear)
-      .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
-      .map(([year, { releaseId, date }]) => ({
-        releaseId,
-        date,
-        year: parseInt(year, 10),
-      }));
+    return Object.values(byYear).sort((a, b) => a.year - b.year);
   } catch {
     return [];
   }
@@ -82,6 +75,10 @@ if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
  * Fetches only the sparse Wayback releases where actual imagery changes occurred for the given coordinates.
  */
 export async function fetchLocalChanges(lat: number, lng: number): Promise<WaybackRelease[]> {
+  if (!lat || !lng || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return [];
+  }
+
   const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)}`;
 
   // 1. Check in-memory results cache
@@ -111,12 +108,25 @@ export async function fetchLocalChanges(lat: number, lng: number): Promise<Wayba
   // 4. Create and cache the promise to deduplicate active requests
   const promise = (async () => {
     try {
-      // Dynamic import to avoid SSR issues with the esri library
-      const { getWaybackItemsWithLocalChanges } = await import('@esri/wayback-core');
-      const items = await getWaybackItemsWithLocalChanges(
-        { latitude: lat, longitude: lng },
-        18
+      const { getWaybackItems, long2tile, lat2tile } = await import('@esri/wayback-core');
+      const allItems = await getWaybackItems();
+
+      const level = 16;
+      const column = long2tile(lng, level);
+      const row = lat2tile(lat, level);
+
+      const tilemapUrl = `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tilemap/${level}/${row}/${column}`;
+      const res = await fetch(tilemapUrl);
+      if (!res.ok) throw new Error(`Tilemap fetch failed with status ${res.status}`);
+
+      const tilemapData = await res.json();
+      const selectReleases = new Set<number>(
+        Array.isArray(tilemapData.select) ? tilemapData.select.map((n: unknown) => Number(n)) : []
       );
+
+      const matchedItems = selectReleases.size > 0
+        ? allItems.filter((item: { releaseNum: number }) => selectReleases.has(item.releaseNum))
+        : allItems;
 
       interface IWaybackItem {
         itemTitle?: string;
@@ -124,22 +134,19 @@ export async function fetchLocalChanges(lat: number, lng: number): Promise<Wayba
         releaseNum: number;
       }
 
-      const mapped = items.map((i: IWaybackItem) => {
+      const byYear: Record<number, WaybackRelease> = {};
+      matchedItems.forEach((i: IWaybackItem) => {
         const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
         const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
         const year = parseInt(dateStr.slice(0, 4), 10);
-        return {
-          releaseId: i.releaseNum,
-          date: dateStr,
-          year
-        };
-      });
+        if (isNaN(year)) return;
 
-      // Deduplicate by year, keeping the latest release per year, and sort chronologically
-      const byYear: Record<number, WaybackRelease> = {};
-      mapped.forEach((rel: WaybackRelease) => {
-        if (!byYear[rel.year] || rel.date > byYear[rel.year].date) {
-          byYear[rel.year] = rel;
+        if (!byYear[year] || dateStr > byYear[year].date) {
+          byYear[year] = {
+            releaseId: i.releaseNum,
+            date: dateStr,
+            year,
+          };
         }
       });
 
@@ -147,7 +154,7 @@ export async function fetchLocalChanges(lat: number, lng: number): Promise<Wayba
 
       // Save to results cache
       localChangesCache.set(cacheKey, result);
-      
+
       // Limit memory cache size to prevent leaks (FIFO eviction)
       if (localChangesCache.size > 100) {
         const oldestKey = localChangesCache.keys().next().value;

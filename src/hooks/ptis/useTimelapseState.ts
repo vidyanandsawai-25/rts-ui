@@ -44,10 +44,12 @@ export function useTimelapseState({
   const [lng, setLng] = useState(() => initialLng ?? 0);
   const [activeIdx, setActiveIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [loading, setLoading] = useState(!initialWaybackReleases || initialWaybackReleases.length === 0);
+  const [loading, setLoading] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [failedReleases, setFailedReleases] = useState<Set<number>>(() => new Set());
   const [speed, setSpeed] = useState(2000);
+
+  const hasFetchedLocalRef = useRef(false);
 
   const releasesCountRef = useRef(waybackReleases.length);
   useEffect(() => {
@@ -57,11 +59,12 @@ export function useTimelapseState({
   useEffect(() => {
     setLat(initialLat ?? 0);
     setLng(initialLng ?? 0);
+    hasFetchedLocalRef.current = false;
   }, [initialLat, initialLng]);
 
-  // Re-sync server-passed props after navigation
+  // Re-sync server-passed props after navigation if local changes haven't loaded yet
   useEffect(() => {
-    if (initialWaybackReleases && initialWaybackReleases.length > 0) {
+    if (initialWaybackReleases && initialWaybackReleases.length > 0 && !hasFetchedLocalRef.current) {
       setWaybackReleases(initialWaybackReleases);
       setLoading(false);
     }
@@ -82,6 +85,7 @@ export function useTimelapseState({
       try {
         const localReleases = await fetchLocalChanges(lat, lng);
         if (isMounted && localReleases.length > 0) {
+          hasFetchedLocalRef.current = true;
           setWaybackReleases(localReleases);
           setActiveIdx((current) => (current >= localReleases.length ? 0 : current));
         }

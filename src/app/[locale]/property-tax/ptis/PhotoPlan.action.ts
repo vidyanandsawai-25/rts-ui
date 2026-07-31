@@ -2,7 +2,6 @@
 
 import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
 import { deleteDocument } from '@/lib/api/document.service';
-import { cookies } from 'next/headers';
 import { ActionResult } from '@/types/common.types';
 import type { 
   PropertyPhotoDto, 
@@ -217,46 +216,11 @@ export async function launchPhotoPlanDrawingToolAction(
   returnUrl: string
 ): Promise<ActionResult<{ launchUrl: string }>> {
   try {
-    const apiCouncilName = councilName === 'THANE_Survey' ? 'THANE_survey' : councilName;
-    const cookieStore = await cookies();
-    const tokenValue = cookieStore.get('auth_token')?.value;
+    const loginCouncilName = councilName || 'THANE_Survey';
+    const apiCouncilName = councilName === 'THANE_Survey' ? 'THANE_survey' : (councilName || 'THANE_survey');
 
-    let ptisUsername = cookieStore.get('login_username')?.value || '';
-    if (!ptisUsername && tokenValue) {
-      try {
-        const parts = tokenValue.split('.');
-        if (parts.length === 3) {
-          const decoded = Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
-          const payload = JSON.parse(decoded);
-          ptisUsername = payload.unique_name || payload.username || payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '';
-        }
-      } catch {
-        // ignore decoding errors
-      }
-    }
-
-    const rawDisplayName = cookieStore.get('user_name')?.value || '';
-    let ptisDisplayName = '';
-    if (rawDisplayName) {
-      try {
-        ptisDisplayName = decodeURIComponent(rawDisplayName.replace(/\+/g, ' '));
-      } catch {
-        ptisDisplayName = rawDisplayName;
-      }
-    }
-
-    const ptisUserId = cookieStore.get('user_id')?.value || '';
-
-    // Fallbacks
-    if (!ptisUsername) {
-      ptisUsername = ptisDisplayName ? ptisDisplayName.toLowerCase().replace(/\s+/g, '') : 'user';
-    }
-    if (!ptisDisplayName) {
-      ptisDisplayName = ptisUsername || 'User';
-    }
-    const safeUserId = ptisUserId || '0';
-
-    const loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {
+    // 1. Authenticate user
+    let loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -264,9 +228,23 @@ export async function launchPhotoPlanDrawingToolAction(
       body: JSON.stringify({
         username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
         password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
-        councilName: apiCouncilName
+        councilName: loginCouncilName
       })
     });
+
+    if (!loginRes.ok) {
+      loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
+          password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
+          councilName: loginCouncilName
+        })
+      });
+    }
 
     if (!loginRes.ok) {
       throw new Error(`Failed to authenticate drawing tool API: ${loginRes.status}`);
@@ -278,6 +256,8 @@ export async function launchPhotoPlanDrawingToolAction(
        throw new Error('Failed to retrieve authentication token.');
     }
 
+    // 2. Retrieve launch URL for property from /api/plans/ptis/launch
+    const safeReturnUrl = returnUrl || 'https://www.google.com/';
     const launchRes = await fetch('https://apiptisplanapp.tabamc.in/api/plans/ptis/launch', {
       method: 'POST',
       headers: {
@@ -288,10 +268,7 @@ export async function launchPhotoPlanDrawingToolAction(
         councilName: apiCouncilName,
         propertyId,
         mode: 'draw',
-        returnUrl,
-        ptisUsername,
-        ptisDisplayName,
-        ptisUserId: safeUserId
+        returnUrl: safeReturnUrl
       })
     });
 
@@ -299,12 +276,13 @@ export async function launchPhotoPlanDrawingToolAction(
       throw new Error(`Failed to launch drawing tool API: ${launchRes.status}`);
     }
     const launchData = await launchRes.json();
-    
-    if (!launchData.launchUrl) {
+    const launchUrl = launchData.launchUrl || launchData.url || (launchData.data && launchData.data.launchUrl);
+
+    if (!launchUrl) {
       throw new Error('Launch URL not found in response.');
     }
 
-    return { success: true, data: { launchUrl: launchData.launchUrl } };
+    return { success: true, data: { launchUrl } };
   } catch (error) {
     return {
       success: false,

@@ -38,6 +38,8 @@ export function TimelineTrack({
               className={`text-sm font-extrabold font-sans tracking-wider transition-colors duration-200 cursor-pointer ${
                 isActive
                   ? 'text-blue-400 font-black scale-105'
+                  : isPlayed
+                  ? 'text-blue-400 font-bold hover:text-blue-300'
                   : 'text-white hover:text-blue-300'
               }`}
             >
