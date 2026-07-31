@@ -366,6 +366,9 @@
     "updateConfirmTitle": "अपडेट की पुष्टि करें",
     "updateConfirmText": "क्या आप सुनिश्चित हैं कि आप संपत्ति के विवरण को अपडेट करना चाहते हैं?",
     "updateConfirmButton": "हाँ, अपडेट करें",
+    "categoryChangeConfirmTitle": "श्रेणी बदलने की पुष्टि करें",
+    "categoryChangeConfirmText": "श्रेणी बदलने से सभी मंजिल, कमरा सबमिशन और किरायेदार के विवरण हटा दिए जाएंगे। क्या आप वास्तव में आगे बढ़ना चाहते हैं?",
+    "categoryChangeConfirmButton": "हाँ, श्रेणी बदलें",
     "updateSuccess": "संपत्ति के बुनियादी विवरण सफलतापूर्वक अपडेट किए गए",
     "updateError": "अपडेट के दौरान एक त्रुटि हुई。",
     "updateButton": "अपडेट करें",
@@ -440,6 +443,7 @@
       "fetchPropertyCategories": "संपत्ति श्रेणियाँ लाने में विफल",
       "fetchWingMaster": "विंग मास्टर लाने में विफल",
       "updatePropertyBasicDetails": "संपत्ति के बुनियादी विवरण अपडेट करने में विफल",
+      "deletePropertyDetails": "मौजूदा मंजिल, कमरा और किरायेदार विवरण हटाने में विफल",
       "fetchCvTaxDetails": "सीवी कर विवरण प्राप्त करने में विफल",
       "fetchTaxZones": "कर क्षेत्र लाने में विफल",
       "unauthorized": "अनधिकृत: टोकन समाप्त हो गया है या अमान्य है। कृपया फिर से लॉग इन करें।",
@@ -1048,7 +1052,10 @@
       "areaUpdatedSuccess": "क्षेत्रफल सफलतापूर्वक अपडेट किया गया।",
       "areaAddedSuccess": "क्षेत्रफल सफलतापूर्वक जोड़ा गया।",
       "failedToSaveArea": "क्षेत्रफल सहेजने में विफल।",
-      "selectOpenPlotCategory": "कृपया एक खुला प्लॉट श्रेणी चुनें।"
+      "selectOpenPlotCategory": "कृपया एक खुला प्लॉट श्रेणी चुनें।",
+      "areaExceededTitle": "भूखंड क्षेत्र सीमा समाप्त",
+      "constructionYearRequired": "निर्माण वर्ष आवश्यक है",
+      "assessmentYearRequired": "मूल्यांकन वर्ष आवश्यक है"
     },
     "deleteConfirmTitle": "क्या आप सुनिश्चित हैं?",
     "deleteConfirmText": "क्या आप इस मंज़िल को हटाना चाहते हैं?",
@@ -1105,16 +1112,6 @@
     "openSpaceAreaExceeded": "खुला स्थान क्षेत्र उपलब्ध शेष क्षेत्र ({area} वर्ग मीटर) से अधिक नहीं हो सकता।",
     "floorAreaExceeded": "मंजिल निर्मित क्षेत्र उपलब्ध शेष क्षेत्र ({area} वर्ग मीटर) से अधिक नहीं हो सकता।",
     "ok": "ठीक है",
-    "errors": {
-      "areaExceededTitle": "भूखंड क्षेत्र सीमा समाप्त",
-      "assessmentYearInvalid": "मूल्यांकन वर्ष ४ अंकों का होना चाहिए (१७०० से वर्तमान वर्ष)",
-      "constructionYearInvalid": "निर्माण वर्ष ४ अंकों का होना चाहिए (१७०० से वर्तमान वर्ष)",
-      "constructionYearRequired": "निर्माण वर्ष आवश्यक है",
-      "assessmentYearRequired": "मूल्यांकन वर्ष आवश्यक है",
-      "floorRequired": "मंजिल का चयन आवश्यक है",
-      "roomCountMismatch": "कमरों की संख्या में विसंगति पाई गई। कृपया विवरण अपडेट करें।",
-      "openPlotConstructionTypeNotFound": "मास्टर डेटा में खुला भूखंड निर्माण प्रकार नहीं मिला।"
-    },
     "unexpectedError": "एक अप्रत्याशित त्रुटि हुई।",
     "roomSubmissionModal": {
       "title": "कक्ष सबमिशन सुविधा",

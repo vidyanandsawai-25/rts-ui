@@ -1,140 +1,176 @@
-"use server";
+'use server';
 
 import {
-    getPropertyBasicDetails,
-    getPropertyCategories,
-    getPropertyTypes,
-    getWingMaster,
-    getMoujaMaster,
-    updatePropertyBasicDetails,
-    getTaxZones
-} from "@/lib/api/ptis/propertybasicdetails/property-basic-details.service";
+  getPropertyBasicDetails,
+  getPropertyCategories,
+  getPropertyTypes,
+  getWingMaster,
+  getMoujaMaster,
+  updatePropertyBasicDetails,
+  getTaxZones,
+  deletePropertyDetails,
+} from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 
 import {
-    PropertyBasicDetailsApiItem,
-    PropertyCategoryApiItem,
-    PropertyTypeApiItem,
-    UpdatePropertyBasicDetailsDto,
-    WingItem,
-    MoujaItem,
-    TaxZoneItem
-} from "@/types/property-basic-details.types";
+  PropertyBasicDetailsApiItem,
+  PropertyCategoryApiItem,
+  PropertyTypeApiItem,
+  UpdatePropertyBasicDetailsDto,
+  WingItem,
+  MoujaItem,
+  TaxZoneItem,
+} from '@/types/property-basic-details.types';
 
-import { ActionResult } from "@/types/common.types";
-import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
+import { ActionResult } from '@/types/common.types';
+import { revalidatePath } from 'next/cache';
+import { getTranslations } from 'next-intl/server';
+import { ApiError } from '@/lib/utils/api';
+import { getFloorSubmissionsByOwner } from '@/lib/api/ptis/floorSubmission';
 
 async function getActionErrorMessage(error: unknown): Promise<string> {
-    const t = await getTranslations("quickDataEntry");
-    if (error instanceof Error && error.message) {
-        const msg = error.message.toLowerCase();
-        if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
-            return t('property.errors.failedToConnect.description');
-        }
-        return error.message;
+  const t = await getTranslations('quickDataEntry');
+  if (error instanceof Error && error.message) {
+    const msg = error.message.toLowerCase();
+    if (
+      msg.includes('fetch failed') ||
+      msg.includes('failed to fetch') ||
+      msg.includes('network error') ||
+      msg.includes('econnrefused')
+    ) {
+      return t('property.errors.failedToConnect.description');
     }
-    return t('property.errors.failedToConnect.description');
+    return error.message;
+  }
+  return t('property.errors.failedToConnect.description');
 }
 
 // Property Basic Details
-export async function getPropertyBasicDetailsAction(propertyId: number): Promise<ActionResult<PropertyBasicDetailsApiItem | null>> {
-    try {
-        const data = await getPropertyBasicDetails(propertyId);
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
-    }
+export async function getPropertyBasicDetailsAction(
+  propertyId: number
+): Promise<ActionResult<PropertyBasicDetailsApiItem | null>> {
+  try {
+    const data = await getPropertyBasicDetails(propertyId);
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 }
 
 // Property Categories
 export async function getPropertyCategoriesAction(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
 ): Promise<ActionResult<PropertyCategoryApiItem[]>> {
-    try {
-        const data = await getPropertyCategories(pageNumber, pageSize, searchTerm);
-        return { success: true, data: data ?? [] };
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
-    }
+  try {
+    const data = await getPropertyCategories(pageNumber, pageSize, searchTerm);
+    return { success: true, data: data ?? [] };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 }
 
 // Property Types
 export async function getPropertyTypesAction(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
 ): Promise<ActionResult<PropertyTypeApiItem[]>> {
-    try {
-        const data = await getPropertyTypes(pageNumber, pageSize, searchTerm);
-        return { success: true, data: data ?? [] };
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
-    }
+  try {
+    const data = await getPropertyTypes(pageNumber, pageSize, searchTerm);
+    return { success: true, data: data ?? [] };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 }
 
 // wing master
 export async function getWingMasterAction(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
 ): Promise<ActionResult<WingItem[]>> {
-    try {
-        const data = await getWingMaster(pageNumber, pageSize, searchTerm);
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
-    }
+  try {
+    const data = await getWingMaster(pageNumber, pageSize, searchTerm);
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 }
 
 // mouja master
 export async function getMoujaMasterAction(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
 ): Promise<ActionResult<MoujaItem[]>> {
-    try {
-        const data = await getMoujaMaster(pageNumber, pageSize, searchTerm);
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
-    }
+  try {
+    const data = await getMoujaMaster(pageNumber, pageSize, searchTerm);
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 }
 
 //update property basic details
 export const updatePropertyBasicDetailsAction = async (
-    locale: string,
-    propertyId: number,
-    payload: UpdatePropertyBasicDetailsDto,
-    shouldRevalidate: boolean = true
+  locale: string,
+  propertyId: number,
+  payload: UpdatePropertyBasicDetailsDto,
+  shouldRevalidate: boolean = true
 ): Promise<ActionResult<null>> => {
-    try {
-        const result = await updatePropertyBasicDetails(propertyId, payload);
-        if (!result.success) {
-            return result;
-        }
-
-        if (shouldRevalidate) {
-            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
-            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`, "page");
-        }
-        return result;
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
+  try {
+    const result = await updatePropertyBasicDetails(propertyId, payload);
+    if (!result.success) {
+      return result;
     }
+
+    if (shouldRevalidate) {
+      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, 'page');
+      revalidatePath(
+        `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`,
+        'page'
+      );
+    }
+    return result;
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 };
 
 // tax zone master
 export async function getTaxZonesAction(
-    pageNumber: number = 1,
-    pageSize: number = 100,
-    searchTerm?: string
+  pageNumber: number = 1,
+  pageSize: number = 100,
+  searchTerm?: string
 ): Promise<ActionResult<TaxZoneItem[]>> {
-    try {
-        const data = await getTaxZones(pageNumber, pageSize, searchTerm);
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: await getActionErrorMessage(error) };
+  try {
+    const data = await getTaxZones(pageNumber, pageSize, searchTerm);
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
+}
+
+// delete property details
+export async function deletePropertyDetailsAction(propertyId: number): Promise<ActionResult<null>> {
+  try {
+    // Check if there are any floors/rooms/renters present
+    const floors = await getFloorSubmissionsByOwner(propertyId);
+    if (!floors || floors.length === 0) {
+      // No details present, so do not call the delete API! Just return success.
+      return { success: true, data: null };
     }
+
+    const result = await deletePropertyDetails(propertyId);
+    return result;
+  } catch (error) {
+    if (
+      (error instanceof ApiError && error.statusCode === 404) ||
+      (error instanceof Error && error.message.toLowerCase().includes("not found"))
+    ) {
+      return { success: true, data: null };
+    }
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
 }

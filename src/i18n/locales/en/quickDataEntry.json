@@ -365,6 +365,9 @@
         "updateConfirmTitle": "Confirm Update",
         "updateConfirmText": "Are you sure you want to update the property details?",
         "updateConfirmButton": "Yes, Update",
+        "categoryChangeConfirmTitle": "Confirm Category Change",
+        "categoryChangeConfirmText": "Changing the category will delete all floor, room submission, and renter details. Are you sure you want to proceed?",
+        "categoryChangeConfirmButton": "Yes, Change Category",
         "updateSuccess": "Property basic details updated successfully",
         "updateError": "An error occurred during update.",
         "updateButton": "Update",
@@ -439,6 +442,7 @@
             "fetchPropertyCategories": "Failed to fetch property categories",
             "fetchWingMaster": "Failed to fetch wing master",
             "updatePropertyBasicDetails": "Failed to update property basic details",
+            "deletePropertyDetails": "Failed to delete existing floor, room, and renter details",
             "fetchCvTaxDetails": "Failed to fetch CV tax details",
             "fetchTaxZones": "Failed to fetch tax zones",
             "unauthorized": "Unauthorized: Token expired or invalid. Please log in again.",
@@ -1057,7 +1061,10 @@
             "areaUpdatedSuccess": "Area updated successfully.",
             "areaAddedSuccess": "Area added successfully.",
             "failedToSaveArea": "Failed to save area.",
-            "selectOpenPlotCategory": "Please select an Open Plot Category."
+            "selectOpenPlotCategory": "Please select an Open Plot Category.",
+            "areaExceededTitle": "Plot Area Limit Exceeded",
+            "constructionYearRequired": "Construction Year is required",
+            "assessmentYearRequired": "Assessment Year is required"
         },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",
@@ -1120,16 +1127,6 @@
         "openSpaceAreaExceeded": "Open Space Area cannot exceed the available remaining area ({area} Sq.M).",
         "floorAreaExceeded": "Floor Built-up Area cannot exceed the available remaining area ({area} Sq.M).",
         "ok": "OK",
-        "errors": {
-            "areaExceededTitle": "Plot Area Limit Exceeded",
-            "assessmentYearInvalid": "Assessment year must be 4 digits (1700 - current year)",
-            "constructionYearInvalid": "Construction year must be 4 digits (1700 - current year)",
-            "constructionYearRequired": "Construction Year is required",
-            "assessmentYearRequired": "Assessment Year is required",
-            "floorRequired": "Floor selection is required",
-            "roomCountMismatch": "Expected details for {enteredRooms} rooms, but found {roomDetailsCount}. Please update room details.",
-            "openPlotConstructionTypeNotFound": "Construction Type for Open Plot (op) not found in master data."
-        },
         "unexpectedError": "An unexpected error occurred.",
         "roomSubmissionModal": {
             "title": "Room Submission Feature",

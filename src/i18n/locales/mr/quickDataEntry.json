@@ -365,6 +365,9 @@
     "updateConfirmTitle": "अद्यतनाची पुष्टी करा",
     "updateConfirmText": "तुम्हाला खात्री आहे की तुम्ही मालमत्तेचा तपशील अद्यतनित करू इच्छिता?",
     "updateConfirmButton": "हो, अद्यतनित करा",
+    "categoryChangeConfirmTitle": "श्रेणी बदलण्याची पुष्टी करा",
+    "categoryChangeConfirmText": "श्रेणी बदलल्यास सर्व मजला, खोलीचे सबमिशन आणि भाडेकरूचे तपशील हटवले जातील. आपण पुढे जाण्याची खात्री बाळगता का?",
+    "categoryChangeConfirmButton": "होय, श्रेणी बदला",
     "updateSuccess": "मालमत्तेची मूलभूत माहिती यशस्वीरित्या अद्यतनित केली गेली",
     "updateError": "अद्यतनित करताना त्रुटी आली.",
     "updateButton": "अद्यतन करा",
@@ -439,6 +442,7 @@
       "fetchPropertyCategories": "मालमत्ता वर्गवारी आणण्यात अयशस्वी",
       "fetchWingMaster": "विंग मास्टर आणण्यात अयशस्वी",
       "updatePropertyBasicDetails": "मालमत्तेचा मूलभूत तपशील अद्ययावत करण्यात अयशस्वी",
+      "deletePropertyDetails": "अस्तित्वात असलेले मजला, खोली आणि भाडेकरूचे तपशील हटविण्यात अयशस्वी",
       "fetchCvTaxDetails": "सीव्ही कर तपशील आणण्यात अयशस्वी",
       "fetchTaxZones": "कर विभाग आणण्यात अयशस्वी",
       "unauthorized": "अनधिकृत: टोकन कालबाह्य झाले आहे किंवा अवैध आहे. कृपया पुन्हा लॉग इन करा.",
@@ -1047,7 +1051,10 @@
       "areaUpdatedSuccess": "क्षेत्रफळ यशस्वीरित्या अद्यतनित केले.",
       "areaAddedSuccess": "क्षेत्रफळ यशस्वीरित्या जोडले.",
       "failedToSaveArea": "क्षेत्रफळ जतन करण्यात अयशस्वी.",
-      "selectOpenPlotCategory": "कृपया एक खुली जागा वर्ग निवडा."
+      "selectOpenPlotCategory": "कृपया एक खुली जागा वर्ग निवडा.",
+      "areaExceededTitle": "भूखंड क्षेत्राची मर्यादा ओलांडली",
+      "constructionYearRequired": "बांधकाम वर्ष आवश्यक आहे",
+      "assessmentYearRequired": "आकारणी वर्ष आवश्यक आहे"
     },
     "deleteConfirmTitle": "तुम्हाला खात्री आहे?",
     "deleteConfirmText": "तुम्हाला हा मजला हटवायचा आहे?",
@@ -1106,16 +1113,6 @@
     "openSpaceAreaExceeded": "मोकळी जागा क्षेत्र उपलब्ध शिल्लक क्षेत्र ({area} चौ.मी.) पेक्षा जास्त असू शकत नाही.",
     "floorAreaExceeded": "मजला बांधकाम क्षेत्र उपलब्ध शिल्लक क्षेत्र ({area} चौ.मी.) पेक्षा जास्त असू शकत नाही.",
     "ok": "ठीक आहे",
-    "errors": {
-      "areaExceededTitle": "भूखंड क्षेत्राची मर्यादा ओलांडली",
-      "assessmentYearInvalid": "आकारणी वर्ष ४ अंकी असावे (१७०० ते चालू वर्ष)",
-      "constructionYearInvalid": "बांधकाम वर्ष ४ अंकी असावे (१७०० ते चालू वर्ष)",
-      "constructionYearRequired": "बांधकाम वर्ष आवश्यक आहे",
-      "assessmentYearRequired": "आकारणी वर्ष आवश्यक आहे",
-      "floorRequired": "मजला निवडणे आवश्यक आहे",
-      "roomCountMismatch": "खोल्यांच्या संख्येत विसंगती आढळली. कृपया माहिती अद्ययावत करा.",
-      "openPlotConstructionTypeNotFound": "मास्टर डेटामध्ये मोकळा भूखंड बांधकाम प्रकार आढळला नाही."
-    },
     "unexpectedError": "एक अनपेक्षित त्रुटी आली.",
     "roomSubmissionModal": {
       "title": "खोली सबमिशन सुविधा",

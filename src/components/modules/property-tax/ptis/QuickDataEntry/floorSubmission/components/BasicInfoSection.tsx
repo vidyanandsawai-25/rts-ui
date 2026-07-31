@@ -9,9 +9,10 @@ import { normalizeToStringArray } from '@/lib/utils/dropdown-helpers';
 import { FieldWrapper } from './SectionField';
 import { validateField } from '@/lib/validations/validateFloorSubmission';
 import { toast } from 'sonner';
-import { focusFieldOrFallback } from '@/lib/utils/floorSubmission/focus-helpers';
 
-export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorType?: 'Construction' | 'OpenPlot' }> = ({
+export const BasicInfoSection: React.FC<
+  BasicInfoSectionProps & { selectedFloorType?: 'Construction' | 'OpenPlot' }
+> = ({
   t,
   editingFloorForm,
   setEditingFloorForm,
@@ -27,10 +28,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
   selectedFloorType = 'Construction',
   isAddingNewFloor,
 }) => {
-
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      focusFieldOrFallback('floor-is-taxable', '.bg-white.rounded-xl');
+      const inputEl = document.getElementById('floor-is-taxable') as HTMLInputElement | null;
+      if (inputEl) {
+        inputEl.focus({ preventScroll: true });
+      }
     }, 100);
     return () => clearTimeout(timer);
   }, [editingFloorForm.id, isAddingNewFloor, selectedFloorType]);
@@ -67,13 +70,15 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
         const conYear = parseInt(conYrVal, 10);
         const asstYear = parseInt(asstYrVal, 10);
         if (!isNaN(conYear) && !isNaN(asstYear) && conYear > asstYear) {
-          const errMsg = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          const errMsg =
+            t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           updated.asstYr = errMsg;
           if (prev.asstYr !== errMsg) {
             toast.error(errMsg);
           }
         } else {
-          const crossFieldError = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          const crossFieldError =
+            t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           if (prev.asstYr === crossFieldError || updated.asstYr === crossFieldError) {
             updated.asstYr = '';
           }
@@ -83,11 +88,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
     });
   };
 
-  const handleYearBlur = (
-    field: 'conYr' | 'asstYr',
-    val: string,
-    errorMsg: string
-  ) => {
+  const handleYearBlur = (field: 'conYr' | 'asstYr', val: string, errorMsg: string) => {
     if (selectedFloorType === 'OpenPlot' && field === 'asstYr') {
       setEditingFloorForm((prev) => ({
         ...prev,
@@ -107,20 +108,26 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
       if (selectedFloorType === 'OpenPlot' && field === 'asstYr') {
         updated.conYr = '';
       }
-      const conYrVal = String(selectedFloorType === 'OpenPlot' && field === 'asstYr' ? val : (editingFloorForm.conYr || ''));
-      const asstYrVal = String(selectedFloorType === 'OpenPlot' && field === 'asstYr' ? val : (editingFloorForm.asstYr || ''));
+      const conYrVal = String(
+        selectedFloorType === 'OpenPlot' && field === 'asstYr' ? val : editingFloorForm.conYr || ''
+      );
+      const asstYrVal = String(
+        selectedFloorType === 'OpenPlot' && field === 'asstYr' ? val : editingFloorForm.asstYr || ''
+      );
 
       if (conYrVal.length === 4 && asstYrVal.length === 4) {
         const conYear = parseInt(conYrVal, 10);
         const asstYear = parseInt(asstYrVal, 10);
         if (!isNaN(conYear) && !isNaN(asstYear) && conYear > asstYear) {
-          const errMsg = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          const errMsg =
+            t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           updated.asstYr = errMsg;
           if (prev.asstYr !== errMsg) {
             toast.error(errMsg);
           }
         } else {
-          const crossFieldError = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          const crossFieldError =
+            t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           if (prev.asstYr === crossFieldError || updated.asstYr === crossFieldError) {
             updated.asstYr = '';
           }
@@ -131,7 +138,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
   };
 
   const currentFloorValue = React.useMemo(() => {
-    if (editingFloorForm.floorId !== undefined && editingFloorForm.floorId !== null && String(editingFloorForm.floorId) !== '') {
+    if (
+      editingFloorForm.floorId !== undefined &&
+      editingFloorForm.floorId !== null &&
+      String(editingFloorForm.floorId) !== ''
+    ) {
       return String(editingFloorForm.floorId);
     }
     if (editingFloorForm.floor) {
@@ -140,7 +151,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
         const idStr = String(f.floorId || f.id || f.ID || '');
         const descStr = String(f.description || f.floorDescription || '').trim();
         const codeStr = String(f.floorCode || f.code || '').trim();
-        return idStr === rawFloor || descStr === rawFloor || codeStr === rawFloor || (codeStr && descStr && `${codeStr} - ${descStr}` === rawFloor);
+        return (
+          idStr === rawFloor ||
+          descStr === rawFloor ||
+          codeStr === rawFloor ||
+          (codeStr && descStr && `${codeStr} - ${descStr}` === rawFloor)
+        );
       });
       if (found) {
         return String(found.floorId || found.id || found.ID);
@@ -150,12 +166,22 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
       return '77';
     }
     return '';
-  }, [editingFloorForm.floorId, editingFloorForm.floor, floorLookup, isAddingNewFloor, selectedFloorType]);
+  }, [
+    editingFloorForm.floorId,
+    editingFloorForm.floor,
+    floorLookup,
+    isAddingNewFloor,
+    selectedFloorType,
+  ]);
 
   return (
     <>
       {/* Is Taxable Dropdown */}
-      <FieldWrapper label={t('floor.taxable')} htmlFor="floor-is-taxable" error={formErrors.isTaxable}>
+      <FieldWrapper
+        label={t('floor.taxable')}
+        htmlFor="floor-is-taxable"
+        error={formErrors.isTaxable}
+      >
         <SearchSelect
           id="floor-is-taxable"
           name="isTaxable"
@@ -169,20 +195,25 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
             setEditingFloorForm({ ...editingFloorForm, isTaxable: value });
           }}
           placeholder={t('floor.selectTaxableStatus')}
+          openOnFocus={false}
           className="h-9 text-sm border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          autoFocus
         />
       </FieldWrapper>
 
       {/* Floor */}
-      <FieldWrapper label={t('floor.floorLabel')} htmlFor="floor-floor" required error={formErrors.floorId || formErrors.floor}>
+      <FieldWrapper
+        label={t('floor.floorLabel')}
+        htmlFor="floor-floor"
+        required
+        error={formErrors.floorId || formErrors.floor}
+      >
         <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
           <SearchSelect
             id="floor-floor"
             name="floorId"
             menuPlacement="top"
             options={[
-              { label: t('floor.selectFloor'), value: "" },
+              { label: t('floor.selectFloor'), value: '' },
               ...getSelectOptions(
                 normalizeToStringArray(floorOptions),
                 floorLookup,
@@ -191,7 +222,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
                 'floorCode',
                 currentFloorValue || undefined,
                 getFloorDescription
-              )
+              ),
             ]}
             value={currentFloorValue}
             onChange={(_name, value) => {
@@ -200,11 +231,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
                 ...prev,
                 floorId: value,
                 floor: desc || value,
-                floorDescription: desc || value
+                floorDescription: desc || value,
               }));
               // Simple required validation: if value is empty, show error
               if (!value) {
-                setFormErrors((prev) => ({ ...prev, floorId: t('floor.errors.floorRequired') || 'Floor selection is required' }));
+                setFormErrors((prev) => ({
+                  ...prev,
+                  floorId: t('floor.errors.floorRequired') || 'Floor selection is required',
+                }));
               } else {
                 setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
               }
@@ -217,13 +251,17 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
 
       {/* Sub Floor */}
       {selectedFloorType !== 'OpenPlot' && (
-        <FieldWrapper label={t('floor.subFloor')} htmlFor="floor-sub-floor" error={formErrors.subFloorId || formErrors.subFloor}>
+        <FieldWrapper
+          label={t('floor.subFloor')}
+          htmlFor="floor-sub-floor"
+          error={formErrors.subFloorId || formErrors.subFloor}
+        >
           <div onFocusCapture={() => handleOpenDropdown('loadSubFloor')}>
             <SearchSelect
               id="floor-sub-floor"
               name="subFloorId"
               options={[
-                { label: t('floor.selectSubFloor'), value: "" },
+                { label: t('floor.selectSubFloor'), value: '' },
                 ...getSelectOptions(
                   normalizeToStringArray(subFloorOptions),
                   subFloorLookup,
@@ -232,16 +270,16 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
                   'subFloorCode',
                   editingFloorForm.subFloorId,
                   getSubFloorDescription
-                )
+                ),
               ]}
               value={String(editingFloorForm.subFloorId ?? '')}
               onChange={(_name, value) => {
                 const desc = getSubFloorDescription(value, subFloorLookup);
                 setEditingFloorForm((prev: FloorData) => ({
                   ...prev,
-                  subFloorId: value === "" ? undefined : value,
-                  subFloor: value === "" ? "" : (desc || value),
-                  subFloorDescription: value === "" ? "" : (desc || value)
+                  subFloorId: value === '' ? undefined : value,
+                  subFloor: value === '' ? '' : desc || value,
+                  subFloorDescription: value === '' ? '' : desc || value,
                 }));
               }}
               placeholder={t('floor.selectSubFloor')}
@@ -253,14 +291,23 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
 
       {/* Con Yr (Construction Year) */}
       {selectedFloorType !== 'OpenPlot' && (
-        <FieldWrapper label={t('roomSubmission.table.conYr')} htmlFor="floor-con-yr" required error={formErrors.conYr}>
+        <FieldWrapper
+          label={t('roomSubmission.table.conYr')}
+          htmlFor="floor-con-yr"
+          required
+          error={formErrors.conYr}
+        >
           <AnimatedDigitInput
             id="floor-con-yr"
             maxLength={4}
             value={String(editingFloorForm.conYr || '')}
             placeholder="2020"
-            onChange={(val) => handleYearValueChange('conYr', val, t('floor.errors.constructionYearInvalid'))}
-            onBlur={(e) => handleYearBlur('conYr', e.target.value, t('floor.errors.constructionYearInvalid'))}
+            onChange={(val) =>
+              handleYearValueChange('conYr', val, t('floor.errors.constructionYearInvalid'))
+            }
+            onBlur={(e) =>
+              handleYearBlur('conYr', e.target.value, t('floor.errors.constructionYearInvalid'))
+            }
           />
         </FieldWrapper>
       )}
@@ -270,18 +317,26 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps & { selectedFloorT
         label={t('roomSubmission.table.asstYr')}
         htmlFor="floor-asst-yr"
         required
-        error={formErrors.asstYr === (t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year') ? undefined : formErrors.asstYr}
+        error={
+          formErrors.asstYr ===
+          (t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year')
+            ? undefined
+            : formErrors.asstYr
+        }
       >
         <AnimatedDigitInput
           id="floor-asst-yr"
           maxLength={4}
           value={String(editingFloorForm.asstYr || '')}
           placeholder="2024"
-          onChange={(val) => handleYearValueChange('asstYr', val, t('floor.errors.assessmentYearInvalid'))}
-          onBlur={(e) => handleYearBlur('asstYr', e.target.value, t('floor.errors.assessmentYearInvalid'))}
+          onChange={(val) =>
+            handleYearValueChange('asstYr', val, t('floor.errors.assessmentYearInvalid'))
+          }
+          onBlur={(e) =>
+            handleYearBlur('asstYr', e.target.value, t('floor.errors.assessmentYearInvalid'))
+          }
         />
       </FieldWrapper>
     </>
   );
 };
-
