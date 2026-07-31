@@ -20,6 +20,8 @@ export interface ZoneDataRow {
     totalUnit: number;
     classifications: Classification[];
     isTotal?: boolean;
+    totalDemand?: number;
+    [key: string]: unknown;
 }
 
 export interface ApprovalByUlbItems {
@@ -66,6 +68,59 @@ export interface BuildingWiseResponse {
     success: boolean;
     message: string;
     items: BuildingWisePagination;
+    errors: unknown | null;
+    correlationId: string | null;
+}
+
+export interface PropertyWiseRecord {
+    area: string;
+    use: string;
+    year: string;
+    rv: string;
+    tax: string;
+}
+
+export interface PropertyWiseItem {
+    wardNo: string;
+    newPropertyNo: string;
+    oldPropertyNo: string;
+    description: string;
+    ownerName: string;
+    occupierName: string;
+    address: string;
+    societyName: string;
+    builderName: string;
+    wingNo: string;
+    flatNo: string;
+    oldRecord: PropertyWiseRecord;
+    newRecord: PropertyWiseRecord;
+    propertyType: string;
+    totalDemand: number;
+    clerkSign: number;
+    taxInspectorSign: number;
+    assistantCommissionerSign: number;
+    deputyCommissionerSign: number;
+    additionalCommissionerSign: number;
+    authoritySignatures: AuthoritySignature[];
+    documents?: unknown;
+    actions?: unknown;
+    [key: string]: unknown;
+}
+    
+export interface PropertyWisePagination {
+    items: PropertyWiseItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}
+
+export interface PropertyWiseResponse {
+    success: boolean;
+    message: string;
+    items: PropertyWisePagination;
     errors: unknown | null;
     correlationId: string | null;
 }

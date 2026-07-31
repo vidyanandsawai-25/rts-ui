@@ -7,7 +7,7 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function InternalSurveyError({ error, reset }: ErrorProps) {
+export default function AutomationDashboardError({ error, reset }: ErrorProps) {
   return (
     <ErrorPage
       error={error}

@@ -14,6 +14,7 @@ export interface AssessmentClassification {
 export interface AssessmentZoneData {
   zoneId: number | null;
   zoneName: string;
+  zoneNo: string;
   totalStructure: number;
   totalUnit: number;
   classifications: AssessmentClassification[];
@@ -36,8 +37,10 @@ export interface AssessmentGridResponse {
 export interface AssessmentRow {
     [key: string]: unknown;
     id: string;
+    zoneId?: number | null;
     sr?: number | string;
     zoneName?: string;
+    zoneNo?: string;
     totalStructure?: number | string;
     totalUnit?: number | string;
     type: string;

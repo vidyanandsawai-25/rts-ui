@@ -13,6 +13,8 @@
     "fetchPendingAssessmentProps": "Failed to fetch pending assessment properties.",
     "fetchPropertyTypeMaster": "Failed to fetch property type master details.",
     "fetchApprovalByUlbDetails": "Failed to fetch approval by ULB details.",
+    "fetchBuildingWiseData": "Failed to fetch building-wise data.",
+    "fetchPropertyWiseData": "Failed to fetch property-wise data.",
     "fetchPropertyAssessmentStatus": "Failed to fetch property assessment status details."
   },
   "summaryCards": {
@@ -282,6 +284,61 @@
       "underConstruction": "Under Construction"
     }
   },
+  "approvalByULB": {
+    "title": "Approval by ULB",
+    "titleWithWard": "Approval by ULB - {wardId}",
+    "searchPlaceholder": "Search notice no...",
+    "backToWardWise": "Back to Ward-wise",
+    "totalStructures": "Total Structures",
+    "totalUnitsSubmitted": "Total Units Submitted",
+    "totalDemandCr": "Total Demand (Cr)",
+    "total": "Total",
+    "updatePending": "Update Pending",
+    "export": "Export",
+    "signed": "Signed",
+    "pending": "Pending",
+    "buildings": "Buildings",
+    "structures": "Structures",
+    "unit": "Unit",
+    "units": "Units",
+    "columns": {
+      "sr": "Sr",
+      "zoneWard": "Zone / Ward",
+      "division": "Division",
+      "divisionOffice": "Division Office",
+      "ward": "Ward",
+      "totalStructures": "Total Structures",
+      "totalUnits": "Total Units",
+      "demandCr": "Demand (Cr)",
+      "buildingNo": "Building No",
+      "noticeNo": "Notice No",
+      "units": "Units"
+    },
+    "buildingWiseProperty": {
+      "backToStructureDetails": "Back to Structure Details",
+      "title": "Approval by ULB - {propertyNo}",
+      "searchPlaceholder": "Search property no...",
+      "oldLabel": "Old: ",
+      "newLabel": "New",
+      "ownerLabel": "Owner: ",
+      "occupierLabel": "Occupier: ",
+      "societyLabel": "Society: ",
+      "builderLabel": "Builder: ",
+      "wingLabel": "Wing: ",
+      "flatLabel": "Flat: ",
+      "areaLabel": "Area: ",
+      "useLabel": "Use: ",
+      "yearLabel": "Year: ",
+      "rvLabel": "RV: ",
+      "taxLabel": "Tax: ",
+      "na": "N/A",
+      "notAvailable": "Not Available",
+      "currencySymbol": "₹",
+      "unassessed": "Unassessed",
+      "report": "Report",
+      "tracking": "Tracking"
+    }
+  },
   "sendToApprove": {
     "title": "Send to Approve",
     "subtitle": "Select properties from the Assessment stage to send for approval",
@@ -328,5 +385,31 @@
     "pendingStatus": "PENDING",
     "approvedBy": "Approved By:",
     "submittedBy": "Submitted By:"
+  },
+  "assessment": {
+    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "summary": "Summary",
+    "sendToApprove": "Send to Approve",
+    "tabs": {
+      "total": "Total",
+      "assessed": "Assessed",
+      "unassessed": "Unassessed",
+      "rented": "Rented"
+    },
+    "columns": {
+      "sr": "SR",
+      "zoneNo": "ZONE NO",
+      "totalStructure": "TOTAL STRUCTURE",
+      "totalUnit": "TOTAL UNIT",
+      "propertyClassification": "PROPERTY CLASSIFICATION",
+      "type": "TYPE",
+      "structure": "STRUCTURE",
+      "unit": "UNIT",
+      "oldDemand": "OLD DEMAND (₹)",
+      "currentDemand": "CURRENT DEMAND (₹)",
+      "retroDemand": "RETRO DEMAND (₹)",
+      "totalDemand": "TOTAL DEMAND (₹)",
+      "additionalRevenue": "ADDITIONAL REVENUE GENERATED (₹)"
+    }
   }
 }

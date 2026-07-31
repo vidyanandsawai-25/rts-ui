@@ -7,7 +7,7 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function GeoSequencingError({ error, reset }: ErrorProps) {
+export default function QualityCheckError({ error, reset }: ErrorProps) {
   return (
     <ErrorPage
       error={error}

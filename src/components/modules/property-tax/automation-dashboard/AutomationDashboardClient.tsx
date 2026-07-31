@@ -30,7 +30,8 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
         pathname.includes('/property-details-dashboard') ||
         pathname.includes('/quality-check/update-common-details') ||
         pathname.includes('/send-to-approve') ||
-        pathname.includes('/pending-structures-ward-wise');
+        pathname.includes('/pending-structures-ward-wise') ||
+        pathname.includes('/building-wise-property') ;
 
     const getStageConfig = (stageName: string) => {
         switch (stageName) {
@@ -82,7 +83,7 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
                             const isActive = activeTab === tab.value;
                             const Icon = tab.icon;
                             const colors = getTabColors(tab.value);
-                            const isClickable = index < 3;
+                            const isClickable = index < 5;
 
                             return (
                                 <div

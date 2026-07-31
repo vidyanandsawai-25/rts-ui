@@ -1,9 +1,9 @@
 import { LoadingPage } from "@/components/common";
 
 /**
- * GeoSequencingLoading
- * Next.js route-level loading boundary for the Geo Sequencing module.
+ * InternalSurveyLoading
+ * Next.js route-level loading boundary for the Internal Survey module.
  */
-export default function GeoSequencingLoading() {
+export default function InternalSurveyLoading() {
     return <LoadingPage />;
 }

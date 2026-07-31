@@ -115,3 +115,22 @@ export interface PropertyAssessmentStatusResponseItems {
     hasPrevious: boolean;
     hasNext: boolean;
 }
+export interface ZoneItem {
+    id: number;
+    zoneNo: string;
+    description: string;
+    sequenceNo: number | null;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+}
+
+export interface ZoneResponseItems {
+    items: ZoneItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}

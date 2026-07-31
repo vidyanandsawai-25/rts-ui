@@ -10,7 +10,9 @@ import {
     PropertyTypeMasterResponseItems,
     PropertyTypeMasterItem,
     PropertyAssessmentStatusResponseItems,
-    PropertyAssessmentStatusItem
+    PropertyAssessmentStatusItem,
+    ZoneItem,
+    ZoneResponseItems
 } from "@/types/automation-dashboard/property-dashboard/property-subgrid-details.type";
 
 export async function automationGetPropertySubGridDetails(
@@ -104,4 +106,18 @@ export async function getPropertyAssessmentStatus(
     const t = await getTranslations("automationDashboard");
 
     return handleApiResponse(response, t("errors.fetchPropertyAssessmentStatus") || "Failed to fetch property assessment status details").items ?? null;
+}
+
+export async function getZones(
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<ZoneItem[] | null> {
+    const params = new URLSearchParams();
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+
+    const response = await apiClient.get<ZoneResponseItems>(`/Zone?${params.toString()}`,{cache: "force-cache"});
+    const t = await getTranslations("automationDashboard");
+
+    return handleApiResponse(response, t("errors.fetchZones") || "Failed to fetch zones").items ?? null;
 }

@@ -1,9 +1,9 @@
 import { LoadingPage } from "@/components/common";
 
 /**
- * GeoSequencingLoading
- * Next.js route-level loading boundary for the Geo Sequencing module.
+ * QualityCheckLoading
+ * Next.js route-level loading boundary for the Quality Check module.
  */
-export default function GeoSequencingLoading() {
+export default function QualityCheckLoading() {
     return <LoadingPage />;
 }

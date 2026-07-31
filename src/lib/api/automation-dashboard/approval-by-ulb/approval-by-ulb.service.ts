@@ -1,10 +1,11 @@
-
 import { getTranslations } from "next-intl/server";
 import { 
     ApprovalByUlbItems, 
     ApprovalByUlbResponse, 
     BuildingWisePagination, 
-    BuildingWiseResponse 
+    BuildingWiseResponse, 
+    PropertyWisePagination,
+    PropertyWiseResponse 
 } from "@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type";
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
@@ -42,4 +43,23 @@ export async function getBuildingWiseData(
     const t = await getTranslations("automationDashboard");
 
     return handleApiResponse(response, t("errors.fetchBuildingWiseData") || "Failed to fetch building-wise data").items ?? null;
+}
+
+export async function getPropertyWiseData(
+    propertyNo: string,
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<PropertyWisePagination | null> {
+    const params = new URLSearchParams();
+    params.append("propertyNo", propertyNo);
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+
+    const response = await apiClient.get<PropertyWiseResponse>(
+        `/PropertySignature/GetPropertyWiseData?${params.toString()}`,
+        { cache: "force-cache" }
+    );
+    const t = await getTranslations("automationDashboard");
+
+    return handleApiResponse(response, t("errors.fetchPropertyWiseData") || "Failed to fetch property-wise data").items ?? null;
 }
