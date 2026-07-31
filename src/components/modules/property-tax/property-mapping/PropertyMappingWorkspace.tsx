@@ -56,6 +56,16 @@ interface PropertyMappingWorkspaceProps {
   };
   onConfirmClick: () => void;
   stepNumbers: { comparisonStep: number; floorStep: number };
+  page12?: number;
+  pageSize12?: number;
+  totalCount12?: number;
+  onPageChange12?: (page: number) => void;
+  onPageSizeChange12?: (size: number) => void;
+  page13?: number;
+  pageSize13?: number;
+  totalCount13?: number;
+  onPageChange13?: (page: number) => void;
+  onPageSizeChange13?: (size: number) => void;
 }
 
 export function PropertyMappingWorkspace({
@@ -91,6 +101,16 @@ export function PropertyMappingWorkspace({
   validationStatus,
   onConfirmClick,
   stepNumbers,
+  page12,
+  pageSize12,
+  totalCount12,
+  onPageChange12,
+  onPageSizeChange12,
+  page13,
+  pageSize13,
+  totalCount13,
+  onPageChange13,
+  onPageSizeChange13,
 }: PropertyMappingWorkspaceProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] gap-4 items-start w-full">
@@ -126,6 +146,16 @@ export function PropertyMappingWorkspace({
           hasSearchActive={hasSearchActive}
           currentWard={currentNewProperty?.ward}
           currentPartition={currentNewProperty?.partitionNo}
+          page12={page12}
+          pageSize12={pageSize12}
+          totalCount12={totalCount12}
+          onPageChange12={onPageChange12}
+          onPageSizeChange12={onPageSizeChange12}
+          page13={page13}
+          pageSize13={pageSize13}
+          totalCount13={totalCount13}
+          onPageChange13={onPageChange13}
+          onPageSizeChange13={onPageSizeChange13}
         />
 
         <ComparisonCards

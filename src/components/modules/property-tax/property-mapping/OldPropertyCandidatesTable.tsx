@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { MasterTable, Button, Checkbox } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { Eye, CheckCircle2 } from "lucide-react";
-import { OldPropertyCandidate } from "@/types/property-mapping";
+import { OldPropertyCandidate, CandidatesTableProps } from "@/types/property-mapping";
 import { formatArea } from "./mappingUtils";
 
 const formatMappedProperty = (propNo: string, ward?: string, partition?: string | null) => {
@@ -25,19 +25,6 @@ const formatMappedProperty = (propNo: string, ward?: string, partition?: string 
   return [formattedWard, propNo, formattedPartition].filter(Boolean).join("-");
 };
 
-interface CandidatesTableProps {
-  autoCandidates: OldPropertyCandidate[];
-  manualCandidates: OldPropertyCandidate[];
-  activeCheckedIds: string[];
-  mappedOldPropNos: string[];
-  onToggleCandidate: (id: string) => void;
-  onCompareClick: (candidate: OldPropertyCandidate) => void;
-  money: (val: number) => string;
-  hasSearchActive: boolean;
-  currentWard?: string;
-  currentPartition?: string | null;
-}
-
 export function CandidatesTable({
   autoCandidates,
   manualCandidates,
@@ -49,6 +36,16 @@ export function CandidatesTable({
   hasSearchActive,
   currentWard,
   currentPartition,
+  page12: propPage12,
+  pageSize12: propPageSize12,
+  totalCount12: propTotalCount12,
+  onPageChange12,
+  onPageSizeChange12,
+  page13: propPage13,
+  pageSize13: propPageSize13,
+  totalCount13: propTotalCount13,
+  onPageChange13,
+  onPageSizeChange13,
 }: CandidatesTableProps) {
   const t = useTranslations("propertyMapping");
   const areaUnit = t("candidatesTable.areaUnit");
@@ -72,44 +69,40 @@ export function CandidatesTable({
   const table12Data = is12Occupied ? unlinkedAuto : unlinkedManual;
   const table13Data = is12Occupied ? unlinkedManual : [];
 
-  const [page11, setPage11] = useState(1);
-  const [pageSize11, setPageSize11] = useState(10);
+  const [localPage11, setLocalPage11] = useState(1);
+  const [localPageSize11, setLocalPageSize11] = useState(10);
 
-  const [page12, setPage12] = useState(1);
-  const [pageSize12, setPageSize12] = useState(10);
+  const [localPage12, setLocalPage12] = useState(1);
+  const [localPageSize12, setLocalPageSize12] = useState(10);
 
-  const [page13, setPage13] = useState(1);
-  const [pageSize13, setPageSize13] = useState(10);
+  const [localPage13, setLocalPage13] = useState(1);
+  const [localPageSize13, setLocalPageSize13] = useState(10);
+
+  const page12 = propPage12 ?? localPage12;
+  const pageSize12 = propPageSize12 ?? localPageSize12;
+
+  const page13 = propPage13 ?? localPage13;
+  const pageSize13 = propPageSize13 ?? localPageSize13;
 
   useEffect(() => {
-    setPage11(1);
+    setLocalPage11(1);
   }, [linkedCandidates.length]);
 
-  useEffect(() => {
-    setPage12(1);
-  }, [table12Data.length]);
-
-  useEffect(() => {
-    setPage13(1);
-  }, [table13Data.length]);
-
   const totalCount11 = linkedCandidates.length;
-  const totalPages11 = Math.max(1, Math.ceil(totalCount11 / pageSize11));
-  const safePage11 = Math.min(page11, totalPages11);
-  const startIndex11 = (safePage11 - 1) * pageSize11;
-  const paginated11 = linkedCandidates.slice(startIndex11, startIndex11 + pageSize11);
+  const totalPages11 = Math.max(1, Math.ceil(totalCount11 / localPageSize11));
+  const safePage11 = Math.min(localPage11, totalPages11);
+  const startIndex11 = (safePage11 - 1) * localPageSize11;
+  const paginated11 = linkedCandidates.slice(startIndex11, startIndex11 + localPageSize11);
 
-  const totalCount12 = table12Data.length;
+  const totalCount12 = propTotalCount12 !== undefined ? propTotalCount12 : table12Data.length;
   const totalPages12 = Math.max(1, Math.ceil(totalCount12 / pageSize12));
   const safePage12 = Math.min(page12, totalPages12);
-  const startIndex12 = (safePage12 - 1) * pageSize12;
-  const paginated12 = table12Data.slice(startIndex12, startIndex12 + pageSize12);
+  const paginated12 = onPageChange12 ? table12Data : table12Data.slice((safePage12 - 1) * pageSize12, safePage12 * pageSize12);
 
-  const totalCount13 = table13Data.length;
+  const totalCount13 = propTotalCount13 !== undefined ? propTotalCount13 : table13Data.length;
   const totalPages13 = Math.max(1, Math.ceil(totalCount13 / pageSize13));
   const safePage13 = Math.min(page13, totalPages13);
-  const startIndex13 = (safePage13 - 1) * pageSize13;
-  const paginated13 = table13Data.slice(startIndex13, startIndex13 + pageSize13);
+  const paginated13 = onPageChange13 ? table13Data : table13Data.slice((safePage13 - 1) * pageSize13, safePage13 * pageSize13);
 
   const columns: Column<OldPropertyCandidate>[] = [
     {
@@ -347,13 +340,13 @@ export function CandidatesTable({
           actionLabel={t("candidatesTable.columns.action")}
           getRowKey={(row) => row.id}
           pageNumber={safePage11}
-          pageSize={pageSize11}
+          pageSize={localPageSize11}
           totalCount={totalCount11}
           totalPages={totalPages11}
-          onPageChange={(page) => setPage11(page)}
+          onPageChange={(page) => setLocalPage11(page)}
           onPageSizeChange={(size) => {
-            setPageSize11(size);
-            setPage11(1);
+            setLocalPageSize11(size);
+            setLocalPage11(1);
           }}
           paginationConfig={{ enabled: true, showPageSizeSelector: true }}
           tableClassName="min-w-[900px]"
@@ -415,10 +408,16 @@ export function CandidatesTable({
             pageSize={pageSize12}
             totalCount={totalCount12}
             totalPages={totalPages12}
-            onPageChange={(page) => setPage12(page)}
+            onPageChange={(page) => {
+              if (onPageChange12) onPageChange12(page);
+              else setLocalPage12(page);
+            }}
             onPageSizeChange={(size) => {
-              setPageSize12(size);
-              setPage12(1);
+              if (onPageSizeChange12) onPageSizeChange12(size);
+              else {
+                setLocalPageSize12(size);
+                setLocalPage12(1);
+              }
             }}
             paginationConfig={{ enabled: true, showPageSizeSelector: true }}
             tableClassName="min-w-[900px]"
@@ -478,10 +477,16 @@ export function CandidatesTable({
             pageSize={pageSize13}
             totalCount={totalCount13}
             totalPages={totalPages13}
-            onPageChange={(page) => setPage13(page)}
+            onPageChange={(page) => {
+              if (onPageChange13) onPageChange13(page);
+              else setLocalPage13(page);
+            }}
             onPageSizeChange={(size) => {
-              setPageSize13(size);
-              setPage13(1);
+              if (onPageSizeChange13) onPageSizeChange13(size);
+              else {
+                setLocalPageSize13(size);
+                setLocalPage13(1);
+              }
             }}
             paginationConfig={{ enabled: true, showPageSizeSelector: true }}
             tableClassName="min-w-[900px]"

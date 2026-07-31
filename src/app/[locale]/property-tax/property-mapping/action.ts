@@ -41,9 +41,14 @@ export async function searchOldPropertiesAction(params: SearchOldPropertiesParam
     if (params.oldBuilderName) queryParts.push(`OldBuilderName=${encodeURIComponent(params.oldBuilderName)}`);
     if (params.oldConstructionYear) queryParts.push(`OldConstructionYear=${encodeURIComponent(params.oldConstructionYear)}`);
     
-    const pageSize = params.pageSize ?? -1;
-    queryParts.push(`PageSize=${pageSize}`);
-    if (params.pageNumber !== undefined) queryParts.push(`PageNumber=${params.pageNumber}`);
+    if (params.pageSize !== undefined && params.pageSize !== null) {
+      queryParts.push(`PageSize=${params.pageSize}`);
+    } else {
+      queryParts.push(`PageSize=10`);
+    }
+    if (params.pageNumber !== undefined && params.pageNumber !== null) {
+      queryParts.push(`PageNumber=${params.pageNumber}`);
+    }
 
     const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
     const response = await apiClient.get<SearchOldPropertiesApiResponse>(

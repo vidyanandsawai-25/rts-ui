@@ -120,6 +120,16 @@ export function usePropertySearchLogic({
   const [serverSearchedCandidates, setServerSearchedCandidates] = useState<OldPropertyCandidate[]>([]);
   const [autoSearchedCandidates, setAutoSearchedCandidates] = useState<OldPropertyCandidate[]>([]);
 
+  // Step 1.1 Pagination State (Auto-Search / Primary Table)
+  const [page12, setPage12] = useState(1);
+  const [pageSize12, setPageSize12] = useState(10);
+  const [totalCount12, setTotalCount12] = useState(0);
+
+  // Step 1.2 Pagination State (Manual Search Table)
+  const [page13, setPage13] = useState(1);
+  const [pageSize13, setPageSize13] = useState(10);
+  const [totalCount13, setTotalCount13] = useState(0);
+
   const updateFloorMapFromSuggestions = useCallback((suggestions: SearchOldPropertySuggestion[]) => {
     setCustomFloorDataMap(prev => {
       const updated = { ...prev };
@@ -142,19 +152,28 @@ export function usePropertySearchLogic({
     });
   }, [setCustomFloorDataMap]);
 
-  const performServerSearch = async (term: string) => {
+  const performServerSearch = async (term: string, page?: number, size?: number) => {
     if (!term || term.trim().length < 3) return;
     const cleanTerm = term.trim();
+    const reqPage = page ?? page13;
+    const reqSize = size ?? pageSize13;
     setIsManualSearching(true);
     try {
-      const res = await searchOldPropertiesAction({ searchTerm: cleanTerm, pageSize: -1 });
+      const res = await searchOldPropertiesAction({
+        searchTerm: cleanTerm,
+        pageNumber: reqPage,
+        pageSize: reqSize,
+      });
       if (res && res.oldPropertySuggestions) {
         setServerSearchedCandidates(
           res.oldPropertySuggestions.map((item, idx) => mapSuggestionToCandidate(item, idx, currentNewProperty, "search"))
         );
+        const count = res.totalCount ?? res.totalRecords ?? res.oldPropertySuggestions.length;
+        setTotalCount13(count);
         updateFloorMapFromSuggestions(res.oldPropertySuggestions);
       } else {
         setServerSearchedCandidates([]);
+        setTotalCount13(0);
       }
     } catch (err) {
       console.error("performServerSearch failed:", err);
@@ -164,55 +183,103 @@ export function usePropertySearchLogic({
     }
   };
 
+  const handlePageChange13 = (newPage: number) => {
+    setPage13(newPage);
+    if (searchQuery.trim()) {
+      performServerSearch(searchQuery, newPage, pageSize13);
+    }
+  };
+
+  const handlePageSizeChange13 = (newSize: number) => {
+    setPageSize13(newSize);
+    setPage13(1);
+    if (searchQuery.trim()) {
+      performServerSearch(searchQuery, 1, newSize);
+    }
+  };
+
+  const executeAutoSearch = useCallback(async (page?: number, size?: number) => {
+    if (!currentNewProperty || !currentNewProperty.propNo) return;
+    const reqPage = page ?? page12;
+    const reqSize = size ?? pageSize12;
+    setIsAutoSearching(true);
+    try {
+      const params: SearchOldPropertiesParams = { pageNumber: reqPage, pageSize: reqSize };
+      if (currentNewProperty.owner) params.oldOwnerName = currentNewProperty.owner;
+      if (currentNewProperty.mobile) params.oldMobileNo = currentNewProperty.mobile;
+      if (currentNewProperty.address) params.oldAddress = currentNewProperty.address;
+      if (currentNewProperty.constructionYear) params.oldConstructionYear = currentNewProperty.constructionYear;
+
+      if (Object.keys(params).length <= 2) {
+        setAutoSearchedCandidates([]);
+        setTotalCount12(0);
+        return;
+      }
+
+      const res = await searchOldPropertiesAction(params);
+      if (res && res.oldPropertySuggestions) {
+        setAutoSearchedCandidates(
+          res.oldPropertySuggestions.map((item, idx) => mapSuggestionToCandidate(item, idx, currentNewProperty, "auto"))
+        );
+        const count = res.totalCount ?? res.totalRecords ?? res.oldPropertySuggestions.length;
+        setTotalCount12(count);
+        updateFloorMapFromSuggestions(res.oldPropertySuggestions);
+      } else {
+        setAutoSearchedCandidates([]);
+        setTotalCount12(0);
+      }
+    } catch (err) {
+      console.error("Auto background search failed:", err);
+    } finally {
+      setIsAutoSearching(false);
+    }
+  }, [currentNewProperty, page12, pageSize12, updateFloorMapFromSuggestions]);
+
+  const handlePageChange12 = (newPage: number) => {
+    setPage12(newPage);
+    if (autoSearchedCandidates.length > 0) {
+      executeAutoSearch(newPage, pageSize12);
+    } else if (searchQuery.trim()) {
+      performServerSearch(searchQuery, newPage, pageSize12);
+    }
+  };
+
+  const handlePageSizeChange12 = (newSize: number) => {
+    setPageSize12(newSize);
+    setPage12(1);
+    if (autoSearchedCandidates.length > 0) {
+      executeAutoSearch(1, newSize);
+    } else if (searchQuery.trim()) {
+      performServerSearch(searchQuery, 1, newSize);
+    }
+  };
+
   useEffect(() => {
     if (!searchQuery.trim()) {
       setServerSearchedCandidates([]);
+      setTotalCount13(0);
     }
   }, [searchQuery]);
 
   useEffect(() => {
     if (!currentNewProperty || !currentNewProperty.propNo || autoSearchedPropNos.current.has(currentNewProperty.propNo)) {
-      if (!currentNewProperty?.propNo) setAutoSearchedCandidates([]);
+      if (!currentNewProperty?.propNo) {
+        setAutoSearchedCandidates([]);
+        setTotalCount12(0);
+      }
       return;
     }
 
-    const triggerAutoSearch = async () => {
-      autoSearchedPropNos.current.add(currentNewProperty.propNo);
-      setIsAutoSearching(true);
-      try {
-        const params: SearchOldPropertiesParams = { pageSize: -1 };
-        if (currentNewProperty.owner) params.oldOwnerName = currentNewProperty.owner;
-        if (currentNewProperty.mobile) params.oldMobileNo = currentNewProperty.mobile;
-        if (currentNewProperty.address) params.oldAddress = currentNewProperty.address;
-        if (currentNewProperty.constructionYear) params.oldConstructionYear = currentNewProperty.constructionYear;
-
-        if (Object.keys(params).length <= 1) {
-          setAutoSearchedCandidates([]);
-          return;
-        }
-
-        const res = await searchOldPropertiesAction(params);
-        if (res && res.oldPropertySuggestions) {
-          setAutoSearchedCandidates(
-            res.oldPropertySuggestions.map((item, idx) => mapSuggestionToCandidate(item, idx, currentNewProperty, "auto"))
-          );
-          updateFloorMapFromSuggestions(res.oldPropertySuggestions);
-        } else {
-          setAutoSearchedCandidates([]);
-        }
-      } catch (err) {
-        console.error("Auto background search failed:", err);
-      } finally {
-        setIsAutoSearching(false);
-      }
-    };
-
-    triggerAutoSearch();
-  }, [currentNewProperty?.propNo, currentNewProperty, updateFloorMapFromSuggestions]);
+    autoSearchedPropNos.current.add(currentNewProperty.propNo);
+    setPage12(1);
+    executeAutoSearch(1, pageSize12);
+  }, [currentNewProperty?.propNo, currentNewProperty, executeAutoSearch, pageSize12]);
 
   const resetSearch = () => {
     setSearchQuery("");
     setServerSearchedCandidates([]);
+    setTotalCount13(0);
+    setPage13(1);
   };
 
   return {
@@ -223,5 +290,19 @@ export function usePropertySearchLogic({
     autoSearchedCandidates,
     performServerSearch,
     resetSearch,
+
+    // Step 1.1 Pagination Props
+    page12,
+    pageSize12,
+    totalCount12: totalCount12 || autoSearchedCandidates.length,
+    handlePageChange12,
+    handlePageSizeChange12,
+
+    // Step 1.2 Pagination Props
+    page13,
+    pageSize13,
+    totalCount13: totalCount13 || serverSearchedCandidates.length,
+    handlePageChange13,
+    handlePageSizeChange13,
   };
 }

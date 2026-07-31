@@ -87,7 +87,9 @@ export default function PropertyMapping({ initialMappingData, initialSearchParam
   } = usePropertyMappingState(initialMappingData, queryPropertyId, customFloorDataMap);
 
   const {
-    isManualSearching, isSearchingServer, serverSearchedCandidates, autoSearchedCandidates, performServerSearch, resetSearch
+    isManualSearching, isSearchingServer, serverSearchedCandidates, autoSearchedCandidates, performServerSearch, resetSearch,
+    page12, pageSize12, totalCount12, handlePageChange12, handlePageSizeChange12,
+    page13, pageSize13, totalCount13, handlePageChange13, handlePageSizeChange13,
   } = usePropertySearchLogic({ currentNewProperty, searchQuery, setSearchQuery, setCustomFloorDataMap, showToast });
 
   const {
@@ -148,6 +150,16 @@ export default function PropertyMapping({ initialMappingData, initialSearchParam
             validationStatus={validationStatus}
             onConfirmClick={handleConfirmMapping}
             stepNumbers={{ comparisonStep: 2, floorStep: 3 }}
+            page12={page12}
+            pageSize12={pageSize12}
+            totalCount12={totalCount12}
+            onPageChange12={handlePageChange12}
+            onPageSizeChange12={handlePageSizeChange12}
+            page13={page13}
+            pageSize13={pageSize13}
+            totalCount13={totalCount13}
+            onPageChange13={handlePageChange13}
+            onPageSizeChange13={handlePageSizeChange13}
           />
         )}
 

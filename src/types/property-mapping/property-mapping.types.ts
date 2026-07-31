@@ -315,6 +315,13 @@ export interface SearchOldPropertiesParams {
 
 export interface SearchOldPropertiesApiResponse {
   oldPropertySuggestions: SearchOldPropertySuggestion[];
+  totalCount?: number;
+  totalRecords?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  totalPages?: number;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
 }
 
 export interface FloorTab {
@@ -335,6 +342,18 @@ export interface CandidatesTableProps {
   hasSearchActive: boolean;
   currentWard?: string;
   currentPartition?: string | null;
+  // Step 1.1 Server Pagination Props
+  page12?: number;
+  pageSize12?: number;
+  totalCount12?: number;
+  onPageChange12?: (page: number) => void;
+  onPageSizeChange12?: (size: number) => void;
+  // Step 1.2 Server Pagination Props
+  page13?: number;
+  pageSize13?: number;
+  totalCount13?: number;
+  onPageChange13?: (page: number) => void;
+  onPageSizeChange13?: (size: number) => void;
 }
 
 export interface ReconciliationMetrics {
