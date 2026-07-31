@@ -341,26 +341,28 @@ const FloorTable: React.FC<FloorTableProps> = ({
           </h3>
 
           {/* Table Header Summary Badges */}
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-            {plotAreaSqM > 0 && (
-              <span className="px-2.5 py-0.5 bg-blue-50 border border-blue-200 text-blue-800 rounded-md flex items-center gap-1 shadow-2xs">
-                <span className="text-blue-600 font-medium">Plot Area:</span>
-                <strong className="font-bold">{plotAreaSqM.toFixed(2)} Sq M</strong>
+          {!isBuildingPermissionView && (
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+              {plotAreaSqM > 0 && (
+                <span className="px-2.5 py-0.5 bg-blue-50 border border-blue-200 text-blue-800 rounded-md flex items-center gap-1 shadow-2xs">
+                  <span className="text-blue-600 font-medium">Plot Area:</span>
+                  <strong className="font-bold">{plotAreaSqM.toFixed(2)} Sq M</strong>
+                </span>
+              )}
+              <span className="px-2.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-md flex items-center gap-1 shadow-2xs">
+                <span className="text-amber-700 font-medium">Additional Plot Area:</span>
+                <strong className="font-bold">{summaryMetrics.totalOpenSpaceArea.toFixed(2)} Sq M</strong>
               </span>
-            )}
-            <span className="px-2.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-md flex items-center gap-1 shadow-2xs">
-              <span className="text-amber-700 font-medium">Additional Plot Area:</span>
-              <strong className="font-bold">{summaryMetrics.totalOpenSpaceArea.toFixed(2)} Sq M</strong>
-            </span>
-            <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-md flex items-center gap-1 shadow-2xs">
-              <span className="text-emerald-700 font-medium">Carpet Area:</span>
-              <strong className="font-bold">{summaryMetrics.totalCarpetArea.toFixed(2)} Sq M</strong>
-            </span>
-            <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-md flex items-center gap-1 shadow-2xs">
-              <span className="text-indigo-700 font-medium">Built-up Area:</span>
-              <strong className="font-bold">{summaryMetrics.totalBuiltupArea.toFixed(2)} Sq M</strong>
-            </span>
-          </div>
+              <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-md flex items-center gap-1 shadow-2xs">
+                <span className="text-emerald-700 font-medium">Carpet Area:</span>
+                <strong className="font-bold">{summaryMetrics.totalCarpetArea.toFixed(2)} Sq M</strong>
+              </span>
+              <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-md flex items-center gap-1 shadow-2xs">
+                <span className="text-indigo-700 font-medium">Built-up Area:</span>
+                <strong className="font-bold">{summaryMetrics.totalBuiltupArea.toFixed(2)} Sq M</strong>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-2">

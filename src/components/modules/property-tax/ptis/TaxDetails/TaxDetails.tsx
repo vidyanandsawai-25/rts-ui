@@ -38,6 +38,16 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
         });
       });
     });
+
+    if (policies.length > 0) {
+      const hasTotal = Array.from(namesSet).some((name) =>
+        name.trim().toLowerCase().includes('taxtotal')
+      );
+      if (!hasTotal) {
+        namesSet.add('TAXTOTAL');
+      }
+    }
+
     return Array.from(namesSet);
   }, [initialTaxDetails]);
 
@@ -85,8 +95,19 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
         policy.taxAmounts?.forEach((item) => {
           if (item.taxName) {
             row[item.taxName] = item.taxAmount;
+            row[item.taxName.trim().toLowerCase()] = item.taxAmount;
           }
         });
+
+        // Fallback for TAXTOTAL from policy.taxTotal
+        if (policy.taxTotal !== undefined && policy.taxTotal !== null) {
+          const lowerTotalVal = (row['taxtotal'] as number | undefined);
+          if (lowerTotalVal === undefined || lowerTotalVal === 0) {
+            row['TAXTOTAL'] = policy.taxTotal;
+            row['TaxTotal'] = policy.taxTotal;
+            row['taxtotal'] = policy.taxTotal;
+          }
+        }
 
         return row as unknown as TaxRow;
       });

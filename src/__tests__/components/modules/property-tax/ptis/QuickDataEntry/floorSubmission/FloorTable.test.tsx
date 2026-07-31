@@ -153,6 +153,15 @@ describe('FloorTable', () => {
     expect(screen.getByText('Built-up Area:')).toBeInTheDocument();
   });
 
+  it('hides table summary metrics badges when isBuildingPermissionView is true', () => {
+    render(<FloorTable {...mockProps} isBuildingPermissionView={true} plotAreaSqM={1000} />);
+
+    expect(screen.queryByText('Plot Area:')).toBeNull();
+    expect(screen.queryByText('Additional Plot Area:')).toBeNull();
+    expect(screen.queryByText('Carpet Area:')).toBeNull();
+    expect(screen.queryByText('Built-up Area:')).toBeNull();
+  });
+
   it('renders add floor button', () => {
     render(<FloorTable {...mockProps} />);
 
