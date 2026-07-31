@@ -52,7 +52,7 @@ export async function clearDataEntrySameAsCache(): Promise<void> {
 export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, _categoryName?: string): Promise<SelectableProperty[]> {
     const cacheKey = `${wardId}-${propertyNo}`;
     const cached = sameAsCache.get(cacheKey);
-    if (cached && cached.data && cached.data.length > 0 && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
+    if (cached && cached.data && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
         return cached.data;
     }
 
@@ -73,6 +73,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             : [];
 
         if (!items || !items.length) {
+            sameAsCache.set(cacheKey, { data: [], timestamp: Date.now() });
             return [];
         }
         const results = items.map((item) => {
@@ -119,9 +120,7 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 parkingBuiltupAreaSqMeter: extended.parkingBuiltupAreaSqMeter ?? null,
             };
         });
-        if (results.length > 0) {
-            sameAsCache.set(cacheKey, { data: results, timestamp: Date.now() });
-        }
+        sameAsCache.set(cacheKey, { data: results, timestamp: Date.now() });
         return results;
     } catch (_error) {
         return [];

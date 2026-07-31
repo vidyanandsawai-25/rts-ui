@@ -153,26 +153,17 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   // Individual property: Data Entry Same As button should always be enabled
   const isIndividualProperty = categoryName.toLowerCase() === 'individual';
 
-  // Preserve the existing wing rule: hide Data Entry Same As for a property
-  // with wing metadata or a wing-style partition such as A, B, A1 or A-1.
+  // Hide Data Entry Same As only when actual wing metadata is present.
+  // Partition numbers such as A, A1, A2 or A-1 do not imply a wing.
   const hasWing = React.useMemo(() => {
     const wingNo = props.initialPropertyData?.wingNo || props.initialPropertyData?.wingName;
-    const hasWingData = Boolean(
+    return Boolean(
       wingNo &&
         String(wingNo).trim() !== '' &&
         String(wingNo).trim() !== '-' &&
         String(wingNo).trim() !== '0'
     );
-
-    const rawPartition =
-      props.partitionNo ||
-      (props.initialPropertyData as Record<string, unknown> | undefined)?.partitionNo ||
-      '';
-    const partition = String(rawPartition).trim().toUpperCase();
-    const isWingPartition = /^[A-Z]$/.test(partition) || /^[A-Z][0-9-]/i.test(partition);
-
-    return hasWingData || isWingPartition;
-  }, [props.initialPropertyData, props.partitionNo]);
+  }, [props.initialPropertyData]);
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(true);

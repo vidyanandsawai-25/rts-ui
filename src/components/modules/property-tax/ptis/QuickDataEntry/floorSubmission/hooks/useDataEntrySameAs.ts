@@ -68,6 +68,13 @@ export function useDataEntrySameAs({
   const [changeTypeInput, setChangeTypeInput] = React.useState<string>('');
   const initializedRequestRef = React.useRef<string | null>(null);
   const wardsLoadedRef = React.useRef(false);
+  const wardsRequestRef = React.useRef<Promise<void> | null>(null);
+  const preloadedPropertiesRef = React.useRef<{
+    key: string;
+    request: Promise<SelectableProperty[]>;
+    data?: SelectableProperty[];
+  } | null>(null);
+  const consumedPreloadKeyRef = React.useRef<string | null>(null);
   const prevIsOpenRef = React.useRef(false);
 
   const currentPropertyType = React.useMemo(() => {
@@ -86,19 +93,87 @@ export function useDataEntrySameAs({
     []
   );
 
-  const loadWards = React.useCallback(async () => {
-    setIsFetchingWards(true);
-    try {
-      const res = await getWardListAction();
-      if (res.success && res.data) {
-        setWardOptions(res.data.map((w) => ({ label: w.wardNo || '', value: String(w.wardId) })));
-        wardsLoadedRef.current = true;
+  const preloadProperties = React.useCallback(() => {
+    const numericWardId = Number(wardId);
+    const normalizedPropertyNo = propertyNo?.trim() ?? '';
+
+    if (!numericWardId || !normalizedPropertyNo) {
+      return null;
+    }
+
+    const key = `${numericWardId}|${normalizedPropertyNo}|${(categoryName ?? '').trim().toLowerCase()}`;
+    if (preloadedPropertiesRef.current?.key === key) {
+      return preloadedPropertiesRef.current;
+    }
+
+    const request = fetchDataEntrySameAsAction(
+      numericWardId,
+      normalizedPropertyNo,
+      categoryName
+    ).catch(() => [] as SelectableProperty[]);
+    const preload: {
+      key: string;
+      request: Promise<SelectableProperty[]>;
+      data?: SelectableProperty[];
+    } = { key, request };
+    preloadedPropertiesRef.current = preload;
+    void request.then((data) => {
+      if (preloadedPropertiesRef.current === preload) {
+        preload.data = data;
       }
-    } catch {
+    });
+    return preload;
+  }, [wardId, propertyNo, categoryName]);
+
+  const loadWards = React.useCallback(async () => {
+    if (wardsLoadedRef.current) {
+      return;
+    }
+    if (wardsRequestRef.current) {
+      return wardsRequestRef.current;
+    }
+
+    const request = (async () => {
+      setIsFetchingWards(true);
+      try {
+        const res = await getWardListAction();
+        if (res.success && res.data) {
+          setWardOptions(res.data.map((w) => ({ label: w.wardNo || '', value: String(w.wardId) })));
+          wardsLoadedRef.current = true;
+        }
+      } catch {
+      } finally {
+        setIsFetchingWards(false);
+      }
+    })();
+
+    wardsRequestRef.current = request;
+    try {
+      await request;
     } finally {
-      setIsFetchingWards(false);
+      if (wardsRequestRef.current === request) {
+        wardsRequestRef.current = null;
+      }
     }
   }, []);
+
+  React.useEffect(() => {
+    const propertyPreload = preloadProperties();
+    let isSubscribed = true;
+
+    if (propertyPreload) {
+      void propertyPreload.request.then((data) => {
+        if (isSubscribed && preloadedPropertiesRef.current === propertyPreload) {
+          setSelectableProperties(data);
+        }
+      });
+    }
+    void loadWards();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [preloadProperties, loadWards]);
 
   const handleWardChange = React.useCallback((_name: string | undefined, value: string) => {
     setSearchWardId(value);
@@ -157,14 +232,26 @@ export function useDataEntrySameAs({
         return;
       }
 
+      const propertyPreload = preloadProperties();
+      const canUsePreload =
+        propertyPreload && consumedPreloadKeyRef.current !== propertyPreload.key;
+      if (canUsePreload) {
+        consumedPreloadKeyRef.current = propertyPreload.key;
+      }
+
+      if (canUsePreload && propertyPreload.data !== undefined) {
+        initializedRequestRef.current = fetchKey;
+        setSelectableProperties(propertyPreload.data);
+        setIsLoadingProperties(false);
+        return;
+      }
+
       setIsLoadingProperties(true);
 
       try {
-        const results = await fetchDataEntrySameAsAction(
-          Number(wardId),
-          propertyNo.trim(),
-          categoryName
-        );
+        const results = canUsePreload
+          ? await propertyPreload.request
+          : await fetchDataEntrySameAsAction(Number(wardId), propertyNo.trim(), categoryName);
         if (isSubscribed) {
           initializedRequestRef.current = fetchKey;
           setSelectableProperties(results);
@@ -185,7 +272,7 @@ export function useDataEntrySameAs({
     return () => {
       isSubscribed = false;
     };
-  }, [isOpen, wardId, propertyNo, categoryName, loadWards]);
+  }, [isOpen, wardId, propertyNo, categoryName, loadWards, preloadProperties]);
 
   const filterPropertiesForTable = React.useCallback(
     (properties: SelectableProperty[], includeCurrentPartition = false) => {
