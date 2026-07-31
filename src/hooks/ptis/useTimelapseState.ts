@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { WaybackRelease } from '@/lib/api/wayback.service';
+import { fetchLocalChanges, type WaybackRelease } from '@/lib/api/wayback.service';
 
 interface UseTimelapseStateOptions {
   initialLat?: number;
@@ -74,22 +74,16 @@ export function useTimelapseState({
       return;
     }
 
-    // We always want to fetch the sparse local changes when in the map modal.
-    // The initialWaybackReleases are just for the static preview card fallback.
-
     let isMounted = true;
     const loadLocalChanges = async () => {
       if (releasesCountRef.current === 0) {
         setLoading(true);
       }
       try {
-        const { fetchLocalChanges } = await import('@/lib/api/wayback.service');
         const localReleases = await fetchLocalChanges(lat, lng);
-        
         if (isMounted && localReleases.length > 0) {
           setWaybackReleases(localReleases);
-          // If the currently active index is out of bounds, reset to 0
-          setActiveIdx((current) => current >= localReleases.length ? 0 : current);
+          setActiveIdx((current) => (current >= localReleases.length ? 0 : current));
         }
       } catch {
         // Ignored
