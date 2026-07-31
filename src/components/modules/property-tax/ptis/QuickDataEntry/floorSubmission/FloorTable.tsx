@@ -1,6 +1,5 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
-
 import React from 'react';
 import { Layers, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -365,7 +364,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          {!viewOnly && !isAmenityProperty && !hasWing && (
+          {!viewOnly && !isAmenityProperty && !hasWing && !(categoryName?.trim().toLowerCase() === 'apartment' && !partitionNo?.trim()) && (
             <div
               onClick={handleDataEntrySameAsClick}
               className="inline-block cursor-pointer"

@@ -68,6 +68,7 @@ export function useDataEntrySameAs({
   const [changeTypeInput, setChangeTypeInput] = React.useState<string>('');
   const initializedRequestRef = React.useRef<string | null>(null);
   const wardsLoadedRef = React.useRef(false);
+  const prevIsOpenRef = React.useRef(false);
 
   const currentPropertyType = React.useMemo(() => {
     const match = selectableProperties.find(
@@ -125,7 +126,20 @@ export function useDataEntrySameAs({
   }, [searchWardId, searchPropertyNo, categoryName]);
 
   React.useEffect(() => {
+    if (!isOpen) {
+      prevIsOpenRef.current = false;
+      initializedRequestRef.current = null;
+      return;
+    }
+
     const fetchKey = `${wardId ?? ''}|${propertyNo ?? ''}`;
+    const justOpened = !prevIsOpenRef.current;
+    prevIsOpenRef.current = true;
+
+    // Do not reset search inputs or re-fetch initial property if drawer is already open and initialized
+    if (!justOpened && initializedRequestRef.current === fetchKey) {
+      return;
+    }
 
     let isSubscribed = true;
     const initData = async () => {
@@ -142,13 +156,6 @@ export function useDataEntrySameAs({
         setIsLoadingProperties(false);
         return;
       }
-
-      // If already fetched for this wardId and propertyNo, don't re-fetch
-      if (initializedRequestRef.current === fetchKey && selectableProperties.length > 0) {
-        setIsLoadingProperties(false);
-        return;
-      }
-
 
       setIsLoadingProperties(true);
 
@@ -167,7 +174,9 @@ export function useDataEntrySameAs({
           setSelectableProperties([]);
         }
       } finally {
-        setIsLoadingProperties(false);
+        if (isSubscribed) {
+          setIsLoadingProperties(false);
+        }
       }
     };
 
@@ -176,18 +185,27 @@ export function useDataEntrySameAs({
     return () => {
       isSubscribed = false;
     };
-  }, [isOpen, wardId, propertyNo, categoryName, loadWards, selectableProperties.length]);
+  }, [isOpen, wardId, propertyNo, categoryName, loadWards]);
 
   const filterPropertiesForTable = React.useCallback(
     (properties: SelectableProperty[], includeCurrentPartition = false) => {
+      const isIndividual = (categoryName ?? '').trim().toLowerCase() === 'individual';
+
       const mapped = properties
-        .filter(
-          (p) =>
+        .filter((p) => {
+          if (isIndividual) {
+            const propCat = (p.categoryName ?? '').trim().toLowerCase();
+            if (propCat !== 'individual') {
+              return false;
+            }
+          }
+          return (
             includeCurrentPartition ||
             (p.partitionNo &&
               p.partitionNo !== '-' &&
               normalizePartitionNo(p.partitionNo) !== normalizePartitionNo(partitionNo))
-        )
+          );
+        })
         .map((p) => {
           const wardOpt = wardOptions.find((o) => o.value === String(p.wardId));
           return { ...p, wardNo: wardOpt ? wardOpt.label : '-' };
@@ -209,7 +227,7 @@ export function useDataEntrySameAs({
 
       return sorted;
     },
-    [partitionNo, wardOptions, currentPropertyId]
+    [partitionNo, wardOptions, currentPropertyId, categoryName]
   );
 
   const sourcePropertyIds = React.useMemo(() => {

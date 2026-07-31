@@ -197,8 +197,13 @@ describe('FloorTable', () => {
     expect(screen.queryByTestId('data-entry-button')).toBeNull();
   });
 
-  it('hides Data Entry Same As button when property has a wing (hasWing is true)', () => {
+  it('hides Data Entry Same As button when the existing wing condition matches', () => {
     render(<FloorTable {...mockProps} hasWing={true} />);
+    expect(screen.queryByTestId('data-entry-button')).toBeNull();
+  });
+
+  it('hides Data Entry Same As button when category is Apartment and partitionNo is null or empty', () => {
+    render(<FloorTable {...mockProps} categoryName="Apartment" partitionNo="" />);
     expect(screen.queryByTestId('data-entry-button')).toBeNull();
   });
 });

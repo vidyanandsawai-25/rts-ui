@@ -153,12 +153,21 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   // Individual property: Data Entry Same As button should always be enabled
   const isIndividualProperty = categoryName.toLowerCase() === 'individual';
 
-  // Wing property: Data Entry Same As button should be hidden when the property has a wingNo or wing partition (e.g., 'C', 'A', 'B', 'A1', 'A-1')
+  // Preserve the existing wing rule: hide Data Entry Same As for a property
+  // with wing metadata or a wing-style partition such as A, B, A1 or A-1.
   const hasWing = React.useMemo(() => {
     const wingNo = props.initialPropertyData?.wingNo || props.initialPropertyData?.wingName;
-    const hasWingData = Boolean(wingNo && String(wingNo).trim() !== '' && String(wingNo).trim() !== '-' && String(wingNo).trim() !== '0');
+    const hasWingData = Boolean(
+      wingNo &&
+        String(wingNo).trim() !== '' &&
+        String(wingNo).trim() !== '-' &&
+        String(wingNo).trim() !== '0'
+    );
 
-    const rawPartition = props.partitionNo || (props.initialPropertyData as Record<string, unknown> | undefined)?.partitionNo || '';
+    const rawPartition =
+      props.partitionNo ||
+      (props.initialPropertyData as Record<string, unknown> | undefined)?.partitionNo ||
+      '';
     const partition = String(rawPartition).trim().toUpperCase();
     const isWingPartition = /^[A-Z]$/.test(partition) || /^[A-Z][0-9-]/i.test(partition);
 
