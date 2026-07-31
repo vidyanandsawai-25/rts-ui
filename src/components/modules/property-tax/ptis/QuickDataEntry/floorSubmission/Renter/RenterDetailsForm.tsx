@@ -113,18 +113,30 @@ export const RenterDetailsForm = memo(
 
       toast.success(t('floor.renterSection.successfullySaved'));
 
+      const drawerParam = searchParams.get('drawer');
+      const isPlot =
+        drawerParam === 'OpenPlot' ||
+        (initialData as any)?.isOpenPlot === true ||
+        String((initialData as any)?.floorId) === '77' ||
+        String((initialData as any)?.floor) === '77';
+
       const redirectParams = new URLSearchParams();
       if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
       if (resolvedPropertyNo) redirectParams.set('propertyNo', resolvedPropertyNo);
       if (resolvedPartitionNo) redirectParams.set('partitionNo', resolvedPartitionNo);
       redirectParams.set('floorId', savedFloorId);
-      redirectParams.set('drawer', savedFloorId === 'new' ? 'add' : 'edit');
+      redirectParams.set('drawer', isPlot ? 'OpenPlot' : (savedFloorId === 'new' ? 'add' : 'edit'));
+
+      try {
+        sessionStorage.setItem('renter_return_focus', 'true');
+      } catch {}
 
       router.push(
         `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
       );
     }, [
       floorId,
+      initialData,
       locale,
       onSaveRenter,
       partitionNo,
@@ -135,6 +147,33 @@ export const RenterDetailsForm = memo(
       t,
       wardNo,
     ]);
+
+    const handleCancelRenter = useCallback(() => {
+      const resolvedWardNo = wardNo || searchParams.get('wardNo') || '';
+      const resolvedPropertyNo = propertyNo || searchParams.get('propertyNo') || '';
+      const resolvedPartitionNo = partitionNo || searchParams.get('partitionNo') || '';
+      const drawerParam = searchParams.get('drawer');
+      const isPlot =
+        drawerParam === 'OpenPlot' ||
+        (initialData as any)?.isOpenPlot === true ||
+        String((initialData as any)?.floorId) === '77' ||
+        String((initialData as any)?.floor) === '77';
+
+      const redirectParams = new URLSearchParams();
+      if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
+      if (resolvedPropertyNo) redirectParams.set('propertyNo', resolvedPropertyNo);
+      if (resolvedPartitionNo) redirectParams.set('partitionNo', resolvedPartitionNo);
+      if (floorId) redirectParams.set('floorId', floorId);
+      redirectParams.set('drawer', isPlot ? 'OpenPlot' : (floorId === 'new' ? 'add' : 'edit'));
+
+      try {
+        sessionStorage.setItem('renter_return_focus', 'true');
+      } catch {}
+
+      router.push(
+        `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
+      );
+    }, [wardNo, propertyNo, partitionNo, searchParams, initialData, floorId, locale, propertyId, router]);
 
     const { formData, setFormData, isSaving, handleSave } = useRenterForm({
       initialData,
@@ -235,7 +274,7 @@ export const RenterDetailsForm = memo(
             <div className="flex items-center gap-4 shrink-0">
               <Button
                 variant="secondary"
-                onClick={() => router.back()}
+                onClick={handleCancelRenter}
                 className="w-10 h-10 p-0 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:text-blue-500 border border-transparent hover:border-blue-100 transition-all font-bold flex items-center justify-center"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-400" />
@@ -295,7 +334,7 @@ export const RenterDetailsForm = memo(
           <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
             <Button
               variant="secondary"
-              onClick={() => router.back()}
+              onClick={handleCancelRenter}
               className="px-6 h-9 rounded-md border-red-200 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 hover:border-red-300 transition-all"
             >
               {t('floor.renterSection.cancel')}

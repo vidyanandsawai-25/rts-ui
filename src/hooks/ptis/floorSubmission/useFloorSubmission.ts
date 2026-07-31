@@ -61,10 +61,29 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     [propertyCategory.categoryName]
   );
 
-  // Auto-select OpenPlot if category is Plot, otherwise default to Construction
+  // 2. URL and Navigation
+  const urlSync = useFloorUrlSync();
+  const { searchParams, updateUrlParams, router, locale, propertyId } = urlSync;
+
+  const drawerParam = searchParams?.get('drawer');
+  const initialFloorType: 'Construction' | 'OpenPlot' =
+    isPlotCategory || drawerParam === 'OpenPlot' ? 'OpenPlot' : 'Construction';
+
+  // Auto-select OpenPlot if category is Plot or drawer URL param is OpenPlot
   const [selectedFloorTypeState, setSelectedFloorTypeState] = useState<'Construction' | 'OpenPlot'>(
-    isPlotCategory ? 'OpenPlot' : 'Construction'
+    initialFloorType
   );
+
+  useEffect(() => {
+    const drawer = searchParams?.get('drawer');
+    if (drawer === 'OpenPlot') {
+      setSelectedFloorTypeState('OpenPlot');
+    } else if (drawer === 'Construction') {
+      if (!isPlotCategory) {
+        setSelectedFloorTypeState('Construction');
+      }
+    }
+  }, [searchParams, isPlotCategory]);
 
   const selectedFloorType = isPlotCategory
     ? 'OpenPlot'
@@ -102,10 +121,6 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
       setPlotAreaSqM(Number(props.initialPlotArea.totalPlotArea));
     }
   }, [openPlotRecord, props.initialPlotArea]);
-
-  // 2. URL and Navigation
-  const urlSync = useFloorUrlSync();
-  const { searchParams, updateUrlParams, router, locale, propertyId } = urlSync;
 
   const syncResult = useFloorSync({
     props,
@@ -364,6 +379,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     selectedFloorType,
     setSelectedFloorType: (type: 'Construction' | 'OpenPlot') => {
       setSelectedFloorTypeState(type);
+      updateUrlParams({ drawer: type === 'OpenPlot' ? 'OpenPlot' : 'Construction' });
       hasAutoPopulatedOpenSpaceRef.current = false;
       if (selectedFloor) {
         const isPlot = isRecordOpenPlot(selectedFloor);

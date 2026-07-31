@@ -9,7 +9,12 @@ import { FloorSubmissionPayload, EditSidebarProps } from '@/types/floor-details.
 import { ConfirmOptions } from '@/components/common';
 import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
 import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
-import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction, } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import {
+  submitFloorSubmissionNoRedirectAction,
+  updateFloorSubmissionNoRedirectAction,
+  deleteRenterDetailsAction,
+  deleteRenterMastAction,
+} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
 
@@ -240,6 +245,38 @@ export const useFloorDataHandlers = (params: {
 
           // Perform actual Server Action call
           const isEditing = !isAddingNewFloor && (selectedFloor?.id || editingFloorForm.id);
+          const targetFloorId = selectedFloor?.id || editingFloorForm.id;
+          const wasRenterActive = selectedFloor?.renter === 'Yes' || selectedFloor?.renterYesNo === true;
+          const isRenterNowNo = editingFloorForm.renter === 'No' || editingFloorForm.renterYesNo === false;
+
+          if (isEditing && wasRenterActive && isRenterNowNo) {
+            try {
+              let hasDeleted = false;
+              if (selectedFloor?.renterDetails && selectedFloor.renterDetails.length > 0) {
+                for (const item of selectedFloor.renterDetails) {
+                  if (item.id && Number(item.id) > 0) {
+                    await deleteRenterDetailsAction(item.id, locale, propertyId);
+                    hasDeleted = true;
+                  }
+                }
+              }
+              if (selectedFloor?.renterMast && selectedFloor.renterMast.length > 0) {
+                for (const item of selectedFloor.renterMast) {
+                  if (item.id && Number(item.id) > 0) {
+                    await deleteRenterMastAction(item.id, locale, propertyId);
+                    hasDeleted = true;
+                  }
+                }
+              }
+              if (!hasDeleted && targetFloorId && Number(targetFloorId) > 0) {
+                await deleteRenterDetailsAction(targetFloorId, locale, propertyId);
+                await deleteRenterMastAction(targetFloorId, locale, propertyId);
+              }
+            } catch (_err) {
+              // Best-effort cleanup before floor update
+            }
+          }
+
           const response = isEditing
             ? await updateFloorSubmissionNoRedirectAction(
               Number(selectedFloor?.id || editingFloorForm.id),
@@ -318,6 +355,7 @@ export const useFloorDataHandlers = (params: {
 
     try {
       sessionStorage.setItem('editingFloorForm', JSON.stringify(currentForm));
+      sessionStorage.setItem('renter_return_focus', 'true');
     } catch {
       // Session staging is best-effort before navigating to renter screen.
     }
@@ -325,9 +363,14 @@ export const useFloorDataHandlers = (params: {
     const floorIdParam = currentForm.id ? String(currentForm.id) : 'new';
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     params.set('floorId', floorIdParam);
+    if (selectedFloorType === 'OpenPlot' || currentForm.isOpenPlot || String(currentForm.floorId) === '77' || String(currentForm.floor) === '77') {
+      params.set('drawer', 'OpenPlot');
+    } else {
+      params.set('drawer', currentForm.id ? 'edit' : 'add');
+    }
     const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?${params.toString()}`;
     router.push(renterManagementUrl);
-  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
+  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId, selectedFloorType]);
 
 
   return {

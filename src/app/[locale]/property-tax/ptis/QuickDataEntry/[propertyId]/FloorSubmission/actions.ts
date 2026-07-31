@@ -20,6 +20,8 @@ import {
     saveRenterDetails,
     updateRenterDetails,
     deleteRenterDetails,
+    deleteRenterDetailsRecord,
+    deleteRenterMastRecord,
     applyDataEntrySameAs,
     type ApplyDataEntrySameAsPayload,
     type ApplyDataEntrySameAsResponse,
@@ -52,7 +54,7 @@ export async function clearDataEntrySameAsCache(): Promise<void> {
 export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, _categoryName?: string): Promise<SelectableProperty[]> {
     const cacheKey = `${wardId}-${propertyNo}`;
     const cached = sameAsCache.get(cacheKey);
-    if (cached && cached.data && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
+    if (cached && cached.data && cached.data.length > 0 && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
         return cached.data;
     }
 
@@ -73,7 +75,6 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
             : [];
 
         if (!items || !items.length) {
-            sameAsCache.set(cacheKey, { data: [], timestamp: Date.now() });
             return [];
         }
         const results = items.map((item) => {
@@ -120,7 +121,9 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
                 parkingBuiltupAreaSqMeter: extended.parkingBuiltupAreaSqMeter ?? null,
             };
         });
-        sameAsCache.set(cacheKey, { data: results, timestamp: Date.now() });
+        if (results.length > 0) {
+            sameAsCache.set(cacheKey, { data: results, timestamp: Date.now() });
+        }
         return results;
     } catch (_error) {
         return [];
@@ -254,6 +257,38 @@ export const deleteFloorSubmissionNoRedirectAction = async (submissionId: number
         return { success: true, data: undefined };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteFailed" };
+    }
+};
+
+/**
+ * Deletes a RenterDetails record by ID.
+ * Endpoint: DELETE /api/RenterDetails/{id}
+ */
+export const deleteRenterDetailsAction = async (id: number | string, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
+    try {
+        const data = await deleteRenterDetailsRecord(id);
+        if (locale) {
+            revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        }
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteRenterDetailsFailed" };
+    }
+};
+
+/**
+ * Deletes a RenterMast record by ID.
+ * Endpoint: DELETE /api/RenterMast/{id}
+ */
+export const deleteRenterMastAction = async (id: number | string, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
+    try {
+        const data = await deleteRenterMastRecord(id);
+        if (locale) {
+            revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        }
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteRenterMastFailed" };
     }
 };
 

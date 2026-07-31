@@ -30,6 +30,22 @@ export const BasicInfoSection: React.FC<
 }) => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
+      let isRenterReturn = false;
+      try {
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('renter_return_focus') === 'true') {
+          isRenterReturn = true;
+          sessionStorage.removeItem('renter_return_focus');
+        }
+      } catch {}
+
+      if (isRenterReturn) {
+        const renterEl = document.getElementById('floor-renter') as HTMLInputElement | null;
+        if (renterEl) {
+          renterEl.focus({ preventScroll: true });
+          return;
+        }
+      }
+
       const inputEl = document.getElementById('floor-is-taxable') as HTMLInputElement | null;
       if (inputEl) {
         inputEl.focus({ preventScroll: true });
@@ -140,6 +156,13 @@ export const BasicInfoSection: React.FC<
   };
 
   const currentFloorValue = React.useMemo(() => {
+    if (selectedFloorType === 'Construction') {
+      const idStr = String(editingFloorForm.floorId || '');
+      const rawFloor = String(editingFloorForm.floor || '').trim().toLowerCase();
+      if (idStr === '77' || rawFloor === 'op' || rawFloor === 'open plot' || rawFloor.includes('open plot')) {
+        return '';
+      }
+    }
     if (
       editingFloorForm.floorId !== undefined &&
       editingFloorForm.floorId !== null &&
@@ -224,7 +247,14 @@ export const BasicInfoSection: React.FC<
                 'floorCode',
                 currentFloorValue || undefined,
                 getFloorDescription
-              ),
+              ).filter(opt => {
+                if (selectedFloorType === 'Construction') {
+                  const valStr = String(opt.value);
+                  const lblStr = String(opt.label).toLowerCase();
+                  return valStr !== '77' && !lblStr.includes('open plot');
+                }
+                return true;
+              }),
             ]}
             value={currentFloorValue}
             onChange={(_name, value) => {

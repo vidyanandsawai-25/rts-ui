@@ -77,9 +77,23 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
                   'constructionCode',
                   editingFloorForm.constructionTypeId,
                   getConstructionDescription
-                )
+                ).filter(opt => {
+                  if (selectedFloorType === 'Construction') {
+                    const lblStr = String(opt.label).toLowerCase();
+                    const valStr = String(opt.value).toLowerCase();
+                    return !lblStr.includes('open plot') && valStr !== '11';
+                  }
+                  return true;
+                })
               ]}
-              value={String(editingFloorForm.constructionTypeId ?? '')}
+              value={
+                selectedFloorType === 'Construction' &&
+                (String(editingFloorForm.conTyp || '').toLowerCase().includes('open plot') ||
+                 String(editingFloorForm.constructionTypeDescription || '').toLowerCase().includes('open plot') ||
+                 String(editingFloorForm.constructionTypeId || '') === '11')
+                  ? ''
+                  : String(editingFloorForm.constructionTypeId ?? '')
+              }
               onChange={(_name, value) => {
                 const desc = getConstructionDescription(value, constructionLookup);
                 setEditingFloorForm((prev: FloorData) => ({
