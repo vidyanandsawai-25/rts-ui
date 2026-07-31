@@ -132,7 +132,7 @@ export const commonValidations = {
         const numVal = Number(fieldValue);
         const key = messageKey || 'form.validation.sequenceInvalid';
 
-        if (!Number.isFinite(numVal) || numVal < 0) {
+        if (!Number.isFinite(numVal) || numVal <= 0) {
           return t(key);
         }
         return undefined;

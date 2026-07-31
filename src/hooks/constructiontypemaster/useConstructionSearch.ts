@@ -37,6 +37,7 @@ export function useConstructionSearch({
     sortOrder,
     basePath: '/property-tax/constructiontype',
     startTransition,
+    includePaginationParams: false,
   });
 
   const handleSearchChange = (value: string) => {

@@ -95,6 +95,8 @@ export default function ConstructionTypeForm({
           errors={errors}
           showError={showError}
           t={t}
+          isActive={isActive}
+          isEdit={isEdit}
         />
 
         <ValidationSection tCommon={tCommon} />

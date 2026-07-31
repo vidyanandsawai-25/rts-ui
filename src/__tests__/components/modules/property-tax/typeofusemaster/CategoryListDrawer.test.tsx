@@ -15,6 +15,7 @@ vi.mock("next/navigation", () => ({
     push: mockRouterPush,
     refresh: mockRouterRefresh,
   }),
+  usePathname: () => "/hi/property-tax/typeofusemaster/category",
   useSearchParams: () => ({
     get: vi.fn((key) => {
       if (key === "q") return "";

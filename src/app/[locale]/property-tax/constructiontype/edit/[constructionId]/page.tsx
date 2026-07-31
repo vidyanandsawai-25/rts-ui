@@ -1,5 +1,6 @@
 import ConstructionTypeForm from "@/components/modules/property-tax/construction-type-master/ConstructionTypeForm";
-import { getConstructionTypeByIdAction } from "../../action";
+import { ConstructionTypeMaster } from "@/components/modules/property-tax/construction-type-master";
+import { fetchConstructionPagedServerAction, getConstructionTypeByIdAction } from "../../action";
 import { notFound } from "next/navigation";
 import React from "react";
 import type { ConstructionType } from "@/types/construction.types";
@@ -13,6 +14,7 @@ interface PageProps {
 
 export default async function EditPage({ params }: PageProps): Promise<React.ReactElement> {
   const { constructionId: constructionIdParam } = await params;
+  const result = await fetchConstructionPagedServerAction(1, 10, undefined, "searchSequence", "asc");
 
   // Parse and validate the ID (Next.js route params are always strings)
   const constructionId = Number(constructionIdParam);
@@ -38,6 +40,15 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
 
   return (
     <>
+      <ConstructionTypeMaster
+        data={result.items}
+        pageNumber={result.pageNumber}
+        pageSize={result.pageSize}
+        totalCount={result.totalCount}
+        totalPages={result.totalPages}
+        sortBy="searchSequence"
+        sortOrder="asc"
+      />
       <ConstructionTypeForm
         id={constructionId}
         initialData={constructionData}
