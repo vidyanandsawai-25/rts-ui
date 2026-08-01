@@ -126,7 +126,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldZoneName"
                 label={t('fields.oldZoneName')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <Tooltip content={oldDetailsData?.oldZoneName || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldZoneName || ''} title="" />
@@ -136,7 +136,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldWardNo"
                 label={t('fields.oldWardNo')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1 2xl:col-span-1"
               >
                 <Tooltip content={oldDetailsData?.oldWardNo || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldWardNo || ''} title="" />
@@ -166,7 +166,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldEGovNo"
                 label={t('fields.oldEGovNo')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <Tooltip content={oldDetailsData?.oldEGovernanceNo || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldEGovernanceNo || ''} title="" />
@@ -176,7 +176,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPlotArea"
                 label={t('fields.oldPlotAreaWithUnit')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <Tooltip content={oldDetailsData?.oldPlotArea || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldPlotArea || ''} title="" />
@@ -186,7 +186,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPlotNo"
                 label={t('fields.oldPlotNo')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1 2xl:col-span-1"
               >
                 <Tooltip content={oldDetailsData?.oldPlotNo || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldPlotNo || ''} title="" />
@@ -196,7 +196,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldConstructionArea"
                 label={t('fields.oldConstructionAreaWithUnit')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <Tooltip content={oldDetailsData?.oldConstructionArea || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldConstructionArea || ''} title="" />
@@ -206,7 +206,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldALV"
                 label={t('fields.oldALV')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1 2xl:col-span-1"
               >
                 <Tooltip content={oldDetailsData?.oldALV || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldALV || ''} title="" />
@@ -216,7 +216,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldRV"
                 label={t('fields.oldRV')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1 2xl:col-span-1"
               >
                 <Tooltip content={oldDetailsData?.oldRV || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldRV || ''} title="" />
@@ -226,7 +226,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPropTax"
                 label={t('fields.oldPropTax')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <Tooltip content={oldDetailsData?.oldPropertyTax || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldPropertyTax || ''} title="" />
@@ -236,32 +236,32 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldTotalTax"
                 label={t('fields.oldTotalTax')}
-                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <Tooltip content={oldDetailsData?.oldTotalTax || ''} placement="bottom">
                   <ValueDisplay value={oldDetailsData?.oldTotalTax || ''} title="" />
                 </Tooltip>
               </FieldShell>
 
-              <div className="col-span-2 sm:col-span-2 md:col-span-2 lg:col-span-6 2xl:col-span-2 flex items-end gap-0.5">
+              <div className="col-span-2 sm:col-span-4 md:col-span-6 lg:col-span-4 2xl:col-span-4 flex items-end gap-0.5">
                 <Button
                   size="sm"
                   onClick={() => setShowOldMapInfo(!showOldMapInfo)}
-                  className="h-5 min-h-[20px] max-h-[35px] px-1.5 mb-3 text-xs sm:text-sm bg-teal-600 hover:bg-teal-700 leading-none flex-1"
+                  className="h-5 min-h-[20px] max-h-[35px] px-1 mb-3 text-xs bg-teal-600 hover:bg-teal-700 leading-none flex-1 min-w-0 whitespace-nowrap"
                 >
                   {showOldMapInfo ? t('actions.hideMapDetails') : t('actions.showMapDetails')}
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => setShowOldFloorInfo(!showOldFloorInfo)}
-                  className="h-5 min-h-[20px] max-h-[35px] px-1.5 mb-3 text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-700 leading-none flex-1"
+                  className="h-5 min-h-[20px] max-h-[35px] px-1 mb-3 text-xs bg-indigo-600 hover:bg-indigo-700 leading-none flex-1 min-w-0 whitespace-nowrap"
                 >
                   {showOldFloorInfo ? t('actions.hideFloorDetails') : t('actions.showFloorDetails')}
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => setShowOldTaxInfo(!showOldTaxInfo)}
-                  className="h-5 min-h-[20px] max-h-[35px] px-1.5 mb-3 text-xs sm:text-sm bg-orange-600 hover:bg-orange-700 leading-none flex-1"
+                  className="h-5 min-h-[20px] max-h-[35px] px-1 mb-3 text-xs bg-orange-600 hover:bg-orange-700 leading-none flex-1 min-w-0 whitespace-nowrap"
                 >
                   {showOldTaxInfo ? t('actions.hideOldTax') : t('actions.showOldTax')}
                 </Button>
@@ -290,7 +290,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
                     }).toString();
                     router.push(`/${locale}/property-tax/property-mapping?${params}`);
                   }}
-                  className="h-5 min-h-[20px] max-h-[35px] px-1.5 mb-3 text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 leading-none flex-1"
+                  className="h-5 min-h-[20px] max-h-[35px] px-1 mb-3 text-xs bg-purple-600 hover:bg-purple-700 leading-none flex-1 min-w-0 whitespace-nowrap"
                 >
                   {t('actions.propertyMapping')}
                 </Button>
