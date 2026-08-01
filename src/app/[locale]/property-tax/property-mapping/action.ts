@@ -1,84 +1,44 @@
 'use server';
 
-import { apiClient } from "@/services/api.service";
-import { handleApiResponse } from "@/lib/utils/api";
 import {
   MappedPropertyApiResponse,
   SearchOldPropertiesApiResponse,
   SearchOldPropertiesParams,
 } from "@/types/property-mapping";
+import {
+  getMappedProperties,
+  searchOldProperties,
+  savePropertyMapping,
+  SavePropertyMappingPayload,
+} from "@/lib/api/property-mapping/property-mapping.service";
 
 /**
- * Fetches mapped property details by PropertyId.
- * API: GET /api/PropertyMapMaster/mapped-properties?PropertyId={PropertyId}&PageSize={pageSize}
+ * Server action to fetch mapped property details by PropertyId.
+ * Delegates to property-mapping service layer.
  */
-export async function getMappedPropertiesAction(propertyId: number, pageSize: number = -1): Promise<MappedPropertyApiResponse | null> {
-  try {
-    const response = await apiClient.get<MappedPropertyApiResponse>(
-      `/PropertyMapMaster/mapped-properties?PropertyId=${propertyId}&PageSize=${pageSize}`
-    );
-    return handleApiResponse(response, `Fetch mapped properties for ${propertyId} failed`);
-  } catch (error) {
-    console.error("getMappedPropertiesAction failed:", error);
-    return null;
-  }
+export async function getMappedPropertiesAction(
+  propertyId: number,
+  pageSize: number = -1
+): Promise<MappedPropertyApiResponse | null> {
+  return await getMappedProperties(propertyId, pageSize);
 }
 
 /**
- * Searches old property candidates by structured query parameters or search term.
- * API: GET /api/PropertyMapMaster/search?...
+ * Server action to search old property candidates by structured query parameters or search term.
+ * Delegates to property-mapping service layer.
  */
-export async function searchOldPropertiesAction(params: SearchOldPropertiesParams): Promise<SearchOldPropertiesApiResponse | null> {
-  try {
-    const queryParts: string[] = [];
-    if (params.searchTerm) queryParts.push(`SearchTerm=${encodeURIComponent(params.searchTerm)}`);
-    if (params.oldOwnerName) queryParts.push(`OldOwnerName=${encodeURIComponent(params.oldOwnerName)}`);
-    if (params.oldOwnerNameEnglish) queryParts.push(`OldOwnerNameEnglish=${encodeURIComponent(params.oldOwnerNameEnglish)}`);
-    if (params.oldMobileNo) queryParts.push(`OldMobileNo=${encodeURIComponent(params.oldMobileNo)}`);
-    if (params.oldAddress) queryParts.push(`OldAddress=${encodeURIComponent(params.oldAddress)}`);
-    if (params.oldSocietyName) queryParts.push(`OldSocietyName=${encodeURIComponent(params.oldSocietyName)}`);
-    if (params.oldOccupierName) queryParts.push(`OldOccupierName=${encodeURIComponent(params.oldOccupierName)}`);
-    if (params.oldBuilderName) queryParts.push(`OldBuilderName=${encodeURIComponent(params.oldBuilderName)}`);
-    if (params.oldConstructionYear) queryParts.push(`OldConstructionYear=${encodeURIComponent(params.oldConstructionYear)}`);
-    
-    if (params.pageSize !== undefined && params.pageSize !== null) {
-      queryParts.push(`PageSize=${params.pageSize}`);
-    } else {
-      queryParts.push(`PageSize=10`);
-    }
-    if (params.pageNumber !== undefined && params.pageNumber !== null) {
-      queryParts.push(`PageNumber=${params.pageNumber}`);
-    }
-
-    const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
-    const response = await apiClient.get<SearchOldPropertiesApiResponse>(
-      `/PropertyMapMaster/search${queryString}`
-    );
-    return handleApiResponse(response, `Search old properties failed`);
-  } catch (error) {
-    console.error("searchOldPropertiesAction failed:", error);
-    return null;
-  }
+export async function searchOldPropertiesAction(
+  params: SearchOldPropertiesParams
+): Promise<SearchOldPropertiesApiResponse | null> {
+  return await searchOldProperties(params);
 }
 
 /**
- * Saves/Confirms a property mapping link or unmapped status to the server.
- * API: POST /api/PropertyMapMaster/save-mapping
+ * Server action to save/confirm a property mapping link or unmapped status.
+ * Delegates to property-mapping service layer.
  */
-export async function savePropertyMappingAction(payload: {
-  newPropertyNo: string;
-  oldPropertyNos: string[];
-  mappingType: string;
-  remark: string;
-}): Promise<{ success: boolean; message?: string } | null> {
-  try {
-    const response = await apiClient.post<{ success: boolean; message?: string }>(
-      `/PropertyMapMaster/save-mapping`,
-      payload
-    );
-    return handleApiResponse(response, `Save property mapping for ${payload.newPropertyNo} failed`);
-  } catch (error) {
-    console.error("savePropertyMappingAction failed:", error);
-    return null;
-  }
+export async function savePropertyMappingAction(
+  payload: SavePropertyMappingPayload
+): Promise<{ success: boolean; message?: string } | null> {
+  return await savePropertyMapping(payload);
 }

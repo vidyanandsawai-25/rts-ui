@@ -85,3 +85,133 @@ export function formatAreaUnit(rawUnit?: string): string {
   }
   return rawUnit;
 }
+
+/**
+ * Computes Levenshtein Distance between two strings.
+ */
+export function levenshteinDistance(s1: string, s2: string): number {
+  if (s1 === s2) return 0;
+  if (s1.length === 0) return s2.length;
+  if (s2.length === 0) return s1.length;
+
+  const row = new Array(s2.length + 1);
+  for (let i = 0; i <= s2.length; i++) {
+    row[i] = i;
+  }
+
+  for (let i = 1; i <= s1.length; i++) {
+    let prev = i;
+    for (let j = 1; j <= s2.length; j++) {
+      const val = s1[i - 1] === s2[j - 1] ? row[j - 1] : Math.min(row[j - 1] + 1, prev + 1, row[j] + 1);
+      row[j - 1] = prev;
+      prev = val;
+    }
+    row[s2.length] = prev;
+  }
+
+  return row[s2.length];
+}
+
+/**
+ * Industry-standard text similarity percentage using Levenshtein distance, Jaccard Index, and Token Containment.
+ */
+export function calculateStringSimilarityPercentage(str1: string, str2: string): number {
+  const s1 = str1.toLowerCase().trim();
+  const s2 = str2.toLowerCase().trim();
+  if (!s1 && !s2) return 100;
+  if (!s1 || !s2) return 0;
+  if (s1 === s2) return 100;
+
+  const clean1 = s1.replace(/[^\w\s\u0900-\u097F]/gi, '').trim();
+  const clean2 = s2.replace(/[^\w\s\u0900-\u097F]/gi, '').trim();
+  if (clean1 === clean2) return 100;
+
+  // 1. Normalized Levenshtein Similarity
+  const maxLen = Math.max(clean1.length, clean2.length);
+  const levDist = levenshteinDistance(clean1, clean2);
+  const levSim = maxLen > 0 ? ((maxLen - levDist) / maxLen) * 100 : 0;
+
+  // 2. Token Set Jaccard & Containment Similarity
+  const tokens1 = clean1.split(/\s+/).filter(t => t.length > 0);
+  const tokens2 = clean2.split(/\s+/).filter(t => t.length > 0);
+
+  if (tokens1.length === 0 || tokens2.length === 0) return parseFloat(levSim.toFixed(2));
+
+  const set2 = new Set(tokens2);
+  const common = tokens1.filter(t => set2.has(t));
+  const union = new Set([...tokens1, ...tokens2]);
+
+  const jaccard = (common.length / union.size) * 100;
+  const dice = ((2 * common.length) / (tokens1.length + tokens2.length)) * 100;
+
+  const overallSim = Math.max(levSim, jaccard, dice);
+  return parseFloat(overallSim.toFixed(2));
+}
+
+/**
+ * Calculates numeric match percentage based on relative variance.
+ */
+export function calculateNumericSimilarityPercentage(num1: number, num2: number): number {
+  if (num1 === num2) return 100;
+  const maxVal = Math.max(Math.abs(num1), Math.abs(num2));
+  if (maxVal === 0) return 100;
+  const diff = Math.abs(num1 - num2);
+  const variancePct = (diff / maxVal) * 100;
+  const matchPct = Math.max(0, 100 - variancePct);
+  return parseFloat(matchPct.toFixed(2));
+}
+
+/**
+ * Evaluates parameter match based on configurable threshold (default 80%).
+ */
+export function evaluatePropertyParameterMatch(
+  val1: string | number | undefined | null,
+  val2: string | number | undefined | null,
+  type: 'text' | 'numeric' | 'category' | 'exact' = 'text',
+  thresholdPercent = 80
+): { matchPercentage: number; isMatch: boolean } {
+  if (val1 === undefined || val1 === null || val2 === undefined || val2 === null) {
+    return { matchPercentage: 0, isMatch: false };
+  }
+
+  const str1 = String(val1).trim();
+  const str2 = String(val2).trim();
+  if (!str1 || !str2 || str1.toUpperCase() === 'N/A' || str2.toUpperCase() === 'N/A' || str1.toUpperCase() === 'LAAGU NAHI') {
+    return { matchPercentage: 0, isMatch: false };
+  }
+
+  if (type === 'exact') {
+    const clean1 = str1.toLowerCase().replace(/[^a-z0-9]/gi, '');
+    const clean2 = str2.toLowerCase().replace(/[^a-z0-9]/gi, '');
+    const isExact = clean1 !== '' && clean2 !== '' && clean1 === clean2;
+    return { matchPercentage: isExact ? 100 : 0, isMatch: isExact };
+  }
+
+  if (type === 'numeric') {
+    const n1 = typeof val1 === 'number' ? val1 : parseFloat(String(val1).replace(/[^0-9.-]/g, '')) || 0;
+    const n2 = typeof val2 === 'number' ? val2 : parseFloat(String(val2).replace(/[^0-9.-]/g, '')) || 0;
+    const matchPercentage = calculateNumericSimilarityPercentage(n1, n2);
+    return { matchPercentage, isMatch: matchPercentage >= thresholdPercent };
+  }
+
+  if (type === 'category') {
+    const raw1 = str1.toLowerCase();
+    const raw2 = str2.toLowerCase();
+    if (raw1 === raw2) return { matchPercentage: 100, isMatch: true };
+
+    const isNonRes1 = raw1.includes('अनिवासी') || raw1.includes('non-res') || raw1.includes('commercial');
+    const isNonRes2 = raw2.includes('अनिवासी') || raw2.includes('non-res') || raw2.includes('commercial');
+
+    const isRes1 = !isNonRes1 && (raw1.includes('res') || raw1.includes('निवासी'));
+    const isRes2 = !isNonRes2 && (raw2.includes('res') || raw2.includes('निवासी'));
+
+    if ((isRes1 && isRes2) || (isNonRes1 && isNonRes2)) {
+      return { matchPercentage: 100, isMatch: true };
+    }
+    return { matchPercentage: 0, isMatch: false };
+  }
+
+  const matchPercentage = calculateStringSimilarityPercentage(str1, str2);
+  return { matchPercentage, isMatch: matchPercentage >= thresholdPercent };
+}
+
