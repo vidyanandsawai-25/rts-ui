@@ -12,6 +12,7 @@ import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
 import { toast } from 'sonner';
+import { getCookieValue, decodeCookieValue } from '@/lib/utils/cookie';
 import { launchPhotoPlanDrawingToolAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 export interface PropertyMediaPanelProps {
   wardNo?: string;
@@ -135,8 +136,19 @@ function PropertyMediaPanel({
       try {
         const councilName = 'THANE_Survey';
         const returnUrl = typeof window !== 'undefined' ? window.location.href : '';
+        const ptisUsername = getCookieValue('login_username');
+        const rawDisplayName = getCookieValue('user_name');
+        const ptisDisplayName = rawDisplayName ? decodeCookieValue(rawDisplayName) : undefined;
+        const ptisUserId = getCookieValue('user_id');
 
-        const result = await launchPhotoPlanDrawingToolAction(propertyId, councilName, returnUrl);
+        const result = await launchPhotoPlanDrawingToolAction(
+          propertyId,
+          councilName,
+          returnUrl,
+          ptisUsername,
+          ptisDisplayName,
+          ptisUserId
+        );
 
         if (!result.success || !result.data?.launchUrl) {
            throw new Error(result.error || (t('media.launchUrlNotFound') || 'Launch URL not found in response.'));

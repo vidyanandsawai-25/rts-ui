@@ -510,7 +510,14 @@ describe('PhotoPlan Section - Complete Tests', () => {
       });
 
       // It should call the server action for authentication
-      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalledWith(1, 'THANE_Survey', expect.any(String));
+      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalledWith(
+        1,
+        'THANE_Survey',
+        expect.any(String),
+        undefined,
+        undefined,
+        undefined
+      );
 
       // Delete plan button check - should not exist
       const deleteBtn = screen.queryByLabelText('Delete plan');

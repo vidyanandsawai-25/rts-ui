@@ -10,6 +10,7 @@ import type {
 } from '@/types/photoplan.types';
 import { z } from 'zod';
 import { getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
 
 const idSchema = z.number().positive();
 
@@ -213,9 +214,42 @@ export async function updatePropertyPhotoTypeAction(
 export async function launchPhotoPlanDrawingToolAction(
   propertyId: number,
   councilName: string,
-  returnUrl: string
+  returnUrl: string,
+  ptisUsername?: string,
+  ptisDisplayName?: string,
+  ptisUserId?: string
 ): Promise<ActionResult<{ launchUrl: string }>> {
   try {
+    let cookieUsername = '';
+    let cookieDisplayName = '';
+    let cookieUserId = '';
+
+    try {
+      const cookieStore = await cookies();
+      cookieUsername = cookieStore.get('login_username')?.value || '';
+      cookieDisplayName = cookieStore.get('user_name')?.value || '';
+      cookieUserId = cookieStore.get('user_id')?.value || '';
+    } catch {
+      // Cookies may not be accessible in all execution contexts
+    }
+
+    const safeDecode = (val?: string) => {
+      if (!val) return '';
+      try {
+        return decodeURIComponent(val.replace(/\+/g, ' '));
+      } catch {
+        return val;
+      }
+    };
+
+    const rawUsername = ptisUsername || cookieUsername || 'ADMIN';
+    const rawDisplayName = ptisDisplayName || cookieDisplayName || 'Admin scipl';
+    const rawUserId = ptisUserId || cookieUserId || '1';
+
+    const finalPtisUsername = safeDecode(rawUsername);
+    const finalPtisDisplayName = safeDecode(rawDisplayName);
+    const finalPtisUserId = safeDecode(rawUserId);
+
     const loginCouncilName = councilName || 'THANE_Survey';
     const apiCouncilName = councilName === 'THANE_Survey' ? 'THANE_survey' : (councilName || 'THANE_survey');
 
@@ -257,7 +291,18 @@ export async function launchPhotoPlanDrawingToolAction(
     }
 
     // 2. Retrieve launch URL for property from /api/plans/ptis/launch
-    const safeReturnUrl = returnUrl || 'https://www.google.com/';
+    const isProd = process.env.NODE_ENV === 'production';
+    const defaultReturnBase = isProd
+      ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
+      : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+
+    let safeReturnUrl = returnUrl;
+    if (!safeReturnUrl) {
+      safeReturnUrl = `${defaultReturnBase}/en/property-tax/ptis`;
+    } else if (safeReturnUrl.startsWith('/')) {
+      safeReturnUrl = `${defaultReturnBase}${safeReturnUrl}`;
+    }
+
     const launchRes = await fetch('https://apiptisplanapp.tabamc.in/api/plans/ptis/launch', {
       method: 'POST',
       headers: {
@@ -268,7 +313,15 @@ export async function launchPhotoPlanDrawingToolAction(
         councilName: apiCouncilName,
         propertyId,
         mode: 'draw',
-        returnUrl: safeReturnUrl
+        returnUrl: safeReturnUrl,
+        ptisUsername: finalPtisUsername,
+        ptisDisplayName: finalPtisDisplayName,
+        ptisUserId: finalPtisUserId,
+        ptisUserName: finalPtisUsername,
+        username: finalPtisUsername,
+        displayName: finalPtisDisplayName,
+        userId: finalPtisUserId,
+        userName: finalPtisUsername,
       })
     });
 
