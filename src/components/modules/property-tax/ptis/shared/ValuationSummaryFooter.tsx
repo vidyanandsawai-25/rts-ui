@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { TaxDetailsContainer } from './TaxDetailsContainer';
 import {
   formatCurrencyValue,
+  formatCompactCurrency,
   formatAreaUnit,
 } from '@/lib/utils/propertyComparison.utils';
 import { Expand, ArrowLeftRight, PieChart, Receipt, Calculator } from 'lucide-react';
@@ -93,7 +94,7 @@ export async function ValuationSummaryFooter({
   const metricsCards = (
     <div className="flex flex-nowrap items-center justify-between gap-2.5 w-full overflow-x-auto py-0.5">
       {/* Card 1: Area */}
-      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-blue-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[210px]">
+      <div className="flex items-center justify-between gap-2.5 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-blue-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[270px]">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8.5 h-8.5 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-inner">
             <Expand className="w-4 h-4 stroke-[2.5]" />
@@ -121,37 +122,44 @@ export async function ValuationSummaryFooter({
           </div>
         </div>
         <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
-        <VarianceDiffBadge diff={areaDiff} unit={areaUnit} />
+        <div className="shrink-0">
+          <VarianceDiffBadge diff={areaDiff} unit={areaUnit} />
+        </div>
       </div>
 
       {/* Card 2: Change of Use */}
-      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-purple-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[230px]">
+      <div className="flex items-center justify-between gap-2.5 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-purple-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[230px]">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8.5 h-8.5 rounded-full bg-purple-50/80 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/60 shadow-inner">
             <ArrowLeftRight className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
             <span className="text-purple-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('changeOfUse')}</span>
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[9px] xl:text-[9.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-200 leading-none shrink-0">
-                {hasChangedUse ? tVal('yes') : tVal('no')}
-              </span>
-              <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
-                <Tooltip content={`Old Use: ${oldUseType}`} placement="top">
-                  <span className="whitespace-nowrap cursor-help">
-                    {tVal('oldLabel')}{' '}
-                    <span className="font-bold text-gray-800">{oldUseType}</span>
-                  </span>
-                </Tooltip>
-                <Tooltip content={`New Use: ${newUseType}`} placement="top">
-                  <span className="whitespace-nowrap cursor-help">
-                    {tVal('newLabel')}{' '}
-                    <span className="font-bold text-purple-600">{newUseType}</span>
-                  </span>
-                </Tooltip>
-              </div>
+            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+              <Tooltip content={`Old Use: ${oldUseType}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('oldLabel')}{' '}
+                  <span className="font-bold text-gray-800">{oldUseType}</span>
+                </span>
+              </Tooltip>
+              <Tooltip content={`New Use: ${newUseType}`} placement="top">
+                <span className="whitespace-nowrap cursor-help">
+                  {tVal('newLabel')}{' '}
+                  <span className="font-bold text-purple-600">{newUseType}</span>
+                </span>
+              </Tooltip>
             </div>
           </div>
+        </div>
+        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <div className="shrink-0">
+          <span className={`text-[10px] xl:text-[10.5px] font-black px-2 py-1 rounded-md uppercase tracking-wider leading-none border shrink-0 ${
+            hasChangedUse 
+              ? 'bg-amber-50 text-amber-700 border-amber-200' 
+              : 'bg-gray-100 text-gray-600 border-gray-200'
+          }`}>
+            {hasChangedUse ? tVal('yes') : tVal('no')}
+          </span>
         </div>
       </div>
 
@@ -168,20 +176,22 @@ export async function ValuationSummaryFooter({
                 <Tooltip content={`Old ALV: ${formatCurrencyValue(oldValALV)}`} placement="top">
                   <span className="whitespace-nowrap cursor-help">
                     {tVal('oldLabel')}{' '}
-                    <span className="font-bold text-gray-800">{formatCurrencyValue(oldValALV)}</span>
+                    <span className="font-bold text-gray-800">{formatCompactCurrency(oldValALV).compact}</span>
                   </span>
                 </Tooltip>
                 <Tooltip content={`New ALV: ${formatCurrencyValue(newValALV)}`} placement="top">
                   <span className="whitespace-nowrap cursor-help">
                     {tVal('newLabel')}{' '}
-                    <span className="font-bold text-indigo-600">{formatCurrencyValue(newValALV)}</span>
+                    <span className="font-bold text-indigo-600">{formatCompactCurrency(newValALV).compact}</span>
                   </span>
                 </Tooltip>
               </div>
             </div>
           </div>
           <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
-          <VarianceDiffBadge diff={valDiffALV} isCurrency />
+          <div className="shrink-0">
+            <VarianceDiffBadge diff={valDiffALV} isCurrency />
+          </div>
         </div>
       )}
 
@@ -197,20 +207,22 @@ export async function ValuationSummaryFooter({
               <Tooltip content={`Old ${valLabel}: ${formatCurrencyValue(oldValRV)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
-                  <span className="font-bold text-gray-800">{formatCurrencyValue(oldValRV)}</span>
+                  <span className="font-bold text-gray-800">{formatCompactCurrency(oldValRV).compact}</span>
                 </span>
               </Tooltip>
               <Tooltip content={`New ${valLabel}: ${formatCurrencyValue(newValRV)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('newLabel')}{' '}
-                  <span className="font-bold text-orange-600">{formatCurrencyValue(newValRV)}</span>
+                  <span className="font-bold text-orange-600">{formatCompactCurrency(newValRV).compact}</span>
                 </span>
               </Tooltip>
             </div>
           </div>
         </div>
         <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
-        <VarianceDiffBadge diff={valDiffRV} isCurrency />
+        <div className="shrink-0">
+          <VarianceDiffBadge diff={valDiffRV} isCurrency />
+        </div>
       </div>
 
       {/* Card 5: Tax */}
@@ -225,20 +237,22 @@ export async function ValuationSummaryFooter({
               <Tooltip content={`Old Tax: ${formatCurrencyValue(oldTax)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
-                  <span className="font-bold text-gray-800">{formatCurrencyValue(oldTax)}</span>
+                  <span className="font-bold text-gray-800">{formatCompactCurrency(oldTax).compact}</span>
                 </span>
               </Tooltip>
               <Tooltip content={`New Tax: ${formatCurrencyValue(newTax)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('newLabel')}{' '}
-                  <span className="font-bold text-emerald-600">{formatCurrencyValue(newTax)}</span>
+                  <span className="font-bold text-emerald-600">{formatCompactCurrency(newTax).compact}</span>
                 </span>
               </Tooltip>
             </div>
           </div>
         </div>
         <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
-        <VarianceDiffBadge diff={taxDiff} isCurrency />
+        <div className="shrink-0">
+          <VarianceDiffBadge diff={taxDiff} isCurrency />
+        </div>
       </div>
     </div>
   );

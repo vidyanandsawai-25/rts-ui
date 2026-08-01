@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatCompactCurrency, formatCompactNumber } from '@/lib/utils/propertyComparison.utils';
 import { Tooltip } from '@/components/common/Tooltip';
 
@@ -22,6 +23,7 @@ export function VarianceDiffBadge({
   isCurrency = false,
   className = '',
 }: VarianceDiffBadgeProps) {
+  const tVal = useTranslations('ptis.modules.PtisTaxDetails');
   const isPositive = diff > 0;
   const isNegative = diff < 0;
 
@@ -36,7 +38,15 @@ export function VarianceDiffBadge({
     : formatCompactNumber(Math.abs(diff), unit);
 
   return (
-    <Tooltip content={`Full Change: ${formattedObj.full}`} placement="top">
+    <Tooltip 
+      content={
+        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+          <span className="text-[11px] font-semibold text-white/90">{tVal('fullChange')}</span>
+          <span className="text-[13px] font-extrabold text-white mt-0.5">{formattedObj.full}</span>
+        </div>
+      } 
+      placement="top"
+    >
       <div
         className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-bold text-[11.5px] xl:text-xs shrink-0 transition-all duration-300 hover:scale-105 cursor-help ${colorClass} ${className}`}
       >

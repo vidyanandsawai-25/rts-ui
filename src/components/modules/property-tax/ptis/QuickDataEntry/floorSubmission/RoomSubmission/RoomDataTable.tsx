@@ -30,7 +30,11 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
     const isOpenSpaceSection =
         floorData?.selectedFloorType === 'OpenPlot' ||
         floorData?.isOpenPlot === true ||
-        String(floorData?.floorId) === '77';
+        String(floorData?.floorId) === '77' ||
+        String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+        String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+        String(floorData?.floor || '').toLowerCase().includes('open plot') ||
+        String(floorData?.floorDescription || '').toLowerCase().includes('open plot');
 
     const t = useTranslations("quickDataEntry");
 
