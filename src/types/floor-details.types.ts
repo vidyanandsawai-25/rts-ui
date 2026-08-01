@@ -629,12 +629,14 @@ export interface RenterTableEntryPostRow {
 
 export interface SelectableProperty {
     id: string | number;
+    propertyId?: string | number;
     propertyFloorId?: string | number | null;
     propertyDetailsId?: string | number | null;
     wardId?: string | number;
     wardNo: string;
     propertyNo: string;
     partitionNo: string;
+    categoryName?: string;
     type: string | number;
     typeLabel?: string;
     wing: string;
@@ -654,8 +656,11 @@ export interface DataEntrySameAsItem {
     propertyFloorId?: number | null;
     propertyDetailsId?: number | null;
     wardId: number;
+    wardNo?: string | null;
     propertyNo: string;
     partitionNo: string;
+    propertyCategoryName?: string | null;
+    categoryName?: string | null;
     type: string | number;
     typeName?: string | null;
     typeLabel?: string | null;

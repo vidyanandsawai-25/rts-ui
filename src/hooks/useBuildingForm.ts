@@ -567,7 +567,7 @@ export const useBuildingForm = (
         } finally {
             stopLoading();
         }
-    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors, selectedTypeId, activeScope, activeFloorId, setBuildingPermission, setInitialFloorStateCache, floors, setFloorCertificatesCache, getCombinedFloors, router, markCurrentStateAsSaved]);
+    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors, selectedTypeId, activeScope, activeFloorId, floors, getCombinedFloors, router, markCurrentStateAsSaved]);
 
     const { handleFileUpload, handleFileDelete } = useBuildingFileUpload(
         buildingPermission,
@@ -631,7 +631,7 @@ export const useBuildingForm = (
         } finally {
             stopLoading();
         }
-    }, [buildingPermission, activeScope, activeFloorId, propertyId, locale, handleFileDelete, handleInputChange, handleToggleEnabled, startLoading, stopLoading, setFloorCertificatesCache, setInitialFloorStateCache, setBuildingPermission, setFloors, t, getCombinedFloors, router, markCurrentStateAsSaved]);
+    }, [buildingPermission, activeScope, activeFloorId, propertyId, locale, handleFileDelete, handleInputChange, handleToggleEnabled, startLoading, stopLoading, setFloors, t, getCombinedFloors, router, markCurrentStateAsSaved]);
 
     return {
         buildingPermission,
