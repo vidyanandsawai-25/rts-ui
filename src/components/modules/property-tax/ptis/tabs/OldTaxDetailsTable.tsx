@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { OldTaxesData } from '@/types/ptis.types';
+import { MasterTable, Column } from '@/components/common/MasterTable';
 
 interface OldTaxDetailsTableProps {
   oldTaxesData: OldTaxesData | null | undefined;
@@ -13,6 +14,95 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 }) => {
   const t = useTranslations('ptis');
 
+  // Collect unique tax names (excluding 'taxtotal') to define dynamic columns
+  const uniqueTaxNames = useMemo(() => {
+    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+    const taxNames = new Set<string>();
+    oldTaxesData.taxYears.forEach((yearData) => {
+      yearData.taxes.forEach((tax) => {
+        const name = tax.taxName;
+        if (name && name.toLowerCase() !== 'taxtotal') {
+          taxNames.add(name);
+        }
+      });
+    });
+    return Array.from(taxNames);
+  }, [oldTaxesData]);
+
+  // Construct table columns
+  const columns = useMemo(() => {
+    const cols: Column<Record<string, unknown>>[] = [
+      {
+        key: 'wardPropPartNo',
+        label: t('fields.wardPropPartNo'),
+        align: 'left',
+        width: '180px',
+      },
+      {
+        key: 'year',
+        label: t('fields.year'),
+        align: 'center',
+        width: '100px',
+      },
+    ];
+
+    // Dynamic tax columns
+    uniqueTaxNames.forEach((taxName) => {
+      cols.push({
+        key: taxName,
+        label: taxName,
+        align: 'right',
+        cellClassName: 'tabular-nums font-medium',
+      });
+    });
+
+    // Last column: Tax Total
+    cols.push({
+      key: 'taxTotal',
+      label: t('fields.taxTotal'),
+      align: 'right',
+      cellClassName: 'tabular-nums font-bold text-slate-900',
+    });
+
+    return cols;
+  }, [uniqueTaxNames, t]);
+
+  // Construct table data
+  const data = useMemo(() => {
+    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+
+    return oldTaxesData.taxYears.map((yearData) => {
+      const wardNo = yearData.oldWardNo?.toString() ?? '';
+      const propertyNo = yearData.oldPropertyNo ?? '';
+      const partitionNo = yearData.oldPartitionNo?.toString() ?? '';
+      const wardPropPartNo = [wardNo, propertyNo, partitionNo].filter(Boolean).join(' - ');
+
+      const row: Record<string, unknown> = {
+        wardPropPartNo,
+        year: yearData.yearCode || yearData.year,
+      };
+
+      // Initialize unique tax names and taxTotal
+      uniqueTaxNames.forEach((name) => {
+        row[name] = 0;
+      });
+      row['taxTotal'] = 0;
+
+      yearData.taxes.forEach((tax) => {
+        const name = tax.taxName;
+        if (name) {
+          if (name.toLowerCase() === 'taxtotal') {
+            row['taxTotal'] = tax.taxAmount;
+          } else {
+            row[name] = tax.taxAmount;
+          }
+        }
+      });
+
+      return row;
+    });
+  }, [oldTaxesData, uniqueTaxNames]);
+
   if (!showOldTaxInfo) return null;
 
   if (!oldTaxesData || !oldTaxesData.taxYears || oldTaxesData.taxYears.length === 0) {
@@ -24,40 +114,15 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
   }
 
   return (
-    <div className="mt-0.5 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded border border-blue-100 p-1 shadow-inner">
-      <div className="divide-y divide-blue-100/50">
-        {oldTaxesData.taxYears.map((yearData, yearIdx: number) => {
-          const wardNo = yearData.oldWardNo?.toString() ?? '';
-          const propertyNo = yearData.oldPropertyNo ?? '';
-          const partitionNo = yearData.oldPartitionNo?.toString() ?? '';
-          const wardPropPartNo = [wardNo, propertyNo, partitionNo].filter(Boolean).join(' - ');
-
-          const activeTaxes = yearData.taxes.filter(
-            (tax) => Number(tax.taxAmount) !== 0
-          );
-
-          return (
-            <div
-              key={yearIdx}
-              className="py-1.5 px-2 text-xs text-slate-700 leading-relaxed font-medium hover:bg-white/60 transition-colors rounded-sm"
-            >
-              <span className="font-bold text-indigo-700">{t('fields.wardPropPartNo')}: </span>
-              <span className="font-semibold text-slate-900">{wardPropPartNo || '-'}</span>
-              <span className="text-slate-400 font-normal">, </span>
-
-              <span className="font-bold text-blue-700">{t('fields.year')} = </span>
-              <span className="font-semibold text-slate-950">{yearData.yearCode || yearData.year}</span>
-
-              {activeTaxes.map((tax) => (
-                <React.Fragment key={tax.taxId}>
-                  <span className="text-slate-400 font-normal">, </span>
-                  <span className="text-slate-600 font-semibold">{tax.taxName} = </span>
-                  <span className="text-slate-900 font-bold tabular-nums">{tax.taxAmount}</span>
-                </React.Fragment>
-              ))}
-            </div>
-          );
-        })}
+    <div className="mt-0.5 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded border border-blue-100 p-0.5 shadow-inner">
+      <div className="rounded overflow-x-auto shadow-sm">
+        <MasterTable<Record<string, unknown>>
+          data={data}
+          columns={columns}
+          emptyText={t('fields.noTaxDetails')}
+          paginationConfig={{ enabled: false }}
+          maxBodyHeightClassName="max-h-[300px]"
+        />
       </div>
     </div>
   );

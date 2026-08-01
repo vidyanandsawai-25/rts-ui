@@ -407,6 +407,7 @@
     "interest": "Interest",
     "netTotal": "Net Total",
     "noTaxDetails": "No tax details available",
+    "taxDetails": "Tax Details",
     "noMapDetails": "No map details available",
     "latitude": "Latitude",
     "longitude": "Longitude",
