@@ -8,7 +8,7 @@ import { BuildingDetailPane } from "./BuildingDetailPane";
 import { ValidationErrorBanner } from "./ValidationErrorBanner";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 
-import { SaveDetailsConfirmModal } from "./SaveDetailsConfirmModal";
+import { SaveDetailsConfirmModal, formatDateToDDMMYYYY } from "./SaveDetailsConfirmModal";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AlertCircle } from "lucide-react";
@@ -236,7 +236,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
 
                 const detailsList: string[] = [];
                 if (hasNum) detailsList.push(`${t("building.number") || "Number"}: ${cert.number}`);
-                if (hasDt) detailsList.push(`${t("building.date") || "Date"}: ${cert.date}`);
+                if (hasDt) detailsList.push(`${t("building.date") || "Date"}: ${formatDateToDDMMYYYY(cert.date)}`);
 
                 confirm({
                     title: t("building.confirmDeleteCertificateTitle") || "Delete Certificate & Data",
@@ -362,7 +362,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         setConfirmData({
             certificateName: displayName || "",
             certificateNumber: activeCert.number || "",
-            certificateDate: activeCert.date || "",
+            certificateDate: formatDateToDDMMYYYY(activeCert.date),
             targetFloors,
             isPropertyWideGlobal,
             onConfirm: onConfirmAction
