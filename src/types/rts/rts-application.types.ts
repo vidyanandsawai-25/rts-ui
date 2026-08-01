@@ -71,67 +71,6 @@ export interface RtsOfficer {
   status?: string;
 }
 
-export interface RtsApplicationApiApplicantDetail {
-  fieldLabel: string;
-  fieldValue: string | null;
-}
-
-export interface RtsApplicationApiDashboard {
-  totalApplications: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-  reverted: number;
-  todayApplications: number;
-  overdueApplications: number;
-  dueToday: number;
-  pendingPercentage: number;
-  approvedPercentage: number;
-  rejectedPercentage: number;
-  revertedPercentage: number;
-  todayPercentage: number;
-  dueTodayPercentage: number;
-  overduePercentage: number;
-}
-
-export interface RtsApplicationApiListItem {
-  id: number;
-  departmentId: number;
-  serviceId: number;
-  applicationNo: string;
-  applicationStatus: string;
-  createdDate: string;
-  updatedDate: string | null;
-  assignedTo: number | string | null;
-  action: number | null;
-  sessionId: string | null;
-  ownerId: number | null;
-  departmentName: string | null;
-  citizenName: string | null;
-  serviceName: string | null;
-  sla: string | number | null;
-  remainingDays: number | null;
-  dueDays: number | null;
-  overdueDays: number | null;
-  remark: string | null;
-  applicantDetails: RtsApplicationApiApplicantDetail[] | null;
-}
-
-export interface RtsApplicationsApiListPayload {
-  dashboard: RtsApplicationApiDashboard | null;
-  applications: RtsApplicationApiListItem[] | null;
-}
-
-export interface RtsApplicationsApiListResponse {
-  items: RtsApplicationsApiListPayload[] | null;
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
-
 export interface RtsApplicationApiDetail {
   departmentId: number;
   serviceId: number;

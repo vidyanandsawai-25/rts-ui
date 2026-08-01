@@ -370,7 +370,7 @@
     "applications": {
       "title": "तुमचे अर्ज आणि SLA कालमर्यादा",
       "description": "प्रत्येक महानगरपालिका सेवा कायदेशीर सेवा हक्क वितरण कालमर्यादेने बांधील आहे.",
-      "searchPlaceholder": "आयडी किंवा सेवेच्या नावाने शोधा...",
+      "searchPlaceholder": "अर्ज क्रमांकाने शोधा...",
       "empty": "शोध निकषांशी जुळणारा कोणताही अर्ज आढळला नाही.",
       "loading": "डॅशबोर्ड लोड होत आहे..."
     },
@@ -421,10 +421,26 @@
       "slaTimeline": "SLA कालमर्यादा",
       "slaDeadline": "SLA अंतिम तारीख",
       "notAvailable": "उपलब्ध नाही",
+      "status": "स्थिती",
       "approvalStages": "मंजुरीचे टप्पे",
       "completion": "25% पूर्ण",
+      "stageProgress": "3 पैकी 1 पूर्ण",
       "submittedDocuments": "सादर केलेली कागदपत्रे",
+      "submittedDocumentsDescription": "अर्ज सादर करताना अपलोड केलेली",
+      "documentAttached": "कागदपत्र जोडले आहे",
+      "noSubmittedDocuments": "या अर्जासोबत कोणतीही कागदपत्रे सादर केलेली नाहीत.",
+      "noApprovalStages": "या अर्जासाठी कोणतेही मंजुरीचे टप्पे उपलब्ध नाहीत.",
+      "previewUnavailable": "कागदपत्र पूर्वावलोकन अद्याप उपलब्ध नाही",
+      "downloadUnavailable": "कागदपत्र डाउनलोड अद्याप उपलब्ध नाही",
       "downloadDocument": "{name} डाउनलोड करा",
+      "viewDocument": "{name} पहा",
+      "download": "डाउनलोड",
+      "downloading": "डाउनलोड होत आहे...",
+      "closePreview": "कागदपत्र पूर्वावलोकन बंद करा",
+      "unsupportedPreview": "या कागदपत्राचे पूर्वावलोकन येथे करता येत नाही",
+      "unsupportedPreviewDescription": "सुसंगत एप्लिकेशनमध्ये उघडण्यासाठी कागदपत्र डाउनलोड करा.",
+      "previewFailed": "कागदपत्राचे पूर्वावलोकन लोड करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+      "downloadFailed": "कागदपत्र डाउनलोड करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
       "stages": {
         "applicationSubmitted": {
           "title": "अर्ज सादर केला",
@@ -436,7 +452,22 @@
           "status": "प्रलंबित",
           "remark": "पुनरावलोकन प्रलंबित आहे."
         },
-        "finalApproval": { "title": "अंतिम मंजुरी", "status": "प्रलंबित", "remark": "प्रलंबित." }
+        "finalApproval": {
+          "title": "अंतिम मंजुरी (वरिष्ठ अधिकारी)",
+          "status": "प्रलंबित",
+          "remark": "प्रलंबित.",
+          "description": "मुख्य कार्यालय पडताळणी पूर्ण झाल्यानंतर सुरू होते."
+        }
+        ,"clerkVerification": {
+          "title": "लिपिक पडताळणी",
+          "status": "पूर्ण",
+          "description": "अर्ज प्राप्त करून लिपिकाने तपासला आहे."
+        },
+        "headOfficeVerification": {
+          "title": "मुख्य कार्यालय पडताळणी",
+          "status": "प्रगतीत",
+          "description": "कागदपत्रे मुख्य कार्यालयाकडून तपासली जात आहेत."
+        }
       },
       "documents": {
         "identityProof": { "name": "ओळख पुरावा (आधार कार्ड)", "size": "1.2 MB" },

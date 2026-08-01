@@ -1,15 +1,15 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   AlertOctagon,
   CalendarClock,
   CheckCircle2,
+  ChevronRightIcon,
   Clock3,
   FileText,
-  Filter,
   LayoutDashboard,
   RotateCcw,
   TimerReset,
@@ -19,7 +19,6 @@ import {
 import {
   Button,
   Card,
-  Drawer,
   Label,
   MasterTable,
   SearchInput,
@@ -32,9 +31,12 @@ import ApplicationDrawerContent from './RtsApplicationDrawerContext';
 import type {
   AdminApplicationGridRow,
   ApplicationsDashboardKpis,
+  RtsApplicationsDashboardResult,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
+import type { RtsApplicationApprovalDetails } from '@/types/rts/rtsapplicationapprovel.types';
+import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
 
 interface RtsApplicationDashboardProps {
   kpis: ApplicationsDashboardKpis | null;
@@ -43,11 +45,24 @@ interface RtsApplicationDashboardProps {
   error: string | null;
   departments: RtsDepartmentApiItem[];
   services: RtsServiceApiItem[];
+  filters: {
+    pageNumber: number;
+    pageSize: 10;
+    departmentId: number | null;
+    serviceId: number | null;
+    departmentSlug: string;
+    serviceSlug: string;
+    status: string;
+    search: string;
+    applicationId: number | null;
+  };
+  pagination: RtsApplicationsDashboardResult['pagination'];
+  approvalDetails: RtsApplicationApprovalDetails | null;
 }
 
 type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: number };
 
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const PAGE_SIZE_OPTIONS = [10];
 
 export default function RtsApplicationDashboard({
   kpis,
@@ -56,18 +71,33 @@ export default function RtsApplicationDashboard({
   error,
   departments,
   services,
+  filters,
+  pagination,
+  approvalDetails,
 }: RtsApplicationDashboardProps) {
   const t = useTranslations('rts');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchInput, setSearchInput] = useState(filters.search);
+  const searchReloadTimerRef = useRef<number | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDept, setSelectedDept] = useState('all');
-  const [selectedService, setSelectedService] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [selectedRow, setSelectedRow] = useState<GridRow | null>(null);
+  const updateQuery = useCallback(
+    (changes: Record<string, string | null>, resetPage = false) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('PageSize', '10');
+
+      for (const [key, value] of Object.entries(changes)) {
+        if (value) params.set(key, value);
+        else params.delete(key);
+      }
+
+      if (resetPage) params.set('PageNumber', '1');
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN'),
@@ -78,33 +108,48 @@ export default function RtsApplicationDashboard({
     () => rows.map((row) => ({ ...row, id: row.applicationId })),
     [rows]
   );
+  const selectedRow = useMemo(
+    () => gridRows.find((row) => row.applicationId === filters.applicationId) ?? null,
+    [filters.applicationId, gridRows]
+  );
+
+  useEffect(
+    () => () => {
+      if (searchReloadTimerRef.current) window.clearTimeout(searchReloadTimerRef.current);
+    },
+    []
+  );
 
   const deptOptions = useMemo(() => {
     return [
       { label: 'All Departments', value: 'all' },
       ...departments.map((department) => ({
         label: department.departmentName,
-        value: String(department.id),
+        value: toApplicationFilterSlug(department.departmentName),
       })),
     ];
   }, [departments]);
 
   const serviceOptions = useMemo(() => {
-    const unique = Array.from(
-      new Set(
-        services
-          .filter((service) => selectedDept === 'all' || service.departmentId === Number(selectedDept))
-          .map((service) => service)
-      )
-    ).sort((first, second) => first.serviceName.localeCompare(second.serviceName));
+    const matchingServices = services.filter(
+      (service) => filters.departmentId === null || service.departmentId === filters.departmentId
+    );
+    const slugCounts = matchingServices.reduce((counts, service) => {
+      const slug = toApplicationFilterSlug(service.serviceName);
+      counts.set(slug, (counts.get(slug) ?? 0) + 1);
+      return counts;
+    }, new Map<string, number>());
+    const unique = matchingServices
+      .filter((service) => slugCounts.get(toApplicationFilterSlug(service.serviceName)) === 1)
+      .sort((first, second) => first.serviceName.localeCompare(second.serviceName));
     return [
       { label: 'All Services', value: 'all' },
       ...unique.map((service) => ({
         label: service.serviceName,
-        value: String(service.id),
+        value: toApplicationFilterSlug(service.serviceName),
       })),
     ];
-  }, [selectedDept, services]);
+  }, [filters.departmentId, services]);
 
   const statusOptions = useMemo(() => {
     const unique = Array.from(new Set(gridRows.map((row) => row.currentStatus)));
@@ -116,35 +161,6 @@ export default function RtsApplicationDashboard({
       })),
     ];
   }, [gridRows, t]);
-
-  const filteredRows = useMemo(() => {
-    const query = searchTerm.toLocaleLowerCase(locale).trim();
-
-    return gridRows.filter((row) => {
-      const matchesSearch =
-        !query ||
-        row.applicationNo.toLocaleLowerCase(locale).includes(query) ||
-        row.applicantName?.toLocaleLowerCase(locale).includes(query) ||
-        row.serviceName?.toLocaleLowerCase(locale).includes(query);
-      const matchesDept = selectedDept === 'all' || row.departmentId === Number(selectedDept);
-      const matchesService = selectedService === 'all' || row.serviceId === Number(selectedService);
-      const matchesStatus = selectedStatus === 'all' || row.currentStatus === selectedStatus;
-
-      return matchesSearch && matchesDept && matchesService && matchesStatus;
-    });
-  }, [gridRows, locale, searchTerm, selectedDept, selectedService, selectedStatus]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-
-  const paginatedRows = useMemo(() => {
-    const start = (pageNumber - 1) * pageSize;
-    return filteredRows.slice(start, start + pageSize);
-  }, [filteredRows, pageNumber, pageSize]);
-
-  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
-    setter(value);
-    setPageNumber(1);
-  };
 
   const formatDate = useCallback(
     (value: string | null) => {
@@ -408,10 +424,15 @@ export default function RtsApplicationDashboard({
               <Select
                 selectSize="sm"
                 options={deptOptions}
-                value={selectedDept}
+                value={filters.departmentSlug || 'all'}
                 onChange={(_, value) => {
-                  handleFilterChange(setSelectedDept)(value);
-                  handleFilterChange(setSelectedService)('all');
+                  updateQuery(
+                    {
+                      Department: value === 'all' ? null : value,
+                      Service: null,
+                    },
+                    true
+                  );
                 }}
               />
             </div>
@@ -423,8 +444,10 @@ export default function RtsApplicationDashboard({
               <Select
                 selectSize="sm"
                 options={serviceOptions}
-                value={selectedService}
-                onChange={(_, value) => handleFilterChange(setSelectedService)(value)}
+                value={filters.serviceSlug || 'all'}
+                onChange={(_, value) =>
+                  updateQuery({ Service: value === 'all' ? null : value }, true)
+                }
               />
             </div>
 
@@ -435,44 +458,46 @@ export default function RtsApplicationDashboard({
               <Select
                 selectSize="sm"
                 options={statusOptions}
-                value={selectedStatus}
-                onChange={(_, value) => handleFilterChange(setSelectedStatus)(value)}
+                value={filters.status || 'all'}
+                onChange={(_, value) =>
+                  updateQuery({ Status: value === 'all' ? null : value }, true)
+                }
               />
             </div>
 
-            <div className="w-full sm:w-56 space-y-1">
+            <div className="w-full sm:w-76 space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {tCommon('actions.search')}
               </Label>
               <SearchInput
-                value={searchTerm}
-                onChange={(value) => handleFilterChange(setSearchTerm)(value)}
+                value={searchInput}
+                onChange={(value) => {
+                  setSearchInput(value);
+                  if (searchReloadTimerRef.current) window.clearTimeout(searchReloadTimerRef.current);
+
+                  searchReloadTimerRef.current = window.setTimeout(() => {
+                    const search = value.trim();
+                    if (search !== filters.search) {
+                      updateQuery({ Search: search || null }, true);
+                    }
+                  }, 1000);
+                }}
                 placeholder={t('applicationDashboard.applications.searchPlaceholder')}
                 className="mb-0 w-full font-medium"
               />
-            </div>
-
-            <div className="self-end pb-0.5">
-              <button
-                type="button"
-                aria-label={t('applicationDashboard.actions.openFilters')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white transition hover:bg-slate-50"
-              >
-                <Filter className="h-4.5 w-4.5 text-slate-500" />
-              </button>
             </div>
           </div>
         </div>
 
         <MasterTable<GridRow>
           columns={columns}
-          data={paginatedRows}
+          data={gridRows}
           emptyText={t('applicationDashboard.applications.empty')}
           getRowKey={(row) => row.id}
           renderActions={(row) => (
             <div className="flex justify-center gap-2">
               <ViewButton
-                onClick={() => setSelectedRow(row)}
+                onClick={() => updateQuery({ ApplicationId: String(row.applicationId) })}
                 aria-label={t('applicationDashboard.actions.viewDetailsAria', {
                   appId: row.applicationNo,
                 })}
@@ -488,6 +513,7 @@ export default function RtsApplicationDashboard({
                 type="button"
                 variant="primary"
                 size="xs"
+                icon={ChevronRightIcon}
                 onClick={() =>
                   router.push(`/${locale}/rts/dashboard/rts-applications/${row.applicationId}`)
                 }
@@ -500,65 +526,40 @@ export default function RtsApplicationDashboard({
             </div>
           )}
           actionLabel={t('applicationDashboard.table.actions')}
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={filteredRows.length}
-          totalPages={totalPages}
-          onPageChange={setPageNumber}
-          onPageSizeChange={setPageSize}
+          pageNumber={pagination?.pageNumber ?? filters.pageNumber}
+          pageSize={filters.pageSize}
+          totalCount={pagination?.totalCount ?? 0}
+          totalPages={pagination?.totalPages ?? 1}
+          onPageChange={(page) => updateQuery({ PageNumber: String(page) })}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
           paginationConfig={{
             enabled: true,
-            showPageSizeSelector: true,
+            showPageSizeSelector: false,
           }}
-          maxBodyHeightClassName="max-h-auto"
+          maxBodyHeightClassName="min-h-50 max-h-auto"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
-          footerLeftContent={
-            <span className="text-[12px] text-slate-400">
-              {t('applicationDashboard.pagination.showing', {
-                shown: numberFormatter.format(paginatedRows.length),
-                total: numberFormatter.format(filteredRows.length),
-              })}
-            </span>
-          }
           footerClassName="!border-slate-100 !bg-white !shadow-none"
           footerLeftClassName="text-slate-400"
         />
       </Card>
 
       {selectedRow && (
-        <Drawer
-          open={!!selectedRow}
-          onClose={() => setSelectedRow(null)}
-          width="md"
-          title={
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50">
-                <FileText className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-[11px] font-bold uppercase tracking-wide text-slate-700">
-                  {selectedRow.applicationNo}
-                </div>
-                <div className="text-lg font-bold text-slate-800">
-                  {selectedRow.serviceName ?? t('applicationDashboard.table.na')}
-                </div>
-              </div>
-            </div>
-          }
-        >
-          <ApplicationDrawerContent
-            record={{
-              applicationId: selectedRow.applicationId,
-              citizenName: selectedRow.applicantName,
-              submittedDate: formatDate(selectedRow.applicationDate),
-              slaLimit: selectedRow.sla,
-            }}
-            onClose={() => setSelectedRow(null)}
-          />
-        </Drawer>
+        <ApplicationDrawerContent
+          open
+          onClose={() => updateQuery({ ApplicationId: null })}
+          detail={approvalDetails}
+          record={{
+            applicationId: selectedRow.applicationId,
+            applicationNo: selectedRow.applicationNo,
+            serviceName: selectedRow.serviceName,
+            departmentName: selectedRow.departmentName,
+            submittedDate: formatDate(selectedRow.applicationDate),
+            slaLimit: selectedRow.sla,
+            applicationStatus: selectedRow.currentStatus,
+          }}
+        />
       )}
     </div>
   );

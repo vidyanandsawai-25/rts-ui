@@ -2,12 +2,20 @@
 
 import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
-import { getRtsApplications } from '@/lib/api/rts/rtsapplication.service';
-import type { RtsApplicationApiDashboard } from '@/types/rts/rts-application.types';
+import {
+  getRtsApplicationApprovalDashboardCards,
+  getRtsApplicationApprovalDetails,
+  getRtsApplicationApprovals,
+} from '@/lib/api/rts/rtsapplicationapprovel.service';
+import type {
+  RtsApplicationApprovalDashboardCards,
+  RtsApplicationApprovalDetails,
+  RtsApplicationApprovalListItem,
+} from '@/types/rts/rtsapplicationapprovel.types';
 import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
 
-export type ApplicationsDashboardKpis = RtsApplicationApiDashboard;
+export type ApplicationsDashboardKpis = RtsApplicationApprovalDashboardCards;
 
 export interface AdminApplicationGridRow {
   applicationId: number;
@@ -32,6 +40,31 @@ export interface RtsApplicationsDashboardResult {
   kpis: ApplicationsDashboardKpis | null;
   rows: AdminApplicationGridRow[];
   error: string | null;
+  pagination: {
+    pageNumber: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  } | null;
+}
+
+export interface RtsApplicationsDashboardQuery {
+  pageNumber: number;
+  departmentId?: number;
+  serviceId?: number;
+  applicationStatus?: string;
+  search?: string;
+}
+
+export async function getRtsApplicationApprovalDetailsAction(
+  applicationId: number
+): Promise<RtsApplicationApprovalDetails | null> {
+  try {
+    return await getRtsApplicationApprovalDetails(applicationId);
+  } catch (error) {
+    console.error(`Failed to fetch approval details for RTS application ${applicationId}:`, error);
+    return null;
+  }
 }
 
 export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiItem[]> {
@@ -76,42 +109,73 @@ function getApplicantName(
   return joinName(['first name', 'middle name', 'last name']) || '-';
 }
 
-export async function getRtsApplicationsDashboardAction(): Promise<RtsApplicationsDashboardResult> {
+function toGridRow(application: RtsApplicationApprovalListItem): AdminApplicationGridRow {
+  return {
+    applicationId: application.id,
+    applicationNo: application.applicationNo,
+    departmentId: application.departmentId,
+    serviceId: application.serviceId,
+    applicationDate: application.createdDate ?? null,
+    applicantName: getApplicantName(application.applicantDetails),
+    serviceName: application.serviceName,
+    departmentName: application.departmentName,
+    currentStatus: application.applicationStatus,
+    remainingDays: application.remainingDays,
+    dueDays: application.dueDays,
+    overdueDays: application.overdueDays,
+    lastUpdatedDate: application.updatedDate,
+    sla: application.sla,
+    assignedTo: application.assignedTo,
+    remark: application.remark,
+  };
+}
+
+function sortRows(rows: AdminApplicationGridRow[]): AdminApplicationGridRow[] {
+  return rows.sort((left, right) => {
+    const leftDate = left.applicationDate ? new Date(left.applicationDate).getTime() : Number.NEGATIVE_INFINITY;
+    const rightDate = right.applicationDate ? new Date(right.applicationDate).getTime() : Number.NEGATIVE_INFINITY;
+    return rightDate - leftDate;
+  });
+}
+
+export async function getRtsApplicationsDashboardAction(
+  query: RtsApplicationsDashboardQuery
+): Promise<RtsApplicationsDashboardResult> {
   try {
-    const response = await getRtsApplications({ pageNumber: 1, pageSize: 1000 });
+    const requestFilters = {
+      departmentId: query.departmentId,
+      serviceId: query.serviceId,
+      applicationStatus: query.applicationStatus,
+      applicationNo: query.search,
+    };
+    const [response, kpis] = await Promise.all([
+      getRtsApplicationApprovals({
+        ...requestFilters,
+        pageNumber: query.pageNumber,
+      }),
+      getRtsApplicationApprovalDashboardCards(),
+    ]);
 
-    const rows = response.applications
-      .map((application) => ({
-        applicationId: application.id,
-        applicationNo: application.applicationNo,
-        departmentId: application.departmentId,
-        serviceId: application.serviceId,
-        applicationDate: application.createdDate ?? null,
-        applicantName: getApplicantName(application.applicantDetails),
-        serviceName: application.serviceName,
-        departmentName: application.departmentName,
-        currentStatus: application.applicationStatus,
-        remainingDays: application.remainingDays,
-        dueDays: application.dueDays,
-        overdueDays: application.overdueDays,
-        lastUpdatedDate: application.updatedDate,
-        sla: application.sla,
-        assignedTo: application.assignedTo,
-        remark: application.remark,
-      }))
-      .sort((left, right) => {
-        const leftDate = left.applicationDate ? new Date(left.applicationDate).getTime() : Number.NEGATIVE_INFINITY;
-        const rightDate = right.applicationDate ? new Date(right.applicationDate).getTime() : Number.NEGATIVE_INFINITY;
-        return rightDate - leftDate;
-      });
+    const rows = sortRows(response.applications.map(toGridRow));
 
-    return { kpis: response.dashboard, rows, error: null };
+    return {
+      kpis,
+      rows,
+      error: null,
+      pagination: {
+        pageNumber: response.pageNumber,
+        pageSize: response.pageSize,
+        totalCount: response.totalCount,
+        totalPages: response.totalPages,
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch RTS applications dashboard:', error);
     return {
       kpis: null,
       rows: [],
       error: error instanceof Error ? error.message : 'Failed to fetch RTS applications dashboard',
+      pagination: null,
     };
   }
 }

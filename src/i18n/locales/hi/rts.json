@@ -367,7 +367,7 @@
     "applications": {
       "title": "आपके आवेदन और SLA समयरेखा",
       "description": "प्रत्येक नगरपालिका सेवा कानूनी सेवा अधिकार वितरण समयसीमा से बंधी है।",
-      "searchPlaceholder": "आईडी या सेवा नाम से खोजें...",
+      "searchPlaceholder": "आवेदन संख्या से खोजें...",
       "empty": "खोज मानदंड से मेल खाने वाला कोई आवेदन नहीं मिला।",
       "loading": "डैशबोर्ड लोड हो रहा है..."
     },
@@ -418,10 +418,26 @@
       "slaTimeline": "SLA समयरेखा",
       "slaDeadline": "SLA अंतिम तिथि",
       "notAvailable": "उपलब्ध नहीं",
+      "status": "स्थिति",
       "approvalStages": "स्वीकृति चरण",
       "completion": "25% पूर्ण",
+      "stageProgress": "3 में से 1 पूर्ण",
       "submittedDocuments": "जमा किए गए दस्तावेज़",
+      "submittedDocumentsDescription": "आवेदन के समय अपलोड किए गए",
+      "documentAttached": "दस्तावेज़ संलग्न है",
+      "noSubmittedDocuments": "इस आवेदन के साथ कोई दस्तावेज़ जमा नहीं किया गया।",
+      "noApprovalStages": "इस आवेदन के लिए कोई स्वीकृति चरण उपलब्ध नहीं है।",
+      "previewUnavailable": "दस्तावेज़ पूर्वावलोकन अभी उपलब्ध नहीं है",
+      "downloadUnavailable": "दस्तावेज़ डाउनलोड अभी उपलब्ध नहीं है",
       "downloadDocument": "{name} डाउनलोड करें",
+      "viewDocument": "{name} देखें",
+      "download": "डाउनलोड",
+      "downloading": "डाउनलोड हो रहा है...",
+      "closePreview": "दस्तावेज़ पूर्वावलोकन बंद करें",
+      "unsupportedPreview": "इस दस्तावेज़ का पूर्वावलोकन यहाँ नहीं किया जा सकता",
+      "unsupportedPreviewDescription": "दस्तावेज़ को संगत एप्लिकेशन में खोलने के लिए डाउनलोड करें।",
+      "previewFailed": "दस्तावेज़ पूर्वावलोकन लोड नहीं हो सका। कृपया फिर से प्रयास करें।",
+      "downloadFailed": "दस्तावेज़ डाउनलोड नहीं हो सका। कृपया फिर से प्रयास करें।",
       "stages": {
         "applicationSubmitted": {
           "title": "आवेदन जमा किया गया",
@@ -433,7 +449,22 @@
           "status": "लंबित",
           "remark": "समीक्षा लंबित है।"
         },
-        "finalApproval": { "title": "अंतिम स्वीकृति", "status": "लंबित", "remark": "लंबित।" }
+        "finalApproval": {
+          "title": "अंतिम स्वीकृति (वरिष्ठ अधिकारी)",
+          "status": "लंबित",
+          "remark": "लंबित।",
+          "description": "मुख्य कार्यालय सत्यापन पूर्ण होने के बाद शुरू होता है।"
+        }
+        ,"clerkVerification": {
+          "title": "लिपिक सत्यापन",
+          "status": "पूर्ण",
+          "description": "आवेदन प्राप्त कर लिपिक द्वारा जांचा गया।"
+        },
+        "headOfficeVerification": {
+          "title": "मुख्य कार्यालय सत्यापन",
+          "status": "प्रगति में",
+          "description": "दस्तावेज़ मुख्य कार्यालय द्वारा समीक्षा में हैं।"
+        }
       },
       "documents": {
         "identityProof": { "name": "पहचान प्रमाण (आधार कार्ड)", "size": "1.2 MB" },

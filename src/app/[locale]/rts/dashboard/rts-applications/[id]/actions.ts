@@ -24,6 +24,8 @@ export interface RtsApplicationDetailData {
   departmentName: string | null;
   serviceId: number;
   serviceName: string | null;
+  sessionId: string | null;
+  ownerId: number | null;
   applicationStatus: string;
   answerGroups: ApplicationAnswerGroup[];
   workflow: ApplicationWorkflowState | null;
@@ -98,6 +100,8 @@ export async function getApplicationDetailAction(
     departmentName,
     serviceId: application.serviceId,
     serviceName,
+    sessionId: application.sessionId,
+    ownerId: application.ownerId,
     applicationStatus: application.applicationStatus,
     answerGroups,
     workflow,

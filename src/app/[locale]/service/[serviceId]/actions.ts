@@ -3,10 +3,10 @@
 import { cookies } from "next/headers";
 import {
   createRtsApplication,
-  uploadRtsDocument,
   type CreateRtsApplicationPayload,
   type CreateRtsApplicationResponse,
 } from "@/lib/api/rts/rtsapplication.service";
+import { uploadRtsDocument } from "@/lib/api/rts/rtsdocument.service";
 import { getRtsServiceById } from "@/lib/api/rts/rtsservices.service";
 import { buildRtsApplicationPayload } from "@/lib/utils/rts/rts-application-payload";
 import type { RtsServiceApiItem } from "@/types/rts/service.types";

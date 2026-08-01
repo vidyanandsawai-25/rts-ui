@@ -8,11 +8,6 @@ import type {
   RtsApprovalFlowStageApiItem,
   SubmitWorkflowActionPayload,
 } from "@/types/rts/workflow.types";
-import {
-  applyMockWorkflowAction,
-  getMockWorkflowState,
-  isRtsMockModeEnabled,
-} from "./rts-workflow-mock-store";
 
 /**
  * Approval-flow configuration (one flow per RTS service, per ApprovalFlowMaster).
@@ -131,8 +126,7 @@ export async function deleteApprovalFlowStage(id: number): Promise<void> {
  *
  * Neither this endpoint nor `/actions` below exist on the backend yet
  * (confirmed against the live swagger spec — only `POST /RTSApplication` is
- * implemented). Both fall back to the dev-only mock store; see
- * rts-workflow-mock-store.ts.
+ * implemented). No local mock data is used.
  */
 export async function getApplicationWorkflow(
   applicationNo: string
@@ -144,10 +138,6 @@ export async function getApplicationWorkflow(
 
   if (response.success && response.data) {
     return response.data;
-  }
-
-  if (isRtsMockModeEnabled()) {
-    return getMockWorkflowState(applicationNo);
   }
 
   throw new Error(response.error || "Failed to fetch application workflow state");
@@ -165,10 +155,6 @@ export async function submitApplicationWorkflowAction(
 
   if (response.success && response.data) {
     return response.data;
-  }
-
-  if (isRtsMockModeEnabled()) {
-    return applyMockWorkflowAction(applicationNo, payload);
   }
 
   throw new Error(response.error || "Failed to submit workflow action");

@@ -1,15 +1,8 @@
 import "server-only";
 
 import { apiClient } from "@/services/api.service";
-import { getAppConfig } from "@/config/app.config";
-import { serverFetch } from "@/lib/utils/server-fetch";
-import { cookies } from "next/headers";
 import type {
-  RtsApplicationApiDashboard,
   RtsApplicationApiDetail,
-  RtsApplicationApiListItem,
-  RtsApplicationsApiListPayload,
-  RtsApplicationsApiListResponse,
 } from "@/types/rts/rts-application.types";
 
 export interface RtsApplicationFieldValuePayload {
@@ -68,70 +61,6 @@ export interface CreateRtsApplicationResponse {
   correlationId: string | null;
 }
 
-export interface GetRtsApplicationsParams {
-  pageNumber?: number;
-  pageSize?: number;
-  departmentId?: number;
-  serviceId?: number;
-  applicationNo?: string;
-  applicationStatus?: string;
-}
-
-
-export interface UploadRtsDocumentPayload {
-  file: File;
-  ownerUserId?: number;
-  documentType?: string;
-  departmentId?: number;
-  moduleId?: number;
-  isPrimaryDocument?: boolean;
-}
-
-export interface UploadRtsDocumentItem {
-  documentGuid: string;
-  documentId: number;
-  documentBindingId: number | null;
-  fileName: string;
-  fileSizeBytes: number;
-  storagePath: string;
-}
-
-export interface UploadRtsDocumentResponse {
-  success: boolean;
-  message: string;
-  items: UploadRtsDocumentItem;
-  errors: unknown;
-  correlationId: string | null;
-}
-
-async function getMultipartAuthHeaders(): Promise<Record<string, string>> {
-  const cookieStore = await cookies();
-  const headers: Record<string, string> = {
-    Accept: "application/json, text/plain, */*",
-  };
-
-  const token = cookieStore.get("auth_token")?.value;
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const csrf = cookieStore.get("csrf_token")?.value;
-  if (csrf) headers["X-CSRF-Token"] = csrf;
-
-  const cookieStr = cookieStore
-    .getAll()
-    .filter((cookie) =>
-      /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(cookie.name)
-    )
-    .map(
-      (cookie) =>
-        `${cookie.name.replace(/[^\x00-\x7F]/g, "")}=${cookie.value.replace(/[^\x00-\x7F]/g, "")}`
-    )
-    .join("; ");
-
-  if (cookieStr) headers.Cookie = cookieStr;
-
-  return headers;
-}
-
 export async function createRtsApplication(
   payload: CreateRtsApplicationPayload
 ): Promise<CreateRtsApplicationResponse> {
@@ -145,7 +74,6 @@ export async function createRtsApplication(
 
   return response.data;
 }
-
 export async function getRtsApplicationById(applicationId: number): Promise<RtsApplicationApiDetail> {
   const response = await apiClient.get<RtsApplicationApiDetail>(
     `/RTSApplication/${applicationId}`,
@@ -157,103 +85,4 @@ export async function getRtsApplicationById(applicationId: number): Promise<RtsA
   }
 
   return response.data;
-}
-
-/**
- * GET /api/RTSApplication (list + dashboard metrics aggregate)
- */
-export async function getRtsApplications(
-  params: GetRtsApplicationsParams = {}
-): Promise<{
-  dashboard: RtsApplicationApiDashboard | null;
-  applications: RtsApplicationApiListItem[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-}> {
-  const queryParams = new URLSearchParams();
-  if (params.pageNumber != null) queryParams.set("PageNumber", String(params.pageNumber));
-  if (params.pageSize != null) queryParams.set("PageSize", String(params.pageSize));
-  if (params.departmentId != null) queryParams.set("DepartmentId", String(params.departmentId));
-  if (params.serviceId != null) queryParams.set("ServiceId", String(params.serviceId));
-  if (params.applicationNo) queryParams.set("ApplicationNo", params.applicationNo);
-  if (params.applicationStatus) queryParams.set("ApplicationStatus", params.applicationStatus);
-
-  const queryString = queryParams.toString();
-  const endpoint = `/RTSApplication${queryString ? `?${queryString}` : ""}`;
-
-  const response = await apiClient.get<RtsApplicationsApiListResponse>(endpoint, {
-    cache: "no-store",
-  });
-
-  if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch RTS applications");
-  }
-
-  const data = response.data;
-  const firstItem = Array.isArray(data.items)
-    ? data.items[0]
-    : (data.items as unknown as RtsApplicationsApiListPayload);
-
-  return {
-    dashboard: firstItem?.dashboard ?? null,
-    applications: firstItem?.applications ?? [],
-    totalCount: data.totalCount,
-    pageNumber: data.pageNumber,
-    pageSize: data.pageSize,
-    totalPages: data.totalPages,
-  };
-}
-
-export async function uploadRtsDocument(
-  payload: UploadRtsDocumentPayload
-): Promise<UploadRtsDocumentItem> {
-  const baseUrl = getAppConfig().api.baseUrl?.trim();
-  if (!baseUrl) {
-    throw new Error("API base URL is not configured");
-  }
-
-  const url = `${baseUrl.replace(/\/$/, "")}/documents/upload`;
-  const formData = new FormData();
-
-  formData.append("File", payload.file, payload.file.name);
-  formData.append("OwnerUserId", String(payload.ownerUserId ?? 0));
-  formData.append("DocumentType", payload.documentType ?? "");
-  formData.append("DepartmentId", String(payload.departmentId ?? 0));
-  formData.append("ModuleId", String(payload.moduleId ?? 0));
-  formData.append("IsPrimaryDocument", String(payload.isPrimaryDocument ?? false));
-
-  const response = await serverFetch(url, {
-    method: "POST",
-    headers: await getMultipartAuthHeaders(),
-    body: formData,
-    cache: "no-store",
-  });
-
-  const text = await response.text();
-  let data: UploadRtsDocumentResponse | { message?: string; error?: string };
-
-  try {
-    data = text ? (JSON.parse(text) as UploadRtsDocumentResponse) : ({ message: "" } as const);
-  } catch {
-    data = { message: text };
-  }
-
-  if (!response.ok) {
-    const errorMsg =
-      ("message" in data && typeof data.message === "string" && data.message) ||
-      ("error" in data && typeof data.error === "string" && data.error) ||
-      `RTS document upload failed with status ${response.status}`;
-    throw new Error(errorMsg);
-  }
-
-  if (!("items" in data) || !data.items) {
-    const errorMsg =
-      ("message" in data && typeof data.message === "string" && data.message) ||
-      "RTS document upload response did not include document data";
-    throw new Error(errorMsg);
-  }
-
-  return data.items;
 }

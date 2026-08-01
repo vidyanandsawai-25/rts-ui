@@ -367,7 +367,7 @@
     "applications": {
       "title": "YOUR APPLICATIONS & SLA TIMELINE",
       "description": "Each municipal service is bound by legal Right to Service delivery timelines.",
-      "searchPlaceholder": "Search by application number, owner name, or survey number...",
+      "searchPlaceholder": "Search by application number...",
       "empty": "No applications matched the tracking criteria.",
       "loading": "Loading dashboard..."
     },
@@ -418,10 +418,26 @@
       "slaTimeline": "SLA Timeline",
       "slaDeadline": "SLA Deadline",
       "notAvailable": "Not available",
+      "status": "Status",
       "approvalStages": "Approval Stages",
       "completion": "25% Done",
+      "stageProgress": "1 of 3 Done",
       "submittedDocuments": "Submitted Documents",
+      "submittedDocumentsDescription": "Uploaded at the time of application",
+      "documentAttached": "Document attached",
+      "noSubmittedDocuments": "No documents were submitted with this application.",
+      "noApprovalStages": "No approval stages are available for this application.",
+      "previewUnavailable": "Document preview is not available yet",
+      "downloadUnavailable": "Document download is not available yet",
       "downloadDocument": "Download {name}",
+      "viewDocument": "View {name}",
+      "download": "Download",
+      "downloading": "Downloading...",
+      "closePreview": "Close document preview",
+      "unsupportedPreview": "This document cannot be previewed here",
+      "unsupportedPreviewDescription": "Download the document to open it in a compatible application.",
+      "previewFailed": "Unable to load the document preview. Please try again.",
+      "downloadFailed": "Unable to download the document. Please try again.",
       "stages": {
         "applicationSubmitted": {
           "title": "Application Submitted",
@@ -433,7 +449,22 @@
           "status": "Pending",
           "remark": "Pending review."
         },
-        "finalApproval": { "title": "Final Approval", "status": "Pending", "remark": "Pending." }
+        "finalApproval": {
+          "title": "Final Approval (Senior Officer)",
+          "status": "Pending",
+          "remark": "Pending.",
+          "description": "Starts after head office verification is completed."
+        }
+        ,"clerkVerification": {
+          "title": "Clerk Verification",
+          "status": "Complete",
+          "description": "Application was received and checked by the clerk."
+        },
+        "headOfficeVerification": {
+          "title": "Head Office Verification",
+          "status": "In Progress",
+          "description": "Documents are under review by the head office."
+        }
       },
       "documents": {
         "identityProof": { "name": "Identity Proof (Aadhaar Card)", "size": "1.2 MB" },
