@@ -1,4 +1,5 @@
 
+import { redirect } from "next/navigation";
 import GeoSequencingPage from "@/components/modules/property-tax/automation-dashboard/GeoSequencing/GeoSequencingPage";
 import { getGeoSequencingGridAction } from "./action";
 import { getAutomationWorkflowCardsAction } from "../action";
@@ -16,6 +17,7 @@ export default async function GeoSequencingPageServer({ searchParams }: Props) {
         const geoCard = workflowCardsResult?.data?.find((card: { stageName: string; id: string }) => card.stageName === 'GeoSequencing');
         if (geoCard?.id) {
             workflowStageId = geoCard.id;
+            redirect(`?workflowStageId=${geoCard.id}`);
         }
     }
 
@@ -24,9 +26,9 @@ export default async function GeoSequencingPageServer({ searchParams }: Props) {
     ]);
 
     return (
-        <GeoSequencingPage 
-            serverData={dataResult?.data ?? null} 
-            defaultWorkflowStageId={workflowStageId} 
+        <GeoSequencingPage
+            serverData={dataResult?.data ?? null}
+            defaultWorkflowStageId={workflowStageId}
         />
     );
 }

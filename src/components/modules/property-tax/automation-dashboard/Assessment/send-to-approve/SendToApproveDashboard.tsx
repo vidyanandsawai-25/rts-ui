@@ -51,8 +51,8 @@ export default function SendToApproveDashboard({
     const selectedSurveyType = searchParams.get('surveyType') || 'All';
     const selectedZoneName = searchParams.get('zoneName') || 'All';
     const selectedWardNumber = searchParams.get('wardNumber') || 'All';
-    const selectedPropertyType = searchParams.get('propertyType') || 'All';
-    const selectedPropertyDescription = searchParams.get('propertyDescription') || 'All';
+    const selectedPropertyType = searchParams.get('PropertyTypeCategoryId') || 'All';
+    const selectedPropertyDescription = searchParams.get('PropertyTypeId') || 'All';
 
     const [viewerDocumentGuid, setViewerDocumentGuid] = useState<string | null>(null);
     const [viewerPropertyNo, setViewerPropertyNo] = useState<string>('');
@@ -291,7 +291,7 @@ export default function SendToApproveDashboard({
                     <div className="min-w-0">
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.propertyType')}</label>
                         <SearchSelect
-                            name="propertyType"
+                            name="PropertyTypeCategoryId"
                             value={selectedPropertyType}
                             onChange={handleFilterChange}
                             options={propertyTypeOptions}
@@ -301,7 +301,7 @@ export default function SendToApproveDashboard({
                     <div className="min-w-0">
                         <label className="text-xs font-medium text-slate-600 mb-1 block">{t('sendToApprove.filters.propertyDescription')}</label>
                         <SearchSelect
-                            name="propertyDescription"
+                            name="PropertyTypeId"
                             value={selectedPropertyDescription}
                             onChange={handleFilterChange}
                             options={propertyDescriptionOptions}

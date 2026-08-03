@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
     back: mockBack,
   }),
   useSearchParams: () => mockSearchParams,
+  usePathname: () => "/en/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/123",
 }));
 
 // Mock next-intl
@@ -85,6 +86,6 @@ describe("BuildingwiseProperty", () => {
     const backButton = screen.getByRole("button", { name: /back/i });
     fireEvent.click(backButton);
     
-    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/automation-dashboard/approval-by-ulb");
   });
 });

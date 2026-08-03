@@ -26,8 +26,8 @@ interface PageProps {
         surveyType?: string;
         zoneName?: string;
         wardNumber?: string;
-        propertyType?: string;
-        propertyDescription?: string;
+        PropertyTypeCategoryId?: string;
+        PropertyTypeId?: string;
     }>;
 }
 
@@ -39,7 +39,8 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
     const surveyType = search.surveyType || 'All';
     const zoneName = search.zoneName || 'All';
     const wardNumber = search.wardNumber || 'All';
-    const propertyType = search.propertyType || 'All';
+    const propertyType = search.PropertyTypeCategoryId || 'All';
+    const propertyDescription = search.PropertyTypeId || 'All';
 
     // 1. Fetch metadata first (Zones, Wards, Property Types, Survey Types)
     const [
@@ -57,23 +58,16 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
     const zones = zonesRes.success && zonesRes.data ? zonesRes.data : [];
     const wards = wardsRes.success && wardsRes.data ? wardsRes.data : [];
 
-    const selectedZoneObj = zones.find(z => z.id.toString() === zoneName);
-    const zoneNo = selectedZoneObj ? selectedZoneObj.zoneNo : undefined;
-
-    const selectedWardObj = wards.find(w => w.id.toString() === wardNumber);
-    const wardNo = selectedWardObj ? selectedWardObj.wardNo : undefined;
-
     // 2. Fetch pending assessment properties with all queries mapped
     const response = await getPendingAssessmentPropsAction({
         pageNumber,
         pageSize,
         searchTerm: SearchTerm,
         surveyTypeId: surveyType,
-        zoneId: zoneName,
-        zoneNo,
-        wardId: wardNumber,
-        wardNo,
-        propertyTypeId: propertyType
+        zoneId: zoneName,    
+        wardId: wardNumber,    
+        PropertyTypeCategoryId: propertyType,
+        PropertyTypeId: propertyDescription
     });
 
     const serverData = response.success ? (response.data ?? null) : null;
@@ -88,6 +82,9 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
     wardOptions.unshift({ value: 'All', label: 'All Wards' });
     propDescOptions.unshift({ value: 'All', label: 'All Descriptions' });
     surveyTypeOptions.unshift({ value: 'All', label: 'All Survey Types' });
+
+    console.log("propertyType :",propertyType);
+    
 
     return (
         <SendToApproveDashboard 

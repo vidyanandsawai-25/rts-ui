@@ -90,7 +90,7 @@ describe("PendingStructuresWardWise", () => {
     const backButton = screen.getByRole("button", { name: /backToWardWise/i });
     fireEvent.click(backButton);
     
-    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax");
     mockSearchParams.delete("returnUrl");
   });
 });

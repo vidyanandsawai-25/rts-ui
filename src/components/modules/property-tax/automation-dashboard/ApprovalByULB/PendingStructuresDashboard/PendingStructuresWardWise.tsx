@@ -11,9 +11,9 @@ import {
     ExtendedBuildingWiseItem
 } from './PendingStructuresColumns';
 import {
-    AuthoritySignature,
     BuildingWisePagination
 } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
+import { Button } from '@/components/common';
 
 interface PendingStructuresWardWiseProps {
     wardId?: string;
@@ -27,24 +27,22 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
     const t = useTranslations('automationDashboard.approvalByULB');
     const [searchTerm, setSearchTerm] = useState('');
 
+    const wardName = searchParams.get('wardName');
+    const returnUrl = searchParams.get('returnUrl');
+    const basePath = pathname.split('/').slice(0, 4).join('/') || `/${pathname.split('/')[1] || 'en'}/property-tax/automation-dashboard`;
+    const backUrl = returnUrl ? decodeURIComponent(returnUrl) : `${basePath}/approval-by-ulb`;
+
     const rawItems: ExtendedBuildingWiseItem[] = useMemo(() => (serverData?.items as ExtendedBuildingWiseItem[]) || [], [serverData?.items]);
 
-    // Extract unique authorities for dynamic columns
+    // Extract authorities for dynamic columns from the first valid row
     const uniqueAuthorities = useMemo(() => {
-        if (!rawItems.length) return [];
-        const authoritiesMap = new Map<number, AuthoritySignature>();
-        rawItems.forEach((row: ExtendedBuildingWiseItem) => {
-            row.authoritySignatures?.forEach((auth: AuthoritySignature) => {
-                if (!authoritiesMap.has(auth.signAuthorityId)) {
-                    authoritiesMap.set(auth.signAuthorityId, auth);
-                }
-            });
-        });
-        return Array.from(authoritiesMap.values()).sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+        const firstRowWithAuth = rawItems.find(row => row.authoritySignatures?.length > 0);
+        return firstRowWithAuth ? firstRowWithAuth.authoritySignatures : [];
     }, [rawItems]);
 
     const locale = pathname.split('/')[1] || 'en';
-    const columns = useMemo(() => getPendingStructuresColumns(uniqueAuthorities, t, locale), [uniqueAuthorities, t, locale]);
+    const currentUrl = encodeURIComponent(`${pathname}?${searchParams.toString()}`);
+    const columns = useMemo(() => getPendingStructuresColumns(uniqueAuthorities, t, locale, currentUrl), [uniqueAuthorities, t, locale, currentUrl]);
 
     const tableData = useMemo(() => {
         if (!rawItems.length) return [];
@@ -54,19 +52,20 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
         // If the server provides a separate totalRow object, append it
         const sData = serverData as unknown as { totalRow?: ExtendedBuildingWiseItem };
         if (sData?.totalRow) {
-            mappedData.push({
-                ...sData.totalRow,
-                isTotal: true,
-                demand: sData.totalRow.demand || sData.totalRow.totalDemand
-            });
+            const totalRow = { ...sData.totalRow };
+            totalRow.isTotal = true;
+            totalRow.demand = totalRow.demand || totalRow.totalDemand;
+            mappedData.push(totalRow);
         }
 
         // If the total is already the last item in the array, ensure it has isTotal: true
         if (mappedData.length > 0) {
-            const lastRow = mappedData[mappedData.length - 1];
+            const lastRowIndex = mappedData.length - 1;
+            const lastRow = { ...mappedData[lastRowIndex] };
             // Infer it's a total row if buildingNo is empty or explicitly flagged
             if (!lastRow.buildingNo || lastRow.buildingNo === 'Total' || lastRow.isTotal) {
                 lastRow.isTotal = true;
+                mappedData[lastRowIndex] = lastRow;
             }
         }
 
@@ -89,19 +88,22 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
     return (
         <div className="flex flex-col h-full min-h-0 overflow-hidden gap-3 p-3">
             {/* Custom Page Header */}
-            <div className="flex items-center bg-[#f8f9fe] px-4 py-3 rounded-t-lg border border-slate-200 border-b-0 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
-                <button
-                    onClick={() => router.back()}
-                    className="flex items-center gap-2 text-[13px] text-slate-700 hover:text-indigo-600 transition-colors w-[200px]"
+            <div className="relative p-3 border-b border-slate-200 bg-slate-50 flex items-center rounded-t-2xl">
+
+                <Button
+                    type="button"
+                    variant="secondary"
+                    className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold !bg-white hover:!bg-blue-50 border !border-blue-200 rounded-lg transition-colors shadow-sm"
+                    onClick={() => router.push(backUrl)}
+                    icon={ArrowLeft}
                 >
-                    <ArrowLeft className="w-4 h-4" />
-                    {t('backToWardWise')}
-                </button>
+                    {t('backToWardWise') || 'Back to Divisions'}
+                </Button>
 
                 <div className="flex-1 flex justify-center">
-                    <h1 className="text-[15px] font-bold text-slate-800">
-                        {t('titleWithWard', { wardId: wardId || '' })}
-                    </h1>
+                    <h3 className="absolute left-1/2 -translate-x-1/2 text-[15px] font-semibold text-slate-800 text-center">
+                        {wardName ? `Approval by ULB - ${wardName}` : t('titleWithWard', { wardId: wardId || '' })}
+                    </h3>
                 </div>
 
                 <div className="w-[200px] flex justify-end">
@@ -119,16 +121,16 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
             </div>
 
             {/* Table Area */}
-            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1 min-h-0">
+            <div className="border border-slate-200 shadow-md overflow-hidden bg-white rounded-2xl flex flex-col flex-1 min-h-0">
                 <div className="flex-1 p-0 flex flex-col min-h-0 transition-all duration-300 border-t border-slate-200">
                     <AutomationTable
                         data={tableData}
                         columns={columns}
                         containerClassName="h-full flex flex-col min-h-0"
                         tableClassName="w-full border-collapse text-xs border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                        theadClassName="sticky top-0 z-20 bg-[#ebfbfb] shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300 [&>tr>th]:py-3 [&>tr>th]:!text-black"
+                        theadClassName="sticky top-0 z-20 bg-gradient-to-r from-teal-50 to-cyan-50 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300 [&>tr>th]:py-3 [&>tr>th]:!text-black"
                         maxBodyHeightClassName="flex-1 min-h-0"
-                        rowClassName={(row) => row.isTotal ? "bg-purple-100/50 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-purple-200" : "group transition-colors border-b border-slate-200 cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-purple-100/50 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-purple-200" : "border-b border-slate-200 odd:bg-white even:bg-teal-50/25 hover:bg-indigo-50/25 transition-colors cursor-pointer"}
                         loading={false}
                         totalCount={serverData?.totalCount || 0}
                         pageNumber={serverData?.pageNumber || 1}

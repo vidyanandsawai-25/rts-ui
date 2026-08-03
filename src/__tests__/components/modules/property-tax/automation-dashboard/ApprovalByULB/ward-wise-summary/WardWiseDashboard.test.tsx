@@ -40,6 +40,7 @@ describe("WardWiseDashboard", () => {
     zoneData: [
       {
         zoneId: 1,
+        zoneNo: "1",
         zoneName: "Zone 1",
         wardId: 10,
         wardName: "Ward 10",
@@ -50,6 +51,7 @@ describe("WardWiseDashboard", () => {
     ],
     totalRow: {
       zoneId: null,
+      zoneNo: "Total",
       zoneName: "total",
       wardId: null,
       wardName: null,
@@ -62,14 +64,14 @@ describe("WardWiseDashboard", () => {
 
   it("renders correctly with empty data", () => {
     render(<WardWiseDashboard zoneId="1" serverData={null} />);
-    expect(screen.getByText("backToWardWise")).toBeInTheDocument();
+    expect(screen.getByText("backToDivisions")).toBeInTheDocument();
     expect(screen.queryByTestId("table-row-0")).not.toBeInTheDocument();
   });
 
   it("renders table with data and total row correctly", () => {
     render(<WardWiseDashboard zoneId="1" serverData={mockServerData} />);
     
-    expect(screen.getByText("Approval by ULB - Ward-wise (Zone 1)")).toBeInTheDocument();
+    expect(screen.getByText("Approval by ULB - Ward-wise (1 - Zone 1)")).toBeInTheDocument();
     
     // Check if table rows are rendered
     expect(screen.getByTestId("table-row-0")).toHaveTextContent("Zone 1");
@@ -81,7 +83,7 @@ describe("WardWiseDashboard", () => {
   it("navigates back when back button is clicked", () => {
     render(<WardWiseDashboard zoneId="1" serverData={mockServerData} />);
     
-    const backButton = screen.getByText("backToWardWise");
+    const backButton = screen.getByText("backToDivisions");
     fireEvent.click(backButton);
     
     expect(mockPush).toHaveBeenCalledWith("/en/property-tax/automation-dashboard/approval-by-ulb");

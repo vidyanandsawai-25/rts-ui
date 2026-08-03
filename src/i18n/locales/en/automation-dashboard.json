@@ -1,5 +1,6 @@
 {
   "errors": {
+    "exportPendingData": "Failed to export pending data.",
     "fetchMainCards": "Failed to fetch main cards data.",
     "fetchWorkflowCards": "Failed to fetch workflow cards data.",
     "fetchGeoSequencingGrid": "Failed to fetch geo sequencing grid data.",
@@ -291,6 +292,7 @@
     "titleWithWard": "Approval by ULB - {wardId}",
     "searchPlaceholder": "Search notice no...",
     "backToWardWise": "Back to Ward-wise",
+    "backToDivisions": "Back to Divisions",
     "totalStructures": "Total Structures",
     "totalUnitsSubmitted": "Total Units Submitted",
     "totalDemandCr": "Total Demand (Cr)",

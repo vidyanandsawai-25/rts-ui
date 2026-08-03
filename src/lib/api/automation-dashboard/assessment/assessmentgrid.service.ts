@@ -29,7 +29,8 @@ export interface FetchPendingAssessmentPropsParams {
   zoneNo?: string;
   wardId?: string | number;
   wardNo?: string;
-  propertyTypeId?: string | number;
+  PropertyTypeCategoryId?: string | number;
+  PropertyTypeId?: string | number;
 }
 
 export async function automationGetPendingAssessmentProps(
@@ -44,7 +45,8 @@ export async function automationGetPendingAssessmentProps(
   if (params.zoneNo) urlParams.append("ZoneNo", params.zoneNo);
   if (params.wardId !== undefined && params.wardId !== null && params.wardId !== 'All') urlParams.append("WardId", params.wardId.toString());
   if (params.wardNo) urlParams.append("WardNo", params.wardNo);
-  if (params.propertyTypeId !== undefined && params.propertyTypeId !== null && params.propertyTypeId !== 'All') urlParams.append("PropertyTypeId", params.propertyTypeId.toString());
+  if (params.PropertyTypeCategoryId !== undefined && params.PropertyTypeCategoryId !== null && params.PropertyTypeCategoryId !== 'All') urlParams.append("PropertyTypeCategoryId", params.PropertyTypeCategoryId.toString());
+  if (params.PropertyTypeId !== undefined && params.PropertyTypeId !== null && params.PropertyTypeId !== 'All') urlParams.append("PropertyTypeId", params.PropertyTypeId.toString());
 
   const response = await apiClient.get<PendingAssessmentResponse>(
     `/AutomationDashboard/GetPendingAssessmentProps?${urlParams.toString()}`

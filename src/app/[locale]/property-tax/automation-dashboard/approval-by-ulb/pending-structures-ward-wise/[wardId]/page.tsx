@@ -24,7 +24,7 @@ export default async function PendingStructuresWardWisePage({ params, searchPara
 
     const summaryResponse = await getBuildingWiseDataAction(wardId, workflowStageId, pageNumber, pageSize);
     const serverData = summaryResponse.success && summaryResponse.data ? summaryResponse.data : null;
-    
+
     return (
         <PendingStructuresWardWise wardId={wardId} serverData={serverData} />
     );

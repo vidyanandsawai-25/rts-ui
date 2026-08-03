@@ -1,5 +1,6 @@
 {
   "errors": {
+    "exportPendingData": "प्रलंबित डेटा निर्यात करण्यात अयशस्वी.",
     "fetchMainCards": "मुख्य कार्ड डेटा प्राप्त करण्यात अयशस्वी.",
     "fetchWorkflowCards": "वर्कफ्लो कार्ड डेटा प्राप्त करण्यात अयशस्वी.",
     "fetchGeoSequencingGrid": "जिओ-सिक्वेन्सिंग ग्रिड डेटा प्राप्त करण्यात अयशस्वी.",
@@ -291,6 +292,7 @@
     "titleWithWard": "ULB द्वारे मंजुरी - {wardId}",
     "searchPlaceholder": "नोटीस क्रमांक शोधा...",
     "backToWardWise": "वॉर्डनुसार (मागे जा)",
+    "backToDivisions": "विभागावर परत जा",
     "totalStructures": "एकूण संरचना",
     "totalUnitsSubmitted": "एकूण सबमिट केलेले युनिट्स",
     "totalDemandCr": "एकूण मागणी (Cr)",

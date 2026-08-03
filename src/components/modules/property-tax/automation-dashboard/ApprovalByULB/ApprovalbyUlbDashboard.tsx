@@ -7,19 +7,49 @@ import { AutomationTable } from '@/components/common/AutomationTable';
 import { ExportButton } from '@/components/common/ActionButtons';
 import { Button } from '@/components/common/ActionButton';
 import { getUniqueRoles, getApprovalColumns, getApprovalHeaderRows } from './ApprovalbyUlbColumns';
-import { ApprovalByUlbItems } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
+import { ApprovalByUlbItems, PendingExportItem } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
+import { useAutoExportToExcel } from '@/hooks/automation-dashboard/useAutoExportToExcel';
 
 interface ApprovalbyUlbDashboardProps {
     serverData?: ApprovalByUlbItems | null;
+    exportData?: PendingExportItem[] | null;
+    exportRoleName?: string | null;
 }
 
-const ApprovalbyUlbDashboard = ({ serverData }: ApprovalbyUlbDashboardProps) => {
+const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: ApprovalbyUlbDashboardProps) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const locale = useLocale();
     const t = useTranslations('automationDashboard.approvalByULB');
     const workflowStageId = searchParams.get('workflowStageId') || '';
     const basePath = `/${locale}/property-tax/automation-dashboard`;
+
+    const handleComplete = useCallback(() => {
+        const currentParams = new URLSearchParams(searchParams.toString());
+        currentParams.delete('signAuthorityId');
+        currentParams.delete('roleName');
+        router.replace(`${basePath}/approval-by-ulb?${currentParams.toString()}`);
+    }, [searchParams, router, basePath]);
+
+    const excelData = useMemo(() => {
+        if (!exportData) return null;
+        return exportData.map((row) => ({
+            "Zone": row.zone || "",
+            "Building No": row.buildingNo || "",
+            "SR Notice No": row.srNoticeNo || "",
+            "Pending Sign At": row.pendingSignAt || "",
+            "Pending Officer Name": row.pendingOfficerName || ""
+        }));
+    }, [exportData]);
+
+    useAutoExportToExcel({
+        data: excelData,
+        fileName: exportRoleName ? `Pending_Signatures_${exportRoleName.replace(/\s+/g, '_')}` : null,
+        sheetName: 'Pending_Signatures',
+        emptyMessage: `No pending records found for ${exportRoleName}`,
+        successMessage: `Successfully exported data for ${exportRoleName}`,
+        onComplete: handleComplete
+    });
 
     const tableData = useMemo(() => {
         if (!serverData) return [];
@@ -45,8 +75,19 @@ const ApprovalbyUlbDashboard = ({ serverData }: ApprovalbyUlbDashboardProps) => 
         router.push(`${basePath}/approval-by-ulb/ward-wise-summary/${zoneId}${query}`);
     }, [router, locale, basePath, workflowStageId]);
 
+    const handleExportClick = useCallback((roleId: number, roleName: string) => {
+        const currentParams = new URLSearchParams(searchParams.toString());
+        currentParams.set('signAuthorityId', roleId.toString());
+        currentParams.set('roleName', roleName);
+        // Also keep workflowStageId if present
+        if (workflowStageId) {
+            currentParams.set('workflowStageId', workflowStageId);
+        }
+        router.push(`${basePath}/approval-by-ulb?${currentParams.toString()}`);
+    }, [router, searchParams, basePath, workflowStageId]);
+
     const columns = useMemo(() => getApprovalColumns(roles, handleNavigation, t), [roles, handleNavigation, t]);
-    const headerRows = useMemo(() => getApprovalHeaderRows(roles, t, 'zone'), [roles, t]);
+    const headerRows = useMemo(() => getApprovalHeaderRows(roles, t, 'zone', handleExportClick), [roles, t, handleExportClick]);
 
     return (
         <div className="flex h-full flex-col gap-1 overflow-hidden bg-gray-50   ">

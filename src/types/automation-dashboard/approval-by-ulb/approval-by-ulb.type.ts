@@ -1,4 +1,5 @@
 export interface Classification {
+    typeId: number;
     type: string;
     structure: number;
     unit: number;
@@ -14,6 +15,7 @@ export interface Classification {
 export interface ZoneDataRow {
     zoneId: number | null;
     zoneName: string;
+    zoneNo: string;
     wardId: number | null;
     wardName: string | null;
     totalStructure: number;
@@ -81,6 +83,7 @@ export interface PropertyWiseRecord {
 }
 
 export interface PropertyWiseItem {
+    propertyId: string,
     wardNo: string;
     newPropertyNo: string;
     oldPropertyNo: string;
@@ -121,6 +124,22 @@ export interface PropertyWiseResponse {
     success: boolean;
     message: string;
     items: PropertyWisePagination;
+    errors: unknown | null;
+    correlationId: string | null;
+}
+
+export interface PendingExportItem {
+    zone: string;
+    buildingNo: string;
+    srNoticeNo: string;
+    pendingSignAt: string;
+    pendingOfficerName: string;
+}
+
+export interface PendingExportResponse {
+    success: boolean;
+    message: string;
+    items: PendingExportItem[];
     errors: unknown | null;
     correlationId: string | null;
 }

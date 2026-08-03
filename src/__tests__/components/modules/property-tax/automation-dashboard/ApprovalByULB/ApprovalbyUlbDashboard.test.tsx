@@ -40,6 +40,7 @@ describe("ApprovalbyUlbDashboard", () => {
     zoneData: [
       {
         zoneId: 1,
+        zoneNo: "1",
         zoneName: "Zone 1",
         wardId: null,
         wardName: null,
@@ -49,6 +50,7 @@ describe("ApprovalbyUlbDashboard", () => {
       },
       {
         zoneId: 2,
+        zoneNo: "2",
         zoneName: "Zone 2",
         wardId: null,
         wardName: null,
@@ -59,6 +61,7 @@ describe("ApprovalbyUlbDashboard", () => {
     ],
     totalRow: {
       zoneId: null,
+      zoneNo: "Total",
       zoneName: "total",
       wardId: null,
       wardName: null,

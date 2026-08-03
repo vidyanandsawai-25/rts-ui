@@ -1,14 +1,14 @@
-
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { PropertyWisePagination } from "@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type";
+import { PropertyWisePagination, PropertyWiseItem } from "@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type";
 import { AutomationTable } from "@/components/common/AutomationTable";
 import { ArrowLeft, Search } from "lucide-react";
 
 import { getBuildingwisePropertyHeaderRows, getBuildingwisePropertyColumns } from "./BuildingwisePropertyColumns";
+import { Button } from "@/components/common";
 
 interface BuildingwisePropertyProps {
     propertyNo: string;
@@ -18,11 +18,22 @@ interface BuildingwisePropertyProps {
 const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
     const t = useTranslations("automationDashboard");
     const [searchTerm, setSearchTerm] = useState("");
 
+    const returnUrl = searchParams.get('returnUrl');
+    const basePath = pathname.split('/').slice(0, 4).join('/') || `/${pathname.split('/')[1] || 'en'}/property-tax/automation-dashboard`;
+    const backUrl = returnUrl ? decodeURIComponent(returnUrl) : `${basePath}/approval-by-ulb`;
+
+    const handleTrackingClick = useCallback((row: PropertyWiseItem) => {
+        const currentReturnUrl = encodeURIComponent(`${pathname}?${searchParams.toString()}`);
+        const propertyId = row.propertyId || row.newPropertyNo || 'unknown';
+        router.push(`${pathname}/PropertyTracking/${propertyId}?propertyNo=${row.newPropertyNo || ''}&ownerName=${row.ownerName || ''}&returnUrl=${currentReturnUrl}`);
+    }, [pathname, searchParams, router]);
+
     const headerRows = useMemo(() => getBuildingwisePropertyHeaderRows(), []);
-    const columns = useMemo(() => getBuildingwisePropertyColumns(t), [t]);
+    const columns = useMemo(() => getBuildingwisePropertyColumns(t, handleTrackingClick), [t, handleTrackingClick]);
 
     const totalCount = serverData?.totalCount || 0;
     const pageNumber = serverData?.pageNumber || 1;
@@ -44,49 +55,51 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
         router.push(`?${currentParams.toString()}`);
     };
 
-    const handleBack = () => {
-        router.back();
-    };
-
     return (
-        <div className="flex flex-col h-full min-h-0 overflow-hidden bg-slate-50 gap-3 p-3">
+        <div className="flex flex-col h-full min-h-0 overflow-hidden bg-slate-50 gap-3">
             {/* Header Bar */}
-            <div className="bg-white border border-slate-200 rounded-lg p-2.5 flex items-center justify-between shadow-sm">
-                <button
-                    onClick={handleBack}
-                    className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium"
-                >
-                    <ArrowLeft size={16} />
-                    {t('approvalByULB.buildingWiseProperty.backToStructureDetails')}
-                </button>
+            <div className="relative p-3 border-b border-slate-200 bg-slate-50 flex items-center rounded-t-2xl">
 
-                <div className="flex-1 flex justify-center text-[13px] font-bold text-slate-800">
-                    {t('approvalByULB.buildingWiseProperty.title', { propertyNo })}
+                <Button
+                    type="button"
+                    className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold !text-black !bg-white hover:!bg-blue-50 border !border-blue-200 rounded-lg transition-colors shadow-sm"
+                    onClick={() => router.push(backUrl)}
+                    icon={ArrowLeft}
+                >
+                    {t('approvalByULB.buildingWiseProperty.backToStructureDetails')}
+                </Button>
+
+                <div className="flex-1 flex justify-center">
+                    <h3 className="absolute left-1/2 -translate-x-1/2 text-[15px] font-semibold text-slate-800 text-center">
+                        {t('approvalByULB.buildingWiseProperty.title', { propertyNo })}
+                    </h3>
                 </div>
 
-                <div className="relative w-full max-w-[200px]">
-                    <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder={t('approvalByULB.buildingWiseProperty.searchPlaceholder')}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-slate-300 rounded outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 text-slate-700 bg-white"
-                    />
+                <div className="relative w-full max-w-[240px] ml-auto flex justify-end">
+                    <div className="relative w-full">
+                        <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder={t('approvalByULB.buildingWiseProperty.searchPlaceholder')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-slate-300 rounded outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 text-slate-700 bg-white"
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Table Area */}
-            <div className="relative border-0 shadow-sm overflow-hidden bg-white rounded-lg flex flex-col flex-1 min-h-0 border border-slate-200">
+            <div className="border border-slate-200 shadow-md overflow-hidden bg-white rounded-2xl flex flex-col flex-1 min-h-0">
                 <AutomationTable
                     data={tableData}
                     columns={columns}
                     headerRows={headerRows}
                     containerClassName="h-full flex flex-col min-h-0"
                     tableClassName="w-full border-collapse text-xs border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                    theadClassName="sticky top-0 z-20 bg-slate-50 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300"
+                    theadClassName="sticky top-0 z-20 bg-gradient-to-r from-violet-50 to-fuchsia-50 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300 [&>tr>th]:py-3 [&>tr>th]:!text-black"
                     maxBodyHeightClassName="flex-1 min-h-0"
-                    rowClassName={() => "group transition-colors border-b border-slate-200 cursor-pointer"}
+                    rowClassName={() => "border-b border-slate-200 odd:bg-white even:bg-violet-50/25 hover:bg-indigo-50/25 transition-colors cursor-pointer"}
                     loading={false}
                     totalCount={totalCount}
                     pageNumber={pageNumber}

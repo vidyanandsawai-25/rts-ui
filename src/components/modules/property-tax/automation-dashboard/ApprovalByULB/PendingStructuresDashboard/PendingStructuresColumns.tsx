@@ -10,7 +10,7 @@ export type ExtendedBuildingWiseItem = BuildingWiseItem & {
     [key: string]: unknown;
 };
 
-export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignature[] = [], t: (key: string) => string, locale: string = 'en'): Column<ExtendedBuildingWiseItem>[] => {
+export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignature[] = [], t: (key: string) => string, locale: string = 'en', currentUrl: string = ''): Column<ExtendedBuildingWiseItem>[] => {
     const baseColumns: Column<ExtendedBuildingWiseItem>[] = [
         {
             key: 'sr',
@@ -29,7 +29,7 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
                 if (row.isTotal) return null;
                 return (
                     <Link 
-                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}`} 
+                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}${currentUrl ? `?returnUrl=${currentUrl}` : ''}`} 
                         className="text-gray-700 font-semibold hover:underline hover:text-indigo-800 transition-colors"
                     >
                         {row.buildingNo}
@@ -73,10 +73,10 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             label: auth.authorityName,
             align: 'center',
             render: (_val, row) => {
-                const sig = row.authoritySignatures?.find((s: AuthoritySignature) => s.signAuthorityId === auth.signAuthorityId);
                 if (row.isTotal) {
-                     return <span className="font-bold text-slate-800">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? sig?.isSigned ?? 0}</span>;
-                    }
+                     return <span className="font-bold text-slate-800">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? 0}</span>;
+                }
+                const sig = row.authoritySignatures?.find((s: AuthoritySignature) => s.signAuthorityId === auth.signAuthorityId);
                 if (sig) {
                     if (sig.isSigned === 1) {
                         return <Check className="w-4 h-4 text-emerald-500 mx-auto" strokeWidth={3} />;
