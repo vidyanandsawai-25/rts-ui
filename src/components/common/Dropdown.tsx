@@ -58,7 +58,9 @@ export function MultiSelectDropdown({
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [openUp, setOpenUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- CLOSE ON OUTSIDE CLICK ---------------- */
   useEffect(() => {
@@ -77,6 +79,36 @@ export function MultiSelectDropdown({
       o.label.toLowerCase().includes(search.toLowerCase())
     );
   }, [options, search]);
+
+  useEffect(() => {
+    if (!open || !ref.current || !dropdownRef.current) return;
+
+    const updateDirection = () => {
+      if (!ref.current || !dropdownRef.current) {
+        return;
+      }
+
+      const triggerRect = ref.current.getBoundingClientRect();
+      const dropdownHeight = dropdownRef.current.offsetHeight || 0;
+      const spaceBelow = window.innerHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+
+      if (dropdownHeight > spaceBelow && spaceAbove > spaceBelow) {
+        setOpenUp(true);
+      } else {
+        setOpenUp(false);
+      }
+    };
+
+    updateDirection();
+    window.addEventListener("resize", updateDirection);
+    window.addEventListener("scroll", updateDirection, true);
+
+    return () => {
+      window.removeEventListener("resize", updateDirection);
+      window.removeEventListener("scroll", updateDirection, true);
+    };
+  }, [open, filteredOptions]);
 
   /* ---------------- TOGGLE SINGLE ---------------- */
   const toggleValue = (val: string) => {
@@ -149,9 +181,9 @@ export function MultiSelectDropdown({
       {/* -------- DROPDOWN -------- */}
       {open && (
         <div
+          ref={dropdownRef}
           className={cn(
-            `absolute z-50 mt-1 w-full
-             bg-white border border-gray-200 rounded-lg shadow-lg`,
+            `absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg ${openUp ? "bottom-full mb-1" : "mt-1"}`,
             styles?.dropdown
           )}
         >

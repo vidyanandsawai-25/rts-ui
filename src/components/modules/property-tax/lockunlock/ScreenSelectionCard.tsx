@@ -82,11 +82,16 @@ export function ScreenSelectionCard({
   // Generate unique module classifications for dropdown from modules API
   const moduleOptions = useMemo(() => {
     return modules
-      .map((m) => ({
-        label: m.moduleName || m.moduleCode,
-        value: String(m.id),
-        tooltip: m.moduleDescription || m.moduleName,
-      }))
+      .map((m) => {
+        const label = m.moduleLabel && m.moduleName
+          ? `${m.moduleLabel} - ${m.moduleName}`
+          : m.moduleLabel || m.moduleName || m.moduleCode;
+        return {
+          label,
+          value: String(m.id),
+          tooltip: m.moduleDescription || label,
+        };
+      })
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [modules]);
 
@@ -156,7 +161,7 @@ export function ScreenSelectionCard({
             className="!mb-0 flex-1 w-full"
             showClear={true}
           />
-          <div className="w-full sm:w-[180px]">
+          <div className="w-full sm:w-[240px]">
             <MultiSelectDropdown
               options={moduleOptions}
               value={selectedModuleIds}
@@ -243,7 +248,9 @@ export function ScreenSelectionCard({
                         />
                       </div>
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider min-w-[36px] justify-center shrink-0">
-                        {screen.moduleName || screen.moduleCode || badgeCode}
+                        {screen.moduleLabel && screen.moduleName
+                          ? `${screen.moduleLabel} - ${screen.moduleName}`
+                          : screen.moduleLabel || screen.moduleName || screen.moduleCode || badgeCode}
                       </span>
                       <Label
                         htmlFor={`screen-${screen.id}`}

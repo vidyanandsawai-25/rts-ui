@@ -8,6 +8,7 @@ export interface LockedScreen {
   moduleCode?: string;
   moduleName?: string;
   moduleNameLocal?: string;
+  moduleLabel?: string;
 }
 
 export interface LockUnlockPropertyItem extends Record<string, unknown> {
@@ -90,4 +91,4 @@ export interface ModuleMasterResponse {
   totalPages: number;
   hasPrevious: boolean;
   hasNext: boolean;
-}
+}

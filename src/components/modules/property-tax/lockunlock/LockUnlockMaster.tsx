@@ -159,14 +159,14 @@ export default function LockUnlockMaster({
                 }}
                 pageSizeOptions={[5, 10, 20, 50, 100]}
                 headerExtra={
-                  <div className="flex items-center gap-3 w-full justify-end">
+                  <div className="flex flex-wrap items-center gap-3 w-full">
                     <SearchInput
                       value={propertySearchTerm}
                       onChange={handlePropertySearch}
                       placeholder={t(
                         "resultsTable.searchPropertyPlaceholder"
                       )}
-                      className="!mb-0 w-118"
+                      className="!mb-0"
                     />
 
                     <SearchButton
