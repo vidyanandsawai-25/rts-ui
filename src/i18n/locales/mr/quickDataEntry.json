@@ -426,7 +426,8 @@
       "oldConstructionTypeIdInvalid": "बांधकामाचा प्रकार अवैध आहे",
       "oldTypeOfUseIdInvalid": "वापराचा प्रकार अवैध आहे",
       "invalidIds": "अवैध आयडी प्रदान केले",
-      "invalidCarpetArea": "कार्पेट क्षेत्रफळ 0 पेक्षा जास्त वैध संख्या असणे आवश्यक आहे"
+      "invalidCarpetArea": "कार्पेट क्षेत्रफळ 0 पेक्षा जास्त वैध संख्या असणे आवश्यक आहे",
+      "invalidCharacters": "इनपुटमध्ये अवैध अक्षरे आहेत. फक्त अक्षरे, संख्या आणि मानक विरामचिन्हे वापरण्यास अनुमती आहे."
     },
     "errors": {
       "failedToConnect": {

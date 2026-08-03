@@ -44,7 +44,12 @@ export const ptisSocialMapper = {
       items: activeItems.map((item) => ({
         propertyId: Number(item.propertyId || rawData?.propertyId || 0),
         socialAttributeId: Number(item.socialAttributeId ?? item.id),
-        bitValue: typeof item.bitValue === 'boolean' ? item.bitValue : null,
+        bitValue:
+          typeof item.bitValue === 'boolean'
+            ? item.bitValue
+            : item.bitValue != null
+              ? String(item.bitValue).trim().toLowerCase() === 'true' || String(item.bitValue).trim() === '1'
+              : null,
         intValue: item.intValue != null ? Number(item.intValue) : null,
         decimalValue: item.decimalValue != null ? Number(item.decimalValue) : null,
         textValue: item.textValue != null ? String(item.textValue) : null,
@@ -119,7 +124,12 @@ export const ptisSocialMapper = {
         flatItems.push({
           propertyId,
           socialAttributeId: Number(attr.id),
-          bitValue: typeof attr.bitValue === 'boolean' ? attr.bitValue : null,
+          bitValue:
+            typeof attr.bitValue === 'boolean'
+              ? attr.bitValue
+              : attr.bitValue != null
+                ? String(attr.bitValue).trim().toLowerCase() === 'true' || String(attr.bitValue).trim() === '1'
+                : null,
           intValue: attr.intValue != null ? Number(attr.intValue) : null,
           decimalValue: attr.decimalValue != null ? Number(attr.decimalValue) : null,
           textValue: attr.textValue != null ? String(attr.textValue) : null,

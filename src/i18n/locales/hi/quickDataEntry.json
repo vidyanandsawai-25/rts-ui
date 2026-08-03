@@ -427,7 +427,8 @@
       "oldConstructionTypeIdInvalid": "निर्माण का प्रकार अमान्य है",
       "oldTypeOfUseIdInvalid": "उपयोग का प्रकार अमान्य है",
       "invalidIds": "अमान्य आईडी प्रदान की गई",
-      "invalidCarpetArea": "कार्पेट क्षेत्रफल 0 से अधिक एक वैध संख्या होनी चाहिए"
+      "invalidCarpetArea": "कार्पेट क्षेत्रफल 0 से अधिक एक वैध संख्या होनी चाहिए",
+      "invalidCharacters": "इनपुट में अमान्य वर्ण हैं। केवल अक्षरांकीय (अक्षर और संख्या) और मानक विराम चिह्नों की अनुमति है।"
     },
     "errors": {
       "failedToConnect": {

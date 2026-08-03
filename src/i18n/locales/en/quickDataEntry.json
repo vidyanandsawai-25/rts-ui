@@ -426,7 +426,8 @@
             "oldConstructionTypeIdInvalid": "Construction Type is invalid",
             "oldTypeOfUseIdInvalid": "Type of Use is invalid",
             "invalidIds": "Invalid IDs provided",
-            "invalidCarpetArea": "Carpet area must be a valid number greater than 0"
+            "invalidCarpetArea": "Carpet area must be a valid number greater than 0",
+            "invalidCharacters": "Input contains invalid characters. Only alphanumeric characters and standard punctuation are allowed."
         },
         "errors": {
             "failedToConnect": {

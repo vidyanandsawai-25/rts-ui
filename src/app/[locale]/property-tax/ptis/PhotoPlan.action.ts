@@ -233,109 +233,23 @@ export async function launchPhotoPlanDrawingToolAction(
       // Cookies may not be accessible in all execution contexts
     }
 
-    const safeDecode = (val?: string) => {
-      if (!val) return '';
-      try {
-        return decodeURIComponent(val.replace(/\+/g, ' '));
-      } catch {
-        return val;
-      }
+    const result = await photoPlanService.launchDrawingTool({
+      propertyId,
+      councilName,
+      returnUrl,
+      ptisUsername: ptisUsername || cookieUsername,
+      ptisDisplayName: ptisDisplayName || cookieDisplayName,
+      ptisUserId: ptisUserId || cookieUserId,
+    });
+
+    if (result.success && result.launchUrl) {
+      return { success: true, data: { launchUrl: result.launchUrl } };
+    }
+
+    return {
+      success: false,
+      error: result.error || 'Failed to retrieve launch URL from drawing tool service.'
     };
-
-    const rawUsername = ptisUsername || cookieUsername || 'ADMIN';
-    const rawDisplayName = ptisDisplayName || cookieDisplayName || 'Admin scipl';
-    const rawUserId = ptisUserId || cookieUserId || '1';
-
-    const finalPtisUsername = safeDecode(rawUsername);
-    const finalPtisDisplayName = safeDecode(rawDisplayName);
-    const finalPtisUserId = safeDecode(rawUserId);
-
-    const loginCouncilName = councilName || 'THANE_Survey';
-    const apiCouncilName = councilName === 'THANE_Survey' ? 'THANE_survey' : (councilName || 'THANE_survey');
-
-    // 1. Authenticate user
-    let loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
-        password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
-        councilName: loginCouncilName
-      })
-    });
-
-    if (!loginRes.ok) {
-      loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
-          password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
-          councilName: loginCouncilName
-        })
-      });
-    }
-
-    if (!loginRes.ok) {
-      throw new Error(`Failed to authenticate drawing tool API: ${loginRes.status}`);
-    }
-    const loginData = await loginRes.json();
-    const token = loginData.token || loginData.access_token || (loginData.data && loginData.data.token);
-
-    if (!token) {
-       throw new Error('Failed to retrieve authentication token.');
-    }
-
-    // 2. Retrieve launch URL for property from /api/plans/ptis/launch
-    const isProd = process.env.NODE_ENV === 'production';
-    const defaultReturnBase = isProd
-      ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
-      : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
-
-    let safeReturnUrl = returnUrl;
-    if (!safeReturnUrl) {
-      safeReturnUrl = `${defaultReturnBase}/en/property-tax/ptis`;
-    } else if (safeReturnUrl.startsWith('/')) {
-      safeReturnUrl = `${defaultReturnBase}${safeReturnUrl}`;
-    }
-
-    const launchRes = await fetch('https://apiptisplanapp.tabamc.in/api/plans/ptis/launch', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        councilName: apiCouncilName,
-        propertyId,
-        mode: 'draw',
-        returnUrl: safeReturnUrl,
-        ptisUsername: finalPtisUsername,
-        ptisDisplayName: finalPtisDisplayName,
-        ptisUserId: finalPtisUserId,
-        ptisUserName: finalPtisUsername,
-        username: finalPtisUsername,
-        displayName: finalPtisDisplayName,
-        userId: finalPtisUserId,
-        userName: finalPtisUsername,
-      })
-    });
-
-    if (!launchRes.ok) {
-      throw new Error(`Failed to launch drawing tool API: ${launchRes.status}`);
-    }
-    const launchData = await launchRes.json();
-    const launchUrl = launchData.launchUrl || launchData.url || (launchData.data && launchData.data.launchUrl);
-
-    if (!launchUrl) {
-      throw new Error('Launch URL not found in response.');
-    }
-
-    return { success: true, data: { launchUrl } };
   } catch (error) {
     return {
       success: false,

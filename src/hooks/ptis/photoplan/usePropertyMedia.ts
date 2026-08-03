@@ -39,7 +39,7 @@ export function usePropertyMedia({
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave } = useImageHoverPreview();
+  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } = useImageHoverPreview();
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
@@ -49,6 +49,7 @@ export function usePropertyMedia({
   useEffect(() => {
     if (propertyId !== prevPropertyIdRef.current) {
       prevPropertyIdRef.current = propertyId;
+      resetHoverPreview();
       setFullyLoadedIds(new Set());
       if (propertyId && propertyMediaCache.has(propertyId)) {
         setPhotos(propertyMediaCache.get(propertyId)!.photos);
@@ -56,21 +57,23 @@ export function usePropertyMedia({
         setPhotos(initialPhotos);
       }
     }
-  }, [propertyId, initialPhotos]);
+  }, [propertyId, initialPhotos, resetHoverPreview]);
 
   useEffect(() => {
     if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {
+      resetHoverPreview();
       setPhotos(initialPhotos);
       prevPhotosRef.current = initialPhotos;
     }
-  }, [initialPhotos]);
+  }, [initialPhotos, resetHoverPreview]);
 
   useEffect(() => {
     if (!areSlotsEqual(initialPhotoSlots, prevSlotsRef.current)) {
+      resetHoverPreview();
       setFullyLoadedIds(new Set());
       prevSlotsRef.current = initialPhotoSlots;
     }
-  }, [initialPhotoSlots]);
+  }, [initialPhotoSlots, resetHoverPreview]);
 
   const categories = useMemo(
     () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t),
@@ -79,6 +82,7 @@ export function usePropertyMedia({
 
   const handleCategoriesChange = useCallback(
     (newCats: PhotoCategory[]) => {
+      resetHoverPreview();
       const updated: PropertyPhotoDto[] = [];
       newCats.forEach((c) =>
         c.images.forEach((img) => {
@@ -127,7 +131,7 @@ export function usePropertyMedia({
         evictOldestCacheEntry();
       }
     },
-    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange]
+    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
   );
 
   const [photoPlanCategory, propertyPhotoCategory] = useMemo(
@@ -211,6 +215,7 @@ export function usePropertyMedia({
     handleImageHover,
     handleImageLeave,
     cancelImageLeave,
+    resetHoverPreview,
     t,
   };
 }

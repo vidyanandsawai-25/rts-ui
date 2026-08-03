@@ -150,6 +150,20 @@ describe('PhotoPlan Section - Complete Tests', () => {
     mockSearchParamsGet.mockReturnValue(null);
     propertyMediaCache.clear();
     documentCache.clear();
+    if (typeof window !== 'undefined') {
+      try {
+        Object.defineProperty(window.location, 'assign', {
+          configurable: true,
+          writable: true,
+          value: vi.fn(),
+        });
+      } catch {
+        vi.stubGlobal('location', {
+          ...window.location,
+          assign: vi.fn(),
+        });
+      }
+    }
   });
 
 

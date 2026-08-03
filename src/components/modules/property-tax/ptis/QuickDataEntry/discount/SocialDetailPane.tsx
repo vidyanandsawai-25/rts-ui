@@ -89,8 +89,29 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     const isPhotoRequired = data.isPhotoRequired === true;
 
     const errorMsg = validationErrors?.[data.socialAttributeId];
-    const isPhotoInvalid = !!errorMsg && errorMsg.includes("required") && !data.documentGuid;
-    const isValueInvalid = !!errorMsg && !isPhotoInvalid;
+    const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
+    const isPhotoInvalid = !!errorMsg && (errorMsg.includes("required") && !data.documentGuid || errorMsg === docRequiredMsg);
+
+    let isRemarkError = false;
+    let isValueInvalid = false;
+
+    if (errorMsg && !isPhotoInvalid) {
+        if ((data.dataType || "").toUpperCase() === "BIT") {
+            isRemarkError = true;
+        } else if (errorMsg.includes("500") || errorMsg.includes("Remark cannot exceed")) {
+            isRemarkError = true;
+        } else if (errorMsg === (t("property.validation.invalidCharacters") || "Contains invalid characters.")) {
+            const textValueInvalid = (data.dataType || "").toUpperCase() === "VARCHAR" && 
+                                     data.textValue && !/^[a-zA-Z0-9\s\-()&'\./,]*$/.test(String(data.textValue));
+            if (textValueInvalid) {
+                isValueInvalid = true;
+            } else {
+                isRemarkError = true;
+            }
+        } else {
+            isValueInvalid = true;
+        }
+    }
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     return (
@@ -179,12 +200,23 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </Label>
                     <TextArea
                         value={data.remark || ""}
-                        onChange={(e) => onInputChange(data.socialAttributeId, "remark", e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/[<>]/g, "");
+                            onInputChange(data.socialAttributeId, "remark", val);
+                        }}
                         placeholder={t("discount.remarkPlaceholder") || "Enter remark..."}
                         disabled={isDisabled}
                         rows={2}
-                        className="resize-none font-semibold"
+                        maxLength={500}
+                        showCharCount
+                        charCountLabel="characters"
+                        className={`resize-y font-semibold ${isRemarkError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                     />
+                    {isRemarkError && (
+                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">
+                            {errorMsg}
+                        </span>
+                    )}
                 </div>
             </div>
 

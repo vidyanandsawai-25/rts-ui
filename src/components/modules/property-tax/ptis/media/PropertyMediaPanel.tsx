@@ -63,6 +63,7 @@ function PropertyMediaPanel({
     showMoreImages,
     setShowMoreImages,
     hoverPreview,
+    resetHoverPreview,
     categories,
     handleCategoriesChange,
     photoPlanCategory,
@@ -89,6 +90,12 @@ function PropertyMediaPanel({
     onPhotosChange,
     onPhotoSlotsChange,
   });
+
+  useEffect(() => {
+    if (loading) {
+      resetHoverPreview();
+    }
+  }, [loading, resetHoverPreview]);
   const hasCoords = typeof initialLatitude === 'number' && Number.isFinite(initialLatitude) && typeof initialLongitude === 'number' && Number.isFinite(initialLongitude);
   const coords = hasCoords ? { lat: initialLatitude, lng: initialLongitude } : undefined;
   const waybackReleases = initialWaybackReleases;

@@ -339,7 +339,7 @@ describe("validateDiscountForm", () => {
 
         it("should fail if remark contains invalid characters", () => {
             const item = createBaseAttr({
-                remark: "invalid@remark!",
+                remark: "<script>alert('xss')</script>",
                 documentGuid: "some-guid"
             });
             const result = validateDiscountForm({ 1: item }, tMock);

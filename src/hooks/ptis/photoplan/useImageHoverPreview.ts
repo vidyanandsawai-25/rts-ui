@@ -52,10 +52,19 @@ export function useImageHoverPreview() {
     }
   }, []);
 
+  const resetHoverPreview = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoverPreview(null);
+  }, []);
+
   return {
     hoverPreview,
     handleImageHover,
     handleImageLeave,
     cancelImageLeave,
+    resetHoverPreview,
   };
 }

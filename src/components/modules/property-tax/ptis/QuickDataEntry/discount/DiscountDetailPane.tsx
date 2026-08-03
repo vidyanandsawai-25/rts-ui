@@ -99,7 +99,28 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const isDisabled = !isActiveDiscount(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
     const isDocumentInvalid = !!validationError && validationError === docRequiredMsg;
-    const isValueInvalid = !!validationError && !isDocumentInvalid;
+
+    let isRemarkError = false;
+    let isValueInvalid = false;
+
+    if (validationError && !isDocumentInvalid) {
+        if ((data.dataType || "").toUpperCase() === "BIT") {
+            isRemarkError = true;
+        } else if (validationError.includes("500") || validationError.includes("Remark cannot exceed")) {
+            isRemarkError = true;
+        } else if (validationError === (t("property.validation.invalidCharacters") || "Contains invalid characters.")) {
+            const textValueInvalid = (data.dataType || "").toUpperCase() === "VARCHAR" && 
+                                     data.textValue && !/^[a-zA-Z0-9\s\-()&'\./,]*$/.test(data.textValue);
+            if (textValueInvalid) {
+                isValueInvalid = true;
+            } else {
+                isRemarkError = true;
+            }
+        } else {
+            isValueInvalid = true;
+        }
+    }
+
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
@@ -171,12 +192,23 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     </Label>
                     <TextArea
                         value={data.remark || ""}
-                        onChange={(e) => onInputChange("remark", e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/[<>]/g, "");
+                            onInputChange("remark", val);
+                        }}
                         placeholder={hasRemarkPlaceholder ? t("discount.remarkPlaceholder") : "Enter remark..."}
                         disabled={isDisabled}
                         rows={2}
-                        className="resize-none font-semibold"
+                        maxLength={500}
+                        showCharCount
+                        charCountLabel="characters"
+                        className={`resize-y font-semibold ${isRemarkError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                     />
+                    {isRemarkError && (
+                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">
+                            {validationError}
+                        </span>
+                    )}
                 </div>
             </div>
 

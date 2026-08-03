@@ -1,5 +1,7 @@
 import { DiscountAttributeState } from "@/types/discount.types";
 
+const TEXT_PATTERN = /^[a-zA-Z0-9\s\-()&'\./,]*$/;
+
 export const checkDiscountRequiredFields = (
     item: DiscountAttributeState,
     t: (key: string, params?: Record<string, string | number>) => string
@@ -82,7 +84,6 @@ export const checkDiscountRequiredFields = (
         if (trimmedText.length > 100) {
             return t("discount.socialValidation.maxTextLength") || "Value cannot exceed 100 characters.";
         }
-        const TEXT_PATTERN = /^[a-zA-Z0-9\s\-()&'\./,]*$/;
         if (!TEXT_PATTERN.test(item.textValue || "")) {
             return t("property.validation.invalidCharacters") || "Contains invalid characters.";
         }
@@ -106,8 +107,7 @@ export const checkDiscountRequiredFields = (
         if (item.remark.length > 500) {
             return t("discount.socialValidation.maxVal", { max: 500 }) || "Remark cannot exceed 500 characters.";
         }
-        const TEXT_PATTERN = /^[a-zA-Z0-9\s\-()&'\./,]*$/;
-        if (!TEXT_PATTERN.test(item.remark)) {
+        if (!TEXT_PATTERN.test(item.remark || "")) {
             return t("property.validation.invalidCharacters") || "Remark contains invalid characters.";
         }
     }

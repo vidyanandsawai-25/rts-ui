@@ -35,14 +35,36 @@ export const PTIS_VALUATION_ERROR_MESSAGES = {
  */
 export function localizeBackendError(rawError: string, t: PtisTranslationFunction): string {
   const errUpper = rawError.toUpperCase();
-  if (errUpper.includes('PROPERTYDETAILSNOTFOUND') || errUpper.includes('PROPERTY DETAILS NOT FOUND')) {
+  if (
+    errUpper.includes('PROPERTYDETAILSNOTFOUND') || 
+    errUpper.includes('PROPERTY DETAILS NOT FOUND') ||
+    (errUpper.includes('PROPERTYDETAILS') && errUpper.includes('NOT FOUND')) ||
+    (errUpper.includes('PROPERTY DETAILS') && errUpper.includes('NOT FOUND'))
+  ) {
     return t.has('error.propertyDetailsNotFound') ? t('error.propertyDetailsNotFound') : rawError;
   }
-  if (errUpper.includes('INVALIDPROPERTYDATA') || errUpper.includes('INVALID PROPERTY DATA')) {
+  if (
+    errUpper.includes('INVALIDPROPERTYDATA') || 
+    errUpper.includes('INVALID PROPERTY DATA') ||
+    (errUpper.includes('INVALID') && errUpper.includes('PROPERTY DATA'))
+  ) {
     return t.has('error.invalidPropertyData') ? t('error.invalidPropertyData') : rawError;
   }
-  if (errUpper.includes('TYPEOFUSEGROUPNOTFOUND') || errUpper.includes('TYPE OF USE GROUP NOT FOUND')) {
+  if (
+    errUpper.includes('TYPEOFUSEGROUPNOTFOUND') || 
+    errUpper.includes('TYPE OF USE GROUP NOT FOUND') ||
+    (errUpper.includes('TYPEOFUSEGROUP') && errUpper.includes('NOT FOUND')) ||
+    (errUpper.includes('TYPE OF USE GROUP') && errUpper.includes('NOT FOUND'))
+  ) {
     return t.has('error.typeOfUseGroupNotFound') ? t('error.typeOfUseGroupNotFound') : rawError;
+  }
+  if (
+    errUpper.includes('YEARRANGENOTFOUND') || 
+    errUpper.includes('YEAR RANGE NOT FOUND') ||
+    (errUpper.includes('YEARRANGE') && errUpper.includes('NOT FOUND')) ||
+    (errUpper.includes('YEAR RANGE') && errUpper.includes('NOT FOUND'))
+  ) {
+    return t.has('error.yearRangeNotFound') ? t('error.yearRangeNotFound') : rawError;
   }
   return rawError;
 }

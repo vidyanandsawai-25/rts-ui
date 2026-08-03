@@ -148,12 +148,11 @@ export const validateDiscountForm = (
             missingFields.push(t("common.validation.documentRequired") || "Document is required.");
         }
 
-        // 3. Validate optional remark field
         if (item.remark && item.remark.trim() !== "") {
             if (item.remark.length > 500) {
                 missingFields.push(t("discount.socialValidation.maxVal", { max: 500 }) || "Remark cannot exceed 500 characters.");
             }
-            if (!TEXT_PATTERN.test(item.remark)) {
+            if (!TEXT_PATTERN.test(item.remark || "")) {
                 missingFields.push(t("property.validation.invalidCharacters") || "Remark contains invalid characters.");
             }
         }
