@@ -55,7 +55,7 @@ export function useDepreciationHandlers({
   const { confirm } = useConfirm();
   const router = useRouter();
   const pathname = usePathname();
-  const { validateMinMax, sanitizeInput, checkOverlap } = useDepreciationValidation(t);
+  const { validateMinMax, sanitizeInput, checkOverlap, checkGap } = useDepreciationValidation(t);
 
   const buildUrl = useCallback(
     (page: number, size: number) => {
@@ -133,19 +133,24 @@ export function useDepreciationHandlers({
       return;
     }
 
-    setSaving(true);
-    const tid = toast.loading(t("messages.updating", { count: changeCount }));
-    try {
-      const res = await syncDepreciationRatesAction(locale, dbRows, pendingChanges);
-      if (!res.success) throw new Error(res.error);
-      toast.success(t("success.updated"), { id: tid });
-      await reloadData();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : t("errors.update"), { id: tid });
-    } finally {
-      setSaving(false);
-    }
-  }, [pendingChanges, locale, dbRows, t, setSaving, reloadData]);
+    confirm({
+      variant: "update",
+      onConfirm: async () => {
+        setSaving(true);
+        const tid = toast.loading(t("messages.updating", { count: changeCount }));
+        try {
+          const res = await syncDepreciationRatesAction(locale, dbRows, pendingChanges);
+          if (!res.success) throw new Error(res.error);
+          toast.success(t("success.updated"), { id: tid });
+          await reloadData();
+        } catch (err: unknown) {
+          toast.error(err instanceof Error ? err.message : t("errors.update"), { id: tid });
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
+  }, [pendingChanges, locale, dbRows, t, setSaving, reloadData, confirm]);
 
   const handleMinChange = useCallback(
     (value: string) => {
@@ -178,6 +183,16 @@ export function useDepreciationHandlers({
       return;
     }
 
+    const gapResult = checkGap(Number(minValue), Number(maxValue), ranges);
+    if (gapResult !== null) {
+      if (gapResult.field === 'max') {
+        setMaxError(t("errors.gapMax", { expectedMax: gapResult.expectedValue }));
+      } else {
+        setMinError(t("errors.gapMin", { expectedMin: gapResult.expectedValue }));
+      }
+      return;
+    }
+
     setSaving(true);
     const tid = toast.loading(t("messages.creatingRange"));
     try {
@@ -197,7 +212,7 @@ export function useDepreciationHandlers({
     } finally {
       setSaving(false);
     }
-  }, [minValue, maxValue, ranges, locale, t, validateMinMax, checkOverlap, setMinError, setMaxError, setSaving, setMinValue, setMaxValue, reloadData]);
+  }, [minValue, maxValue, ranges, locale, t, validateMinMax, checkOverlap, checkGap, setMinError, setMaxError, setSaving, setMinValue, setMaxValue, reloadData]);
 
   const handleDeleteRange = useCallback(async () => {
     if (!effectiveSelectedRangeId) return;
