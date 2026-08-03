@@ -282,7 +282,7 @@
     "filters": {
       "allJobs": "सभी कार्य",
       "searchJobId": "कार्य आईडी खोजें",
-      "searchPlaceholder": "कार्य आईडी / संपत्ति / उपयोगकर्ता / वार्ड खोजें",
+      "searchPlaceholder": "कार्य आईडी खोजें",
       "status": "स्थिति",
       "date": "दिनांक"
     },

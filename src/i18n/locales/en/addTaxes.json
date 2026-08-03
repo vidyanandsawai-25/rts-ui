@@ -284,7 +284,7 @@
     "filters": {
       "allJobs": "All Jobs",
       "searchJobId": "Search Job ID",
-      "searchPlaceholder": "Search Job ID / Property / User / Ward",
+      "searchPlaceholder": "Search Job ID",
       "status": "Status",
       "date": "Date"
     },

@@ -282,7 +282,7 @@
     "filters": {
       "allJobs": "सर्व जॉब्स",
       "searchJobId": "जॉब आयडी शोधा",
-      "searchPlaceholder": "जॉब आयडी / मालमत्ता / वापरकर्ता / प्रभाग शोधा",
+      "searchPlaceholder": "जॉब आयडी शोधा",
       "status": "स्थिती",
       "date": "तारीख"
     },
