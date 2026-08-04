@@ -8,29 +8,22 @@ export const getColumns = (
 ): Column<TaxApplicabilityItem>[] => [
   {
     key: 'taxHead' as keyof TaxApplicabilityItem,
-    label: t('taxHead'), // 25%
-    width: '25%',
+    label: t('taxHead'),
+    width: '40%',
     cellClassName: 'border-y border-[#DCEAFF] border-l rounded-l-xl py-2 px-3 bg-white font-extrabold text-slate-800 shadow-sm leading-tight text-xs',
-  },
-  {
-    key: 'calculationType' as keyof TaxApplicabilityItem,
-    label: t('calculation'), // 28%
-    width: '28%',
-    cellClassName: 'border-y whitespace-nowrap border-[#DCEAFF] py-2 px-3 bg-white text-slate-400 font-bold shadow-sm text-xs',
-    render: (val: unknown) => String(val || '—'),
   },
   {
     key: 'taxPercentage' as keyof TaxApplicabilityItem,
     label: t('rate'),
-    width: '15%',
+    width: '25%',
     align: 'center' as const,
     cellClassName: 'border-y border-[#DCEAFF] py-2 px-3 bg-white font-extrabold text-[#0B3C8E] shadow-sm text-xs',
     render: (val: unknown) => `${Number(typeof val === 'number' ? val : 0).toFixed(2)}%`,
   },
   {
     key: 'isApplicable' as keyof TaxApplicabilityItem,
-    label: t('headStatus'), // 32%
-    width: '28%',
+    label: t('headStatus'),
+    width: '35%',
     align: 'center' as const,
     cellClassName: 'border-y border-[#DCEAFF] border-r rounded-r-xl py-2 px-2 bg-white shadow-sm text-xs',
     render: (_val: unknown, row: TaxApplicabilityItem) => {

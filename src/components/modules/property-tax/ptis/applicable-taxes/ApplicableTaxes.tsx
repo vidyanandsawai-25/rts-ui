@@ -26,8 +26,7 @@ export const ApplicableTaxes = ({
     pageSize,
     totalPages,
     totalCount,
-    applicableCount,
-    exemptedCount,
+
     setPageNumber,
     paginatedData,
     columns,
@@ -42,7 +41,7 @@ export const ApplicableTaxes = ({
   });
 
   return (
-    <div className="flex flex-col h-full bg-white relative overflow-hidden">
+    <div className="flex flex-col h-full bg-white relative overflow-hidden dropdown-full-text">
       {/* Non-scrollable Body */}
       <div className="flex-1 p-4 flex flex-col overflow-hidden pb-24">
         {/* Cards Grid */}
@@ -84,10 +83,7 @@ export const ApplicableTaxes = ({
         </div>
 
         {/* Tab Navigation header */}
-        <ApplicableTaxesTabNavigation
-          applicableCount={applicableCount}
-          exemptedCount={exemptedCount}
-        />
+        <ApplicableTaxesTabNavigation />
 
         {/* Custom Master Table Container */}
         <div className="flex-1 overflow-hidden min-h-0">

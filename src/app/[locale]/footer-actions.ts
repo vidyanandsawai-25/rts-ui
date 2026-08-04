@@ -226,7 +226,7 @@ export async function handleFooterAction(
         if (payload.partitionNo !== undefined) params.set('partitionNo', payload.partitionNo);
         if (payload.valuationTab) params.set('valuationTab', payload.valuationTab);
         redirect(
-          `/${payloadLocale}/property-tax/ptis/applicable-taxes/applicable?${params.toString()}`
+          `/${payloadLocale}/property-tax/ptis/applicable-taxes?${params.toString()}`
         );
       }
       case 'PTIS_REFRESH': {

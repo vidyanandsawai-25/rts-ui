@@ -11,7 +11,7 @@ const mockConfirm = vi.fn();
 const mockPush = vi.fn();
 const mockReplace = vi.fn();
 const mockRefresh = vi.fn();
-let mockPathname = '/en/property-tax/ptis/applicable-taxes/applicable';
+let mockPathname = '/en/property-tax/ptis/applicable-taxes';
 const mockParams = { locale: 'en' };
 let mockSearchParams = new URLSearchParams('propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=1&floorUse=2');
 
@@ -110,7 +110,7 @@ import type {
   TaxApplicabilityItem,
   PagedResponse,
   AssessmentYearRangeItem,
-  TypeOfUseGroupItem,
+  TypeOfUseItem,
   TaxApplicabilityData,
 } from '@/types/applicable-taxes.types';
 
@@ -170,11 +170,11 @@ const mockAsseYearsResponse: PagedResponse<AssessmentYearRangeItem> = {
   hasNext: false,
 };
 
-const mockUseGroupsResponse: PagedResponse<TypeOfUseGroupItem> = {
+const mockUseGroupsResponse: PagedResponse<TypeOfUseItem> = {
   items: [
-    { id: 1, typeOfUseGroupCode: 'UG01', groupName: 'Residential', groupIcon: 'home', isActive: true },
-    { id: 2, typeOfUseGroupCode: 'UG02', groupName: 'Commercial', groupIcon: 'building', isActive: true },
-    { id: 3, typeOfUseGroupCode: 'UG03', groupName: 'Industrial', groupIcon: 'factory', isActive: false },
+    { id: 1, typeOfUseCode: 'UG01', description: 'Residential', type: 'R', typeOfUseGroupId: 1, searchSequence: 1, typeOfUseCategoryId: 1, isActive: true },
+    { id: 2, typeOfUseCode: 'UG02', description: 'Commercial', type: 'C', typeOfUseGroupId: 2, searchSequence: 2, typeOfUseCategoryId: 2, isActive: true },
+    { id: 3, typeOfUseCode: 'UG03', description: 'Industrial', type: 'I', typeOfUseGroupId: 3, searchSequence: 3, typeOfUseCategoryId: 3, isActive: false },
   ],
   totalCount: 3,
   pageNumber: 1,
@@ -213,7 +213,7 @@ describe('ApplicableTaxes Screen Suite', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParams = new URLSearchParams('propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=1&floorUse=2');
-    mockPathname = '/en/property-tax/ptis/applicable-taxes/applicable';
+    mockPathname = '/en/property-tax/ptis/applicable-taxes';
   });
 
   test('Component mounts and renders structure correctly', () => {
@@ -256,11 +256,11 @@ describe('ApplicableTaxes Screen Suite', () => {
     fireEvent.change(yearSelect, { target: { value: '2' } });
 
     expect(mockReplace).toHaveBeenCalledWith(
-      '/en/property-tax/ptis/applicable-taxes/applicable?propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=2&floorUse=2&pageNumber=1'
+      '/en/property-tax/ptis/applicable-taxes?propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=2&floorUse=2&pageNumber=1'
     );
   });
 
-  test('Renders correct columns and filters active rows inside the active tab', () => {
+  test('Renders correct columns and shows all active taxes', () => {
     render(
       <ApplicableTaxes
         asseYearsResponse={mockAsseYearsResponse}
@@ -271,11 +271,12 @@ describe('ApplicableTaxes Screen Suite', () => {
     );
 
     const tableRows = screen.getAllByTestId('table-row');
-    // Active tab filters out non-active taxes (Water Tax with isActive=false is hidden)
+    // Only active taxes should be shown
     expect(tableRows.length).toBe(2);
 
     expect(screen.getByText('Property Tax')).toBeInTheDocument();
     expect(screen.getByText('Education Cess')).toBeInTheDocument();
+    expect(screen.queryByText('Water Tax')).toBeNull();
   });
 
   test('Pagination works and switches page lists', () => {
@@ -423,25 +424,17 @@ describe('ApplicableTaxesTabNavigation component', () => {
     mockSearchParams = new URLSearchParams('propertyId=123&asseYear=1&floorUse=2');
   });
 
-  test('Renders navigation counts and search input', () => {
+  test('Renders search input', () => {
     render(
-      <ApplicableTaxesTabNavigation
-        applicableCount={5}
-        exemptedCount={9}
-      />
+      <ApplicableTaxesTabNavigation />
     );
 
     expect(screen.getByPlaceholderText('applicableTaxes.searchPlaceholder')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('9')).toBeInTheDocument();
   });
 
   test('Updates local search input and replaces url params via debouncing', async () => {
     render(
-      <ApplicableTaxesTabNavigation
-        applicableCount={5}
-        exemptedCount={9}
-      />
+      <ApplicableTaxesTabNavigation />
     );
 
     const searchInput = screen.getByPlaceholderText('applicableTaxes.searchPlaceholder');
@@ -449,7 +442,7 @@ describe('ApplicableTaxesTabNavigation component', () => {
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(
-        '/en/property-tax/ptis/applicable-taxes/applicable?propertyId=123&asseYear=1&floorUse=2&search=custom-search'
+        '/en/property-tax/ptis/applicable-taxes?propertyId=123&asseYear=1&floorUse=2&search=custom-search'
       );
     });
   });

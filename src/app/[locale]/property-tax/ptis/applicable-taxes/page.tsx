@@ -2,9 +2,9 @@ import { ApplicableTaxes } from "@/components/modules/property-tax/ptis/applicab
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import {
   getAssessmentYearsAction,
-  getUseGroupsAction,
+  getTypeOfUseAction,
   getTaxApplicabilityAction
-} from '../action';
+} from './action';
 
 interface PageProps {
   params: Promise<{
@@ -31,7 +31,7 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
 
   const [asseYearsResponse, useGroupsResponse] = await Promise.all([
     getAssessmentYearsAction(valuationTab, 1, -1),
-    getUseGroupsAction(1, -1),
+    getTypeOfUseAction(1, -1),
   ]);
 
   if (!asseYearsResponse.success) {
@@ -41,8 +41,19 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
     throw new Error(useGroupsResponse.error || t("errors.fetchUseGroups"));
   }
 
-  const financialYearId = selectedAsseYear
-    ? Number(selectedAsseYear)
+  let finalAsseYear = selectedAsseYear;
+
+  if (!finalAsseYear && asseYearsResponse.data?.items?.length) {
+    const currentYear = new Date().getFullYear();
+    const activeYears = asseYearsResponse.data.items.filter(y => y.isActive);
+    const currentYearItem = activeYears.find(y => currentYear >= y.fromYear && currentYear <= y.toYear) || activeYears[0];
+    if (currentYearItem) {
+      finalAsseYear = String(currentYearItem.id);
+    }
+  }
+
+  const financialYearId = finalAsseYear
+    ? Number(finalAsseYear)
     : undefined;
 
   const typeOfUseGroupId = selectedFloorUse

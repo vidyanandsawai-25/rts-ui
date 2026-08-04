@@ -1,7 +1,7 @@
 import { apiClient } from '@/services/api.service';
 import type {
   AssessmentYearRangeItem,
-  TypeOfUseGroupItem,
+  TypeOfUseItem,
   PagedResponse,
   TaxApplicabilityData
 } from '@/types/applicable-taxes.types';
@@ -9,15 +9,15 @@ import { handleApiResponse } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
 import type { ActionResult } from '@/types/common.types';
 
-export async function getTypeOfUseGroup(
+export async function getTypeOfUse(
   pageNumber: number = 1,
   pageSize: number = 100
-): Promise<{ success: boolean; data?: PagedResponse<TypeOfUseGroupItem>; error?: string }> {
-  const res = await apiClient.get<PagedResponse<TypeOfUseGroupItem>>(`/TypeOfUseGroup?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+): Promise<{ success: boolean; data?: PagedResponse<TypeOfUseItem>; error?: string }> {
+  const res = await apiClient.get<PagedResponse<TypeOfUseItem>>(`/TypeOfUse?PageNumber=${pageNumber}&PageSize=${pageSize}`);
   if (res.success && res.data) {
     return { success: true, data: res.data };
   }
-  return { success: false, error: res.error || 'Failed to fetch Type of Use Groups' };
+  return { success: false, error: res.error || 'Failed to fetch Type of Use' };
 }
 
 export async function getAssessmentYearRange(

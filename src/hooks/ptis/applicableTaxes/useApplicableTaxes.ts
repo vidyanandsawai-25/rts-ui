@@ -28,8 +28,6 @@ export function useApplicableTaxes({
   const wardNo = searchParams.get('wardNo') || '';
   const propertyNo = searchParams.get('propertyNo') || '';
   const partitionNo = searchParams.get('partitionNo') || '';
-
-  const isExempted = pathname.includes('/exempted');
   const isValuationTab = !!valuationTab;
 
   const dynamicAsseYears = useMemo(() => {
@@ -51,18 +49,22 @@ export function useApplicableTaxes({
 
   const useTypeOptions = useMemo(() => {
     return dynamicUseGroups.map((group) => ({
-      label: `${group.typeOfUseGroupCode} - ${group.groupName}`,
+      label: `${group.typeOfUseCode} - ${group.description}`,
       value: String(group.id),
     }));
   }, [dynamicUseGroups]);
 
-  const selectedAsseYear = searchParams.get('asseYear') || '';
+  const currentYear = new Date().getFullYear();
+  const defaultAsseYearItem = useMemo(() => {
+    return dynamicAsseYears.find(y => currentYear >= y.fromYear && currentYear <= y.toYear) || dynamicAsseYears[0];
+  }, [dynamicAsseYears, currentYear]);
+
+  const selectedAsseYear = searchParams.get('asseYear') || (defaultAsseYearItem ? String(defaultAsseYearItem.id) : '');
   const selectedFloorUse = searchParams.get('floorUse') || '';
   const searchQuery = searchParams.get('search') || '';
 
   const items = useMemo(() => taxApplicabilityPagedResponse?.items || [], [taxApplicabilityPagedResponse]);
-  const applicableCount = items[0]?.applicableCount || 0;
-  const exemptedCount = items[0]?.exemptedCount || 0;
+
 
   const pageNumber = taxApplicabilityPagedResponse?.pageNumber || 1;
   const pageSize = taxApplicabilityPagedResponse?.pageSize || 10;
@@ -119,20 +121,30 @@ export function useApplicableTaxes({
     if (key !== 'pageNumber') {
       newParams.set('pageNumber', '1');
     }
+    if (!newParams.has('asseYear') && selectedAsseYear) {
+      newParams.set('asseYear', selectedAsseYear);
+    }
+    if (!newParams.has('floorUse') && selectedFloorUse) {
+      newParams.set('floorUse', selectedFloorUse);
+    }
     router.replace(`${pathname}?${newParams.toString()}`);
-  }, [searchParams, pathname, router]);
+  }, [searchParams, pathname, router, selectedAsseYear, selectedFloorUse]);
 
   const setPageNumber = useCallback((page: number) => {
     handleParamChange('pageNumber', String(page));
   }, [handleParamChange]);
 
   const filteredTaxes = useMemo(() => {
-    const rawTaxes = isExempted ? (items[0]?.exemptedTaxes || []) : (items[0]?.applicableTaxes || []);
+    const rawTaxes = [
+      ...(items[0]?.applicableTaxes || []),
+      ...(items[0]?.exemptedTaxes || [])
+    ];
     return rawTaxes.filter(item => {
+      if (!item.isActive) return false;
       const matchesSearch = item.taxHead.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
-  }, [items, searchQuery, isExempted]);
+  }, [items, searchQuery]);
 
   const paginatedData = useMemo(() => {
     return filteredTaxes;
@@ -153,8 +165,7 @@ export function useApplicableTaxes({
     pageSize,
     totalPages,
     totalCount,
-    applicableCount,
-    exemptedCount,
+
     setPageNumber,
     paginatedData,
     filteredTaxes,
