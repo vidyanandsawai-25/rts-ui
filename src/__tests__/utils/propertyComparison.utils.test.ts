@@ -94,6 +94,15 @@ describe("Property Comparison Similarity Utility (Industry Standard 80%+ Matchin
 
       const unmatchRes = evaluatePropertyParameterMatch("अनिवासी", "Residential", "category", 80);
       expect(unmatchRes.isMatch).toBe(false);
+
+      const nivasiVsNonRes = evaluatePropertyParameterMatch("निवासी", "Non Residential", "category", 80);
+      expect(nivasiVsNonRes.isMatch).toBe(false);
+
+      const nivasiVsNonResHyphen = evaluatePropertyParameterMatch("निवासी", "Non-Residential", "category", 80);
+      expect(nivasiVsNonResHyphen.isMatch).toBe(false);
+
+      const anivasiVsNonRes = evaluatePropertyParameterMatch("अनिवासी", "Non Residential", "category", 80);
+      expect(anivasiVsNonRes.isMatch).toBe(true);
     });
 
     it("should evaluate exact match fields strictly (Construction Year, Mobile, CTS, Zone/Ward)", () => {

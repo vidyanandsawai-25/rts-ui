@@ -199,11 +199,28 @@ export function evaluatePropertyParameterMatch(
     const raw2 = str2.toLowerCase();
     if (raw1 === raw2) return { matchPercentage: 100, isMatch: true };
 
-    const isNonRes1 = raw1.includes('अनिवासी') || raw1.includes('non-res') || raw1.includes('commercial');
-    const isNonRes2 = raw2.includes('अनिवासी') || raw2.includes('non-res') || raw2.includes('commercial');
+    const isNonRes = (s: string) =>
+      s.includes('अनिवासी') ||
+      s.includes('गैरनिवासी') ||
+      s.includes('non-res') ||
+      s.includes('non res') ||
+      s.includes('nonres') ||
+      s.includes('non-residential') ||
+      s.includes('non residential') ||
+      s.includes('nonresidential') ||
+      s.includes('commercial') ||
+      s.includes('industrial') ||
+      s.includes('business') ||
+      s.includes('office') ||
+      s.includes('shop') ||
+      s.includes('गाळा') ||
+      s.includes('व्यावसायिक');
 
-    const isRes1 = !isNonRes1 && (raw1.includes('res') || raw1.includes('निवासी'));
-    const isRes2 = !isNonRes2 && (raw2.includes('res') || raw2.includes('निवासी'));
+    const isNonRes1 = isNonRes(raw1);
+    const isNonRes2 = isNonRes(raw2);
+
+    const isRes1 = !isNonRes1 && (raw1.includes('res') || raw1.includes('निवासी') || raw1.includes('घर'));
+    const isRes2 = !isNonRes2 && (raw2.includes('res') || raw2.includes('निवासी') || raw2.includes('घर'));
 
     if ((isRes1 && isRes2) || (isNonRes1 && isNonRes2)) {
       return { matchPercentage: 100, isMatch: true };

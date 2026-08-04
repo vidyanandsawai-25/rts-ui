@@ -63,6 +63,7 @@ function LoginFormCredentialsBody({
   return (
     <motion.form
       id="login-credentials-form"
+      autoComplete="off"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       action={formAction}
