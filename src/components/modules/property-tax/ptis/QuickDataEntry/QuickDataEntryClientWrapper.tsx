@@ -10,9 +10,23 @@ import { cn } from '@/lib/utils/cn';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { QDE_TO_MAIN_MAP } from '@/lib/utils/qde-tab-mapping';
 
-export function QuickDataEntryClientWrapper({ children, categoryName, propertyDescription }: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
+export function QuickDataEntryClientWrapper({
+    children,
+    categoryName,
+    propertyDescription,
+    initialHasIncompatibleFloor = false,
+}: {
+    children: ReactNode;
+    categoryName?: string;
+    propertyDescription?: string;
+    initialHasIncompatibleFloor?: boolean;
+}) {
     return (
-        <QuickDataEntryContent categoryName={categoryName} propertyDescription={propertyDescription}>
+        <QuickDataEntryContent
+            categoryName={categoryName}
+            propertyDescription={propertyDescription}
+            initialHasIncompatibleFloor={initialHasIncompatibleFloor}
+        >
             {children}
         </QuickDataEntryContent>
     );
@@ -22,7 +36,13 @@ function QuickDataEntryContent({
     children,
     categoryName,
     propertyDescription,
-}: { children: ReactNode; categoryName?: string; propertyDescription?: string }) {
+    initialHasIncompatibleFloor = false,
+}: {
+    children: ReactNode;
+    categoryName?: string;
+    propertyDescription?: string;
+    initialHasIncompatibleFloor?: boolean;
+}) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -55,38 +75,24 @@ function QuickDataEntryContent({
 
     const { confirm } = useConfirm();
 
-    const [isFormSaving, setIsFormSaving] = useState(false);
+    const [isFormSaving] = useState(false);
+    const [showIncompatibleBanner, setShowIncompatibleBanner] = useState(initialHasIncompatibleFloor);
 
     useEffect(() => {
-        const handleSavingState = (e: Event) => {
-            const customEvent = e as CustomEvent<{ isSaving: boolean }>;
-            setIsFormSaving(!!customEvent.detail?.isSaving);
-        };
-        window.addEventListener('ntis:form-saving-state', handleSavingState);
-        return () => {
-            window.removeEventListener('ntis:form-saving-state', handleSavingState);
-        };
-    }, []);
+        if (initialHasIncompatibleFloor && typeof window !== 'undefined') {
+            (window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor = true;
+        }
+    }, [initialHasIncompatibleFloor]);
 
     useEffect(() => {
-        if (!isFormSaving) return;
-
-        const blockMouseEvent = (e: MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
+        const checkBannerState = () => {
+            const isActive = typeof window !== 'undefined' && !!(window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor;
+            setShowIncompatibleBanner(isActive);
         };
-
-        window.addEventListener('click', blockMouseEvent, true);
-        window.addEventListener('mousedown', blockMouseEvent, true);
-        window.addEventListener('pointerdown', blockMouseEvent, true);
-
-        return () => {
-            window.removeEventListener('click', blockMouseEvent, true);
-            window.removeEventListener('mousedown', blockMouseEvent, true);
-            window.removeEventListener('pointerdown', blockMouseEvent, true);
-        };
-    }, [isFormSaving]);
+        checkBannerState();
+        const intervalId = setInterval(checkBannerState, 300);
+        return () => clearInterval(intervalId);
+    }, [pathname]);
 
     const handleClose = () => {
         const win = typeof window !== 'undefined' ? (window as unknown as {
@@ -103,40 +109,45 @@ function QuickDataEntryContent({
             !!(window as unknown as { __isQuickDataEntrySaving?: boolean }).__isQuickDataEntrySaving
         ));
 
+        const isIncompatibleFloorActive = typeof window !== 'undefined' && !!(window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor;
+        if (isIncompatibleFloorActive) {
+            confirm({
+                variant: 'warning',
+                title: t('property.propertyDescriptionChangeConfirmTitle') || 'Confirm Property Description Change',
+                description: t('property.propertyDescriptionFloorIncompatible') || "Property Description has been changed. One or more existing Floor records contain a Use that is not valid for the selected Property Description. Please update or remove the incompatible Floor records before saving the new Property Description.",
+                confirmText: t('common.ok') || 'OK',
+                onConfirm: () => {
+                    // Stays on page so user can fix floor records
+                },
+            });
+            return;
+        }
+
         if (isSavingActive) {
             return;
         }
 
         const doClose = () => {
-            const winObj = typeof window !== 'undefined' ? (window as unknown as { __ptisHasSavedChanges?: boolean }) : {};
-            const hasSavedChanges = !!winObj.__ptisHasSavedChanges;
-
-            const isSameOriginReferrer = typeof document !== 'undefined' && document.referrer && new URL(document.referrer, window.location.href).origin === window.location.origin;
-
-            if (!hasSavedChanges && isSameOriginReferrer && typeof window !== 'undefined' && window.history.length > 1) {
-                router.back();
-            } else {
-                if (typeof window !== 'undefined') {
-                    (window as unknown as { __ptisHasSavedChanges?: boolean }).__ptisHasSavedChanges = false;
-                }
-                const params = new URLSearchParams();
-                if (propertyId) params.set('propertyId', propertyId);
-                if (wardNo) params.set('wardNo', wardNo);
-                if (wardId) params.set('wardId', wardId);
-                if (propertyNo) params.set('propertyNo', propertyNo);
-                if (partitionNo) params.set('partitionNo', partitionNo);
-                if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
-                if (valuationTab) params.set('valuationTab', valuationTab);
-                if (appartmentTab) params.set('appartmentTab', appartmentTab);
-                if (subTab) params.set('subTab', subTab);
-                if (showDetails) params.set('showDetails', showDetails);
-                if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
-                rateableExpands.forEach(v => params.append('rateableExpand', v));
-                capitalExpands.forEach(v => params.append('capitalExpand', v));
-                dualExpands.forEach(v => params.append('dualExpand', v));
-
-                router.push(`/${locale}/property-tax/ptis?${params}`);
+            if (typeof window !== 'undefined') {
+                (window as unknown as { __ptisHasSavedChanges?: boolean }).__ptisHasSavedChanges = false;
             }
+            const params = new URLSearchParams();
+            if (propertyId) params.set('propertyId', propertyId);
+            if (wardNo) params.set('wardNo', wardNo);
+            if (wardId) params.set('wardId', wardId);
+            if (propertyNo) params.set('propertyNo', propertyNo);
+            if (partitionNo) params.set('partitionNo', partitionNo);
+            if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+            if (valuationTab) params.set('valuationTab', valuationTab);
+            if (appartmentTab) params.set('appartmentTab', appartmentTab);
+            if (subTab) params.set('subTab', subTab);
+            if (showDetails) params.set('showDetails', showDetails);
+            if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
+            rateableExpands.forEach(v => params.append('rateableExpand', v));
+            capitalExpands.forEach(v => params.append('capitalExpand', v));
+            dualExpands.forEach(v => params.append('dualExpand', v));
+
+            router.push(`/${locale}/property-tax/ptis?${params}`);
         };
 
         const hasBuildingChanges = !!win.__buildingFormHasChanges;
@@ -286,6 +297,23 @@ function QuickDataEntryContent({
                 <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)]">
                     {!isRenterPage && (
                         <TabNavigation />
+                    )}
+                    {showIncompatibleBanner && (
+                        <div className="mx-4 mt-3 flex items-start gap-3 p-3.5 bg-amber-50/90 border border-amber-200/80 text-amber-900 rounded-xl shadow-xs transition-all duration-300">
+                            <div className="p-1 bg-amber-100/80 rounded-lg text-amber-700 shrink-0 mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                                    <line x1="12" y1="9" x2="12" y2="13" />
+                                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs leading-relaxed font-medium">
+                                    {t('property.propertyDescriptionFloorIncompatible') ||
+                                        "Property Description has been changed. One or more existing Floor records contain a Use that is not valid for the selected Property Description. Please update or remove the incompatible Floor records before saving the new Property Description."}
+                                </p>
+                            </div>
+                        </div>
                     )}
                     <div className="flex-1 flex flex-col">
                         {children}

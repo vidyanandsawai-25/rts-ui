@@ -559,7 +559,7 @@ export function SearchSelect({
 
               return (
                 <li
-                  key={opt.value}
+                  key={`${opt.value}-${index}`}
                   id={`${accessibleId}-option-${index}`}
                   role="option"
                   aria-selected={isSelected}

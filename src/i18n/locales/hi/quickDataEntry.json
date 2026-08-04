@@ -1,5 +1,9 @@
 
 {
+  "renter": {
+    "loadingScreen": "किराएदार स्क्रीन लोड हो रही है...",
+    "loadingEngine": "किराया इंजन लोड हो रहा है..."
+  },
   "commonbuttonmessages": {
     "update": "अपडेट",
     "UpdateChanges": "अपडेट करें",
@@ -369,6 +373,10 @@
     "categoryChangeConfirmTitle": "श्रेणी बदलने की पुष्टि करें",
     "categoryChangeConfirmText": "श्रेणी बदलने से सभी मंजिल, कमरा सबमिशन और किरायेदार के विवरण हटा दिए जाएंगे। क्या आप वास्तव में आगे बढ़ना चाहते हैं?",
     "categoryChangeConfirmButton": "हाँ, श्रेणी बदलें",
+    "propertyDescriptionChangeConfirmTitle": "संपत्ति विवरण परिवर्तन की पुष्टि करें",
+    "propertyDescriptionChangeConfirmText": "आपने संपत्ति विवरण बदल दिया है। मौजूदा मंजिल विवरण पिछले संपत्ति विवरण से जुड़े हुए हैं। सहेजने से पहले कृपया मंजिल रिकॉर्ड अपडेट करें या हटाएं। क्या आप जारी रखना चाहते हैं?",
+    "propertyDescriptionChangeConfirmButton": "हाँ, जारी रखें",
+    "propertyDescriptionFloorIncompatible": "संपत्ति विवरण बदल दिया गया है। एक या अधिक मौजूदा मंजिल रिकॉर्ड में ऐसा उपयोग शामिल है जो चयनित संपत्ति विवरण के लिए मान्य नहीं है। नया संपत्ति विवरण सहेजने से पहले कृपया असंगत मंजिल रिकॉर्ड अपडेट करें या हटाएं।",
     "updateSuccess": "संपत्ति के बुनियादी विवरण सफलतापूर्वक अपडेट किए गए",
     "updateError": "अपडेट के दौरान एक त्रुटि हुई。",
     "updateButton": "अपडेट करें",

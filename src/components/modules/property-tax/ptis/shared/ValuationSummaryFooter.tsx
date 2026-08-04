@@ -92,16 +92,16 @@ export async function ValuationSummaryFooter({
   );
 
   const metricsCards = (
-    <div className="flex flex-nowrap items-center justify-between gap-2.5 w-full overflow-x-auto py-0.5">
+    <div className="flex flex-nowrap items-center gap-2 xl:gap-3 min-w-max ml-auto py-0.5">
       {/* Card 1: Area */}
-      <div className="flex items-center justify-between gap-2.5 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-blue-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[270px]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8.5 h-8.5 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-inner">
-            <Expand className="w-4 h-4 stroke-[2.5]" />
+      <div className="flex items-center justify-between gap-2.5 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-blue-600 p-2 sm:p-2.5 shadow-sm transition-all duration-200 hover:shadow-md shrink-0 min-w-[240px] xl:min-w-[260px]">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-inner">
+            <Expand className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-blue-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('area')}</span>
-            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+            <span className="text-blue-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('area')}</span>
+            <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
               <Tooltip content={`Old Area: ${oldArea.toLocaleString('en-IN')} ${areaUnit}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
@@ -121,21 +121,21 @@ export async function ValuationSummaryFooter({
             </div>
           </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <div className="border-l border-gray-200 h-7 sm:h-8 mx-0.5 shrink-0"></div>
         <div className="shrink-0">
           <VarianceDiffBadge diff={areaDiff} unit={areaUnit} />
         </div>
       </div>
 
       {/* Card 2: Change of Use */}
-      <div className="flex items-center justify-between gap-2.5 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-purple-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[230px]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8.5 h-8.5 rounded-full bg-purple-50/80 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/60 shadow-inner">
-            <ArrowLeftRight className="w-4 h-4 stroke-[2.5]" />
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-purple-600 p-2 sm:p-2.5 shadow-sm transition-all duration-200 hover:shadow-md shrink-0 min-w-[190px] xl:min-w-[210px]">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-50/80 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100/60 shadow-inner">
+            <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-purple-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('changeOfUse')}</span>
-            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+            <span className="text-purple-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('changeOfUse')}</span>
+            <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
               <Tooltip content={`Old Use: ${oldUseType}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
@@ -151,13 +151,12 @@ export async function ValuationSummaryFooter({
             </div>
           </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <div className="border-l border-gray-200 h-7 sm:h-8 mx-0.5 shrink-0"></div>
         <div className="shrink-0">
-          <span className={`text-[10px] xl:text-[10.5px] font-black px-2 py-1 rounded-md uppercase tracking-wider leading-none border shrink-0 ${
-            hasChangedUse 
-              ? 'bg-amber-50 text-amber-700 border-amber-200' 
+          <span className={`text-[9px] sm:text-[10px] xl:text-[10.5px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md uppercase tracking-wider leading-none border shrink-0 ${hasChangedUse
+              ? 'bg-amber-50 text-amber-700 border-amber-200'
               : 'bg-gray-100 text-gray-600 border-gray-200'
-          }`}>
+            }`}>
             {hasChangedUse ? tVal('yes') : tVal('no')}
           </span>
         </div>
@@ -165,14 +164,14 @@ export async function ValuationSummaryFooter({
 
       {/* Card 3: ALV (renders conditionally if non-zero ALV present) */}
       {hasALVCard && (
-        <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-indigo-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[220px]">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8.5 h-8.5 rounded-full bg-indigo-50/80 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100/60 shadow-inner">
-              <PieChart className="w-4 h-4 stroke-[2.5]" />
+        <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-indigo-600 p-2 sm:p-2.5 shadow-sm transition-all duration-200 hover:shadow-md shrink-0 min-w-[170px] xl:min-w-[190px]">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-50/80 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100/60 shadow-inner">
+              <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
             </div>
             <div className="flex flex-col min-w-0 leading-tight">
-              <span className="text-indigo-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">ALV</span>
-              <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+              <span className="text-indigo-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">ALV</span>
+              <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
                 <Tooltip content={`Old ALV: ${formatCurrencyValue(oldValALV)}`} placement="top">
                   <span className="whitespace-nowrap cursor-help">
                     {tVal('oldLabel')}{' '}
@@ -188,7 +187,7 @@ export async function ValuationSummaryFooter({
               </div>
             </div>
           </div>
-          <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+          <div className="border-l border-gray-200 h-7 sm:h-8 mx-0.5 shrink-0"></div>
           <div className="shrink-0">
             <VarianceDiffBadge diff={valDiffALV} isCurrency />
           </div>
@@ -196,14 +195,14 @@ export async function ValuationSummaryFooter({
       )}
 
       {/* Card 4: RV/CV */}
-      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-orange-500 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[220px]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8.5 h-8.5 rounded-xl bg-orange-50/80 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100/60 shadow-inner">
-            <Receipt className="w-4 h-4 stroke-[2.5]" />
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-orange-500 p-2 sm:p-2.5 shadow-sm transition-all duration-200 hover:shadow-md shrink-0 min-w-[170px] xl:min-w-[190px]">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-orange-50/80 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100/60 shadow-inner">
+            <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-orange-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{valLabel}</span>
-            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+            <span className="text-orange-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{valLabel}</span>
+            <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
               <Tooltip content={`Old ${valLabel}: ${formatCurrencyValue(oldValRV)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
@@ -219,21 +218,21 @@ export async function ValuationSummaryFooter({
             </div>
           </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <div className="border-l border-gray-200 h-7 sm:h-8 mx-0.5 shrink-0"></div>
         <div className="shrink-0">
           <VarianceDiffBadge diff={valDiffRV} isCurrency />
         </div>
       </div>
 
       {/* Card 5: Tax */}
-      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-emerald-600 p-2.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md flex-1 min-w-[220px]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8.5 h-8.5 rounded-xl bg-emerald-50/80 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/60 shadow-inner">
-            <Calculator className="w-4 h-4 stroke-[2.5]" />
+      <div className="flex items-center justify-between gap-2 bg-white rounded-xl border border-gray-200 border-t-[3px] border-t-emerald-600 p-2 sm:p-2.5 shadow-sm transition-all duration-200 hover:shadow-md shrink-0 min-w-[170px] xl:min-w-[190px]">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50/80 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/60 shadow-inner">
+            <Calculator className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-emerald-600 font-extrabold text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('tax')}</span>
-            <div className="flex flex-col text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
+            <span className="text-emerald-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('tax')}</span>
+            <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
               <Tooltip content={`Old Tax: ${formatCurrencyValue(oldTax)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
@@ -249,7 +248,7 @@ export async function ValuationSummaryFooter({
             </div>
           </div>
         </div>
-        <div className="border-l border-gray-200 h-8 mx-0.5 shrink-0"></div>
+        <div className="border-l border-gray-200 h-7 sm:h-8 mx-0.5 shrink-0"></div>
         <div className="shrink-0">
           <VarianceDiffBadge diff={taxDiff} isCurrency />
         </div>

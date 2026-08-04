@@ -175,6 +175,56 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     updateUrlParams({ dataEntrySameAs: null });
   }, [updateUrlParams]);
 
+  // Check if any existing floor contains a Use that is not valid for the current Property Description's allowed Use list
+  const hasIncompatibleFloor = React.useMemo(() => {
+    // Only check if useLookup has been loaded for the current property description
+    if (!useLookup || !Array.isArray(useLookup) || useLookup.length === 0) return false;
+
+    const floors = ((localFloors && localFloors.length > 0) ? localFloors : (props.initialFloors || [])) as FloorData[];
+    if (!floors || floors.length === 0) return false;
+
+    const validUseIds = new Set(
+      useLookup
+        .map(u => String(u.typeOfUseId || u.id || u.ID || ''))
+        .filter(Boolean)
+    );
+
+    const validUseDescs = new Set<string>();
+    useLookup.forEach((u) => {
+      const desc = String(u.description || '').trim().toLowerCase();
+      const code = String(u.typeOfUseCode || u.code || '').trim().toLowerCase();
+      if (desc) validUseDescs.add(desc);
+      if (code) validUseDescs.add(code);
+      if (code && desc) validUseDescs.add(`${code} - ${desc}`);
+      if (code && desc) validUseDescs.add(`${code}-${desc}`);
+    });
+
+    return floors.some((floor) => {
+      const floorUseId = String(
+        (floor as any).typeOfUseId || (floor as any).useId || ''
+      ).trim();
+      const floorUseDesc = String(
+        (floor as any).use || (floor as any).usageDescription || (floor as any).typeOfUseDescription || ''
+      ).trim().toLowerCase();
+
+      // If floor has no use specified yet, don't flag as incompatible
+      if (!floorUseId && !floorUseDesc) return false;
+
+      // If either the numeric ID OR the description matches any valid Use, it is compatible
+      const matchesId = floorUseId ? validUseIds.has(floorUseId) : false;
+      const matchesDesc = floorUseDesc ? validUseDescs.has(floorUseDesc) : false;
+
+      return !matchesId && !matchesDesc;
+    });
+  }, [useLookup, localFloors, props.initialFloors]);
+
+  // Expose hasIncompatibleFloor state to global window object to block drawer navigation when incompatible floor exists
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor = hasIncompatibleFloor;
+    }
+  }, [hasIncompatibleFloor]);
+
   // Show full-screen loader during save/update/delete operations
   if (isOperationLoading) {
     return (

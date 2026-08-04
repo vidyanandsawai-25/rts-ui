@@ -141,7 +141,12 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
                 'description',
                 'typeOfUseCode',
                 editingFloorForm.typeOfUseId,
-                getUseDescription
+                (val: string, lookup: LookupData[]): string => {
+              return (
+                getUseDescription(val, lookup) ||
+                String(editingFloorForm.use || editingFloorForm.usageDescription || editingFloorForm.typeOfUseDescription || '')
+              );
+            }
               )
             ]}
             value={String(editingFloorForm.typeOfUseId ?? '')}

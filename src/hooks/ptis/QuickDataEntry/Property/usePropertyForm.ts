@@ -7,7 +7,8 @@ import { useLoading } from '@/hooks/useLoading';
 import { hasErrors } from '@/lib/utils/validation';
 import {
     updatePropertyBasicDetailsAction,
-    deletePropertyDetailsAction
+    deletePropertyDetailsAction,
+    validateFloorCompatibilityAction,
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
 import {
     UpdatePropertyBasicDetailsDto,
@@ -115,6 +116,9 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         const originalCategoryId = propertyData?.categoryId ?? null;
         const isCategoryChanged = !!originalCategoryId && categoryId !== originalCategoryId;
 
+        const originalPropertyTypeId = propertyData?.propertyTypeId ?? null;
+        const isPropertyDescriptionChanged = originalPropertyTypeId !== null && propertyTypeId !== null && propertyTypeId !== originalPropertyTypeId;
+
         if (isCategoryChanged) {
             confirm({
                 variant: "warning",
@@ -134,6 +138,42 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
                             toast.error(t('property.errors.updatePropertyBasicDetails'));
                             return;
                         }
+                        toast.success(t('property.updateSuccess'));
+                        router.refresh();
+                    } catch (_err) {
+                        toast.error(t('property.updateError'));
+                    } finally {
+                        stopLoading();
+                    }
+                }
+            });
+        } else if (isPropertyDescriptionChanged) {
+            confirm({
+                variant: "warning",
+                title: t('property.propertyDescriptionChangeConfirmTitle'),
+                description: t('property.propertyDescriptionChangeConfirmText'),
+                confirmText: t('property.propertyDescriptionChangeConfirmButton'),
+                cancelText: t('common.cancel'),
+                onConfirm: async () => {
+                    startLoading();
+                    try {
+                        const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
+                        if (!result?.success) {
+                            toast.error(t('property.errors.updatePropertyBasicDetails'));
+                            return;
+                        }
+                        
+                        // Validate existing floor compatibility immediately
+                        if (propertyTypeId) {
+                            const checkCompat = await validateFloorCompatibilityAction(pId, propertyTypeId);
+                            if (checkCompat.success && checkCompat.data) {
+                                const hasIncompatible = !checkCompat.data.isCompatible;
+                                if (typeof window !== 'undefined') {
+                                    (window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor = hasIncompatible;
+                                }
+                            }
+                        }
+
                         toast.success(t('property.updateSuccess'));
                         router.refresh();
                     } catch (_err) {

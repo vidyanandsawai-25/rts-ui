@@ -174,3 +174,95 @@ export async function deletePropertyDetailsAction(propertyId: number): Promise<A
     return { success: false, error: await getActionErrorMessage(error) };
   }
 }
+
+// Validate existing floor compatibility with propertyTypeId
+export async function validateFloorCompatibilityAction(
+  propertyId: number,
+  newPropertyTypeId?: number
+): Promise<ActionResult<{ isCompatible: boolean; invalidCount: number }>> {
+  try {
+    const floors = await getFloorSubmissionsByOwner(propertyId);
+    if (!floors || floors.length === 0) {
+      return { success: true, data: { isCompatible: true, invalidCount: 0 } };
+    }
+
+    let targetPropertyTypeId = newPropertyTypeId;
+    if (!targetPropertyTypeId) {
+      const basicDetails = await getPropertyBasicDetails(propertyId);
+      targetPropertyTypeId = basicDetails?.propertyTypeId ?? undefined;
+    }
+
+    if (!targetPropertyTypeId) {
+      return { success: true, data: { isCompatible: true, invalidCount: 0 } };
+    }
+
+    const { getTypeOfUseData } = await import('@/lib/api/ptis/floorSubmission');
+    const validUses = await getTypeOfUseData(targetPropertyTypeId);
+    const validUseIds = new Set<string>(
+      (validUses || []).map((u) => String(u.typeOfUseId || u.id || u.ID || ''))
+    );
+    const validUseDescs = new Set<string>();
+    (validUses || []).forEach((u) => {
+      const desc = String(u.description || '').trim().toLowerCase();
+      const code = String(u.typeOfUseCode || u.code || '').trim().toLowerCase();
+      if (desc) validUseDescs.add(desc);
+      if (code) validUseDescs.add(code);
+      if (code && desc) validUseDescs.add(`${code} - ${desc}`);
+      if (code && desc) validUseDescs.add(`${code}-${desc}`);
+    });
+
+    let invalidCount = 0;
+    for (const item of floors) {
+      const floor = item as {
+        typeOfUseId?: string | number;
+        useId?: string | number;
+        use?: string;
+        usageDescription?: string;
+        typeOfUseDescription?: string;
+        isOpenPlot?: boolean | string | number;
+        IsOpenPlot?: boolean | string | number;
+        floorId?: string | number;
+        floor?: string | number;
+      };
+
+      const isActualOpenPlot =
+        floor.isOpenPlot === true ||
+        floor.isOpenPlot === 'true' ||
+        floor.isOpenPlot === 1 ||
+        floor.IsOpenPlot === true ||
+        floor.IsOpenPlot === 'true' ||
+        floor.IsOpenPlot === 1 ||
+        String(floor.floorId ?? floor.floor ?? '') === '77';
+
+      // Neglect floor use check if floor is Open Plot
+      if (isActualOpenPlot) continue;
+
+      const floorUseId = String(
+        floor.typeOfUseId ?? floor.useId ?? ''
+      ).trim();
+      const floorUseDesc = String(
+        floor.use ?? floor.usageDescription ?? floor.typeOfUseDescription ?? ''
+      ).trim().toLowerCase();
+
+      if (!floorUseId && !floorUseDesc) continue;
+
+      const matchesId = floorUseId ? validUseIds.has(floorUseId) : false;
+      const matchesDesc = floorUseDesc ? validUseDescs.has(floorUseDesc) : false;
+
+      if (!matchesId && !matchesDesc) {
+        invalidCount++;
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        isCompatible: invalidCount === 0,
+        invalidCount,
+      },
+    };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
+}
+

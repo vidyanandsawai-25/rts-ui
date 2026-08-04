@@ -48,22 +48,32 @@ export function VarianceDiffBadge({
       placement="top"
     >
       <div
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-bold text-[11.5px] xl:text-xs shrink-0 transition-all duration-300 hover:scale-105 cursor-help ${colorClass} ${className}`}
+        className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-lg border font-bold text-[10px] sm:text-[11.5px] xl:text-xs shrink-0 transition-all duration-300 hover:scale-105 cursor-help ${colorClass} ${className}`}
       >
         {isPositive && (
-          <span className="inline-block animate-bounce [animation-duration:1.5s]">
-            <ArrowUp className="w-3.5 h-3.5 stroke-[3]" />
+          <span className="relative inline-flex items-center justify-center">
+            <span className="animate-bounce [animation-duration:2s] flex items-center gap-1">
+              <ArrowUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3] text-emerald-600 drop-shadow-sm" />
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-700 shadow-inner text-[10px] sm:text-[11px] leading-none transition-transform hover:scale-125">
+                😊
+              </span>
+            </span>
           </span>
         )}
         {isNegative && (
-          <span className="inline-block animate-bounce [animation-duration:1.5s]">
-            <ArrowDown className="w-3.5 h-3.5 stroke-[3]" />
+          <span className="relative inline-flex items-center justify-center">
+            <span className="animate-bounce [animation-duration:2s] flex items-center gap-1">
+              <ArrowDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3] text-rose-600 drop-shadow-sm" />
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-rose-100/90 text-rose-700 shadow-inner text-[10px] sm:text-[11px] leading-none transition-transform hover:scale-125">
+                😟
+              </span>
+            </span>
           </span>
         )}
         {!isPositive && !isNegative && (
-          <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
         )}
-        <span>{formattedObj.compact}</span>
+        <span className="tracking-tight">{formattedObj.compact}</span>
       </div>
     </Tooltip>
   );

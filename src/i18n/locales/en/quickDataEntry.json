@@ -1,4 +1,8 @@
 {
+    "renter": {
+        "loadingScreen": "Loading renter screen...",
+        "loadingEngine": "Loading rent engine..."
+    },
     "commonbuttonmessages": {
         "update": "Update",
         "UpdateChanges": "Update Changes",
@@ -368,6 +372,10 @@
         "categoryChangeConfirmTitle": "Confirm Category Change",
         "categoryChangeConfirmText": "Changing the category will delete all floor, room submission, and renter details. Are you sure you want to proceed?",
         "categoryChangeConfirmButton": "Yes, Change Category",
+        "propertyDescriptionChangeConfirmTitle": "Confirm Property Description Change",
+        "propertyDescriptionChangeConfirmText": "You have changed the Property Description. Existing Floor details are linked to the previous Property Description. Please update or remove the Floor records before saving. Do you want to continue?",
+        "propertyDescriptionChangeConfirmButton": "Yes, Continue",
+        "propertyDescriptionFloorIncompatible": "Property Description has been changed. One or more existing Floor records contain a Use that is not valid for the selected Property Description. Please update or remove the incompatible Floor records before saving the new Property Description.",
         "updateSuccess": "Property basic details updated successfully",
         "updateError": "An error occurred during update.",
         "updateButton": "Update",

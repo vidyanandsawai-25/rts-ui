@@ -31,19 +31,25 @@
 }
 
 @keyframes bounce-subtle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-4px);
   }
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.95;
     transform: scale(1.02);
@@ -508,6 +514,7 @@ div[role="dialog"] [role="combobox"]:focus {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -516,7 +523,37 @@ div[role="dialog"] [role="combobox"]:focus {
 .config-drawer div.flex-1.overflow-y-auto::-webkit-scrollbar {
   display: none;
 }
+
 .config-drawer div.flex-1.overflow-y-auto {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 1px !important;
+  height: 1px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #165297 !important;
+  border-radius: 2px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #153aa0 !important;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #dde2f5 transparent;
 }

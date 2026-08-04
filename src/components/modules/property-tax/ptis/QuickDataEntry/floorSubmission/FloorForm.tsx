@@ -91,14 +91,40 @@ const FloorForm: React.FC<FloorFormProps & {
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
+    const isUseValidForProperty = React.useMemo(() => {
+      if (!useLookup || useLookup.length === 0) return true;
+      const currentUseId = String(editingFloorForm.typeOfUseId || '').trim();
+      const currentUseDesc = String(
+        editingFloorForm.use || editingFloorForm.usageDescription || editingFloorForm.typeOfUseDescription || ''
+      ).trim().toLowerCase();
+
+      if (!currentUseId && !currentUseDesc) return false;
+
+      const validUseIds = new Set(useLookup.map(u => String(u.typeOfUseId || u.id || u.ID || '')));
+      const validUseDescs = new Set<string>();
+      useLookup.forEach((u) => {
+        const desc = String(u.description || '').trim().toLowerCase();
+        const code = String(u.typeOfUseCode || u.code || '').trim().toLowerCase();
+        if (desc) validUseDescs.add(desc);
+        if (code) validUseDescs.add(code);
+        if (code && desc) validUseDescs.add(`${code} - ${desc}`);
+        if (code && desc) validUseDescs.add(`${code}-${desc}`);
+      });
+
+      const matchesId = currentUseId ? validUseIds.has(currentUseId) : false;
+      const matchesDesc = currentUseDesc ? validUseDescs.has(currentUseDesc) : false;
+
+      return matchesId || matchesDesc;
+    }, [useLookup, editingFloorForm.typeOfUseId, editingFloorForm.use, editingFloorForm.usageDescription, editingFloorForm.typeOfUseDescription]);
+
     const isFormValid = React.useMemo(() => {
       const result = floorFormSchema.safeParse({
         ...editingFloorForm,
         isAddingNewFloor,
         selectedFloorType,
       });
-      return result.success;
-    }, [editingFloorForm, isAddingNewFloor, selectedFloorType]);
+      return result.success && isUseValidForProperty;
+    }, [editingFloorForm, isAddingNewFloor, selectedFloorType, isUseValidForProperty]);
 
     return (
       <div className="bg-white rounded-xl shadow-lg border-2 border-blue-100 m-0 p-4 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
