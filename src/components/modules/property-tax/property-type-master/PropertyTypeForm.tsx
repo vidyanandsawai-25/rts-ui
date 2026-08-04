@@ -167,6 +167,8 @@ export default function PropertyTypeForm({
               showError={showError}
               categories={categories}
               t={t}
+              isActive={isActive}
+              isEdit={isEdit}
             />
             <ValidationSection tCommon={tCommon} />
           </div>

@@ -17,6 +17,8 @@ interface FormFieldsSectionProps {
   showError: (field: keyof PropertyTypeFormModel) => boolean;
   categories: PropertyTypeCategory[];
   t: (key: string) => string;
+  isActive?: boolean;
+  isEdit?: boolean;
 }
 
 export interface FormFieldsSectionRef {
@@ -35,6 +37,8 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
     showError,
     categories,
     t,
+    isActive = true,
+    isEdit = false,
   }, ref) => {
     const propertyDescriptionRef = React.useRef<HTMLInputElement>(null);
 
@@ -132,6 +136,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           }
         }}
         onBlur={handleBlur}
+        disabled={!isActive || !isEdit}
         fullWidth
         className="text-gray-700"
       />

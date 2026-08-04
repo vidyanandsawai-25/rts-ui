@@ -31,25 +31,25 @@ export const TypeOfUseSection = ({
   onClearAll,
   t,
 }: TypeOfUseSectionProps) => {
-  // --- Search & filter state (SSR-safe, no useEffect) ---
+  // --- Search & filter state ---
   const [touSearchTerm, setTouSearchTerm] = useState("");
   const [manualTouType, setManualTouType] = useState<string>("ALL");
+  const [prevSelectedTypeValue, setPrevSelectedTypeValue] = useState<string | undefined>(undefined);
 
-  const effectiveTouType = useMemo(() => {
+  // Sync manual filter with left-side form selection, but allow manual overrides afterwards
+  if (selectedTypeValue !== prevSelectedTypeValue) {
+    setPrevSelectedTypeValue(selectedTypeValue);
     const normalizedType = String(selectedTypeValue ?? "").trim().toUpperCase();
     const syncableTypes = new Set(["R", "C", "I", "N"]);
-    const compositeTypes = new Set(["R-C", "I-C"]);
-
+    
     if (syncableTypes.has(normalizedType)) {
-      return normalizedType;
+      setManualTouType(normalizedType);
+    } else {
+      setManualTouType("ALL");
     }
+  }
 
-    if (compositeTypes.has(normalizedType)) {
-      return "ALL";
-    }
-
-    return manualTouType;
-  }, [selectedTypeValue, manualTouType]);
+  const effectiveTouType = manualTouType;
 
   // Sanitize search input
   const sanitizeSearchText = (value: string) => {

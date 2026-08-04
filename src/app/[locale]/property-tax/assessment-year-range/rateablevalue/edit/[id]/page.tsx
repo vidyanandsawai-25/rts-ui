@@ -1,14 +1,15 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { AssessmentYearRangeForm } from "@/components/modules/property-tax/assessment-year-range";
+import { AssessmentYearRangeForm, AssessmentYearRangeMaster } from "@/components/modules/property-tax/assessment-year-range";
 import { rateableValueConfig } from "@/components/modules/property-tax/assessment-year-range/config";
 import {
   getAssessmentYearRangeRVByIdAction,
   createAssessmentYearRangeRVAction,
   updateAssessmentYearRangeRVAction,
+  deleteAssessmentYearRangeRVAction,
+  fetchAssessmentYearRangeRVPagedAction,
 } from "../../action";
 import { AssessmentYearRangeRV } from "@/types/assessment-year-range.types";
-import { ApiError } from "@/lib/utils/api";
 
 interface PageProps {
   params: Promise<{
@@ -25,25 +26,31 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
     notFound();
   }
 
-  // Fetch data server-side
-  let data: AssessmentYearRangeRV;
-  try {
-    data = await getAssessmentYearRangeRVByIdAction(id);
-  } catch (error) {
-    if (error instanceof ApiError && error.statusCode === 404) {
-      notFound();
-    }
-    console.error("Failed to fetch assessment year range:", error);
-    throw error;
-  }
+  const [data, result] = await Promise.all([
+    getAssessmentYearRangeRVByIdAction(id),
+    fetchAssessmentYearRangeRVPagedAction(1, 10, "fromYear", "asc"),
+  ]);
 
   return (
-    <AssessmentYearRangeForm<AssessmentYearRangeRV>
-      config={rateableValueConfig}
-      id={id}
-      initialData={data}
-      createAction={createAssessmentYearRangeRVAction}
-      updateAction={updateAssessmentYearRangeRVAction}
-    />
+    <>
+      <AssessmentYearRangeMaster<AssessmentYearRangeRV>
+        config={rateableValueConfig}
+        data={result.items}
+        pageNumber={result.pageNumber}
+        pageSize={result.pageSize}
+        totalCount={result.totalCount}
+        totalPages={result.totalPages}
+        sortBy="fromYear"
+        sortOrder="asc"
+        deleteAction={deleteAssessmentYearRangeRVAction}
+      />
+      <AssessmentYearRangeForm<AssessmentYearRangeRV>
+        config={rateableValueConfig}
+        id={id}
+        initialData={data}
+        createAction={createAssessmentYearRangeRVAction}
+        updateAction={updateAssessmentYearRangeRVAction}
+      />
+    </>
   );
 }
