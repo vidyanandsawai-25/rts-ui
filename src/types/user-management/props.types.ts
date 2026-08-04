@@ -27,6 +27,8 @@ export interface UserConfigurationProps {
     departments: Department[];
     designations: Designation[];
   };
+  fetchError?: string;
+  statusCode?: number;
 }
 
 export interface UserConfigurationClientProps {
@@ -38,6 +40,8 @@ export interface UserConfigurationClientProps {
     usersTab: string;
     rolesTab: string;
   };
+  fetchError?: string;
+  statusCode?: number;
 }
 
 export interface DesignationFormProps {
