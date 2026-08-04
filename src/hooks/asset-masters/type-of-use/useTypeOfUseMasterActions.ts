@@ -60,17 +60,18 @@ export function useTypeOfUseMasterActions({
         const result = await deleteTypeOfUseGroupAction(fd);
         if (result.success) {
           toast.success(t("messages.groupDeleted", { default: "Group deleted successfully" }));
-          if (group.id === selectedGroupId) {
-            pushUrl({ selectedGroupId: null, selectedTypeOfUseId: null });
-          } else {
-            router.refresh();
-          }
+          pushUrl({
+            selectedGroupId: group.id === selectedGroupId ? null : selectedGroupId,
+            selectedTypeOfUseId: group.id === selectedGroupId ? null : selectedTypeOfUseId,
+            typePn: 1,
+            subTypePn: 1,
+          });
         } else {
           toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("group.title")));
         }
       },
     });
-  }, [confirm, selectedGroupId, pushUrl, router, t, tCommon]);
+  }, [confirm, selectedGroupId, selectedTypeOfUseId, pushUrl, t, tCommon]);
 
   const handleAddType = useCallback(() => {
     const params = sp.toString() ? `?${sp.toString()}` : "";
@@ -94,17 +95,17 @@ export function useTypeOfUseMasterActions({
         const result = await deleteAssetTypeOfUseAction(fd);
         if (result.success) {
           toast.success(t("messages.typeDeleted", { default: "Type of Use deleted successfully" }));
-          if (typeOfUse.id === selectedTypeOfUseId) {
-            pushUrl({ selectedTypeOfUseId: null });
-          } else {
-            router.refresh();
-          }
+          pushUrl({
+            selectedTypeOfUseId: typeOfUse.id === selectedTypeOfUseId ? null : selectedTypeOfUseId,
+            subTypePn: 1,
+            subTypeSearch: "",
+          });
         } else {
           toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("type.title")));
         }
       },
     });
-  }, [confirm, selectedTypeOfUseId, pushUrl, router, t, tCommon]);
+  }, [confirm, selectedTypeOfUseId, pushUrl, t, tCommon]);
 
   const handleAddSubtype = useCallback(() => {
     const params = sp.toString() ? `?${sp.toString()}` : "";
@@ -128,13 +129,18 @@ export function useTypeOfUseMasterActions({
         const result = await deleteAssetSubTypeOfUseAction(fd);
         if (result.success) {
           toast.success(t("messages.subTypeDeleted", { default: "Sub-Type of Use deleted successfully" }));
-          router.refresh();
+          pushUrl({
+            selectedGroupId,
+            selectedTypeOfUseId,
+            subTypePn: 1,
+            subTypeSearch: "",
+          });
         } else {
           toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("subtype.title")));
         }
       },
     });
-  }, [confirm, router, t, tCommon]);
+  }, [confirm, selectedGroupId, selectedTypeOfUseId, pushUrl, t, tCommon]);
 
   return {
     handleAddGroup,

@@ -2,7 +2,8 @@
 
 import { useCallback } from "react";
 import type { OwningDepartmentFormModel } from "@/types/asset-masters/owning-department.types";
-import { validateForm, commonValidations, isAllZeros } from "@/lib/utils/validation";
+import { validateForm } from "@/lib/utils/validation";
+import { isAllZeros, ASSET_MASTER_NAME_REGEX, DESCRIPTION_REGEX } from "@/lib/utils/asset-validation-rules";
 
 interface UseOwningDepartmentFormValidationProps {
   isEdit: boolean;
@@ -23,25 +24,29 @@ export function useOwningDepartmentFormValidation({
       const schema = {
         owningDepartmentName: (value: unknown) => {
           const strVal = String(value ?? "").trim();
-          if (isAllZeros(strVal)) {
+          if (!strVal) {
+            return t("form.validation.nameRequired");
+          }
+          if (strVal.length > 100) {
+            return t("form.validation.nameMaxLength", { count: 100 });
+          }
+          if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) {
             return t("form.validation.nameFormat");
           }
-          return commonValidations.masterDescription(t, 100, {
-            required: "form.validation.nameRequired",
-            format: "form.validation.nameFormat",
-            maxLength: "form.validation.nameMaxLength",
-          })(value);
+          return undefined;
         },
         description: (value: unknown) => {
           const strVal = String(value ?? "").trim();
-          if (isAllZeros(strVal)) {
+          if (!strVal) {
+            return t("form.validation.descriptionRequired");
+          }
+          if (strVal.length > 100) {
+            return t("form.validation.descriptionMaxLength", { count: 100 });
+          }
+          if (isAllZeros(strVal) || !DESCRIPTION_REGEX.test(strVal)) {
             return t("form.validation.descriptionFormat");
           }
-          return commonValidations.masterDescription(t, 100, {
-            required: "form.validation.descriptionRequired",
-            format: "form.validation.descriptionFormat",
-            maxLength: "form.validation.descriptionMaxLength",
-          })(value);
+          return undefined;
         },
       };
 

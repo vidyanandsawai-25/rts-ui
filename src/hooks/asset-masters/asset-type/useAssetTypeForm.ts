@@ -3,13 +3,10 @@
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { CODE_SANITIZE, ASSET_MASTER_TEXT_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/validation-rules";
-import { validateAssetMasterForm } from "@/lib/validations/asset-master-form.validation";
+import { sanitizeFieldValue, validateAssetTypeForm } from "./validation";
 import { useAssetTypeSubmit } from "./useAssetTypeSubmit";
 import type { AssetTypeFormModel } from "@/types/asset-masters/asset-type.types";
 import type { MasterDataGroup } from "@/types/asset-masters/master-data.types";
-
-const CODE_MAX = 15;
 
 export interface UseAssetTypeFormProps {
   initialData?: AssetTypeFormModel | null;
@@ -21,6 +18,7 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
   const isEdit = initialData?.id != null;
 
   const [open, setOpen] = useState(true);
+  const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const t = useTranslations("asset.configuration.masterData.form");
   const tCommon = useTranslations("common");
@@ -55,61 +53,78 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
   }, [router]);
 
   const validate = useCallback((data: AssetTypeFormModel) => {
-    const err = validateAssetMasterForm(data, t, { requiresGroup: true });
-    if (!data.allowUnitRegistration && !data.allowRoomRegistration) {
-      err.registrationType = t("validation.registrationTypeRequired");
-    }
-    return err;
-  }, [t]);
+    return validateAssetTypeForm(data, t, isEdit);
+  }, [t, isEdit]);
 
   const showError = useCallback((field: keyof AssetTypeFormModel) => {
-    return touched[field] && !!errors[field];
-  }, [touched, errors]);
+    return (submittedOnce || touched[field]) && !!errors[field];
+  }, [submittedOnce, touched, errors]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    let newValue = value;
+    const sanitized = sanitizeFieldValue(name, value);
 
-    if (name === "code") {
-      if (newValue.length > CODE_MAX) return;
-      newValue = newValue.replace(CODE_SANITIZE, "");
-    }
-
-    if (name === "name") {
-      newValue = newValue.replace(ASSET_MASTER_NAME_SANITIZE, "");
-    }
-
-    if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "");
-    }
-    
-    if (typeof newValue === "string" && newValue.length > 0 && ["code", "name", "description"].includes(name)) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
-
-    setFormData((p) => ({ ...p, [name]: newValue }));
-    setErrors((p) => ({ ...p, [name]: "" }));
+    setFormData((p) => ({ ...p, [name]: sanitized }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err[name];
+      return err;
+    });
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string) => {
-    setFormData((p) => ({ ...p, [name]: value }));
-    setErrors((p) => ({ ...p, [name]: "" }));
-  }, []);
+    setFormData((p) => {
+      const updated = { ...p, [name]: value };
+      const fieldErrors = validate(updated);
+      setErrors((prev) => {
+        const err = { ...prev };
+        if (fieldErrors[name as keyof AssetTypeFormModel]) {
+          err[name] = fieldErrors[name as keyof AssetTypeFormModel]!;
+        } else {
+          delete err[name];
+        }
+        return err;
+      });
+      return updated;
+    });
+  }, [validate]);
 
   const handleRadioChange = useCallback((value: string) => {
-    setFormData((p) => ({
-      ...p,
-      allowUnitRegistration: value === "unit",
-      allowRoomRegistration: value === "room",
-    }));
-  }, []);
+    setFormData((p) => {
+      const updated = {
+        ...p,
+        allowUnitRegistration: value === "unit",
+        allowRoomRegistration: value === "room",
+      };
+      const fieldErrors = validate(updated);
+      setErrors((prev) => {
+        const err = { ...prev };
+        if (fieldErrors.registrationType) {
+          err.registrationType = fieldErrors.registrationType;
+        } else {
+          delete err.registrationType;
+        }
+        return err;
+      });
+      return updated;
+    });
+  }, [validate]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    const fieldErrors = validate({ ...formData, [name]: value });
-    setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
+    const sanitized = sanitizeFieldValue(name, value);
+    const updated = { ...formData, [name]: sanitized };
+    setFormData(updated);
+
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const err = { ...p };
+      const field = name as keyof AssetTypeFormModel;
+      if (fieldErrors[field]) err[field] = fieldErrors[field]!; else delete err[field];
+      return err;
+    });
   }, [formData, validate]);
 
   const { handleSubmit, isSubmitting } = useAssetTypeSubmit({
@@ -119,8 +134,10 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
     validate,
     setErrors,
     setTouched,
+    setSubmittedOnce,
     setOpen,
     t,
+    tCommon,
   });
 
   const handleToggleStatus = useCallback((checked?: boolean) => {
@@ -147,3 +164,5 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
     categoryOptions,
   };
 }
+
+

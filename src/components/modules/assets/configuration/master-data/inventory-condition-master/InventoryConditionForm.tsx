@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, AlertCircle, CheckCircle2, X } from "lucide-react";
 import {
   CancelButton,
   SaveButton,
-  StatusToggleCard,
-  RequiredFieldsNote,
+  ToggleSwitch,
+  ValidationMessage,
 } from "@/components/common";
 import { Drawer } from "@/components/common/Drawer";
+import { cn } from "@/lib/utils/cn";
 import { useTranslations, useLocale } from "next-intl";
 import { FormFieldsSection } from "./FormFieldsSection";
 
@@ -19,7 +20,7 @@ import type {
   AssetConditionCategory,
   InventoryConditionFormProps,
 } from "@/types/asset-masters/inventory-condition.types";
-import { validateInventoryConditionForm } from "@/lib/validations/inventory-item-form.validation";
+import { validateInventoryConditionForm } from "@/hooks/asset-masters/inventory-condition/validation";
 import { useInventoryConditionSubmit } from "@/hooks/asset-masters/inventory-condition/useInventoryConditionSubmit";
 import { useInventoryConditionForm } from "@/hooks/asset-masters/inventory-condition/useInventoryConditionForm";
 
@@ -33,19 +34,36 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
+  const statusToggleRef = useRef<HTMLButtonElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const timeoutId = setTimeout(() => {
+      if (isEdit && statusToggleRef.current) {
+        statusToggleRef.current.focus();
+      } else if (!isEdit && nameRef.current) {
+        nameRef.current.focus();
+      }
+    }, 150);
+    return () => clearTimeout(timeoutId);
+  }, [open, isEdit]);
+
   const handleClose = useCallback(() => {
     setOpen(false);
     router.back();
   }, [router]);
 
   const validate = useCallback((data: InventoryConditionFormModel) => {
-    return validateInventoryConditionForm(data, t);
-  }, [t]);
+    return validateInventoryConditionForm(data, t, isEdit);
+  }, [t, isEdit]);
 
   const {
     formData,
     errors,
     touched,
+    submittedOnce,
+    setSubmittedOnce,
     handleChange,
     handleSelectChange,
     handleBlur,
@@ -67,7 +85,7 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
     { label: "Inventory", value: "Inventory" },
   ], []);
 
-  const showError = (field: string) => touched[field] && !!errors[field];
+  const showError = (field: string) => (submittedOnce || touched[field]) && !!errors[field as keyof InventoryConditionFormModel];
 
   const { handleSubmit, isSubmitting } = useInventoryConditionSubmit({
     isEdit,
@@ -76,9 +94,12 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
     validate,
     setErrors,
     setTouched,
+    setSubmittedOnce,
     setOpen,
     tCommon,
   });
+
+  const isActive = formData.isActive;
 
   return (
     <Drawer
@@ -104,7 +125,7 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
       }
       footer={
         <>
-          <CancelButton label={t("configuration.masterData.form.buttons.cancel")} onClick={handleClose} />
+          <CancelButton label={t("configuration.masterData.form.buttons.cancel")} onClick={handleClose} disabled={isSubmitting} />
           <SaveButton
             label={isEdit ? t("configuration.masterData.form.buttons.update") : t("configuration.masterData.form.buttons.save")}
             type="submit"
@@ -116,16 +137,51 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
     >
       <form id="inventory-condition-form" onSubmit={handleSubmit} noValidate className="space-y-6 bg-[#F8FAFF] p-5">
         {isEdit && (
-          <StatusToggleCard
-            isActive={formData.isActive}
-            onToggle={handleToggleStatus}
-            activeLabel={tCommon("status.active")}
-            inactiveLabel={tCommon("status.inactive")}
-            statusLabel={tCommon("status.label")}
-          />
+          <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
+            <div
+              className={cn(
+                "rounded-xl p-3 flex items-center justify-between",
+                isActive
+                  ? "border border-blue-200 bg-[#F0F6FF]"
+                  : "border border-gray-200 bg-gray-50"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "h-9 w-9 flex items-center justify-center rounded-full",
+                    isActive
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-200 text-gray-900"
+                  )}
+                >
+                  {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{tCommon("status.label")}</div>
+                  <div className="text-sm text-gray-500">
+                    {isActive ? ` ${tCommon("status.active")}` : ` ${tCommon("status.inactive")}`}
+                  </div>
+                </div>
+              </div>
+
+              <ToggleSwitch
+                ref={statusToggleRef}
+                checked={isActive}
+                onChange={handleToggleStatus}
+                showPopup={false}
+                activeLabel={tCommon("status.active")}
+                inactiveLabel={tCommon("status.inactive")}
+              />
+            </div>
+            {errors.isActive && (
+              <ValidationMessage message={errors.isActive} className="mt-2" />
+            )}
+          </div>
         )}
 
         <FormFieldsSection
+          nameRef={nameRef}
           formData={formData}
           errors={errors}
           showError={showError}
@@ -137,8 +193,13 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
           conditionTypeOptions={conditionTypeOptions}
         />
 
-        <RequiredFieldsNote text={tCommon("note.mandatory") || "FIELDS ARE MANDATORY"} />
+        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+          <AlertCircle size={16} />
+          <span>{tCommon("note.mandatory")}</span>
+        </div>
       </form>
     </Drawer>
   );
 }
+
+

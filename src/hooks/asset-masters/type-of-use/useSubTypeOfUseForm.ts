@@ -68,8 +68,16 @@ export function useSubTypeOfUseForm({
     const { name, value } = e.target;
     let val: string | number = value;
 
-    if (name === "typeOfUseId" || name === "searchSequence") {
+    if (name === "typeOfUseId") {
       val = Number(value) || 0;
+    } else if (name === "searchSequence") {
+      const sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
+      if (sanitized === "") {
+        val = "";
+      } else {
+        const numVal = Number(sanitized);
+        val = numVal > 999 ? 999 : numVal;
+      }
     } else {
       val = sanitizeSubTypeOfUseFieldValue(name, value);
     }
@@ -85,8 +93,16 @@ export function useSubTypeOfUseForm({
     setTouched((p) => ({ ...p, [name]: true }));
 
     let sanitizedValue: string | number = value;
-    if (name === "typeOfUseId" || name === "searchSequence") {
+    if (name === "typeOfUseId") {
       sanitizedValue = Number(value) || 0;
+    } else if (name === "searchSequence") {
+      const sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
+      if (sanitized === "") {
+        sanitizedValue = "";
+      } else {
+        const numVal = Number(sanitized);
+        sanitizedValue = numVal > 999 ? 999 : numVal;
+      }
     } else {
       sanitizedValue = sanitizeSubTypeOfUseFieldValue(name, value);
     }
@@ -170,9 +186,7 @@ export function useSubTypeOfUseForm({
         ? t("messages.subTypeUpdated", { default: "Sub-Type updated successfully" })
         : t("messages.subTypeCreated", { default: "Sub-Type created successfully" })
       ));
-
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);
@@ -202,3 +216,4 @@ export function useSubTypeOfUseForm({
     isEdit,
   };
 }
+

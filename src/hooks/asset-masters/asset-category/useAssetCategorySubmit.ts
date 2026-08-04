@@ -3,16 +3,20 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveAssetCategoryAction } from "@/app/[locale]/assets/configuration/master-data/asset-category/actions";
 import type { AssetCategoryFormModel } from "@/types/asset-masters/asset-category.types";
+import { mapAssetCategoryApiError } from "./validation";
+import { getSafeMessage } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 
 interface UseAssetCategorySubmitProps {
   isEdit: boolean;
   locale: string;
   formData: AssetCategoryFormModel;
-  validate: (data: AssetCategoryFormModel) => Record<string, string>;
-  setErrors: (errors: Record<string, string>) => void;
+  validate: (data: AssetCategoryFormModel) => Partial<Record<keyof AssetCategoryFormModel, string>>;
+  setErrors: (errors: Partial<Record<keyof AssetCategoryFormModel, string>>) => void;
   setTouched: (touched: Record<string, boolean>) => void;
+  setSubmittedOnce: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
   t: (key: string) => string;
+  tCommon: (key: string) => string;
 }
 
 export function useAssetCategorySubmit({
@@ -22,14 +26,17 @@ export function useAssetCategorySubmit({
   validate,
   setErrors,
   setTouched,
+  setSubmittedOnce,
   setOpen,
   t,
+  tCommon,
 }: UseAssetCategorySubmitProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmittedOnce(true);
 
     setTouched({
       code: true,
@@ -41,7 +48,13 @@ export function useAssetCategorySubmit({
     setErrors(v);
 
     if (Object.keys(v).length) {
-      toast.error(t("validation.fixErrors"));
+      const fixErrorsMsg =
+        getSafeMessage(tCommon, "validation.fixErrors") ||
+        getSafeMessage(t, "validation.fixErrors") ||
+        getSafeMessage(t, "form.validation.fixErrors") ||
+        getSafeMessage(t, "errors.fixErrors") ||
+        "Please fix validation errors before submitting";
+      toast.error(fixErrorsMsg);
       return;
     }
 
@@ -76,14 +89,12 @@ export function useAssetCategorySubmit({
       }
 
       if (res && !res.ok) {
+        toast.error(mapAssetCategoryApiError(res, t, tCommon));
         if (res.error === "duplicate") {
           setErrors({
-            code: t("validation.duplicateRecord"),
-            name: t("validation.duplicateRecord"),
+            code: t("validation.duplicateRecord") || "Already exists",
+            name: t("validation.duplicateRecord") || "Already exists",
           });
-          toast.error(t("validation.duplicateError"));
-        } else {
-          toast.error(res.error || t("messages.error"));
         }
         return;
       }
@@ -99,3 +110,4 @@ export function useAssetCategorySubmit({
 
   return { handleSubmit, isSubmitting };
 }
+

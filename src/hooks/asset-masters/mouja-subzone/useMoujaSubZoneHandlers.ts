@@ -88,8 +88,8 @@ export function useMoujaSubZoneHandlers({
           if (String(row.id) === selectedMoujaId) {
             setSubZoneSearch("");
             pushUrl({ moujaId: "", subZoneSearch: "", subZonePn: 1 });
-          } else {
-            router.refresh();
+          } else if (selectedMoujaId) {
+            pushUrl({ moujaId: selectedMoujaId, subZoneSearch: "", subZonePn: 1 });
           }
         } else {
           toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.moujaTitle")));
@@ -124,7 +124,7 @@ export function useMoujaSubZoneHandlers({
         const result = await deleteSubZoneAction(fd);
         if (result.success) {
           toast.success(t("success.subZoneDeleted"));
-          router.refresh();
+          pushUrl({ moujaId: selectedMoujaId ?? "", subZoneSearch: "", subZonePn: 1 });
         } else {
           toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.subZoneTitle")));
         }
@@ -144,6 +144,8 @@ export function useMoujaSubZoneHandlers({
     handleDeleteSubZone,
   };
 }
+
+
 
 
 

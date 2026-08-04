@@ -157,9 +157,7 @@ export function useGroupForm({
         ? t("messages.groupUpdated", { default: "Group updated successfully" })
         : t("messages.groupCreated", { default: "Group created successfully" })
       ));
-
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);
@@ -190,3 +188,4 @@ export function useGroupForm({
     isEdit,
   };
 }
+

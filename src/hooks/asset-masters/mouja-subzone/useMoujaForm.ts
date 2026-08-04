@@ -145,7 +145,6 @@ export function useMoujaForm({
       ));
 
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);

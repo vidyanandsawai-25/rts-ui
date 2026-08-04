@@ -110,7 +110,6 @@ export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = (
       }
       toast.success(res.message || (isEdit ? t("success.subZoneUpdated") : t("success.subZoneCreated")));
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);

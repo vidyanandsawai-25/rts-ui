@@ -1,5 +1,5 @@
 import type { OwnershipTypeFormModel } from "@/types/asset-masters/ownership-type.types";
-import { DESCRIPTION_REGEX, isAllZeros, ASSET_MASTER_NAME_REGEX } from "../utils/validation-rules";
+import { DESCRIPTION_REGEX, isAllZeros, ASSET_MASTER_NAME_REGEX } from "../utils/asset-validation-rules";
 
 export function validateOwnershipTypeForm(
   data: OwnershipTypeFormModel,

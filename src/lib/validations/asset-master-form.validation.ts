@@ -1,4 +1,4 @@
-import { CODE_REGEX, DESCRIPTION_REGEX, ASSET_INVENTORY_NAME_REGEX, ASSET_MASTER_NAME_REGEX, isAllZeros } from "../utils/validation-rules";
+import { CODE_REGEX, DESCRIPTION_REGEX, ASSET_INVENTORY_NAME_REGEX, ASSET_MASTER_NAME_REGEX, isAllZeros } from "../utils/asset-validation-rules";
 
 const CODE_MAX = 15;
 const NAME_MAX = 50;

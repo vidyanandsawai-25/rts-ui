@@ -89,6 +89,7 @@ export function AssetPhotoTypeFormFields({
         type="number"
         required
         min={1}
+        max={99999}
         value={displayOrderValue}
         onChange={handleChange}
         onBlur={handleBlur}

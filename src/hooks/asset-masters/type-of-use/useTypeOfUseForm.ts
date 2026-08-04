@@ -73,10 +73,19 @@ export function useTypeOfUseForm({
     [submittedOnce, touched, errors]
   );
 
-  const parseVal = (name: string, value: string) =>
-    ["assetCategoryId", "assetTypeId", "typeOfUseGroupId", "searchSequence"].includes(name)
-      ? (Number(value) || 0)
-      : sanitizeTypeOfUseFieldValue(name, value);
+  const parseVal = (name: string, value: string) => {
+    if (["assetCategoryId", "assetTypeId", "typeOfUseGroupId"].includes(name)) {
+      const num = Number(value);
+      return Number.isFinite(num) && num > 0 ? num : 0;
+    }
+    if (name === "searchSequence") {
+      const sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
+      if (sanitized === "") return "";
+      const numVal = Number(sanitized);
+      return numVal > 999 ? 999 : numVal;
+    }
+    return sanitizeTypeOfUseFieldValue(name, value);
+  };
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
@@ -91,8 +100,6 @@ export function useTypeOfUseForm({
     const val = parseVal(name, value);
     const updated = { ...formData, [name]: val };
     setFormData(updated);
-    if (name === "assetCategoryId") onCategoryChange?.(Number(val));
-
     const fieldErrors = validate(updated);
     setErrors((p) => {
       const newErrors = { ...p };
@@ -101,7 +108,7 @@ export function useTypeOfUseForm({
       else delete newErrors[fieldName];
       return newErrors;
     });
-  }, [formData, validate, onCategoryChange]);
+  }, [formData, validate]);
 
   const mapApiError = useCallback((result: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
     if (result.errors) {
@@ -127,6 +134,7 @@ export function useTypeOfUseForm({
     setOpen(false);
     setTimeout(() => {
       const params = new URLSearchParams(sp.toString());
+      params.delete("assetCategoryId");
       if (updatedGroupId !== undefined) {
         params.set("selectedGroupId", String(updatedGroupId));
         params.set("typePn", "1");
@@ -168,9 +176,7 @@ export function useTypeOfUseForm({
         ? t("messages.typeUpdated", { default: "Type updated successfully" })
         : t("messages.typeCreated", { default: "Type created successfully" })
       ));
-
       onSuccess();
-      router.refresh();
       closeAndRoute(formData.typeOfUseGroupId);
     } finally {
       setIsSubmitting(false);
@@ -202,3 +208,7 @@ export function useTypeOfUseForm({
     isEdit,
   };
 }
+
+
+
+

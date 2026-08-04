@@ -63,7 +63,8 @@
       "descriptionFormat": "अवैध वर्णन स्वरूप",
       "mustBeActive": "जतन करण्यासाठी मालमत्ता खोली प्रकार सक्रिय असणे आवश्यक आहे",
       "assetCategoryRequired": "मालमत्ता श्रेणी आवश्यक आहे",
-      "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे"
+      "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे",
+      "invalidFormat": "अवैध स्वरूप"
     },
     "status": {
       "label": "सक्रिय स्थिती",
@@ -80,6 +81,8 @@
   },
   "apiErrors": {
     "duplicateRecord": "कृपया खोली प्रकार कोड आणि नाव तपासा - डुप्लिकेट रेकॉर्डला परवानगी नाही.",
+    "AssetRoomType_RoomTypeCode_Duplicate": "खोली प्रकार कोड आधीपासूनच अस्तित्वात आहे",
+    "AssetRoomType_RoomTypeName_Duplicate": "खोली प्रकार नाव आधीपासूनच अस्तित्वात आहे",
     "A record with the same details already exists": "समान तपशीलांचे रेकॉर्ड आधीपासूनच अस्तित्वात आहे.",
     "validationError": "अवैध डेटा प्रदान केला गेला. कृपया सर्व फील्ड तपासा.",
     "invalidData": "अवैध डेटा प्रदान केला गेला. कृपया सर्व फील्ड तपासा.",

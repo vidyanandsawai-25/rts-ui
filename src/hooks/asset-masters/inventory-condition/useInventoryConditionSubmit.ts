@@ -3,14 +3,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createInventoryConditionAction, updateInventoryConditionAction } from "@/app/[locale]/assets/configuration/master-data/inventory-condition/actions";
 import type { InventoryConditionFormModel } from "@/types/asset-masters/inventory-condition.types";
+import { mapInventoryConditionApiError } from "./validation";
 
 interface UseInventoryConditionSubmitProps {
   isEdit: boolean;
   locale: string;
   formData: InventoryConditionFormModel;
-  validate: (data: InventoryConditionFormModel) => Record<string, string>;
-  setErrors: (errors: Record<string, string>) => void;
+  validate: (data: InventoryConditionFormModel) => Partial<Record<keyof InventoryConditionFormModel, string>>;
+  setErrors: (errors: Partial<Record<keyof InventoryConditionFormModel, string>>) => void;
   setTouched: (touched: Record<string, boolean>) => void;
+  setSubmittedOnce?: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
   tCommon: (key: string) => string;
 }
@@ -22,6 +24,7 @@ export function useInventoryConditionSubmit({
   validate,
   setErrors,
   setTouched,
+  setSubmittedOnce,
   setOpen,
   tCommon,
 }: UseInventoryConditionSubmitProps) {
@@ -30,6 +33,7 @@ export function useInventoryConditionSubmit({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (setSubmittedOnce) setSubmittedOnce(true);
 
     setTouched({
       conditionType: true,
@@ -43,7 +47,7 @@ export function useInventoryConditionSubmit({
     setErrors(v);
 
     if (Object.keys(v).length) {
-      toast.error(tCommon("errors.validationError"));
+      toast.error(tCommon("errors.validationError") || "errors.validationError");
       return;
     }
 
@@ -65,7 +69,7 @@ export function useInventoryConditionSubmit({
         router.refresh();
         return;
       } else {
-        toast.error((res as { error?: string }).error || tCommon("errors.generic"));
+        toast.error(mapInventoryConditionApiError(res, (k) => k, tCommon));
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));
@@ -76,3 +80,4 @@ export function useInventoryConditionSubmit({
 
   return { handleSubmit, isSubmitting };
 }
+

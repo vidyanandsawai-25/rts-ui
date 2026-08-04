@@ -2,8 +2,11 @@ import type { MasterDataRecord } from '@/types/asset-masters/master-data.types';
 
 // Inventory Category
 export function buildCategoryPayload(record: MasterDataRecord, userId: number = 0) {
+  const rec = record as unknown as Record<string, unknown>;
+  const assetCategoryId = Number(record.group) || Number(rec.assetCategoryId) || 0;
   return {
     isActive: record.status === 'Active',
+    assetCategoryId,
     typeCode: record.id,
     typeName: record.name,
     description: record.description?.trim() || '',
@@ -19,7 +22,8 @@ export const buildCategoryUpdatePayload = buildCategoryPayload;
 
 // Inventory Condition
 export function buildConditionPayload(record: MasterDataRecord, userId: number = 0) {
-  const inventoryItemCategoryId = Number(record.group) || 0;
+  const rec = record as unknown as Record<string, unknown>;
+  const inventoryItemCategoryId = Number(record.group) || Number(rec.inventoryItemCategoryId) || 0;
   return {
     isActive: record.status === 'Active',
     inventoryItemCategoryId,
@@ -37,7 +41,8 @@ export const buildConditionUpdatePayload = buildConditionPayload;
 
 // Inventory Item Name
 export function buildItemNamePayload(record: MasterDataRecord, userId: number = 0) {
-  const inventoryItemCategoryId = Number(record.group) || 0;
+  const rec = record as unknown as Record<string, unknown>;
+  const inventoryItemCategoryId = Number(record.group) || Number(rec.inventoryItemCategoryId) || 0;
   return {
     isActive: record.status === 'Active',
     inventoryItemCategoryId,
@@ -55,7 +60,8 @@ export const buildItemNameUpdatePayload = buildItemNamePayload;
 
 // Inventory Model
 export function buildModelPayload(record: MasterDataRecord, userId: number = 0) {
-  const inventoryItemNameId = Number(record.group) || 0;
+  const rec = record as unknown as Record<string, unknown>;
+  const inventoryItemNameId = Number(record.group) || Number(rec.inventoryItemNameId) || 0;
   return {
     isActive: record.status === 'Active',
     inventoryItemNameId,

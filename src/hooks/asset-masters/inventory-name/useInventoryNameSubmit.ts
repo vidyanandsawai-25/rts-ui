@@ -3,14 +3,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createInventoryNameAction, updateInventoryNameAction } from "@/app/[locale]/assets/configuration/master-data/inventory-name/actions";
 import type { InventoryNameFormModel } from "@/types/asset-masters/inventory-name.types";
+import { mapInventoryNameApiError } from "./validation";
 
 interface UseInventoryNameSubmitProps {
   isEdit: boolean;
   locale: string;
   formData: InventoryNameFormModel;
-  validate: (data: InventoryNameFormModel) => Record<string, string>;
-  setErrors: (errors: Record<string, string>) => void;
+  validate: (data: InventoryNameFormModel) => Partial<Record<keyof InventoryNameFormModel, string>>;
+  setErrors: (errors: Partial<Record<keyof InventoryNameFormModel, string>>) => void;
   setTouched: (touched: Record<string, boolean>) => void;
+  setSubmittedOnce?: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
   tCommon: (key: string) => string;
 }
@@ -22,6 +24,7 @@ export function useInventoryNameSubmit({
   validate,
   setErrors,
   setTouched,
+  setSubmittedOnce,
   setOpen,
   tCommon,
 }: UseInventoryNameSubmitProps) {
@@ -30,6 +33,7 @@ export function useInventoryNameSubmit({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (setSubmittedOnce) setSubmittedOnce(true);
 
     setTouched({
       inventoryItemCategoryId: true,
@@ -42,7 +46,7 @@ export function useInventoryNameSubmit({
     setErrors(v);
 
     if (Object.keys(v).length) {
-      toast.error(tCommon("errors.validationError"));
+      toast.error(tCommon("errors.validationError") || "errors.validationError");
       return;
     }
 
@@ -64,7 +68,7 @@ export function useInventoryNameSubmit({
         router.refresh();
         return;
       } else {
-        toast.error((res as { error?: string }).error || tCommon("errors.generic"));
+        toast.error(mapInventoryNameApiError(res, (k) => k, tCommon));
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));
@@ -75,3 +79,4 @@ export function useInventoryNameSubmit({
 
   return { handleSubmit, isSubmitting };
 }
+

@@ -138,7 +138,6 @@ export function useDesignationForm({
       ));
 
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);

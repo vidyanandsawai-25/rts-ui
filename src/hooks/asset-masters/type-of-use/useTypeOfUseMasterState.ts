@@ -8,7 +8,7 @@ import { useTypeOfUseUrl } from "./useTypeOfUseUrl";
 import { useDebounce } from "@/hooks/useDebounce";
 import { AssetTypeOfUse } from "@/types/asset-masters/type-of-use.types";
 import { validateAndPrepareSearchTerm } from "./validation";
-import { TEXT_SANITIZE } from "@/lib/utils/validation";
+import { TEXT_SANITIZE } from "@/lib/utils/asset-validation-rules";
 import { useTypeOfUseMasterActions } from "./useTypeOfUseMasterActions";
 
 interface UseTypeOfUseMasterStateProps {
@@ -45,7 +45,6 @@ export function useTypeOfUseMasterState({
     urlTypeSearch,
     urlSubTypeSearch,
     pushUrl,
-    replaceUrl,
   } = useTypeOfUseUrl();
 
   const [typeSearch, setTypeSearch] = useState(urlTypeSearch);
@@ -67,13 +66,6 @@ export function useTypeOfUseMasterState({
     });
   }, [urlSubTypeSearch, startTransition]);
 
-  // Sync server auto-selected selectedTypeOfUseId to URL via Next.js App Router (router.replace)
-  useEffect(() => {
-    const currentUrlTypeId = sp.get("selectedTypeOfUseId");
-    if (selectedTypeOfUseId && currentUrlTypeId !== String(selectedTypeOfUseId)) {
-      replaceUrl({ selectedTypeOfUseId: String(selectedTypeOfUseId) });
-    }
-  }, [selectedTypeOfUseId, sp, replaceUrl]);
 
   // Adjust out-of-bounds pagination parameters
   useEffect(() => {

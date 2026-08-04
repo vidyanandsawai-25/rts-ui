@@ -119,14 +119,17 @@ export const getAgeFactorCvWeightageMasterColumns = ({
       label: createSortableLabel(t('columns.constructionType'), "constructionCode"),
       width: "12%",
       render: (value, row) => {
-        if (value && typeof value === "string" && value !== "-") return value;
-        const opt = constructionTypeOptions.find(o => o.value === String(row.constructionTypeId));
-        if (opt) {
-          const parts = opt.label.split(" - ");
-          if (parts.length > 1) return parts[0].trim();
-          return opt.label;
+        let code = "-";
+        if (value && typeof value === "string" && value !== "-") {
+          code = value;
+        } else {
+          const opt = constructionTypeOptions.find(o => o.value === String(row.constructionTypeId));
+          if (opt) {
+            const parts = opt.label.split(" - ");
+            code = parts.length > 1 ? parts[0].trim() : opt.label;
+          }
         }
-        return "-";
+        return <span className="break-all block">{code}</span>;
       },
     },
     {
@@ -134,14 +137,17 @@ export const getAgeFactorCvWeightageMasterColumns = ({
       label: createSortableLabel(t('columns.description'), "constructionDescription"),
       width: "18%",
       render: (value, row) => {
-        if (value && typeof value === "string" && value !== "-") return value;
-        const opt = constructionTypeOptions.find(o => o.value === String(row.constructionTypeId));
-        if (opt) {
-          const parts = opt.label.split(" - ");
-          if (parts.length > 1) return parts.slice(1).join(" - ").trim();
-          return opt.label;
+        let desc = "-";
+        if (value && typeof value === "string" && value !== "-") {
+          desc = value;
+        } else {
+          const opt = constructionTypeOptions.find(o => o.value === String(row.constructionTypeId));
+          if (opt) {
+            const parts = opt.label.split(" - ");
+            desc = parts.length > 1 ? parts.slice(1).join(" - ").trim() : opt.label;
+          }
         }
-        return "-";
+        return <span className="break-all block">{desc}</span>;
       },
     },
     {

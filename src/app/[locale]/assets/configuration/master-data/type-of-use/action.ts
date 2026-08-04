@@ -58,6 +58,11 @@ export async function fetchTypeOfUseGroupsPagedAction(
   sortOrder?: string
 ): Promise<PagedResponse<TypeOfUseGroup>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      throw new ApiError(401, "you are unauthorized", "Unauthorized");
+    }
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
     if (
@@ -105,7 +110,7 @@ export async function createTypeOfUseGroupAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.createdBy = userId;
     const msg = await createTypeOfUseGroup(data);
@@ -129,7 +134,7 @@ export async function updateTypeOfUseGroupAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.updatedBy = userId;
     const msg = await updateTypeOfUseGroup(data);
@@ -149,15 +154,19 @@ export async function updateTypeOfUseGroupAction(
 export async function deleteTypeOfUseGroupAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-  const rawId = formData.get("id");
-  const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-  if (!id || id <= 0) {
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
     return { success: false, message: "Valid Group ID is required", statusCode: 400 };
   }
 
   try {
-    await deleteTypeOfUseGroup(id);
+    await deleteTypeOfUseGroup(numericId);
     revalidateTypeOfUseRoutes();
     return { success: true, message: "Type of Use Group deleted successfully" };
   } catch (error) {
@@ -170,10 +179,11 @@ export async function deleteTypeOfUseGroupAction(
 
 export async function fetchTypeOfUseGroupByIdAction(id: number): Promise<TypeOfUseGroup> {
   try {
-    if (!id || id <= 0) {
+    const numericId = Number(id);
+    if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
       throw new ApiError(400, "Valid Group ID is required", "Validation failed");
     }
-    const result = await getTypeOfUseGroupById(id);
+    const result = await getTypeOfUseGroupById(numericId);
     if (!result) {
       throw new ApiError(404, "Type of Use Group not found", "Not Found");
     }
@@ -202,10 +212,11 @@ export async function fetchAssetTypeOfUsesAction(
 
 export async function fetchAssetTypeOfUseByIdAction(id: number): Promise<AssetTypeOfUse> {
   try {
-    if (!id || id <= 0) {
+    const numericId = Number(id);
+    if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
       throw new ApiError(400, "Valid Type ID is required", "Validation failed");
     }
-    const result = await getAssetTypeOfUseById(id);
+    const result = await getAssetTypeOfUseById(numericId);
     if (!result) {
       throw new ApiError(404, "Asset Type of Use not found", "Not Found");
     }
@@ -223,7 +234,7 @@ export async function createAssetTypeOfUseAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.createdBy = userId;
     const msg = await createAssetTypeOfUse(data);
@@ -247,7 +258,7 @@ export async function updateAssetTypeOfUseAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.updatedBy = userId;
     const msg = await updateAssetTypeOfUse(data);
@@ -267,15 +278,19 @@ export async function updateAssetTypeOfUseAction(
 export async function deleteAssetTypeOfUseAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-  const rawId = formData.get("id");
-  const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-  if (!id || id <= 0) {
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
     return { success: false, message: "Valid Type ID is required", statusCode: 400 };
   }
 
   try {
-    await deleteAssetTypeOfUse(id);
+    await deleteAssetTypeOfUse(numericId);
     revalidateTypeOfUseRoutes();
     return { success: true, message: "Asset Type of Use deleted successfully" };
   } catch (error) {
@@ -304,10 +319,11 @@ export async function fetchAssetSubTypeOfUsesAction(
 
 export async function fetchAssetSubTypeOfUseByIdAction(id: number): Promise<AssetSubTypeOfUse> {
   try {
-    if (!id || id <= 0) {
+    const numericId = Number(id);
+    if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
       throw new ApiError(400, "Valid Sub-Type ID is required", "Validation failed");
     }
-    const result = await getAssetSubTypeOfUseById(id);
+    const result = await getAssetSubTypeOfUseById(numericId);
     if (!result) {
       throw new ApiError(404, "Asset Sub-Type of Use not found", "Not Found");
     }
@@ -325,7 +341,7 @@ export async function createAssetSubTypeOfUseAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.createdBy = userId;
     const msg = await createAssetSubTypeOfUse(data);
@@ -349,7 +365,7 @@ export async function updateAssetSubTypeOfUseAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.updatedBy = userId;
     const msg = await updateAssetSubTypeOfUse(data);
@@ -369,15 +385,19 @@ export async function updateAssetSubTypeOfUseAction(
 export async function deleteAssetSubTypeOfUseAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-  const rawId = formData.get("id");
-  const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-  if (!id || id <= 0) {
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
     return { success: false, message: "Valid Sub-Type ID is required", statusCode: 400 };
   }
 
   try {
-    await deleteAssetSubTypeOfUse(id);
+    await deleteAssetSubTypeOfUse(numericId);
     revalidateTypeOfUseRoutes();
     return { success: true, message: "Asset Sub-Type of Use deleted successfully" };
   } catch (error) {
@@ -435,6 +455,11 @@ export async function fetchAssetTypeOfUsesPagedAction(
   sortOrder?: string
 ): Promise<PagedResponse<AssetTypeOfUse>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      throw new ApiError(401, "you are unauthorized", "Unauthorized");
+    }
     return await getAssetTypeOfUsesPaged(pageNumber, pageSize, typeOfUseGroupId, searchTerm, sortBy, sortOrder);
   } catch (error) {
     logger.error("Failed to fetch Asset Type of Uses paged", { typeOfUseGroupId }, error);
@@ -451,6 +476,11 @@ export async function fetchAssetSubTypeOfUsesPagedAction(
   sortOrder?: string
 ): Promise<PagedResponse<AssetSubTypeOfUse>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      throw new ApiError(401, "you are unauthorized", "Unauthorized");
+    }
     return await getAssetSubTypeOfUsesPaged(pageNumber, pageSize, typeOfUseId, searchTerm, sortBy, sortOrder);
   } catch (error) {
     logger.error("Failed to fetch Asset Sub-Type of Uses paged", { typeOfUseId }, error);
@@ -474,6 +504,12 @@ export async function getTypeOfUseDashboardProps(
     [key: string]: string | undefined;
   }
 ) {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) {
+    throw new ApiError(401, "you are unauthorized", "Unauthorized");
+  }
+
   const groupsResult = await fetchTypeOfUseGroupsPagedAction(1, -1);
 
   let selectedGroupId = search.selectedGroupId ? Number(search.selectedGroupId) : null;
@@ -489,12 +525,16 @@ export async function getTypeOfUseDashboardProps(
   const typePn = Number(search.typePn || 1);
   const typePs = Number(search.typePs || 10);
   const typeSearch = search.typeSearch || undefined;
+  const typeSortBy = search.typeSortBy || undefined;
+  const typeSortOrder = search.typeSortOrder || undefined;
 
   const typesResult = await getAssetTypeOfUsesPaged(
     typePn,
     typePs,
     selectedGroupId || undefined,
-    typeSearch
+    typeSearch,
+    typeSortBy,
+    typeSortOrder
   );
 
   // Preselect the first type of use if not specified in search params, so server fetches sub-types for it
@@ -505,6 +545,8 @@ export async function getTypeOfUseDashboardProps(
   const subTypePn = Number(search.subTypePn || 1);
   const subTypePs = Number(search.subTypePs || 10);
   const subTypeSearch = search.subTypeSearch || undefined;
+  const subTypeSortBy = search.subTypeSortBy || undefined;
+  const subTypeSortOrder = search.subTypeSortOrder || undefined;
 
   let subTypesResult: PagedResponse<AssetSubTypeOfUse> = { items: [], pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0, hasPrevious: false, hasNext: false };
   if (selectedTypeOfUseId) {
@@ -512,7 +554,9 @@ export async function getTypeOfUseDashboardProps(
       subTypePn,
       subTypePs,
       selectedTypeOfUseId,
-      subTypeSearch
+      subTypeSearch,
+      subTypeSortBy,
+      subTypeSortOrder
     );
   }
 

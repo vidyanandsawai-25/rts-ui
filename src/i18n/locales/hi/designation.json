@@ -55,7 +55,7 @@
     },
     "validation": {
       "designationCodeRequired": "पदनाम कोड आवश्यक है",
-      "designationCodeMaxLength": "अधिकतम लंबाई 50 वर्ण है",
+      "designationCodeMaxLength": "अधिकतम लंबाई {count} वर्ण है",
       "designationCodeFormat": "केवल अक्षरांकीय बड़े अक्षरों और अंडरस्कोर की अनुमति है",
       "designationNameRequired": "पदनाम नाम आवश्यक है",
       "designationNameMaxLength": "अधिकतम लंबाई 100 वर्ण है",
@@ -65,7 +65,8 @@
       "owningDepartmentRequired": "विभाग आवश्यक है",
       "mustBeActive": "सहेजने के लिए पदनाम सक्रिय होना चाहिए",
       "descriptionMaxLength": "अधिकतम लंबाई {count} वर्ण है",
-      "descriptionFormat": "अमान्य विवरण प्रारूप"
+      "descriptionFormat": "अमान्य विवरण प्रारूप",
+      "invalidFormat": "अमान्य प्रारूप"
     }
   },
   "delete": {

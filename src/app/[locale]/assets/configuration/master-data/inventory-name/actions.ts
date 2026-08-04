@@ -55,9 +55,18 @@ export async function getInventoryNameCategoriesAction(): Promise<InventoryNameC
 
 export async function createInventoryNameAction(formData: InventoryNameFormModel) {
   try {
-    const userId = getUserIdFromCookies(await cookies()) ?? 1;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+    const rawCatId = Number(formData.inventoryItemCategoryId);
+    if (!Number.isFinite(rawCatId) || rawCatId <= 0) {
+      return { success: false, error: "invalid_inventoryItemCategoryId" };
+    }
+    const inventoryItemCategoryId = rawCatId;
+
     const result = await inventoryItemNameService.create({
-      inventoryItemCategoryId: formData.inventoryItemCategoryId,
+      inventoryItemCategoryId,
       subTypeCode: formData.subTypeCode,
       subTypeName: formData.subTypeName,
       description: formData.description,
@@ -79,10 +88,18 @@ export async function createInventoryNameAction(formData: InventoryNameFormModel
 export async function updateInventoryNameAction(formData: InventoryNameFormModel) {
   try {
     if (!formData.id) throw new Error("ID is required for update");
-    const userId = getUserIdFromCookies(await cookies()) ?? 1;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+    const rawCatId = Number(formData.inventoryItemCategoryId);
+    if (!Number.isFinite(rawCatId) || rawCatId <= 0) {
+      return { success: false, error: "invalid_inventoryItemCategoryId" };
+    }
+    const inventoryItemCategoryId = rawCatId;
     
     const result = await inventoryItemNameService.update(formData.id, {
-      inventoryItemCategoryId: formData.inventoryItemCategoryId,
+      inventoryItemCategoryId,
       subTypeCode: formData.subTypeCode,
       subTypeName: formData.subTypeName,
       description: formData.description,
@@ -102,6 +119,10 @@ export async function updateInventoryNameAction(formData: InventoryNameFormModel
 
 export async function deleteInventoryNameAction(id: string) {
   try {
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
     await inventoryItemNameService.delete(id);
     const { locales } = await import("@/i18n/config");
     for (const locale of locales) {

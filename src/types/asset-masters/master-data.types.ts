@@ -42,6 +42,8 @@ export type MasterDataRecord = {
   conditionFactor?: number;
   departmentId?: number;
   departmentName?: string;
+  assetCategoryId?: number;
+  assetCategoryName?: string;
   isMovable?: boolean;
   hasFloorDetails?: boolean;
   hasInventory?: boolean;

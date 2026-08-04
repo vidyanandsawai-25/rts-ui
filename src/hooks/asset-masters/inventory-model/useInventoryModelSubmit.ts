@@ -3,16 +3,19 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveInventoryModelAction } from "@/app/[locale]/assets/configuration/master-data/inventory-model/actions";
 import type { InventoryModelFormModel } from "@/types/asset-masters/inventory-model.types";
+import { mapInventoryModelApiError } from "./validation";
 
 interface UseInventoryModelSubmitProps {
   isEdit: boolean;
   locale: string;
   formData: InventoryModelFormModel;
-  validate: (data: InventoryModelFormModel) => Record<string, string>;
-  setErrors: (errors: Record<string, string>) => void;
+  validate: (data: InventoryModelFormModel) => Partial<Record<keyof InventoryModelFormModel, string>>;
+  setErrors: (errors: Partial<Record<keyof InventoryModelFormModel, string>>) => void;
   setTouched: (touched: Record<string, boolean>) => void;
+  setSubmittedOnce?: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
   t: (key: string) => string;
+  tCommon?: (key: string) => string;
 }
 
 export function useInventoryModelSubmit({
@@ -22,14 +25,17 @@ export function useInventoryModelSubmit({
   validate,
   setErrors,
   setTouched,
+  setSubmittedOnce,
   setOpen,
   t,
+  tCommon = (k) => k,
 }: UseInventoryModelSubmitProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (setSubmittedOnce) setSubmittedOnce(true);
 
     setTouched({
       name: true,
@@ -40,10 +46,7 @@ export function useInventoryModelSubmit({
     const v = validate(formData);
     setErrors(v);
 
-    if (Object.keys(v).length) {
-      toast.error(t("validation.fixErrors"));
-      return;
-    }
+    if (Object.keys(v).length) return;
 
     setIsSubmitting(true);
 
@@ -70,15 +73,11 @@ export function useInventoryModelSubmit({
       }
 
       if (res && !res.ok) {
+        toast.error(mapInventoryModelApiError(res, t, tCommon));
         if (res.error === "duplicate") {
           setErrors({
-            name: t("errors.duplicateRecord"),
+            name: t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Already exists",
           });
-          toast.error(t("validation.duplicateError"));
-        } else if (res.error === "invalid_id") {
-          toast.error(t("messages.invalidIdError"));
-        } else {
-          toast.error(res.error || t("messages.error"));
         }
         return;
       }
@@ -94,3 +93,4 @@ export function useInventoryModelSubmit({
 
   return { handleSubmit, isSubmitting };
 }
+

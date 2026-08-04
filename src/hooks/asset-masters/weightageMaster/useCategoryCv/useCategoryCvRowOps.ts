@@ -32,7 +32,7 @@ export function useCategoryCvRowOps({
             addToast('error', tW('common.messages.negativeValuesNotAllowed'));
             return;
         }
-        if (value > 999999) {
+        if (value > 999.99) {
             addToast('error', tW('common.messages.valueExceedsMax'));
             return;
         }

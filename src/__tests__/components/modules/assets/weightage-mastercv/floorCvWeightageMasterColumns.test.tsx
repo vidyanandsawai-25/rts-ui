@@ -82,7 +82,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const floorCodeColumn = columns[0];
     expect(floorCodeColumn.key).toBe('floorCode');
     expect(floorCodeColumn.width).toBe('10%');
-    expect(floorCodeColumn.render?.('F1', mockRow, 0)).toBe('F1');
+    expect(floorCodeColumn.render?.('F1', mockRow, 0)).toEqual(<span className="break-all block">F1</span>);
   });
 
   it('floorCode column renders "-" for undefined value', () => {
@@ -96,7 +96,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     });
 
     const floorCodeColumn = columns[0];
-    expect(floorCodeColumn.render?.(undefined, mockRow, 0)).toBe('-');
+    expect(floorCodeColumn.render?.(undefined, mockRow, 0)).toEqual(<span className="break-all block">-</span>);
   });
 
   it('floorDescription column renders correctly', () => {
@@ -113,7 +113,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     expect(descriptionColumn.key).toBe('floorDescription');
     expect(descriptionColumn.label).toBe('Description');
     expect(descriptionColumn.width).toBe('14%');
-    expect(descriptionColumn.render?.('First Floor', mockRow, 0)).toBe('First Floor');
+    expect(descriptionColumn.render?.('First Floor', mockRow, 0)).toEqual(<span className="break-all block">First Floor</span>);
   });
 
   it('factorWithLift column renders MatrixCellInput', () => {

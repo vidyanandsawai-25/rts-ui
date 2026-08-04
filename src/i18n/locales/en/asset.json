@@ -346,7 +346,8 @@
           "penaltyValueRange": "Penalty value must be greater than or equal to 0",
           "penaltyValuePercentageRange": "Penalty value must be between 0 and 100 for percentage calculation",
           "gracePeriodDaysRequired": "Grace period days is required",
-          "gracePeriodDaysRange": "Grace period days must be greater than or equal to 0"
+          "gracePeriodDaysRange": "Grace period days must be greater than or equal to 0",
+          "notFound": "Record not found."
         }
       },
       "messages": {

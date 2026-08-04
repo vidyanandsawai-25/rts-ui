@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useTransition, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
-import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
+import { TEXT_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 interface UseGstMasterSearchProps {
   pageSize: number;

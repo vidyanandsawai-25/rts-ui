@@ -242,14 +242,21 @@ export default function TypeOfUseForm({
                 visible={showError("type")}
               />
 
-              <Input
+                            <Input
                 type="number"
                 name="searchSequence"
                 label={t("type.fields.sequence", { default: "Sequence" })}
                 required
-                value={formData.searchSequence}
+                min={0}
+                max={999}
+                value={formData.searchSequence === "" ? "" : formData.searchSequence}
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={(e) => {
+                  if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
+                    e.preventDefault();
+                  }
+                }}
                 fullWidth
               />
               <ValidationMessage
@@ -281,4 +288,6 @@ export default function TypeOfUseForm({
     </PageContainer>
   );
 }
+
+
 

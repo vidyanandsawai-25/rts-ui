@@ -46,8 +46,8 @@ export function useFloorCvRowOps({
             addToast("error", tW("common.messages.negativeValuesNotAllowed"));
             return;
         }
-        // Prevent values greater than 999999
-        if (numValue > 999999) {
+        // Prevent values greater than 999.99
+        if (numValue > 999.99) {
             addToast("error", tW("common.messages.valueExceedsMax"));
             return;
         }

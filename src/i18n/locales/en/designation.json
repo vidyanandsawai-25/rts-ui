@@ -55,7 +55,7 @@
     },
     "validation": {
       "designationCodeRequired": "Designation code is required",
-      "designationCodeMaxLength": "Maximum length is 50 characters",
+      "designationCodeMaxLength": "Maximum length is {count} characters",
       "designationCodeFormat": "Only alphanumeric uppercase characters and underscores are allowed",
       "designationNameRequired": "Designation name is required",
       "designationNameMaxLength": "Maximum length is 100 characters",
@@ -65,7 +65,8 @@
       "owningDepartmentRequired": "Owning Department is required",
       "mustBeActive": "Designation must be active to save",
       "descriptionMaxLength": "Maximum length is {count} characters",
-      "descriptionFormat": "Invalid description format"
+      "descriptionFormat": "Invalid description format",
+      "invalidFormat": "Invalid format"
     }
   },
   "delete": {

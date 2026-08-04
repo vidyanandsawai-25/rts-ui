@@ -29,6 +29,11 @@ export async function fetchAssetRoomPagedServerAction(
     sortOrder?: string
 ): Promise<PagedResponse<AssetRoomType>> {
     try {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        if (!userId) {
+            throw new ApiError(401, "you are unauthorized", "Unauthorized");
+        }
         const MAX_PAGE_SIZE = 100;
         const MAX_PAGE_NUMBER = 10000;
         if (
@@ -60,9 +65,10 @@ export async function createAssetRoomAction(
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        if (userId) {
-            data.createdBy = userId;
+        if (!userId) {
+            return { success: false, message: "you are unauthorized", statusCode: 401 };
         }
+        data.createdBy = userId;
         const msg = await createAssetRoomType(data);
 
         for (const locale of locales) {
@@ -90,9 +96,10 @@ export async function updateAssetRoomAction(
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        if (userId) {
-            data.updatedBy = userId;
+        if (!userId) {
+            return { success: false, message: "you are unauthorized", statusCode: 401 };
         }
+        data.updatedBy = userId;
         const msg = await updateAssetRoomType(data);
 
         for (const locale of locales) {
@@ -117,10 +124,14 @@ export async function updateAssetRoomAction(
 export async function deleteAssetRoomTypeAction(
     formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-    const rawId = formData.get("id");
-    const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-    if (!id || id <= 0) {
+    const rawId = formData.get("id");
+    const numericId = Number(rawId);
+
+    if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
         return {
             success: false,
             message: "Valid Asset Room Type ID is required",
@@ -129,7 +140,7 @@ export async function deleteAssetRoomTypeAction(
     }
 
     try {
-        await deleteAssetRoomType(id);
+        await deleteAssetRoomType(numericId);
 
         for (const locale of locales) {
             revalidatePath(`/${locale}/assets/configuration/master-data/asset-room-type`, "page");
@@ -157,10 +168,16 @@ export async function getAssetRoomTypeByIdAction(
     id: number
 ): Promise<AssetRoomType> {
     try {
-        if (!id || id <= 0) {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        if (!userId) {
+            throw new ApiError(401, "you are unauthorized", "Unauthorized");
+        }
+        const numericId = Number(id);
+        if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
             throw new ApiError(400, "Valid Asset Room Type ID is required", "Validation failed");
         }
-        const result = await getAssetRoomTypeById(id);
+        const result = await getAssetRoomTypeById(numericId);
         if (!result) {
             throw new ApiError(404, "Asset Room Type not found", "Not Found");
         }

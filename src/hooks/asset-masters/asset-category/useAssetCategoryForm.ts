@@ -3,12 +3,9 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { CODE_SANITIZE, ASSET_MASTER_TEXT_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/validation-rules";
-import { validateAssetMasterForm } from "@/lib/validations/asset-master-form.validation";
+import { sanitizeFieldValue, validateAssetCategoryForm } from "./validation";
 import { useAssetCategorySubmit } from "./useAssetCategorySubmit";
 import type { AssetCategoryFormModel } from "@/types/asset-masters/asset-category.types";
-
-const CODE_MAX = 15;
 
 export interface UseAssetCategoryFormProps {
   initialData?: AssetCategoryFormModel | null;
@@ -19,6 +16,7 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
   const isEdit = initialData?.id != null;
 
   const [open, setOpen] = useState(true);
+  const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const t = useTranslations("asset.configuration.masterData.form");
   const tCommon = useTranslations("common");
@@ -41,7 +39,7 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
     }
   );
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof AssetCategoryFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const handleClose = useCallback(() => {
@@ -50,36 +48,23 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
   }, [router]);
 
   const validate = useCallback((data: AssetCategoryFormModel) => {
-    return validateAssetMasterForm(data, t);
-  }, [t]);
+    return validateAssetCategoryForm(data, t, isEdit);
+  }, [t, isEdit]);
 
   const showError = useCallback((field: keyof AssetCategoryFormModel) => {
-    return touched[field] && !!errors[field];
-  }, [touched, errors]);
+    return (submittedOnce || touched[field]) && !!errors[field];
+  }, [submittedOnce, touched, errors]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    let newValue = value;
+    const sanitized = sanitizeFieldValue(name, value);
 
-    if (name === "code") {
-      if (newValue.length > CODE_MAX) return;
-      newValue = newValue.replace(CODE_SANITIZE, "");
-    }
-
-    if (name === "name") {
-      newValue = newValue.replace(ASSET_MASTER_NAME_SANITIZE, "");
-    }
-
-    if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "");
-    }
-    
-    if (typeof newValue === "string" && newValue.length > 0 && ["code", "name", "description"].includes(name)) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
-
-    setFormData((p) => ({ ...p, [name]: newValue }));
-    setErrors((p) => ({ ...p, [name]: "" }));
+    setFormData((p) => ({ ...p, [name]: sanitized }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err[name as keyof AssetCategoryFormModel];
+      return err;
+    });
   }, []);
 
   const handleCheckboxChange = useCallback((name: string, checked: boolean) => {
@@ -96,8 +81,17 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    const fieldErrors = validate({ ...formData, [name]: value });
-    setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
+    const sanitized = sanitizeFieldValue(name, value);
+    const updated = { ...formData, [name]: sanitized };
+    setFormData(updated);
+
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const err = { ...p };
+      const field = name as keyof AssetCategoryFormModel;
+      if (fieldErrors[field]) err[field] = fieldErrors[field]; else delete err[field];
+      return err;
+    });
   }, [formData, validate]);
 
   const { handleSubmit, isSubmitting } = useAssetCategorySubmit({
@@ -107,8 +101,10 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
     validate,
     setErrors,
     setTouched,
+    setSubmittedOnce,
     setOpen,
     t,
+    tCommon,
   });
 
   const handleToggleStatus = useCallback((checked?: boolean) => {
@@ -133,3 +129,4 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
     tNames,
   };
 }
+

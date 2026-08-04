@@ -156,7 +156,7 @@ describe('useCategoryCvColumns', () => {
       expect(button).toBeInTheDocument();
       fireEvent.click(button!);
       
-      expect(mockSort).toHaveBeenCalledWith('TypeOfUseId');
+      expect(mockSort).toHaveBeenCalledWith('TypeOfUseCode');
     });
 
     it('renders assessment year range correctly', () => {

@@ -29,6 +29,11 @@ export async function fetchAssetPhotoPagedServerAction(
     sortOrder?: string
 ): Promise<PagedResponse<AssetPhotoType>> {
     try {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        if (!userId) {
+            throw new ApiError(401, "you are unauthorized", "Unauthorized");
+        }
         const MAX_PAGE_SIZE = 100;
         const MAX_PAGE_NUMBER = 10000;
         if (
@@ -60,9 +65,10 @@ export async function createAssetPhotoAction(
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        if (userId) {
-            data.createdBy = userId;
+        if (!userId) {
+            return { success: false, message: "you are unauthorized", statusCode: 401 };
         }
+        data.createdBy = userId;
         const msg = await createAssetPhotoType(data);
 
         for (const locale of locales) {
@@ -90,9 +96,10 @@ export async function updateAssetPhotoAction(
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        if (userId) {
-            data.updatedBy = userId;
+        if (!userId) {
+            return { success: false, message: "you are unauthorized", statusCode: 401 };
         }
+        data.updatedBy = userId;
         const msg = await updateAssetPhotoType(data);
 
         for (const locale of locales) {
@@ -117,10 +124,14 @@ export async function updateAssetPhotoAction(
 export async function deleteAssetPhotoTypeAction(
     formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-    const rawId = formData.get("id");
-    const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-    if (!id || id <= 0) {
+    const rawId = formData.get("id");
+    const numericId = Number(rawId);
+
+    if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
         return {
             success: false,
             message: "Valid Asset Photo Type ID is required",
@@ -129,7 +140,7 @@ export async function deleteAssetPhotoTypeAction(
     }
 
     try {
-        await deleteAssetPhotoType(id);
+        await deleteAssetPhotoType(numericId);
 
         for (const locale of locales) {
             revalidatePath(`/${locale}/assets/configuration/master-data/asset-photo-type`, "page");
@@ -157,10 +168,16 @@ export async function getAssetPhotoTypeByIdAction(
     id: number
 ): Promise<AssetPhotoType> {
     try {
-        if (!id || id <= 0) {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        if (!userId) {
+            throw new ApiError(401, "you are unauthorized", "Unauthorized");
+        }
+        const numericId = Number(id);
+        if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
             throw new ApiError(400, "Valid Asset Photo Type ID is required", "Validation failed");
         }
-        const result = await getAssetPhotoTypeById(id);
+        const result = await getAssetPhotoTypeById(numericId);
         if (!result) {
             throw new ApiError(404, "Asset Photo Type not found", "Not Found");
         }

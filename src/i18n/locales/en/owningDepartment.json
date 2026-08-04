@@ -45,7 +45,8 @@
       "descriptionFormat": "Description contains invalid characters",
       "descriptionMaxLength": "Description cannot exceed {count} characters",
       "mandatoryNotice": "Fields marked with <b>*</b> are mandatory",
-      "fixErrors": "Please fix the errors in the form"
+      "fixErrors": "Please fix the errors in the form",
+      "invalidFormat": "Invalid format"
     },
     "messages": {
       "createSuccess": "Owning department created successfully",

@@ -94,7 +94,7 @@ describe("useGstMasterForm", () => {
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
-      expect(result.current.formData.taxCode).toBe("GST18SCRIPT");
+      expect(result.current.formData.taxCode).toBe("GST-18SCRIPT");
     });
 
     it("should toggle isActive state when toggled", () => {

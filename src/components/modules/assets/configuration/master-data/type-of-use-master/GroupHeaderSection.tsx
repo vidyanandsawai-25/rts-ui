@@ -1,12 +1,13 @@
 "use client";
 
-import { LayoutGrid, Home, Building2, Factory, Landmark, HelpCircle, LucideIcon } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { AddButton, DeleteButton, EditButton } from "@/components/common";
 import { Tooltip } from "@/components/common/Tooltip";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import type { TypeOfUseGroup } from "@/types/asset-masters/type-of-use.types";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
+import { getIconComponent, getIconKey } from "@/config/typeofuse-icons.config";
 
 interface GroupHeaderSectionProps {
   groups: TypeOfUseGroup[];
@@ -16,19 +17,6 @@ interface GroupHeaderSectionProps {
   onEditGroup: (group: TypeOfUseGroup) => void;
   onDeleteGroup: (group: TypeOfUseGroup) => void;
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string;
-}
-
-const iconMap: Record<string, LucideIcon> = {
-  home: Home,
-  building: Building2,
-  factory: Factory,
-  landmark: Landmark,
-};
-
-function getIconComponent(iconName?: string): LucideIcon {
-  if (!iconName) return HelpCircle;
-  const key = iconName.toLowerCase().trim();
-  return iconMap[key] || HelpCircle;
 }
 
 export function GroupHeaderSection({
@@ -108,7 +96,7 @@ export function GroupHeaderSection({
 
         {/* Individual Group Cards */}
         {groups.map((g) => {
-          const Icon = getIconComponent(g.groupIcon);
+          const Icon = getIconComponent(getIconKey(g.groupIcon));
           const selected = g.id === selectedGroupId;
 
           return (
@@ -171,11 +159,11 @@ export function GroupHeaderSection({
                     </div>
                   </div>
 
-                  <div className="mt-1 text-xs flex items-center gap-2">
-                    <span className="text-slate-600">
+                  <div className="mt-1 text-xs flex items-center justify-between gap-2">
+                    <span className="text-slate-600 truncate">
                       {t("group.codeLabel", { code: g.typeOfUseGroupCode })}
                     </span>
-                    <StatusBadge value={g.isActive ? "Active" : "Inactive"} />
+                    <StatusBadge value={g.isActive ? "Active" : "Inactive"} className="shrink-0" />
                   </div>
                 </div>
               </div>

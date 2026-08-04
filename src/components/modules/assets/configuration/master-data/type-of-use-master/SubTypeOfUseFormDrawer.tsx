@@ -190,6 +190,8 @@ export default function SubTypeOfUseFormDrawer({
             name="searchSequence"
             label={t("subtype.fields.sequence.label", { default: "Sequence" })}
             required
+            min={0}
+            max={999}
             value={formData.searchSequence}
             onChange={handleChange}
             onBlur={handleBlur}

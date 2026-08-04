@@ -89,7 +89,7 @@ describe("PenaltyRuleMasterForm Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText("penaltyRuleMaster.form.validation.codeRequired")).toBeInTheDocument();
-      expect(screen.getByText("penaltyRuleMaster.form.validation.descriptionRequired")).toBeInTheDocument();
+      expect(screen.getByText("penaltyRuleMaster.form.validation.nameRequired")).toBeInTheDocument();
       expect(screen.getByText("penaltyRuleMaster.form.validation.calculationTypeRequired")).toBeInTheDocument();
       expect(screen.getByText("penaltyRuleMaster.form.validation.valueRequired")).toBeInTheDocument();
       expect(screen.getByText("penaltyRuleMaster.form.validation.gracePeriodRequired")).toBeInTheDocument();
@@ -108,7 +108,6 @@ describe("PenaltyRuleMasterForm Component", () => {
       expect(savePenaltyRule).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith("penaltyRuleMaster.form.messages.updateSuccess");
       expect(mockPush).toHaveBeenCalledWith("/en/assets/configuration/master-data/penalty-rule-master");
-      expect(mockRefresh).toHaveBeenCalled();
     });
   });
 

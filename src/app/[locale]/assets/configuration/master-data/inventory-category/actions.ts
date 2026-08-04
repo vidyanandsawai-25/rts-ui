@@ -14,13 +14,23 @@ const logger = createLogger("InventoryCategory");
 
 export async function saveInventoryCategoryAction(id: string, formData: FormData) {
   try {
-    const userId = getUserIdFromCookies(await cookies()) ?? 0;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { ok: false, error: "Unauthorized" };
+    }
     const isEdit = !!id;
+
+    const rawGroupId = Number(formData.get("group"));
+    if (!Number.isFinite(rawGroupId) || rawGroupId <= 0) {
+      return { ok: false, error: "invalid_assetCategoryId" };
+    }
+    const assetCategoryId = rawGroupId;
 
     const record = {
       typeCode: formData.get("code") as string,
       typeName: formData.get("name") as string,
-      depreciationRate: Number(formData.get("depreciationRate")),
+      assetCategoryId,
+      depreciationRate: Number(formData.get("depreciationRate") || 0.1),
       description: formData.get("description") as string,
       displayOrder: Number(formData.get("displayOrder") || 1),
       isActive: formData.get("isActive") === "true",
@@ -80,7 +90,7 @@ export async function getInventoryCategoryByIdAction(id: string | number) {
       id: String(rawRecord.id),
       code: rawRecord.typeCode || "",
       name: rawRecord.typeName || "",
-      group: "",
+      group: String(rawRecord.assetCategoryId || (rawRecord as unknown as Record<string, unknown>).categoryId || ""),
       description: rawRecord.description || "",
       depreciationRate: rawRecord.depreciationRate ? String(rawRecord.depreciationRate) : "",
       isActive: rawRecord.isActive ?? true,

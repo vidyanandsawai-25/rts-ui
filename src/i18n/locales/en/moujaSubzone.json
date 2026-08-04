@@ -73,7 +73,8 @@
       "subZoneNameFormat": "Invalid name format",
       "moujaRequired": "Mouja is required",
       "mustBeActive": "Must be active to save",
-      "fixErrors": "Please fix validation errors"
+      "fixErrors": "Please fix validation errors",
+      "invalidFormat": "Invalid format"
     }
   },
   "delete": {
@@ -85,13 +86,16 @@
     "Mouja_MoujaName_Duplicate": "Mouja name already exists.",
     "SubZoneDetailsForCV_SubZoneNo_Duplicate": "SubZone number already exists.",
     "SubZoneDetailsForCV_SubZoneName_Duplicate": "SubZone name already exists.",
+    "AssetMouja_MoujaNo_Duplicate": "Asset Mouja number already exists.",
+    "AssetSubZoneDetailsForCV_SubZoneNo_Duplicate": "Asset SubZone number already exists.",
     "notFound": "Record not found.",
     "inUse": "Cannot delete this record because it is referenced in other tables.",
     "Cannot deactivate/delete this MoujaMaster because it is referenced in: Sub Zone Details For CV": "Cannot deactivate or delete this Mouja because it is referenced in SubZone Details (Sub Zone Details For CV).",
     "Cannot deactivate/delete this AssetMoujaMaster because it is referenced in: Asset Sub Zone Details": "Cannot deactivate or delete this Asset Mouja because it is referenced in Asset Sub Zone Details.",
     "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}.",
     "A record with the same details already exists": "A record with the same details already exists.",
-    "operationFailed": "Operation failed."
+    "operationFailed": "Operation failed.",
+    "User session required": "User session required."
   },
   "success": {
     "moujaCreated": "New Mouja created successfully",

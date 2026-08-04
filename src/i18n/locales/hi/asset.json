@@ -346,7 +346,8 @@
           "penaltyValueRange": "जुर्माना मूल्य 0 या अधिक होना चाहिए",
           "penaltyValuePercentageRange": "प्रतिशत गणना के लिए जुर्माना मूल्य 0 और 100 के बीच होना चाहिए",
           "gracePeriodDaysRequired": "छूट अवधि (दिनों में) आवश्यक है",
-          "gracePeriodDaysRange": "छूट की अवधि 0 या अधिक होनी चाहिए"
+          "gracePeriodDaysRange": "छूट की अवधि 0 या अधिक होनी चाहिए",
+          "notFound": "रिकॉर्ड नहीं मिला।"
         }
       },
       "messages": {

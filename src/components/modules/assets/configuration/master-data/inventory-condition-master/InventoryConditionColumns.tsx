@@ -122,7 +122,7 @@ export function getInventoryConditionColumns(
       width: "10%",
       render: (value) => (
         <div className="text-sm text-slate-600 font-medium">
-          {typeof value === "number" ? value : "1.0"}
+          {value !== undefined && value !== null && value !== "" ? String(value) : "-"}
         </div>
       ),
     },

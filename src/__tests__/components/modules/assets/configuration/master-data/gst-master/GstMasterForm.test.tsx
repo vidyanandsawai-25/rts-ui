@@ -117,7 +117,6 @@ describe("GstMasterForm Component", () => {
       expect(saveGstMaster).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith("gstMaster.form.messages.updateSuccess");
       expect(mockPush).toHaveBeenCalledWith("/en/assets/configuration/master-data/gst-master");
-      expect(mockRefresh).toHaveBeenCalled();
     });
   });
 

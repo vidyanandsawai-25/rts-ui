@@ -55,7 +55,7 @@
     },
     "validation": {
       "designationCodeRequired": "पदनाम कोड आवश्यक आहे",
-      "designationCodeMaxLength": "जास्तीत जास्त लांबी ५० अक्षरे असावी",
+      "designationCodeMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "designationCodeFormat": "केवळ अक्षरे, अंक आणि अंडरस्कोरची परवानगी आहे",
       "designationNameRequired": "पदनाम नाव आवश्यक आहे",
       "designationNameMaxLength": "जास्तीत जास्त लांबी १०० अक्षरे असावी",
@@ -65,7 +65,8 @@
       "owningDepartmentRequired": "विभाग आवश्यक आहे",
       "mustBeActive": "जतन करण्यासाठी पदनाम सक्रिय असणे आवश्यक आहे",
       "descriptionMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
-      "descriptionFormat": "अवैध वर्णन स्वरूप"
+      "descriptionFormat": "अवैध वर्णन स्वरूप",
+      "invalidFormat": "अवैध स्वरूप"
     }
   },
   "delete": {

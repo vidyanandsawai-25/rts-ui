@@ -45,7 +45,8 @@
       "descriptionFormat": "वर्णनात अवैध अक्षरे आहेत",
       "descriptionMaxLength": "वर्णन {count} पेक्षा जास्त अक्षरांचे नसावे",
       "mandatoryNotice": "<b>*</b> चिन्हांकित फील्ड अनिवार्य आहेत",
-      "fixErrors": "कृपया फॉर्ममधील त्रुटी दुरुस्त करा"
+      "fixErrors": "कृपया फॉर्ममधील त्रुटी दुरुस्त करा",
+      "invalidFormat": "अवैध स्वरूप"
     },
     "messages": {
       "createSuccess": "मालकी विभाग यशस्वीरित्या तयार केला",

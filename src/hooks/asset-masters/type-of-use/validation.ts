@@ -1,14 +1,13 @@
 import {
-  validateForm,
-  commonValidations,
-  TEXT_SANITIZE
+  validateForm
 } from "@/lib/utils/validation";
 import {
   CODE_REGEX,
   CODE_SANITIZE,
   ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE
-} from "@/lib/utils/validation-rules";
+  ASSET_MASTER_NAME_SANITIZE,
+  TEXT_SANITIZE
+} from "@/lib/utils/asset-validation-rules";
 import {
   TypeOfUseGroupFormModel,
   AssetTypeOfUseFormModel,
@@ -21,7 +20,7 @@ export const GROUP_CODE_MAX = 10;
 export const GROUP_NAME_MAX = 50;
 
 // AssetTypeOfUse:
-export const TYPE_CODE_MAX = 20;
+export const TYPE_CODE_MAX = 10;
 export const TYPE_NAME_MAX = 100;
 
 // AssetSubTypeOfUse:
@@ -98,7 +97,12 @@ export const validateGroupForm = (
       if (str.length > 50) return t("apiErrors.TypeOfUseGroup_GroupIcon_MaxLen_50", { default: "Group Icon maximum length is 50 characters" });
       return undefined;
     },
-    isActive: commonValidations.masterActiveStatus(t, isEdit, "errors.mustBeActive"),
+    isActive: (val: unknown) => {
+      if (!isEdit && val !== true) {
+        return t("errors.mustBeActive");
+      }
+      return undefined;
+    },
   };
   return validateForm(data, schema);
 };
@@ -143,6 +147,9 @@ export const validateTypeOfUseForm = (
       if (val === undefined || val === null || isNaN(n) || n < 0) {
         return t("messages.sequenceNonNegative", { default: "Sequence must be 0 or greater" });
       }
+      if (n > 999) {
+        return t("messages.sequenceMaxLimit", { default: "Sequence must be 999 or less" });
+      }
       return undefined;
     },
     type: (val: unknown) => {
@@ -150,7 +157,12 @@ export const validateTypeOfUseForm = (
       if (!strVal) return t("type.selectType", { default: "Type is required" });
       return undefined;
     },
-    isActive: commonValidations.masterActiveStatus(t, isEdit, "errors.mustBeActive"),
+    isActive: (val: unknown) => {
+      if (!isEdit && val !== true) {
+        return t("errors.mustBeActive");
+      }
+      return undefined;
+    },
   };
   return validateForm(data, schema);
 };
@@ -178,9 +190,17 @@ export const validateSubTypeOfUseForm = (
       if (val === undefined || val === null || isNaN(n) || n < 0) {
         return t("messages.sequenceNonNegative", { default: "Sequence must be 0 or greater" });
       }
+      if (n > 999) {
+        return t("messages.sequenceMaxLimit", { default: "Sequence must be 999 or less" });
+      }
       return undefined;
     },
-    isActive: commonValidations.masterActiveStatus(t, isEdit, "errors.mustBeActive"),
+    isActive: (val: unknown) => {
+      if (!isEdit && val !== true) {
+        return t("errors.mustBeActive");
+      }
+      return undefined;
+    },
   };
   return validateForm(data, schema);
 };

@@ -67,19 +67,21 @@
     },
     "validation": {
       "photoTypeCodeRequired": "फोटो प्रकार कोड आवश्यक आहे",
-      "photoTypeCodeMaxLength": "जास्तीत जास्त लांबी ५० अक्षरे असावी",
+      "photoTypeCodeMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "photoTypeCodeFormat": "केवळ अक्षरे, अंक आणि अंडरस्कोरची परवानगी आहे",
       "photoTypeNameRequired": "फोटो प्रकार नाव आवश्यक आहे",
       "photoTypeNameMaxLength": "जास्तीत जास्त लांबी १०० अक्षरे असावी",
       "photoTypeNameFormat": "अवैध नाव स्वरूप",
       "descriptionRequired": "वर्णन आवश्यक आहे",
-      "descriptionMaxLength": "जास्तीत जास्त लांबी २०० अक्षरे असावी",
+      "descriptionMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "descriptionFormat": "अवैध वर्णन स्वरूप",
       "displayOrderInvalid": "प्रदर्शन क्रम 0 पेक्षा जास्त असावा",
+      "displayOrderMaxLimit": "प्रदर्शन क्रम 99999 पेक्षा जास्त नसावा",
       "displayOrderRequired": "प्रदर्शन क्रम आवश्यक आहे",
       "mustBeActive": "जतन करण्यासाठी मालमत्ता फोटो प्रकार सक्रिय असणे आवश्यक आहे",
       "assetCategoryRequired": "मालमत्ता श्रेणी आवश्यक आहे",
-      "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे"
+      "assetTypeRequired": "मालमत्ता प्रकार आवश्यक आहे",
+      "invalidFormat": "अवैध स्वरूप"
     },
     "status": {
       "label": "सक्रिय स्थिती",
@@ -96,6 +98,9 @@
   },
   "apiErrors": {
     "duplicateRecord": "कृपया फोटो प्रकार कोड तपासा - डुप्लिकेट रेकॉर्डला परवानगी नाही.",
+    "AssetPhotoType_PhotoTypeCode_Duplicate": "मालमत्ता फोटो प्रकार कोड आधीपासूनच अस्तित्वात आहे",
+    "AssetPhotoType_AssetCategoryId_Invalid": "अवैध मालमत्ता वर्ग निवडला आहे",
+    "AssetPhotoType_AssetTypeId_Invalid": "अवैध मालमत्ता प्रकार निवडला आहे",
     "A record with the same details already exists": "समान तपशीलांचे रेकॉर्ड आधीपासूनच अस्तित्वात आहे.",
     "validationError": "अवैध डेटा प्रदान केला गेला. कृपया सर्व फील्ड तपासा.",
     "invalidData": "अवैध डेटा प्रदान केला गेला. कृपया सर्व फील्ड तपासा.",

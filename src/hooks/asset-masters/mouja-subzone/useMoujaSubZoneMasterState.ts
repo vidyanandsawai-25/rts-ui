@@ -1,11 +1,10 @@
 import { useState, useTransition, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMoujaSubZoneUrl } from "@/hooks/asset-masters/mouja-subzone/useMoujaSubZoneUrl";
 import { MoujaSubZoneProps } from "@/types/asset-masters/mouja-subzone.types";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMoujaSubZoneHandlers } from "./useMoujaSubZoneHandlers";
-import { TEXT_SANITIZE } from "@/lib/utils/validation";
+import { TEXT_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 export function useMoujaSubZoneMasterState({
   moujas,
@@ -21,18 +20,12 @@ export function useMoujaSubZoneMasterState({
   subZoneSortBy,
   subZoneSortOrder,
 }: MoujaSubZoneProps) {
-  const sp = useSearchParams();
   const t = useTranslations("moujaSubzone");
   const tCommon = useTranslations("common");
   const [, startTransition] = useTransition();
 
-  const { urlMoujaSearch, urlSubZoneSearch, pushUrl, replaceUrl } = useMoujaSubZoneUrl();
+  const { urlMoujaSearch, urlSubZoneSearch, pushUrl } = useMoujaSubZoneUrl();
 
-  useEffect(() => {
-    if (selectedMoujaId && !sp.get("moujaId")) {
-      replaceUrl({ moujaId: selectedMoujaId });
-    }
-  }, [selectedMoujaId, sp, replaceUrl]);
 
   const [moujaSearch, setMoujaSearchState] = useState(urlMoujaSearch);
   const [subZoneSearch, setSubZoneSearchState] = useState(urlSubZoneSearch);

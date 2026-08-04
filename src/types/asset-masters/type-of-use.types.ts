@@ -32,7 +32,7 @@ export interface AssetTypeOfUseFormModel {
   typeOfUseCode: string;
   description: string;
   type: string; // R, C, I, N
-  searchSequence: number;
+  searchSequence: number | "";
   createdBy?: number;
   updatedBy?: number;
 }
@@ -47,7 +47,7 @@ export interface AssetTypeOfUse {
   typeOfUseCode: string;
   description: string;
   type: string;
-  searchSequence: number;
+  searchSequence: number | "";
   createdDate?: string;
   updatedDate?: string | null;
   // Join properties returned by API
@@ -65,7 +65,7 @@ export interface AssetSubTypeOfUseFormModel {
   isActive: boolean;
   typeOfUseId: number;
   description: string; // Sub-Type Name
-  searchSequence: number;
+  searchSequence: number | "";
   createdBy?: number;
   updatedBy?: number;
 }
@@ -76,11 +76,12 @@ export interface AssetSubTypeOfUse {
   isActive: boolean;
   typeOfUseId: number;
   description: string;
-  searchSequence: number;
+  searchSequence: number | "";
   createdDate?: string;
   updatedDate?: string | null;
   // Join properties returned by API
   typeOfUseCode?: string;
   typeOfUseDescription?: string;
 }
+
 

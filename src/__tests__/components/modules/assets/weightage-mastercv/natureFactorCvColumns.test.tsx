@@ -76,7 +76,7 @@ describe('getNatureFactorCvColumns', () => {
     const col = columns[0];
     expect(col.key).toBe('constructionCode');
     expect(col.label).toBeDefined();
-    expect(col.render?.('C1', mockRow, 0)).toBe('C1');
+    expect(col.render?.('C1', mockRow, 0)).toEqual(<span className="break-all block">C1</span>);
   });
 
   it('constructionCode column renders "-" for undefined value', () => {
@@ -90,7 +90,7 @@ describe('getNatureFactorCvColumns', () => {
     });
 
     const col = columns[0];
-    expect(col.render?.(undefined, mockRow, 0)).toBe('-');
+    expect(col.render?.(undefined, mockRow, 0)).toEqual(<span className="break-all block">-</span>);
   });
 
   it('description column renders correctly', () => {
@@ -106,7 +106,7 @@ describe('getNatureFactorCvColumns', () => {
     const col = columns[1];
     expect(col.key).toBe('constructionDescription');
     expect(col.label).toBeDefined();
-    expect(col.render?.('RCC', mockRow, 0)).toBe('RCC');
+    expect(col.render?.('RCC', mockRow, 0)).toEqual(<span className="break-all block">RCC</span>);
   });
 
   it('factor column renders MatrixCellInput', () => {

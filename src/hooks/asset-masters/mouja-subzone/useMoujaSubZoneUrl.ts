@@ -92,11 +92,7 @@ export function useMoujaSubZoneUrl() {
   const replaceUrl = useCallback(
     (next: Parameters<typeof buildHref>[0]) => {
       const href = buildHref(next);
-      if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", href);
-      } else {
-        router.replace(href);
-      }
+      router.replace(href);
     },
     [router, buildHref]
   );

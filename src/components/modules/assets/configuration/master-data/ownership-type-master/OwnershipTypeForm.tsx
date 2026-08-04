@@ -3,9 +3,9 @@
 import type React from "react";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, CheckCircle2, X } from "lucide-react";
 
-import { CancelButton, SaveButton, StatusToggleCard } from "@/components/common";
+import { CancelButton, SaveButton, ToggleSwitch, ValidationMessage } from "@/components/common";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
 import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
@@ -14,6 +14,7 @@ import type { OwnershipTypeFormModel } from "@/types/asset-masters/ownership-typ
 import { validateOwnershipTypeForm } from "@/lib/validations/ownership-type-form.validation";
 import { useOwnershipTypeSubmit } from "@/hooks/asset-masters/ownership-type/useOwnershipTypeSubmit";
 import { ASSET_MASTER_TEXT_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/validation-rules";
+import { cn } from "@/lib/utils/cn";
 
 export function OwnershipTypeForm({ id, initialData }: { id?: number; initialData?: import("@/types/asset-masters/ownership-type.types").OwnershipTypeFormModel | null; }) {
   const router = useRouter();
@@ -53,11 +54,11 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
     let newValue = value;
 
     if (name === "ownershipTypeName") {
-      newValue = newValue.replace(ASSET_MASTER_NAME_SANITIZE, "");
+      newValue = newValue.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     }
     
     if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "");
+      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     }
     
     if (typeof newValue === "string" && newValue.length > 0 && ["ownershipTypeName", "description"].includes(name)) {
@@ -127,13 +128,46 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
     >
       <form id="ownership-type-form" onSubmit={handleSubmit} noValidate className="space-y-6 bg-[#F8FAFF] p-5">
         {isEdit && (
-          <StatusToggleCard
-            isActive={formData.isActive}
-            onToggle={handleToggleStatus}
-            activeLabel={tCommon("status.active")}
-            inactiveLabel={tCommon("status.inactive")}
-            statusLabel={tCommon("status.label")}
-          />
+          <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
+            <div
+              className={cn(
+                "rounded-xl p-3 flex items-center justify-between",
+                formData.isActive
+                  ? "border border-blue-200 bg-[#F0F6FF]"
+                  : "border border-gray-200 bg-gray-50"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "h-9 w-9 flex items-center justify-center rounded-full",
+                    formData.isActive
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-200 text-gray-900"
+                  )}
+                >
+                  {formData.isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{tCommon("status.label")}</div>
+                  <div className="text-sm text-gray-500">
+                    {formData.isActive ? ` ${tCommon("status.active")}` : ` ${tCommon("status.inactive")}`}
+                  </div>
+                </div>
+              </div>
+
+              <ToggleSwitch
+                checked={formData.isActive}
+                onChange={handleToggleStatus}
+                showPopup={false}
+                activeLabel={tCommon("status.active")}
+                inactiveLabel={tCommon("status.inactive")}
+              />
+            </div>
+            {errors.isActive && (
+              <ValidationMessage message={errors.isActive} className="mt-2" />
+            )}
+          </div>
         )}
 
         <FormFieldsSection

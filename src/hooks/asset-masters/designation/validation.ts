@@ -1,14 +1,19 @@
 import {
+  validateForm
+} from "@/lib/utils/validation";
+import {
   CODE_SANITIZE,
   DESCRIPTION_SANITIZE,
-  validateForm,
-  commonValidations
-} from "@/lib/utils/validation";
+  CODE_REGEX,
+  DESCRIPTION_REGEX,
+  isAllZeros
+} from "@/lib/utils/asset-validation-rules";
 import { DesignationFormModel } from "@/types/asset-masters/designation.types";
+import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
 
-export const CODE_MAX = 50;
+export const CODE_MAX = 20;
 export const NAME_MAX = 100;
-export const DESCRIPTION_MAX = 200;
+export const DESCRIPTION_MAX = 100;
 
 export const sanitizeFieldValue = (name: string, value: string): string => {
   let sanitizedValue = value;
@@ -37,15 +42,19 @@ export const validateDesignationForm = (
   isEdit: boolean
 ): Partial<Record<keyof DesignationFormModel, string>> => {
   const schema = {
-    designationCode: commonValidations.masterCode(t, CODE_MAX, {
-      required: 'form.validation.designationCodeRequired',
-      format: 'form.validation.designationCodeFormat',
-      maxLength: 'form.validation.designationCodeMaxLength',
-    }),
+    designationCode: (value: unknown) => {
+      const strVal = String(value ?? '').trim();
+      if (!strVal) return t('form.validation.designationCodeRequired');
+      if (strVal.length > CODE_MAX) return t('form.validation.designationCodeMaxLength', { count: CODE_MAX });
+      if (isAllZeros(strVal)) return t('form.validation.invalidFormat', { default: 'Invalid format' });
+      if (!CODE_REGEX.test(strVal)) return t('form.validation.designationCodeFormat');
+      return undefined;
+    },
     designationName: (val: unknown) => {
       const str = String(val ?? '').trim();
       if (!str) return t('form.validation.designationNameRequired');
       if (str.length > NAME_MAX) return t('form.validation.designationNameMaxLength', { count: NAME_MAX });
+      if (/^0+$/.test(str)) return t('form.validation.designationNameFormat');
       if (!/^[\p{L}\p{M}\p{N}]+(?:[\s][\p{L}\p{M}\p{N}]+)*$/u.test(str)) return t('form.validation.designationNameFormat');
       return undefined;
     },
@@ -53,16 +62,23 @@ export const validateDesignationForm = (
       const str = String(val ?? '').trim();
       if (!str) return t('form.validation.designationLocalRequired');
       if (str.length > NAME_MAX) return t('form.validation.designationLocalMaxLength', { count: NAME_MAX });
+      if (/^0+$/.test(str)) return t('form.validation.designationLocalRequired');
       return undefined;
     },
     designationDescription: (val: unknown) => {
-      if (!String(val ?? '').trim()) return undefined;
-      return commonValidations.masterDescription(t, DESCRIPTION_MAX, {
-        maxLength: 'form.validation.descriptionMaxLength',
-        format: 'form.validation.descriptionFormat',
-      })(val);
+      const strVal = String(val ?? '').trim();
+      if (!strVal) return undefined;
+      if (strVal.length > DESCRIPTION_MAX) return t('form.validation.descriptionMaxLength', { count: DESCRIPTION_MAX });
+      if (isAllZeros(strVal)) return t('form.validation.invalidFormat', { default: 'Invalid format' });
+      if (!DESCRIPTION_REGEX.test(strVal)) return t('form.validation.descriptionFormat');
+      return undefined;
     },
-    isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+    isActive: (val: unknown) => {
+      if (!isEdit && val !== true) {
+        return t('form.validation.mustBeActive');
+      }
+      return undefined;
+    },
     owningDepartmentId: (val: unknown) => {
       const parsed = Number(val);
       if (!val || isNaN(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
@@ -79,92 +95,36 @@ export const mapDesignationApiError = (
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
-  const rawMsg = (result.message || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entity = match[1];
-    const tables = match[2];
-    
-    let entityName = t("list.title");
-    const lowerEntity = entity.toLowerCase();
-    
-    if (lowerEntity.includes("designation")) {
-      try { entityName = t("list.title"); } catch {}
+  return mapSharedApiError({
+    message: result.message,
+    statusCode: result.statusCode,
+    t,
+    tCommon,
+    fallbackEntityName: t("list.title"),
+    entityMatchers: [{ test: /designation/i, labelKey: "list.title" }],
+    customStatusCodes: {
+      409: t("apiErrors.duplicateRecord"),
+      404: t("apiErrors.notFound"),
+      401: tCommon("errors.unauthorized"),
+      403: tCommon("errors.unauthorized"),
     }
-    
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
-
-  const errorMap: Record<number, string> = {
-    409: t("apiErrors.duplicateRecord"),
-    404: t("apiErrors.notFound"),
-    401: tCommon("errors.unauthorized"),
-    403: tCommon("errors.unauthorized"),
-  };
-
-  const code = result.statusCode ?? 0;
-  if (errorMap[code]) return errorMap[code];
-
-  if (code === 400) {
-    const msg = result.message?.toLowerCase() || "";
-    if (msg.includes("duplicate") || msg.includes("already exists")) {
-      return t("apiErrors.duplicateRecord");
-    }
-    return result.message || t("apiErrors.invalidData");
-  }
-
-  if (code >= 500) return tCommon("errors.serverError");
-  return result.message || t("apiErrors.operationFailed");
+  });
 };
+
 
 export function getErrorMessage(
   message: string | undefined,
   statusCode: number | undefined,
-  t: (key: string, values?: Record<string, string>) => string,
-  tCommon: (key: string) => string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
   fallbackEntityName: string
 ): string {
-  const rawMsg = (message || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entity = match[1];
-    const tables = match[2];
-    
-    let entityName = fallbackEntityName;
-    const lowerEntity = entity.toLowerCase();
-    
-    if (lowerEntity.includes("designation")) {
-      try { entityName = t("list.title"); } catch {}
-    }
-    
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
-  
-  try {
-    const key = `apiErrors.${rawMsg}`;
-    const translated = t(key as never);
-    if (translated && translated !== key && !translated.includes(key)) {
-      return translated;
-    }
-  } catch {}
-
-  return statusCode === 409
-    ? (t("apiErrors.inUse") || "Record is in use.")
-    : (t("apiErrors.operationFailed") || tCommon("errors.generic") || tCommon("errors.deleteError"));
+  return mapSharedApiError({
+    message,
+    statusCode,
+    t,
+    tCommon,
+    fallbackEntityName,
+    entityMatchers: [{ test: /designation/i, labelKey: "list.title" }]
+  });
 }
-
-

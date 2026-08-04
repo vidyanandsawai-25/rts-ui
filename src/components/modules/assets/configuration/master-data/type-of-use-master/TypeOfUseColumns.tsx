@@ -146,7 +146,7 @@ export function getSubTypeOfUseColumns(
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<AssetSubTypeOfUse>[] {
-  const sortableColumns = ["description", "searchSequence"];
+  const sortableColumns = ["description"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
