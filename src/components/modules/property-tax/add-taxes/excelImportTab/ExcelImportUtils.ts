@@ -79,23 +79,11 @@ export const mapExcelDataToPayload = (
     }
 
     if (rawPropNo) {
-      if (rawPropNo.includes('-')) {
-        const parts = rawPropNo.split('-');
-        const pNo = parts[0]?.trim();
-        const pPart = parts[1]?.trim();
-        if (pNo) building.push(pNo);
-        if (pPart) partitionNos.push(pPart);
-      } else {
-        building.push(rawPropNo);
-      }
+      building.push(rawPropNo);
     }
 
     if (rawPropNoPartitionNo) {
-      const parts = rawPropNoPartitionNo.split('-');
-      const pNo = parts[0]?.trim();
-      const pPart = parts[1]?.trim();
-      if (pNo) building.push(pNo);
-      if (pPart) partitionNos.push(pPart);
+      building.push(rawPropNoPartitionNo);
     }
 
     if (rawUpicId) upicIds.push(rawUpicId);
