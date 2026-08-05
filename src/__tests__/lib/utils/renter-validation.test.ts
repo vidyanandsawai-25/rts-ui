@@ -52,11 +52,10 @@ describe('validateRenterForm', () => {
       });
     });
 
-    it('should reject empty or whitespace agreement No', () => {
+    it('should allow empty or missing agreement No', () => {
       const errors = validateRenterForm({ ...validBaseForm, agreementId: '' });
       const matched = errors.filter((e) => e.field === 'agreementId');
-      expect(matched).not.toHaveLength(0);
-      expect(matched[0].message).toBe('Agreement No is required.');
+      expect(matched).toHaveLength(0);
     });
 
     it('should reject agreement Nos with invalid special characters', () => {
@@ -82,6 +81,8 @@ describe('validateRenterForm', () => {
   describe('Renter Name Validation', () => {
     it('should allow valid renter names', () => {
       const validNames = [
+        'Ashwin',
+        'Ashwin ',
         'Rahul Deshmukh',
         'Yash Patil',
         'Amit Sharma',
