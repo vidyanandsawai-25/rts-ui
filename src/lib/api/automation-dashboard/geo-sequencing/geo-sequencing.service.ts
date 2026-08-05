@@ -23,7 +23,9 @@ export async function automationGetGeoSequencingWardWiseSummary(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
 ): Promise<GeoSequencingWardWiseItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -33,6 +35,12 @@ export async function automationGetGeoSequencingWardWiseSummary(
 
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
+    }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+    if (categoryId) {
+        params.append("CategoryId", categoryId);
     }
 
     const response = await apiClient.get<GeoSequencingWardWiseResponse>(

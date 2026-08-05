@@ -12,14 +12,18 @@ import {
     GeoSequencingData,
     getGeoSequencingSharedColumns,
     getGeoSequencingSharedHeaderRows,
+    getPropertyTypeIdParam
 } from './CommonGeoSequencingColumns';
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 interface GeoSequencingPageProps {
     serverData?: GeoSequencingItems | null;
     defaultWorkflowStageId?: string;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ t }: { t: (key: string) => string }) => {
+const TopBar = ({ t, propertyDescriptions }: { t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     return (
@@ -34,12 +38,15 @@ const TopBar = ({ t }: { t: (key: string) => string }) => {
 
                 <SearchButton label={t('geoSequencing.buttons.search')} />
             </div>
-            <ExportButton label={t('geoSequencing.buttons.export')} />
+            <div className="flex items-center gap-3">
+                <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                <ExportButton label={t('geoSequencing.buttons.export')} />
+            </div>
         </div>
     );
 };
 
-const GeoSequencingPage = ({ serverData, defaultWorkflowStageId }: GeoSequencingPageProps) => {
+const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescriptions }: GeoSequencingPageProps) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const t = useTranslations('automationDashboard');
@@ -64,7 +71,9 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId }: GeoSequencing
                 const zoneId = row.zoneId ?? row.division.split(' ')[0];
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                const typeIdParam = getPropertyTypeIdParam(columnKey);
+                
+                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );
@@ -127,7 +136,7 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId }: GeoSequencing
             data={tableData}
             columns={columns}
             headerRows={headerRows}
-            headerExtra={<TopBar t={t} />}
+            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} />}
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
             rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors border-b border-slate-200 hover:bg-transparent"}

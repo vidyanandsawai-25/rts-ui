@@ -7,12 +7,17 @@ import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { ExportButton, SearchButton } from '@/components/common';
 import { InternalSurveyGridItems } from "@/types/automation-dashboard/internal-surveygrid/internal-surveygrid.type";
+
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { getInternalSurveyColumns, getInternalSurveyHeaderRows, InternalSurveyTableRow } from './InternalSurveyColumns';
+import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 interface InternalSurveyPageProps {
     serverData: InternalSurveyGridItems | null;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ t }: { t: (key: string) => string }) => {
+const TopBar = ({ t, propertyDescriptions = [] }: { t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     return (
@@ -27,12 +32,15 @@ const TopBar = ({ t }: { t: (key: string) => string }) => {
 
                 <SearchButton label={t('internalSurvey.buttons.search')} />
             </div>
-            <ExportButton label={t('internalSurvey.buttons.export')} />
+            <div className="flex items-center gap-3">
+                <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                <ExportButton label={t('internalSurvey.buttons.export')} />
+            </div>
         </div>
     );
 };
 
-const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData }) => {
+const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, propertyDescriptions = [] }) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const t = useTranslations('automationDashboard');
@@ -56,7 +64,8 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData }) =
                 const zoneId = row.zoneId ?? row.division.split(' ')[0];
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                const typeIdParam = getPropertyTypeIdParam(columnKey);
+                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );
@@ -128,7 +137,7 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData }) =
             data={tableData}
             columns={columns}
             headerRows={headerRows}
-            headerExtra={<TopBar t={t} />}
+            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} />}
             loading={!serverData}
             rowClassName={(row) => row.sr === t('internalSurvey.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors hover:bg-transparent"}
             emptyText={t('internalSurvey.emptyMessage')}

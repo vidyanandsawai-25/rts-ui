@@ -170,25 +170,31 @@ export const getBuildingwisePropertyColumns = (
       label: 'ACTIONS',
       render: (_, row) => (
         <div className="flex flex-col items-center justify-center gap-1.5 py-1 text-xs">
-          <button className="h-5 px-3 rounded-full flex items-center justify-center font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors cursor-pointer select-none">
+          <button
+            className="inline-flex items-center justify-center whitespace-nowrap disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 gap-1.5 px-3 has-[>svg]:px-2.5 h-6 w-[70px] rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors"
+          >
             {t('approvalByULB.buildingWiseProperty.report')}
           </button>
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               onTrackingClick?.(row);
             }}
-            className="h-5 px-3 rounded-full font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center justify-center cursor-pointer select-none"
+            className="inline-flex items-center justify-center whitespace-nowrap disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 gap-1.5 px-3 has-[>svg]:px-2.5 h-6 w-[70px] rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-colors"
           >
             {t('approvalByULB.buildingWiseProperty.tracking')}
           </button>
           <div
-            className="h-6 w-6 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full cursor-pointer mt-0.5"
+            className="h-12 w-12 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full overflow-hidden mx-auto"
             title="Location"
             onClick={() => handleLocationClick(row)}
-          >
+          >           
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Google_Maps_icon_%282015-2020%29.svg" alt="Location" className="h-4 w-4" />
+            <img
+              src="https://thaneautomationdashboard.tabamc.in/_next/static/media/map%20icon.11lzpgxlb~sr1.png"
+              alt="Location"
+              className="h-8 w-8 object-contain scale-[2]"
+            />
           </div>
         </div>
       )

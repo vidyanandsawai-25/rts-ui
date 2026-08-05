@@ -131,10 +131,10 @@ const TopBar = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabChange
     const locale = useLocale();
 
     return (
-        <div className="flex items-center justify-between gap-4 w-full px-2">
-            <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between gap-4 w-full">
+            <div className="flex items-center gap-4 flex-1">
                 <TopFilters activeTab={activeTab} onTabChange={onTabChange} t={t} />
-                <div className="flex items-center gap-2 w-[500px] ml-4">
+                <div className="flex items-center gap-2 flex-1 max-w-xl ml-4">
                     <SearchInput
                         value={searchTerm}
                         onChange={setSearchTerm}
@@ -145,7 +145,7 @@ const TopBar = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabChange
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="flex items-center gap-3">
                 <Button
                     variant="secondary"
                     icon={ChevronDown}
@@ -163,9 +163,7 @@ const TopBar = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabChange
                     {t('sendToApprove')}
                 </Button>
 
-                <div className="shrink-0">
-                    <ExportButton />
-                </div>
+                <ExportButton />
             </div>
         </div>
     );
@@ -194,13 +192,17 @@ const AssessmentDetailsContent = ({ serverData }: { serverData?: AssessmentGridI
     const tableData = useMemo(() => mapServerDataToTable(serverData), [serverData]);
 
     return (
-        <div className="flex flex-col gap-4 h-full p-4 bg-slate-50">
+        <div className="flex flex-col gap-4 h-full bg-slate-50">
             {/* <AssessmentSummaryCards data={serverData} /> */}
             <AutomationTable
                 data={tableData}
                 columns={columns}
                 headerRows={getAssessmentHeaderRows(activeTab, t)}
-                headerExtra={<TopBar activeTab={activeTab} onTabChange={handleTabChange} t={t} />}
+                headerExtra={
+                    <div className="flex items-center gap-2 w-full">
+                        <TopBar activeTab={activeTab} onTabChange={handleTabChange} t={t} />
+                    </div>
+                }
                 containerClassName="h-full"
                 tableClassName="border-collapse"
                 paginationConfig={{ enabled: false, showPageSizeSelector: false }}

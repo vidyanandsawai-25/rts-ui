@@ -55,11 +55,13 @@ export async function getDataEntryWardWiseSummaryAction(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
 ): Promise<ActionResult<DataEntryWardWiseSummaryItems>> {
     try {
-        logger.info("getDataEntryWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize });
-        const data = await automationGetDataEntryWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize);
+        logger.info("getDataEntryWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId });
+        const data = await automationGetDataEntryWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch data entry ward-wise summary data", { zoneId, workflowStageId, pageNumber, pageSize }, error);

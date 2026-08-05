@@ -90,35 +90,38 @@ const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: Appr
     const headerRows = useMemo(() => getApprovalHeaderRows(roles, t, 'zone', handleExportClick), [roles, t, handleExportClick]);
 
     return (
-        <div className="flex h-full flex-col gap-1 overflow-hidden bg-gray-50   ">
-            <div className="flex items-center justify-end bg-white rounded-lg shadow-sm border border-slate-200">
-                <div className="flex items-center gap-2 justify-end">
-                    <Button className="px-3 py-1 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-sm rounded transition-colors shadow-sm border-none">
-                        {t('updatePending') || 'Update Pending'}
-                    </Button>
-                    <ExportButton className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm rounded transition-colors shadow-sm" />
-                </div>
-            </div>
-
-            <div className="flex-1 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0">
-                <AutomationTable
-                    columns={columns}
-                    headerRows={headerRows}
-                    data={tableData}
-                    tableClassName="border-collapse w-full border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                    theadClassName="[&>tr>th]:border [&>tr>th]:border-slate-300"
-                    rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors hover:bg-slate-50"}
-                    getRowKey={(row, index) => `${row.zoneId || 'total'}-${index}`}
-                    onRowClick={(row) => {
-                        if (!row.isTotal) {
-                            const code = row.zoneId ? String(row.zoneId) : row.wardId ? String(row.wardId) : typeof row.zoneName === 'string' ? row.zoneName.split(' - ')[0] : '';
-                            if (code) {
-                                handleNavigation(code);
-                            }
+        <div className="flex flex-col gap-4 h-full bg-slate-50">
+            <AutomationTable
+                headerExtra={
+                    <div className="flex items-center justify-between gap-4 w-full">
+                        <div className="flex items-center gap-4 flex-1">
+                            {/* Empty space on left side if we don't have search */}
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button className="px-3 py-1 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-sm rounded transition-colors shadow-sm border-none">
+                                {t('updatePending') || 'Update Pending'}
+                            </Button>
+                            <ExportButton />
+                        </div>
+                    </div>
+                }
+                containerClassName="h-full"
+                columns={columns}
+                headerRows={headerRows}
+                data={tableData}
+                tableClassName="border-collapse w-full border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
+                theadClassName="[&>tr>th]:border [&>tr>th]:border-slate-300"
+                rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors hover:bg-slate-50"}
+                getRowKey={(row, index) => `${row.zoneId || 'total'}-${index}`}
+                onRowClick={(row) => {
+                    if (!row.isTotal) {
+                        const code = row.zoneId ? String(row.zoneId) : row.wardId ? String(row.wardId) : typeof row.zoneName === 'string' ? row.zoneName.split(' - ')[0] : '';
+                        if (code) {
+                            handleNavigation(code);
                         }
-                    }}
-                />
-            </div>
+                    }
+                }}
+            />
         </div>
     );
 };

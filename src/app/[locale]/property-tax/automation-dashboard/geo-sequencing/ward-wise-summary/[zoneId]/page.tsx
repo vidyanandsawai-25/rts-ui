@@ -1,6 +1,7 @@
 
 import { GeoSequencingWardWiseDashboard } from "@/components/modules/property-tax/automation-dashboard/GeoSequencing/ward-wise-summary/WardWisedashboard";
 import { getWardWiseSummaryAction } from "../../action";
+import { getPropertyTypeMasterAction } from "../../../property-details-dashboard/[zoneId]/action";
 interface WardWiseSummaryPageProps {
     params: Promise<{
         zoneId: string;
@@ -10,6 +11,9 @@ interface WardWiseSummaryPageProps {
         workflowStageId?: string;
         pageNumber?: string;
         pageSize?: string;
+        isFilter?: string;
+        propertyDescription?: string;
+        propertyTypeId?: string;
     }>;
 }
 
@@ -17,16 +21,26 @@ export default async function WardWiseSummaryPage({ params, searchParams }: Ward
     const resolvedParams = await params;
     const resolvedSearchParams = await searchParams;
     const { zoneId } = resolvedParams;
-    const { workflowStageId } = resolvedSearchParams;
+    const { workflowStageId, propertyDescription, propertyTypeId } = resolvedSearchParams;
     const pageNumber = resolvedSearchParams.pageNumber ? parseInt(resolvedSearchParams.pageNumber) : 1;
     const pageSize = resolvedSearchParams.pageSize ? parseInt(resolvedSearchParams.pageSize) : 10;
 
-    const summaryResponse = await getWardWiseSummaryAction(zoneId, workflowStageId, pageNumber, pageSize);
+    const isFilterOpen = resolvedSearchParams.isFilter === 'true';
+
+    const [summaryResponse, propertyTypeResult] = await Promise.all([
+        getWardWiseSummaryAction(zoneId, workflowStageId, pageNumber, pageSize, propertyDescription, propertyTypeId),
+        isFilterOpen ? getPropertyTypeMasterAction(1, -1) : Promise.resolve({ success: true, data: null })
+    ]);
+
     const summaryData = summaryResponse.success ? summaryResponse.data : null;
-    
+
     return (
         <>
-            <GeoSequencingWardWiseDashboard zoneId={zoneId} summaryData={summaryData} />
+            <GeoSequencingWardWiseDashboard
+                zoneId={zoneId}
+                summaryData={summaryData}
+                propertyDescriptions={propertyTypeResult?.data ?? []}
+            />
         </>
     );
 }

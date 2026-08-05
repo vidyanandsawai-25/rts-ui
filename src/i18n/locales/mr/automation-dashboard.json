@@ -17,8 +17,8 @@
     "fetchBuildingWiseData": "इमारत-निहाय डेटा आणण्यात अयशस्वी.",
     "fetchPropertyWiseData": "मालमत्ता-निहाय डेटा आणण्यात अयशस्वी.",
     "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील आणण्यात अयशस्वी.",
-     "fetchZones": "झोन डेटा आणण्यात अयशस्वी.",
-     "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी."
+    "fetchZones": "झोन डेटा आणण्यात अयशस्वी.",
+    "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -96,7 +96,10 @@
       "propertyType": "मालमत्ता प्रकार",
       "selectPropertyType": "मालमत्ता प्रकार निवडा",
       "assessmentType": "मूल्यांकन प्रकार",
-      "selectAssessmentType": "मूल्यांकन प्रकार निवडा"
+      "selectAssessmentType": "मूल्यांकन प्रकार निवडा",
+      "Descriptionforproperty": "वर्णन",
+      "CategoryProperty": "श्रेणी",
+      "Filters": "फिल्टर"
     },
     "labels": {
       "na": "N/A",

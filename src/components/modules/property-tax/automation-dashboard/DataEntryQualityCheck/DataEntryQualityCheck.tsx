@@ -8,13 +8,18 @@ import { SearchButton } from '@/components/common';
 import { ExportButton } from '@/components/common/ActionButtons';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { DataEntryGridItems } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
+
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { getDataEntryColumns, getDataEntryHeaderRows } from './DataEntryQualityCheckColumns';
+import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 interface DataEntryQualityCheckProps {
     serverData: DataEntryGridItems | null;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ searchTerm, setSearchTerm, t }: { searchTerm: string, setSearchTerm: (val: string) => void, t: (key: string) => string }) => {
+const TopBar = ({ searchTerm, setSearchTerm, t, propertyDescriptions = [] }: { searchTerm: string, setSearchTerm: (val: string) => void, t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
     return (
         <div className="flex items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-2 flex-1 max-w-xl">
@@ -26,14 +31,15 @@ const TopBar = ({ searchTerm, setSearchTerm, t }: { searchTerm: string, setSearc
                 />
                 <SearchButton />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+                <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
                 <ExportButton />
             </div>
         </div>
     );
 };
 
-const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverData }) => {
+const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverData, propertyDescriptions = [] }) => {
     const locale = useLocale();
     const searchParams = useSearchParams();
     const t = useTranslations('automationDashboard');
@@ -60,7 +66,8 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
                 const actualZoneId = row.zoneId ?? row.division.split(' ')[0];
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/quality-check${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=dataEntryQC&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                const typeIdParam = getPropertyTypeIdParam(columnKey);
+                const query = `?stage=dataEntryQC&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
                 router.push(`${basePath}/property-details-dashboard/${actualZoneId}${query}`);
             }
         );
@@ -170,7 +177,16 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
             data={tableData}
             columns={columns}
             headerRows={headerRows}
-            headerExtra={<TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} t={t} />}
+            headerExtra={
+                <div className="flex items-center gap-2 w-full">
+                    <TopBar 
+                        searchTerm={searchTerm} 
+                        setSearchTerm={setSearchTerm} 
+                        t={t} 
+                        propertyDescriptions={propertyDescriptions}
+                    />
+                </div>
+            }
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
             rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 hover:bg-transparent"}

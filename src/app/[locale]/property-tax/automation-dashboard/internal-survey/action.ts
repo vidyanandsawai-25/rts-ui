@@ -55,11 +55,13 @@ export async function getInternalSurveyWardWiseSummaryAction(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
 ): Promise<ActionResult<InternalSurveyWardWiseItems>> {
     try {
-        logger.info("getInternalSurveyWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize });
-        const data = await automationGetInternalSurveyWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize);
+        logger.info("getInternalSurveyWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId });
+        const data = await automationGetInternalSurveyWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch internal survey ward-wise summary data", { zoneId, workflowStageId, pageNumber, pageSize }, error);

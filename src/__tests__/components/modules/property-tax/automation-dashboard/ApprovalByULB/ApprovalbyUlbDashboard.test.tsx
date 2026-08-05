@@ -20,8 +20,9 @@ vi.mock("next-intl", () => ({
 
 // Mock AutomationTable component to simplify testing
 vi.mock("@/components/common/AutomationTable", () => ({
-  AutomationTable: ({ data }: { data: Array<{ zoneName?: string }> }) => (
+  AutomationTable: ({ data, headerExtra }: { data: Array<{ zoneName?: string }>, headerExtra?: React.ReactNode }) => (
     <div data-testid="automation-table">
+      {headerExtra && <div data-testid="header-extra">{headerExtra}</div>}
       {data.map((row, idx) => (
         <div key={idx} data-testid={`table-row-${idx}`}>
           {row.zoneName}

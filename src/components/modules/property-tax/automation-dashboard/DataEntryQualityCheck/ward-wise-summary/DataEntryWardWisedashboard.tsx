@@ -9,13 +9,17 @@ import { ArrowLeft, Download, MapPin } from 'lucide-react';
 import { DataEntryWardWiseSummaryItems, DataEntryWardData } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
 import { getDataEntryColumns, getDataEntryHeaderRows, DataEntryData } from '../DataEntryQualityCheckColumns';
 import { DataEnteryWardWiseSummaryCards } from './DataEnteryWardWiseSummaryCards';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
 
 interface DataEntryWardWiseDashboardProps {
     zoneId: string;
     summaryData: DataEntryWardWiseSummaryItems | null;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-export default function DataEntryWardWisedashboard({ zoneId, summaryData }: DataEntryWardWiseDashboardProps) {
+export default function DataEntryWardWisedashboard({ zoneId, summaryData, propertyDescriptions = [] }: DataEntryWardWiseDashboardProps) {
     const searchParams = useSearchParams();
     const workflowStageId = searchParams.get('workflowStageId') || '';
     const t = useTranslations('automationDashboard');
@@ -57,7 +61,8 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData }: Data
                 const pathId = row.wardId ? row.wardId : row.wardNo;
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/quality-check/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=dataEntryQC&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                const typeIdParam = getPropertyTypeIdParam(columnKey);
+                const query = `?stage=dataEntryQC&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
                 router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
             }
         );
@@ -119,53 +124,49 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData }: Data
 
         return mappedWards;
     }, [summaryData, t]);
-
-
-
     const handleExport = () => {
         // Implement export logic
         console.log("Export triggered");
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 gap-2 p-4">
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl border border-green-200">
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold !text-blue-700 !bg-white hover:!bg-blue-50 border !border-blue-200 rounded-lg transition-colors shadow-sm"
-                    onClick={handleBack}
-                    icon={ArrowLeft}
-                >
-                    {t('dataEntryQualityCheck.buttons.backToDivisions') || 'Back to Divisions'}
-                </Button>
+        <div className="flex flex-col h-full gap-3 p-3">
+            {/* Custom Page Header */}
+            <div className="flex items-center justify-between bg-[#fcfaff] px-4 py-3 rounded-lg shadow-sm border border-indigo-100/60">
+                <div className="flex-1 flex justify-start">
+                    <Button
+                        variant="ghost"
+                        onClick={handleBack}
+                        icon={ArrowLeft}
+                        className="text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 text-[13px] h-9 px-4 font-semibold"
+                    >
+                        {t('dataEntryQualityCheck.buttons.backToDivisions')}
+                    </Button>
+                </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="bg-green-600 p-2 rounded-lg">
-                        <MapPin className="w-5 h-5 text-white" />
+                <div className="flex-none flex items-center justify-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md">
+                        <MapPin className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-lg">
+                        <h1 className="text-[16px] font-bold text-slate-800">
                             {searchParams.get('zoneNo') ? `${searchParams.get('zoneNo')} - ` : ''}
                             {summaryData?.zoneName ? summaryData.zoneName : ''} - {t('dataEntryQualityCheck.wardWiseSummary') || 'Ward-wise Summary'}
-                        </span>
-                        <div className="flex items-center gap-4 text-xs text-slate-500">
-                            <span>{t('dataEntryQualityCheck.stage') || 'Stage:'} <span className="font-semibold text-slate-700">{t('dataEntryQualityCheck.qualityAnalyst') || 'Quality Analyst'}</span></span>
-                            <span>{t('dataEntryQualityCheck.generatedOn') || 'Generated on:'} {new Date().toLocaleString()}</span>
-                        </div>
+                        </h1>
                     </div>
                 </div>
 
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-black !bg-white hover:!bg-blue-50 border !border-blue-200 rounded-lg transition-colors shadow-sm"
-
-                    onClick={handleExport}
-                    icon={Download}
-                >
-                    {t('dataEntryQualityCheck.buttons.export') || 'Export'}
-                </Button>
+                <div className="flex-1 flex items-center justify-end gap-3">
+                    <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                    <Button
+                        variant="secondary"
+                        onClick={handleExport}
+                        icon={Download}
+                        className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 text-[13px] h-9 px-4 font-semibold"
+                    >
+                        {t('dataEntryQualityCheck.buttons.export') || 'Export'}
+                    </Button>
+                </div>
             </div>
 
             <DataEnteryWardWiseSummaryCards summaryData={summaryData} />

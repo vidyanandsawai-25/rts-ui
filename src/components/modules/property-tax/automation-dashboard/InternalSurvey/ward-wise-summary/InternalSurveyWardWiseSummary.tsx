@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { AutomationTable, Column } from '@/components/common/AutomationTable';
 import { Button } from '@/components/common/ActionButton';
 import { InternalSurveyWardWiseSummaryCards } from './InternalSurveyWardWiseSummaryCards';
+
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import {
     getInternalSurveyColumns,
     getInternalSurveyHeaderRows,
@@ -15,13 +17,16 @@ import {
 } from '../InternalSurveyColumns';
 import { InternalSurveyWardWiseItems, InternalSurveyWardWiseData } from '@/types/automation-dashboard/internal-surveygrid/internal-surveygrid.type';
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
 
 interface InternalSurveyWardWiseSummaryProps {
     zoneId: string;
     summaryData?: InternalSurveyWardWiseItems | null;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWardWiseSummaryProps) => {
+const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptions = [] }: InternalSurveyWardWiseSummaryProps) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const locale = useLocale();
@@ -77,7 +82,8 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
             const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
             const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
             const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
-            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            const typeIdParam = getPropertyTypeIdParam(columnKey);
+            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
@@ -160,15 +166,17 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
         <div className="flex flex-col h-full gap-3 p-3">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#fcfaff] px-4 py-3 rounded-lg shadow-sm border border-purple-100/60">
-                <Link
-                    href={backUrl}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-purple-700 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition-colors shadow-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    {t('internalSurvey.buttons.backToDivisions')}
-                </Link>
+                <div className="flex-1 flex justify-start">
+                    <Link
+                        href={backUrl}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-purple-700 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition-colors shadow-sm"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        {t('internalSurvey.buttons.backToDivisions')}
+                    </Link>
+                </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex-none flex items-center justify-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center shadow-md">
                         <MapPin className="w-6 h-6 text-white" />
                     </div>
@@ -184,9 +192,12 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData }: InternalSurveyWa
                     </div>
                 </div>
 
-                <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
-                    {t('internalSurvey.buttons.export')}
-                </Button>
+                <div className="flex-1 flex items-center justify-end gap-3">
+                    <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                    <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
+                        {t('internalSurvey.buttons.export')}
+                    </Button>
+                </div>
             </div>
 
             {/* Summary Cards */}

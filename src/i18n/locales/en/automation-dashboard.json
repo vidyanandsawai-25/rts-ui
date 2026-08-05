@@ -96,7 +96,10 @@
       "propertyType": "PROPERTY TYPE",
       "selectPropertyType": "Select Property Type",
       "assessmentType": "ASSESSMENT TYPE",
-      "selectAssessmentType": "Select Assessment Type"
+      "selectAssessmentType": "Select Assessment Type",
+      "Descriptionforproperty": "Description",
+      "CategoryProperty" : "Category",
+      "Filters": "Filters"
     },
     "labels": {
       "na": "N/A",

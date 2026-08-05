@@ -254,3 +254,14 @@ export const getGeoSequencingSharedHeaderRows = (t: any, viewType: ViewType): He
 
     return [topRow, bottomRow];
 };
+
+export const getPropertyTypeIdParam = (columnKey: string): string => {
+    switch (columnKey) {
+        case 'propRes': return '&propertyTypeId=1';
+        case 'propNonRes': return '&propertyTypeId=2';
+        case 'propMixed': return '&propertyTypeId=3';
+        case 'propPublic': return '&propertyTypeId=5';
+        case 'propUnder': return '&propertyTypeId=6';
+        default: return '';
+    }
+};

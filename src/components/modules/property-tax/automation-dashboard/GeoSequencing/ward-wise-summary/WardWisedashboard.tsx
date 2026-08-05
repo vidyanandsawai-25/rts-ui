@@ -11,18 +11,22 @@ import { WardWiseSummaryCards } from './WardWiseSummaryCards';
 import {
     getGeoSequencingSharedColumns,
     getGeoSequencingSharedHeaderRows,
+    getPropertyTypeIdParam,
     GeoSequencingData
 } from '../CommonGeoSequencingColumns';
 import { GeoSequencingWardWiseItems, GeoSequencingWard } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { AutomationTable } from '@/components/common/AutomationTable';
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 interface GeoSequencingWardWiseDashboardProps {
     zoneId: string;
     summaryData?: GeoSequencingWardWiseItems | null;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSequencingWardWiseDashboardProps) {
+export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDescriptions = [] }: GeoSequencingWardWiseDashboardProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const locale = useLocale();
@@ -79,7 +83,10 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
             const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
             const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
             const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
-            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            
+            const typeIdParam = getPropertyTypeIdParam(columnKey);
+            
+            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
@@ -154,15 +161,17 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
         <div className="flex flex-col h-full gap-3 p-3">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#f8f9fe] px-4 py-3 rounded-lg shadow-sm border border-indigo-100/60">
-                <Link
-                    href={backUrl}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors shadow-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    {t('geoSequencing.buttons.backToDivisions')}
-                </Link>
+                <div className="flex-1 flex justify-start">
+                    <Link
+                        href={backUrl}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors shadow-sm"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        {t('geoSequencing.buttons.backToDivisions')}
+                    </Link>
+                </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex-none flex items-center justify-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md">
                         <MapPin className="w-6 h-6 text-white" />
                     </div>
@@ -178,9 +187,12 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                     </div>
                 </div>
 
-                <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
-                    {t('geoSequencing.buttons.export')}
-                </Button>
+                <div className="flex-1 flex items-center justify-end gap-3">
+                    <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                    <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
+                        {t('geoSequencing.buttons.export')}
+                    </Button>
+                </div>
             </div>
 
             {/* Summary Cards */}
