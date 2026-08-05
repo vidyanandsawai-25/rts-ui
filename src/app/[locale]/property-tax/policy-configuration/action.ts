@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import {
   updatePolicyConfiguration,
-  deletePolicyConfiguration,
   getPolicyConfigurationsPagedServer,
   getPolicyConfigurationById,
   ApiError,
@@ -31,20 +30,6 @@ export async function getPolicyConfigurationByIdAction(
   id: string | number
 ): Promise<PolicyConfiguration> {
   return await getPolicyConfigurationById(id);
-}
-
-/** Server action to delete a Policy Configuration */
-export async function deletePolicyConfigurationAction(formData: FormData) {
-  const locale = validateRequiredStringFromFormData(formData, "locale");
-  const idRaw = validateRequiredStringFromFormData(formData, "id");
-
-  const id = Number(idRaw);
-  if (!Number.isFinite(id) || id <= 0) {
-    throw new Error("Invalid id: must be a positive number");
-  }
-
-  await deletePolicyConfiguration(id);
-  revalidatePath(`/${locale}/property-tax/policy-configuration`);
 }
 
 /** Server action to save (create or update) a Policy Configuration */

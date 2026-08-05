@@ -79,16 +79,3 @@ export async function updatePolicyConfiguration(data: PolicyConfigurationFormMod
     );
   }
 }
-
-/** DELETE */
-export async function deletePolicyConfiguration(id: string | number): Promise<void> {
-  const response = await apiClient.delete<void>(`/PolicyConfiguration/${id}`);
-
-  if (!response.success) {
-    throw new ApiError(
-      response.statusCode || 500,
-      "",
-      response.error || `Delete policy configuration ${id} failed`
-    );
-  }
-}

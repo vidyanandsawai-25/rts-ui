@@ -5,8 +5,7 @@
       "subtitle": "Manage system configurations and policy values",
       "buttons": {
         "add": "Add Policy",
-        "edit": "Edit",
-        "delete": "Delete"
+        "edit": "Edit"
       },
       "filters": {
         "show": "Show",
@@ -109,10 +108,6 @@
          "error": "Unable to save policy configuration. Please try again.",
         "invalidIdError": "Invalid ID format. ID must be a positive number."
       }
-    },
-    "delete": {
-      "success": "Policy Configuration deleted successfully",
-      "error": "Cannot delete policy configuration because it is in use"
     },
     "error": {
       "title": "Policy Configuration Error",

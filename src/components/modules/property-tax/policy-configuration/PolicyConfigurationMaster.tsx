@@ -2,12 +2,9 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import type { PolicyConfiguration, PolicyConfigurationMasterProps } from "@/types/policy-configuration.types";
-import { deletePolicyConfigurationAction } from "@/app/[locale]/property-tax/policy-configuration/action";
-import { useConfirm } from "@/components/common/ConfirmProvider";
-import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
+import { EditButton } from "@/components/common/ActionButtons";
 import { useTranslations, useLocale } from "next-intl";
 import { getPolicyConfigurationColumns } from "./PolicyConfigurationColumn";
 import { PageContainer, SearchInput } from "@/components/common";
@@ -23,7 +20,6 @@ export default function PolicyConfigurationMaster({
   search = "",
 }: PolicyConfigurationMasterProps) {
   const router = useRouter();
-  const { confirm } = useConfirm();
 
   const t = useTranslations("policyConfiguration");
   const tCommon = useTranslations("common");
@@ -100,31 +96,6 @@ export default function PolicyConfigurationMaster({
     router.push(url);
   };
 
-  const handleDelete = (row: PolicyConfiguration) => {
-    confirm({
-      variant: "delete",
-      meta: {
-        name: row.displayName,
-      },
-      onConfirm: async () => {
-        try {
-          const fd = new FormData();
-          fd.append("id", String(row.id));
-          fd.append("locale", locale);
-          await deletePolicyConfigurationAction(fd);
-
-          toast.success(t("delete.success"));
-
-          router.refresh();
-        }
-        catch (error) {
-          toast.error(t("delete.error"));
-          console.error(error);
-        }
-      },
-    });
-  };
-
   return (
     <PageContainer>
       <div className="space-y-6">
@@ -157,15 +128,12 @@ export default function PolicyConfigurationMaster({
           paginationConfig={{ enabled: true, showPageSizeSelector: true }}
           
           renderActions={(row) => (
-            <>
-              <EditButton
-                aria-label={tCommon("table.actions.edit")}
-                onClick={() =>
-                  router.push(`${base}/edit/${row.id}`)
-                }
-              />
-              <DeleteButton aria-label={tCommon("table.actions.delete")} onClick={() => handleDelete(row)} />
-            </>
+            <EditButton
+              aria-label={tCommon("table.actions.edit")}
+              onClick={() =>
+                router.push(`${base}/edit/${row.id}`)
+              }
+            />
           )}
           actionLabel={t("list.table.actions")}
           getRowKey={(row) => row.id}

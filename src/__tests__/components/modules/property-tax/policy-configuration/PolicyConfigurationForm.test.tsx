@@ -30,8 +30,8 @@ vi.mock("@/components/common/Drawer", () => ({
           child.type === 'form'
         ) {
           const childElement = child as React.ReactElement<{ id?: string }>;
-          return React.cloneElement(childElement, { 
-            ...childElement.props, 
+          return React.cloneElement(childElement, {
+            ...childElement.props,
             ...({ 'data-testid': 'form' } as React.HTMLAttributes<HTMLFormElement>)
           });
         }
@@ -53,11 +53,11 @@ vi.mock("@/components/common", () => ({
   CancelButton: ({ label, fullWidth: _fullWidth, isLoading: _isLoading, ...rest }: { label: string; fullWidth?: boolean; isLoading?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...rest}>{label}</button>,
   SaveButton: ({ label, fullWidth: _fullWidth, isLoading: _isLoading, ...rest }: { label: string; fullWidth?: boolean; isLoading?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...rest}>{label}</button>,
   ToggleSwitch: ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
-    <input 
-      type="checkbox" 
-      checked={checked} 
-      onChange={onChange} 
-      data-testid="status-toggle" 
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      data-testid="status-toggle"
       aria-label="Toggle status"
     />
   ),
@@ -136,20 +136,26 @@ describe("PolicyConfigurationForm", () => {
       isActive: true,
       allowedValues: null,
     };
-    
+
     render(<PolicyConfigurationForm initialData={initialData} />);
-    
-    // Verify data is loaded
+
+    // Verify data is loaded and read-only/disabled in edit mode
+    expect(screen.getByTestId("policyCode")).toBeDisabled();
+    expect(screen.getByTestId("category")).toBeDisabled();
+    expect(screen.getByTestId("displayName")).toBeDisabled();
+    expect(screen.getByTestId("description")).toBeDisabled();
+    expect(screen.getByTestId("defaultValue")).toBeDisabled();
+
     expect(screen.getByTestId("policyCode")).toHaveValue("PT_RATE_EXISTING");
     expect(screen.getByTestId("displayName")).toHaveValue("Existing Rate");
-    
-    // Change a field
-    fireEvent.change(screen.getByTestId("displayName"), { target: { value: "Updated Rate" } });
-    fireEvent.blur(screen.getByTestId("displayName"));
-    
+
+    // Change an editable field (policyValue)
+    fireEvent.change(screen.getByTestId("policyValue"), { target: { value: "20" } });
+    fireEvent.blur(screen.getByTestId("policyValue"));
+
     // Submit
     fireEvent.submit(screen.getByTestId("form"));
-    
+
     await waitFor(() => {
       expect(mockSavePolicy).toHaveBeenCalled();
       expect(mockRouterPush).toHaveBeenCalled();
@@ -175,7 +181,7 @@ describe("PolicyConfigurationForm", () => {
     };
     render(<PolicyConfigurationForm initialData={emptyData} />);
     fireEvent.submit(screen.getByTestId("form"));
-    
+
     expect(mockSavePolicy).not.toHaveBeenCalled();
   });
 
@@ -195,7 +201,7 @@ describe("PolicyConfigurationForm", () => {
       isActive: true,
       allowedValues: null,
     };
-    
+
     render(<PolicyConfigurationForm initialData={initialData} />);
     const toggle = screen.getByTestId("status-toggle");
     expect(toggle).toBeChecked();
@@ -224,7 +230,7 @@ describe("PolicyConfigurationForm", () => {
     fireEvent.click(cancelBtn);
     expect(mockRouterPush).not.toHaveBeenCalled(); // Goes back, which is window history based in this component
   });
-  it("maps legacy BIT value '1' and '0' to allowed values when allowedValues is present", () => {
+  it("returns raw backend values for policyValue and defaultValue as-is", () => {
     const initialData = {
       id: 1,
       policyCode: "TEST_BIT",
@@ -232,17 +238,17 @@ describe("PolicyConfigurationForm", () => {
       displayName: "Test Bit Policy",
       description: "Test",
       dataType: "BIT",
-      policyValue: "1",
-      defaultValue: "0",
+      policyValue: "Enable",
+      defaultValue: "Disable",
       unit: "",
       effectiveFrom: "2026-06-03T00:00:00Z",
       effectiveTo: null,
       isActive: true,
       allowedValues: "Enable, Disable",
     };
-    
+
     render(<PolicyConfigurationForm initialData={initialData} />);
-    
+
     expect(screen.getByTestId("policyValue")).toHaveValue("Enable");
     expect(screen.getByTestId("defaultValue")).toHaveValue("Disable");
   });
@@ -263,14 +269,14 @@ describe("PolicyConfigurationForm", () => {
       isActive: true,
       allowedValues: "Option1, Option2",
     };
-    
+
     render(<PolicyConfigurationForm initialData={initialData} />);
-    
+
     expect(screen.getByTestId("policyValue")).toHaveValue("Option2");
     expect(screen.getByTestId("defaultValue")).toHaveValue("Option1");
   });
 
-  it("falls back to the first option if the value is neither in allowedValues nor a legacy BIT value", () => {
+  it("preserves dynamic policyValue and defaultValue when present in allowedValues", () => {
     const initialData = {
       id: 3,
       policyCode: "TEST_BIT",
@@ -284,12 +290,36 @@ describe("PolicyConfigurationForm", () => {
       effectiveFrom: "2026-06-03T00:00:00Z",
       effectiveTo: null,
       isActive: true,
-      allowedValues: "OptionA, OptionB",
+      allowedValues: "RandomValue, AnotherRandom",
     };
-    
+
     render(<PolicyConfigurationForm initialData={initialData} />);
-    
-    expect(screen.getByTestId("policyValue")).toHaveValue("OptionA");
-    expect(screen.getByTestId("defaultValue")).toHaveValue("OptionA");
+
+    expect(screen.getByTestId("policyValue")).toHaveValue("RandomValue");
+    expect(screen.getByTestId("defaultValue")).toHaveValue("AnotherRandom");
+  });
+
+  it("displays category dynamically as read-only input field in edit form without transform", () => {
+    const initialData = {
+      id: 4,
+      policyCode: "TEST_CAT",
+      category: "General",
+      displayName: "Test Category Policy",
+      description: "Test",
+      dataType: "VARCHAR",
+      policyValue: "2026",
+      defaultValue: "2026",
+      unit: "",
+      effectiveFrom: "2026-06-03T00:00:00Z",
+      effectiveTo: null,
+      isActive: true,
+      allowedValues: null,
+    };
+
+    render(<PolicyConfigurationForm initialData={initialData} />);
+
+    const catInput = screen.getByTestId("category");
+    expect(catInput).toBeDisabled();
+    expect(catInput).toHaveValue("General");
   });
 });
