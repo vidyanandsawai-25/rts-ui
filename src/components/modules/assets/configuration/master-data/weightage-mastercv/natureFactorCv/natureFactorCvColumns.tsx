@@ -88,10 +88,10 @@ export const getNatureFactorCvColumns = ({
   constructionTypeOptions = [],
   assessmentYearOptions = [],
 }: GetNatureFactorCvColumnsProps): Column<NatureFactorCVMasterType>[] => {
-  // Sortable columns — API requires fields: ConstructionTypeId, YearRangeCVId, IsActive
+  // Sortable columns — API requires fields: ConstructionTypeId, ConstructionDescription, YearRangeCVId
   const sortableColumns: Record<string, string> = {
     constructionCode: "ConstructionTypeId",
-    constructionDescription: "ConstructionTypeId",
+    constructionDescription: "ConstructionDescription",
     fromYear: "YearRangeCVId",
   };
 

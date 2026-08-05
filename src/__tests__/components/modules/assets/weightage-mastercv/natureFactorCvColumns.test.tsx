@@ -213,4 +213,33 @@ describe('getNatureFactorCvColumns', () => {
     
     expect(mockHandleCellChange).toHaveBeenCalled();
   });
+
+  it('renders SortableHeader with correct columnKeys when onSort is provided', () => {
+    const mockOnSort = vi.fn();
+    const columns = getNatureFactorCvColumns({
+      t: mockT,
+      tW: mockTW,
+      tCommon: mockTCommon,
+      editableRows: mockEditableRows,
+      handleCellChange: mockHandleCellChange,
+      getRowUid: mockGetRowUid,
+      onSort: mockOnSort,
+      sortBy: 'ConstructionDescription',
+      sortOrder: 'asc',
+    });
+
+    const { container: codeContainer } = render(<>{columns[0].label}</>);
+    const codeBtn = codeContainer.querySelector('button');
+    expect(codeBtn).toBeInTheDocument();
+    fireEvent.click(codeBtn!);
+    expect(mockOnSort).toHaveBeenCalledWith('ConstructionTypeId');
+
+    mockOnSort.mockClear();
+
+    const { container: descContainer } = render(<>{columns[1].label}</>);
+    const descBtn = descContainer.querySelector('button');
+    expect(descBtn).toBeInTheDocument();
+    fireEvent.click(descBtn!);
+    expect(mockOnSort).toHaveBeenCalledWith('ConstructionDescription');
+  });
 });

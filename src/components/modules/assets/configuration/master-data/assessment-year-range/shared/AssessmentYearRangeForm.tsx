@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { CalendarRange } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common";
@@ -52,6 +53,21 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
     updateAction,
   });
 
+  const statusToggleRef = useRef<HTMLButtonElement>(null);
+  const fromYearRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const timeoutId = setTimeout(() => {
+      if (isEdit && statusToggleRef.current) {
+        statusToggleRef.current.focus();
+      } else if (!isEdit && fromYearRef.current) {
+        fromYearRef.current.focus();
+      }
+    }, 150);
+    return () => clearTimeout(timeoutId);
+  }, [open, isEdit]);
+
   return (
     <Drawer
       open={open}
@@ -90,6 +106,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
     >
       <form id="assessment-year-range-form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
         <StatusToggleSection
+          statusToggleRef={statusToggleRef}
           isEdit={isEdit}
           isActive={isActive}
           handleToggleStatus={handleToggleStatus}
@@ -99,6 +116,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
         />
 
         <FormFieldsSection
+          fromYearRef={fromYearRef}
           fromYearValue={fromYearValue}
           toYearValue={toYearValue}
           handleYearChange={handleYearChange}

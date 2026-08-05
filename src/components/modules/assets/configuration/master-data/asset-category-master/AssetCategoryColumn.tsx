@@ -91,7 +91,7 @@ export function getAssetCategoryColumns(
   return [
     {
       key: "categoryCode",
-      width: "18%",
+      width: "15%",
       label: createSortableLabel(t("labels.code"), "categoryCode"),
       render: (_, r) => (
         <Badge variant="secondary" size="sm">
@@ -101,7 +101,7 @@ export function getAssetCategoryColumns(
     },
     {
       key: "categoryName",
-      width: "48%",
+      width: "40%",
       label: createSortableLabel(t("labels.name"), "categoryName"),
       render: (_, r) => (
         <div>
@@ -113,8 +113,18 @@ export function getAssetCategoryColumns(
       ),
     },
     {
+      key: "valuationType",
+      width: "20%",
+      label: t("labels.valuationType"),
+      render: (_, r) => (
+        <span className="text-sm text-slate-700 font-medium">
+          {String(r.valuationType || "-")}
+        </span>
+      ),
+    },
+    {
       key: "status",
-      width: "18%",
+      width: "15%",
       label: t("labels.status"),
       isStatus: true,
       render: (_, r) => <StatusBadge value={r.status as string} />,

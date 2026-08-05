@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { LayoutGrid, CheckCircle2, X } from "lucide-react";
 
@@ -25,6 +25,21 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
   const t = useTranslations("ownershipType");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+
+  const statusToggleRef = useRef<HTMLButtonElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const timeoutId = setTimeout(() => {
+      if (isEdit && statusToggleRef.current) {
+        statusToggleRef.current.focus();
+      } else if (!isEdit && nameRef.current) {
+        nameRef.current.focus();
+      }
+    }, 150);
+    return () => clearTimeout(timeoutId);
+  }, [open, isEdit]);
 
   const [formData, setFormData] = useState<OwnershipTypeFormModel>(
     initialData ?? {
@@ -157,6 +172,7 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
               </div>
 
               <ToggleSwitch
+                ref={statusToggleRef}
                 checked={formData.isActive}
                 onChange={handleToggleStatus}
                 showPopup={false}
@@ -171,6 +187,7 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
         )}
 
         <FormFieldsSection
+          nameRef={nameRef}
           formData={formData}
           errors={errors}
           showError={showError}

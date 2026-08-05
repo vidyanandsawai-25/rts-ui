@@ -5,6 +5,7 @@ import { TextArea } from "@/components/common/Textarea";
 import type { OwnershipTypeFormFieldsSectionProps } from "@/types/asset-masters/ownership-type.types";
 
 export function FormFieldsSection({
+  nameRef,
   formData,
   errors,
   showError,
@@ -15,6 +16,7 @@ export function FormFieldsSection({
   return (
     <div className="space-y-6">
       <Input
+        ref={nameRef}
         name="ownershipTypeName"
         label={t("configuration.masterData.form.labels.name")}
         required
