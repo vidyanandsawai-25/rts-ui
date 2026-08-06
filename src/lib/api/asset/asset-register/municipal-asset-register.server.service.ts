@@ -39,6 +39,7 @@ export type AssetRegisterSubUnitItem = {
   carpetAreaSqMeter?: number | null;
   capitalValue?: number | null;
   lastCVDate?: string | null;
+  assetLife?: number | null;
   names?: {
     category?: string | null;
     type?: string | null;

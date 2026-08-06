@@ -39,6 +39,9 @@ vi.mock('@/components/common', () => ({
     </div>
   ),
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  Badge: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+  Tooltip: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  SortableColumnHeader: ({ label, ...props }: any) => <div {...props}>{label}</div>,
 }));
 
 import { AssetRegisterTable } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterTable';

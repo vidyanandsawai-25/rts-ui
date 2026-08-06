@@ -1,11 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Eye, PencilLine, Printer, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
-import { Badge, Button, Tooltip, type Column } from '@/components/common';
+import { Eye, PencilLine, Printer, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { Badge, Button, Tooltip, SortableColumnHeader, type Column } from '@/components/common';
 import { IconOnlyActionButton } from '@/components/common/ActionButtons';
 import type { AssetRegisterRow } from '@/types/asset/asset-register/municipal-asset-register.types';
 import { formatIndianCurrencyAbbreviated } from '@/lib/utils/asset-utils/currency-format';
+import { cn } from '@/lib/utils/cn';
 
 export function renderTruncatedText(value?: string) {
   const text = value || '-';
@@ -46,7 +47,9 @@ export function getRegisterColumns(
   loadingSubunits?: Record<number, boolean>,
   onToggleExpand?: (row: AssetRegisterRow) => void
 ): Column<AssetRegisterRow>[] {
-  const sortIcon = (column: keyof AssetRegisterRow) => {
+  const sortableHeader = (label: string, column: keyof AssetRegisterRow, alignCenter = true) => {
+    if (!onSort) return label;
+
     const backendKeys: Record<string, string> = {
       assetCode: 'AssetNo',
       assetName: 'AssetName',
@@ -57,25 +60,20 @@ export function getRegisterColumns(
       lifeYears: 'AssetLife',
     };
     const activeSortKey = backendKeys[column];
-    if (sortBy !== activeSortKey) return <ArrowUpDown className="w-3.5 h-3.5 opacity-80" />;
-    return sortOrder === 'asc' ? (
-      <ArrowUp className="w-3.5 h-3.5 opacity-90 text-white" />
-    ) : (
-      <ArrowDown className="w-3.5 h-3.5 opacity-90 text-white" />
-    );
-  };
+    const isCurrent = sortBy === activeSortKey;
+    const sortDirection = isCurrent ? sortOrder : null;
 
-  const sortableHeader = (label: string, column: keyof AssetRegisterRow, alignCenter = true) => {
-    if (!onSort) return label;
     return (
-      <button
-        type="button"
-        onClick={() => onSort(column)}
-        className={`inline-flex items-center gap-1.5 w-full text-slate-100 hover:text-white font-semibold transition-colors focus:outline-none ${alignCenter ? 'justify-center' : ''}`}
-      >
-        <span>{label}</span>
-        {sortIcon(column)}
-      </button>
+      <SortableColumnHeader
+        label={label}
+        sortDirection={sortDirection}
+        onSort={() => onSort(column)}
+        size='md'
+        className={cn(
+          '!bg-transparent !border-none !p-0 w-full text-slate-100 hover:text-white font-semibold transition-colors focus:ring-0 [&_svg]:!text-slate-100/80 hover:[&_svg]:!text-white [&_svg]:transition-colors',
+          alignCenter ? 'justify-center' : 'justify-start'
+        )}
+      />
     );
   };
 
@@ -99,22 +97,20 @@ export function getRegisterColumns(
               <span className="text-slate-400 font-normal mr-1 text-xs select-none pl-2">{'↳'}</span>
             )}
             {!row.isSubUnit && row.id && onToggleExpand && hasSubUnits ? (
-              <button
-                type="button"
+              <IconOnlyActionButton
+                icon={isLoading ? Loader2 : isExpanded ? ChevronDown : ChevronRight}
+                aria-label={isExpanded ? "Collapse" : "Expand"}
+                variant="secondary"
+                size="xs"
+                className={cn(
+                  "!h-5 !w-5 !p-0 !rounded-full bg-slate-50 hover:bg-blue-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-all duration-200 focus:outline-none shadow-sm flex items-center justify-center [&_svg]:!h-3.5 [&_svg]:!w-3.5 [&_svg]:!stroke-[2.5]",
+                  isLoading && "[&_svg]:animate-spin [&_svg]:!text-blue-500"
+                )}
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleExpand(row);
                 }}
-                className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-50 hover:bg-blue-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-all duration-200 focus:outline-none shadow-sm"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
-                ) : isExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                )}
-              </button>
+              />
             ) : (
               !row.isSubUnit && <div className="w-5" />
             )}

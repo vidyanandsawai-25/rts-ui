@@ -332,6 +332,7 @@ describe('registerMappers', () => {
         names: { category: 'Building', type: 'Office', ward: 'W2', zone: 'Z2' },
         occupancy: 'Occupied',
         status: 'Good',
+        assetLife: 10,
       } as never,
       {
         id: 10,
@@ -357,5 +358,6 @@ describe('registerMappers', () => {
     expect(row.isSubUnit).toBe(true);
     expect(row.parentId).toBe(10);
     expect(row.assetCode).toBe('SUB-5');
+    expect(row.lifeYears).toBe('10');
   });
 });
