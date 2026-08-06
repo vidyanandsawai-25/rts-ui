@@ -5,7 +5,6 @@ import { Button } from '@/components/common';
 import { Images, X, Plus } from 'lucide-react';
 import { ImageHoverPreview } from './ImageHoverPreview';
 import { MediaImageCard, AdditionalImagesGrid } from './MediaImageCards';
-import { GisMapCard } from './GisMapCard';
 import { ChangeDetectionCard } from './ChangeDetectionCard';
 import type { PhotoCategory } from './PhotoPlanSidebar';
 import type { AdditionalImage } from './MediaImageCards';
@@ -36,9 +35,8 @@ interface PropertyMediaPanelContentProps {
   photoPlanPhoto?: AdditionalImage;
   photoPlanCategory?: PhotoCategory;
   handleCreateClick: (e: React.MouseEvent) => void;
-  gisPhoto: AdditionalImage;
-  gisCategory?: PhotoCategory;
-  hasCoords: boolean;
+  signaturePhoto?: AdditionalImage;
+  signatureCategory?: PhotoCategory;
   cdBeforeImg: string;
   cdAfterImg: string;
   cdBeforeLabel: string;
@@ -64,9 +62,8 @@ export function PropertyMediaPanelContent({
   photoPlanPhoto,
   photoPlanCategory,
   handleCreateClick,
-  gisPhoto,
-  gisCategory,
-  hasCoords,
+  signaturePhoto,
+  signatureCategory,
   cdBeforeImg,
   cdAfterImg,
   cdBeforeLabel,
@@ -103,6 +100,7 @@ export function PropertyMediaPanelContent({
           onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
           onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || t('media.propertyPhoto'))}
           onMouseLeave={handleImageLeave}
+          hasPhoto={propertyPhoto?.hasPhoto}
         >
           {remainingImages.length > 0 && (
             <Button
@@ -147,6 +145,7 @@ export function PropertyMediaPanelContent({
           onClick={() => openDrawer(photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0, 0)}
           onMouseEnter={() => handleImageHover(photoPlanPhoto?.fullSrc || photoPlanPhoto?.src || '', photoPlanPhoto?.title || t('media.photoPlan'))}
           onMouseLeave={handleImageLeave}
+          hasPhoto={photoPlanPhoto?.hasPhoto}
         >
           <Button
             variant="edit"
@@ -160,12 +159,20 @@ export function PropertyMediaPanelContent({
         </MediaImageCard>
 
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
-        <GisMapCard
-          image={gisPhoto}
-          hasCoords={hasCoords}
-          onClick={() => openDrawer(gisCategory ? categories.indexOf(gisCategory) : 0, 0)}
-          onMouseEnter={() => handleImageHover(gisPhoto?.fullSrc || gisPhoto?.src || '', gisPhoto?.title || t('media.satelliteView'))}
+        <MediaImageCard
+          src={signaturePhoto?.src || ''}
+          documentGuid={signaturePhoto?.documentGuid}
+          fullSrc={signaturePhoto?.fullSrc || ''}
+          alt={signaturePhoto?.alt || t('media.ownerSignaturePhoto') || 'Owner Signature Photo'}
+          label={signaturePhoto?.title || t('media.ownerSignaturePhoto') || 'Owner Signature Photo'}
+          hoverBorderColor="hover:border-green-500"
+          onClick={() => {
+            const idx = signatureCategory ? categories.indexOf(signatureCategory) : -1;
+            if (idx !== -1) openDrawer(idx, 0);
+          }}
+          onMouseEnter={() => handleImageHover(signaturePhoto?.fullSrc || signaturePhoto?.src || '', signaturePhoto?.title || t('media.ownerSignaturePhoto') || 'Owner Signature Photo')}
           onMouseLeave={handleImageLeave}
+          hasPhoto={signaturePhoto?.hasPhoto}
         />
 
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />

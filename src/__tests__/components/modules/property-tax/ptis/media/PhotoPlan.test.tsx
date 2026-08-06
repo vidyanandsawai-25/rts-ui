@@ -652,8 +652,6 @@ describe('PhotoPlan Section - Complete Tests', () => {
       // 3. Verify name validation with Devanagari character (Hindi/Marathi name input)
       const nameInput = screen.getByLabelText(/media.photoPlanName/i);
       fireEvent.change(nameInput, { target: { value: 'मुख्य प्रवेशद्वार' } });
-      const displayOrderInput = screen.getByLabelText(/media.displayOrder/i);
-      fireEvent.change(displayOrderInput, { target: { value: '2' } });
 
       // 4. Verify validation error on invalid file type (e.g. text file)
       const invalidFile = new File(['text'], 'test.txt', { type: 'text/plain' });
@@ -668,27 +666,29 @@ describe('PhotoPlan Section - Complete Tests', () => {
 
       expect(screen.getByText('Only JPEG, JPG, and PNG images are allowed')).toBeInTheDocument();
 
-      // 5. Verify validation error on oversized file (e.g. > 5MB)
-      const largeFile = new File(['large_image_content'], 'oversized.png', { type: 'image/png' });
-      Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // Mock 6 MB file
-
-      fireEvent.change(fileInput, { target: { files: [largeFile] } });
-      fireEvent.click(saveBtn);
-
-      expect(screen.getByText('File size should not exceed 5 MB')).toBeInTheDocument();
-
-      // 6. Verify successful submit with valid file, remarks, and Devanagari name
-      const validFile = new File(['image_content'], 'photo.png', { type: 'image/png' });
-      fireEvent.change(fileInput, { target: { files: [validFile] } });
-
-      const remarksInput = screen.getByPlaceholderText('media.remarksPlaceholder');
+       // 5. Verify validation error on oversized file (e.g. > 5MB) and that the edit button is hidden
+       const largeFile = new File(['large_image_content'], 'oversized.png', { type: 'image/png' });
+       Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // Mock 6 MB file
+ 
+       fireEvent.change(fileInput, { target: { files: [largeFile] } });
+       expect(screen.queryByRole('button', { name: 'media.editImage' })).not.toBeInTheDocument();
+       fireEvent.click(saveBtn);
+ 
+       expect(screen.getByText('File size should not exceed 5 MB')).toBeInTheDocument();
+ 
+       // 6. Verify successful submit with valid file, remarks, and Devanagari name
+       const validFile = new File(['image_content'], 'photo.png', { type: 'image/png' });
+       fireEvent.change(fileInput, { target: { files: [validFile] } });
+       expect(screen.getByRole('button', { name: 'media.editImage' })).toBeInTheDocument();
+ 
+       const remarksInput = screen.getByPlaceholderText('media.remarksPlaceholder');
       fireEvent.change(remarksInput, { target: { value: 'Valid remarks' } });
 
       fireEvent.click(saveBtn);
 
       expect(onSubmit).toHaveBeenCalledWith(
         'मुख्य प्रवेशद्वार',
-        2,
+        1,
         1,
         validFile,
         'Valid remarks'

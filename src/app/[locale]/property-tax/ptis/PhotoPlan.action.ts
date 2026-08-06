@@ -87,9 +87,10 @@ export async function uploadPropertyPhotoAction(
     const propertyId = Number(formData.get('PropertyId'));
     const photoTypeId = Number(formData.get('PhotoTypeId'));
     const propertyPhotoId = Number(formData.get('PropertyPhotoId') || '0');
-    const referenceTableIdGuid = formData.get('ReferenceTableIdGuid') as string | null;
     const remarks = String(formData.get('Remarks') || '');
     const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
+
+    const displayOrder = Number(formData.get('DisplayOrder') || '1');
 
     if (!file || file.size === 0) {
       return { success: false, error: t('media.fileRequired') || 'File is required' };
@@ -106,7 +107,7 @@ export async function uploadPropertyPhotoAction(
       propertyId,
       photoTypeId,
       propertyPhotoId,
-      referenceTableIdGuid || undefined,
+      displayOrder,
       remarks,
       photoTypeCode || undefined
     );
@@ -136,6 +137,7 @@ export async function replacePropertyPhotoAction(
     const photoTypeId = Number(formData.get('PhotoTypeId'));
     const referenceTableIdGuid = formData.get('ReferenceTableIdGuid') as string | null;
     const remarks = String(formData.get('Remarks') || '');
+    const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
 
     if (!propertyPhotoId || isNaN(propertyPhotoId)) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
@@ -151,7 +153,8 @@ export async function replacePropertyPhotoAction(
       photoTypeId,
       propertyPhotoId,
       referenceTableIdGuid || undefined,
-      remarks
+      remarks,
+      photoTypeCode || undefined
     );
 
     if (result.success && result.data) {

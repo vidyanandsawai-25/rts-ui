@@ -177,6 +177,13 @@ export function usePropertyMedia({
     };
   }, [gisCategory, t, hasCoords, initialLatitude, initialLongitude, initialWaybackReleases]);
 
+  const signatureCategory = useMemo(
+    () => findCategory(categories, ['SIGNATURE', 'OWNER_SIGNATURE'], ['signature', 'owner signature']),
+    [categories]
+  );
+
+  const signaturePhoto = signatureCategory?.images?.[0];
+
   const photoPlanPhoto = photoPlanCategory?.images && photoPlanCategory.images.length > 0
     ? photoPlanCategory.images[photoPlanCategory.images.length - 1]
     : undefined;
@@ -186,7 +193,7 @@ export function usePropertyMedia({
     const all = categories.flatMap((c) => c.images);
     return all.filter((img) => {
       const code = img.photoTypeCode?.toUpperCase() || '';
-      if (code === 'FLOOR' || code === 'GIS' || code === 'CHANGE_DETECTION') return false;
+      if (code === 'FLOOR' || code === 'GIS' || code === 'CHANGE_DETECTION' || code.includes('SIGNATURE')) return false;
       if (propertyPhoto && img.propertyPhotoId === propertyPhoto.propertyPhotoId) return false;
       if (photoPlanPhoto && img.propertyPhotoId === photoPlanPhoto.propertyPhotoId) return false;
       return true;
@@ -216,6 +223,8 @@ export function usePropertyMedia({
     handleImageLeave,
     cancelImageLeave,
     resetHoverPreview,
+    signatureCategory,
+    signaturePhoto,
     t,
   };
 }

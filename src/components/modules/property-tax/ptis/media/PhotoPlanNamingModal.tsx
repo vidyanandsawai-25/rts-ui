@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { UploadCloud, FileImage, X, Loader2 } from 'lucide-react';
 import { Input, Button, Select, Drawer } from '@/components/common';
 import { photoPlanNamingSchema, validatePhotoFile } from '@/lib/validation/ptis/photo-plan-validation';
 import { UploadInstructions } from './UploadInstructions';
@@ -28,16 +30,35 @@ export function PhotoPlanNamingModal({
   open, onClose, onSubmit, availableTypes, defaultDisplayOrder,
   defaultName = '', isReplacement = false, defaultPhotoTypeId,
   isEdit = false, defaultRemarks = '', isLoading = false,
-  photoTypeCode = '',
+  photoTypeCode: _photoTypeCode = '',
 }: PhotoPlanNamingModalProps): React.ReactElement {
   const t = useTranslations('ptis');
   const [name, setName] = useState(defaultName);
-  const [displayOrder, setDisplayOrder] = useState(String(defaultDisplayOrder));
+  const displayOrder = String(defaultDisplayOrder);
   const [photoTypeId, setPhotoTypeId] = useState(defaultPhotoTypeId ? String(defaultPhotoTypeId) : '');
   const [remarks, setRemarks] = useState(defaultRemarks);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [editImageSrc, setEditImageSrc] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isLoading) {
+      setUploadProgress(8);
+      const timer = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 94) return prev;
+          const inc = Math.floor(Math.random() * 12) + 6;
+          return Math.min(prev + inc, 94);
+        });
+      }, 180);
+      return () => clearInterval(timer);
+    } else {
+      setUploadProgress(0);
+    }
+  }, [isLoading]);
 
   const handleTypeChange = (value: string) => {
     setPhotoTypeId(value);
@@ -49,6 +70,44 @@ export function PhotoPlanNamingModal({
   const getMsg = (key: string) => {
     const msg = t(key as Parameters<typeof t>[0]);
     return msg === key ? (FALLBACKS[key] || key) : msg;
+  };
+
+  const updateSelectedFileWithValidation = (file: File | null) => {
+    setSelectedFile(file);
+    const fileErrKey = validatePhotoFile(file);
+    if (fileErrKey && (!isEdit || file)) {
+      setErrors((prev) => ({ ...prev, file: getMsg(fileErrKey) }));
+    } else {
+      setErrors(({ file: _, ...next }) => next);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isLoading) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (isLoading) return;
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      updateSelectedFileWithValidation(droppedFile);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    updateSelectedFileWithValidation(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,7 +124,7 @@ export function PhotoPlanNamingModal({
         if (typeof path === 'string') newErrors[path] = getMsg(err.message);
       });
     }
-    if (!isEdit) {
+    if (!isEdit || selectedFile) {
       const fileErrorKey = validatePhotoFile(selectedFile);
       if (fileErrorKey) newErrors.file = getMsg(fileErrorKey);
     }
@@ -76,7 +135,10 @@ export function PhotoPlanNamingModal({
     onSubmit(name.trim(), orderNum, Number(photoTypeId || '0'), selectedFile || undefined, remarks.trim());
   };
 
-  const isSaveDisabled = isLoading || !name.trim() || !displayOrder.trim() || (!isEdit && (!photoTypeId || !selectedFile));
+  const fileValidationErrKey = selectedFile ? validatePhotoFile(selectedFile) : null;
+  const isFileRequiredMissing = !isEdit && !selectedFile;
+  const isFileInvalid = isFileRequiredMissing || !!fileValidationErrKey;
+  const isSaveDisabled = isLoading || !name.trim() || !displayOrder.trim() || (!isEdit && !photoTypeId) || isFileInvalid || Object.keys(errors).length > 0;
   const selectedPhotoTypeName = availableTypes.find((t) => String(t.value) === String(photoTypeId))?.label || defaultName || t('media.slot') || 'Photo Slot';
   const titleStr = isEdit ? t('media.editPhotoDetails') || 'Edit Photo Details' : isReplacement ? t('media.replaceImageTitle') || 'Replace Image Details' : t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`;
   const subtitleStr = isEdit ? t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.' : undefined;
@@ -122,22 +184,7 @@ export function PhotoPlanNamingModal({
               });
             }}
           />
-          <Input
-            label={t('media.displayOrder') || 'Display Order'} placeholder="e.g. 1, 2, 3"
-            type="number" min="1" value={displayOrder} error={errors.displayOrder} required disabled={isReplacement || isLoading} fullWidth
-            onChange={(e) => {
-              const val = e.target.value;
-              setDisplayOrder(val);
-              if (photoTypeCode === 'CHANGE_DETECTION' && !isReplacement && !isEdit) {
-                if (val === '1') setName('OLD');
-                else if (val === '2') setName('NEW');
-              }
-              setErrors((prev) => {
-                const { displayOrder: _, ...next } = prev;
-                return next;
-              });
-            }}
-          />
+          <input type="hidden" value={displayOrder} />
           <Input
             label={t.has('media.remarks') ? t('media.remarks') : 'Remarks'}
             placeholder={t.has('media.remarksPlaceholder') ? t('media.remarksPlaceholder') : 'Enter any remarks...'}
@@ -147,24 +194,131 @@ export function PhotoPlanNamingModal({
             <>
               <UploadInstructions />
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">{t('media.photoFile') || 'Photo File'} *</label>
-                <div className="flex items-center gap-2 mt-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  {t('media.photoFile') || 'Photo File'} <span className="text-red-500">*</span>
+                </label>
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => !isLoading && fileInputRef.current?.click()}
+                  className={`group relative flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl transition-all duration-200 cursor-pointer ${
+                    isDragging
+                      ? 'border-blue-500 bg-blue-50/80 ring-4 ring-blue-100/50 scale-[1.01]'
+                      : errors.file || fileValidationErrKey
+                      ? 'border-red-400 bg-red-50/40 hover:border-red-500 ring-2 ring-red-100'
+                      : selectedFile
+                      ? 'border-blue-300 bg-slate-50/70 hover:border-blue-400'
+                      : 'border-slate-200 hover:border-blue-400 bg-slate-50/40 hover:bg-blue-50/30'
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
                   <input
-                    type="file" accept="image/*" disabled={isLoading}
-                    onChange={(e) => {
-                      setSelectedFile(e.target.files?.[0] || null);
-                      setErrors(({ file: _, ...next }) => next);
-                    }}
-                    className="flex-1 min-w-0 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer disabled:opacity-50"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    disabled={isLoading}
+                    onChange={handleFileChange}
+                    className="sr-only"
                   />
-                  {selectedFile && (
-                    <Button
-                      variant="secondary" size="sm" type="button"
-                      onClick={() => setEditImageSrc(URL.createObjectURL(selectedFile))}
-                      className="shrink-0 hover:scale-105 active:scale-95 transition-all duration-200"
-                    >
-                      {t('media.editImage') || 'Edit Image'}
-                    </Button>
+
+                  {isLoading ? (
+                    <div className="w-full flex flex-col justify-center py-1.5 px-1 gap-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                          <span className="text-xs font-semibold text-slate-800">
+                            {uploadProgress < 75
+                              ? (t.has('media.uploadingAndSaving') ? t('media.uploadingAndSaving') : 'Uploading image...')
+                              : (t.has('media.saving') ? t('media.saving') : 'Saving photo record...')}
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold text-blue-600">
+                          {uploadProgress}%
+                        </span>
+                      </div>
+                      
+                      <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden relative">
+                        <div
+                          className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+
+                      {selectedFile && (
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                          <span className="truncate max-w-[220px] text-slate-700">{selectedFile.name}</span>
+                          <span>{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : !selectedFile ? (
+                    <div className="flex flex-col items-center text-center py-2">
+                      <div className={`p-2.5 rounded-full mb-2 transition-transform duration-200 group-hover:scale-110 ${isDragging ? 'bg-blue-200/80 text-blue-700' : 'bg-blue-50 text-blue-600'}`}>
+                        <UploadCloud className="w-6 h-6" />
+                      </div>
+                      <p className="text-xs font-semibold text-slate-700">
+                        <span className="text-blue-600 hover:underline">
+                          {t.has('media.chooseFile') ? t('media.chooseFile') : 'Choose a file'}
+                        </span>{' '}
+                        {t.has('media.orDragDrop') ? t('media.orDragDrop') : 'or drag & drop it here'}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        {t.has('media.allowedFormatsSubtitle') ? t('media.allowedFormatsSubtitle') : 'Supports JPEG, JPG, PNG (Max 5MB)'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between w-full gap-3 p-1">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0 flex items-center justify-center">
+                          {selectedFile.type.startsWith('image/') ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={URL.createObjectURL(selectedFile)}
+                              alt="Selected preview"
+                              className="w-full h-full object-cover"
+                              onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                            />
+                          ) : (
+                            <FileImage className="w-5 h-5 text-slate-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1 text-left">
+                          <p className="text-xs font-medium text-slate-800 truncate" title={selectedFile.name}>
+                            {selectedFile.name}
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {selectedFile.size <= 5 * 1024 * 1024 && /\.(jpe?g|png)$/i.test(selectedFile.name) && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            type="button"
+                            onClick={() => setEditImageSrc(URL.createObjectURL(selectedFile))}
+                            className="text-xs px-2.5 py-1.5 hover:scale-105 active:scale-95 transition-all duration-200"
+                          >
+                            {t('media.editImage') || 'Edit Image'}
+                          </Button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={isLoading}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedFile(null);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Remove file"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
                 {errors.file && <p className="text-xs text-red-500 mt-0.5">{errors.file}</p>}
@@ -181,3 +335,4 @@ export function PhotoPlanNamingModal({
     </>
   );
 }
+

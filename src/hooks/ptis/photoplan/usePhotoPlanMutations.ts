@@ -15,6 +15,7 @@ import {
   patchCategory,
   sortByOrder,
 } from '@/lib/utils/ptis-photo-plan-localization';
+import { validatePhotoFile } from '@/lib/validation/ptis/photo-plan-validation';
 
 export interface UsePhotoPlanMutationsProps {
   propertyId?: number;
@@ -80,11 +81,24 @@ export function usePhotoPlanMutations({
     targetImg: AdditionalImage,
     index: number
   ): Promise<boolean> => {
+    const fileErrKey = validatePhotoFile(file);
+    if (fileErrKey) {
+      const fallbacks: Record<string, string> = {
+        'media.allowedFormats': 'Only JPEG, JPG, and PNG images are allowed',
+        'media.maxFileSize': 'File size should not exceed 5 MB',
+        'media.fileRequired': 'Photo file is required',
+      };
+      const msg = t.has(fileErrKey as Parameters<typeof t.has>[0]) ? t(fileErrKey as Parameters<typeof t>[0]) : (fallbacks[fileErrKey] || fileErrKey);
+      toast.error(msg);
+      return false;
+    }
+
     setIsReplacing(true);
     const formData = new FormData();
     formData.append('File', file);
     if (propertyId) formData.append('PropertyId', propertyId.toString());
     if (activeCategory?.photoTypeId) formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
+    if (activeCategory?.photoTypeCode) formData.append('PhotoTypeCode', activeCategory.photoTypeCode);
     formData.append('PropertyPhotoId', propertyPhotoId.toString());
     const isDefaultName = targetImg.title === activeCategory?.photoTypeName;
     const englishTitle = isDefaultName ? getEnglishCategoryName(activeCategory.photoTypeCode, targetImg.title) : targetImg.title;
@@ -135,6 +149,16 @@ export function usePhotoPlanMutations({
   ) => {
     if (isUploading || !activeCategory) return;
     if (!file) return toast.error(t('media.fileRequired') || 'Photo file is required');
+    const fileErrKey = validatePhotoFile(file);
+    if (fileErrKey) {
+      const fallbacks: Record<string, string> = {
+        'media.allowedFormats': 'Only JPEG, JPG, and PNG images are allowed',
+        'media.maxFileSize': 'File size should not exceed 5 MB',
+        'media.fileRequired': 'Photo file is required',
+      };
+      const msg = t.has(fileErrKey as Parameters<typeof t.has>[0]) ? t(fileErrKey as Parameters<typeof t>[0]) : (fallbacks[fileErrKey] || fileErrKey);
+      return toast.error(msg);
+    }
     if (!propertyId) {
       setIsNamingOpen(false);
       return toast.error(t('media.propertyIdRequired') || 'PropertyId is required.');

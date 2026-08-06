@@ -49,6 +49,7 @@ export function useChangeDetectionUpload({
       if (isCustom && existingImg?.propertyPhotoId) {
         formData.append('PropertyId', propertyId.toString());
         formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
+        formData.append('PhotoTypeCode', activeCategory.photoTypeCode || 'CHANGE_DETECTION');
         formData.append('PropertyPhotoId', existingImg.propertyPhotoId.toString());
         const oldDocumentGuid = existingImg.documentGuid || (() => {
           const match = existingImg.src.match(/\/documents\/([a-fA-F0-9-]{36})/);

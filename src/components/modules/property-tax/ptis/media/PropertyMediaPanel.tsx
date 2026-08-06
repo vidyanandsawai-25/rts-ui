@@ -68,8 +68,6 @@ function PropertyMediaPanel({
     handleCategoriesChange,
     photoPlanCategory,
     propertyPhotoCategory,
-    gisCategory,
-    gisPhoto,
     photoPlanPhoto,
     propertyPhoto,
     remainingImages,
@@ -79,6 +77,8 @@ function PropertyMediaPanel({
     fullyLoadedIds,
     setFullyLoadedIds,
     setPhotos,
+    signatureCategory,
+    signaturePhoto,
     t,
   } = usePropertyMedia({
     initialPhotoSlots,
@@ -90,6 +90,17 @@ function PropertyMediaPanel({
     onPhotosChange,
     onPhotoSlotsChange,
   });
+
+  const handleOpenDrawer = useCallback(
+    (categoryIndex: number, imageIndex?: number, mode?: 'view' | 'create') => {
+      if (!propertyId || propertyId <= 0) {
+        toast.error(t('error.propertyIdMissing') || 'Property is missing. Please search and select a property first.');
+        return;
+      }
+      openDrawer(categoryIndex, imageIndex, mode);
+    },
+    [propertyId, openDrawer, t]
+  );
 
   useEffect(() => {
     if (loading) {
@@ -135,7 +146,7 @@ function PropertyMediaPanel({
       e.stopPropagation();
       
       if (!propertyId) {
-        toast.error(t('media.drawingToolPropertyIdRequired') || 'Property ID is required.');
+        toast.error(t('error.propertyIdMissing') || 'Property is missing. Please search and select a property first.');
         return;
       }
 
@@ -190,7 +201,7 @@ function PropertyMediaPanel({
       <PropertyMediaPanelContent
         categories={categories}
         t={t}
-        openDrawer={openDrawer}
+        openDrawer={handleOpenDrawer}
         handleImageHover={handleImageHover}
         handleImageLeave={handleImageLeave}
         cancelImageLeave={cancelImageLeave}
@@ -203,9 +214,8 @@ function PropertyMediaPanel({
         photoPlanPhoto={photoPlanPhoto}
         photoPlanCategory={photoPlanCategory}
         handleCreateClick={handleCreateClick}
-        gisPhoto={gisPhoto}
-        gisCategory={gisCategory}
-        hasCoords={hasCoords}
+        signaturePhoto={signaturePhoto}
+        signatureCategory={signatureCategory}
         cdBeforeImg={cdBeforeImg}
         cdAfterImg={cdAfterImg}
         cdBeforeLabel={cdBeforeLabel}

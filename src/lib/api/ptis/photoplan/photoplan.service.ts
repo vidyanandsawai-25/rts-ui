@@ -47,22 +47,23 @@ export const photoPlanService = {
     propertyId: number,
     photoTypeId: number,
     propertyPhotoId: number,
-    _referenceTableIdGuid?: string,
+    _displayOrder?: number,
     remarks?: string,
     photoTypeCode?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
     try {
+      const isNew = propertyPhotoId <= 0 || propertyPhotoId === 9998 || propertyPhotoId === 9999;
+
       const uploadParams: DocumentUploadParams = {
         departmentId: DEPARTMENT_ID.PTIS,
         moduleId: MODULE_ID.PropertyPhoto,
         bindingPurpose: remarks || "Photo",
         documentType: photoTypeCode || String(photoTypeId),
-        isPrimaryDocument: true
+        isPrimaryDocument: true,
+        referenceTableName: REFERENCE_TABLE.PropertyPhoto
       };
 
-      uploadParams.referenceTableName = REFERENCE_TABLE.PropertyPhoto;
-
-      if (propertyPhotoId > 0 && propertyPhotoId !== 9998 && propertyPhotoId !== 9999) {
+      if (!isNew) {
         uploadParams.referenceTableId = propertyPhotoId;
         uploadParams.referencePropertyName = "PropertyPhotoId";
       } else {
@@ -124,61 +125,125 @@ export const photoPlanService = {
     _photoTypeId: number,
     propertyPhotoId: number,
     _referenceTableIdGuid?: string,
-    remarks?: string
+    remarks?: string,
+    photoTypeCode?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
     try {
+      // Determine if this propertyPhotoId looks like a real PropertyPhoto row
+      // or if it's actually the propertyId / a placeholder.
+      const isLikelyPropertyId = propertyPhotoId === propertyId
+        || propertyPhotoId <= 0
+        || propertyPhotoId === 9998
+        || propertyPhotoId === 9999;
+
       const uploadParams: DocumentUploadParams = {
         departmentId: DEPARTMENT_ID.PTIS,
         moduleId: MODULE_ID.PropertyPhoto,
         referenceTableName: REFERENCE_TABLE.PropertyPhoto,
-        referencePropertyName: "PropertyPhotoId",
-        referenceTableId: propertyPhotoId,
         bindingPurpose: remarks || "Photo",
-        documentType: DOCUMENT_TYPE.Photo,
+        documentType: photoTypeCode || DOCUMENT_TYPE.Photo,
         isPrimaryDocument: true
       };
 
-      const uploadResponse = await uploadDocument(file, uploadParams);
+      if (isLikelyPropertyId) {
+        // The stored propertyPhotoId is actually a propertyId or placeholder.
+        // Use PropertyId reference so the backend's OnAfterUploadAsync
+        // dynamically creates the PropertyPhoto row.
+        uploadParams.referenceTableId = propertyId;
+        uploadParams.referencePropertyName = "PropertyId";
+      } else {
+        // Looks like a real PropertyPhotoId — try it first.
+        uploadParams.referenceTableId = propertyPhotoId;
+        uploadParams.referencePropertyName = "PropertyPhotoId";
+      }
+
+      let uploadResponse;
+      try {
+        uploadResponse = await uploadDocument(file, uploadParams);
+      } catch (firstError: unknown) {
+        // If the PropertyPhotoId reference failed (row doesn't exist),
+        // fall back to PropertyId reference.
+        const errMsg = firstError instanceof Error ? firstError.message : String(firstError);
+        const isNotFoundError = errMsg.includes("not found")
+          || errMsg.includes("does not exist")
+          || errMsg.includes("No '")
+          || errMsg.includes("row exists");
+
+        if (!isLikelyPropertyId && isNotFoundError) {
+          uploadParams.referenceTableId = propertyId;
+          uploadParams.referencePropertyName = "PropertyId";
+          uploadResponse = await uploadDocument(file, uploadParams);
+        } else {
+          throw firstError;
+        }
+      }
 
       if (!uploadResponse.documentGuid) {
         throw new Error("Failed to retrieve document GUID from upload.");
       }
 
+      // Best-effort cleanup of the old document
       if (oldDocumentGuid && oldDocumentGuid !== uploadResponse.documentGuid) {
-        // Best-effort cleanup of the replaced document.
-        await deleteDocument(oldDocumentGuid);
+        try {
+          await deleteDocument(oldDocumentGuid);
+        } catch {
+          // Non-critical: old document cleanup can fail silently
+        }
       }
 
-      // Fetch the updated photos for the property to retrieve the new PropertyPhotoId
-      const photosResponse = await this.getPhotosByProperty(propertyId);
-      if (!photosResponse.success || !photosResponse.data) {
-        throw new Error(photosResponse.error || "Failed to retrieve photos list to identify the new photo ID.");
-      }
+      // Best-effort: try to find the newly created/updated photo to get the
+      // real PropertyPhotoId. If this lookup fails, we still return success
+      // using the upload response data directly.
+      let resolvedPropertyPhotoId = propertyPhotoId;
+      let resolvedPhotoTypeId = _photoTypeId;
+      let resolvedDisplayOrder: number | undefined;
+      let resolvedRemarks = remarks || "";
+      let resolvedDocumentBindingId = uploadResponse.documentBindingId || 0;
+      let resolvedDocumentGuid = uploadResponse.documentGuid;
 
-      const newPhoto = photosResponse.data.find(
-        (p) => p.documentGuid === uploadResponse.documentGuid || p.documentBindingId === uploadResponse.documentBindingId
-      );
+      try {
+        const photosResponse = await this.getPhotosByProperty(propertyId);
+        if (photosResponse.success && photosResponse.data) {
+          // Try multiple matching strategies
+          const newPhoto = photosResponse.data.find(
+            (p) => p.documentGuid === uploadResponse.documentGuid
+          ) || photosResponse.data.find(
+            (p) => uploadResponse.documentBindingId && p.documentBindingId === uploadResponse.documentBindingId
+          ) || photosResponse.data.find(
+            (p) => p.photoTypeId === _photoTypeId
+              && p.propertyPhotoId !== propertyPhotoId
+              && p.documentGuid
+          );
 
-      if (!newPhoto) {
-        throw new Error("Replaced photo not found in property photo records.");
+          if (newPhoto) {
+            resolvedPropertyPhotoId = newPhoto.propertyPhotoId;
+            resolvedPhotoTypeId = newPhoto.photoTypeId;
+            resolvedDisplayOrder = newPhoto.displayOrder;
+            resolvedRemarks = newPhoto.remarks || remarks || "";
+            resolvedDocumentBindingId = newPhoto.documentBindingId || resolvedDocumentBindingId;
+            resolvedDocumentGuid = newPhoto.documentGuid || resolvedDocumentGuid;
+          }
+        }
+      } catch {
+        // Lookup failure is non-critical — the upload already succeeded.
       }
 
       return {
         success: true,
         data: {
-          propertyPhotoId: newPhoto.propertyPhotoId,
-          documentGuid: newPhoto.documentGuid || uploadResponse.documentGuid,
+          propertyPhotoId: resolvedPropertyPhotoId,
+          documentGuid: resolvedDocumentGuid,
           documentId: uploadResponse.documentId,
-          documentBindingId: newPhoto.documentBindingId || uploadResponse.documentBindingId || 0,
-          propertyId: newPhoto.propertyId,
-          photoTypeId: newPhoto.photoTypeId,
-          displayOrder: newPhoto.displayOrder,
-          remarks: newPhoto.remarks || remarks || "",
+          documentBindingId: resolvedDocumentBindingId,
+          propertyId: propertyId,
+          photoTypeId: resolvedPhotoTypeId,
+          displayOrder: resolvedDisplayOrder,
+          remarks: resolvedRemarks,
           fileName: file.name,
           fileSizeBytes: file.size,
           storagePath: uploadResponse.storagePath ?? "",
-          viewUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/view`,
-          downloadUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/download`
+          viewUrl: `/api/documents/${resolvedDocumentGuid}/view`,
+          downloadUrl: `/api/documents/${resolvedDocumentGuid}/download`
         }
       };
     } catch (error: unknown) {
