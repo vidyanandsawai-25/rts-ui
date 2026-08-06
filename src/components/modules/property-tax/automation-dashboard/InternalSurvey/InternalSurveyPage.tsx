@@ -5,19 +5,22 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
-import { ExportButton, SearchButton } from '@/components/common';
+import { SearchButton } from '@/components/common';
 import { InternalSurveyGridItems } from "@/types/automation-dashboard/internal-surveygrid/internal-surveygrid.type";
 
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { getInternalSurveyColumns, getInternalSurveyHeaderRows, InternalSurveyTableRow } from './InternalSurveyColumns';
 import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { ExportDropdown } from './ExportDropdown';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 interface InternalSurveyPageProps {
     serverData: InternalSurveyGridItems | null;
     propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ t, propertyDescriptions = [] }: { t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
+const TopBar = ({ t, propertyDescriptions = [], exportConfig }: { t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[], exportConfig: ExportConfig<InternalSurveyTableRow> }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     return (
@@ -34,7 +37,7 @@ const TopBar = ({ t, propertyDescriptions = [] }: { t: (key: string) => string, 
             </div>
             <div className="flex items-center gap-3">
                 <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
-                <ExportButton label={t('internalSurvey.buttons.export')} />
+                <ExportDropdown config={exportConfig} />
             </div>
         </div>
     );
@@ -132,12 +135,26 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, pro
         return mappedData;
     }, [serverData, t]);
 
+    const exportConfig = useMemo<ExportConfig<InternalSurveyTableRow>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);
+
+        return {
+            fileName: 'Internal_Survey_Division_Report',
+            reportTitle: 'Property Tax Data Center - Division-wise Summary',
+            reportSubtitle: `Workflow Stage: Internal Survey - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData
+        };
+    }, [tableData, columns, headerRows]);
+
     return (
         <AutomationTable<InternalSurveyTableRow>
             data={tableData}
             columns={columns}
             headerRows={headerRows}
-            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} />}
+            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} exportConfig={exportConfig} />}
             loading={!serverData}
             rowClassName={(row) => row.sr === t('internalSurvey.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors hover:bg-transparent"}
             emptyText={t('internalSurvey.emptyMessage')}

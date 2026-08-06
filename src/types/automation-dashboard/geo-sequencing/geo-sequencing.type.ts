@@ -36,7 +36,7 @@ export interface GeoSequencingItems {
 export interface GeoSequencingGridResponse {
   success: boolean;
   message: string;
-  items: GeoSequencingItems;
+  items: GeoSequencingItems[];
   errors: unknown | null;
   correlationId?: string | null;
 }
@@ -94,7 +94,7 @@ export interface GeoSequencingWardWiseItems {
 export interface GeoSequencingWardWiseResponse {
   success: boolean;
   message: string;
-  items: GeoSequencingWardWiseItems;
+  items: GeoSequencingWardWiseItems[];
   errors: unknown | null;
   correlationId?: string | null;
 }

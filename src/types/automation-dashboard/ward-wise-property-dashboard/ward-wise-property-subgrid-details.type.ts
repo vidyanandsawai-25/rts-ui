@@ -35,7 +35,7 @@ export interface WardWisePropertySubGridDetailsItems {
 export interface WardWisePropertySubGridDetailsResponse {
   success: boolean;
   message: string;
-  items: WardWisePropertySubGridDetailsItems;
+  items: WardWisePropertySubGridDetailsItems[] | null;
   errors: unknown | null;
   correlationId?: string | null;
 }

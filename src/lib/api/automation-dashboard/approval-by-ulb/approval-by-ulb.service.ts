@@ -16,14 +16,16 @@ export async function getApprovalByUlbGridDetails(): Promise<ApprovalByUlbItems 
     const response = await apiClient.get<ApprovalByUlbResponse>("/PropertySignature/dashboard/sign-grid", { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch approval by ULB details").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch approval by ULB details");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function getWardWiseApprovalByUlbGridDetails(zoneId: string | number): Promise<ApprovalByUlbItems | null> {
     const response = await apiClient.get<ApprovalByUlbResponse>(`/PropertySignature/dashboard/sign-grid/zone/${zoneId}`, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch ward-wise approval by ULB details").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch ward-wise approval by ULB details");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function getBuildingWiseData(
@@ -44,7 +46,8 @@ export async function getBuildingWiseData(
     );
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchBuildingWiseData") || "Failed to fetch building-wise data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchBuildingWiseData") || "Failed to fetch building-wise data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function exportPendingData(
@@ -78,5 +81,6 @@ export async function getPropertyWiseData(
     );
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchPropertyWiseData") || "Failed to fetch property-wise data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchPropertyWiseData") || "Failed to fetch property-wise data");
+    return responseData.items?.[0] ?? null;
 }

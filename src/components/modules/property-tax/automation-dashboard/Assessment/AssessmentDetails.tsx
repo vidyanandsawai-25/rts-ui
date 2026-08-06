@@ -7,11 +7,15 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
-import { SearchButton, ExportButton } from '@/components/common/ActionButtons';
+import { SearchButton } from '@/components/common/ActionButtons';
 import { Button } from '@/components/common/ActionButton';
+import { ExportDropdown } from './ExportDropdown';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { Send, ChevronDown } from 'lucide-react';
 import { getAssessmentColumns, getAssessmentHeaderRows } from './AssessmentColumns';
 import { AssessmentGridItems, AssessmentRow } from '@/types/automation-dashboard/assessment/assessmentgrid.type';
+import { Column } from '@/components/common';
 
 type TabType = 'Total' | 'Assessed' | 'Unassessed' | 'Rented';
 
@@ -125,7 +129,7 @@ const TopFilters = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabCh
     );
 };
 
-const TopBar = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabChange: (t: TabType) => void, t: (key: string) => string }) => {
+const TopBar = ({ activeTab, onTabChange, t, exportConfig }: { activeTab: TabType, onTabChange: (t: TabType) => void, t: (key: string) => string, exportConfig: ExportConfig<Record<string, unknown>> }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const router = useRouter();
     const locale = useLocale();
@@ -163,7 +167,7 @@ const TopBar = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabChange
                     {t('sendToApprove')}
                 </Button>
 
-                <ExportButton />
+                <ExportDropdown config={exportConfig} />
             </div>
         </div>
     );
@@ -191,16 +195,29 @@ const AssessmentDetailsContent = ({ serverData }: { serverData?: AssessmentGridI
     const columns = useMemo(() => getAssessmentColumns(activeTab, t, locale, searchParams.get('workflowStageId'), returnUrl, router), [activeTab, t, locale, searchParams, returnUrl, router]);
     const tableData = useMemo(() => mapServerDataToTable(serverData), [serverData]);
 
+    const exportConfig = useMemo<ExportConfig<Record<string, unknown>>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns as unknown as Column<Record<string, unknown>>[], getAssessmentHeaderRows(activeTab, t));
+
+        return {
+            fileName: 'Assessment_Report',
+            reportTitle: 'Property Tax Data Center - Assessment Dashboard',
+            reportSubtitle: `Workflow Stage: Assessment - ${activeTab} | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData as Record<string, unknown>[]
+        };
+    }, [tableData, columns, activeTab, t]);
+
     return (
         <div className="flex flex-col gap-4 h-full bg-slate-50">
-            {/* <AssessmentSummaryCards data={serverData} /> */}
             <AutomationTable
                 data={tableData}
                 columns={columns}
                 headerRows={getAssessmentHeaderRows(activeTab, t)}
                 headerExtra={
                     <div className="flex items-center gap-2 w-full">
-                        <TopBar activeTab={activeTab} onTabChange={handleTabChange} t={t} />
+                        <TopBar activeTab={activeTab} onTabChange={handleTabChange} t={t} exportConfig={exportConfig} />
                     </div>
                 }
                 containerClassName="h-full"

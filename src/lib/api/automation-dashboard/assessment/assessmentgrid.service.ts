@@ -17,7 +17,8 @@ export async function automationGetAssessmentGrid(workflowStageId?: string | num
   const response = await apiClient.get<AssessmentGridResponse>(url, { cache: "force-cache" });
   const t = await getTranslations("automationDashboard");
 
-  return handleApiResponse(response, t("errors.fetchAssessmentGrid") || "Failed to fetch assessment grid data").items ?? null;
+  const responseData = handleApiResponse(response, t("errors.fetchAssessmentGrid") || "Failed to fetch assessment grid data");
+  return responseData.items?.[0] ?? null;
 }
 
 export interface FetchPendingAssessmentPropsParams {
@@ -53,6 +54,7 @@ export async function automationGetPendingAssessmentProps(
   ,{ cache: "force-cache" });
   const t = await getTranslations("automationDashboard");
 
-  return handleApiResponse(response, t("errors.fetchPendingAssessmentProps") || "Failed to fetch pending assessment properties").items ?? null;
+  const responseData = handleApiResponse(response, t("errors.fetchPendingAssessmentProps") || "Failed to fetch pending assessment properties");
+  return responseData.items?.[0] ?? null;
 }
 

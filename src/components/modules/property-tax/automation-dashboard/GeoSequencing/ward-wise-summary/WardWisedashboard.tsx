@@ -4,9 +4,9 @@
 import { useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Download, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/common/ActionButton';
+import { ExportDropdown } from '../ExportDropdown';
 import { WardWiseSummaryCards } from './WardWiseSummaryCards';
 import {
     getGeoSequencingSharedColumns,
@@ -18,6 +18,8 @@ import { GeoSequencingWardWiseItems, GeoSequencingWard } from '@/types/automatio
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 interface GeoSequencingWardWiseDashboardProps {
@@ -83,9 +85,9 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
             const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
             const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
             const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
-            
+
             const typeIdParam = getPropertyTypeIdParam(columnKey);
-            
+
             const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
@@ -157,8 +159,22 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
         };
     }, [summaryData, formattedStage]);
 
+    const exportConfig = useMemo<ExportConfig<GeoSequencingData>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);
+
+        return {
+            fileName: 'Geo_Sequencing_Ward_Wise_Report',
+            reportTitle: `Property Tax Data Center - Ward-wise Summary (${zoneNo ? `${zoneNo} - ` : ''}${summaryData?.zoneName || ''})`,
+            reportSubtitle: `Workflow Stage: Geo-sequencing - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData
+        };
+    }, [tableData, zoneNo, summaryData, columns, headerRows]);
+
     return (
-        <div className="flex flex-col h-full gap-3 p-3">
+        <div className="w-full h-[calc(100vh-140px)] flex flex-col p-4 bg-slate-50 gap-4 overflow-hidden">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#f8f9fe] px-4 py-3 rounded-lg shadow-sm border border-indigo-100/60">
                 <div className="flex-1 flex justify-start">
@@ -189,9 +205,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
 
                 <div className="flex-1 flex items-center justify-end gap-3">
                     <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
-                    <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
-                        {t('geoSequencing.buttons.export')}
-                    </Button>
+                    <ExportDropdown config={exportConfig} />
                 </div>
             </div>
 

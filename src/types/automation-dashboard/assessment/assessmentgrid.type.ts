@@ -29,7 +29,7 @@ export interface AssessmentGridItems {
 export interface AssessmentGridResponse {
   success: boolean;
   message: string;
-  items: AssessmentGridItems | null;
+  items: AssessmentGridItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }
@@ -109,7 +109,7 @@ export interface PendingAssessmentItems {
 export interface PendingAssessmentResponse {
   success: boolean;
   message: string;
-  items: PendingAssessmentItems | null;
+  items: PendingAssessmentItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }

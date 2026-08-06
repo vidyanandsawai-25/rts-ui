@@ -16,7 +16,8 @@ export async function automationGetDataEntryGrid(workflowStageId?: string | numb
     const response = await apiClient.get<DataEntryGridResponse>(url, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchDataEntryGrid") || "Failed to fetch data entry grid data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchDataEntryGrid") || "Failed to fetch data entry grid data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetDataEntryWardWiseSummary(
@@ -49,5 +50,6 @@ export async function automationGetDataEntryWardWiseSummary(
     );
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchDataEntryWardWiseSummary") || "Failed to fetch data entry ward-wise summary data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchDataEntryWardWiseSummary") || "Failed to fetch data entry ward-wise summary data");
+    return responseData.items?.[0] ?? null;
 }

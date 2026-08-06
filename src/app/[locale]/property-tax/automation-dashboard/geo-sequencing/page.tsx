@@ -15,9 +15,9 @@ export default async function GeoSequencingPageServer({ searchParams }: Props) {
 
     if (!workflowStageId) {
         const workflowCardsResult = await getAutomationWorkflowCardsAction();
-        const geoCard = workflowCardsResult?.data?.find((card: { stageName: string; id: string }) => card.stageName === 'GeoSequencing');
+        const geoCard = workflowCardsResult?.data?.find((card) => card.stageName === 'GeoSequencing');
         if (geoCard?.id) {
-            workflowStageId = geoCard.id;
+            workflowStageId = geoCard.id.toString();
             redirect(`?workflowStageId=${geoCard.id}`);
         }
     }

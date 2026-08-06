@@ -16,7 +16,8 @@ export async function automationGetInternalSurveyGrid(workflowStageId?: string |
     const response = await apiClient.get<InternalSurveyGridResponse>(url, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchInternalSurveyGrid") || "Failed to fetch internal survey grid data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchInternalSurveyGrid") || "Failed to fetch internal survey grid data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetInternalSurveyWardWiseSummary(
@@ -49,5 +50,6 @@ export async function automationGetInternalSurveyWardWiseSummary(
     );
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchInternalSurveyWardWiseSummary") || "Failed to fetch internal survey ward-wise summary data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchInternalSurveyWardWiseSummary") || "Failed to fetch internal survey ward-wise summary data");
+    return responseData.items?.[0] ?? null;
 }

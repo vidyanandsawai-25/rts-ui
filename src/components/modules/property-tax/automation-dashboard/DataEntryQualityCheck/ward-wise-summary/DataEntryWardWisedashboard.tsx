@@ -5,13 +5,17 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { Button } from '@/components/common/ActionButton';
-import { ArrowLeft, Download, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import { DataEntryWardWiseSummaryItems, DataEntryWardData } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
 import { getDataEntryColumns, getDataEntryHeaderRows, DataEntryData } from '../DataEntryQualityCheckColumns';
 import { DataEnteryWardWiseSummaryCards } from './DataEnteryWardWiseSummaryCards';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
+import { ExportDropdown } from '../ExportDropdown';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
+import { Column } from '@/components/common';
 
 interface DataEntryWardWiseDashboardProps {
     zoneId: string;
@@ -124,11 +128,20 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
 
         return mappedWards;
     }, [summaryData, t]);
-    const handleExport = () => {
-        // Implement export logic
-        console.log("Export triggered");
-    };
+    const exportConfig = useMemo<ExportConfig<Record<string, unknown>>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns as unknown as Column<Record<string, unknown>>[], headerRows);
+        const zoneNo = searchParams.get('zoneNo');
 
+        return {
+            fileName: `Data_Entry_Quality_Check_Ward_Summary_${zoneNo ? zoneNo + '_' : ''}${summaryData?.zoneName || 'Zone'}`.replace(/\s+/g, '_'),
+            reportTitle: `Property Tax Data Center - ${zoneNo ? `${zoneNo} - ` : ''}${summaryData?.zoneName ? summaryData.zoneName : ''} - Ward-wise Summary`,
+            reportSubtitle: `Workflow Stage: Data Entry & Quality Check - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData as Record<string, unknown>[]
+        };
+    }, [tableData, columns, headerRows, searchParams, summaryData]);
     return (
         <div className="flex flex-col h-full gap-3 p-3">
             {/* Custom Page Header */}
@@ -158,14 +171,7 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
 
                 <div className="flex-1 flex items-center justify-end gap-3">
                     <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
-                    <Button
-                        variant="secondary"
-                        onClick={handleExport}
-                        icon={Download}
-                        className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 text-[13px] h-9 px-4 font-semibold"
-                    >
-                        {t('dataEntryQualityCheck.buttons.export') || 'Export'}
-                    </Button>
+                    <ExportDropdown config={exportConfig} />
                 </div>
             </div>
 

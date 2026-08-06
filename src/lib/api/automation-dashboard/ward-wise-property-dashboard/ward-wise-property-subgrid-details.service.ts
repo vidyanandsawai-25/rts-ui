@@ -47,9 +47,10 @@ export async function automationGetWardWisePropertySubGridDetails(
     if (sortOrder) {
         params.append("SortOrder", sortOrder);
     }
-
-    const response = await apiClient.get<WardWisePropertySubGridDetailsResponse>(`/AutomationDashboard/GetSubGridPDData?${params.toString()}`, { cache: "force-cache" });
+  
+    const response = await apiClient.get<WardWisePropertySubGridDetailsResponse>(`/AutomationDashboard/GetWardSubGridPDData?${params.toString()}`, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchGeoSequencingPropertyDetails") || "Failed to fetch property details").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchGeoSequencingPropertyDetails") || "Failed to fetch property details");
+    return responseData.items?.[0] ?? null;
 }

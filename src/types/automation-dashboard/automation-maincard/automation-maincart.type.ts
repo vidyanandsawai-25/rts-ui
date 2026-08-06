@@ -20,12 +20,12 @@ export interface MainCardsData {
 export interface MainCardsResponse {
   success: boolean;
   message: string;
-  items: MainCardsData;
+  items: MainCardsData[];
   errors: unknown | null;
 }
 
 export interface WorkflowCardData {
-  id:string,
+  id: number;
   stageName: string;
   propertyCount: number;
   structureCount: number;

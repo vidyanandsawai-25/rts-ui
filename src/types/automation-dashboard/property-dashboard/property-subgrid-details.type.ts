@@ -44,7 +44,7 @@ export interface PropertySubGridDetailsItems {
 export interface PropertySubGridDetailsResponse {
   success: boolean;
   message: string;
-  items: PropertySubGridDetailsItems;
+  items: PropertySubGridDetailsItems[] | null;
   errors: unknown | null;
   correlationId?: string | null;
 }

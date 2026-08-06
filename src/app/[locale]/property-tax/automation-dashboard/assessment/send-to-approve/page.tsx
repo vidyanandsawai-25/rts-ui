@@ -83,9 +83,6 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
     propDescOptions.unshift({ value: 'All', label: 'All Descriptions' });
     surveyTypeOptions.unshift({ value: 'All', label: 'All Survey Types' });
 
-    console.log("propertyType :",propertyType);
-    
-
     return (
         <SendToApproveDashboard 
             serverData={serverData} 

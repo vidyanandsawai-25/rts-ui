@@ -66,7 +66,7 @@ export interface DataEntryGridItems {
 export interface DataEntryGridResponse {
   success: boolean;
   message: string;
-  items: DataEntryGridItems | null;
+  items: DataEntryGridItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }
@@ -99,7 +99,7 @@ export interface DataEntryWardWiseSummaryItems {
 export interface DataEntryWardWiseSummaryResponse {
   success: boolean;
   message: string;
-  items: DataEntryWardWiseSummaryItems | null;
+  items: DataEntryWardWiseSummaryItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }

@@ -53,8 +53,6 @@ export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashbo
     const zoneNameDisplay = serverData?.zoneData?.[0]?.zoneName || '';
     const zoneNoDisplay = serverData?.zoneData?.[0]?.zoneNo || '';
 
-    console.log("serverData :",serverData);
-    
     return (
         <div className="flex flex-col h-full min-h-0 overflow-hidden gap-3 p-3">
             {/* Custom Page Header */}

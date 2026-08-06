@@ -73,6 +73,8 @@
     "buttons": {
       "search": "Search",
       "export": "Export",
+      "exportExcel": "Export to Excel",
+      "exportPdf": "Export to PDF",
       "backToDivisions": "Back to Divisions"
     }
   },

@@ -6,7 +6,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
-import { ExportButton, SearchButton } from '@/components/common';
+import { SearchButton } from '@/components/common';
+import { ExportDropdown } from './ExportDropdown';
 import { GeoSequencingItems } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import {
     GeoSequencingData,
@@ -16,6 +17,8 @@ import {
 } from './CommonGeoSequencingColumns';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 
 interface GeoSequencingPageProps {
     serverData?: GeoSequencingItems | null;
@@ -23,7 +26,15 @@ interface GeoSequencingPageProps {
     propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ t, propertyDescriptions }: { t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
+const TopBar = ({
+    t,
+    propertyDescriptions,
+    exportConfig
+}: {
+    t: (key: string) => string;
+    propertyDescriptions?: PropertyTypeMasterItem[];
+    exportConfig: ExportConfig<GeoSequencingData>;
+}) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     return (
@@ -40,7 +51,7 @@ const TopBar = ({ t, propertyDescriptions }: { t: (key: string) => string, prope
             </div>
             <div className="flex items-center gap-3">
                 <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
-                <ExportButton label={t('geoSequencing.buttons.export')} />
+                <ExportDropdown config={exportConfig} />
             </div>
         </div>
     );
@@ -72,7 +83,7 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
-                
+
                 const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
@@ -131,12 +142,26 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
         return totalRow ? [...mappedZones, totalRow] : mappedZones;
     }, [serverData, t]);
 
+    const exportConfig = useMemo<ExportConfig<GeoSequencingData>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);
+
+        return {
+            fileName: 'Geo_Sequencing_Division_Report',
+            reportTitle: 'Property Tax Data Center - Division-wise Summary',
+            reportSubtitle: `Workflow Stage: Geo-sequencing - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData
+        };
+    }, [tableData, columns, headerRows]);
+
     return (
         <AutomationTable<GeoSequencingData>
             data={tableData}
             columns={columns}
             headerRows={headerRows}
-            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} />}
+            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} exportConfig={exportConfig} />}
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
             rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors border-b border-slate-200 hover:bg-transparent"}

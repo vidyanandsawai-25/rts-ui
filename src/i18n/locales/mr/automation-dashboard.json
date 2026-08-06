@@ -73,6 +73,8 @@
     "buttons": {
       "search": "शोधा",
       "export": "निर्यात करा",
+      "exportExcel": "एक्सेल मध्ये निर्यात करा",
+      "exportPdf": "पीडीएफ मध्ये निर्यात करा",
       "backToDivisions": "विभागांकडे परत जा"
     }
   },

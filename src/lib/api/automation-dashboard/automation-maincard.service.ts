@@ -12,7 +12,8 @@ export async function automationgetMainCards(): Promise<MainCardsData | null> {
   // Make sure this namespace exists in your localization files (e.g., en.json, etc.)
   const t = await getTranslations("automationDashboard");
 
-  return handleApiResponse(response, t("errors.fetchMainCards")).items ?? null;
+  const responseData = handleApiResponse(response, t("errors.fetchMainCards"));
+  return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetWorkflowCards(): Promise<WorkflowCardData[] | null> {

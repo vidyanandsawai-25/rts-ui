@@ -38,7 +38,7 @@ export interface InternalSurveyGridItems {
 export interface InternalSurveyGridResponse {
   success: boolean;
   message: string;
-  items: InternalSurveyGridItems | null;
+  items: InternalSurveyGridItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }
@@ -70,7 +70,7 @@ export interface InternalSurveyWardWiseItems {
 export interface InternalSurveyWardWiseResponse {
   success: boolean;
   message: string;
-  items: InternalSurveyWardWiseItems | null;
+  items: InternalSurveyWardWiseItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }

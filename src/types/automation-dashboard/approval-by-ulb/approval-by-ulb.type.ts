@@ -35,7 +35,7 @@ export interface ApprovalByUlbItems {
 export interface ApprovalByUlbResponse {
     success: boolean;
     message: string;
-    items: ApprovalByUlbItems;
+    items: ApprovalByUlbItems[] | null;
     errors: unknown | null;
     correlationId: string | null;
 }
@@ -69,7 +69,7 @@ export interface BuildingWisePagination {
 export interface BuildingWiseResponse {
     success: boolean;
     message: string;
-    items: BuildingWisePagination;
+    items: BuildingWisePagination[] | null;
     errors: unknown | null;
     correlationId: string | null;
 }
@@ -123,7 +123,7 @@ export interface PropertyWisePagination {
 export interface PropertyWiseResponse {
     success: boolean;
     message: string;
-    items: PropertyWisePagination;
+    items: PropertyWisePagination[] | null;
     errors: unknown | null;
     correlationId: string | null;
 }

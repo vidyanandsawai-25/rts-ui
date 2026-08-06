@@ -34,7 +34,7 @@ export async function automationGetPropertySubGridDetails(
     params.append("zoneId", zoneId.toString());
     params.append("workflowStageId", workflowStageId.toString());
     params.append("PageNumber", pageNumber.toString());
-    params.append("PageSize", pageSize.toString());
+    params.append("PageSize", pageSize.toString());    
 
     if (wardId !== undefined && wardId !== null && wardId !== 'All') {
         params.append("WardId", wardId.toString());
@@ -61,7 +61,9 @@ export async function automationGetPropertySubGridDetails(
     const response = await apiClient.get<PropertySubGridDetailsResponse>(`/AutomationDashboard/GetSubGridPDData?${params.toString()}`, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchGeoSequencingPropertyDetails") || "Failed to fetch geo sequencing property details").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchGeoSequencingPropertyDetails") || "Failed to fetch geo sequencing property details");
+
+    return responseData.items?.[0] ?? null;
 }
 
 export async function getWards(

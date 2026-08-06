@@ -73,6 +73,8 @@
     "buttons": {
       "search": "खोजें",
       "export": "निर्यात करें",
+      "exportExcel": "एक्सेल में निर्यात करें",
+      "exportPdf": "पीडीएफ में निर्यात करें",
       "backToDivisions": "डिवीजन पर वापस जाएं"
     }
   },

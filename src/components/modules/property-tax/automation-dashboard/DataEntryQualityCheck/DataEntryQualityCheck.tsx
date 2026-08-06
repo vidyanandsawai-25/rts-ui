@@ -4,8 +4,7 @@ import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SearchInput } from '@/components/common/SearchInput';
-import { SearchButton } from '@/components/common';
-import { ExportButton } from '@/components/common/ActionButtons';
+import { Column, SearchButton } from '@/components/common';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { DataEntryGridItems } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
 
@@ -13,13 +12,16 @@ import { DashboardFilterBar } from '@/components/modules/property-tax/automation
 import { getDataEntryColumns, getDataEntryHeaderRows } from './DataEntryQualityCheckColumns';
 import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { ExportDropdown } from './ExportDropdown';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 
 interface DataEntryQualityCheckProps {
     serverData: DataEntryGridItems | null;
     propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ searchTerm, setSearchTerm, t, propertyDescriptions = [] }: { searchTerm: string, setSearchTerm: (val: string) => void, t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
+const TopBar = ({ searchTerm, setSearchTerm, t, propertyDescriptions = [], exportConfig }: { searchTerm: string, setSearchTerm: (val: string) => void, t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[], exportConfig: ExportConfig<Record<string, unknown>> }) => {
     return (
         <div className="flex items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-2 flex-1 max-w-xl">
@@ -33,7 +35,7 @@ const TopBar = ({ searchTerm, setSearchTerm, t, propertyDescriptions = [] }: { s
             </div>
             <div className="flex items-center gap-3">
                 <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
-                <ExportButton />
+                <ExportDropdown config={exportConfig} />
             </div>
         </div>
     );
@@ -172,6 +174,20 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
         return totalRow ? [...mappedZones, totalRow] : mappedZones;
     }, [serverData, t]);
 
+    const exportConfig = useMemo<ExportConfig<Record<string, unknown>>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns as unknown as Column<Record<string, unknown>>[], headerRows);
+
+        return {
+            fileName: 'Data_Entry_Quality_Check_Division_Report',
+            reportTitle: 'Property Tax Data Center - Division-wise Summary',
+            reportSubtitle: `Workflow Stage: Data Entry & Quality Check - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData as Record<string, unknown>[]
+        };
+    }, [tableData, columns, headerRows]);
+
     return (
         <AutomationTable
             data={tableData}
@@ -184,6 +200,7 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
                         setSearchTerm={setSearchTerm} 
                         t={t} 
                         propertyDescriptions={propertyDescriptions}
+                        exportConfig={exportConfig}
                     />
                 </div>
             }

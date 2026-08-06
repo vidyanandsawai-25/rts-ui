@@ -3,10 +3,9 @@
 import { useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Download, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { AutomationTable, Column } from '@/components/common/AutomationTable';
-import { Button } from '@/components/common/ActionButton';
 import { InternalSurveyWardWiseSummaryCards } from './InternalSurveyWardWiseSummaryCards';
 
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
@@ -19,6 +18,9 @@ import { InternalSurveyWardWiseItems, InternalSurveyWardWiseData } from '@/types
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
+import { ExportDropdown } from '../ExportDropdown';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 
 interface InternalSurveyWardWiseSummaryProps {
     zoneId: string;
@@ -162,6 +164,20 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
         };
     }, [summaryData, formattedStage]);
 
+    const exportConfig = useMemo<ExportConfig<Record<string, unknown>>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns as unknown as Column<Record<string, unknown>>[], headerRows);
+
+        return {
+            fileName: `Internal_Survey_Ward_Summary_${zoneNo ? zoneNo + '_' : ''}${summaryData?.zoneName || 'Zone'}`.replace(/\s+/g, '_'),
+            reportTitle: `Property Tax Data Center - ${zoneNo ? `${zoneNo} - ` : ''}${summaryData?.zoneName ? summaryData.zoneName : ''} - Ward-wise Summary`,
+            reportSubtitle: `Workflow Stage: Internal Survey - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData as Record<string, unknown>[]
+        };
+    }, [tableData, columns, headerRows, zoneNo, summaryData]);
+
     return (
         <div className="flex flex-col h-full gap-3 p-3">
             {/* Custom Page Header */}
@@ -194,9 +210,7 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
 
                 <div className="flex-1 flex items-center justify-end gap-3">
                     <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
-                    <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
-                        {t('internalSurvey.buttons.export')}
-                    </Button>
+                    <ExportDropdown config={exportConfig} />
                 </div>
             </div>
 

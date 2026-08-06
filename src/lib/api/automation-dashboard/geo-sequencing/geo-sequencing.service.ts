@@ -16,7 +16,8 @@ export async function automationGetGeoSequencingGrid(workflowStageId?: string | 
     const response = await apiClient.get<GeoSequencingGridResponse>(url,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchGeoSequencingGrid") || "Failed to fetch geo sequencing grid data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchGeoSequencingGrid") || "Failed to fetch geo sequencing grid data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetGeoSequencingWardWiseSummary(
@@ -48,5 +49,6 @@ export async function automationGetGeoSequencingWardWiseSummary(
     ,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchGeoSequencingWardWiseSummary") || "Failed to fetch geo sequencing ward-wise summary data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchGeoSequencingWardWiseSummary") || "Failed to fetch geo sequencing ward-wise summary data");
+    return responseData.items?.[0] ?? null;
 }
