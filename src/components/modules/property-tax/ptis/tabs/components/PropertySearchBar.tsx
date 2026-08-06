@@ -50,6 +50,7 @@ export interface PropertySearchBarProps {
   propertyDescription: string;
   tabHeaderInfo?: TabHeaderInfoData | null;
   onPropertySearchChange?: (search: string) => void;
+  onPartitionSearchChange?: (search: string) => void;
   isSearchingProperties?: boolean;
 }
 
@@ -78,6 +79,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   propertyDescription,
   tabHeaderInfo,
   onPropertySearchChange,
+  onPartitionSearchChange,
   isSearchingProperties = false,
 }) => {
   const t = useTranslations('ptis');
@@ -179,6 +181,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   const handleFormSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      if (!propertyId) return;
       let finalPropertyNo = propertyNo;
       let finalPartitionNo = partitionNo;
       if (propertyNo.includes('-') && !propertyId) {
@@ -289,6 +292,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
                 emptyMessage={t('search.typeToGetSuggestions')}
+                noResultsMessage={t('search.error')}
                 strictMode={false}
                 onSearchChange={onPropertySearchChange}
                 showOptionsOnlyOnType
@@ -315,10 +319,11 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 sanitizeInput={sanitizePartitionNo}
                 className="h-7 text-xs lg:text-sm"
                 disabled={!wardId || !propertyNo}
-                isLoading={false}
+                isLoading={isSearchingProperties}
                 loadingPlaceholder={t('search.loading')}
                 noOptionsPlaceholder={t('search.noOptionsAvailable')}
                 strictMode={false}
+                onSearchChange={onPartitionSearchChange}
               />
               <Input type="hidden" name="partitionNo" value={partitionNo ?? ''} />
             </div>
@@ -330,7 +335,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
             variant="primary"
             size="sm"
             className="h-7 w-7 bg-blue-900 hover:bg-blue-700"
-            disabled={isSearching}
+            disabled={isSearching || !propertyId}
             aria-label={t('search.searchButton')}
           >
             {isSearching ? (

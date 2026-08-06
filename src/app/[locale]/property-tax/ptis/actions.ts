@@ -46,7 +46,15 @@ export async function getWardListAction(): Promise<{ success: boolean; data?: Wa
       backoffMultiplier: 2,
     });
     if (result.success && result.data) {
-      wardListCache = { data: result.data, timestamp: Date.now() };
+      // Sort alphabetically/alphanumerically using natural sort before caching
+      const sortedData = [...result.data].sort((a, b) => {
+        return (a.wardNo || '').localeCompare(b.wardNo || '', undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        });
+      });
+      wardListCache = { data: sortedData, timestamp: Date.now() };
+      return { success: true, data: sortedData };
     }
     return result;
   });
