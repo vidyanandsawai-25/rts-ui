@@ -1,12 +1,8 @@
 import React from "react";
 import type { Column } from "@/components/common/MasterTable";
-import type { AssetPhotoType } from "@/types/asset-masters/asset-photo-type.types";
+import type { AssetGrievanceRemark } from "@/types/asset-masters/asset-grievance-remark.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
-import { StatusBadge } from "@/components/common/StatusBadge";
 
-/**
- * Renders a sortable column header with sort icon
- */
 function SortableHeader({
   label,
   columnKey,
@@ -59,24 +55,28 @@ function SortableHeader({
   );
 }
 
-/**
- * Returns the table column configuration for Asset Photo Type Master.
- */
-export function getAssetPhotoTypeColumns(
+export function getAssetGrievanceRemarkColumns(
   t: (key: string) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
   onSort?: (key: string) => void
-): Column<AssetPhotoType>[] {
-  const sortableColumns = ["photoTypeCode", "photoTypeName", "displayOrder", "description"];
+): Column<AssetGrievanceRemark>[] {
+  // NOTE: "grievanceCategoryName" is mapped to "grievanceCategoryId" for sorting.
+  // The "description" and "isActive" columns are present in the table but are marked
+  // as non-sortable because the backend API does not support sorting on these fields.
+  const sortableColumns: Record<string, string> = {
+    remark: "remark",
+    grievanceCategoryName: "grievanceCategoryId",
+  };
 
   const createSortableLabel = (label: string, key: string) => {
-    if (onSort && sortableColumns.includes(key)) {
+    const apiSortKey = sortableColumns[key];
+    if (onSort && apiSortKey) {
       return (
         <SortableHeader
           label={label}
-          columnKey={key}
+          columnKey={apiSortKey}
           sortBy={sortBy}
           sortOrder={sortOrder}
           onSort={onSort}
@@ -89,18 +89,18 @@ export function getAssetPhotoTypeColumns(
 
   return [
     {
-      key: "photoTypeCode",
-      label: createSortableLabel(t("list.table.photoTypeCode"), "photoTypeCode"),
-      width: "20%",
+      key: "grievanceCategoryName",
+      label: createSortableLabel(t("table.columns.remarkType"), "grievanceCategoryName"),
+      width: "25%",
       align: "center",
       headerClassName: "break-words [word-break:break-word]",
       cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : ""),
+      render: (value) => (typeof value === "string" ? value : "-"),
     },
     {
-      key: "photoTypeName",
-      label: createSortableLabel(t("list.table.photoTypeName"), "photoTypeName"),
-      width: "20%",
+      key: "remark",
+      label: createSortableLabel(t("table.columns.remark"), "remark"),
+      width: "35%",
       align: "center",
       headerClassName: "break-words [word-break:break-word]",
       cellClassName: "break-words [word-break:break-word]",
@@ -108,69 +108,16 @@ export function getAssetPhotoTypeColumns(
     },
     {
       key: "description",
-      label: createSortableLabel(t("list.table.description"), "description"),
-      width: "20%",
+      label: t("form.description") || "Description",
+      width: "30%",
       align: "center",
       headerClassName: "break-words [word-break:break-word]",
       cellClassName: "break-words [word-break:break-word]",
       render: (value) => (typeof value === "string" ? value : "-"),
     },
     {
-      key: "displayOrder",
-      label: createSortableLabel(t("list.table.displayOrder"), "displayOrder"),
-      width: "10%",
-      align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (value != null ? String(value) : "-"),
-    },
-    {
-      key: "assetCategoryName",
-      label: t("list.table.assetCategoryAndType"),
-      width: "20%",
-      align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (_, row) => {
-        const parts = [];
-        if (row.assetCategoryName) parts.push(row.assetCategoryName);
-        if (row.assetTypeName) parts.push(row.assetTypeName);
-        return parts.length > 0 ? parts.join(" / ") : "-";
-      },
-    },
-    {
-      key: "isSubUnit",
-      label: t("list.table.isSubUnit"),
-      width: "10%",
-      align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (
-        <StatusBadge
-          value={Boolean(value)}
-          activeLabel={t("yes")}
-          inactiveLabel={t("no")}
-        />
-      ),
-    },
-    {
-      key: "isRequired",
-      label: t("list.table.isRequired"),
-      width: "10%",
-      align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (
-        <StatusBadge
-          value={Boolean(value)}
-          activeLabel={t("yes")}
-          inactiveLabel={t("no")}
-        />
-      ),
-    },
-    {
       key: "isActive",
-      label: t("list.table.status"),
+      label: t("table.columns.status"),
       width: "10%",
       align: "center",
       headerClassName: "break-words [word-break:break-word]",

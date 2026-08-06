@@ -92,6 +92,8 @@ export default getRequestConfig(async ({ locale }) => {
     mapDashboardMessages,
     propertyMappingMessages,
     assetRegisterMessages,
+    assetGrievanceCategoryMessages,
+    assetGrievanceRemarkMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -225,6 +227,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/mapDashboard.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/propertyMapping.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetRegister.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetGrievanceCategory.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetGrievanceRemark.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -308,6 +312,8 @@ export default getRequestConfig(async ({ locale }) => {
       mapDashboard: mapDashboardMessages,
       propertyMapping: propertyMappingMessages?.propertyMapping || propertyMappingMessages,
       assetRegister: assetRegisterMessages,
+      assetGrievanceCategory: assetGrievanceCategoryMessages,
+      assetGrievanceRemark: assetGrievanceRemarkMessages,
     },
   };
 });
