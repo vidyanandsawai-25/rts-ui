@@ -34,6 +34,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
   focusRefs,
   roomTypeData,
   isUtilityCategory,
+  floorData,
 }) => {
   const t = useTranslations('quickDataEntry');
 
@@ -60,6 +61,17 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
     formData.outer
   ), [calculateTotal, calculatedArea, formData.roomCount, currentRoomOffsets, formData.outer]);
 
+  const isOpenSpace =
+    floorData?.selectedFloorType === 'OpenPlot' ||
+    floorData?.isOpenPlot === true ||
+    String(floorData?.floorId) === '77' ||
+    String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+    String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floor || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floor || '').toLowerCase().includes('open space') ||
+    String(floorData?.floorDescription || '').toLowerCase().includes('open space');
+
   return (
     <div className="relative z-30 mb-2 overflow-visible rounded-lg border border-gray-300 shadow-lg animate-fade-slide-up">
       <div className="w-full overflow-visible rounded-b-lg">
@@ -70,22 +82,34 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
               <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomNo }}>
                 {isUtilityCategory ? t('roomSubmission.table.utilityRoomNo') : t('roomSubmission.table.roomNo')}
               </div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomType }}>
-                {isUtilityCategory ? t('roomSubmission.table.utilityRoomType') : t('roomSubmission.table.roomType')}
+              {!isOpenSpace && (
+                <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomType }}>
+                  {isUtilityCategory ? t('roomSubmission.table.utilityRoomType') : t('roomSubmission.table.roomType')}
+                </div>
+              )}
+              <div className="flex items-center justify-center flex-1 min-w-[120px] px-2 font-semibold border-r border-white/20">
+                {t('roomSubmission.table.shape')}
               </div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.shape }}>{t('roomSubmission.table.shape')}</div>
               <div className="flex flex-col items-center justify-center flex-shrink-0 px-2 font-semibold leading-tight border-r border-white/20" style={{ width: COLUMN_WIDTHS.area }}>
                 {t('roomSubmission.table.area')} <span className="text-[10px] uppercase opacity-80">({areaUnit})</span>
               </div>
               <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.roomCount }}>
                 {isUtilityCategory ? "COUNT" : t('roomSubmission.table.roomCount')}
               </div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.offset }}>{t('roomSubmission.table.offset')}</div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.outer }}>{t('roomSubmission.table.outer')}</div>
+              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.offset }}>
+                {t('roomSubmission.table.offset')}
+              </div>
+              {!isOpenSpace && (
+                <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold border-r border-white/20" style={{ width: COLUMN_WIDTHS.outer }}>
+                  {t('roomSubmission.table.outer')}
+                </div>
+              )}
               <div className="flex flex-col items-center justify-center flex-shrink-0 px-2 font-semibold leading-tight border-r border-white/20" style={{ width: COLUMN_WIDTHS.total }}>
                 {t('roomSubmission.table.total')} <span className="text-[10px] uppercase opacity-80">({areaUnit})</span>
               </div>
-              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold" style={{ width: COLUMN_WIDTHS.action }}>{t('roomSubmission.table.action')}</div>
+              <div className="flex items-center justify-center flex-shrink-0 px-2 font-semibold" style={{ width: COLUMN_WIDTHS.action }}>
+                {t('roomSubmission.table.action')}
+              </div>
             </div>
           </div>
         </div>
@@ -101,6 +125,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
               t={t}
               roomTypeData={roomTypeData}
               isUtilityCategory={isUtilityCategory}
+              floorData={floorData}
             />
 
             <DimensionAreaFields
@@ -131,6 +156,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
               currentRoomOffsets={currentRoomOffsets}
               setCurrentRoomOffsets={setCurrentRoomOffsets}
               calculatedArea={calculatedArea}
+              floorData={floorData}
             />
 
             <TotalActionFields

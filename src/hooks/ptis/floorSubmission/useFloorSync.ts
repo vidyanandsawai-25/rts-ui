@@ -86,6 +86,7 @@ export const useFloorSync = (params: {
     props,
     isAddingNewFloor,
     setIsAddingNewFloor,
+    editingFloorForm,
     setEditingFloorForm,
     setLocalFloors,
     setSelectedFloor,
@@ -243,8 +244,24 @@ export const useFloorSync = (params: {
           ...finalForm,
           id: undefined, // It's a new floor, keep id undefined
         }));
+      } else {
+        const gFloor = (props.floorData as { floorCode?: string; floorId?: number; description?: string }[] || []).find(
+          (f) => f.floorCode === 'G' || f.description?.startsWith('G -') || f.description?.startsWith('G-')
+        );
+        if (gFloor) {
+          setEditingFloorForm((prev) => ({
+            ...prev,
+            floorId: String(gFloor.floorId || gFloor.floorCode || ''),
+            floor: gFloor.description || 'G - तळमजला',
+            floorDescription: gFloor.description || 'G - तळमजला',
+          }));
+        }
       }
-    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new' && !isAddingNewFloor) {
+    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new') {
+      if (isAddingNewFloor && !editingFloorForm.id) {
+        return;
+      }
+      setIsAddingNewFloor(false);
       const renterData = getRenterDataFromStorage(currentFloorIdUrl, initialPropertyID);
       const savedForm = getSavedFormFromStorage(currentFloorIdUrl, restoredSessionFormRef);
 
@@ -289,7 +306,7 @@ export const useFloorSync = (params: {
         setSelectedFloor(finalForm);
       }
     }
-  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors, initialPropertyID]);
+  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, editingFloorForm.id, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors, initialPropertyID, props.floorData]);
 
   // Plot area auto-population disabled to keep Open Space form blank
   /*

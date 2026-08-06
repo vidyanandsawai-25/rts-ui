@@ -91,7 +91,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     ) as FloorData | undefined;
   }, [localFloors, props.initialFloors]);
 
-  // Auto-select previously saved TypeOfUseId during Edit mode
+  // Auto-select previously saved TypeOfUseId during Edit mode or default to 'OP'
   React.useEffect(() => {
     if (openPlotRecord) {
       const rawId = Number(
@@ -105,9 +105,19 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       );
       if (matched) {
         setSelectedOpenPlotCategory(matched);
+        return;
       }
     }
-  }, [openPlotRecord, openPlotCategoryOptions]);
+
+    if (!selectedOpenPlotCategory && openPlotCategoryOptions.length > 0) {
+      const opDefault = openPlotCategoryOptions.find(
+        (c) => String(c.typeOfUseCode || '').toUpperCase() === 'OP' || String(c.description || '').toLowerCase().includes('खुला भूखंड')
+      ) || openPlotCategoryOptions[0];
+      if (opDefault) {
+        setSelectedOpenPlotCategory(opDefault);
+      }
+    }
+  }, [openPlotRecord, openPlotCategoryOptions, selectedOpenPlotCategory]);
 
   const dynamicPlotArea = React.useMemo(() => {
     if (openPlotRecord) {
@@ -296,17 +306,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               selectedOpenPlotCategory={selectedOpenPlotCategory}
               onChangeOpenPlotCategory={(cat) => {
                 setSelectedOpenPlotCategory(cat);
-                if (cat && (selectedFloorType === 'OpenPlot' || editingFloorForm?.isOpenPlot)) {
-                  const isTaxable = isOpenPlotCodeTaxable(cat.typeOfUseCode);
-                  setEditingFloorForm((prev) => ({
-                    ...prev,
-                    typeOfUseId: cat.id,
-                    use: String(cat.id),
-                    typeOfUseDescription: cat.description,
-                    isTaxable: isTaxable ? 'Yes' : 'No',
-                    taxLiability: isTaxable ? 'Taxable' : 'NonTaxable',
-                  }));
-                }
               }}
               handleOpenDropdown={handleOpenDropdown}
               menuPlacement={Boolean(selectedFloor || isAddingNewFloor) ? 'bottom' : 'top'}
@@ -424,7 +423,9 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               <FloorForm
                 t={t}
                 selectedFloor={selectedFloor}
+                setSelectedFloor={setSelectedFloor}
                 isAddingNewFloor={isAddingNewFloor}
+                setIsAddingNewFloor={setIsAddingNewFloor}
                 editingFloorForm={editingFloorForm}
                 setEditingFloorForm={setEditingFloorForm}
                 formErrors={formErrors}

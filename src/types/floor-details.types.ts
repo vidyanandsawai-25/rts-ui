@@ -289,6 +289,8 @@ export interface OldFloorRow {
 export interface FloorFormProps {
     t: (key: string, values?: Record<string, string | number | Date>) => string;
     isAddingNewFloor: boolean;
+    setIsAddingNewFloor?: React.Dispatch<React.SetStateAction<boolean>>;
+    setSelectedFloor?: (val: FloorData | null) => void;
     editingFloorForm: FloorData;
     setEditingFloorForm: React.Dispatch<React.SetStateAction<FloorData>>;
     formErrors: Record<string, string>;

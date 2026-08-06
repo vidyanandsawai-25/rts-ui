@@ -38,132 +38,132 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
 
     const t = useTranslations("quickDataEntry");
 
-    const columns = useMemo(() => [
-        {
-            key: "roomNo",
-            label: isUtilityCategory ? "NO" : t("roomSubmission.table.roomNo"),
-            width: COLUMN_WIDTHS.roomNo,
-            align: "center",
-            cellClassName: "font-medium text-gray-700",
-        },
-        // {
-        //     key: "utilities",
-        //     label: t("roomSubmission.table.roomType"),
-        //     width: COLUMN_WIDTHS.roomType,
-        //     align: "center",
-        //     render: (_val: unknown, row: RoomData) => (
-        //         <div className="px-2 text-gray-900 font-medium truncate text-center">
-        //             {row.utilities || "-"}
-        //         </div>
-        //     )
-        // },
+    const columns = useMemo(() => {
+        const shapeWidth = isOpenSpaceSection ? "30%" : COLUMN_WIDTHS.shape;
+        const totalWidth = isOpenSpaceSection ? "18%" : COLUMN_WIDTHS.total;
+        const roomNoWidth = isOpenSpaceSection ? "12%" : COLUMN_WIDTHS.roomNo;
+        const areaWidth = isOpenSpaceSection ? "15%" : COLUMN_WIDTHS.area;
+        const roomCountWidth = isOpenSpaceSection ? "13%" : COLUMN_WIDTHS.roomCount;
+        const offsetWidth = isOpenSpaceSection ? "12%" : COLUMN_WIDTHS.offset;
 
-        {
-            key: "utilities",
-            label: isUtilityCategory ? "TYPE" : t("roomSubmission.table.roomType"),
-            width: COLUMN_WIDTHS.roomType,
-            align: "center",
-            render: (_val: unknown, row: RoomData) => {
-                const typeVal = row.roomTypeDescription ?? row.utilities ?? row.roomType;
-                const cleanType = (typeVal && typeVal !== "Room" && typeVal !== "Residential") ? String(typeVal) : "";
-                return (
-                    <div className="px-2 text-gray-900 font-medium truncate text-center">
-                        {cleanType || "-"}
-                    </div>
-                );
-            }
-        },
-        {
-            key: "shape",
-            label: t("roomSubmission.table.shape"),
-            width: COLUMN_WIDTHS.shape,
-            align: "center",
-            render: (val: unknown) => (
-                <div className="px-2 text-gray-900 font-medium truncate text-center">
-                    {val && val !== "-Select-" ? t(`roomSubmission.input.shapes.${String(val).replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase())}`) : "-Select-"}
-                </div>
-            )
-        },
-        {
-            key: "area",
-            label: `${t("roomSubmission.table.area")} (${areaUnit})`,
-            width: COLUMN_WIDTHS.area,
-            align: "center",
-            render: (val: unknown) => <div className="text-center"><span className="font-semibold text-gray-800">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
-        },
-        {
-            key: "roomCount",
-            label: isUtilityCategory ? "COUNT" : t("roomSubmission.table.roomCount"),
-            width: COLUMN_WIDTHS.roomCount,
-            align: "center",
-            cellClassName: "text-gray-700",
-        },
-        {
-            key: "offsetMinus",
-            label: t("roomSubmission.table.offset"),
-            width: COLUMN_WIDTHS.offset,
-            align: "center",
-            render: (val: unknown, row: RoomData, idx: number) => {
-                const hasOffset = val === "Yes" || row.offsetMinus === "Yes" || row.minusYesNo === true || (row.offsets && row.offsets.length > 0);
-                return (
-                    <div className="flex justify-center">
-                        <Tooltip placement="top" content={row.offsets && row.offsets.length > 0
-                            ? t("offsetTooltip", {
-                                details: row.offsets.map((off: OffsetData) => {
-                                    // Normalize shape to match translation keys (remove spaces, lowercase first char only)
-                                    const normalizedShape = off.shape
-                                        ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
-                                        : "";
-                                    return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
-                                }).join(", ")
-                            })
-                            : t("offsetTooltipEmpty")}
-                        >
-                            <div
-                                className="flex justify-center items-center gap-1 cursor-pointer hover:scale-110 transition-transform"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (onOpenOffset) onOpenOffset(idx);
-                                }}
-                            >
-                                {hasOffset ? (
-                                    <div className="flex items-center text-red-500 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 font-bold">
-                                        {row.offsets?.length || 0}
-                                        <Info className="w-2.5 h-2.5 ml-1" />
-                                    </div>
-                                ) : (
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-100">{t("floor.no")}</span>
-                                )}
+        return [
+            {
+                key: "roomNo",
+                label: isUtilityCategory ? "NO" : t("roomSubmission.table.roomNo"),
+                width: roomNoWidth,
+                align: "center",
+                cellClassName: "font-medium text-gray-700",
+            },
+            ...(!isOpenSpaceSection ? [
+                {
+                    key: "utilities",
+                    label: isUtilityCategory ? "TYPE" : t("roomSubmission.table.roomType"),
+                    width: COLUMN_WIDTHS.roomType,
+                    align: "center",
+                    render: (_val: unknown, row: RoomData) => {
+                        const typeVal = row.roomTypeDescription ?? row.utilities ?? row.roomType;
+                        const cleanType = (typeVal && typeVal !== "Room" && typeVal !== "Residential") ? String(typeVal) : "";
+                        return (
+                            <div className="px-2 text-gray-900 font-medium truncate text-center">
+                                {cleanType || "-"}
                             </div>
-                        </Tooltip>
+                        );
+                    }
+                }
+            ] : []),
+            {
+                key: "shape",
+                label: t("roomSubmission.table.shape"),
+                width: shapeWidth,
+                align: "center",
+                render: (val: unknown) => (
+                    <div className="px-2 text-gray-900 font-medium truncate text-center">
+                        {val && val !== "-Select-" ? t(`roomSubmission.input.shapes.${String(val).replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase())}`) : "-Select-"}
                     </div>
-                );
+                )
+            },
+            {
+                key: "area",
+                label: `${t("roomSubmission.table.area")} (${areaUnit})`,
+                width: areaWidth,
+                align: "center",
+                render: (val: unknown) => <div className="text-center"><span className="font-semibold text-gray-800">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
+            },
+            {
+                key: "roomCount",
+                label: isUtilityCategory ? "COUNT" : t("roomSubmission.table.roomCount"),
+                width: roomCountWidth,
+                align: "center",
+                cellClassName: "text-gray-700",
+            },
+            {
+                key: "offsetMinus",
+                label: t("roomSubmission.table.offset"),
+                width: offsetWidth,
+                align: "center",
+                render: (val: unknown, row: RoomData, idx: number) => {
+                    const hasOffset = val === "Yes" || row.offsetMinus === "Yes" || row.minusYesNo === true || (row.offsets && row.offsets.length > 0);
+                    return (
+                        <div className="flex justify-center">
+                            <Tooltip placement="top" content={row.offsets && row.offsets.length > 0
+                                ? t("offsetTooltip", {
+                                    details: row.offsets.map((off: OffsetData) => {
+                                        const normalizedShape = off.shape
+                                            ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
+                                            : "";
+                                        return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
+                                    }).join(", ")
+                                })
+                                : t("offsetTooltipEmpty")}
+                            >
+                                <div
+                                    className="flex justify-center items-center gap-1 cursor-pointer hover:scale-110 transition-transform"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (onOpenOffset) onOpenOffset(idx);
+                                    }}
+                                >
+                                    {hasOffset ? (
+                                        <div className="flex items-center text-red-500 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 font-bold">
+                                            {row.offsets?.length || 0}
+                                            <Info className="w-2.5 h-2.5 ml-1" />
+                                        </div>
+                                    ) : (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-100">{t("floor.no")}</span>
+                                    )}
+                                </div>
+                            </Tooltip>
+                        </div>
+                    );
+                }
+            },
+            ...(!isOpenSpaceSection ? [
+                {
+                    key: "outer",
+                    label: t("roomSubmission.table.outer"),
+                    width: COLUMN_WIDTHS.outer,
+                    align: "center",
+                    render: (val: unknown) => (
+                        <div className="flex justify-center">
+                            <span className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-bold",
+                                val === "Yes" ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-blue-50 text-blue-600 border border-blue-100"
+                            )}>
+                                {val === "Yes" ? t("floor.yes") : t("floor.no")}
+                            </span>
+                        </div>
+                    )
+                }
+            ] : []),
+            {
+                key: "total",
+                label: `${t("roomSubmission.table.total")} (${areaUnit})`,
+                width: totalWidth,
+                align: "center",
+                render: (val: unknown) => <div className="text-center"><span className="font-bold text-indigo-700">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
             }
-        },
-        {
-            key: "outer",
-            label: t("roomSubmission.table.outer"),
-            width: COLUMN_WIDTHS.outer,
-            align: "center",
-            render: (val: unknown) => (
-                <div className="flex justify-center">
-                    <span className={cn(
-                        "px-2 py-0.5 rounded text-[10px] font-bold",
-                        val === "Yes" ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-blue-50 text-blue-600 border border-blue-100"
-                    )}>
-                        {val === "Yes" ? t("floor.yes") : t("floor.no")}
-                    </span>
-                </div>
-            )
-        },
-        {
-            key: "total",
-            label: `${t("roomSubmission.table.total")} (${areaUnit})`,
-            width: COLUMN_WIDTHS.total,
-            align: "center",
-            render: (val: unknown) => <div className="text-center"><span className="font-bold text-indigo-700">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
-        }
-    ], [areaUnit, t, onOpenOffset, isUtilityCategory]);
+        ];
+    }, [areaUnit, t, onOpenOffset, isUtilityCategory, isOpenSpaceSection]);
 
     const finalColumns = columns;
 

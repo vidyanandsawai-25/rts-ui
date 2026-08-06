@@ -11,6 +11,8 @@ import {
   deletePropertyDetails,
 } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 
+import { getTypeOfUseData } from '@/lib/api/ptis/floorSubmission';
+
 import {
   PropertyBasicDetailsApiItem,
   PropertyCategoryApiItem,
@@ -196,7 +198,6 @@ export async function validateFloorCompatibilityAction(
       return { success: true, data: { isCompatible: true, invalidCount: 0 } };
     }
 
-    const { getTypeOfUseData } = await import('@/lib/api/ptis/floorSubmission');
     const validUses = await getTypeOfUseData(targetPropertyTypeId);
     const validUseIds = new Set<string>(
       (validUses || []).map((u) => String(u.typeOfUseId || u.id || u.ID || ''))

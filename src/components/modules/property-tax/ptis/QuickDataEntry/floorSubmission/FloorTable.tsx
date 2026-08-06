@@ -63,7 +63,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
   setFloorSearch: _setFloorSearch,
   selectedFloor,
   setSelectedFloor,
-  isAddingNewFloor,
+  isAddingNewFloor: _isAddingNewFloor,
   setIsAddingNewFloor,
   handleAddFloor,
   handleOpenDataEntrySameAs,
@@ -411,17 +411,17 @@ const FloorTable: React.FC<FloorTableProps> = ({
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) => {
             const isSelected = selectedFloor
-              ? (Number(selectedFloor.id) === Number(row.id) ||
-                Number((selectedFloor as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number((row as unknown as { propertyDetailsId?: number }).propertyDetailsId) ||
-                Number((selectedFloor as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number(row.id) ||
-                Number(selectedFloor.id) === Number((row as unknown as { propertyDetailsId?: number }).propertyDetailsId))
+              ? (Boolean(selectedFloor.id && row.id && String(selectedFloor.id) === String(row.id)) ||
+                Boolean(selectedFloor.propertyDetailsId && row.propertyDetailsId && Number(selectedFloor.propertyDetailsId) === Number(row.propertyDetailsId)) ||
+                Boolean(selectedFloor.propertyDetailsId && row.id && Number(selectedFloor.propertyDetailsId) === Number(row.id)) ||
+                Boolean(selectedFloor.id && row.propertyDetailsId && Number(selectedFloor.id) === Number(row.propertyDetailsId)))
               : false;
 
             if (viewOnly && !onRowClick) {
               return 'cursor-default border-l-4 border-l-transparent border-b-2 border-blue-200/90';
             }
 
-            return `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${isSelected && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600 font-bold' : 'border-l-4 border-l-transparent'
+            return `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${isSelected ? 'bg-blue-100/70 border-l-4 border-l-blue-600 font-bold' : 'border-l-4 border-l-transparent'
               }`;
           }}
         />
