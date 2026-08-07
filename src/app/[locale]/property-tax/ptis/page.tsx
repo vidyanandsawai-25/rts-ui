@@ -193,7 +193,15 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                 currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined
               }
               propertyNo={propertyNo}
-              ownerName={kycDetails.propertyHolderName || ''}
+              ownerName={
+                kycDetails?.propertyHolderName ||
+                kycDetails?.propertyHolderNameMarathi ||
+                kycDetails?.propertyHolderNameEnglish ||
+                ((kycDetails as unknown) as Record<string, unknown>)?.ownerName as string ||
+                tabHeaderInfo?.ownerName ||
+                ((rawPropertyData as unknown) as Array<Record<string, unknown>>)?.find((p) => p.propertyId === resolvedPropertyId || p.propertyNo === propertyNo)?.ownerName as string ||
+                ''
+              }
             />
           }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}

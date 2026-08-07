@@ -109,19 +109,6 @@ function QuickDataEntryContent({
             !!(window as unknown as { __isQuickDataEntrySaving?: boolean }).__isQuickDataEntrySaving
         ));
 
-        const isIncompatibleFloorActive = typeof window !== 'undefined' && !!(window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor;
-        if (isIncompatibleFloorActive) {
-            confirm({
-                variant: 'warning',
-                title: t('property.propertyDescriptionChangeConfirmTitle') || 'Confirm Property Description Change',
-                description: t('property.propertyDescriptionFloorIncompatible') || "Property Description has been changed. One or more existing Floor records contain a Use that is not valid for the selected Property Description. Please update or remove the incompatible Floor records before saving the new Property Description.",
-                confirmText: t('common.ok') || 'OK',
-                onConfirm: () => {
-                    // Stays on page so user can fix floor records
-                },
-            });
-            return;
-        }
 
         if (isSavingActive) {
             return;
@@ -310,7 +297,7 @@ function QuickDataEntryContent({
                             <div className="flex-1">
                                 <p className="text-xs leading-relaxed font-medium">
                                     {t('property.propertyDescriptionFloorIncompatible') ||
-                                        "Property Description has been changed. One or more existing Floor records contain a Use that is not valid for the selected Property Description. Please update or remove the incompatible Floor records before saving the new Property Description."}
+                                        "Property Description has been changed. One or more existing Floor records contain a Use that is not valid for the selected Property Description. Please update or remove the incompatible Floor records."}
                                 </p>
                             </div>
                         </div>

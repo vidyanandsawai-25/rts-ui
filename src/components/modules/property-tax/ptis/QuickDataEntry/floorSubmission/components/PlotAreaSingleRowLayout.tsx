@@ -91,7 +91,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
         {/* L Input */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
-            {getTranslation('floor.lengthShort', 'L (ft)')}
+            {getTranslation('floor.lengthShort', 'Length')}
           </span>
           <AnimatedDigitInput
             id="plot-length"
@@ -112,7 +112,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
         {/* W Input */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
-            {getTranslation('floor.widthShort', 'W (ft)')}
+            {getTranslation('floor.widthShort', 'Width')}
           </span>
           <AnimatedDigitInput
             id="plot-width"
