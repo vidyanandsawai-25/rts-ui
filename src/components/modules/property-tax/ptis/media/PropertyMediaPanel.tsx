@@ -77,8 +77,7 @@ function PropertyMediaPanel({
     fullyLoadedIds,
     setFullyLoadedIds,
     setPhotos,
-    signatureCategory,
-    signaturePhoto,
+    gisPhoto,
     t,
   } = usePropertyMedia({
     initialPhotoSlots,
@@ -214,8 +213,8 @@ function PropertyMediaPanel({
         photoPlanPhoto={photoPlanPhoto}
         photoPlanCategory={photoPlanCategory}
         handleCreateClick={handleCreateClick}
-        signaturePhoto={signaturePhoto}
-        signatureCategory={signatureCategory}
+        gisPhoto={gisPhoto}
+        hasCoords={hasCoords}
         cdBeforeImg={cdBeforeImg}
         cdAfterImg={cdAfterImg}
         cdBeforeLabel={cdBeforeLabel}

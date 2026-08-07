@@ -6,6 +6,7 @@ import { Images, X, Plus } from 'lucide-react';
 import { ImageHoverPreview } from './ImageHoverPreview';
 import { MediaImageCard, AdditionalImagesGrid } from './MediaImageCards';
 import { ChangeDetectionCard } from './ChangeDetectionCard';
+import { GisMapCard } from './GisMapCard';
 import type { PhotoCategory } from './PhotoPlanSidebar';
 import type { AdditionalImage } from './MediaImageCards';
 import { toast } from 'sonner';
@@ -35,8 +36,8 @@ interface PropertyMediaPanelContentProps {
   photoPlanPhoto?: AdditionalImage;
   photoPlanCategory?: PhotoCategory;
   handleCreateClick: (e: React.MouseEvent) => void;
-  signaturePhoto?: AdditionalImage;
-  signatureCategory?: PhotoCategory;
+  gisPhoto?: AdditionalImage;
+  hasCoords?: boolean;
   cdBeforeImg: string;
   cdAfterImg: string;
   cdBeforeLabel: string;
@@ -62,8 +63,8 @@ export function PropertyMediaPanelContent({
   photoPlanPhoto,
   photoPlanCategory,
   handleCreateClick,
-  signaturePhoto,
-  signatureCategory,
+  gisPhoto,
+  hasCoords = true,
   cdBeforeImg,
   cdAfterImg,
   cdBeforeLabel,
@@ -159,20 +160,19 @@ export function PropertyMediaPanelContent({
         </MediaImageCard>
 
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
-        <MediaImageCard
-          src={signaturePhoto?.src || ''}
-          documentGuid={signaturePhoto?.documentGuid}
-          fullSrc={signaturePhoto?.fullSrc || ''}
-          alt={signaturePhoto?.alt || t('media.ownerSignaturePhoto') || 'Owner Signature Photo'}
-          label={signaturePhoto?.title || t('media.ownerSignaturePhoto') || 'Owner Signature Photo'}
-          hoverBorderColor="hover:border-green-500"
+        <GisMapCard
+          image={gisPhoto}
+          hasCoords={hasCoords}
           onClick={() => {
-            const idx = signatureCategory ? categories.indexOf(signatureCategory) : -1;
-            if (idx !== -1) openDrawer(idx, 0);
+            const idx = cdCategory ? categories.indexOf(cdCategory) : -1;
+            if (idx !== -1) {
+              openDrawer(idx);
+            } else {
+              toast.error(t('error.generic') || 'Something went wrong.');
+            }
           }}
-          onMouseEnter={() => handleImageHover(signaturePhoto?.fullSrc || signaturePhoto?.src || '', signaturePhoto?.title || t('media.ownerSignaturePhoto') || 'Owner Signature Photo')}
+          onMouseEnter={() => handleImageHover(gisPhoto?.fullSrc || gisPhoto?.src || '', gisPhoto?.title || t('media.satelliteView') || 'Satellite View')}
           onMouseLeave={handleImageLeave}
-          hasPhoto={signaturePhoto?.hasPhoto}
         />
 
         <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
