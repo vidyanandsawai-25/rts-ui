@@ -65,7 +65,14 @@
         },
         "dataType": {
           "label": "डेटा प्रकार",
-          "placeholder": "डेटा प्रकार चुनें"
+          "placeholder": "डेटा प्रकार चुनें",
+          "options": {
+            "decimal": "DECIMAL (उदा. 10.5)",
+            "bit": "BIT (सत्य/असत्य)",
+            "integer": "INTEGER (उदा. 10)",
+            "text": "TEXT (उदा. पाठ्य)",
+            "date": "DATE (उदा. 15-08-2026)"
+          }
         },
         "unit": {
           "label": "इकाई",
@@ -84,6 +91,12 @@
         },
         "isDiscountApplicable": {
           "label": "छूट लागू"
+        },
+        "isPhotoRequired": {
+          "label": "फोटो आवश्यक"
+        },
+        "isDocumentRequired": {
+          "label": "दस्तावेज़ आवश्यक"
         },
         "isChild": {
           "label": "क्या यह उप-विशेषता है?"
