@@ -46,7 +46,7 @@ vi.mock('@/lib/api/configuration-settings/config-master/configMaster.service', (
     createConfigKey: vi.fn(),
     createConfigValue: vi.fn(),
     getAllConfigValuesFull: vi.fn(),
-    getAllCategories: vi.fn(),
+    getAllCategories: vi.fn(async () => ({ success: true, data: [] })),
     getItemsByCategory: vi.fn(),
   },
 }));
