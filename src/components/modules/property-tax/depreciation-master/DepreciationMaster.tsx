@@ -26,6 +26,9 @@ export default function DepreciationMaster({
   /* ----------------------------- State ----------------------------- */
   const [saving, setSaving] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<Record<number, number>>({});
+  const [pendingNewRecords, setPendingNewRecords] = useState<
+    Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>
+  >({});
   const [minValue, setMinValue] = useState("");
   const [maxValue, setMaxValue] = useState("");
   const [minError, setMinError] = useState<string | null>(null);
@@ -106,6 +109,8 @@ export default function DepreciationMaster({
     effectiveSelectedRangeId,
     pendingChanges,
     setPendingChanges,
+    pendingNewRecords,
+    setPendingNewRecords,
     setLocalRateOverrides,
     setSaving,
     setMinValue,

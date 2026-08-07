@@ -22,6 +22,8 @@ interface UseDepreciationHandlersParams {
   effectiveSelectedRangeId: string | null;
   pendingChanges: Record<number, number>;
   setPendingChanges: React.Dispatch<React.SetStateAction<Record<number, number>>>;
+  pendingNewRecords: Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>;
+  setPendingNewRecords: React.Dispatch<React.SetStateAction<Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>>>;
   setLocalRateOverrides: React.Dispatch<React.SetStateAction<Record<string, Record<number, number>>>>;
   setSaving: React.Dispatch<React.SetStateAction<boolean>>;
   setMinValue: React.Dispatch<React.SetStateAction<string>>;
@@ -33,6 +35,7 @@ interface UseDepreciationHandlersParams {
   maxValue: string;
 }
 
+
 export function useDepreciationHandlers({
   t,
   locale,
@@ -42,6 +45,8 @@ export function useDepreciationHandlers({
   effectiveSelectedRangeId,
   pendingChanges,
   setPendingChanges,
+  pendingNewRecords,
+  setPendingNewRecords,
   setLocalRateOverrides,
   setSaving,
   setMinValue,
@@ -84,13 +89,14 @@ export function useDepreciationHandlers({
     try {
       refreshPage();
       setPendingChanges({});
+      setPendingNewRecords({});
       setLocalRateOverrides({});
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("errors.load"));
     } finally {
       setSaving(false);
     }
-  }, [t, refreshPage, setSaving, setPendingChanges, setLocalRateOverrides]);
+  }, [t, refreshPage, setSaving, setPendingChanges, setLocalRateOverrides, setPendingNewRecords]);
 
   const handleCellChange = useCallback(
     (rowId: string, colId: string, value: string | number) => {
@@ -121,14 +127,26 @@ export function useDepreciationHandlers({
           ...prev,
           [targetRecord.id]: numValue,
         }));
+      } else {
+        const newKey = `new_${range.min}_${range.max}_${colId}`;
+        setPendingNewRecords((prev) => ({
+          ...prev,
+          [newKey]: {
+            minYear: range.min,
+            maxYear: range.max,
+            constructionTypeId: Number(colId),
+            rate: numValue,
+          },
+        }));
       }
     },
-    [ranges, dbRows, setLocalRateOverrides, setPendingChanges]
+    [ranges, dbRows, setLocalRateOverrides, setPendingChanges, setPendingNewRecords]
   );
 
   const handleUpdateRates = useCallback(async () => {
     const changeCount = Object.keys(pendingChanges).length;
-    if (changeCount === 0) {
+    const newRecordCount = Object.keys(pendingNewRecords).length;
+    if (changeCount === 0 && newRecordCount === 0) {
       toast.info(t("messages.noChanges"));
       return;
     }
@@ -137,9 +155,9 @@ export function useDepreciationHandlers({
       variant: "update",
       onConfirm: async () => {
         setSaving(true);
-        const tid = toast.loading(t("messages.updating", { count: changeCount }));
+        const tid = toast.loading(t("messages.updating", { count: changeCount + newRecordCount }));
         try {
-          const res = await syncDepreciationRatesAction(locale, dbRows, pendingChanges);
+          const res = await syncDepreciationRatesAction(locale, dbRows, pendingChanges, pendingNewRecords);
           if (!res.success) throw new Error(res.error);
           toast.success(t("success.updated"), { id: tid });
           await reloadData();
@@ -150,7 +168,7 @@ export function useDepreciationHandlers({
         }
       },
     });
-  }, [pendingChanges, locale, dbRows, t, setSaving, reloadData, confirm]);
+  }, [pendingChanges, pendingNewRecords, locale, dbRows, t, setSaving, reloadData, confirm]);
 
   const handleMinChange = useCallback(
     (value: string) => {
