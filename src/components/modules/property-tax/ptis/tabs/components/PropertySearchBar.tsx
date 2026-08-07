@@ -84,6 +84,19 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
 }) => {
   const t = useTranslations('ptis');
 
+  React.useEffect(() => {
+    if (!wardId) {
+      const timer = setTimeout(() => {
+        const wardInput = document.getElementById('wardNo');
+        if (wardInput && !wardInput.hasAttribute('disabled')) {
+          wardInput.focus();
+          wardInput.click();
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [wardId]);
+
   const sanitizeWardNo = useCallback((val: string) => {
     return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
   }, []);

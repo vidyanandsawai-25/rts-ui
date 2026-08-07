@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, SearchSelect } from '@/components/common';
+import { Input, Label, SearchSelect, PTISTransliteratedInput } from '@/components/common';
 import {
   KYC_VALIDATION_RULES,
   KYC_TITLE_OPTIONS,
@@ -91,7 +91,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           {t('kyc.propertyHolderNameMarathi')}
           <span className="text-red-500 ml-0.5">*</span>
         </Label>
-        <Input
+        <PTISTransliteratedInput
           type="text"
           id="kyc-ownername"
           placeholder={t('kyc.enterFullNameMarathi')}
@@ -104,7 +104,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             onBlurField();
             setFormData((prev) => ({
               ...prev,
-              ownerName: capitalizeEachWordKycSociety((prev.ownerName ?? '').trim().replace(/\s+/g, ' '), true),
+              ownerName: capitalizeEachWordKycSociety(
+                (prev.ownerName ?? '').trim().replace(/\s+/g, ' '),
+                true
+              ),
             }));
           }}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +126,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             {!(formData.ownerName ?? '').trim()
               ? t('kyc.errors.ownerNameRequired')
               : (formData.ownerName ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
-                (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+                  (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
           </span>
@@ -149,7 +152,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             onBlurField();
             setFormData((prev) => ({
               ...prev,
-              ownerNameEnglish: capitalizeEachWordKycSociety((prev.ownerNameEnglish ?? '').trim().replace(/\s+/g, ' '), true),
+              ownerNameEnglish: capitalizeEachWordKycSociety(
+                (prev.ownerNameEnglish ?? '').trim().replace(/\s+/g, ' '),
+                true
+              ),
             }));
           }}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,8 +173,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           <span className="text-xs text-red-500">
             {!(formData.ownerNameEnglish ?? '').trim()
               ? t('kyc.errors.ownerNameRequired')
-              : (formData.ownerNameEnglish ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
-                (formData.ownerNameEnglish ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+              : (formData.ownerNameEnglish ?? '').trim().length <
+                    KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
+                  (formData.ownerNameEnglish ?? '').trim().length >
+                    KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
           </span>

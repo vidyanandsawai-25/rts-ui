@@ -58,6 +58,9 @@ export type { CardProps } from './Card';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
+export { PTISTransliteratedInput } from './PTISTransliteratedInput';
+export type { PTISTransliteratedInputProps } from './PTISTransliteratedInput';
+
 export { AnimatedDigitInput } from './AnimatedDigitInput';
 export type { AnimatedDigitInputProps } from './AnimatedDigitInput';
 
