@@ -516,7 +516,7 @@ export const getSendToApproveColumns = (
                     <div
                         className="h-8 w-8 mt-0.5 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full animate-shimmer cursor-pointer"
                         title={t ? t('sendToApprove.columns.location') : 'Location'}
-                        onClick={() => handleLocationClick(row)}>
+                        onClick={() => handleLocationClick(row, row.wardNo, row.id.toString())}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Google_Maps_icon_%282015-2020%29.svg" alt="Location" className="h-6 w-6" />
                     </div>

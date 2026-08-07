@@ -112,7 +112,7 @@ export default function SendToApproveDashboard({
                 new: prop.propertyNo,
                 old: 'N/A'
             },
-            wardNo: serverData?.zoneName || 'N/A',
+            wardNo: prop.wardNo || serverData?.zoneName || 'N/A',
             category: prop.category,
             categoryMarathi: prop.propertyDescription,
             desc: {

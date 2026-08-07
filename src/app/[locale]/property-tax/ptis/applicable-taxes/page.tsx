@@ -3,7 +3,8 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import {
   getAssessmentYearsAction,
   getTypeOfUseAction,
-  getTaxApplicabilityAction
+  getTaxApplicabilityAction,
+  getTaxApplicabilityByPropertyIdAction
 } from './action';
 
 interface PageProps {
@@ -23,15 +24,19 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
   const propertyIdStr = typeof searchParamsResolved.propertyId === 'string' ? searchParamsResolved.propertyId : '';
   const propertyId = propertyIdStr ? Number(propertyIdStr) : NaN;
 
-  const selectedAsseYear = typeof searchParamsResolved.asseYear === 'string' ? searchParamsResolved.asseYear : '';
-  const selectedFloorUse = typeof searchParamsResolved.floorUse === 'string' ? searchParamsResolved.floorUse : '';
+  const asseYearParam = typeof searchParamsResolved.asseYear === 'string' ? searchParamsResolved.asseYear : '';
+  const selectedAsseYear = (asseYearParam && !isNaN(Number(asseYearParam)) && Number(asseYearParam) > 0) ? asseYearParam : '';
+
+  const typeOfUseParam = typeof searchParamsResolved.typeOfUse === 'string' ? searchParamsResolved.typeOfUse : '';
+  const selectedTypeOfUse = (typeOfUseParam && !isNaN(Number(typeOfUseParam)) && Number(typeOfUseParam) > 0) ? typeOfUseParam : '';
 
   const pageNumber = typeof searchParamsResolved.pageNumber === 'string' ? Number(searchParamsResolved.pageNumber) : 1;
   const pageSize = typeof searchParamsResolved.pageSize === 'string' ? Number(searchParamsResolved.pageSize) : 10;
 
-  const [asseYearsResponse, useGroupsResponse] = await Promise.all([
+  const [asseYearsResponse, useGroupsResponse, propertyDataResult] = await Promise.all([
     getAssessmentYearsAction(valuationTab, 1, -1),
     getTypeOfUseAction(1, -1),
+    !isNaN(propertyId) ? getTaxApplicabilityByPropertyIdAction(propertyId) : Promise.resolve(null),
   ]);
 
   if (!asseYearsResponse.success) {
@@ -41,33 +46,42 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
     throw new Error(useGroupsResponse.error || t("errors.fetchUseGroups"));
   }
 
-  let finalAsseYear = selectedAsseYear;
+  const taxApplicabilityPropertyData = propertyDataResult?.success ? (propertyDataResult.data ?? null) : null;
 
-  if (!finalAsseYear && asseYearsResponse.data?.items?.length) {
-    const currentYear = new Date().getFullYear();
-    const activeYears = asseYearsResponse.data.items.filter(y => y.isActive);
-    const currentYearItem = activeYears.find(y => currentYear >= y.fromYear && currentYear <= y.toYear) || activeYears[0];
-    if (currentYearItem) {
-      finalAsseYear = String(currentYearItem.id);
-    }
+  let finalAsseYear = selectedAsseYear;
+  let finalTypeOfUse = selectedTypeOfUse;
+
+  const propertyData = taxApplicabilityPropertyData?.[0];
+
+  if (!finalAsseYear && propertyData) {
+    const startYear = parseInt(propertyData.financeYear?.split('-')[0] || '', 10);
+    const matchedAsseYear = asseYearsResponse.data?.items.find(
+      (ay) => ay.fromYear <= startYear && ay.toYear >= startYear
+    );
+    
+    finalAsseYear = matchedAsseYear ? String(matchedAsseYear.id) : String(propertyData.financeYearId);
   }
 
-  const financialYearId = finalAsseYear
+  if (!finalTypeOfUse && propertyData?.typeOfUseId) {
+    finalTypeOfUse = String(propertyData.typeOfUseId);
+  }
+
+  const financialYearId = finalAsseYear && finalAsseYear !== 'undefined' && !isNaN(Number(finalAsseYear))
     ? Number(finalAsseYear)
     : undefined;
 
-  const typeOfUseGroupId = selectedFloorUse
-    ? Number(selectedFloorUse)
+  const typeOfUseId = finalTypeOfUse && finalTypeOfUse !== 'undefined' && !isNaN(Number(finalTypeOfUse))
+    ? Number(finalTypeOfUse)
     : undefined;
 
   const rvOrCv = valuationTab === 'capital' ? 'CV' : 'RV';
 
   let taxApplicabilityResponse = null;
-  if (!isNaN(propertyId) && financialYearId !== undefined && typeOfUseGroupId !== undefined) {
+  if (!isNaN(propertyId) && financialYearId !== undefined && typeOfUseId !== undefined) {
     const taxApplicabilityResult = await getTaxApplicabilityAction({
       propertyId,
       financialYearId,
-      typeOfUseGroupId,
+      typeOfUseId,
       rvOrCv,
       pageNumber,
       pageSize,
@@ -77,13 +91,16 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
     }
     taxApplicabilityResponse = taxApplicabilityResult.data || null;
   }
-  
+
   return (
     <ApplicableTaxes
       asseYearsResponse={asseYearsResponse.data ?? null}
       useGroupsResponse={useGroupsResponse.data ?? null}
       valuationTab={valuationTab}
       taxApplicabilityPagedResponse={taxApplicabilityResponse}
+      taxApplicabilityPropertyData={taxApplicabilityPropertyData}
+      initialAsseYear={finalAsseYear}
+      initialTypeOfUse={finalTypeOfUse}
     />
   );
 }

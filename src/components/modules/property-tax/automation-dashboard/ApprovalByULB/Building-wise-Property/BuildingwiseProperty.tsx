@@ -23,6 +23,7 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
     const [searchTerm, setSearchTerm] = useState("");
 
     const returnUrl = searchParams.get('returnUrl');
+    const noticeNo = searchParams.get('noticeNo');
     const basePath = pathname.split('/').slice(0, 4).join('/') || `/${pathname.split('/')[1] || 'en'}/property-tax/automation-dashboard`;
     const backUrl = returnUrl ? decodeURIComponent(returnUrl) : `${basePath}/approval-by-ulb`;
 
@@ -71,7 +72,10 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
 
                 <div className="flex-1 flex justify-center">
                     <h3 className="absolute left-1/2 -translate-x-1/2 text-[15px] font-semibold text-slate-800 text-center">
-                        {t('approvalByULB.buildingWiseProperty.title', { propertyNo })}
+                        {noticeNo 
+                            ? `Notice No - ${noticeNo}`
+                            : t('approvalByULB.buildingWiseProperty.title', { propertyNo })
+                        }
                     </h3>
                 </div>
 

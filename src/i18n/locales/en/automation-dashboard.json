@@ -37,7 +37,7 @@
     "noData": "No data"
   },
   "geoSequencing": {
-    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "searchPlaceholder": "Search Property No, Owner Name",
     "total": "Total",
     "wardWiseSummary": "Ward-wise Summary",
     "wardWiseTable": "WARD-WISE TABLE",
@@ -201,7 +201,7 @@
   },
   "internalSurvey": {
     "total": "Total",
-    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "searchPlaceholder": "Search Property No, Owner Name",
     "emptyMessage": "No internal survey data available",
     "buttons": {
       "search": "Search",
@@ -242,7 +242,7 @@
   },
   "dataEntryQualityCheck": {
     "emptyMessage": "No data entry quality check data available",
-    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "searchPlaceholder": "Search Property No, Owner Name",
     "total": "Total",
     "wardWiseSummary": "Ward-wise Summary",
     "stage": "Stage:",
@@ -400,7 +400,7 @@
     "submittedBy": "Submitted By:"
   },
   "assessment": {
-    "searchPlaceholder": "Search Property No, Notice No, Owner Name",
+    "searchPlaceholder": "Search Property No, Owner Name",
     "summary": "Summary",
     "sendToApprove": "Send to Approve",
     "tabs": {

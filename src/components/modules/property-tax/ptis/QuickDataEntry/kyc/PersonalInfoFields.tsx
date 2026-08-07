@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, SearchSelect, PTISTransliteratedInput } from '@/components/common';
+import { Input, Label, SearchSelect, PTISTransliteratedInput, Tooltip } from '@/components/common';
 import {
   KYC_VALIDATION_RULES,
   KYC_TITLE_OPTIONS,
@@ -50,21 +50,25 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
         </Label>
-        <SearchSelect
-          id="kyc-ownertype"
-          name="ownerType"
-          autoFocus
-          options={ownerTypeOptions}
-          value={formData.ownerTypeId?.toString() ?? ''}
-          placeholder={t('kyc.select')}
-          onChange={(_name, value) => {
-            setFormData((prev) => ({
-              ...prev,
-              ownerTypeId: value ? Number(value) : null,
-            }));
-          }}
-          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        />
+        <Tooltip content={ownerTypeOptions.find(opt => opt.value === formData.ownerTypeId?.toString())?.label || ''} placement="top">
+          <div className="w-full">
+            <SearchSelect
+              id="kyc-ownertype"
+              name="ownerType"
+              autoFocus
+              options={ownerTypeOptions}
+              value={formData.ownerTypeId?.toString() ?? ''}
+              placeholder={t('kyc.select')}
+              onChange={(_name, value) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  ownerTypeId: value ? Number(value) : null,
+                }));
+              }}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </Tooltip>
       </div>
 
       {/* Title */}
@@ -72,17 +76,21 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         <Label htmlFor="kyc-title" className="text-xs font-semibold text-gray-700">
           {t('kyc.titleLabel')}
         </Label>
-        <SearchSelect
-          id="kyc-title"
-          name="title"
-          options={titleOptions}
-          value={formData.ownerTitle ?? ''}
-          placeholder={t('kyc.select')}
-          onChange={(_name, value) => {
-            setFormData((prev) => ({ ...prev, ownerTitle: value }));
-          }}
-          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        />
+        <Tooltip content={titleOptions.find(opt => opt.value === formData.ownerTitle)?.label || ''} placement="top">
+          <div className="w-full">
+            <SearchSelect
+              id="kyc-title"
+              name="title"
+              options={titleOptions}
+              value={formData.ownerTitle ?? ''}
+              placeholder={t('kyc.select')}
+              onChange={(_name, value) => {
+                setFormData((prev) => ({ ...prev, ownerTitle: value }));
+              }}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </Tooltip>
       </div>
 
       {/* Property Holder Name Regional */}

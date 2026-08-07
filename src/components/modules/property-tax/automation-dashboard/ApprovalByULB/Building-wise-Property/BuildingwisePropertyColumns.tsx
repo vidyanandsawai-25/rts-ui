@@ -187,7 +187,7 @@ export const getBuildingwisePropertyColumns = (
           <div
             className="h-12 w-12 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full overflow-hidden mx-auto"
             title="Location"
-            onClick={() => handleLocationClick(row)}
+            onClick={() => handleLocationClick(row, row.wardNo, row.propertyId)}
           >           
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

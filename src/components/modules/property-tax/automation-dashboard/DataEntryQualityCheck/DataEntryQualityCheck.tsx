@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Column, SearchButton } from '@/components/common';
 import { AutomationTable } from '@/components/common/AutomationTable';
@@ -22,16 +23,26 @@ interface DataEntryQualityCheckProps {
 }
 
 const TopBar = ({ searchTerm, setSearchTerm, t, propertyDescriptions = [], exportConfig }: { searchTerm: string, setSearchTerm: (val: string) => void, t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[], exportConfig: ExportConfig<Record<string, unknown>> }) => {
+    const { isPending, handleSearch } = useDashboardSearch(searchTerm);
+
     return (
         <div className="flex items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-2 flex-1 max-w-xl">
                 <SearchInput
                     value={searchTerm}
                     onChange={setSearchTerm}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearch();
+                        }
+                    }}
                     placeholder={t('dataEntryQualityCheck.searchPlaceholder')}
                     className="w-full flex-1 mb-0"
                 />
-                <SearchButton />
+                <SearchButton 
+                    onClick={handleSearch}
+                    disabled={isPending || !searchTerm.trim()}
+                />
             </div>
             <div className="flex items-center gap-3">
                 <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />

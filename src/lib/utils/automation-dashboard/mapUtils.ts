@@ -1,8 +1,12 @@
 import { toast } from "sonner";
+import { generateGisSsoUrl } from "@/components/modules/property-tax/ptis/media/actions/gisSso";
 
-export const handleLocationClick = async (property: Record<string, unknown> | null) => {
+export const handleLocationClick = async (
+  property: Record<string, unknown> | null,
+  wardNoParam?: string,
+  propertyIdParam?: string | number
+) => {
   try {
-    const secretKey = "ThaneGisHmacSsoKey@2026#Secure";
     let loggedInName = "Unknown User";
     let loggedInUserId = "1263";
 
@@ -25,43 +29,51 @@ export const handleLocationClick = async (property: Record<string, unknown> | nu
 
     const userId = loggedInUserId;
     const name = loggedInName;
-    const timestamp = Math.floor(Date.now() / 1000);
-    const data = `${userId}${name}${timestamp}`;
 
-    // Also extract property's ownerId for map navigation if needed
-    const rawOwnerId = property?.propertyId
-    const propertyOwnerId = rawOwnerId ? String(rawOwnerId) : (property?.id ? String(property.id).split('-')[0] : "");
-
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(secretKey);
-    const dataToSign = encoder.encode(data);
-
-    const cryptoKey = await window.crypto.subtle.importKey(
-      "raw",
-      keyData,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-
-    const signatureBuffer = await window.crypto.subtle.sign(
-      "HMAC",
-      cryptoKey,
-      dataToSign
-    );
-
-    const hashArray = Array.from(new Uint8Array(signatureBuffer));
-    const signatureHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toLowerCase();
-
-    const baseUrl = (process.env.NEXT_PUBLIC_GIS_BASE_URL || "https://gisthane.tabamc.in/").replace(/\/$/, "");
-    let url = `${baseUrl}/en/gis?userId=${userId}&name=${encodeURIComponent(name)}&timestamp=${timestamp}&signature=${signatureHex}`;
-
-    if (propertyOwnerId) {
-      url += `&ownerId=${propertyOwnerId}`;
+    // Extract propertyOwnerId
+    let propertyOwnerId = "";
+    if (propertyIdParam) {
+      propertyOwnerId = String(propertyIdParam);
+    } else {
+      const rawOwnerId = property?.propertyId;
+      propertyOwnerId = rawOwnerId ? String(rawOwnerId) : (property?.id ? String(property.id).split('-')[0] : "");
     }
 
+    // Extract propertyKey (wardNo-propertyNo)
+    let wardNo = wardNoParam;
+    let propertyNo = "";
+
+    if (property) {
+      if (!wardNo) {
+        wardNo = property.wardNo as string | undefined;
+      }
+      if (typeof property.propertyNo === 'object' && property.propertyNo !== null) {
+        const pNoObj = property.propertyNo as { new?: string; old?: string };
+        propertyNo = pNoObj.new || pNoObj.old || "";
+      } else {
+        propertyNo = (property.newPropertyNo as string | undefined) || (property.propertyNo as string | undefined) || "";
+      }
+    }
+
+    let propertyKey = "";
+    const trimmedWard = wardNo?.trim();
+    const trimmedProp = propertyNo?.trim();
+
+    if (trimmedWard && trimmedProp) {
+      // Avoid duplicating wardNo if propertyNo already starts with it
+      if (trimmedProp.startsWith(trimmedWard)) {
+        propertyKey = trimmedProp;
+      } else {
+        propertyKey = `${trimmedWard}-${trimmedProp}`;
+      }
+    } else if (trimmedProp) {
+      propertyKey = trimmedProp;
+    }
+
+    const url = await generateGisSsoUrl(userId, name, propertyOwnerId, propertyKey || undefined);
+
     window.open(url, "_blank");
-  } catch { 
+  } catch {
     toast.error("Failed to open map view");
   }
 };

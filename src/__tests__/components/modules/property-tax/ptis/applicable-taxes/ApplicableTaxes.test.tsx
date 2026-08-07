@@ -189,7 +189,7 @@ const mockTaxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> = {
     {
       propertyId: 123,
       financialYearId: 1,
-      typeOfUseGroupId: 2,
+      typeOfUseId: 2,
       applicableCount: 2,
       exemptedCount: 1,
       applicableTaxes: [
@@ -297,7 +297,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         {
           propertyId: 123,
           financialYearId: 1,
-          typeOfUseGroupId: 2,
+          typeOfUseId: 2,
           applicableCount: 15,
           exemptedCount: 0,
           applicableTaxes: largeTaxes.slice(0, 10),

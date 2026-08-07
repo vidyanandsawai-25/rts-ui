@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { SearchButton } from '@/components/common/ActionButtons';
@@ -131,6 +132,7 @@ const TopFilters = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabCh
 
 const TopBar = ({ activeTab, onTabChange, t, exportConfig }: { activeTab: TabType, onTabChange: (t: TabType) => void, t: (key: string) => string, exportConfig: ExportConfig<Record<string, unknown>> }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const { isPending, handleSearch } = useDashboardSearch(searchTerm);
     const router = useRouter();
     const locale = useLocale();
 
@@ -142,10 +144,18 @@ const TopBar = ({ activeTab, onTabChange, t, exportConfig }: { activeTab: TabTyp
                     <SearchInput
                         value={searchTerm}
                         onChange={setSearchTerm}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSearch();
+                            }
+                        }}
                         placeholder={t('searchPlaceholder')}
                         className="w-full flex-1 mb-0"
                     />
-                    <SearchButton />
+                    <SearchButton 
+                        onClick={handleSearch}
+                        disabled={isPending || !searchTerm.trim()}
+                    />
                 </div>
             </div>
 

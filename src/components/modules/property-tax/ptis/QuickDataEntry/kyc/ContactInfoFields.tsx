@@ -1,6 +1,7 @@
 import React from 'react';
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
+import { Tooltip } from '@/components/common/Tooltip';
 import { KYC_VALIDATION_RULES, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { KycFormData } from '@/types/property-kyc.types';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
@@ -44,49 +45,51 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
         <Label htmlFor="kyc-aadhar-0" className="text-xs font-semibold text-gray-700">
           {t('kyc.aadharCardNo')}
         </Label>
-        <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('aadhar', kycValidators.isValidAadhar(aadharInput.value))
-          ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
-          : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
-          }`}>
-          {[0, 1, 2].map((groupIndex) => (
-            <React.Fragment key={`group-fg-${groupIndex}`}>
-              <div className="flex gap-0.5 flex-1 h-full items-center">
-                {Array.from({ length: 4 }).map((_, i) => {
-                  const index = groupIndex * 4 + i;
-                  return (
-                    <Input
-                      key={index}
-                      id={index === 0 ? 'kyc-aadhar-0' : undefined}
-                      aria-label={`${t('kyc.aadharCardNo')} digit ${index + 1} of 12`}
-                      type="text"
-                      maxLength={1}
-                      inputMode="numeric"
-                      pattern="[0-9]"
-                      value={aadharInput.digits[index]}
-                      onChange={(e) => aadharInput.handleChange(index, e.target.value)}
-                      onKeyDown={(e) => {
-                        aadharInput.handleKeyDown(index, e);
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                        }
-                      }}
-                      onFocus={aadharInput.handleFocus}
-                      onBlur={aadharInput.handleBlur}
-                      ref={aadharInput.setRef(index)}
-                      naked
-                      error={showError('aadhar', kycValidators.isValidAadhar(aadharInput.value)) ? 'error' : undefined}
-                      className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('aadhar', kycValidators.isValidAadhar(aadharInput.value))
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
-                        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-300'
-                        } ${aadharInput.lastTypedIndex === index ? 'animate-digit-pop' : ''}`}
-                    />
-                  );
-                })}
-              </div>
-              {groupIndex < 2 && <span className="text-gray-400 font-bold text-xs shrink-0">-</span>}
-            </React.Fragment>
-          ))}
-        </div>
+        <Tooltip content={aadharInput.value || ''} placement="top">
+          <div className={`flex items-center gap-1.5 p-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('aadhar', kycValidators.isValidAadhar(aadharInput.value))
+            ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
+            : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
+            }`}>
+            {[0, 1, 2].map((groupIndex) => (
+              <React.Fragment key={`group-fg-${groupIndex}`}>
+                <div className="flex gap-0.5 flex-1 h-full items-center">
+                  {Array.from({ length: 4 }).map((_, i) => {
+                    const index = groupIndex * 4 + i;
+                    return (
+                      <Input
+                        key={index}
+                        id={index === 0 ? 'kyc-aadhar-0' : undefined}
+                        aria-label={`${t('kyc.aadharCardNo')} digit ${index + 1} of 12`}
+                        type="text"
+                        maxLength={1}
+                        inputMode="numeric"
+                        pattern="[0-9]"
+                        value={aadharInput.digits[index]}
+                        onChange={(e) => aadharInput.handleChange(index, e.target.value)}
+                        onKeyDown={(e) => {
+                          aadharInput.handleKeyDown(index, e);
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                          }
+                        }}
+                        onFocus={aadharInput.handleFocus}
+                        onBlur={aadharInput.handleBlur}
+                        ref={aadharInput.setRef(index)}
+                        naked
+                        error={showError('aadhar', kycValidators.isValidAadhar(aadharInput.value)) ? 'error' : undefined}
+                        className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('aadhar', kycValidators.isValidAadhar(aadharInput.value))
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
+                          : 'border-gray-300 focus:border-blue-500 focus:ring-blue-300'
+                          } ${aadharInput.lastTypedIndex === index ? 'animate-digit-pop' : ''}`}
+                      />
+                    );
+                  })}
+                </div>
+                {groupIndex < 2 && <span className="text-gray-400 font-bold text-xs shrink-0">-</span>}
+              </React.Fragment>
+            ))}
+          </div>
+        </Tooltip>
         {showError('aadhar', kycValidators.isValidAadhar(aadharInput.value)) && (
           <span className="text-xs text-red-500">
             {aadharInput.value && kycValidators.hasRepeatedSequence(aadharInput.value.replace(/\D/g, ''), 5)
@@ -106,44 +109,46 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           </Label>
           <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] fill-[#25D366] shrink-0" />
         </div>
-        <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value))
-          ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
-          : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
-          }`}>
-          <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-            {t('kyc.countryCode')}
-          </span>
-          <div className="flex gap-0.5 flex-1 h-full items-center">
-            {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
-              <Input
-                key={i}
-                id={i === 0 ? 'kyc-mobile-0' : undefined}
-                aria-label={`${t('kyc.mobileNo')} digit ${i + 1} of 10`}
-                type="text"
-                maxLength={1}
-                inputMode="numeric"
-                pattern="[0-9]"
-                value={mobileInput.digits[i]}
-                onChange={(e) => mobileInput.handleChange(i, e.target.value)}
-                onKeyDown={(e) => {
-                  mobileInput.handleKeyDown(i, e);
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                  }
-                }}
-                onFocus={mobileInput.handleFocus}
-                onBlur={mobileInput.handleBlur}
-                ref={mobileInput.setRef(i)}
-                naked
-                error={showError('mobile', kycValidators.isValidMobile(mobileInput.value)) ? 'error' : undefined}
-                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value))
-                  ? 'border-red-300 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
-                  } ${mobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
-              />
-            ))}
+        <Tooltip content={mobileInput.value || ''} placement="top">
+          <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value))
+            ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
+            : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
+            }`}>
+            <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
+              {t('kyc.countryCode')}
+            </span>
+            <div className="flex gap-0.5 flex-1 h-full items-center">
+              {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
+                <Input
+                  key={i}
+                  id={i === 0 ? 'kyc-mobile-0' : undefined}
+                  aria-label={`${t('kyc.mobileNo')} digit ${i + 1} of 10`}
+                  type="text"
+                  maxLength={1}
+                  inputMode="numeric"
+                  pattern="[0-9]"
+                  value={mobileInput.digits[i]}
+                  onChange={(e) => mobileInput.handleChange(i, e.target.value)}
+                  onKeyDown={(e) => {
+                    mobileInput.handleKeyDown(i, e);
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onFocus={mobileInput.handleFocus}
+                  onBlur={mobileInput.handleBlur}
+                  ref={mobileInput.setRef(i)}
+                  naked
+                  error={showError('mobile', kycValidators.isValidMobile(mobileInput.value)) ? 'error' : undefined}
+                  className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value))
+                    ? 'border-red-300 focus:border-red-500'
+                    : 'border-gray-300 focus:border-blue-500'
+                    } ${mobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        </Tooltip>
         {showError('mobile', kycValidators.isValidMobile(mobileInput.value)) && (
           <span className="text-xs text-red-500">
             {mobileInput.value && kycValidators.hasRepeatedSequence(mobileInput.value.replace(/\D/g, ''), 5)
@@ -161,44 +166,46 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           <Label htmlFor="kyc-alternate-mobile-0" className="text-xs font-semibold text-gray-700">
             {t('kyc.alternateMobileNo')}
           </Label>
-          <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value))
-            ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
-            : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
-            }`}>
-            <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-             {t('kyc.countryCode')}
-            </span>
-            <div className="flex gap-0.5 flex-1 h-full items-center">
-              {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
-                <Input
-                  key={i}
-                  id={i === 0 ? 'kyc-alternate-mobile-0' : undefined}
-                  aria-label={`${t('kyc.alternateMobileNo')} digit ${i + 1} of 10`}
-                  type="text"
-                  maxLength={1}
-                  inputMode="numeric"
-                  pattern="[0-9]"
-                  value={alternateMobileInput.digits[i]}
-                  onChange={(e) => alternateMobileInput.handleChange(i, e.target.value)}
-                  onKeyDown={(e) => {
-                    alternateMobileInput.handleKeyDown(i, e);
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                    }
-                  }}
-                  onFocus={alternateMobileInput.handleFocus}
-                  onBlur={alternateMobileInput.handleBlur}
-                  ref={alternateMobileInput.setRef(i)}
-                  naked
-                  error={showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value)) ? 'error' : undefined}
-                  className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value))
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-blue-500'
-                    } ${alternateMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
-                />
-              ))}
+          <Tooltip content={alternateMobileInput.value || ''} placement="top">
+            <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value))
+              ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
+              : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
+              }`}>
+              <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
+               {t('kyc.countryCode')}
+              </span>
+              <div className="flex gap-0.5 flex-1 h-full items-center">
+                {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
+                  <Input
+                    key={i}
+                    id={i === 0 ? 'kyc-alternate-mobile-0' : undefined}
+                    aria-label={`${t('kyc.alternateMobileNo')} digit ${i + 1} of 10`}
+                    type="text"
+                    maxLength={1}
+                    inputMode="numeric"
+                    pattern="[0-9]"
+                    value={alternateMobileInput.digits[i]}
+                    onChange={(e) => alternateMobileInput.handleChange(i, e.target.value)}
+                    onKeyDown={(e) => {
+                      alternateMobileInput.handleKeyDown(i, e);
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                      }
+                    }}
+                    onFocus={alternateMobileInput.handleFocus}
+                    onBlur={alternateMobileInput.handleBlur}
+                    ref={alternateMobileInput.setRef(i)}
+                    naked
+                    error={showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value)) ? 'error' : undefined}
+                    className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value))
+                      ? 'border-red-300 focus:border-red-500'
+                      : 'border-gray-300 focus:border-blue-500'
+                      } ${alternateMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          </Tooltip>
           {showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value)) && (
             <span className="text-xs text-red-500">
               {alternateMobileInput.value && kycValidators.hasRepeatedSequence(alternateMobileInput.value.replace(/\D/g, ''), 5)
@@ -213,3 +220,4 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
     </>
   );
 };
+

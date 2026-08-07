@@ -1,8 +1,8 @@
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
 import { getTranslations } from "next-intl/server";
-import { 
-    InternalSurveyGridItems, 
+import {
+    InternalSurveyGridItems,
     InternalSurveyGridResponse,
     InternalSurveyWardWiseItems,
     InternalSurveyWardWiseResponse
@@ -41,7 +41,7 @@ export async function automationGetInternalSurveyWardWiseSummary(
         params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
     }
     if (categoryId) {
-        params.append("CategoryId", categoryId);
+        params.append("PropertyTypeId", categoryId);
     }
 
     const response = await apiClient.get<InternalSurveyWardWiseResponse>(

@@ -41,7 +41,7 @@ export async function automationGetDataEntryWardWiseSummary(
         params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
     }
     if (categoryId) {
-        params.append("CategoryId", categoryId);
+        params.append("PropertyTypeId", categoryId);
     }
 
     const response = await apiClient.get<DataEntryWardWiseSummaryResponse>(

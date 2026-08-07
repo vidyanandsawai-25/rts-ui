@@ -41,7 +41,18 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             key: 'noticeNo',
             label: t('columns.noticeNo'),
             align: 'left',
-            colSpan: (row) => row.isTotal ? 0 : 1
+            colSpan: (row) => row.isTotal ? 0 : 1,
+            render: (_val, row) => {
+                if (row.isTotal) return null;
+                return (
+                    <Link 
+                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}?noticeNo=${row.noticeNo}${currentUrl ? `&returnUrl=${currentUrl}` : ''}`} 
+                        className="text-gray-700 font-semibold hover:underline hover:text-indigo-800 transition-colors"
+                    >
+                        {row.noticeNo}
+                    </Link>
+                );
+            }
         },
         {
             key: 'units',

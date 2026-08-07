@@ -39,7 +39,8 @@ export async function automationGetWardWisePropertySubGridDetails(
         params.append("AssessmentTypeId", assessmentTypeId.toString());
     }
     if (searchTerm) {
-        params.append("SearchTerm", searchTerm);
+        params.append("OwnerName", searchTerm);
+        params.append("PropertyNo", searchTerm);
     }
     if (sortBy) {
         params.append("SortBy", sortBy);

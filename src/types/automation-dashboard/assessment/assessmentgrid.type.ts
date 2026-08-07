@@ -80,6 +80,8 @@ export interface PendingAssessmentQcChecklist {
 export interface PendingAssessmentProperty {
   propertyId: number;
   propertyNo: string;
+  wardNo?: string;
+  wardId?: number;
   category: string;
   propertyDescription: string;
   propertyType: string;

@@ -1,4 +1,15 @@
 
+export interface TaxApplicabilityPropertyData {
+  propertyId: number;
+  propertyDetailId: number;
+  financeYearId: number;
+  financeYear?: string;
+  floorId: number;
+  subFloorId: number | null;
+  typeOfUseId: number;
+  typeOfUseCode: string;
+  typeOfUseDescription: string;
+}
 
 export interface AssessmentYearRangeItem {
   id: number;
@@ -53,7 +64,7 @@ export type TaxApplicabilityItem = {
 export interface TaxApplicabilityData {
   propertyId: number;
   financialYearId: number;
-  typeOfUseGroupId: number;
+  typeOfUseId: number;
   applicableCount: number;
   exemptedCount: number;
   applicableTaxes: TaxApplicabilityItem[];
@@ -73,5 +84,8 @@ export interface ApplicableTaxesProps {
   useGroupsResponse: PagedResponse<TypeOfUseItem> | null;
   valuationTab: string;
   taxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> | null;
+  taxApplicabilityPropertyData?: TaxApplicabilityPropertyData[] | null;
+  initialAsseYear?: string;
+  initialTypeOfUse?: string;
 }
 

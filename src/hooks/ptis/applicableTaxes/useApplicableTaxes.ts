@@ -14,6 +14,9 @@ export function useApplicableTaxes({
   useGroupsResponse,
   valuationTab,
   taxApplicabilityPagedResponse,
+  taxApplicabilityPropertyData,
+  initialAsseYear,
+  initialTypeOfUse,
 }: Omit<ApplicableTaxesProps, 'valuationTab'> & {
   valuationTab: string;
 }) {
@@ -48,23 +51,34 @@ export function useApplicableTaxes({
   }, [dynamicAsseYears]);
 
   const useTypeOptions = useMemo(() => {
+    if (taxApplicabilityPropertyData?.length) {
+      const seenIds = new Set<number>();
+      return taxApplicabilityPropertyData
+        .filter((prop) => !seenIds.has(prop.typeOfUseId) && seenIds.add(prop.typeOfUseId))
+        .map((prop) => ({
+          label: `${prop.typeOfUseCode} - ${prop.typeOfUseDescription}`,
+          value: String(prop.typeOfUseId),
+        }));
+    }
+
     return dynamicUseGroups.map((group) => ({
       label: `${group.typeOfUseCode} - ${group.description}`,
       value: String(group.id),
     }));
-  }, [dynamicUseGroups]);
+  }, [dynamicUseGroups, taxApplicabilityPropertyData]);
 
-  const currentYear = new Date().getFullYear();
-  const defaultAsseYearItem = useMemo(() => {
-    return dynamicAsseYears.find(y => currentYear >= y.fromYear && currentYear <= y.toYear) || dynamicAsseYears[0];
-  }, [dynamicAsseYears, currentYear]);
+  const asseYearParam = searchParams.get('asseYear');
+  const selectedAsseYear = (asseYearParam && !isNaN(Number(asseYearParam)) && Number(asseYearParam) > 0)
+    ? asseYearParam
+    : (initialAsseYear || '');
 
-  const selectedAsseYear = searchParams.get('asseYear') || (defaultAsseYearItem ? String(defaultAsseYearItem.id) : '');
-  const selectedFloorUse = searchParams.get('floorUse') || '';
+  const typeOfUseParam = searchParams.get('typeOfUse');
+  const selectedTypeOfUse = (typeOfUseParam && !isNaN(Number(typeOfUseParam)) && Number(typeOfUseParam) > 0)
+    ? typeOfUseParam
+    : (initialTypeOfUse || '');
   const searchQuery = searchParams.get('search') || '';
 
   const items = useMemo(() => taxApplicabilityPagedResponse?.items || [], [taxApplicabilityPagedResponse]);
-
 
   const pageNumber = taxApplicabilityPagedResponse?.pageNumber || 1;
   const pageSize = taxApplicabilityPagedResponse?.pageSize || 10;
@@ -124,11 +138,11 @@ export function useApplicableTaxes({
     if (!newParams.has('asseYear') && selectedAsseYear) {
       newParams.set('asseYear', selectedAsseYear);
     }
-    if (!newParams.has('floorUse') && selectedFloorUse) {
-      newParams.set('floorUse', selectedFloorUse);
+    if (!newParams.has('typeOfUse') && selectedTypeOfUse) {
+      newParams.set('typeOfUse', selectedTypeOfUse);
     }
     router.replace(`${pathname}?${newParams.toString()}`);
-  }, [searchParams, pathname, router, selectedAsseYear, selectedFloorUse]);
+  }, [searchParams, pathname, router, selectedAsseYear, selectedTypeOfUse]);
 
   const setPageNumber = useCallback((page: number) => {
     handleParamChange('pageNumber', String(page));
@@ -160,7 +174,7 @@ export function useApplicableTaxes({
     asseYearOptions,
     useTypeOptions,
     selectedAsseYear,
-    selectedFloorUse,
+    selectedTypeOfUse,
     pageNumber,
     pageSize,
     totalPages,

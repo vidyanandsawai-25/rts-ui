@@ -12,6 +12,9 @@ export const ApplicableTaxes = ({
   useGroupsResponse,
   valuationTab,
   taxApplicabilityPagedResponse,
+  taxApplicabilityPropertyData,
+  initialAsseYear,
+  initialTypeOfUse,
 }: ApplicableTaxesProps) => {
   const {
     wardNo,
@@ -21,7 +24,7 @@ export const ApplicableTaxes = ({
     asseYearOptions,
     useTypeOptions,
     selectedAsseYear,
-    selectedFloorUse,
+    selectedTypeOfUse,
     pageNumber,
     pageSize,
     totalPages,
@@ -38,6 +41,9 @@ export const ApplicableTaxes = ({
     useGroupsResponse,
     valuationTab,
     taxApplicabilityPagedResponse,
+    taxApplicabilityPropertyData,
+    initialAsseYear,
+    initialTypeOfUse,
   });
 
   return (
@@ -74,8 +80,8 @@ export const ApplicableTaxes = ({
             </span>
             <SearchSelect
               options={useTypeOptions}
-              value={selectedFloorUse}
-              onChange={(_, val) => handleParamChange('floorUse', val)}
+              value={selectedTypeOfUse}
+              onChange={(_, val) => handleParamChange('typeOfUse', val)}
               disableSearch={false}
               placeholder={t('selectFloorUse')}
             />

@@ -1,4 +1,5 @@
 import { Input } from '@/components/common';
+import { Tooltip } from '@/components/common/Tooltip';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 
@@ -37,15 +38,17 @@ export const AreaDetailsFields = ({
                 <Label htmlFor="pd-plotarea" className="text-xs font-semibold text-gray-700">
                     {t('property.plotAreaWithUnit')}
                 </Label>
-                <Input
-                    readOnly
-                    id="pd-plotarea"
-                    type="text"
-                    placeholder="0.00 / 0.00"
-                    defaultValue={plotAreaVal}
-                    onKeyDown={preventEnterSubmit}
-                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                />
+                <Tooltip content={plotAreaVal} placement="top">
+                    <Input
+                        readOnly
+                        id="pd-plotarea"
+                        type="text"
+                        placeholder="0.00 / 0.00"
+                        defaultValue={plotAreaVal}
+                        onKeyDown={preventEnterSubmit}
+                        className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                    />
+                </Tooltip>
             </div>
 
             {/* Total Carpet Area & Buildup Area - Hidden for Plot Category */}
@@ -56,15 +59,17 @@ export const AreaDetailsFields = ({
                         <Label htmlFor="pd-carpetarea" className="text-xs font-semibold text-gray-700">
                             {t('property.totalCarpetAreaWithUnit')}
                         </Label>
-                        <Input
-                            readOnly
-                            id="pd-carpetarea"
-                            type="text"
-                            placeholder="0.00 / 0.00"
-                            defaultValue={carpetAreaVal}
-                            onKeyDown={preventEnterSubmit}
-                            className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                        />
+                        <Tooltip content={carpetAreaVal} placement="top">
+                            <Input
+                                readOnly
+                                id="pd-carpetarea"
+                                type="text"
+                                placeholder="0.00 / 0.00"
+                                defaultValue={carpetAreaVal}
+                                onKeyDown={preventEnterSubmit}
+                                className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                            />
+                        </Tooltip>
                     </div>
 
                     {/* Buildup Area */}
@@ -72,15 +77,17 @@ export const AreaDetailsFields = ({
                         <Label htmlFor="pd-builduparea" className="text-xs font-semibold text-gray-700">
                             {t('property.buildupAreaWithUnit')}
                         </Label>
-                        <Input
-                            readOnly
-                            id="pd-builduparea"
-                            type="text"
-                            placeholder="0.00 / 0.00"
-                            defaultValue={buildupAreaVal}
-                            onKeyDown={preventEnterSubmit}
-                            className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                        />
+                        <Tooltip content={buildupAreaVal} placement="top">
+                            <Input
+                                readOnly
+                                id="pd-builduparea"
+                                type="text"
+                                placeholder="0.00 / 0.00"
+                                defaultValue={buildupAreaVal}
+                                onKeyDown={preventEnterSubmit}
+                                className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                            />
+                        </Tooltip>
                     </div>
                 </>
             )}

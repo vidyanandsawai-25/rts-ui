@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { SearchButton } from '@/components/common';
@@ -22,6 +23,7 @@ interface InternalSurveyPageProps {
 
 const TopBar = ({ t, propertyDescriptions = [], exportConfig }: { t: (key: string) => string, propertyDescriptions?: PropertyTypeMasterItem[], exportConfig: ExportConfig<InternalSurveyTableRow> }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const { isPending, handleSearch } = useDashboardSearch(searchTerm);
 
     return (
         <div className="flex items-center justify-between gap-4 w-full">
@@ -29,11 +31,20 @@ const TopBar = ({ t, propertyDescriptions = [], exportConfig }: { t: (key: strin
                 <SearchInput
                     value={searchTerm}
                     onChange={setSearchTerm}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearch();
+                        }
+                    }}
                     placeholder={t('internalSurvey.searchPlaceholder')}
                     className="w-full flex-1 mb-0"
                 />
 
-                <SearchButton label={t('internalSurvey.buttons.search')} />
+                <SearchButton 
+                    label={t('internalSurvey.buttons.search')} 
+                    onClick={handleSearch}
+                    disabled={isPending || !searchTerm.trim()}
+                />
             </div>
             <div className="flex items-center gap-3">
                 <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />

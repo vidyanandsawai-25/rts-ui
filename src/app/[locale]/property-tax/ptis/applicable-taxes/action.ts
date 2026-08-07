@@ -6,12 +6,14 @@ import {
   getAssessmentYearRangeCV,
   getTaxApplicability,
   updateTaxApplicability,
+  getTaxApplicabilityByPropertyId,
 } from '@/lib/api/ptis/applicable-taxes/applicable-taxes.service';
 import type {
   AssessmentYearRangeItem,
   TypeOfUseItem,
   PagedResponse,
-  TaxApplicabilityData
+  TaxApplicabilityData,
+  TaxApplicabilityPropertyData
 } from '@/types/applicable-taxes.types';
 import type { ActionResult } from '@/types/common.types';
 import { revalidatePath } from 'next/cache';
@@ -85,7 +87,7 @@ export async function getTypeOfUseAction(
 export async function getTaxApplicabilityAction(params: {
   propertyId: number;
   financialYearId: number;
-  typeOfUseGroupId: number;
+  typeOfUseId: number;
   rvOrCv: 'RV' | 'CV';
   pageNumber?: number;
   pageSize?: number;
@@ -132,3 +134,23 @@ export const updateTaxApplicabilityAction = async (
     return { success: false, error: await getActionErrorMessage(error) };
   }
 };
+
+export async function getTaxApplicabilityByPropertyIdAction(
+  propertyId: number
+): Promise<ActionResult<TaxApplicabilityPropertyData[]>> {
+  const t = await getTranslations("applicableTaxes");
+  try {
+    const response = await getTaxApplicabilityByPropertyId(propertyId);
+    if (!response.success) {
+      return {
+        success: false,
+        error: response.error
+          ? `${t("errors.fetchTaxApplicability")}: ${response.error}`
+          : t("errors.fetchTaxApplicability")
+      };
+    }
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
+}
