@@ -10,7 +10,7 @@ import {
 } from "@/app/[locale]/property-tax/moujamaster/action";
 import { MoujaFormModel, Mouja } from "@/types/mouja.types";
 import { 
-  CODE_SANITIZE, 
+  CODE_WITH_DECIMAL_SANITIZE, 
   DESCRIPTION_SANITIZE, 
   validateForm, 
   commonValidations 
@@ -52,7 +52,7 @@ export function useMoujaForm({
   const validate = useCallback(
     (data: MoujaFormModel): Partial<Record<keyof MoujaFormModel, string>> => {
       const schema = {
-        moujaNo: commonValidations.masterCode(t, MOUJA_NO_MAX, {
+        moujaNo: commonValidations.masterCodeWithDecimal(t, MOUJA_NO_MAX, {
           required: 'form.validation.moujaNoRequired',
           format: 'form.validation.moujaNoFormat',
           maxLength: 'form.validation.moujaNoMaxLength',
@@ -84,7 +84,7 @@ export function useMoujaForm({
         sanitizedValue = sanitizedValue.substring(0, MOUJA_NAME_MAX);
       }
     } else if (name === "moujaNo") {
-      sanitizedValue = value.replace(CODE_SANITIZE, "");
+      sanitizedValue = value.replace(CODE_WITH_DECIMAL_SANITIZE, "");
       if (sanitizedValue.length > MOUJA_NO_MAX) {
         sanitizedValue = sanitizedValue.substring(0, MOUJA_NO_MAX);
       }

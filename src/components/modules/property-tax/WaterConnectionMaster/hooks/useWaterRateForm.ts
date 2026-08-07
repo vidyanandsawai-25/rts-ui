@@ -53,7 +53,7 @@ export function useWaterRateForm({ id, initialData }: UseWaterRateFormProps) {
         const rate = Number(data.yearlyRate);
         if (Number.isNaN(rate) || rate <= 0 || !/^\d+$/.test(data.yearlyRate)) {
           errs.yearlyRate = t("validation.rateInvalid");
-        } else if (data.yearlyRate.length > 5) {
+        } else if (data.yearlyRate.length > 6) {
           errs.yearlyRate = t("validation.rateMaxDigits");
         }
       }

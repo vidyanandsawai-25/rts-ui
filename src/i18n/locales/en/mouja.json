@@ -45,8 +45,8 @@
       "validation": {
         "moujaNoRequired": "Mouja number is required",
         "moujaNoMaxLength": "Maximum length is 10 characters",
-        "moujaNoFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
-        "moujaNoEnglishOnly": "Only English letters, numbers, and underscore are allowed. Marathi/Hindi not supported.",
+        "moujaNoFormat": "Invalid format. Only English letters, numbers, dot, and underscore are allowed.",
+        "moujaNoEnglishOnly": "Only English letters, numbers, dot, and underscore are allowed. Marathi/Hindi not supported.",
         "moujaNoExists": "This Mouja Number already exists. Please use a different number.",
         "moujaNameRequired": "Mouja name is required",
         "moujaNameMaxLength": "Maximum length is 100 characters",

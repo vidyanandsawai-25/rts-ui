@@ -28,6 +28,10 @@
 export const CODE_REGEX = /^[A-Za-z0-9](?:[A-Za-z0-9_]*[A-Za-z0-9])?$/;
 export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except alphanumeric and underscore
 
+// Generic Code Validation with Decimal: Allow alphanumeric, underscore, and dot (A-Z, a-z, 0-9, _, .)
+export const CODE_WITH_DECIMAL_REGEX = /^(?!.*\.\.)[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/;
+export const CODE_WITH_DECIMAL_SANITIZE = /[^A-Za-z0-9._]/g;
+
 // Asset Mouja No: Allow alphanumeric (multilingual), hyphens (-), and underscores (_)
 export const ASSET_MOUJA_NO_REGEX = /^[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}_\-]*[\p{L}\p{M}\p{N}])?$/u;
 export const ASSET_MOUJA_NO_SANITIZE = /[^\p{L}\p{M}\p{N}_\-]/gu;

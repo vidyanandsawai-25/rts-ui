@@ -143,10 +143,10 @@ export function WaterRateForm({ id, initialData }: Readonly<WaterRateFormProps>)
               id="water-yearly-rate"
               type="text"
               inputMode="numeric"
-              maxLength={5}
+              maxLength={6}
               value={formData.yearlyRate}
               onChange={(e) => {
-                const digits = e.target.value.replace(/\D/g, "").slice(0, 5);
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 6);
                 handleChange("yearlyRate", digits);
               }}
               onBlur={() => handleBlur("yearlyRate")}
