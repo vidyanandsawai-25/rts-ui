@@ -42,7 +42,8 @@
     "deleteRates": "दर हटवा",
     "downloadTemplate": "टेम्प्लेट डाउनलोड करा",
     "uploadExcel": "एक्सेल अपलोड करा",
-    "configureUseTypes": "वापर प्रकार कॉन्फिगर करा"
+    "configureUseTypes": "वापर प्रकार कॉन्फिगर करा",
+    "generateRateMatrix": "दर मॅट्रिक्स तयार करा"
   },
   "messages": {
     "csvOnly": "कृपया वैध CSV फाइल अपलोड करा. Excel (.xlsx) फाइल्स समर्थित नाहीत.",

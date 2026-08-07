@@ -13,7 +13,7 @@ export function generateCsvTemplate(
   
   const rows = allZones.map(zone => [
     zone.zoneNo,
-    ...rateCategories.map(() => '0')
+    ...rateCategories.map(() => '')
   ]);
 
   return [

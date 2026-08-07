@@ -19,7 +19,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface RateMatrixSectionProps {
@@ -185,13 +185,20 @@ export function RateMatrixSection({
             mode={gridMode}
             editableColumns={filteredCategories.map(cat => cat.constructionCode || cat.constructionId)}
             cellMaxValue={MAX_RATE_VALUE}
+            allowZero={true}
             onCellChange={(rowId, colId, value) => {
-              // Sanitize and validate value
-              const sanitized = sanitizePositiveDecimal(String(value));
-              const numValue = sanitized === "" ? 0 : Number(sanitized);
+              let numValue: number | undefined;
+
+              if (value === undefined || value === null || value === "") {
+                numValue = undefined;
+              } else {
+                // Sanitize and validate value
+                const sanitized = sanitizePositiveDecimal(String(value));
+                numValue = sanitized === "" ? undefined : Number(sanitized);
+              }
 
               // Check if value exceeds maximum allowed rate
-              if (numValue > MAX_RATE_VALUE) {
+              if (numValue !== undefined && numValue > MAX_RATE_VALUE) {
                 toast.error(t('messages.rateExceedsMaximum', { max: MAX_RATE_VALUE }));
                 return;
               }
@@ -203,20 +210,30 @@ export function RateMatrixSection({
               // Update matrixData for current page
               setMatrixData(prev => prev.map(row => {
                 if (String(row.id) === rowId) {
-                  return { ...row, [colId]: numValue };
+                  const updatedRow = { ...row };
+                  if (numValue === undefined) {
+                    updatedRow[colId] = null;
+                  } else {
+                    updatedRow[colId] = numValue;
+                  }
+                  return updatedRow;
                 }
                 return row;
               }));
 
               // Update allZoneEdits to persist across page changes
               if (zoneNo) {
-                setAllZoneEdits(prevEdits => ({
-                  ...prevEdits,
-                  [zoneNo]: {
-                    ...(prevEdits[zoneNo] || {}),
-                    [colId]: numValue
+                setAllZoneEdits(prevEdits => {
+                  const updatedEdits = { ...prevEdits };
+                  const zoneEdits = { ...(updatedEdits[zoneNo] || {}) };
+                  if (numValue === undefined) {
+                    zoneEdits[colId] = null as unknown as number;
+                  } else {
+                    zoneEdits[colId] = numValue;
                   }
-                }));
+                  updatedEdits[zoneNo] = zoneEdits;
+                  return updatedEdits;
+                });
               }
             }}
             onCellKeyDown={(e) => {
@@ -226,8 +243,8 @@ export function RateMatrixSection({
               }
             }}
             getCellClassName={(value) => {
-              // Highlight cells: blue for values > 0, light gray for 0
-              return value > 0
+              // Highlight cells: blue for values that are explicitly defined, light gray for undefined
+              return value !== undefined && value !== null && value !== ""
                 ? "bg-blue-50 text-blue-800 border-blue-300"
                 : "bg-gray-50 text-gray-500 border-gray-200";
             }}

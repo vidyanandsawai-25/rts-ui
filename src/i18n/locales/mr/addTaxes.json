@@ -3,85 +3,85 @@
     "message": "मालमत्ता कर ऑपरेशन्स लोड होत आहेत...",
     "description": "कृपया आम्ही मालमत्ता कर ऑपरेशन्स सुरू करेपर्यंत प्रतीक्षा करा"
   },
-  "title": "Property Tax Operations",
-  "subtitle": "Post, reverse, import, and monitor property tax transactions",
+  "title": "मालमत्ता कर ऑपरेशन्स",
+  "subtitle": "मालमत्ता कर व्यवहार पोस्ट करा, उलट करा, आयात करा आणि निरीक्षण करा",
   "buttons": {
-    "guidelines": "Guidelines",
-    "userManual": "User Manual",
-    "auditTrail": "Audit Trail"
+    "guidelines": "मार्गदर्शक तत्त्वे",
+    "userManual": "वापरकर्ता मॅन्युअल",
+    "auditTrail": "ऑडिट ट्रेल"
   },
   "stats": {
-    "financeYear": "Finance Year",
-    "totalProperties": "Total Properties",
-    "eligibleRecords": "Eligible Records",
-    "skippedLocked": "Skipped / Locked",
-    "runningJobs": "Running Jobs"
+    "financeYear": "आर्थिक वर्ष",
+    "totalProperties": "एकूण मालमत्ता",
+    "eligibleRecords": "पात्र रेकॉर्ड",
+    "skippedLocked": "वगळलेले / लॉक केलेले",
+    "runningJobs": "चालू असलेले जॉब्स"
   },
   "permissions": {
-    "title": "User Permission",
-    "allowedMessage": "Allowed for Calculate Property Tax."
+    "title": "वापरकर्ता परवानगी",
+    "allowedMessage": "मालमत्ता कराची गणना करण्यास परवानगी आहे."
   },
   "tabs": {
     "excelComingSoon": "एक्सेल आयात कार्यक्षमता लवकरच येत आहे",
     "auditComingSoon": "ऑडिट आणि मॉनिटर कार्यक्षमता लवकरच येत आहे",
-    "manualSelection": "Manual Selection",
-    "excelImport": "Excel Import",
-    "auditMonitor": "Audit & Monitor"
+    "manualSelection": "मॅन्युअल निवड",
+    "excelImport": "एक्सेल आयात",
+    "auditMonitor": "ऑडिट आणि मॉनिटर"
   },
   "scopeSelection": {
-    "title": "1. Scope Selection",
-    "subtitle": "Choose scope. Only relevant fields appear below.",
+    "title": "1. व्याप्ती निवड",
+    "subtitle": "व्याप्ती निवडा. केवळ संबंधित फील्ड खाली दिसतील.",
     "scopes": {
-      "allProperties": "All Properties",
-      "allPropertiesDesc": "Entire corporation",
-      "zoneNode": "Zone / Node",
-      "zoneNodeDesc": "Zone-wise selection",
-      "wardSector": "Ward / Sector",
-      "wardSectorDesc": "Multi ward selection",
-      "buildingWise": "Building Wise",
-      "buildingWiseDesc": "Building level",
-      "propertyWise": "Property Wise",
-      "propertyWiseDesc": "Selected properties",
-      "propertyRange": "Property Range",
-      "propertyRangeDesc": "From-to property range"
+      "allProperties": "सर्व मालमत्ता",
+      "allPropertiesDesc": "संपूर्ण महानगरपालिका",
+      "zoneNode": "झोन / नोड",
+      "zoneNodeDesc": "झोननुसार निवड",
+      "wardSector": "प्रभाग / सेक्टर",
+      "wardSectorDesc": "बहु प्रभाग निवड",
+      "buildingWise": "इमारत निहाय",
+      "buildingWiseDesc": "इमारत स्तर",
+      "propertyWise": "मालमत्ता निहाय",
+      "propertyWiseDesc": "निवडलेल्या मालमत्ता",
+      "propertyRange": "मालमत्ता श्रेणी",
+      "propertyRangeDesc": "पासून-पर्यंत मालमत्ता श्रेणी"
     },
-    "zoneNodeSelect": "Zone / Node",
-    "zoneNodeSelectPlaceholder": "Select Zone / Node",
-    "propertyType": "Property Type",
-    "propertyTypePlaceholder": "All Types",
-    "eligibleProperties": "Eligible Properties"
+    "zoneNodeSelect": "झोन / नोड",
+    "zoneNodeSelectPlaceholder": "झोन / नोड निवडा",
+    "propertyType": "मालमत्तेचा प्रकार",
+    "propertyTypePlaceholder": "सर्व प्रकार",
+    "eligibleProperties": "पात्र मालमत्ता"
   },
   "executionValidation": {
-    "title": "EXECUTION VALIDATION",
+    "title": "अंमलबजावणी पडताळणी",
     "tags": {
-      "financeYear": "Finance Year",
-      "scope": "Scope",
-      "eligibleRecords": "Eligible Records",
-      "permission": "Permission"
+      "financeYear": "आर्थिक वर्ष",
+      "scope": "व्याप्ती",
+      "eligibleRecords": "पात्र रेकॉर्ड",
+      "permission": "परवानगी"
     },
-    "readyRecords": "Ready Records",
-    "eligibleRecordsSub": "eligible records",
-    "reviewExecute": "Review & Execute",
-    "requiresConfirmation": "Requires final confirmation"
+    "readyRecords": "तयार रेकॉर्ड",
+    "eligibleRecordsSub": "पात्र रेकॉर्ड",
+    "reviewExecute": "पुनरावलोकन आणि अंमलबजावणी करा",
+    "requiresConfirmation": "अंतिम पुष्टीकरण आवश्यक आहे"
   },
   "validateEligibility": {
-    "title": "2. Validate Eligibility",
-    "subtitle": "Allowed actions based on user permission, finance year and selected scope.",
+    "title": "2. पात्रता तपासा",
+    "subtitle": "वापरकर्ता परवानगी, आर्थिक वर्ष आणि निवडलेल्या व्याप्तीवर आधारित अनुमत क्रिया.",
     "actions": {
-      "addTax": "Add Tax",
-      "addTaxDesc": "Eligible for selected FY and scope",
-      "quarterlyAdd": "Quarterly Add",
-      "quarterlyAddDesc": "Eligible when quarter is selected",
-      "removeTax": "Remove Tax",
-      "removeTaxDesc": "Requires senior confirmation",
-      "quarterlyRemove": "Quarterly Remove",
-      "quarterlyRemoveDesc": "Requires approval note"
+      "addTax": "कर जोडा",
+      "addTaxDesc": "निवडलेल्या आर्थिक वर्ष आणि व्याप्तीसाठी पात्र",
+      "quarterlyAdd": "त्रैमासिक जोडणे",
+      "quarterlyAddDesc": "तिमाही निवडल्यावर पात्र",
+      "removeTax": "कर काढा",
+      "removeTaxDesc": "वरिष्ठ पुष्टीकरण आवश्यक आहे",
+      "quarterlyRemove": "त्रैमासिक काढणे",
+      "quarterlyRemoveDesc": "मंजुरी नोट आवश्यक आहे"
     },
     "status": {
-      "allowed": "Allowed",
-      "restricted": "Restricted"
+      "allowed": "परवानगी आहे",
+      "restricted": "प्रतिबंधित"
     },
-    "infoNote": "Select allowed operation here. Final decision summary will be shown only after clicking Review & Execute."
+    "infoNote": "येथे अनुमत क्रिया निवडा. अंतिम निर्णय सारांश फक्त पुनरावलोकन आणि अंमलबजावणी करा वर क्लिक केल्यानंतर दर्शविला जाईल."
   },
   "progressPanel": {
     "title": "प्रक्रिया जॉब",
@@ -110,7 +110,9 @@
     },
     "status": {
       "failed": "अयशस्वी",
-      "added": "जोडले"
+      "added": "जोडले",
+      "pending": "प्रलंबित",
+      "skipped": "वगळलेले"
     }
   },
   "reviewModal": {
@@ -119,6 +121,7 @@
     "action": "कर जोडणे",
     "warningSuffix": "सुरू करणार आहात ({count} मालमत्तांसाठी)",
     "cancel": "रद्द करा",
+    "preview": "पूर्वावलोकन",
     "proceed": "पुढे जा आणि अंमलबजावणी सुरू करा",
     "scheduleExecutionButton": "अंमलबजावणीचे वेळापत्रक करा",
     "operation": "प्रक्रिया",
@@ -244,6 +247,8 @@
     "invalidFileFormat": "अवैध फाइल स्वरूप. कृपया .xlsx किंवा .xls फाइल अपलोड करा.",
     "fileTooLarge": "फाइलचा आकार 10 MB मर्यादेपेक्षा जास्त आहे.",
     "emptyExcelSheet": "एक्सेल शीट रिकामी आहे",
+    "invalidExcelTemplate": "कृपया टेम्पलेटप्रमाणे योग्य एक्सेल अपलोड करा.",
+    "invalidWardPropertyData": "कृपया एक्सेलमध्ये वैध वार्ड आणि मालमत्ता अपलोड करा.",
     "uploadSuccess": "यशस्वीरित्या अपलोड केले. स्वयं-शोधलेली व्याप्ती: {scope}",
     "failedParseExcel": "एक्सेल फाईलचे विश्लेषण करण्यात अयशस्वी",
     "eligibleCalculated": "पात्र मालमत्तांची गणना यशस्वीरित्या झाली",
@@ -332,5 +337,10 @@
     "emptyState": {
       "noData": "कोणताही डेटा उपलब्ध नाही"
     }
+  },
+  "inactiveFinanceYear": {
+    "title": "ऑपरेशन प्रतिबंधित",
+    "message": "आर्थिक वर्ष \"{financeYear}\" साठी तुम्ही कर जोडू शकत नाही.",
+    "subtext": "कर ऑपरेशन करण्यासाठी कृपया चालू आर्थिक वर्ष निवडा."
   }
 }

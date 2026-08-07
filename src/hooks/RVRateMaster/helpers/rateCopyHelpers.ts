@@ -5,7 +5,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface ProcessedCopyRates {
@@ -67,7 +67,7 @@ export function buildZoneEditsFromRates(
     if (zoneRates) {
       rateCategories.forEach((cat) => {
         const rateValue = zoneRates!.get(cat.constructionId);
-        if (rateValue !== undefined && rateValue > 0) {
+        if (rateValue !== undefined) {
           const key = cat.constructionCode || cat.constructionId;
           zoneEdits[key] = rateValue;
         }

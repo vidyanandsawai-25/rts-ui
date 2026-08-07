@@ -42,7 +42,8 @@
     "deleteRates": "Delete Rates",
     "downloadTemplate": "Download Template",
     "uploadExcel": "Upload Excel",
-    "configureUseTypes": "Configure Use Types"
+    "configureUseTypes": "Configure Use Types",
+    "generateRateMatrix": "Generate Rate Matrix"
   },
   "messages": {
     "csvOnly": "Please upload a valid CSV file. Excel (.xlsx) files are not supported.",

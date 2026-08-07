@@ -67,14 +67,27 @@ Z2,90,70,40`;
 
     it("should handle CSV with headers and empty data rows", () => {
       const csvContent = `Tax Zone No,RCC (Rs./Sq.mtr),LOAD (Rs./Sq.mtr),MUD (Rs./Sq.mtr)
-Z1,0,0,0
-Z2,0,0,0`;
+Z1,,,
+Z2,,,`;
 
-      // CSV with only zero values should return empty results (zero values are skipped)
+      // CSV with empty values should return empty results
       const result = parseCsvContent(csvContent, mockZoneDescriptions, mockRateCategories);
 
       expect(Object.keys(result.zoneEdits)).toHaveLength(0);
       expect(result.importedRateCount).toBe(0);
+    });
+
+    it("should parse explicit zero values from CSV", () => {
+      const csvContent = `Tax Zone No,RCC (Rs./Sq.mtr),LOAD (Rs./Sq.mtr),MUD (Rs./Sq.mtr)
+Z1,0,0,0
+Z2,0,0,0`;
+
+      // Explicit zero values should be parsed correctly
+      const result = parseCsvContent(csvContent, mockZoneDescriptions, mockRateCategories);
+
+      expect(Object.keys(result.zoneEdits)).toHaveLength(2);
+      expect(result.zoneEdits["Z1"]["RCC"]).toBe(0);
+      expect(result.importedRateCount).toBe(6);
     });
 
     it("should throw error on invalid file", () => {

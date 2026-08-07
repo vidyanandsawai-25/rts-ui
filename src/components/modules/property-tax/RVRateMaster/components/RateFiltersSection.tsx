@@ -182,11 +182,11 @@ export function RateFiltersSection({
           <>
             {/* Multiplier Button */}
             {!isOpenPlot && (
-              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}>
+              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}>
                 <IconButton
                   icon={TrendingUp}
                   variant="primary"
-                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}
+                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}
                   disabled={isActionsDisabled}
                   onClick={onToggleMultipliers}
                 />
@@ -194,11 +194,11 @@ export function RateFiltersSection({
             )}
 
             {/* Generate Matrix Button */}
-            <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}>
+            <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.generateRateMatrix')}>
               <IconButton
                 icon={Plus}
                 variant="primary"
-                aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}
+                aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.generateRateMatrix')}
                 disabled={isActionsDisabled}
                 onClick={onGenerateMatrix}
               />
@@ -206,11 +206,11 @@ export function RateFiltersSection({
 
             {/* Copy Rates Toggle Button */}
             {!isOpenPlot && (
-              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}>
+              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.copyRates')}>
                 <IconButton
                   icon={ClipboardCopy}
                   variant="primary"
-                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}
+                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.copyRates')}
                   disabled={isActionsDisabled}
                   onClick={onToggleCopyRates}
                 />

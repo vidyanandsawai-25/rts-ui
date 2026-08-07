@@ -6,7 +6,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface UseMatrixStateProps {
@@ -34,7 +34,7 @@ export function useMatrixState({
         rateCategories.forEach((cat) => {
           const key = cat.constructionCode || cat.constructionId;
           const value = zoneEdits[key];
-          if (value && value > 0) {
+          if (value !== undefined && value !== null) {
             count++;
           }
         });
@@ -74,7 +74,7 @@ export function useMatrixState({
         taxZoneId: z.taxZoneId,
         ...rateCategories
           .filter(cat => cat.constructionId !== "zoneNo" && cat.constructionId !== "zoneDescription")
-          .reduce((acc, cat) => ({ ...acc, [cat.constructionCode || cat.constructionId]: 0 }), {} as Record<string, number>),
+          .reduce((acc, cat) => ({ ...acc, [cat.constructionCode || cat.constructionId]: undefined }), {} as Record<string, number | undefined>),
       };
       const edits = allZoneEdits[z.zoneNo] || {};
       return { ...baseData, ...edits };

@@ -175,6 +175,7 @@ export default function RateMasterView({
             onDownloadRates={handleDownloadRates}
             isDownloadDisabled={isDownloadDisabled || isDrawerOpen}
             isActionDisabled={!!frequencyMismatch || isDrawerOpen}
+            isDeleteDisabled={isDrawerOpen}
             t={t}
           />
         </div>

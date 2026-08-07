@@ -7,7 +7,7 @@ type MatrixRow = {
   id: number;
   zone?: string;
   zoneNo?: string;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface RateCopyHandlersProps {

@@ -230,7 +230,7 @@ describe("useMatrixDataSync", () => {
 
       expect(mockSetMatrixData).toHaveBeenCalled();
       const callArg = mockSetMatrixData.mock.calls[mockSetMatrixData.mock.calls.length - 1][0];
-      expect(callArg[0].A).toBe(0); // Should default to 0 when rateSquareFeet is undefined
+      expect(callArg[0].A).toBeUndefined(); // Should default to undefined when rateSquareFeet is undefined
     });
   });
 

@@ -69,9 +69,6 @@ export function buildPayloadFromMatrix(
       const rowKey = typeof cat === 'string' ? cat : (cat.constructionCode || cat.constructionId);
       const val = row[rowKey];
 
-      // Skip if value is invalid
-      if (val === undefined || val === null || val === '' || isNaN(Number(val))) return;
-
       const zoneNoVal = String(row.zoneNo ?? row.zone ?? '');
       const taxZoneIdVal = row.taxZoneId || Number(zoneNoVal);
 
@@ -93,22 +90,11 @@ export function buildPayloadFromMatrix(
         finalUseGroupId
       );
 
-      // For new rates (inserts), skip if value is 0 or negative
-      // For existing rates (updates), always skip negatives
-      // For open plot: if the submitted value is 0 but the existing record has a positive rate,
-      // it means the user never edited that cell (buildCompleteMatrixForSubmission defaulted it to 0).
-      // Skip the update to avoid zeroing out untouched rates.
-      if (Number(val) < 0) return;
-      if (!existing && Number(val) === 0) return;
-      if (config.isOpenPlot && existing && Number(val) === 0) {
-        const existingRate = rateUnit === 'SqFeet' ? existing.rateSquareFeet : existing.rateSquareMeter;
-        if (Number(existingRate) > 0) return;
-      }
+      const isValEmpty = val === undefined || val === null || val === '' || isNaN(Number(val));
+      if (isValEmpty && !existing) return;
 
-      // Calculate rate values based on selected rate unit
-      // If SqMeter: entered value goes to rateSquareMeter, rateSquareFeet is calculated
-      // If SqFeet: entered value goes to rateSquareFeet, rateSquareMeter is calculated
-      const enteredValue = Number(val);
+      const enteredValue = isValEmpty ? 0 : Number(val);
+      if (enteredValue < 0) return;
       const SQM_TO_SQFT = 10.7639104;
       const SQFT_TO_SQM = 0.092903;
       const rateSquareMeterValue = rateUnit === 'SqMeter'

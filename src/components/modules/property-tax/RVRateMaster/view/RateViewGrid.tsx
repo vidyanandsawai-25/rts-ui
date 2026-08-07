@@ -149,15 +149,15 @@ export function RateViewGrid({
                 rows={data.map((row, rowIndex) => {
                   const cells = Object.fromEntries(
                     columns.map((col) => {
-                      let value = 0.00;
+                      let value: number | undefined = undefined;
                       if (row.rates && Array.isArray(row.rates)) {
                         const rateObj = row.rates.find((r: IRateValue) =>
                           r.rateCategory?.trim().toLowerCase() === col.id.trim().toLowerCase()
                         );
                         // Use rate value based on selected rate unit
-                        value = rateUnit === 'SqFeet'
-                          ? ((rateObj && rateObj.ratePerSqFt != null) ? rateObj.ratePerSqFt : 0.00)
-                          : ((rateObj && rateObj.ratePerSqMtr != null) ? rateObj.ratePerSqMtr : 0.00);
+                        if (rateObj) {
+                          value = (rateUnit === 'SqFeet' ? rateObj.ratePerSqFt : rateObj.ratePerSqMtr) ?? undefined;
+                        }
                       } else if ((row as unknown as Record<string, unknown>)[col.id] != null) {
                         value = (row as unknown as Record<string, unknown>)[col.id] as number;
                       }
@@ -187,8 +187,9 @@ export function RateViewGrid({
                   };
                 })}
                 colorMap={categoryColorMap}
+                allowZero={true}
                 getCellClassName={(value) => {
-                  return value > 0
+                  return value !== undefined && value !== null && value !== ""
                     ? "bg-blue-50 text-blue-800 border-blue-300"
                     : "bg-gray-50 text-gray-500 border-gray-200";
                 }}

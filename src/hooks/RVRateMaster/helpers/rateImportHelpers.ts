@@ -5,7 +5,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface ParsedImportData {
@@ -43,12 +43,14 @@ export function parseCsvContent(
     rateCategories.forEach((cat, catIndex) => {
       const valueIndex = 1 + catIndex;
       if (valueIndex < values.length) {
-        const parsedValue = parseFloat(values[valueIndex]);
-        const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
-        if (finalValue > 0) {
-          importedRateCount++;
-          const key = cat.constructionCode || cat.constructionId;
-          zoneEdits[key] = finalValue;
+        const rawValue = values[valueIndex];
+        if (rawValue !== undefined && rawValue !== null && rawValue !== "") {
+          const parsedValue = parseFloat(rawValue);
+          if (!isNaN(parsedValue)) {
+            importedRateCount++;
+            const key = cat.constructionCode || cat.constructionId;
+            zoneEdits[key] = parsedValue;
+          }
         }
       }
     });
