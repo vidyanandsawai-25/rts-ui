@@ -1,4 +1,3 @@
-
 {
   "renter": {
     "loadingScreen": "किराएदार स्क्रीन लोड हो रही है...",
@@ -308,6 +307,7 @@
   },
   "property": {
     "title": "संपत्ति जानकारी",
+    "pageInProgress": "यह पृष्ठ प्रगति पर है",
     "division": "विभाग",
     "divisionPlaceholder": "डिवीजन दर्ज करें",
     "mouja": "मौजा",
@@ -338,6 +338,8 @@
     "builtupAreaSqMeter": "बिल्टअप क्षेत्रफल (वर्ग मी.)",
     "totalCarpetAreaWithUnit": "कुल कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
     "buildupAreaWithUnit": "कुल बिल्टअप क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
+    "oldCarpetAreaWithUnit": "पुराना कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
+    "oldBuildupAreaWithUnit": "पुराना बिल्टअप क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
     "selectType": "प्रकार चुनें",
     "select": "चुनें",
     "residential": "आवासीय",

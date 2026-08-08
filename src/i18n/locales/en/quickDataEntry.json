@@ -306,6 +306,7 @@
         }
     },
     "property": {
+        "pageInProgress": "This page is in progress",
         "title": "Property Information",
         "division": "Division",
         "mouja": "Mouja",
@@ -337,6 +338,8 @@
         "builtupAreaSqMeter": "Buildup Area (sq.m)",
         "totalCarpetAreaWithUnit": "Total Carpet Area (sq.ft / sq.m)",
         "buildupAreaWithUnit": "Total Buildup Area (sq.ft / sq.m)",
+        "oldCarpetAreaWithUnit": "Old Carpet Area (sq.ft / sq.m)",
+        "oldBuildupAreaWithUnit": "Old Buildup Area (sq.ft / sq.m)",
         "selectType": "Select type",
         "select": "Select",
         "residential": "Residential",

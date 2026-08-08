@@ -306,6 +306,7 @@
     }
   },
   "property": {
+    "pageInProgress": "हे पृष्ठ प्रगतीपथावर आहे",
     "title": "मालमत्ता माहिती",
     "division": "विभाग",
     "divisionPlaceholder": "विभाग प्रविष्ट करा",
@@ -337,6 +338,8 @@
     "builtupAreaSqMeter": "बिल्टअप क्षेत्रफळ (चौ. मी.)",
     "totalCarpetAreaWithUnit": "एकूण कार्पेट क्षेत्रफळ (चौ.फू. / चौ.मी.)",
     "buildupAreaWithUnit": "एकूण बांधकाम क्षेत्रफळ (चौ.फू. / चौ.मी.)",
+    "oldCarpetAreaWithUnit": "जुने कार्पेट क्षेत्रफळ (चौ.फू. / चौ.मी.)",
+    "oldBuildupAreaWithUnit": "जुने बांधकाम क्षेत्रफळ (चौ.फू. / चौ.मी.)",
     "selectType": "प्रकार निवडा",
     "select": "निवडा",
     "residential": "निवासी",

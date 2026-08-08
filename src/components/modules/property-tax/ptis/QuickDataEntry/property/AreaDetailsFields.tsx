@@ -24,6 +24,8 @@ export const AreaDetailsFields = ({
     const plotAreaVal = formatAreaValue(propertyData?.plotAreaSqFeet, propertyData?.plotAreaSqMeter);
     const carpetAreaVal = formatAreaValue(propertyData?.totalCarpetAreaSqFeet, propertyData?.totalCarpetAreaSqMeter);
     const buildupAreaVal = formatAreaValue(propertyData?.totalBuiltupAreaSqFeet, propertyData?.totalBuiltupAreaSqMeter);
+    const oldCarpetAreaVal = formatAreaValue(propertyData?.oldCarpetAreaSqFeet, propertyData?.oldCarpetAreaSqMeter);
+    const oldBuildupAreaVal = formatAreaValue(propertyData?.oldBuiltupAreaSqFeet, propertyData?.oldBuiltupAreaSqMeter);
 
     const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -32,9 +34,9 @@ export const AreaDetailsFields = ({
     };
 
     return (
-        <>
+        <div className={`col-span-12 grid grid-cols-1 ${!isPlotCategory ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-x-4 gap-y-3`}>
             {/* Plot Area */}
-            <div className="space-y-1.5 col-span-12 md:col-span-4">
+            <div className="space-y-1.5">
                 <Label htmlFor="pd-plotarea" className="text-xs font-semibold text-gray-700">
                     {t('property.plotAreaWithUnit')}
                 </Label>
@@ -55,7 +57,7 @@ export const AreaDetailsFields = ({
             {!isPlotCategory && (
                 <>
                     {/* Total Carpet Area */}
-                    <div className="space-y-1.5 col-span-12 md:col-span-4">
+                    <div className="space-y-1.5">
                         <Label htmlFor="pd-carpetarea" className="text-xs font-semibold text-gray-700">
                             {t('property.totalCarpetAreaWithUnit')}
                         </Label>
@@ -73,7 +75,7 @@ export const AreaDetailsFields = ({
                     </div>
 
                     {/* Buildup Area */}
-                    <div className="space-y-1.5 col-span-12 md:col-span-4">
+                    <div className="space-y-1.5">
                         <Label htmlFor="pd-builduparea" className="text-xs font-semibold text-gray-700">
                             {t('property.buildupAreaWithUnit')}
                         </Label>
@@ -89,6 +91,42 @@ export const AreaDetailsFields = ({
                             />
                         </Tooltip>
                     </div>
+
+                    {/* Old Carpet Area */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="pd-oldcarpetarea" className="text-xs font-semibold text-gray-700">
+                            {t('property.oldCarpetAreaWithUnit') || 'Old Carpet Area (Sq.Ft/Sq.Mtr)'}
+                        </Label>
+                        <Tooltip content={oldCarpetAreaVal} placement="top">
+                            <Input
+                                readOnly
+                                id="pd-oldcarpetarea"
+                                type="text"
+                                placeholder="0.00 / 0.00"
+                                defaultValue={oldCarpetAreaVal}
+                                onKeyDown={preventEnterSubmit}
+                                className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                            />
+                        </Tooltip>
+                    </div>
+
+                    {/* Old Buildup Area */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="pd-oldbuilduparea" className="text-xs font-semibold text-gray-700">
+                            {t('property.oldBuildupAreaWithUnit') || 'Old Buildup Area (Sq.Ft/Sq.Mtr)'}
+                        </Label>
+                        <Tooltip content={oldBuildupAreaVal} placement="top">
+                            <Input
+                                readOnly
+                                id="pd-oldbuilduparea"
+                                type="text"
+                                placeholder="0.00 / 0.00"
+                                defaultValue={oldBuildupAreaVal}
+                                onKeyDown={preventEnterSubmit}
+                                className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                            />
+                        </Tooltip>
+                    </div>
                 </>
             )}
 
@@ -97,6 +135,6 @@ export const AreaDetailsFields = ({
             <input type="hidden" name="totalCarpetAreaSqMeter" value={propertyData?.totalCarpetAreaSqMeter != null ? Number(propertyData.totalCarpetAreaSqMeter).toFixed(2) : ''} />
             <input type="hidden" name="totalBuiltupAreaSqFeet" value={propertyData?.totalBuiltupAreaSqFeet != null ? Number(propertyData.totalBuiltupAreaSqFeet).toFixed(2) : ''} />
             <input type="hidden" name="totalBuiltupAreaSqMeter" value={propertyData?.totalBuiltupAreaSqMeter != null ? Number(propertyData.totalBuiltupAreaSqMeter).toFixed(2) : ''} />
-        </>
+        </div>
     );
 };
