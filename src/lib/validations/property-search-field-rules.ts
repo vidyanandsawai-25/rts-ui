@@ -206,11 +206,24 @@ function validateSubZoneNo(value: string): boolean {
   );
 }
 
+function getValuationInvalidKey(valuationMethod?: string): SearchValidationKey {
+  if (valuationMethod === "cv") return "capitalValueInvalid";
+  if (valuationMethod === "totalTax") return "totalTaxInvalid";
+  return "rateableValueInvalid";
+}
+
+function getValuationRangeInvalidKey(valuationMethod?: string): SearchValidationKey {
+  if (valuationMethod === "cv") return "capitalValueRangeInvalid";
+  if (valuationMethod === "totalTax") return "totalTaxRangeInvalid";
+  return "rateableValueRangeInvalid";
+}
+
 /** Returns a validation message for a single field, or null when valid / empty. */
 export function validateSearchFieldValue(
   field: keyof SearchCriteria,
   rawValue: string | number,
-  t: PropertySearchValidationTranslator
+  t: PropertySearchValidationTranslator,
+  valuationMethod?: string
 ): string | null {
   if (typeof rawValue === "number") return null;
 
@@ -221,6 +234,9 @@ export function validateSearchFieldValue(
   switch (field) {
     case "propertyNoFrom":
     case "propertyNoTo":
+      if (!/\d/.test(trimmed)) {
+        return t("propertyNoInvalid");
+      }
       return validateAlphanumericWithSeparators(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.propertyNo
@@ -229,6 +245,9 @@ export function validateSearchFieldValue(
         : t("propertyNoInvalid");
 
     case "oldPropertyNo":
+      if (!/\d/.test(trimmed)) {
+        return t("oldPropertyNoInvalid");
+      }
       return validateAlphanumericOnly(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo
@@ -304,12 +323,12 @@ export function validateSearchFieldValue(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.rateableValue
       )) {
-        return t("rateableValueInvalid");
+        return t(getValuationInvalidKey(valuationMethod));
       }
       const cleanVal = String(value).replace(/,/g, "").trim();
       const numVal = Number(cleanVal);
       if (Number.isFinite(numVal) && numVal <= 0) {
-        return t("rateableValueInvalid");
+        return t(getValuationInvalidKey(valuationMethod));
       }
       return null;
 
@@ -389,14 +408,19 @@ export function getPropertySearchFieldErrors(
         const clean = fromVal.replace(/,/g, "");
         const num = Number(clean);
         if (!/^\d+$/.test(clean) || num <= 0) {
-          errors.rateableValueFrom = t("rateableValueInvalid");
+          errors.rateableValueFrom = t(getValuationInvalidKey(criteria.valuationMethod));
         }
       }
     }
 
     for (const field of ["rateableValueFrom", "rateableValueTo"] as const) {
       if (!errors[field]) {
-        const message = validateSearchFieldValue(field, criteria[field], t);
+        const message = validateSearchFieldValue(
+          field,
+          criteria[field],
+          t,
+          criteria.valuationMethod
+        );
         if (message) errors[field] = message;
       }
     }
@@ -408,7 +432,7 @@ export function getPropertySearchFieldErrors(
         const fromNum = Number(fromVal.replace(/,/g, ""));
         const toNum = Number(toVal.replace(/,/g, ""));
         if (toNum < fromNum) {
-          errors.rateableValueTo = t("rateableValueRangeInvalid");
+          errors.rateableValueTo = t(getValuationRangeInvalidKey(criteria.valuationMethod));
         }
       }
     }

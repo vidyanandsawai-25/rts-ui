@@ -24,7 +24,7 @@ function withFixedWidth(
   const { tooltip, ...rest } = column;
   const label = tooltip ? (
     <Tooltip content={tooltip} placement="top">
-      <span className="cursor-help">{column.label}</span>
+      <span className="cursor-default">{column.label}</span>
     </Tooltip>
   ) : (
     column.label
@@ -94,7 +94,7 @@ function PropertyNoPartitionCell({ row, t }: { row: SearchResult; t: Translator 
       )}
       {oldProp ? (
         <Tooltip content={oldProp} placement="top">
-          <span className="text-xs font-medium text-slate-700 cursor-help border-b border-dashed border-slate-400 max-w-full truncate block px-1">
+          <span className="text-xs font-medium text-slate-700 cursor-default border-b border-dashed border-slate-400 max-w-full truncate block px-1">
             {oldProp}
           </span>
         </Tooltip>

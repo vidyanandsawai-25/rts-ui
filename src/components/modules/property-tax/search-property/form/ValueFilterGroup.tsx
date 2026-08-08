@@ -104,6 +104,7 @@ export function ValueFilterGroup({
           value={filterValue}
           onChange={onSelectChange(filterField)}
           disabled={disabled}
+          openOnFocus={false}
           className="!h-8 !min-h-8 !py-0 !px-2.5 !text-xs !rounded-md !leading-8"
         />
       </div>

@@ -367,6 +367,11 @@ export type SearchValidationKey =
   | "rateableValueBetweenRequired"
   | "rateableValueRangeInvalid"
   | "capitalValueBetweenRequired"
+  | "capitalValueRangeInvalid"
+  | "capitalValueInvalid"
+  | "totalTaxRangeInvalid"
+  | "totalTaxInvalid"
+  | "totalTaxBetweenRequired"
   | "rateableValueInvalid"
   | "valuationMethodRequired"
   | "noSearchCriteria";
