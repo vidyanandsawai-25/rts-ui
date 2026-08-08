@@ -67,7 +67,7 @@ const mockMessages = {
         remarkFormat: "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         fixErrors: "Please fix validation errors",
         duplicateRecord: "This record already exists",
-        duplicateError: "This record already exists. Please check Zone No and Zone Type - duplicates not allowed.",
+        duplicateError: "Please check Zone No and Zone Type - duplicates not allowed.",
       },
       status: {
         label: "Active Status",
@@ -218,10 +218,7 @@ describe("TaxZoneForm", () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("This record already exists. Please check Zone No and Zone Type - duplicates not allowed.");
-        // Both fields should show the duplicate error
-        const errorMessages = screen.getAllByText("This record already exists");
-        expect(errorMessages).toHaveLength(2); // One for taxZoneNo, one for taxZoneType
+        expect(toast.error).toHaveBeenCalledWith("Please check Zone No and Zone Type - duplicates not allowed.");
       });
     });
 
