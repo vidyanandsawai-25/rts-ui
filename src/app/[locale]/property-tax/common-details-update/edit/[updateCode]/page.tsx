@@ -16,17 +16,16 @@ import {
   getAllZonesAction,
   getFieldRegistriesAction,
   addFieldRegistryAction,
+  updateFieldRegistryAction,
   getFieldRegistryTablesAction,
   getFieldRegistryColumnsAction,
-  updateFieldRegistryAction,
   exportExcelAction,
   getSourceTablesAction,
   getSourceTableFieldsAction,
   addBulkUpdateDefinitionAction,
   getUpdateHistoryAction,
-  exportUpdateHistoryAction,
-  getExcelTemplateFieldsAction
-} from "./actions";
+  exportUpdateHistoryAction
+} from "../../actions";
 import {
   getFieldRegistriesServer,
   getFieldRegistrySchemasServer,
@@ -34,12 +33,16 @@ import {
   getBulkUpdateFieldConfigServer,
   getSourceTablesServer,
   getSourceTableFieldsServer,
-  getUpdateHistoryServer,
+  getUpdateHistoryServer
 } from "@/lib/api/common-details-update/common-details-update.service";
 
 export const dynamic = "force-dynamic";
 
-interface PageProps {
+interface EditPageProps {
+  params: Promise<{
+    locale: string;
+    updateCode: string;
+  }>;
   searchParams: Promise<{
     tab?: string;
     field?: string;
@@ -69,7 +72,7 @@ const MAX_PAGE = 10_000;
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 
-function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
+function sanitizeParams(raw: Awaited<EditPageProps["searchParams"]>) {
   const rawPage = parseInt(raw.pageNumber ?? raw.page ?? "", 10);
   const pageNumber = Number.isFinite(rawPage)
     ? Math.min(Math.max(rawPage, MIN_PAGE), MAX_PAGE)
@@ -84,7 +87,7 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const selectedField = raw.field?.trim() || "";
   const wardId = raw.wardId?.trim() || "";
   const wardNo = raw.wardNo?.trim() || "";
-
+  
   const rawPropertyNo = raw.propertyNo?.trim() || "";
   const rawPartitionNo = raw.partitionNo?.trim() || "";
   const hasPartition = rawPartitionNo !== "" && rawPartitionNo !== "0";
@@ -93,26 +96,27 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const fromProperty = raw.fromProperty?.trim() || propertyNoCombined;
   const toProperty = raw.toProperty?.trim() || propertyNoCombined;
   const wing = raw.wing?.trim() || "";
-  const tab = raw.tab?.trim() || "updateFields";
   const scopeId = raw.scopeId?.trim() || "";
   const zoneId = raw.zoneId?.trim() || "";
+  const tab = raw.tab?.trim() || "updateFields";
   const sourceid = raw.sourceid?.trim() || "";
   const auditPage = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(raw.auditPage) || 1));
-  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 5));
+  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 10));
   const auditUser = raw.auditUser?.trim() || "";
   const auditSearch = raw.auditSearch?.trim() || "";
 
   return { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch };
 }
 
-export default async function Page({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch } = sanitizeParams(params);
+export default async function EditPage(props: EditPageProps) {
+  const { updateCode: rawUpdateCode } = await props.params;
+  const updateCode = decodeURIComponent(rawUpdateCode);
+  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch } = sanitizeParams(await props.searchParams);
 
   const menuItems = await getMenuItemsAction();
   const defaultCode = selectedField || (menuItems[0]?.updateCode || "");
 
-  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialSourceTableFields, initialExcelTemplateFieldsResult, initialUpdateHistory] = await Promise.all([
+  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, editData, initialSourceTables, initialSourceTableFields, initialUpdateHistory] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
     getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
@@ -142,9 +146,9 @@ export default async function Page({ searchParams }: PageProps) {
       }
       return unique;
     }) : Promise.resolve([]),
+    getFieldRegistriesServer(undefined, undefined, updateCode).catch(() => null),
     getSourceTablesServer().catch(() => []),
     sourceid ? getSourceTableFieldsServer(Number(sourceid)).catch(() => []) : Promise.resolve([]),
-    getExcelTemplateFieldsAction().catch(() => ({ success: false, data: [] })),
     getUpdateHistoryServer({
       PageNumber: auditPage,
       PageSize: auditPageSize,
@@ -173,6 +177,8 @@ export default async function Page({ searchParams }: PageProps) {
     hasNext: false,
   };
 
+  const initialEditData = editData && "items" in editData ? (editData.items?.[0] || null) : (Array.isArray(editData) ? editData[0] : null);
+
   const actions = {
     getFieldConfigsAction,
     getFilteredPropertiesAction,
@@ -197,7 +203,7 @@ export default async function Page({ searchParams }: PageProps) {
     getSourceTableFieldsAction,
     addBulkUpdateDefinitionAction,
     getUpdateHistoryAction,
-    exportUpdateHistoryAction,
+    exportUpdateHistoryAction
   };
 
   return (
@@ -211,8 +217,7 @@ export default async function Page({ searchParams }: PageProps) {
       initialFieldConfigs={initialFieldConfigs}
       initialSourceTables={initialSourceTables}
       initialSourceTableFields={initialSourceTableFields}
-      initialExcelTemplateFields={('data' in initialExcelTemplateFieldsResult ? initialExcelTemplateFieldsResult.data : []) || []}
-      initialField={defaultCode}
+      initialField={selectedField || updateCode}
       initialWardId={wardId}
       initialWardNo={wardNo}
       initialFromProperty={fromProperty}
@@ -221,11 +226,12 @@ export default async function Page({ searchParams }: PageProps) {
       initialPage={pageNumber}
       initialPageSize={pageSize}
       initialSearchTerm={searchTerm}
-      initialTab={tab}
+      initialTab={tab || "fieldRegistry"}
       initialScopeId={scopeId}
       initialZoneId={zoneId}
       setFieldRegistryStatusAction={setFieldRegistryStatusAction}
-      initialEditData={null}
+      editUpdateCode={updateCode}
+      initialEditData={initialEditData}
       initialUpdateHistory={initialUpdateHistory}
       actions={actions}
     />

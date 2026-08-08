@@ -5,13 +5,14 @@ import { Input, Select, ValidationMessage, TextArea, SearchSelect } from "@/comp
 import { Label } from "@/components/common/label";
 import { Checkbox } from "@/components/common/checkbox";
 import { BulkUpdateFieldConfig, SelectOption } from "@/types/common-details-update/common-details-update.types";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 interface DynamicFormFieldProps {
   config: BulkUpdateFieldConfig;
   value: string | number | boolean;
   onChange: (fieldName: string, value: string | number | boolean) => void;
   submitted: boolean;
+  error?: string;
   dropdownOptions?: SelectOption[];
 }
 
@@ -21,11 +22,10 @@ export const DynamicFormField = ({
   config,
   value,
   onChange,
-  submitted,
+  error,
   dropdownOptions = [],
 }: DynamicFormFieldProps) => {
   const locale = useLocale();
-  const tCommon = useTranslations("common");
 
   const displayName =
     locale === "mr" && config.displayNameMarathi
@@ -33,11 +33,9 @@ export const DynamicFormField = ({
       : config.displayName;
 
   const placeholder = config.placeholder ?? "";
-  // Check for required fields - treat 0 as valid, only empty/null/undefined as invalid
-  const isInvalid =
-    submitted &&
-    config.isRequired &&
-    (value === "" || value === null || value === undefined);
+  
+  const isInvalid = Boolean(error);
+  const errorMessage = error || "";
 
   const fieldElement = useMemo(() => {
     switch (config.controlType) {
@@ -90,7 +88,8 @@ export const DynamicFormField = ({
       case "number":
         return (
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={String(value ?? "")}
             onChange={(e) => {
               let val = e.target.value;
@@ -171,7 +170,7 @@ export const DynamicFormField = ({
       {fieldElement}
       <ValidationMessage
         visible={isInvalid}
-        message={tCommon("validation.fieldRequired", { field: displayName })}
+        message={errorMessage}
       />
     </div>
   );

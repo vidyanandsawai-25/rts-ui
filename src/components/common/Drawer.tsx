@@ -16,7 +16,7 @@ interface DrawerProps {
   className?: string;
   bodyClassName?: string;
   description?: string;
-  width?: "sm" | "md" | "lg" | "xl";
+  width?: "sm" | "md" | "lg" | "xl" | "2xl";
   children: React.ReactNode;
   footer?: React.ReactNode;
   hideHeader?: boolean;
@@ -153,43 +153,37 @@ export function Drawer({
 
     return (
       <div
-        className={`flex items-center gap-2.5 rounded-lg border ${pillPaddingClass} ${pillTextClass} font-bold shadow-md backdrop-blur-sm transition-all duration-300 ${
-          isCritical
-            ? "border-red-500 bg-red-950/90 text-white shadow-red-500/30 critical-flash-active"
-            : "border-amber-500/70 bg-amber-950/80 text-amber-100 shadow-amber-500/20 warning-flash-active"
-        } session-warn-active`}
+        className={`flex items-center gap-2.5 rounded-lg border ${pillPaddingClass} ${pillTextClass} font-bold shadow-md backdrop-blur-sm transition-all duration-300 ${isCritical
+          ? "border-red-500 bg-red-950/90 text-white shadow-red-500/30 critical-flash-active"
+          : "border-amber-500/70 bg-amber-950/80 text-amber-100 shadow-amber-500/20 warning-flash-active"
+          } session-warn-active`}
         role="status"
         aria-live="polite"
       >
         <span className={`relative flex ${isLargeDrawer ? "h-3.5 w-3.5" : "h-2.5 w-2.5"} shrink-0`}>
           <span
-            className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
-              isCritical ? "animate-ping bg-red-400" : "bg-amber-400 animate-pulse"
-            }`}
+            className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCritical ? "animate-ping bg-red-400" : "bg-amber-400 animate-pulse"
+              }`}
           />
           <span
-            className={`relative inline-flex rounded-full ${isLargeDrawer ? "h-3.5 w-3.5" : "h-2.5 w-2.5"} ${
-              isCritical ? "bg-red-500" : "bg-amber-500"
-            }`}
+            className={`relative inline-flex rounded-full ${isLargeDrawer ? "h-3.5 w-3.5" : "h-2.5 w-2.5"} ${isCritical ? "bg-red-500" : "bg-amber-500"
+              }`}
           />
         </span>
         <AlertCircle
-          className={`${iconSizeClass} shrink-0 transition-transform ${
-            isCritical ? "text-red-400 animate-bounce timer-blink-sharp" : "text-amber-400 timer-blink-smooth"
-          }`}
+          className={`${iconSizeClass} shrink-0 transition-transform ${isCritical ? "text-red-400 animate-bounce timer-blink-sharp" : "text-amber-400 timer-blink-smooth"
+            }`}
           aria-hidden
         />
         <span
-          className={`font-mono ${countdownTextClass} font-extrabold tracking-wide ${
-            isCritical ? "text-red-200 timer-blink-sharp" : "text-amber-300 timer-blink-smooth"
-          }`}
+          className={`font-mono ${countdownTextClass} font-extrabold tracking-wide ${isCritical ? "text-red-200 timer-blink-sharp" : "text-amber-300 timer-blink-smooth"
+            }`}
         >
           {tLogin("sessionTimeout.countdown", { seconds: secondsLeft })}
         </span>
         <span
-          className={`hidden sm:inline ${hintTextClass} font-semibold tracking-normal ${
-            isCritical ? "text-red-100" : "text-amber-200/90"
-          }`}
+          className={`hidden sm:inline ${hintTextClass} font-semibold tracking-normal ${isCritical ? "text-red-100" : "text-amber-200/90"
+            }`}
         >
           {warningType === 'inactivity'
             ? tLogin("sessionTimeout.inactivitySaveWorkHint")
@@ -204,21 +198,20 @@ export function Drawer({
     md: "w-[90vw] md:w-[520px]",
     lg: "w-[95vw] md:w-[900px] lg:w-[900px] xl:w-[900px]",
     xl: "w-[97vw] md:w-[1000px] lg:w-[1200px] xl:w-[1400px]",
+    "2xl": "w-[97vw] md:w-[1000px] lg:w-[1200px] xl:w-[1600px]"
   }[width];
 
   const responsiveValidationClasses = `
     max-[768px]:[&_[class*='text-red-']]:!text-[9.5px]
     max-[768px]:[&_[class*='text-red-']]:!leading-[1.2]
     max-[768px]:[&_[class*='text-red-']]:!mt-[0.125rem]
-    ${
-      width === "sm"
-        ? "md:[&_[class*='text-red-']]:!text-[9.5px] md:[&_[class*='text-red-']]:!leading-[1.2] md:[&_[class*='text-red-']]:!mt-[0.125rem]"
-        : ""
+    ${width === "sm"
+      ? "md:[&_[class*='text-red-']]:!text-[9.5px] md:[&_[class*='text-red-']]:!leading-[1.2] md:[&_[class*='text-red-']]:!mt-[0.125rem]"
+      : ""
     }
-    ${
-      width === "md"
-        ? "md:[&_[class*='text-red-']]:!text-[10.5px] md:[&_[class*='text-red-']]:!leading-[1.25] md:[&_[class*='text-red-']]:!mt-[0.175rem]"
-        : ""
+    ${width === "md"
+      ? "md:[&_[class*='text-red-']]:!text-[10.5px] md:[&_[class*='text-red-']]:!leading-[1.25] md:[&_[class*='text-red-']]:!mt-[0.175rem]"
+      : ""
     }
   `.replace(/\s+/g, ' ').trim();
 
@@ -310,4 +303,4 @@ export function Drawer({
       </div>
     </>
   );
-}
+}

@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import { ExportConfig, ExportHeaderCell } from '@/types/automation-dashboard/export.type';
 import { formatCellValue } from './helpers';

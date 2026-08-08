@@ -129,6 +129,8 @@ export { LoadingPage } from './LoadingPage';
 export type { LoadingPageProps } from './LoadingPage';
 
 export { SearchSelect } from './SearchSelect';
+export { SearchSelectPaginated } from './SearchSelectPaginated';
+export type { SearchSelectPaginatedProps } from './SearchSelectPaginated';
 export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
 
 export { PTISSearchSelect } from './PTISSearchSelect';

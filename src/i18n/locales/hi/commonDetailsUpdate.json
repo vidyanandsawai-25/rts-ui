@@ -10,7 +10,9 @@
       "updateFields": "फ़ील्ड अपडेट करें",
       "fieldRegistry": "फ़ील्ड रजिस्ट्री",
       "excelUpload": "एक्सेल अपलोड",
-      "jobsAudit": "जॉब्स और ऑडिट"
+      "jobsAudit": "जॉब्स और ऑडिट",
+      "auditMonitor": "ऑडिट और मॉनिटर",
+      "excelupload": "एक्सेल अपलोड"
     },
     "propertyCriteria": {
       "title": "प्रॉपर्टी मानदंड चुनें",
@@ -35,7 +37,8 @@
       "validationReady": "सत्यापन तैयार",
       "fieldsSelected": "फ़ील्ड चयनित",
       "matchedProperties": "मेल खाने वाली संपत्तियां",
-      "validationSummary": "{fields} फ़ील्ड चयनित और {properties} मेल खाने वाली संपत्तियां।"
+      "validationSummary": "{fields} फ़ील्ड चयनित और {properties} मेल खाने वाली संपत्तियां।",
+      "fieldRequired": "{field} आवश्यक है"
     },
     "menu": {
       "title": "अपडेट के लिए फ़ील्ड चुनें",
@@ -43,14 +46,14 @@
     },
     "filter": {
       "title": "प्रॉपर्टी फ़िल्टर",
-      "zoneNumber": "Zone Number",
-      "selectZone": "Select Zone",
+      "zoneNumber": "ज़ोन नंबर",
+      "selectZone": "ज़ोन चुनें",
       "wardNumber": "वार्ड नंबर",
       "selectWard": "वार्ड चुनें",
-      "propertyType": "Property Type",
-      "selectPropertyType": "Select Property Type",
-      "propertyNo": "Property No",
-      "selectPropertyNo": "Select Property No",
+      "propertyType": "प्रॉपर्टी का प्रकार",
+      "selectPropertyType": "प्रॉपर्टी का प्रकार चुनें",
+      "propertyNo": "प्रॉपर्टी नंबर",
+      "selectPropertyNo": "प्रॉपर्टी नंबर चुनें",
       "fromPropertyNo": "से प्रॉपर्टी नंबर",
       "selectFromPropertyNo": "से प्रॉपर्टी नंबर चुनें",
       "toPropertyNo": "तक प्रॉपर्टी नंबर",
@@ -70,7 +73,8 @@
       "enabledFieldList": "सक्षम फ़ील्ड सूची",
       "available": "उपलब्ध",
       "approval": "अनुमोदन",
-      "noApproval": "कोई अनुमोदन नहीं"
+      "noApproval": "कोई अनुमोदन नहीं",
+      "selected": "चयनित:"
     },
     "preview": {
       "title": "पूर्वावलोकन सूची",
@@ -79,13 +83,15 @@
       "selectFilters": "संपत्तियां लोड करने के लिए फ़िल्टर लागू करें",
       "loading": "संपत्तियां लोड हो रही हैं...",
       "selectAll": "सभी चुनें",
+      "selectRow": "संपत्ति {id} चुनें",
       "property": "संपत्ति",
       "properties": "संपत्तियां",
       "selected": "चयनित",
       "showing": "दिखा रहे हैं",
       "of": "में से",
       "entries": "प्रविष्टियां",
-      "searchPlaceholder": "संपत्तियां खोजें..."
+      "searchPlaceholder": "संपत्ति क्र. या विभाजन क्र. द्वारा खोजें...",
+      "fetchingAllPropertiesForUpdate": "अपडेट के लिए सभी संपत्तियां प्राप्त की जा रही हैं..."
     },
     "columns": {
       "wardNo": "वार्ड क्र.",
@@ -101,7 +107,7 @@
       "clear": "साफ करें",
       "updating": "अपडेट हो रहा है...",
       "selectMenuPrompt": "बाएं पैनल से अपडेट करने के लिए फ़ील्ड चुनें",
-      "noFields": "इस अपडेट प्रकार के लिए कोई फ़ील्ड कॉन्फ़िगर नहीं की गई"
+      "noFields": "इस अपडेट प्रकार के लिए कोई फ़ील्ड कॉन्फ़िगर नहीं की गई है। कृपया फ़ील्ड रजिस्ट्री से किसी फ़ील्ड को सक्रिय करें।"
     },
     "fieldRegistry": {
       "title": "अधिकृत उपयोगकर्ता कार्यप्रवाह",
@@ -111,7 +117,7 @@
         "title": "डेटाबेस से फ़ील्ड जोड़ें",
         "subtitle": "प्रमाणित उपयोगकर्ता डेटाबेस फ़ील्ड को रजिस्ट्री में जोड़ सकता है, उपयोगकर्ता-सामना करने वाला नाम परिभाषित कर सकता है और फिर इसे सक्रिय कर सकता है।",
         "sourceModule": "स्रोत मॉड्यूल",
-        "sourceTable": "स्रोत तालिका",
+        "sourceTable": "स्रोत का नाम",
         "databaseColumn": "डेटाबेस कॉलम",
         "userFacingName": "उपयोगकर्ता-सामना करने वाला फ़ील्ड नाम",
         "fieldType": "फ़ील्ड प्रकार",
@@ -124,30 +130,49 @@
         "saveFields": "फ़ील्ड सहेजें",
         "selectSchema": "स्कीमा चुनें",
         "selectTable": "टेबल चुनें",
-        "updateCode": "अपडेट कोड",
+        "updateCode": "अपडेट का नाम",
         "updateNameEnglish": "अपडेट नाम (अंग्रेजी)",
+        "updateNamePlaceholder": "उदा., अपडेट नाम",
         "updateNameMarathi": "अपडेट नाम (मराठी)",
         "referenceTableName": "संदर्भ टेबल नाम",
-        "sequenceNo": "अनुक्रम संख्या",
-        "description": "विवरण",
+        "displaySequence": "डिस्प्ले अनुक्रम",
+        "description": "अद्यतन का उद्देश्य",
         "category": "श्रेणी",
         "selectCategory": "श्रेणी चुनें",
         "fieldConfiguration": "फ़ील्ड कॉन्फ़िगरेशन",
         "fieldName": "फ़ील्ड नाम",
-        "displayName": "प्रदर्शित नाम",
-        "displayNameMarathi": "प्रदर्शित नाम (मराठी)",
+        "selectFieldName": "फ़ील्ड नाम चुनें",
+        "selectModuleAndTableFirst": "पहले मॉड्यूल और टेबल चुनें",
+        "noColumnsAvailable": "कोई विकल्प उपलब्ध नहीं हैं",
+        "displayName": "उपयोगकर्ता-सामना फ़ील्ड नाम",
+        "displayNameMarathi": "उपयोगकर्ता-सामना फ़ील्ड नाम (स्वचालित)",
         "controlType": "नियंत्रण प्रकार",
         "selectControlType": "नियंत्रण प्रकार चुनें",
         "dataType": "डेटा प्रकार",
         "selectDataType": "डेटा प्रकार चुनें",
         "placeholder": "प्लेसहोल्डर",
         "maxLength": "अधिकतम लंबाई",
-        "isApprovalRequired": "क्या अनुमोदन आवश्यक है"
+        "isApprovalRequired": "अनुमोदन आवश्यक है",
+        "isRequired": "आवश्यक",
+        "isActive": "सक्रिय है"
+      },
+      "categories": {
+        "allCategories": "सभी श्रेणियां",
+        "propertyIdentity": "संपत्ति पहचान",
+        "location": "स्थान",
+        "ownerContact": "मालिक संपर्क",
+        "ownerDetails": "मालिक का विवरण",
+        "occupierDetails": "कब्जेदार का विवरण",
+        "buildingDetails": "इमारत का विवरण",
+        "assessment": "मूल्यांकन",
+        "taxDetails": "कर का विवरण",
+        "collection": "संग्रह",
+        "notice": "नोटिस"
       },
       "filters": {
         "category": "श्रेणी",
         "status": "स्थिति",
-        "searchPlaceholder": "फ़ील्ड / डेटाबेस नाम खोजें",
+        "searchPlaceholder": "फ़ील्ड / अपडेट नाम खोजें",
         "allCategories": "सभी श्रेणियां",
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
@@ -160,12 +185,25 @@
         "approvalRequired": "अनुमोदन आवश्यक है"
       },
       "table": {
-        "fieldName": "फ़ील्ड का नाम",
+        "updateName": "अपडेट नाम",
+        "fieldName": "फ़ील्ड नाम",
+        "action": "कार्रवाई",
         "active": "सक्रिय"
       },
       "emptyState": {
         "title": "अभी तक कोई फ़ील्ड पंजीकृत नहीं है",
         "description": "डेटाबेस से फ़ील्ड जोड़ने के लिए ऊपर दिए गए फॉर्म का उपयोग करें"
+      },
+      "editDrawer": {
+        "title": "फ़ील्ड रजिस्ट्री संपादित करें",
+        "updateFieldsBtn": "फ़ील्ड अपडेट करें",
+        "updateName": "अपडेट नाम",
+        "englishNamePlaceholder": "अंग्रेजी नाम",
+        "fieldConfigurations": "फ़ील्ड कॉन्फ़िगरेशन",
+        "fillRequiredFieldsMsg": "कृपया सभी आवश्यक मास्टर फ़ील्ड भरें",
+        "selectFieldNameMsg": "कृपया सभी कॉन्फ़िगरेशन के लिए एक फ़ील्ड नाम चुनें",
+        "updateSuccessMsg": "फ़ील्ड रजिस्ट्री सफलतापूर्वक अपडेट की गई!",
+        "updateFailedMsg": "फ़ील्ड रजिस्ट्री को अपडेट करने में विफल"
       }
     },
     "buttons": {
@@ -173,7 +211,8 @@
       "export": "निर्यात करें",
       "backToPTIS": "पीटीआईएस पर वापस जाएं",
       "uploadExcel": "एक्सेल अपलोड करें",
-      "downloadExcel": "एक्सेल डाउनलोड करें"
+      "downloadExcel": "एक्सेल डाउनलोड करें",
+      "guideline": "मार्गदर्शिका"
     },
     "messages": {
       "fetchMenuFailed": "अपडेट विकल्प लोड करने में विफल",
@@ -181,9 +220,9 @@
       "fetchPropertiesFailed": "संपत्तियां लोड करने में विफल",
       "fetchWardsFailed": "वार्ड लोड करने में विफल",
       "fetchWingsFailed": "विंग लोड करने में विफल",
-      "zoneRequired": "Zone is required",
-      "propertyTypeRequired": "Property Type is required",
-      "propertyNoRequired": "Property No is required",
+      "zoneRequired": "जोन आवश्यक है",
+      "propertyTypeRequired": "संपत्ति प्रकार आवश्यक है",
+      "propertyNoRequired": "संपत्ति नंबर आवश्यक है",
       "wardRequired": "वार्ड आवश्यक है",
       "fromPropertyRequired": "से प्रॉपर्टी नंबर आवश्यक है",
       "toPropertyRequired": "तक प्रॉपर्टी नंबर आवश्यक है",
@@ -198,11 +237,34 @@
       "invalidRange": "संपत्ति क्र. से, संपत्ति क्र. तक से कम या बराबर होना चाहिए",
       "noPropertiesToExport": "निर्यात करने के लिए कोई संपत्ति नहीं",
       "exportSuccess": "सफलतापूर्वक निर्यात किया गया",
+      "exportFailed": "निर्यात विफल रहा",
       "somethingWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
       "configLoadFailed": "कॉन्फ़िगरेशन लोड करने में विफल",
       "propertiesLoaded": "{count} संपत्तियां सफलतापूर्वक लोड हुईं",
       "partialUpdate": "{success} संपत्तियां अपडेट हुईं, {failed} विफल",
-      "noPropertiesFound": "चुने गए फ़िल्टर के लिए कोई संपत्ति नहीं मिली"
+      "noPropertiesFound": "चुने गए फ़िल्टर के लिए कोई संपत्ति नहीं मिली",
+      "cannotDeselectIndividual": "'सभी चुनें' सक्रिय होने पर व्यक्तिगत रिकॉर्ड को अनचुना करने की अनुमति नहीं है। कृपया पहले चयन को साफ़ करें।",
+      "invalidFormat": "कुछ फ़ील्ड में अमान्य प्रारूप",
+      "fetchingAllProperties": "अपडेट के लिए सभी संपत्तियां प्राप्त की जा रही हैं...",
+      "missingWardOrField": "वार्ड आईडी या सक्षम फ़ील्ड चयन गायब है",
+      "downloadingExcel": "एक्सेल फ़ाइल डाउनलोड हो रही है...",
+      "excelDownloadSuccess": "एक्सेल फ़ाइल सफलतापूर्वक डाउनलोड हुई!",
+      "excelExportFailed": "एक्सेल निर्यात विफल रहा",
+      "selectEnabledFieldFirst": "कृपया पहले एक सक्षम फ़ील्ड चुनें",
+      "uploadingExcel": "एक्सेल फ़ाइल अपलोड और प्रोसेस की जा रही है...",
+      "excelProcessSuccess": "एक्सेल सफलतापूर्वक अपलोड और प्रोसेस हुआ!",
+      "definitionAlreadyExists": "इस नाम से एक बल्क अपडेट परिभाषा पहले से मौजूद है।",
+      "pleaseSelectField": "कृपया पहले एक फ़ील्ड चुनें।",
+      "noDataRows": "अपलोड की गई फ़ाइल में कोई डेटा पंक्ति नहीं है या यह चयनित फ़ील्ड से मेल नहीं खाती है।",
+      "loadingTabData": "टैब डेटा लोड हो रहा है...",
+      "downloadingTemplate": "टेम्पलेट डाउनलोड हो रहा है...",
+      "uploadFailed": "एक्सेल अपलोड करने में विफल",
+      "fieldSavedSuccessfully": "फ़ील्ड सफलतापूर्वक सहेजा गया!",
+      "saveFailed": "फ़ील्ड सहेजने में विफल",
+      "selectAtLeastOneFieldName": "कृपया कम से कम एक फ़ील्ड नाम चुनें",
+      "statusUpdateNotAvailable": "स्थिति अद्यतन कार्रवाई उपलब्ध नहीं है",
+      "statusSetActive": "{name} सक्रिय पर सेट किया गया",
+      "statusSetInactive": "{name} निष्क्रिय पर सेट किया गया"
     },
     "status": {
       "active": "सक्रिय",
@@ -218,6 +280,97 @@
       "errorId": "त्रुटि आईडी: {id}",
       "goHome": "होम पर जाएं",
       "tryAgain": "पुनः प्रयास करें"
+    },
+    "guideline": {
+      "title": "यह स्क्रीन कैसे काम करती है",
+      "updateFieldsLabel": "फ़ील्ड अपडेट करें",
+      "updateFieldsDesc": "मानदंड चुनें और सक्षम फ़ील्ड अपडेट करें।",
+      "fieldRegistryLabel": "फ़ील्ड रजिस्ट्री",
+      "fieldRegistryDesc": "व्यवस्थापक उपलब्ध फ़ील्ड कॉन्फ़िगर करता है।",
+      "excelUploadLabel": "एक्सेल अपलोड",
+      "excelUploadDesc": "प्रॉपर्टी-वार मान अपलोड करें।",
+      "auditMonitorLabel": "ऑडिट और मॉनिटर",
+      "auditMonitorDesc": "बल्क जॉब और गतिविधि लॉग की निगरानी करें।"
+    },
+    "jobsAudit": {
+      "title": "ऑडिट और एक्सेस मॉनिटर",
+      "description": "पृष्ठभूमि अद्यतन नौकरियों और फ़ील्ड-स्तरीय उपयोगकर्ता पहुंच के निष्पादन की निगरानी करें।",
+      "exportAudit": "ऑडिट निर्यात करें",
+      "stats": {
+        "totalRecords": "कुल रिकॉर्ड",
+        "totalJobs": "कुल नौकरियां",
+        "completed": "पूरा हुआ",
+        "running": "चल रहा है",
+        "failed": "विफल / त्रुटि",
+        "approvalPending": "स्वीकृति लंबित"
+      },
+      "filters": {
+        "user": "उपयोगकर्ता",
+        "allUsers": "सभी उपयोगकर्ता",
+        "searchPlaceholder": "खोज फ़ील्ड, संपत्ति, उपयोगकर्ता, टिप्पणियाँ"
+      },
+      "columns": {
+        "id": "गतिविधि आईडी",
+        "date": "दिनांक और समय",
+        "wardNo": "वार्ड नं",
+        "propertyNo": "प्रॉपर्टी नं",
+        "updatedColumns": "अद्यतन कॉलम",
+        "username": "उपयोगकर्ता",
+        "remarks": "टिप्पणियाँ",
+        "ipAddress": "आईपी / डिवाइस",
+        "action": "कार्रवाई",
+        "view": "देखें"
+      },
+      "excelUpload": {
+        "validations": {
+          "selectFieldFirst": "कृपया पहले टेम्पलेट कॉलम (फ़ील्ड) चुनें।",
+          "chooseFileFirst": "कृपया पहले एक्सेल फ़ाइल चुनें।",
+          "clearFileBeforeSwitch": "फ़ील्ड बदलने से पहले कृपया चुनी गई एक्सेल फ़ाइल को वैलिडेट करें या साफ़ करें।",
+          "uploading": "एक्सेल अपलोड और वैलिडेट किया जा रहा है...",
+          "success": "{count} प्रॉपर्टी सफलतापूर्वक अपडेट हो गईं",
+          "failed": "{count} प्रॉपर्टी अपडेट करने में विफल",
+          "downloadSuccess": "टेम्पलेट सफलतापूर्वक डाउनलोड किया गया",
+          "downloadFailed": "टेम्पलेट डाउनलोड करने में विफल"
+        }
+      },
+      "modal": {
+        "updateName": "अपडेट नाम",
+        "updatedBy": "द्वारा अपडेट किया गया",
+        "date": "दिनांक और समय",
+        "ipDevice": "आईपी / डिवाइस",
+        "remarks": "टिप्पणियाँ / त्रुटि",
+        "field": "फ़ील्ड",
+        "oldValue": "पुराना मान",
+        "newValue": "नया मान",
+        "updateDetailsPrefix": "अपडेट विवरण"
+      }
+    },
+    "excelUpload": {
+      "title": "एक्सेल अपलोड",
+      "subtitle": "जब प्रत्येक संपत्ति के लिए एक अलग मूल्य की आवश्यकता हो तो संपत्ति-वार मूल्य अपलोड करें।",
+      "bulkUploadBadge": "थोक अपलोड",
+      "infoAlertTitle": "एक्सेल अपलोड फ़ील्ड रजिस्ट्री से केवल सक्रिय फ़ील्ड का उपयोग करता है।",
+      "infoAlertDesc": "सक्षम फ़ील्ड चुनने के बाद टेम्पलेट डाउनलोड करें। आयात से पहले सिस्टम संपत्ति संख्या, फ़ील्ड पहुंच, मूल्य प्रारूप और अनुमोदन आवश्यकता को मान्य करता है।",
+      "actionSectionTitle": "फ़ील्ड अपडेट के लिए एक्सेल अपलोड",
+      "actionSectionDesc": "इसका उपयोग तब करें जब प्रत्येक संपत्ति के अलग-अलग मूल्य हों। सक्रिय फ़ील्ड से टेम्पलेट डाउनलोड करें, एक्सेल अपलोड करें और अपडेट करने से पहले पंक्तियों को मान्य करें।",
+      "viewGuidelinesBtn": "दिशा-निर्देश देखें",
+      "downloadTemplateBtn": "टेम्पलेट डाउनलोड करें",
+      "chooseExcelFileBtn": "एक्सेल फ़ाइल चुनें",
+      "validateExcelBtn": "एक्सेल मान्य करें",
+      "templateColumnsTitle": "टेम्पलेट कॉलम",
+      "previewTitle": "पात्रता सत्यापन पूर्वावलोकन",
+      "previewDesc": "एक्सेल स्प्रेडशीट से आयातित कॉलम और पंक्तियों की समीक्षा करें",
+      "guidelineModalTitle": "एक्सेल अपलोड दिशा-निर्देश",
+      "guidelineModalIntro": "कृपया एक्सेल के माध्यम से संपत्तियों को अपलोड करते समय इन दिशा-निर्देशों का पालन करें:",
+      "batchProcessingTitle": "बैच प्रोसेसिंग:",
+      "batchProcessingDesc": "विभाजन संख्या वाली संपत्तियों और बिना विभाजन संख्या वाली संपत्तियों को अलग-अलग बैच में अपलोड करें।",
+      "consistencyTitle": "निरंतरता:",
+      "consistencyDesc": "सत्यापन त्रुटियों से बचने के लिए एक ही एक्सेल फ़ाइल में विभाजन संख्या वाली और बिना विभाजन संख्या वाली संपत्तियों को न मिलाएं।",
+      "emptyData": "कोई डेटा उपलब्ध नहीं",
+      "loadingData": "डेटा लोड हो रहा है...",
+      "inactiveStatus": "निष्क्रिय",
+      "noFileChosen": "कोई फ़ाइल नहीं चुनी गई",
+      "okButton": "ठीक है"
     }
   }
 }

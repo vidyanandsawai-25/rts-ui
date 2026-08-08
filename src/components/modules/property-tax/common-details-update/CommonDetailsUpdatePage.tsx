@@ -1,15 +1,19 @@
 "use client";
-
-import { Database, ArrowLeft } from "lucide-react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Database, ArrowLeft, Loader2, HelpCircle, Edit, FileSpreadsheet, ToggleLeft, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { PageContainer, Tabs, Tab, TabList, TabPanel, TableHeader } from "@/components/common";
+import { PageContainer, Tabs, Tab, TabList, TabPanel, TableHeader, Button } from "@/components/common";
 import { CommonDetailsUpdatePageProps } from "@/types/common-details-update/common-details-update.types";
 import { useCommonDetailsUpdate } from "@/hooks/commonDetailsUpdate/useCommonDetailsUpdate";
 import { UpdateFieldsTabContent } from "./UpdateFieldsTabContent";
 import { FieldRegistry } from "./FieldRegistry";
+import { JobsAudit } from "./JobsAudit";
+import { ExcelUpload } from "./ExcelUpload";
 import { cn } from "@/lib/utils/cn";
 import { useLocale } from "next-intl";
+import { Modal } from "@/components/common/Modal";
+import { OkButton } from "@/components/common/ActionButtons";
 
 export default function CommonDetailsUpdatePage(
   props: CommonDetailsUpdatePageProps
@@ -20,9 +24,12 @@ export default function CommonDetailsUpdatePage(
   const pathname = usePathname();
 
   const [isFieldListCollapsed, setIsFieldListCollapsed] = useState(false);
+  const [isGuidelineOpen, setIsGuidelineOpen] = useState(false);
 
-  // Tab state from URL params for server-side rendering support
+  // Tab state from URL params
   const tabFromUrl = searchParams.get("tab") || "updateFields";
+  const [activeTab, setActiveTab] = useState<string>(tabFromUrl);
+  const [isTabSwitching, setIsTabSwitching] = useState(false);
 
   const fromPtis = searchParams.get("from") === "ptis";
 
@@ -46,17 +53,29 @@ export default function CommonDetailsUpdatePage(
   const updateData = useCommonDetailsUpdate(props);
   const { t } = updateData;
 
-  // Handle tab change - update URL params for SSR
+  // Handle tab change - client-side instant tab switch with loading feedback
   const handleTabChange = (val: string | number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", String(val));
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    const newTab = String(val);
+    if (newTab === activeTab) return;
+
+    setIsTabSwitching(true);
+    setActiveTab(newTab);
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams();
+      params.set("tab", newTab);
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+    }
+
+    setTimeout(() => {
+      setIsTabSwitching(false);
+    }, 150);
   };
 
 
   return (
     <PageContainer>
-      <div className="space-y-4 h-full flex flex-col">
+      <div className="space-y-2 h-full flex flex-col">
         {/* TableHeader with Screen Objective inside */}
         <TableHeader
           title={t("title")}
@@ -64,16 +83,31 @@ export default function CommonDetailsUpdatePage(
           icon={Database}
           rightContent={
             <div className="flex items-center gap-3">
-              {fromPtis && (
-                <button
+                {fromPtis && (
+                <Button
                   type="button"
+                  variant={"default" as any}
                   onClick={handleBackToPtis}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100/70 hover:border-blue-300 hover:shadow-sm active:scale-95 transition-all duration-200 rounded-lg cursor-pointer"
+                  className="px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100/70 hover:border-blue-300 hover:shadow-sm active:scale-95 transition-all duration-200 rounded-lg cursor-pointer"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>{t("buttons.backToPTIS")}</span>
-                </button>
+                  <div className="flex items-center gap-1.5">
+                    <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>{t("buttons.backToPTIS")}</span>
+                  </div>
+                </Button>
               )}
+              <Button
+                type="button"
+                variant={"default" as any}
+                onClick={() => setIsGuidelineOpen(true)}
+                className="focus:border-none px-3 py-2 text-xs font-bold text-slate-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 hover:border-amber-300 hover:shadow-sm active:scale-95 transition-all duration-200 rounded-lg cursor-pointer"
+              >
+                <div className="flex items-center gap-1.5">
+                  <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{t("buttons.guideline")}</span>
+                </div>
+              </Button>
+            
               <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg max-w-xs">
                 <div className="flex-shrink-0 w-2 h-2 rounded-full bg-amber-400" />
                 <div>
@@ -87,18 +121,19 @@ export default function CommonDetailsUpdatePage(
 
         {/* Tabs */}
         <Tabs
-          value={tabFromUrl}
+          value={activeTab}
           onChange={handleTabChange}
           variant="pills"
           size="md"
           className="flex-1 flex flex-col min-h-0"
         >
-          <TabList className="border-b border-gray-200 pb-0 mb-0">
+          <TabList className="border-b border-gray-200 pb-1 mb-0 gap-2">
             <Tab
               value="updateFields"
+              icon={Edit}
               className={cn(
                 "px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors",
-                tabFromUrl === "updateFields"
+                activeTab === "updateFields"
                   ? "bg-[#0F5FC2] text-white border-[#0F5FC2]"
                   : "bg-white text-gray-600 border-transparent hover:bg-gray-50"
               )}
@@ -106,36 +141,127 @@ export default function CommonDetailsUpdatePage(
               {t("tabs.updateFields")}
             </Tab>
             <Tab
-              value="fieldRegistry"
-              icon={Database}
+              value="excelupload"
+              icon={FileSpreadsheet}
               className={cn(
                 "px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors",
-                tabFromUrl === "fieldRegistry"
+                activeTab === "excelupload"
+                  ? "bg-[#0F5FC2] text-white border-[#0F5FC2]"
+                  : "bg-white text-gray-600 border-transparent hover:bg-gray-50"
+              )}
+            >
+              {t("tabs.excelupload")}
+            </Tab>
+            <Tab
+              value="fieldRegistry"
+              icon={ToggleLeft}
+              className={cn(
+                "px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors",
+                activeTab === "fieldRegistry"
                   ? "bg-[#0F5FC2] text-white border-[#0F5FC2]"
                   : "bg-white text-gray-600 border-transparent hover:bg-gray-50"
               )}
             >
               {t("tabs.fieldRegistry")}
             </Tab>
+            <Tab
+              value="auditMonitor"
+              icon={ClipboardList}
+              className={cn(
+                "px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors",
+                activeTab === "auditMonitor"
+                  ? "bg-[#0F5FC2] text-white border-[#0F5FC2]"
+                  : "bg-white text-gray-600 border-transparent hover:bg-gray-50"
+              )}
+            >
+              {t("tabs.auditMonitor")}
+            </Tab>
           </TabList>
 
-          {/* Update Fields Tab */}
-          <TabPanel value="updateFields" className="flex-1 min-h-0 overflow-auto">
-            <UpdateFieldsTabContent
-              t={t}
-              updateData={updateData}
-              isFieldListCollapsed={isFieldListCollapsed}
-              setIsFieldListCollapsed={setIsFieldListCollapsed}
-              locale={locale}
-            />
-          </TabPanel>
+          {isTabSwitching ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-3 min-h-[300px] bg-white rounded-b-lg border border-t-0 border-gray-200">
+              <Loader2 className="w-8 h-8 text-[#0F5FC2] animate-spin" />
+              <p className="text-sm font-medium text-gray-600">{t("messages.loadingTabData")}</p>
+            </div>
+          ) : (
+            <>
+              {/* Update Fields Tab */}
+              <TabPanel value="updateFields" className="flex-1 min-h-0 overflow-auto">
+                <UpdateFieldsTabContent
+                  t={t}
+                  updateData={updateData}
+                  isFieldListCollapsed={isFieldListCollapsed}
+                  setIsFieldListCollapsed={setIsFieldListCollapsed}
+                  locale={locale}
+                />
+              </TabPanel>
 
-          {/* Field Registry Tab */}
-          <TabPanel value="fieldRegistry" className="flex-1 min-h-0 overflow-auto">
-            <FieldRegistry t={t} initialFields={props.menuItems} />
-          </TabPanel>
+              {/* Field Registry Tab */}
+              <TabPanel value="fieldRegistry" className="flex-1 min-h-0 overflow-auto">
+                <FieldRegistry
+                  t={t}
+                  initialFields={props.initialFieldRegistries || props.menuItems}
+                  initialSchemas={props.initialSchemas}
+                  initialSourceTables={props.initialSourceTables}
+                  initialSourceTableFields={props.initialSourceTableFields}
+                  setFieldRegistryStatusAction={props.setFieldRegistryStatusAction}
+                  editUpdateCode={props.editUpdateCode}
+                  initialEditData={props.initialEditData}
+                  actions={props.actions}
+                />
+              </TabPanel>
+
+              {/* Audit & Monitor Tab */}
+              <TabPanel value="auditMonitor" className="flex-1 min-h-0 overflow-auto">
+                <JobsAudit initialData={props.initialUpdateHistory} actions={props.actions} />
+              </TabPanel>
+
+              {/* Excel Upload Tab */}
+              <TabPanel value="excelupload" className="flex-1 min-h-0 overflow-auto">
+                <ExcelUpload 
+                  initialExcelTemplateFields={Array.isArray(props.initialFieldRegistries) 
+                    ? props.initialFieldRegistries 
+                    : (props.initialFieldRegistries?.items || props.menuItems || [])}
+                />
+              </TabPanel>
+            </>
+          )}
         </Tabs>
       </div>
+
+      <Modal
+        open={isGuidelineOpen}
+        onClose={() => setIsGuidelineOpen(false)}
+        title={t("guideline.title")}
+        maxWidth="md"
+        footer={
+          <div className="flex justify-end gap-3">
+            <OkButton
+              size="sm"
+              onClick={() => setIsGuidelineOpen(false)}
+            />
+          </div>
+        }
+      >
+        <div className="space-y-4 text-sm text-slate-700 p-2">
+          <div className="flex items-start gap-2">
+            <span className="font-bold text-slate-800 min-w-[130px]">{t("guideline.updateFieldsLabel")}:</span>
+            <span>{t("guideline.updateFieldsDesc")}</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-bold text-slate-800 min-w-[130px]">{t("guideline.fieldRegistryLabel")}:</span>
+            <span>{t("guideline.fieldRegistryDesc")}</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-bold text-slate-800 min-w-[130px]">{t("guideline.excelUploadLabel")}:</span>
+            <span>{t("guideline.excelUploadDesc")}</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-bold text-slate-800 min-w-[130px]">{t("guideline.auditMonitorLabel")}:</span>
+            <span>{t("guideline.auditMonitorDesc")}</span>
+          </div>
+        </div>
+      </Modal>
     </PageContainer>
   );
 }

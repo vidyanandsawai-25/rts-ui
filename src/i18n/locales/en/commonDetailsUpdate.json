@@ -10,7 +10,8 @@
       "updateFields": "Update Fields",
       "fieldRegistry": "Field Registry",
       "excelUpload": "Excel Upload",
-      "jobsAudit": "Jobs & Audit"
+      "auditMonitor": "Audit & Monitor",
+      "excelupload": "Excel Upload"
     },
     "propertyCriteria": {
       "title": "Select Property Criteria",
@@ -45,7 +46,8 @@
       "validationReady": "Validation Ready",
       "fieldsSelected": "fields selected",
       "matchedProperties": "matched properties",
-      "validationSummary": "{fields} fields selected and {properties} matched properties."
+      "validationSummary": "{fields} fields selected and {properties} matched properties.",
+      "fieldRequired": "{field} is required"
     },
     "menu": {
       "title": "Choose Field to Update",
@@ -80,13 +82,15 @@
       "selectFilters": "Apply filters to load properties",
       "loading": "Loading properties...",
       "selectAll": "Select All",
+      "selectRow": "Select property {id}",
       "property": "property",
       "properties": "properties",
       "selected": "selected",
       "showing": "Showing",
       "of": "of",
       "entries": "entries",
-      "searchPlaceholder": "Search properties..."
+      "searchPlaceholder": "Search by PropertyNo or PartitionNo",
+      "fetchingAllPropertiesForUpdate": "Fetching all properties for update..."
     },
     "columns": {
       "wardNo": "Ward No.",
@@ -102,7 +106,7 @@
       "clear": "Clear",
       "updating": "Updating...",
       "selectMenuPrompt": "Select a field to update from the left panel",
-      "noFields": "No fields configured for this update type"
+      "noFields": "No fields are configured for this update type. Please activate a field from the Field Registry."
     },
     "fieldRegistry": {
       "title": "Authorized User Workflow",
@@ -112,7 +116,7 @@
         "title": "Add Field from Database",
         "subtitle": "Authenticated user can add a database field into the registry, define user-facing name and then activate it.",
         "sourceModule": "Source Module",
-        "sourceTable": "Source Table",
+        "sourceTable": "Source Name",
         "databaseColumn": "Database Column",
         "userFacingName": "User-facing Field Name",
         "fieldType": "Field Type",
@@ -125,30 +129,49 @@
         "saveFields": "Save Fields",
         "selectSchema": "Select Schema",
         "selectTable": "Select Table",
-        "updateCode": "Update Code",
+        "updateCode": "Update Name",
         "updateNameEnglish": "Update Name (English)",
+        "updateNamePlaceholder": "e.g., Update Name",
         "updateNameMarathi": "Update Name (Marathi)",
         "referenceTableName": "Reference Table Name",
-        "sequenceNo": "Sequence No",
-        "description": "Description",
+        "displaySequence": "Display Sequence",
+        "description": "Purpose of Update",
         "category": "Category",
         "selectCategory": "Select Category",
         "fieldConfiguration": "Field Configuration",
         "fieldName": "Field Name",
-        "displayName": "Display Name",
-        "displayNameMarathi": "Display Name (Marathi)",
+        "selectFieldName": "Select Field Name",
+        "selectModuleAndTableFirst": "Select Module & Table first",
+        "noColumnsAvailable": "No options available",
+        "displayName": "User Facing Field Name",
+        "displayNameMarathi": "User Facing Field Name (Auto)",
         "controlType": "Control Type",
         "selectControlType": "Select Control Type",
         "dataType": "Data Type",
         "selectDataType": "Select Data Type",
         "placeholder": "Placeholder",
         "maxLength": "Max Length",
-        "isApprovalRequired": "Is Approval Required"
+        "isApprovalRequired": "Approval Required",
+        "isActive": "Is Active",
+        "isRequired": "Required"
+      },
+      "categories": {
+        "allCategories": "All Categories",
+        "propertyIdentity": "Property Identity",
+        "location": "Location",
+        "ownerContact": "Owner Contact",
+        "ownerDetails": "Owner Details",
+        "occupierDetails": "Occupier Details",
+        "buildingDetails": "Building Details",
+        "assessment": "Assessment",
+        "taxDetails": "Tax Details",
+        "collection": "Collection",
+        "notice": "Notice"
       },
       "filters": {
         "category": "Category",
         "status": "Status",
-        "searchPlaceholder": "Search field / database name",
+        "searchPlaceholder": "Search field / update name",
         "allCategories": "All Categories",
         "active": "Active",
         "inactive": "Inactive",
@@ -161,12 +184,25 @@
         "approvalRequired": "Approval Required"
       },
       "table": {
+        "updateName": "Update Name",
         "fieldName": "Field Name",
+        "action": "Action",
         "active": "Active"
       },
       "emptyState": {
         "title": "No fields registered yet",
         "description": "Use the form above to add fields from the database"
+      },
+      "editDrawer": {
+        "title": "Edit Field Registry",
+        "updateFieldsBtn": "Update Fields",
+        "updateName": "Update Name",
+        "englishNamePlaceholder": "English Name",
+        "fieldConfigurations": "Field Configurations",
+        "fillRequiredFieldsMsg": "Please fill all required master fields",
+        "selectFieldNameMsg": "Please select a Field Name for all configurations",
+        "updateSuccessMsg": "Field registry updated successfully!",
+        "updateFailedMsg": "Failed to update field registry"
       }
     },
     "buttons": {
@@ -174,7 +210,8 @@
       "export": "Export",
       "backToPTIS": "Back to PTIS",
       "uploadExcel": "Upload Excel",
-      "downloadExcel": "Download Excel"
+      "downloadExcel": "Download Excel",
+      "guideline": "Guideline"
     },
     "messages": {
       "fetchMenuFailed": "Failed to load update options",
@@ -199,11 +236,34 @@
       "invalidRange": "From Property No. must be less than or equal to To Property No.",
       "noPropertiesToExport": "No properties to export",
       "exportSuccess": "Exported successfully",
+      "exportFailed": "Export failed",
       "somethingWrong": "Something went wrong. Please try again.",
       "configLoadFailed": "Failed to load configuration",
       "propertiesLoaded": "{count} properties loaded successfully",
       "partialUpdate": "{success} properties updated, {failed} failed",
-      "noPropertiesFound": "No properties found for the selected filters"
+      "noPropertiesFound": "No properties found for the selected filters",
+      "cannotDeselectIndividual": "Cannot deselect individual records when 'Select All' is active. Please clear selection first.",
+      "invalidFormat": "Invalid format in some fields",
+      "fetchingAllProperties": "Fetching all properties to update...",
+      "missingWardOrField": "Missing Ward ID or Enabled Field selection",
+      "downloadingExcel": "Downloading Excel file...",
+      "excelDownloadSuccess": "Excel file downloaded successfully!",
+      "excelExportFailed": "Excel export failed",
+      "selectEnabledFieldFirst": "Please select an enabled field first",
+      "uploadingExcel": "Uploading and processing Excel file...",
+      "excelProcessSuccess": "Excel uploaded and processed successfully!",
+      "definitionAlreadyExists": "A bulk update definition with code '{code}' already exists.",
+      "pleaseSelectField": "Please select a field first.",
+      "noDataRows": "The uploaded file has no data rows or does not match the selected field.",
+      "loadingTabData": "Loading tab data...",
+      "downloadingTemplate": "Downloading template...",
+      "uploadFailed": "Failed to upload Excel",
+      "fieldSavedSuccessfully": "Field saved successfully!",
+      "saveFailed": "Failed to save field",
+      "selectAtLeastOneFieldName": "Please select at least one field name",
+      "statusUpdateNotAvailable": "Status update action is not available",
+      "statusSetActive": "{name} set to Active",
+      "statusSetInactive": "{name} set to Inactive"
     },
     "status": {
       "active": "Active",
@@ -219,6 +279,97 @@
       "errorId": "Error ID: {id}",
       "goHome": "Go to Home",
       "tryAgain": "Try Again"
+    },
+    "guideline": {
+      "title": "How this screen works",
+      "updateFieldsLabel": "Update Fields",
+      "updateFieldsDesc": "Select criteria and update enabled fields.",
+      "fieldRegistryLabel": "Field Registry",
+      "fieldRegistryDesc": "Admin configures available fields.",
+      "excelUploadLabel": "Excel Upload",
+      "excelUploadDesc": "Upload property-wise values.",
+      "auditMonitorLabel": "Audit & Monitor",
+      "auditMonitorDesc": "Monitor bulk Audit and activity logs."
+    },
+    "jobsAudit": {
+      "title": "Audit & Access Monitor",
+      "description": "Monitor execution of background update Audit and field-level user access.",
+      "exportAudit": "Export Audit",
+      "stats": {
+        "totalRecords": "Total Records",
+        "totalJobs": "Total Jobs",
+        "completed": "Completed",
+        "running": "Running",
+        "failed": "Failed / Error",
+        "approvalPending": "Approval Pending"
+      },
+      "filters": {
+        "user": "User",
+        "allUsers": "All Users",
+        "searchPlaceholder": "Search field, property, user, remarks"
+      },
+      "columns": {
+        "id": "Activity ID",
+        "date": "Date & Time",
+        "wardNo": "Ward No",
+        "propertyNo": "Property No",
+        "updatedColumns": "Updated Columns",
+        "username": "User",
+        "remarks": "Remarks",
+        "ipAddress": "IP / Device",
+        "action": "Action",
+        "view": "View"
+      },
+      "excelUpload": {
+        "validations": {
+          "selectFieldFirst": "Please select a template column (field) first.",
+          "chooseFileFirst": "Please choose an Excel file first.",
+          "clearFileBeforeSwitch": "Please validate or clear the chosen Excel file before switching fields.",
+          "uploading": "Uploading and validating Excel...",
+          "success": "Successfully updated {count} properties",
+          "failed": "Failed to update {count} properties",
+          "downloadSuccess": "Template downloaded successfully",
+          "downloadFailed": "Failed to download template"
+        }
+      },
+      "modal": {
+        "updateName": "Update Name",
+        "updatedBy": "Updated By",
+        "date": "Date & Time",
+        "ipDevice": "IP / Device",
+        "remarks": "Remarks / Error",
+        "field": "Field",
+        "oldValue": "Old Value",
+        "newValue": "New Value",
+        "updateDetailsPrefix": "Update Details"
+      }
+    },
+    "excelUpload": {
+      "title": "Excel Upload",
+      "subtitle": "Upload property-wise field values when each property requires a different value.",
+      "bulkUploadBadge": "Bulk upload",
+      "infoAlertTitle": "Excel upload uses only active fields from Field Registry.",
+      "infoAlertDesc": "Download template after selecting enabled fields. System validates property numbers, field access, value format and approval requirement before import.",
+      "actionSectionTitle": "Excel Upload for Field Update",
+      "actionSectionDesc": "Use this when each property has different values. Download template from activated fields, upload Excel and validate rows before update.",
+      "viewGuidelinesBtn": "View Guidelines",
+      "downloadTemplateBtn": "Download Template",
+      "chooseExcelFileBtn": "Choose Excel File",
+      "validateExcelBtn": "Validate Excel",
+      "templateColumnsTitle": "Template Columns",
+      "previewTitle": "Eligibility Validation Preview",
+      "previewDesc": "Review the columns and rows imported from the Excel spreadsheet",
+      "guidelineModalTitle": "Excel Upload Guidelines",
+      "guidelineModalIntro": "Please follow these guidelines when uploading properties via Excel:",
+      "batchProcessingTitle": "Batch Processing:",
+      "batchProcessingDesc": "Upload properties with partition numbers and properties without partition numbers in separate batches.",
+      "consistencyTitle": "Consistency:",
+      "consistencyDesc": "Do not mix properties with and without partition numbers in a single Excel file to avoid validation errors.",
+      "emptyData": "No data available",
+      "loadingData": "Loading data...",
+      "inactiveStatus": "Inactive",
+      "noFileChosen": "No file chosen",
+      "okButton": "OK"
     }
   }
 }
