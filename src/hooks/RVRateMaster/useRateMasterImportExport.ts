@@ -174,6 +174,7 @@ export function useRateMasterImportExport({
       setShowMatrix,
       fileInputRef,
       t,
+      rateUnit,
     });
   };
 

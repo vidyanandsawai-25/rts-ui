@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import RateMasterForm from "./RateMasterForm";
 import { AddRateDrawerProps } from "@/types/RVRateMaster";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 
 export default function AddRateDrawer({
   zones,
@@ -27,6 +28,8 @@ export default function AddRateDrawer({
   const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("ptis_RVRateMaster");
+  const { confirm } = useConfirm();
+  const [isFormDirty, setIsFormDirty] = useState(false);
 
   // Read filter values from URL params for persistence on reload
   const zoneParam = searchParams.get('zone');
@@ -40,8 +43,24 @@ export default function AddRateDrawer({
   }), [zoneParam, useGroupParam, yearParam, assessmentYearParam, isOpenPlot]);
 
   const handleClose = () => {
-    const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
-    router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
+    if (isFormDirty) {
+      confirm({
+        title: t("messages.confirmCloseTitle"),
+        confirmText: t("messages.confirmCloseConfirm"),
+        cancelText: t("messages.confirmCloseCancel"),
+        variant: "warning",
+        onConfirm: () => {
+          // Keep drawer open - do nothing
+        },
+        onCancel: () => {
+          const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
+          router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
+        }
+      });
+    } else {
+      const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
+      router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
+    }
   };
 
   return (
@@ -84,6 +103,7 @@ export default function AddRateDrawer({
         rateFrequencyPolicy={rateFrequencyPolicy}
         rateUnitPolicy={rateUnitPolicy}
         isOpenPlot={isOpenPlot}
+        onDirtyChange={setIsFormDirty}
       />
     </Drawer>
   );
