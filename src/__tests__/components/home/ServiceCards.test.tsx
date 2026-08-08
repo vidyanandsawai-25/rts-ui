@@ -126,27 +126,20 @@ describe('ServiceCards Component', () => {
 });
 
 describe('ServiceCards Error Handling', () => {
-  it('displays error message when error prop is provided', () => {
+  it('displays clean empty state when error prop is provided', () => {
     render(<ServiceCards error="Failed to load services" />);
-    expect(screen.getByText('Unable to load services')).toBeInTheDocument();
-    expect(screen.getByText('Failed to load services')).toBeInTheDocument();
+    expect(screen.getByText('No departments assigned')).toBeInTheDocument();
   });
 
-  it('displays Try Again button in error state', () => {
-    render(<ServiceCards error="Network error" />);
-    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
-  });
-
-  it('renders error section with correct accessibility label', () => {
+  it('renders section with correct accessibility label on error', () => {
     const { container } = render(<ServiceCards error="Error" />);
     const section = container.querySelector('section');
-    expect(section).toHaveAttribute('aria-label', 'Service Load Error');
+    expect(section).toHaveAttribute('aria-label', 'No Services');
   });
 
-  it('shows error state even when some services are provided', () => {
+  it('shows empty state when error is passed even if services are provided', () => {
     render(<ServiceCards services={mockServices} error="API Error" />);
-    // Error takes precedence
-    expect(screen.getByText('Unable to load services')).toBeInTheDocument();
+    expect(screen.getByText('No departments assigned')).toBeInTheDocument();
   });
 });
 

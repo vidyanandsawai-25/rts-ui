@@ -105,6 +105,8 @@ export function PropertySearchForm({
       if (!formRef.current) return;
 
       const direction = tabDirectionRef.current;
+      if (!direction) return;
+
       if (direction === 'to-kyc-first') {
         const kycFirst = document.getElementById('occupierName');
         if (kycFirst) kycFirst.focus();
@@ -136,12 +138,6 @@ export function PropertySearchForm({
         });
         if (focusableElements.length > 0) {
           focusableElements[focusableElements.length - 1].focus();
-        }
-      } else {
-        // Fallback or clicked tab
-        const propertyTypeInput = document.getElementById('Property Type');
-        if (propertyTypeInput) {
-          propertyTypeInput.focus();
         }
       }
       tabDirectionRef.current = null;

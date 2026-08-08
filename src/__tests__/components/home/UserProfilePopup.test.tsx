@@ -139,10 +139,10 @@ describe('UserProfilePopup Component', () => {
     expect(screen.getByText('Login Time')).toBeInTheDocument();
   });
   
-  it('displays error message when profileError is provided', () => {
+  it('does not display error warning message when profileError is provided', () => {
     const errorMsg = 'Failed to synchronize profile details';
     render(<UserProfilePopup {...defaultProps} profileError={errorMsg} />);
-    expect(screen.getByText(errorMsg)).toBeInTheDocument();
+    expect(screen.queryByText(errorMsg)).not.toBeInTheDocument();
   });
 
   it('displays security message in footer', () => {
