@@ -85,10 +85,12 @@ export default async function Page({ searchParams }: PagePropsAgeFactor): Promis
 
     // Fetch construction types for dropdown - use -1 to fetch all records
     const constructionTypeData = await fetchConstructionTypePagedAction(1, -1);
-    const constructionTypeOptions = constructionTypeData.items.map((type) => ({
-        label: `${type.constructionCode} - ${type.description}`,
-        value: type.id.toString(),
-    }));
+    const constructionTypeOptions = constructionTypeData.items
+        .filter((type) => type.isActive)
+        .map((type) => ({
+            label: `${type.constructionCode} - ${type.description}`,
+            value: type.id.toString(),
+        }));
 
     // Fetch all age factors to get unique age ranges for the filter dropdown
     const allAgeFactors = await fetchAllAgeFactorsAction();

@@ -73,10 +73,12 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
 
   // Fetch floor data for dropdowns
   const floorData = await getFloorPaged(1, -1); // Fetch all floors
-  const floorOptions = floorData.items.map((floor) => ({
-    label: `${floor.floorCode} - ${floor.description}`,
-    value: floor.id.toString(),
-  }));
+  const floorOptions = floorData.items
+    .filter((floor) => floor.isActive)
+    .map((floor) => ({
+      label: `${floor.floorCode} - ${floor.description}`,
+      value: floor.id.toString(),
+    }));
 
   return (
     <div className="pt-6">
