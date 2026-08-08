@@ -92,6 +92,7 @@ export default getRequestConfig(async ({ locale }) => {
     mapDashboardMessages,
     propertyMappingMessages,
     assetRegisterMessages,
+    dynamicTaxRegisterMessages,
     assetGrievanceCategoryMessages,
     assetGrievanceRemarkMessages,
   ] = await Promise.all([
@@ -227,6 +228,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/mapDashboard.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/propertyMapping.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetRegister.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/dynamicTaxRegister.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGrievanceCategory.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGrievanceRemark.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
@@ -312,6 +314,7 @@ export default getRequestConfig(async ({ locale }) => {
       mapDashboard: mapDashboardMessages,
       propertyMapping: propertyMappingMessages?.propertyMapping || propertyMappingMessages,
       assetRegister: assetRegisterMessages,
+      dynamicTaxRegister: dynamicTaxRegisterMessages,
       assetGrievanceCategory: assetGrievanceCategoryMessages,
       assetGrievanceRemark: assetGrievanceRemarkMessages,
     },

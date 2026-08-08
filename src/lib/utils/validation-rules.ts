@@ -148,6 +148,35 @@ export const limitTwoDigitNumber = (value: string): string =>
 // Regex pattern to match invalid keys for positive decimal input (blocks e, E, +, -)
 export const POSITIVE_DECIMAL_INVALID_KEYS = /^[eE+\-]$/;
 
+/* ================= ALPHANUMERIC + PUNCTUATION (NAME/CODE) VALIDATION ================= */
+// Tax Name / Tax Code / Rule Display Name style identifier fields: alphanumeric only,
+// with , . _ / \ allowed as separators between alphanumeric segments (never leading,
+// trailing, or standalone) and a single space allowed between words (no
+// leading/trailing/consecutive spaces). No other special characters permitted.
+export const ALPHANUMERIC_PUNCTUATION_REGEX = /^[A-Za-z0-9]+(([A-Za-z0-9,._\/\\]|\s(?!\s))*[A-Za-z0-9]+)*$/;
+export const ALPHANUMERIC_PUNCTUATION_SANITIZE = /[^A-Za-z0-9\s,._\/\\]/g;
+
+/** Strips disallowed characters and collapses repeated whitespace for real-time
+ *  sanitization of Tax Name/Tax Code/Display Name style fields as the user types —
+ *  does not trim leading/trailing space (that would eat a just-typed trailing space
+ *  before the next word), so pair with ALPHANUMERIC_PUNCTUATION_REGEX.test(value.trim())
+ *  on submit. */
+export const sanitizeAlphanumericPunctuation = (value: string, maxLength: number): string =>
+  value
+    .replace(ALPHANUMERIC_PUNCTUATION_SANITIZE, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, maxLength);
+
+/** Multilingual variant of {@link sanitizeAlphanumericPunctuation} for name fields that must accept
+ *  any script (e.g. a Tax Name in Marathi/Hindi). Strips only characters outside Unicode
+ *  letters/marks/numbers + space and , . - / ( ) & (the DESCRIPTION set), and collapses repeated
+ *  whitespace. Pair with `DESCRIPTION_REGEX.test(value.trim())` on submit. */
+export const sanitizeMultilingualText = (value: string, maxLength: number): string =>
+  value
+    .replace(DESCRIPTION_SANITIZE, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, maxLength);
+
 /* ================= ALL ZEROS VALIDATION ================= */
 /**
  * Check if a string contains only zeros (e.g., "0", "00", "000", "0000")

@@ -51,7 +51,7 @@ export {
   Section129Button,
   PreviewButton,
 } from './ActionButtons';
-export { IconButton } from './ActionButtons';
+export { IconButton, IconOnlyActionButton, RefreshButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export type { CardProps } from './Card';
 
