@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Layers } from "lucide-react";
 import {
   CardHeader,
@@ -39,28 +39,6 @@ export function ScreenSelectionCard({
   const moduleIdFromUrl = searchParams.get("moduleId") || "ALL";
 
   const [searchTerm, setSearchTerm] = useState(screenSearchFromUrl);
-  const [prevScreenSearchFromUrl, setPrevScreenSearchFromUrl] = useState(screenSearchFromUrl);
-  const isFirstRender = useRef(true);
-
-  // Sync local search term if URL changes from outside (e.g. clear filters)
-  if (screenSearchFromUrl !== prevScreenSearchFromUrl) {
-    setPrevScreenSearchFromUrl(screenSearchFromUrl);
-    setSearchTerm(screenSearchFromUrl);
-  }
-
-  // Debounce updating URL query parameters for screenSearch
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      updateQueries({ screenSearch: searchTerm || null });
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, updateQueries]);
 
   const selectedModuleIds = useMemo(() => {
     if (!moduleIdFromUrl || moduleIdFromUrl === "ALL") return [];
@@ -98,9 +76,14 @@ export function ScreenSelectionCard({
   // Derived list of filtered screens based on inputs
   const filteredScreens = useMemo(() => {
     return screens.filter((screen) => {
+      const searchLower = searchTerm.toLowerCase();
       const matchesSearch =
-        screen.screenName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        screen.screenCode.toLowerCase().includes(searchTerm.toLowerCase());
+        (screen.screenName && screen.screenName.toLowerCase().includes(searchLower)) ||
+        (screen.screenNameLocal && screen.screenNameLocal.toLowerCase().includes(searchLower)) ||
+        (screen.screenCode && screen.screenCode.toLowerCase().includes(searchLower)) ||
+        (screen.moduleLabel && screen.moduleLabel.toLowerCase().includes(searchLower)) ||
+        (screen.moduleName && screen.moduleName.toLowerCase().includes(searchLower)) ||
+        (screen.moduleNameLocal && screen.moduleNameLocal.toLowerCase().includes(searchLower));
       
       return matchesSearch;
     });
@@ -127,7 +110,7 @@ export function ScreenSelectionCard({
     const filteredIds = new Set(filteredScreens.map((s) => s.id));
     setSelectedScreenIds((prev) => prev.filter((id) => !filteredIds.has(id)));
     setSearchTerm("");
-    updateQueries({ screenSearch: null, moduleId: null });
+    updateQueries({ moduleId: null });
   };
 
   return (

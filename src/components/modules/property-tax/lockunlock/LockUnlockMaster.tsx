@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLockUnlockMaster";
 import { TableModal } from "./TableModal";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { PropertySelectionCard } from "./PropertySelectionCard";
 import { ScreenSelectionCard } from "./ScreenSelectionCard";
 
@@ -178,23 +179,51 @@ export default function LockUnlockMaster({
                     <LockButton
                       size="sm"
                       label={t("resultsTable.lockButton")}
-                      disabled={
+                      disabled={isPending}
+                      className={
                         (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) ||
-                        selectedScreenIds.length === 0 ||
-                        isPending
+                        selectedScreenIds.length === 0
+                          ? "opacity-50 cursor-not-allowed hover:!bg-red-600 hover:!shadow-none active:!scale-100"
+                          : ""
                       }
-                      onClick={() => handleBulkAction("lock")}
+                      onClick={(e) => {
+                        if (selectedScreenIds.length === 0) {
+                          e.preventDefault();
+                          toast.error(t("messages.selectScreenRequired"));
+                          return;
+                        }
+                        if (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) {
+                          e.preventDefault();
+                          toast.error(t("messages.selectPropertyRequired"));
+                          return;
+                        }
+                        handleBulkAction("lock");
+                      }}
                     />
 
                     <UnlockButton
                       size="sm"
                       label={t("resultsTable.unlockButton")}
-                      disabled={
+                      disabled={isPending}
+                      className={
                         (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) ||
-                        selectedScreenIds.length === 0 ||
-                        isPending
+                        selectedScreenIds.length === 0
+                          ? "opacity-50 cursor-not-allowed hover:!bg-green-600 hover:!shadow-none active:!scale-100"
+                          : ""
                       }
-                      onClick={() => handleBulkAction("unlock")}
+                      onClick={(e) => {
+                        if (selectedScreenIds.length === 0) {
+                          e.preventDefault();
+                          toast.error(t("messages.selectScreenRequired"));
+                          return;
+                        }
+                        if (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) {
+                          e.preventDefault();
+                          toast.error(t("messages.selectPropertyRequired"));
+                          return;
+                        }
+                        handleBulkAction("unlock");
+                      }}
                     />
                   </div>
                 }

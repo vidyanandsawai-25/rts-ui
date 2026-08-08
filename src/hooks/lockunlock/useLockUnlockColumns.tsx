@@ -98,8 +98,7 @@ export function useLockUnlockColumns({
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
         <span className="text-gray-700 px-2">
-          {row.wardNo} - {row.propertyNo}
-          {row.partitionNo ? ` - ${row.partitionNo}` : ""}
+          {row.property || `${row.wardNo} - ${row.propertyNo}${row.partitionNo ? ` - ${row.partitionNo}` : ""}`}
         </span>
       ),
     },

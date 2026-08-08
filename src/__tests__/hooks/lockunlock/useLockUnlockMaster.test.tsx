@@ -354,14 +354,15 @@ describe("useLockUnlockMaster", () => {
   });
 
   it("should call confirm when bulk action with selections", () => {
-    const { result } = renderHook(() => useLockUnlockMaster(defaultProps));
+    const { result } = renderHook(() => useLockUnlockMaster({
+      ...defaultProps,
+      initialProperties: mockProperties,
+      initialPagination: { pageNumber: 1, pageSize: 10, totalCount: 1, totalPages: 1 },
+    }));
 
     act(() => {
-      result.current.setSelectedScreenIds([1]);
-    });
-
-    act(() => {
-      result.current.handleSelectProperty(101);
+      // Screen 2 is not locked on mockProperties[0], so exactApplicableCount will be 1
+      result.current.setSelectedScreenIds([2]);
     });
 
     act(() => {

@@ -17,6 +17,7 @@ export interface LockUnlockPropertyItem extends Record<string, unknown> {
   wardNo: string;
   propertyNo: string;
   partitionNo: string;
+  property?: string;
   isLocked: boolean;
   lockedScreens: Array<number | LockedScreen>;
 }
