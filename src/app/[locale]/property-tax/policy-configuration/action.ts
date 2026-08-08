@@ -112,7 +112,7 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
   const isActive = getBooleanFromFormData(formData, "isActive");
 
   const cookieStore = await cookies();
-  const createdBy = getUserIdFromCookies(cookieStore) ?? undefined;
+  const userId = getUserIdFromCookies(cookieStore) ?? undefined;
 
   if (!id || id.trim() === "") {
     return { ok: false, error: "invalid_id" };
@@ -137,7 +137,8 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
     effectiveTo,
     allowedValues,
     isActive,
-    createdBy,
+    createdBy: userId,
+    updatedBy: userId,
   };
 
   try {

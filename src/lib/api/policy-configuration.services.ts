@@ -67,6 +67,7 @@ export async function updatePolicyConfiguration(data: PolicyConfigurationFormMod
     allowedValues: data.allowedValues ?? null,
     isActive: data.isActive,
     createdBy: data.createdBy ?? 0,
+    updatedBy: data.updatedBy ?? 0
   };
 
   const response = await apiClient.put<void>(`/PolicyConfiguration/${data.id}`, payload);
