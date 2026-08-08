@@ -15,6 +15,7 @@ const FALLBACKS: Record<string, string> = {
   'media.fileRequired': 'Photo file is required',
   'media.allowedFormats': 'Only JPEG, JPG, and PNG images are allowed',
   'media.maxFileSize': 'File size should not exceed 5 MB',
+  'media.invalidImage': 'Please upload a valid image file',
 };
 
 interface PhotoPlanNamingModalProps {
@@ -43,6 +44,16 @@ export function PhotoPlanNamingModal({
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImageCorrupted, setIsImageCorrupted] = useState(false);
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (isLoading) {
@@ -74,9 +85,34 @@ export function PhotoPlanNamingModal({
 
   const updateSelectedFileWithValidation = (file: File | null) => {
     setSelectedFile(file);
+    setIsImageCorrupted(false);
     const fileErrKey = validatePhotoFile(file);
     if (fileErrKey && (!isEdit || file)) {
       setErrors((prev) => ({ ...prev, file: getMsg(fileErrKey) }));
+      return;
+    }
+
+    if (file) {
+      setIsValidatingImage(true);
+      setErrors(({ file: _, ...next }) => next);
+      
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        if (!isMounted.current) return;
+        setIsValidatingImage(false);
+        setIsImageCorrupted(false);
+        setErrors(({ file: _, ...next }) => next);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        if (!isMounted.current) return;
+        setIsValidatingImage(false);
+        setIsImageCorrupted(true);
+        setErrors((prev) => ({ ...prev, file: getMsg('media.invalidImage') || 'Please upload a valid image file' }));
+      };
+      img.src = url;
     } else {
       setErrors(({ file: _, ...next }) => next);
     }
@@ -126,7 +162,11 @@ export function PhotoPlanNamingModal({
     }
     if (!isEdit || selectedFile) {
       const fileErrorKey = validatePhotoFile(selectedFile);
-      if (fileErrorKey) newErrors.file = getMsg(fileErrorKey);
+      if (fileErrorKey) {
+        newErrors.file = getMsg(fileErrorKey);
+      } else if (isImageCorrupted) {
+        newErrors.file = getMsg('media.invalidImage') || 'Please upload a valid image file';
+      }
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -137,8 +177,8 @@ export function PhotoPlanNamingModal({
 
   const fileValidationErrKey = selectedFile ? validatePhotoFile(selectedFile) : null;
   const isFileRequiredMissing = !isEdit && !selectedFile;
-  const isFileInvalid = isFileRequiredMissing || !!fileValidationErrKey;
-  const isSaveDisabled = isLoading || !name.trim() || !displayOrder.trim() || (!isEdit && !photoTypeId) || isFileInvalid || Object.keys(errors).length > 0;
+  const isFileInvalid = isFileRequiredMissing || !!fileValidationErrKey || isImageCorrupted;
+  const isSaveDisabled = isLoading || isValidatingImage || !name.trim() || !displayOrder.trim() || (!isEdit && !photoTypeId) || isFileInvalid || Object.keys(errors).length > 0;
   const selectedPhotoTypeName = availableTypes.find((t) => String(t.value) === String(photoTypeId))?.label || defaultName || t('media.slot') || 'Photo Slot';
   const titleStr = isEdit ? t('media.editPhotoDetails') || 'Edit Photo Details' : isReplacement ? t('media.replaceImageTitle') || 'Replace Image Details' : t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`;
   const subtitleStr = isEdit ? t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.' : undefined;
@@ -293,7 +333,7 @@ export function PhotoPlanNamingModal({
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        {selectedFile.size <= 5 * 1024 * 1024 && /\.(jpe?g|png)$/i.test(selectedFile.name) && (
+                        {selectedFile.size <= 5 * 1024 * 1024 && /\.(jpe?g|png)$/i.test(selectedFile.name) && !isImageCorrupted && !isValidatingImage && (
                           <Button
                             variant="secondary"
                             size="sm"
@@ -309,7 +349,7 @@ export function PhotoPlanNamingModal({
                           disabled={isLoading}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedFile(null);
+                            updateSelectedFileWithValidation(null);
                             if (fileInputRef.current) fileInputRef.current.value = '';
                           }}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"

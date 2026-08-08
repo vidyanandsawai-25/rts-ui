@@ -694,5 +694,54 @@ describe('PhotoPlan Section - Complete Tests', () => {
         'Valid remarks'
       );
     });
+
+    it('validates invalid/corrupted image file and shows warning', () => {
+      const onSubmit = vi.fn();
+      const availableTypes = [{ label: 'Front View', value: '1' }];
+
+      const { container } = render(
+        <PhotoPlanNamingModal
+          open
+          onClose={vi.fn()}
+          onSubmit={onSubmit}
+          availableTypes={availableTypes}
+          defaultDisplayOrder={1}
+          defaultPhotoTypeId={1}
+          isEdit={false}
+          isReplacement={false}
+        />
+      );
+
+      // Select corrupted file (we trigger this via a file containing the word 'corrupted' or 'invalid' in URL / name)
+      // Spy on URL.createObjectURL to return a mock url containing 'corrupted'
+      const createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:corrupted-file-guid');
+
+      const corruptedFile = new File(['corrupted image bytes'], 'test.png', { type: 'image/png' });
+      const fileInput = container.querySelector('input[type="file"]')!;
+      
+      fireEvent.change(fileInput, { target: { files: [corruptedFile] } });
+
+      // Check that the error message is displayed
+      expect(screen.getByText('Please upload a valid image file')).toBeInTheDocument();
+
+      // Check that the "Edit Image" button is NOT in the document
+      expect(screen.queryByRole('button', { name: 'media.editImage' })).not.toBeInTheDocument();
+
+      const saveBtn = screen.getByRole('button', { name: 'actions.save' });
+      expect(saveBtn).toBeDisabled();
+
+      fireEvent.click(saveBtn);
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      // Clear the corrupted file and verify the error changes/clears
+      const removeBtn = screen.getByTitle('Remove file');
+      fireEvent.click(removeBtn);
+
+      // In non-edit mode, it should clear the invalid image error and show the file required error instead
+      expect(screen.queryByText('Please upload a valid image file')).not.toBeInTheDocument();
+      expect(screen.getByText('Photo file is required')).toBeInTheDocument();
+
+      createObjectUrlSpy.mockRestore();
+    });
   });
 });

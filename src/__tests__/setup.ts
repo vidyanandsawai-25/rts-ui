@@ -17,6 +17,29 @@ if (typeof window !== 'undefined') {
       writable: true,
     });
   }
+
+  // Mock window.Image to simulate image onload/onerror events in JSDOM tests
+  class MockImage {
+    onload: () => void = () => {};
+    onerror: () => void = () => {};
+    private _src = '';
+    get src() {
+      return this._src;
+    }
+    set src(value: string) {
+      this._src = value;
+      if (value.includes('invalid') || value.includes('corrupted') || value.includes('corrupt')) {
+        if (this.onerror) this.onerror();
+      } else {
+        if (this.onload) this.onload();
+      }
+    }
+  }
+  Object.defineProperty(window, 'Image', {
+    value: MockImage,
+    writable: true,
+    configurable: true,
+  });
 }
 
 // Mock server-only for tests

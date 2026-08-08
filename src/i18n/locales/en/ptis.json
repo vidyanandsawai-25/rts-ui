@@ -155,6 +155,7 @@
     "uploadInstructions": "Upload Instructions",
     "allowedFormats": "Allowed formats: JPEG, JPG, PNG",
     "maxFileSize": "Maximum file size: 5 MB",
+    "invalidImage": "Please upload a valid image file",
     "photoLegibilityNote": "Ensure the photo is clear and legible",
     "panMode": "Pan Mode",
     "zoomIn": "Zoom In",

@@ -156,6 +156,7 @@
     "uploadInstructions": "अपलोड करण्याच्या सूचना",
     "allowedFormats": "स्वीकार्य स्वरूप: JPEG, JPG, PNG",
     "maxFileSize": "कमाल फाईल आकार: 5 MB",
+    "invalidImage": "कृपया एक वैध इमेज फाईल अपलोड करा",
     "photoLegibilityNote": "फोटो स्पष्ट आणि वाचता येण्याजोगा असल्याची खात्री करा",
     "panMode": "पॅन मोड",
     "zoomIn": "झूम इन",
