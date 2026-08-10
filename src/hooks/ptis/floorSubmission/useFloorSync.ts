@@ -245,17 +245,21 @@ export const useFloorSync = (params: {
           id: undefined, // It's a new floor, keep id undefined
         }));
       } else {
-        const gFloor = (props.floorData as { floorCode?: string; floorId?: number; description?: string }[] || []).find(
-          (f) => f.floorCode === 'G' || f.description?.startsWith('G -') || f.description?.startsWith('G-')
-        );
-        if (gFloor) {
-          setEditingFloorForm((prev) => ({
-            ...prev,
-            floorId: String(gFloor.floorId || gFloor.floorCode || ''),
-            floor: gFloor.description || 'G - तळमजला',
-            floorDescription: gFloor.description || 'G - तळमजला',
-          }));
-        }
+        setEditingFloorForm((prev) => {
+          if (prev.floorId) return prev;
+          const gFloor = (props.floorData as { floorCode?: string; floorId?: number; description?: string }[] || []).find(
+            (f) => f.floorCode === 'G' || f.description?.startsWith('G -') || f.description?.startsWith('G-')
+          );
+          if (gFloor) {
+            return {
+              ...prev,
+              floorId: String(gFloor.floorId || gFloor.floorCode || ''),
+              floor: gFloor.description || 'G - तळमजला',
+              floorDescription: gFloor.description || 'G - तळमजला',
+            };
+          }
+          return prev;
+        });
       }
     } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new') {
       if (isAddingNewFloor && !editingFloorForm.id) {

@@ -112,11 +112,11 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   // Only fetch reassessment data when the reassessment tab is active
   const isReassessmentTabActive = valuationTab === 'reassessment';
   const reassessmentSection = isReassessmentTabActive ? (
-    <ReassessmentPage 
+    <ReassessmentPage
       params={params}
-      wardId={resolvedWardId} 
-      propertyNo={propertyNo} 
-      partitionNo={partitionNo} 
+      wardId={resolvedWardId}
+      propertyNo={propertyNo}
+      partitionNo={partitionNo}
     />
   ) : null;
 

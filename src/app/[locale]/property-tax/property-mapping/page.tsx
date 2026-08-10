@@ -21,7 +21,10 @@ export default async function PropertyMappingPageRoute({ searchParams }: PagePro
   const uniqueKey = `${resolvedSearchParams?.propertyId || ""}-${resolvedSearchParams?.propNo || ""}`;
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-500 font-bold">Loading Property Mapping...</div>}>
+    <Suspense
+      /* eslint-disable-next-line i18next/no-literal-string */
+      fallback={<div className="p-8 text-center text-xs text-slate-500 font-bold">Loading Property Mapping...</div>}
+    >
       <PropertyMapping
         key={uniqueKey}
         initialMappingData={initialMappingData}

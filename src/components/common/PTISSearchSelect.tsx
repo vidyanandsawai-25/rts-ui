@@ -549,7 +549,6 @@ export function PTISSearchSelect({
                   role="option"
                   aria-selected={isSelected}
                   onMouseDown={() => handleSelect(opt.value)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
                   className={`
                     relative flex items-center justify-between
                     px-3 py-2 text-sm cursor-pointer

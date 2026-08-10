@@ -88,7 +88,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
 
       {/* Right side: Input controls strictly in ONE single row */}
       <div className="flex flex-row items-center gap-2 shrink-0 flex-nowrap">
-        {/* L Input */}
+        {/* Length Input */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
             {getTranslation('floor.lengthShort', 'Length')}
@@ -109,7 +109,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
         {/* Multiplier sign */}
         <span className="text-slate-400 font-semibold text-xs self-end mb-2">×</span>
 
-        {/* W Input */}
+        {/* Width Input */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
             {getTranslation('floor.widthShort', 'Width')}

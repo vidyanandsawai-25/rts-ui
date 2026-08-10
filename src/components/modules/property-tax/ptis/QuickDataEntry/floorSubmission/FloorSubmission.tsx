@@ -91,9 +91,16 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     ) as FloorData | undefined;
   }, [localFloors, props.initialFloors]);
 
+  const isCategoryInitializedRef = React.useRef(false);
+  const prevOpenPlotRecordIdRef = React.useRef<string | number | null>(null);
+
   // Auto-select previously saved TypeOfUseId during Edit mode or default to 'OP'
   React.useEffect(() => {
-    if (openPlotRecord) {
+    const recordId = openPlotRecord?.floorId || (openPlotRecord as any)?.id || null;
+    const isNewRecord = recordId !== prevOpenPlotRecordIdRef.current;
+
+    if (isNewRecord && openPlotRecord) {
+      prevOpenPlotRecordIdRef.current = recordId;
       const rawId = Number(
         (openPlotRecord as any).typeOfUseId ||
         (openPlotRecord as any).useId ||
@@ -105,16 +112,18 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       );
       if (matched) {
         setSelectedOpenPlotCategory(matched);
+        isCategoryInitializedRef.current = true;
         return;
       }
     }
 
-    if (!selectedOpenPlotCategory && openPlotCategoryOptions.length > 0) {
+    if (!isCategoryInitializedRef.current && !selectedOpenPlotCategory && openPlotCategoryOptions.length > 0) {
       const opDefault = openPlotCategoryOptions.find(
         (c) => String(c.typeOfUseCode || '').toUpperCase() === 'OP' || String(c.description || '').toLowerCase().includes('खुला भूखंड')
       ) || openPlotCategoryOptions[0];
       if (opDefault) {
         setSelectedOpenPlotCategory(opDefault);
+        isCategoryInitializedRef.current = true;
       }
     }
   }, [openPlotRecord, openPlotCategoryOptions, selectedOpenPlotCategory]);
@@ -313,8 +322,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                 setPlotAreaSqM(parseFloat(sqM) || 0);
                 // onLoad should only set the plot area. It should not modify form state on initial mount.
               }}
-              onChange={(_sqFt, sqM) => {
-                setPlotAreaSqM(parseFloat(sqM) || 0);
+              onChange={(_sqFt, _sqM) => {
+                // Plot area summary state is only updated upon clicking "Update Area" (onApply)
               }}
               onApply={async (_sqFt: string, _sqM: string, len?: string, wid?: string) => {
                 const validation = validateOpenPlotForm(selectedOpenPlotCategory, len, wid);

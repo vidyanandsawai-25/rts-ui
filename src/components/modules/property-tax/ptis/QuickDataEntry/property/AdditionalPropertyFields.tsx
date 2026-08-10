@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Input, SearchSelect } from '@/components/common';
+import { Input, SearchSelect, PTISTransliteratedSearchSelect } from '@/components/common';
 import { Tooltip } from '@/components/common/Tooltip';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
@@ -129,19 +129,15 @@ export const AdditionalPropertyFields = ({
                 <Label htmlFor="pd-description" className="text-xs font-semibold text-gray-700">
                     {t('property.propertyDescription')}
                 </Label>
-                <Tooltip content={propertyDescriptionOptions.find(opt => opt.value === propertyTypeId?.toString())?.label || ''} placement="top">
-                    <div className="w-full">
-                        <SearchSelect
-                            id="pd-description"
-                            name="propertyDescription"
-                            options={propertyDescriptionOptions}
-                            placeholder={t('property.select')}
-                            value={propertyTypeId?.toString() ?? ''}
-                            onChange={handlePropertyDescriptionChange}
-                            className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                        />
-                    </div>
-                </Tooltip>
+                <PTISTransliteratedSearchSelect
+                    id="pd-description"
+                    name="propertyDescription"
+                    options={propertyDescriptionOptions}
+                    placeholder={t('property.select')}
+                    value={propertyTypeId?.toString() ?? ''}
+                    onChange={handlePropertyDescriptionChange}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
             </div>
         </>
     );

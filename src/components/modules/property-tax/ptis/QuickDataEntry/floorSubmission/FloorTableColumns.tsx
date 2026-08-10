@@ -34,6 +34,27 @@ export const useFloorTableColumns = ({
       return isNaN(num) ? '0.00' : num.toFixed(2);
     };
 
+    const formatDateCell = (row: FloorData, val: unknown, certCode: string, certTypeId: number) => {
+      const rowRecord = row as unknown as Record<string, unknown>;
+      const keyPrefix = certCode.toLowerCase();
+      let raw = (rowRecord[`${keyPrefix}Date`] as string) || (rowRecord[`${keyPrefix}IssueDate`] as string) || val;
+      if (!raw && Array.isArray(rowRecord.propertyCertificates)) {
+        const certs = rowRecord.propertyCertificates as Record<string, unknown>[];
+        const cert = certs.find(c => String(c.certificateTypeCode).toUpperCase() === certCode || Number(c.certificateTypeId) === certTypeId);
+        if (cert && cert.issueDate) raw = String(cert.issueDate);
+      }
+      const str = raw ? String(raw).trim() : '';
+      if (!str || str === '-' || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined') {
+        return '-';
+      }
+      const dateOnly = str.split('T')[0];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+        const [yyyy, mm, dd] = dateOnly.split('-');
+        return `${dd}-${mm}-${yyyy}`;
+      }
+      return str;
+    };
+
     return [
       {
         key: 'isTaxable',
@@ -153,19 +174,7 @@ export const useFloorTableColumns = ({
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
-          const rowRecord = row as unknown as Record<string, unknown>;
-          const raw = (rowRecord.ccDate as string) || (rowRecord.ccIssueDate as string) || val;
-          const str = raw ? String(raw).trim() : '';
-          let text = '-';
-          if (str && str !== '-' && str.toLowerCase() !== 'null' && str.toLowerCase() !== 'undefined') {
-            const dateOnly = str.split('T')[0];
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
-              const [yyyy, mm, dd] = dateOnly.split('-');
-              text = `${dd}-${mm}-${yyyy}`;
-            } else {
-              text = str;
-            }
-          }
+          const text = formatDateCell(row, val, 'CC', 1);
           return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
         },
       },
@@ -176,19 +185,7 @@ export const useFloorTableColumns = ({
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
-          const rowRecord = row as unknown as Record<string, unknown>;
-          const raw = (rowRecord.ocDate as string) || (rowRecord.ocIssueDate as string) || val;
-          const str = raw ? String(raw).trim() : '';
-          let text = '-';
-          if (str && str !== '-' && str.toLowerCase() !== 'null' && str.toLowerCase() !== 'undefined') {
-            const dateOnly = str.split('T')[0];
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
-              const [yyyy, mm, dd] = dateOnly.split('-');
-              text = `${dd}-${mm}-${yyyy}`;
-            } else {
-              text = str;
-            }
-          }
+          const text = formatDateCell(row, val, 'OC', 2);
           return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
         },
       },
