@@ -30,6 +30,7 @@ export function PropertySearch({
   pageSize,
   mainCards,
   workflowCards,
+  cardFilterParams,
   zoneOptions,
   wardOptions,
   allWardOptions,
@@ -45,13 +46,14 @@ export function PropertySearch({
 }: PropertySearchProps): React.ReactElement {
   const t = useTranslations("propertySearch");
   const [activeTab, setActiveTab] = useState<SearchTab>(activeTabProp);
-  const [prevActiveTab, setPrevActiveTab] = useState<SearchTab>(activeTabProp);
   const [isPending, startTransition] = useTransition();
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [statusClearedByTab, setStatusClearedByTab] = useState(false);
 
-  if (activeTabProp !== prevActiveTab) {
-    setPrevActiveTab(activeTabProp);
+  const [prevActiveTabProp, setPrevActiveTabProp] = React.useState(activeTabProp);
+
+  if (activeTabProp !== prevActiveTabProp) {
+    setPrevActiveTabProp(activeTabProp);
     setActiveTab(activeTabProp);
   }
 
@@ -135,6 +137,7 @@ export function PropertySearch({
               onStatusClick={handleStatusFilter}
               mainCards={mainCards}
               workflowCards={workflowCards}
+              cardFilterParams={cardFilterParams}
               disabled={isPending}
             />
 

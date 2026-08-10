@@ -172,6 +172,7 @@ export interface PropertySearchProps {
   pageSize: number;
   mainCards?: MainCardsResponse | null;
   workflowCards?: WorkflowCardItem[] | null;
+  cardFilterParams?: CardFilterParams;
   zoneOptions: ZoneOption[];
   wardOptions: WardOption[];
   allWardOptions: WardOption[];
@@ -191,6 +192,7 @@ export interface PropertyStatsProps {
   onStatusClick: (status: PropertyStatus) => void;
   mainCards?: MainCardsResponse | null;
   workflowCards?: WorkflowCardItem[] | null;
+  cardFilterParams?: CardFilterParams;
   disabled?: boolean;
   containerRef?: RefObject<HTMLDivElement | null>;
 }
