@@ -220,7 +220,10 @@ export async function launchPhotoPlanDrawingToolAction(
   returnUrl: string,
   ptisUsername?: string,
   ptisDisplayName?: string,
-  ptisUserId?: string
+  ptisUserId?: string,
+  wardNo?: string,
+  propertyNo?: string,
+  partitionNo?: string | null
 ): Promise<ActionResult<{ launchUrl: string }>> {
   try {
     let cookieUsername = '';
@@ -243,6 +246,9 @@ export async function launchPhotoPlanDrawingToolAction(
       ptisUsername: ptisUsername || cookieUsername,
       ptisDisplayName: ptisDisplayName || cookieDisplayName,
       ptisUserId: ptisUserId || cookieUserId,
+      wardNo,
+      propertyNo,
+      partitionNo,
     });
 
     if (result.success && result.launchUrl) {

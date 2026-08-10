@@ -9,6 +9,7 @@ import type {
   PropertyPhotoUploadResponseDto,
   PropertyPhotoGalleryDto
 } from "@/types/photoplan.types";
+import { getAppConfig } from "@/config/app.config";
 
 interface BackendApiResponseWrapper<T> {
   success: boolean;
@@ -309,9 +310,12 @@ export const photoPlanService = {
     ptisUsername?: string;
     ptisDisplayName?: string;
     ptisUserId?: string;
+    wardNo?: string;
+    propertyNo?: string;
+    partitionNo?: string | null;
   }): Promise<{ success: boolean; launchUrl?: string; error?: string }> {
     try {
-      const { propertyId, councilName, returnUrl, ptisUsername, ptisDisplayName, ptisUserId } = params;
+      const { propertyId, councilName, returnUrl, ptisUsername, ptisDisplayName, ptisUserId, wardNo, propertyNo, partitionNo } = params;
 
       const safeDecode = (val?: string) => {
         if (!val) return '';
@@ -379,14 +383,23 @@ export const photoPlanService = {
         safeReturnUrl = `${defaultReturnBase}${safeReturnUrl}`;
       }
 
+      const rawApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || '';
+      const ptisBackendUri = rawApiUrl.replace(/\/api\/?$/, '');
+
+      const cleanPartition = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-') ? '' : partitionNo.trim();
+
       const queryParams = new URLSearchParams({
         councilName: apiCouncilName,
-        propertyId: String(propertyId),
+        wardNo: wardNo || '',
+        propertyNo: propertyNo || '',
+        partitionNo: cleanPartition,
         mode: 'draw',
         returnUrl: safeReturnUrl,
+        ptisBackendUri: ptisBackendUri,
         ptisUsername: finalPtisUsername,
         ptisDisplayName: finalPtisDisplayName,
         ptisUserId: finalPtisUserId,
+        propertyId: String(propertyId),
       });
 
       const launchRes = await fetch(`https://apiptisplanapp.tabamc.in/api/plans/ptis/launch?${queryParams.toString()}`, {

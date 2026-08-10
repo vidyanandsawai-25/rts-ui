@@ -158,13 +158,18 @@ function PropertyMediaPanel({
         const ptisDisplayName = rawDisplayName ? decodeCookieValue(rawDisplayName) : undefined;
         const ptisUserId = getCookieValue('user_id');
 
+        const cleanPartitionNo = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-') ? '' : partitionNo.trim();
+
         const result = await launchPhotoPlanDrawingToolAction(
           propertyId,
           councilName,
           returnUrl,
           ptisUsername,
           ptisDisplayName,
-          ptisUserId
+          ptisUserId,
+          wardNo,
+          propertyNo,
+          cleanPartitionNo
         );
 
         if (!result.success || !result.data?.launchUrl) {
@@ -188,7 +193,7 @@ function PropertyMediaPanel({
         toast.error(errorMessage, { id: toastId });
       }
     },
-    [propertyId, t]
+    [propertyId, t, wardNo, propertyNo, partitionNo]
   );
 
   if (loading) {
