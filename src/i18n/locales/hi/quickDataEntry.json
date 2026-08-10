@@ -438,7 +438,7 @@
       "oldTypeOfUseIdInvalid": "उपयोग का प्रकार अमान्य है",
       "invalidIds": "अमान्य आईडी प्रदान की गई",
       "invalidCarpetArea": "कार्पेट क्षेत्रफल 0 से अधिक एक वैध संख्या होनी चाहिए",
-      "invalidCharacters": "इनपुट में अमान्य वर्ण हैं। केवल अक्षरांकीय (अक्षर और संख्या) और मानक विराम चिह्नों की अनुमति है।"
+      "invalidCharacters": "इनपुट में अमान्य वर्ण हैं। टेक्स्ट फ़ॉर्मेटिंग वर्णों की अनुमति नहीं है।"
     },
     "errors": {
       "failedToConnect": {
@@ -1225,6 +1225,18 @@
     "unsavedChangesDesc": "आपके पास छूट और सामाजिक डेटा टैब में अनसहेजे गए बदलाव हैं। क्या आप उन्हें छोड़ना चाहते हैं, या संपादन जारी रखना चाहते हैं?",
     "continueButton": "संपादन जारी रखें",
     "discardConfirmButton": "बदलाव छोड़ें",
+    "deleteDiscount": "छूट और डेटा हटाएं",
+    "confirmToggleOffWarning": "आपके पास सक्रिय विवरण हैं:",
+    "confirmDeleteDiscountTitle": "छूट और डेटा हटाएं",
+    "confirmDeleteDiscountDesc": "क्या आप वाकई इस छूट और इसके सभी संबद्ध डेटा को हटाना चाहते हैं?",
+    "confirmDeleteDiscountOk": "हाँ, हटाएँ",
+    "confirmDeleteDiscountCancel": "नहीं, रद्द करें",
+    "deleteSuccess": "विवरण और संबंधित डेटा सफलतापूर्वक हटा दिया गया!",
+    "deleteSocialDetail": "विवरण और डेटा हटाएं",
+    "confirmDeleteAttributeTitle": "सामाजिक विवरण और डेटा हटाएं",
+    "confirmDeleteAttributeDesc": "क्या आप वाकई इस सामाजिक विवरण और इसके सभी संबद्ध डेटा को हटाना चाहते हैं?",
+    "confirmDeleteAttributeOk": "हाँ, हटाएँ",
+    "confirmDeleteAttributeCancel": "नहीं, रद्द करें",
     "socialAttributes": {
       "HAS_FAMILY_PLANNING": "परिवार नियोजन लाभ",
       "IS_GREEN_PROPERTY": "हरित संपत्ति",

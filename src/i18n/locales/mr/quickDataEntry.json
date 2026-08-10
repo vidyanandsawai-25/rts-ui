@@ -438,7 +438,7 @@
       "oldTypeOfUseIdInvalid": "वापराचा प्रकार अवैध आहे",
       "invalidIds": "अवैध आयडी प्रदान केले",
       "invalidCarpetArea": "कार्पेट क्षेत्रफळ 0 पेक्षा जास्त वैध संख्या असणे आवश्यक आहे",
-      "invalidCharacters": "इनपुटमध्ये अवैध अक्षरे आहेत. फक्त अक्षरे, संख्या आणि मानक विरामचिन्हे वापरण्यास अनुमती आहे."
+      "invalidCharacters": "इनपुटमध्ये अवैध अक्षरे आहेत. टेक्स्ट फॉरमॅटिंग अक्षरांना परवानगी नाही।"
     },
     "errors": {
       "failedToConnect": {
@@ -1234,6 +1234,18 @@
     "unsavedChangesDesc": "तुमच्याकडे सवलत आणि सामाजिक डेटा टॅबमध्ये न जतन केलेले बदल आहेत. तुम्हाला ते रद्द करायचे आहेत की संपादन सुरू ठेवायचे आहे?",
     "continueButton": "संपादन सुरू ठेवा",
     "discardConfirmButton": "बदल रद्द करा",
+    "deleteDiscount": "सवलत आणि डेटा हटवा",
+    "confirmToggleOffWarning": "तुमच्याकडे सक्रिय तपशील आहेत:",
+    "confirmDeleteDiscountTitle": "सवलत आणि डेटा हटवा",
+    "confirmDeleteDiscountDesc": "तुम्हाला नक्की ही सवलत आणि त्याशी संबंधित सर्व डेटा हटवायचा आहे का?",
+    "confirmDeleteDiscountOk": "होय, हटवा",
+    "confirmDeleteDiscountCancel": "नाही, रद्द करा",
+    "deleteSuccess": "तपशील आणि संबंधित डेटा यशस्वीरित्या हटविला गेला!",
+    "deleteSocialDetail": "तपशील आणि डेटा हटवा",
+    "confirmDeleteAttributeTitle": "सामाजिक तपशील आणि डेटा हटवा",
+    "confirmDeleteAttributeDesc": "तुम्हाला नक्की हा सामाजिक तपशील आणि त्याशी संबंधित सर्व डेटा हटवायचा आहे का?",
+    "confirmDeleteAttributeOk": "होय, हटवा",
+    "confirmDeleteAttributeCancel": "नाही, रद्द करा",
     "socialAttributes": {
       "HAS_FAMILY_PLANNING": "कुटुंब नियोजन लाभ",
       "IS_GREEN_PROPERTY": "हरित मालमत्ता",

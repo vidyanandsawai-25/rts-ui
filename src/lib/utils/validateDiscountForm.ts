@@ -13,6 +13,7 @@ interface ValidationResult {
 }
 
 const TEXT_PATTERN = /^[a-zA-Z0-9\s\-()&'\./,]*$/;
+const REMARK_PATTERN = /^[^<>]*$/;
 
 /**
  * Validates the discount form state.
@@ -152,7 +153,7 @@ export const validateDiscountForm = (
             if (item.remark.length > 500) {
                 missingFields.push(t("discount.socialValidation.maxVal", { max: 500 }) || "Remark cannot exceed 500 characters.");
             }
-            if (!TEXT_PATTERN.test(item.remark || "")) {
+            if (!REMARK_PATTERN.test(item.remark || "")) {
                 missingFields.push(t("property.validation.invalidCharacters") || "Remark contains invalid characters.");
             }
         }

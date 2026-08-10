@@ -9,6 +9,7 @@ import {
     replaceDiscountDocViaGlobalApi,
     deleteDiscountDoc
 } from "@/lib/api/discount.service";
+import { deletePropertySocialDetail } from "@/lib/api/property-social-details.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
 import { updateBindingReference } from "@/lib/api/document.service";
@@ -173,5 +174,22 @@ export async function deleteDiscountDocumentAction(
     } catch (error: unknown) {
         logger.error("deleteDiscountDocumentAction failed", { documentGuid, error: error as Error });
         return handleActionError(error, "discount.deleteError");
+    }
+}
+
+export async function deletePropertySocialDetailAction(
+    propertyId: string,
+    socialAttributeId: number,
+    locale: string
+): Promise<ApiResponse<void>> {
+    try {
+        const response = await deletePropertySocialDetail(propertyId, socialAttributeId);
+        if (response.success) {
+            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+        }
+        return response;
+    } catch (error: unknown) {
+        logger.error("deletePropertySocialDetailAction failed", { propertyId, socialAttributeId, error: error as Error });
+        return handleActionError(error, "discount.deleteError", locale);
     }
 }

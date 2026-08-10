@@ -1,9 +1,10 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import { 
     upsertPropertySocialInfoAction,
+    deletePropertySocialDetailAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -132,10 +133,102 @@ export const useSocialDetailsForm = (
         });
     };
 
+    const handleDeleteSocialDetail = useCallback(async (id: number) => {
+        const activeItem = socialData[id];
+        if (!activeItem) return;
+
+        const isSavedOnBackend = typeof activeItem.id === "number" && activeItem.id > 0;
+
+        startLoading();
+        try {
+            if (isSavedOnBackend) {
+                const response = await deletePropertySocialDetailAction(
+                    propertyId,
+                    id,
+                    locale
+                );
+
+                if (!response.success) {
+                    toast.error(response.error || "Failed to delete social details");
+                    return;
+                }
+            }
+
+            // Clear local state recursively for this attribute and its children
+            setFormState(prev => {
+                const nextData = { ...prev.data };
+                const nextErrors = { ...prev.errors };
+
+                const clearAttributeAndChildren = (attrs: Record<number, FlatSocialAttributeState>, targetId: number) => {
+                    const item = attrs[targetId];
+                    if (!item) return;
+
+                    attrs[targetId] = {
+                        ...item,
+                        bitValue: false,
+                        intValue: null,
+                        decimalValue: null,
+                        textValue: null,
+                        dateValue: null,
+                        remark: "",
+                        documentGuid: null,
+                        documentBindingId: null,
+                        documentUrl: null,
+                        pendingFile: undefined,
+                        id: null // Reset backend ID
+                    };
+
+                    delete nextErrors[targetId];
+
+                    Object.values(attrs).forEach(attr => {
+                        if (attr.parentAttributeId === targetId) {
+                            clearAttributeAndChildren(attrs, attr.socialAttributeId);
+                        }
+                    });
+                };
+
+                clearAttributeAndChildren(nextData, id);
+
+                return {
+                    data: nextData,
+                    errors: nextErrors
+                };
+            });
+
+            toast.success(t("discount.deleteSuccess") || "Social detail and associated data deleted successfully!");
+
+            if (isSavedOnBackend) {
+                router.refresh();
+            }
+        } catch (_error) {
+            toast.error("An error occurred while deleting the social details");
+        } finally {
+            stopLoading();
+        }
+    }, [socialData, propertyId, locale, setFormState, startLoading, stopLoading, t, router]);
+
+    const revertSocialAttribute = useCallback((id: number) => {
+        setFormState((prev) => {
+            const initialItem = initialFlatData[id];
+            if (!initialItem) return prev;
+            const hasDbValues = typeof initialItem.id === "number" && initialItem.id > 0;
+            if (!hasDbValues) return prev;
+            
+            const nextData = { ...prev.data, [id]: { ...initialItem } };
+            const nextErrors = { ...prev.errors };
+            delete nextErrors[id];
+
+            return {
+                data: nextData,
+                errors: nextErrors
+            };
+        });
+    }, [initialFlatData, setFormState]);
+
     return {
         socialData, isSaving, hasChanges, validationErrors, incompleteAttributes,
         isAttributeEnabled: (attr: FlatSocialAttributeState) => isAttributeEnabled(attr, socialData),
-        handleInputChange, handleToggleEnabled, handlePhotoUpload, handlePhotoDelete, handleSave
+        handleInputChange, handleToggleEnabled, handlePhotoUpload, handlePhotoDelete, handleDeleteSocialDetail, handleSave, revertSocialAttribute
     };
 };
 export { checkSocialRequiredFields };

@@ -11,6 +11,7 @@ import { PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { getFilteredDiscounts } from "@/lib/utils/discount-helpers";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface DiscountFormProps {
     initialDiscountData: PropertyDiscountInfoResponseDto | null;
@@ -73,29 +74,61 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         handleInputChange,
         handleFileUpload,
         handleFileDelete,
-        handleSave
+        handleDeleteDiscount,
+        handleSave,
+        revertDiscount
     } = useDiscountForm(initialDiscountData, propertyId);
 
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [showActiveFirst, setShowActiveFirst] = useState(false);
 
-    const handleToggleEnabledWrapped = useCallback((id: number, checked: boolean) => {
-        handleToggleEnabled(id, checked);
+    const activeSelectedId = useMemo(() => {
+        if (selectedId !== null) {
+            const exists = discountData[selectedId];
+            if (exists) return selectedId;
+        }
+        const rootDiscounts = initialDiscountData?.discountAttributes || [];
+        return rootDiscounts.length > 0 ? rootDiscounts[0].id : null;
+    }, [discountData, selectedId, initialDiscountData?.discountAttributes]);
+
+    const handleSelectDiscount = useCallback((id: number) => {
+        if (activeSelectedId !== null && activeSelectedId !== id) {
+            revertDiscount(activeSelectedId);
+        }
         setSelectedId(id);
-    }, [handleToggleEnabled]);
+    }, [activeSelectedId, revertDiscount]);
+
+    const handleToggleEnabledWrapped = useCallback((id: number, checked: boolean) => {
+        const item = discountData[id];
+        const initialItem = initialDiscountData?.discountAttributes?.find(x => x.id === id);
+        const existsAndActiveInDb = initialItem && typeof initialItem.propertySocialDetailId === "number" && initialItem.propertySocialDetailId > 0 && initialItem.bitValue === true;
+
+        if (!checked && existsAndActiveInDb) {
+            const displayName = getLocalizedName(item.socialAttributeCode, item.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
+            confirm({
+                title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
+                description: `${t("discount.confirmToggleOffWarning") || "You have active details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
+                cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
+                variant: "delete",
+                onConfirm: async () => {
+                    await handleDeleteDiscount(id);
+                    handleSelectDiscount(id);
+                },
+                onCancel: () => {
+                    // Leaves toggle state active/unchanged
+                }
+            });
+        } else {
+            handleToggleEnabled(id, checked);
+            handleSelectDiscount(id);
+        }
+    }, [handleToggleEnabled, discountData, handleDeleteDiscount, confirm, t, initialDiscountData?.discountAttributes, handleSelectDiscount]);
 
     const filteredDiscounts = useMemo(() => {
         return getFilteredDiscounts(discountData, searchTerm, showActiveFirst, t);
     }, [discountData, searchTerm, showActiveFirst, t]);
-
-    const activeSelectedId = useMemo(() => {
-        if (selectedId !== null) {
-            const exists = filteredDiscounts.some(d => d.id === selectedId);
-            if (exists) return selectedId;
-        }
-        return filteredDiscounts.length > 0 ? filteredDiscounts[0].id : null;
-    }, [filteredDiscounts, selectedId]);
 
     const selectedDiscount = activeSelectedId !== null ? discountData[activeSelectedId] : null;
 
@@ -104,7 +137,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
             setShowActiveFirst(false);
         }
         setSearchTerm("");
-        setSelectedId(id);
+        handleSelectDiscount(id);
 
         requestAnimationFrame(() => {
             const card = document.querySelector(`[data-certificate-id="${id}"]`);
@@ -112,7 +145,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 card.scrollIntoView({ behavior: "smooth", block: "center" });
             }
         });
-    }, [showActiveFirst]);
+    }, [showActiveFirst, handleSelectDiscount]);
 
     const handleSaveClick = useCallback(async () => {
         const result = await handleSave();
@@ -125,7 +158,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
             );
             if (activeIncomplete.length > 0) {
                 const firstInvalidId = activeIncomplete[0].id;
-                setSelectedId(firstInvalidId);
+                handleSelectDiscount(firstInvalidId);
                 requestAnimationFrame(() => {
                     const card = document.querySelector(`[data-certificate-id="${firstInvalidId}"]`);
                     if (card && typeof card.scrollIntoView === "function") {
@@ -134,7 +167,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 });
             }
         }
-    }, [handleSave, discountData]);
+    }, [handleSave, discountData, handleSelectDiscount]);
 
     return (
         <>
@@ -160,13 +193,15 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                     setShowActiveFirst={setShowActiveFirst}
                     filteredDiscounts={filteredDiscounts}
                     activeSelectedId={activeSelectedId}
-                    setSelectedId={setSelectedId}
+                    setSelectedId={handleSelectDiscount}
                     handleToggleEnabled={handleToggleEnabledWrapped}
                     validationErrors={validationErrors}
                     selectedDiscount={selectedDiscount}
                     handleInputChange={handleInputChange}
                     handleFileUpload={handleFileUpload}
                     handleFileDelete={handleFileDelete}
+                    handleDeleteDiscount={handleDeleteDiscount}
+                    isSaving={isSaving}
                     t={t}
                 />
             </Tabs.TabPanel>

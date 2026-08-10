@@ -438,7 +438,7 @@
             "oldTypeOfUseIdInvalid": "Type of Use is invalid",
             "invalidIds": "Invalid IDs provided",
             "invalidCarpetArea": "Carpet area must be a valid number greater than 0",
-            "invalidCharacters": "Input contains invalid characters. Only alphanumeric characters and standard punctuation are allowed."
+            "invalidCharacters": "Input contains invalid characters. Text formatting characters are not permitted."
         },
         "errors": {
             "failedToConnect": {
@@ -1248,6 +1248,18 @@
         "unsavedChangesDesc": "You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?",
         "continueButton": "Continue Editing",
         "discardConfirmButton": "Discard Changes",
+        "deleteDiscount": "Delete Discount & Data",
+        "confirmToggleOffWarning": "You have active details:",
+        "confirmDeleteDiscountTitle": "Delete Discount & Data",
+        "confirmDeleteDiscountDesc": "Are you sure you want to delete this discount and all its associated data?",
+        "confirmDeleteDiscountOk": "Yes, Delete",
+        "confirmDeleteDiscountCancel": "No, Cancel",
+        "deleteSuccess": "Details and associated data deleted successfully!",
+        "deleteSocialDetail": "Delete Detail & Data",
+        "confirmDeleteAttributeTitle": "Delete Social Detail & Data",
+        "confirmDeleteAttributeDesc": "Are you sure you want to delete this social detail and all its associated data?",
+        "confirmDeleteAttributeOk": "Yes, Delete",
+        "confirmDeleteAttributeCancel": "No, Cancel",
         "socialAttributes": {
             "HAS_FAMILY_PLANNING": "Family Planning Benefit",
             "IS_GREEN_PROPERTY": "Green Property",
