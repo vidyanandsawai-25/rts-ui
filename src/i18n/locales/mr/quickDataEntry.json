@@ -1630,6 +1630,7 @@
       "dateBefore1900": "तारीख 01-01-1900 पूर्वीची असू शकत नाही",
       "occupancyDateAfterCommencement": "ओसी दिनांक सीसी दिनांकाच्या नंतर असणे आवश्यक आहे",
       "commencementDateBeforeOccupancy": "सीसी दिनांक ओसी दिनांकाच्या आधी असणे आवश्यक आहे",
+      "dateBeforeConstructionYear": "तारीख बांधकाम वर्ष ({year}) पेक्षा जास्त किंवा समान असावी",
       "documentRequired": "कागदपत्र आवश्यक आहे"
     }
   },

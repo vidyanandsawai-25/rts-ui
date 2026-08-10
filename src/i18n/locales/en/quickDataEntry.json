@@ -1652,6 +1652,7 @@
             "dateBefore1900": "Date cannot be before 01-01-1900",
             "occupancyDateAfterCommencement": "OC date must be after CC date",
             "commencementDateBeforeOccupancy": "CC date must be before OC date",
+            "dateBeforeConstructionYear": "Date must be greater than or equal to construction year ({year})",
             "documentRequired": "Document is required"
         }
     },

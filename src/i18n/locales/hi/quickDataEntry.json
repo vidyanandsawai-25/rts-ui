@@ -1621,6 +1621,7 @@
       "dateBefore1900": "तारीख 01-01-1900 से पहले की नहीं हो सकती",
       "occupancyDateAfterCommencement": "ओसी दिनांक सीसी दिनांक के बाद होना चाहिए",
       "commencementDateBeforeOccupancy": "सीसी दिनांक ओसी दिनांक से पहले होना चाहिए",
+      "dateBeforeConstructionYear": "तारीख निर्माण वर्ष ({year}) से अधिक या बराबर होनी चाहिए",
       "documentRequired": "दस्तावेज़ आवश्यक है"
     }
   },

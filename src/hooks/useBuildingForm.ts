@@ -368,7 +368,10 @@ export const useBuildingForm = (
                     skipDocumentValidation: opts?.skipDocumentValidation,
                     skipNumberDateValidation: opts?.skipNumberDateValidation,
                     onlyCertificateTypeId: opts?.onlyCertificateTypeId,
-                    activeCertificateTypeId: targetTypeId
+                    activeCertificateTypeId: targetTypeId,
+                    floors,
+                    activeScope,
+                    activeFloorId
                 }
             );
 

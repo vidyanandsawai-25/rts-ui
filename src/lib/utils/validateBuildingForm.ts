@@ -1,4 +1,4 @@
-import { BuildingPermissionState } from "@/types/building-permission.types";
+import { BuildingPermissionState, FloorCertificateDto } from "@/types/building-permission.types";
 import { validateDocumentNumber, validateDocumentDate, parseDateString } from "@/lib/validation/building/validation-rules";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 
@@ -26,6 +26,9 @@ interface ValidateBuildingFormOptions {
     skipNumberDateValidation?: boolean;
     onlyCertificateTypeId?: number;
     activeCertificateTypeId?: number;
+    floors?: FloorCertificateDto[];
+    activeScope?: 'Property' | 'Floor';
+    activeFloorId?: number | null;
 }
 
 export const validateBuildingForm = (
@@ -57,6 +60,44 @@ export const validateBuildingForm = (
             const dateError = validateDocumentDate(item.date);
             if (dateError) {
                 fieldErrorsForCert.date = t(dateError.key, dateError.params);
+            } else if (item.date && item.date.trim() !== "") {
+                const key = mapTypeNameToKey(item.certificateTypeName || "");
+                const code = (item.certificateTypeCode || "").toUpperCase();
+
+                const isTargetCert = 
+                    key === "occupancyCertificate" || code === "OC" ||
+                    key === "commencementCertificate" || key === "buildCompletionCertificate" || code === "CC" || code === "BCC" ||
+                    key === "electricBill" || code === "EB";
+
+                if (isTargetCert) {
+                    let targetConstructionYear: number | null = null;
+
+                    if (options.activeScope === 'Floor' && options.activeFloorId !== undefined && options.activeFloorId !== null) {
+                        const activeFloor = options.floors?.find(f => f.propertyDetailsId === options.activeFloorId);
+                        if (activeFloor?.constructionYear) {
+                            targetConstructionYear = parseInt(activeFloor.constructionYear, 10);
+                        }
+                    } else {
+                        if (options.floors && options.floors.length > 0) {
+                            const years = options.floors
+                                .map(f => f.constructionYear ? parseInt(f.constructionYear, 10) : null)
+                                .filter((y): y is number => y !== null && !isNaN(y));
+                            if (years.length > 0) {
+                                targetConstructionYear = Math.min(...years);
+                            }
+                        }
+                    }
+
+                    if (targetConstructionYear !== null && !isNaN(targetConstructionYear)) {
+                        const certDate = parseDateString(item.date);
+                        if (certDate) {
+                            const certYear = certDate.getFullYear();
+                            if (certYear < targetConstructionYear) {
+                                fieldErrorsForCert.date = t("validation.dateBeforeConstructionYear", { year: targetConstructionYear });
+                            }
+                        }
+                    }
+                }
             }
         }
 
