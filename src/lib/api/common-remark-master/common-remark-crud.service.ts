@@ -146,7 +146,7 @@ export async function createRemarkCategory(customRemarkType: string, createdByUs
     (c) => c.categoryName.trim().toLowerCase() === customName.toLowerCase()
   );
   if (matched) {
-    return matched;
+    throw new ApiError(409, "This remark type already exists.", "Duplicate category");
   }
 
   const catPayload = {
