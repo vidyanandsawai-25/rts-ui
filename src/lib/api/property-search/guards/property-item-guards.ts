@@ -217,10 +217,7 @@ export function isPropertySearchApiResponse(
   const obj = value as Record<string, unknown>;
   return (
     typeof obj.success === "boolean" &&
-    typeof obj.items === "object" &&
-    obj.items !== null &&
-    (Array.isArray((obj.items as Record<string, unknown>).items) ||
-      Array.isArray((obj.items as Record<string, unknown>).Items))
+    (obj.items === null || typeof obj.items === "object")
   );
 }
 

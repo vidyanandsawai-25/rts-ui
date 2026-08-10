@@ -102,4 +102,55 @@ describe("property-item-guards", () => {
     expect(result.partitionNo).toBe("12.3");
     expect(result.address).toBe("123 Main St. Bldg 4.0");
   });
+
+  it("handles the user's specific API response layout and content", () => {
+    const response = {
+      "success": true,
+      "message": "Search results retrieved successfully",
+      "items": {
+        "results": {
+          "items": [
+            {
+              "propertyId": 3886413,
+              "upicId": "WE2B95",
+              "zoneName": "नौपाडा - कोपरी",
+              "wardName": "WE2",
+              "propertyNo": "95",
+              "partitionNo": "",
+              "oldPropertyNo": null,
+              "citySurveyNo": "CSN005A",
+              "plotNo": null,
+              "wingFlatNo": "2",
+              "categoryName": "Individual",
+              "propertyDescription": "औद्योगिक",
+              "mobile": "9773051119",
+              "propertyHolderName": "The Holder",
+              "occupierName": null,
+              "shopBuildingName": "Tata Motars",
+              "societyName": null,
+              "address": "CHAWL NO 002 ROOM NO 002 , KAILAS GIRI NAGAR SHANKAR MANDIR , BYPASS ROAD MUMBRA THANE",
+              "rv": 1202133,
+              "cv": 259708629768,
+              "totalTax": 96070534454.16,
+              "childUnitCount": null
+            }
+          ],
+          "totalCount": 1,
+          "pageNumber": 1,
+          "pageSize": 10,
+          "totalPages": 1,
+          "hasPrevious": false,
+          "hasNext": false
+        },
+        "totalMatchingProperties": 1
+      },
+      "errors": null,
+      "correlationId": null
+    };
+
+    const normalized = normalizePropertySearchResponse(response);
+    console.log("=== NORMALIZED RESULTS ===", JSON.stringify(normalized, null, 2));
+    expect(normalized.items.length).toBe(1);
+    expect(normalized.items[0].propertyId).toBe(3886413);
+  });
 });

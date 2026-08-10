@@ -260,7 +260,12 @@ export async function filterPropertiesAction(
     activeTab === "kyc" &&
     !!searchCriteria.occupierName?.trim();
 
-  const useLocalPagination = isRangeSearch || isKycNameSearch;
+  const isTopSearch =
+    isSearchActive &&
+    activeTab === "values-dues" &&
+    searchCriteria.rateableValueFilter === "top";
+
+  const useLocalPagination = isRangeSearch || isKycNameSearch || isTopSearch;
 
   const payload = buildPropertySearchPayload(
     selectedStatus,

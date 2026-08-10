@@ -230,4 +230,68 @@ describe("filterPropertiesAction", () => {
     expect(response.results[0].propertyId).toBe(1);
     expect(response.results[1].propertyId).toBe(3);
   });
+
+  it("should request unpaged results and slice them locally for Values & Dues top count search", async () => {
+    const mockResults: SearchResult[] = [
+      {
+        id: "prop-1",
+        propertyId: 1,
+        upicId: "UPIC001",
+        zone: "Z1",
+        ward: "W1",
+        propertyNo: "10",
+        partitionNo: "0",
+        oldPropertyNo: "",
+        citySurveyNo: "",
+        plotNo: "",
+        wingFlatNo: "",
+        propertyCount: 1,
+        category: "Residential",
+        description: "",
+        mobile: "",
+        alternateMobile: "",
+        holderName: "John",
+        holderNameMarathi: "",
+        occupierName: "",
+        occupierNameMarathi: "",
+        shopBuildingName: "",
+        societyName: "",
+        address: "",
+        rv: 1000,
+        cv: null,
+        totalTax: 100,
+        status: "Register Property",
+      },
+    ];
+
+    vi.mocked(searchProperties).mockResolvedValue({
+      items: mockResults,
+      totalCount: 1,
+      pageNumber: 1,
+      pageSize: -1,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
+    const criteria = {
+      ...INITIAL_SEARCH_CRITERIA,
+      valuationMethod: "totalTax",
+      rateableValueFilter: "top",
+      rateableValueFrom: "1",
+    };
+
+    const response = await filterPropertiesAction(null, criteria, true, "values-dues", 1, 10);
+
+    expect(response.error).toBeNull();
+    expect(response.results).toHaveLength(1);
+    expect(response.results[0].propertyId).toBe(1);
+
+    // Verify searchProperties was called with pageSize -1
+    expect(searchProperties).toHaveBeenCalledWith(expect.objectContaining({
+      pageSize: -1,
+      filterType: "top",
+      topCount: 1,
+    }));
+  });
 });
