@@ -41,6 +41,9 @@ export function useRuleBuilder({
   const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? '');
   const [ruleDescription, setRuleDescription] = React.useState(initialRule?.description ?? '');
   const [priority, setPriority] = React.useState<number | undefined>(initialRule?.priority);
+  const [propertyRuleEvaluationMasterId, setPropertyRuleEvaluationMasterId] = React.useState<number | undefined>(
+    initialRule?.propertyRuleEvaluationMasterId
+  );
 
   const [targetFilters, setTargetFilters] = React.useState<TargetFilterState>(
     () => safeParse<TargetFilterState>(initialRule?.targetFiltersJson, {})
@@ -65,11 +68,12 @@ export function useRuleBuilder({
       description: ruleDescription.trim(),
       priority,
       ruleScopeId,
+      propertyRuleEvaluationMasterId,
       rulesList,
       isActive,
       stopProcessing,
     });
-  }, [ruleName, ruleCategory, ruleDescription, priority, ruleScopeId, rulesList, isActive, stopProcessing]);
+  }, [ruleName, ruleCategory, ruleDescription, priority, ruleScopeId, propertyRuleEvaluationMasterId, rulesList, isActive, stopProcessing]);
 
   const currentDataRef = React.useRef(currentData);
   React.useEffect(() => {
@@ -122,12 +126,18 @@ export function useRuleBuilder({
     setIsSaving(true);
 
     try {
+      const firstOverride = rulesList[0]?.effects[0]?.overrideRate;
+      const derivedEvalMasterId = firstOverride !== undefined && !isNaN(Number(firstOverride))
+        ? Number(firstOverride)
+        : undefined;
+
       const payload: RuleItem = {
         id: currentRuleId ?? initialRule?.id,
         ruleName: ruleName.trim(),
         ruleCode,
         isActive,
         ruleScopeId,
+        propertyRuleEvaluationMasterId: propertyRuleEvaluationMasterId ?? derivedEvalMasterId ?? 0,
         conditionsJson: JSON.stringify(
           rulesList.map((block) => {
             const { effect: _effect, ...cleanBlock } = block;
@@ -167,6 +177,7 @@ export function useRuleBuilder({
     isActive, setIsActive,
     stopProcessing, setStopProcessing,
     ruleScopeId, setRuleScopeId,
+    propertyRuleEvaluationMasterId, setPropertyRuleEvaluationMasterId,
     ruleCategory, setRuleCategory,
     ruleDescription, setRuleDescription,
     priority, setPriority,
