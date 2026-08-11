@@ -267,13 +267,24 @@ export async function filterPropertiesAction(
 
   const useLocalPagination = isRangeSearch || isKycNameSearch || isTopSearch;
 
+  let apiPageSize = pageSize;
+  let apiPageNumber: number | undefined = pageNumber;
+  
+  if (isRangeSearch || isKycNameSearch) {
+    apiPageSize = -1;
+    apiPageNumber = undefined;
+  } else if (isTopSearch) {
+    apiPageSize = parsePositiveInteger(searchCriteria.rateableValueFrom || "") ?? 1;
+    apiPageNumber = undefined;
+  }
+
   const payload = buildPropertySearchPayload(
     selectedStatus,
     searchCriteria,
     isSearchActive,
     activeTab,
-    useLocalPagination ? undefined : pageNumber,
-    useLocalPagination ? -1 : pageSize
+    apiPageNumber,
+    apiPageSize
   );
 
   try {

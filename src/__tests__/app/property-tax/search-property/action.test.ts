@@ -287,9 +287,9 @@ describe("filterPropertiesAction", () => {
     expect(response.results).toHaveLength(1);
     expect(response.results[0].propertyId).toBe(1);
 
-    // Verify searchProperties was called with pageSize -1
+    // Verify searchProperties was called with pageSize matching topCount
     expect(searchProperties).toHaveBeenCalledWith(expect.objectContaining({
-      pageSize: -1,
+      pageSize: 1,
       filterType: "top",
       topCount: 1,
     }));

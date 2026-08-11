@@ -133,7 +133,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
               let prevBgId = null;
               if (finalTargetType === 'Background') {
                 const prevBg = images.find((i) => i.name === 'Background' || i.isBackgroundImage);
-                if (prevBg) {
+                if (prevBg && !isNaN(Number(prevBg.id))) {
                   prevBgId = prevBg.id;
                   await updateUlbImageTypeAction(Number(prevBg.id), 'BackgroundLibrary', prevBg.documentId || 0);
                 }
@@ -149,7 +149,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
               }
               toast.success('Image uploaded successfully', { id: toastId });
             } else {
-              if (!replaceId) throw new Error('Replace target id missing');
+              if (!replaceId || isNaN(Number(replaceId))) throw new Error('Replace target id missing or invalid');
               const target = images.find((i) => i.id === replaceId);
               if (!target) throw new Error('Target image not found');
 

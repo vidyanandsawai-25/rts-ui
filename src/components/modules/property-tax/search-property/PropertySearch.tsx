@@ -49,6 +49,7 @@ export function PropertySearch({
   const [isPending, startTransition] = useTransition();
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [statusClearedByTab, setStatusClearedByTab] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const [prevActiveTabProp, setPrevActiveTabProp] = React.useState(activeTabProp);
 
@@ -60,6 +61,8 @@ export function PropertySearch({
   const displayedStatus =
     statusClearedByTab && selectedStatus ? null : selectedStatus;
   const resultsLoading = awaitingResults && isPending;
+  const displayedResults = (isPending && isResetting) ? [] : results;
+  const displayedTotal = (isPending && isResetting) ? 0 : totalCount;
 
   const {
     updateSearchCriteria,
@@ -73,6 +76,7 @@ export function PropertySearch({
   const handleStatusFilter = useCallback(
     (status: PropertyStatus) => {
       setStatusClearedByTab(false);
+      setIsResetting(false);
       setAwaitingResults(true);
       if (displayedStatus === status) {
         updateStatus(null);
@@ -85,6 +89,7 @@ export function PropertySearch({
 
   const handleSearch = useCallback(
     (next: SearchCriteria, tab: SearchTab) => {
+      setIsResetting(false);
       setAwaitingResults(true);
       updateSearchCriteria(next, tab, displayedStatus);
     },
@@ -92,7 +97,8 @@ export function PropertySearch({
   );
 
   const handleReset = useCallback(() => {
-    setAwaitingResults(true);
+    setIsResetting(true);
+    setAwaitingResults(false);
     resetSearch(activeTab);
   }, [activeTab, resetSearch]);
 
@@ -172,8 +178,8 @@ export function PropertySearch({
             <PropertySearchResults
               selectedStatus={displayedStatus}
               isSearchActive={isSearchActive}
-              results={results}
-              totalCount={totalCount}
+              results={displayedResults}
+              totalCount={displayedTotal}
               pageNumber={pageNumber}
               pageSize={pageSize}
               onPageChange={updatePage}

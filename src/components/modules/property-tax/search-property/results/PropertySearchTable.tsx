@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
+import { Loader2 } from "lucide-react";
 import { WRAP_HEADER, WRAP_CELL } from "./result-styles";
 import { PropertySearchPagination } from "./PropertySearchPagination";
 import type { SearchResult } from "@/types/property-search";
@@ -83,8 +84,11 @@ export function PropertySearchTable({
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={columns.length + 1} className="py-10 text-center text-gray-500">
-                    {tCommon("actions.loading")}
+                  <td colSpan={columns.length + 1} className="py-20 text-center text-gray-500">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <Loader2 className="w-8 h-8 animate-spin text-[#004c8c]" />
+                      <span className="text-sm font-medium">{tCommon("actions.loading")}</span>
+                    </div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
