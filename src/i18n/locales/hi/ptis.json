@@ -580,6 +580,7 @@
       "fullChange": "पूरा बदलाव:",
       "cv": "सीवी",
       "rv": "आरवी",
+      "alv": "एएलवी",
       "m2Unit": "वर्ग मीटर",
       "oldTotalRv": "[पुराना] कुल आर.वी.",
       "oldTotalAlv": "[पुराना] कुल ए.एल.वी.",
@@ -664,7 +665,13 @@
       "description": "क्या आप निश्चित रूप से बिल वितरित करना चाहते हैं?",
       "confirmText": "हाँ",
       "cancelText": "नहीं"
-    }
+    },
+    "qcStatus": {
+      "label": "क्यूसी स्थिति",
+      "placeholder": "क्यूसी स्थिति"
+    },
+    "qcDoneLabel": "क्यूसी पूर्ण",
+    "trackStatus": "स्थिति ट्रैक करें"
   },
   "footerActions": {
     "R_SAVE": "सहेजें",

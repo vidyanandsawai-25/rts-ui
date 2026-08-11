@@ -47,31 +47,36 @@ export async function ValuationSummaryFooter({
   const areaUnit = formatAreaUnit(comparisonData?.area?.unit);
   const oldArea = comparisonData?.area ? comparisonData.area.old : 0;
   const newArea = comparisonData?.area ? comparisonData.area.new : 0;
-  const areaDiff = comparisonData?.area ? comparisonData.area.change : (newArea - oldArea);
+  const areaDiff = comparisonData?.area ? comparisonData.area.change : newArea - oldArea;
 
   // 2. CHANGE OF USE DATA
   const oldUseType = comparisonData?.changeOfUse?.oldUse ?? 'N/A';
   const newUseType = comparisonData?.changeOfUse?.newUse ?? 'Mix';
-  const hasChangedUse = comparisonData?.changeOfUse != null
-    ? comparisonData.changeOfUse.hasChanged
-    : (oldUseType !== newUseType && oldUseType !== 'N/A');
+  const hasChangedUse =
+    comparisonData?.changeOfUse != null
+      ? comparisonData.changeOfUse.hasChanged
+      : oldUseType !== newUseType && oldUseType !== 'N/A';
 
   // 3. BADGE FALLBACK CALCULATIONS (when comparisonData is absent)
   const oldValRVBadge = badges?.find(
-    item => item.label === tVal('oldTotalRv') || item.label === tVal('oldTotalCv')
+    (item) => item.label === tVal('oldTotalRv') || item.label === tVal('oldTotalCv')
   );
   const newValRVBadge = badges?.find(
-    item => item.label === tVal('totalRv') || item.label === tVal('totalCv')
+    (item) => item.label === tVal('totalRv') || item.label === tVal('totalCv')
   );
-  const oldValALVBadge = badges?.find(item => item.label === tVal('oldTotalAlv'));
-  const newValALVBadge = badges?.find(item => item.label === tVal('totalAlv'));
-  const oldTaxBadge = badges?.find(item => item.label === tVal('oldTotalTax'));
-  const newTaxBadge = badges?.find(item => item.label === tVal('totalTax'));
+  const oldValALVBadge = badges?.find((item) => item.label === tVal('oldTotalAlv'));
+  const newValALVBadge = badges?.find((item) => item.label === tVal('totalAlv'));
+  const oldTaxBadge = badges?.find((item) => item.label === tVal('oldTotalTax'));
+  const newTaxBadge = badges?.find((item) => item.label === tVal('totalTax'));
 
   // 4. ALV DATA
-  const oldValALV = comparisonData?.alv ? comparisonData.alv.old : Number(oldValALVBadge?.value ?? 0);
-  const newValALV = comparisonData?.alv ? comparisonData.alv.new : Number(newValALVBadge?.value ?? 0);
-  const valDiffALV = comparisonData?.alv ? comparisonData.alv.change : (newValALV - oldValALV);
+  const oldValALV = comparisonData?.alv
+    ? comparisonData.alv.old
+    : Number(oldValALVBadge?.value ?? 0);
+  const newValALV = comparisonData?.alv
+    ? comparisonData.alv.new
+    : Number(newValALVBadge?.value ?? 0);
+  const valDiffALV = comparisonData?.alv ? comparisonData.alv.change : newValALV - oldValALV;
 
   // 5. RV/CV DATA
   const isCV = oldValRVBadge?.label === tVal('oldTotalCv') || Boolean(comparisonData?.cv);
@@ -79,12 +84,12 @@ export async function ValuationSummaryFooter({
   const rvOrCvData = comparisonData?.rv || comparisonData?.cv;
   const oldValRV = rvOrCvData ? rvOrCvData.old : Number(oldValRVBadge?.value ?? 0);
   const newValRV = rvOrCvData ? rvOrCvData.new : Number(newValRVBadge?.value ?? 0);
-  const valDiffRV = rvOrCvData ? rvOrCvData.change : (newValRV - oldValRV);
+  const valDiffRV = rvOrCvData ? rvOrCvData.change : newValRV - oldValRV;
 
   // 6. TAX DATA
   const oldTax = comparisonData?.tax ? comparisonData.tax.old : Number(oldTaxBadge?.value ?? 0);
   const newTax = comparisonData?.tax ? comparisonData.tax.new : Number(newTaxBadge?.value ?? 0);
-  const taxDiff = comparisonData?.tax ? comparisonData.tax.change : (newTax - oldTax);
+  const taxDiff = comparisonData?.tax ? comparisonData.tax.change : newTax - oldTax;
 
   // ALV Card is hidden unless explicitly present with non-zero values in comparison data
   const hasALVCard = Boolean(
@@ -100,9 +105,14 @@ export async function ValuationSummaryFooter({
             <Expand className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-blue-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('area')}</span>
+            <span className="text-blue-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">
+              {tVal('area')}
+            </span>
             <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
-              <Tooltip content={`Old Area: ${oldArea.toLocaleString('en-IN')} ${areaUnit}`} placement="top">
+              <Tooltip
+                content={`Old Area: ${oldArea.toLocaleString('en-IN')} ${areaUnit}`}
+                placement="top"
+              >
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
                   <span className="font-bold text-gray-800">
@@ -110,7 +120,10 @@ export async function ValuationSummaryFooter({
                   </span>
                 </span>
               </Tooltip>
-              <Tooltip content={`New Area: ${newArea.toLocaleString('en-IN')} ${areaUnit}`} placement="top">
+              <Tooltip
+                content={`New Area: ${newArea.toLocaleString('en-IN')} ${areaUnit}`}
+                placement="top"
+              >
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('newLabel')}{' '}
                   <span className="font-bold text-blue-600">
@@ -134,18 +147,18 @@ export async function ValuationSummaryFooter({
             <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-purple-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('changeOfUse')}</span>
+            <span className="text-purple-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">
+              {tVal('changeOfUse')}
+            </span>
             <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
               <Tooltip content={`Old Use: ${oldUseType}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
-                  {tVal('oldLabel')}{' '}
-                  <span className="font-bold text-gray-800">{oldUseType}</span>
+                  {tVal('oldLabel')} <span className="font-bold text-gray-800">{oldUseType}</span>
                 </span>
               </Tooltip>
               <Tooltip content={`New Use: ${newUseType}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
-                  {tVal('newLabel')}{' '}
-                  <span className="font-bold text-purple-600">{newUseType}</span>
+                  {tVal('newLabel')} <span className="font-bold text-purple-600">{newUseType}</span>
                 </span>
               </Tooltip>
             </div>
@@ -153,10 +166,13 @@ export async function ValuationSummaryFooter({
         </div>
         <div className="border-l border-gray-200 h-7 sm:h-8 mx-0.5 shrink-0"></div>
         <div className="shrink-0">
-          <span className={`text-[9px] sm:text-[10px] xl:text-[10.5px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md uppercase tracking-wider leading-none border shrink-0 ${hasChangedUse
-              ? 'bg-amber-50 text-amber-700 border-amber-200'
-              : 'bg-gray-100 text-gray-600 border-gray-200'
-            }`}>
+          <span
+            className={`text-[9px] sm:text-[10px] xl:text-[10.5px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md uppercase tracking-wider leading-none border shrink-0 ${
+              hasChangedUse
+                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                : 'bg-gray-100 text-gray-600 border-gray-200'
+            }`}
+          >
             {hasChangedUse ? tVal('yes') : tVal('no')}
           </span>
         </div>
@@ -170,18 +186,30 @@ export async function ValuationSummaryFooter({
               <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
             </div>
             <div className="flex flex-col min-w-0 leading-tight">
-              <span className="text-indigo-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">ALV</span>
+              <span className="text-indigo-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">
+                {tVal('alv')}
+              </span>
               <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
-                <Tooltip content={`Old ALV: ${formatCurrencyValue(oldValALV)}`} placement="top">
+                <Tooltip
+                  content={`Old ${tVal('alv')}: ${formatCurrencyValue(oldValALV)}`}
+                  placement="top"
+                >
                   <span className="whitespace-nowrap cursor-help">
                     {tVal('oldLabel')}{' '}
-                    <span className="font-bold text-gray-800">{formatCompactCurrency(oldValALV).compact}</span>
+                    <span className="font-bold text-gray-800">
+                      {formatCompactCurrency(oldValALV).compact}
+                    </span>
                   </span>
                 </Tooltip>
-                <Tooltip content={`New ALV: ${formatCurrencyValue(newValALV)}`} placement="top">
+                <Tooltip
+                  content={`New ${tVal('alv')}: ${formatCurrencyValue(newValALV)}`}
+                  placement="top"
+                >
                   <span className="whitespace-nowrap cursor-help">
                     {tVal('newLabel')}{' '}
-                    <span className="font-bold text-indigo-600">{formatCompactCurrency(newValALV).compact}</span>
+                    <span className="font-bold text-indigo-600">
+                      {formatCompactCurrency(newValALV).compact}
+                    </span>
                   </span>
                 </Tooltip>
               </div>
@@ -201,18 +229,30 @@ export async function ValuationSummaryFooter({
             <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-orange-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{valLabel}</span>
+            <span className="text-orange-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">
+              {valLabel}
+            </span>
             <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
-              <Tooltip content={`Old ${valLabel}: ${formatCurrencyValue(oldValRV)}`} placement="top">
+              <Tooltip
+                content={`Old ${valLabel}: ${formatCurrencyValue(oldValRV)}`}
+                placement="top"
+              >
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
-                  <span className="font-bold text-gray-800">{formatCompactCurrency(oldValRV).compact}</span>
+                  <span className="font-bold text-gray-800">
+                    {formatCompactCurrency(oldValRV).compact}
+                  </span>
                 </span>
               </Tooltip>
-              <Tooltip content={`New ${valLabel}: ${formatCurrencyValue(newValRV)}`} placement="top">
+              <Tooltip
+                content={`New ${valLabel}: ${formatCurrencyValue(newValRV)}`}
+                placement="top"
+              >
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('newLabel')}{' '}
-                  <span className="font-bold text-orange-600">{formatCompactCurrency(newValRV).compact}</span>
+                  <span className="font-bold text-orange-600">
+                    {formatCompactCurrency(newValRV).compact}
+                  </span>
                 </span>
               </Tooltip>
             </div>
@@ -231,18 +271,24 @@ export async function ValuationSummaryFooter({
             <Calculator className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
           </div>
           <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-emerald-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">{tVal('tax')}</span>
+            <span className="text-emerald-600 font-extrabold text-[11px] sm:text-[12px] xl:text-[13px] whitespace-nowrap mb-0.5">
+              {tVal('tax')}
+            </span>
             <div className="flex flex-col text-[9.5px] sm:text-[10.5px] xl:text-[11px] text-gray-500 font-medium leading-snug whitespace-nowrap">
               <Tooltip content={`Old Tax: ${formatCurrencyValue(oldTax)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('oldLabel')}{' '}
-                  <span className="font-bold text-gray-800">{formatCompactCurrency(oldTax).compact}</span>
+                  <span className="font-bold text-gray-800">
+                    {formatCompactCurrency(oldTax).compact}
+                  </span>
                 </span>
               </Tooltip>
               <Tooltip content={`New Tax: ${formatCurrencyValue(newTax)}`} placement="top">
                 <span className="whitespace-nowrap cursor-help">
                   {tVal('newLabel')}{' '}
-                  <span className="font-bold text-emerald-600">{formatCompactCurrency(newTax).compact}</span>
+                  <span className="font-bold text-emerald-600">
+                    {formatCompactCurrency(newTax).compact}
+                  </span>
                 </span>
               </Tooltip>
             </div>

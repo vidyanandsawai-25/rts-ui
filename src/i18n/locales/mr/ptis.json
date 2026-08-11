@@ -581,6 +581,7 @@
       "fullChange": "पूर्ण बदल:",
       "cv": "सीव्ही",
       "rv": "आरव्ही",
+      "alv": "एएलव्ही",
       "m2Unit": "चौ.मी.",
       "oldTotalRv": "[जुने] एकूण आर.व्ही.",
       "oldTotalAlv": "[जुने] एकूण ए.एल.व्ही.",
@@ -666,7 +667,12 @@
       "confirmText": "होय",
       "cancelText": "नाही"
     },
-    "qcDoneLabel": "QC Done"
+    "qcStatus": {
+      "label": "क्यूसी स्थिती",
+      "placeholder": "क्यूसी स्थिती"
+    },
+    "qcDoneLabel": "क्यूसी पूर्ण",
+    "trackStatus": "स्थिती ट्रॅक करा"
   },
   "footerActions": {
     "R_SAVE": "जतन करा",

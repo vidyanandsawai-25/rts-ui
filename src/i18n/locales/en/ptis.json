@@ -577,6 +577,7 @@
       "m2Unit": "m²",
       "cv": "CV",
       "rv": "RV",
+      "alv": "ALV",
       "oldTotalRv": "[Old] Total RV",
       "oldTotalAlv": "[Old] Total ALV",
       "oldTotalCv": "[Old] Total CV",
@@ -661,7 +662,12 @@
       "confirmText": "Yes",
       "cancelText": "No"
     },
-    "qcDoneLabel": "QC Done"
+    "qcStatus": {
+      "label": "QC Status",
+      "placeholder": "QC Status"
+    },
+    "qcDoneLabel": "QC Done",
+    "trackStatus": "Track Status"
   },
   "footerActions": {
     "R_SAVE": "Save",
