@@ -70,7 +70,6 @@ export default function middleware(request: NextRequest) {
   );
   const isLoggedIn = sessionState === 'active';
   const sessionExpired = sessionState === 'expired' || hasLoggedInCookie;
-  const isSessionExpiredOrWasLoggedIn = sessionExpired;
 
   const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
   const sessionExpiredLogin =
