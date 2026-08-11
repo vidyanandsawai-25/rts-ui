@@ -297,3 +297,24 @@ export async function rejectApprovalApplication(
   assertApprovalSuccess(response.data, `Failed to reject application ${id}`);
   return response.data;
 }
+
+/**
+ * 10. PUT /api/RTSApplicationApproval/{applicationId}/Revert-Application
+ * Returns an application to the citizen from the current approval stage.
+ */
+export async function revertApprovalApplication(
+  id: number | string,
+  payload: RtsApplicationApprovalActionPayload
+): Promise<RtsApplicationApprovalDecisionResponse> {
+  const response = await apiClient.put<RtsApplicationApprovalDecisionResponse>(
+    `/RTSApplicationApproval/${encodeURIComponent(String(id))}/Revert-Application`,
+    payload
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.error || response.data?.message || `Failed to revert application ${id}`);
+  }
+
+  assertApprovalSuccess(response.data, `Failed to revert application ${id}`);
+  return response.data;
+}

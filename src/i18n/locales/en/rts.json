@@ -506,6 +506,7 @@
       "approveApplication": "Approve Application",
       "rejectApplication": "Reject Application",
       "returnToCitizen": "Return to Citizen",
+      "revertToCitizen": "Revert to Citizen",
       "recordPayment": "Record Payment",
       "viewNoteSheet": "View Note Sheet",
       "actionsUnavailable": "This approval action will be available when the decision API is integrated.",

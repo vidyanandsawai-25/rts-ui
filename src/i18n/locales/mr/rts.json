@@ -509,6 +509,7 @@
       "approveApplication": "Approve Application",
       "rejectApplication": "Reject Application",
       "returnToCitizen": "Return to Citizen",
+      "revertToCitizen": "नागरिकाकडे परत पाठवा",
       "recordPayment": "Record Payment",
       "viewNoteSheet": "नोट शीट पहा",
       "actionsUnavailable": "This approval action will be available when the decision API is integrated.",

@@ -13,6 +13,7 @@ import {
   getApprovalApplicationStages,
   getApprovalApplicationVerification,
   rejectApprovalApplication,
+  revertApprovalApplication,
   verifyAndCorrectApproval,
   verifyAndSendToApprove,
   verifyApprovalDocuments,
@@ -219,6 +220,18 @@ export async function rejectApprovalApplicationAction(
     remark,
     (payload) => rejectApprovalApplication(applicationId, payload),
     'Rejected'
+  );
+}
+
+export async function revertApprovalApplicationAction(
+  applicationId: number,
+  remark: string
+): Promise<RtsApplicationApprovalActionResult> {
+  return submitApprovalDecision(
+    applicationId,
+    remark,
+    (payload) => revertApprovalApplication(applicationId, payload),
+    'Reverted'
   );
 }
 

@@ -33,6 +33,7 @@ import {
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import {
   rejectApprovalApplicationAction,
+  revertApprovalApplicationAction,
   verifyAndCorrectApprovalAction,
   verifyAndSendToApproveAction,
   verifyApprovalDocumentsAction,
@@ -127,14 +128,14 @@ function createFieldUpdatePayload(
 
 const ACTIONS: Array<{
   key: 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn' | 'canPay' | 'canViewNoteSheet';
-  labelKey: 'verifyDocuments' | 'approveApplication' | 'rejectApplication' | 'returnToCitizen' | 'recordPayment' | 'viewNoteSheet';
+  labelKey: 'verifyDocuments' | 'approveApplication' | 'rejectApplication' | 'revertToCitizen' | 'recordPayment' | 'viewNoteSheet';
   icon: typeof Shield;
   variant: ButtonVariant;
 }> = [
     { key: 'canVerifyDocument', labelKey: 'verifyDocuments', icon: CheckCircle2, variant: 'primary' },
     { key: 'canApprove', labelKey: 'approveApplication', icon: Check, variant: 'success' },
     { key: 'canReject', labelKey: 'rejectApplication', icon: XCircle, variant: 'danger' },
-    { key: 'canReturn', labelKey: 'returnToCitizen', icon: RotateCcw, variant: 'secondary' },
+    { key: 'canReturn', labelKey: 'revertToCitizen', icon: RotateCcw, variant: 'secondary' },
     { key: 'canPay', labelKey: 'recordPayment', icon: Shield, variant: 'primary' },
     { key: 'canViewNoteSheet', labelKey: 'viewNoteSheet', icon: FileText, variant: 'secondary' },
   ];
@@ -233,7 +234,7 @@ export default function RtsApplicationProcessDrawer({
     toast.info(t('actionsUnavailable'));
   };
 
-  const submitDecision = (actionKey: 'canVerifyDocument' | 'canApprove' | 'canReject') => {
+  const submitDecision = (actionKey: 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn') => {
     if (!applicationId) return;
 
     if (!officerRemark.trim()) {
@@ -246,7 +247,9 @@ export default function RtsApplicationProcessDrawer({
         ? await verifyApprovalDocumentsAction(applicationId, officerRemark)
         : actionKey === 'canApprove'
           ? await verifyAndSendToApproveAction(applicationId, officerRemark)
-          : await rejectApprovalApplicationAction(applicationId, officerRemark);
+          : actionKey === 'canReject'
+            ? await rejectApprovalApplicationAction(applicationId, officerRemark)
+            : await revertApprovalApplicationAction(applicationId, officerRemark);
 
       if (!result.success) {
         toast.error(result.message || t('actionFailed'));
@@ -259,7 +262,9 @@ export default function RtsApplicationProcessDrawer({
             ? t('documentsVerified')
             : actionKey === 'canApprove'
               ? t('applicationSentForApproval')
-              : t('rejectApplication')
+              : actionKey === 'canReject'
+                ? t('rejectApplication')
+                : t('revertToCitizen')
         )
       );
       setOfficerRemark('');
@@ -324,7 +329,8 @@ export default function RtsApplicationProcessDrawer({
                   if (
                     action.key === 'canVerifyDocument' ||
                     action.key === 'canApprove' ||
-                    action.key === 'canReject'
+                    action.key === 'canReject' ||
+                    action.key === 'canReturn'
                   ) {
                     submitDecision(action.key);
                     return;
