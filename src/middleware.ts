@@ -94,7 +94,6 @@ export default function middleware(request: NextRequest) {
       return response;
     }
 
-<<<<<<< HEAD
     const hasCitizenSession = request.cookies.has('rts_session');
     if (isCitizenLogin) {
       if (hasCitizenSession) {
@@ -118,18 +117,6 @@ export default function middleware(request: NextRequest) {
     if (!isLoginRoute && !isLoggedIn) {
       return redirectToLogin(request, locale, sessionExpired);
     }
-=======
-  if (pathWithoutLocale === '/') {
-    if (!isLoggedIn) {
-      return redirectToLogin(request, locale, isSessionExpiredOrWasLoggedIn);
-    }
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
-  }
-
-  if (!isLoginRoute && !isLoggedIn) {
-    // Navigating to any protected route without active session should trigger sessionExpired error message on login
-    return redirectToLogin(request, locale, true);
->>>>>>> a2d4522e1937412d0e3ff2ac2e87e54a54711a27
   }
 
   // 3. Determine if it's a home or auth-related layout page
