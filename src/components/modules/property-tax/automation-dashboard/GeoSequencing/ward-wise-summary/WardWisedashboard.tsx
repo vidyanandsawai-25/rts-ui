@@ -1,28 +1,34 @@
- 
+
 'use client';
 
 import { useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Download, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/common/ActionButton';
+import { ExportDropdown } from '../ExportDropdown';
 import { WardWiseSummaryCards } from './WardWiseSummaryCards';
 import {
     getGeoSequencingSharedColumns,
     getGeoSequencingSharedHeaderRows,
+    getPropertyTypeIdParam,
     GeoSequencingData
 } from '../CommonGeoSequencingColumns';
 import { GeoSequencingWardWiseItems, GeoSequencingWard } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { AutomationTable } from '@/components/common/AutomationTable';
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 interface GeoSequencingWardWiseDashboardProps {
     zoneId: string;
     summaryData?: GeoSequencingWardWiseItems | null;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSequencingWardWiseDashboardProps) {
+export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDescriptions = [] }: GeoSequencingWardWiseDashboardProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const locale = useLocale();
@@ -62,7 +68,30 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
         router.push(`${window.location.pathname}?${currentParams.toString()}`);
     };
 
-    const columns = useMemo(() => getGeoSequencingSharedColumns(t, 'ward'), [t]);
+    const zoneNo = searchParams.get('zoneNo');
+    const columns = useMemo(() => getGeoSequencingSharedColumns(
+        t,
+        'ward',
+        (_wardNo, row) => {
+            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+            const pathId = row.wardId ? row.wardId : _wardNo.split(' - ')[0];
+            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+            const query = `?stage=geoSequencing&source=ward&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
+        },
+        undefined,
+        (row, columnKey) => {
+            if (row.isTotal || !row.division) return;
+            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+            const pathId = row.wardId ? row.wardId : row.division.split(' - ')[0];
+            const zoneNoParam = zoneNo ? `&zoneNo=${zoneNo}` : '';
+
+            const typeIdParam = getPropertyTypeIdParam(columnKey);
+
+            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+            router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
+        }
+    ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
     const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward'), [t]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
@@ -75,6 +104,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
         const mappedWards: GeoSequencingData[] = summaryData.wardData.map((ward: GeoSequencingWard, index: number) => ({
             sr: startSr + index + 1,
             division: ward.wardNo,
+            wardId: ward.wardId,
             geoStruct: ward.geoSequencedProperties?.structureCount ?? 0,
             geoUnit: ward.geoSequencedProperties?.unitCount ?? 0,
             propRes: ward.propertyTypeBreakdown?.residential ?? 0,
@@ -114,7 +144,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                 inprocessStruct: total.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
                 inprocessUnit: total.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
             });
-        }   
+        }
         return mappedWards;
     }, [summaryData, t]);
 
@@ -125,29 +155,46 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
             totalUnits: summaryData.totalRow.geoSequencedProperties?.unitCount ?? 0,
             assessed: summaryData.totalRow.assessmentStatusBreakdown?.assessed?.structureCount ?? 0,
             unassessed: summaryData.totalRow.assessmentStatusBreakdown?.unassessed?.structureCount ?? 0,
-            formattedStage : formattedStage
+            formattedStage: formattedStage
         };
     }, [summaryData, formattedStage]);
 
+    const exportConfig = useMemo<ExportConfig<GeoSequencingData>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);
+
+        return {
+            fileName: 'Geo_Sequencing_Ward_Wise_Report',
+            reportTitle: `Property Tax Data Center - Ward-wise Summary (${zoneNo ? `${zoneNo} - ` : ''}${summaryData?.zoneName || ''})`,
+            reportSubtitle: `Workflow Stage: Geo-sequencing - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData
+        };
+    }, [tableData, zoneNo, summaryData, columns, headerRows]);
+
     return (
-        <div className="flex flex-col h-full gap-3 p-3">
+        <div className="w-full h-[calc(100vh-140px)] flex flex-col p-4 bg-slate-50 gap-4 overflow-hidden">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#f8f9fe] px-4 py-3 rounded-lg shadow-sm border border-indigo-100/60">
-                <Link
-                    href={backUrl}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors shadow-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    {t('geoSequencing.buttons.backToDivisions')}
-                </Link>
+                <div className="flex-1 flex justify-start">
+                    <Link
+                        href={backUrl}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors shadow-sm"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        {t('geoSequencing.buttons.backToDivisions')}
+                    </Link>
+                </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex-none flex items-center justify-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md">
                         <MapPin className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-[16px] font-bold text-slate-800">
-                            {zoneId} {summaryData?.zoneName ? `- ${summaryData.zoneName}` : ''} - {t('geoSequencing.wardWiseSummary')}
+                            {zoneNo ? `${zoneNo} - ` : ''}
+                            {summaryData?.zoneName ? summaryData.zoneName : ''} - {t('geoSequencing.wardWiseSummary')}
                         </h1>
                         <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
                             <span>{t('geoSequencing.stage')} {formattedStage}</span>
@@ -156,16 +203,17 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                     </div>
                 </div>
 
-                <Button variant="secondary" size="sm" icon={Download} className="bg-white border-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-[13px]">
-                    {t('geoSequencing.buttons.export')}
-                </Button>
+                <div className="flex-1 flex items-center justify-end gap-3">
+                    <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                    <ExportDropdown config={exportConfig} />
+                </div>
             </div>
 
             {/* Summary Cards */}
             <WardWiseSummaryCards data={summaryCardsData} />
 
             {/* Ward-wise Table */}
-            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1">              
+            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1">
                 <div className="flex-1 p-0 overflow-auto max-h-[70vh] transition-all duration-300 border-t border-slate-200 [&_thead>tr:first-child]:bg-gradient-to-r [&_thead>tr:first-child]:from-indigo-100 [&_thead>tr:first-child]:to-purple-100 [&_thead>tr:first-child]:shadow-sm [&_thead>tr:nth-child(2)]:bg-gradient-to-r [&_thead>tr:nth-child(2)]:from-indigo-50 [&_thead>tr:nth-child(2)]:to-purple-50 [&_th]:border [&_th]:border-slate-300 [&_td]:border [&_td]:border-slate-300">
                     <AutomationTable<GeoSequencingData>
                         data={tableData}
@@ -174,8 +222,8 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                         containerClassName="h-full"
                         tableClassName="w-full border-collapse text-xs border border-slate-300"
                         theadClassName="sticky top-0 z-20 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)]"
-                        maxBodyHeightClassName="max-h-none"                       
-                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 cursor-pointer"}
+                        maxBodyHeightClassName="max-h-none"
+                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200"}
                         loading={false}
                         totalCount={totalCount}
                         pageNumber={pageNumber}
@@ -186,12 +234,6 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData }: GeoSeque
                         paginationConfig={{
                             enabled: true,
                             showPageSizeSelector: true
-                        }}
-                        onRowClick={(row) => {
-                            if (row.isTotal || !row.division) return;
-                            const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                            const query = `?stage=geoSequencing&source=ward&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                            router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
                         }}
                     />
                 </div>

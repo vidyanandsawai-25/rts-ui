@@ -32,7 +32,6 @@ export function useGstMasterForm({ initialData }: UseGstMasterFormProps) {
   } = useGstMasterFormState({ initialData });
 
   const { validate, showError } = useGstMasterFormValidation({
-    isEdit,
     submittedOnce,
     touched,
     errors,

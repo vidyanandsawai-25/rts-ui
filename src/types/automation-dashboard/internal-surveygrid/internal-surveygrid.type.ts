@@ -19,6 +19,7 @@ export interface PropertyTypeProp {
 export interface InternalSurveyGridData {
   divisionId: number | null;
   divisionName: string;
+  zoneNo: string;
   geoSequencingProperties: StructureUnitProp;
   surveyProperties: StructureUnitProp;
   propertyType: PropertyTypeProp;
@@ -37,7 +38,7 @@ export interface InternalSurveyGridItems {
 export interface InternalSurveyGridResponse {
   success: boolean;
   message: string;
-  items: InternalSurveyGridItems | null;
+  items: InternalSurveyGridItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }
@@ -57,6 +58,7 @@ export interface InternalSurveyWardWiseData {
 
 export interface InternalSurveyWardWiseItems {
   zoneId: number;
+  zoneNo?: string;
   zoneName: string;
   pageNumber: number;
   pageSize: number;
@@ -68,7 +70,7 @@ export interface InternalSurveyWardWiseItems {
 export interface InternalSurveyWardWiseResponse {
   success: boolean;
   message: string;
-  items: InternalSurveyWardWiseItems | null;
+  items: InternalSurveyWardWiseItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }

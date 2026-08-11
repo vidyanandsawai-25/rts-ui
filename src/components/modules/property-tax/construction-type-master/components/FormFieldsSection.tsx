@@ -22,7 +22,9 @@ export const FormFieldsSection = ({
   errors,
   showError,
   t,
-}: FormFieldsSectionProps) => {
+  isActive = true,
+  isEdit = false,
+}: FormFieldsSectionProps & { isActive?: boolean; isEdit?: boolean }) => {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
@@ -33,6 +35,7 @@ export const FormFieldsSection = ({
         value={formData.constructionCode}
         onChange={handleChange}
         onBlur={handleBlur}
+        disabled={!isActive}
         fullWidth
         className="text-gray-700"
       />
@@ -49,6 +52,7 @@ export const FormFieldsSection = ({
         value={formData.description}
         onChange={handleChange}
         onBlur={handleBlur}
+        disabled={!isActive}
         fullWidth
         className="text-gray-700"
       />
@@ -61,10 +65,11 @@ export const FormFieldsSection = ({
         name="searchSequence"
         label={t("form.fields.searchSequence.label")}
         type="number"
-        min={0}
+        min={1}
         value={searchSequenceValue}
         onChange={handleChange}
         onBlur={handleBlur}
+        disabled={!isActive || !isEdit}
         fullWidth
         className="text-gray-700"
       />

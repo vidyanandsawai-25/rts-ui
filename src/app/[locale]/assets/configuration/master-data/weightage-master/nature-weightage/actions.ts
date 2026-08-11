@@ -15,6 +15,7 @@ import {
   bulkUpdateNatureFactorCVMaster,
 } from "@/lib/api/asset-masters/natureofbuilding-cv-weightageMaster.service";
 import { ApiError } from "@/lib/utils/api";
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import { createLogger } from "@/lib/utils/server-logger";
 import {
   NatureFactorCVMaster,
@@ -126,14 +127,14 @@ export async function updateNatureFactorCVMasterAction(
       const t = await getTranslations('common');
       return {
         success: false,
-        message: error.responseText || t('errors.serverError'),
+        message: cleanErrorMessage(error.responseText || error.message, t('errors.serverError')),
         statusCode: error.statusCode,
       };
     }
     const t = await getTranslations('common');
     return {
       success: false,
-      message: error instanceof Error ? error.message : t('errors.generic'),
+      message: cleanErrorMessage(error instanceof Error ? error.message : t('errors.generic'), t('errors.generic')),
       statusCode: 500,
     };
   }
@@ -162,7 +163,7 @@ export async function createNatureFactorCVMasterAction(
       return { success: true, data: response.data };
     } else {
       const t = await getTranslations('natureFactorCVMaster');
-      return { success: false, message: response.error || t('errors.createFailed'), statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response.error, t('errors.createFailed')), statusCode: 500 };
     }
   } catch (error: unknown) {
     const logger = createLogger('createNatureFactorCVMaster');
@@ -171,14 +172,14 @@ export async function createNatureFactorCVMasterAction(
       const t = await getTranslations('common');
       return {
         success: false,
-        message: error.responseText || t('errors.serverError'),
+        message: cleanErrorMessage(error.responseText || error.message, t('errors.serverError')),
         statusCode: error.statusCode,
       };
     }
     const t = await getTranslations('common');
     return {
       success: false,
-      message: error instanceof Error ? error.message : t('errors.generic'),
+      message: cleanErrorMessage(error instanceof Error ? error.message : t('errors.generic'), t('errors.generic')),
       statusCode: 500,
     };
   }
@@ -207,7 +208,7 @@ export async function bulkCreateNatureFactorCVMasterAction(
       return { success: true, data: response.data };
     } else {
       const t = await getTranslations('natureFactorCVMaster');
-      return { success: false, message: response?.error || t('errors.bulkCreateFailed'), statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response?.error, t('errors.bulkCreateFailed')), statusCode: 500 };
     }
   } catch (error: unknown) {
     const logger = createLogger('bulkCreateNatureFactorCVMaster');
@@ -216,14 +217,14 @@ export async function bulkCreateNatureFactorCVMasterAction(
       const t = await getTranslations('common');
       return {
         success: false,
-        message: error.responseText || t('errors.serverError'),
+        message: cleanErrorMessage(error.responseText || error.message, t('errors.serverError')),
         statusCode: error.statusCode,
       };
     }
     const t = await getTranslations('common');
     return {
       success: false,
-      message: error instanceof Error ? error.message : t('errors.generic'),
+      message: cleanErrorMessage(error instanceof Error ? error.message : t('errors.generic'), t('errors.generic')),
       statusCode: 500,
     };
   }
@@ -260,14 +261,14 @@ export async function bulkUpdateNatureFactorCVMasterAction(
       const t = await getTranslations('common');
       return {
         success: false,
-        message: error.responseText || t('errors.serverError'),
+        message: cleanErrorMessage(error.responseText || error.message, t('errors.serverError')),
         statusCode: error.statusCode,
       };
     }
     const t = await getTranslations('common');
     return {
       success: false,
-      message: error instanceof Error ? error.message : t('errors.generic'),
+      message: cleanErrorMessage(error instanceof Error ? error.message : t('errors.generic'), t('errors.generic')),
       statusCode: 500,
     };
   }

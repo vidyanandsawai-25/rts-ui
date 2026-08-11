@@ -1,82 +1,119 @@
 
 
 
+import React from "react";
+import { Label } from "@/components/common/label";
 import { Input } from "@/components/common/Input";
+import { Select } from "@/components/common/select";
 import { TextArea } from "@/components/common/Textarea";
+import { ValidationMessage } from "@/components/common/ValidationMessage";
 import type { FormFieldsSectionProps } from "@/types/asset-masters/inventory-category.types";
+
+interface ExtendedFormFieldsSectionProps extends FormFieldsSectionProps {
+  codeRef?: React.RefObject<HTMLInputElement | null>;
+}
 
 export function FormFieldsSection({
   formData,
   errors,
   showError,
   onChange,
+  onSelectChange,
   onBlur,
   t,
-}: FormFieldsSectionProps) {
+  categoryOptions = [],
+  codeRef,
+}: ExtendedFormFieldsSectionProps) {
   return (
-    <div className="space-y-6">
+    <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
+      <div className="space-y-1">
+        <Label className="block text-sm font-medium text-slate-700">
+          {t("labels.category")} <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          options={categoryOptions}
+          value={String(formData.group ?? "")}
+          onChange={(_, v) => onSelectChange?.("group", String(v))}
+          placeholder={t("placeholders.category")}
+          error={showError("group") ? " " : undefined}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.group} visible={showError("group")} />
+      </div>
 
+      <div>
+        <Input
+          ref={codeRef}
+          name="code"
+          label={t("labels.code")}
+          required
+          value={formData.code}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.code")}
+          maxLength={15}
+          error={showError("code") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.code} visible={showError("code")} />
+      </div>
 
-      <Input
-        name="code"
-        label={t("labels.code")}
-        required
-        value={formData.code}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("placeholders.code")}
-        maxLength={15}
-        error={showError("code") ? errors.code : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          name="name"
+          label={t("labels.name")}
+          required
+          value={formData.name}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.name")}
+          maxLength={40}
+          error={showError("name") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.name} visible={showError("name")} />
+      </div>
 
-      <Input
-        name="name"
-        label={t("labels.name")}
-        required
-        value={formData.name}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("placeholders.name")}
-        maxLength={40}
-        error={showError("name") ? errors.name : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          name="depreciationRate"
+          label={t("labels.depreciationRate")}
+          required
+          type="number"
+          step="0.01"
+          min="0"
+          max="1"
+          value={formData.depreciationRate ?? ""}
+          onChange={onChange}
+          onKeyDown={(e) => {
+            if (e.key === "-" || e.key === "e") {
+              e.preventDefault();
+            }
+          }}
+          onBlur={onBlur}
+          placeholder={t("placeholders.depreciationRate")}
+          error={showError("depreciationRate") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.depreciationRate} visible={showError("depreciationRate")} />
+      </div>
 
-      <Input
-        name="depreciationRate"
-        label={t("labels.depreciationRate")}
-        required
-        type="number"
-        step="0.01"
-        min="0"
-        max="1"
-        value={formData.depreciationRate ?? ""}
-        onChange={onChange}
-        onKeyDown={(e) => {
-          if (e.key === "-" || e.key === "e") {
-            e.preventDefault();
-          }
-        }}
-        onBlur={onBlur}
-        placeholder={t("placeholders.depreciationRate")}
-        error={showError("depreciationRate") ? errors.depreciationRate : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
-
-      <TextArea
-        name="description"
-        label={t("labels.description")}
-        rows={3}
-        value={formData.description}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("placeholders.description")}
-        maxLength={500}
-        error={showError("description") ? true : false}
-        errorMessage={showError("description") ? errors.description : undefined}
-        className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <TextArea
+          name="description"
+          label={t("labels.description")}
+          rows={3}
+          value={formData.description}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.description")}
+          maxLength={500}
+          error={showError("description") ? true : false}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.description} visible={showError("description")} />
+      </div>
     </div>
   );
 }
+

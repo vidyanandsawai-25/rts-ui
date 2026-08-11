@@ -18,7 +18,7 @@ export default async function Layout({ children }: Props) {
     return (
         <ClientWrapper
             serverData={mainCardResult?.data}
-            workflowCardsData={workflowCardsResult?.data} 
+            workflowCardsData={workflowCardsResult?.data}
         >
             {children}
         </ClientWrapper>

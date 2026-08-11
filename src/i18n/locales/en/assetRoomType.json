@@ -63,7 +63,8 @@
       "descriptionFormat": "Invalid description format",
       "mustBeActive": "Asset Room Type must be active to save",
       "assetCategoryRequired": "Asset Category is required",
-      "assetTypeRequired": "Asset Type is required"
+      "assetTypeRequired": "Asset Type is required",
+      "invalidFormat": "Invalid format"
     },
     "status": {
       "label": "Active Status",
@@ -80,11 +81,15 @@
   },
   "apiErrors": {
     "duplicateRecord": "Please check Room Type Code and Name - duplicates not allowed.",
+    "AssetRoomType_RoomTypeCode_Duplicate": "Room Type Code already exists",
+    "AssetRoomType_RoomTypeName_Duplicate": "Room Type Name already exists",
+    "A record with the same details already exists": "A record with the same details already exists.",
     "validationError": "Invalid data provided. Please check all fields.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "notFound": "Asset room type not found.",
     "inUse": "Cannot deactivate/delete this Asset Room Type because it is referenced by other asset records.",
-    "operationFailed": "Operation failed. Please try again later."
+    "operationFailed": "Operation failed. Please try again later.",
+    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
   },
   "success": {
     "created": "New asset room type created successfully: {code}",

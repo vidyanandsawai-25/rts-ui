@@ -6,7 +6,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 /**

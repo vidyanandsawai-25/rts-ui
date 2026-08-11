@@ -3,7 +3,7 @@ import type { IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import {
   generateCsvTemplate,
   downloadFile,
-  parseCsvContent,
+  parseExcelOrCsvContent,
   applyImportedEditsToMatrix,
   validateFileType,
 } from "./index";
@@ -13,7 +13,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface TemplateDownloadParams {
@@ -67,27 +67,40 @@ interface FileUploadParams {
   setShowMatrix: (show: boolean) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  rateUnit: "SqMeter" | "SqFeet";
 }
 
 export function handleFileUpload(
   event: React.ChangeEvent<HTMLInputElement>,
   params: FileUploadParams
 ) {
-  const { allZones, rateCategories, matrixData, allZoneEdits, showMatrix, setMatrixData, setAllZoneEdits, setShowMatrix, fileInputRef, t } = params;
+  const { allZones, rateCategories, matrixData, allZoneEdits, showMatrix, setMatrixData, setAllZoneEdits, setShowMatrix, fileInputRef, t, rateUnit } = params;
 
   const file = event.target.files?.[0];
   if (!file) return;
 
   if (!validateFileType(file)) {
-    toast.error(t('messages.csvOnly'));
+    toast.error(t('messages.validationUploadValidFile'));
     return;
   }
+
+  const fileExt = file.name.toLowerCase().split('.').pop() || '';
 
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
-      const text = e.target?.result as string;
-      const { zoneEdits, importedRateCount } = parseCsvContent(text, allZones, rateCategories);
+      const result = e.target?.result;
+      if (!result) {
+        throw new Error(t('messages.validationReadFileFailed'));
+      }
+      const { zoneEdits, importedRateCount } = parseExcelOrCsvContent(
+        result,
+        fileExt,
+        allZones,
+        rateCategories,
+        rateUnit,
+        t
+      );
 
       const newEdits: Record<string, Record<string, number>> = { ...allZoneEdits, ...zoneEdits };
       setAllZoneEdits(newEdits);
@@ -113,7 +126,11 @@ export function handleFileUpload(
     toast.error(t('messages.validationReadFileFailed'));
   };
 
-  reader.readAsText(file);
+  if (fileExt === 'csv') {
+    reader.readAsText(file);
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
 
   if (fileInputRef.current) {
     fileInputRef.current.value = '';

@@ -28,8 +28,8 @@
     },
     "labels": {
       "addAgeRange": "वय मर्यादा जोडा",
-      "minYear": "किमान वर्ष",
-      "maxYear": "कमाल वर्ष",
+      "minYear": "वय पासून",
+      "maxYear": "वय पर्यंत",
       "close": "बंद करा"
     },
     "messages": {

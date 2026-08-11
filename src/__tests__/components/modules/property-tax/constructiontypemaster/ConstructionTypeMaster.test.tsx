@@ -1,12 +1,13 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { ConstructionType } from "@/types/construction.types";
 import { ConstructionTypeMaster } from "@/components/modules/property-tax/construction-type-master";
 
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(),
+    usePathname: vi.fn(() => "/en/property-tax/constructiontype"),
     useSearchParams: vi.fn(() => ({
         get: vi.fn(() => ""),
     })),
@@ -89,6 +90,7 @@ const defaultProps = {
 describe("ConstructionTypeMaster", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(usePathname).mockReturnValue("/en/property-tax/constructiontype");
     });
 
     it("renders table with data", () => {

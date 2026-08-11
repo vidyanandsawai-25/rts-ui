@@ -12,6 +12,8 @@ import {
   GraduationCap,
   Wheat,
   MapPin,
+  LandPlot,
+  SquareParking,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { UseGroupIconKey } from '@/types/typeOfUse.types';
@@ -36,6 +38,8 @@ export const ICON_OPTIONS: IconOption[] = [
   { value: 'school', label: 'School', Icon: GraduationCap },
   { value: 'leaf', label: 'Wheat', Icon: Wheat },
   { value: 'map', label: 'MapPin', Icon: MapPin },
+  { value: 'plots', label: 'Plots', Icon: LandPlot },
+  { value: 'parking', label: 'Parking', Icon: SquareParking },
 ];
 
 /**
@@ -52,6 +56,8 @@ export const getIconKey = (iconStr: string): UseGroupIconKey => {
   if (iconStr.includes('school') || iconStr.includes('graduation')) return 'school';
   if (iconStr.includes('leaf') || iconStr.includes('wheat')) return 'leaf';
   if (iconStr.includes('map') || iconStr.includes('pin')) return 'map';
+  if (iconStr.includes('plot') || iconStr.includes('land')) return 'plots';
+  if (iconStr.includes('parking') || iconStr.includes('car')) return 'parking';
   return 'home'; // default fallback
 };
 

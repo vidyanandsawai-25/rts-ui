@@ -5,6 +5,7 @@ export interface InventoryCategoryItem {
   id: number;
   typeCode: string;
   typeName: string;
+  assetCategoryId?: number;
   displayOrder: number;
   depreciationRate: number;
   description: string | null;
@@ -38,6 +39,7 @@ export interface InventoryCategoryListParams {
 export interface InventoryCategoryPayload {
   typeCode: string;
   typeName: string;
+  assetCategoryId?: number;
   description?: string;
   depreciationRate?: number;
   displayOrder: number;
@@ -61,8 +63,10 @@ export interface FormFieldsSectionProps {
   errors: Record<string, string>;
   showError: (field: string) => boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSelectChange?: (field: keyof InventoryCategoryFormModel, value: string) => void;
   onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   t: (key: string) => string;
+  categoryOptions?: Array<{ label: string; value: string }>;
 }
 
 export interface InventoryCategoryMasterErrorContextType {
@@ -70,8 +74,15 @@ export interface InventoryCategoryMasterErrorContextType {
   setHasError: (value: boolean) => void;
 }
 
+export interface InventoryCategoryGroupOption {
+  id: string;
+  name: string;
+  status?: string;
+}
+
 export interface InventoryCategoryFormProps {
   initialData: InventoryCategoryFormModel | null;
+  groups?: InventoryCategoryGroupOption[];
 }
 
 export interface InventoryCategoryMasterProps {

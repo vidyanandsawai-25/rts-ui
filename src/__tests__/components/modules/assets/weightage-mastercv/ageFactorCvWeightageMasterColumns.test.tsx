@@ -80,7 +80,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const column = columns[0];
     expect(column.key).toBe('constructionCode');
     expect(column.label).toBe('Construction Type');
-    expect(column.render?.('C1', mockRow, 0)).toBe('C1');
+    expect(column.render?.('C1', mockRow, 0)).toEqual(<span className="break-all block">C1</span>);
   });
 
   it('constructionCode column renders "-" for undefined value', () => {
@@ -94,7 +94,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     });
 
     const column = columns[0];
-    expect(column.render?.(undefined, mockRow, 0)).toBe('-');
+    expect(column.render?.(undefined, mockRow, 0)).toEqual(<span className="break-all block">-</span>);
   });
 
   it('constructionDescription column renders correctly', () => {
@@ -110,7 +110,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const column = columns[1];
     expect(column.key).toBe('constructionDescription');
     expect(column.label).toBe('Description');
-    expect(column.render?.('Concrete Structure', mockRow, 0)).toBe('Concrete Structure');
+    expect(column.render?.('Concrete Structure', mockRow, 0)).toEqual(<span className="break-all block">Concrete Structure</span>);
   });
 
   it('constructionDescription column renders "-" for undefined value', () => {
@@ -124,7 +124,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     });
 
     const column = columns[1];
-    expect(column.render?.(undefined, mockRow, 0)).toBe('-');
+    expect(column.render?.(undefined, mockRow, 0)).toEqual(<span className="break-all block">-</span>);
   });
 
   it('ageFrom and ageTo columns render correctly', () => {

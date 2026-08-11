@@ -179,3 +179,31 @@ export function getDepartmentContextFromCookieStore(store: CookieStoreLike): Dep
     moduleName: decodeCookieValue(store.get('module_name')?.value),
   };
 }
+
+// ---------------------------------------------------------------------------
+// PTIS Media Panel Visibility Cookie
+// ---------------------------------------------------------------------------
+
+export const COOKIE_PTIS_MEDIA_PANEL_VISIBLE = 'ptis_media_panel_visible';
+
+/** Reads client-side cookie for PTIS media panel visibility (`true` or `false`). */
+export function getMediaPanelVisibleFromCookie(): boolean | undefined {
+  const val = getCookieValue(COOKIE_PTIS_MEDIA_PANEL_VISIBLE);
+  if (val === 'true') return true;
+  if (val === 'false') return false;
+  return undefined;
+}
+
+/** Reads server-side cookie store for PTIS media panel visibility (`true` or `false`). */
+export function getMediaPanelVisibleFromCookieStore(store: CookieStoreLike): boolean {
+  const val = decodeCookieValue(store.get(COOKIE_PTIS_MEDIA_PANEL_VISIBLE)?.value);
+  return val === 'true';
+}
+
+/** Sets client-side cookie for PTIS media panel visibility. */
+export function setMediaPanelVisibleInCookie(visible: boolean): void {
+  if (typeof document === 'undefined') return;
+  const maxAge = 365 * 24 * 60 * 60; // 1 year
+  document.cookie = `${COOKIE_PTIS_MEDIA_PANEL_VISIBLE}=${visible ? 'true' : 'false'}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+

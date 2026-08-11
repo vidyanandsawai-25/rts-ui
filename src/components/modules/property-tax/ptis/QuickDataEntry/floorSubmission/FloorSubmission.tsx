@@ -91,9 +91,16 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     ) as FloorData | undefined;
   }, [localFloors, props.initialFloors]);
 
-  // Auto-select previously saved TypeOfUseId during Edit mode
+  const isCategoryInitializedRef = React.useRef(false);
+  const prevOpenPlotRecordIdRef = React.useRef<string | number | null>(null);
+
+  // Auto-select previously saved TypeOfUseId during Edit mode or default to 'OP'
   React.useEffect(() => {
-    if (openPlotRecord) {
+    const recordId = openPlotRecord?.floorId || (openPlotRecord as any)?.id || null;
+    const isNewRecord = recordId !== prevOpenPlotRecordIdRef.current;
+
+    if (isNewRecord && openPlotRecord) {
+      prevOpenPlotRecordIdRef.current = recordId;
       const rawId = Number(
         (openPlotRecord as any).typeOfUseId ||
         (openPlotRecord as any).useId ||
@@ -105,9 +112,21 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       );
       if (matched) {
         setSelectedOpenPlotCategory(matched);
+        isCategoryInitializedRef.current = true;
+        return;
       }
     }
-  }, [openPlotRecord, openPlotCategoryOptions]);
+
+    if (!isCategoryInitializedRef.current && !selectedOpenPlotCategory && openPlotCategoryOptions.length > 0) {
+      const opDefault = openPlotCategoryOptions.find(
+        (c) => String(c.typeOfUseCode || '').toUpperCase() === 'OP' || String(c.description || '').toLowerCase().includes('खुला भूखंड')
+      ) || openPlotCategoryOptions[0];
+      if (opDefault) {
+        setSelectedOpenPlotCategory(opDefault);
+        isCategoryInitializedRef.current = true;
+      }
+    }
+  }, [openPlotRecord, openPlotCategoryOptions, selectedOpenPlotCategory]);
 
   const dynamicPlotArea = React.useMemo(() => {
     if (openPlotRecord) {
@@ -145,8 +164,25 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     return typeof name === 'string' ? name.trim() : '';
   }, [props.initialPropertyData]);
 
+  const propertyDescription = React.useMemo(() => {
+    const description = props.initialPropertyData?.propertyDescription;
+    return typeof description === 'string' ? description.trim() : '';
+  }, [props.initialPropertyData]);
+
   // Individual property: Data Entry Same As button should always be enabled
   const isIndividualProperty = categoryName.toLowerCase() === 'individual';
+
+  // Hide Data Entry Same As only when actual wing metadata is present.
+  // Partition numbers such as A, A1, A2 or A-1 do not imply a wing.
+  const hasWing = React.useMemo(() => {
+    const wingNo = props.initialPropertyData?.wingNo || props.initialPropertyData?.wingName;
+    return Boolean(
+      wingNo &&
+        String(wingNo).trim() !== '' &&
+        String(wingNo).trim() !== '-' &&
+        String(wingNo).trim() !== '0'
+    );
+  }, [props.initialPropertyData]);
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(true);
@@ -157,6 +193,56 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     setShowDataEntrySameAsDrawer(false);
     updateUrlParams({ dataEntrySameAs: null });
   }, [updateUrlParams]);
+
+  // Check if any existing floor contains a Use that is not valid for the current Property Description's allowed Use list
+  const hasIncompatibleFloor = React.useMemo(() => {
+    // Only check if useLookup has been loaded for the current property description
+    if (!useLookup || !Array.isArray(useLookup) || useLookup.length === 0) return false;
+
+    const floors = ((localFloors && localFloors.length > 0) ? localFloors : (props.initialFloors || [])) as FloorData[];
+    if (!floors || floors.length === 0) return false;
+
+    const validUseIds = new Set(
+      useLookup
+        .map(u => String(u.typeOfUseId || u.id || u.ID || ''))
+        .filter(Boolean)
+    );
+
+    const validUseDescs = new Set<string>();
+    useLookup.forEach((u) => {
+      const desc = String(u.description || '').trim().toLowerCase();
+      const code = String(u.typeOfUseCode || u.code || '').trim().toLowerCase();
+      if (desc) validUseDescs.add(desc);
+      if (code) validUseDescs.add(code);
+      if (code && desc) validUseDescs.add(`${code} - ${desc}`);
+      if (code && desc) validUseDescs.add(`${code}-${desc}`);
+    });
+
+    return floors.some((floor) => {
+      const floorUseId = String(
+        (floor as any).typeOfUseId || (floor as any).useId || ''
+      ).trim();
+      const floorUseDesc = String(
+        (floor as any).use || (floor as any).usageDescription || (floor as any).typeOfUseDescription || ''
+      ).trim().toLowerCase();
+
+      // If floor has no use specified yet, don't flag as incompatible
+      if (!floorUseId && !floorUseDesc) return false;
+
+      // If either the numeric ID OR the description matches any valid Use, it is compatible
+      const matchesId = floorUseId ? validUseIds.has(floorUseId) : false;
+      const matchesDesc = floorUseDesc ? validUseDescs.has(floorUseDesc) : false;
+
+      return !matchesId && !matchesDesc;
+    });
+  }, [useLookup, localFloors, props.initialFloors]);
+
+  // Expose hasIncompatibleFloor state to global window object to block drawer navigation when incompatible floor exists
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor = hasIncompatibleFloor;
+    }
+  }, [hasIncompatibleFloor]);
 
   // Show full-screen loader during save/update/delete operations
   if (isOperationLoading) {
@@ -177,7 +263,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         {/* Render API errors if any */}
         <SubmissionApiErrors apiErrors={props.apiErrors} t={t} />
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
           {/* All Floors Table Section */}
           <FloorTable
             t={t}
@@ -204,6 +289,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             isPlotCategory={isPlotCategory}
             partitionNo={props.partitionNo}
             isIndividualProperty={isIndividualProperty}
+            plotAreaSqM={plotAreaSqM}
+            categoryName={categoryName}
+            propertyDescription={propertyDescription}
+            hasWing={hasWing}
           />
 
 
@@ -217,6 +306,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               isLoading={isAddingArea}
               buttonText={openPlotRecord ? (t('floor.updateArea') || 'Update Area') : (t('floor.applyArea') || 'Add Area')}
               selectedFloorType={selectedFloorType}
+              isPlotCategory={isPlotCategory}
               onChangeFloorType={(type) => {
                 setSelectedFloorType(type);
                 handleAddFloor();
@@ -225,17 +315,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               selectedOpenPlotCategory={selectedOpenPlotCategory}
               onChangeOpenPlotCategory={(cat) => {
                 setSelectedOpenPlotCategory(cat);
-                if (cat && (selectedFloorType === 'OpenPlot' || editingFloorForm?.isOpenPlot)) {
-                  const isTaxable = isOpenPlotCodeTaxable(cat.typeOfUseCode);
-                  setEditingFloorForm((prev) => ({
-                    ...prev,
-                    typeOfUseId: cat.id,
-                    use: String(cat.id),
-                    typeOfUseDescription: cat.description,
-                    isTaxable: isTaxable ? 'Yes' : 'No',
-                    taxLiability: isTaxable ? 'Taxable' : 'NonTaxable',
-                  }));
-                }
               }}
               handleOpenDropdown={handleOpenDropdown}
               menuPlacement={Boolean(selectedFloor || isAddingNewFloor) ? 'bottom' : 'top'}
@@ -243,8 +322,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                 setPlotAreaSqM(parseFloat(sqM) || 0);
                 // onLoad should only set the plot area. It should not modify form state on initial mount.
               }}
-              onChange={(_sqFt, sqM) => {
-                setPlotAreaSqM(parseFloat(sqM) || 0);
+              onChange={(_sqFt, _sqM) => {
+                // Plot area summary state is only updated upon clicking "Update Area" (onApply)
               }}
               onApply={async (_sqFt: string, _sqM: string, len?: string, wid?: string) => {
                 const validation = validateOpenPlotForm(selectedOpenPlotCategory, len, wid);
@@ -352,7 +431,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             <div className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
+                selectedFloor={selectedFloor}
+                setSelectedFloor={setSelectedFloor}
                 isAddingNewFloor={isAddingNewFloor}
+                setIsAddingNewFloor={setIsAddingNewFloor}
                 editingFloorForm={editingFloorForm}
                 setEditingFloorForm={setEditingFloorForm}
                 formErrors={formErrors}

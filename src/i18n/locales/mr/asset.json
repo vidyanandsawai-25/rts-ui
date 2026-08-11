@@ -346,7 +346,8 @@
           "penaltyValueRange": "दंड मूल्य 0 किंवा अधिक असणे आवश्यक आहे",
           "penaltyValuePercentageRange": "टक्केवारी गणनेसाठी दंड मूल्य 0 ते 100 दरम्यान असणे आवश्यक आहे",
           "gracePeriodDaysRequired": "सवलत कालावधी (दिवस) आवश्यक आहे",
-          "gracePeriodDaysRange": "सवलत कालावधी 0 किंवा अधिक असणे आवश्यक आहे"
+          "gracePeriodDaysRange": "सवलत कालावधी 0 किंवा अधिक असणे आवश्यक आहे",
+          "notFound": "रेकॉर्ड सापडला नाही."
         }
       },
       "messages": {

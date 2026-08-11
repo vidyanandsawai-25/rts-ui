@@ -96,6 +96,10 @@
     "invalidDisplayOrder": "प्रदर्शन क्रम एक धनात्मक पूर्णांक होना चाहिए",
     "remarks": "टिप्पणी",
     "remarksPlaceholder": "टिप्पणी दर्ज करें...",
+    "chooseFile": "फ़ाइल चुनें",
+    "orDragDrop": "या यहाँ ड्रैग और ड्रॉप करें",
+    "allowedFormatsSubtitle": "JPEG, JPG, PNG समर्थित (अधिकतम 5MB)",
+    "uploadingAndSaving": "इमेज अपलोड और सहेजी जा रही है...",
     "nameRequired": "नाम आवश्यक है",
     "invalidNameFormat": "केवल अक्षर, संख्याएं, रिक्त स्थान, हाइफ़न और अंडरस्कोर की अनुमति है",
     "imageUnavailable": "छवि अनुपलब्ध",
@@ -151,6 +155,7 @@
     "uploadInstructions": "अपलोड निर्देश",
     "allowedFormats": "अनुमत प्रारूप: JPEG, JPG, PNG",
     "maxFileSize": "अधिकतम फ़ाइल आकार: 5 MB",
+    "invalidImage": "कृपया एक वैध इमेज फ़ाइल अपलोड करें",
     "photoLegibilityNote": "सुनिश्चित करें कि फोटो स्पष्ट और पठनीय है",
     "panMode": "पैन मोड",
     "zoomIn": "ज़ूम इन",
@@ -407,12 +412,14 @@
     "interest": "ब्याज",
     "netTotal": "कुल देय",
     "noTaxDetails": "कोई कर विवरण उपलब्ध नहीं है",
+    "taxDetails": "कर विवरण",
     "noMapDetails": "कोई मानचित्र विवरण उपलब्ध नहीं है",
     "latitude": "अक्षांश",
     "longitude": "रेखांश",
     "mappingCategory": "मानचित्रण श्रेणी",
     "oldPropPartNo": "पुराना संपत्ति क्र.-अनुभाग क्र.",
     "oldWardPropPartNo": "पुराना वार्ड-संपत्ति-अनुभाग नं",
+    "wardPropPartNo": "वार्ड-संपत्ति-अनुभाग नं",
     "oldPlotAreaSqMtr": "पुराना भूखंड क्षेत्रफल (वर्ग मीटर)",
     "oldConstAreaSqMtr": "पुराना निर्माण क्षेत्रफल (वर्ग मीटर)"
   },
@@ -462,7 +469,8 @@
     "showOldTax": "पुराना कर दिखाएं",
     "hideOldTax": "पुराना कर छुपाएं",
     "showMapDetails": "मानचित्र विवरण दिखाएं",
-    "hideMapDetails": "मानचित्र विवरण छुपाएं"
+    "hideMapDetails": "मानचित्र विवरण छुपाएं",
+    "propertyMapping": "संपत्ति मैपिंग"
   },
   "loading": {
     "message": "संपत्ति विवरण लोड हो रहा है",
@@ -569,8 +577,10 @@
       "tax": "कर",
       "yes": "हाँ",
       "no": "नहीं",
+      "fullChange": "पूरा बदलाव:",
       "cv": "सीवी",
       "rv": "आरवी",
+      "alv": "एएलवी",
       "m2Unit": "वर्ग मीटर",
       "oldTotalRv": "[पुराना] कुल आर.वी.",
       "oldTotalAlv": "[पुराना] कुल ए.एल.वी.",
@@ -655,7 +665,13 @@
       "description": "क्या आप निश्चित रूप से बिल वितरित करना चाहते हैं?",
       "confirmText": "हाँ",
       "cancelText": "नहीं"
-    }
+    },
+    "qcStatus": {
+      "label": "क्यूसी स्थिति",
+      "placeholder": "क्यूसी स्थिति"
+    },
+    "qcDoneLabel": "क्यूसी पूर्ण",
+    "trackStatus": "स्थिति ट्रैक करें"
   },
   "footerActions": {
     "R_SAVE": "सहेजें",

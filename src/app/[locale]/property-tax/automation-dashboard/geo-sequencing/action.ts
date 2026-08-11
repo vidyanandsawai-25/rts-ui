@@ -1,7 +1,19 @@
 'use server';
 
 import { automationGetGeoSequencingGrid, automationGetGeoSequencingWardWiseSummary } from "@/lib/api/automation-dashboard/geo-sequencing/geo-sequencing.service";
-import { GeoSequencingItems } from "@/types/automation-dashboard/geo-sequencing/geo-sequencing.type";
+import { GeoSequencingItems, GeoSequencingWardWiseItems } from "@/types/automation-dashboard/geo-sequencing/geo-sequencing.type";
+import { createLogger } from "@/lib/utils/server-logger";
+import { ApiError } from "@/lib/utils/api";
+import { getTranslations } from "next-intl/server";
+
+const logger = createLogger("GeoSequencingActions");
+
+type ActionResult<T> = {
+    success: boolean;
+    data?: T | null;
+    error?: string;
+    statusCode?: number;
+};
 
 /**
  * Server action to fetch the geo-sequencing grid data.
@@ -11,13 +23,18 @@ import { GeoSequencingItems } from "@/types/automation-dashboard/geo-sequencing/
  */
 export async function getGeoSequencingGridAction(
     workflowStageId?: string | number
-): Promise<{ success: boolean; data?: GeoSequencingItems | null; error?: string }> {
+): Promise<ActionResult<GeoSequencingItems>> {
     try {
-        const data = await automationGetGeoSequencingGrid(workflowStageId);        
+        logger.info("getGeoSequencingGridAction: Fetching geo-sequencing grid data", { workflowStageId });
+        const data = await automationGetGeoSequencingGrid(workflowStageId);
         return { success: true, data };
     } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : "Failed to fetch geo-sequencing grid data";
-        return { success: false, error: errorMsg };
+        logger.error("Failed to fetch geo-sequencing grid data", { workflowStageId }, error);
+        if (error instanceof ApiError) {
+            return { success: false, error: error.message, statusCode: error.statusCode };
+        }
+        const t = await getTranslations("automationDashboard");
+        return { success: false, error: t("errors.fetchGeoSequencingGrid") || "Failed to fetch geo-sequencing grid data", statusCode: 500 };
     }
 }
 
@@ -25,12 +42,20 @@ export async function getWardWiseSummaryAction(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
-) {
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
+): Promise<ActionResult<GeoSequencingWardWiseItems>> {
     try {
-        const data = await automationGetGeoSequencingWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize);
+        logger.info("getWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId });
+        const data = await automationGetGeoSequencingWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId);
         return { success: true, data };
-    } catch (_error) {
-        return { success: false, data: null, error: 'Failed to fetch ward-wise summary' };
-    }   
+    } catch (error) {
+        logger.error("Failed to fetch ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize }, error);
+        if (error instanceof ApiError) {
+            return { success: false, error: error.message, statusCode: error.statusCode };
+        }
+        const t = await getTranslations("automationDashboard");
+        return { success: false, error: t("errors.fetchWardWiseSummary") || "Failed to fetch ward-wise summary", statusCode: 500 };
+    }
 }

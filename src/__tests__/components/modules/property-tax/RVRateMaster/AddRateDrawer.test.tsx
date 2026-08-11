@@ -14,6 +14,13 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// Mock ConfirmProvider
+vi.mock("@/components/common/ConfirmProvider", () => ({
+  useConfirm: () => ({
+    confirm: vi.fn(({ onConfirm }) => onConfirm && onConfirm()),
+  }),
+}));
+
 // Mock Drawer component
 vi.mock("@/components/common/Drawer", () => ({
   Drawer: ({ children, open, title }: { children: React.ReactNode; open: boolean; title?: string }) => (
@@ -23,6 +30,7 @@ vi.mock("@/components/common/Drawer", () => ({
     </div>
   ),
 }));
+
 
 // Mock RateMasterForm
 import type { ISelectOption } from "@/types/RVRateMaster";

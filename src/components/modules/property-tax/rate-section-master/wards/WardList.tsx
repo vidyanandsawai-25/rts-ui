@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, startTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { WardListProps } from "@/types/rateSectionMaster.types";
 import { useConfirm } from "@/components/common";
@@ -33,6 +33,12 @@ export default function WardList({
   const pageSize = Number(searchParams?.get("wardpagesize")) || 10;
   const initialSearch = searchParams?.get("wardq") || "";
   const [search, setSearch] = useState(sanitizeSearch(initialSearch));
+
+  useEffect(() => {
+    startTransition(() => {
+      setSearch(sanitizeSearch(initialSearch));
+    });
+  }, [initialSearch]);
 
   const { rateSectionLabel, effectiveSelectedRateSection } = useWardRateSectionLabel({
     selectedRateSection,

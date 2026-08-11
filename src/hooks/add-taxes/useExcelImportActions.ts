@@ -3,7 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { ScopeOptionItem } from '@/types/addTaxes.types';
-import { autoDetectScopeType, mapExcelDataToPayload } from '@/components/modules/property-tax/add-taxes/excelImportTab/ExcelImportUtils';
+import { autoDetectScopeType, mapExcelDataToPayload, getNormalizedHeaders, getRowValue, hasRequiredBuildingHeaders, isWardValueValid, isPropertyValueValid } from '@/components/modules/property-tax/add-taxes/excelImportTab/ExcelImportUtils';
 import { ExcelImportState } from './useExcelImportState';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
@@ -113,8 +113,39 @@ export function useExcelImportActions({
           state.setRows([]);
           return;
         }
-        state.setRows(json as Record<string, unknown>[]);
-        const detected = autoDetectScopeType(json as Record<string, unknown>[]);
+
+        const normalizedHeaders = getNormalizedHeaders(json as Record<string, unknown>[]);
+        if (!hasRequiredBuildingHeaders(normalizedHeaders)) {
+          toast.error(t('messages.invalidExcelTemplate'));
+          state.setRows([]);
+          return;
+        }
+
+        const rows = json as Record<string, unknown>[];
+        let invalidRowCount = 0;
+        rows.forEach(row => {
+          const rawWard = getRowValue(row, ['ward', 'wardno', 'ward name', 'wardno']);
+          const rawProperty = getRowValue(row, ['propertynopartitionno', 'propertyno', 'propertynumber']);
+
+          const wardValid = rawWard ? isWardValueValid(rawWard, state.fetchedWards) : false;
+          const propertyValid = rawProperty ? isPropertyValueValid(rawProperty) : false;
+          if (!wardValid || !propertyValid) {
+            invalidRowCount += 1;
+          }
+        });
+
+        if (invalidRowCount === rows.length) {
+          toast.error(t('messages.invalidWardPropertyData'));
+          state.setRows([]);
+          return;
+        }
+
+        if (invalidRowCount > 0) {
+          toast.error(t('messages.invalidWardPropertyData'));
+        }
+
+        state.setRows(rows);
+        const detected = autoDetectScopeType(rows);
         state.setSelectedScopeType(detected);
         toast.success(t('messages.uploadSuccess', {
           scope: detected === 'building'

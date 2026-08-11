@@ -24,6 +24,9 @@ vi.mock("next/navigation", () => ({
     refresh: mockRefresh,
   }),
   usePathname: () => "/en/assets/configuration/master-data/gst-master",
+  useSearchParams: () => ({
+    get: () => null,
+  }),
 }));
 
 // Mock useConfirm

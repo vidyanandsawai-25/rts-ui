@@ -71,11 +71,42 @@ export const useTaxDetailsTable = (
   // Generate table columns using the utility
   const taxColumns = useMemo<FloorDetailsTableColumn<TaxRow>[]>(() => {
     const policies = initialTaxDetails?.policies || [];
-    const allTaxNames = Array.from(
+    const allTaxNamesRaw = Array.from(
       new Set(policies.flatMap((p) => p.taxAmounts.map((a) => a.taxName)))
     );
 
-    return getTaxDetailsFloorColumns(allTaxNames, t, getTaxLabelStyle);
+    // Omit tax heads where all policies have 0 amount (e.g. State Employment Tax = 0)
+    const activeTaxNames = allTaxNamesRaw.filter((taxName) => {
+      const lower = taxName.trim().toLowerCase();
+      if (lower === 'totaltax' || lower === 'taxtotal' || lower === 'total tax' || lower === 'total') {
+        return true;
+      }
+      return policies.some((p) => {
+        const item = p.taxAmounts.find(
+          (a) => a.taxName.trim().toLowerCase() === lower
+        );
+        return item && Number(item.taxAmount || 0) > 0;
+      });
+    });
+
+    const finalTaxNames = activeTaxNames.length > 0 ? activeTaxNames : allTaxNamesRaw;
+
+    // Ensure TOTAL TAX is placed at the VERY LAST column
+    const nonTotal: string[] = [];
+    const total: string[] = [];
+
+    finalTaxNames.forEach((name) => {
+      const lower = name.trim().toLowerCase();
+      if (lower === 'totaltax' || lower === 'taxtotal' || lower === 'total tax' || lower === 'total') {
+        total.push(name);
+      } else {
+        nonTotal.push(name);
+      }
+    });
+
+    const orderedTaxNames = [...nonTotal, ...total];
+
+    return getTaxDetailsFloorColumns(orderedTaxNames, t, getTaxLabelStyle);
   }, [initialTaxDetails, getTaxLabelStyle, t]);
 
   return {

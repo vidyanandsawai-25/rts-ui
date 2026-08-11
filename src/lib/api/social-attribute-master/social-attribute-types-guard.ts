@@ -100,6 +100,8 @@ export function normalizeSocialAttribute(data: Record<string, unknown>): SocialA
     parentAttributeId: data.parentAttributeId != null ? Number(data.parentAttributeId) : null,
     isRequiredWhenParentTrue: parseBoolean(data.isRequiredWhenParentTrue),
     isDiscountApplicable: parseBoolean(data.isDiscountApplicable),
+    isPhotoRequired: parseBoolean(data.isPhotoRequired),
+    isDocumentRequired: parseBoolean(data.isDocumentRequired),
     isActive: parseBoolean(data.isActive),
     createdDate: createdDateStr,
     updatedDate: data.updatedDate != null ? String(data.updatedDate) : null,

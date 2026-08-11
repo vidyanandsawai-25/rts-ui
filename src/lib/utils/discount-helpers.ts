@@ -30,7 +30,14 @@ export const mapApiToDiscountState = (
             bitValue: bitValue,
             enabled: isBitType
                 ? bitValue
-                : (bitValue === true || attr.intValue !== null || attr.decimalValue !== null || attr.textValue !== null || attr.dateValue !== null),
+                : (attr.bitValue != null 
+                    ? bitValue 
+                    : (
+                        (attr.intValue !== null && attr.intValue !== 0) || 
+                        (attr.decimalValue !== null && attr.decimalValue !== 0) || 
+                        attr.textValue !== null || 
+                        attr.dateValue !== null
+                      )),
             dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
             isUploading: false,
         };

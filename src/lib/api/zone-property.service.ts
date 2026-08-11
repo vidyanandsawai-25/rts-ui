@@ -1,5 +1,10 @@
 import { apiClient } from "@/services/api.service";
-import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
+import {
+  ZonePropertyItem,
+  ZonePropertyListResponse,
+  ZonePropertySearchByCategoryItem,
+  ZonePropertySearchByCategoryResponse,
+} from "@/types/zone-master/properties/zoneProperty.types";
 import { CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/property-category.types";
 import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
@@ -44,6 +49,102 @@ export async function getPropertiesByWard(
   }
 
   return response.data;
+}
+
+/** SearchCategory=2 means "search properties by ward" on the search-by-category endpoint. */
+const SEARCH_CATEGORY_BY_WARD = 2;
+
+function mapSearchByCategoryItemToZoneProperty(
+  item: ZonePropertySearchByCategoryItem
+): ZonePropertyItem {
+  return {
+    id: item.propertyId,
+    taxZoneId: item.taxZoneId,
+    wardId: item.wardId,
+    propertyNo: item.propertyNo,
+    partitionNo: item.partitionNo,
+    propertyTypeId: item.propertyTypeId,
+    upicId: item.upicId,
+    openPlot: false,
+    csn: null,
+    subZoneNo: null,
+    plotNo: null,
+    categoryId: item.categoryId,
+    type: item.partType,
+    ownerTitle: null,
+    ownerName: null,
+    ownerTitleEnglish: null,
+    ownerNameEnglish: null,
+    occupierTitle: null,
+    occupierName: null,
+    occupierTitleEnglish: null,
+    occupierNameEnglish: null,
+    flatOrShopNo: null,
+    flatOrShopName: null,
+    flatOrShopNoEnglish: null,
+    flatOrShopNameEnglish: null,
+    address: null,
+    location: null,
+    addressEnglish: null,
+    locationEnglish: null,
+    mobileNo: item.mobileNo,
+    emailId: null,
+    societyDetailId: null,
+    markedForDeletion: false,
+    propertySeqNo: null,
+    displayProperty: item.property,
+    isActive: true,
+    createdDate: "",
+    updatedDate: null,
+  };
+}
+
+/**
+ * Fetches paginated properties for a specific ward via the search-by-category endpoint.
+ * Used by the zone-master Properties tab table.
+ * SearchCategory is fixed to 2 (search-by-ward); WardId/PageNumber/PageSize/SearchTerm
+ * are passed through the same as the legacy /Property listing endpoint.
+ * @throws ApiError on failure so Next.js error boundary can catch it.
+ */
+export async function searchPropertiesByCategory(
+  pageNumber: number,
+  pageSize: number,
+  wardId: number,
+  searchTerm?: string
+): Promise<ZonePropertyListResponse> {
+  const params = new URLSearchParams();
+  params.set("SearchCategory", String(SEARCH_CATEGORY_BY_WARD));
+  params.set("WardId", wardId.toString());
+  params.set("PageNumber", pageNumber.toString());
+  params.set("PageSize", pageSize.toString());
+
+  if (searchTerm) {
+    params.set("SearchTerm", searchTerm);
+  }
+
+  const response = await apiClient.get<ZonePropertySearchByCategoryResponse>(
+    `/Property/search-by-category?${params.toString()}`
+  );
+
+  if (!response.success || !response.data || response.data.success === false) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || response.data?.message || "Failed to fetch properties",
+      "Search properties by category failed"
+    );
+  }
+
+  const data = response.data.items;
+
+  return {
+    items: (data.items || []).map(mapSearchByCategoryItemToZoneProperty),
+    totalCount: data.totalCount,
+    pageNumber: data.pageNumber,
+    pageSize: data.pageSize,
+    totalPages: data.totalPages,
+    hasPrevious: data.hasPrevious,
+    hasNext: data.hasNext,
+  };
 }
 
 /**

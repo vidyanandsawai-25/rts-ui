@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import {
   addDepreciationRangeBulk,
+  bulkCreateDepreciation,
   deleteDepreciationRange,
   getConstructionTypes,
   getDepreciationPaged,
@@ -223,10 +224,12 @@ export async function getDepreciationScreenAction(): Promise<
 export async function syncDepreciationRatesAction(
   locale: string,
   currentPageRecords: DepreciationRow[],
-  changes: Record<number, number>
+  changes: Record<number, number>,
+  newRecords?: Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>
 ): Promise<ActionResult> {
   try {
-    if (!changes || Object.keys(changes).length === 0) return { success: true };
+    const newRecordsList = newRecords ? Object.values(newRecords) : [];
+    if ((!changes || Object.keys(changes).length === 0) && newRecordsList.length === 0) return { success: true };
 
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
@@ -235,7 +238,44 @@ export async function syncDepreciationRatesAction(
       throw new ApiError(401, 'Unauthorized', 'User session expired');
     }
 
-    await syncDepreciationRatesFromPage(currentPageRecords, changes, userId.toString());
+    if (changes && Object.keys(changes).length > 0) {
+      await syncDepreciationRatesFromPage(currentPageRecords, changes, userId.toString());
+    }
+
+    if (newRecordsList.length > 0) {
+      // Group newRecordsList by minYear-maxYear
+      const grouped = newRecordsList.reduce((acc, curr) => {
+        const key = `${curr.minYear}-${curr.maxYear}`;
+        if (!acc[key]) {
+          acc[key] = {
+            minYear: curr.minYear,
+            maxYear: curr.maxYear,
+            rates: []
+          };
+        }
+        acc[key].rates.push({ constructionTypeId: curr.constructionTypeId, rate: curr.rate });
+        return acc;
+      }, {} as Record<string, { minYear: number; maxYear: number; rates: { constructionTypeId: number; rate: number }[] }>);
+
+      for (const group of Object.values(grouped)) {
+        // Find existing yearRangeRVId from currentPageRecords
+        const existingRecordForRange = currentPageRecords.find(r => r.minYear === group.minYear && r.maxYear === group.maxYear);
+        const yearRangeRVId = existingRecordForRange?.yearRangeRVId;
+        
+        if (yearRangeRVId) {
+          const payload = {
+            minYear: group.minYear,
+            maxYear: group.maxYear,
+            yearRangeRVId,
+            rates: group.rates,
+            createdBy: Number(userId.toString())
+          };
+          await bulkCreateDepreciation(payload);
+        } else {
+          console.warn('Could not find yearRangeRVId for range', group.minYear, group.maxYear);
+        }
+      }
+    }
 
     revalidatePath(getPagePath(locale));
 

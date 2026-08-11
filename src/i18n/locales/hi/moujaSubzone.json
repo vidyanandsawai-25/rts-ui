@@ -72,7 +72,9 @@
       "subZoneNameMaxLength": "अधिकतम लंबाई 100 अक्षर होनी चाहिए",
       "subZoneNameFormat": "अमान्य नाम प्रारूप",
       "moujaRequired": "मोजा आवश्यक है",
-      "mustBeActive": "सहेजने के लिए सक्रिय होना आवश्यक है"
+      "mustBeActive": "सहेजने के लिए सक्रिय होना आवश्यक है",
+      "fixErrors": "कृपया सत्यापन त्रुटियों को ठीक करें",
+      "invalidFormat": "अमान्य प्रारूप"
     }
   },
   "delete": {
@@ -84,11 +86,16 @@
     "Mouja_MoujaName_Duplicate": "मोजा नाम पहले से मौजूद है।",
     "SubZoneDetailsForCV_SubZoneNo_Duplicate": "उपविभाग संख्या पहले से मौजूद है।",
     "SubZoneDetailsForCV_SubZoneName_Duplicate": "उपविभाग नाम पहले से मौजूद है।",
+    "AssetMouja_MoujaNo_Duplicate": "एसेट मोजा संख्या पहले से मौजूद है।",
+    "AssetSubZoneDetailsForCV_SubZoneNo_Duplicate": "एसेट उपविभाग संख्या पहले से मौजूद है।",
     "notFound": "रिकॉर्ड नहीं मिला।",
     "inUse": "अन्य तालिकाओं में संदर्भित होने के कारण इस रिकॉर्ड को हटाया नहीं जा सकता।",
     "Cannot deactivate/delete this MoujaMaster because it is referenced in: Sub Zone Details For CV": "उपविभाग विवरण (Sub Zone Details For CV) तालिका में संदर्भित होने के कारण इस मोजा को निष्‍क्र‍िय या हटाया नहीं जा सकता।",
+    "Cannot deactivate/delete this AssetMoujaMaster because it is referenced in: Asset Sub Zone Details": "मालमत्ता उपविभाग विवरण (Asset Sub Zone Details) तालिका में संदर्भित होने के कारण इस मोजा को निष्‍क्र‍िय या हटाया नहीं जा सकता।",
+    "referencedIn": "{tables} तालिका में संदर्भित होने के कारण इस {entity} को निष्‍क्र‍िय या हटाया नहीं जा सकता।",
     "A record with the same details already exists": "समान विवरण वाला रिकॉर्ड पहले से मौजूद है।",
-    "operationFailed": "ऑपरेशन विफल रहा।"
+    "operationFailed": "ऑपरेशन विफल रहा है।",
+    "User session required": "उपयोगकर्ता सत्र आवश्यक है।"
   },
   "success": {
     "moujaCreated": "नया मोजा सफलतापूर्वक बनाया गया",

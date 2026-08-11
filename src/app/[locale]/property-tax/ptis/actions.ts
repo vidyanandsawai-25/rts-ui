@@ -30,15 +30,33 @@ export async function createAction<T>(
   }
 }
 
-export async function getWardListAction() {
+type WardListItem = { wardId: number; wardNo: string; zoneId: number; description: string };
+let wardListCache: { data: WardListItem[]; timestamp: number } | null = null;
+const WARD_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
+export async function getWardListAction(): Promise<{ success: boolean; data?: WardListItem[]; error?: string }> {
+  if (wardListCache && Date.now() - wardListCache.timestamp < WARD_CACHE_TTL) {
+    return { success: true, data: wardListCache.data };
+  }
   return createAction(async () => {
-    // Retry ward list fetch with shorter delays since this is critical data
-    return retryWithBackoff(() => ptisService.getWardList(), {
+    const result = await retryWithBackoff(() => ptisService.getWardList(), {
       maxRetries: 2,
       initialDelay: 500,
       maxDelay: 2000,
       backoffMultiplier: 2,
     });
+    if (result.success && result.data) {
+      // Sort alphabetically/alphanumerically using natural sort before caching
+      const sortedData = [...result.data].sort((a, b) => {
+        return (a.wardNo || '').localeCompare(b.wardNo || '', undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        });
+      });
+      wardListCache = { data: sortedData, timestamp: Date.now() };
+      return { success: true, data: sortedData };
+    }
+    return result;
   });
 }
 

@@ -184,6 +184,39 @@ describe("useAssessmentYearRangeForm", () => {
     expect(result.current.showError("fromYear")).toBeFalsy();
   });
 
+  it("does not surface the strict less-than validation error for equal years", async () => {
+    const createAction = vi.fn().mockResolvedValue({
+      success: false,
+      statusCode: 400,
+      message: JSON.stringify({
+        errors: {
+          fromYear: ["FromYear_MustBeLessThanToYear"],
+        },
+      }),
+    });
+
+    const { result } = renderHook(() =>
+      useAssessmentYearRangeForm({
+        config: mockConfig,
+        id: null,
+        initialData: undefined,
+        createAction,
+        updateAction: mockUpdateAction,
+      })
+    );
+
+    act(() => {
+      result.current.handleYearChange("fromYear", "2024");
+      result.current.handleYearChange("toYear", "2024");
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.errors.fromYear).toBeUndefined();
+  });
+
   it("provides translation functions", () => {
     const { result } = renderHook(() =>
       useAssessmentYearRangeForm({

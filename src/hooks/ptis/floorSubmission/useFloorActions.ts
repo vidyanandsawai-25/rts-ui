@@ -100,13 +100,14 @@ export const useFloorActions = (params: {
       });
 
       const gFloor = (floorData as { floorCode?: string; floorId?: number; description?: string }[]).find(
-        (f) => f.floorCode === 'G' || f.description?.toLowerCase() === 'ground floor'
+        (f) => f.floorCode === 'G' || f.description?.startsWith('G -') || f.description?.startsWith('G-')
       );
       if (gFloor) {
         setEditingFloorForm((prev) => ({
           ...prev,
           floorId: String(gFloor.floorId || gFloor.floorCode || ''),
-          floor: gFloor.description || '',
+          floor: gFloor.description || 'G - तळमजला',
+          floorDescription: gFloor.description || 'G - तळमजला',
           rooms: '0',
         }));
       }

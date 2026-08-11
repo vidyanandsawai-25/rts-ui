@@ -77,6 +77,7 @@ export function ConfigKeyFormFields({
           className={errors.configCode ? 'border-red-500' : ''}
           disabled={isPending}
           maxLength={50}
+          autoComplete="off"
           aria-invalid={errors.configCode ? 'true' : 'false'}
           aria-describedby={errors.configCode ? 'configCode-error' : undefined}
         />
@@ -181,6 +182,7 @@ export function ConfigKeyFormFields({
               className={errors.defaultValue ? 'border-red-500' : ''}
               disabled={isPending}
               maxLength={100}
+              autoComplete="off"
               aria-invalid={errors.defaultValue ? 'true' : 'false'}
               aria-describedby={errors.defaultValue ? 'defaultValue-error' : undefined}
             />

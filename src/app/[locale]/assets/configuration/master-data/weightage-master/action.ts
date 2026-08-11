@@ -14,6 +14,7 @@ import {
   getFloorPaged,
 } from "@/lib/api/asset-masters/floor-cv-weightageMaster.service";
 import { ApiError } from "@/lib/utils/api";
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import {
   FloorFactorCVMaster,
   FloorFactorCVMasterCreateAction,
@@ -101,11 +102,10 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
     const yearRangeParam =
       selectedYearRange && selectedYearRange.trim() !== "" ? selectedYearRange : undefined;
 
-    // Whitelist-validate sort columns (single source of truth)
+    // Whitelist-validate and map sort columns to API allowed fields (FloorId, YearRangeCVId, IsActive)
     let validSortBy: string | undefined =
       sortBy && (ALLOWED_SORT_COLUMNS as readonly string[]).includes(sortBy) ? sortBy : undefined;
 
-    // Map display columns to API sort fields
     if (validSortBy === "FloorCode" || validSortBy === "FloorDescription") {
       validSortBy = "FloorId";
     } else if (validSortBy === "FromYear") {
@@ -175,13 +175,13 @@ export async function updateFloorFactorCVMasterAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText || 'API Error occurred',
+        message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'),
         statusCode: error.statusCode,
       };
     }
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to update record",
+      message: cleanErrorMessage(error instanceof Error ? error.message : "Failed to update record", "Failed to update record"),
       statusCode: 500,
     };
   }
@@ -209,7 +209,7 @@ export async function createFloorFactorCVMasterAction(
       revalidateWeightagePages();
       return { success: true, data: response.data };
     } else {
-      return { success: false, message: response.error || 'Failed to create record', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response.error, 'Failed to create record'), statusCode: 500 };
     }
   } catch (error: unknown) {
     const logger = createLogger('createFloorFactorCVMaster');
@@ -218,13 +218,13 @@ export async function createFloorFactorCVMasterAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText || 'API Error occurred',
+        message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'),
         statusCode: error.statusCode,
       };
     }
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: cleanErrorMessage(error instanceof Error ? error.message : 'Unknown error', 'Unknown error'),
       statusCode: 500,
     };
   }
@@ -252,7 +252,7 @@ export async function bulkCreateFloorFactorCVMasterAction(
       revalidateWeightagePages();
       return { success: true, data: response.data };
     } else {
-      return { success: false, message: response?.error || 'Failed to bulk create records', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response?.error, 'Failed to bulk create records'), statusCode: 500 };
     }
   } catch (error: unknown) {
     const logger = createLogger('bulkCreateFloorFactorCVMaster');
@@ -261,13 +261,13 @@ export async function bulkCreateFloorFactorCVMasterAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText || 'API Error occurred',
+        message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'),
         statusCode: error.statusCode,
       };
     }
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: cleanErrorMessage(error instanceof Error ? error.message : 'Unknown error', 'Unknown error'),
       statusCode: 500,
     };
   }
@@ -304,13 +304,13 @@ export async function bulkUpdateFloorFactorCVMasterAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText || 'API Error occurred',
+        message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'),
         statusCode: error.statusCode,
       };
     }
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to bulk update",
+      message: cleanErrorMessage(error instanceof Error ? error.message : "Failed to bulk update", "Failed to bulk update"),
       statusCode: 500,
     };
   }

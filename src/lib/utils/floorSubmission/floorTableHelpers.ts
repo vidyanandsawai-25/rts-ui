@@ -29,10 +29,13 @@ const safeStr = (...values: (string | number | null | undefined)[]): string => {
  * @param floor - Raw floor data from API
  * @returns Normalized floor data with string IDs
  */
-export const normalizeFloorFormData = (floor: FloorData): Partial<FloorData> => ({
-  ...floor,
-  floorId: safeStr(floor.floorId, floor.floorID, floor.FloorID),
-  subFloorId: safeStr(floor.subFloorId, floor.subFloorID, floor.SubFloorID),
+export const normalizeFloorFormData = (floor: FloorData): Partial<FloorData> => {
+  const rawFloorId = safeStr(floor.floorId, floor.floorID, floor.FloorID);
+  const resolvedFloorId = (!rawFloorId && floor.floor && !isNaN(Number(floor.floor))) ? String(floor.floor) : rawFloorId;
+  return {
+    ...floor,
+    floorId: resolvedFloorId,
+    subFloorId: safeStr(floor.subFloorId, floor.subFloorID, floor.SubFloorID),
   constructionTypeId: safeStr(floor.constructionTypeId, floor.constructionId, floor.ConstructionTypeId),
   typeOfUseId: safeStr(floor.typeOfUseId, floor.TypeOfUseId, floor.useId),
   subTypeOfUseId: safeStr(floor.subTypeOfUseId, floor.subTypId, floor.SubTypeOfUseId),
@@ -49,6 +52,6 @@ export const normalizeFloorFormData = (floor: FloorData): Partial<FloorData> => 
   areaSqM: String(floor.areaSqM !== undefined && floor.areaSqM !== null ? floor.areaSqM : floor.carpetAreaSqMeter || ''),
   builtupAreaSqFt: String(floor.builtupAreaSqFt !== undefined && floor.builtupAreaSqFt !== null ? floor.builtupAreaSqFt : floor.builtupAreaSqFeet || floor.builtUpAreaSqFeet || '0.00'),
   builtupAreaSqM: String(floor.builtupAreaSqM !== undefined && floor.builtupAreaSqM !== null ? floor.builtupAreaSqM : floor.builtupAreaSqMeter || floor.builtUpAreaSqMeter || '0.00'),
-  renter: (floor.renter === 'Yes' || floor.renter === true || floor.isRenter === true || floor.renterYesNo === true || floor.renterYesNO === true) ? 'Yes' : 'No',
   isTaxable: (floor.isTaxable === 'Yes' || floor.isTaxable === true) ? 'Yes' : 'No',
-});
+  };
+};

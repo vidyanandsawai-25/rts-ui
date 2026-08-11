@@ -11,7 +11,7 @@ vi.mock("@/components/common", () => ({
       {rows.map((row) => (
         <div key={row.id} data-testid={`grid-row-${row.id}`}>
           {Object.entries(row.cells).map(([key, value]) => (
-            <span key={key} data-testid={`cell-${row.id}-${key}`}>{value}</span>
+            <span key={key} data-testid={`cell-${row.id}-${key}`}>{value ?? 0}</span>
           ))}
         </div>
       ))}

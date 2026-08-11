@@ -3,6 +3,7 @@ import {
   getCommonRemarkCategories,
   getCommonRemarksPaged,
   getCommonRemarkById,
+  createRemarkCategory,
   createCommonRemark,
   updateCommonRemark,
   deleteCommonRemark,
@@ -196,6 +197,19 @@ describe("common-remark-crud.service", () => {
         isActive: true,
         createdBy: 42,
       });
+    });
+  });
+
+  describe("createRemarkCategory", () => {
+    it("should throw ApiError 409 if category name already exists", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({
+        success: true,
+        data: {
+          items: [{ id: 1, remarkTypeName: "Existing Category" }],
+        },
+      });
+
+      await expect(createRemarkCategory("Existing Category")).rejects.toThrow(ApiError);
     });
   });
 

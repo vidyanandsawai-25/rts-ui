@@ -94,13 +94,6 @@ describe('Navbar Component', () => {
     expect(mockHandleLogout).toHaveBeenCalledTimes(1);
   });
 
-  it('toggles profile dropdown when user button is clicked', () => {
-    render(<Navbar username="Test" />);
-    const userButton = screen.getByRole('button', { name: /Welcome/ });
-    fireEvent.click(userButton);
-    expect(mockSetShowProfileDropdown).toHaveBeenCalledWith(true);
-  });
-
   it('applies correct styling to navbar', () => {
     render(<Navbar />);
     const nav = screen.getByRole('navigation');

@@ -16,14 +16,17 @@ export async function automationGetDataEntryGrid(workflowStageId?: string | numb
     const response = await apiClient.get<DataEntryGridResponse>(url, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchDataEntryGrid") || "Failed to fetch data entry grid data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchDataEntryGrid") || "Failed to fetch data entry grid data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetDataEntryWardWiseSummary(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
 ): Promise<DataEntryWardWiseSummaryItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -34,6 +37,12 @@ export async function automationGetDataEntryWardWiseSummary(
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
     }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+    if (categoryId) {
+        params.append("PropertyTypeId", categoryId);
+    }
 
     const response = await apiClient.get<DataEntryWardWiseSummaryResponse>(
         `/AutomationDashboard/DataEntryWardWiseSummary?${params.toString()}`,
@@ -41,5 +50,6 @@ export async function automationGetDataEntryWardWiseSummary(
     );
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchDataEntryWardWiseSummary") || "Failed to fetch data entry ward-wise summary data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchDataEntryWardWiseSummary") || "Failed to fetch data entry ward-wise summary data");
+    return responseData.items?.[0] ?? null;
 }

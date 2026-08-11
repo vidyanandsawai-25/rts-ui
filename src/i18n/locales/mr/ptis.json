@@ -97,6 +97,10 @@
     "invalidDisplayOrder": "प्रदर्शन क्रम हा धन पूर्णांक असावा",
     "remarks": "शेरा",
     "remarksPlaceholder": "शेरा प्रविष्ट करा...",
+    "chooseFile": "फाईल निवडा",
+    "orDragDrop": "किंवा येथे ड्रॅग आणि ड्रॉप करा",
+    "allowedFormatsSubtitle": "JPEG, JPG, PNG समर्थित (जास्तीत जास्त 5MB)",
+    "uploadingAndSaving": "प्रतिमा अपलोड आणि जतन केली जात आहे...",
     "nameRequired": "नाव आवश्यक आहे",
     "invalidNameFormat": "फक्त अक्षरे, अंक, मोकळी जागा, हायफन आणि अंडरस्कोरला अनुमती आहे",
     "imageUnavailable": "चित्र अनुपलब्ध",
@@ -152,6 +156,7 @@
     "uploadInstructions": "अपलोड करण्याच्या सूचना",
     "allowedFormats": "स्वीकार्य स्वरूप: JPEG, JPG, PNG",
     "maxFileSize": "कमाल फाईल आकार: 5 MB",
+    "invalidImage": "कृपया एक वैध इमेज फाईल अपलोड करा",
     "photoLegibilityNote": "फोटो स्पष्ट आणि वाचता येण्याजोगा असल्याची खात्री करा",
     "panMode": "पॅन मोड",
     "zoomIn": "झूम इन",
@@ -408,12 +413,14 @@
     "interest": "व्याज",
     "netTotal": "एकूण देय",
     "noTaxDetails": "कोणताही कर तपशील उपलब्ध नाही",
+    "taxDetails": "कर तपशील",
     "noMapDetails": "कोणताही नकाशा तपशील उपलब्ध नाही",
     "latitude": "अक्षांश",
     "longitude": "रेखांश",
     "mappingCategory": "मॅपिंग वर्गवारी",
     "oldPropPartNo": "जुना मालमत्ता क्र.-विभाग क्र.",
     "oldWardPropPartNo": "जुना प्रभाग-मालमत्ता-विभाग क्र.",
+    "wardPropPartNo": "प्रभाग-मालमत्ता-विभाग क्र.",
     "oldPlotAreaSqMtr": "जुने भूखंड क्षेत्रफळ (चौ. मी.)",
     "oldConstAreaSqMtr": "जुने बांधकाम क्षेत्रफळ (चौ. मी.)"
   },
@@ -463,7 +470,8 @@
     "showOldTax": "जुना कर पहा",
     "hideOldTax": "जुना कर लपवा",
     "showMapDetails": "नकाशा तपशील दाखवा",
-    "hideMapDetails": "नकाशा तपशील लपवा"
+    "hideMapDetails": "नकाशा तपशील लपवा",
+    "propertyMapping": "मालमत्ता मॅपिंग"
   },
   "loading": {
     "message": "मालमत्ता तपशील लोड होत आहे",
@@ -570,8 +578,10 @@
       "tax": "कर",
       "yes": "होय",
       "no": "नाही",
+      "fullChange": "पूर्ण बदल:",
       "cv": "सीव्ही",
       "rv": "आरव्ही",
+      "alv": "एएलव्ही",
       "m2Unit": "चौ.मी.",
       "oldTotalRv": "[जुने] एकूण आर.व्ही.",
       "oldTotalAlv": "[जुने] एकूण ए.एल.व्ही.",
@@ -657,7 +667,12 @@
       "confirmText": "होय",
       "cancelText": "नाही"
     },
-    "qcDoneLabel": "QC Done"
+    "qcStatus": {
+      "label": "क्यूसी स्थिती",
+      "placeholder": "क्यूसी स्थिती"
+    },
+    "qcDoneLabel": "क्यूसी पूर्ण",
+    "trackStatus": "स्थिती ट्रॅक करा"
   },
   "footerActions": {
     "R_SAVE": "जतन करा",

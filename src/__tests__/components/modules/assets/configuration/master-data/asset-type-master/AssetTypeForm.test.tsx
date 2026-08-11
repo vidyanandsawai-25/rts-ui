@@ -74,7 +74,7 @@ describe("AssetTypeForm", () => {
     vi.mocked(actions.saveAssetTypeAction).mockResolvedValue({ ok: true, mode: "create" });
     render(<AssetTypeForm groups={mockGroups} initialData={null} />);
 
-    fireEvent.change(screen.getByTestId("group-input"), { target: { name: "group", value: "G1" } });
+    fireEvent.change(screen.getByTestId("group-input"), { target: { name: "group", value: "1" } });
     fireEvent.change(screen.getByTestId("code-input"), { target: { name: "code", value: "TYPE1" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "name", value: "Type Name" } });
     fireEvent.click(screen.getByTestId("unit-radio"));

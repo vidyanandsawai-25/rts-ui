@@ -67,19 +67,21 @@
     },
     "validation": {
       "photoTypeCodeRequired": "Photo type code is required",
-      "photoTypeCodeMaxLength": "Maximum length is 50 characters",
+      "photoTypeCodeMaxLength": "Maximum length is {count} characters",
       "photoTypeCodeFormat": "Only alphanumeric uppercase characters and underscores are allowed",
       "photoTypeNameRequired": "Photo type name is required",
       "photoTypeNameMaxLength": "Maximum length is 100 characters",
       "photoTypeNameFormat": "Invalid name format",
       "descriptionRequired": "Description is required",
-      "descriptionMaxLength": "Maximum length is 200 characters",
+      "descriptionMaxLength": "Maximum length is {count} characters",
       "descriptionFormat": "Invalid description format",
       "displayOrderInvalid": "Display order must be greater than 0",
+      "displayOrderMaxLimit": "Display order cannot exceed 99999",
       "displayOrderRequired": "Display order is required",
       "mustBeActive": "Asset Photo Type must be active to save",
       "assetCategoryRequired": "Asset Category is required",
-      "assetTypeRequired": "Asset Type is required"
+      "assetTypeRequired": "Asset Type is required",
+      "invalidFormat": "Invalid format"
     },
     "status": {
       "label": "Active Status",
@@ -96,11 +98,16 @@
   },
   "apiErrors": {
     "duplicateRecord": "Please check Photo Type Code - duplicates not allowed.",
+    "AssetPhotoType_PhotoTypeCode_Duplicate": "Asset Photo Type Code already exists",
+    "AssetPhotoType_AssetCategoryId_Invalid": "Invalid Asset Category selected",
+    "AssetPhotoType_AssetTypeId_Invalid": "Invalid Asset Type selected",
+    "A record with the same details already exists": "A record with the same details already exists.",
     "validationError": "Invalid data provided. Please check all fields.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "notFound": "Asset photo type not found.",
     "inUse": "Cannot deactivate/delete this Asset Photo Type because it is referenced by other asset records.",
-    "operationFailed": "Operation failed. Please try again later."
+    "operationFailed": "Operation failed. Please try again later.",
+    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
   },
   "success": {
     "created": "New asset photo type created successfully: {code}",

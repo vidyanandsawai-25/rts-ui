@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { ToastNotifier } from '@/components/common';
 import type { OldDetailsData } from '@/types/ptis.types';
-
 import type { RateableValueResponse } from '@/types/rateableValue.types';
+import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { RateableTaxTable } from './components/RateableTaxTable';
 import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/shared/ValuationSummaryFooter';
 import { getRateableValue } from '@/app/[locale]/property-tax/ptis/RateableValue.action';
@@ -15,6 +15,7 @@ interface Props {
   oldDetails: OldDetailsData;
   searchParams: Record<string, string | string[] | undefined>;
   rateableData?: RateableValueResponse | null;
+  comparisonData?: PropertyComparisonResponse | null;
   hasFetchedData?: boolean;
   error?: string;
   showInlineError?: boolean;
@@ -28,6 +29,7 @@ export async function RateableTaxDetailsSection({
   oldDetails,
   searchParams,
   rateableData: initialData,
+  comparisonData,
   hasFetchedData = false,
   error: initialError,
   showInlineError = true,
@@ -35,7 +37,6 @@ export async function RateableTaxDetailsSection({
   taxDetailsError,
   locale,
 }: Props) {
-
   const ptisT = await getTranslations({ locale, namespace: 'ptis' });
 
   const { data: rateableData, error, message, warning } = await resolveValuationData<RateableValueResponse>({
@@ -75,9 +76,9 @@ export async function RateableTaxDetailsSection({
       )}
       <RateableTaxTable locale={locale} rateableData={rateableData} searchParams={searchParams} propertyId={propertyId} />
 
-
       <ValuationSummaryFooter
         title={t('title')}
+        comparisonData={comparisonData}
         badges={[
           { label: t('oldTotalRv'), value: oldAreaRV, color: 'blue' },
           { label: t('oldTotalTax'), value: oldAreaTax, color: 'blue' },

@@ -28,8 +28,8 @@
     },
     "labels": {
       "addAgeRange": "आयु सीमा जोड़ें",
-      "minYear": "न्यूनतम वर्ष",
-      "maxYear": "अधिकतम वर्ष",
+      "minYear": "आयु से",
+      "maxYear": "आयु तक",
       "close": "बंद करें"
     },
     "messages": {

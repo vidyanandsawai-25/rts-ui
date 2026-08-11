@@ -117,11 +117,15 @@ function transformDepartmentConfigs(
         };
       });
 
+    const hasSubmodules = submodules.length > 0;
+
     return {
       id: dept.departmentId,
       name: dept.departmentName,
       code: dept.departmentCode,
-      isEnabled: !!deptValueObj?.isActive,
+      isEnabled: hasSubmodules
+        ? submodules.some((sub) => sub.isEnabled)
+        : !!deptValueObj?.isActive,
       configValueId: deptValueObj?.configValueId || 0,
       value: deptValueObj?.value || '',
       submoduleCount: submodules.length,
@@ -174,7 +178,7 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
             isActive: u.isEnabled,
             updatedBy: userId,
           });
-        } else if (u.isEnabled || (u.value !== undefined && u.value !== '')) {
+        } else if (u.isEnabled) {
           return configMasterService.createConfigValue({
             configKeyId: keyId,
             departmentId: u.departmentId,

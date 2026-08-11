@@ -28,8 +28,8 @@
     },
     "labels": {
       "addAgeRange": "Add Age Range",
-      "minYear": "Min Year",
-      "maxYear": "Max Year",
+      "minYear": "From Year",
+      "maxYear": "To Year",
       "close": "Close"
     },
     "messages": {

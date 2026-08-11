@@ -122,6 +122,7 @@ export interface OldDetailsData {
 }
 
 export interface OldFloorDetailsData {
+  wardPropPartNo: string; // combined "oldWardNo - oldPropertyNo - oldPartitionNo"
   floor: string;
   subFloor: string;
   assessmentYear: string;
@@ -247,6 +248,9 @@ export interface OldTaxYear {
   taxTotal: number;
   interest: number;
   netTotal: number;
+  oldWardNo?: string | number | null;
+  oldPropertyNo?: string | null;
+  oldPartitionNo?: string | number | null;
 }
 
 export interface OldTaxesData {
@@ -402,6 +406,9 @@ export interface OldFloorDetailApiResponse {
   oldCarpetAreaSqMeter?: number;
   oldBuiltupAreaSqFeet?: number;
   oldBuiltupAreaSqMeter?: number;
+  oldWardNo?: string | number;
+  oldPropertyNo?: string;
+  oldPartitionNo?: string | number;
 }
 
 export interface OldTaxDetailApiResponse {
@@ -420,6 +427,9 @@ export interface OldTaxYearApiResponse {
   taxTotal: number;
   interest: number;
   netTotal: number;
+  oldWardNo?: string | number | null;
+  oldPropertyNo?: string | null;
+  oldPartitionNo?: string | number | null;
 }
 
 export interface OldTaxesApiResponse {

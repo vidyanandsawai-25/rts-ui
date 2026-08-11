@@ -68,7 +68,7 @@ describe("useMatrixState", () => {
     expect(result.current.completionPercentage).toBe(100);
   });
 
-  it("should ignore zero values when calculating filled rates", () => {
+  it("should count zero values as filled rates if present in edits", () => {
     const { result } = renderHook(() =>
       useMatrixState({
         allZones: mockZoneDescriptions,
@@ -80,8 +80,8 @@ describe("useMatrixState", () => {
       })
     );
 
-    // Only LOAD has a non-zero value
-    expect(result.current.filledRatesCount).toBe(1);
+    // RCC, LOAD, and MUD are all present in edits (even though two are 0)
+    expect(result.current.filledRatesCount).toBe(3);
   });
 
   it("should build complete matrix for submission", () => {

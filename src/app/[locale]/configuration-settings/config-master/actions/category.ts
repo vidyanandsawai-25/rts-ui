@@ -38,6 +38,56 @@ export async function createConfigCategoryAction(formData: FormData): Promise<Ac
       };
     }
 
+    // Check if category with the same code already exists (case-insensitive)
+    const categoriesRes = await configMasterService.getAllCategories();
+    const existingCategory = categoriesRes.success && categoriesRes.data
+      ? categoriesRes.data.find(
+          (c) => c.code.trim().toLowerCase() === validation.data.categoryCode.trim().toLowerCase()
+        )
+      : null;
+
+    if (existingCategory) {
+      if (existingCategory.isActive) {
+        return {
+          success: false,
+          error: await tConfigMessage('duplicateCode', 'Code already exists. Please use a unique code.'),
+          validationErrors: {
+            categoryCode: ['messages.duplicateCode'],
+          },
+        };
+      }
+
+      // If it is inactive, reactivate it by calling updateConfigCategory
+      const reactivateResult = await configMasterService.updateConfigCategory(
+        Number(existingCategory.id),
+        {
+          categoryCode: validation.data.categoryCode,
+          categoryName: validation.data.categoryName,
+          displayOrder: validation.data.displayOrder || existingCategory.displayOrder,
+          isActive: true,
+          updatedBy: userId,
+        }
+      );
+
+      if (reactivateResult.success) {
+        const locale = await getLocaleFromHeaders();
+        revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
+        return {
+          success: true,
+          message: await tConfigMessage('categoryCreated', 'Category created successfully'),
+        };
+      }
+
+      return {
+        success: false,
+        error: await localizeBackendMessage(
+          reactivateResult.error,
+          'unexpectedError',
+          'Failed to create category'
+        ),
+      };
+    }
+
     const result = await configMasterService.createConfigCategory({
       ...validation.data,
       createdBy: userId,
@@ -90,6 +140,25 @@ export async function updateConfigCategoryAction(
         error: await tConfigMessage('unexpectedError', 'Validation failed'),
         validationErrors: validation.error.flatten().fieldErrors,
       };
+    }
+
+    // Verify that the updated code is not already in use by any other category (active or inactive)
+    const categoriesRes = await configMasterService.getAllCategories();
+    if (categoriesRes.success && categoriesRes.data) {
+      const duplicateCategory = categoriesRes.data.find(
+        (c) =>
+          c.code.trim().toLowerCase() === validation.data.categoryCode.trim().toLowerCase() &&
+          Number(c.id) !== id
+      );
+      if (duplicateCategory) {
+        return {
+          success: false,
+          error: await tConfigMessage('duplicateCode', 'Code already exists. Please use a unique code.'),
+          validationErrors: {
+            categoryCode: ['messages.duplicateCode'],
+          },
+        };
+      }
     }
 
     const result = await configMasterService.updateConfigCategory(id, {

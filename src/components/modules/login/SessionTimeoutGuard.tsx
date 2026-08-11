@@ -131,11 +131,12 @@ export function SessionTimeoutGuard() {
     const nowUnix = Math.floor(Date.now() / 1000);
     const expiresUnix = knownExpiryUnixRef.current ?? getSessionExpiresAtUnixFromCookie();
 
-    if (expiresUnix !== null) {
-      if (isSessionExpiredAtUnix(expiresUnix, nowUnix)) {
+    if (hasLoggedInFlag()) {
+      if (expiresUnix === null || isSessionExpiredAtUnix(expiresUnix, nowUnix)) {
         redirectingRef.current = true;
         clearLegacyAuthClientStorage();
-        window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+        const errorParam = isWarningFromInactivityRef.current ? 'inactivityTimeout' : SESSION_EXPIRED_LOGIN_ERROR;
+        window.location.assign(`/${locale}/login?error=${errorParam}`);
         return;
       }
 
@@ -146,7 +147,8 @@ export function SessionTimeoutGuard() {
         } else {
           redirectingRef.current = true;
           clearLegacyAuthClientStorage();
-          window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+          const errorParam = isWarningFromInactivityRef.current ? 'inactivityTimeout' : SESSION_EXPIRED_LOGIN_ERROR;
+          window.location.assign(`/${locale}/login?error=${errorParam}`);
         }
       }
     }
@@ -165,7 +167,7 @@ export function SessionTimeoutGuard() {
       return;
     }
 
-    if (expiresUnix !== null && isSessionExpiredAtUnix(expiresUnix)) {
+    if (expiresUnix === null || isSessionExpiredAtUnix(expiresUnix)) {
       redirectingRef.current = true;
       clearLegacyAuthClientStorage();
       window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
@@ -254,7 +256,7 @@ export function SessionTimeoutGuard() {
       try {
         sessionStorage.removeItem('is_tab_active_session');
       } catch {}
-      window.location.assign(`/${locale}/login?requireVerification=1`);
+      window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}&requireVerification=1`);
     }
   }, [pathname, locale]);
 

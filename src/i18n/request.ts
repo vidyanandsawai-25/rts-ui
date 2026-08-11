@@ -88,8 +88,17 @@ export default getRequestConfig(async ({ locale }) => {
     owningDepartmentMessages,
     municipalAssetMessages,
     moujaSubzoneMessages,
+    assetTypeOfUseMessages,
     mapDashboardMessages,
+<<<<<<< HEAD
     rtsMessages,
+=======
+    propertyMappingMessages,
+    assetRegisterMessages,
+    dynamicTaxRegisterMessages,
+    assetGrievanceCategoryMessages,
+    assetGrievanceRemarkMessages,
+>>>>>>> a2d4522e1937412d0e3ff2ac2e87e54a54711a27
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -219,8 +228,17 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/municipalAsset.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetTypeOfUse.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/mapDashboard.json`).catch(() => ({})).then((m) => m.default || m),
+<<<<<<< HEAD
     import(`./locales/${validatedLocale}/rts.json`).catch(() => ({})).then((m) => m.default || m),
+=======
+    import(`./locales/${validatedLocale}/propertyMapping.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetRegister.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/dynamicTaxRegister.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetGrievanceCategory.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetGrievanceRemark.json`).catch(() => ({})).then((m) => m.default || m),
+>>>>>>> a2d4522e1937412d0e3ff2ac2e87e54a54711a27
   ]);
 
   return {
@@ -302,7 +320,14 @@ export default getRequestConfig(async ({ locale }) => {
       owningDepartment: owningDepartmentMessages,
       municipalAsset: municipalAssetMessages,
       moujaSubzone: moujaSubzoneMessages,
+      assetTypeOfUse: assetTypeOfUseMessages,
       mapDashboard: mapDashboardMessages,
+      propertyMapping: propertyMappingMessages?.propertyMapping || propertyMappingMessages,
+      assetRegister: assetRegisterMessages,
+      dynamicTaxRegister: dynamicTaxRegisterMessages,
+      assetGrievanceCategory: assetGrievanceCategoryMessages,
+      assetGrievanceRemark: assetGrievanceRemarkMessages,
     },
   };
 });
+

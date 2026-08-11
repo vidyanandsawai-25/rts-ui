@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import type React from "react";
 import type { InventoryModelFormModel } from "@/types/asset-masters/inventory-model.types";
-import { ASSET_MASTER_TEXT_SANITIZE, ASSET_INVENTORY_NAME_SANITIZE } from "@/lib/utils/validation-rules";
+import { sanitizeFieldValue } from "./validation";
 
 export function useInventoryModelForm(
   initialData: InventoryModelFormModel | null | undefined,
-  validate: (data: InventoryModelFormModel) => Record<string, string>
+  validate: (data: InventoryModelFormModel) => Partial<Record<keyof InventoryModelFormModel, string>>
 ) {
   const [formData, setFormData] = useState<InventoryModelFormModel>(
     initialData ?? {
@@ -17,40 +17,51 @@ export function useInventoryModelForm(
     }
   );
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof InventoryModelFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    let newValue = value;
+    const sanitized = sanitizeFieldValue(name, value);
 
-    if (name === "name") {
-      newValue = newValue.replace(ASSET_INVENTORY_NAME_SANITIZE, "");
-    }
-
-    if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "");
-    }
-    
-    if (typeof newValue === "string" && newValue.length > 0 && ["name", "description"].includes(name)) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
-
-    setFormData((p) => ({ ...p, [name]: newValue }));
-    setErrors((p) => ({ ...p, [name]: "" }));
+    setFormData((p) => ({ ...p, [name]: sanitized }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err[name as keyof InventoryModelFormModel];
+      return err;
+    });
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string) => {
-    setFormData((p) => ({ ...p, [name]: value }));
-    setErrors((p) => ({ ...p, [name]: "" }));
-  }, []);
+    setFormData((p) => {
+      const updated = { ...p, [name]: value };
+      const fieldErrors = validate(updated);
+      setErrors((prev) => {
+        const err = { ...prev };
+        const field = name as keyof InventoryModelFormModel;
+        if (fieldErrors[field]) err[field] = fieldErrors[field]; else delete err[field];
+        return err;
+      });
+      return updated;
+    });
+  }, [validate]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    const fieldErrors = validate({ ...formData, [name]: value });
-    setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
+    const sanitized = sanitizeFieldValue(name, value);
+    const updated = { ...formData, [name]: sanitized };
+    setFormData(updated);
+
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const err = { ...p };
+      const field = name as keyof InventoryModelFormModel;
+      if (fieldErrors[field]) err[field] = fieldErrors[field]; else delete err[field];
+      return err;
+    });
   }, [formData, validate]);
 
   const handleToggleStatus = useCallback((checked?: boolean | unknown) => {
@@ -64,9 +75,12 @@ export function useInventoryModelForm(
     setErrors,
     touched,
     setTouched,
+    submittedOnce,
+    setSubmittedOnce,
     handleChange,
     handleSelectChange,
     handleBlur,
     handleToggleStatus,
   };
 }
+

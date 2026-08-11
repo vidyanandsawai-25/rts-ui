@@ -1,5 +1,5 @@
 'use client';
-
+/* eslint-disable react-hooks/refs */
 import { useTranslations } from 'next-intl';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, Check, Loader2 } from 'lucide-react';
@@ -85,7 +85,6 @@ export function SearchSelectPaginated({
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [hasTyped, setHasTyped] = useState(false);
-  const [isFocusedState, setIsFocusedState] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
   const activePlacement = menuPlacement || placement;
@@ -93,7 +92,6 @@ export function SearchSelectPaginated({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isFocused = useRef<boolean>(false);
   const didSelectRef = useRef<boolean>(false);
@@ -101,51 +99,35 @@ export function SearchSelectPaginated({
 
   useEffect(() => {
     if (menuPlacement) return;
-    if (!isOpen) return;
 
-    const updatePlacement = () => {
-      if (!wrapperRef.current) return;
+    if (isOpen && wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect();
-      const spaceAbove = rect.top;
       const spaceBelow = window.innerHeight - rect.bottom;
-      const dropdownHeight = Math.min(dropdownRef.current?.scrollHeight ?? 260, 260);
-
-      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+      if (spaceBelow < 250 && rect.top > 250) {
         setPlacement('top');
       } else {
         setPlacement('bottom');
       }
-    };
-
-    const frame = window.requestAnimationFrame(updatePlacement);
-    window.addEventListener('resize', updatePlacement);
-    window.addEventListener('scroll', updatePlacement, true);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', updatePlacement);
-      window.removeEventListener('scroll', updatePlacement, true);
-    };
+    } else {
+      setPlacement('bottom');
+    }
   }, [isOpen, menuPlacement]);
 
   const validOptions = useMemo(() => Array.isArray(options) ? options : [], [options]);
   const hasOptions = validOptions.length > 0;
 
   const displayValue = useMemo<string>(() => {
-    if (hasTyped && isFocusedState) return search;
+    if (hasTyped && isFocused.current) return search;
     const valStr = value !== undefined && value !== null ? String(value) : '';
     if (valStr !== '') {
       const match = validOptions.find(
         (o) => String(o.value) === valStr || String(o.value).toLowerCase() === valStr.toLowerCase()
       );
-      if (match?.label) return match.label;
-      if (forceSearchText !== undefined && forceSearchText.trim() !== '') return forceSearchText;
-      if (search.trim() !== '') return search;
-      return '';
+      return match?.label ?? valStr;
     }
     if (forceSearchText !== undefined && forceSearchText.trim() !== '') return forceSearchText;
     return search;
-  }, [hasTyped, isFocusedState, search, forceSearchText, value, validOptions]);
+  }, [hasTyped, search, forceSearchText, value, validOptions]);
 
   useEffect((): (() => void) => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -239,11 +221,9 @@ export function SearchSelectPaginated({
       if (didSelectRef.current) {
         didSelectRef.current = false;
         setIsOpen(false);
-        setIsFocusedState(false);
         return;
       }
       setIsOpen(false);
-      setIsFocusedState(false);
       if (!hasOptions) return;
       const cleanSearch = normalizeSearchText(search);
       const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
@@ -400,7 +380,6 @@ export function SearchSelectPaginated({
           inputMode={inputMode}
           onFocus={() => {
             isFocused.current = true;
-            setIsFocusedState(true);
             onInputFocus?.();
             if (!disabled) {
               setIsOpen(true);
@@ -446,7 +425,6 @@ export function SearchSelectPaginated({
 
       {isOpen && (
         <div
-          ref={dropdownRef}
           id={`${accessibleId}-listbox`}
           role="listbox"
           className={`

@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { GstMasterFormModel } from "@/types/asset-masters/gst-master.types";
 import { saveGstMaster } from "@/app/[locale]/assets/configuration/master-data/gst-master/action";
-import { sanitizeText } from "@/lib/utils/sanitization";
-import { CODE_SANITIZE } from "@/lib/utils/validation";
+import { CODE_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 interface UseGstMasterFormHandlersProps {
   formData: GstMasterFormModel;
@@ -61,7 +60,10 @@ export function useGstMasterFormHandlers({
     if (name === "taxCode") {
       sanitizedValue = value.toUpperCase().replace(CODE_SANITIZE, "").slice(0, 20);
     } else if (name === "taxName") {
-      sanitizedValue = sanitizeText(value, 100);
+      sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      if (sanitizedValue.length > 100) {
+        sanitizedValue = sanitizedValue.substring(0, 100);
+      }
     }
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));
@@ -118,7 +120,6 @@ export function useGstMasterFormHandlers({
         setOpen(false);
         startTransition(() => {
           router.push(`/${locale}/assets/configuration/master-data/gst-master`);
-          router.refresh();
         });
         return;
       }

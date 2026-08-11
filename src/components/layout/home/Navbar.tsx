@@ -7,7 +7,6 @@ import { useHeaderState } from '@/hooks/useHeaderState';
 
 import { Settings, User, AlertCircle } from "lucide-react";
 
-import { UserProfilePopup } from "./UserProfilePopup";
 import { Button } from "@/components/common/ActionButton";
 import type { UserProfileDisplayValues } from "@/types/home/user-profile.types";
 
@@ -24,9 +23,9 @@ export const Navbar = ({
     username,
     ulbName,
     userProfile,
-    profileError,
-    sessionId,
-    clientIp,
+    profileError: _profileError,
+    sessionId: _sessionId,
+    clientIp: _clientIp,
 }: NavbarProps) => {
     const t = useTranslations('common');
     const tLogin = useTranslations('login');
@@ -34,8 +33,6 @@ export const Navbar = ({
     const locale = useLocale();
     const {
         handleLogout,
-        showProfileDropdown,
-        setShowProfileDropdown,
         isLoggingOut
     } = useHeaderState();
 
@@ -129,30 +126,14 @@ export const Navbar = ({
                     )}
 
                     {/* User info */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                            className="flex items-center gap-2 sm:gap-3 text-left focus:outline-none group border-l border-blue-400 pl-3 sm:pl-4 md:pl-6 shrink-0"
-                        >
-                            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-400/30 group-hover:bg-blue-500/30 transition-colors shrink-0">
-                                <User className="w-4 sm:w-5 h-4 sm:h-5 text-blue-100" />
-                            </div>
-                            <div className="hidden sm:flex flex-col md:flex-row md:items-baseline gap-0.5 md:gap-1">
-                                <span className="text-[10px] sm:text-xs text-blue-200 leading-none">{t('app.welcome')}</span>
-                                <span className="text-xs sm:text-sm font-semibold text-white truncate max-w-[80px] md:max-w-[120px] lg:max-w-none">{username || t('app.defaultUser')}</span>
-                            </div>
-                        </button>
-
-                        <UserProfilePopup
-                            isOpen={showProfileDropdown}
-                            onClose={() => setShowProfileDropdown(false)}
-                            username={username}
-                            ulbName={ulbName}
-                            userProfile={userProfile}
-                            profileError={profileError}
-                            sessionId={sessionId}
-                            clientIp={clientIp}
-                        />
+                    <div className="flex items-center gap-2 sm:gap-3 text-left border-l border-blue-400 pl-3 sm:pl-4 md:pl-6 shrink-0">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-400/30 shrink-0">
+                            <User className="w-4 sm:w-5 h-4 sm:h-5 text-blue-100" />
+                        </div>
+                        <div className="hidden sm:flex flex-col md:flex-row md:items-baseline gap-0.5 md:gap-1">
+                            <span className="text-[10px] sm:text-xs text-blue-200 leading-none">{t('app.welcome')}</span>
+                            <span className="text-xs sm:text-sm font-semibold text-white truncate max-w-[80px] md:max-w-[120px] lg:max-w-none">{username || t('app.defaultUser')}</span>
+                        </div>
                     </div>
 
                     {/* Logout button */}

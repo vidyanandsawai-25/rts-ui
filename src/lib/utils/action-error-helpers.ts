@@ -77,6 +77,9 @@ export async function cleanCommonApiError(
     if (str.toLowerCase().includes("dto field is required")) {
         return t("discount.socialValidation.required", { fieldName: "Value" }) || "Required information is missing.";
     }
+    if (str.includes("InvalidCharacters")) {
+        return t("property.validation.invalidCharacters") || "Input contains invalid characters. Only alphanumeric characters and standard punctuation are allowed.";
+    }
     return str;
 }
 

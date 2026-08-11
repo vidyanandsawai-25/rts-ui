@@ -38,19 +38,28 @@ export function filterOpenPlotCategories(
     return isCategoryMatch && isActive;
   });
 
-  return filtered.map((item) => {
+  const seenIds = new Set<number>();
+  const result: OpenPlotCategoryItem[] = [];
+
+  for (const item of filtered) {
+    const id = Number(item.typeOfUseId ?? item.id ?? item.ID ?? 0);
+    if (seenIds.has(id)) continue;
+    seenIds.add(id);
+
     const catId = Number(item.typeOfUseCategoryId ?? item.TypeOfUseCategoryId ?? item.categoryId ?? item.CategoryId ?? 4);
-    return {
-      id: Number(item.typeOfUseId ?? item.id ?? item.ID ?? 0),
-      typeOfUseId: Number(item.typeOfUseId ?? item.id ?? item.ID ?? 0),
+    result.push({
+      id,
+      typeOfUseId: id,
       typeOfUseCode: String(item.typeOfUseCode ?? item.code ?? item.Code ?? ''),
       description: String(item.description ?? item.Description ?? ''),
       type: String(item.type ?? item.Type ?? 'C'),
       typeOfUseGroupId: Number(item.typeOfUseGroupId ?? item.TypeOfUseGroupId ?? 10031),
       typeOfUseCategoryId: catId,
       isActive: true,
-    };
-  });
+    });
+  }
+
+  return result;
 }
 
 const NON_TAXABLE_OPEN_PLOT_CODES = new Set(['OPF', 'OPN']);

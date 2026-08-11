@@ -37,6 +37,7 @@ interface MediaImageCardProps {
   onMouseLeave?: () => void;
   children?: React.ReactNode;
   priority?: boolean;
+  hasPhoto?: boolean;
 }
 
 /**
@@ -55,6 +56,7 @@ export function MediaImageCard({
   onMouseLeave,
   children,
   priority,
+  hasPhoto,
 }: MediaImageCardProps): React.ReactElement {
   return (
     <div
@@ -76,23 +78,25 @@ export function MediaImageCard({
       {/* Action buttons (visible on hover) */}
       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         {children}
-        <Button
-          variant="secondary"
-          size="xs"
-          className="h-7 w-7 p-0 shadow-lg cursor-pointer"
-          aria-label="Download image"
-          onClick={(e) => {
-            e.stopPropagation();
-            const link = document.createElement('a');
-            link.href = fullSrc || src;
-            link.download = `${label.replace(/\s+/g, '_')}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }}
-        >
-          <Download className="w-3.5 h-3.5 cursor-pointer" />
-        </Button>
+        {hasPhoto && (
+          <Button
+            variant="secondary"
+            size="xs"
+            className="h-7 w-7 p-0 shadow-lg cursor-pointer"
+            aria-label="Download image"
+            onClick={(e) => {
+              e.stopPropagation();
+              const link = document.createElement('a');
+              link.href = fullSrc || src;
+              link.download = `${label.replace(/\s+/g, '_')}.png`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+          >
+            <Download className="w-3.5 h-3.5 cursor-pointer" />
+          </Button>
+        )}
       </div>
 
       {/* Bottom label overlay */}

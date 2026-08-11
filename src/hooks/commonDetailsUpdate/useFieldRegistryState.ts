@@ -1,56 +1,127 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { BulkUpdateMaster } from "@/types/common-details-update/common-details-update.types";
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
+import { PagedResponse } from "@/types/common.types";
+import { BulkUpdateMaster, FieldRegistrySchema, CommonDetailsUpdateActions, FieldRegistryTable, SourceTableField } from "@/types/common-details-update/common-details-update.types";
 import { useFieldRegistryForm } from "./useFieldRegistryForm";
 
-export const useFieldRegistryState = (initialFields: BulkUpdateMaster[] = []) => {
-  const router = useRouter();
+export const useFieldRegistryState = (
+  initialFields: PagedResponse<BulkUpdateMaster> | BulkUpdateMaster[] = [],
+  initialSchemas: FieldRegistrySchema[] = [],
+  initialSourceTables: FieldRegistryTable[] = [],
+  initialSourceTableFields: SourceTableField[] = [],
+  actions: Partial<CommonDetailsUpdateActions> = {}
+) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const [fields, setFields] = useState<BulkUpdateMaster[]>(initialFields);
+  const [fields, setFields] = useState<BulkUpdateMaster[]>(() => {
+    if (Array.isArray(initialFields)) {
+      return initialFields;
+    }
+    if (initialFields && "items" in initialFields) {
+      return initialFields.items || [];
+    }
+    return [];
+  });
 
-  const [categoryFilter, setCategoryFilterState] = useState(searchParams.get("category") || "all");
+  const [totalCount, setTotalCount] = useState<number>(() => {
+    if (Array.isArray(initialFields)) {
+      return initialFields.length;
+    }
+    if (initialFields && "totalCount" in initialFields) {
+      return initialFields.totalCount || 0;
+    }
+    return 0;
+  });
+
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTermState] = useState(searchParams.get("searchTerm") || "");
 
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const initialPageNumber = Number(searchParams.get("pageNumber") || searchParams.get("page") || "1");
+  const initialPageSize = Number(searchParams.get("pageSize") || "10");
 
-  const setCategoryFilter = (val: string) => {
-    setCategoryFilterState(val);
-    const params = new URLSearchParams(searchParams.toString());
-    if (val && val !== "all") params.set("category", val); else params.delete("category");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  const [pageNumber, setPageNumberState] = useState(initialPageNumber);
+  const [pageSize, setPageSizeState] = useState(initialPageSize);
 
   const setSearchTerm = (val: string) => {
     setSearchTermState(val);
-    const params = new URLSearchParams(searchParams.toString());
-    if (val) params.set("searchTerm", val); else params.delete("searchTerm");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (val) params.set("searchTerm", val); else params.delete("searchTerm");
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+    }
   };
 
-  // Note: we fetch fresh fields but for this hook we keep it simple or import getMenuItemsAction if needed.
-  // We can pass refreshFieldsList to useFieldRegistryForm.
-  const refreshFieldsList = async () => {
-    // import here dynamically or pass from somewhere if needed, but since it's just state we can skip dynamic import and rely on the hook passing
-    const { getMenuItemsAction } = await import("@/app/[locale]/property-tax/common-details-update/actions");
-    const freshMenuItems = await getMenuItemsAction();
-    setFields(freshMenuItems);
+  const setPageNumber = (val: number) => {
+    setPageNumberState(val);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      params.set("pageNumber", String(val));
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+    }
   };
 
-  const formState = useFieldRegistryForm(fields, refreshFieldsList);
+  const setPageSize = (val: number) => {
+    setPageSizeState(val);
+    setPageNumberState(1);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      params.set("pageSize", String(val));
+      params.set("pageNumber", "1");
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+    }
+  };
+
+  const refreshFieldsList = useCallback(async () => {
+    if (!actions.getFieldRegistriesAction) return;
+  
+    const res = await actions.getFieldRegistriesAction(1, 1000);
+    if (res.success && res.data) {
+      const data = res.data;
+      if (data && "items" in data) {
+        setFields(data.items || []);
+        setTotalCount(data.totalCount || 0);
+      }
+    }
+    
+  }, [actions.getFieldRegistriesAction]);
+
+  useEffect(() => {
+    refreshFieldsList();
+  }, [refreshFieldsList]);
+
+  useEffect(() => {
+    if (Array.isArray(initialFields)) {
+      setFields(initialFields);
+      setTotalCount(initialFields.length);
+    } else if (initialFields && "items" in initialFields) {
+      setFields(initialFields.items || []);
+      setTotalCount(initialFields.totalCount || 0);
+    } else {
+      setFields([]);
+      setTotalCount(0);
+    }
+  }, [initialFields]);
+
+  const formState = useFieldRegistryForm(fields, refreshFieldsList, initialSchemas, initialSourceTables, initialSourceTableFields, {
+    addFieldRegistryAction: actions.addFieldRegistryAction,
+    getFieldRegistryTablesAction: actions.getFieldRegistryTablesAction,
+    getFieldRegistryColumnsAction: actions.getFieldRegistryColumnsAction,
+    getSourceTablesAction: actions.getSourceTablesAction,
+    getSourceTableFieldsAction: actions.getSourceTableFieldsAction
+  });
 
   return {
     fields, setFields,
+    refreshFieldsList,
     ...formState,
-    categoryFilter, setCategoryFilter,
+
     statusFilter, setStatusFilter,
     searchTerm, setSearchTerm,
     pageNumber, setPageNumber,
     pageSize, setPageSize,
+    totalCount,
+    setFieldRegistryStatusAction: actions.setFieldRegistryStatusAction,
   };
 };

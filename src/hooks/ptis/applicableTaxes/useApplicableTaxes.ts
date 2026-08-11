@@ -14,6 +14,9 @@ export function useApplicableTaxes({
   useGroupsResponse,
   valuationTab,
   taxApplicabilityPagedResponse,
+  taxApplicabilityPropertyData,
+  initialAsseYear,
+  initialTypeOfUse,
 }: Omit<ApplicableTaxesProps, 'valuationTab'> & {
   valuationTab: string;
 }) {
@@ -28,8 +31,6 @@ export function useApplicableTaxes({
   const wardNo = searchParams.get('wardNo') || '';
   const propertyNo = searchParams.get('propertyNo') || '';
   const partitionNo = searchParams.get('partitionNo') || '';
-
-  const isExempted = pathname.includes('/exempted');
   const isValuationTab = !!valuationTab;
 
   const dynamicAsseYears = useMemo(() => {
@@ -50,19 +51,34 @@ export function useApplicableTaxes({
   }, [dynamicAsseYears]);
 
   const useTypeOptions = useMemo(() => {
+    if (taxApplicabilityPropertyData?.length) {
+      const seenIds = new Set<number>();
+      return taxApplicabilityPropertyData
+        .filter((prop) => !seenIds.has(prop.typeOfUseId) && seenIds.add(prop.typeOfUseId))
+        .map((prop) => ({
+          label: `${prop.typeOfUseCode} - ${prop.typeOfUseDescription}`,
+          value: String(prop.typeOfUseId),
+        }));
+    }
+
     return dynamicUseGroups.map((group) => ({
-      label: `${group.typeOfUseGroupCode} - ${group.groupName}`,
+      label: `${group.typeOfUseCode} - ${group.description}`,
       value: String(group.id),
     }));
-  }, [dynamicUseGroups]);
+  }, [dynamicUseGroups, taxApplicabilityPropertyData]);
 
-  const selectedAsseYear = searchParams.get('asseYear') || '';
-  const selectedFloorUse = searchParams.get('floorUse') || '';
+  const asseYearParam = searchParams.get('asseYear');
+  const selectedAsseYear = (asseYearParam && !isNaN(Number(asseYearParam)) && Number(asseYearParam) > 0)
+    ? asseYearParam
+    : (initialAsseYear || '');
+
+  const typeOfUseParam = searchParams.get('typeOfUse');
+  const selectedTypeOfUse = (typeOfUseParam && !isNaN(Number(typeOfUseParam)) && Number(typeOfUseParam) > 0)
+    ? typeOfUseParam
+    : (initialTypeOfUse || '');
   const searchQuery = searchParams.get('search') || '';
 
   const items = useMemo(() => taxApplicabilityPagedResponse?.items || [], [taxApplicabilityPagedResponse]);
-  const applicableCount = items[0]?.applicableCount || 0;
-  const exemptedCount = items[0]?.exemptedCount || 0;
 
   const pageNumber = taxApplicabilityPagedResponse?.pageNumber || 1;
   const pageSize = taxApplicabilityPagedResponse?.pageSize || 10;
@@ -119,20 +135,30 @@ export function useApplicableTaxes({
     if (key !== 'pageNumber') {
       newParams.set('pageNumber', '1');
     }
+    if (!newParams.has('asseYear') && selectedAsseYear) {
+      newParams.set('asseYear', selectedAsseYear);
+    }
+    if (!newParams.has('typeOfUse') && selectedTypeOfUse) {
+      newParams.set('typeOfUse', selectedTypeOfUse);
+    }
     router.replace(`${pathname}?${newParams.toString()}`);
-  }, [searchParams, pathname, router]);
+  }, [searchParams, pathname, router, selectedAsseYear, selectedTypeOfUse]);
 
   const setPageNumber = useCallback((page: number) => {
     handleParamChange('pageNumber', String(page));
   }, [handleParamChange]);
 
   const filteredTaxes = useMemo(() => {
-    const rawTaxes = isExempted ? (items[0]?.exemptedTaxes || []) : (items[0]?.applicableTaxes || []);
+    const rawTaxes = [
+      ...(items[0]?.applicableTaxes || []),
+      ...(items[0]?.exemptedTaxes || [])
+    ];
     return rawTaxes.filter(item => {
+      if (!item.isActive) return false;
       const matchesSearch = item.taxHead.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
-  }, [items, searchQuery, isExempted]);
+  }, [items, searchQuery]);
 
   const paginatedData = useMemo(() => {
     return filteredTaxes;
@@ -148,13 +174,12 @@ export function useApplicableTaxes({
     asseYearOptions,
     useTypeOptions,
     selectedAsseYear,
-    selectedFloorUse,
+    selectedTypeOfUse,
     pageNumber,
     pageSize,
     totalPages,
     totalCount,
-    applicableCount,
-    exemptedCount,
+
     setPageNumber,
     paginatedData,
     filteredTaxes,

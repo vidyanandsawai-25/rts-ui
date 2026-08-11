@@ -150,6 +150,20 @@ describe('PhotoPlan Section - Complete Tests', () => {
     mockSearchParamsGet.mockReturnValue(null);
     propertyMediaCache.clear();
     documentCache.clear();
+    if (typeof window !== 'undefined') {
+      try {
+        Object.defineProperty(window.location, 'assign', {
+          configurable: true,
+          writable: true,
+          value: vi.fn(),
+        });
+      } catch {
+        vi.stubGlobal('location', {
+          ...window.location,
+          assign: vi.fn(),
+        });
+      }
+    }
   });
 
 
@@ -510,7 +524,17 @@ describe('PhotoPlan Section - Complete Tests', () => {
       });
 
       // It should call the server action for authentication
-      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalledWith(1, 'THANE_Survey', expect.any(String));
+      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalledWith(
+        1,
+        'THANE_Survey',
+        expect.any(String),
+        undefined,
+        undefined,
+        undefined,
+        '',
+        '',
+        ''
+      );
 
       // Delete plan button check - should not exist
       const deleteBtn = screen.queryByLabelText('Delete plan');
@@ -631,8 +655,6 @@ describe('PhotoPlan Section - Complete Tests', () => {
       // 3. Verify name validation with Devanagari character (Hindi/Marathi name input)
       const nameInput = screen.getByLabelText(/media.photoPlanName/i);
       fireEvent.change(nameInput, { target: { value: 'मुख्य प्रवेशद्वार' } });
-      const displayOrderInput = screen.getByLabelText(/media.displayOrder/i);
-      fireEvent.change(displayOrderInput, { target: { value: '2' } });
 
       // 4. Verify validation error on invalid file type (e.g. text file)
       const invalidFile = new File(['text'], 'test.txt', { type: 'text/plain' });
@@ -647,31 +669,82 @@ describe('PhotoPlan Section - Complete Tests', () => {
 
       expect(screen.getByText('Only JPEG, JPG, and PNG images are allowed')).toBeInTheDocument();
 
-      // 5. Verify validation error on oversized file (e.g. > 5MB)
-      const largeFile = new File(['large_image_content'], 'oversized.png', { type: 'image/png' });
-      Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // Mock 6 MB file
-
-      fireEvent.change(fileInput, { target: { files: [largeFile] } });
-      fireEvent.click(saveBtn);
-
-      expect(screen.getByText('File size should not exceed 5 MB')).toBeInTheDocument();
-
-      // 6. Verify successful submit with valid file, remarks, and Devanagari name
-      const validFile = new File(['image_content'], 'photo.png', { type: 'image/png' });
-      fireEvent.change(fileInput, { target: { files: [validFile] } });
-
-      const remarksInput = screen.getByPlaceholderText('media.remarksPlaceholder');
+       // 5. Verify validation error on oversized file (e.g. > 5MB) and that the edit button is hidden
+       const largeFile = new File(['large_image_content'], 'oversized.png', { type: 'image/png' });
+       Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // Mock 6 MB file
+ 
+       fireEvent.change(fileInput, { target: { files: [largeFile] } });
+       expect(screen.queryByRole('button', { name: 'media.editImage' })).not.toBeInTheDocument();
+       fireEvent.click(saveBtn);
+ 
+       expect(screen.getByText('File size should not exceed 5 MB')).toBeInTheDocument();
+ 
+       // 6. Verify successful submit with valid file, remarks, and Devanagari name
+       const validFile = new File(['image_content'], 'photo.png', { type: 'image/png' });
+       fireEvent.change(fileInput, { target: { files: [validFile] } });
+       expect(screen.getByRole('button', { name: 'media.editImage' })).toBeInTheDocument();
+ 
+       const remarksInput = screen.getByPlaceholderText('media.remarksPlaceholder');
       fireEvent.change(remarksInput, { target: { value: 'Valid remarks' } });
 
       fireEvent.click(saveBtn);
 
       expect(onSubmit).toHaveBeenCalledWith(
         'मुख्य प्रवेशद्वार',
-        2,
+        1,
         1,
         validFile,
         'Valid remarks'
       );
+    });
+
+    it('validates invalid/corrupted image file and shows warning', () => {
+      const onSubmit = vi.fn();
+      const availableTypes = [{ label: 'Front View', value: '1' }];
+
+      const { container } = render(
+        <PhotoPlanNamingModal
+          open
+          onClose={vi.fn()}
+          onSubmit={onSubmit}
+          availableTypes={availableTypes}
+          defaultDisplayOrder={1}
+          defaultPhotoTypeId={1}
+          isEdit={false}
+          isReplacement={false}
+        />
+      );
+
+      // Select corrupted file (we trigger this via a file containing the word 'corrupted' or 'invalid' in URL / name)
+      // Spy on URL.createObjectURL to return a mock url containing 'corrupted'
+      const createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:corrupted-file-guid');
+
+      const corruptedFile = new File(['corrupted image bytes'], 'test.png', { type: 'image/png' });
+      const fileInput = container.querySelector('input[type="file"]')!;
+      
+      fireEvent.change(fileInput, { target: { files: [corruptedFile] } });
+
+      // Check that the error message is displayed
+      expect(screen.getByText('Please upload a valid image file')).toBeInTheDocument();
+
+      // Check that the "Edit Image" button is NOT in the document
+      expect(screen.queryByRole('button', { name: 'media.editImage' })).not.toBeInTheDocument();
+
+      const saveBtn = screen.getByRole('button', { name: 'actions.save' });
+      expect(saveBtn).toBeDisabled();
+
+      fireEvent.click(saveBtn);
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      // Clear the corrupted file and verify the error changes/clears
+      const removeBtn = screen.getByTitle('Remove file');
+      fireEvent.click(removeBtn);
+
+      // In non-edit mode, it should clear the invalid image error and show the file required error instead
+      expect(screen.queryByText('Please upload a valid image file')).not.toBeInTheDocument();
+      expect(screen.getByText('Photo file is required')).toBeInTheDocument();
+
+      createObjectUrlSpy.mockRestore();
     });
   });
 });

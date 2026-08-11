@@ -3,11 +3,11 @@
 import React from "react";
 import { Building2 } from "lucide-react";
 import { PageContainer, SearchInput, Select } from "@/components/common";
+import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
-import { AddButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
+import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import type { GstMasterProps, GstMaster } from "@/types/asset-masters/gst-master.types";
 import { useGstMasterList } from "@/hooks/asset-masters/gst-master/useGstMasterList";
-import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 export function GstMaster(props: GstMasterProps) {
   const {
@@ -17,7 +17,7 @@ export function GstMaster(props: GstMasterProps) {
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,
@@ -31,24 +31,25 @@ export function GstMaster(props: GstMasterProps) {
   return (
     <PageContainer>
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4 rounded-xl border bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Building2 className="h-6 w-6 text-slate-700" />
-            <div>
-              <div className="text-lg font-semibold text-slate-900">{t("title")}</div>
-              <div className="text-sm text-slate-500">{t("subtitle")}</div>
+        <TableHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+          icon={Building2}
+          actionLabel={t("add")}
+          onActionClick={() => {
+            router.push(`/${locale}/assets/configuration/master-data/gst-master/add`);
+          }}
+          rightContent={
+            <div className="flex w-full justify-end">
+              <SearchInput
+                value={search}
+                onChange={handleSearchChange}
+                placeholder={t("searchPlaceholder") || "Search GST records..."}
+                className="mb-0 w-full text-gray-900"
+              />
             </div>
-          </div>
-          <div className="flex w-full max-w-xl items-center gap-3">
-            <SearchInput
-              value={search}
-              onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ""))}
-              placeholder={t("searchPlaceholder")}
-              className="mb-0 w-full"
-            />
-            <AddButton label={t("add")} onClick={() => router.push(`/${locale}/assets/configuration/master-data/gst-master/add`)} />
-          </div>
-        </div>
+          }
+        />
         <MasterTable<GstMaster>
           columns={columns}
           data={data}

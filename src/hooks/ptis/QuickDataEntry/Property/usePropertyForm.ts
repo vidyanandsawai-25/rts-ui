@@ -5,7 +5,11 @@ import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useLoading } from '@/hooks/useLoading';
 import { hasErrors } from '@/lib/utils/validation';
-import { updatePropertyBasicDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
+import {
+    updatePropertyBasicDetailsAction,
+    deletePropertyDetailsAction,
+    validateFloorCompatibilityAction,
+} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
 import {
     UpdatePropertyBasicDetailsDto,
     PropertyFormViewProps,
@@ -109,28 +113,100 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
             rateSectionDescription: String(formData.get("rateSectionDescription") ?? "").trim() || null,
         };
 
-        confirm({
-            variant: "update",
-            title: t('property.updateConfirmTitle'),
-            description: t('property.updateConfirmText'),
-            confirmText: t('property.updateConfirmButton'),
-            onConfirm: async () => {
-                startLoading();
-                try {
-                    const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
-                    if (!result?.success) {
-                        toast.error(t('property.errors.updatePropertyBasicDetails'));
-                        return;
+        const originalCategoryId = propertyData?.categoryId ?? null;
+        const isCategoryChanged = !!originalCategoryId && categoryId !== originalCategoryId;
+
+        const originalPropertyTypeId = propertyData?.propertyTypeId ?? null;
+        const isPropertyDescriptionChanged = originalPropertyTypeId !== null && propertyTypeId !== null && propertyTypeId !== originalPropertyTypeId;
+
+        if (isCategoryChanged) {
+            confirm({
+                variant: "warning",
+                title: t('property.categoryChangeConfirmTitle'),
+                description: t('property.categoryChangeConfirmText'),
+                confirmText: t('property.categoryChangeConfirmButton'),
+                onConfirm: async () => {
+                    startLoading();
+                    try {
+                        const deleteResult = await deletePropertyDetailsAction(pId);
+                        if (!deleteResult.success) {
+                            toast.error(deleteResult.error || t('property.errors.deletePropertyDetails'));
+                            return;
+                        }
+                        const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
+                        if (!result?.success) {
+                            toast.error(t('property.errors.updatePropertyBasicDetails'));
+                            return;
+                        }
+                        toast.success(t('property.updateSuccess'));
+                        router.refresh();
+                    } catch (_err) {
+                        toast.error(t('property.updateError'));
+                    } finally {
+                        stopLoading();
                     }
-                    toast.success(t('property.updateSuccess'));
-                    router.refresh();
-                } catch (_err) {
-                    toast.error(t('property.updateError'));
-                } finally {
-                    stopLoading();
                 }
-            }
-        });
+            });
+        } else if (isPropertyDescriptionChanged) {
+            confirm({
+                variant: "warning",
+                title: t('property.propertyDescriptionChangeConfirmTitle'),
+                description: t('property.propertyDescriptionChangeConfirmText'),
+                confirmText: t('property.propertyDescriptionChangeConfirmButton'),
+                cancelText: t('common.cancel'),
+                onConfirm: async () => {
+                    startLoading();
+                    try {
+                        const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
+                        if (!result?.success) {
+                            toast.error(t('property.errors.updatePropertyBasicDetails'));
+                            return;
+                        }
+                        
+                        // Validate existing floor compatibility immediately
+                        if (propertyTypeId) {
+                            const checkCompat = await validateFloorCompatibilityAction(pId, propertyTypeId);
+                            if (checkCompat.success && checkCompat.data) {
+                                const hasIncompatible = !checkCompat.data.isCompatible;
+                                if (typeof window !== 'undefined') {
+                                    (window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor = hasIncompatible;
+                                }
+                            }
+                        }
+
+                        toast.success(t('property.updateSuccess'));
+                        router.refresh();
+                    } catch (_err) {
+                        toast.error(t('property.updateError'));
+                    } finally {
+                        stopLoading();
+                    }
+                }
+            });
+        } else {
+            confirm({
+                variant: "update",
+                title: t('property.updateConfirmTitle'),
+                description: t('property.updateConfirmText'),
+                confirmText: t('property.updateConfirmButton'),
+                onConfirm: async () => {
+                    startLoading();
+                    try {
+                        const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
+                        if (!result?.success) {
+                            toast.error(t('property.errors.updatePropertyBasicDetails'));
+                            return;
+                        }
+                        toast.success(t('property.updateSuccess'));
+                        router.refresh();
+                    } catch (_err) {
+                        toast.error(t('property.updateError'));
+                    } finally {
+                        stopLoading();
+                    }
+                }
+            });
+        }
     };
 
     return {

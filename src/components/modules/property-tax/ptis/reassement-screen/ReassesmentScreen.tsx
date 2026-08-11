@@ -28,6 +28,7 @@ import type {
 import { useReassessmentSummaryCards } from '@/hooks/ptis/reassessment/useReassessmentSummaryCards';
 import { useReassessmentTaxTable } from '@/hooks/ptis/reassessment/useReassessmentTaxTable';
 import { useSynchronizedScrolling } from '@/hooks/ptis/reassessment/useSynchronizedScrolling';
+import { useReassessmentLivePhotos } from '@/hooks/ptis/reassessment/useReassessmentLivePhotos';
 import { cn } from '@/lib/utils/cn';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import { useSharedAutoScroll } from '@/hooks/ptis/reassessment/useSharedAutoScroll';
@@ -43,6 +44,9 @@ interface TaxColumn {
 }
 
 interface ReassesmentScreenProps {
+  wardId?: number;
+  propertyNo?: string;
+  partitionNo?: string;
   oldFloorDetails?: MappedFloorDetail[];
   newFloorDetails?: MappedFloorDetail[];
   taxColumns?: TaxColumn[];
@@ -58,6 +62,9 @@ interface ReassesmentScreenProps {
 // ============================================
 
 export default function ReassesmentScreen({
+  wardId,
+  propertyNo,
+  partitionNo,
   oldFloorDetails = [],
   newFloorDetails = [],
   taxColumns = [],
@@ -77,6 +84,12 @@ export default function ReassesmentScreen({
   // Image viewer state
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { photos: livePhotos } = useReassessmentLivePhotos({
+    wardId,
+    propertyNo,
+    partitionNo,
+    initialPhotos: photos,
+  });
 
   // ============================================
   // HOOKS
@@ -100,10 +113,10 @@ export default function ReassesmentScreen({
   const viewerImages = useMemo((): ImageViewerImage[] => {
     const images: ImageViewerImage[] = [];
 
-    const oldPropertyPhoto = photos.find((p) => p.type === 'OLD_PROPERTY_PHOTO');
-    const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
-    const newPropertyPhoto = photos.find((p) => p.type === 'NEW_PROPERTY_PHOTO');
-    const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
+    const oldPropertyPhoto = livePhotos.find((p) => p.type === 'OLD_PROPERTY_PHOTO');
+    const oldPlanPhoto = livePhotos.find((p) => p.type === 'OLD_PLAN_PHOTO');
+    const newPropertyPhoto = livePhotos.find((p) => p.type === 'NEW_PROPERTY_PHOTO');
+    const newPlanPhoto = livePhotos.find((p) => p.type === 'NEW_PLAN_PHOTO');
 
     if (oldPropertyPhoto) {
       images.push({
@@ -138,7 +151,7 @@ export default function ReassesmentScreen({
     }
 
     return images;
-  }, [photos, t]);
+  }, [livePhotos, t]);
 
   // Handler to open image viewer
   const handleImageClick = (photoType: string) => {
@@ -179,10 +192,10 @@ export default function ReassesmentScreen({
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 {(() => {
-                  const oldPropertyPhoto = photos.find(
+                  const oldPropertyPhoto = livePhotos.find(
                     (p) => p.type === 'OLD_PROPERTY_PHOTO'
                   );
-                  const oldPlanPhoto = photos.find((p) => p.type === 'OLD_PLAN_PHOTO');
+                  const oldPlanPhoto = livePhotos.find((p) => p.type === 'OLD_PLAN_PHOTO');
                   const hasOldPropertyPhoto = !!oldPropertyPhoto;
                   const hasOldPlanPhoto = !!oldPlanPhoto;
                   return (
@@ -292,10 +305,10 @@ export default function ReassesmentScreen({
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 {(() => {
-                  const newPropertyPhoto = photos.find(
+                  const newPropertyPhoto = livePhotos.find(
                     (p) => p.type === 'NEW_PROPERTY_PHOTO'
                   );
-                  const newPlanPhoto = photos.find((p) => p.type === 'NEW_PLAN_PHOTO');
+                  const newPlanPhoto = livePhotos.find((p) => p.type === 'NEW_PLAN_PHOTO');
                   const hasNewPropertyPhoto = !!newPropertyPhoto;
                   const hasNewPlanPhoto = !!newPlanPhoto;
                   return (

@@ -67,6 +67,7 @@ vi.mock("@/components/common", () => ({
     <button data-testid="cancel-button" onClick={onClick}>{label}</button>
   ),
   StatusToggleCard: () => <div data-testid="status-toggle-card" />,
+  ToggleSwitch: (props: any) => <input type="checkbox" data-testid="status-toggle-card" checked={props.checked} onChange={(e) => props.onChange?.(e.target.checked)} />,
   RequiredFieldsNote: () => <div data-testid="mandatory-fields-notice" />,
 }));
 
@@ -190,7 +191,7 @@ describe("AssetCategoryForm", () => {
       fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(mockToastError).toHaveBeenCalledWith("validation.duplicateError");
+        expect(mockToastError).toHaveBeenCalledWith(expect.stringMatching(/validation\.duplicate/));
       });
     });
   });

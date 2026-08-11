@@ -22,6 +22,7 @@ import type { PtisTabId, PtisInitialData } from '@/types/ptis.types';
 import { PTIS_TABS } from '@/types/ptis.types';
 import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/common/PTISSearchSelect';
 import { useDebounce } from '@/hooks/useDebounce';
+import { normalizePartition } from '@/lib/utils/format';
 import { toast } from 'sonner';
 
 interface PropertyTabSectionProps {
@@ -104,9 +105,13 @@ export default function PropertyTabSection({
   const [searchText, setSearchText] = useState('');
   const debouncedSearchText = useDebounce(searchText, 150);
 
+  const [partitionSearchText, setPartitionSearchText] = useState('');
+  const debouncedPartitionSearchText = useDebounce(partitionSearchText, 150);
+
   const { propertiesList, setPropertiesList, isSearchingProperties } = usePropertySuggestions(
     draft.wardId,
     debouncedSearchText,
+    debouncedPartitionSearchText,
     draft.propertyId,
     initialData?.rawPropertyData || EMPTY_ARRAY
   );
@@ -117,6 +122,7 @@ export default function PropertyTabSection({
       handleWardSelection(id, no);
       setPropertiesList([]);
       setSearchText('');
+      setPartitionSearchText('');
       updateUrl({
         wardNo: no || null,
         wardId: id ? id.toString() : null,
@@ -134,6 +140,46 @@ export default function PropertyTabSection({
       setPropertiesList(initialData.rawPropertyData);
     }
   }, [initialData?.rawPropertyData, setPropertiesList]);
+
+  // Auto-resolve propertyId if typed values exactly match an item in suggestions list
+  useEffect(() => {
+    if (!draft.propertyNo) {
+      if (draft.propertyId) {
+        setPropertyId(null);
+      }
+      return;
+    }
+
+    const normalizedDraftProp = draft.propertyNo.trim().toLowerCase();
+    const normalizedDraftPart = normalizePartition(draft.partitionNo).toLowerCase();
+
+    // Check if current propertyId is still valid for the typed text
+    if (draft.propertyId) {
+      const currentMatch = propertiesList.find(
+        (p) => p.propertyId === Number(draft.propertyId)
+      );
+      if (
+        !currentMatch ||
+        currentMatch.propertyNo.trim().toLowerCase() !== normalizedDraftProp ||
+        normalizePartition(currentMatch.partitionNo).toLowerCase() !== normalizedDraftPart
+      ) {
+        // Current selection no longer matches input text, reset it
+        setPropertyId(null);
+      }
+      return;
+    }
+
+    // Try to find a match in the suggestions list
+    const exactMatch = propertiesList.find(
+      (p) =>
+        p.propertyNo.trim().toLowerCase() === normalizedDraftProp &&
+        normalizePartition(p.partitionNo).toLowerCase() === normalizedDraftPart
+    );
+
+    if (exactMatch) {
+      setPropertyId(exactMatch.propertyId.toString());
+    }
+  }, [draft.propertyNo, draft.partitionNo, draft.propertyId, propertiesList, setPropertyId]);
 
   const dynamicPropertyOptions = useMemo<SearchSelectOption[]>(() => {
     return propertiesList.map((p) => {
@@ -192,30 +238,60 @@ export default function PropertyTabSection({
     (value: boolean) => {
       if (value !== showOldFloorInfo) {
         setShowOldFloorInfo(value);
-        updateUrl({ showFloor: value ? 'true' : null });
+        if (value) {
+          setShowOldTaxInfo(false);
+          setShowOldMapInfo(false);
+          updateUrl({
+            showFloor: 'true',
+            showOldTax: null,
+            showMapDetails: null,
+          });
+        } else {
+          updateUrl({ showFloor: null });
+        }
       }
     },
-    [showOldFloorInfo, setShowOldFloorInfo, updateUrl]
+    [showOldFloorInfo, setShowOldFloorInfo, setShowOldTaxInfo, setShowOldMapInfo, updateUrl]
   );
 
   const handleShowTaxInfoChange = useCallback(
     (value: boolean) => {
       if (value !== showOldTaxInfo) {
         setShowOldTaxInfo(value);
-        updateUrl({ showOldTax: value ? 'true' : null });
+        if (value) {
+          setShowOldFloorInfo(false);
+          setShowOldMapInfo(false);
+          updateUrl({
+            showOldTax: 'true',
+            showFloor: null,
+            showMapDetails: null,
+          });
+        } else {
+          updateUrl({ showOldTax: null });
+        }
       }
     },
-    [showOldTaxInfo, setShowOldTaxInfo, updateUrl]
+    [showOldTaxInfo, setShowOldTaxInfo, setShowOldFloorInfo, setShowOldMapInfo, updateUrl]
   );
 
   const handleShowMapInfoChange = useCallback(
     (value: boolean) => {
       if (value !== showOldMapInfo) {
         setShowOldMapInfo(value);
-        updateUrl({ showMapDetails: value ? 'true' : null });
+        if (value) {
+          setShowOldFloorInfo(false);
+          setShowOldTaxInfo(false);
+          updateUrl({
+            showMapDetails: 'true',
+            showFloor: null,
+            showOldTax: null,
+          });
+        } else {
+          updateUrl({ showMapDetails: null });
+        }
       }
     },
-    [showOldMapInfo, setShowOldMapInfo, updateUrl]
+    [showOldMapInfo, setShowOldMapInfo, setShowOldFloorInfo, setShowOldTaxInfo, updateUrl]
   );
 
   return (
@@ -247,6 +323,7 @@ export default function PropertyTabSection({
           propertyDescription={data.propertyDescription}
           tabHeaderInfo={initialData?.tabHeaderInfo}
           onPropertySearchChange={setSearchText}
+          onPartitionSearchChange={setPartitionSearchText}
           isSearchingProperties={isSearchingProperties}
         />
 

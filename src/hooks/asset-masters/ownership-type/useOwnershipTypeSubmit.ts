@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createOwnershipTypeAction, updateOwnershipTypeAction } from "@/app/[locale]/assets/configuration/master-data/ownership-type/actions";
 import type { OwnershipTypeFormModel } from "@/types/asset-masters/ownership-type.types";
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
+import { getSafeMessage } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 
 interface UseOwnershipTypeSubmitProps {
   isEdit: boolean;
@@ -66,10 +68,12 @@ export function useOwnershipTypeSubmit({
 
       if (res && !res.success) {
         const errorKey = (res as { error?: string }).error;
-        const isTranslationKey = errorKey && /^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/.test(errorKey);
-        toast.error(
-          isTranslationKey ? tCommon(errorKey) : errorKey || tCommon("errors.generic")
-        );
+        if (errorKey === "duplicate") {
+          toast.error(getSafeMessage(tCommon, "validation.duplicateRecord") || "Record already exists");
+        } else {
+          const cleaned = cleanErrorMessage(errorKey || "", tCommon("errors.generic"));
+          toast.error(cleaned);
+        }
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));

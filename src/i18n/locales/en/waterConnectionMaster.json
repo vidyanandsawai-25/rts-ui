@@ -195,7 +195,7 @@
         "yearRequired": "Finance Year is required",
         "rateRequired": "Yearly Rate is required",
         "rateInvalid": "Yearly Rate must be a valid positive number",
-        "rateMaxDigits": "Yearly Rate cannot exceed 5 digits"
+        "rateMaxDigits": "Yearly Rate cannot exceed 6 digits"
       },
       "messages": {
         "createSuccess": "Water Rate created successfully",

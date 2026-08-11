@@ -132,3 +132,22 @@ export async function deleteSocialPhotoViaGlobalApi(documentGuid: string): Promi
         };
     }
 }
+
+/**
+ * Delete property social detail record by PropertyId and SocialAttributeId (marks record for deletion)
+ */
+export async function deletePropertySocialDetail(propertyId: string, socialAttributeId: number): Promise<ApiResponse<void>> {
+    try {
+        const params = new URLSearchParams({
+            propertyId: String(propertyId),
+            socialAttributeId: String(socialAttributeId)
+        });
+        const response = await apiClient.delete<void>(`/PropertySocialDetails?${params.toString()}`);
+        return response;
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}

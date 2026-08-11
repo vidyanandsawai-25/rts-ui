@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { useRouter } from "next/navigation";
-import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { PolicyConfiguration } from "@/types/policy-configuration.types";
 import PolicyConfigurationMaster from "@/components/modules/property-tax/policy-configuration/PolicyConfigurationMaster";
 
@@ -15,10 +14,6 @@ vi.mock("next/navigation", () => ({
 vi.mock("next-intl", () => ({
   useTranslations: vi.fn((ns?: string) => (key: string) => ns ? `${ns}.${key}` : key),
   useLocale: vi.fn(() => "en"),
-}));
-
-vi.mock("@/components/common/ConfirmProvider", () => ({
-  useConfirm: vi.fn(() => ({ confirm: vi.fn() })),
 }));
 
 vi.mock("sonner", () => ({
@@ -86,20 +81,12 @@ describe("PolicyConfigurationMaster", () => {
     expect(screen.getByText("Policy Rate 2")).toBeInTheDocument();
   });
 
-  it("navigates to edit page on edit click", () => {
+  it("navigates to edit page on edit click and does not render delete button", () => {
     render(<PolicyConfigurationMaster {...defaultProps} />);
     const editButtons = screen.getAllByRole("button", { name: "common.table.actions.edit" });
     fireEvent.click(editButtons[0]);
     expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/policy-configuration/edit/1");
-  });
-
-  it("calls confirm dialog on delete click", () => {
-    const confirmMock = vi.fn();
-    vi.mocked(useConfirm).mockImplementation(() => ({ confirm: confirmMock }));
-    render(<PolicyConfigurationMaster {...defaultProps} />);
-    const deleteButtons = screen.getAllByRole("button", { name: "common.table.actions.delete" });
-    fireEvent.click(deleteButtons[0]);
-    expect(confirmMock).toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "common.table.actions.delete" })).not.toBeInTheDocument();
   });
 
   it("updates URL on search with debounced change", () => {

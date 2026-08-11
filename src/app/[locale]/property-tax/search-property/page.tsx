@@ -26,8 +26,6 @@ import {
   listWardsByZoneAction,
   listZonesAction,
   listAllWardsAction,
-  getMainCardsAction,
-  getWorkflowCardsAction,
 } from "./action";
 
 const EMPTY_LOOKUP = {
@@ -203,13 +201,9 @@ export default async function PropertySearchPage({
       }
     : undefined;
 
-  // Parallel SSR fetches. Heavy data sources (zones, categories, lookup)
-  // are cached at the fetch layer; lookup is skipped entirely when no zone
-  // is selected to save a needless round trip.
-  // Default property records load on every visit. Stat cards filter immediately.
-  // Form filters apply only after Search (`isActive=1`). Draft zone/ward URL
-  // params load dropdown options but do not filter the table until Search.
-  const [zones, propertyAssessmentStatuses, propertyCategories, propertyWorkflowStages, wards, lookup, searchOutcome, allWards, mainCards, workflowCards] =
+  // Parallel SSR fetches. Fast master data and search grid render instantly.
+  // Dashboard card counts are loaded asynchronously in the background.
+  const [zones, propertyAssessmentStatuses, propertyCategories, propertyWorkflowStages, wards, lookup, searchOutcome, allWards] =
     await Promise.all([
       listZonesAction(),
       listPropertyAssessmentStatusesAction(),
@@ -230,8 +224,6 @@ export default async function PropertySearchPage({
         pageSize
       ),
       listAllWardsAction(),
-      getMainCardsAction(cardFilterParams),
-      getWorkflowCardsAction(cardFilterParams),
     ]);
 
   const propertyTypeOptions: PropertyAssessmentStatusOption[] =
@@ -287,8 +279,7 @@ export default async function PropertySearchPage({
       totalCount={searchOutcome.totalCount}
       pageNumber={pageNumber}
       pageSize={pageSize}
-      mainCards={mainCards}
-      workflowCards={workflowCards}
+      cardFilterParams={cardFilterParams}
       zoneOptions={zoneOptions}
       wardOptions={wardOptions}
       allWardOptions={allWardOptions}

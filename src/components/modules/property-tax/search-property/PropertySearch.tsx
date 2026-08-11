@@ -30,6 +30,7 @@ export function PropertySearch({
   pageSize,
   mainCards,
   workflowCards,
+  cardFilterParams,
   zoneOptions,
   wardOptions,
   allWardOptions,
@@ -45,19 +46,23 @@ export function PropertySearch({
 }: PropertySearchProps): React.ReactElement {
   const t = useTranslations("propertySearch");
   const [activeTab, setActiveTab] = useState<SearchTab>(activeTabProp);
-  const [prevActiveTab, setPrevActiveTab] = useState<SearchTab>(activeTabProp);
   const [isPending, startTransition] = useTransition();
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [statusClearedByTab, setStatusClearedByTab] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
-  if (activeTabProp !== prevActiveTab) {
-    setPrevActiveTab(activeTabProp);
+  const [prevActiveTabProp, setPrevActiveTabProp] = React.useState(activeTabProp);
+
+  if (activeTabProp !== prevActiveTabProp) {
+    setPrevActiveTabProp(activeTabProp);
     setActiveTab(activeTabProp);
   }
 
   const displayedStatus =
     statusClearedByTab && selectedStatus ? null : selectedStatus;
   const resultsLoading = awaitingResults && isPending;
+  const displayedResults = (isPending && isResetting) ? [] : results;
+  const displayedTotal = (isPending && isResetting) ? 0 : totalCount;
 
   const {
     updateSearchCriteria,
@@ -71,6 +76,7 @@ export function PropertySearch({
   const handleStatusFilter = useCallback(
     (status: PropertyStatus) => {
       setStatusClearedByTab(false);
+      setIsResetting(false);
       setAwaitingResults(true);
       if (displayedStatus === status) {
         updateStatus(null);
@@ -83,6 +89,7 @@ export function PropertySearch({
 
   const handleSearch = useCallback(
     (next: SearchCriteria, tab: SearchTab) => {
+      setIsResetting(false);
       setAwaitingResults(true);
       updateSearchCriteria(next, tab, displayedStatus);
     },
@@ -90,7 +97,8 @@ export function PropertySearch({
   );
 
   const handleReset = useCallback(() => {
-    setAwaitingResults(true);
+    setIsResetting(true);
+    setAwaitingResults(false);
     resetSearch(activeTab);
   }, [activeTab, resetSearch]);
 
@@ -135,6 +143,7 @@ export function PropertySearch({
               onStatusClick={handleStatusFilter}
               mainCards={mainCards}
               workflowCards={workflowCards}
+              cardFilterParams={cardFilterParams}
               disabled={isPending}
             />
 
@@ -169,8 +178,8 @@ export function PropertySearch({
             <PropertySearchResults
               selectedStatus={displayedStatus}
               isSearchActive={isSearchActive}
-              results={results}
-              totalCount={totalCount}
+              results={displayedResults}
+              totalCount={displayedTotal}
               pageNumber={pageNumber}
               pageSize={pageSize}
               onPageChange={updatePage}

@@ -115,7 +115,7 @@ export function handleActionError<T = void>(
 
   return {
     success: false,
-    error: fallbackMessage,
+    error: error instanceof Error ? error.message : fallbackMessage,
   };
 }
 

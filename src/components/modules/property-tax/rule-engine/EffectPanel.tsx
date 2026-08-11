@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 
 import { EffectState, EffectTypeConfig, FieldConfig } from '@/types/rule-engine';

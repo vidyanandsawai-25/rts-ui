@@ -25,7 +25,7 @@ export interface TaxZoneFormProps {
 
 export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   const router = useRouter();
-   const isEdit = initialData?.id != null;
+  const isEdit = initialData?.id != null;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -157,8 +157,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       if (res?.ok) {
         toast.success(
           res.mode === "update"
-            ? t("form.messages.updateSuccess") 
-            : t("form.messages.createSuccess") 
+            ? t("form.messages.updateSuccess")
+            : t("form.messages.createSuccess")
         );
         setOpen(false);
         router.push(`/${locale}/property-tax/taxzone-master/taxzone`);
@@ -169,11 +169,6 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       // Handle specific error types
       if (res && !res.ok) {
         if (res.error === "duplicate") {
-          // Show duplicate error for both fields
-          setErrors({
-            taxZoneNo: t("form.validation.duplicateRecord") ,
-            taxZoneType: t("form.validation.duplicateRecord") 
-          });
           toast.error(
             t("form.validation.duplicateError")
           );

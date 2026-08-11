@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { TaxationBreakdownFormProps } from "@/types/OldDetails/property-old-details.types";
 import { useTaxationBreakdownForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useTaxationBreakdownForm";
 import { SearchSelect, Input } from "@/components/common";
+import { Tooltip } from "@/components/common/Tooltip";
 import { Label } from "@/components/common/label";
 import { Calculator, AlertCircle } from "lucide-react";
 
@@ -87,28 +88,34 @@ export default function TaxationBreakdownForm({
               {t("assessmentYear")} <span className="text-red-500 ml-0.5">*</span>
             </Label>
             {isYearLocked ? (
-              <Input
-                type="text"
-                className="h-9 text-sm rounded-lg border-slate-500 bg-slate-50 cursor-not-allowed text-slate-500 font-medium"
-                value={selectedYearDisplay}
-                disabled
-                autoFocus
-                readOnly
-              />
+              <Tooltip content={selectedYearDisplay} placement="top">
+                <Input
+                  type="text"
+                  className="h-9 text-sm rounded-lg border-slate-500 bg-slate-50 cursor-not-allowed text-slate-500 font-medium"
+                  value={selectedYearDisplay}
+                  disabled
+                  autoFocus
+                  readOnly
+                />
+              </Tooltip>
             ) : (
               <div className="relative">
-                <SearchSelect
-                  options={transformedYearOptions}
-                  placeholder={t("selectYearPlaceholder")}
-                  autoFocus
-                  className={`h-9 text-sm rounded-lg focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${validationErrors.yearMaster
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10 text-red-900 bg-red-50/30'
-                      : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 text-gray-900 bg-white'
-                    }`}
-                  name="yearMaster"
-                  onChange={(_, val) => setSelectedYearId(val)}
-                  value={selectedYearId}
-                />
+                <Tooltip content={transformedYearOptions.find(opt => opt.value === selectedYearId)?.label || ''} placement="top">
+                  <div className="w-full">
+                    <SearchSelect
+                      options={transformedYearOptions}
+                      placeholder={t("selectYearPlaceholder")}
+                      autoFocus
+                      className={`h-9 text-sm rounded-lg focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 ${validationErrors.yearMaster
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10 text-red-900 bg-red-50/30'
+                        : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 text-gray-900 bg-white'
+                        }`}
+                      name="yearMaster"
+                      onChange={(_, val) => setSelectedYearId(val)}
+                      value={selectedYearId}
+                    />
+                  </div>
+                </Tooltip>
                 {validationErrors.yearMaster && (
                   <span className="text-[10px] font-medium text-red-500 absolute top-full left-0 mt-1 flex items-center gap-1 bg-red-50 border border-red-100 rounded px-1.5 py-0.5 shadow-sm whitespace-nowrap z-50 animate-in fade-in slide-in-from-top-1 duration-200">
                     <span className="w-1 h-1 rounded-full bg-red-500 shrink-0" />

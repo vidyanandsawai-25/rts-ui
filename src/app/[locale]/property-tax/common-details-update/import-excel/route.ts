@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
 import { logger } from '@/lib/utils/logger';
+import { getTranslations } from 'next-intl/server';
 
 export async function POST(request: NextRequest) {
+  let t;
+  try {
+    t = await getTranslations('commonDetailsUpdate');
+  } catch (_err) {
+    t = (key: string) => key;
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('File');
@@ -11,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (!file || !updateCode) {
       return NextResponse.json(
-        { error: 'Missing required parameters: File and UpdateCode' },
+        { error: t('messages.missingParameters') },
         { status: 400 }
       );
     }
@@ -21,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     if (!authToken) {
       return NextResponse.json(
-        { error: 'Unauthorized: No authentication token found' },
+        { error: t('messages.unauthorized') },
         { status: 401 }
       );
     }
@@ -49,7 +57,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error('[Common Details Excel Import] Unexpected error', { error: error as Error });
     return NextResponse.json(
-      { error: 'Internal server error during Excel import' },
+      { error: t('messages.excelImportError') },
       { status: 500 }
     );
   }

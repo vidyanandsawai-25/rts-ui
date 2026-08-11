@@ -18,6 +18,7 @@ import {
 } from "@/lib/api/asset-masters/weightagemaster/ageOfBuildingCvFactor/ageFactorCv.bulk.service";
 
 import { ApiError } from "@/lib/utils/api";
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import {
   AgeFactorCVMaster,
   AgeFactorCVMasterCreate,
@@ -177,20 +178,20 @@ export async function updateAgeFactorCVMasterAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText || 'API Error occurred',
+        message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'),
         statusCode: error.statusCode,
       };
     }
     if (error instanceof Error) {
       return {
         success: false,
-        message: error.message,
+        message: cleanErrorMessage(error.message, 'Failed to update AgeFactorCVMaster'),
         statusCode: 500,
       };
     }
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to update AgeFactorCVMaster",
+      message: cleanErrorMessage(error instanceof Error ? error.message : "Failed to update AgeFactorCVMaster", "Failed to update AgeFactorCVMaster"),
       statusCode: 500,
     };
   }
@@ -228,14 +229,14 @@ export async function createAgeFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      return { success: false, message: response.error || 'Failed to create record', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response.error, 'Failed to create record'), statusCode: 500 };
     }
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
     if (error instanceof Error) {
-      return { success: false, message: error.message, statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(error.message, 'Unknown error'), statusCode: 500 };
     }
     return { success: false, message: 'Unknown error', statusCode: 500 };
   }
@@ -273,14 +274,14 @@ export async function bulkCreateAgeFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      return { success: false, message: response?.error || 'Failed to bulk create records', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response?.error, 'Failed to bulk create records'), statusCode: 500 };
     }
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
     if (error instanceof Error) {
-      return { success: false, message: error.message, statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(error.message, 'Unknown error'), statusCode: 500 };
     }
     return { success: false, message: 'Unknown error', statusCode: 500 };
   }
@@ -323,10 +324,10 @@ export async function bulkUpdateAgeFactorCVMasterAction(
     return { success: true };
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
     if (error instanceof Error) {
-      return { success: false, message: error.message, statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(error.message, 'Failed to bulk update AgeFactorCVMaster'), statusCode: 500 };
     }
 
     return { success: false, message: "Failed to bulk update AgeFactorCVMaster", statusCode: 500 };
@@ -351,14 +352,14 @@ export async function deleteAgeFactorCVMasterAction(
       }
       return { success: true };
     } else {
-      return { success: false, message: response.error || 'Failed to delete record', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response.error, 'Failed to delete record'), statusCode: 500 };
     }
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
     if (error instanceof Error) {
-      return { success: false, message: error.message, statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(error.message, 'Unknown error'), statusCode: 500 };
     }
     return { success: false, message: 'Unknown error', statusCode: 500 };
   }
@@ -382,14 +383,14 @@ export async function bulkDeleteAgeFactorCVMasterAction(
       }
       return { success: true };
     } else {
-      return { success: false, message: response.error || 'Failed to bulk delete records', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response.error, 'Failed to bulk delete records'), statusCode: 500 };
     }
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
     if (error instanceof Error) {
-      return { success: false, message: error.message, statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(error.message, 'Unknown error'), statusCode: 500 };
     }
     return { success: false, message: 'Unknown error', statusCode: 500 };
   }

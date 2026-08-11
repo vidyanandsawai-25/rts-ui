@@ -64,6 +64,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           type="number"
           min={0}
           max={100}
+          step="any"
           label={t("form.fields.percent.label")}
           required
           value={String(formData.taxPercentage)}
@@ -85,6 +86,8 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           label={t("form.fields.effectiveFrom.label")}
           required
           value={formData.effectiveFromDate || ""}
+          min="1700-01-01"
+          max="2100-12-31"
           onChange={onChange}
           onBlur={onBlur}
           fullWidth
@@ -97,7 +100,8 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           label={t("form.fields.effectiveTo.label")}
           required
           value={formData.effectiveToDate || ""}
-          min={formData.effectiveFromDate || ""}
+          min={formData.effectiveFromDate || "1700-01-01"}
+          max="2100-12-31"
           onChange={onChange}
           onBlur={onBlur}
           fullWidth

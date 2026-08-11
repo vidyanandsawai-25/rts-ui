@@ -1,26 +1,22 @@
-"use client";
-/* eslint-disable react-hooks/set-state-in-effect */
-
+/* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import {
-  getFieldRegistrySchemasAction,
-  getFieldRegistryTablesAction,
-  addFieldRegistryAction,
-} from "@/app/[locale]/property-tax/common-details-update/actions";
+import { useLocale, useTranslations } from "next-intl";
 import {
   BulkUpdateMaster,
   FieldRegistrySchema,
   FieldRegistryTable,
-  CreateFieldRegistryDto
+  FieldRegistryColumn,
+  SourceTableField,
+  CommonDetailsUpdateActions,
+  BulkUpdateDefinitionPayload
 } from "@/types/common-details-update/common-details-update.types";
+import { addBulkUpdateDefinitionAction } from "@/app/[locale]/property-tax/common-details-update/actions";
 
-// Define field config type for the form     
 interface FieldConfigForm {
-  fieldName: string;
+  fieldName: string[];
   displayName: string;
-  displayNameMarathi: string;
   controlType: string;
   dataType: string;
   placeholder: string;
@@ -29,198 +25,209 @@ interface FieldConfigForm {
   validationRegex: string;
 }
 
-export const useFieldRegistryForm = (_fields: BulkUpdateMaster[], refreshFieldsList: () => Promise<void>) => {
+export const useFieldRegistryForm = (
+  _fields: BulkUpdateMaster[],
+  refreshFieldsList: () => Promise<void>,
+  initialSchemas: FieldRegistrySchema[] = [],
+  initialSourceTables: FieldRegistryTable[] = [],
+  initialSourceTableFields: SourceTableField[] = [],
+  actions: Partial<CommonDetailsUpdateActions> = {}
+) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations("commonDetailsUpdate");
   const [, startTransition] = useTransition();
 
   const [sourceModule, setSourceModuleState] = useState(searchParams.get("sourceModule") || "");
   const [sourceTable, setSourceTableState] = useState(searchParams.get("sourceTable") || "");
 
-  // New fields
   const [updateCode, setUpdateCode] = useState("");
-  const [updateName, setUpdateName] = useState("");
-  const [updateNameMarathi, setUpdateNameMarathi] = useState("");
-  const [referenceTableName, setReferenceTableName] = useState("");
   const [displaySequence, setDisplaySequence] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [iconName, setIconName] = useState("");
   const [approvalRequired, setApprovalRequired] = useState(false);
 
-  // Field configurations array
   const [fieldConfigs, setFieldConfigs] = useState<FieldConfigForm[]>([
     {
-      fieldName: "",
+      fieldName: [],
       displayName: "",
-      displayNameMarathi: "",
       controlType: "",
       dataType: "",
       placeholder: "",
-      isRequired: true,
+      isRequired: false,
       maxLength: "",
       validationRegex: "",
     }
   ]);
 
-  const [schemas, setSchemas] = useState<FieldRegistrySchema[]>([]);
-  const [tables, setTables] = useState<FieldRegistryTable[]>([]);
-  const [loadingSchemas, setLoadingSchemas] = useState(false);
+  const [tables, setTables] = useState<FieldRegistryTable[]>(initialSourceTables);
+  const [columns] = useState<FieldRegistryColumn[]>([]);
+
+  const [sourceTableFields, setSourceTableFields] = useState<SourceTableField[]>(initialSourceTableFields);
+
+  useEffect(() => {
+    setSourceTableFields(initialSourceTableFields);
+  }, [initialSourceTableFields]);
+
   const [loadingTables, setLoadingTables] = useState(false);
+  const [loadingColumns, setLoadingColumns] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Function to add a new field config
+  const schemas = initialSchemas;
+  const loadingSchemas = false;
+
+  const setSourceModule = (val: string) => {
+    setSourceModuleState(val);
+    setSourceTableState("");
+    setFieldConfigs(prev => prev.map(config => ({ ...config, fieldName: [], isRequired: false })));
+    
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (val) params.set("sourceModule", val); else params.delete("sourceModule");
+      params.delete("sourceTable");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  };
+
+  const setSourceTable = (val: string) => {
+    setSourceTableState(val);
+    setFieldConfigs(prev => prev.map(config => ({ ...config, fieldName: [], isRequired: false })));
+    
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (val) params.set("sourceTable", val); else params.delete("sourceTable");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  };
+
   const addFieldConfig = () => {
     setFieldConfigs([
       ...fieldConfigs,
       {
-        fieldName: "",
+        fieldName: [],
         displayName: "",
-        displayNameMarathi: "",
         controlType: "",
         dataType: "",
         placeholder: "",
-        isRequired: true,
+        isRequired: false,
         maxLength: "",
         validationRegex: "",
       }
     ]);
   };
 
-  // Function to update a field config
   const updateFieldConfig = (index: number, updates: Partial<FieldConfigForm>) => {
-    const newFieldConfigs = [...fieldConfigs];
-    newFieldConfigs[index] = { ...newFieldConfigs[index], ...updates };
-    setFieldConfigs(newFieldConfigs);
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = { ...newConfigs[index], ...updates };
+    setFieldConfigs(newConfigs);
   };
 
-  // Function to delete a field config
   const deleteFieldConfig = (index: number) => {
     if (fieldConfigs.length > 1) {
-      const newFieldConfigs = fieldConfigs.filter((_, i) => i !== index);
-      setFieldConfigs(newFieldConfigs);
+      setFieldConfigs(fieldConfigs.filter((_, i) => i !== index));
     }
   };
 
-  const setSourceModule = (val: string) => {
-    setSourceModuleState(val);
-    setSourceTableState("");
-    const params = new URLSearchParams(searchParams.toString());
-    if (val) params.set("sourceModule", val); else params.delete("sourceModule");
-    params.delete("sourceTable");
-    params.delete("databaseColumn");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  const setSourceTable = (val: string) => {
-    setSourceTableState(val);
-    setReferenceTableName(val || "");
-    const params = new URLSearchParams(searchParams.toString());
-    if (val) params.set("sourceTable", val); else params.delete("sourceTable");
-    params.delete("databaseColumn");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  const { getSourceTablesAction, getSourceTableFieldsAction } = actions;
 
   useEffect(() => {
-    const loadSchemas = async () => {
-      setLoadingSchemas(true);
-      const res = await getFieldRegistrySchemasAction();
-      if (res.success && res.data) setSchemas(res.data);
-      setLoadingSchemas(false);
-    };
-    loadSchemas();
-  }, []);
-
-  useEffect(() => {
-    if (!sourceModule) {
-      setTables([]);
-      setSourceTableState("");
-      return;
-    }
     const loadTables = async () => {
+      if (!getSourceTablesAction) return;
       setLoadingTables(true);
-      const res = await getFieldRegistryTablesAction(sourceModule);
-      if (res.success && res.data) setTables(res.data);
-      setLoadingTables(false);
+      try {
+        const res = await getSourceTablesAction();
+        if (res.success && res.data) {
+          setTables(res.data as any);
+        } else {
+          setTables([]);
+        }
+      } catch {
+        setTables([]);
+      } finally {
+        setLoadingTables(false);
+      }
     };
     loadTables();
-  }, [sourceModule]);
+  }, [getSourceTablesAction]);
+  useEffect(() => {
+    if (!sourceTable) {
+      setSourceTableFields([]);
+      return;
+    }
+    const loadColumns = async () => {
+      if (!getSourceTableFieldsAction) return;
+      setLoadingColumns(true);
+      try {
+        const res = await getSourceTableFieldsAction(Number(sourceTable));
+        if (res.success && res.data) {
+          setSourceTableFields(res.data as any);
+        } else {
+          setSourceTableFields([]);
+        }
+      } catch {
+        setSourceTableFields([]);
+      } finally {
+        setLoadingColumns(false);
+      }
+    };
+    loadColumns();
+  }, [sourceTable, getSourceTableFieldsAction]);
 
   const handleAddFieldToRegistry = async () => {
-    // Validate master fields
-    const parsedDisplaySequence = Number(displaySequence);
     if (
       !updateCode ||
-      !updateName ||
-      !updateNameMarathi ||
-      !referenceTableName ||
-      !category ||
-      !displaySequence ||
-      Number.isNaN(parsedDisplaySequence) ||
-      parsedDisplaySequence <= 0
+      !sourceTable 
     ) {
-      toast.error("Please fill all required master fields");
+      toast.error(t("messages.fillRequiredMasterFields"));
       return;
     }
 
-    // Validate all field configs
     for (const config of fieldConfigs) {
-      if (!config.fieldName || !config.displayName || !config.displayNameMarathi || !config.controlType || !config.dataType) {
-        toast.error("Please fill all required fields in field configuration");
+      if (config.fieldName.length === 0) {
+        toast.error(t("messages.selectAtLeastOneFieldName"));
         return;
       }
     }
 
     setSubmitting(true);
-    const payload: CreateFieldRegistryDto = {
-      updateCode,
-      updateName,
-      updateNameMarathi,
-      referenceTableName,
-      displaySequence: parsedDisplaySequence,
-      description: description || null,
-      category: category || null,
+    
+    // We need to map fieldName string arrays back to their numeric IDs in sourceTableFields
+    const selectedFieldIds: number[] = [];
+    for (const config of fieldConfigs) {
+      for (const fn of config.fieldName) {
+        const foundField = sourceTableFields.find(f => f.tableFieldName === fn);
+        if (foundField) {
+          selectedFieldIds.push(foundField.id);
+        }
+      }
+    }
+
+    const payload: BulkUpdateDefinitionPayload = {
+      updateName: updateCode, // "updateCode" is what the user typed in "Update Name" input
+      tableId: Number(sourceTable),
+      tableFieldIds: selectedFieldIds,
       isApprovalRequired: approvalRequired,
-      isActive: true,
-      createdBy: 0,
-      apiRoute: "/CommonDetails/update",
-      fieldConfigs: fieldConfigs.map((config, index) => ({
-        fieldName: config.fieldName,
-        displayName: config.displayName,
-        displayNameMarathi: config.displayNameMarathi,
-        controlType: config.controlType,
-        dataType: config.dataType,
-        placeholder: config.placeholder || null,
-        isRequired: config.isRequired,
-        maxLength: config.maxLength ? Number(config.maxLength) : null,
-        validationRegex: config.validationRegex || null,
-        defaultValue: null,
-        bindApi: null,
-        sequenceNo: index + 1
-      }))
     };
-    const res = await addFieldRegistryAction(payload);
+    
+    const res = await addBulkUpdateDefinitionAction(payload);
     if (res.success) {
-      toast.success("Field saved successfully!");
-      // Reset all fields
+      toast.success(t("messages.fieldSavedSuccessfully"));
       setSourceModuleState("");
       setSourceTableState("");
       setUpdateCode("");
-      setUpdateName("");
-      setUpdateNameMarathi("");
-      setReferenceTableName("");
       setDisplaySequence("");
       setDescription("");
-      setCategory("");
+      setIconName("");
       setApprovalRequired(false);
       setFieldConfigs([{
-        fieldName: "",
+        fieldName: [],
         displayName: "",
-        displayNameMarathi: "",
         controlType: "",
         dataType: "",
         placeholder: "",
-        isRequired: true,
+        isRequired: false,
         maxLength: "",
         validationRegex: "",
       }]);
@@ -232,9 +239,15 @@ export const useFieldRegistryForm = (_fields: BulkUpdateMaster[], refreshFieldsL
       await refreshFieldsList();
       startTransition(() => { router.refresh(); });
     } else {
-      toast.error(res.error || "Failed to save field");
+      toast.error(res.error || t("messages.saveFailed"));
     }
     setSubmitting(false);
+  };
+
+  const handleEdit = (item: BulkUpdateMaster) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "fieldRegistry");
+    router.push(`/${locale}/property-tax/common-details-update/edit/${encodeURIComponent(item.updateCode)}?${params.toString()}`);
   };
 
   return {
@@ -242,20 +255,17 @@ export const useFieldRegistryForm = (_fields: BulkUpdateMaster[], refreshFieldsL
     sourceTable, setSourceTable,
     databaseColumn: "", setDatabaseColumn: () => { },
     updateCode, setUpdateCode,
-    updateName, setUpdateName,
-    updateNameMarathi, setUpdateNameMarathi,
-    referenceTableName, setReferenceTableName,
     displaySequence, setDisplaySequence,
     description, setDescription,
-    category, setCategory,
+    iconName, setIconName,
     approvalRequired, setApprovalRequired,
     fieldConfigs,
     addFieldConfig,
     updateFieldConfig,
     deleteFieldConfig,
-    schemas, tables, columns: [],
-    loadingSchemas, loadingTables, loadingColumns: false, submitting,
-    selectedColumnObj: null,
-    handleAddFieldToRegistry
+    schemas, tables, columns, sourceTableFields,
+    loadingSchemas, loadingTables, loadingColumns, submitting,
+    handleAddFieldToRegistry,
+    handleEdit,
   };
 };

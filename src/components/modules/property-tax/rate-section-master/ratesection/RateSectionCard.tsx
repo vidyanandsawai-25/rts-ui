@@ -31,6 +31,7 @@ export default function RateSectionCard({
     const params = new URLSearchParams(searchParams.toString());
     params.set("zone", String(rateId));
     params.set("wardpage", "1");
+    params.delete("wardq");
 
     router.push(`${pathname}?${params.toString()}`);
   };

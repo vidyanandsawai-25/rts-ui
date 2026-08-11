@@ -1,5 +1,6 @@
 "use client"
 import { AnimatedDigitInput, Input, SearchSelect } from "@/components/common";
+import { Tooltip } from "@/components/common/Tooltip";
 import { Label } from "@/components/common/label";
 import { FloorFormFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 import { FloorFormActions } from "./FloorFormActions";
@@ -38,22 +39,24 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.floorLabel')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <div onFocusCapture={() => handleOpenDropdown('loadFloor')}>
-                    <SearchSelect
-                        options={floorOptions}
-                        name="floor"
-                        onChange={(_, val) => onFieldChange('oldFloorId', val)}
-                        value={String(formData.oldFloorId)}
-                        forceSearchText={
-                          formData.oldFloorId && !floorOptions.some(o => o.value === String(formData.oldFloorId))
-                            ? String(formData?.floorDescription || '')
-                            : undefined
-                        }
-                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                        autoFocus
-                        className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    />
-                </div>
+                <Tooltip content={floorOptions.find(opt => opt.value === String(formData.oldFloorId))?.label || ''} placement="top">
+                    <div className="w-full" onFocusCapture={() => handleOpenDropdown('loadFloor')}>
+                        <SearchSelect
+                            options={floorOptions}
+                            name="floor"
+                            onChange={(_, val) => onFieldChange('oldFloorId', val)}
+                            value={String(formData.oldFloorId)}
+                            forceSearchText={
+                              formData.oldFloorId && !floorOptions.some(o => o.value === String(formData.oldFloorId))
+                                ? String(formData?.floorDescription || '')
+                                : undefined
+                            }
+                            placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                            autoFocus
+                            className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        />
+                    </div>
+                </Tooltip>
                 {showError("oldFloorId") && (
                     <span className="text-xs text-red-500">{errors.oldFloorId}</span>
                 )}
@@ -64,21 +67,23 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.subFloor')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <div onFocusCapture={() => handleOpenDropdown('loadSubFloor')}>
-                    <SearchSelect
-                        options={subFloorOptions}
-                        name="subFloor"
-                        onChange={(_, val) => onFieldChange('oldSubFloorId', val)}
-                        value={String(formData.oldSubFloorId)}
-                        forceSearchText={
-                          formData.oldSubFloorId && !subFloorOptions.some(o => o.value === String(formData.oldSubFloorId))
-                            ? String(formData?.subFloorDescription || '')
-                            : undefined
-                        }
-                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    />
-                </div>
+                <Tooltip content={subFloorOptions.find(opt => opt.value === String(formData.oldSubFloorId))?.label || ''} placement="top">
+                    <div className="w-full" onFocusCapture={() => handleOpenDropdown('loadSubFloor')}>
+                        <SearchSelect
+                            options={subFloorOptions}
+                            name="subFloor"
+                            onChange={(_, val) => onFieldChange('oldSubFloorId', val)}
+                            value={String(formData.oldSubFloorId)}
+                            forceSearchText={
+                              formData.oldSubFloorId && !subFloorOptions.some(o => o.value === String(formData.oldSubFloorId))
+                                ? String(formData?.subFloorDescription || '')
+                                : undefined
+                            }
+                            placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                            className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        />
+                    </div>
+                </Tooltip>
                 {showError("oldSubFloorId") && (
                     <span className="text-xs text-red-500">{errors.oldSubFloorId}</span>
                 )}
@@ -134,21 +139,23 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.conTyp')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <div onFocusCapture={() => handleOpenDropdown('loadConstruction')}>
-                    <SearchSelect
-                        options={constructionTypeOptions}
-                        name="conTyp"
-                        onChange={(_, val) => onFieldChange('oldConstructionTypeId', val)}
-                        value={String(formData.oldConstructionTypeId)}
-                        forceSearchText={
-                          formData.oldConstructionTypeId && !constructionTypeOptions.some(o => o.value === String(formData.oldConstructionTypeId))
-                            ? String(formData?.constructionTypeDescription || '')
-                            : undefined
-                        }
-                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    />
-                </div>
+                <Tooltip content={constructionTypeOptions.find(opt => opt.value === String(formData.oldConstructionTypeId))?.label || ''} placement="top">
+                    <div className="w-full" onFocusCapture={() => handleOpenDropdown('loadConstruction')}>
+                        <SearchSelect
+                            options={constructionTypeOptions}
+                            name="conTyp"
+                            onChange={(_, val) => onFieldChange('oldConstructionTypeId', val)}
+                            value={String(formData.oldConstructionTypeId)}
+                            forceSearchText={
+                              formData.oldConstructionTypeId && !constructionTypeOptions.some(o => o.value === String(formData.oldConstructionTypeId))
+                                ? String(formData?.constructionTypeDescription || '')
+                                : undefined
+                            }
+                            placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                            className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        />
+                    </div>
+                </Tooltip>
                 {showError("oldConstructionTypeId") && (
                     <span className="text-xs text-red-500">{errors.oldConstructionTypeId}</span>
                 )}
@@ -159,21 +166,23 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.floordtails.use')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <div onFocusCapture={() => handleOpenDropdown('loadUsage')}>
-                    <SearchSelect
-                        options={useOptions}
-                        name="use"
-                        onChange={(_, val) => onUseTypeChange(val)}
-                        value={String(formData.oldTypeOfUseId)}
-                        forceSearchText={
-                          formData.oldTypeOfUseId && !useOptions.some(o => o.value === String(formData.oldTypeOfUseId))
-                            ? String(formData?.typeOfUseDescription || '')
-                            : undefined
-                        }
-                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    />
-                </div>
+                <Tooltip content={useOptions.find(opt => opt.value === String(formData.oldTypeOfUseId))?.label || ''} placement="top">
+                    <div className="w-full" onFocusCapture={() => handleOpenDropdown('loadUsage')}>
+                        <SearchSelect
+                            options={useOptions}
+                            name="use"
+                            onChange={(_, val) => onUseTypeChange(val)}
+                            value={String(formData.oldTypeOfUseId)}
+                            forceSearchText={
+                              formData.oldTypeOfUseId && !useOptions.some(o => o.value === String(formData.oldTypeOfUseId))
+                                ? String(formData?.typeOfUseDescription || '')
+                                : undefined
+                            }
+                            placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                            className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        />
+                    </div>
+                </Tooltip>
                 {showError("oldTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldTypeOfUseId}</span>
                 )}
@@ -184,22 +193,24 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('floor.subTyp')} {(hasSubUseOptions || formData.oldSubTypeOfUseId) && <span className="text-red-500 ml-1">*</span>}
                 </Label>
-                <div onFocusCapture={() => formData.oldTypeOfUseId && handleOpenDropdown('loadSubType')}>
-                    <SearchSelect
-                        name="subUseType"
-                        onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
-                        value={String(formData.oldSubTypeOfUseId)}
-                        disabled={!hasSubUseOptions && !formData.oldSubTypeOfUseId}
-                        options={subUseOptions}
-                        forceSearchText={
-                          formData.oldSubTypeOfUseId && !subUseOptions.some(o => o.value === String(formData.oldSubTypeOfUseId))
-                            ? String(formData?.subTypeOfUseDescription || '')
-                            : undefined
-                        }
-                        placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    />
-                </div>
+                <Tooltip content={subUseOptions.find(opt => opt.value === String(formData.oldSubTypeOfUseId))?.label || ''} placement="top">
+                    <div className="w-full" onFocusCapture={() => formData.oldTypeOfUseId && handleOpenDropdown('loadSubType')}>
+                        <SearchSelect
+                            name="subUseType"
+                            onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
+                            value={String(formData.oldSubTypeOfUseId)}
+                            disabled={!hasSubUseOptions && !formData.oldSubTypeOfUseId}
+                            options={subUseOptions}
+                            forceSearchText={
+                              formData.oldSubTypeOfUseId && !subUseOptions.some(o => o.value === String(formData.oldSubTypeOfUseId))
+                                ? String(formData?.subTypeOfUseDescription || '')
+                                : undefined
+                            }
+                            placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                            className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        />
+                    </div>
+                </Tooltip>
                 {showError("oldSubTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldSubTypeOfUseId}</span>
                 )}
@@ -210,20 +221,22 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.carpetAreaSqFt')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={formData.oldCarpetAreaSqFeet ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
-                    onChange={(e) => {
-                        const value = sanitizeTaxDecimal(e.target.value);
-                        if (value !== '' || e.target.value === '') {
-                            onFieldChange('oldCarpetAreaSqFeet', value);
-                        }
-                    }}
-                    onKeyDown={preventInvalidNumericKeys}
-                />
+                <Tooltip content={String(formData.oldCarpetAreaSqFeet ?? '')} placement="top">
+                    <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={formData.oldCarpetAreaSqFeet ?? ''}
+                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        placeholder="0.00"
+                        onChange={(e) => {
+                            const value = sanitizeTaxDecimal(e.target.value);
+                            if (value !== '' || e.target.value === '') {
+                                onFieldChange('oldCarpetAreaSqFeet', value);
+                            }
+                        }}
+                        onKeyDown={preventInvalidNumericKeys}
+                    />
+                </Tooltip>
                 {showError("oldCarpetAreaSqFeet") && (
                     <span className="text-xs text-red-500">{errors.oldCarpetAreaSqFeet}</span>
                 )}
@@ -234,20 +247,22 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.areaSqM')}<span className="text-red-500 ml-1">*</span>
                 </Label>
-                <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={formData.oldAreaSqMeter ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
-                    onChange={(e) => {
-                        const value = sanitizeTaxDecimal(e.target.value);
-                        if (value !== '' || e.target.value === '') {
-                            onFieldChange('oldAreaSqMeter', value);
-                        }
-                    }}
-                    onKeyDown={preventInvalidNumericKeys}
-                />
+                <Tooltip content={String(formData.oldAreaSqMeter ?? '')} placement="top">
+                    <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={formData.oldAreaSqMeter ?? ''}
+                        className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        placeholder="0.00"
+                        onChange={(e) => {
+                            const value = sanitizeTaxDecimal(e.target.value);
+                            if (value !== '' || e.target.value === '') {
+                                onFieldChange('oldAreaSqMeter', value);
+                            }
+                        }}
+                        onKeyDown={preventInvalidNumericKeys}
+                    />
+                </Tooltip>
                 {showError("oldAreaSqMeter") && (
                     <span className="text-xs text-red-500">{errors.oldAreaSqMeter}</span>
                 )}
@@ -258,17 +273,19 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.builtupAreaSqFt')}
                 </Label>
-                <Input
-                    type="number"
-                    value={
-                        formData.oldBuiltupAreaSqFeet
-                            ? Number(formData.oldBuiltupAreaSqFeet).toFixed(2)
-                            : ''
-                    }
-                    readOnly
-                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
-                />
+                <Tooltip content={String(formData.oldBuiltupAreaSqFeet ? Number(formData.oldBuiltupAreaSqFeet).toFixed(2) : '')} placement="top">
+                    <Input
+                        type="number"
+                        value={
+                            formData.oldBuiltupAreaSqFeet
+                                ? Number(formData.oldBuiltupAreaSqFeet).toFixed(2)
+                                : ''
+                        }
+                        readOnly
+                        className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        placeholder="0.00"
+                    />
+                </Tooltip>
             </div>
 
             {/* Builtup Area (Sq M) - Read Only */}
@@ -276,17 +293,19 @@ export function FloorFormFields({
                 <Label className="text-xs font-semibold text-gray-700">
                     {t('oldDetails.builtupAreaSqMeter')}
                 </Label>
-                <Input
-                    type="number"
-                    value={
-                        formData.oldBuiltupAreaSqMeter
-                            ? Number(formData.oldBuiltupAreaSqMeter).toFixed(2)
-                            : ''
-                    }
-                    readOnly
-                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
-                />
+                <Tooltip content={String(formData.oldBuiltupAreaSqMeter ? Number(formData.oldBuiltupAreaSqMeter).toFixed(2) : '')} placement="top">
+                    <Input
+                        type="number"
+                        value={
+                            formData.oldBuiltupAreaSqMeter
+                                ? Number(formData.oldBuiltupAreaSqMeter).toFixed(2)
+                                : ''
+                        }
+                        readOnly
+                        className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                        placeholder="0.00"
+                    />
+                </Tooltip>
             </div>
             <div className="w-full flex justify-end gap-5 items-end mt-6 md:mt-0 md:h-full">
                 <FloorFormActions

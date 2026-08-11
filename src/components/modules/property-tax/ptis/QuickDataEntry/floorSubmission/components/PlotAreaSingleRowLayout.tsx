@@ -28,6 +28,7 @@ export interface PlotAreaSingleRowLayoutProps {
   handleOpenPlotCategoryFocus?: () => void;
   isCategoryLoading?: boolean;
   handleOpenDropdown?: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType' | 'loadOpenPlotCategory') => void;
+  isPlotCategory?: boolean;
 }
 
 export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = ({
@@ -54,6 +55,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
   handleOpenPlotCategoryFocus,
   isCategoryLoading = false,
   handleOpenDropdown,
+  isPlotCategory = false,
 }) => {
   const categoryCode = getTranslation('floor.openPlotCategory', 'Category');
 
@@ -86,10 +88,10 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
 
       {/* Right side: Input controls strictly in ONE single row */}
       <div className="flex flex-row items-center gap-2 shrink-0 flex-nowrap">
-        {/* L Input */}
+        {/* Length Input */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
-            {getTranslation('floor.lengthShort', 'L (ft)')}
+            {getTranslation('floor.lengthShort', 'Length')}
           </span>
           <AnimatedDigitInput
             id="plot-length"
@@ -107,10 +109,10 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
         {/* Multiplier sign */}
         <span className="text-slate-400 font-semibold text-xs self-end mb-2">×</span>
 
-        {/* W Input */}
+        {/* Width Input */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
-            {getTranslation('floor.widthShort', 'W (ft)')}
+            {getTranslation('floor.widthShort', 'Width')}
           </span>
           <AnimatedDigitInput
             id="plot-width"
@@ -215,7 +217,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
               options={[
                 { label: getTranslation('floor.construction', 'Construction'), value: 'Construction' },
                 { label: getTranslation('floor.openPlot', 'Open Space'), value: 'OpenPlot' },
-              ]}
+              ].filter(opt => !isPlotCategory || opt.value !== 'Construction')}
               value={selectedFloorType}
               onChange={(_name, val) => onChangeFloorType(val as 'Construction' | 'OpenPlot')}
               className="h-8 text-xs font-bold text-slate-700 w-[115px]"

@@ -121,6 +121,7 @@
     "action": "Add Tax",
     "warningSuffix": "for {count} properties",
     "cancel": "Cancel",
+    "preview": "Preview",
     "proceed": "Proceed & Start Execution",
     "scheduleExecutionButton": "Schedule Execution",
     "operation": "Operation",
@@ -247,6 +248,8 @@
     "fileTooLarge": "File size exceeds 10 MB limit.",
     "emptyExcelSheet": "The Excel sheet is empty",
     "uploadSuccess": "Uploaded successfully. Auto-detected scope: {scope}",
+    "invalidExcelTemplate": "Please upload correct excel as per template.",
+    "invalidWardPropertyData": "Please upload valid wards & properties in excel.",
     "failedParseExcel": "Failed to parse Excel file",
     "eligibleCalculated": "Eligible properties calculated successfully",
     "failedFetchCalculation": "Failed to fetch calculation results",
@@ -284,7 +287,7 @@
     "filters": {
       "allJobs": "All Jobs",
       "searchJobId": "Search Job ID",
-      "searchPlaceholder": "Search Job ID / Property / User / Ward",
+      "searchPlaceholder": "Search Job ID",
       "status": "Status",
       "date": "Date"
     },

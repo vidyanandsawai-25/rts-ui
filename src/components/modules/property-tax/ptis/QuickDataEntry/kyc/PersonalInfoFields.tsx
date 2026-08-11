@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, SearchSelect } from '@/components/common';
+import { Input, Label, SearchSelect, PTISTransliteratedInput, Tooltip } from '@/components/common';
 import {
   KYC_VALIDATION_RULES,
   KYC_TITLE_OPTIONS,
@@ -50,21 +50,25 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
         </Label>
-        <SearchSelect
-          id="kyc-ownertype"
-          name="ownerType"
-          autoFocus
-          options={ownerTypeOptions}
-          value={formData.ownerTypeId?.toString() ?? ''}
-          placeholder={t('kyc.select')}
-          onChange={(_name, value) => {
-            setFormData((prev) => ({
-              ...prev,
-              ownerTypeId: value ? Number(value) : null,
-            }));
-          }}
-          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        />
+        <Tooltip content={ownerTypeOptions.find(opt => opt.value === formData.ownerTypeId?.toString())?.label || ''} placement="top">
+          <div className="w-full">
+            <SearchSelect
+              id="kyc-ownertype"
+              name="ownerType"
+              autoFocus
+              options={ownerTypeOptions}
+              value={formData.ownerTypeId?.toString() ?? ''}
+              placeholder={t('kyc.select')}
+              onChange={(_name, value) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  ownerTypeId: value ? Number(value) : null,
+                }));
+              }}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </Tooltip>
       </div>
 
       {/* Title */}
@@ -72,17 +76,21 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         <Label htmlFor="kyc-title" className="text-xs font-semibold text-gray-700">
           {t('kyc.titleLabel')}
         </Label>
-        <SearchSelect
-          id="kyc-title"
-          name="title"
-          options={titleOptions}
-          value={formData.ownerTitle ?? ''}
-          placeholder={t('kyc.select')}
-          onChange={(_name, value) => {
-            setFormData((prev) => ({ ...prev, ownerTitle: value }));
-          }}
-          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        />
+        <Tooltip content={titleOptions.find(opt => opt.value === formData.ownerTitle)?.label || ''} placement="top">
+          <div className="w-full">
+            <SearchSelect
+              id="kyc-title"
+              name="title"
+              options={titleOptions}
+              value={formData.ownerTitle ?? ''}
+              placeholder={t('kyc.select')}
+              onChange={(_name, value) => {
+                setFormData((prev) => ({ ...prev, ownerTitle: value }));
+              }}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </Tooltip>
       </div>
 
       {/* Property Holder Name Regional */}
@@ -91,7 +99,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           {t('kyc.propertyHolderNameMarathi')}
           <span className="text-red-500 ml-0.5">*</span>
         </Label>
-        <Input
+        <PTISTransliteratedInput
           type="text"
           id="kyc-ownername"
           placeholder={t('kyc.enterFullNameMarathi')}
@@ -104,7 +112,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             onBlurField();
             setFormData((prev) => ({
               ...prev,
-              ownerName: capitalizeEachWordKycSociety((prev.ownerName ?? '').trim().replace(/\s+/g, ' '), true),
+              ownerName: capitalizeEachWordKycSociety(
+                (prev.ownerName ?? '').trim().replace(/\s+/g, ' '),
+                true
+              ),
             }));
           }}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +134,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             {!(formData.ownerName ?? '').trim()
               ? t('kyc.errors.ownerNameRequired')
               : (formData.ownerName ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
-                (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+                  (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
           </span>
@@ -149,7 +160,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             onBlurField();
             setFormData((prev) => ({
               ...prev,
-              ownerNameEnglish: capitalizeEachWordKycSociety((prev.ownerNameEnglish ?? '').trim().replace(/\s+/g, ' '), true),
+              ownerNameEnglish: capitalizeEachWordKycSociety(
+                (prev.ownerNameEnglish ?? '').trim().replace(/\s+/g, ' '),
+                true
+              ),
             }));
           }}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,8 +181,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           <span className="text-xs text-red-500">
             {!(formData.ownerNameEnglish ?? '').trim()
               ? t('kyc.errors.ownerNameRequired')
-              : (formData.ownerNameEnglish ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
-                (formData.ownerNameEnglish ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+              : (formData.ownerNameEnglish ?? '').trim().length <
+                    KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
+                  (formData.ownerNameEnglish ?? '').trim().length >
+                    KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
           </span>

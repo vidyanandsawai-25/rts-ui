@@ -228,6 +228,9 @@ describe("usePropertyTypeForm", () => {
           target: { name: "propertyTypeGroup", value: "Group" },
         } as React.ChangeEvent<HTMLInputElement>);
         result.current.handleCategoryChange("1");
+        result.current.handleChange({
+          target: { name: "searchSequence", value: "5" },
+        } as React.ChangeEvent<HTMLInputElement>);
       });
 
       await act(async () => {
@@ -294,6 +297,9 @@ describe("usePropertyTypeForm", () => {
           target: { name: "propertyTypeGroup", value: "Group" },
         } as React.ChangeEvent<HTMLInputElement>);
         result.current.handleCategoryChange("1");
+        result.current.handleChange({
+          target: { name: "searchSequence", value: "5" },
+        } as React.ChangeEvent<HTMLInputElement>);
       });
 
       await act(async () => {

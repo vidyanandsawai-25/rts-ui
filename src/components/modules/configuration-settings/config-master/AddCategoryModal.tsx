@@ -17,6 +17,7 @@ interface AddCategoryModalProps {
   onClose: () => void;
   onSuccess: () => void;
   initialData?: ConfigCategory | null;
+  categories?: ConfigCategory[];
 }
 
 export default function AddCategoryModal({
@@ -24,6 +25,7 @@ export default function AddCategoryModal({
   onClose,
   onSuccess,
   initialData,
+  categories,
 }: AddCategoryModalProps) {
   const t = useTranslations('configMaster');
   const [isPending, startTransition] = useTransition();
@@ -31,10 +33,20 @@ export default function AddCategoryModal({
   const { confirm } = useConfirm();
   const isEdit = !!initialData;
 
+  const autoDisplayOrder = useMemo(() => {
+    if (initialData?.displayOrder != null) {
+      return initialData.displayOrder.toString();
+    }
+    if (!categories || categories.length === 0) return '1';
+    const orders = categories.map((c) => Number(c.displayOrder) || 0);
+    const maxOrder = Math.max(...orders, 0);
+    return (maxOrder + 1).toString();
+  }, [categories, initialData]);
+
   const [formData, setFormData] = useState({
     categoryCode: (initialData?.code || '').toUpperCase(),
     categoryName: initialData?.name || '',
-    displayOrder: initialData?.displayOrder?.toString() || '1',
+    displayOrder: autoDisplayOrder,
     isActive: initialData?.isActive ?? true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,7 +55,7 @@ export default function AddCategoryModal({
     setFormData({
       categoryCode: (initialData?.code || '').toUpperCase(),
       categoryName: initialData?.name || '',
-      displayOrder: initialData?.displayOrder?.toString() || '1',
+      displayOrder: autoDisplayOrder,
       isActive: initialData?.isActive ?? true,
     });
     setErrors({});
@@ -53,10 +65,10 @@ export default function AddCategoryModal({
     return (
       formData.categoryCode !== (initialData?.code || '') ||
       formData.categoryName !== (initialData?.name || '') ||
-      formData.displayOrder !== (initialData?.displayOrder?.toString() || '1') ||
+      formData.displayOrder !== autoDisplayOrder ||
       formData.isActive !== (initialData?.isActive ?? true)
     );
-  }, [formData, initialData]);
+  }, [formData, initialData, autoDisplayOrder]);
 
   const handleChange = (field: string, value: string | boolean): void => {
     setFormData((prev) => ({ ...prev, [field]: value }));

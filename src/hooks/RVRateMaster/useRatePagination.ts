@@ -24,10 +24,10 @@ export function useRatePagination({
 
   // Pagination state for matrix grid
   const [matrixPageNumber, setMatrixPageNumber] = useState(paginatedZonesData?.pageNumber ?? 1);
-  const [matrixPageSize, setMatrixPageSize] = useState(paginatedZonesData?.pageSize ?? 10);
-  const [matrixTotalPages, setMatrixTotalPages] = useState(paginatedZonesData?.totalPages ?? Math.ceil(zoneDescriptions.length / 10));
+  const [matrixPageSize, setMatrixPageSize] = useState(paginatedZonesData?.pageSize ?? 100);
+  const [matrixTotalPages, setMatrixTotalPages] = useState(paginatedZonesData?.totalPages ?? Math.ceil(zoneDescriptions.length / 100));
   const [matrixTotalCount, setMatrixTotalCount] = useState(paginatedZonesData?.totalCount ?? zoneDescriptions.length);
-  const [paginatedZoneDescriptions, setPaginatedZoneDescriptions] = useState(paginatedZonesData?.items ?? zoneDescriptions.slice(0, 10));
+  const [paginatedZoneDescriptions, setPaginatedZoneDescriptions] = useState(paginatedZonesData?.items ?? zoneDescriptions.slice(0, 100));
 
   // Sync paginated zone data from server-provided props when they change
   useEffect(() => {

@@ -1,8 +1,18 @@
 import React from 'react';
-import { AnimatedDigitInput, Input } from '@/components/common';
+import { AnimatedDigitInput, Input, PTISTransliteratedInput,Tooltip } from '@/components/common';
 import { Label } from '@/components/common/label';
-import { KYC_VALIDATION_RULES, enhancedKycValidators, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
-import { sanitizeAddress, sanitizeShopName, sanitizeEmailStrict, sanitizeName, capitalizeEachWordKycSociety } from '@/lib/utils/input-sanitization';
+import {
+  KYC_VALIDATION_RULES,
+  enhancedKycValidators,
+  kycValidators,
+} from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import {
+  sanitizeAddress,
+  sanitizeShopName,
+  sanitizeEmailStrict,
+  sanitizeName,
+  capitalizeEachWordKycSociety,
+} from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 
 interface AddressInfoFieldsProps {
@@ -52,15 +62,13 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
     'addressEnglish',
     enhancedKycValidators.isValidAddress(formData.addressEnglish ?? '')
   );
-  const pinCodeError = showError(
-    'pinCode',
-    kycValidators.isValidPinCode(formData.pinCode ?? '')
-  ) || !!(
-    formData.pinCode && (
-      (formData.pinCode.length >= 4 && formData.pinCode.length <= 5) ||
-      (formData.pinCode.length === 6 && kycValidators.hasRepeatedSequence(formData.pinCode, 5))
-    )
-  );
+  const pinCodeError =
+    showError('pinCode', kycValidators.isValidPinCode(formData.pinCode ?? '')) ||
+    !!(
+      formData.pinCode &&
+      ((formData.pinCode.length >= 4 && formData.pinCode.length <= 5) ||
+        (formData.pinCode.length === 6 && kycValidators.hasRepeatedSequence(formData.pinCode, 5)))
+    );
 
   const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -77,7 +85,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             <Label htmlFor="kyc-occupier" className="text-xs font-semibold text-gray-700">
               {t('kyc.occupierNameMarathi')}
             </Label>
-            <Input
+            <PTISTransliteratedInput
               type="text"
               id="kyc-occupier"
               placeholder={t('kyc.enterOccupierNameMarathi')}
@@ -90,7 +98,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 onBlurField();
                 setFormData((prev) => ({
                   ...prev,
-                  occupierName: capitalizeEachWordKycSociety((prev.occupierName ?? '').trim().replace(/\s+/g, ' '), true),
+                  occupierName: capitalizeEachWordKycSociety(
+                    (prev.occupierName ?? '').trim().replace(/\s+/g, ' '),
+                    true
+                  ),
                 }));
               }}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,16 +109,16 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 const start = e.target.selectionStart ?? val.length;
                 const isAtEnd = start >= val.length;
                 const sanitized = sanitizeName(val);
-                const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                const finalVal = isAtEnd
+                  ? capitalizeEachWordKycSociety(sanitized, false)
+                  : sanitized;
                 if (finalVal.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
                   setFormData((prev) => ({ ...prev, occupierName: finalVal }));
                 }
               }}
             />
             {occupierNameError && (
-              <span className="text-xs text-red-500">
-                {t('kyc.validation.invalidName')}
-              </span>
+              <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
             )}
           </div>
 
@@ -129,7 +140,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 onBlurField();
                 setFormData((prev) => ({
                   ...prev,
-                  occupierNameEnglish: capitalizeEachWordKycSociety((prev.occupierNameEnglish ?? '').trim().replace(/\s+/g, ' '), true),
+                  occupierNameEnglish: capitalizeEachWordKycSociety(
+                    (prev.occupierNameEnglish ?? '').trim().replace(/\s+/g, ' '),
+                    true
+                  ),
                 }));
               }}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,16 +151,16 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 const start = e.target.selectionStart ?? val.length;
                 const isAtEnd = start >= val.length;
                 const sanitized = sanitizeName(val);
-                const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                const finalVal = isAtEnd
+                  ? capitalizeEachWordKycSociety(sanitized, false)
+                  : sanitized;
                 if (finalVal.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
                   setFormData((prev) => ({ ...prev, occupierNameEnglish: finalVal }));
                 }
               }}
             />
             {occupierNameEnglishError && (
-              <span className="text-xs text-red-500">
-                {t('kyc.validation.invalidName')}
-              </span>
+              <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
             )}
           </div>
 
@@ -155,7 +169,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             <Label htmlFor="kyc-shopname" className="text-xs font-semibold text-gray-700">
               {t('kyc.shopNameMarathi')}
             </Label>
-            <Input
+            <PTISTransliteratedInput
               type="text"
               id="kyc-shopname"
               placeholder={t('kyc.enterShopNameMarathi')}
@@ -168,7 +182,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 onBlurField();
                 setFormData((prev) => ({
                   ...prev,
-                  flatOrShopName: capitalizeEachWordKycSociety((prev.flatOrShopName ?? '').trim().replace(/\s+/g, ' '), true),
+                  flatOrShopName: capitalizeEachWordKycSociety(
+                    (prev.flatOrShopName ?? '').trim().replace(/\s+/g, ' '),
+                    true
+                  ),
                 }));
               }}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,16 +193,16 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 const start = e.target.selectionStart ?? val.length;
                 const isAtEnd = start >= val.length;
                 const sanitized = sanitizeShopName(val);
-                const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                const finalVal = isAtEnd
+                  ? capitalizeEachWordKycSociety(sanitized, false)
+                  : sanitized;
                 if (finalVal.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
                   setFormData((prev) => ({ ...prev, flatOrShopName: finalVal }));
                 }
               }}
             />
             {shopNameError && (
-              <span className="text-xs text-red-500">
-                {t('kyc.validation.invalidName')}
-              </span>
+              <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
             )}
           </div>
 
@@ -207,7 +224,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 onBlurField();
                 setFormData((prev) => ({
                   ...prev,
-                  flatOrShopNameEnglish: capitalizeEachWordKycSociety((prev.flatOrShopNameEnglish ?? '').trim().replace(/\s+/g, ' '), true),
+                  flatOrShopNameEnglish: capitalizeEachWordKycSociety(
+                    (prev.flatOrShopNameEnglish ?? '').trim().replace(/\s+/g, ' '),
+                    true
+                  ),
                 }));
               }}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,16 +235,16 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
                 const start = e.target.selectionStart ?? val.length;
                 const isAtEnd = start >= val.length;
                 const sanitized = sanitizeShopName(val);
-                const finalVal = isAtEnd ? capitalizeEachWordKycSociety(sanitized, false) : sanitized;
+                const finalVal = isAtEnd
+                  ? capitalizeEachWordKycSociety(sanitized, false)
+                  : sanitized;
                 if (finalVal.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
                   setFormData((prev) => ({ ...prev, flatOrShopNameEnglish: finalVal }));
                 }
               }}
             />
             {shopNameEnglishError && (
-              <span className="text-xs text-red-500">
-                {t('kyc.validation.invalidName')}
-              </span>
+              <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
             )}
           </div>
         </>
@@ -237,21 +257,23 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
               {t('kyc.emailId')}
             </Label>
-            <Input
-              id="kyc-email"
-              type="email"
-              placeholder={t('kyc.enterEmailId')}
-              value={formData.emailId ?? ''}
-              maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-              className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${emailIdError ? 'border-red-300 focus:border-red-500' : ''}`}
-              onFocus={() => onFocusField('emailId')}
-              onKeyDown={preventEnterSubmit}
-              onBlur={onBlurField}
-              onChange={(e) => {
-                const sanitized = sanitizeEmailStrict(e.target.value);
-                setFormData((prev) => ({ ...prev, emailId: sanitized }));
-              }}
-            />
+            <Tooltip content={formData.emailId ?? ''} placement="top">
+              <Input
+                id="kyc-email"
+                type="email"
+                placeholder={t('kyc.enterEmailId')}
+                value={formData.emailId ?? ''}
+                maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+                className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${emailIdError ? 'border-red-300 focus:border-red-500' : ''}`}
+                onFocus={() => onFocusField('emailId')}
+                onKeyDown={preventEnterSubmit}
+                onBlur={onBlurField}
+                onChange={(e) => {
+                  const sanitized = sanitizeEmailStrict(e.target.value);
+                  setFormData((prev) => ({ ...prev, emailId: sanitized }));
+                }}
+              />
+            </Tooltip>
             {emailIdError && (
               <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
             )}
@@ -262,7 +284,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             <Label htmlFor="kyc-address" className="text-xs font-semibold text-gray-700">
               {t('kyc.addressMarathi')}
             </Label>
-            <Input
+            <PTISTransliteratedInput
               type="text"
               id="kyc-address"
               placeholder={t('kyc.enterAddressMarathi')}
@@ -282,9 +304,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
               }}
             />
             {addressError && (
-              <span className="text-xs text-red-500">
-                {t('kyc.validation.invalidAddress')}
-              </span>
+              <span className="text-xs text-red-500">{t('kyc.validation.invalidAddress')}</span>
             )}
           </div>
 
@@ -293,29 +313,29 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             <Label htmlFor="kyc-address-english" className="text-xs font-semibold text-gray-700">
               {t('kyc.addressEnglish')}
             </Label>
-            <Input
-              type="text"
-              id="kyc-address-english"
-              placeholder={t('kyc.enterAddressEnglish')}
-              value={formData.addressEnglish ?? ''}
-              maxLength={KYC_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
-              className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${addressEnglishError ? 'border-red-300 focus:border-red-500' : ''}`}
-              onFocus={() => onFocusField('addressEnglish')}
-              onKeyDown={preventEnterSubmit}
-              onBlur={onBlurField}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                // Sanitize to remove invalid characters immediately
-                const sanitized = sanitizeAddress(e.target.value);
-                setFormData((prev) => ({
-                  ...prev,
-                  addressEnglish: sanitized.slice(0, KYC_VALIDATION_RULES.ADDRESS_MAX_LENGTH),
-                }));
-              }}
-            />
+            <Tooltip content={formData.addressEnglish ?? ''} placement="top">
+              <Input
+                type="text"
+                id="kyc-address-english"
+                placeholder={t('kyc.enterAddressEnglish')}
+                value={formData.addressEnglish ?? ''}
+                maxLength={KYC_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
+                className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${addressEnglishError ? 'border-red-300 focus:border-red-500' : ''}`}
+                onFocus={() => onFocusField('addressEnglish')}
+                onKeyDown={preventEnterSubmit}
+                onBlur={onBlurField}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  // Sanitize to remove invalid characters immediately
+                  const sanitized = sanitizeAddress(e.target.value);
+                  setFormData((prev) => ({
+                    ...prev,
+                    addressEnglish: sanitized.slice(0, KYC_VALIDATION_RULES.ADDRESS_MAX_LENGTH),
+                  }));
+                }}
+              />
+            </Tooltip>
             {addressEnglishError && (
-              <span className="text-xs text-red-500">
-                {t('kyc.validation.invalidAddress')}
-              </span>
+              <span className="text-xs text-red-500">{t('kyc.validation.invalidAddress')}</span>
             )}
           </div>
 
@@ -329,7 +349,11 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
               placeholder={t('kyc.enterPinCode')}
               value={String(formData.pinCode || '')}
               maxLength={6}
-              className={pinCodeError ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300' : ''}
+              className={
+                pinCodeError
+                  ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
+                  : ''
+              }
               onFocus={() => onFocusField('pinCode')}
               onKeyDown={preventEnterSubmit}
               onBlur={onBlurField}

@@ -1,6 +1,6 @@
 // Rate Master Import/Export Helpers
 export { generateCsvTemplate, downloadFile } from './rateExportHelpers';
-export { parseCsvContent, applyImportedEditsToMatrix, validateFileType } from './rateImportHelpers';
+export { parseExcelOrCsvContent, applyImportedEditsToMatrix, validateFileType } from './rateImportHelpers';
 export { processRatesForCopy, buildZoneEditsFromRates, applyRatesToMatrix } from './rateCopyHelpers';
 
 // Rate Master Operations Helpers

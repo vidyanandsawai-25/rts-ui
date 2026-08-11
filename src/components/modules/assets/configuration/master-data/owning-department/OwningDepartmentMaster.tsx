@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
-import { PageContainer, Select } from "@/components/common";
+import { PageContainer, Select, SearchInput } from "@/components/common";
+import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useOwningDepartmentList } from "@/hooks/asset-masters/owning-department/useOwningDepartmentList";
-import { OwningDepartmentHeader } from "./OwningDepartmentHeader";
+import { Settings } from "lucide-react";
 import type { OwningDepartment, OwningDepartmentMasterProps } from "@/types/asset-masters/owning-department.types";
 
 export function OwningDepartmentMaster(props: OwningDepartmentMasterProps) {
@@ -16,7 +17,7 @@ export function OwningDepartmentMaster(props: OwningDepartmentMasterProps) {
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,
@@ -30,11 +31,24 @@ export function OwningDepartmentMaster(props: OwningDepartmentMasterProps) {
   return (
     <PageContainer>
       <div className="space-y-4">
-        <OwningDepartmentHeader
-          search={search}
-          setSearch={setSearch}
-          locale={locale}
-          t={t}
+        <TableHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+          icon={Settings}
+          actionLabel={t("add")}
+          onActionClick={() => {
+            router.push(`/${locale}/assets/configuration/master-data/owning-department/add`);
+          }}
+          rightContent={
+            <div className="flex w-full justify-end">
+              <SearchInput
+                value={search}
+                onChange={handleSearchChange}
+                placeholder={t("searchPlaceholder") || "Search by Owning Department..."}
+                className="mb-0 w-full text-gray-900"
+              />
+            </div>
+          }
         />
 
         <MasterTable<OwningDepartment>

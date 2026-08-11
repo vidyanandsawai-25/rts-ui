@@ -62,15 +62,30 @@ export function validatePropertySearchCriteria(
       }
       if (filter === "between") {
         if (!normalized.rateableValueFrom || !normalized.rateableValueTo) {
-          return fail("rateableValueBetweenRequired", t);
+          const key = criteria.valuationMethod === "cv"
+            ? "capitalValueBetweenRequired"
+            : criteria.valuationMethod === "totalTax"
+              ? "totalTaxBetweenRequired"
+              : "rateableValueBetweenRequired";
+          return fail(key as SearchValidationKey, t);
         }
       } else if (filter === "top") {
         if (!normalized.rateableValueFrom) {
-          return fail("rateableValueInvalid", t);
+          const key = criteria.valuationMethod === "cv"
+            ? "capitalValueInvalid"
+            : criteria.valuationMethod === "totalTax"
+              ? "totalTaxInvalid"
+              : "rateableValueInvalid";
+          return fail(key as SearchValidationKey, t);
         }
       } else if (filter === "exact" || filter === "moreThan" || filter === "lessThan") {
         if (!normalized.rateableValueFrom) {
-          return fail("rateableValueInvalid", t);
+          const key = criteria.valuationMethod === "cv"
+            ? "capitalValueInvalid"
+            : criteria.valuationMethod === "totalTax"
+              ? "totalTaxInvalid"
+              : "rateableValueInvalid";
+          return fail(key as SearchValidationKey, t);
         }
       }
     }

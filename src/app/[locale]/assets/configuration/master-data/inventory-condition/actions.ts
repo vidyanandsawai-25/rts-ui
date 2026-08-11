@@ -68,7 +68,10 @@ export async function getAssetCategoriesForConditionAction(): Promise<AssetCondi
 
 export async function createInventoryConditionAction(formData: InventoryConditionFormModel) {
   try {
-    const userId = getUserIdFromCookies(await cookies()) ?? 1;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
     const result = await inventoryConditionService.create({
       inventoryItemCategoryId: formData.inventoryItemCategoryId,
       conditionName: formData.conditionName,
@@ -93,7 +96,10 @@ export async function createInventoryConditionAction(formData: InventoryConditio
 export async function updateInventoryConditionAction(formData: InventoryConditionFormModel) {
   try {
     if (!formData.id) throw new Error("ID is required for update");
-    const userId = getUserIdFromCookies(await cookies()) ?? 1;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
     
     const result = await inventoryConditionService.update(formData.id, {
       inventoryItemCategoryId: formData.inventoryItemCategoryId,
@@ -117,6 +123,10 @@ export async function updateInventoryConditionAction(formData: InventoryConditio
 
 export async function deleteInventoryConditionAction(id: string) {
   try {
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
     await inventoryConditionService.delete(id);
     const { locales } = await import("@/i18n/config");
     for (const locale of locales) {

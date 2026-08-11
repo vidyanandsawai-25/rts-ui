@@ -58,6 +58,7 @@
         "customRemarkTypeSpacesOnly": "Custom Remark Type cannot contain only spaces.",
         "customRemarkTypeConsecutiveSpaces": "Custom Remark Type cannot contain multiple consecutive spaces.",
         "customRemarkTypeFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
+        "customRemarkTypeExists": "This remark type already exists.",
         "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)"
       }
     },

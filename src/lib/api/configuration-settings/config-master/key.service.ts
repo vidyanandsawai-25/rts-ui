@@ -88,6 +88,42 @@ export const getAllConfigKeys = cache(async (params: {
     let response: ApiResponse<unknown>;
     let normalized: ConfigItem[] = [];
 
+    // Fetch all values to extract global settings (where DepartmentId and ModuleId are null/0)
+    const valuesResponse = await apiClient.get<unknown>('/ConfigValueMaster?pageSize=500');
+    const rawValues = valuesResponse.success ? normalizeApiResponse(valuesResponse.data) : [];
+    const configValues = Array.isArray(rawValues)
+      ? rawValues.map((v: unknown) => {
+          const d = v as Record<string, unknown>;
+          return {
+            configValueId: Number(d.configValueId ?? d.ConfigValueId ?? d.id ?? d.Id),
+            configKeyId: Number(d.configKeyId ?? d.ConfigKeyId),
+            departmentId: d.departmentId ?? d.DepartmentId ?? null,
+            moduleId: d.moduleId ?? d.ModuleId ?? null,
+            value: String(d.value ?? d.Value ?? ''),
+            isActive: d.isActive ?? d.IsActive ?? true,
+          };
+        })
+      : [];
+
+    const mergeGlobalValues = (items: ConfigItem[]): ConfigItem[] => {
+      return items.map((item) => {
+        const globalVal = configValues.find(
+          (v) =>
+            v.configKeyId === item.configKeyId &&
+            (v.departmentId === null || v.departmentId === 0) &&
+            (v.moduleId === null || v.moduleId === 0)
+        );
+        if (globalVal) {
+          return {
+            ...item,
+            value: globalVal.value,
+            configValueId: globalVal.configValueId,
+          };
+        }
+        return item;
+      });
+    };
+
     if (params.fetchAll) {
       const effectivePageSize = Math.max(100, params.pageSize ?? 500);
       const maxPages = 50;
@@ -124,6 +160,7 @@ export const getAllConfigKeys = cache(async (params: {
       normalized = merged.filter((item, index, arr) =>
         arr.findIndex((x) => x.configKeyId === item.configKeyId) === index
       );
+      normalized = mergeGlobalValues(normalized);
       return {
         success: true,
         data: normalized,
@@ -140,7 +177,7 @@ export const getAllConfigKeys = cache(async (params: {
         };
       }
       const rawItems = normalizeApiResponse(response.data);
-      normalized = normalizeKeys(rawItems);
+      normalized = mergeGlobalValues(normalizeKeys(rawItems));
     }
     // If we requested a category but got nothing, try fetching all and filtering in JS as a graceful fallback
     if (normalized.length === 0 && params.categoryId && params.categoryId !== 'all') {

@@ -1,35 +1,24 @@
-"use client";
-
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { logger } from "@/lib/utils/logger";
 import {
-  getFieldConfigsAction,
-  getFilteredPropertiesAction,
-  getWingsAction,
-  executeBulkUpdateAction,
-  getAllWardsAction,
-  getPropertiesByWardAction,
-  getAllWingsAction,
-  getScopeOptionsAction,
-  getScopeCategoryOptionsAction,
-  getAllZonesAction,
-} from "@/app/[locale]/property-tax/common-details-update/actions";
-import {
   BulkUpdateFieldConfig,
   PropertyPreviewRow,
   WingOption,
   PropertyFilterParams,
+  PropertyFilterByCategoryParams,
   BulkUpdatePayload,
   BulkUpdateResponse,
   SelectOption,
+  CommonDetailsUpdateActions,
 } from "@/types/common-details-update/common-details-update.types";
 import { ScopeOption } from "@/lib/api/common-details-update/common-details-update.service";
 import { PagedResponse } from "@/types/common.types";
 
 export const useCommonDetailsUpdateActions = (
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: string, values?: Record<string, string | number>) => string,
+  actions: Partial<CommonDetailsUpdateActions>
 ) => {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -39,8 +28,9 @@ export const useCommonDetailsUpdateActions = (
     onSuccess: (configs: BulkUpdateFieldConfig[]) => void
   ) => {
     try {
-      const result = await getFieldConfigsAction(updateCode);
-      if (result.success) {
+      if (!actions.getFieldConfigsAction) return;
+      const result = await actions.getFieldConfigsAction(updateCode);
+      if (result.success && result.data) {
         onSuccess(result.data);
       } else {
         toast.error(t("messages.fetchFieldConfigFailed"));
@@ -48,15 +38,16 @@ export const useCommonDetailsUpdateActions = (
     } catch {
       toast.error(t("messages.configLoadFailed"));
     }
-  }, [t]);
+  }, [t, actions]);
 
   const loadProperties = useCallback(async (
     params: PropertyFilterParams,
     onSuccess: (data: PagedResponse<PropertyPreviewRow>) => void
   ) => {
     try {
-      const result = await getFilteredPropertiesAction(params);
-      if (result.success) {
+      if (!actions.getFilteredPropertiesAction) return;
+      const result = await actions.getFilteredPropertiesAction(params);
+      if (result.success && result.data) {
         onSuccess(result.data);
       } else {
         toast.error(result.error || t("messages.fetchPropertiesFailed"));
@@ -64,35 +55,54 @@ export const useCommonDetailsUpdateActions = (
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("messages.fetchPropertiesFailed"));
     }
-  }, [t]);
+  }, [t, actions]);
+
+  const loadPreviewListByCategory = useCallback(async (
+    params: PropertyFilterByCategoryParams,
+    onSuccess: (data: PagedResponse<PropertyPreviewRow>) => void
+  ) => {
+    try {
+      if (!actions.getPreviewListByCategoryAction) return;
+      if (!params.UpdateCode) {
+        onSuccess({ items: [], totalCount: 0, pageNumber: 1, pageSize: params.PageSize || 10, totalPages: 0, hasPrevious: false, hasNext: false });
+        return;
+      }
+      const result = await actions.getPreviewListByCategoryAction(params);
+      if (result.success && result.data) {
+        onSuccess(result.data);
+      } else {
+        toast.error(result.error || t("messages.fetchPropertiesFailed"));
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("messages.fetchPropertiesFailed"));
+    }
+  }, [t, actions]);
 
   const loadWings = useCallback(async (
     wardId: number,
     onSuccess: (wings: WingOption[]) => void
   ) => {
     try {
-      const result = await getWingsAction(wardId);
-      if (result.success) {
+      if (!actions.getWingsAction) return;
+      const result = await actions.getWingsAction(wardId);
+      if (result.success && result.data) {
         onSuccess(result.data);
       }
     } catch {
       // Wings are optional — silently ignore
     }
-  }, []);
+  }, [actions]);
 
-  /**
-   * Loads all wards for the Ward Number dropdown.
-   * Uses getWards from ward.services with PageSize=-1.
-   */
   const loadAllWards = useCallback(async (
     zoneId: number | undefined,
     onSuccess: (wards: SelectOption[]) => void
   ) => {
     try {
-      const result = await getAllWardsAction(zoneId);
+      if (!actions.getAllWardsAction) return;
+      const result = await actions.getAllWardsAction(zoneId);
       if (result.success && result.data) {
         const items = result.data.items || [];
-        const options: SelectOption[] = items.map((ward) => ({
+        const options: SelectOption[] = items.map((ward: { id: number; wardNo: string }) => ({
           label: ward.wardNo,
           value: String(ward.id),
         }));
@@ -105,25 +115,19 @@ export const useCommonDetailsUpdateActions = (
       logger.error("Failed to load all wards", { error: error as Error });
       onSuccess([]);
     }
-  }, []);
+  }, [actions]);
 
-  /**
-   * Loads properties for a specific ward.
-   * Used to populate From/To Property dropdowns.
-   */
   const loadPropertiesByWard = useCallback(async (
     wardId: number,
     updateCode: string,
     onSuccess: (properties: SelectOption[]) => void
   ) => {
     try {
-      const result = await getPropertiesByWardAction(wardId, updateCode);
+      if (!actions.getPropertiesByWardAction) return;
+      const result = await actions.getPropertiesByWardAction(wardId, updateCode);
       if (result.success && result.data) {
         const items = result.data.items || [];
-        const options: SelectOption[] = items.map((prop) => {
-          // Format: "propertyNo-partitionNo" or just "propertyNo" if no partition
-          // Use same format for both label and value to ensure unique keys
-          // Treat '0' or empty as "no partition"
+        const options: SelectOption[] = items.map((prop: { propertyNo: string; partitionNo?: string }) => {
           const normalizedPartitionNo = String(prop.partitionNo ?? "").trim();
           const hasPartition = normalizedPartitionNo !== "" && normalizedPartitionNo !== "0";
           const displayValue = hasPartition
@@ -131,7 +135,7 @@ export const useCommonDetailsUpdateActions = (
             : prop.propertyNo;
           return {
             label: displayValue,
-            value: displayValue, // Use unique value to avoid duplicate key errors
+            value: displayValue,
           };
         });
         onSuccess(options);
@@ -143,20 +147,66 @@ export const useCommonDetailsUpdateActions = (
       logger.error("Failed to load properties by ward", { error: error as Error });
       onSuccess([]);
     }
-  }, []);
+  }, [actions]);
 
-  /**
-   * Loads all wings for the Wing dropdown.
-   * Uses GET /Wing?PageSize=-1
-   */
+  const loadPropertiesByCategory = useCallback(async (
+    searchCategory: number,
+    zoneId: number | undefined,
+    wardId: number,
+    pageNumber: number,
+    pageSize: number,
+    searchTerm?: string,
+    propertyFrom?: string,
+    onSuccess?: (data: PagedResponse<{ propertyId: number; propertyNo: string; partitionNo: string }>) => void
+  ) => {
+    try {
+      if (!actions.getPropertiesByCategoryAction) return;
+      const result = await actions.getPropertiesByCategoryAction(
+        searchCategory,
+        zoneId,
+        wardId,
+        pageNumber,
+        pageSize,
+        searchTerm,
+        propertyFrom
+      );
+      if (result.success && result.data) {
+        onSuccess?.(result.data);
+      } else {
+        logger.warn("Failed to load properties by category");
+        onSuccess?.({
+          items: [],
+          totalCount: 0,
+          pageNumber: 1,
+          pageSize: 0,
+          totalPages: 0,
+          hasPrevious: false,
+          hasNext: false,
+        });
+      }
+    } catch (error) {
+      logger.error("Failed to load properties by category", { error: error as Error });
+      onSuccess?.({
+        items: [],
+        totalCount: 0,
+        pageNumber: 1,
+        pageSize: 0,
+        totalPages: 0,
+        hasPrevious: false,
+        hasNext: false,
+      });
+    }
+  }, [actions]);
+
   const loadAllWings = useCallback(async (
     onSuccess: (wings: SelectOption[]) => void
   ) => {
     try {
-      const result = await getAllWingsAction();
+      if (!actions.getAllWingsAction) return;
+      const result = await actions.getAllWingsAction();
       if (result.success && result.data) {
         const items = result.data.items || [];
-        const options: SelectOption[] = items.map((wing) => ({
+        const options: SelectOption[] = items.map((wing: { id: number; wingNo: string }) => ({
           label: wing.wingNo,
           value: String(wing.id),
         }));
@@ -169,13 +219,14 @@ export const useCommonDetailsUpdateActions = (
       logger.error("Failed to load all wings", { error: error as Error });
       onSuccess([]);
     }
-  }, []);
+  }, [actions]);
 
   const loadScopeOptions = useCallback(async (
     onSuccess: (options: ScopeOption[]) => void
   ) => {
     try {
-      const result = await getScopeOptionsAction();
+      if (!actions.getScopeOptionsAction) return;
+      const result = await actions.getScopeOptionsAction();
       if (result.success && result.data) {
         onSuccess(result.data);
       } else {
@@ -185,30 +236,32 @@ export const useCommonDetailsUpdateActions = (
       logger.error("Failed to load scope options", { error: error as Error });
       onSuccess([]);
     }
-  }, []);
+  }, [actions]);
 
   const loadScopeCategoryOptions = useCallback(async (
     categoryId: number,
     onSuccess: (option: ScopeOption) => void
   ) => {
     try {
-      const result = await getScopeCategoryOptionsAction(categoryId);
+      if (!actions.getScopeCategoryOptionsAction) return;
+      const result = await actions.getScopeCategoryOptionsAction(categoryId);
       if (result.success && result.data) {
         onSuccess(result.data);
       }
     } catch (error) {
       logger.error("Failed to load scope category options", { error: error as Error });
     }
-  }, []);
+  }, [actions]);
 
   const loadAllZones = useCallback(async (
     onSuccess: (zones: SelectOption[]) => void
   ) => {
     try {
-      const result = await getAllZonesAction();
+      if (!actions.getAllZonesAction) return;
+      const result = await actions.getAllZonesAction();
       if (result.success && result.data) {
         const items = result.data.items || [];
-        const options: SelectOption[] = items.map((zone) => ({
+        const options: SelectOption[] = items.map((zone: { id: number; zoneNo: string }) => ({
           label: zone.zoneNo,
           value: String(zone.id),
         }));
@@ -221,31 +274,30 @@ export const useCommonDetailsUpdateActions = (
       logger.error("Failed to load all zones", { error: error as Error });
       onSuccess([]);
     }
-  }, []);
+  }, [actions]);
 
   const handleBulkUpdate = useCallback(async (
     apiRoute: string,
-    payload: BulkUpdatePayload,
+    payload: BulkUpdatePayload | BulkUpdatePayload[],
     onSuccess: () => void
   ) => {
     setSaving(true);
     try {
-      const result = await executeBulkUpdateAction({ apiRoute, ...payload });
+      if (!actions.executeBulkUpdateAction) return;
+      const result = await actions.executeBulkUpdateAction({ apiRoute, payload });
 
       if (result.success && result.data) {
         const response = result.data as BulkUpdateResponse;
-        // Use the message from API response or fallback to translation
         const successMessage = response.message || t("messages.updateSuccess");
         toast.success(successMessage);
-        
-        // Show additional info if there were failures
+
         if (response.items?.failedCount > 0) {
-          toast.warning(t("messages.partialUpdate", { 
-            success: response.items.successCount, 
-            failed: response.items.failedCount 
+          toast.warning(t("messages.partialUpdate", {
+            success: response.items.successCount,
+            failed: response.items.failedCount
           }));
         }
-        
+
         router.refresh();
         onSuccess();
       } else if (!result.success) {
@@ -257,15 +309,17 @@ export const useCommonDetailsUpdateActions = (
     } finally {
       setSaving(false);
     }
-  }, [t, router]);
+  }, [t, router, actions]);
 
   return {
     saving,
     loadFieldConfigs,
     loadProperties,
+    loadPreviewListByCategory,
     loadWings,
     loadAllWards,
     loadPropertiesByWard,
+    loadPropertiesByCategory,
     loadAllWings,
     loadScopeOptions,
     loadScopeCategoryOptions,

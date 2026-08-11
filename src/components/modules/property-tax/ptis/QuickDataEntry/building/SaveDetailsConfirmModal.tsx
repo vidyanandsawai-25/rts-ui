@@ -26,6 +26,27 @@ interface SaveDetailsConfirmModalProps {
     }>;
 }
  
+export function formatDateToDDMMYYYY(dateStr?: string | null): string {
+    if (!dateStr || dateStr.trim() === "" || dateStr === "—") return "—";
+    const cleanStr = dateStr.trim().split("T")[0];
+
+    // Match YYYY-MM-DD
+    const ymdMatch = cleanStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (ymdMatch) {
+        const [, y, m, d] = ymdMatch;
+        return `${d.padStart(2, "0")}-${m.padStart(2, "0")}-${y}`;
+    }
+
+    // Match DD-MM-YYYY or DD/MM/YYYY
+    const dmyMatch = cleanStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (dmyMatch) {
+        const [, d, m, y] = dmyMatch;
+        return `${d.padStart(2, "0")}-${m.padStart(2, "0")}-${y}`;
+    }
+
+    return dateStr;
+}
+
 export const SaveDetailsConfirmModal: React.FC<SaveDetailsConfirmModalProps> = ({
     isOpen,
     onClose,
@@ -161,7 +182,7 @@ export const SaveDetailsConfirmModal: React.FC<SaveDetailsConfirmModalProps> = (
                             <div className="flex justify-between items-center pb-2.5 border-b border-slate-200/60">
                                 <span className="font-semibold text-slate-500 uppercase tracking-wider text-xs">{t("building.confirmCertDateLabel")}:</span>
                                 <span className="font-mono font-bold text-slate-800 bg-white px-2.5 py-0.5 border border-slate-100 rounded shadow-sm text-xs">
-                                    {certificateDate || "—"}
+                                    {formatDateToDDMMYYYY(certificateDate)}
                                 </span>
                             </div>
                             <div className="pt-1">

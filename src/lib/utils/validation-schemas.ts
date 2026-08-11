@@ -19,6 +19,7 @@
  */
 import {
   CODE_REGEX,
+  CODE_WITH_DECIMAL_REGEX,
   DESCRIPTION_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
@@ -82,6 +83,40 @@ export const commonValidations = {
       },
 
   /**
+   * Master code validation with decimal support (alphanumeric, underscore, and decimal point)
+   * Allows decimal numbers (e.g. 12.5, 0.5, M001.1) and standard codes
+   * Used for: Mouja Number, or any master code field allowing decimal values
+   *
+   * @param t - Translation function
+   * @param maxLength - Maximum allowed length
+   * @param messageKeys - Custom translation keys for errors
+   */
+  masterCodeWithDecimal:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      maxLength: number = 50,
+      messageKeys?: {
+        required?: string;
+        format?: string;
+        maxLength?: string;
+      }
+    ): Validator =>
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
+
+        const keys = {
+          required: messageKeys?.required || 'form.validation.codeRequired',
+          format: messageKeys?.format || 'form.validation.codeFormat',
+          maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
+        };
+
+        if (!strVal) return t(keys.required);
+        if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+        if (!CODE_WITH_DECIMAL_REGEX.test(strVal)) return t(keys.format);
+        return undefined;
+      },
+
+  /**
    * Generic master description validation (multilingual support)
    * Special characters (&, -, /, etc.) must be in between other characters, not at start/end
    * Only single space allowed between words, no consecutive spaces
@@ -132,7 +167,7 @@ export const commonValidations = {
         const numVal = Number(fieldValue);
         const key = messageKey || 'form.validation.sequenceInvalid';
 
-        if (!Number.isFinite(numVal) || numVal < 0) {
+        if (!Number.isFinite(numVal) || numVal <= 0) {
           return t(key);
         }
         return undefined;

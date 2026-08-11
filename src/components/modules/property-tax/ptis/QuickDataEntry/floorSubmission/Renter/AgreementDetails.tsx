@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils/cn';
 import { Swal } from '@/lib/utils/alerts';
 import { extractAgreementData } from '@/lib/utils/renter/renterUtils';
 import { DocumentViewerModal } from '@/components/common/DocumentViewerModal';
-import { RenterFormData, RenterFormDataDetails } from '@/types/renter/renter.types';
+import { RenterFormData } from '@/types/renter/renter.types';
 import { toast } from 'sonner';
 import { globalUploadDocumentAction, globalDeleteDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
@@ -210,8 +210,10 @@ const AgreementDetails = memo(
       relevantFields.forEach((field) => {
         const err = validationErrors.find((e) => e.field === field);
         if (err) {
-          const val = formData.renterDetails?.[field as keyof RenterFormDataDetails];
-          const isEmpty = !val || (typeof val === 'string' && !val.trim());
+          // Do not display inline validation errors before user touches/interacts with the field
+          if (!touchedFields[field]) {
+            return;
+          }
 
           // For date fields, hide invalid-format errors while manually typing partial inputs (length < 10)
           if (
@@ -232,19 +234,9 @@ const AgreementDetails = memo(
             if (displayVal.length > 0 && displayVal.length < 10) {
               return; // Silence partial typing errors
             }
-
-            if (isEmpty) {
-              if (touchedFields[field]) nextErrors[field] = err.message;
-            } else {
-              nextErrors[field] = err.message;
-            }
-          } else {
-            if (isEmpty) {
-              if (touchedFields[field]) nextErrors[field] = err.message;
-            } else {
-              nextErrors[field] = err.message;
-            }
           }
+
+          nextErrors[field] = err.message;
         }
       });
 
@@ -494,7 +486,7 @@ const AgreementDetails = memo(
           {/* Agreement No — Alphanumeric only */}
           <div className="col-span-1 lg:w-[100px] shrink-0 flex flex-col gap-1.5 relative">
             <Label className={fieldLabelClassName}>
-              {t('floor.renterSection.agreementId')} <span className="text-red-500">*</span>
+              {t('floor.renterSection.agreementId')}
             </Label>
             <Input
               type="text"
@@ -504,13 +496,11 @@ const AgreementDetails = memo(
               onChange={(e) => {
                 const val = e.target.value.slice(0, 8);
                 if (!isValidAgreementId(val)) {
-                  markTouched('agreementId');
                   return;
                 }
                 setFormData((prev) => {
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementId: val } };
                 });
-                markTouched('agreementId');
               }}
               onBlur={() => markTouched('agreementId')}
               className={`h-10 text-xs font-medium w-full text-slate-700 ${fieldErrors.agreementId ? errorBorderClassName : ''}`}
@@ -532,13 +522,19 @@ const AgreementDetails = memo(
                 className="absolute inset-0 opacity-0 pointer-events-none"
                 value={formData?.renterDetails?.agreementDate || ''}
                 onChange={(e) => {
+                  const newDate = e.target.value;
                   setFormData((prev) => {
                     return {
                       ...prev,
-                      renterDetails: { ...prev.renterDetails, agreementDate: e.target.value },
+                      renterDetails: {
+                        ...prev.renterDetails,
+                        agreementDate: newDate,
+                        agreementDateFrom: newDate,
+                      },
                     };
                   });
                   markTouched('agreementDate');
+                  markTouched('agreementDateFrom');
                 }}
               />
               <Input
@@ -548,17 +544,20 @@ const AgreementDetails = memo(
                 value={toDisplayDate(formData?.renterDetails?.agreementDate || '')}
                 onChange={(e) => {
                   const formatted = formatManualDate(e.target.value).slice(0, 10);
+                  const valueDate = toValueDate(formatted);
                   setFormData((prev) => {
                     return {
                       ...prev,
                       renterDetails: {
                         ...prev.renterDetails,
-                        agreementDate: toValueDate(formatted),
+                        agreementDate: valueDate,
+                        agreementDateFrom: valueDate,
                       },
                     };
                   });
                   if (formatted.length === 10) {
                     markTouched('agreementDate');
+                    markTouched('agreementDateFrom');
                   }
                 }}
                 onBlur={() => markTouched('agreementDate')}
@@ -600,7 +599,6 @@ const AgreementDetails = memo(
                     renterDetails: { ...prev.renterDetails, renterName: capitalized },
                   };
                 });
-                markTouched('renterName');
               }}
               onBlur={() => {
                 markTouched('renterName');
@@ -771,7 +769,6 @@ const AgreementDetails = memo(
                 setFormData((prev) => {
                   return { ...prev, renterDetails: { ...prev.renterDetails, rentAmount: val } };
                 });
-                markTouched('rentAmount');
               }}
               onBlur={() => markTouched('rentAmount')}
               className={`h-10 w-full font-medium text-xs text-slate-700 ${fieldErrors.rentAmount ? errorBorderClassName : ''}`}
@@ -800,7 +797,6 @@ const AgreementDetails = memo(
                     renterDetails: { ...prev.renterDetails, selfDeclarationAmount: val },
                   };
                 });
-                markTouched('selfDeclarationAmount');
               }}
               onBlur={() => markTouched('selfDeclarationAmount')}
               className={`h-10 w-full font-medium text-xs text-slate-700 ${fieldErrors.selfDeclarationAmount ? errorBorderClassName : ''}`}

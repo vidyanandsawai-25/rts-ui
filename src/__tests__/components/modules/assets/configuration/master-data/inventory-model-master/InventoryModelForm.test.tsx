@@ -58,7 +58,7 @@ describe("InventoryModelForm", () => {
     render(<InventoryModelForm groups={mockGroups} initialData={null} />);
 
     // Inventory Model doesn't have a code field!
-    fireEvent.change(screen.getByTestId("group-input"), { target: { name: "group", value: "G1" } });
+    fireEvent.change(screen.getByTestId("group-input"), { target: { name: "group", value: "1" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "name", value: "Type Name" } });
 
     fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);

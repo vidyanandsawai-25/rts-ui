@@ -177,6 +177,11 @@
       "rateableValueBetweenRequired": "दोनों राशि दर्ज करें।",
       "rateableValueRangeInvalid": "रेटेबल वैल्यू 'To' राशि 'From' से अधिक या बराबर होनी चाहिए।",
       "capitalValueBetweenRequired": "दोनों राशि दर्ज करें।",
+      "capitalValueRangeInvalid": "पूँजी मूल्य 'To' राशि 'From' से अधिक या बराबर होनी चाहिए।",
+      "capitalValueInvalid": "पूँजी मूल्य में केवल धनात्मक संख्याएँ होनी चाहिए।",
+      "totalTaxRangeInvalid": "कुल कर 'To' राशि 'From' से अधिक या बराबर होनी चाहिए।",
+      "totalTaxInvalid": "कुल कर में केवल धनात्मक संख्याएँ होनी चाहिए।",
+      "totalTaxBetweenRequired": "दोनों राशि दर्ज करें।",
       "rateableValueInvalid": "रेटेबल वैल्यू में केवल धनात्मक संख्याएँ होनी चाहिए।",
       "valuationMethodRequired": "कृपया मूल्यांकन विधि चुनें।",
       "noSearchCriteria": "खोज करने से पहले कम से कम एक फ़िल्टर (ज़ोन, वार्ड, संपत्ति क्र., UPIC ID, धारक नाम, मोबाइल आदि) चुनें।"

@@ -315,7 +315,7 @@
     "selectPropertyType": "मालमत्ता प्रकार निवडा",
     "category": "मालमत्तेची श्रेणी",
     "selectCategory": "श्रेणी निवडा",
-    "taxZoneId": "कर क्षेत्र आयडी",
+    "taxZoneId": "कर क्षेत्र",
     "selectTaxZone": "कर क्षेत्र निवडा",
     "bulkCreateMode": "मोठ्या प्रमाणात निर्मिती मोड",
     "bulkCreateDescription": "एकाच वेळी अनेक मालमत्ता तयार करा",

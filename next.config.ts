@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       allowedOrigins: extraServerActionOrigins,
       // default in Next is 1mb; allow slightly larger form posts if needed
-      bodySizeLimit: "2mb",
+      bodySizeLimit: "10mb",
     },
   },
 

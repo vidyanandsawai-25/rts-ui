@@ -68,11 +68,13 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
         sortOrder: leftSortOrder,
     });
    
-    const typeOfUseDropdown = await fetchTypeOfUsePaged({ pageNumber: 1, pageSize: -1});
-    const typeOfUseOptions = typeOfUseDropdown.items.map((type) => ({
-        label: `${type.typeOfUseCode} - ${type.description}`,
-        value: String(type.id),
-    }));
+    const typeOfUseDropdown = await fetchTypeOfUsePaged({ pageNumber: 1, pageSize: -1, filterLogic: 1 });
+    const typeOfUseOptions = typeOfUseDropdown.items
+        .filter((type) => type.isActive)
+        .map((type) => ({
+            label: `${type.typeOfUseCode} - ${type.description}`,
+            value: String(type.id),
+        }));
 
 
     return (
@@ -84,7 +86,7 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
                 totalCount={tableResult?.totalCount || 0}
                 totalPages={tableResult?.totalPages || 1}
                 
-                typeOfUseTableData={typeOfUseTableData?.items || []}
+                typeOfUseTableData={(typeOfUseTableData?.items || []).filter((item) => item.isActive)}
                 typeOfUsePageNumber={typeOfUseTableData?.pageNumber || 1}
                 typeOfUsePageSize={typeOfUseTableData?.pageSize || 10}
                 typeOfUseTotalCount={typeOfUseTableData?.totalCount || 0}

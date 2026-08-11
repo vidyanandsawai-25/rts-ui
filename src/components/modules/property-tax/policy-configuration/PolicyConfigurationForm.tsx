@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { CancelButton, SaveButton } from "@/components/common";
 import { MandatoryFieldsNotice } from "./components/MandatoryFieldsNotice";
 import type { PolicyConfigurationFormModel } from "@/types/policy-configuration.types";
-import { CODE_SANITIZE, DESCRIPTION_SANITIZE, TEXT_SANITIZE,DISPLAY_NAME_SANITIZE ,UNIT_SANITIZE} from "@/lib/utils/validation-rules";
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE, TEXT_SANITIZE, DISPLAY_NAME_SANITIZE, UNIT_SANITIZE } from "@/lib/utils/validation-rules";
 import { savePolicyConfiguration } from "@/app/[locale]/property-tax/policy-configuration/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
@@ -22,24 +22,7 @@ import {
 export interface PolicyConfigurationFormProps {
   initialData: PolicyConfigurationFormModel;
 }
-function resolveValueFromAllowedList(value: string, allowedValues: string | null): string {
-  if (!allowedValues || !allowedValues.trim()) return value;
 
-  const options = allowedValues
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean);
-
-  // Direct match — already correct
-  if (options.includes(value)) return value;
-
-  // Legacy BIT mapping: "1" → first option, "0" → second option
-  if (value === "1" && options.length >= 1) return options[0];
-  if (value === "0" && options.length >= 2) return options[1];
-
-  // Fallback: first option
-  return options[0] ?? value;
-}
 function prepareInitialData(
   data: PolicyConfigurationFormModel
 ): PolicyConfigurationFormModel {
@@ -47,8 +30,8 @@ function prepareInitialData(
     ...data,
     unit: data.unit ?? "",
     effectiveFrom: data.effectiveFrom ?? "",
-    policyValue: resolveValueFromAllowedList(data.policyValue ?? "", data.allowedValues ?? null),
-    defaultValue: resolveValueFromAllowedList(data.defaultValue ?? "", data.allowedValues ?? null),
+    policyValue: data.policyValue ?? "",
+    defaultValue: data.defaultValue ?? "",
   };
 }
 
@@ -112,8 +95,10 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
 
     if (name === "policyCode") {
       sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase().substring(0, 40);
+    } else if (name === "category") {
+      sanitizedValue = value.replace(TEXT_SANITIZE, "").substring(0, 40);
     } else if (name === "displayName") {
-       sanitizedValue = value.replace(DISPLAY_NAME_SANITIZE, "").substring(0, 40);
+      sanitizedValue = value.replace(DISPLAY_NAME_SANITIZE, "").substring(0, 40);
     } else if (name === "description") {
       sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").substring(0, 100);
     } else if (name === "policyValue" || name === "defaultValue") {
@@ -210,7 +195,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       fd.append("category", formData.category);
       fd.append("displayName", formData.displayName);
       fd.append("description", formData.description);
-       fd.append("dataType", formData.dataType || "VARCHAR");
+      fd.append("dataType", formData.dataType || "VARCHAR");
       fd.append("policyValue", formData.policyValue);
       fd.append("defaultValue", formData.defaultValue);
       fd.append("unit", formData.unit ?? "");

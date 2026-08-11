@@ -135,6 +135,23 @@ function getDeleteErrorStatusCode(errorMessage: string): number {
   return 500;
 }
 
+function isItemDeleted(record: Record<string, unknown>): boolean {
+  const keys = [
+    "MarkedForDeletion", "markedForDeletion",
+    "IsMarkedForDelete", "isMarkedForDelete",
+    "IsMarkedForDeletion", "isMarkedForDeletion",
+    "IsMarkForDelete", "isMarkForDelete",
+    "IsDeleted", "isDeleted",
+    "IsMarkDelete", "isMarkDelete"
+  ];
+  for (const k of keys) {
+    const val = record[k];
+    if (val === true || val === 1 || val === "1") return true;
+    if (typeof val === "string" && val.toLowerCase() === "true") return true;
+  }
+  return false;
+}
+
 /**
  * Fetches paginated Assessment Year Range data
  */
@@ -151,6 +168,7 @@ export async function getAssessmentYearRangePaged<T extends AssessmentYearRange>
     const params = new URLSearchParams();
     params.append("PageNumber", pageNumber.toString());
     params.append("PageSize", pageSize.toString());
+    params.append("MarkedForDeletion", "false");
 
     if (sortBy && sortBy.trim()) params.append("SortBy", sortBy.trim());
     if (sortOrder && sortOrder.trim()) params.append("SortOrder", sortOrder.trim());
@@ -171,14 +189,19 @@ export async function getAssessmentYearRangePaged<T extends AssessmentYearRange>
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
 
-    const validItems = response.data.items.filter((item) =>
-      isValidAssessmentYearRangeShape(item, config.idField)
-    );
+    const validItems = response.data.items.filter((item) => {
+      if (!isValidAssessmentYearRangeShape(item, config.idField)) return false;
+      return !isItemDeleted(item as Record<string, unknown>);
+    });
     const normalizedItems = validItems.map((item) =>
       normalizeAssessmentYearRange<T>(item as unknown as Record<string, unknown>, config.idField)
     );
 
-    return { ...response.data, items: normalizedItems };
+    return {
+      ...response.data,
+      items: normalizedItems,
+      totalCount: response.data.totalCount,
+    };
   } catch (error) {
     console.error(`Error fetching paged assessment year range (${config.type}):`, error);
     throw error;

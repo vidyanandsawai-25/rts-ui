@@ -250,13 +250,9 @@ export function useAssessmentYearRangeForm({
                   // Whitelist check
                   if (whitelist.includes(fieldKey)) {
                     if (backendMsg === "FromYear_MustBeLessThanToYear") {
-                      // Only show this specific validation error under fromYear field
-                      if (fieldKey === "fromYear") {
-                        serverErrors[fieldKey] = t("form.validation.fromYearMustBeLessThanToYear");
-                      }
-                    } else {
-                      serverErrors[fieldKey] = backendMsg;
+                      return;
                     }
+                    serverErrors[fieldKey] = backendMsg;
                   } else {
                     hasUnmappedErrors = true;
                   }

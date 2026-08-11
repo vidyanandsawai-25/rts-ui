@@ -511,3 +511,29 @@ export async function deleteRenterDetails(renterId: string | number): Promise<vo
     }
 }
 
+/**
+ * Direct DELETE endpoint call for RenterDetails by ID
+ * Endpoint: DELETE /RenterDetails/{id}
+ */
+export async function deleteRenterDetailsRecord(id: string | number): Promise<SubmissionResponse> {
+    try {
+        const response = await apiClient.delete<SubmissionResponse>(`/RenterDetails/${encodeURIComponent(String(id))}`);
+        return (response.data || response) as SubmissionResponse;
+    } catch (error) {
+        throw error;
+    }
+}
+
+/**
+ * Direct DELETE endpoint call for RenterMast by ID
+ * Endpoint: DELETE /RenterMast/{id}
+ */
+export async function deleteRenterMastRecord(id: string | number): Promise<SubmissionResponse> {
+    try {
+        const response = await apiClient.delete<SubmissionResponse>(`/RenterMast/${encodeURIComponent(String(id))}`);
+        return (response.data || response) as SubmissionResponse;
+    } catch (error) {
+        throw error;
+    }
+}
+

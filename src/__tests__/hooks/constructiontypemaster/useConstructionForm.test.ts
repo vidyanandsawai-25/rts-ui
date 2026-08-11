@@ -129,6 +129,9 @@ describe("useConstructionForm", () => {
       result.current.handleChange({
         target: { name: "description", value: "Valid Description" },
       } as unknown as React.ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "searchSequence", value: "5" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
     });
 
     await act(async () => {

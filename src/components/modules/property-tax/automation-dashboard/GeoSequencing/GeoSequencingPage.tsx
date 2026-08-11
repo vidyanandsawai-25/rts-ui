@@ -1,25 +1,42 @@
 'use client';
 
-import { useState } from 'react';
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
-import { ExportButton, SearchButton } from '@/components/common';
+import { SearchButton } from '@/components/common';
+import { ExportDropdown } from './ExportDropdown';
 import { GeoSequencingItems } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import {
     GeoSequencingData,
     getGeoSequencingSharedColumns,
     getGeoSequencingSharedHeaderRows,
+    getPropertyTypeIdParam
 } from './CommonGeoSequencingColumns';
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { ExportConfig } from '@/types/automation-dashboard/export.type';
+import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 
 interface GeoSequencingPageProps {
     serverData?: GeoSequencingItems | null;
+    defaultWorkflowStageId?: string;
+    propertyDescriptions?: PropertyTypeMasterItem[];
 }
 
-const TopBar = ({ t }: { t: (key: string) => string }) => {
+const TopBar = ({
+    t,
+    propertyDescriptions,
+    exportConfig
+}: {
+    t: (key: string) => string;
+    propertyDescriptions?: PropertyTypeMasterItem[];
+    exportConfig: ExportConfig<GeoSequencingData>;
+}) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const { isPending, handleSearch } = useDashboardSearch(searchTerm);
 
     return (
         <div className="flex items-center justify-between gap-4 w-full">
@@ -27,35 +44,59 @@ const TopBar = ({ t }: { t: (key: string) => string }) => {
                 <SearchInput
                     value={searchTerm}
                     onChange={setSearchTerm}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearch();
+                        }
+                    }}
                     placeholder={t('geoSequencing.searchPlaceholder')}
                     className="w-full flex-1 mb-0"
                 />
 
-                <SearchButton label={t('geoSequencing.buttons.search')} />
+                <SearchButton 
+                    label={t('geoSequencing.buttons.search')} 
+                    onClick={handleSearch}
+                    disabled={isPending || !searchTerm.trim()}
+                />
             </div>
-            <ExportButton label={t('geoSequencing.buttons.export')} />
+            <div className="flex items-center gap-3">
+                <DashboardFilterBar t={t} propertyDescriptions={propertyDescriptions} />
+                <ExportDropdown config={exportConfig} />
+            </div>
         </div>
     );
 };
 
-const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
+const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescriptions }: GeoSequencingPageProps) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const t = useTranslations('automationDashboard');
     const locale = useLocale();
-    const workflowStageId = searchParams.get('workflowStageId') || '';
+    const workflowStageId = searchParams.get('workflowStageId') || defaultWorkflowStageId || '';
     const basePath = `/${locale}/property-tax/automation-dashboard`;
 
     const columns = useMemo(() => {
         return getGeoSequencingSharedColumns(
             t,
             'zone',
-            (zoneId) => {
+            (zoneCode, row) => {
+                const targetZoneId = row.zoneId ?? zoneCode;
+                const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                router.push(`${basePath}/geo-sequencing/ward-wise-summary/${zoneId}${query}`);
+                const query = `?returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}`;
+                router.push(`${basePath}/geo-sequencing/ward-wise-summary/${targetZoneId}${query}`);
             },
-            undefined // Pass undefined to use onClick instead of Link to avoid page refreshes
+            undefined,
+            (row, columnKey) => {
+                if (row.isTotal || !row.division) return;
+                const zoneId = row.zoneId ?? row.division.split(' ')[0];
+                const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
+                const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+                const typeIdParam = getPropertyTypeIdParam(columnKey);
+
+                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+                router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
+            }
         );
     }, [t, router, basePath, workflowStageId, locale]);
     const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'zone'), [t]);
@@ -65,7 +106,9 @@ const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
 
         const mappedZones: GeoSequencingData[] = serverData.zones.map((zone, index) => ({
             sr: index + 1,
-            division: `${zone.zoneId} - ${zone.zoneName}`,
+            division: zone.zoneNo ? `${zone.zoneNo} - ${zone.zoneName}` : zone.zoneName,
+            zoneId: zone.zoneId,
+            zoneNo: zone.zoneNo,
             registered: zone.registeredProperties ?? 0,
             geoStruct: zone.geoSequencedProperties?.structureCount ?? 0,
             geoUnit: zone.geoSequencedProperties?.unitCount ?? 0,
@@ -109,23 +152,29 @@ const GeoSequencingPage = ({ serverData }: GeoSequencingPageProps) => {
         return totalRow ? [...mappedZones, totalRow] : mappedZones;
     }, [serverData, t]);
 
+    const exportConfig = useMemo<ExportConfig<GeoSequencingData>>(() => {
+        const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);
+
+        return {
+            fileName: 'Geo_Sequencing_Division_Report',
+            reportTitle: 'Property Tax Data Center - Division-wise Summary',
+            reportSubtitle: `Workflow Stage: Geo-sequencing - total | Generated: ${new Date().toLocaleString()}`,
+            pdfOrientation: 'landscape',
+            headerRows: exportHeaderRows,
+            columns: exportColumns,
+            data: tableData
+        };
+    }, [tableData, columns, headerRows]);
+
     return (
         <AutomationTable<GeoSequencingData>
             data={tableData}
             columns={columns}
             headerRows={headerRows}
-            headerExtra={<TopBar t={t} />}
+            headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} exportConfig={exportConfig} />}
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
-            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors cursor-pointer"}
-            onRowClick={(row) => {
-                if (row.sr === t('geoSequencing.total') || !row.division) return;
-                // Extract zone id, e.g. "13" from "13 - Some Zone"
-                const zoneId = row.division.split(' ')[0];
-                const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
-                const query = `?stage=geoSequencing&source=division&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}`;
-                router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
-            }}
+            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors border-b border-slate-200 hover:bg-transparent"}
         />
     );
 };

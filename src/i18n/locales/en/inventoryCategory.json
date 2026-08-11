@@ -33,6 +33,7 @@
           "code": "Code",
           "name": "Name",
           "category": "Asset Category",
+          "assetCategory": "Asset Category",
           "itemName": "Item Name",
           "description": "Description",
           "depreciationRate": "Depreciation Rate",
@@ -56,6 +57,7 @@
           "cancel": "Cancel"
         },
         "validation": {
+          "groupRequired": "Asset Category is required",
           "codeRequired": "Code is required",
           "codeAllZeros": "Code cannot be all zeros",
           "codeMax": "Code exceeds maximum length",
@@ -77,6 +79,7 @@
           "error": "An unexpected error occurred"
         },
         "errors": {
+          "duplicateRecord": "This record already exists",
           "fillRequired": "Please fill in all required fields.",
           "group": "Asset Category is required.",
           "codeRequired": "Code is required.",

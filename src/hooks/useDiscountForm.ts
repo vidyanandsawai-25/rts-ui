@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import { 
     updateDiscountDetailsAction,
+    deletePropertySocialDetailAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
 import { DiscountState, PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { useTranslations } from "next-intl";
@@ -19,6 +20,7 @@ export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoRespons
     const [incompleteDiscounts, setIncompleteDiscounts] = useState<{ id: number; name: string }[]>([]);
     const params = useParams();
     const locale = params.locale as string;
+    const router = useRouter();
     const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData));
 
     const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData), [initialDiscountData]);
@@ -104,6 +106,65 @@ export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoRespons
         toast.success(t("discount.fileRemoved") || "File removed from form. Click Save Changes to apply.");
     }, [clearError, t]);
 
+    const handleDeleteDiscount = useCallback(async (id: number) => {
+        const activeItem = discountData[id];
+        if (!activeItem) return;
+
+        const isSavedOnBackend = typeof activeItem.propertySocialDetailId === "number" && activeItem.propertySocialDetailId > 0;
+
+        startLoading();
+        try {
+            if (isSavedOnBackend) {
+                const response = await deletePropertySocialDetailAction(
+                    propertyId,
+                    id,
+                    locale
+                );
+
+                if (!response.success) {
+                    toast.error(response.error || "Failed to delete discount details");
+                    return;
+                }
+            }
+
+            // Clear local state and disable toggle
+            setDiscountData(prev => {
+                const item = prev[id];
+                if (!item) return prev;
+                return {
+                    ...prev,
+                    [id]: {
+                        ...item,
+                        pendingFile: undefined,
+                        documentGuid: null,
+                        documentBindingId: null,
+                        documentUrl: null,
+                        fileName: undefined,
+                        intValue: null,
+                        decimalValue: null,
+                        textValue: null,
+                        dateValue: null,
+                        remark: "",
+                        enabled: false,
+                        bitValue: false,
+                        propertySocialDetailId: null // Reset backend ID
+                    }
+                };
+            });
+            clearError(id);
+
+            toast.success(t("discount.deleteSuccess") || "Discount and associated data deleted successfully!");
+
+            if (isSavedOnBackend) {
+                router.refresh();
+            }
+        } catch (_error) {
+            toast.error("An error occurred while deleting the discount details");
+        } finally {
+            stopLoading();
+        }
+    }, [discountData, propertyId, locale, clearError, startLoading, stopLoading, t, router]);
+
     const handleSave = async () => {
         if (isSaving) return { success: false, isValid: true };
         const { isValid, errors, incompleteDiscounts: invalidDiscounts } = validateDiscountForm(discountData, (key, params) => t(key, params));
@@ -140,6 +201,21 @@ export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoRespons
             return { success: false, isValid: true };
         } finally { stopLoading(); }
     };
+    
+    const revertDiscount = useCallback((id: number) => {
+        setDiscountData((prev) => {
+            const initialItem = initialMappedState[id];
+            if (!initialItem) return prev;
+            const hasDbValues = typeof initialItem.propertySocialDetailId === "number" && initialItem.propertySocialDetailId > 0;
+            if (!hasDbValues) return prev;
+            return {
+                ...prev,
+                [id]: { ...initialItem }
+            };
+        });
+        setValidationErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
+        setIncompleteDiscounts((prev) => prev.filter((d) => d.id !== id));
+    }, [initialMappedState]);
 
-    return { discountData, isSaving, hasChanges, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleSave, t };
+    return { discountData, isSaving, hasChanges, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleDeleteDiscount, handleSave, revertDiscount, t };
 };

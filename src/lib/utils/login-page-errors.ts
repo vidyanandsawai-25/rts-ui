@@ -4,9 +4,26 @@
  */
 const LOGIN_ERROR_QUERY_TO_I18N_SUFFIX: Record<string, string> = {
   sessionExpired: 'sessionExpired',
+  session_expired: 'sessionExpired',
+  SESSION_EXPIRED: 'sessionExpired',
+  sessionTimeout: 'sessionExpired',
+  session_timeout: 'sessionExpired',
+  SESSION_TIMEOUT: 'sessionExpired',
+  expired: 'sessionExpired',
+  EXPIRED: 'sessionExpired',
+  unauthorized: 'sessionExpired',
+  UNAUTHORIZED: 'sessionExpired',
+  '401': 'sessionExpired',
+  requireVerification: 'sessionExpired',
   inactivityTimeout: 'inactivityTimeout',
+  inactivity_timeout: 'inactivityTimeout',
+  INACTIVITY_TIMEOUT: 'inactivityTimeout',
+  inactivity: 'inactivityTimeout',
+  INACTIVITY: 'inactivityTimeout',
+  inactiveLogout: 'inactivityTimeout',
+  inactive_logout: 'inactivityTimeout',
+  inactive_timeout: 'inactivityTimeout',
   invalidToken: 'invalidToken',
-  SESSION_EXPIRED: 'SESSION_EXPIRED',
   LOGIN_FAILED: 'LOGIN_FAILED',
   INVALID_CREDENTIALS: 'invalidCredentials',
   credentialsRequired: 'credentialsRequired',
@@ -34,7 +51,8 @@ function normalizeQueryCode(raw: string | undefined): string | undefined {
  */
 export function resolveLoginPageErrorI18nSuffix(
   errorParam: string | undefined,
-  messageParam?: string | undefined
+  messageParam?: string | undefined,
+  requireVerificationParam?: string | undefined
 ): string | null {
   const fromError = normalizeQueryCode(errorParam);
   if (fromError) {
@@ -44,6 +62,11 @@ export function resolveLoginPageErrorI18nSuffix(
   const fromMessage = normalizeQueryCode(messageParam);
   if (fromMessage) {
     return LOGIN_ERROR_QUERY_TO_I18N_SUFFIX[fromMessage] ?? null;
+  }
+
+  const fromReqVerification = normalizeQueryCode(requireVerificationParam);
+  if (fromReqVerification === '1' || fromReqVerification === 'true') {
+    return 'sessionExpired';
   }
 
   return null;

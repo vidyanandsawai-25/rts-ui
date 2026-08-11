@@ -36,6 +36,9 @@ vi.mock("next/navigation", () => ({
     refresh: mockRefresh,
   }),
   usePathname: () => "/en/assets/configuration/master-data/owning-department",
+  useSearchParams: () => ({
+    get: () => null,
+  }),
 }));
 
 // Mock useConfirm

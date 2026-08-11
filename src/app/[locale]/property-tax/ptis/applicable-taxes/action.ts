@@ -1,17 +1,19 @@
 'use server';
 
 import {
-  getTypeOfUseGroup,
+  getTypeOfUse,
   getAssessmentYearRange,
   getAssessmentYearRangeCV,
   getTaxApplicability,
   updateTaxApplicability,
+  getTaxApplicabilityByPropertyId,
 } from '@/lib/api/ptis/applicable-taxes/applicable-taxes.service';
 import type {
   AssessmentYearRangeItem,
-  TypeOfUseGroupItem,
+  TypeOfUseItem,
   PagedResponse,
-  TaxApplicabilityData
+  TaxApplicabilityData,
+  TaxApplicabilityPropertyData
 } from '@/types/applicable-taxes.types';
 import type { ActionResult } from '@/types/common.types';
 import { revalidatePath } from 'next/cache';
@@ -60,13 +62,13 @@ export async function getAssessmentYearsAction(
   }
 }
 
-export async function getUseGroupsAction(
+export async function getTypeOfUseAction(
   pageNumber: number = 1,
   pageSize: number = -1
-): Promise<ActionResult<PagedResponse<TypeOfUseGroupItem>>> {
+): Promise<ActionResult<PagedResponse<TypeOfUseItem>>> {
   const t = await getTranslations("applicableTaxes");
   try {
-    const response = await getTypeOfUseGroup(pageNumber, pageSize);
+    const response = await getTypeOfUse(pageNumber, pageSize);
     if (!response.success) {
       return {
         success: false,
@@ -85,13 +87,14 @@ export async function getUseGroupsAction(
 export async function getTaxApplicabilityAction(params: {
   propertyId: number;
   financialYearId: number;
-  typeOfUseGroupId: number;
+  typeOfUseId: number;
   rvOrCv: 'RV' | 'CV';
   pageNumber?: number;
   pageSize?: number;
 }): Promise<ActionResult<PagedResponse<TaxApplicabilityData>>> {
   const t = await getTranslations("applicableTaxes");
   try {
+
     const response = await getTaxApplicability(params);
 
     if (!response.success) {
@@ -123,12 +126,7 @@ export const updateTaxApplicabilityAction = async (
   try {
     const result = await updateTaxApplicability(payload);
 
-    if (!result.success) {
-      return result;
-    }
-
-    revalidatePath(`/${locale}/property-tax/ptis/applicable-taxes/applicable`, "page");
-    revalidatePath(`/${locale}/property-tax/ptis/applicable-taxes/exempted`, "page");
+    revalidatePath(`/${locale}/property-tax/ptis/applicable-taxes`, "page");
 
     return result;
 
@@ -136,3 +134,23 @@ export const updateTaxApplicabilityAction = async (
     return { success: false, error: await getActionErrorMessage(error) };
   }
 };
+
+export async function getTaxApplicabilityByPropertyIdAction(
+  propertyId: number
+): Promise<ActionResult<TaxApplicabilityPropertyData[]>> {
+  const t = await getTranslations("applicableTaxes");
+  try {
+    const response = await getTaxApplicabilityByPropertyId(propertyId);
+    if (!response.success) {
+      return {
+        success: false,
+        error: response.error
+          ? `${t("errors.fetchTaxApplicability")}: ${response.error}`
+          : t("errors.fetchTaxApplicability")
+      };
+    }
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, error: await getActionErrorMessage(error) };
+  }
+}

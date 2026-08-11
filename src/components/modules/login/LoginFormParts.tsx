@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useId, useState } from 'react';
+import React, { useId, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Eye, EyeOff, User, Lock, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -90,6 +90,22 @@ export function LoginCredentialFields({
   const usernameId = useId();
   const passwordId = useId();
 
+  // Automatically hide/unview password after 5 seconds for security
+  useEffect(() => {
+    if (!showPassword) return;
+
+    const timer = setTimeout(() => {
+      setShowPassword(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [showPassword]);
+
+  // Reset password visibility if password field is cleared
+  if (showPassword && formData.password.length === 0) {
+    setShowPassword(false);
+  }
+
   const labelUsername = t('username') || copy?.username;
   const placeholderUsername = t('usernamePlaceholder') || copy?.usernamePlaceholder;
   const labelPassword = t('password') || copy?.password;
@@ -148,7 +164,7 @@ export function LoginCredentialFields({
               className={LOGIN_PASSWORD_INPUT_CLASS}
               error={showError('password') ? errors.password : undefined}
               fullWidth
-              autoComplete="current-password"
+              autoComplete="new-password"
             />
             {formData.password.length > 0 ? (
               <Button

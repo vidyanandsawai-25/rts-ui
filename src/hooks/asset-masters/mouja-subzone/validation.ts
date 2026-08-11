@@ -9,8 +9,9 @@ import {
   ASSET_SUBZONE_NO_SANITIZE,
   ASSET_MASTER_NAME_REGEX,
   ASSET_MASTER_NAME_SANITIZE
-} from "@/lib/utils/validation-rules";
+} from "@/lib/utils/asset-validation-rules";
 import { MoujaFormModel, SubZoneFormModel } from "@/types/asset-masters/mouja-subzone.types";
+import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 20;
 export const NAME_MAX = 100;
@@ -101,3 +102,26 @@ export const validateSubZoneForm = (
   };
   return validateForm(data, schema);
 };
+
+export function getErrorMessage(
+  message: string | undefined,
+  statusCode: number | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
+  fallbackEntityName: string
+): string {
+  return mapSharedApiError({
+    message,
+    statusCode,
+    t,
+    tCommon,
+    fallbackEntityName,
+    entityMatchers: [
+      { test: /mouja/i, labelKey: "list.moujaTitle" },
+      { test: /subzone|sub zone/i, labelKey: "list.subZoneTitle" }
+    ]
+  });
+}
+
+
+

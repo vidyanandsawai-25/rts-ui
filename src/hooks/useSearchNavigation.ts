@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface UseSearchNavigationProps {
   search: string;
@@ -12,6 +12,7 @@ interface UseSearchNavigationProps {
   debounceMs?: number;
   startTransition: (callback: () => void) => void;
   extraParams?: Record<string, string | number | boolean | undefined>;
+  includePaginationParams?: boolean;
 }
 
 export function useSearchNavigation({
@@ -25,11 +26,22 @@ export function useSearchNavigation({
   debounceMs = 500,
   startTransition,
   extraParams,
+  includePaginationParams = true,
 }: UseSearchNavigationProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const isFirstRender = useRef(true);
 
   useEffect(() => {
+    const normalizePath = (path: string) => (path.endsWith("/") && path !== "/" ? path.slice(0, -1) : path);
+    const baseRoute = `/${locale}${basePath}`;
+
+    // Only trigger search URL updates on the base list route.
+    // This prevents auto-navigation when list components are rendered behind add/edit drawers.
+    if (normalizePath(pathname) !== normalizePath(baseRoute)) {
+      return;
+    }
+
     // Only trigger when user changes search term, not on initial mount
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -41,9 +53,18 @@ export function useSearchNavigation({
     
     const timer = setTimeout(() => {
       const trimmedSearch = search.trim();
+
+      // Prevent URL churn on rerenders when the effective search text did not change.
+      if (trimmedSearch === (currentSearchTerm || "").trim()) {
+        return;
+      }
+
       const params = new URLSearchParams();
-      params.set("page", "1");
-      params.set("pageSize", String(pageSize));
+
+      if (includePaginationParams) {
+        params.set("page", "1");
+        params.set("pageSize", String(pageSize));
+      }
       
       if (trimmedSearch) {
         params.set("q", trimmedSearch);
@@ -66,7 +87,8 @@ export function useSearchNavigation({
         });
       }
       
-      const newUrl = `/${locale}${basePath}?${params.toString()}`;
+      const query = params.toString();
+      const newUrl = query ? `/${locale}${basePath}?${query}` : `/${locale}${basePath}`;
       const currentUrl = `${window.location.pathname}${window.location.search}`;
 
       if (newUrl !== currentUrl) {
@@ -77,5 +99,5 @@ export function useSearchNavigation({
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [search, pageSize, router, locale, currentSearchTerm, sortBy, sortOrder, basePath, debounceMs, startTransition, extraParams]);
+  }, [search, pageSize, router, pathname, locale, currentSearchTerm, sortBy, sortOrder, basePath, debounceMs, startTransition, extraParams, includePaginationParams]);
 }

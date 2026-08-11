@@ -26,7 +26,7 @@ export interface MatrixColumn {
  
 export interface MatrixRow {
   id: string;
-  cells: Record<string, string | number>;
+  cells: Record<string, string | number | undefined | null>;
   meta?: Record<string, React.ReactNode>;
 }
  
@@ -48,10 +48,11 @@ export interface MatrixGridProps {
   mode?: "view" | "edit";
   editableColumns?: string[];
   editableRowId?: string;
-  onCellChange?: (rowId: string, columnId: string, value: string | number) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onCellChange?: (rowId: string, columnId: string, value: any) => void;
   onCellKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onRowDelete?: (index: number) => void;
-  getCellClassName?: (value: number, rowId: string, columnId: string) => string;
+  getCellClassName?: (value: unknown, rowId: string, columnId: string) => string;
   translations: {
     action: string;
     currencySymbol?: string;
@@ -60,6 +61,7 @@ export interface MatrixGridProps {
   pagination?: MatrixGridPaginationProps;
   /** Maximum value allowed in editable cells (default: 9999) */
   cellMaxValue?: number;
+  allowZero?: boolean;
 }
  
 /* ================= HELPER FUNCTIONS ================= */
@@ -213,6 +215,7 @@ export const MatrixGrid = ({
   translations,
   pagination,
   cellMaxValue,
+  allowZero = false,
 }: MatrixGridProps): React.ReactElement => {
   const isEditable = mode === "edit";
  
@@ -359,7 +362,9 @@ export const MatrixGrid = ({
               {rateColumns.map((col, colIdx) => {
                 const colorClass: string = colorMap[col.id?.toUpperCase?.()] || colorMap[col.id?.toLowerCase?.()] || "";
                 const rawValue = row.cells[col.id];
-                const value: number = Number(rawValue) || 0;
+                const value: number | undefined = rawValue !== undefined && rawValue !== null && rawValue !== ""
+                  ? Number(rawValue)
+                  : (allowZero ? undefined : 0);
  
                 const canEdit: boolean =
                   isEditable &&
@@ -391,23 +396,25 @@ export const MatrixGrid = ({
                         maxValue={cellMaxValue}
                         onCellChange={onCellChange}
                         onKeyDown={onCellKeyDown}
+                        allowZero={allowZero}
                       />
                     </td>
                   );
                 }
 
                 // View mode or non-editable column
+                const hasValue = value !== undefined && (value > 0 || (value === 0 && allowZero));
                 return (
                   <td key={col.id || `cell-${colIdx}`} className="px-0.5 md:px-1 py-1 md:py-1 text-center">
                     <div
                       className={cn(
                         "px-1 md:px-2 py-1 md:py-1 rounded-md md:rounded-lg font-bold text-xs md:text-sm text-center border w-full",
-                        value > 0 ? "bg-blue-50 text-blue-800 border-blue-300" : "bg-gray-50 text-gray-500 border-gray-200",
+                        hasValue ? "bg-blue-50 text-blue-800 border-blue-300" : "bg-gray-50 text-gray-500 border-gray-200",
                         colorClass,
                         customCellClass
                       )}
                     >
-                      {String(Number(Number(value).toFixed(2)))}
+                      {value !== undefined ? String(Number(Number(value).toFixed(2))) : "0"}
                     </div>
                   </td>
                 );

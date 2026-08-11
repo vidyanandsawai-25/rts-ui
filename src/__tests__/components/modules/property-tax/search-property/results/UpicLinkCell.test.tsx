@@ -6,10 +6,12 @@ vi.mock("next/link", () => ({
   default: ({
     href,
     children,
+    prefetch: _prefetch,
     ...props
   }: {
     href: string;
     children: React.ReactNode;
+    prefetch?: boolean;
   }) => (
     <a href={href} {...props}>
       {children}
@@ -18,11 +20,15 @@ vi.mock("next/link", () => ({
 }));
 
 describe("UpicLinkCell", () => {
-  it("navigates with propertyId instead of ward/property/partition params", () => {
+  it("navigates with propertyId, wardNo, wardId, propertyNo, and partitionNo params", () => {
     render(
       <UpicLinkCell
         upicId=""
         propertyId={4242}
+        wardNo="MM11"
+        wardId={23}
+        propertyNo="24"
+        partitionNo="-"
         locale="en"
         copyLabel="UPIC ID"
       />
@@ -31,15 +37,12 @@ describe("UpicLinkCell", () => {
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute(
       "href",
-      "/en/property-tax/ptis?propertyId=4242&searchState=clear"
+      "/en/property-tax/ptis?propertyId=4242&wardNo=MM11&wardId=23&propertyNo=24&partitionNo=-&searchState=clear"
     );
     expect(link).toHaveAttribute("title", "Open in PTIS");
-    expect(link.getAttribute("href")).not.toContain("wardNo=");
-    expect(link.getAttribute("href")).not.toContain("propertyNo=");
-    expect(link.getAttribute("href")).not.toContain("partitionNo=");
   });
 
-  it("shows a display placeholder without putting it in the URL", () => {
+  it("shows a display placeholder and builds the correct link URL", () => {
     render(
       <UpicLinkCell
         upicId=""

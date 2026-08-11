@@ -86,7 +86,7 @@ describe("ConstructionTypeForm", () => {
     fireEvent.submit(screen.getByTestId("form"));
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalled();
-      expect(mockRouterPush).toHaveBeenCalled();
+      expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/constructiontype");
       expect(mockRouterRefresh).toHaveBeenCalled();
     });
   });
@@ -112,7 +112,7 @@ describe("ConstructionTypeForm", () => {
     fireEvent.submit(screen.getByTestId("form"));
     await waitFor(() => {
       expect(mockUpdate).toHaveBeenCalled();
-      expect(mockRouterPush).toHaveBeenCalled();
+      expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/constructiontype");
       expect(mockRouterRefresh).toHaveBeenCalled();
     });
   });
@@ -146,7 +146,7 @@ describe("ConstructionTypeForm", () => {
     const cancelBtn = screen.getByText("common.buttons.cancel");
     fireEvent.click(cancelBtn);
     await waitFor(() => {
-      expect(mockRouterPush).toHaveBeenCalled();
+      expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/constructiontype");
     }, { timeout: 1000 });
   });
 

@@ -1,8 +1,8 @@
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
 import { getTranslations } from "next-intl/server";
-import { 
-    InternalSurveyGridItems, 
+import {
+    InternalSurveyGridItems,
     InternalSurveyGridResponse,
     InternalSurveyWardWiseItems,
     InternalSurveyWardWiseResponse
@@ -16,14 +16,17 @@ export async function automationGetInternalSurveyGrid(workflowStageId?: string |
     const response = await apiClient.get<InternalSurveyGridResponse>(url, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchInternalSurveyGrid") || "Failed to fetch internal survey grid data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchInternalSurveyGrid") || "Failed to fetch internal survey grid data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetInternalSurveyWardWiseSummary(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
 ): Promise<InternalSurveyWardWiseItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -34,6 +37,12 @@ export async function automationGetInternalSurveyWardWiseSummary(
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
     }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+    if (categoryId) {
+        params.append("PropertyTypeId", categoryId);
+    }
 
     const response = await apiClient.get<InternalSurveyWardWiseResponse>(
         `/AutomationDashboard/InternalSurveyWardWiseSummary?${params.toString()}`,
@@ -41,5 +50,6 @@ export async function automationGetInternalSurveyWardWiseSummary(
     );
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchInternalSurveyWardWiseSummary") || "Failed to fetch internal survey ward-wise summary data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchInternalSurveyWardWiseSummary") || "Failed to fetch internal survey ward-wise summary data");
+    return responseData.items?.[0] ?? null;
 }

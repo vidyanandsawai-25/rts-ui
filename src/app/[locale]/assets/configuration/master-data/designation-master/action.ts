@@ -27,6 +27,11 @@ export async function fetchDesignationsPagedServerAction(
     sortOrder?: string
 ): Promise<PagedResponse<Designation>> {
     try {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        if (!userId) {
+            throw new ApiError(401, "you are unauthorized", "Unauthorized");
+        }
         const MAX_PAGE_SIZE = 100;
         const MAX_PAGE_NUMBER = 10000;
         if (
@@ -58,9 +63,10 @@ export async function createDesignationAction(
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        if (userId) {
-            data.createdBy = userId;
+        if (!userId) {
+            return { success: false, message: "you are unauthorized", statusCode: 401 };
         }
+        data.createdBy = userId;
         const msg = await createDesignation(data);
 
         for (const locale of locales) {
@@ -88,9 +94,10 @@ export async function updateDesignationAction(
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
-        if (userId) {
-            data.updatedBy = userId;
+        if (!userId) {
+            return { success: false, message: "you are unauthorized", statusCode: 401 };
         }
+        data.updatedBy = userId;
         const msg = await updateDesignation(data);
 
         for (const locale of locales) {
@@ -115,10 +122,14 @@ export async function updateDesignationAction(
 export async function deleteDesignationAction(
     formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-    const rawId = formData.get("id");
-    const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-    if (!id || id <= 0) {
+    const rawId = formData.get("id");
+    const numericId = Number(rawId);
+
+    if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
         return {
             success: false,
             message: "Valid Designation ID is required",
@@ -127,7 +138,7 @@ export async function deleteDesignationAction(
     }
 
     try {
-        await deleteDesignation(id);
+        await deleteDesignation(numericId);
 
         for (const locale of locales) {
             revalidatePath(`/${locale}/assets/configuration/master-data/designation-master`, "page");
@@ -155,10 +166,16 @@ export async function getDesignationByIdAction(
     id: number
 ): Promise<Designation> {
     try {
-        if (!id || id <= 0) {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        if (!userId) {
+            throw new ApiError(401, "you are unauthorized", "Unauthorized");
+        }
+        const numericId = Number(id);
+        if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
             throw new ApiError(400, "Valid Designation ID is required", "Validation failed");
         }
-        const result = await getDesignationById(id);
+        const result = await getDesignationById(numericId);
         if (!result) {
             throw new ApiError(404, "Designation not found", "Not Found");
         }

@@ -1,23 +1,24 @@
 import { apiClient } from '@/services/api.service';
 import type {
   AssessmentYearRangeItem,
-  TypeOfUseGroupItem,
+  TypeOfUseItem,
   PagedResponse,
-  TaxApplicabilityData
+  TaxApplicabilityData,
+  TaxApplicabilityPropertyData
 } from '@/types/applicable-taxes.types';
 import { handleApiResponse } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
 import type { ActionResult } from '@/types/common.types';
 
-export async function getTypeOfUseGroup(
+export async function getTypeOfUse(
   pageNumber: number = 1,
   pageSize: number = 100
-): Promise<{ success: boolean; data?: PagedResponse<TypeOfUseGroupItem>; error?: string }> {
-  const res = await apiClient.get<PagedResponse<TypeOfUseGroupItem>>(`/TypeOfUseGroup?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+): Promise<{ success: boolean; data?: PagedResponse<TypeOfUseItem>; error?: string }> {
+  const res = await apiClient.get<PagedResponse<TypeOfUseItem>>(`/TypeOfUse?PageNumber=${pageNumber}&PageSize=${pageSize}`);
   if (res.success && res.data) {
     return { success: true, data: res.data };
   }
-  return { success: false, error: res.error || 'Failed to fetch Type of Use Groups' };
+  return { success: false, error: res.error || 'Failed to fetch Type of Use' };
 }
 
 export async function getAssessmentYearRange(
@@ -45,14 +46,14 @@ export async function getAssessmentYearRangeCV(
 export async function getTaxApplicability(params: {
   propertyId: number;
   financialYearId: number;
-  typeOfUseGroupId: number;
+  typeOfUseId: number;
   rvOrCv: 'RV' | 'CV';
   pageNumber?: number;
   pageSize?: number;
 }): Promise<{ success: boolean; data?: PagedResponse<TaxApplicabilityData>; error?: string }> {
-  const { propertyId, financialYearId, typeOfUseGroupId, rvOrCv, pageNumber = 1, pageSize = 10 } = params;
+  const { propertyId, financialYearId, typeOfUseId, rvOrCv, pageNumber = 1, pageSize = 10 } = params;
   const res = await apiClient.get<PagedResponse<TaxApplicabilityData>>(
-    `/TaxApplicability?PropertyId=${propertyId}&FinancialYearId=${financialYearId}&TypeOfUseGroupId=${typeOfUseGroupId}&RvOrCv=${rvOrCv}&PageNumber=${pageNumber}&PageSize=${pageSize}`
+    `/TaxApplicability?PropertyId=${propertyId}&FinancialYearId=${financialYearId}&TypeOfUseId=${typeOfUseId}&RvOrCv=${rvOrCv}&PageNumber=${pageNumber}&PageSize=${pageSize}`
   );
 
   if (res.success && res.data) {
@@ -73,3 +74,14 @@ export async function updateTaxApplicability(payload: {
   const t = await getTranslations("applicableTaxes");
   return handleApiResponse(response, t("errors.updateTaxApplicability"));
 }
+
+export async function getTaxApplicabilityByPropertyId(
+  propertyId: number
+): Promise<{ success: boolean; data?: TaxApplicabilityPropertyData[]; error?: string }> {
+  const res = await apiClient.get<TaxApplicabilityPropertyData[]>(`/TaxApplicability/${propertyId}`);
+  
+  if (res.success && res.data) {
+    return { success: true, data: res.data };
+  }
+  return { success: false, error: res.error || 'Failed to fetch Tax Applicability by Property Id' };
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { RateMasterFormProps } from "@/types/RVRateMaster";
 import { useRateMasterFilters } from "@/hooks/RVRateMaster/useRateMasterFilters";
@@ -23,7 +24,7 @@ import {
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { ConfigureRatesDrawer } from "./components/ConfigureRatesDrawer";
 
-const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGroupOptions, assessmentYears, assessmentYearRanges, zoneDescriptions, allZones, rateCategories, editData, bulkEditData, backendRates, filterValues, showCopyRateSection, showMultipliersSection, hideMatrixSection, onClose, mode: propMode, paginatedZonesData, initialExistingRatesCheck, rateFrequencyPolicy, rateUnitPolicy, isOpenPlot = false }) => {
+const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGroupOptions, assessmentYears, assessmentYearRanges, zoneDescriptions, allZones, rateCategories, editData, bulkEditData, backendRates, filterValues, showCopyRateSection, showMultipliersSection, hideMatrixSection, onClose, mode: propMode, paginatedZonesData, initialExistingRatesCheck, rateFrequencyPolicy, rateUnitPolicy, isOpenPlot = false, onDirtyChange }) => {
   const mode: "edit" | "delete" | "add" = propMode || "edit";
   const t = useTranslations("ptis_RVRateMaster");
   const tCommon = useTranslations("common");
@@ -71,6 +72,12 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
   const { showMatrix, setShowMatrix, matrixData, setMatrixData, matrixPageNumber, matrixPageSize, matrixTotalPages, matrixTotalCount, paginatedZoneDescriptions, allZoneEdits, setAllZoneEdits, existingRateFound, setExistingRateFound, isCheckingRates, setIsCheckingRates, allFiltersSelected, errors, zoneRemarksMap, filledRatesCount, completionPercentage, matrixStorageKey, handleMatrixPaginationChange, buildCompleteMatrixForSubmission } = useRateMasterFormState({ mode, id, editData, bulkEditData, backendRates, fetchedBackendRates, filterValues, selectedZone, selectedUseGroup, assessmentYear, setSelectedZone, setSelectedUseGroup, setAssessmentYear, rateFrequency, setRateFrequency, rateUnit, zoneDescriptions, allZones, rateCategories: localRateCategories, assessmentYears: finalAssessmentYears, zoneOptions: finalZoneOptions, useGroupOptions: finalUseGroupOptions, showCopyRateSection, showMultipliersSection, paginatedZonesData, initialExistingRatesCheck, isOpenPlot });
 
   const { sourceUseGroup, setSourceUseGroup, sourceRateSection, setSourceRateSection, sourceRateSectionOptions, copySectionsExpanded, setCopySectionsExpanded, copyRatesActiveTab, setCopyRatesActiveTab, showMultipliersInline, setShowMultipliersInline, tempMultipliers, setTempMultipliers, fileInputRef, handleCopyRates, handleCopyRatesFromRateSection, handleDownloadTemplate, handleUploadExcel } = useRateMasterImportExport({ selectedZone, selectedUseGroup, assessmentYear, allZones, zoneDescriptions, rateCategories: localRateCategories, zoneOptions: finalZoneOptions, useGroupOptions: finalUseGroupOptions, assessmentYears: finalAssessmentYears, assessmentYearRanges, matrixData, setMatrixData, allZoneEdits, setAllZoneEdits, setShowMatrix, showMatrix, showCopyRateSection, t, multipliers, setMultipliers, rateUnit });
+
+  useEffect(() => {
+    if (onDirtyChange) {
+      onDirtyChange(mode === "add" && filledRatesCount > 0);
+    }
+  }, [onDirtyChange, mode, filledRatesCount]);
 
   useExistingRateCheck({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, allFiltersSelected, setExistingRateFound, setIsCheckingRates, isOpenPlot, rateCategories: localRateCategories });
   useUrlParamSync({ selectedZone, selectedUseGroup, assessmentYear, copySectionsExpanded, showMultipliersInline, isOpenPlot });

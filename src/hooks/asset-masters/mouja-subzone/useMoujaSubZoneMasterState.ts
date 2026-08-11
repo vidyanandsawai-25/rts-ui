@@ -1,10 +1,10 @@
-import { useState, useTransition, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useMoujaSubZoneUrl } from "@/hooks/asset-masters/mouja-subzone/useMoujaSubZoneUrl";
 import { MoujaSubZoneProps } from "@/types/asset-masters/mouja-subzone.types";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMoujaSubZoneHandlers } from "./useMoujaSubZoneHandlers";
+import { TEXT_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 export function useMoujaSubZoneMasterState({
   moujas,
@@ -20,21 +20,28 @@ export function useMoujaSubZoneMasterState({
   subZoneSortBy,
   subZoneSortOrder,
 }: MoujaSubZoneProps) {
-  const sp = useSearchParams();
   const t = useTranslations("moujaSubzone");
   const tCommon = useTranslations("common");
   const [, startTransition] = useTransition();
 
-  const { urlMoujaSearch, urlSubZoneSearch, pushUrl, replaceUrl } = useMoujaSubZoneUrl();
+  const { urlMoujaSearch, urlSubZoneSearch, pushUrl } = useMoujaSubZoneUrl();
 
-  useEffect(() => {
-    if (selectedMoujaId && !sp.get("moujaId")) {
-      replaceUrl({ moujaId: selectedMoujaId });
-    }
-  }, [selectedMoujaId, sp, replaceUrl]);
 
-  const [moujaSearch, setMoujaSearch] = useState(urlMoujaSearch);
-  const [subZoneSearch, setSubZoneSearch] = useState(urlSubZoneSearch);
+  const [moujaSearch, setMoujaSearchState] = useState(urlMoujaSearch);
+  const [subZoneSearch, setSubZoneSearchState] = useState(urlSubZoneSearch);
+
+  const setMoujaSearch = useCallback((val: string) => {
+    let sanitized = val.replace(TEXT_SANITIZE, "");
+    sanitized = sanitized.trimStart().replace(/\s{2,}/g, " ");
+    setMoujaSearchState(sanitized);
+  }, []);
+
+  const setSubZoneSearch = useCallback((val: string) => {
+    let sanitized = val.replace(TEXT_SANITIZE, "");
+    sanitized = sanitized.trimStart().replace(/\s{2,}/g, " ");
+    setSubZoneSearchState(sanitized);
+  }, []);
+
 
   const debouncedMoujaSearch = useDebounce(moujaSearch, 300);
   const debouncedSubZoneSearch = useDebounce(subZoneSearch, 300);
@@ -43,13 +50,13 @@ export function useMoujaSubZoneMasterState({
     startTransition(() => {
       setMoujaSearch(urlMoujaSearch);
     });
-  }, [urlMoujaSearch, startTransition]);
+  }, [urlMoujaSearch, startTransition, setMoujaSearch]);
 
   useEffect(() => {
     startTransition(() => {
       setSubZoneSearch(urlSubZoneSearch);
     });
-  }, [urlSubZoneSearch, startTransition]);
+  }, [urlSubZoneSearch, startTransition, setSubZoneSearch]);
 
   useEffect(() => {
     let hasChanged = false;

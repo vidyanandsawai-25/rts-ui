@@ -56,6 +56,8 @@ vi.mock('@/app/[locale]/configuration-settings/config-master/actions/utils', () 
   verifySession: mockVerifySession,
   getLocaleFromHeaders: mockGetLocaleFromHeaders,
   tConfigMessage: vi.fn(async (_key: string, fallback: string) => fallback),
+  localizeConfigError: vi.fn(async (err: unknown) => err instanceof Error ? err.message : String(err)),
+  localizeBackendMessage: vi.fn(async (msg: string | null | undefined, _fallbackKey: string, fallbackDefault: string) => msg || fallbackDefault),
   MAX_CONCURRENT_UPDATES: 10,
   processBatch: async <T, R>(
     items: T[],

@@ -13,6 +13,7 @@ import {
   getSubTypeOfUseWithParams,
 } from "@/lib/api/asset-masters/weightagemaster/useCategoryCvFactor/useCategoryCvFactor.service";
 import { ApiError } from "@/lib/utils/api";
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { createLogger } from "@/lib/utils/server-logger";
 import { sanitizeNumericParam } from "@/lib/utils/params";
@@ -62,10 +63,11 @@ export async function fetchUseFactorCVMasterPagedServerAction(
     const yearRangeParam = sanitizeNumericParam(selectedYearRange);
 
     const allowedSortColumns = ["TypeOfUseId", "SubTypeOfUseId", "YearRangeCVId", "IsActive", "TypeOfUseCode", "TypeOfUseDescription", "SubTypeOfUseDescription", "FromYear"];
-    let validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
-    if (validSortBy === "TypeOfUseCode" || validSortBy === "TypeOfUseDescription") validSortBy = "TypeOfUseId";
-    else if (validSortBy === "SubTypeOfUseDescription") validSortBy = "SubTypeOfUseId";
-    else if (validSortBy === "FromYear") validSortBy = "YearRangeCVId";
+    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
+    let apiSortBy = validSortBy;
+    if (apiSortBy === "TypeOfUseCode" || apiSortBy === "TypeOfUseDescription") apiSortBy = "TypeOfUseId";
+    else if (apiSortBy === "SubTypeOfUseDescription") apiSortBy = "SubTypeOfUseId";
+    else if (apiSortBy === "FromYear") apiSortBy = "YearRangeCVId";
 
     const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? (sortOrder.toLowerCase() as "asc" | "desc") : undefined;
 
@@ -76,7 +78,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
       yearRangeCVId: yearRangeParam,
       typeOfUseId: safeTypeOfUseId,
       subTypeOfUseId: safeSubTypeOfUseId,
-      sortBy: validSortBy,
+      sortBy: apiSortBy,
       sortOrder: validSortOrder,
     });
 
@@ -159,9 +161,12 @@ export async function fetchUseFactorCVMasterPagedServerAction(
     if (validSortBy || validSortOrder) {
       response.data.items.sort((a: UseFactorCVMaster, b: UseFactorCVMaster) => {
         let cmp = 0;
-        if (validSortBy === "TypeOfUseId") cmp = (Number(a.typeOfUseId) || 0) - (Number(b.typeOfUseId) || 0);
+        if (validSortBy === "TypeOfUseCode") cmp = (a.typeOfUseCode || "").localeCompare(b.typeOfUseCode || "");
+        else if (validSortBy === "TypeOfUseDescription") cmp = (a.typeOfUseDescription || "").localeCompare(b.typeOfUseDescription || "");
+        else if (validSortBy === "TypeOfUseId") cmp = (Number(a.typeOfUseId) || 0) - (Number(b.typeOfUseId) || 0);
+        else if (validSortBy === "SubTypeOfUseDescription") cmp = (a.subTypeOfUseDescription || "").localeCompare(b.subTypeOfUseDescription || "");
         else if (validSortBy === "SubTypeOfUseId") cmp = (Number(a.subTypeOfUseId) || 0) - (Number(b.subTypeOfUseId) || 0);
-        else if (validSortBy === "YearRangeCVId") cmp = (Number(a.yearRangeCVId) || 0) - (Number(b.yearRangeCVId) || 0);
+        else if (validSortBy === "FromYear" || validSortBy === "YearRangeCVId") cmp = (Number(a.yearRangeCVId) || 0) - (Number(b.yearRangeCVId) || 0);
         else if (validSortBy === "IsActive") cmp = (a.isActive === b.isActive ? 0 : a.isActive ? -1 : 1);
         return validSortOrder === "desc" ? -cmp : cmp;
       });
@@ -212,9 +217,9 @@ export async function updateUseFactorCVMasterAction(
     logger.error('Failed to update UseFactorCVMaster', { operation: 'updateUseFactorCVMasterAction', id }, error);
 
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
-    return { success: false, message: error instanceof Error ? error.message : "Failed to update record", statusCode: 500 };
+    return { success: false, message: cleanErrorMessage(error instanceof Error ? error.message : "Failed to update record", "Failed to update record"), statusCode: 500 };
   }
 }
 
@@ -235,16 +240,16 @@ export async function createUseFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      return { success: false, message: response.error || 'Failed to create record', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response.error, 'Failed to create record'), statusCode: 500 };
     }
   } catch (error: unknown) {
     const logger = createLogger('createUseFactorCVMaster');
     logger.error('Failed to create UseFactorCVMaster', { operation: 'createUseFactorCVMasterAction' }, error);
 
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
-    return { success: false, message: error instanceof Error ? error.message : 'Unknown error', statusCode: 500 };
+    return { success: false, message: cleanErrorMessage(error instanceof Error ? error.message : 'Unknown error', 'Unknown error'), statusCode: 500 };
   }
 }
 
@@ -265,16 +270,16 @@ export async function bulkCreateUseFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      return { success: false, message: response?.error || 'Failed to bulk create records', statusCode: 500 };
+      return { success: false, message: cleanErrorMessage(response?.error, 'Failed to bulk create records'), statusCode: 500 };
     }
   } catch (error: unknown) {
     const logger = createLogger('bulkCreateUseFactorCVMaster');
     logger.error('Failed to bulk create UseFactorCVMaster', { operation: 'bulkCreateUseFactorCVMasterAction', count: payload.length }, error);
 
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
-    return { success: false, message: error instanceof Error ? error.message : 'Unknown error', statusCode: 500 };
+    return { success: false, message: cleanErrorMessage(error instanceof Error ? error.message : 'Unknown error', 'Unknown error'), statusCode: 500 };
   }
 }
 
@@ -303,9 +308,9 @@ export async function bulkUpdateUseFactorCVMasterAction(
     logger.error('Failed to bulk update UseFactorCVMaster', { operation: 'bulkUpdateUseFactorCVMasterAction', count: payload.length }, error);
 
     if (error instanceof ApiError) {
-      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+      return { success: false, message: cleanErrorMessage(error.responseText || error.message, 'API Error occurred'), statusCode: error.statusCode };
     }
-    return { success: false, message: error instanceof Error ? error.message : "Failed to bulk update", statusCode: 500 };
+    return { success: false, message: cleanErrorMessage(error instanceof Error ? error.message : "Failed to bulk update", "Failed to bulk update"), statusCode: 500 };
   }
 }
 

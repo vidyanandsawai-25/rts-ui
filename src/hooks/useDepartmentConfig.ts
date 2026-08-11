@@ -10,7 +10,7 @@ export function useDepartmentConfig(
   initialData: DepartmentApiResponse[] | null,
   configKeyId: number,
   onSuccess: () => void,
-  defaultValue?: string | number | boolean
+  _defaultValue?: string | number | boolean
 ) {
   const t = useTranslations('configMaster');
   const { success: toastSuccess, error: toastError } = useToast();
@@ -39,8 +39,6 @@ export function useDepartmentConfig(
       prev.map((d) => (d.id === deptId ? { 
         ...d, 
         isEnabled: !d.isEnabled,
-        // Set default value if enabling and currently empty
-        value: (!d.isEnabled && !d.value) ? String(defaultValue ?? '') : d.value
       } : d))
     );
   };
@@ -55,8 +53,6 @@ export function useDepartmentConfig(
                 s.id === subId ? { 
                   ...s, 
                   isEnabled: !s.isEnabled,
-                  // Set default value if enabling and currently empty
-                  value: (!s.isEnabled && !s.value) ? String(defaultValue ?? '') : s.value
                 } : s
               ),
             }
@@ -74,8 +70,6 @@ export function useDepartmentConfig(
               submodules: d.submodules.map((s) => ({ 
                 ...s, 
                 isEnabled: enabled,
-                // Set default value if enabling and currently empty
-                value: (enabled && !s.value) ? String(defaultValue ?? '') : s.value
               })),
             }
           : d
@@ -112,24 +106,64 @@ export function useDepartmentConfig(
           value: string;
           configValueId: number;
         }
+
+        // Map initialData for quick lookup
+        const initialMap = new Map<string, { isEnabled: boolean; value: string }>();
+        if (initialData) {
+          initialData.forEach((dept) => {
+            initialMap.set(`${dept.id}_0`, { isEnabled: dept.isEnabled, value: dept.value || '' });
+            dept.submodules.forEach((sub) => {
+              initialMap.set(`${dept.id}_${sub.id}`, { isEnabled: sub.isEnabled, value: sub.value || '' });
+            });
+          });
+        }
+
         const updates: UpdatePayload[] = [];
         departments.forEach((dept) => {
-          updates.push({
-            departmentId: dept.id,
-            moduleId: 0,
-            isEnabled: dept.isEnabled,
-            value: dept.value || '',
-            configValueId: dept.configValueId,
-          });
-
-          dept.submodules.forEach((sub) => {
+          const hasSubmodules = dept.submodules.length > 0;
+          
+          if (!hasSubmodules) {
+            const initialDept = initialMap.get(`${dept.id}_0`);
+            const hasDeptChanged = !initialDept || 
+                                  initialDept.isEnabled !== dept.isEnabled || 
+                                  initialDept.value !== (dept.value || '');
+            
+            if (hasDeptChanged) {
+              updates.push({
+                departmentId: dept.id,
+                moduleId: 0,
+                isEnabled: dept.isEnabled,
+                value: dept.value || '',
+                configValueId: dept.configValueId,
+              });
+            }
+          } else if (dept.configValueId > 0) {
+            // Clean up/deactivate existing department-level record since the department has submodules
             updates.push({
               departmentId: dept.id,
-              moduleId: sub.id,
-              isEnabled: sub.isEnabled,
-              value: sub.value || '',
-              configValueId: sub.configValueId,
+              moduleId: 0,
+              isEnabled: false,
+              value: '',
+              configValueId: dept.configValueId,
             });
+          }
+
+          dept.submodules.forEach((sub) => {
+            const initialSub = initialMap.get(`${dept.id}_${sub.id}`);
+            const isSubEnabled = dept.isEnabled ? sub.isEnabled : false;
+            const hasSubChanged = !initialSub || 
+                                  initialSub.isEnabled !== isSubEnabled || 
+                                  initialSub.value !== (sub.value || '');
+            
+            if (hasSubChanged) {
+              updates.push({
+                departmentId: dept.id,
+                moduleId: sub.id,
+                isEnabled: isSubEnabled,
+                value: sub.value || '',
+                configValueId: sub.configValueId,
+              });
+            }
           });
         });
 

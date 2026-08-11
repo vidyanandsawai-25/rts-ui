@@ -35,7 +35,8 @@ export default async function EditRatePage({
 
   // Get matrix pagination params from URL
   const matrixPage = Number(resolvedSearchParams?.matrixPage) || 1;
-  const matrixPageSize = Number(resolvedSearchParams?.matrixPageSize) || 10;
+  const rawMatrixPageSize = Number(resolvedSearchParams?.matrixPageSize);
+  const matrixPageSize = [100, 150, 200].includes(rawMatrixPageSize) ? rawMatrixPageSize : 100;
 
   // Check if this is bulk edit (id === "bulk")
   const isBulkEdit = resolvedParams.id === "bulk";

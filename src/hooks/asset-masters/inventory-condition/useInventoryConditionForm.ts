@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import type React from "react";
 import type { InventoryConditionFormModel, ConditionType } from "@/types/asset-masters/inventory-condition.types";
-import { ASSET_MASTER_TEXT_SANITIZE, ASSET_INVENTORY_NAME_SANITIZE } from "@/lib/utils/validation-rules";
+import { sanitizeFieldValue } from "./validation";
 
 export function useInventoryConditionForm(
   initialData: InventoryConditionFormModel | null | undefined,
-  validate: (data: InventoryConditionFormModel) => Record<string, string>
+  validate: (data: InventoryConditionFormModel) => Partial<Record<keyof InventoryConditionFormModel, string>>
 ) {
   const [formData, setFormData] = useState<InventoryConditionFormModel>(
     initialData
@@ -21,49 +21,71 @@ export function useInventoryConditionForm(
         }
   );
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof InventoryConditionFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    let newValue = value;
+    const sanitized = sanitizeFieldValue(name, value);
 
-    if (name === "conditionName") {
-      newValue = newValue.replace(ASSET_INVENTORY_NAME_SANITIZE, "");
-    }
-
-    if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "");
-    }
-    
-    if (typeof newValue === "string" && newValue.length > 0 && ["conditionName", "description"].includes(name)) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
-
-    setFormData((p) => ({ ...p, [name]: name === "conditionFactor" && newValue !== "" ? Number(newValue) : newValue }));
-    setErrors((p) => ({ ...p, [name]: "" }));
+    const valToSave = name === "conditionFactor" && sanitized !== "" ? Number(sanitized) : sanitized;
+    setFormData((p) => ({ ...p, [name]: valToSave }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err[name as keyof InventoryConditionFormModel];
+      return err;
+    });
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string) => {
     if (name === "conditionType") {
-      setFormData((p) => ({
-        ...p,
-        conditionType: value as ConditionType,
-        inventoryItemCategoryId: 0,
-      }));
-      setErrors((p) => ({ ...p, conditionType: "", inventoryItemCategoryId: "" }));
+      setFormData((p) => {
+        const updated = {
+          ...p,
+          conditionType: value as ConditionType,
+          inventoryItemCategoryId: 0,
+        };
+        const fieldErrors = validate(updated);
+        setErrors((prev) => {
+          const err = { ...prev };
+          if (fieldErrors.conditionType) err.conditionType = fieldErrors.conditionType; else delete err.conditionType;
+          if (fieldErrors.inventoryItemCategoryId) err.inventoryItemCategoryId = fieldErrors.inventoryItemCategoryId; else delete err.inventoryItemCategoryId;
+          return err;
+        });
+        return updated;
+      });
     } else {
-      setFormData((p) => ({ ...p, [name]: Number(value) }));
-      setErrors((p) => ({ ...p, [name]: "" }));
+      setFormData((p) => {
+        const updated = { ...p, [name]: Number(value) };
+        const fieldErrors = validate(updated);
+        setErrors((prev) => {
+          const err = { ...prev };
+          const field = name as keyof InventoryConditionFormModel;
+          if (fieldErrors[field]) err[field] = fieldErrors[field]; else delete err[field];
+          return err;
+        });
+        return updated;
+      });
     }
-  }, []);
+  }, [validate]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    const fieldErrors = validate({ ...formData, [name]: name === "conditionFactor" && value !== "" ? Number(value) : value });
-    setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
+    const sanitized = sanitizeFieldValue(name, value);
+    const valToSave = name === "conditionFactor" && sanitized !== "" ? Number(sanitized) : sanitized;
+    const updated = { ...formData, [name]: valToSave };
+    setFormData(updated);
+
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const err = { ...p };
+      const field = name as keyof InventoryConditionFormModel;
+      if (fieldErrors[field]) err[field] = fieldErrors[field]; else delete err[field];
+      return err;
+    });
   }, [formData, validate]);
 
   const handleToggleStatus = useCallback((checked?: boolean | unknown) => {
@@ -77,9 +99,12 @@ export function useInventoryConditionForm(
     setErrors,
     touched,
     setTouched,
+    submittedOnce,
+    setSubmittedOnce,
     handleChange,
     handleSelectChange,
     handleBlur,
     handleToggleStatus,
   };
 }
+

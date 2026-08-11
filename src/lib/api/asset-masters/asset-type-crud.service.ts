@@ -51,7 +51,7 @@ export const assetTypeService = {
       name: item.typeName,
       code: item.typeCode,
       status: item.isActive ? 'Active' : 'Inactive',
-      description: item.description,
+      description: String(item.description ?? item.Description ?? ""),
       backendId: item.id,
       group: String(item.categoryId || ""),
       allowRoomRegistration: item.allowRoomRegistration,

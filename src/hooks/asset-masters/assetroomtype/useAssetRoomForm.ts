@@ -124,7 +124,6 @@ export function useAssetRoomForm({
       }
       toast.success(res.message || t(isEdit ? "success.updated" : "success.created", { code: formData.roomTypeCode }));
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);

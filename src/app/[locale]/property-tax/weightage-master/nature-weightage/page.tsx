@@ -75,10 +75,12 @@ export default async function Page({ searchParams }: NatureFactorCvPageProps): P
 
     // Construction type dropdown
     const constructionTypeData = await fetchConstructionPagedServerAction(1, -1);
-    const constructionTypeOptions = constructionTypeData.items.map((type) => ({
-        label: `${type.constructionCode} - ${type.description}`,
-        value: type.id.toString(),
-    }));
+    const constructionTypeOptions = constructionTypeData.items
+        .filter((type) => type.isActive)
+        .map((type) => ({
+            label: `${type.constructionCode} - ${type.description}`,
+            value: type.id.toString(),
+        }));
 
     return (
         <div className="pt-6">

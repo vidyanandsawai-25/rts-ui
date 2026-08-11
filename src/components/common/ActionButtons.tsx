@@ -29,6 +29,7 @@ import {
   Lock,
   Unlock,
   Search,
+  Settings,
   CheckCircle,
   Clock,
   ArrowUpRight,
@@ -112,6 +113,17 @@ export function UpdateButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="primary" icon={RefreshCw} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function ConfigureButton({
+  label = "Configure",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={Settings} {...props}>
       {label}
     </Button>
   );

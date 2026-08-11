@@ -15,6 +15,7 @@ import {
   patchCategory,
   sortByOrder,
 } from '@/lib/utils/ptis-photo-plan-localization';
+import { validatePhotoFile } from '@/lib/validation/ptis/photo-plan-validation';
 
 export interface UsePhotoPlanMutationsProps {
   propertyId?: number;
@@ -46,12 +47,22 @@ export function usePhotoPlanMutations({
     else { setSelectedImageIndex?.(idx); setViewMode?.(mode); }
   }, [setViewerIndexAndMode, setSelectedImageIndex, setViewMode]);
 
+  const refreshAfterMediaMutation = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('ptis:media-updated', {
+        detail: { propertyId },
+      })
+    );
+  }, [propertyId]);
+
   const activeCategory = categories[selectedCategoryIndex];
 
   const { isDeleting, handleDeletePhoto } = usePhotoPlanDelete({
     propertyId, categories, onCategoriesChange,
     selectedCategoryIndex, selectedImageIndex, viewMode,
     setViewerIndexAndModeValue, locale, t,
+    onMutationSuccess: refreshAfterMediaMutation,
   });
 
   const isUploading = isAdding || isReplacing || isDeleting;
@@ -70,11 +81,24 @@ export function usePhotoPlanMutations({
     targetImg: AdditionalImage,
     index: number
   ): Promise<boolean> => {
+    const fileErrKey = validatePhotoFile(file);
+    if (fileErrKey) {
+      const fallbacks: Record<string, string> = {
+        'media.allowedFormats': 'Only JPEG, JPG, and PNG images are allowed',
+        'media.maxFileSize': 'File size should not exceed 5 MB',
+        'media.fileRequired': 'Photo file is required',
+      };
+      const msg = t.has(fileErrKey as Parameters<typeof t.has>[0]) ? t(fileErrKey as Parameters<typeof t>[0]) : (fallbacks[fileErrKey] || fileErrKey);
+      toast.error(msg);
+      return false;
+    }
+
     setIsReplacing(true);
     const formData = new FormData();
     formData.append('File', file);
     if (propertyId) formData.append('PropertyId', propertyId.toString());
     if (activeCategory?.photoTypeId) formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
+    if (activeCategory?.photoTypeCode) formData.append('PhotoTypeCode', activeCategory.photoTypeCode);
     formData.append('PropertyPhotoId', propertyPhotoId.toString());
     const isDefaultName = targetImg.title === activeCategory?.photoTypeName;
     const englishTitle = isDefaultName ? getEnglishCategoryName(activeCategory.photoTypeCode, targetImg.title) : targetImg.title;
@@ -95,6 +119,7 @@ export function usePhotoPlanMutations({
         const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
+        refreshAfterMediaMutation();
         setViewerIndexAndModeValue(index, 'viewer');
         return true;
       }
@@ -106,7 +131,7 @@ export function usePhotoPlanMutations({
     } finally {
       setIsReplacing(false);
     }
-  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, locale, t, setViewerIndexAndModeValue, propertyId]);
+  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, locale, t, setViewerIndexAndModeValue, propertyId, refreshAfterMediaMutation]);
 
   const handleSaveEditedPhoto = useCallback(async (index: number, file: File): Promise<boolean> => {
     if (isUploading || !activeCategory) return false;
@@ -124,6 +149,16 @@ export function usePhotoPlanMutations({
   ) => {
     if (isUploading || !activeCategory) return;
     if (!file) return toast.error(t('media.fileRequired') || 'Photo file is required');
+    const fileErrKey = validatePhotoFile(file);
+    if (fileErrKey) {
+      const fallbacks: Record<string, string> = {
+        'media.allowedFormats': 'Only JPEG, JPG, and PNG images are allowed',
+        'media.maxFileSize': 'File size should not exceed 5 MB',
+        'media.fileRequired': 'Photo file is required',
+      };
+      const msg = t.has(fileErrKey as Parameters<typeof t.has>[0]) ? t(fileErrKey as Parameters<typeof t>[0]) : (fallbacks[fileErrKey] || fileErrKey);
+      return toast.error(msg);
+    }
     if (!propertyId) {
       setIsNamingOpen(false);
       return toast.error(t('media.propertyIdRequired') || 'PropertyId is required.');
@@ -167,6 +202,7 @@ export function usePhotoPlanMutations({
         const updatedImages = sortByOrder([...activeCategory.images, newImg]);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updatedImages));
         toast.success(t('media.photoUploadedSuccess') || 'Photo uploaded successfully');
+        refreshAfterMediaMutation();
         const targetPhotoId = res.data.propertyPhotoId;
         const newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
         if (newImgIndex !== -1) setViewerIndexAndModeValue(newImgIndex, 'viewer');
@@ -177,7 +213,7 @@ export function usePhotoPlanMutations({
       setIsAdding(false);
     }
     setIsNamingOpen(false);
-  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, propertyId, isUploading, t, locale, setViewerIndexAndModeValue, isReplacement, activeIndexToReplace, executeReplaceApi]);
+  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, propertyId, isUploading, t, locale, setViewerIndexAndModeValue, isReplacement, activeIndexToReplace, executeReplaceApi, refreshAfterMediaMutation]);
 
   const replaceImage = activeIndexToReplace !== null ? activeCategory?.images[activeIndexToReplace] : null;
 

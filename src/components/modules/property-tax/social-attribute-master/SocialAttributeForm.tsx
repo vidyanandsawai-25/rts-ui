@@ -36,6 +36,8 @@ export default function SocialAttributeForm({
     handleToggleIsChild,
     handleToggleIsRequiredWhenParentTrue,
     handleToggleIsDiscountApplicable,
+    handleToggleIsPhotoRequired,
+    handleToggleIsDocumentRequired,
     handleCancel,
     showError,
     t,
@@ -103,6 +105,8 @@ export default function SocialAttributeForm({
           handleToggleIsChild={handleToggleIsChild}
           handleToggleIsRequiredWhenParentTrue={handleToggleIsRequiredWhenParentTrue}
           handleToggleIsDiscountApplicable={handleToggleIsDiscountApplicable}
+          handleToggleIsPhotoRequired={handleToggleIsPhotoRequired}
+          handleToggleIsDocumentRequired={handleToggleIsDocumentRequired}
           errors={errors}
           showError={showError}
           t={t}

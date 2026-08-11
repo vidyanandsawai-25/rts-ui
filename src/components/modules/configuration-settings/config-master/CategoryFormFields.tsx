@@ -74,30 +74,8 @@ export function CategoryFormFields({
         <ValidationMessage id="categoryName-error" message={errors.categoryName} visible={!!errors.categoryName} />
       </div>
 
-      {/* Display Order */}
-      <div className="space-y-2">
-        <Label htmlFor="displayOrder" required className="text-sm font-medium text-slate-700">
-          {t('modals.addCategory.form.displayOrder')}
-        </Label>
-        <Input
-          id="displayOrder"
-          type="number"
-          min="0"
-          max="99999"
-          placeholder="0"
-          value={formData.displayOrder}
-          onChange={(e) => onChange('displayOrder', e.target.value)}
-          onKeyDown={(e) => {
-            if (/^[eE+\-.]$/.test(e.key)) e.preventDefault();
-          }}
-          className={errors.displayOrder ? 'border-red-500' : ''}
-          disabled={isPending}
-          maxLength={5}
-          aria-invalid={errors.displayOrder ? 'true' : 'false'}
-          aria-describedby={errors.displayOrder ? 'displayOrder-error' : undefined}
-        />
-        <ValidationMessage id="displayOrder-error" message={errors.displayOrder} visible={!!errors.displayOrder} />
-      </div>
+      {/* Display Order - Auto-set and hidden from user view */}
+      <input type="hidden" id="displayOrder" name="displayOrder" value={formData.displayOrder} />
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (

@@ -70,11 +70,11 @@ export function HistoricalPingPongController({
       const release = releases.find((r) => r.year === year);
       const releaseId = release?.releaseId ?? 0;
       layer = L.tileLayer(WAYBACK_MAP_TILE_URL(releaseId), {
-        maxNativeZoom: 18,
+        maxNativeZoom: 19,
         maxZoom: 21,
-        keepBuffer: 12,
-        updateWhenIdle: true,
-        updateWhenZooming: false,
+        keepBuffer: 16,
+        updateWhenIdle: false,
+        updateWhenZooming: true,
         className: 'timelapse-tile-layer',
         attribution: '© Esri, Wayback, Maxar',
       });
@@ -104,7 +104,6 @@ export function HistoricalPingPongController({
       });
       cache.set(year, layer);
     }
-    if (map.getContainer() && !map.hasLayer(layer)) layer.addTo(map);
     return layer;
   }, [map, releases, updateLoadingState]);
 
@@ -167,13 +166,24 @@ export function HistoricalPingPongController({
     }
 
     try {
-      getOrCreateLayer(activeYear).setOpacity(1.0).setZIndex(10);
-      adjacentYears.forEach((y) => getOrCreateLayer(y).setOpacity(0.0).setZIndex(5));
-      const adjacentSet = new Set([activeYear, ...adjacentYears]);
+      const activeLayer = getOrCreateLayer(activeYear);
+      activeLayer.setOpacity(1.0);
+      if (typeof (activeLayer as unknown as { setZIndex: (z: number) => void }).setZIndex === 'function') {
+        (activeLayer as unknown as { setZIndex: (z: number) => void }).setZIndex(100);
+      }
+      if (!map.hasLayer(activeLayer)) {
+        activeLayer.addTo(map);
+      }
+
+      // Explicitly remove all non-active year tile layers from map so previous maps never linger
       cache.forEach((layer, y) => {
-        if (!adjacentSet.has(y)) {
-          if (map.hasLayer(layer)) layer.setOpacity(0.0).setZIndex(1);
-          if (layerLoadingStateRef.current.get(y)) layerLoadingStateRef.current.set(y, false);
+        if (y !== activeYear && y !== -1) {
+          if (map.hasLayer(layer)) {
+            map.removeLayer(layer);
+          }
+          if (layerLoadingStateRef.current.get(y)) {
+            layerLoadingStateRef.current.set(y, false);
+          }
         }
       });
 

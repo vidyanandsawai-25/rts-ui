@@ -514,10 +514,8 @@ export function useLockUnlockMaster({
 
     router.push(`${pathname}?${params.toString()}`);
 
-    if (showResults) {
-      fetchProperties(1, pagination.pageSize, termToSearch, true);
-    }
-  }, [propertySearchTerm, searchParams, pathname, router, showResults, fetchProperties, pagination.pageSize, t]);
+    fetchProperties(1, pagination.pageSize, termToSearch, true);
+  }, [propertySearchTerm, searchParams, pathname, router, fetchProperties, pagination.pageSize, t]);
 
   // Clear search
   const handleClearSearch = useCallback(() => {
@@ -529,10 +527,8 @@ export function useLockUnlockMaster({
     params.set("pageNumber", "1");
     router.push(`${pathname}?${params.toString()}`);
 
-    if (showResults) {
-      fetchProperties(1, pagination.pageSize, "", true);
-    }
-  }, [searchParams, pathname, router, showResults, fetchProperties, pagination.pageSize]);
+    fetchProperties(1, pagination.pageSize, "", true);
+  }, [searchParams, pathname, router, fetchProperties, pagination.pageSize]);
 
   // Keeps the input responsive and triggers debounced search on empty bar
   const handlePropertySearch = useCallback((searchTerm: string) => {
@@ -628,10 +624,27 @@ export function useLockUnlockMaster({
       return;
     }
 
+    const lockedIds = getScreenIds(row.lockedScreens as unknown as []);
+
+    if (willLock) {
+      const allAlreadyLocked = selectedScreenIds.every(id => lockedIds.includes(id));
+      if (allAlreadyLocked) {
+        toast.error(t("messages.wrongScreenSelectedLock"));
+        return;
+      }
+    } else {
+      const noneAreLocked = selectedScreenIds.every(id => !lockedIds.includes(id));
+      if (noneAreLocked) {
+        toast.error(t("messages.wrongScreenSelectedUnlock"));
+        return;
+      }
+    }
+
     const title = willLock ? t("messages.lockConfirmTitle") : t("messages.unlockConfirmTitle");
+    const fullPropertyNo = row.property || `${row.wardNo} - ${row.propertyNo}${row.partitionNo ? ` - ${row.partitionNo}` : ""}`;
     const description = willLock
-      ? t("messages.lockConfirmDescription", { propertyNo: row.propertyNo })
-      : t("messages.unlockConfirmDescription", { propertyNo: row.propertyNo });
+      ? t("messages.lockConfirmDescription", { propertyNo: fullPropertyNo })
+      : t("messages.unlockConfirmDescription", { propertyNo: fullPropertyNo });
 
     confirm({
       variant: willLock ? "warning" : "info",
@@ -642,7 +655,7 @@ export function useLockUnlockMaster({
         setIsActionPending(true);
         startTransition(async () => {
           try {
-            const screenIds = getScreenIds(willLock ? selectedScreenIds : row.lockedScreens as unknown as []);
+            const screenIds = selectedScreenIds;
             const response = await bulkLockUnlockPropertiesAction({
               propertyIds: [Number(row.propertyId)],
               screenIds,
@@ -651,12 +664,9 @@ export function useLockUnlockMaster({
 
             if (response.success) {
               toast.success(
-                response.message ||
-                t("messages.propertySuccess", {
-                  action: willLock
-                    ? t("resultsTable.status.locked").toLowerCase()
-                    : t("resultsTable.status.unlocked").toLowerCase()
-                })
+                willLock
+                  ? t("messages.bulkSuccessLock", { count: 1 })
+                  : t("messages.bulkSuccessUnlock", { count: 1 })
               );
               handleShow();
             } else {
@@ -743,37 +753,121 @@ export function useLockUnlockMaster({
       return;
     }
 
+    let finalPropertyIds = selectedPropertyIds;
+
+    if (!isBulkCategoryAction && selectedPropertyIds.length > 0) {
+      const selectedProps = properties.filter(p => selectedPropertyIds.includes(p.propertyId));
+      
+      const applicablePropertyIds: number[] = [];
+      for (const prop of selectedProps) {
+        const lockedIds = getScreenIds(prop.lockedScreens as unknown as []);
+        if (action === "lock") {
+          const canLock = selectedScreenIds.some(id => !lockedIds.includes(id));
+          if (canLock) applicablePropertyIds.push(prop.propertyId);
+        } else {
+          const canUnlock = selectedScreenIds.some(id => lockedIds.includes(id));
+          if (canUnlock) applicablePropertyIds.push(prop.propertyId);
+        }
+      }
+
+      if (applicablePropertyIds.length === 0) {
+        if (action === "lock") {
+           toast.error(t("messages.wrongScreenSelectedLock"));
+        } else {
+           toast.error(t("messages.wrongScreenSelectedUnlock"));
+        }
+        return;
+      }
+
+      finalPropertyIds = applicablePropertyIds;
+    }
+
+    let exactApplicableCount: number | null = null;
+    let exactIgnoredCount: number | null = null;
+
+    if (!isBulkCategoryAction && selectedPropertyIds.length > 0) {
+      exactApplicableCount = finalPropertyIds.length;
+      exactIgnoredCount = selectedPropertyIds.length - finalPropertyIds.length;
+    } else if (isAllPropertiesSelected && pagination.totalCount <= properties.length) {
+      const selectedProps = properties.filter(p => !excludedPropertyIds.includes(p.propertyId));
+      const applicablePropertyIds: number[] = [];
+      for (const prop of selectedProps) {
+        const lockedIds = getScreenIds(prop.lockedScreens as unknown as []);
+        if (action === "lock") {
+          const canLock = selectedScreenIds.some(id => !lockedIds.includes(id));
+          if (canLock) applicablePropertyIds.push(prop.propertyId);
+        } else {
+          const canUnlock = selectedScreenIds.some(id => lockedIds.includes(id));
+          if (canUnlock) applicablePropertyIds.push(prop.propertyId);
+        }
+      }
+      exactApplicableCount = applicablePropertyIds.length;
+      exactIgnoredCount = selectedProps.length - applicablePropertyIds.length;
+      
+      if (exactApplicableCount === 0) {
+        if (action === "lock") {
+          toast.error(t("messages.wrongScreenSelectedLock"));
+        } else {
+          toast.error(t("messages.wrongScreenSelectedUnlock"));
+        }
+        return;
+      }
+    }
+
     const propertyCount = isBulkCategoryAction
       ? pagination.totalCount
       : isAllPropertiesSelected
         ? pagination.totalCount - excludedPropertyIds.length
-        : selectedPropertyIds.length;
+        : finalPropertyIds.length;
+
+    const displayPropertyCount = exactApplicableCount !== null ? exactApplicableCount : propertyCount;
 
     const title = action === "lock" ? t("messages.lockConfirmTitle") : t("messages.unlockConfirmTitle");
     const isLargePropertyRange = formData.searchCategory === 4 && propertyCount > 3000;
     const shouldShowWarningMessage = isScopeZoneOrWard || isLargePropertyRange;
 
+    const isCategory4SelectAll = formData.searchCategory === 4 && isAllPropertiesSelected;
+
     const description = shouldShowWarningMessage
       ? (
         <span className="whitespace-pre-wrap leading-relaxed inline-block">
           {t.rich("messages.bulkLockUnlockConfirmation", {
-            action: action === "lock" ? t("messages.lockButtonText") : t("messages.unlockButtonText"),
-            propertyCount,
+            action: action === "lock" ? t("messages.lockText") : t("messages.unlockText"),
+            propertyCount: displayPropertyCount,
             warning: (chunks) => <span className="font-bold text-red-600">{chunks}</span>,
             highlight: (chunks) => <span className="font-bold text-blue-600">{chunks}</span>,
           })}
         </span>
       ) as unknown as string
-      : t("messages.bulkConfirmDescription", {
-        action: action === "lock" ? t("messages.lockButtonText").toLowerCase() : t("messages.unlockButtonText").toLowerCase(),
+      : isCategory4SelectAll
+      ? t("messages.bulkConfirmDescriptionRange", {
+        action: action === "lock" ? t("messages.lockText").toLowerCase() : t("messages.unlockText").toLowerCase(),
         screenCount: selectedScreenIds.length,
-        propertyCount,
+        propertyCount: displayPropertyCount,
+        fromProperty: formData.fromProperty,
+        toProperty: formData.toProperty,
+      })
+      : t("messages.bulkConfirmDescription", {
+        action: action === "lock" ? t("messages.lockText").toLowerCase() : t("messages.unlockText").toLowerCase(),
+        screenCount: selectedScreenIds.length,
+        propertyCount: displayPropertyCount,
       });
 
+    const clarificationNote = exactIgnoredCount && exactIgnoredCount > 0
+      ? (action === "lock" ? t("messages.exactLockedIgnored", { ignoredCount: exactIgnoredCount }) : t("messages.exactUnlockedIgnored", { ignoredCount: exactIgnoredCount }))
+      : (action === "lock" ? t("messages.alreadyLockedIgnored") : t("messages.alreadyUnlockedIgnored"));
+    
+    // Add clarification note unless it's the scope warning message (which already implies bulk operations and has its own warning)
+    const finalDescription = shouldShowWarningMessage ? description : (
+      <div className="flex flex-col gap-2">
+        <span>{description}</span>
+        {exactIgnoredCount === 0 ? null : <span className="text-xs text-slate-500 font-semibold">{clarificationNote}</span>}
+      </div>
+    ) as unknown as string;
     confirm({
       variant: action === "lock" ? "warning" : "info",
       title,
-      description,
+      description: finalDescription,
       confirmText: action === "lock" ? t("messages.lockButtonText") : t("messages.unlockButtonText"),
       onConfirm: async () => {
         setIsActionPending(true);
@@ -836,12 +930,9 @@ export function useLockUnlockMaster({
               const response = await bulkLockUnlockByCategoryAction(scopePayload);
               if (response.success) {
                 toast.success(
-                  response.message ||
-                  t("messages.propertySuccess", {
-                    action: action === "lock"
-                      ? t("resultsTable.status.locked").toLowerCase()
-                      : t("resultsTable.status.unlocked").toLowerCase()
-                  })
+                  action === "lock"
+                    ? t("messages.bulkSuccessLock", { count: propertyCount })
+                    : t("messages.bulkSuccessUnlock", { count: propertyCount })
                 );
                 handleShow();
                 resetSelectionState();
@@ -852,19 +943,16 @@ export function useLockUnlockMaster({
               const payload: Parameters<typeof bulkLockUnlockPropertiesAction>[0] = {
                 screenIds: selectedScreenIds.map(Number),
                 action,
-                propertyIds: selectedPropertyIds.map(Number)
+                propertyIds: finalPropertyIds.map(Number)
               };
 
               const response = await bulkLockUnlockPropertiesAction(payload);
 
               if (response.success) {
                 toast.success(
-                  response.message ||
-                  t("messages.propertySuccess", {
-                    action: action === "lock"
-                      ? t("resultsTable.status.locked").toLowerCase()
-                      : t("resultsTable.status.unlocked").toLowerCase()
-                  })
+                  action === "lock"
+                    ? t("messages.bulkSuccessLock", { count: propertyCount })
+                    : t("messages.bulkSuccessUnlock", { count: propertyCount })
                 );
                 handleShow();
                 resetSelectionState();

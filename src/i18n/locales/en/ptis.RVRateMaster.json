@@ -42,7 +42,8 @@
     "deleteRates": "Delete Rates",
     "downloadTemplate": "Download Template",
     "uploadExcel": "Upload Excel",
-    "configureUseTypes": "Configure Use Types"
+    "configureUseTypes": "Configure Use Types",
+    "generateRateMatrix": "Generate Rate Matrix"
   },
   "messages": {
     "csvOnly": "Please upload a valid CSV file. Excel (.xlsx) files are not supported.",
@@ -90,7 +91,7 @@
     "validationSelectValidFinanceYear": "Please select a valid Finance Year",
     "validationEnterRateValue": "Please enter at least one rate value",
     "validationDeleteRecordsFirst": "First delete records for {year} finance year, and then proceed to generate rates for other year.",
-    "validationFetchUpdateFailed": "Failed to fetch rates for update",
+    "validationFetchUpdateFailed": "Rates are not present for this combination - Rate Section, Use Group & Year Range. Please add rates and then update.",
     "validationDownloadTemplateFailed": "Failed to download template",
     "validationUploadValidFile": "Please upload a valid CSV or Excel file",
     "validationRatesAlreadyExist": "Rates already exist for selected filters. Please use Update instead",
@@ -99,12 +100,18 @@
     "validationFileEmpty": "File is empty or invalid",
     "validationParseFailed": "Failed to parse file. Please check the format.",
     "validationReadFileFailed": "Failed to read file",
+    "validationCorrectTemplate": "Please upload correct excel template",
+    "confirmCloseTitle": "Do you want to proceed with adding rates?",
+    "confirmCloseConfirm": "Continue",
+    "confirmCloseCancel": "Cancel",
     "noRatesAvailable": "No rates available",
     "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates.",
     "rateExceedsMaximum": "Rate value cannot exceed {max}. Please enter a valid rate.",
     "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value.",
     "cannotChangeConfiguredValue": "Cannot change configured value. Please update in Policy Configuration.",
-    "rateFrequencyMismatch": "Rate Frequency Mismatch for policy RateMonthlyOrYearly.:-The policy is configured as {configured}, but the current rates are entered as {existing}. Please update the policy configuration or delete the existing rates before configuring new rates."
+    "rateFrequencyMismatch": "Rate Frequency Mismatch for policy RateMonthlyOrYearly.:-The policy is configured as {configured}, but the current rates are entered as {existing}. Please update the policy configuration or delete the existing rates before configuring new rates.",
+    "multipliersCleared": "Multipliers cleared. Showing only selected use group.",
+    "multiplierConflictRemovedSuccess": "Conflicting multipliers for {removed} removed. Added multipliers for {groups}."
   },
   "sections": {
     "copyRatesTitle": "Copy Rates",
@@ -148,7 +155,9 @@
     "configureUseTypeTitle": "Configure Use Type",
     "configureUseTypeDescription": "Do you want to configure different use groups for Type Of Use with OP, Parking as its Category?",
     "confirmYes": "Yes",
-    "confirmNo": "No"
+    "confirmNo": "No",
+    "confirmMultiplierUpdateTitle": "Confirm Multiplier Update",
+    "confirmMultiplierUpdateDescription": "Rates are already present for use groups in multiplier ({groups}). Do you want to update existing rates?"
   },
   "configureRates": {
     "title": "Configure Use Groups",

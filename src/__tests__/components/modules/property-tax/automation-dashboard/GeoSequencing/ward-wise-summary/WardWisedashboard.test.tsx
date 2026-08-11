@@ -104,7 +104,7 @@ describe('GeoSequencingWardWiseDashboard', () => {
     render(<GeoSequencingWardWiseDashboard zoneId="Z1" summaryData={mockSummaryData} />);
 
     // Header title check
-    expect(screen.getByText('Z1 - Zone A - Ward-wise Summary')).toBeInTheDocument();
+    expect(screen.getByText('Zone A - Ward-wise Summary')).toBeInTheDocument();
 
     // Stage check
     expect(screen.getByText('Stage: Geo-sequencing')).toBeInTheDocument();
@@ -119,10 +119,8 @@ describe('GeoSequencingWardWiseDashboard', () => {
   it('navigates when a row is clicked (excluding total row)', () => {
     render(<GeoSequencingWardWiseDashboard zoneId="Z1" summaryData={mockSummaryData} />);
 
-    // Find the row containing 'Ward 101' and click it directly (or a non-stopping propagation child)
-    const wardRow = screen.getByText('Ward 101').closest('tr');
-    expect(wardRow).toBeTruthy();
-    fireEvent.click(wardRow!);
+    const wardCell = screen.getByText('Ward 101');
+    fireEvent.click(wardCell);
 
     expect(mockPush).toHaveBeenCalled();
   });

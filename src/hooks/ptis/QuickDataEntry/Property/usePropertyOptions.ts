@@ -9,7 +9,9 @@ export const usePropertyOptions = (props: PropertyFormViewProps) => {
     } = props;
 
     const categoryOptions = useMemo(() => 
-        propertyCategoryList.map((item) => ({ label: item.propertyCategoryName, value: String(item.id) })),
+        propertyCategoryList
+            .filter((item) => item.isActive)
+            .map((item) => ({ label: item.propertyCategoryName, value: String(item.id) })),
     [propertyCategoryList]);
 
     const propertyDescriptionOptions = useMemo(() => 

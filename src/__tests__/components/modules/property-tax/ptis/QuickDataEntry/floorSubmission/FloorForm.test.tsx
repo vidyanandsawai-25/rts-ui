@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FloorForm from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/FloorForm';
 import { floorFormSchema } from '@/lib/validations/floor-form.schema';
 import { INITIAL_FORM_STATE } from '@/hooks/ptis/floorSubmission/useFloorFormState';
+import { FloorData } from '@/types/room-details.types';
 
 // Mock all section components
 vi.mock('@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/components', () => ({
@@ -39,6 +40,7 @@ vi.mock('@/components/common', () => ({
       ))}
     </select>
   ),
+  useConfirm: () => ({ confirm: vi.fn() }),
 }));
 
 vi.mock('lucide-react', () => ({
@@ -50,6 +52,7 @@ describe('FloorForm', () => {
   const mockProps = {
     t: (key: string) => key,
     isAddingNewFloor: false,
+    selectedFloor: { id: 1, floor: 'Ground Floor', subFloor: 'None', conYr: '2020', asstYr: '2021', conTyp: 'RCC', use: 'Residential', subTyp: 'Apartment', rooms: '5', areaSqFt: '1000', areaSqM: '92.9', builtupAreaSqFt: '1200', builtupAreaSqM: '111.5', renter: false } as unknown as FloorData,
     editingFloorForm: {
       floor: 'Ground Floor',
       subFloor: 'None',
@@ -104,14 +107,14 @@ describe('FloorForm', () => {
   });
 
   it('displays correct title when adding new floor', () => {
-    const propsForAdding = { ...mockProps, isAddingNewFloor: true };
+    const propsForAdding = { ...mockProps, isAddingNewFloor: true, selectedFloor: null };
     render(<FloorForm {...propsForAdding} />);
 
     expect(screen.getByText('floor.addFloorDetails')).toBeInTheDocument();
   });
 
   it('displays correct title when adding new open plot', () => {
-    const propsForAdding = { ...mockProps, isAddingNewFloor: true, selectedFloorType: 'OpenPlot' as const };
+    const propsForAdding = { ...mockProps, isAddingNewFloor: true, selectedFloor: null, selectedFloorType: 'OpenPlot' as const };
     render(<FloorForm {...propsForAdding} />);
 
     expect(screen.getByText('floor.addOpenPlotDetails')).toBeInTheDocument();

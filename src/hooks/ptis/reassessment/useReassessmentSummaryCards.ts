@@ -49,8 +49,8 @@ export function useReassessmentSummaryCards({
     },
     {
       label: t('summaryCards.typeOfUseLabel'),
-      oldValue: oldUses.length > 20 ? oldUses.substring(0, 20) + '...' : oldUses,
-      newValue: newUses.length > 20 ? newUses.substring(0, 20) + '...' : newUses,
+      oldValue: oldUses,
+      newValue: newUses,
       difference: useChanged ? t('summaryCards.changedStatus') : t('summaryCards.sameStatus'),
       unit: t('summaryCards.units.type'),
       color: 'purple' as const,

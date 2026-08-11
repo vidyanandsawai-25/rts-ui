@@ -15,6 +15,7 @@ interface UsePhotoPlanDeleteProps {
   setViewerIndexAndModeValue: (idx: number | null, mode: 'grid' | 'viewer' | 'compare') => void;
   locale: string;
   t: (key: string) => string;
+  onMutationSuccess?: () => void;
 }
 
 export function usePhotoPlanDelete({
@@ -27,6 +28,7 @@ export function usePhotoPlanDelete({
   setViewerIndexAndModeValue,
   locale,
   t,
+  onMutationSuccess,
 }: UsePhotoPlanDeleteProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const activeCategory = categories[selectedCategoryIndex];
@@ -54,6 +56,7 @@ export function usePhotoPlanDelete({
           return;
         }
         toast.success(t('media.photoDeletedSuccess') || 'Photo deleted successfully');
+        onMutationSuccess?.();
       } catch {
         toast.error(t('media.unexpectedError') || 'An unexpected error occurred.');
         setIsDeleting(false);
@@ -71,7 +74,7 @@ export function usePhotoPlanDelete({
     } else if (selectedImageIndex !== null && selectedImageIndex > indexToDelete) {
       setViewerIndexAndModeValue(selectedImageIndex - 1, viewMode);
     }
-  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, propertyId, selectedImageIndex, viewMode, setViewerIndexAndModeValue, t, locale]);
+  }, [activeCategory, categories, selectedCategoryIndex, onCategoriesChange, propertyId, selectedImageIndex, viewMode, setViewerIndexAndModeValue, t, locale, onMutationSuccess]);
 
   return { isDeleting, handleDeletePhoto };
 }

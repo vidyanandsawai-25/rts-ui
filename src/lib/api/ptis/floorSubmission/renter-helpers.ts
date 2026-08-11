@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { normalizeRenterDetailItem, normalizeRenterMastItem } from "./floor-types-guard";
 
-const isActiveRow = (item: any) => item && item.isActive !== false && item.IsActive !== false;
+const isActiveRow = (item: any) => {
+    if (!item) return false;
+    const activeVal = item.isActive ?? item.IsActive;
+    return activeVal !== false && activeVal !== 0 && activeVal !== '0';
+};
 
 /**
  * Extract `renterDetails` and `renters`/`renterMast` from the floor envelope and

@@ -106,6 +106,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
           errors={errors}
           showError={showError}
           t={t}
+          disabled={!isActive}
         />
 
         <ValidationSection tCommon={tCommon} />

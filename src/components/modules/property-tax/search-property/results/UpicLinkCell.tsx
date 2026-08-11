@@ -61,6 +61,10 @@ function hasActiveFilters(queryString: string): boolean {
 export function UpicLinkCell({
   upicId,
   propertyId,
+  wardNo,
+  wardId,
+  propertyNo,
+  partitionNo,
   locale,
   copyLabel,
 }: UpicLinkCellProps) {
@@ -69,9 +73,26 @@ export function UpicLinkCell({
   const displayText = formatDisplayText(upicId);
   const canOpenPtis = propertyId > 0;
   const activeFiltersExist = hasActiveFilters(currentQuery);
-  const href = `/${locale}/property-tax/ptis?propertyId=${propertyId}&searchState=${
-    activeFiltersExist ? encodeURIComponent(currentQuery) : "clear"
-  }`;
+
+  const params = new URLSearchParams();
+  if (canOpenPtis) {
+    params.set("propertyId", String(propertyId));
+  }
+  if (wardNo) {
+    params.set("wardNo", wardNo);
+  }
+  if (wardId) {
+    params.set("wardId", String(wardId));
+  }
+  if (propertyNo) {
+    params.set("propertyNo", propertyNo);
+  }
+  if (partitionNo !== undefined && partitionNo !== null && partitionNo !== "") {
+    params.set("partitionNo", partitionNo);
+  }
+
+  const searchStateVal = activeFiltersExist ? currentQuery : "clear";
+  const href = `/${locale}/property-tax/ptis?${params.toString()}&searchState=${encodeURIComponent(searchStateVal)}`;
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault();

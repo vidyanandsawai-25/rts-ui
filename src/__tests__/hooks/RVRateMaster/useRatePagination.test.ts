@@ -33,7 +33,7 @@ describe("useRatePagination", () => {
     );
 
     expect(result.current.matrixPageNumber).toBe(1);
-    expect(result.current.matrixPageSize).toBe(10);
+    expect(result.current.matrixPageSize).toBe(100);
     expect(result.current.paginatedZoneDescriptions.length).toBeGreaterThan(0);
   });
 

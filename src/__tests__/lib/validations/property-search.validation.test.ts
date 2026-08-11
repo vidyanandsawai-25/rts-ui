@@ -24,10 +24,13 @@ describe("property-search-field-rules", () => {
     expect(validateSearchFieldValue("propertyNoFrom", "@123", t)).toBe(
       "propertyNoInvalid"
     );
+    expect(validateSearchFieldValue("propertyNoFrom", "NK", t)).toBe(
+      "propertyNoInvalid"
+    );
   });
 
   it("rejects over-length property numbers", () => {
-    const tooLong = "A".repeat(21);
+    const tooLong = "A1".repeat(11);
     expect(validateSearchFieldValue("propertyNoFrom", tooLong, t)).toBe(
       "propertyNoInvalid"
     );
@@ -45,6 +48,9 @@ describe("property-search-field-rules", () => {
 
   it("validates Old Property No format", () => {
     expect(validateSearchFieldValue("oldPropertyNo", "OLD123", t)).toBeNull();
+    expect(validateSearchFieldValue("oldPropertyNo", "OLD", t)).toBe(
+      "oldPropertyNoInvalid"
+    );
     expect(validateSearchFieldValue("oldPropertyNo", "OLD-123", t)).toBe(
       "oldPropertyNoInvalid"
     );
@@ -360,6 +366,50 @@ describe("property-search.validation", () => {
       };
       const result = validatePropertySearchCriteria(criteria, "values-dues", t);
       expect(result).toEqual({ valid: false, message: "valuationMethodRequired" });
+    });
+
+    it("returns correct field errors for Total Tax and CV", () => {
+      const criteriaTax: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "totalTax",
+        rateableValueFilter: "between",
+        rateableValueFrom: "3",
+        rateableValueTo: "1",
+      };
+      const errorsTax = getPropertySearchFieldErrors(criteriaTax, "values-dues", t);
+      expect(errorsTax.rateableValueTo).toBe("totalTaxRangeInvalid");
+
+      const criteriaCV: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "cv",
+        rateableValueFilter: "between",
+        rateableValueFrom: "3",
+        rateableValueTo: "1",
+      };
+      const errorsCV = getPropertySearchFieldErrors(criteriaCV, "values-dues", t);
+      expect(errorsCV.rateableValueTo).toBe("capitalValueRangeInvalid");
+    });
+
+    it("rejects empty values-dues criteria dynamically for Total Tax and CV in validatePropertySearchCriteria", () => {
+      const criteriaTax: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "totalTax",
+        rateableValueFilter: "between",
+        rateableValueFrom: "",
+        rateableValueTo: "",
+      };
+      const resultTax = validatePropertySearchCriteria(criteriaTax, "values-dues", t);
+      expect(resultTax).toEqual({ valid: false, message: "totalTaxBetweenRequired" });
+
+      const criteriaCV: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        valuationMethod: "cv",
+        rateableValueFilter: "between",
+        rateableValueFrom: "",
+        rateableValueTo: "",
+      };
+      const resultCV = validatePropertySearchCriteria(criteriaCV, "values-dues", t);
+      expect(resultCV).toEqual({ valid: false, message: "capitalValueBetweenRequired" });
     });
   });
 });

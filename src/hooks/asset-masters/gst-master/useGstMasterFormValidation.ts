@@ -2,10 +2,10 @@
 
 import { useCallback } from "react";
 import type { GstMasterFormModel } from "@/types/asset-masters/gst-master.types";
-import { validateForm, commonValidations, isAllZeros } from "@/lib/utils/validation";
+import { validateForm } from "@/lib/utils/validation";
+import { isAllZeros, CODE_REGEX, ASSET_MASTER_NAME_REGEX } from "@/lib/utils/asset-validation-rules";
 
 interface UseGstMasterFormValidationProps {
-  isEdit: boolean;
   submittedOnce: boolean;
   touched: Record<string, boolean>;
   errors: Partial<Record<keyof GstMasterFormModel, string>>;
@@ -13,7 +13,6 @@ interface UseGstMasterFormValidationProps {
 }
 
 export function useGstMasterFormValidation({
-  isEdit,
   submittedOnce,
   touched,
   errors,
@@ -22,22 +21,23 @@ export function useGstMasterFormValidation({
   const validate = useCallback(
     (data: GstMasterFormModel): Partial<Record<keyof GstMasterFormModel, string>> => {
       const schema = {
-        taxCode: commonValidations.masterCode(t, 20, {
-          required: "form.validation.codeRequired",
-          format: "form.validation.codeFormat",
-          maxLength: "form.validation.codeMaxLength",
-        }),
+        taxCode: (value: unknown) => {
+          const strVal = String(value ?? '').trim();
+          if (!strVal) return t("form.validation.codeRequired");
+          if (strVal.length > 20) return t("form.validation.codeMaxLength", { count: 20 });
+          if (isAllZeros(strVal)) return t('form.validation.invalidFormat', { default: 'Invalid format' });
+          if (!CODE_REGEX.test(strVal)) return t("form.validation.codeFormat");
+          return undefined;
+        },
         taxName: (value: unknown) => {
-          const standardError = commonValidations.masterDescription(t, 100, {
-            required: "form.validation.descriptionRequired",
-            format: "form.validation.descriptionFormat",
-            maxLength: "form.validation.descriptionMaxLength",
-          })(value);
-
-          if (standardError) return standardError;
-
           const strVal = String(value ?? "").trim();
-          if (isAllZeros(strVal)) {
+          if (!strVal) {
+            return t("form.validation.descriptionRequired");
+          }
+          if (strVal.length > 100) {
+            return t("form.validation.descriptionMaxLength", { count: 100 });
+          }
+          if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) {
             return t("form.validation.descriptionFormat");
           }
           return undefined;
@@ -57,12 +57,20 @@ export function useGstMasterFormValidation({
           if (!strVal) {
             return t("form.validation.effectiveFromRequired");
           }
+          const year = new Date(strVal).getFullYear();
+          if (isNaN(year) || year < 1700 || year > 2100) {
+            return t("form.validation.dateYearRange", { default: "Year must be between 1700 and 2100" });
+          }
           return undefined;
         },
         effectiveToDate: (value: unknown) => {
           const strVal = String(value ?? "").trim();
           if (!strVal) {
             return t("form.validation.effectiveToRequired");
+          }
+          const year = new Date(strVal).getFullYear();
+          if (isNaN(year) || year < 1700 || year > 2100) {
+            return t("form.validation.dateYearRange", { default: "Year must be between 1700 and 2100" });
           }
           if (data.effectiveFromDate?.trim()) {
             const from = new Date(data.effectiveFromDate);
@@ -73,12 +81,11 @@ export function useGstMasterFormValidation({
           }
           return undefined;
         },
-        isActive: commonValidations.masterActiveStatus(t, isEdit, "form.validation.mustBeActive"),
       };
 
       return validateForm(data, schema) as Partial<Record<keyof GstMasterFormModel, string>>;
     },
-    [t, isEdit]
+    [t]
   );
 
   const showError = useCallback(

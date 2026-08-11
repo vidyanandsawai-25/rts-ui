@@ -1,8 +1,5 @@
 'use client';
-
-import { useEffect } from 'react';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 import {
@@ -25,26 +22,16 @@ import { WorkflowTabButton } from './StageNavigationCard/TabCardStyles';
 export function ClientWrapper({ children, workflowCardsData, serverData }: Props) {
 
     const pathname = usePathname();
-    const searchParams = useSearchParams();
     const locale = useLocale();
     const router = useRouter();
-
-    // Redirect to set workflowStageId for geo-sequencing on initial render
-    useEffect(() => {
-        if (pathname.includes('/geo-sequencing') && !searchParams.get('workflowStageId')) {
-            const geoCard = workflowCardsData?.find(card => card.stageName === 'GeoSequencing');
-            if (geoCard?.id) {
-                router.replace(`${pathname}?workflowStageId=${geoCard.id}`);
-            }
-        }
-    }, [pathname, searchParams, workflowCardsData, router]);
-
     const basePath = `/${locale}/property-tax/automation-dashboard`;
 
     const isIsolatedView = pathname.includes('/ward-wise-summary') ||
         pathname.includes('/property-details-dashboard') ||
         pathname.includes('/quality-check/update-common-details') ||
-        pathname.includes('/send-to-approve');
+        pathname.includes('/send-to-approve') ||
+        pathname.includes('/pending-structures-ward-wise') ||
+        pathname.includes('/building-wise-property') ;
 
     const getStageConfig = (stageName: string) => {
         switch (stageName) {
@@ -52,7 +39,7 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
             case 'InternalSurvey': return { icon: FileSearch, value: 'internal-survey' };
             case 'DataEntry': return { icon: CheckCircle, value: 'quality-check' };
             case 'Assessment': return { icon: FileCheck, value: 'assessment' };
-            case 'ApprovalByULB': return { icon: ThumbsUp, value: 'approval' };
+            case 'ApprovalByULB': return { icon: ThumbsUp, value: 'approval-by-ulb' };
             case 'NoticeDistribution': return { icon: Bell, value: 'notice-distribution' };
             case 'HearingAndAppeal': return { icon: Scale, value: 'hearing-appeals' };
             case 'BillDistribution': return { icon: FileText, value: 'bills-distribution' };
@@ -92,19 +79,23 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
                         className="grid gap-2 w-full no-scrollbar"
                         style={{ gridTemplateColumns: `repeat(${rawTabs.length}, minmax(0, 1fr))` }}
                     >
-                        {rawTabs.map((tab) => {
+                        {rawTabs.map((tab, index) => {
                             const isActive = activeTab === tab.value;
                             const Icon = tab.icon;
                             const colors = getTabColors(tab.value);
+                            const isClickable = index < 5;
 
                             return (
-                                <Link
+                                <div
                                     key={tab.value}
-                                    href={`${basePath}/${tab.value}?workflowStageId=${tab.id}`}
-                                    className="min-w-0 w-full h-full text-left outline-none transition-transform active:scale-[0.98] block"
+                                    title={!isClickable ? "Work in Progress" : undefined}
+                                    onClick={() => isClickable && router.push(`${basePath}/${tab.value}?workflowStageId=${tab.id}`)}
+                                    className={`min-w-0 w-full h-full text-left outline-none block ${isClickable ? 'cursor-pointer transition-transform active:scale-[0.98]' : 'cursor-not-allowed grayscale opacity-50'}`}
                                 >
-                                    <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} />
-                                </Link>
+                                    <div className={`w-full h-full ${!isClickable ? 'pointer-events-none' : ''}`}>
+                                        <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} />
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>

@@ -31,6 +31,7 @@ export interface OwnershipTypeMasterErrorContextType {
 }
 
 export interface OwnershipTypeFormFieldsSectionProps {
+  nameRef?: React.RefObject<HTMLInputElement | null>;
   formData: OwnershipTypeFormModel;
   errors: Record<string, string>;
   showError: (field: string) => boolean;

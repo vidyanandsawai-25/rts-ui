@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { PageContainer } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MoujaSubZoneProps } from "@/types/asset-masters/mouja-subzone.types";
@@ -54,7 +54,7 @@ export function MoujaSubZoneMaster(props: MoujaSubZoneProps) {
   return (
     <PageContainer>
       <div className="space-y-4">
-        <TableHeader title={t("list.title")} subtitle={t("list.subtitle")} icon={Layers} />
+        <TableHeader title={t("list.title")} subtitle={t("list.subtitle")} icon={MapPin} />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <MoujaTableSection

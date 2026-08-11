@@ -7,7 +7,7 @@ type MatrixRow = {
   id: number;
   zone?: string;
   zoneNo?: string;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface RateCRUDHandlersProps {
@@ -31,6 +31,7 @@ interface RateCRUDHandlersProps {
   handleClose: () => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
   isOpenPlot?: boolean;
+  router: { refresh: () => void; replace?: (url: string) => void; };
 }
 
 export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
@@ -38,7 +39,7 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     selectedZone, selectedUseGroup, assessmentYear, existingRateFound, rateCategories,
     useGroupOptions, zoneOptions, zoneDescriptions, assessmentYears, assessmentYearRanges,
     confirm, buildCompleteMatrixForSubmission, handleBulkCreate, handleBulkUpdate, handleDelete,
-    handleClose, t, isOpenPlot
+    handleClose, t, isOpenPlot, router
   } = props;
 
   const handleAddRates = async () => {
@@ -51,8 +52,8 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     const filledCells = completeMatrixData.reduce((count, row) => {
       return count + rateCategories.filter(cat => {
         const key = cat.constructionCode || cat.constructionId;
-        const value = row[key] as number;
-        return value && value > 0;
+        const value = row[key];
+        return value !== undefined && value !== null && value !== "";
       }).length;
     }, 0);
     const completionPct = totalCells > 0 ? Math.round((filledCells / totalCells) * 100) : 0;
@@ -62,6 +63,7 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     }
     const result = await handleBulkCreate(completeMatrixData);
     if (result?.success) {
+      router.refresh();
       handleClose();
     }
   };
@@ -70,6 +72,7 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     const completeMatrixData = buildCompleteMatrixForSubmission();
     const result = await handleBulkUpdate(completeMatrixData);
     if (result?.success) {
+      router.refresh();
       handleClose();
     }
   };
@@ -130,6 +133,7 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
       onConfirm: async () => {
         const result = await handleDelete(latestBackendRates);
         if (result?.success) {
+          router.refresh();
           handleClose();
         }
       },

@@ -21,6 +21,7 @@ export interface AssessmentStatusBreakdown {
 export interface GeoSequencingZone {
   zoneId: number;
   zoneName: string;
+  zoneNo: string;
   registeredProperties: number;
   geoSequencedProperties: CountBreakdown;
   propertyTypeBreakdown: PropertyTypeBreakdown;
@@ -35,7 +36,7 @@ export interface GeoSequencingItems {
 export interface GeoSequencingGridResponse {
   success: boolean;
   message: string;
-  items: GeoSequencingItems;
+  items: GeoSequencingItems[];
   errors: unknown | null;
   correlationId?: string | null;
 }
@@ -71,21 +72,6 @@ export interface GeoSequencingProperty {
   propertyDetailsComparison: PropertyDetailsComparison;
 }
 
-export interface GeoSequencingPropertyDetailsItems {
-  zoneId: number;
-  zoneName: string;
-  properties: GeoSequencingProperty[];
-  totalCount: number;
-}
-
-export interface GeoSequencingPropertyDetailsResponse {
-  success: boolean;
-  message: string;
-  items: GeoSequencingPropertyDetailsItems;
-  errors: unknown | null;
-  correlationId?: string | null;
-}
-
 export interface GeoSequencingWard {
   wardId: number;
   wardNo: string;
@@ -108,7 +94,7 @@ export interface GeoSequencingWardWiseItems {
 export interface GeoSequencingWardWiseResponse {
   success: boolean;
   message: string;
-  items: GeoSequencingWardWiseItems;
+  items: GeoSequencingWardWiseItems[];
   errors: unknown | null;
   correlationId?: string | null;
 }

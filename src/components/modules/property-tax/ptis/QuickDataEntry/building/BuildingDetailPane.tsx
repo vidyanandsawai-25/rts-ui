@@ -52,6 +52,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     subFloorData = [],
     subTypeData = [],
     initialFloors = [],
+    floors = [],
     activeScope = 'Property',
     activeFloorId = null,
     onScopeChange,
@@ -96,6 +97,20 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
         return hasFile && hasNumber && hasDate;
     }, [displayData]);
 
+    const floorsWithCertDates = React.useMemo(() => {
+        return (initialFloors || []).map((f) => {
+            const fId = f.id ?? (f as unknown as { propertyDetailsId?: number }).propertyDetailsId;
+            const certFloor = (floors || []).find(
+                (fc) => fc.propertyDetailsId === Number(fId)
+            );
+            return {
+                ...f,
+                ccDate: certFloor?.ccDate || (f as unknown as { ccDate?: string }).ccDate || null,
+                ocDate: certFloor?.ocDate || (f as unknown as { ocDate?: string }).ocDate || null,
+            };
+        });
+    }, [initialFloors, floors]);
+
     const handleFileUploadWithConfirm = (file: File) => {
         if (data && data.documentGuid) {
             confirm({
@@ -134,26 +149,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
 
             confirm({
                 title: t("building.confirmDeleteCertificateTitle") || "Delete Certificate & Data",
-                description: (
-                    <span className="flex flex-col gap-1 items-center text-center -my-1">
-                        <span className="text-xs text-gray-700 font-medium leading-snug">
-                            {t("building.confirmToggleOffWarning") || "You have an attached certificate with details:"}
-                        </span>
-                        <span className="bg-blue-50 border border-blue-200 rounded-xl py-1.5 px-3 text-center my-0.5 shadow-2xs w-full max-w-[340px] flex flex-col gap-0.5 items-center">
-                            <span className="font-bold text-blue-950 block text-xs leading-tight">
-                                {displayName}
-                            </span>
-                            {detailsList.map((detail, idx) => (
-                                <span key={idx} className="text-xs text-blue-800 font-semibold block leading-tight">
-                                    {detail}
-                                </span>
-                            ))}
-                        </span>
-                        <span className="text-xs text-gray-700 font-medium leading-snug">
-                            {t("building.confirmDeleteCertificateDesc") || "Are you sure you want to delete this certificate and all its associated data?"}
-                        </span>
-                    </span>
-                ) as unknown as string,
+                description: `${t("building.confirmToggleOffWarning") || "You have an attached certificate with details:"}\n${displayName}${detailsList.length > 0 ? ` (${detailsList.join(", ")})` : ""}\n\n${t("building.confirmDeleteCertificateDesc") || "Are you sure you want to delete this certificate and all its associated data?"}`,
                 confirmText: t("building.confirmDeleteCertificateOk") || "Yes, Delete",
                 cancelText: t("building.confirmDeleteCertificateCancel") || "No, Cancel",
                 variant: "delete",
@@ -229,7 +225,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                 <div className="mb-3">
                     <FloorTable
                         t={t}
-                        filteredFloors={initialFloors}
+                        filteredFloors={floorsWithCertDates}
                         floorSearch=""
                         setFloorSearch={() => {}}
                         selectedFloor={activeFloorId !== null ? initialFloors.find(f =>
@@ -252,6 +248,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         useLookup={useData}
                         subTypeData={subTypeData}
                         setEditingFloorForm={() => {}}
+                        isBuildingPermissionView={true}
                         onRowClick={(floor: FloorData) => {
                             if (isSaving) return;
                             const targetId = floor.id ?? (floor as unknown as { propertyDetailsId?: number }).propertyDetailsId;

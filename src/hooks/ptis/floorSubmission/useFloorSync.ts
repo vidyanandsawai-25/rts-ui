@@ -9,7 +9,6 @@ import { normalizeFloorData } from '@/lib/utils/floorSubmission/floor-normalizat
 import { getCookieValue } from '@/lib/utils/cookie';
 import { ReadonlyURLSearchParams } from 'next/navigation';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
-import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 
 
 function getRenterDataFromStorage(floorId: string | number | null | undefined, initialPropertyID?: string | number): any {
@@ -87,6 +86,7 @@ export const useFloorSync = (params: {
     props,
     isAddingNewFloor,
     setIsAddingNewFloor,
+    editingFloorForm,
     setEditingFloorForm,
     setLocalFloors,
     setSelectedFloor,
@@ -124,6 +124,11 @@ export const useFloorSync = (params: {
       ? (initialFloorDetails as Record<string, unknown>).id as string | number | undefined
       : undefined;
   }, [initialFloorDetails]);
+
+  const selectedFloorRef = useRef(selectedFloor);
+  useEffect(() => {
+    selectedFloorRef.current = selectedFloor;
+  }, [selectedFloor]);
 
   useEffect(() => {
     if (initialFloorDetails) {
@@ -169,7 +174,7 @@ export const useFloorSync = (params: {
       }
     } else {
       hasSyncedRef.current = null;
-      if (!isAddingNewFloor && (!currentFloorIdUrl || currentFloorIdUrl === 'new')) {
+      if (!isAddingNewFloor && !selectedFloorRef.current && (!currentFloorIdUrl || currentFloorIdUrl === 'new')) {
         setEditingFloorForm(INITIAL_FORM_STATE);
         setSelectedFloor(null);
       }
@@ -239,8 +244,28 @@ export const useFloorSync = (params: {
           ...finalForm,
           id: undefined, // It's a new floor, keep id undefined
         }));
+      } else {
+        setEditingFloorForm((prev) => {
+          if (prev.floorId) return prev;
+          const gFloor = (props.floorData as { floorCode?: string; floorId?: number; description?: string }[] || []).find(
+            (f) => f.floorCode === 'G' || f.description?.startsWith('G -') || f.description?.startsWith('G-')
+          );
+          if (gFloor) {
+            return {
+              ...prev,
+              floorId: String(gFloor.floorId || gFloor.floorCode || ''),
+              floor: gFloor.description || 'G - तळमजला',
+              floorDescription: gFloor.description || 'G - तळमजला',
+            };
+          }
+          return prev;
+        });
       }
-    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new' && !isAddingNewFloor) {
+    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new') {
+      if (isAddingNewFloor && !editingFloorForm.id) {
+        return;
+      }
+      setIsAddingNewFloor(false);
       const renterData = getRenterDataFromStorage(currentFloorIdUrl, initialPropertyID);
       const savedForm = getSavedFormFromStorage(currentFloorIdUrl, restoredSessionFormRef);
 
@@ -285,8 +310,10 @@ export const useFloorSync = (params: {
         setSelectedFloor(finalForm);
       }
     }
-  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors, initialPropertyID]);
+  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, editingFloorForm.id, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor, mappedInitialFloors, initialPropertyID, props.floorData]);
 
+  // Plot area auto-population disabled to keep Open Space form blank
+  /*
   useEffect(() => {
     const isPropertyCategoryPlot = checkIsPlotCategory(props.initialPropertyData?.categoryName as string | undefined);
     const isPlot = isPropertyCategoryPlot;
@@ -324,19 +351,22 @@ export const useFloorSync = (params: {
     props.initialPropertyData?.categoryName,
     setEditingFloorForm,
   ]);
+  */
 
   // Auto open Add Open Plot Details form when category is Plot and no records exist
   useEffect(() => {
     const isPlot = checkIsPlotCategory(props.initialPropertyData?.categoryName as string | undefined);
     const hasNoFloorIdInUrl = !currentFloorIdUrl || currentFloorIdUrl === 'new';
-    if (isPlot && hasNoFloorIdInUrl) {
+    if (isPlot && hasNoFloorIdInUrl && !selectedFloor) {
       if (props.initialFloors.length === 0) {
         setIsAddingNewFloor(true);
-      } else {
-        setIsAddingNewFloor(false);
       }
     }
-  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, isAddingNewFloor, selectedFloor, setIsAddingNewFloor]);
+  }, [props.initialPropertyData?.categoryName, props.initialFloors.length, currentFloorIdUrl, setIsAddingNewFloor, selectedFloor]);
 
-  return { mappedInitialFloors };
+  const resetRestoredSessionFormRef = () => {
+    restoredSessionFormRef.current = null;
+  };
+
+  return { mappedInitialFloors, resetRestoredSessionFormRef };
 };

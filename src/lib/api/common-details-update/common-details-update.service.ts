@@ -2,20 +2,27 @@ export {
   getBulkUpdateMenuServer,
   getBulkUpdateFieldConfigServer,
   getPropertiesForFilterServer,
+  getPreviewListByCategoryServer,
   getWardsPagedServer,
   getWingsForWardServer,
   getDropdownOptionsServer,
   getPropertiesByWardServer,
+  getPropertiesByCategoryServer,
   getAllWingsServer,
   getFieldRegistrySchemasServer,
   getFieldRegistryTablesServer,
   getFieldRegistryColumnsServer,
+  getSourceTablesServer,
+  getSourceTableFieldsServer,
   getScopeOptionsServer,
   getScopeCategoryOptionsServer,
   exportExcelServer,
+  getFieldRegistriesServer,
+  getUpdateHistoryServer,
+  exportUpdateHistoryServer,
 } from './common-details-update-queries.service';
 
 export type { PropertyItem, WingItem, ScopeOption } from './common-details-update-queries.service';
 
-export { executeBulkUpdateServer, addFieldRegistryServer, importExcelServer } from './common-details-update-mutations.service';
+export { executeBulkUpdateServer, addFieldRegistryServer, importExcelServer, setFieldRegistryStatusServer, updateFieldRegistryServer, addBulkUpdateDefinitionServer } from './common-details-update-mutations.service';
 

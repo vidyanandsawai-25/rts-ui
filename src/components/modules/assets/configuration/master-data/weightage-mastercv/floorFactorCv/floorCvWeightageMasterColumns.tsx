@@ -86,11 +86,11 @@ export const getFloorCvWeightageMasterColumns = ({
   floorOptions?: { label: string; value: string }[];
   assessmentYearOptions?: { label: string; value: string }[];
 }): Column<FloorFactorCVMasterWithIndex>[] => {
-  // Sortable columns — API requires fields: FloorId, YearRangeCVId, IsActive
+  // Sortable columns — API accepts: FloorCode, FloorDescription, FromYear
   const sortableColumns: Record<string, string> = {
-    floorCode: 'FloorId',
-    floorDescription: 'FloorId',
-    fromYear: 'YearRangeCVId',
+    floorCode: 'FloorCode',
+    floorDescription: 'FloorDescription',
+    fromYear: 'FromYear',
   };
 
   const createSortableLabel = (label: string, dataKey: string) => {
@@ -116,14 +116,17 @@ export const getFloorCvWeightageMasterColumns = ({
       label: createSortableLabel(t('columns.floorCode'), 'floorCode'),
       width: '10%',
       render: (value: unknown, row: FloorFactorCVMasterWithIndex) => {
-        if (value && typeof value === 'string' && value !== '-') return value;
-        const opt = floorOptions.find(o => o.value === String(row.floorId));
-        if (opt) {
-          const parts = opt.label.split(' - ');
-          if (parts.length > 1) return parts[0].trim();
-          return opt.label;
+        let code = '-';
+        if (value && typeof value === 'string' && value !== '-') {
+          code = value;
+        } else {
+          const opt = floorOptions.find(o => o.value === String(row.floorId));
+          if (opt) {
+            const parts = opt.label.split(' - ');
+            code = parts.length > 1 ? parts[0].trim() : opt.label;
+          }
         }
-        return '-';
+        return <span className="break-all block">{code}</span>;
       },
     },
     {
@@ -131,14 +134,17 @@ export const getFloorCvWeightageMasterColumns = ({
       label: createSortableLabel(t('columns.description'), 'floorDescription'),
       width: '14%',
       render: (value: unknown, row: FloorFactorCVMasterWithIndex) => {
-        if (value && typeof value === 'string' && value !== '-') return value;
-        const opt = floorOptions.find(o => o.value === String(row.floorId));
-        if (opt) {
-          const parts = opt.label.split(' - ');
-          if (parts.length > 1) return parts.slice(1).join(' - ').trim();
-          return opt.label;
+        let desc = '-';
+        if (value && typeof value === 'string' && value !== '-') {
+          desc = value;
+        } else {
+          const opt = floorOptions.find(o => o.value === String(row.floorId));
+          if (opt) {
+            const parts = opt.label.split(' - ');
+            desc = parts.length > 1 ? parts.slice(1).join(' - ').trim() : opt.label;
+          }
         }
-        return '-';
+        return <span className="break-all block">{desc}</span>;
       },
     },
     {

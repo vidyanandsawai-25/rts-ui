@@ -1,5 +1,5 @@
+/* eslint-disable i18next/no-literal-string */
 'use client';
-
 import React from 'react';
 import { Layers, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,7 +7,6 @@ import {
   AddButton,
   FloorDetailsTable,
   FloorDetailsTableColumn,
-  SearchInput,
 } from '@/components/common';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
@@ -21,8 +20,8 @@ import { ExpandedRoomsBreakdown } from './components/ExpandedRoomsBreakdown';
 interface FloorTableProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   filteredFloors: FloorData[];
-  floorSearch: string;
-  setFloorSearch: (val: string) => void;
+  floorSearch?: string;
+  setFloorSearch?: (val: string) => void;
   selectedFloor: FloorData | null;
   setSelectedFloor: (val: FloorData | null) => void;
   isAddingNewFloor: boolean;
@@ -46,17 +45,25 @@ interface FloorTableProps {
   partitionNo?: string;
   onRowClick?: (row: FloorData) => void;
   isIndividualProperty?: boolean;
+  /** categoryName from PropertyCategoryMaster (e.g. "Amenity", "Individual", "Apartment") */
+  categoryName?: string;
+  /** propertyDescription from PropertyCategoryMaster (e.g. "Amenity" or "ॲमिनिटी") */
+  propertyDescription?: string;
+  /** true when the current property belongs to a wing — Data Entry Same As should be hidden */
+  hasWing?: boolean;
+  isBuildingPermissionView?: boolean;
+  plotAreaSqM?: number;
 }
 
 const FloorTable: React.FC<FloorTableProps> = ({
   t,
   filteredFloors,
   selectedFloorType,
-  floorSearch,
-  setFloorSearch,
+  floorSearch: _floorSearch = '',
+  setFloorSearch: _setFloorSearch,
   selectedFloor,
   setSelectedFloor,
-  isAddingNewFloor,
+  isAddingNewFloor: _isAddingNewFloor,
   setIsAddingNewFloor,
   handleAddFloor,
   handleOpenDataEntrySameAs,
@@ -72,10 +79,30 @@ const FloorTable: React.FC<FloorTableProps> = ({
   subTypeData,
   setEditingFloorForm,
   isPlotCategory = false,
-  partitionNo: _partitionNo,
+  partitionNo,
+  categoryName,
+  propertyDescription,
+  hasWing = false,
   isIndividualProperty: _isIndividualProperty = false,
   onRowClick,
+  isBuildingPermissionView = false,
+  plotAreaSqM = 0,
 }) => {
+
+  // Amenity properties do not support Data Entry Same As — always hide the button.
+  // Check categoryName, propertyDescription (English & Marathi), and partitionNo pattern (e.g. AAM10, B-AM1).
+  const isAmenityProperty = React.useMemo(() => {
+    const cat = (categoryName ?? '').trim().toLowerCase();
+    const desc = (propertyDescription ?? '').trim().toLowerCase();
+    const part = (partitionNo ?? '').trim().toUpperCase();
+
+    const byCategoryName = cat.includes('amenity') || cat.includes('ॲमिनिटी') || cat.includes('अॅमिनिटी');
+    const byPropertyDescription = desc.includes('amenity') || desc.includes('ॲमिनिटी') || desc.includes('अॅमिनिटी') || desc.includes('अमेनिटी');
+    const byPartitionNo = part.includes('AM');
+
+    return byCategoryName || byPropertyDescription || byPartitionNo;
+  }, [categoryName, propertyDescription, partitionNo]);
+
   const isDataEntryDisabled = React.useMemo(() => {
     // Disable button if no floors exist for the selected property; enable when floors exist
     return !filteredFloors || filteredFloors.length === 0;
@@ -85,7 +112,6 @@ const FloorTable: React.FC<FloorTableProps> = ({
     if (isDataEntryDisabled) {
       toast.error(
         t('floor.atLeastOneFloorRequired')
-          
       );
       return;
     }
@@ -113,9 +139,54 @@ const FloorTable: React.FC<FloorTableProps> = ({
     return renderFloorActions(t, handleDeleteFloor);
   }, [t, handleDeleteFloor]);
 
+  // Calculate Summary Metrics for Table Header
+  const summaryMetrics = React.useMemo(() => {
+    let totalOpenSpaceArea = 0;
+    let totalCarpetArea = 0;
+    let totalBuiltupArea = 0;
+
+    (filteredFloors || []).forEach((floor) => {
+      // Exclude property master plot header record (floorId 77 if carpetArea === plotAreaSqM)
+      if (
+        (String(floor.floorId) === '77' || String(floor.floor) === '77' || floor.isOpenPlot === true) &&
+        Number(floor.carpetAreaSqMeter || floor.builtupAreaSqMeter || 0) === plotAreaSqM &&
+        plotAreaSqM > 0
+      ) {
+        return;
+      }
+
+      const isOpenPlot =
+        floor.selectedFloorType === 'OpenPlot' ||
+        String(floor.conTyp || floor.constructionTypeDescription || '').toLowerCase().includes('open plot') ||
+        String(floor.conTyp || '').toLowerCase() === 'op';
+
+      const areaSqM = Number(floor.areaSqM || floor.builtupAreaSqM || floor.builtupAreaSqMeter || floor.carpetAreaSqMeter || 0);
+      const carpetSqM = Number(floor.carpetAreaSqMeter || floor.carpetArea || floor.areaSqM || 0);
+      const builtupSqM = Number(floor.builtupAreaSqMeter || floor.builtupAreaSqM || floor.areaSqM || 0);
+
+      if (isOpenPlot) {
+        totalOpenSpaceArea += areaSqM;
+      } else {
+        totalCarpetArea += carpetSqM;
+        totalBuiltupArea += builtupSqM;
+      }
+    });
+
+    return {
+      totalOpenSpaceArea: Math.round(totalOpenSpaceArea * 100) / 100,
+      totalCarpetArea: Math.round(totalCarpetArea * 100) / 100,
+      totalBuiltupArea: Math.round(totalBuiltupArea * 100) / 100,
+    };
+  }, [filteredFloors, plotAreaSqM]);
+
   // Adapt the custom MasterTable columns to be compatible with FloorDetailsTable and style cells cleanly
   const adaptedColumns = React.useMemo<FloorDetailsTableColumn<FloorData>[]>(() => {
-    const baseCols: FloorDetailsTableColumn<FloorData>[] = columns.map((col) => ({
+    const buildingPermissionKeys = ['floor', 'subFloor', 'conYr', 'asstYr', 'conTyp', 'use', 'ccDate', 'ocDate'];
+    const targetCols = isBuildingPermissionView
+      ? columns.filter((col) => buildingPermissionKeys.includes(col.key))
+      : columns;
+
+    const baseCols: FloorDetailsTableColumn<FloorData>[] = targetCols.map((col) => ({
       ...col,
       sortable: true,
       render: (row: FloorData, index: number) => {
@@ -156,11 +227,10 @@ const FloorTable: React.FC<FloorTableProps> = ({
                   e.stopPropagation();
                   onRowClick(row);
                 }}
-                className={`flex items-center justify-center w-6 h-6 rounded-full border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
-                    : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
-                }`}
+                className={`flex items-center justify-center w-6 h-6 rounded-full border transition-all cursor-pointer ${isSelected
+                  ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
+                  : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
+                  }`}
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
@@ -171,7 +241,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
     }
 
     return baseCols;
-  }, [columns, t, deleteCellRenderer, viewOnly, onRowClick, selectedFloor]);
+  }, [columns, t, deleteCellRenderer, viewOnly, onRowClick, selectedFloor, isBuildingPermissionView]);
 
   /**
    * Handle row click to edit or select a floor
@@ -260,25 +330,43 @@ const FloorTable: React.FC<FloorTableProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-md border-2 border-blue-100 p-2">
-      <div className="flex items-center justify-between mb-2 pb-1.5 border-b-2 border-blue-200">
-        <h3 className="text-xs font-bold text-blue-800 flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5" />
-          {t('floor.allFloors')}
-          <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-semibold">
-            {filteredFloors.length}
-          </span>
-        </h3>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {!viewOnly && (
-            <SearchInput
-              value={floorSearch}
-              onChange={setFloorSearch}
-              placeholder={t('floor.searchFloors')}
-              className="w-32 md:w-36 mb-0 h-7 scale-90"
-            />
-          )}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-1.5 border-b-2 border-blue-200">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-xs font-bold text-blue-800 flex items-center gap-1.5 mr-1">
+            <Layers className="w-3.5 h-3.5" />
+            {t('floor.allFloors')}
+            <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-semibold">
+              {filteredFloors.length}
+            </span>
+          </h3>
 
-          {!viewOnly && (
+          {/* Table Header Summary Badges */}
+          {!isBuildingPermissionView && (
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+              {plotAreaSqM > 0 && (
+                <span className="px-2.5 py-0.5 bg-blue-50 border border-blue-200 text-blue-800 rounded-md flex items-center gap-1 shadow-2xs">
+                  <span className="text-blue-600 font-medium">Plot Area:</span>
+                  <strong className="font-bold">{plotAreaSqM.toFixed(2)} Sq M</strong>
+                </span>
+              )}
+              <span className="px-2.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-md flex items-center gap-1 shadow-2xs">
+                <span className="text-amber-700 font-medium">Additional Plot Area:</span>
+                <strong className="font-bold">{summaryMetrics.totalOpenSpaceArea.toFixed(2)} Sq M</strong>
+              </span>
+              <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-md flex items-center gap-1 shadow-2xs">
+                <span className="text-emerald-700 font-medium">Carpet Area:</span>
+                <strong className="font-bold">{summaryMetrics.totalCarpetArea.toFixed(2)} Sq M</strong>
+              </span>
+              <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-md flex items-center gap-1 shadow-2xs">
+                <span className="text-indigo-700 font-medium">Built-up Area:</span>
+                <strong className="font-bold">{summaryMetrics.totalBuiltupArea.toFixed(2)} Sq M</strong>
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2">
+          {!viewOnly && !isAmenityProperty && !hasWing && !(categoryName?.trim().toLowerCase() === 'apartment' && !partitionNo?.trim()) && (
             <div
               onClick={handleDataEntrySameAsClick}
               className="inline-block cursor-pointer"
@@ -286,9 +374,8 @@ const FloorTable: React.FC<FloorTableProps> = ({
               <AddButton
                 label={t('floor.dataEntry')}
                 size="sm"
-                className={`px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg flex items-center gap-2 ${
-                  isDataEntryDisabled ? 'pointer-events-none opacity-60' : 'active:scale-95'
-                }`}
+                className={`px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg flex items-center gap-2 ${isDataEntryDisabled ? 'pointer-events-none opacity-60' : 'active:scale-95'
+                  }`}
                 onClick={handleDataEntrySameAsClick}
                 disabled={isDataEntryDisabled}
               />
@@ -315,7 +402,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           expandedRowIds={expandedRowIds}
           getExpandHref={(row) => `#floor-${row.id}`}
           renderExpanded={renderExpandedRooms}
-          tableClassName="w-full min-w-[1200px]"
+          tableClassName={isBuildingPermissionView ? "w-full" : "w-full min-w-[1200px]"}
           emptyMessage={viewOnly ? t('floorSubmission.validation.emptyMessage') : t('floor.noFloorsFound')}
           striped={true}
           hoverable={true}
@@ -324,19 +411,18 @@ const FloorTable: React.FC<FloorTableProps> = ({
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) => {
             const isSelected = selectedFloor
-              ? (Number(selectedFloor.id) === Number(row.id) ||
-                 Number((selectedFloor as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number((row as unknown as { propertyDetailsId?: number }).propertyDetailsId) ||
-                 Number((selectedFloor as unknown as { propertyDetailsId?: number }).propertyDetailsId) === Number(row.id) ||
-                 Number(selectedFloor.id) === Number((row as unknown as { propertyDetailsId?: number }).propertyDetailsId))
+              ? (Boolean(selectedFloor.id && row.id && String(selectedFloor.id) === String(row.id)) ||
+                Boolean(selectedFloor.propertyDetailsId && row.propertyDetailsId && Number(selectedFloor.propertyDetailsId) === Number(row.propertyDetailsId)) ||
+                Boolean(selectedFloor.propertyDetailsId && row.id && Number(selectedFloor.propertyDetailsId) === Number(row.id)) ||
+                Boolean(selectedFloor.id && row.propertyDetailsId && Number(selectedFloor.id) === Number(row.propertyDetailsId)))
               : false;
 
             if (viewOnly && !onRowClick) {
               return 'cursor-default border-l-4 border-l-transparent border-b-2 border-blue-200/90';
             }
 
-            return `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${
-              isSelected && !isAddingNewFloor ? 'bg-blue-100/70 border-l-4 border-l-blue-600 font-bold' : 'border-l-4 border-l-transparent'
-            }`;
+            return `cursor-pointer transition-all duration-200 hover:bg-blue-50/80 active:bg-blue-100 border-b-2 border-blue-200/90 ${isSelected ? 'bg-blue-100/70 border-l-4 border-l-blue-600 font-bold' : 'border-l-4 border-l-transparent'
+              }`;
           }}
         />
       </div>

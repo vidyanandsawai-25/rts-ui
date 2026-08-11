@@ -1,3 +1,4 @@
+import React from "react";
 import { Label } from "@/components/common/label";
 import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/select";
@@ -5,6 +6,10 @@ import { ValidationMessage } from "@/components/common/ValidationMessage";
 import { TextArea } from "@/components/common/Textarea";
 
 import type { InventoryNameFormFieldsSectionProps } from "@/types/asset-masters/inventory-name.types";
+
+interface ExtendedFormFieldsSectionProps extends InventoryNameFormFieldsSectionProps {
+  codeRef?: React.RefObject<HTMLInputElement | null>;
+}
 
 export function FormFieldsSection({
   formData,
@@ -15,9 +20,10 @@ export function FormFieldsSection({
   onSelectChange,
   t,
   categoryOptions,
-}: InventoryNameFormFieldsSectionProps) {
+  codeRef,
+}: ExtendedFormFieldsSectionProps) {
   return (
-    <div className="space-y-6">
+    <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <div className="space-y-1">
         <Label className="block text-sm font-medium text-slate-700">
           {t("configuration.masterData.form.labels.category")} <span className="text-red-500">*</span>
@@ -27,50 +33,61 @@ export function FormFieldsSection({
           value={String(formData.inventoryItemCategoryId ?? "")}
           onChange={(_, v) => onSelectChange("inventoryItemCategoryId", String(v))}
           placeholder={t("configuration.masterData.form.placeholders.category")}
+          error={showError("inventoryItemCategoryId") ? " " : undefined}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
-        {showError("inventoryItemCategoryId") && <ValidationMessage message={errors.inventoryItemCategoryId} />}
+        <ValidationMessage message={errors.inventoryItemCategoryId} visible={showError("inventoryItemCategoryId")} />
       </div>
 
-      <Input
-        name="subTypeCode"
-        label={t("configuration.masterData.form.labels.code")}
-        required
-        value={formData.subTypeCode}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("configuration.masterData.form.placeholders.code")}
-        maxLength={15}
-        error={showError("subTypeCode") ? errors.subTypeCode : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          ref={codeRef}
+          name="subTypeCode"
+          label={t("configuration.masterData.form.labels.code")}
+          required
+          value={formData.subTypeCode}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.code")}
+          maxLength={15}
+          error={showError("subTypeCode") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.subTypeCode} visible={showError("subTypeCode")} />
+      </div>
 
-      <Input
-        name="subTypeName"
-        label={t("configuration.masterData.form.labels.name")}
-        required
-        value={formData.subTypeName}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("configuration.masterData.form.placeholders.name")}
-        maxLength={50}
-        error={showError("subTypeName") ? errors.subTypeName : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          name="subTypeName"
+          label={t("configuration.masterData.form.labels.name")}
+          required
+          value={formData.subTypeName}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.name")}
+          maxLength={50}
+          error={showError("subTypeName") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.subTypeName} visible={showError("subTypeName")} />
+      </div>
 
-      <TextArea
-        name="description"
-        label={t("configuration.masterData.form.labels.description")}
-        rows={4}
-        value={formData.description}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("configuration.masterData.form.placeholders.description")}
-        maxLength={500}
-        error={showError("description") ? true : false}
-        errorMessage={showError("description") ? errors.description : undefined}
-        className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <TextArea
+          name="description"
+          label={t("configuration.masterData.form.labels.description")}
+          rows={4}
+          value={formData.description}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.description")}
+          maxLength={500}
+          error={showError("description") ? true : false}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.description} visible={showError("description")} />
+      </div>
     </div>
   );
 }
+

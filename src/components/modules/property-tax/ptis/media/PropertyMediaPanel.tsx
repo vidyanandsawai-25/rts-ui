@@ -12,6 +12,7 @@ import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
 import { toast } from 'sonner';
+import { getCookieValue, decodeCookieValue } from '@/lib/utils/cookie';
 import { launchPhotoPlanDrawingToolAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 export interface PropertyMediaPanelProps {
   wardNo?: string;
@@ -47,7 +48,7 @@ function PropertyMediaPanel({
 }: PropertyMediaPanelProps): React.ReactElement {
   const { isDrawerOpen, drawerInitialCategoryIndex, openDrawer, closeDrawer } =
     useMediaDrawerState();
-  const { isPanelVisible, togglePanel } = useMediaPanel();
+  const { togglePanel } = useMediaPanel();
 
   // Close the drawer if the propertyId changes (e.g. searching/switching property)
   const prevPropertyIdRef = useRef(propertyId);
@@ -62,12 +63,11 @@ function PropertyMediaPanel({
     showMoreImages,
     setShowMoreImages,
     hoverPreview,
+    resetHoverPreview,
     categories,
     handleCategoriesChange,
     photoPlanCategory,
     propertyPhotoCategory,
-    gisCategory,
-    gisPhoto,
     photoPlanPhoto,
     propertyPhoto,
     remainingImages,
@@ -77,6 +77,7 @@ function PropertyMediaPanel({
     fullyLoadedIds,
     setFullyLoadedIds,
     setPhotos,
+    gisPhoto,
     t,
   } = usePropertyMedia({
     initialPhotoSlots,
@@ -88,6 +89,23 @@ function PropertyMediaPanel({
     onPhotosChange,
     onPhotoSlotsChange,
   });
+
+  const handleOpenDrawer = useCallback(
+    (categoryIndex: number, imageIndex?: number, mode?: 'view' | 'create') => {
+      if (!propertyId || propertyId <= 0) {
+        toast.error(t('error.propertyIdMissing') || 'Property is missing. Please search and select a property first.');
+        return;
+      }
+      openDrawer(categoryIndex, imageIndex, mode);
+    },
+    [propertyId, openDrawer, t]
+  );
+
+  useEffect(() => {
+    if (loading) {
+      resetHoverPreview();
+    }
+  }, [loading, resetHoverPreview]);
   const hasCoords = typeof initialLatitude === 'number' && Number.isFinite(initialLatitude) && typeof initialLongitude === 'number' && Number.isFinite(initialLongitude);
   const coords = hasCoords ? { lat: initialLatitude, lng: initialLongitude } : undefined;
   const waybackReleases = initialWaybackReleases;
@@ -127,7 +145,7 @@ function PropertyMediaPanel({
       e.stopPropagation();
       
       if (!propertyId) {
-        toast.error(t('media.drawingToolPropertyIdRequired') || 'Property ID is required.');
+        toast.error(t('error.propertyIdMissing') || 'Property is missing. Please search and select a property first.');
         return;
       }
 
@@ -135,8 +153,24 @@ function PropertyMediaPanel({
       try {
         const councilName = 'THANE_Survey';
         const returnUrl = typeof window !== 'undefined' ? window.location.href : '';
+        const ptisUsername = getCookieValue('login_username');
+        const rawDisplayName = getCookieValue('user_name');
+        const ptisDisplayName = rawDisplayName ? decodeCookieValue(rawDisplayName) : undefined;
+        const ptisUserId = getCookieValue('user_id');
 
-        const result = await launchPhotoPlanDrawingToolAction(propertyId, councilName, returnUrl);
+        const cleanPartitionNo = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-') ? '' : partitionNo.trim();
+
+        const result = await launchPhotoPlanDrawingToolAction(
+          propertyId,
+          councilName,
+          returnUrl,
+          ptisUsername,
+          ptisDisplayName,
+          ptisUserId,
+          wardNo,
+          propertyNo,
+          cleanPartitionNo
+        );
 
         if (!result.success || !result.data?.launchUrl) {
            throw new Error(result.error || (t('media.launchUrlNotFound') || 'Launch URL not found in response.'));
@@ -159,7 +193,7 @@ function PropertyMediaPanel({
         toast.error(errorMessage, { id: toastId });
       }
     },
-    [propertyId, t]
+    [propertyId, t, wardNo, propertyNo, partitionNo]
   );
 
   if (loading) {
@@ -171,7 +205,7 @@ function PropertyMediaPanel({
       <PropertyMediaPanelContent
         categories={categories}
         t={t}
-        openDrawer={openDrawer}
+        openDrawer={handleOpenDrawer}
         handleImageHover={handleImageHover}
         handleImageLeave={handleImageLeave}
         cancelImageLeave={cancelImageLeave}
@@ -185,7 +219,6 @@ function PropertyMediaPanel({
         photoPlanCategory={photoPlanCategory}
         handleCreateClick={handleCreateClick}
         gisPhoto={gisPhoto}
-        gisCategory={gisCategory}
         hasCoords={hasCoords}
         cdBeforeImg={cdBeforeImg}
         cdAfterImg={cdAfterImg}
@@ -210,7 +243,7 @@ function PropertyMediaPanel({
         </button>
       </div>
 
-      {isDrawerOpen && isPanelVisible && (
+      {isDrawerOpen && (
         <PhotoPlanDrawer
           open={isDrawerOpen}
           onClose={closeDrawer}

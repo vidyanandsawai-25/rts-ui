@@ -51,12 +51,17 @@ export {
   Section129Button,
   PreviewButton,
 } from './ActionButtons';
-export { IconButton } from './ActionButtons';
+export { IconButton, IconOnlyActionButton, RefreshButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export type { CardProps } from './Card';
 
 export { Input } from './Input';
 export type { InputProps } from './Input';
+
+export { PTISTransliteratedSearchSelect } from './PTISTransliteratedSearchSelect';
+export type { PTISTransliteratedSearchSelectProps } from './PTISTransliteratedSearchSelect';
+export { PTISTransliteratedInput } from './PTISTransliteratedInput';
+export type { PTISTransliteratedInputProps } from './PTISTransliteratedInput';
 
 export { AnimatedDigitInput } from './AnimatedDigitInput';
 export type { AnimatedDigitInputProps } from './AnimatedDigitInput';
@@ -82,6 +87,8 @@ export { Modal } from './Modal';
 export { MultiSelectDropdown } from './Dropdown';
 export { MultiSelect } from './MultiSelect';
 export type { Option as MultiSelectOption } from './MultiSelect';
+export { MultiSelectWithIcons } from './MultiSelectWithIcons';
+export type { IconOption } from './MultiSelectWithIcons';
 
 export { MasterTable } from './MasterTable';
 export type { Column, MasterTableProps } from './MasterTable';
@@ -125,10 +132,13 @@ export { LoadingPage } from './LoadingPage';
 export type { LoadingPageProps } from './LoadingPage';
 
 export { SearchSelect } from './SearchSelect';
+export { SearchSelectPaginated } from './SearchSelectPaginated';
+export type { SearchSelectPaginatedProps } from './SearchSelectPaginated';
 export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
 
 export { PTISSearchSelect } from './PTISSearchSelect';
 export type { PTISSearchSelectProps, PTISSearchSelectOption } from './PTISSearchSelect';
+
 
 export { MatrixGrid } from './MatrixGrid';
 export type { MatrixGridProps, MatrixColumn, MatrixRow } from './MatrixGrid';

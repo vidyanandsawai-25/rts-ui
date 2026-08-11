@@ -10,6 +10,8 @@ export interface SocialAttributeFormModel {
   parentAttributeId: number | null;
   isRequiredWhenParentTrue: boolean;
   isDiscountApplicable: boolean;
+  isPhotoRequired: boolean;
+  isDocumentRequired: boolean;
   isActive: boolean;
   createdBy?: number;
   updatedBy?: number;
@@ -26,6 +28,8 @@ export interface SocialAttribute {
   parentAttributeId: number | null;
   isRequiredWhenParentTrue: boolean;
   isDiscountApplicable: boolean;
+  isPhotoRequired: boolean;
+  isDocumentRequired: boolean;
   isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
@@ -40,6 +44,8 @@ export interface SocialAttributeCreatePayload {
   parentAttributeId: number | null;
   isRequiredWhenParentTrue: boolean;
   isDiscountApplicable: boolean;
+  isPhotoRequired: boolean;
+  isDocumentRequired: boolean;
   isActive: boolean;
   createdBy?: number;
   createdDate?: string;

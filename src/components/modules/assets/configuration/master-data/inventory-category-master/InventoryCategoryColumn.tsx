@@ -7,6 +7,7 @@ import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/c
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import type { Column } from "@/components/common/MasterTable";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
+import { getSafeMessage } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 
 function SortableHeader({
   label,
@@ -89,7 +90,7 @@ export function getInventoryCategoryColumns(
   return [
     {
       key: "id",
-      width: "18%",
+      width: "15%",
       label: createSortableLabel(t("labels.code"), "typeCode"),
       render: (_, r) => (
         <Badge variant="secondary" size="sm">
@@ -99,7 +100,7 @@ export function getInventoryCategoryColumns(
     },
     {
       key: "name",
-      width: "30%",
+      width: "25%",
       label: createSortableLabel(t("labels.name"), "typeName"),
       render: (_, r) => (
         <div>
@@ -111,8 +112,28 @@ export function getInventoryCategoryColumns(
       ),
     },
     {
+      key: "assetCategoryName",
+      width: "20%",
+      label: createSortableLabel(
+        getSafeMessage(t, "labels.assetCategory") ||
+        getSafeMessage(t, "labels.category") ||
+        getSafeMessage(t, "labels.group") ||
+        "Asset Category",
+        "assetCategoryName"
+      ),
+      render: (_, r) => {
+        const catName = (r as Record<string, unknown>).assetCategoryName as string | undefined;
+        const catId = (r as Record<string, unknown>).assetCategoryId as number | undefined;
+        return (
+          <div className="text-sm font-medium text-slate-700">
+            {catName || (catId ? `Category #${catId}` : "-")}
+          </div>
+        );
+      },
+    },
+    {
       key: "depreciationRate",
-      width: "18%",
+      width: "15%",
       label: createSortableLabel(t("labels.depreciationRate"), "depreciationRate", "center"),
       align: "center",
       render: (_, r) => (
@@ -123,7 +144,7 @@ export function getInventoryCategoryColumns(
     },
     {
       key: "status",
-      width: "18%",
+      width: "15%",
       label: createSortableLabel(t("labels.status"), "isActive"),
       render: (_, r) => <StatusBadge value={r.status} />,
     },

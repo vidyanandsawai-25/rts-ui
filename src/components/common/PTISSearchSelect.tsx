@@ -119,6 +119,10 @@ export interface PTISSearchSelectProps {
    */
   emptyMessage?: string;
   /**
+   * Optional custom label when the search yields no results.
+   */
+  noResultsMessage?: string;
+  /**
    * Optional prop to hide default options until the user has typed a query.
    */
   showOptionsOnlyOnType?: boolean;
@@ -158,6 +162,7 @@ export function PTISSearchSelect({
   onBlur,
   strictMode = true,
   emptyMessage,
+  noResultsMessage,
   showOptionsOnlyOnType = false,
 }: PTISSearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
@@ -525,7 +530,9 @@ export function PTISSearchSelect({
         >
           {filteredOptions.length === 0 && !isLoading ? (
             <li className="px-3 py-2.5 text-sm text-slate-500 text-center">
-              {emptyMessage || t('multiSelect.noOptionsAvailable')}
+              {search.trim() !== ''
+                ? (noResultsMessage || noOptionsPlaceholder || t('multiSelect.noOptionsAvailable'))
+                : (emptyMessage || t('multiSelect.noOptionsAvailable'))}
             </li>
           ) : (
             filteredOptions.map((opt, index) => {
@@ -537,12 +544,11 @@ export function PTISSearchSelect({
 
               return (
                 <li
-                  key={opt.value}
+                  key={`${opt.value}-${index}`}
                   id={`${accessibleId}-option-${index}`}
                   role="option"
                   aria-selected={isSelected}
                   onMouseDown={() => handleSelect(opt.value)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
                   className={`
                     relative flex items-center justify-between
                     px-3 py-2 text-sm cursor-pointer

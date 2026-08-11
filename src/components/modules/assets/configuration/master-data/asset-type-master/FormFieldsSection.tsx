@@ -1,12 +1,15 @@
+import React from "react";
 import { Label } from "@/components/common/label";
-
-
 import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/select";
 import { RadioGroup, RadioGroupItem } from "@/components/common/radio-group";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
 import { TextArea } from "@/components/common/Textarea";
 import type { FormFieldsSectionProps } from "@/types/asset-masters/asset-type.types";
+
+interface ExtendedFormFieldsSectionProps extends FormFieldsSectionProps {
+  codeRef?: React.RefObject<HTMLInputElement | null>;
+}
 
 export function FormFieldsSection({
   formData,
@@ -18,9 +21,10 @@ export function FormFieldsSection({
   onRadioChange,
   t,
   categoryOptions,
-}: FormFieldsSectionProps) {
+  codeRef,
+}: ExtendedFormFieldsSectionProps) {
   return (
-    <div className="space-y-6">
+    <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <div className="space-y-1">
         <Label className="block text-sm font-medium text-slate-700">
           {t("labels.category")} <span className="text-red-500">*</span>
@@ -30,36 +34,44 @@ export function FormFieldsSection({
           value={String(formData.group ?? "")}
           onChange={(_, v) => onSelectChange("group", String(v))}
           placeholder={t("placeholders.category")}
+          error={showError("group") ? " " : undefined}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
-        {showError("group") && <ValidationMessage message={errors.group} />}
+        <ValidationMessage message={errors.group} visible={showError("group")} />
       </div>
 
-      <Input
-        name="code"
-        label={t("labels.code")}
-        required
-        value={formData.code}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("placeholders.code")}
-        maxLength={15}
-        error={showError("code") ? errors.code : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          ref={codeRef}
+          name="code"
+          label={t("labels.code")}
+          required
+          value={formData.code}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.code")}
+          maxLength={15}
+          error={showError("code") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.code} visible={showError("code")} />
+      </div>
 
-      <Input
-        name="name"
-        label={t("labels.name")}
-        required
-        value={formData.name}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("placeholders.name")}
-        maxLength={50}
-        error={showError("name") ? errors.name : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          name="name"
+          label={t("labels.name")}
+          required
+          value={formData.name}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.name")}
+          maxLength={50}
+          error={showError("name") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.name} visible={showError("name")} />
+      </div>
 
       <div className="space-y-3">
         <Label className="block text-sm font-medium text-slate-700">
@@ -83,22 +95,25 @@ export function FormFieldsSection({
             </Label>
           </div>
         </RadioGroup>
-        {showError("registrationType") && <ValidationMessage message={errors.registrationType} />}
+        <ValidationMessage message={errors.registrationType} visible={showError("registrationType")} />
       </div>
 
-      <TextArea
-        name="description"
-        label={t("labels.description")}
-        rows={4}
-        value={formData.description}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={t("placeholders.description")}
-        maxLength={500}
-        error={showError("description") ? true : false}
-        errorMessage={showError("description") ? errors.description : undefined}
-        className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <TextArea
+          name="description"
+          label={t("labels.description")}
+          rows={4}
+          value={formData.description}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.description")}
+          maxLength={500}
+          error={showError("description") ? true : false}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.description} visible={showError("description")} />
+      </div>
     </div>
   );
 }
+
