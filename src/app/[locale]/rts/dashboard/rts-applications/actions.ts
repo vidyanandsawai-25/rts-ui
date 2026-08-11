@@ -1,80 +1,613 @@
 'use server';
 
-import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
+import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { getRtsMisDashboardData } from '@/lib/api/rts/rtsmisdashboard.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
+import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
+import { getRtsApplicationByNo } from '@/lib/api/rts/rtsapplication.service';
 import {
-  getRtsApplicationApprovalDashboardCards,
-  getRtsApplicationApprovalDetails,
-  getRtsApplicationApprovals,
-} from '@/lib/api/rts/rtsapplicationapprovel.service';
+  getApplicationDashboardCards,
+  getApprovalApplicationDetails,
+  getApprovalApplicationsPaged,
+  getApprovalApplicationStages,
+  getApprovalApplicationVerification,
+  rejectApprovalApplication,
+  verifyAndCorrectApproval,
+  verifyAndSendToApprove,
+  verifyApprovalDocuments,
+} from '@/lib/api/rts/rts-application-approval.service';
+import { getUserIdFromCookies } from '@/lib/utils/auth-session';
+import { submitApplicationWorkflowAction } from '@/lib/api/rts/rts-workflow.service';
 import type {
-  RtsApplicationApprovalDashboardCards,
-  RtsApplicationApprovalDetails,
-  RtsApplicationApprovalListItem,
-} from '@/types/rts/rtsapplicationapprovel.types';
-import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
+  RtsApplicationApprovalStage,
+  RtsApplicationApprovalActionPayload,
+  RtsApplicationApprovalFieldValuePayload,
+  RtsApplicationApprovalStagesItem,
+  RtsApplicationDocumentItem,
+  RtsApplicationVerificationItem,
+  RtsApplicationViewDetailsItem,
+} from '@/types/rts/application-approval.types';
+import {
+  computeOverdueDays,
+  computeRemainingDays,
+  deriveApplicantName,
+} from '@/lib/utils/rts/application-grid';
+import type { RtsMisDashboardResponse } from '@/types/rts/rtsmisdashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
+import type { ApplicationWorkflowState, RtsApprovalFlowStageApiItem, WorkflowActionType } from '@/types/rts/workflow.types';
+import type { ApplicationAnswerGroup, ApplicationAnswerItem } from '@/lib/utils/rts/application-answers';
 
-export type ApplicationsDashboardKpis = RtsApplicationApprovalDashboardCards;
+export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiItem[]> {
+  try {
+    return await getAllRtsServices();
+  } catch (error) {
+    console.error('Failed to fetch RTS application services:', error);
+    return [];
+  }
+}
+
+export async function getUserMisDashboardAction(): Promise<RtsMisDashboardResponse> {
+  try {
+    return await getRtsMisDashboardData({
+      Flag: 'user',
+      UpicId: 'AKLMC000010',
+    });
+  } catch (error) {
+    console.error('Failed to fetch User MIS Dashboard:', error);
+
+    return {
+      status: false,
+      message: 'Failed to fetch dashboard data.',
+      data: {
+        serviceWiseData: [],
+        departmentWiseData: [],
+        userApplicationDashboardData: [],
+      },
+    };
+  }
+}
+
+
+export interface RtsApplicationDetailData {
+  applicationNo: string;
+  departmentId: number;
+  departmentName: string | null;
+  serviceId: number;
+  serviceName: string | null;
+  applicationStatus: string;
+  answerGroups: ApplicationAnswerGroup[];
+  workflow: ApplicationWorkflowState | null;
+  approvalFlowStages?: RtsApprovalFlowStageApiItem[];
+  approvalStages?: RtsApplicationApprovalStage[];
+  completedStages?: number;
+  totalApprovalStages?: number;
+  documents?: RtsApplicationDocumentItem[];
+}
+
+export interface RtsApplicationProcessData {
+  details: RtsApplicationViewDetailsItem | null;
+  stages: RtsApplicationApprovalStagesItem | null;
+  verification: RtsApplicationVerificationItem | null;
+  errors: {
+    details: string | null;
+    stages: string | null;
+    verification: string | null;
+  };
+}
+
+export interface RtsApplicationApprovalActionResult {
+  success: boolean;
+  message?: string;
+}
+
+function getProcessSectionResult<T>(result: PromiseSettledResult<T>): { data: T | null; error: string | null } {
+  if (result.status === 'fulfilled') {
+    return { data: result.value, error: null };
+  }
+
+  return {
+    data: null,
+    error: result.reason instanceof Error ? result.reason.message : 'Unable to load this section.',
+  };
+}
+
+/** Loads the three approval API responses needed by the read-only process drawer. */
+export async function getRtsApplicationProcessDataAction(
+  applicationId: number
+): Promise<RtsApplicationProcessData> {
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    return {
+      details: null,
+      stages: null,
+      verification: null,
+      errors: {
+        details: 'Invalid application ID.',
+        stages: 'Invalid application ID.',
+        verification: 'Invalid application ID.',
+      },
+    };
+  }
+
+  const [detailsResult, stagesResult, verificationResult] = await Promise.allSettled([
+    getApprovalApplicationDetails(applicationId),
+    getApprovalApplicationStages(applicationId),
+    getApprovalApplicationVerification(applicationId),
+  ]);
+
+  const details = getProcessSectionResult(detailsResult);
+  const stages = getProcessSectionResult(stagesResult);
+  const verification = getProcessSectionResult(verificationResult);
+
+  return {
+    details: details.data,
+    stages: stages.data,
+    verification: verification.data,
+    errors: {
+      details: details.error,
+      stages: stages.error,
+      verification: verification.error,
+    },
+  };
+}
+
+async function submitApprovalDecision(
+  applicationId: number,
+  remark: string,
+  submit: (payload: RtsApplicationApprovalActionPayload) => Promise<{ message: string }>,
+  status: string
+): Promise<RtsApplicationApprovalActionResult> {
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    return { success: false, message: 'Invalid application ID.' };
+  }
+
+  const normalizedRemark = remark.trim();
+  if (!normalizedRemark) {
+    return { success: false, message: 'Officer remark is required.' };
+  }
+
+  try {
+    const cookieStore = await cookies();
+    const updatedBy = getUserIdFromCookies(cookieStore) ?? 0;
+    const result = await submit({
+      isActive: true,
+      updatedBy,
+      remark: normalizedRemark,
+      status,
+    });
+
+    revalidatePath('/rts/dashboard/rts-applications');
+    return { success: true, message: result.message };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unable to update the application.',
+    };
+  }
+}
+
+export async function verifyApprovalDocumentsAction(
+  applicationId: number,
+  remark: string
+): Promise<RtsApplicationApprovalActionResult> {
+  return submitApprovalDecision(
+    applicationId,
+    remark,
+    (payload) => verifyApprovalDocuments(applicationId, payload),
+    'Verified'
+  );
+}
+
+export async function verifyAndSendToApproveAction(
+  applicationId: number,
+  remark: string
+): Promise<RtsApplicationApprovalActionResult> {
+  return submitApprovalDecision(
+    applicationId,
+    remark,
+    (payload) => verifyAndSendToApprove(applicationId, payload),
+    'Approved'
+  );
+}
+
+export async function rejectApprovalApplicationAction(
+  applicationId: number,
+  remark: string
+): Promise<RtsApplicationApprovalActionResult> {
+  return submitApprovalDecision(
+    applicationId,
+    remark,
+    (payload) => rejectApprovalApplication(applicationId, payload),
+    'Rejected'
+  );
+}
+
+export async function verifyAndCorrectApprovalAction(
+  applicationId: number,
+  remark: string,
+  fieldValue: RtsApplicationApprovalFieldValuePayload[]
+): Promise<RtsApplicationApprovalActionResult> {
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    return { success: false, message: 'Invalid application ID.' };
+  }
+
+  const normalizedRemark = remark.trim();
+  if (!normalizedRemark) {
+    return { success: false, message: 'Officer remark is required.' };
+  }
+
+  if (fieldValue.length === 0) {
+    return { success: false, message: 'Update at least one field before submitting.' };
+  }
+
+  try {
+    const cookieStore = await cookies();
+    const updatedBy = getUserIdFromCookies(cookieStore) ?? 0;
+    const result = await verifyAndCorrectApproval(applicationId, {
+      isActive: true,
+      updatedBy,
+      remark: normalizedRemark,
+      status: 'Corrected',
+      fieldValue: fieldValue.map((field) => ({ ...field, updatedBy })),
+    });
+
+    revalidatePath('/rts/dashboard/rts-applications');
+    return { success: true, message: result.message };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unable to update the application fields.',
+    };
+  }
+}
+
+/**
+ * Fetches the application header + submitted answers (joined against field
+ * definitions) + resolved workflow state for the "process application" screen.
+ *
+ * `GET /RTSApplication/{no}/workflow` is a spec'd backend endpoint that does not
+ * exist yet, so that part degrades gracefully to a read-only view (no actions
+ * available) rather than failing the whole page.
+ */
+export async function getApplicationDetailAction(
+  applicationNo: string
+): Promise<RtsApplicationDetailData | null> {
+  const numericId = parseInt(applicationNo.replace(/\D/g, ''), 10);
+
+  if (Number.isFinite(numericId) && numericId > 0) {
+    try {
+      const [viewDetails, stageDetails] = await Promise.all([
+        getApprovalApplicationDetails(numericId).catch((err) => {
+          console.error(`Failed to fetch ViewApplicationDetails for ${numericId}:`, err);
+          return null;
+        }),
+        getApprovalApplicationStages(numericId).catch((err) => {
+          console.error(`Failed to fetch ApplicationApprovalStages for ${numericId}:`, err);
+          return null;
+        }),
+      ]);
+
+      if (viewDetails) {
+        const groupMap = new Map<string, ApplicationAnswerItem[]>();
+        for (const field of viewDetails.applicationDetails) {
+          const groupName = field.fieldGroup || 'General Details';
+          if (!groupMap.has(groupName)) {
+            groupMap.set(groupName, []);
+          }
+          groupMap.get(groupName)!.push({
+            fieldDefinitionId: field.fieldDefinitionId,
+            fieldCode: field.fieldCode,
+            label: field.fieldLabel,
+            fieldType: field.fieldType,
+            displayValue: field.value ?? '—',
+            documentGuid: null,
+            displayOrder: field.displayOrder,
+          });
+        }
+
+        const answerGroups: ApplicationAnswerGroup[] = Array.from(groupMap.entries()).map(
+          ([groupTitle, answers]) => ({
+            groupTitle,
+            answers,
+          })
+        );
+
+        let approvalFlowStages: RtsApprovalFlowStageApiItem[] = [];
+        if (stageDetails && stageDetails.approvalStages.length > 0) {
+          approvalFlowStages = stageDetails.approvalStages.map((stg) => ({
+            id: stg.approvalFlowStageId,
+            approvalFlowId: 0,
+            stageOrder: stg.stageOrder,
+            stageName: stg.stageName,
+            employeeTypeId: 0,
+            slaDays: 7,
+            canVerifyDocument: true,
+            canApprove: true,
+            canReject: true,
+            canReturn: true,
+            canPay: false,
+            isFinalStage: stg.stageOrder === stageDetails.totalApprovalStages,
+            isActive: true,
+            createdDate: '',
+            updatedDate: null,
+          }));
+        }
+
+        let applicationHeader = null;
+        try {
+          applicationHeader = await getRtsApplicationByNo(applicationNo);
+        } catch {
+          applicationHeader = null;
+        }
+
+        return {
+          applicationNo,
+          departmentId: applicationHeader?.departmentId ?? 0,
+          departmentName: null,
+          serviceId: applicationHeader?.serviceId ?? 0,
+          serviceName: null,
+          applicationStatus: applicationHeader?.applicationStatus ?? 'pending',
+          answerGroups,
+          workflow: null,
+          approvalFlowStages,
+          approvalStages: stageDetails?.approvalStages ?? [],
+          completedStages: stageDetails?.completedStages ?? 0,
+          totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+          documents: viewDetails.documents ?? [],
+        };
+      }
+
+      // If viewDetails was null (e.g. ID not found in ViewApplicationDetails API), return live stages if present without mock fallback
+      return {
+        applicationNo,
+        departmentId: 0,
+        departmentName: null,
+        serviceId: 0,
+        serviceName: null,
+        applicationStatus: 'pending',
+        answerGroups: [],
+        workflow: null,
+        approvalFlowStages: [],
+        approvalStages: stageDetails?.approvalStages ?? [],
+        completedStages: stageDetails?.completedStages ?? 0,
+        totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+        documents: [],
+      };
+    } catch (err) {
+      console.error(`Error in getApplicationDetailAction for ${applicationNo}:`, err);
+    }
+  }
+
+  return {
+    applicationNo,
+    departmentId: 0,
+    departmentName: null,
+    serviceId: 0,
+    serviceName: null,
+    applicationStatus: 'pending',
+    answerGroups: [],
+    workflow: null,
+    approvalFlowStages: [],
+    approvalStages: [],
+    completedStages: 0,
+    totalApprovalStages: 0,
+    documents: [],
+  };
+}
+
+export interface SubmitApplicationActionResult {
+  success: boolean;
+  message?: string;
+  workflow?: ApplicationWorkflowState;
+}
+
+export interface ApplicationsDashboardKpis {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  overdue: number;
+  reverted: number;
+  today: number;
+  dueToday: number;
+  inProgress: number;
+  pendingPercentage?: number;
+  approvedPercentage?: number;
+  rejectedPercentage?: number;
+  revertedPercentage?: number;
+  todayPercentage?: number;
+  dueTodayPercentage?: number;
+  overduePercentage?: number;
+  /** Whether total/pending/approved/rejected/overdue came from the real admin API (vs. all-zero fallback). */
+  isLive: boolean;
+}
 
 export interface AdminApplicationGridRow {
   applicationId: number;
   applicationNo: string;
-  departmentId: number;
-  serviceId: number;
-  applicationDate: string | null;
+  applicationDate: string;
   applicantName: string;
-  serviceName: string | null;
-  departmentName: string | null;
+  serviceName: string;
+  departmentName: string;
   currentStatus: string;
+  currentStageName: string;
+  remarks: string;
+  expectedSlaDays: number;
   remainingDays: number | null;
   dueDays: number | null;
   overdueDays: number | null;
-  lastUpdatedDate: string | null;
-  sla: string | number | null;
-  assignedTo: number | string | null;
-  remark: string | null;
+  lastUpdatedDate: string;
+  assignedTo: string;
+  assignedToName: string;
+  assignedToRole: string;
 }
 
 export interface RtsApplicationsDashboardResult {
-  kpis: ApplicationsDashboardKpis | null;
+  kpis: ApplicationsDashboardKpis;
   rows: AdminApplicationGridRow[];
-  error: string | null;
   pagination: {
     pageNumber: number;
     pageSize: number;
     totalCount: number;
     totalPages: number;
-  } | null;
+  };
 }
 
-export interface RtsApplicationsDashboardQuery {
+export interface RtsApplicationsDashboardFilters {
   pageNumber: number;
   departmentId?: number;
   serviceId?: number;
-  applicationStatus?: string;
-  search?: string;
+  applicationNo?: string;
+  status?: string;
 }
 
-export async function getRtsApplicationApprovalDetailsAction(
-  applicationId: number
-): Promise<RtsApplicationApprovalDetails | null> {
+function parseSlaDays(sla: string | number | undefined | null): number {
+  if (typeof sla === 'number') return sla;
+  if (!sla) return 7;
+  const parsed = parseInt(String(sla), 10);
+  return Number.isNaN(parsed) ? 7 : parsed;
+}
+
+/**
+ * Real API combined dashboard action — fetches aggregated KPIs and full application grid
+ * from GET /api/RTSApplication.
+ */
+export async function getRtsApplicationsDashboardAction(
+  filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
+): Promise<RtsApplicationsDashboardResult> {
   try {
-    return await getRtsApplicationApprovalDetails(applicationId);
+    const [approvalRes, cards] = await Promise.all([
+      getApprovalApplicationsPaged({
+        pageNumber: filters.pageNumber,
+        departmentId: filters.departmentId,
+        serviceId: filters.serviceId,
+        applicationNo: filters.applicationNo,
+        status: filters.status,
+      }).catch((err) => {
+        console.error('Failed to fetch approval applications list:', err);
+        return null;
+      }),
+      getApplicationDashboardCards().catch((err) => {
+        console.error('Failed to fetch RTS application dashboard cards API:', err);
+        return null;
+      }),
+    ]);
+
+    const kpis: ApplicationsDashboardKpis = {
+      total: cards?.totalApplications ?? approvalRes?.totalCount ?? 0,
+      pending: cards?.pending ?? 0,
+      approved: cards?.approved ?? 0,
+      rejected: cards?.rejected ?? 0,
+      overdue: cards?.overdueApplications ?? 0,
+      reverted: cards?.reverted ?? 0,
+      today: cards?.todayApplications ?? 0,
+      dueToday: cards?.dueToday ?? 0,
+      inProgress: 0,
+      pendingPercentage: cards?.pendingPercentage ?? 0,
+      approvedPercentage: cards?.approvedPercentage ?? 0,
+      rejectedPercentage: cards?.rejectedPercentage ?? 0,
+      revertedPercentage: cards?.revertedPercentage ?? 0,
+      todayPercentage: cards?.todayPercentage ?? 0,
+      dueTodayPercentage: cards?.dueTodayPercentage ?? 0,
+      overduePercentage: cards?.overduePercentage ?? 0,
+      isLive: true,
+    };
+
+    const rawApps = approvalRes?.applications ?? [];
+    const rows: AdminApplicationGridRow[] = rawApps.map((app) => {
+      const slaDays = parseSlaDays(app.sla);
+      const isActionable =
+        app.applicationStatus.toLowerCase() === 'pending' ||
+        app.applicationStatus.toLowerCase() === 'submitted';
+
+      const remainingDays =
+        app.remainingDays != null
+          ? app.remainingDays
+          : isActionable
+            ? computeRemainingDays(app.createdDate, slaDays)
+            : null;
+
+      const dueDays = app.dueDays ?? null;
+
+      const overdueDays =
+        app.overdueDays != null
+          ? app.overdueDays
+          : isActionable
+            ? computeOverdueDays(app.createdDate, slaDays)
+            : null;
+
+      const remarks = app.remark || '—';
+      const currentStageName = app.applicationStatus
+        ? app.applicationStatus.charAt(0).toUpperCase() + app.applicationStatus.slice(1)
+        : 'Pending';
+      const assignedToName = app.userName?.trim() || '—';
+      const assignedToStr = assignedToName;
+      const assignedToRole = '';
+
+      return {
+        applicationId: app.id,
+        applicationNo: app.applicationNo,
+        applicationDate: app.createdDate,
+        applicantName: deriveApplicantName(app.applicantDetails, app.citizenName, app.applicationNo),
+        serviceName: app.serviceName || 'Unknown Service',
+        departmentName: app.departmentName || 'Unknown Department',
+        currentStatus: app.applicationStatus,
+        currentStageName,
+        remarks,
+        expectedSlaDays: slaDays,
+        remainingDays,
+        dueDays,
+        overdueDays,
+        lastUpdatedDate: app.updatedDate || app.createdDate,
+        assignedTo: assignedToStr,
+        assignedToName,
+        assignedToRole,
+      };
+    });
+
+    return {
+      kpis,
+      rows,
+      pagination: {
+        pageNumber: approvalRes?.pageNumber ?? filters.pageNumber,
+        pageSize: 10,
+        totalCount: approvalRes?.totalCount ?? 0,
+        totalPages: approvalRes?.totalPages ?? 1,
+      },
+    };
   } catch (error) {
-    console.error(`Failed to fetch approval details for RTS application ${applicationId}:`, error);
-    return null;
+    console.error('Failed to fetch RTS applications dashboard:', error);
+
+    return {
+      kpis: {
+        total: 0,
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        overdue: 0,
+        reverted: 0,
+        today: 0,
+        dueToday: 0,
+        inProgress: 0,
+        isLive: false,
+      },
+      rows: [],
+      pagination: { pageNumber: filters.pageNumber, pageSize: 10, totalCount: 0, totalPages: 1 },
+    };
   }
 }
 
-export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiItem[]> {
-  return getAllRtsServices();
+export async function getApplicationsDashboardKpisAction(): Promise<ApplicationsDashboardKpis> {
+  const result = await getRtsApplicationsDashboardAction();
+  return result.kpis;
 }
 
-export async function getRtsApplicationFilterOptionsAction(): Promise<{
-  departments: RtsDepartmentApiItem[];
-  services: RtsServiceApiItem[];
-}> {
+export async function getAdminApplicationsGridAction(): Promise<AdminApplicationGridRow[]> {
+  const result = await getRtsApplicationsDashboardAction();
+  return result.rows;
+}
+
+export async function getRtsApplicationFilterOptionsAction() {
   const [departments, services] = await Promise.all([
     getAllRtsDepartments(),
     getAllRtsServices(),
@@ -83,99 +616,25 @@ export async function getRtsApplicationFilterOptionsAction(): Promise<{
   return { departments, services };
 }
 
-function getApplicantName(
-  applicantDetails: Array<{ fieldLabel: string; fieldValue: string | null }> | null
-): string {
-  const valuesByLabel = new Map<string, string>();
-
-  for (const detail of applicantDetails ?? []) {
-    const label = detail.fieldLabel?.trim().toLocaleLowerCase();
-    const value = detail.fieldValue?.trim();
-    if (label && value) valuesByLabel.set(label, value);
-  }
-
-  const joinName = (labels: string[]) =>
-    labels
-      .map((label) => valuesByLabel.get(label))
-      .filter((value): value is string => Boolean(value))
-      .join(' ');
-
-  const childName = joinName(['child first name', 'child middle name', 'child last name']);
-  if (childName) return childName;
-
-  const fullName = valuesByLabel.get('full name');
-  if (fullName) return fullName;
-
-  return joinName(['first name', 'middle name', 'last name']) || '-';
-}
-
-function toGridRow(application: RtsApplicationApprovalListItem): AdminApplicationGridRow {
-  return {
-    applicationId: application.id,
-    applicationNo: application.applicationNo,
-    departmentId: application.departmentId,
-    serviceId: application.serviceId,
-    applicationDate: application.createdDate ?? null,
-    applicantName: getApplicantName(application.applicantDetails),
-    serviceName: application.serviceName,
-    departmentName: application.departmentName,
-    currentStatus: application.applicationStatus,
-    remainingDays: application.remainingDays,
-    dueDays: application.dueDays,
-    overdueDays: application.overdueDays,
-    lastUpdatedDate: application.updatedDate,
-    sla: application.sla,
-    assignedTo: application.assignedTo,
-    remark: application.remark,
-  };
-}
-
-function sortRows(rows: AdminApplicationGridRow[]): AdminApplicationGridRow[] {
-  return rows.sort((left, right) => {
-    const leftDate = left.applicationDate ? new Date(left.applicationDate).getTime() : Number.NEGATIVE_INFINITY;
-    const rightDate = right.applicationDate ? new Date(right.applicationDate).getTime() : Number.NEGATIVE_INFINITY;
-    return rightDate - leftDate;
-  });
-}
-
-export async function getRtsApplicationsDashboardAction(
-  query: RtsApplicationsDashboardQuery
-): Promise<RtsApplicationsDashboardResult> {
+export async function submitApplicationActionAction(
+  applicationNo: string,
+  actionType: WorkflowActionType,
+  remark: string
+): Promise<SubmitApplicationActionResult> {
   try {
-    const requestFilters = {
-      departmentId: query.departmentId,
-      serviceId: query.serviceId,
-      applicationStatus: query.applicationStatus,
-      applicationNo: query.search,
-    };
-    const [response, kpis] = await Promise.all([
-      getRtsApplicationApprovals({
-        ...requestFilters,
-        pageNumber: query.pageNumber,
-      }),
-      getRtsApplicationApprovalDashboardCards(),
-    ]);
+    const workflow = await submitApplicationWorkflowAction(applicationNo, {
+      actionType,
+      remark,
+    });
 
-    const rows = sortRows(response.applications.map(toGridRow));
+    revalidatePath(`/rts/dashboard/rts-applications/${applicationNo}`);
+    revalidatePath('/rts/dashboard/rts-applications');
 
-    return {
-      kpis,
-      rows,
-      error: null,
-      pagination: {
-        pageNumber: response.pageNumber,
-        pageSize: response.pageSize,
-        totalCount: response.totalCount,
-        totalPages: response.totalPages,
-      },
-    };
+    return { success: true, workflow };
   } catch (error) {
-    console.error('Failed to fetch RTS applications dashboard:', error);
     return {
-      kpis: null,
-      rows: [],
-      error: error instanceof Error ? error.message : 'Failed to fetch RTS applications dashboard',
-      pagination: null,
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to submit workflow action',
     };
   }
 }

@@ -593,7 +593,6 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
                     updateUrl({ AppliSource: nextSource, PageNumber: "1" });
                   }}
                   ariaLabel={t("misDashboard.applicationSource")}
-                  // label={}
                   selectSize="sm"
                 />
               </div>
@@ -666,16 +665,6 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
                 <div className="mt-1 flex items-center justify-center gap-y-1 gap-x-1">
 
-                  {/* Gauge */}
-                  {/* <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-cyan-50">
-                    <Gauge className="size-5 text-[#008B8B]" strokeWidth={2.2} />
-                  </div> */}
-
-                  {/* Divider */}
-                  {/* <div className="h-9 w-px bg-slate-200" /> */}
-
-                  {/* Value */}
-                  {/* <div className="flex items-end gap-1"> */}
                   <span className="text-[16px] font-extrabold leading-none text-[#008B8B]">
                     {formatNumber(selectedDepartment?.sla ?? 0)}
                   </span>

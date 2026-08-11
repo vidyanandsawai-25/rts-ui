@@ -1,15 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   AlertOctagon,
   CalendarClock,
   CheckCircle2,
-  ChevronRightIcon,
   Clock3,
   FileText,
+  Filter,
   LayoutDashboard,
   RotateCcw,
   TimerReset,
@@ -17,87 +17,76 @@ import {
 } from 'lucide-react';
 
 import {
-  Button,
+  Badge,
   Card,
   Label,
   MasterTable,
   SearchInput,
   Select,
-  StatusBadge,
   ViewButton,
 } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';
-import ApplicationDrawerContent from './RtsApplicationDrawerContext';
+import RtsApplicationViewDrawer from './RtsApplicationDrawerContext';
+import RtsApplicationProcessDrawer from './RtsApplicationProcessDrawer';
+import RtsApplicationDocumentView from './RtsApplicationDocumentView';
 import type {
   AdminApplicationGridRow,
   ApplicationsDashboardKpis,
-  RtsApplicationsDashboardResult,
+  RtsApplicationProcessData,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
+import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
+import { getDocumentDownloadUrl, getDocumentViewUrl } from '@/lib/api/rts/rts-document-utils';
+import type { RtsApplicationDocumentItem } from '@/types/rts/application-approval.types';
 import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
-import type { RtsApplicationApprovalDetails } from '@/types/rts/rtsapplicationapprovel.types';
-import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
 
 interface RtsApplicationDashboardProps {
-  kpis: ApplicationsDashboardKpis | null;
+  kpis: ApplicationsDashboardKpis;
   rows: AdminApplicationGridRow[];
-  locale: string;
-  error: string | null;
+  pagination: { pageNumber: number; pageSize: number; totalCount: number; totalPages: number };
   departments: RtsDepartmentApiItem[];
   services: RtsServiceApiItem[];
-  filters: {
-    pageNumber: number;
-    pageSize: 10;
-    departmentId: number | null;
-    serviceId: number | null;
-    departmentSlug: string;
-    serviceSlug: string;
-    status: string;
-    search: string;
-    applicationId: number | null;
-  };
-  pagination: RtsApplicationsDashboardResult['pagination'];
-  approvalDetails: RtsApplicationApprovalDetails | null;
+  filters: { department: string; service: string; status: string; search: string };
+  locale: string;
+  drawer: {
+    mode: 'view' | 'process';
+    record: AdminApplicationGridRow;
+    data: RtsApplicationProcessData;
+  } | {
+    mode: 'document';
+    document: RtsApplicationDocumentItem;
+  } | null;
 }
 
-type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: number };
+type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string };
 
 const PAGE_SIZE_OPTIONS = [10];
+const STATUS_OPTIONS = ['submitted', 'pending', 'approved', 'rejected', 'reverted'];
+
+function statusBadgeVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
+  const normalized = status.toLowerCase();
+  if (normalized === 'approved') return 'success';
+  if (normalized === 'rejected') return 'destructive';
+  if (normalized === 'returned') return 'warning';
+  return 'secondary';
+}
 
 export default function RtsApplicationDashboard({
   kpis,
-  rows = [],
-  locale,
-  error,
+  rows,
+  pagination,
   departments,
   services,
   filters,
-  pagination,
-  approvalDetails,
+  locale,
+  drawer,
 }: RtsApplicationDashboardProps) {
   const t = useTranslations('rts');
   const tCommon = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [searchInput, setSearchInput] = useState(filters.search);
-  const searchReloadTimerRef = useRef<number | null>(null);
 
-  const updateQuery = useCallback(
-    (changes: Record<string, string | null>, resetPage = false) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('PageSize', '10');
-
-      for (const [key, value] of Object.entries(changes)) {
-        if (value) params.set(key, value);
-        else params.delete(key);
-      }
-
-      if (resetPage) params.set('PageNumber', '1');
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [pathname, router, searchParams]
-  );
+  const [searchTerm, setSearchTerm] = useState(filters.search);
 
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN'),
@@ -105,24 +94,13 @@ export default function RtsApplicationDashboard({
   );
 
   const gridRows = useMemo<GridRow[]>(
-    () => rows.map((row) => ({ ...row, id: row.applicationId })),
+    () => rows.map((row) => ({ ...row, id: row.applicationNo })),
     [rows]
-  );
-  const selectedRow = useMemo(
-    () => gridRows.find((row) => row.applicationId === filters.applicationId) ?? null,
-    [filters.applicationId, gridRows]
-  );
-
-  useEffect(
-    () => () => {
-      if (searchReloadTimerRef.current) window.clearTimeout(searchReloadTimerRef.current);
-    },
-    []
   );
 
   const deptOptions = useMemo(() => {
     return [
-      { label: 'All Departments', value: 'all' },
+      { label: 'All Departments', value: '' },
       ...departments.map((department) => ({
         label: department.departmentName,
         value: toApplicationFilterSlug(department.departmentName),
@@ -131,40 +109,104 @@ export default function RtsApplicationDashboard({
   }, [departments]);
 
   const serviceOptions = useMemo(() => {
-    const matchingServices = services.filter(
-      (service) => filters.departmentId === null || service.departmentId === filters.departmentId
+    const selectedDepartment = departments.find(
+      (department) => toApplicationFilterSlug(department.departmentName) === filters.department
     );
-    const slugCounts = matchingServices.reduce((counts, service) => {
-      const slug = toApplicationFilterSlug(service.serviceName);
-      counts.set(slug, (counts.get(slug) ?? 0) + 1);
-      return counts;
-    }, new Map<string, number>());
-    const unique = matchingServices
-      .filter((service) => slugCounts.get(toApplicationFilterSlug(service.serviceName)) === 1)
-      .sort((first, second) => first.serviceName.localeCompare(second.serviceName));
+    const availableServices = selectedDepartment
+      ? services.filter((service) => service.departmentId === selectedDepartment.id)
+      : [];
     return [
-      { label: 'All Services', value: 'all' },
-      ...unique.map((service) => ({
+      { label: 'All Services', value: '' },
+      ...availableServices.map((service) => ({
         label: service.serviceName,
         value: toApplicationFilterSlug(service.serviceName),
       })),
     ];
-  }, [filters.departmentId, services]);
+  }, [departments, filters.department, services]);
 
   const statusOptions = useMemo(() => {
-    const unique = Array.from(new Set(gridRows.map((row) => row.currentStatus)));
     return [
-      { label: t('applicationDashboard.filters.allStatuses'), value: 'all' },
-      ...unique.map((status) => ({
+      { label: t('applicationDashboard.filters.allStatuses'), value: '' },
+      ...STATUS_OPTIONS.map((status) => ({
         label: status.charAt(0).toUpperCase() + status.slice(1),
         value: status,
       })),
     ];
-  }, [gridRows, t]);
+  }, [t]);
+
+  const updateUrl = useCallback(
+    (changes: Record<string, string>) => {
+      const params = new URLSearchParams(window.location.search);
+      ['Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber'].forEach((key) =>
+        params.delete(key)
+      );
+
+      Object.entries(changes).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+        else params.delete(key);
+      });
+      params.set('pageSize', '10');
+      if (!params.get('pageNumber')) params.set('pageNumber', '1');
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router]
+  );
+
+  const updateDrawerUrl = useCallback(
+    (changes: Record<string, string>) => {
+      const params = new URLSearchParams(window.location.search);
+      Object.entries(changes).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+        else params.delete(key);
+      });
+      const query = params.toString();
+      router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router]
+  );
+
+  const openDocument = useCallback(
+    (documentGuid: string) => {
+      updateDrawerUrl({ view: '', process: '', doc: documentGuid });
+    },
+    [updateDrawerUrl]
+  );
+
+  const openProcess = useCallback(() => {
+    if (drawer?.mode !== 'view') return;
+    const stageName = drawer.data.verification?.stageName;
+    if (!stageName) return;
+
+    const parentUrl = `${pathname}?${new URLSearchParams(window.location.search).toString()}`;
+    window.sessionStorage.setItem('rts-application-process-parent', parentUrl);
+    updateDrawerUrl({
+      view: '',
+      process: `${drawer.record.applicationId}-${toApplicationFilterSlug(stageName)}`,
+      doc: '',
+    });
+  }, [drawer, pathname, updateDrawerUrl]);
+
+  const closeProcess = useCallback(() => {
+    const storedParent = window.sessionStorage.getItem('rts-application-process-parent');
+    if (storedParent) {
+      window.sessionStorage.removeItem('rts-application-process-parent');
+      router.back();
+      return;
+    }
+
+    updateDrawerUrl({ process: '', doc: '' });
+  }, [router, updateDrawerUrl]);
+
+  useEffect(() => {
+    if (searchTerm === filters.search) return;
+    const timeoutId = window.setTimeout(() => {
+      updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' });
+    }, 1000);
+    return () => window.clearTimeout(timeoutId);
+  }, [filters, searchTerm, updateUrl]);
 
   const formatDate = useCallback(
-    (value: string | null) => {
-      if (!value) return t('applicationDashboard.table.na');
+    (value: string) => {
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return t('applicationDashboard.table.na');
       return date.toLocaleDateString(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN');
@@ -178,12 +220,24 @@ export default function RtsApplicationDashboard({
     [t]
   );
 
-  const kpiCards = [
+  interface KpiCardItem {
+    key: string;
+    icon: React.ElementType;
+    label: string;
+    value: number;
+    percentage?: number;
+    borderClassName: string;
+    valueClassName: string;
+    iconClassName: string;
+  }
+
+  const kpiCards: KpiCardItem[] = [
     {
       key: 'total',
       icon: FileText,
       label: t('applicationDashboard.cards.totalApplications'),
-      value: kpis?.totalApplications ?? null,
+      value: kpis.total,
+      percentage: undefined,
       borderClassName: 'border-l-[#2563EB]',
       valueClassName: 'text-slate-900',
       iconClassName: 'bg-blue-50 border-blue-100 text-[#2563EB]',
@@ -192,7 +246,8 @@ export default function RtsApplicationDashboard({
       key: 'pending',
       icon: Clock3,
       label: t('applicationDashboard.cards.pending'),
-      value: kpis?.pending ?? null,
+      value: kpis.pending,
+      percentage: kpis.pendingPercentage ?? (kpis.total > 0 ? Math.round((kpis.pending / kpis.total) * 100) : 0),
       borderClassName: 'border-l-[#F59E0B]',
       valueClassName: 'text-[#F59E0B]',
       iconClassName: 'bg-amber-50 border-amber-100 text-[#F59E0B]',
@@ -201,7 +256,8 @@ export default function RtsApplicationDashboard({
       key: 'approved',
       icon: CheckCircle2,
       label: t('applicationDashboard.cards.approved'),
-      value: kpis?.approved ?? null,
+      value: kpis.approved,
+      percentage: kpis.approvedPercentage ?? (kpis.total > 0 ? Math.round((kpis.approved / kpis.total) * 100) : 0),
       borderClassName: 'border-l-[#10B981]',
       valueClassName: 'text-[#10B981]',
       iconClassName: 'bg-emerald-50 border-emerald-100 text-[#10B981]',
@@ -210,7 +266,8 @@ export default function RtsApplicationDashboard({
       key: 'rejected',
       icon: TriangleAlert,
       label: t('applicationDashboard.cards.rejected'),
-      value: kpis?.rejected ?? null,
+      value: kpis.rejected,
+      percentage: kpis.rejectedPercentage ?? (kpis.total > 0 ? Math.round((kpis.rejected / kpis.total) * 100) : 0),
       borderClassName: 'border-l-[#EF4444]',
       valueClassName: 'text-[#EF4444]',
       iconClassName: 'bg-rose-50 border-rose-100 text-[#EF4444]',
@@ -219,7 +276,8 @@ export default function RtsApplicationDashboard({
       key: 'overdue',
       icon: AlertOctagon,
       label: t('applicationDashboard.cards.overdueApplications'),
-      value: kpis?.overdueApplications ?? null,
+      value: kpis.overdue,
+      percentage: kpis.overduePercentage ?? (kpis.total > 0 ? Math.round((kpis.overdue / kpis.total) * 100) : 0),
       borderClassName: 'border-l-[#DC2626]',
       valueClassName: 'text-[#DC2626]',
       iconClassName: 'bg-red-50 border-red-100 text-[#DC2626]',
@@ -228,7 +286,8 @@ export default function RtsApplicationDashboard({
       key: 'reverted',
       icon: RotateCcw,
       label: t('applicationDashboard.cards.reverted'),
-      value: kpis?.reverted ?? null,
+      value: kpis.reverted,
+      percentage: kpis.revertedPercentage ?? (kpis.total > 0 ? Math.round((kpis.reverted / kpis.total) * 100) : 0),
       borderClassName: 'border-l-violet-500',
       valueClassName: 'text-violet-600',
       iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
@@ -237,7 +296,8 @@ export default function RtsApplicationDashboard({
       key: 'today',
       icon: CalendarClock,
       label: t('applicationDashboard.cards.todaysApplications'),
-      value: kpis?.todayApplications ?? null,
+      value: kpis.today,
+      percentage: kpis.todayPercentage ?? (kpis.total > 0 ? Math.round((kpis.today / kpis.total) * 100) : 0),
       borderClassName: 'border-l-cyan-500',
       valueClassName: 'text-cyan-600',
       iconClassName: 'bg-cyan-50 border-cyan-100 text-cyan-600',
@@ -246,7 +306,8 @@ export default function RtsApplicationDashboard({
       key: 'dueToday',
       icon: TimerReset,
       label: t('applicationDashboard.cards.dueToday'),
-      value: kpis?.dueToday ?? null,
+      value: kpis.dueToday,
+      percentage: kpis.dueTodayPercentage ?? (kpis.total > 0 ? Math.round((kpis.dueToday / kpis.total) * 100) : 0),
       borderClassName: 'border-l-orange-500',
       valueClassName: 'text-orange-600',
       iconClassName: 'bg-orange-50 border-orange-100 text-orange-600',
@@ -267,68 +328,102 @@ export default function RtsApplicationDashboard({
         key: 'applicationDate',
         label: t('applicationDashboard.table.applicationDate'),
         align: 'center',
-        render: (_value, row) => formatDate(row.applicationDate),
+        render: (_value, row) => (
+          <span className="font-medium text-slate-700">{formatDate(row.applicationDate)}</span>
+        ),
       },
       {
         key: 'applicantName',
         label: t('applicationDashboard.table.applicantName'),
+        render: (_value, row) => (
+          <span className="font-medium text-slate-800">{row.applicantName}</span>
+        ),
       },
       {
         key: 'serviceName',
-        label: `${t('applicationDashboard.table.serviceName')} / ${t('applicationDashboard.table.department')}`,
+        label: t('applicationDashboard.table.serviceName'),
         render: (_value, row) => (
-          <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-slate-800">{row.serviceName ?? t('applicationDashboard.table.na')}</span>
-            <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">{row.departmentName ?? t('applicationDashboard.table.na')}</span>
+          <div className="flex flex-col">
+            <span className="font-[#173B73] text-[15px] font-bold tracking-tight text-[#173B73]">
+              {row.serviceName}
+            </span>
+            <span className="text-[12px] font-bold uppercase tracking-wider text-teal-600">
+              {row.departmentName}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'assignedTo',
+        label: t('applicationDashboard.table.assignedTo'),
+        render: (_value, row) => (
+          <div className="flex flex-col">
+            <span className="font-medium text-slate-800 text-[13px]">
+              {row.assignedToName || row.assignedTo || t('applicationDashboard.table.na')}
+            </span>
+            {row.assignedToRole && (
+              <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
+                {row.assignedToRole}
+              </span>
+            )}
           </div>
         ),
       },
       {
         key: 'currentStatus',
-        label: t('applicationDashboard.table.currentStatus'),
-        align: 'center',
-        render: (_value, row) => {
-          const status = row.currentStatus.trim();
-          const normalizedStatus = status.toLocaleLowerCase();
-
-          return (
-            <div className="flex items-center justify-center">
-              <StatusBadge
-                variant={normalizedStatus === 'pending' ? 'pending' : 'info'}
-                label={status}
-                className="px-2 py-0.5 text-[10px]"
-              />
-            </div>
-          );
-        },
-      },
-      {
-        key: 'remainingDays',
-        label: t('applicationDashboard.table.remainingDays'),
+        label: t('applicationDashboard.table.status'),
         align: 'center',
         render: (_value, row) => (
-          <span className={row.remainingDays === 0 ? 'font-bold text-red-600' : ''}>
-            {formatDays(row.remainingDays)}
-          </span>
+          <Badge variant={statusBadgeVariant(row.currentStatus)}>
+            {row.currentStatus.charAt(0).toUpperCase() + row.currentStatus.slice(1)}
+          </Badge>
         ),
       },
       {
         key: 'lastUpdatedDate',
         label: t('applicationDashboard.table.lastUpdatedDate'),
         align: 'center',
-        render: (_value, row) => formatDate(row.lastUpdatedDate ?? row.applicationDate),
+        render: (_value, row) => (
+          <span className="font-medium text-slate-700">
+            {formatDate(row.lastUpdatedDate)}
+          </span>
+        ),
       },
       {
-        key: 'assignedTo',
-        label: t('applicationDashboard.table.assignedTo'),
+        key: 'remainingDays',
+        label: t('applicationDashboard.table.remainingDays'),
         align: 'center',
-        render: (_value, row) => row.assignedTo ?? t('applicationDashboard.table.na'),
+        render: (_value, row) => (
+          <span
+            className={`font-semibold ${
+              row.remainingDays === 0 ? 'text-red-600 font-extrabold' : 'text-slate-700'
+            }`}
+          >
+            {formatDays(row.remainingDays)}
+          </span>
+        ),
       },
+      // {
+      //   key: 'currentStageName',
+      //   label: t('applicationDashboard.table.stage'),
+      //   render: (_value, row) => (
+      //     <span className="font-semibold text-slate-800 text-[13px]">
+      //       {row.currentStageName || t('applicationDashboard.table.na')}
+      //     </span>
+      //   ),
+      // },
+
       {
-        key: 'remark',
-        label: t('applicationDashboard.table.remark'),
-        align: 'center',
-        render: (_value, row) => row.remark?.trim() || '-',
+        key: 'remarks',
+        label: t('applicationDashboard.table.remarks'),
+        render: (_value, row) => (
+          <span
+            className="font-medium text-slate-600 text-[12px] italic max-w-[200px] truncate block"
+            title={row.remarks || t('applicationDashboard.table.na')}
+          >
+            {row.remarks || t('applicationDashboard.table.na')}
+          </span>
+        ),
       },
     ],
     [t, formatDate, formatDays]
@@ -353,11 +448,6 @@ export default function RtsApplicationDashboard({
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
         {kpiCards.map((metric) => {
-          const percentage =
-            kpis && metric.value !== null && kpis.totalApplications > 0
-              ? Math.round((metric.value / kpis.totalApplications) * 100)
-              : null;
-
           return (
             <Card
               key={metric.key}
@@ -372,13 +462,17 @@ export default function RtsApplicationDashboard({
 
                   <div className="mt-2.5 flex items-baseline gap-1">
                     <span className={`text-xl font-extrabold leading-none ${metric.valueClassName}`}>
-                      {metric.value === null
-                        ? t('applicationDashboard.table.na')
-                        : numberFormatter.format(metric.value)}
+                      {numberFormatter.format(metric.value)}
                     </span>
-                    {metric.key !== 'total' && (
+                    {metric.key !== 'total' && metric.percentage !== undefined && (
                       <span className="text-[13px] font-bold text-slate-400">
-                        {percentage === null ? t('applicationDashboard.table.na') : `(${percentage}%)`}
+                        (
+                        {typeof metric.percentage === 'number'
+                          ? Number.isInteger(metric.percentage)
+                            ? metric.percentage
+                            : parseFloat(metric.percentage.toFixed(2))
+                          : metric.percentage}
+                        %)
                       </span>
                     )}
                   </div>
@@ -395,9 +489,9 @@ export default function RtsApplicationDashboard({
         })}
       </div>
 
-      {error && (
+      {!kpis.isLive && (
         <p className="text-[11px] font-semibold text-red-500">
-          {error}
+          {t('applicationDashboard.cards.liveUnavailable')}
         </p>
       )}
 
@@ -424,15 +518,9 @@ export default function RtsApplicationDashboard({
               <Select
                 selectSize="sm"
                 options={deptOptions}
-                value={filters.departmentSlug || 'all'}
+                value={filters.department}
                 onChange={(_, value) => {
-                  updateQuery(
-                    {
-                      Department: value === 'all' ? null : value,
-                      Service: null,
-                    },
-                    true
-                  );
+                  updateUrl({ ...filters, department: value, service: '', pageNumber: '1' });
                 }}
               />
             </div>
@@ -444,10 +532,9 @@ export default function RtsApplicationDashboard({
               <Select
                 selectSize="sm"
                 options={serviceOptions}
-                value={filters.serviceSlug || 'all'}
-                onChange={(_, value) =>
-                  updateQuery({ Service: value === 'all' ? null : value }, true)
-                }
+                value={filters.service}
+                disabled={!filters.department}
+                onChange={(_, value) => updateUrl({ ...filters, service: value, pageNumber: '1' })}
               />
             </div>
 
@@ -458,33 +545,31 @@ export default function RtsApplicationDashboard({
               <Select
                 selectSize="sm"
                 options={statusOptions}
-                value={filters.status || 'all'}
-                onChange={(_, value) =>
-                  updateQuery({ Status: value === 'all' ? null : value }, true)
-                }
+                value={filters.status}
+                onChange={(_, value) => updateUrl({ ...filters, status: value, pageNumber: '1' })}
               />
             </div>
 
-            <div className="w-full sm:w-76 space-y-1">
+            <div className="w-full sm:w-56 space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {tCommon('actions.search')}
               </Label>
               <SearchInput
-                value={searchInput}
-                onChange={(value) => {
-                  setSearchInput(value);
-                  if (searchReloadTimerRef.current) window.clearTimeout(searchReloadTimerRef.current);
-
-                  searchReloadTimerRef.current = window.setTimeout(() => {
-                    const search = value.trim();
-                    if (search !== filters.search) {
-                      updateQuery({ Search: search || null }, true);
-                    }
-                  }, 1000);
-                }}
+                value={searchTerm}
+                onChange={setSearchTerm}
                 placeholder={t('applicationDashboard.applications.searchPlaceholder')}
                 className="mb-0 w-full font-medium"
               />
+            </div>
+
+            <div className="self-end pb-0.5">
+              <button
+                type="button"
+                aria-label={t('applicationDashboard.actions.openFilters')}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white transition hover:bg-slate-50"
+              >
+                <Filter className="h-4.5 w-4.5 text-slate-500" />
+              </button>
             </div>
           </div>
         </div>
@@ -495,70 +580,101 @@ export default function RtsApplicationDashboard({
           emptyText={t('applicationDashboard.applications.empty')}
           getRowKey={(row) => row.id}
           renderActions={(row) => (
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center">
               <ViewButton
-                onClick={() => updateQuery({ ApplicationId: String(row.applicationId) })}
+                onClick={() => updateDrawerUrl({ view: String(row.applicationId), process: '', doc: '' })}
                 aria-label={t('applicationDashboard.actions.viewDetailsAria', {
                   appId: row.applicationNo,
                 })}
                 title={t('applicationDashboard.actions.viewDetailsAria', {
                   appId: row.applicationNo,
                 })}
-                className="rounded-full px-2.5 text-[10px]"
+                className="rounded-full px-3 text-xs font-semibold"
                 size="xs"
               >
                 {t('applicationDashboard.actions.viewDetails')}
               </ViewButton>
-              <Button
-                type="button"
-                variant="primary"
-                size="xs"
-                icon={ChevronRightIcon}
-                onClick={() =>
-                  router.push(`/${locale}/rts/dashboard/rts-applications/${row.applicationId}`)
-                }
-                title={t('applicationDashboard.actions.processAria', {
-                  appId: row.applicationNo,
-                })}
-              >
-                {t('applicationDashboard.actions.process')}
-              </Button>
             </div>
           )}
           actionLabel={t('applicationDashboard.table.actions')}
-          pageNumber={pagination?.pageNumber ?? filters.pageNumber}
-          pageSize={filters.pageSize}
-          totalCount={pagination?.totalCount ?? 0}
-          totalPages={pagination?.totalPages ?? 1}
-          onPageChange={(page) => updateQuery({ PageNumber: String(page) })}
+          pageNumber={pagination.pageNumber}
+          pageSize={10}
+          totalCount={pagination.totalCount}
+          totalPages={pagination.totalPages}
+          onPageChange={(pageNumber) => updateUrl({ ...filters, pageNumber: String(pageNumber) })}
+          onPageSizeChange={() => updateUrl({ ...filters, pageNumber: '1' })}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
           paginationConfig={{
             enabled: true,
-            showPageSizeSelector: false,
+            showPageSizeSelector: true,
           }}
-          maxBodyHeightClassName="min-h-50 max-h-auto"
+          maxBodyHeightClassName="max-h-auto"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
+          footerLeftContent={
+            <span className="text-[12px] text-slate-400">
+              {t('applicationDashboard.pagination.showing', {
+                shown: numberFormatter.format(gridRows.length),
+                total: numberFormatter.format(pagination.totalCount),
+              })}
+            </span>
+          }
           footerClassName="!border-slate-100 !bg-white !shadow-none"
           footerLeftClassName="text-slate-400"
         />
       </Card>
 
-      {selectedRow && (
-        <ApplicationDrawerContent
+      <RtsApplicationViewDrawer
+        open={drawer?.mode === 'view'}
+        record={
+          drawer?.mode === 'view'
+            ? {
+                appId: drawer.record.applicationNo,
+                citizenName: drawer.record.applicantName,
+                submittedDate: formatDate(drawer.record.applicationDate),
+                slaLimit: drawer.record.expectedSlaDays,
+                serviceName: drawer.record.serviceName,
+                departmentName: drawer.record.departmentName,
+                applicationStatus: drawer.record.currentStatus || 'Pending',
+              }
+            : null
+        }
+        data={drawer?.mode === 'view' ? drawer.data : null}
+        onClose={() => updateDrawerUrl({ view: '', process: '', doc: '' })}
+        onOpenFullDetails={openProcess}
+        onOpenDocument={openDocument}
+      />
+
+      <RtsApplicationProcessDrawer
+        key={drawer?.mode === 'process' ? drawer.record.applicationId : 'no-process-drawer'}
+        open={drawer?.mode === 'process'}
+        record={
+          drawer?.mode === 'process'
+            ? {
+                applicationId: drawer.record.applicationId,
+                appId: drawer.record.applicationNo,
+                citizenName: drawer.record.applicantName,
+                submittedDate: formatDate(drawer.record.applicationDate),
+                slaLimit: drawer.record.expectedSlaDays,
+                serviceName: drawer.record.serviceName,
+                applicationStatus: drawer.record.currentStatus || 'Pending',
+              }
+            : null
+        }
+        data={drawer?.mode === 'process' ? drawer.data : null}
+        onClose={closeProcess}
+        onOpenDocument={openDocument}
+        onSuccess={() => router.refresh()}
+      />
+
+      {drawer?.mode === 'document' && drawer.document.documentGuid && (
+        <RtsApplicationDocumentView
           open
-          onClose={() => updateQuery({ ApplicationId: null })}
-          detail={approvalDetails}
-          record={{
-            applicationId: selectedRow.applicationId,
-            applicationNo: selectedRow.applicationNo,
-            serviceName: selectedRow.serviceName,
-            departmentName: selectedRow.departmentName,
-            submittedDate: formatDate(selectedRow.applicationDate),
-            slaLimit: selectedRow.sla,
-            applicationStatus: selectedRow.currentStatus,
-          }}
+          fileUrl={getDocumentViewUrl(drawer.document.documentGuid)}
+          downloadUrl={getDocumentDownloadUrl(drawer.document.documentGuid)}
+          fileName={drawer.document.documentName || 'Document'}
+          label={drawer.document.documentName || undefined}
         />
       )}
     </div>

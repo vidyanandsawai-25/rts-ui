@@ -1,99 +1,135 @@
-import RtsApplicationDashboard from "@/components/modules/rts/dashboard/RtsApplicationDashboard";
+import RtsApplicationDashboard from '@/components/modules/rts/dashboard/RtsApplicationDashboard';
+import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
 import {
-  getRtsApplicationApprovalDetailsAction,
   getRtsApplicationFilterOptionsAction,
   getRtsApplicationsDashboardAction,
-} from "./actions";
-import { toApplicationFilterSlug } from "@/lib/utils/rts/application-filter-slug";
+  getRtsApplicationProcessDataAction,
+} from './actions';
 
-type SearchParams = Record<string, string | string[] | undefined>;
+type QueryValue = string | string[] | undefined;
+type SearchParams = Record<string, QueryValue>;
 
-function getFirstValue(value: string | string[] | undefined): string | undefined {
+function readQuery(query: SearchParams, canonical: string, legacy: string): string | undefined {
+  const value = query[canonical] ?? query[legacy];
   return Array.isArray(value) ? value[0] : value;
 }
 
-function getPositiveInteger(value: string | undefined): number | undefined {
+function getPositivePage(value: string | undefined): number {
   const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function findUniqueMasterBySlug<T extends { id: number }>(
-  items: T[],
-  slug: string | undefined,
-  getName: (item: T) => string
-): T | undefined {
-  if (!slug) return undefined;
-
-  const matches = items.filter((item) => toApplicationFilterSlug(getName(item)) === slug);
-  return matches.length === 1 ? matches[0] : undefined;
+function getPositiveApplicationId(value: string | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-export default async function RtsApplicationsPage({
+function parseProcessRoute(value: string | undefined): {
+  applicationId: number;
+  stageSlug: string;
+} | null {
+  const match = value?.trim().toLowerCase().match(/^(\d+)-(.+)$/);
+  if (!match) return null;
+
+  const applicationId = getPositiveApplicationId(match[1]);
+  return applicationId && match[2]
+    ? { applicationId, stageSlug: match[2] }
+    : null;
+}
+
+export default async function RtsApplicationDashboardPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
   searchParams: Promise<SearchParams>;
 }) {
-  const { locale } = await params;
-  const query = await searchParams;
-  const pageNumber = getPositiveInteger(getFirstValue(query.PageNumber)) ?? 1;
-  const applicationId = getPositiveInteger(getFirstValue(query.ApplicationId));
-  const departmentSlug = getFirstValue(query.Department)?.trim().toLowerCase() || undefined;
-  const serviceSlug = getFirstValue(query.Service)?.trim().toLowerCase() || undefined;
-  const applicationStatus = getFirstValue(query.Status)?.trim() || undefined;
-  const search = getFirstValue(query.Search)?.trim() || undefined;
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  const { departments, services } = await getRtsApplicationFilterOptionsAction();
 
-  const filterOptions = await getRtsApplicationFilterOptionsAction();
-  const selectedDepartment = findUniqueMasterBySlug(
-    filterOptions.departments,
-    departmentSlug,
-    (department) => department.departmentName
-  );
-  const serviceCandidates = selectedDepartment
-    ? filterOptions.services.filter((service) => service.departmentId === selectedDepartment.id)
-    : filterOptions.services;
-  const selectedService = findUniqueMasterBySlug(
-    serviceCandidates,
-    serviceSlug,
-    (service) => service.serviceName
-  );
-  const dashboardData = await getRtsApplicationsDashboardAction({
-    pageNumber,
-    departmentId: selectedDepartment?.id,
-    serviceId: selectedService?.id,
-    applicationStatus,
-    search,
-  });
-  const selectedApplication = applicationId
-    ? dashboardData.rows.find((row) => row.applicationId === applicationId)
+  const departmentSlug = readQuery(query, 'department', 'Department')?.trim().toLowerCase() ?? '';
+  const requestedServiceSlug = readQuery(query, 'service', 'Service')?.trim().toLowerCase() ?? '';
+  const rawStatus = readQuery(query, 'status', 'Status')?.trim().toLowerCase();
+  const status = ['submitted', 'pending', 'approved', 'rejected', 'reverted'].includes(rawStatus ?? '')
+    ? rawStatus
     : undefined;
-  const approvalDetails = selectedApplication
-    ? await getRtsApplicationApprovalDetailsAction(selectedApplication.applicationId)
+  const search = readQuery(query, 'search', 'Search')?.trim() ?? '';
+  const pageNumber = getPositivePage(readQuery(query, 'pageNumber', 'PageNumber'));
+
+  const department = departments.find(
+    (item) => toApplicationFilterSlug(item.departmentName) === departmentSlug
+  );
+  const service = department
+    ? services.find(
+        (item) =>
+          item.departmentId === department.id &&
+          toApplicationFilterSlug(item.serviceName) === requestedServiceSlug
+      )
+    : undefined;
+
+  const result = await getRtsApplicationsDashboardAction({
+    pageNumber,
+    departmentId: department?.id,
+    serviceId: service?.id,
+    applicationNo: search || undefined,
+    status,
+  });
+
+  const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
+  const requestedProcess = parseProcessRoute(readQuery(query, 'process', 'Process'));
+  const requestedViewId = getPositiveApplicationId(readQuery(query, 'view', 'View'));
+  const drawerApplicationId = requestedProcess?.applicationId ?? requestedViewId;
+  const drawerRow = drawerApplicationId
+    ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? null
     : null;
+  const drawerData = drawerRow
+    ? await getRtsApplicationProcessDataAction(drawerRow.applicationId)
+    : null;
+  const currentStageSlug = drawerData?.verification?.stageName
+    ? toApplicationFilterSlug(drawerData.verification.stageName)
+    : '';
+
+  const drawer = requestedDocumentGuid
+    ? {
+        mode: 'document' as const,
+        document: {
+          documentGuid: requestedDocumentGuid,
+          documentName: 'Application document',
+        },
+      }
+    : requestedProcess &&
+        drawerRow &&
+        drawerData &&
+        requestedProcess.stageSlug === currentStageSlug
+      ? {
+          mode: 'process' as const,
+          record: drawerRow,
+          data: drawerData,
+        }
+      : requestedViewId && drawerRow && drawerData
+        ? {
+            mode: 'view' as const,
+            record: drawerRow,
+            data: drawerData,
+          }
+        : null;
 
   return (
     <div className="w-full">
       <RtsApplicationDashboard
-        kpis={dashboardData.kpis}
-        rows={dashboardData.rows}
-        locale={locale}
-        error={dashboardData.error}
-        departments={filterOptions.departments}
-        services={filterOptions.services}
+        kpis={result.kpis}
+        rows={result.rows}
+        pagination={result.pagination}
+        departments={departments}
+        services={services}
         filters={{
-          pageNumber,
-          pageSize: 10,
-          departmentId: selectedDepartment?.id ?? null,
-          serviceId: selectedService?.id ?? null,
-          departmentSlug: selectedDepartment ? toApplicationFilterSlug(selectedDepartment.departmentName) : '',
-          serviceSlug: selectedService ? toApplicationFilterSlug(selectedService.serviceName) : '',
-          status: applicationStatus ?? "",
-          search: search ?? "",
-          applicationId: selectedApplication?.applicationId ?? null,
+          department: department ? departmentSlug : '',
+          service: service ? requestedServiceSlug : '',
+          status: status ?? '',
+          search,
         }}
-        pagination={dashboardData.pagination}
-        approvalDetails={approvalDetails}
+        locale={locale}
+        drawer={drawer}
       />
     </div>
   );

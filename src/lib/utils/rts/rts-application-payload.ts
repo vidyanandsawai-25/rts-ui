@@ -1,4 +1,4 @@
-import type { CreateRtsApplicationPayload } from "@/lib/api/rts/rtsapplication.service";
+import type { CreateRtsApplicationPayload } from "@/types/rts/rts-application.types";
 
 export interface BuildRtsApplicationPayloadParams {
   formData: Record<string, unknown>;
@@ -7,6 +7,7 @@ export interface BuildRtsApplicationPayloadParams {
   serviceId?: number | string | null;
   sessionId: string;
   ownerId?: number;
+  userId?: number;
   createdBy?: number;
   applicationStatus?: string;
   documentGuidByFieldDefinitionId?: Record<string, string>;
@@ -105,6 +106,7 @@ export function buildRtsApplicationPayload({
   serviceId,
   sessionId,
   ownerId,
+  userId,
   createdBy = 0,
   applicationStatus = "pending",
   documentGuidByFieldDefinitionId = {},
@@ -168,9 +170,15 @@ export function buildRtsApplicationPayload({
     createdBy,
     departmentId: departmentId == null || departmentId === "" ? undefined : Number(departmentId),
     serviceId: serviceId == null || serviceId === "" ? undefined : Number(serviceId),
+    // New applications always enter the workflow before any stage has been assigned.
+    approvalFlowId: 0,
+    currentApprovalFlowStageId: 0,
+    currentStageOrder: 0,
+    userId,
     sessionId,
     ownerId,
     applicationStatus,
+    remark: "",
     fieldValues,
   };
 }

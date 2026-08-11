@@ -1,14 +1,14 @@
 'use server';
 
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/auth-session";
 import {
   createRtsApplication,
-  type CreateRtsApplicationPayload,
-  type CreateRtsApplicationResponse,
 } from "@/lib/api/rts/rtsapplication.service";
 import { uploadRtsDocument } from "@/lib/api/rts/rtsdocument.service";
 import { getRtsServiceById } from "@/lib/api/rts/rtsservices.service";
 import { buildRtsApplicationPayload } from "@/lib/utils/rts/rts-application-payload";
+import type { CreateRtsApplicationPayload, CreateRtsApplicationResponse } from "@/types/rts/rts-application.types";
 import type { RtsServiceApiItem } from "@/types/rts/service.types";
 
 interface SubmitRtsFileFieldMeta {
@@ -60,6 +60,7 @@ export async function submitRtsApplicationAction(
   const ownerId = readCitizenOwnerIdFromCookieValue(
     cookieStore.get("rts_citizen_profile")?.value
   );
+  const userId = getUserIdFromCookies(cookieStore) ?? undefined;
   let sessionId = cookieStore.get("rts_session")?.value?.trim();
 
   if (!sessionId) {
@@ -109,6 +110,7 @@ export async function submitRtsApplicationAction(
     serviceId: input.serviceId,
     sessionId,
     ownerId,
+    userId,
     createdBy: input.createdBy,
     applicationStatus: input.applicationStatus,
     documentGuidByFieldDefinitionId,

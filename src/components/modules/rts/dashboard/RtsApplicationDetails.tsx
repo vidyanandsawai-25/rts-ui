@@ -21,7 +21,7 @@ import { Badge, Card } from "@/components/common";
 import type {
   RtsApplicationDetailData,
   SubmitApplicationActionResult,
-} from "@/app/[locale]/rts/dashboard/rts-applications/[id]/actions";
+} from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import type { WorkflowActionType } from "@/types/rts/workflow.types";
 
 interface RtsApplicationDetailsProps {

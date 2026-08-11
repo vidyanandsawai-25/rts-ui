@@ -4,32 +4,13 @@ import { getAppConfig } from "@/config/app.config";
 import { apiClient } from "@/services/api.service";
 import { cookies } from "next/headers";
 import { serverFetch } from "@/lib/utils/server-fetch";
+import type {
+  UploadRtsDocumentItem,
+  UploadRtsDocumentPayload,
+  UploadRtsDocumentResponse,
+} from "@/types/rts/rts-application.types";
 
-export interface UploadRtsDocumentPayload {
-  file: File;
-  ownerUserId?: number;
-  documentType?: string;
-  departmentId?: number;
-  moduleId?: number;
-  isPrimaryDocument?: boolean;
-}
-
-export interface UploadRtsDocumentItem {
-  documentGuid: string;
-  documentId: number;
-  documentBindingId: number | null;
-  fileName: string;
-  fileSizeBytes: number;
-  storagePath: string;
-}
-
-interface UploadRtsDocumentResponse {
-  success: boolean;
-  message: string;
-  items: UploadRtsDocumentItem;
-  errors: unknown;
-  correlationId: string | null;
-}
+export type { UploadRtsDocumentItem, UploadRtsDocumentPayload } from "@/types/rts/rts-application.types";
 
 async function getMultipartAuthHeaders(): Promise<Record<string, string>> {
   const cookieStore = await cookies();
