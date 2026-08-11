@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslations } from "next-intl";
 import { Minus, Plus } from "lucide-react";
-import { Tooltip } from "@/components/common/Tooltip";
 import { Button } from "@/components/common/ActionButton";
 import { OffsetData } from "@/types/offset-details.types";
 
@@ -43,21 +42,19 @@ export const OffsetFormSummary: React.FC<OffsetFormSummaryProps> = ({
 
                 <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2">
-                        <Tooltip content={t("offset.tooltips.subtract")}>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleSubtractClick}
-                                icon={Minus}
-                                className={`p-2 rounded-md transition-all duration-150 ${selectedOperation === "subtract"
-                                    ? "bg-orange-500 text-white"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                    } ${isShakingSubtract
-                                        ? "animate-shake-increment border-2 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
-                                        : ""
-                                    }`}
-                            />
-                        </Tooltip>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleSubtractClick}
+                            icon={Minus}
+                            className={`p-2 rounded-md transition-all duration-150 ${selectedOperation === "subtract"
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                } ${isShakingSubtract
+                                    ? "animate-shake-increment border-2 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+                                    : ""
+                                }`}
+                        />
                         {offsetData.area > 0 && selectedOperation === "subtract" && (
                             <span className="px-2 py-0.5 bg-orange-500 text-white text-xs font-semibold rounded whitespace-nowrap">
                                 {offsetData.area.toFixed(2)}
@@ -66,18 +63,16 @@ export const OffsetFormSummary: React.FC<OffsetFormSummaryProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Tooltip content={t("offset.tooltips.add")}>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleAddClick}
-                                icon={Plus}
-                                className={`p-2 rounded-md transition-colors ${selectedOperation === "add"
-                                    ? "bg-green-500 text-white"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                    }`}
-                            />
-                        </Tooltip>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleAddClick}
+                            icon={Plus}
+                            className={`p-2 rounded-md transition-colors ${selectedOperation === "add"
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                        />
                         {offsetData.area > 0 && selectedOperation === "add" && (
                             <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded whitespace-nowrap">
                                 +{offsetData.area.toFixed(2)}
