@@ -109,11 +109,6 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
 
   const handleOffsetOk = () => {
     const currentList = [...offsetList];
-    if (isOffsetValid(offsetData, selectedShape) && selectedOperation) {
-      if (!(selectedOperation === OFFSET_OPERATIONS.SUBTRACT && calculateAdjustedRoomTotal() - offsetData.area < 0)) {
-        currentList.push({ ...offsetData, shapeType: selectedShape, operation: selectedOperation });
-      }
-    }
     setCurrentRoomOffsets(currentList);
     setFormData(prev => ({ ...prev, offsetMinus: currentList.length > 0 ? "Yes" : "No" }));
     setOffsetModalOpen(false);

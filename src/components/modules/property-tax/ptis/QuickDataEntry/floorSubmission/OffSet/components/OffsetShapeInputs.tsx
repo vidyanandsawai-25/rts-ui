@@ -330,13 +330,13 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                     </div>
                 ) : null}
 
-                <div className="flex-shrink-0 w-[110px]">
+                <div className="flex-shrink-0 w-[130px]">
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <Label className="text-xs font-semibold text-gray-700">
                             {t("offset.calculatedArea")}
                         </Label>
                         {selectedShape === "Trapezoid" && (
-                            <Tooltip content={t("offset.formulaTip")}>
+                            <Tooltip content={t("offset.formulaTip")} placement="top">
                                 <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
                             </Tooltip>
                         )}
