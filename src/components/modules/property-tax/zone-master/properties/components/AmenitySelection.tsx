@@ -121,15 +121,17 @@ export function AmenitySelection({
         <div>
           <Input
             label={t("partitionForm.amenity.toAmenity")}
-            type="number"
+            type="text"
+            inputMode="numeric"
+            maxLength={3}
             value={form.toAmenity}
             onChange={(e) => {
-              setForm({ ...form, toAmenity: e.target.value });
+              const value = e.target.value.replace(/\D/g, "").slice(0, 3);
+              setForm({ ...form, toAmenity: value });
               setErrors({ ...errors, toAmenity: undefined });
             }}
             placeholder={t("partitionForm.amenity.placeholders.toAmenity")}
             required
-            min={0}
           />
           <ValidationMessage
             message={errors.toAmenity}

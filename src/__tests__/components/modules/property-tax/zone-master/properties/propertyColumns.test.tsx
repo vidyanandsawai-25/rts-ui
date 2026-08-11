@@ -48,7 +48,7 @@ describe("propertyColumns", () => {
 
   it("should return the correct number of columns", () => {
     const columns = getPropertyColumns(params);
-    expect(columns).toHaveLength(6);
+    expect(columns).toHaveLength(4);
   });
 
   it("should correctly render serial number", () => {
@@ -59,24 +59,27 @@ describe("propertyColumns", () => {
     expect(srNoColumn?.render?.(null, {}, 5)).toBe(6);
   });
 
-  it("should correctly render ward number", () => {
-    const columns = getPropertyColumns(params);
-    const wardNoColumn = columns.find((c) => c.key === "wardNo");
-
-    expect(wardNoColumn?.render?.(null, { wardId: 1 }, 0)).toBe("W01");
-    expect(wardNoColumn?.render?.(null, { wardId: 2 }, 0)).toBe("-");
-  });
-
-  it("should correctly render property number and partition number", () => {
+  it("should correctly render combined property number (ward-property-partition)", () => {
     const columns = getPropertyColumns(params);
     const propertyNoColumn = columns.find((c) => c.key === "propertyNo");
-    const partitionNoColumn = columns.find((c) => c.key === "partitionNo");
 
-    expect(propertyNoColumn?.render?.("P123", {}, 0)).toBe("P123");
+    expect(
+      propertyNoColumn?.render?.(
+        null,
+        { wardId: 1, propertyNo: "P123", partitionNo: "01" },
+        0
+      )
+    ).toBe("W01-P123-01");
+
+    expect(
+      propertyNoColumn?.render?.(null, { wardId: 1, propertyNo: "P123" }, 0)
+    ).toBe("W01-P123");
+
+    expect(
+      propertyNoColumn?.render?.(null, { wardId: 2, propertyNo: "P123" }, 0)
+    ).toBe("P123");
+
     expect(propertyNoColumn?.render?.(null, {}, 0)).toBe("-");
-
-    expect(partitionNoColumn?.render?.("01", {}, 0)).toBe("01");
-    expect(partitionNoColumn?.render?.(null, {}, 0)).toBe("-");
   });
 
   it("should correctly render category as a StatusBadge", () => {

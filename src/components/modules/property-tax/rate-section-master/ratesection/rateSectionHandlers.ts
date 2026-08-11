@@ -32,8 +32,12 @@ export async function handleRateSectionDelete({
 
         if (remaining.length > 0 && remaining[0].id) {
           params.set("zone", String(remaining[0].id));
+          params.set("wardpage", "1");
+          params.delete("wardq");
         } else {
           params.delete("zone");
+          params.delete("wardpage");
+          params.delete("wardq");
         }
       }
 

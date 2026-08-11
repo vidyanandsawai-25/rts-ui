@@ -61,6 +61,53 @@ export interface ZonePropertyListResponse {
 }
 
 /**
+ * Property item as returned by GET /Property/search-by-category
+ */
+export interface ZonePropertySearchByCategoryItem {
+  propertyId: number;
+  taxZoneId: number;
+  zoneId: number;
+  zoneNo: string | null;
+  wardId: number;
+  wardNo: string | null;
+  propertyNo: string;
+  partitionNo: string | null;
+  property: string | null;
+  mobileNo: string | null;
+  upicId: string;
+  propertyTypeId: number | null;
+  partType: string | null;
+  categoryId: number | null;
+  propertyCategoryName: string | null;
+  isWing: boolean;
+  propertyAssessmentStatusId: number | null;
+}
+
+/**
+ * Inner paginated payload of the search-by-category response
+ */
+export interface ZonePropertySearchByCategoryData {
+  items: ZonePropertySearchByCategoryItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+/**
+ * Envelope returned by GET /Property/search-by-category
+ */
+export interface ZonePropertySearchByCategoryResponse {
+  success: boolean;
+  message: string | null;
+  items: ZonePropertySearchByCategoryData;
+  errors: unknown;
+  correlationId: string | null;
+}
+
+/**
  * Pagination data for property list in Zone Master
  */
 export interface ZonePropertyPaginationData {

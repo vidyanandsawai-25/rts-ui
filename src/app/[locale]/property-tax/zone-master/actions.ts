@@ -1556,7 +1556,7 @@ export async function createBulkBuildingPropertiesAction(
 
 /**
  * Fetches the next partition number for a given ward and property.
- * API: GET /api/Property?WardId={wardId}&PropertyNo={propertyNo}&PageNumber=1&PageSize=1&SortBy=Id&SortOrder=desc
+ * API: GET /api/Property?WardId={wardId}&PropertyNo={propertyNo}&PageNumber=1&PageSize=-1&SortBy=PropertySeqNo&SortOrder=desc
  * Used for SSR to auto-calculate the next partition number.
  */
 export async function getNextPartitionNumberAction(
@@ -1576,14 +1576,17 @@ export async function getNextPartitionNumberAction(
       return { success: false, error: "Invalid property number" };
     }
 
-    // Build query parameters to get the latest property for this ward and propertyNo
-    // Filter by PropertyNo to get partitions for this specific property only
+    // Build query parameters to fetch ALL partitions for this ward and propertyNo.
+    // We can't rely on the API's sort + PageSize=1 to hand us the highest partitionNo:
+    // Id order (insertion order) doesn't always match partitionNo order (partitions can be
+    // created/deleted out of sequence), so fetching everything and computing the max
+    // partitionNo ourselves is the only reliable approach.
     const queryParams = new URLSearchParams({
       WardId: String(wardId),
       PropertyNo: propertyNo.trim(),
       PageNumber: "1",
-      PageSize: "1",
-      SortBy: "Id",
+      PageSize: "-1",
+      SortBy: "PropertySeqNo",
       SortOrder: "desc",
       MarkedForDeletion: "false",
     });
@@ -1597,18 +1600,20 @@ export async function getNextPartitionNumberAction(
     }
 
     const items = response.data.items || [];
-    
+
     // If no items found, this is the first partition for this property
     if (items.length === 0) {
       return { success: true, data: 1 };
     }
 
-    // Get the latest item (sorted by Id desc, so first item is the latest)
-    const latestItem = items[0];
-    const latestPartition = parseInt(latestItem.partitionNo || "0", 10);
-    
-    // Next partition number is latest + 1
-    const nextPartition = isNaN(latestPartition) ? 1 : latestPartition + 1;
+    // Compute the highest partitionNo across all returned items
+    const highestPartition = items.reduce((max, item) => {
+      const partition = parseInt(item.partitionNo || "0", 10);
+      return isNaN(partition) ? max : Math.max(max, partition);
+    }, 0);
+
+    // Next partition number is highest + 1
+    const nextPartition = highestPartition + 1;
 
     return { 
       success: true, 

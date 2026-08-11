@@ -319,7 +319,7 @@
     "selectPropertyType": "Select property type",
     "category": "Category",
     "selectCategory": "Select category",
-    "taxZoneId": "Tax Zone ID",
+    "taxZoneId": "Tax Zone",
     "selectTaxZone": "Select tax zone",
     "bulkCreateMode": "Bulk Create Mode",
     "bulkCreateDescription": "Create multiple properties at once",
