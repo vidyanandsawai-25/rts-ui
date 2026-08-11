@@ -69,11 +69,11 @@ export function PropertyStats({
       return;
     }
 
-    if (statsCache[filterKey] && !fetchedCardsMap[filterKey]) {
+    if (statsCache[filterKey]) {
       return;
     }
 
-    if (!statsCache[filterKey] && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem(`ntis_card_stats_${filterKey}`);
         if (stored) {
@@ -84,10 +84,11 @@ export function PropertyStats({
     }
 
     let isMounted = true;
+    const params = cardFilterParams;
 
     Promise.all([
-      getMainCardsAction(cardFilterParams),
-      getWorkflowCardsAction(cardFilterParams),
+      getMainCardsAction(params),
+      getWorkflowCardsAction(params),
     ])
       .then(([mainRes, workflowRes]) => {
         if (isMounted) {
@@ -110,7 +111,8 @@ export function PropertyStats({
     return () => {
       isMounted = false;
     };
-  }, [mainCardsProp, workflowCardsProp, filterKey, cardFilterParams, fetchedCardsMap]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mainCardsProp, workflowCardsProp, filterKey]);
 
   const mainCards = currentCards?.mainCards;
   const workflowCards = currentCards?.workflowCards;

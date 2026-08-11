@@ -30,6 +30,7 @@ import {
   fetchMainCards,
   fetchWorkflowCards,
   fetchApartmentUnitList,
+  fetchAllWards,
 } from "@/lib/api/property-search";
 import { resolveSearchErrorMessage } from "@/lib/api/property-search/resolve-search-error-message";
 import { hasTabSearchInput } from "@/components/modules/property-tax/search-property/search-field-groups";
@@ -418,15 +419,7 @@ export async function getWardOptionsAction(zone: string): Promise<string[]> {
 }
 
 export async function listAllWardsAction(): Promise<WardApiResponse[]> {
-  try {
-    const zones = await fetchZones();
-    const allWards = await Promise.all(
-      zones.map((z) => fetchWardsByZone(z.zoneId))
-    );
-    return allWards.flat();
-  } catch {
-    return [];
-  }
+  return fetchAllWards();
 }
 
 export async function fetchApartmentUnitListAction(
