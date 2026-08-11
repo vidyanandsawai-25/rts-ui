@@ -1,26 +1,135 @@
-import RtsApplicationDashboard from "@/components/modules/rts/dashboard/RtsApplicationDashboard";
+import RtsApplicationDashboard from '@/components/modules/rts/dashboard/RtsApplicationDashboard';
+import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
 import {
   getRtsApplicationFilterOptionsAction,
   getRtsApplicationsDashboardAction,
-} from "./actions";
+  getRtsApplicationProcessDataAction,
+} from './actions';
 
-export default async function RtsApplicationsPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+type QueryValue = string | string[] | undefined;
+type SearchParams = Record<string, QueryValue>;
 
-  const [dashboardData, filterOptions] = await Promise.all([
-    getRtsApplicationsDashboardAction(),
-    getRtsApplicationFilterOptionsAction(),
-  ]);
+function readQuery(query: SearchParams, canonical: string, legacy: string): string | undefined {
+  const value = query[canonical] ?? query[legacy];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getPositivePage(value: string | undefined): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function getPositiveApplicationId(value: string | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseProcessRoute(value: string | undefined): {
+  applicationId: number;
+  stageSlug: string;
+} | null {
+  const match = value?.trim().toLowerCase().match(/^(\d+)-(.+)$/);
+  if (!match) return null;
+
+  const applicationId = getPositiveApplicationId(match[1]);
+  return applicationId && match[2]
+    ? { applicationId, stageSlug: match[2] }
+    : null;
+}
+
+export default async function RtsApplicationDashboardPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<SearchParams>;
+}) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  const { departments, services } = await getRtsApplicationFilterOptionsAction();
+
+  const departmentSlug = readQuery(query, 'department', 'Department')?.trim().toLowerCase() ?? '';
+  const requestedServiceSlug = readQuery(query, 'service', 'Service')?.trim().toLowerCase() ?? '';
+  const rawStatus = readQuery(query, 'status', 'Status')?.trim().toLowerCase();
+  const status = ['submitted', 'pending', 'approved', 'rejected', 'reverted'].includes(rawStatus ?? '')
+    ? rawStatus
+    : undefined;
+  const search = readQuery(query, 'search', 'Search')?.trim() ?? '';
+  const pageNumber = getPositivePage(readQuery(query, 'pageNumber', 'PageNumber'));
+
+  const department = departments.find(
+    (item) => toApplicationFilterSlug(item.departmentName) === departmentSlug
+  );
+  const service = department
+    ? services.find(
+        (item) =>
+          item.departmentId === department.id &&
+          toApplicationFilterSlug(item.serviceName) === requestedServiceSlug
+      )
+    : undefined;
+
+  const result = await getRtsApplicationsDashboardAction({
+    pageNumber,
+    departmentId: department?.id,
+    serviceId: service?.id,
+    applicationNo: search || undefined,
+    status,
+  });
+
+  const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
+  const requestedProcess = parseProcessRoute(readQuery(query, 'process', 'Process'));
+  const requestedViewId = getPositiveApplicationId(readQuery(query, 'view', 'View'));
+  const drawerApplicationId = requestedProcess?.applicationId ?? requestedViewId;
+  const drawerRow = drawerApplicationId
+    ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? null
+    : null;
+  const drawerData = drawerRow
+    ? await getRtsApplicationProcessDataAction(drawerRow.applicationId)
+    : null;
+  const currentStageSlug = drawerData?.verification?.stageName
+    ? toApplicationFilterSlug(drawerData.verification.stageName)
+    : '';
+
+  const drawer = requestedDocumentGuid
+    ? {
+        mode: 'document' as const,
+        document: {
+          documentGuid: requestedDocumentGuid,
+          documentName: 'Application document',
+        },
+      }
+    : requestedProcess &&
+        drawerRow &&
+        drawerData &&
+        requestedProcess.stageSlug === currentStageSlug
+      ? {
+          mode: 'process' as const,
+          record: drawerRow,
+          data: drawerData,
+        }
+      : requestedViewId && drawerRow && drawerData
+        ? {
+            mode: 'view' as const,
+            record: drawerRow,
+            data: drawerData,
+          }
+        : null;
 
   return (
     <div className="w-full">
       <RtsApplicationDashboard
-        kpis={dashboardData.kpis}
-        rows={dashboardData.rows}
+        kpis={result.kpis}
+        rows={result.rows}
+        pagination={result.pagination}
+        departments={departments}
+        services={services}
+        filters={{
+          department: department ? departmentSlug : '',
+          service: service ? requestedServiceSlug : '',
+          status: status ?? '',
+          search,
+        }}
         locale={locale}
-        error={dashboardData.error}
-        departments={filterOptions.departments}
-        services={filterOptions.services}
+        drawer={drawer}
       />
     </div>
   );

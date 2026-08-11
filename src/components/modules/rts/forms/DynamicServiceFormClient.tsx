@@ -36,7 +36,7 @@ import {
   buildOldServiceFormConfigFromRtsFieldDefinitions,
   extractRtsFieldDefinitionItems,
 } from "@/lib/utils/rts/rts-field-definition-mapper";
-import type { CreateRtsApplicationResponse } from "@/lib/api/rts/rtsapplication.service";
+import type { CreateRtsApplicationResponse } from "@/types/rts/rts-application.types";
 
 const MySwal = withReactContent(Swal);
 
@@ -976,7 +976,7 @@ export default function DynamicServiceFormClient({
         departmentId,
         serviceId,
         createdBy: 0,
-        applicationStatus: "pending",
+        applicationStatus: "Submitted",
         fileFields,
       })
     );

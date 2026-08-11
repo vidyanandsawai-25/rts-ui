@@ -71,67 +71,6 @@ export interface RtsOfficer {
   status?: string;
 }
 
-export interface RtsApplicationApiApplicantDetail {
-  fieldLabel: string;
-  fieldValue: string | null;
-}
-
-export interface RtsApplicationApiDashboard {
-  totalApplications: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-  reverted: number;
-  todayApplications: number;
-  overdueApplications: number;
-  dueToday: number;
-  pendingPercentage: number;
-  approvedPercentage: number;
-  rejectedPercentage: number;
-  revertedPercentage: number;
-  todayPercentage: number;
-  dueTodayPercentage: number;
-  overduePercentage: number;
-}
-
-export interface RtsApplicationApiListItem {
-  id: number;
-  departmentId: number;
-  serviceId: number;
-  applicationNo: string;
-  applicationStatus: string;
-  createdDate: string;
-  updatedDate: string | null;
-  assignedTo: number | string | null;
-  action: number | null;
-  sessionId: string | null;
-  ownerId: number | null;
-  departmentName: string | null;
-  citizenName: string | null;
-  serviceName: string | null;
-  sla: string | number | null;
-  remainingDays: number | null;
-  dueDays: number | null;
-  overdueDays: number | null;
-  remark: string | null;
-  applicantDetails: RtsApplicationApiApplicantDetail[] | null;
-}
-
-export interface RtsApplicationsApiListPayload {
-  dashboard: RtsApplicationApiDashboard | null;
-  applications: RtsApplicationApiListItem[] | null;
-}
-
-export interface RtsApplicationsApiListResponse {
-  items: RtsApplicationsApiListPayload[] | null;
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
-
 export interface RtsApplicationApiDetail {
   departmentId: number;
   serviceId: number;
@@ -148,4 +87,103 @@ export interface RtsApplicationApiDetail {
     booleanValue: boolean | null;
     documentGuid: string | null;
   }>;
+}
+
+export interface RtsApplicationFieldValuePayload {
+  isActive?: boolean;
+  createdBy?: number;
+  fieldDefinitionId: number;
+  textValue?: string | null;
+  numberValue?: number | null;
+  dateValue?: string | null;
+  booleanValue?: boolean | null;
+  documentGuid?: string | null;
+}
+
+export interface CreateRtsApplicationPayload {
+  isActive?: boolean;
+  createdBy?: number;
+  departmentId?: number;
+  serviceId?: number;
+  approvalFlowId: number;
+  currentApprovalFlowStageId: number;
+  currentStageOrder: number;
+  userId?: number;
+  sessionId: string;
+  ownerId?: number;
+  applicationStatus?: string;
+  remark?: string;
+  fieldValues: RtsApplicationFieldValuePayload[];
+}
+
+export interface CreateRtsApplicationFieldValueResponse {
+  applicationId: number;
+  fieldDefinitionId: number;
+  textValue: string | null;
+  numberValue: number | null;
+  dateValue: string | null;
+  booleanValue: boolean | null;
+  documentGuid: string | null;
+  id: number;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
+}
+
+export interface CreateRtsApplicationResponseItem {
+  id: number;
+  departmentId: number;
+  serviceId: number;
+  sessionId: string | null;
+  ownerId: number | null;
+  applicationNo: string;
+  applicationStatus: string;
+  fieldValues: CreateRtsApplicationFieldValueResponse[];
+}
+
+export interface CreateRtsApplicationResponse {
+  success: boolean;
+  message: string;
+  items: CreateRtsApplicationResponseItem;
+  errors: unknown;
+  correlationId: string | null;
+}
+
+export interface RtsApplicationApiApplicantDetail {
+  fieldLabel: string;
+  fieldValue: string | null;
+}
+
+export interface GetRtsApplicationApprovalListParams {
+  pageNumber?: number;
+  departmentId?: number;
+  serviceId?: number;
+  applicationNo?: string;
+  status?: string;
+}
+
+export interface UploadRtsDocumentPayload {
+  file: File;
+  ownerUserId?: number;
+  documentType?: string;
+  departmentId?: number;
+  moduleId?: number;
+  isPrimaryDocument?: boolean;
+}
+
+export interface UploadRtsDocumentItem {
+  documentGuid: string;
+  documentId: number;
+  documentBindingId: number | null;
+  fileName: string;
+  fileSizeBytes: number;
+  storagePath: string;
+}
+
+export interface UploadRtsDocumentResponse {
+  success: boolean;
+  message: string;
+  items: UploadRtsDocumentItem;
+  errors: unknown;
+  correlationId: string | null;
 }

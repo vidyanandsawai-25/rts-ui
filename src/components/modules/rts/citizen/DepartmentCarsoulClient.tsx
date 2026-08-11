@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
@@ -15,12 +14,26 @@ import {
   AlertTriangle,
   Search,
   Eye,
+  LayoutDashboard,
   Download,
-  LayoutDashboard
+  UserCheck,
+  GitCommit,
+  Paperclip,
 } from "lucide-react";
 import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Drawer } from "@/components/common/Drawer";
+import {
+  Button,
+  ViewButton,
+  DocumentViewerModal,
+} from "@/components/common";
+import { ApprovalStagesTimeline } from "@/components/modules/rts"
+import {
+  getApplicationDetailAction,
+  type RtsApplicationDetailData,
+} from "@/app/[locale]/rts/dashboard/rts-applications/actions";
+import { getDocumentDownloadUrl, getDocumentViewUrl } from "@/lib/api/rts/rts-document-utils";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
@@ -53,7 +66,12 @@ type DepartmentCarsoulClientProps = {
   upicId?: string;
 };
 
-
+const UI = {
+  available: { en: "Available Services", hi: "Available Services", mr: "Available Services" },
+  found: { en: "Services Found", hi: "Services Found", mr: "Services Found" },
+  clear: { en: "Clear", hi: "Clear", mr: "Clear" },
+  searchResults: { en: "Search Results", hi: "Search Results", mr: "Search Results" },
+} as const;
 
 const normalize = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -77,15 +95,6 @@ type CitizenApplication = RtsMisDashboardUserApplicationItem & {
   normalizedStatus: "approved" | "rejected" | "pending";
 };
 
-type WorkflowStageStatus = "complete" | "in_progress" | "pending";
-
-type WorkflowStage = {
-  id: string;
-  title: string;
-  description: string;
-  status: WorkflowStageStatus;
-};
-
 function normalizeApplicationStatus(status: string): CitizenApplication["normalizedStatus"] {
   const normalized = status.toLowerCase();
   if (normalized.includes("approved")) return "approved";
@@ -105,107 +114,313 @@ function formatSubmittedDate(value: string, locale: Language): string {
   }).format(date);
 }
 
-const staticWorkflowText = {
-  title: "Approval Stages",
-  complete: "Complete",
-  inProgress: "In Progress",
-  pending: "Pending",
-  clerkVerification: "Clerk Verification",
-  clerkDescription: "Application was received and checked by the clerk.",
-  headOfficeVerification: "Head Office Verification",
-  headOfficeDescription: "Documents are under review by the head office.",
-  finalApproval: "Final Approval (Senior Officer)",
-  finalApprovalDescription: "Starts after head office verification is completed.",
-  documentsTitle: "Submitted Documents",
-  documentsSubtitle: "Uploaded by you at the time of application",
-  previewDocument: "Preview document",
-  downloadDocument: "Download document",
-  unavailableDocument: "Document is not available",
-  missing: "Missing - required for approval",
-};
-
-// Replace this object with the workflow-detail API response when it is available.
-const staticWorkflowData: { stages: WorkflowStage[] } = {
-  stages: [
-    {
-      id: "clerk-verification",
-      title: staticWorkflowText.clerkVerification,
-      description: staticWorkflowText.clerkDescription,
-      status: "complete",
-    },
-    {
-      id: "head-office-verification",
-      title: staticWorkflowText.headOfficeVerification,
-      description: staticWorkflowText.headOfficeDescription,
-      status: "in_progress",
-    },
-    {
-      id: "final-approval",
-      title: staticWorkflowText.finalApproval,
-      description: staticWorkflowText.finalApprovalDescription,
-      status: "pending",
-    },
-  ],
-};
-
-const workflowStageStyles: Record<WorkflowStageStatus, {
-  label: string;
-  markerClassName: string;
-  cardClassName: string;
-  badgeClassName: string;
-}> = {
-  complete: {
-    label: staticWorkflowText.complete,
-    markerClassName: "bg-emerald-500 text-white",
-    cardClassName: "border-emerald-100 bg-emerald-50/40",
-    badgeClassName: "bg-emerald-100 text-emerald-700",
-  },
-  in_progress: {
-    label: staticWorkflowText.inProgress,
-    markerClassName: "bg-amber-500 text-white",
-    cardClassName: "border-amber-200 bg-amber-50/50",
-    badgeClassName: "bg-amber-100 text-amber-700",
-  },
-  pending: {
-    label: staticWorkflowText.pending,
-    markerClassName: "bg-slate-200 text-slate-500",
-    cardClassName: "border-slate-200 bg-slate-50",
-    badgeClassName: "bg-slate-200 text-slate-500",
-  },
-};
-
-function WorkflowStageItem({ stage, stepNumber, hasNext }: {
-  stage: WorkflowStage;
-  stepNumber: number;
-  hasNext: boolean;
-}) {
-  const style = workflowStageStyles[stage.status];
+function isStaticMockService(app: RtsMisDashboardUserApplicationItem): boolean {
+  const appNo = (app.applicationNo || "").toLowerCase();
+  const serviceName = (app.serviceName || "").toLowerCase();
 
   return (
-    <div className="relative flex gap-3">
-      <div className="relative flex w-5 shrink-0 justify-center">
-        {hasNext && <span aria-hidden className="absolute top-5 -bottom-3 w-px bg-slate-200" />}
-        <span className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ring-4 ring-white ${style.markerClassName}`}>
-          {stage.status === "complete" ? <CheckCircle2 size={12} strokeWidth={3} /> : stepNumber}
-        </span>
-      </div>
-      <div className={`min-w-0 flex-1 rounded-lg border px-3 py-2.5 ${style.cardClassName}`}>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-black text-slate-700">{stage.title}</p>
-          <span className={`rounded px-1.5 py-0.5 text-[8px] font-black uppercase ${style.badgeClassName}`}>{style.label}</span>
-        </div>
-        <p className="mt-1 text-[10px] font-medium text-slate-500">{stage.description}</p>
-      </div>
-    </div>
+    appNo.startsWith("pt-") ||
+    appNo.startsWith("tl-") ||
+    appNo.startsWith("wc-") ||
+    serviceName.includes("property tax") ||
+    serviceName.includes("property") ||
+    serviceName.includes("trade") ||
+    serviceName.includes("water")
   );
 }
 
-const staticSubmittedDocuments = [
-  { name: "Identity Proof (Aadhaar Card)", size: "1.2 MB", available: true },
-  { name: "Property Ownership Deed", size: "3.4 MB", available: true },
-  { name: "NOC from Fire Department", size: "2.1 MB", available: true },
-  { name: "School Leaving Original Certificate", size: staticWorkflowText.missing, available: false },
-];
+function CitizenApplicationDrawerBody({
+  app,
+  lang,
+}: {
+  app: CitizenApplication;
+  lang: Language;
+}) {
+  const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [viewingDoc, setViewingDoc] = useState<{
+    fileUrl: string;
+    fileName: string;
+    label: string;
+  } | null>(null);
+
+  const isMock = isStaticMockService(app);
+
+  useEffect(() => {
+    if (isMock) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        const data = await getApplicationDetailAction(app.applicationNo);
+        if (!cancelled && data) {
+          setDetail(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch citizen application detail:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [app.applicationNo, isMock]);
+
+  if (isMock) {
+    return (
+      <div className="p-5 space-y-5">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
+          <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
+            {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Details"}
+          </h4>
+          <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
+            <div>
+              <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                {lang === "mr" ? "अर्ज क्रमांक" : lang === "hi" ? "आवेदन क्रमांक" : "Application Number"}
+              </span>
+              <span className="text-slate-900 font-extrabold">{app.applicationNo}</span>
+            </div>
+            <div>
+              <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
+              </span>
+              <span className="text-slate-900 font-extrabold">{formatSubmittedDate(app.submittedDate, lang)}</span>
+            </div>
+            <div>
+              <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
+              </span>
+              <span className="text-blue-700 font-extrabold">
+                {app.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
+              </span>
+            </div>
+            <div>
+              <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+                {lang === "mr" ? "स्थिती" : lang === "hi" ? "स्थिति" : "Status"}
+              </span>
+              {app.normalizedStatus === "approved" ? (
+                <StatusBadge value activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+              ) : app.normalizedStatus === "rejected" ? (
+                <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "अस्वीकृत" : "Rejected"} />
+              ) : (
+                <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4.5 space-y-3 shadow-sm">
+          <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider flex items-center gap-2">
+            <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+            <span>{lang === "mr" ? "सेवा तपशील (Static/Mock)" : lang === "hi" ? "सेवा विवरण (Static/Mock)" : "Service Details (Static/Mock)"}</span>
+          </h4>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span className="block text-[10px] text-slate-400 font-medium">Service Name</span>
+              <span className="font-bold text-slate-800">{app.serviceName}</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-slate-400 font-medium">Category</span>
+              <span className="font-bold text-slate-800">Municipal Services</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-slate-400 font-medium">Applicant Name</span>
+              <span className="font-bold text-slate-800">Citizen Application</span>
+            </div>
+            <div>
+              <span className="block text-[10px] text-slate-400 font-medium">Payment Status</span>
+              <span className="font-bold text-emerald-600">Paid / Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-xs text-slate-400 font-medium">
+        Loading application details...
+      </div>
+    );
+  }
+
+  const documents = [
+    ...(detail?.documents ?? []).map((d, idx) => ({
+      id: d.documentId || idx + 1,
+      label: d.documentName || "Document Attachment",
+      guid: d.documentGuid || "",
+      size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : "Attachment",
+    })),
+    ...(detail?.answerGroups ?? [])
+      .flatMap((g) => g.answers)
+      .filter((a) => a.documentGuid)
+      .map((a, idx) => ({
+        id: a.fieldDefinitionId || idx + 1,
+        label: a.label || "Document Attachment",
+        guid: a.documentGuid || "",
+        size: "Attachment",
+      })),
+  ];
+
+  return (
+    <div className="p-5 space-y-5">
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
+        <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
+          {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Summary"}
+        </h4>
+        <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
+          <div>
+            <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+              {lang === "mr" ? "अर्ज क्रमांक" : lang === "hi" ? "आवेदन क्रमांक" : "Application Number"}
+            </span>
+            <span className="text-slate-900 font-extrabold">{app.applicationNo}</span>
+          </div>
+          <div>
+            <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+              {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
+            </span>
+            <span className="text-slate-900 font-extrabold">{formatSubmittedDate(app.submittedDate, lang)}</span>
+          </div>
+          <div>
+            <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+              {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
+            </span>
+            <span className="text-blue-700 font-extrabold">
+              {app.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
+              {lang === "mr" ? "स्थिती" : lang === "hi" ? "स्थिति" : "Status"}
+            </span>
+            {app.normalizedStatus === "approved" ? (
+              <StatusBadge value activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+            ) : app.normalizedStatus === "rejected" ? (
+              <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "अस्वीकृत" : "Rejected"} />
+            ) : (
+              <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+            )}
+          </div>
+        </div>
+      </div>
+
+
+      <div className="bg-white border border-slate-200 rounded-xl p-4.5 space-y-3 shadow-sm">
+        <h4 className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase border-b border-slate-100 pb-2">
+          <Paperclip className="w-4 h-4 text-blue-600" />
+          Uploaded Attachments & Documents ({documents.length})
+        </h4>
+        {documents.length > 0 ? (
+          <div className="space-y-2.5">
+            {documents.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-slate-800 truncate" title={doc.label}>
+                      {doc.label}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-medium">
+                      {doc.size}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {doc.guid && (
+                    <>
+                      <ViewButton
+                        size="xs"
+                        onClick={() =>
+                          setViewingDoc({
+                            fileUrl: getDocumentViewUrl(doc.guid),
+                            fileName: `${doc.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+                            label: doc.label,
+                          })
+                        }
+                      >
+                        View
+                      </ViewButton>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="xs"
+                        icon={Download}
+                        onClick={() => window.open(getDocumentDownloadUrl(doc.guid), "_blank")}
+                      >
+                        Download
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 font-medium text-center py-2">
+            No uploaded document attachments found for this application.
+          </p>
+        )}
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-xl p-4.5 space-y-3 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h4 className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase">
+            <GitCommit className="w-4 h-4 text-blue-600" />
+            Approval Workflow Timeline
+          </h4>
+          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+            {detail?.approvalStages?.length || 0} Stages
+          </span>
+        </div>
+
+        {detail?.approvalStages && detail.approvalStages.length > 0 ? (
+          <ApprovalStagesTimeline
+            stages={detail.approvalStages.map((stg) => ({
+              id: stg.approvalFlowStageId,
+              stageName: stg.stageName,
+              stageOrder: stg.stageOrder,
+              status: stg.status,
+              remark: stg.remark || undefined,
+              assignedToName: stg.assignedToName || undefined,
+            }))}
+            completedCount={detail.completedStages || 0}
+            currentStageIndex={(() => {
+              const index = detail.approvalStages.findIndex((stage) => stage.isCurrentStage);
+              return index >= 0 ? index : undefined;
+            })()}
+          />
+        ) : (
+          <p className="text-xs text-slate-400 font-medium text-center py-2">
+            No approval workflow stages recorded for this application.
+          </p>
+        )}
+      </div>
+
+      {viewingDoc && (
+        <DocumentViewerModal
+          isOpen={!!viewingDoc}
+          onClose={() => setViewingDoc(null)}
+          fileUrl={viewingDoc.fileUrl}
+          fileName={viewingDoc.fileName}
+          label={viewingDoc.label}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function DepartmentCarsoulClient({ departments, userApplications, upicId }: DepartmentCarsoulClientProps) {
   const router = useRouter();
@@ -214,7 +429,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
 
   const { language } = useLanguage();
   const lang = safeLang(language);
-  const t = useTranslations("rts.serviceGrid");
   const localePrefix = `/${lang}`;
 
   const [activeDrawerApp, setActiveDrawerApp] = useState<CitizenApplication | null>(null);
@@ -241,20 +455,16 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     return serviceName.includes(query) || appId.includes(query);
   });
 
-  // Render the Overview Panel
   const renderDashboardOverview = () => {
     return (
       <div className="space-y-5">
-        {/* TableHeader standard common component */}
         <TableHeader
           title={lang === "mr" ? "माझा नागरिक डॅशबोर्ड" : lang === "hi" ? "मेरा नागरिक डैशबोर्ड" : "Citizen Dashboard"}
           subtitle={lang === "mr" ? "तुमचे सादर केलेले सर्व अर्ज आणि लोकसेवा हक्क (SLA) प्रगती" : lang === "hi" ? "आपके सभी जमा किए गए आवेदन और लोक सेवा अधिकार (SLA) प्रगति" : "Track all your submitted applications and Right to Service (SLA) statuses"}
           icon={LayoutDashboard}
         />
 
-        {/* Customized Premium Status-Colored KPI Cards Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {/* Card 1: Total */}
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
@@ -266,7 +476,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             </div>
           </div>
 
-          {/* Card 2: Approved */}
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
@@ -278,7 +487,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             </div>
           </div>
 
-          {/* Card 3: Pending */}
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-xl" />
             <div className="flex-1 min-w-0">
@@ -290,7 +498,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             </div>
           </div>
 
-          {/* Card 4: Rejected */}
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
@@ -303,7 +510,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           </div>
         </div>
 
-        {/* Applications List Table Section */}
         <div className="bg-white border border-slate-200 rounded-xl p-4.5 shadow-sm space-y-3.5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="space-y-0.5">
@@ -315,7 +521,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                 {lang === "mr" ? "अधिनियमानुसार प्रत्येक सेवेचा हमी कालावधी निश्चित आहे." : lang === "hi" ? "अधिनियम के तहत प्रत्येक सेवा की गारंटी समय सीमा तय है।" : "Each municipal service is bound by legal Right to Service delivery timelines."}
               </p>
             </div>
-            {/* Inline search filter box */}
             <div className="relative w-full sm:w-64">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Search size={13} />
@@ -379,7 +584,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                         <td className="py-2.5 px-3 text-right">
                           <button
                             onClick={() => setActiveDrawerApp(app)}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-755 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
                           >
                             <Eye size={12} />
                             <span>{lang === "mr" ? "तपशील पहा" : lang === "hi" ? "विवरण देखें" : "View Details"}</span>
@@ -394,7 +599,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           )}
         </div>
 
-        {/* Slide-over Side Drawer using standard common Drawer component */}
         {activeDrawerApp && (
           <Drawer
             open={!!activeDrawerApp}
@@ -420,131 +624,13 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             footer={
               <button
                 onClick={() => setActiveDrawerApp(null)}
-                className="bg-slate-205 hover:bg-slate-300 text-slate-800 font-black text-xs px-4.5 py-2 rounded-xl transition-colors cursor-pointer border border-slate-200"
+                className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-xs px-4.5 py-2 rounded-xl transition-colors cursor-pointer border border-slate-200"
               >
                 {lang === "mr" ? "बंद करा" : lang === "hi" ? "बंद करें" : "Close"}
               </button>
             }
           >
-            {/* Drawer Body Content */}
-            <div className="p-5 space-y-5">
-              {/* SLA & Submitted Info Summary Card */}
-              <section className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
-                <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
-                  {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Details"}
-                </h4>
-                <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
-                  <div>
-                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                      {lang === "mr" ? "अर्ज क्रमांक" : lang === "hi" ? "आवेदन क्रमांक" : "Application Number"}
-                    </span>
-                    <span className="text-slate-900 font-extrabold">{activeDrawerApp.applicationNo}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                      {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
-                    </span>
-                    <span className="text-slate-900 font-extrabold">{formatSubmittedDate(activeDrawerApp.submittedDate, lang)}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                      {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
-                    </span>
-                    <span className="text-blue-700 font-extrabold">
-                      {activeDrawerApp.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                      {lang === "mr" ? "स्थिती" : lang === "hi" ? "स्थिति" : "Status"}
-                    </span>
-                    {activeDrawerApp.normalizedStatus === "approved" ? (
-                      <StatusBadge value activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
-                    ) : activeDrawerApp.normalizedStatus === "rejected" ? (
-                      <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "अस्वीकृत" : "Rejected"} />
-                    ) : (
-                      <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
-                    )}
-                  </div>
-                </div>
-              </section>
-
-
-              {/* Static until the application workflow API exposes stage history. */}
-              <section className="rounded-xl border border-slate-200 bg-white p-4.5">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">
-                    {staticWorkflowText.title}
-                  </h4>
-                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[9px] font-black text-amber-700">
-                    {`${staticWorkflowData.stages.filter((stage) => stage.status === "complete").length} of ${staticWorkflowData.stages.length} Done`}
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  {staticWorkflowData.stages.map((stage, index) => (
-                    <WorkflowStageItem
-                      key={stage.id}
-                      stage={stage}
-                      stepNumber={index + 1}
-                      hasNext={index < staticWorkflowData.stages.length - 1}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Static document history until application-detail APIs are available. */}
-              <section className="rounded-xl border border-slate-200 bg-white p-4.5">
-                <div className="mb-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">
-                    {staticWorkflowText.documentsTitle}
-                  </h4>
-                  <p className="mt-0.5 text-[10px] font-medium text-slate-500">
-                    {staticWorkflowText.documentsSubtitle}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  {staticSubmittedDocuments.map((document) => (
-                    <div
-                      key={document.name}
-                      className={`flex items-center gap-3 rounded-xl border p-3 ${document.available ? "border-slate-200 bg-white" : "border-slate-150 bg-slate-50/70"
-                        }`}
-                    >
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${document.available ? "bg-blue-50 text-blue-600" : "bg-slate-200 text-slate-400"
-                        }`}>
-                        <FileText size={17} />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className={`truncate text-[11px] font-black ${document.available ? "text-slate-800" : "text-slate-500"}`}>
-                          {document.name}
-                        </p>
-                        <p className={`mt-0.5 text-[10px] font-semibold ${document.available ? "text-slate-400" : "text-rose-500"}`}>
-                          {document.size}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 gap-1.5">
-                        <button
-                          type="button"
-                          disabled
-                          title={document.available ? staticWorkflowText.previewDocument : staticWorkflowText.unavailableDocument}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          disabled
-                          title={document.available ? staticWorkflowText.downloadDocument : staticWorkflowText.unavailableDocument}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          <Download size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
+            <CitizenApplicationDrawerBody app={activeDrawerApp} lang={lang} />
           </Drawer>
         )}
       </div>
@@ -595,7 +681,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     return Array.from(new Map([...deptServices, ...serviceMatches].map((service) => [service.id, service])).values());
   }, [departments, exactDeptMatches, lang, matchedDepts, qNorm]);
 
-  const selectedDeptId = deptFromUrl; // Can be "" if Dashboard Overview is active
+  const selectedDeptId = deptFromUrl;
 
   const carouselDeptId = useMemo(() => {
     if (!qNorm) return selectedDeptId;
@@ -606,8 +692,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
 
   const activeDeptObj = departments.find((department) => department.id === carouselDeptId);
   const activeDeptLabel = activeDeptObj ? pickLangText(activeDeptObj.name, lang) : "";
-
-  // No auto-redirect on mount anymore. If deptFromUrl is empty, we show Dashboard Overview.
 
   const handleDeptChange = (deptId: string) => {
     const params = new URLSearchParams();
@@ -628,15 +712,15 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           className="mx-3 flex gap-2 overflow-x-auto px-3 pb-2 pt-1 sm:-mx-4 sm:px-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {/* Dashboard Overview Mobile Tab */}
           <button
             type="button"
             onClick={() => !qNorm && handleDeptChange("")}
             disabled={!!qNorm}
-            className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${(!carouselDeptId && !qNorm)
+            className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+              (!carouselDeptId && !qNorm)
                 ? 'border-teal-600 bg-teal-600 text-white shadow-md'
                 : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50'
-              } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+            } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
           >
             <span className="whitespace-nowrap">{lang === "mr" ? "डॅशबोर्ड" : lang === "hi" ? "डैशबोर्ड" : "Dashboard"}</span>
           </button>
@@ -650,10 +734,11 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                 type="button"
                 onClick={() => !qNorm && handleDeptChange(department.id)}
                 disabled={!!qNorm}
-                className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${isActive
+                className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+                  isActive
                     ? 'border-teal-600 bg-teal-600 text-white shadow-md'
                     : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50'
-                  } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
                 <span className="whitespace-nowrap">{label}</span>
               </button>
@@ -673,7 +758,6 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
         </div>
 
         <div className="min-w-0 flex-1 w-full lg:max-h-[calc(100vh-230px)] lg:overflow-y-auto lg:pr-2" style={{ scrollbarWidth: "thin" }}>
-          {/* Render Dashboard Overview if no department is selected and no search query */}
           {!carouselDeptId && !qNorm ? (
             renderDashboardOverview()
           ) : (
@@ -684,7 +768,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
                       {exactDeptMatches.length === 1
                         ? `---- ${pickLangText(exactDeptMatches[0].name, lang)} ----`
-                        : `${t("searchResults")} - \"${qRaw}\"`}
+                        : `${UI.searchResults[lang]} - \"${qRaw}\"`}
                     </h2>
                   ) : (
                     <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
@@ -697,8 +781,8 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                   <div className="h-2 w-2 rounded-full bg-green-500" />
                   <span>
                     {qNorm
-                      ? `${results.length} ${t("servicesFound")}`
-                      : `${activeDeptObj?.services.length ?? 0} ${t("availableServices")}`}
+                      ? `${results.length} ${UI.found[lang]}`
+                      : `${activeDeptObj?.services.length ?? 0} ${UI.available[lang]}`}
                   </span>
                 </div>
 
@@ -707,7 +791,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     onClick={() => router.replace(`${localePrefix}/service/dashboard`, { scroll: false })}
                     className="shrink-0 self-center rounded-lg border bg-white px-3 py-1.5 text-xs hover:bg-gray-50 sm:self-auto"
                   >
-                    {t("clear")}
+                    {UI.clear[lang]}
                   </button>
                 ) : null}
               </div>

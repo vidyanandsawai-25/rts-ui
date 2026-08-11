@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   CheckCircle2,
@@ -37,6 +38,11 @@ interface DashboardProps {
     departmentName: string,
     moduleName: RtsMisDashboardModuleName
   ) => Promise<RtsMisDashboardData>;
+  filters: {
+    applicationSource: ApplicationSource;
+    chart: PieChartView;
+    pageNumber: number;
+  };
 }
 
 interface DepartmentRow {
@@ -99,12 +105,12 @@ interface PieDataPoint {
 
 type PaginationToken = number | "dots";
 type PieChartView = "department" | "service";
-type ApplicationSource = "rts" | "aapleSarkar" | "offline";
+type ApplicationSource = "rts" | "aaple-sarkar" | "offline";
 
 function getModuleName(applicationSource: ApplicationSource): RtsMisDashboardModuleName {
-  if (applicationSource === "rts") return "RTS";
-  if (applicationSource === "aapleSarkar") return "AapleSarkar";
-  return "Offline";
+  if (applicationSource === "aaple-sarkar") return "AapleSarkar";
+  if (applicationSource === "offline") return "Offline";
+  return "RTS";
 }
 
 function getPaginationTokens(currentPage: number, totalPages: number): PaginationToken[] {
@@ -237,19 +243,18 @@ function DonutChart({
   );
 }
 
-export default function RtsMisDashboard({ misDashboardData, getDepartmentServices }: DashboardProps) {
+export default function RtsMisDashboard({ misDashboardData, getDepartmentServices, filters }: DashboardProps) {
   const locale = useLocale();
   const t = useTranslations("rts");
   const tCommon = useTranslations("common");
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { applicationSource, chart: pieChartView, pageNumber } = filters;
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [departmentPage, setDepartmentPage] = useState(1);
-  const [applicationSource, setApplicationSource] = useState<ApplicationSource>("rts");
-  const [pieChartView, setPieChartView] = useState<PieChartView>("department");
   const [expandedDepartmentId, setExpandedDepartmentId] = useState<string | null>(null);
-  const [sourceDashboardData, setSourceDashboardData] = useState<RtsMisDashboardData | null>(null);
-  const [isSourceLoading, setIsSourceLoading] = useState(false);
   const [servicesByDepartment, setServicesByDepartment] = useState<Record<string, ServiceRow[]>>({});
   const [loadingDepartmentId, setLoadingDepartmentId] = useState<string | null>(null);
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
@@ -258,7 +263,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
   const formatNumber = (value: number) => numberFormatter.format(value);
   const moduleName = getModuleName(applicationSource);
-  const dashboardData = sourceDashboardData ?? misDashboardData;
+  const dashboardData = misDashboardData;
   const initialDepartmentIdsByName = useMemo(() => new Map(
     (misDashboardData.departmentWiseData ?? [])
       .filter((department) => department.departmentId != null && department.departmentName?.trim())
@@ -312,10 +317,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   ), [departments]);
 
   const departmentTotalPages = Math.max(1, Math.ceil(filteredDepartments.length / DEPARTMENT_PAGE_SIZE));
-  const expandedDepartmentIndex = filteredDepartments.findIndex((department) => department.id === expandedDepartment?.id);
-  const currentDepartmentPage = expandedDepartmentIndex >= 0
-    ? Math.floor(expandedDepartmentIndex / DEPARTMENT_PAGE_SIZE) + 1
-    : Math.min(departmentPage, departmentTotalPages);
+  const currentDepartmentPage = Math.min(pageNumber, departmentTotalPages);
   const paginatedDepartments = useMemo(() => {
     const start = (currentDepartmentPage - 1) * DEPARTMENT_PAGE_SIZE;
     return filteredDepartments.slice(start, start + DEPARTMENT_PAGE_SIZE);
@@ -346,7 +348,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
     try {
       const response = await getDepartmentServices(numericId, department.name, moduleName);
-      const mappedServices = (response.serviceWiseData ?? []).map((service, index): ServiceRow => ({
+      const services = (response.serviceWiseData ?? []).map((service, index): ServiceRow => ({
         srNo: index + 1,
         id: `${department.id}-${createIdentifier(service.serviceName, String(index + 1))}`,
         name: service.serviceName,
@@ -359,7 +361,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
         overdue: Number(service.overdueCount ?? 0),
         sla: Number(service.sla ?? 0),
       }));
-      setServicesByDepartment((current) => ({ ...current, [department.id]: mappedServices }));
+      setServicesByDepartment((current) => ({ ...current, [department.id]: services }));
     } catch {
       setServiceErrors((current) => ({ ...current, [department.id]: t("misDashboard.serviceLoadFailed") }));
     } finally {
@@ -368,52 +370,45 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     }
   }, [getDepartmentServices, moduleName, servicesByDepartment, t]);
 
-  const fetchDepartmentServicesRef = useRef(fetchDepartmentServices);
-
   useEffect(() => {
-    fetchDepartmentServicesRef.current = fetchDepartmentServices;
-  }, [fetchDepartmentServices]);
+    if (!expandedDepartment) return;
+
+    const requestTimer = window.setTimeout(() => {
+      void fetchDepartmentServices(expandedDepartment);
+    }, 0);
+
+    return () => window.clearTimeout(requestTimer);
+  }, [expandedDepartment, fetchDepartmentServices]);
 
   useEffect(() => {
     if (previousApplicationSource.current === applicationSource) return;
     previousApplicationSource.current = applicationSource;
+    activeServiceRequests.current.clear();
+    setExpandedDepartmentId(null);
+    setServicesByDepartment({});
+    setLoadingDepartmentId(null);
+    setServiceErrors({});
+  }, [applicationSource]);
 
-    let cancelled = false;
-
-    void getDepartmentServices(1, "Property Tax", moduleName)
-      .then((data) => {
-        if (!cancelled) setSourceDashboardData(data);
-      })
-      .catch(() => {
-        if (!cancelled) setSourceDashboardData(null);
-      })
-      .finally(() => {
-        if (!cancelled) setIsSourceLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [applicationSource, getDepartmentServices, moduleName]);
-
-  useEffect(() => {
-    if (!expandedDepartmentId) return;
-
-    const requestTimer = window.setTimeout(() => {
-      const department = departments.find((item) => item.id === expandedDepartmentId);
-      if (department) void fetchDepartmentServicesRef.current(department);
-    }, 0);
-
-    return () => window.clearTimeout(requestTimer);
-  }, [departments, expandedDepartmentId]);
+  const updateUrl = useCallback((updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get("AppliSource") === "aapleSarkar") params.set("AppliSource", "aaple-sarkar");
+    params.delete("Deparment");
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    });
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   const toggleDepartment = (department: DepartmentRow) => {
     setExpandedDepartmentId((current) => current === department.id ? null : department.id);
   };
 
   const changeDepartmentPage = (page: number) => {
-    setDepartmentPage(page);
     setExpandedDepartmentId(null);
+    updateUrl({ PageNumber: String(page) });
   };
 
   const metrics = [
@@ -589,23 +584,15 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
                   value={applicationSource}
                   options={[
                     { value: "rts", label: "RTS" },
-                    { value: "aapleSarkar", label: "AapleSarkar" },
+                    { value: "aaple-sarkar", label: "Aaple Sarkar" },
                     { value: "offline", label: "Offline" }
                   ]}
                   onChange={(_event, value) => {
                     const nextSource = value as ApplicationSource;
                     if (nextSource === applicationSource) return;
-                    setDepartmentPage(1);
-                    setServicesByDepartment({});
-                    setServiceErrors({});
-                    setLoadingDepartmentId(null);
-                    setSourceDashboardData(null);
-                    setIsSourceLoading(true);
-                    setExpandedDepartmentId(null);
-                    setApplicationSource(nextSource);
+                    updateUrl({ AppliSource: nextSource, PageNumber: "1" });
                   }}
                   ariaLabel={t("misDashboard.applicationSource")}
-                  // label={}
                   selectSize="sm"
                 />
               </div>
@@ -615,7 +602,6 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
           <MasterTable<MisTableRow>
             columns={tableColumns}
             data={tableRows}
-            loading={isSourceLoading}
             getRowKey={(row) => row.id}
             emptyText={t("misDashboard.noData")}
             maxBodyHeightClassName="h-[442px]"
@@ -679,16 +665,6 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
                 <div className="mt-1 flex items-center justify-center gap-y-1 gap-x-1">
 
-                  {/* Gauge */}
-                  {/* <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-cyan-50">
-                    <Gauge className="size-5 text-[#008B8B]" strokeWidth={2.2} />
-                  </div> */}
-
-                  {/* Divider */}
-                  {/* <div className="h-9 w-px bg-slate-200" /> */}
-
-                  {/* Value */}
-                  {/* <div className="flex items-end gap-1"> */}
                   <span className="text-[16px] font-extrabold leading-none text-[#008B8B]">
                     {formatNumber(selectedDepartment?.sla ?? 0)}
                   </span>
@@ -747,8 +723,8 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
             <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
               <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0a3275] truncate"><PieChart className="h-4 w-4 text-[#0B5CD5]" />{t("misDashboard.applicationShare")}</h3>
               <div role="tablist" aria-label={t("misDashboard.applicationShare")} className="flex rounded-lg bg-slate-100 p-0.5">
-                <button type="button" role="tab" aria-selected={pieChartView === "department"} onClick={() => setPieChartView("department")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "department" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.department")}</button>
-                <button type="button" role="tab" aria-selected={pieChartView === "service"} onClick={() => setPieChartView("service")} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "service" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.service")}</button>
+                <button type="button" role="tab" aria-selected={pieChartView === "department"} onClick={() => updateUrl({ Chart: "department" })} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "department" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.department")}</button>
+                <button type="button" role="tab" aria-selected={pieChartView === "service"} onClick={() => updateUrl({ Chart: "service" })} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "service" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.service")}</button>
               </div>
             </div>
             <DonutChart
