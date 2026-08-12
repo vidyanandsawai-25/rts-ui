@@ -41,6 +41,7 @@ interface PageProps {
     // Create Partition drawer
     createPartition?: string;
     partitionPropertyId?: string;
+    partitionPropertyNo?: string;
     // Delete Property drawer
     deleteProperty?: string;
   }>;
@@ -440,6 +441,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
 
     // Fetch society details and next partition number if a property is selected
     const partitionPropertyId = params.partitionPropertyId;
+    const partitionPropertyNo = params.partitionPropertyNo;
     if (partitionPropertyId) {
       const propertyId = parseInt(String(partitionPropertyId), 10);
       if (!isNaN(propertyId) && propertyId > 0) {
@@ -449,12 +451,12 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
           ssrPartitionSocietyDetails = societyDetailsResult.data.items || [];
         }
 
-        // Fetch next partition number
-        const selectedProperty = ssrPartitionProperties.find(p => p.id === propertyId);
-        if (selectedProperty && selectedPropWardId) {
+        // Fetch next partition number using the propertyNo carried directly in the URL,
+        // so this doesn't depend on ssrPartitionProperties having resolved first.
+        if (partitionPropertyNo && selectedPropWardId) {
           const nextPartitionResult = await getNextPartitionNumberAction(
             selectedPropWardId,
-            selectedProperty.propertyNo
+            partitionPropertyNo
           );
           if (nextPartitionResult.success && nextPartitionResult.data !== undefined) {
             ssrNextPartitionNumber = nextPartitionResult.data;
