@@ -6,6 +6,9 @@ import { createTaxZone, updateTaxZone, deleteTaxZone, getTaxZonePagedServer, get
 import type { PagedResponse, TaxZone } from "@/types/taxzone.types";
 import { validateRequiredStringFromFormData, getOptionalStringFromFormData, getBooleanFromFormData } from "@/lib/utils/validation-helpers";
 
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
+
 export async function getTaxZonePagedAction(
   pageNumber: number,
   pageSize: number,
@@ -60,6 +63,15 @@ export async function saveTaxZone(id: string, formData: FormData) {
   // ✅ Optional fields - safely extract with type checking
   const remark = getOptionalStringFromFormData(formData, "remark");
   const isActive = getBooleanFromFormData(formData, "isActive");
+
+  // Read logged in user ID from cookie store
+  const cookieStore = await cookies();
+  const userIdFromCookie = getUserIdFromCookies(cookieStore);
+  const rawCreatedBy = formData.get("createdBy");
+  const rawUpdatedBy = formData.get("updatedBy");
+
+  const createdBy = userIdFromCookie ?? (rawCreatedBy ? Number(rawCreatedBy) : null);
+  const updatedBy = userIdFromCookie ?? (rawUpdatedBy ? Number(rawUpdatedBy) : null);
   
   // ✅ Validate id parameter - must be empty or a valid number
   let numericId: number | undefined = undefined;
@@ -79,7 +91,15 @@ export async function saveTaxZone(id: string, formData: FormData) {
     isUpdate = true;
   }
   
-  const payload = {
+  const payload: {
+    id?: number;
+    taxZoneNo: string;
+    taxZoneType: string;
+    remark: string;
+    isActive: boolean;
+    createdBy?: number | null;
+    updatedBy?: number | null;
+  } = {
     id: numericId,
     taxZoneNo: taxZoneNo,
     taxZoneType: taxZoneType,
@@ -89,10 +109,12 @@ export async function saveTaxZone(id: string, formData: FormData) {
 
   try {
     if (isUpdate) {
+      payload.updatedBy = updatedBy;
       await updateTaxZone(payload);
       revalidatePath(`/${locale}/property-tax/taxzone-master/taxzone`);
       return { ok: true, mode: "update" as const };
     } else {
+      payload.createdBy = createdBy;
       await createTaxZone(payload);
       revalidatePath(`/${locale}/property-tax/taxzone-master/taxzone`);
       return { ok: true, mode: "create" as const };

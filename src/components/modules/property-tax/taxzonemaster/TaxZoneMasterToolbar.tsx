@@ -34,18 +34,27 @@ export function TaxZoneMasterToolbar() {
 
   useEffect(() => {
     if (activeTab !== 'taxzone') return;
-    
+    if (pathname.endsWith('/add') || pathname.includes('/edit/')) return;
+
     const timer = setTimeout(() => {
-      if (search === currentSearchTerm) return;
-      
+      const trimmedSearch = search.trim();
+      const trimmedCurrent = currentSearchTerm.trim();
+
+      if (trimmedSearch === trimmedCurrent) {
+        if (!trimmedSearch && search !== '') {
+          setSearch('');
+        }
+        return;
+      }
+
       const params = new URLSearchParams(searchParams.toString());
-      if (search.trim()) {
-        params.set('search', search.trim());
+      if (trimmedSearch) {
+        params.set('search', trimmedSearch);
       } else {
         params.delete('search');
       }
       params.set('page', '1');
-      
+
       router.push(`${pathname}?${params.toString()}`);
     }, 500);
 
@@ -68,7 +77,9 @@ export function TaxZoneMasterToolbar() {
       {activeTab === 'taxzone' && (
         <AddButton
           label={tZone('list.buttons.add')}
-          onClick={() => router.push(`${base}/taxzone/add`)}
+          onClick={() => {
+            router.push(`${base}/taxzone/add`)
+          }}
         />
       )}
 
