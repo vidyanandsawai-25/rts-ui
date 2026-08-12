@@ -9,11 +9,11 @@ import {
   updateConstructionAction,
 } from "@/app/[locale]/property-tax/constructiontype/action";
 import { ConstructionTypeFormModel, ConstructionType } from "@/types/construction.types";
-import { 
-  CODE_SANITIZE, 
-  DESCRIPTION_SANITIZE, 
-  validateForm, 
-  commonValidations 
+import {
+  CODE_SANITIZE,
+  DESCRIPTION_SANITIZE,
+  validateForm,
+  commonValidations
 } from "@/lib/utils/validation";
 import { CONSTRUCTION_CODE_MAX, DESCRIPTION_MAX } from "@/components/modules/property-tax/construction-type-master/constants";
 
@@ -82,7 +82,7 @@ export function useConstructionForm({
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-    
+
     let sanitizedValue = value;
     if (name === "description") {
       sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "");
@@ -134,13 +134,13 @@ export function useConstructionForm({
     setErrors((p) => {
       const newErrors = { ...p };
       const fieldName = name as keyof ConstructionTypeFormModel;
-      
+
       if (fieldErrors[fieldName]) {
         newErrors[fieldName] = fieldErrors[fieldName];
       } else {
         delete newErrors[fieldName];
       }
-      
+
       return newErrors;
     });
   }, [formData, validate]);
@@ -155,7 +155,7 @@ export function useConstructionForm({
 
     const code = result.statusCode ?? 0;
     if (errorMap[code]) return errorMap[code];
-    
+
     if (code === 400) {
       const msg = result.message?.toLowerCase() || "";
       if (msg.includes("duplicate") || msg.includes("already exists")) {
@@ -163,7 +163,7 @@ export function useConstructionForm({
       }
       return result.message || t("apiErrors.invalidData");
     }
-    
+
     if (code >= 500) return tCommon("errors.serverError");
     return result.message || t("apiErrors.operationFailed");
   }, [t, tCommon]);
@@ -194,6 +194,18 @@ export function useConstructionForm({
 
     if (Object.keys(v).length) return;
 
+    // Numbers only not allowed for constructionCode
+    if (!/[A-Za-z]/.test(formData.constructionCode)) {
+      toast.error(t("form.validation.constructionCodeNumbersOnlyNotAllowed"));
+      return;
+    }
+
+    // Numbers only not allowed for description
+    if (!/[A-Za-z]/.test(formData.description)) {
+      toast.error(t("form.validation.descriptionNumbersOnlyNotAllowed"));
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = isEdit
@@ -209,11 +221,11 @@ export function useConstructionForm({
         ? t("success.updated", { code: formData.constructionCode })
         : t("success.created", { code: formData.constructionCode })
       );
-      
+
       onSuccess();
       startTransition(() => {
-          router.refresh();
-          closeAndRoute();
+        router.refresh();
+        closeAndRoute();
       });
     } finally {
       setIsSubmitting(false);
