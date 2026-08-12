@@ -198,18 +198,20 @@ describe('KycFormView', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(updatePropertyKycAction).toHaveBeenCalledWith(
-        mockKycDetailsData.propertyId,
-        expect.objectContaining({
-          ownerName: 'John Smith',
-          mobileNo: '9876543210',
-          adharCardNo: '223456789012',
-          pinCode: '123456',
-        }),
-        'en'
-      );
-      expect(toast.success).toHaveBeenCalledWith('Updated');
+      expect(updatePropertyKycAction).toHaveBeenCalled();
     });
+
+    expect(updatePropertyKycAction).toHaveBeenCalledWith(
+      mockKycDetailsData.propertyId,
+      expect.objectContaining({
+        ownerName: 'John Smith',
+        mobileNo: '+919876543210',
+        adharCardNo: '223456789012',
+        pinCode: '123456',
+      }),
+      'en'
+    );
+    expect(toast.success).toHaveBeenCalledWith('Updated');
   });
 
   it('handles submission error correctly', async () => {

@@ -52,8 +52,8 @@ export const PropertyTrackingDrawer = ({
     const pathZoneId = params?.zoneId as string;
     const routePropertyId = params?.trackingId as string;
     const propertyId = propPropertyId || routePropertyId;
-    const stage = searchParams.get('stage') || 'geoSequencing';
-    const workflowStageId = searchParams.get('workflowStageId');
+    // const stage = searchParams.get('stage') || 'geoSequencing';
+    // const workflowStageId = searchParams.get('workflowStageId');
 
     const stageItems = useMemo(() => initialStageItems || [], [initialStageItems]);
     const isLoading = false;
@@ -67,13 +67,10 @@ export const PropertyTrackingDrawer = ({
             owner: propOwnerName || searchParams.get('ownerName') || '-'
         };
     }, [propertyId, propOwnerName, propPropertyNo, searchParams]);
-    const source = searchParams.get('source') || 'division';
 
     const handleClose = () => {
-        // Go back to the dashboard page under /property-details-dashboard/[zoneId]
-        const sourceParam = source ? `&source=${source}` : '';
-        const returnUrlParam = searchParams.get('returnUrl') ? `&returnUrl=${encodeURIComponent(searchParams.get('returnUrl')!)}` : '';
-        router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}?zoneId=${pathZoneId}&stage=${stage}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${sourceParam}${returnUrlParam}`);
+        const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+        router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}?${currentParams.toString()}`);
     };
 
     const trackingStages: TrackingStage[] = useMemo(() => {

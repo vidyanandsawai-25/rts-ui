@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+
 import PropertyMapping from "@/components/modules/property-tax/property-mapping/PropertyMapping";
 import { getMappedPropertiesAction } from "./action";
 
@@ -20,15 +20,11 @@ export default async function PropertyMappingPageRoute({ searchParams }: PagePro
 
   const uniqueKey = `${resolvedSearchParams?.propertyId || ""}-${resolvedSearchParams?.propNo || ""}`;
 
-  return (
-    <Suspense
-      fallback={<div className="p-8 text-center text-xs text-slate-500 font-bold">Loading Property Mapping...</div>}
-    >
+  return (    
       <PropertyMapping
         key={uniqueKey}
         initialMappingData={initialMappingData}
         initialSearchParams={resolvedSearchParams}
       />
-    </Suspense>
   );
 }

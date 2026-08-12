@@ -8,10 +8,23 @@ import {
     DataEntryWardWiseSummaryResponse
 } from "@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type";
 
-export async function automationGetDataEntryGrid(workflowStageId?: string | number): Promise<DataEntryGridItems | null> {
-    const url = workflowStageId !== undefined && workflowStageId !== null
-        ? `/AutomationDashboard/DataEntryGrid?workflowStageId=${workflowStageId}`
-        : `/AutomationDashboard/DataEntryGrid`;
+export async function automationGetDataEntryGrid(
+    workflowStageId?: string | number,
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
+): Promise<DataEntryGridItems | null> {
+    const params = new URLSearchParams();
+    if (workflowStageId !== undefined && workflowStageId !== null) {
+        params.append("workflowStageId", workflowStageId.toString());
+    }
+    if (propertyTypeId) {
+        params.append("PropertyTypeId", propertyTypeId);
+    }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+
+    const url = `/AutomationDashboard/DataEntryGrid?${params.toString()}`;
 
     const response = await apiClient.get<DataEntryGridResponse>(url, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
@@ -25,8 +38,8 @@ export async function automationGetDataEntryWardWiseSummary(
     workflowStageId?: string | number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    propertyTypeCategoryId?: string | null,
-    categoryId?: string | null
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<DataEntryWardWiseSummaryItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -37,11 +50,11 @@ export async function automationGetDataEntryWardWiseSummary(
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
     }
+    if (propertyTypeId) {
+        params.append("PropertyTypeId", propertyTypeId);
+    }
     if (propertyTypeCategoryId) {
         params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
-    }
-    if (categoryId) {
-        params.append("PropertyTypeId", categoryId);
     }
 
     const response = await apiClient.get<DataEntryWardWiseSummaryResponse>(

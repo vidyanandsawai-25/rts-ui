@@ -68,10 +68,14 @@ export async function exportPendingData(
 export async function getPropertyWiseData(
     propertyNo: string,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    searchType?: string
 ): Promise<PropertyWisePagination | null> {
     const params = new URLSearchParams();
-    params.append("propertyNo", propertyNo);
+    params.append("PropertyNo", propertyNo);
+    if (searchType) {
+        params.append("SearchType", searchType);
+    }
     params.append("pageNumber", pageNumber.toString());
     params.append("pageSize", pageSize.toString());
 

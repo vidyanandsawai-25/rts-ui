@@ -13,8 +13,8 @@ interface WardWiseSummaryPageProps {
         pageNumber?: string;
         pageSize?: string;
         isFilter?: string;
-        propertyDescription?: string;
         propertyTypeId?: string;
+        propertyTypeCategoryId?: string;
     }>;
 }
 
@@ -22,11 +22,11 @@ export default async function InternalSurveyWardWiseSummaryPage({ params, search
     const resolvedParams = await params;
     const resolvedSearchParams = await searchParams;
     const { zoneId } = resolvedParams;
-    const { workflowStageId, propertyDescription, propertyTypeId } = resolvedSearchParams;
+    const { workflowStageId, propertyTypeId, propertyTypeCategoryId } = resolvedSearchParams;
     const pageNumber = resolvedSearchParams.pageNumber ? parseInt(resolvedSearchParams.pageNumber) : 1;
     const pageSize = resolvedSearchParams.pageSize ? parseInt(resolvedSearchParams.pageSize) : 10;
 
-    const summaryResponse = await getInternalSurveyWardWiseSummaryAction(zoneId, workflowStageId, pageNumber, pageSize, propertyDescription, propertyTypeId);
+    const summaryResponse = await getInternalSurveyWardWiseSummaryAction(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeId, propertyTypeCategoryId);
 
     const summaryData = summaryResponse.success ? summaryResponse.data ?? null : null;
 

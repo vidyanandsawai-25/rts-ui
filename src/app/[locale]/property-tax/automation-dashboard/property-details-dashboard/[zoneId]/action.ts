@@ -32,14 +32,16 @@ export async function getGeoSequencingPropertyDetailsAction(
     pageNumber: number = 1,
     pageSize: number = 10,
     wardId?: string | number,
-    propertyDescription?: string,
+    propertyTypeCategoryId?: string | number,
     propertyTypeId?: string | number,
     assessmentTypeId?: string | number,
     searchTerm?: string,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
+    structure?: boolean,
+    unit?: boolean
 ): Promise<ActionResult<PropertySubGridDetailsItems>> {
-    try {            
+    try {
         logger.info("getGeoSequencingPropertyDetailsAction: Fetching property details", { zoneId, workflowStageId, pageNumber, pageSize });
         const data = await automationGetPropertySubGridDetails(
             zoneId,
@@ -47,12 +49,14 @@ export async function getGeoSequencingPropertyDetailsAction(
             pageNumber,
             pageSize,
             wardId,
-            propertyDescription,
+            propertyTypeCategoryId,
             propertyTypeId,
             assessmentTypeId,
             searchTerm,
             sortBy,
-            sortOrder
+            sortOrder,
+            structure,
+            unit
         );
         return { success: true, data };
     } catch (error) {
@@ -133,11 +137,14 @@ export async function getWardWisePropertySubGridDetailsAction(
     pageSize: number = 10,
     wardId?: string | number,
     propertyDescription?: string,
+    propertyTypeCategoryId?: string | number,
     propertyTypeId?: string | number,
     assessmentTypeId?: string | number,
     searchTerm?: string,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
+    structure?: boolean,
+    unit?: boolean
 ): Promise<ActionResult<WardWisePropertySubGridDetailsItems>> {
     try {      
         logger.info("getWardWisePropertySubGridDetailsAction: Fetching property details", { zoneId, workflowStageId, pageNumber, pageSize });
@@ -148,11 +155,14 @@ export async function getWardWisePropertySubGridDetailsAction(
             pageSize,
             wardId,
             propertyDescription,
+            propertyTypeCategoryId,
             propertyTypeId,
             assessmentTypeId,
             searchTerm,
             sortBy,
-            sortOrder
+            sortOrder,
+            structure,
+            unit
         );
         return { success: true, data };
     } catch (error) {

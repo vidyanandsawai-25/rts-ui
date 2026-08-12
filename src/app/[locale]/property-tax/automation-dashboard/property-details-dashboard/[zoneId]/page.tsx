@@ -19,6 +19,8 @@ interface PageProps {
             pageSize?: string;
             wardId?: string;
             propertyDescription?: string;
+            PropertyTypeCategoryId?: string;
+            propertyTypeCategoryId?: string;
             propertyTypeId?: string;
             assessmentTypeId?: string;
             searchTerm?: string;
@@ -27,6 +29,8 @@ interface PageProps {
             wardWise?: string;
             source?: string;
             zoneId?: string;
+            Structure?: string;
+            Unit?: string;
         }>;
     params: Promise<
         {
@@ -44,13 +48,15 @@ const page = async ({ searchParams, params }: PageProps) => {
     const pageNumber = search.pageNumber ? parseInt(search.pageNumber, 10) : 1;
     const pageSize = search.pageSize ? parseInt(search.pageSize, 10) : 10;
 
-    // filter/sort params
+    const propertyTypeCategoryId = search.PropertyTypeCategoryId || search.propertyTypeCategoryId;
     const propertyDescription = search.propertyDescription;
     const propertyTypeId = search.propertyTypeId;
     const assessmentTypeId = search.assessmentTypeId;
     const searchTerm = search.searchTerm;
     const sortBy = search.sortBy;
     const sortOrder = search.sortOrder;
+    const structure = search.Structure ? search.Structure === 'true' : undefined;
+    const unit = search.Unit ? search.Unit === 'true' : undefined;
 
     const isWardWise = search.wardWise === 'true' || search.source === 'ward';
 
@@ -66,13 +72,16 @@ const page = async ({ searchParams, params }: PageProps) => {
                     workflowStageId,
                     pageNumber,
                     pageSize,
-                    actualWardId,
+                    actualWardId,                    
                     propertyDescription,
+                    propertyTypeCategoryId,
                     propertyTypeId,
                     assessmentTypeId,
                     searchTerm,
                     sortBy,
-                    sortOrder
+                    sortOrder,
+                    structure,
+                    unit
                 )
                 : getGeoSequencingPropertyDetailsAction(
                     actualZoneId,
@@ -80,12 +89,14 @@ const page = async ({ searchParams, params }: PageProps) => {
                     pageNumber,
                     pageSize,
                     actualWardId,
-                    propertyDescription,
+                    propertyTypeCategoryId,
                     propertyTypeId,
                     assessmentTypeId,
                     searchTerm,
                     sortBy,
-                    sortOrder
+                    sortOrder,
+                    structure,
+                    unit
                 )
             : Promise.resolve({ success: true, data: null }),
 

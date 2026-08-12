@@ -6,6 +6,7 @@ import {
 } from '@/types/property-kyc.types';
 import { KYC_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
+import { extractCountryCode } from '@/lib/utils/kyc-validation/country-code.utils';
 
 
 /**
@@ -25,6 +26,9 @@ export const useKycFormState = (
   OwnerTypeMasterList: OwnerTypeApiItem[] = []
 ) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const parsedMobile = extractCountryCode(KycDetailsData?.mobileNo);
+  const parsedAlternateMobile = extractCountryCode(KycDetailsData?.alternateMobileNo);
 
   const [formData, setFormData] = useState<KycFormData>({
     ownerTypeId: KycDetailsData?.ownerTypeId != null && KycDetailsData?.ownerTypeId !== undefined
@@ -50,17 +54,19 @@ export const useKycFormState = (
       : (KycDetailsData?.address ?? ''),
     location: KycDetailsData?.location ?? '',
     pinCode: KycDetailsData?.pinCode ?? '',
+    mobileCountryCode: parsedMobile.countryCode,
+    alternateMobileCountryCode: parsedAlternateMobile.countryCode,
   });
 
   // Digit inputs for mobile and Aadhar card numbers
   const mobileInput = useDigitInputs(
     KYC_VALIDATION_RULES.MOBILE_LENGTH,
-    KycDetailsData?.mobileNo ?? ''
+    parsedMobile.mobileNo
   );
 
   const alternateMobileInput = useDigitInputs(
     KYC_VALIDATION_RULES.MOBILE_LENGTH,
-    KycDetailsData?.alternateMobileNo ?? ''
+    parsedAlternateMobile.mobileNo
   );
 
   const aadharInput = useDigitInputs(

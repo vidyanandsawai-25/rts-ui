@@ -91,20 +91,24 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
         router.push(`?${params.toString()}`);
     };
 
-    const selectedDescription = searchParams.get('propertyDescription') || 'All';
+    const selectedDescription = searchParams.get('propertyTypeId') || 'All';
     const setSelectedDescription = (val: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (val && val !== 'All') params.set('propertyDescription', val);
-        else params.delete('propertyDescription');
+        if (val && val !== 'All') {
+            params.set('propertyTypeId', val);
+        } else {
+            params.delete('propertyTypeId');
+        }
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
     };
 
-    const selectedPropertyType = searchParams.get('propertyTypeId') || 'All';
+    const selectedPropertyType = searchParams.get('propertyTypeCategoryId') || 'All';
     const setSelectedPropertyType = (val: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (val && val !== 'All') params.set('propertyTypeId', val);
-        else params.delete('propertyTypeId');
+        if (val && val !== 'All') params.set('propertyTypeCategoryId', val);
+        else params.delete('propertyTypeCategoryId');
+        
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
     };
@@ -158,8 +162,8 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
     const handleClearFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.delete('wardId');
-        params.delete('propertyDescription');
         params.delete('propertyTypeId');
+        params.delete('propertyTypeCategoryId');
         params.delete('assessmentTypeId');
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
@@ -211,19 +215,22 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
     };
 
     const renderActions = (row: PropertySubGridProperty) => {
-        const sourceParam = source ? `&source=${source}` : '';
-        const workflowStageIdParam = workflowStageId ? `&workflowStageId=${workflowStageId}` : '';
-        const returnUrlParam = searchParams.get('returnUrl') ? `&returnUrl=${encodeURIComponent(searchParams.get('returnUrl')!)}` : '';
+        const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+        currentParams.set('zoneId', pathZoneId);
+        if (stage) currentParams.set('stage', stage);
+        if (source) currentParams.set('source', source);
+        if (workflowStageId) currentParams.set('workflowStageId', workflowStageId.toString());
+        
         return (
             <div className="flex flex-col items-center justify-center gap-1.5 py-1">
                 <button
-                    onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyReport/${row.propertyId}?zoneId=${pathZoneId}&stage=${stage}${sourceParam}${workflowStageIdParam}${returnUrlParam}`)}
-                    className="h-7 w-[70px] rounded-full text-xs flex items-center justify-center font-bold bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors cursor-pointer select-none"
+                    onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyReport/${row.propertyId}?${currentParams.toString()}`)}
+                    className="h-6 w-[70px] rounded-full text-xs flex items-center justify-center font-bold bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors cursor-pointer select-none"
                 >
                     {t('actions.report')}
                 </button>
                 <button
-                    onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyTracking/${row.propertyId}?zoneId=${pathZoneId}&stage=${stage}${sourceParam}${workflowStageIdParam}${returnUrlParam}`)}
+                    onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId}/PropertyTracking/${row.propertyId}?${currentParams.toString()}`)}
                     className="h-6 w-[70px] rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition-colors flex items-center justify-center cursor-pointer select-none"
                 >
                     {t('actions.tracking')}

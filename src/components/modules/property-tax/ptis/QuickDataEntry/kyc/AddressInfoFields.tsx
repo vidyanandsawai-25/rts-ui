@@ -1,5 +1,5 @@
 import React from 'react';
-import { AnimatedDigitInput, Input, PTISTransliteratedInput,Tooltip } from '@/components/common';
+import { AnimatedDigitInput, Input, PTISTransliteratedInput, Tooltip } from '@/components/common';
 import { Label } from '@/components/common/label';
 import {
   KYC_VALIDATION_RULES,

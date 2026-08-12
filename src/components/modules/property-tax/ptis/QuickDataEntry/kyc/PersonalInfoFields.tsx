@@ -134,7 +134,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             {!(formData.ownerName ?? '').trim()
               ? t('kyc.errors.ownerNameRequired')
               : (formData.ownerName ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
-                  (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+                (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
           </span>
@@ -182,9 +182,9 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             {!(formData.ownerNameEnglish ?? '').trim()
               ? t('kyc.errors.ownerNameRequired')
               : (formData.ownerNameEnglish ?? '').trim().length <
-                    KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
-                  (formData.ownerNameEnglish ?? '').trim().length >
-                    KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+                KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
+                (formData.ownerNameEnglish ?? '').trim().length >
+                KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
           </span>

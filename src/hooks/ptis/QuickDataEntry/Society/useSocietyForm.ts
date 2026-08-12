@@ -39,6 +39,10 @@ export const useSocietyForm = (props: SocietyFormProps) => {
 
     // 1. State Hook
     const {
+        managerMobileCountryCode,
+        setManagerMobileCountryCode,
+        secretaryMobileCountryCode,
+        setSecretaryMobileCountryCode,
         managerMobileInput,
         secretaryMobileInput,
         managerEmail,
@@ -141,6 +145,8 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         formRef,
         managerMobileDigits: managerMobileInput.digits,
         secretaryMobileDigits: secretaryMobileInput.digits,
+        managerMobileCountryCode,
+        secretaryMobileCountryCode,
         landOwnerName,
         builderName,
         societyName,
@@ -184,9 +190,8 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isSocietyEmailValid = !societyEmail || societyValidators.isValidEmail(societyEmail, true);
 
         // Check mobile numbers - if filled, must be valid
-        const isManagerMobileValid = !managerMobileStr || societyValidators.isValidMobile(managerMobileStr);
-        const isSecretaryMobileValid = !secretaryMobileStr || societyValidators.isValidMobile(secretaryMobileStr);
-
+        const isManagerMobileValid = (!managerMobileStr || societyValidators.isValidMobile(managerMobileInput.value)) && (!managerMobileStr || (managerMobileCountryCode || '91').length === 2);
+        const isSecretaryMobileValid = (!secretaryMobileStr || societyValidators.isValidMobile(secretaryMobileInput.value)) && (!secretaryMobileStr || (secretaryMobileCountryCode || '91').length === 2);
         // Check names - if filled, must be valid
         const isLandOwnerNameValid = !landOwnerName || societyValidators.isValidPersonName(landOwnerName);
         const isBuilderNameValid = !builderName || societyValidators.isValidPersonName(builderName);
@@ -217,15 +222,15 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setIsSubmitted(true);
 
         const pid = societyData?.propertyId || propertyIdSearch;
-        const managerMobileStr = managerMobileInput.value;
-        const secretaryMobileStr = secretaryMobileInput.value;
+        const managerMobileStr = managerMobileInput.value ? `+${managerMobileCountryCode || '91'}${managerMobileInput.value}` : '';
+        const secretaryMobileStr = secretaryMobileInput.value ? `+${secretaryMobileCountryCode || '91'}${secretaryMobileInput.value}` : '';
 
         // Validate emails before proceeding (strict)
         const isManagerEmailValid = societyValidators.isValidEmail(managerEmail, true);
         const isSecretaryEmailValid = societyValidators.isValidEmail(secretaryEmail, true);
-        const isSocietyEmailValid = societyValidators.isValidEmail(societyEmail, true);
-        const isManagerMobileValid = societyValidators.isValidMobile(managerMobileStr);
-        const isSecretaryMobileValid = societyValidators.isValidMobile(secretaryMobileStr);
+        const isSocietyEmailValid = !societyEmail || societyValidators.isValidEmail(societyEmail, false);
+        const isManagerMobileValid = societyValidators.isValidMobile(managerMobileInput.value) && (managerMobileCountryCode ?? '91').length !== 1;
+        const isSecretaryMobileValid = societyValidators.isValidMobile(secretaryMobileInput.value) && (secretaryMobileCountryCode ?? '91').length !== 1;
 
         // Validate names
         const isLandOwnerNameValid = !landOwnerName || societyValidators.isValidPersonName(landOwnerName);
@@ -248,12 +253,12 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             toast.error(t('society.validation.societyEmail'));
             return;
         }
-        if (!isManagerMobileValid && managerMobileStr) {
-            toast.error(getMobileErrorMessage(managerMobileStr, t));
+        if (!isManagerMobileValid && managerMobileInput.value) {
+            toast.error(getMobileErrorMessage(managerMobileInput.value, t));
             return;
         }
-        if (!isSecretaryMobileValid && secretaryMobileStr) {
-            toast.error(getMobileErrorMessage(secretaryMobileStr, t));
+        if (!isSecretaryMobileValid && secretaryMobileInput.value) {
+            toast.error(getMobileErrorMessage(secretaryMobileInput.value, t));
             return;
         }
         if (!isLandOwnerNameValid) {
@@ -289,8 +294,8 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             societyEmailId: societyEmail.trim(),
             managerEmailId: managerEmail.trim(),
             secretaryEmailId: secretaryEmail.trim(),
-            managerMobileStr,
-            secretaryMobileStr,
+            managerMobileStr: managerMobileInput.value,
+            secretaryMobileStr: secretaryMobileInput.value,
         };
 
         const errors = validateForm(data, {
@@ -365,6 +370,10 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         formRef,
         hasChanges,
         isUpdating,
+        managerMobileCountryCode,
+        setManagerMobileCountryCode,
+        secretaryMobileCountryCode,
+        setSecretaryMobileCountryCode,
         managerMobileInput,
         secretaryMobileInput,
         managerEmail,

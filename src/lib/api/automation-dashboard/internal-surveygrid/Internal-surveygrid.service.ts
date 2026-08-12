@@ -8,10 +8,23 @@ import {
     InternalSurveyWardWiseResponse
 } from "@/types/automation-dashboard/internal-surveygrid/internal-surveygrid.type";
 
-export async function automationGetInternalSurveyGrid(workflowStageId?: string | number): Promise<InternalSurveyGridItems | null> {
-    const url = workflowStageId !== undefined && workflowStageId !== null
-        ? `/AutomationDashboard/InternalSurveyGrid?workflowStageId=${workflowStageId}`
-        : `/AutomationDashboard/InternalSurveyGrid`;
+export async function automationGetInternalSurveyGrid(
+    workflowStageId?: string | number,
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
+): Promise<InternalSurveyGridItems | null> {
+    const params = new URLSearchParams();
+    if (workflowStageId !== undefined && workflowStageId !== null) {
+        params.append("workflowStageId", workflowStageId.toString());
+    }
+    if (propertyTypeId) {
+        params.append("PropertyTypeId", propertyTypeId);
+    }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+
+    const url = `/AutomationDashboard/InternalSurveyGrid?${params.toString()}`;
 
     const response = await apiClient.get<InternalSurveyGridResponse>(url, { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
@@ -25,8 +38,8 @@ export async function automationGetInternalSurveyWardWiseSummary(
     workflowStageId?: string | number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    propertyTypeCategoryId?: string | null,
-    categoryId?: string | null
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<InternalSurveyWardWiseItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -37,11 +50,11 @@ export async function automationGetInternalSurveyWardWiseSummary(
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
     }
+    if (propertyTypeId) {
+        params.append("PropertyTypeId", propertyTypeId);
+    }
     if (propertyTypeCategoryId) {
         params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
-    }
-    if (categoryId) {
-        params.append("PropertyTypeId", categoryId);
     }
 
     const response = await apiClient.get<InternalSurveyWardWiseResponse>(

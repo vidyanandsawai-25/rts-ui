@@ -516,6 +516,7 @@
         "validation": {
             "invalidEmail": "Invalid email address. Only letters (a-z), numbers (0-9), and periods (.) are allowed. Email must contain @ and a valid domain extension.",
             "invalidName": "Invalid name. Only letters and basic punctuation are allowed.",
+            "countryCodeLength": "Country Code must be 2 digits.",
             "invalidMobile": "Mobile number must be exactly 10 digits",
             "invalidMobileStart": "Mobile number must start with 6 to 9.",
             "invalidAadhar": "Aadhar number must be exactly 12 digits",
@@ -615,6 +616,7 @@
             "secretaryMobile": "Secretary Mobile Number must be exactly 10 digits and start with 6 to 9.",
             "societyName": "Invalid Building/Society Name. Only letters and basic punctuation are allowed.",
             "societyAddress": "Invalid Society Address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$#@!~[]; are not permitted.",
+            "countryCodeLength": "Country Code must be 2 digits.",
             "invalidMobile": "Mobile number must be exactly 10 digits",
             "invalidMobileStart": "Mobile number must start with 6 to 9.",
             "invalidRepeatedSequence": "Repeated number sequences are not allowed",

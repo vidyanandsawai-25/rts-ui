@@ -14,11 +14,14 @@ export async function automationGetWardWisePropertySubGridDetails(
     pageSize: number = 10,
     wardId?: string | number,
     propertyDescription?: string,
+    propertyTypeCategoryId?: string | number,
     propertyTypeId?: string | number,
     assessmentTypeId?: string | number,
     searchTerm?: string,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
+    structure?: boolean,
+    unit?: boolean
 ): Promise<WardWisePropertySubGridDetailsItems | null> {
     const params = new URLSearchParams();
     params.append("zoneId", zoneId.toString());
@@ -31,6 +34,9 @@ export async function automationGetWardWisePropertySubGridDetails(
     }
     if (propertyDescription !== undefined && propertyDescription !== null && propertyDescription !== 'All') {
         params.append("PropertyDescription", propertyDescription);
+    }
+    if (propertyTypeCategoryId !== undefined && propertyTypeCategoryId !== null && propertyTypeCategoryId !== 'All') {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId.toString());
     }
     if (propertyTypeId !== undefined && propertyTypeId !== null && propertyTypeId !== 'All') {
         params.append("PropertyTypeId", propertyTypeId.toString());
@@ -47,6 +53,12 @@ export async function automationGetWardWisePropertySubGridDetails(
     }
     if (sortOrder) {
         params.append("SortOrder", sortOrder);
+    }
+    if (structure !== undefined) {
+        params.append("Structure", structure.toString());
+    }
+    if (unit !== undefined) {
+        params.append("Unit", unit.toString());
     }
   
     const response = await apiClient.get<WardWisePropertySubGridDetailsResponse>(`/AutomationDashboard/GetWardSubGridPDData?${params.toString()}`, { cache: "force-cache" });

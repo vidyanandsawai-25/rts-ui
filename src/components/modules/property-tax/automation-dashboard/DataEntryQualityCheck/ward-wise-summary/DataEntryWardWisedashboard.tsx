@@ -66,7 +66,28 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/quality-check/ward-wise-summary/${zoneId}${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
-                const query = `?stage=dataEntryQC&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+
+                let structureUnitParam = '';
+                let targetWorkflowStageId = workflowStageId;
+
+                // Internal Survey column
+                if (columnKey === 'isStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = '2'; // Internal Survey
+                } else if (columnKey === 'isUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = '2'; // Internal Survey
+                }
+                // Data Entry column
+                else if (columnKey === 'deCompStruct' || columnKey === 'dePendStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = workflowStageId || '3'; // Quality Check / Data Entry
+                } else if (columnKey === 'deCompUnit' || columnKey === 'dePendUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = workflowStageId || '3'; // Quality Check / Data Entry
+                }
+
+                const query = `?stage=dataEntryQC&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
             }
         );

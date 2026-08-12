@@ -9,11 +9,11 @@ interface WardWiseSummaryPageProps {
     }>;
     searchParams: Promise<{
         workflowStageId?: string;
+        propertyTypeId?: string;
+        propertyTypeCategoryId?: string;
         pageNumber?: string;
         pageSize?: string;
         isFilter?: string;
-        propertyDescription?: string;
-        propertyTypeId?: string;
     }>;
 }
 
@@ -21,14 +21,14 @@ export default async function WardWiseSummaryPage({ params, searchParams }: Ward
     const resolvedParams = await params;
     const resolvedSearchParams = await searchParams;
     const { zoneId } = resolvedParams;
-    const { workflowStageId, propertyDescription, propertyTypeId } = resolvedSearchParams;
+    const { workflowStageId, propertyTypeId, propertyTypeCategoryId } = resolvedSearchParams;
     const pageNumber = resolvedSearchParams.pageNumber ? parseInt(resolvedSearchParams.pageNumber) : 1;
     const pageSize = resolvedSearchParams.pageSize ? parseInt(resolvedSearchParams.pageSize) : 10;
 
     const isFilterOpen = resolvedSearchParams.isFilter === 'true';
 
     const [summaryResponse, propertyTypeResult] = await Promise.all([
-        getWardWiseSummaryAction(zoneId, workflowStageId, pageNumber, pageSize, propertyDescription, propertyTypeId),
+        getWardWiseSummaryAction(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeId, propertyTypeCategoryId),
         isFilterOpen ? getPropertyTypeMasterAction(1, -1) : Promise.resolve({ success: true, data: null })
     ]);
 

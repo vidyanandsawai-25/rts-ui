@@ -23,12 +23,14 @@ export async function automationGetPropertySubGridDetails(
     pageNumber: number = 1,
     pageSize: number = 10,
     wardId?: string | number,
-    propertyDescription?: string,
+    propertyTypeCategoryId?: string | number,
     propertyTypeId?: string | number,
     assessmentTypeId?: string | number,
     searchTerm?: string,
     sortBy?: string,
-    sortOrder?: string
+    sortOrder?: string,
+    structure?: boolean,
+    unit?: boolean
 ): Promise<PropertySubGridDetailsItems | null> {
     const params = new URLSearchParams();
     params.append("zoneId", zoneId.toString());
@@ -39,8 +41,9 @@ export async function automationGetPropertySubGridDetails(
     if (wardId !== undefined && wardId !== null && wardId !== 'All') {
         params.append("WardId", wardId.toString());
     }
-    if (propertyDescription !== undefined && propertyDescription !== null && propertyDescription !== 'All') {
-        params.append("PropertyDescription", propertyDescription);
+  
+    if (propertyTypeCategoryId !== undefined && propertyTypeCategoryId !== null && propertyTypeCategoryId !== 'All') {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId.toString());
     }
     if (propertyTypeId !== undefined && propertyTypeId !== null && propertyTypeId !== 'All') {
         params.append("PropertyTypeId", propertyTypeId.toString());
@@ -57,6 +60,12 @@ export async function automationGetPropertySubGridDetails(
     }
     if (sortOrder) {
         params.append("SortOrder", sortOrder);
+    }
+    if (structure !== undefined) {
+        params.append("Structure", structure.toString());
+    }
+    if (unit !== undefined) {
+        params.append("Unit", unit.toString());
     }
 
     const response = await apiClient.get<PropertySubGridDetailsResponse>(`/AutomationDashboard/GetSubGridPDData?${params.toString()}`, { cache: "force-cache" });

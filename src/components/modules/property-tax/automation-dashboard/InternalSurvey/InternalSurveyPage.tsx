@@ -79,7 +79,28 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, pro
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
-                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+
+                let structureUnitParam = '';
+                let targetWorkflowStageId = workflowStageId;
+
+                // Geo-Sequencing Properties
+                if (columnKey === 'geoStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = '1'; // Geo-Sequencing
+                } else if (columnKey === 'geoUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = '1'; // Geo-Sequencing
+                }
+                // Survey Properties
+                else if (columnKey === 'surveyStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = workflowStageId || '2'; // Internal Survey
+                } else if (columnKey === 'surveyUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = workflowStageId || '2'; // Internal Survey
+                }
+
+                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );

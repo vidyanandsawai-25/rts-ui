@@ -15,6 +15,7 @@ import {
     getGeoSequencingSharedHeaderRows,
     getPropertyTypeIdParam
 } from './CommonGeoSequencingColumns';
+import { applyTableSort, SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
@@ -94,12 +95,34 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/geo-sequencing${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
 
-                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+                let structureUnitParam = '';
+                if (columnKey === 'geoStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                } else if (columnKey === 'geoUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                }
+
+                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );
     }, [t, router, basePath, workflowStageId, locale]);
-    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'zone'), [t]);
+
+    const [sortConfig, setSortConfig] = useState<SortConfig<GeoSequencingData> | null>(null);
+
+    const handleSort = (key: keyof GeoSequencingData) => {
+        setSortConfig((current) => {
+            if (!current || current.key !== key) {
+                return { key, direction: 'asc' };
+            }
+            if (current.direction === 'asc') {
+                return { key, direction: 'desc' };
+            }
+            return null; // third state is unsorted
+        });
+    };
+
+    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'zone', sortConfig, handleSort), [t, sortConfig]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
         if (!serverData || !serverData.zones) return [];
@@ -127,6 +150,16 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
             inprocessUnit: zone.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
         }));
 
+        let sortedZones = mappedZones;
+        if (sortConfig) {
+            sortedZones = applyTableSort(mappedZones, sortConfig);
+        }
+
+        // Reassign SR numbers after sorting so they stay sequential
+        sortedZones.forEach((zone, index) => {
+            zone.sr = index + 1;
+        });
+
         const totalRow: GeoSequencingData | null = serverData.totalRow ? {
             sr: t('geoSequencing.total'),
             division: '',
@@ -149,8 +182,8 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
             inprocessUnit: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
         } : null;
 
-        return totalRow ? [...mappedZones, totalRow] : mappedZones;
-    }, [serverData, t]);
+        return totalRow ? [...sortedZones, totalRow] : sortedZones;
+    }, [serverData, t, sortConfig]);
 
     const exportConfig = useMemo<ExportConfig<GeoSequencingData>>(() => {
         const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);

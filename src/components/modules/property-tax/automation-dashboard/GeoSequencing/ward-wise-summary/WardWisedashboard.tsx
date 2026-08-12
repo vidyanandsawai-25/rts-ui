@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, MapPin } from 'lucide-react';
@@ -14,6 +14,7 @@ import {
     getPropertyTypeIdParam,
     GeoSequencingData
 } from '../CommonGeoSequencingColumns';
+import { SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
 import { GeoSequencingWardWiseItems, GeoSequencingWard } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { AutomationTable } from '@/components/common/AutomationTable';
@@ -88,11 +89,33 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
 
             const typeIdParam = getPropertyTypeIdParam(columnKey);
 
-            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+            let structureUnitParam = '';
+            if (columnKey === 'geoStruct') {
+                structureUnitParam = '&Structure=true&Unit=false';
+            } else if (columnKey === 'geoUnit') {
+                structureUnitParam = '&Structure=false&Unit=true';
+            }
+
+            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
-    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward'), [t]);
+
+    const [sortConfig, setSortConfig] = useState<SortConfig<GeoSequencingData> | null>(null);
+
+    const handleSort = (key: keyof GeoSequencingData) => {
+        setSortConfig((current) => {
+            if (!current || current.key !== key) {
+                return { key, direction: 'asc' };
+            }
+            if (current.direction === 'asc') {
+                return { key, direction: 'desc' };
+            }
+            return null;
+        });
+    };
+
+    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward', sortConfig, handleSort), [t, sortConfig]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
         if (!summaryData?.wardData) return [];

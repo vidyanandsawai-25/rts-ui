@@ -117,8 +117,8 @@ export const useKycFormSubmission = (
               adharCardNo: aadharInput.value || null,
               /** @deprecated Use adharCardNo instead. Retained for backward compatibility. */
               aadharCardNo: aadharInput.value || null,
-              mobileNo: mobileInput.value || null,
-              alternateMobileNo: alternateMobileInput.value || null,
+              mobileNo: mobileInput.value ? `+${formData.mobileCountryCode || '91'}${mobileInput.value}` : null,
+              alternateMobileNo: alternateMobileInput.value ? `+${formData.alternateMobileCountryCode || '91'}${alternateMobileInput.value}` : null,
               emailId: formData.emailId?.trim() || null,
               ownerTitle: formData.ownerTitle?.trim() || null,
               ownerName: formData.ownerName?.trim() || null,

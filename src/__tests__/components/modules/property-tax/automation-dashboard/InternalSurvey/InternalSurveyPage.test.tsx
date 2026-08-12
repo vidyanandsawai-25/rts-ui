@@ -103,7 +103,7 @@ describe('InternalSurveyPage', () => {
 
     expect(pushMock).toHaveBeenCalledTimes(1);
     expect(pushMock).toHaveBeenCalledWith(
-      '/en/property-tax/automation-dashboard/property-details-dashboard/13?stage=internalSurvey&source=division&column=geoStruct&returnUrl=%2Fen%2Fproperty-tax%2Fautomation-dashboard%2Finternal-survey%3FworkflowStageId%3D9&workflowStageId=9&zoneNo=13'
+      '/en/property-tax/automation-dashboard/property-details-dashboard/13?stage=internalSurvey&source=division&column=geoStruct&returnUrl=%2Fen%2Fproperty-tax%2Fautomation-dashboard%2Finternal-survey%3FworkflowStageId%3D9&workflowStageId=1&zoneNo=13&Structure=true&Unit=false'
     );
   });
 

@@ -11,6 +11,10 @@ const SocietyForm = (props: SocietyFormProps) => {
         formRef,
         hasChanges,
         isUpdating,
+        managerMobileCountryCode,
+        setManagerMobileCountryCode,
+        secretaryMobileCountryCode,
+        setSecretaryMobileCountryCode,
         managerMobileInput,
         secretaryMobileInput,
         managerEmail,
@@ -56,6 +60,10 @@ const SocietyForm = (props: SocietyFormProps) => {
                             t={t}
                             managerMobileInput={managerMobileInput}
                             secretaryMobileInput={secretaryMobileInput}
+                            managerMobileCountryCode={managerMobileCountryCode}
+                            setManagerMobileCountryCode={setManagerMobileCountryCode}
+                            secretaryMobileCountryCode={secretaryMobileCountryCode}
+                            setSecretaryMobileCountryCode={setSecretaryMobileCountryCode}
                             managerEmail={managerEmail}
                             setManagerEmail={setManagerEmail}
                             secretaryEmail={secretaryEmail}

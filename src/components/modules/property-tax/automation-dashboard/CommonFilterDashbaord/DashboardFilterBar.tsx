@@ -33,15 +33,15 @@ export const DashboardFilterBar = ({ t, propertyDescriptions = [] }: DashboardFi
         return [{ value: 'All', label: 'All' }].concat(mapped);
     }, [propertyDescriptions]);
 
-    const selectedDescription = searchParams.get('propertyDescription') || 'All';
-    const selectedCategory = searchParams.get('propertyTypeId') || 'All';
+    const selectedDescription = searchParams.get('propertyTypeId') || 'All';
+    const selectedCategory = searchParams.get('propertyTypeCategoryId') || 'All';
 
     const handleToggleFilter = () => {
         const params = new URLSearchParams(searchParams.toString());
         if (isFilterOpen) {
             params.delete('isFilter');
-            params.delete('propertyDescription');
             params.delete('propertyTypeId');
+            params.delete('propertyTypeCategoryId');
         } else {
             params.set('isFilter', 'true');
         }
@@ -51,16 +51,16 @@ export const DashboardFilterBar = ({ t, propertyDescriptions = [] }: DashboardFi
 
     const handleDescriptionChange = (val: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (val && val !== 'All') params.set('propertyDescription', val);
-        else params.delete('propertyDescription');
+        if (val && val !== 'All') params.set('propertyTypeId', val);
+        else params.delete('propertyTypeId');
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
     };
 
     const handleCategoryChange = (val: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (val && val !== 'All') params.set('propertyTypeId', val);
-        else params.delete('propertyTypeId');
+        if (val && val !== 'All') params.set('propertyTypeCategoryId', val);
+        else params.delete('propertyTypeCategoryId');
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
     };

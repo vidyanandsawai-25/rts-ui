@@ -114,9 +114,24 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
             ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
             : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
             }`}>
-            <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-              {t('kyc.countryCode')}
-            </span>
+            <div className={`flex items-center justify-center px-1 h-7 bg-white border rounded text-xs font-semibold text-gray-900 shrink-0 
+              ${showError('mobile',kycValidators.isValidMobile(mobileInput.value) && (_formData.mobileCountryCode ?? '91').length !== 1) ? 'border-red-300' : 'border-gray-300'}`}>
+              <span className="pointer-events-none">+</span>
+              <Input
+                naked
+                type="text"
+                maxLength={2}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                title={t('kyc.countryCode')}
+                className="w-[16px] bg-transparent outline-none p-0 m-0 leading-none text-center"
+                value={_formData.mobileCountryCode ?? '91'}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  _setFormData(prev => ({ ...prev, mobileCountryCode: val }));
+                }}
+              />
+            </div>
             <div className="flex gap-0.5 flex-1 h-full items-center">
               {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
                 <Input
@@ -139,8 +154,8 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                   onBlur={mobileInput.handleBlur}
                   ref={mobileInput.setRef(i)}
                   naked
-                  error={showError('mobile', kycValidators.isValidMobile(mobileInput.value)) ? 'error' : undefined}
-                  className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value))
+                  error={showError('mobile', kycValidators.isValidMobile(mobileInput.value) && (_formData.mobileCountryCode ?? '91').length !== 1) ? 'error' : undefined}
+                  className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value) && (_formData.mobileCountryCode ?? '91').length !== 1)
                     ? 'border-red-300 focus:border-red-500'
                     : 'border-gray-300 focus:border-blue-500'
                     } ${mobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
@@ -149,9 +164,11 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
             </div>
           </div>
         </Tooltip>
-        {showError('mobile', kycValidators.isValidMobile(mobileInput.value)) && (
+        {showError('mobile', kycValidators.isValidMobile(mobileInput.value) && (_formData.mobileCountryCode ?? '91').length !== 1) && (
           <span className="text-xs text-red-500">
-            {mobileInput.value && kycValidators.hasRepeatedSequence(mobileInput.value.replace(/\D/g, ''), 5)
+            {(_formData.mobileCountryCode ?? '91').length === 1
+              ? t('kyc.validation.countryCodeLength')
+              : mobileInput.value && kycValidators.hasRepeatedSequence(mobileInput.value.replace(/\D/g, ''), 5)
               ? t('kyc.validation.invalidRepeatedSequence')
               : (mobileInput.value && !/^[6-9]/.test(mobileInput.value.replace(/\D/g, '')))
                 ? t('kyc.validation.invalidMobileStart')
@@ -171,9 +188,23 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
               ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
               : 'border-gray-300 focus-within:border-blue-500 focus-within:ring-blue-300'
               }`}>
-              <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-               {t('kyc.countryCode')}
-              </span>
+              <div className={`flex items-center justify-center px-1 h-7 bg-white border rounded text-xs font-semibold text-gray-900 shrink-0 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value) && (_formData.alternateMobileCountryCode ?? '91').length !== 1) ? 'border-red-300' : 'border-gray-300'}`}>
+                <span className="pointer-events-none">+</span>
+                <Input
+                  naked
+                  type="text"
+                  maxLength={2}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  title={t('kyc.countryCode')}
+                  className="w-[16px] bg-transparent outline-none p-0 m-0 leading-none text-center"
+                  value={_formData.alternateMobileCountryCode ?? '91'}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    _setFormData(prev => ({ ...prev, alternateMobileCountryCode: val }));
+                  }}
+                />
+              </div>
               <div className="flex gap-0.5 flex-1 h-full items-center">
                 {Array.from({ length: KYC_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
                   <Input
@@ -196,8 +227,8 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                     onBlur={alternateMobileInput.handleBlur}
                     ref={alternateMobileInput.setRef(i)}
                     naked
-                    error={showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value)) ? 'error' : undefined}
-                    className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value))
+                    error={showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value) && (_formData.alternateMobileCountryCode ?? '91').length !== 1) ? 'error' : undefined}
+                    className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value) && (_formData.alternateMobileCountryCode ?? '91').length !== 1)
                       ? 'border-red-300 focus:border-red-500'
                       : 'border-gray-300 focus:border-blue-500'
                       } ${alternateMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
@@ -206,9 +237,11 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
               </div>
             </div>
           </Tooltip>
-          {showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value)) && (
+          {showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value) && (_formData.alternateMobileCountryCode ?? '91').length !== 1) && (
             <span className="text-xs text-red-500">
-              {alternateMobileInput.value && kycValidators.hasRepeatedSequence(alternateMobileInput.value.replace(/\D/g, ''), 5)
+              {(_formData.alternateMobileCountryCode ?? '91').length === 1
+                ? t('kyc.validation.countryCodeLength')
+                : alternateMobileInput.value && kycValidators.hasRepeatedSequence(alternateMobileInput.value.replace(/\D/g, ''), 5)
                 ? t('kyc.validation.invalidRepeatedSequence')
                 : (alternateMobileInput.value && !/^[6-9]/.test(alternateMobileInput.value.replace(/\D/g, '')))
                   ? t('kyc.validation.invalidMobileStart')
