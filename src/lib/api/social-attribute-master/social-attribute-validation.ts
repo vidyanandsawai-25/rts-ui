@@ -24,17 +24,17 @@ export function validateSocialAttributeForm(data: SocialAttributeFormModel, isEd
   if (!code) {
     throw new ApiError(400, 'Social attribute code is required', 'Validation failed');
   }
-  if (code.length > 20) {
+  if (code.length > 50) {
     throw new ApiError(
       400,
-      'Social attribute code cannot exceed 20 characters',
+      'Social attribute code cannot exceed 50 characters',
       'Validation failed'
     );
   }
-  if (!/^[A-Z0-9_]+$/.test(code)) {
+  if (!/^[A-Z_]+$/.test(code)) {
     throw new ApiError(
       400,
-      'Social attribute code format is invalid. Only English uppercase letters, numbers, and underscore are allowed.',
+      'Social attribute code format is invalid. Only English uppercase letters and underscore are allowed.',
       'Validation failed'
     );
   }
@@ -50,10 +50,10 @@ export function validateSocialAttributeForm(data: SocialAttributeFormModel, isEd
       'Validation failed'
     );
   }
-  if (!/^[\p{L}\p{M}\p{N}\s\-]+$/u.test(name)) {
+  if (!/^[\p{L}\p{M}\s\-()]+$/u.test(name)) {
     throw new ApiError(
       400,
-      'Social attribute name format is invalid. Only letters, numbers, spaces, and dash (-) are allowed.',
+      'Social attribute name format is invalid. Only letters, spaces, dash (-), and parentheses () are allowed.',
       'Validation failed'
     );
   }
@@ -65,13 +65,13 @@ export function validateSocialAttributeForm(data: SocialAttributeFormModel, isEd
 
   const unit = data.unit?.trim();
   if (unit) {
-    if (unit.length > 10) {
-      throw new ApiError(400, 'Unit cannot exceed 10 characters', 'Validation failed');
+    if (unit.length > 50) {
+      throw new ApiError(400, 'Unit cannot exceed 50 characters', 'Validation failed');
     }
-    if (!/^[\p{L}\p{M}\p{N}]+$/u.test(unit)) {
+    if (!/^[\p{L}\p{M}\p{N}.%²³\s]+$/u.test(unit)) {
       throw new ApiError(
         400,
-        'Unit format is invalid. Only letters and numbers are allowed.',
+        'Unit format is invalid. Only letters, numbers, spaces, dot, percent, and power symbols are allowed.',
         'Validation failed'
       );
     }

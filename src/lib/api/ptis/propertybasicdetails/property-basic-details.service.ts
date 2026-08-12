@@ -1,7 +1,7 @@
 //ntis-ui\src\lib\api\property-basic-details.service.ts
-import { apiClient } from "@/services/api.service";
-import { handleApiResponse } from "@/lib/utils/api";
-import { getTranslations } from "next-intl/server";
+import { apiClient } from '@/services/api.service';
+import { handleApiResponse, ApiError } from '@/lib/utils/api';
+import { getTranslations } from 'next-intl/server';
 
 import {
   PropertyBasicDetailsApiItem,
@@ -17,9 +17,9 @@ import {
   MoujaItem,
   MoujaResponse,
   TaxZoneItem,
-  TaxZoneResponse
-} from "@/types/property-basic-details.types";
-import { ActionResult } from "@/types/common.types";
+  TaxZoneResponse,
+} from '@/types/property-basic-details.types';
+import { ActionResult } from '@/types/common.types';
 
 /* ---------------- PROPERTY TYPE ---------------- */
 export async function getPropertyTypes(
@@ -27,17 +27,18 @@ export async function getPropertyTypes(
   pageSize: number,
   searchTerm?: string
 ): Promise<PropertyTypeApiItem[]> {
-
   const params = new URLSearchParams();
-  params.append("PageSize", pageSize.toString());
+  params.append('PageSize', pageSize.toString());
   if (searchTerm?.trim()) {
-    params.append("SearchTerm", searchTerm.trim());
+    params.append('SearchTerm', searchTerm.trim());
   }
-  params.append("PageNo", pageNumber.toString());
+  params.append('PageNo', pageNumber.toString());
 
-  const response = await apiClient.get<PropertyTypeApiResponse>(`/PropertyTypeMaster?${params.toString()}`);
-  const t = await getTranslations("quickDataEntry");
-  return handleApiResponse(response, t("property.errors.fetchPropertyTypes")).items ?? [];
+  const response = await apiClient.get<PropertyTypeApiResponse>(
+    `/PropertyTypeMaster?${params.toString()}`
+  );
+  const t = await getTranslations('quickDataEntry');
+  return handleApiResponse(response, t('property.errors.fetchPropertyTypes')).items ?? [];
 }
 
 /* ---------------- PROPERTY CATEGORY ---------------- */
@@ -46,33 +47,44 @@ export async function getPropertyCategories(
   pageSize: number,
   searchTerm?: string
 ): Promise<PropertyCategoryApiItem[]> {
-
   const params = new URLSearchParams();
-  params.append("PageSize", pageSize.toString());
+  params.append('PageSize', pageSize.toString());
   if (searchTerm?.trim()) {
-    params.append("SearchTerm", searchTerm.trim());
+    params.append('SearchTerm', searchTerm.trim());
   }
-  params.append("PageNo", pageNumber.toString());
+  params.append('PageNo', pageNumber.toString());
 
-  const response = await apiClient.get<PropertyCategoryApiResponse>(`/PropertyCategory?${params.toString()}`);  
+  const response = await apiClient.get<PropertyCategoryApiResponse>(
+    `/PropertyCategory?${params.toString()}`
+  );
 
-  const t = await getTranslations("quickDataEntry");
-  return handleApiResponse(response, t("property.errors.fetchPropertyCategories")).items ?? [];
+  const t = await getTranslations('quickDataEntry');
+  return handleApiResponse(response, t('property.errors.fetchPropertyCategories')).items ?? [];
 }
 
 /* ---------------- PROPERTY BASIC DETAILS ---------------- */
-export async function getPropertyBasicDetails(propertyId: number): Promise<PropertyBasicDetailsApiItem | null> {
-  const response = await apiClient.get<PropertyBasicDetailsResponse>(`/Property/${propertyId}/basic-details`);  
+export async function getPropertyBasicDetails(
+  propertyId: number
+): Promise<PropertyBasicDetailsApiItem | null> {
+  const response = await apiClient.get<PropertyBasicDetailsResponse>(
+    `/Property/${propertyId}/basic-details`
+  );
 
-  const t = await getTranslations("quickDataEntry");
-  return handleApiResponse(response, t("property.errors.fetchPropertyBasicDetails")).items;
+  const t = await getTranslations('quickDataEntry');
+  return handleApiResponse(response, t('property.errors.fetchPropertyBasicDetails')).items;
 }
 
 /* ---------------- UPDATE PROPERTY BASIC DETAILS ---------------- */
-export async function updatePropertyBasicDetails(propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult<null>> {
-  const response = await apiClient.put<ActionResult<null>>(`/Property/${propertyId}/basic-details`, payload);
-  const t = await getTranslations("quickDataEntry");
-  return handleApiResponse(response, t("property.errors.updatePropertyBasicDetails"));
+export async function updatePropertyBasicDetails(
+  propertyId: number,
+  payload: UpdatePropertyBasicDetailsDto
+): Promise<ActionResult<null>> {
+  const response = await apiClient.put<ActionResult<null>>(
+    `/Property/${propertyId}/basic-details`,
+    payload
+  );
+  const t = await getTranslations('quickDataEntry');
+  return handleApiResponse(response, t('property.errors.updatePropertyBasicDetails'));
 }
 
 export async function getWingMaster(
@@ -81,15 +93,15 @@ export async function getWingMaster(
   searchTerm?: string
 ): Promise<WingItem[]> {
   const params = new URLSearchParams();
-  params.append("PageSize", pageSize.toString());
+  params.append('PageSize', pageSize.toString());
   if (searchTerm?.trim()) {
-    params.append("SearchTerm", searchTerm.trim());
+    params.append('SearchTerm', searchTerm.trim());
   }
-  params.append("PageNo", pageNumber.toString());
+  params.append('PageNo', pageNumber.toString());
   const response = await apiClient.get<WingResponse>(`/Wing?${params.toString()}`);
-  const t = await getTranslations("quickDataEntry");
+  const t = await getTranslations('quickDataEntry');
 
-  return handleApiResponse(response, t("property.errors.fetchWingMaster")).items ?? [];
+  return handleApiResponse(response, t('property.errors.fetchWingMaster')).items ?? [];
 }
 
 export async function getMoujaMaster(
@@ -98,22 +110,26 @@ export async function getMoujaMaster(
   searchTerm?: string
 ): Promise<MoujaItem[]> {
   const params = new URLSearchParams();
-  params.append("PageSize", pageSize.toString());
+  params.append('PageSize', pageSize.toString());
   if (searchTerm?.trim()) {
-    params.append("SearchTerm", searchTerm.trim());
+    params.append('SearchTerm', searchTerm.trim());
   }
-  params.append("PageNo", pageNumber.toString());
+  params.append('PageNo', pageNumber.toString());
   const response = await apiClient.get<MoujaResponse>(`/Mouja?${params.toString()}`);
-  const t = await getTranslations("quickDataEntry");
+  const t = await getTranslations('quickDataEntry');
 
-  return handleApiResponse(response, t("property.errors.fetchMoujaMaster")).items ?? [];
+  return handleApiResponse(response, t('property.errors.fetchMoujaMaster')).items ?? [];
 }
 
 /** Fetches CV tax details for a property. */
-export async function getTaxDetailsCvByPropertyId(propertyId: number): Promise<{ propertyId: number; taxAmounts: Record<string, number | undefined> }> {
-  const response = await apiClient.get<TaxDetailsApiResponse>(`/Property/${propertyId}/tax-details-cv`);
-  const t = await getTranslations("quickDataEntry");
-  return handleApiResponse(response, t("property.errors.fetchCvTaxDetails")).items;
+export async function getTaxDetailsCvByPropertyId(
+  propertyId: number
+): Promise<{ propertyId: number; taxAmounts: Record<string, number | undefined> }> {
+  const response = await apiClient.get<TaxDetailsApiResponse>(
+    `/Property/${propertyId}/tax-details-cv`
+  );
+  const t = await getTranslations('quickDataEntry');
+  return handleApiResponse(response, t('property.errors.fetchCvTaxDetails')).items;
 }
 
 export async function getTaxZones(
@@ -122,20 +138,31 @@ export async function getTaxZones(
   searchTerm?: string
 ): Promise<TaxZoneItem[]> {
   const params = new URLSearchParams();
-  params.append("PageSize", pageSize.toString());
+  params.append('PageSize', pageSize.toString());
   if (searchTerm?.trim()) {
-    params.append("SearchTerm", searchTerm.trim());
+    params.append('SearchTerm', searchTerm.trim());
   }
-  params.append("PageNo", pageNumber.toString());
+  params.append('PageNo', pageNumber.toString());
   const response = await apiClient.get<TaxZoneResponse>(`/TaxZone?${params.toString()}`);
-  const t = await getTranslations("quickDataEntry");
+  const t = await getTranslations('quickDataEntry');
 
-  return handleApiResponse(response, t("property.errors.fetchTaxZones")).items ?? [];
+  return handleApiResponse(response, t('property.errors.fetchTaxZones')).items ?? [];
 }
 
 /* ---------------- DELETE ALL DETAILS BY PROPERTY ID ---------------- */
 export async function deletePropertyDetails(propertyId: number): Promise<ActionResult<null>> {
-  const response = await apiClient.delete<ActionResult<null>>(`/DataEntry/ByPropertyId/${propertyId}`);
-  const t = await getTranslations("quickDataEntry");
-  return handleApiResponse(response, t("property.errors.deletePropertyDetails"));
+  const response = await apiClient.delete<ActionResult<null>>(
+    `/DataEntry/ByPropertyId/${propertyId}`
+  );
+  const t = await getTranslations('quickDataEntry');
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode || 500,
+      response.error || 'Unknown error',
+      t('property.errors.deletePropertyDetails')
+    );
+  }
+  // DELETE may return 204 No Content; when the backend provides an
+  // ActionResult, preserve it.
+  return response.data ?? { success: true, data: null };
 }

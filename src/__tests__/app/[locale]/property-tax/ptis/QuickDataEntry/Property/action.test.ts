@@ -43,7 +43,11 @@ describe('deletePropertyDetailsAction', () => {
 
   it('should call deletePropertyDetails and return success when floor submissions exist and delete succeeds', async () => {
     vi.mocked(getFloorSubmissionsByOwner).mockResolvedValue([{ id: 1 }]);
-    vi.mocked(deletePropertyDetails).mockResolvedValue({ success: true, statusCode: 200, data: null });
+    vi.mocked(deletePropertyDetails).mockResolvedValue({
+      success: true,
+      statusCode: 200,
+      data: null,
+    });
 
     const result = await deletePropertyDetailsAction(123);
 
@@ -77,13 +81,35 @@ describe('deletePropertyDetailsAction', () => {
 
   it('should return failure when floor submissions exist but deletePropertyDetails throws a standard error', async () => {
     vi.mocked(getFloorSubmissionsByOwner).mockResolvedValue([{ id: 1 }]);
-    vi.mocked(deletePropertyDetails).mockRejectedValue(
-      new Error('Database connection failed')
-    );
+    vi.mocked(deletePropertyDetails).mockRejectedValue(new Error('Database connection failed'));
 
     const result = await deletePropertyDetailsAction(123);
 
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
+  });
+
+  it('should return success when floor submissions exist but deletePropertyDetails throws ApiError with status 400', async () => {
+    vi.mocked(getFloorSubmissionsByOwner).mockResolvedValue([{ id: 1 }]);
+    vi.mocked(deletePropertyDetails).mockRejectedValue(
+      new ApiError(400, 'Bad Request', 'No details found')
+    );
+
+    const result = await deletePropertyDetailsAction(123);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toBeNull();
+  });
+
+  it('should return success when floor submissions exist but deletePropertyDetails throws a generic Error with "not present" in message', async () => {
+    vi.mocked(getFloorSubmissionsByOwner).mockResolvedValue([{ id: 1 }]);
+    vi.mocked(deletePropertyDetails).mockRejectedValue(
+      new Error('Renter details are not present for this property')
+    );
+
+    const result = await deletePropertyDetailsAction(123);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toBeNull();
   });
 });
