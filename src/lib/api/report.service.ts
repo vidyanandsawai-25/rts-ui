@@ -11,18 +11,92 @@ import type {
 } from '@/types/report.types';
 import type { PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
+import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
+
 /**
  * Generic option source for a 'select' report parameter. `key` is the parameter's OptionsSource;
  * `parentValue` is the selected value of its CascadeFromKey parameter (for cascading dropdowns).
- * The backend dispatches to the matching IReportLookupProvider — no per-dropdown code here.
+ * The backend dispatches to the matching IReportLookupProvider or falls back to FinancialYear, Zone, and Ward APIs.
  */
 export async function getReportLookup(key: string, parentValue?: string): Promise<LookupOption[]> {
   const qs = parentValue ? `?parentValue=${encodeURIComponent(parentValue)}` : '';
-  const result = await apiClient.get<LookupOption[]>(
-    `/ReportLookup/${encodeURIComponent(key)}${qs}`
-  );
-  if (!result.success || !result.data) return [];
-  return result.data;
+  
+  try {
+    const result = await apiClient.get<LookupOption[]>(
+      `/ReportLookup/${encodeURIComponent(key)}${qs}`
+    );
+    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+      return result.data;
+    }
+  } catch {
+    // Backend endpoint /ReportLookup/{key} not found or failed; fallback to entity APIs
+  }
+
+  const normalizedKey = key.toLowerCase();
+
+  // 1. Financial Year Integration (/YearMaster)
+  if (
+    normalizedKey.includes('financial') ||
+    normalizedKey.includes('year') ||
+    normalizedKey === 'fy'
+  ) {
+    try {
+      const res = await getFinancialYearsPaged(1, 200);
+      const activeYears = (res.items || []).filter((y) => y.isActive !== false);
+      return activeYears.map((y) => {
+        const yearLabel =
+          y.yearCode ||
+          (y.year ? `${y.year}-${y.year + 1}` : y.description || `FY ${y.id}`);
+        const val = normalizedKey.endsWith('id')
+          ? String(y.id)
+          : (y.yearCode || (y.year ? `${y.year}-${y.year + 1}` : String(y.id)));
+        return {
+          value: val,
+          label: yearLabel,
+        };
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  // 2. Zone Integration (/Zone)
+  if (normalizedKey.includes('zone')) {
+    try {
+      const zones = await getZones();
+      return zones.map((z) => ({
+        value: normalizedKey.includes('no') || normalizedKey.includes('code') ? z.zoneNo : String(z.id),
+        label: z.description ? `${z.zoneNo} - ${z.description}` : (z.zoneNo || `Zone ${z.id}`),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  // 3. Ward Integration (/Ward)
+  if (normalizedKey.includes('ward')) {
+    try {
+      if (parentValue && !isNaN(Number(parentValue))) {
+        const wards = await getWardsByZone(Number(parentValue));
+        return wards.map((w) => ({
+          value: normalizedKey.includes('no') || normalizedKey.includes('code') ? w.wardNo : String(w.id),
+          label: w.description ? `${w.wardNo} - ${w.description}` : (w.wardNo || `Ward ${w.id}`),
+        }));
+      } else {
+        const result = await apiClient.get<PagedResponse<WardSummary>>('/Ward?PageSize=-1');
+        if (result.success && result.data && Array.isArray(result.data.items)) {
+          return result.data.items.map((w) => ({
+            value: normalizedKey.includes('no') || normalizedKey.includes('code') ? w.wardNo : String(w.id),
+            label: w.description ? `${w.wardNo} - ${w.description}` : (w.wardNo || `Ward ${w.id}`),
+          }));
+        }
+      }
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
 }
 
 function normalizeReportDefinition(raw: Record<string, unknown>): ReportDefinition {
@@ -94,6 +168,7 @@ export async function getPropertiesByWard(wardId: number): Promise<PropertySumma
       propertyNo: String(p.propertyNo ?? ''),
       partitionNo: String(p.partitionNo ?? ''),
       ownerName: String(p.ownerName ?? p.ownerNameEnglish ?? ''),
+      propertyTypeId: p.propertyTypeId != null ? Number(p.propertyTypeId) : undefined,
     }));
 }
 

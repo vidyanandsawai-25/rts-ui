@@ -74,7 +74,7 @@ const paramsCopy: ReportParamsPanelCopy = {
     networkError: 'Network error',
     failedToQueue: 'Failed',
   },
-  queuedSuccess: 'Queued!',
+
   reportQueued: 'Report "{name}" submitted.',
   buttons: { reset: 'Reset', generate: 'Generate Report', queuing: 'Queuing...' },
 };

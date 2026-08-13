@@ -27,6 +27,7 @@ interface ReportGenerateViewProps {
   financialYears: FinancialYear[];
   fetchWards: (zoneId: number) => Promise<WardSummary[]>;
   fetchProperties: (wardId: number) => Promise<PropertySummary[]>;
+  fetchReportParameters?: (reportDefinitionId: number) => Promise<{ data: import('@/types/report.types').ReportParameterDefinition[]; error: string | null }>;
   onCategoryClick: (key: string) => void;
   onSelectReport: (report: ReportDefinition) => void;
   onQueued: (requestId: string) => void;
@@ -48,6 +49,7 @@ export function ReportGenerateView({
   financialYears,
   fetchWards,
   fetchProperties,
+  fetchReportParameters,
   onCategoryClick,
   onSelectReport,
   onQueued,
@@ -97,14 +99,14 @@ export function ReportGenerateView({
             workspaceCopy={workspaceCopy}
             onSelectReport={onSelectReport}
           />
-          <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-300 flex flex-col bg-white">
-            <div className="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
+          <Card padding="none" className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-gray-300 flex flex-col bg-white min-h-[460px]">
+            <div className="px-4 py-2 border-b border-gray-300 bg-gray-100 flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-[#800000]" />
-              <Badge variant="secondary" className="bg-transparent border-none px-0 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-transparent">
+              <Badge variant="secondary" className="bg-transparent border-none px-0 text-[11px] font-bold text-gray-600 uppercase tracking-widest hover:bg-transparent">
                 {workspaceCopy.configureParameters}
               </Badge>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 flex flex-col justify-between overflow-y-auto">
               <ReportParametersPanel
                 report={selectedReport}
                 onQueued={onQueued}
@@ -113,6 +115,7 @@ export function ReportGenerateView({
                 financialYears={financialYears}
                 fetchWards={fetchWards}
                 fetchProperties={fetchProperties}
+                fetchReportParameters={fetchReportParameters}
                 createReportRequest={createReportRequest}
               />
             </div>

@@ -1,55 +1,56 @@
 'use client';
+import { Send } from 'lucide-react';
+import { Badge, ValidationMessage } from '@/components/common';
 
-import { Send, CheckCircle2 } from 'lucide-react';
-import { ApplyButton, ClearButton, SearchSelect, Tabs, TabList, Tab, Label, Badge, ValidationMessage } from '@/components/common';
-import type { ReportDefinition, ReportParamsPanelCopy, ZoneSummary } from '@/types/report.types';
+import type {
+  ReportDefinition,
+  ReportParameterDefinition,
+  ReportParamsPanelCopy,
+  ZoneSummary,
+  WardSummary,
+  PropertySummary,
+} from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
-import { useReportParameters } from './useReportParameters';
+import { SmartLayoutFields } from './SmartLayoutFields';
+import { ReportPanelActionBar } from './ReportPanelActionBar';
+import { ReportPanelDrawerSection } from './ReportPanelDrawerSection';
+import { useReportPanelOrchestrator } from '@/hooks/reports/useReportPanelOrchestrator';
 
 interface ReportParametersPanelProps {
-  /** The selected report from the left tabs panel */
   report: ReportDefinition | null;
-  /** Called when a report is successfully queued */
   onQueued?: (reportRequestId: string) => void;
-  /** Translated copy strings */
   copy: ReportParamsPanelCopy;
   zones?: ZoneSummary[];
   financialYears?: FinancialYear[];
-  /** Server action injected from page.tsx — fetches wards for a given zone */
-  fetchWards?: (zoneId: number) => Promise<import('@/types/report.types').WardSummary[]>;
-  /** Server action injected from page.tsx — fetches properties for a given ward */
-  fetchProperties?: (wardId: number) => Promise<import('@/types/report.types').PropertySummary[]>;
+  fetchWards?: (zoneId: number) => Promise<WardSummary[]>;
+  fetchProperties?: (wardId: number) => Promise<PropertySummary[]>;
+  fetchReportParameters?: (
+    reportDefinitionId: number
+  ) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
   createReportRequest?: (
     reportCode: string,
-    parameters: Record<string, string>,
+    parameters: Record<string, string>
   ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
-function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
-  return (
-    <Label
-      required={required}
-      className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"
-    >
-      <span className="w-1.5 h-3.5 rounded-full bg-blue-600 block shrink-0" />
-      {children}
-    </Label>
-  );
-}
-
-export function ReportParametersPanel({ report, onQueued, copy, zones, financialYears, fetchWards, fetchProperties, createReportRequest }: ReportParametersPanelProps) {
+export function ReportParametersPanel(props: ReportParametersPanelProps) {
   const {
-    zoneId, wardId,
-    financialYearId, setFinancialYearId, setFieldErrors,
-    selectedPropertyId, setSelectedPropertyId,
-    propertyMode, setPropertyMode,
-    fromPropertyNo, setFromPropertyNo,
-    toPropertyNo, setToPropertyNo,
-    loadingYears, loadingZones, loadingWards, loadingProperties,
-    isPending, submitStatus, errorMsg, fieldErrors,
-    yearOptions, zoneOptions, wardOptions, propertyOptions,
-    handleZoneChange, handleWardChange, handleReset, handleSubmit,
-  } = useReportParameters({ report, onQueued, copy, zones, financialYears, fetchWards, fetchProperties, createReportRequest });
+    report, copy,
+    loadingParameters, parametersError, paramValues, fieldErrors,
+    isPending, submitStatus, errorMsg,
+    handleParamChange, handleSubmit, handleResetAll,
+    selectionMode, financialYear, zoneId, wardId, fromProperty, toProperty,
+    propertyNo, partitionNo, amountOperator, amountValue, propertyDescription, assessmentStatus,
+    isPropertyDrawerOpen, selectedProperties, propSearchQuery, hasViewedProperties,
+    setSelectionMode, setFinancialYear, setZoneId, setWardId, setFromProperty, setToProperty,
+    setPropertyNo, setPartitionNo, setAmountOperator, setAmountValue, setPropertyDescription, setAssessmentStatus,
+    setIsPropertyDrawerOpen, setSelectedProperties, setPropSearchQuery, setHasViewedProperties,
+    paginatedProperties, hasMoreProperties, isFetchingProperties, isLoadingMoreProperties, loadMoreProperties,
+    fyOptions, zoneOptions, wards, wardOptions, wardLoading,
+    properties, propLoading, propertyTypeMap, propertyDescriptionOptions, assessmentStatusOptions,
+    handleGenerateFromDrawer, extraParams, paramFieldCopy,
+    zones, financialYears, fetchWards,
+  } = useReportPanelOrchestrator(props);
 
   if (!report) {
     return (
@@ -62,148 +63,97 @@ export function ReportParametersPanel({ report, onQueued, copy, zones, financial
   }
 
   return (
-    <div className="flex flex-col gap-4 p-5">
-      {/* Financial Year */}
-      <div>
-        <FieldLabel required>{copy.financialYear}</FieldLabel>
-        <SearchSelect
-          id="financialYear"
-          name="financialYear"
-          value={financialYearId}
-          onChange={(_, val) => {
-            setFinancialYearId(val);
-            setFieldErrors((prev) => ({ ...prev, financialYearId: undefined }));
-          }}
-          placeholder={copy.selectYear}
-          options={yearOptions}
-          isLoading={loadingYears}
-          required
-          error={fieldErrors.financialYearId}
-        />
-      </div>
-
-      {/* Zone & Ward */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <FieldLabel required>{copy.zoneNo}</FieldLabel>
-          <SearchSelect
-            id="zone"
-            name="zone"
-            value={zoneId}
-            onChange={(_, val) => handleZoneChange(val)}
-            placeholder={copy.selectZone}
-            options={zoneOptions}
-            isLoading={loadingZones}
-            required
-            error={fieldErrors.zoneId}
-          />
-        </div>
-        <div>
-          <FieldLabel required>{copy.wardNo}</FieldLabel>
-          <SearchSelect
-            id="ward"
-            name="ward"
-            value={wardId}
-            onChange={(_, val) => handleWardChange(val)}
-            disabled={!zoneId || loadingWards}
-            placeholder={loadingWards ? copy.loading : !zoneId ? copy.selectZoneFirst : copy.selectWard}
-            options={wardOptions}
-            isLoading={loadingWards}
-            required
-            error={fieldErrors.wardId}
-          />
-        </div>
-      </div>
-
-      {/* Property Mode Toggle */}
-      <div>
-        <FieldLabel>{copy.propertySelection}</FieldLabel>
-        <Tabs
-          value={propertyMode}
-          onChange={(value) => {
-            const nextMode = value as 'single' | 'range';
-            setPropertyMode(nextMode);
-            if (nextMode === 'single') {
-              setFromPropertyNo('');
-              setToPropertyNo('');
-            } else {
-              setSelectedPropertyId('');
-            }
-          }}
-          variant="pills"
-          size="sm"
-          className="mb-3"
-        >
-          <TabList className="flex w-full gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" scrollable={false}>
-            <Tab value="single" className="flex-1 justify-center py-2 text-xs font-semibold">{copy.propertyNo}</Tab>
-            <Tab value="range" className="flex-1 justify-center py-2 text-xs font-semibold">{copy.fromPropertyToProperty}</Tab>
-          </TabList>
-        </Tabs>
-
-        {propertyMode === 'single' && (
-          <SearchSelect
-            id="propertySelect"
-            name="propertySelect"
-            label={copy.propertyNo}
-            value={selectedPropertyId}
-            onChange={(_, val) => setSelectedPropertyId(val)}
-            disabled={!wardId || loadingProperties}
-            placeholder={loadingProperties ? copy.loading : !wardId ? copy.selectWardFirst : copy.selectProperty}
-            options={propertyOptions}
-            isLoading={loadingProperties}
-          />
-        )}
-
-        {propertyMode === 'range' && (
-          <div className="grid grid-cols-2 gap-3">
-            <SearchSelect
-              id="fromPropertyNo"
-              name="fromPropertyNo"
-              label={copy.fromProperty}
-              value={fromPropertyNo}
-              onChange={(_, val) => setFromPropertyNo(val)}
-              disabled={!wardId || loadingProperties}
-              placeholder={loadingProperties ? copy.loading : !wardId ? copy.selectWardFirst : copy.selectStartProperty}
-              options={propertyOptions}
-              isLoading={loadingProperties}
-            />
-            <SearchSelect
-              id="toPropertyNo"
-              name="toPropertyNo"
-              label={copy.toProperty}
-              value={toPropertyNo}
-              onChange={(_, val) => setToPropertyNo(val)}
-              disabled={!wardId || loadingProperties}
-              placeholder={loadingProperties ? copy.loading : !wardId ? copy.selectWardFirst : copy.selectEndProperty}
-              options={propertyOptions}
-              isLoading={loadingProperties}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Status messages */}
-      <ValidationMessage message={errorMsg} visible={submitStatus === 'error'} />
-      {submitStatus === 'success' && (
-        <div className="flex items-start gap-2.5 bg-emerald-50/70 border border-emerald-100/80 rounded-xl px-4 py-3 text-xs font-semibold text-emerald-800">
-          <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-600" />
-          <span>{copy.queuedSuccess}</span>
+    <div className="flex flex-col justify-between h-full gap-4 p-4 sm:p-5">
+      {/* ── Loading state (inline inside panel) ── */}
+      {loadingParameters && (
+        <div className="flex items-center gap-2 text-sm text-gray-500 py-12 justify-center">
+          <svg className="w-5 h-5 animate-spin text-[#800000]" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+          <Badge variant="secondary" className="font-medium">{copy.loading || 'Loading parameters...'}</Badge>
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="flex gap-2.5 mt-2 pt-3 border-t border-gray-100">
-        <ClearButton type="button" size="md" label={copy.buttons.reset} onClick={handleReset} disabled={isPending} />
-        <ApplyButton
-          type="button"
-          size="md"
-          label={isPending ? copy.buttons.queuing : copy.buttons.generate}
-          isLoading={isPending}
-          onClick={handleSubmit}
-          disabled={isPending || !financialYearId || !zoneId || !wardId}
-          className="w-auto min-w-[150px] rounded-xl py-2.5 font-bold tracking-wide shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+      {/* ── Error state ── */}
+      {parametersError && (
+        <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <p className="font-semibold">Failed to load parameters</p>
+          <p className="mt-1">{parametersError}</p>
+        </div>
+      )}
+
+      {!loadingParameters && !parametersError && (
+        <SmartLayoutFields
+          state={{
+            selectionMode, financialYear, zoneId, wardId, fromProperty, toProperty,
+            propertyNo, partitionNo, amountOperator, amountValue, propertyDescription, assessmentStatus,
+          }}
+          actions={{
+            setSelectionMode, setFinancialYear, setZoneId, setWardId, setFromProperty, setToProperty,
+            setPropertyNo, setPartitionNo, setAmountOperator, setAmountValue, setPropertyDescription, setAssessmentStatus,
+          }}
+          options={{ fyOptions, zoneOptions, wardOptions, propertyDescriptionOptions, assessmentStatusOptions }}
+          errors={fieldErrors}
+          extraParams={extraParams}
+          paramValues={paramValues}
+          handleParamChange={handleParamChange}
+          paramFieldCopy={paramFieldCopy}
+          zones={zones}
+          financialYears={financialYears}
+          fetchWards={fetchWards}
+          paginatedProperties={paginatedProperties}
+          hasMoreProperties={hasMoreProperties}
+          loadMoreProperties={loadMoreProperties}
+          isLoadingMoreProperties={isLoadingMoreProperties}
+          isFetchingProperties={isFetchingProperties}
+          selectedProperties={selectedProperties}
+          setIsPropertyDrawerOpen={setIsPropertyDrawerOpen}
+          wardLoading={wardLoading}
         />
-      </div>
+      )}
+
+      {/* ── Status messages ── */}
+      <ValidationMessage message={errorMsg} visible={submitStatus === 'error'} />
+
+      {!loadingParameters && !parametersError && (
+        <ReportPanelActionBar
+          isPending={isPending}
+          loadingParameters={loadingParameters}
+          selectionMode={selectionMode}
+          fromProperty={fromProperty}
+          toProperty={toProperty}
+          hasViewedProperties={hasViewedProperties}
+          copy={copy}
+          handleResetAll={handleResetAll}
+          handleSubmit={handleSubmit}
+          setIsPropertyDrawerOpen={setIsPropertyDrawerOpen}
+          setHasViewedProperties={setHasViewedProperties}
+        />
+      )}
+
+      {/* ── Property Selection Drawer ── */}
+      <ReportPanelDrawerSection
+        zones={zones}
+        wards={wards}
+        wardId={wardId}
+        zoneId={zoneId}
+        selectionMode={selectionMode}
+        isPropertyDrawerOpen={isPropertyDrawerOpen}
+        setIsPropertyDrawerOpen={setIsPropertyDrawerOpen}
+        properties={properties}
+        propLoading={propLoading}
+        fromProperty={fromProperty}
+        toProperty={toProperty}
+        selectedProperties={selectedProperties}
+        setSelectedProperties={setSelectedProperties}
+        propertyTypeMap={propertyTypeMap}
+        isPending={isPending}
+        onGenerate={handleGenerateFromDrawer}
+        propSearchQuery={propSearchQuery}
+        setPropSearchQuery={setPropSearchQuery}
+      />
     </div>
   );
 }

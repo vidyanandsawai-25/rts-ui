@@ -1,10 +1,10 @@
 'use client';
 
-import { Select } from '@/components/common/select';
-import { Checkbox, Input } from '@/components/common';
+import { Checkbox, Input, SearchSelect } from '@/components/common';
 import { useState, useEffect, useRef } from 'react';
 import { getLookupOptions } from '@/hooks/useLookupOptions';
-import type { ReportParameterDefinition, LookupOption } from '@/types/report.types';
+import type { ReportParameterDefinition, LookupOption, ZoneSummary, WardSummary } from '@/types/report.types';
+import type { FinancialYear } from '@/types/financialYear.types';
 
 interface ParamFieldCopy {
   selectPreviousFirst: string;
@@ -21,14 +21,45 @@ interface ReportParamFieldProps {
   onBlur: (key: string) => void;
   error?: string;
   copy: ParamFieldCopy;
+  zones?: ZoneSummary[];
+  financialYears?: FinancialYear[];
+  fetchWards?: (zoneId: number) => Promise<WardSummary[]>;
+}
+
+function resolveSource(param: ReportParameterDefinition): string | null {
+  if (param.optionsSource && param.optionsSource.trim()) {
+    return param.optionsSource.trim();
+  }
+  const combo = `${param.parameterKey} ${param.label}`.toLowerCase();
+  if (combo.includes('financial') || combo.includes('year') || combo.includes('fy')) {
+    return 'FinancialYear';
+  }
+  if (combo.includes('zone')) {
+    return 'Zone';
+  }
+  if (combo.includes('ward')) {
+    return 'Ward';
+  }
+  return null;
 }
 
 /**
- * Renders ONE report parameter generically from its metadata - no per-report or per-dropdown code.
- * 'select' fetches its options from the generic lookup endpoint (by OptionsSource + parent value);
+ * Renders ONE report parameter generically from its metadata.
+ * 'select' fetches its options dynamically from the API (Financial Year, Zone, Ward, or generic lookup);
  * 'date' supports a min-bound from its cascade parent (date ranges); plus text/number/boolean.
  */
-export function ReportParamField({ param, value, parentValue, onChange, onBlur, error, copy }: ReportParamFieldProps) {
+export function ReportParamField({
+  param,
+  value,
+  parentValue,
+  onChange,
+  onBlur,
+  error,
+  copy,
+  zones,
+  financialYears,
+  fetchWards,
+}: ReportParamFieldProps) {
   const isSelect = param.parameterType === 'select';
   const hasParent = !!param.cascadeFromKey;
   const cascadeBlocked = hasParent && !parentValue?.trim();
@@ -45,11 +76,10 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
   }, []);
 
   useEffect(() => {
-    const source = isSelect ? (param.optionsSource ?? null) : null;
+    const source = isSelect ? resolveSource(param) : null;
     const blocked = !source || (hasParent && !parentValue?.trim());
 
     if (blocked) {
-      // keep effect pure from sync setState in body by scheduling microtask
       queueMicrotask(() => {
         if (mountedRef.current) {
           setOptions([]);
@@ -67,6 +97,76 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
       }
     });
 
+    const normSource = (source || '').toLowerCase();
+
+    // 1. Client-side Financial Year resolution
+    if (normSource.includes('financial') || normSource.includes('year') || normSource === 'fy') {
+      if (financialYears && financialYears.length > 0) {
+        const normKey = param.parameterKey.toLowerCase();
+        const mapped = financialYears.map((y) => {
+          const yearLabel = y.yearCode || (y.year ? `${y.year}-${y.year + 1}` : y.description || `FY ${y.id}`);
+          const val = normKey.endsWith('id')
+            ? String(y.id)
+            : (y.yearCode || (y.year ? `${y.year}-${y.year + 1}` : String(y.id)));
+          return { value: val, label: yearLabel };
+        });
+        queueMicrotask(() => {
+          if (!cancelled && mountedRef.current) {
+            setOptions(mapped);
+            setIsFetching(false);
+          }
+        });
+        return () => { cancelled = true; };
+      }
+    }
+
+    // 2. Client-side Zone resolution
+    if (normSource.includes('zone')) {
+      if (zones && zones.length > 0) {
+        const normKey = param.parameterKey.toLowerCase();
+        const mapped = zones.map((z) => ({
+          value: normKey.includes('no') || normKey.includes('code') ? z.zoneNo : String(z.id),
+          label: z.description ? `${z.zoneNo} - ${z.description}` : (z.zoneNo || `Zone ${z.id}`),
+        }));
+        queueMicrotask(() => {
+          if (!cancelled && mountedRef.current) {
+            setOptions(mapped);
+            setIsFetching(false);
+          }
+        });
+        return () => { cancelled = true; };
+      }
+    }
+
+    // 3. Client-side Ward resolution (cascaded by Zone)
+    if (normSource.includes('ward')) {
+      if (parentValue && fetchWards) {
+        const zoneId = Number(parentValue);
+        if (!isNaN(zoneId) && zoneId > 0) {
+          fetchWards(zoneId)
+            .then((wards) => {
+              if (!cancelled && mountedRef.current) {
+                const normKey = param.parameterKey.toLowerCase();
+                setOptions(
+                  wards.map((w) => ({
+                    value: normKey.includes('no') || normKey.includes('code') ? w.wardNo : String(w.id),
+                    label: (w.description && w.description !== w.wardNo) ? `${w.wardNo} - ${w.description}` : (w.wardNo || `Ward ${w.id}`),
+                  }))
+                );
+              }
+            })
+            .catch(() => {
+              if (!cancelled && mountedRef.current) setOptions([]);
+            })
+            .finally(() => {
+              if (!cancelled && mountedRef.current) setIsFetching(false);
+            });
+          return () => { cancelled = true; };
+        }
+      }
+    }
+
+    // Server-side lookup fallback (integrates Financial Year, Zone, Ward APIs)
     getLookupOptions(source, parentValue?.trim() || undefined)
       .then((opts) => {
         if (!cancelled && mountedRef.current) {
@@ -87,7 +187,7 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
     return () => {
       cancelled = true;
     };
-  }, [isSelect, param.optionsSource, parentValue, hasParent]);
+  }, [isSelect, param, parentValue, hasParent, zones, financialYears, fetchWards]);
 
   const change = (v: string) => onChange(param.parameterKey, v);
   const blur = () => onBlur(param.parameterKey);
@@ -95,7 +195,7 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
   switch (param.parameterType) {
     case 'select':
       return (
-        <Select
+        <SearchSelect
           name={param.parameterKey}
           label={param.label}
           required={param.isRequired}
@@ -103,8 +203,8 @@ export function ReportParamField({ param, value, parentValue, onChange, onBlur, 
           options={options.map((o) => ({ value: o.value, label: o.label }))}
           value={value}
           disabled={cascadeBlocked || isFetching}
+          isLoading={isFetching}
           onChange={(_, v) => change(v)}
-          onBlur={blur}
           error={error}
         />
       );

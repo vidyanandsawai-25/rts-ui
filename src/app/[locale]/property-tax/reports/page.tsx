@@ -34,20 +34,21 @@ export default async function ReportsPage({ params }: PageProps) {
   const goHomeAction = (
     <Link
       href={`/${locale}/home`}
-      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-all"
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-all"
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="h-3.5 w-3.5" />
       {t('error.goHome')}
     </Link>
   );
 
   return (
-    <PageContainer className="p-6 pt-2 w-full flex flex-col gap-4">
+    <PageContainer className="p-4 pt-2 w-full flex flex-col gap-3">
       <TableHeader
         title={copy.pageTitle}
         subtitle={copy.pageSubtitle}
         icon="fileText"
         rightContent={goHomeAction}
+        className="py-2 sm:py-2.5 px-3 sm:px-4"
       />
       <ReportsWorkspace
         copy={copy}

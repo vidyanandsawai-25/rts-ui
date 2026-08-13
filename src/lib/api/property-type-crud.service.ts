@@ -25,7 +25,7 @@ import { PROPERTY_TYPE_ERROR_CODES } from "@/lib/constants/property-type-error-c
  */
 export async function getPropertyTypes(): Promise<PropertyType[]> {
   try {
-    const response = await apiClient.get<PagedResponse<PropertyType>>("/PropertyTypeMaster");
+    const response = await apiClient.get<PagedResponse<PropertyType>>("/PropertyTypeMaster?PageSize=-1");
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch property types", "Get property types failed");
     }

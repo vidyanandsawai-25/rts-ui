@@ -140,6 +140,24 @@
     "loading": "लोड होत आहे...",
     "selectZoneFirst": "आधी क्षेत्र निवडा",
     "selectWardFirst": "आधी वॉर्ड निवडा",
+    "selectMode": "मोड निवडा",
+    "wardWise": "वॉर्ड नुसार",
+    "fromToProperty": "पासून - पर्यंत मालमत्ता",
+    "individualProperty": "वैयक्तिक मालमत्ता",
+    "propertyDescription": "मालमत्तेचे वर्णन",
+    "selectDescription": "वर्णन निवडा",
+    "assessmentType": "मूल्यांकनाचा प्रकार",
+    "selectAssessmentType": "मूल्यांकनाचा प्रकार निवडा",
+    "propertyDemand": "मालमत्तेची मागणी",
+    "greaterThan": "पेक्षा जास्त",
+    "lessThan": "पेक्षा कमी",
+    "top": "शीर्ष",
+    "enterAmount": "रक्कम प्रविष्ट करा",
+    "eg1": "उदा. 1",
+    "eg10": "उदा. 10",
+    "egPropertyNo": "उदा. 101 किंवा 101/A/1",
+    "propertiesSelected": "मालमत्ता निवडल्या",
+    "viewEdit": "पहा / संपादित करा",
     "validation": {
       "financialYearRequired": "आर्थिक वर्ष आवश्यक आहे.",
       "zoneRequired": "क्षेत्र आवश्यक आहे.",
@@ -148,7 +166,7 @@
       "networkError": "नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा.",
       "failedToQueue": "अहवाल रांगेत टाकण्यात अपयश"
     },
-    "queuedSuccess": "अहवाल रांगेत आहे! तयार झाल्यावर तो कामांच्या यादीत दिसेल.",
+
     "reportQueued": "अहवाल \"{name}\" ची विनंती यशस्वीरित्या सबमिट केली गेली.",
     "buttons": {
       "reset": "रीसेट करा",
