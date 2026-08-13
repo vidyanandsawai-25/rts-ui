@@ -17,7 +17,7 @@ export function useReassessmentSummaryCards({
   t: (key: string) => string;
 }) {
   const calculateTotalArea = (floors: MappedFloorDetail[]) =>
-    floors.reduce((sum, f) => sum + (f.carpetAreaSqM || 0), 0);
+    floors.reduce((sum, f) => sum + ((f.builtUpAreaSqM ?? f.carpetAreaSqM) || 0), 0);
 
   const oldTotalArea = calculateTotalArea(oldFloorDetails);
   const newTotalArea = calculateTotalArea(newFloorDetails);

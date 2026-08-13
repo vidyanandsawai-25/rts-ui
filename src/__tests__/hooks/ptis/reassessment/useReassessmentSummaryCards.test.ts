@@ -135,7 +135,7 @@ describe("useReassessmentSummaryCards", () => {
     return translations[key] || key;
   };
 
-  it("calculates total carpet area correctly", () => {
+  it("calculates total built-up area correctly", () => {
     const { result } = renderHook(() =>
       useReassessmentSummaryCards({
         oldFloorDetails: mockOldFloorDetails,
@@ -144,8 +144,8 @@ describe("useReassessmentSummaryCards", () => {
         t: mockT,
       })
     );
-    expect(result.current[0].oldValue).toBe("46.45");
-    expect(result.current[0].newValue).toBe("55.74");
+    expect(result.current[0].oldValue).toBe("55.74");
+    expect(result.current[0].newValue).toBe("65.03");
     expect(result.current[0].difference).toBe("+9.29");
   });
 
