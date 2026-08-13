@@ -11,11 +11,17 @@ export interface PropertyTypeBreakdown {
   underConstruction: number;
 }
 
+export interface StatusCountBreakdown {
+  statusId: number;
+  structureCount: number;
+  unitCount: number;
+}
+
 export interface AssessmentStatusBreakdown {
-  assessed: CountBreakdown;
-  unassessed: CountBreakdown;
-  newlyAssessedFound: CountBreakdown;
-  assessmentInProcess: CountBreakdown;
+  assessed: StatusCountBreakdown;
+  unassessed: StatusCountBreakdown;
+  newlyAssessedFound: StatusCountBreakdown;
+  assessmentInProcess: StatusCountBreakdown;
 }
 
 export interface GeoSequencingZone {

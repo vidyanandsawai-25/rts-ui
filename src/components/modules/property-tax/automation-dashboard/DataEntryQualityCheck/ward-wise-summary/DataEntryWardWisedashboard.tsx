@@ -16,6 +16,7 @@ import { ExportDropdown } from '../ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { Column } from '@/components/common';
+import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 
 interface DataEntryWardWiseDashboardProps {
     zoneId: string;
@@ -68,6 +69,7 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
 
                 let structureUnitParam = '';
+                let assessmentTypeParam = '';
                 let targetWorkflowStageId = workflowStageId;
 
                 // Internal Survey column
@@ -79,15 +81,27 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
                     targetWorkflowStageId = '2'; // Internal Survey
                 }
                 // Data Entry column
-                else if (columnKey === 'deCompStruct' || columnKey === 'dePendStruct') {
+                else if (columnKey === 'deCompStruct') {
                     structureUnitParam = '&Structure=true&Unit=false';
                     targetWorkflowStageId = workflowStageId || '3'; // Quality Check / Data Entry
-                } else if (columnKey === 'deCompUnit' || columnKey === 'dePendUnit') {
+                } else if (columnKey === 'deCompUnit') {
                     structureUnitParam = '&Structure=false&Unit=true';
                     targetWorkflowStageId = workflowStageId || '3'; // Quality Check / Data Entry
+                } else if (columnKey === 'dePendStruct') {
+                    structureUnitParam = '&PendingStructure=true';
+                    targetWorkflowStageId = workflowStageId || '3';
+                } else if (columnKey === 'dePendUnit') {
+                    structureUnitParam = '&PendingUnit=true';
+                    targetWorkflowStageId = workflowStageId || '3';
                 }
 
-                const query = `?stage=dataEntryQC&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
+                const assessmentParams = getAssessmentStatusNavigationParams(columnKey, row);
+                if (assessmentParams.isAssessmentStatusColumn) {
+                    assessmentTypeParam = assessmentParams.assessmentTypeParam;
+                    structureUnitParam = assessmentParams.structureUnitParam;
+                }
+
+                const query = `?stage=dataEntryQC&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${assessmentTypeParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
             }
         );
@@ -139,6 +153,10 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
             newlyUnit: ward.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
             inprocessStruct: ward.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
             inprocessUnit: ward.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+            assessedStatusId: ward.assessmentStatusBreakdown?.assessed?.statusId,
+            unassessedStatusId: ward.assessmentStatusBreakdown?.unassessed?.statusId,
+            newlyAssessedStatusId: ward.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+            inprocessStatusId: ward.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         });
 
         const mappedWards = summaryData.wardData.map((ward, index) => mapWardDataToRow(ward, false, index));

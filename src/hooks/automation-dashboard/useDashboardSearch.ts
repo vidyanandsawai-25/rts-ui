@@ -1,18 +1,29 @@
 import { useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 export function useDashboardSearch(searchTerm: string) {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const locale = useLocale();
 
     const handleSearch = () => {
         if (!searchTerm.trim()) return;
-        const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+        const currentSearch = searchParams.toString();
+        const currentUrl = currentSearch ? `${pathname}?${currentSearch}` : pathname;
         const returnUrl = encodeURIComponent(currentUrl);
+        const workflowStageId = searchParams.get('workflowStageId');
+      
+        let targetUrl = `/${locale}/property-tax/automation-dashboard/property-details-dashboard/All?PropertyNo=${encodeURIComponent(searchTerm.trim())}&returnUrl=${returnUrl}`;
+        if (workflowStageId) {
+            targetUrl += `&workflowStageId=${workflowStageId}`;
+        }
+
         startTransition(() => {
-            router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/All?searchTerm=${encodeURIComponent(searchTerm.trim())}&returnUrl=${returnUrl}`);
+            router.push(targetUrl);
         });
     };
 

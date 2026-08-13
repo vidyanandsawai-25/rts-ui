@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { SearchButton } from '@/components/common';
@@ -20,6 +19,8 @@ import { DashboardFilterBar } from '@/components/modules/property-tax/automation
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
+import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
+import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 
 interface GeoSequencingPageProps {
     serverData?: GeoSequencingItems | null;
@@ -40,7 +41,7 @@ const TopBar = ({
     const { isPending, handleSearch } = useDashboardSearch(searchTerm);
 
     return (
-        <div className="flex items-center justify-between gap-4 w-full">
+        <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2 flex-1 max-w-xl">
                 <SearchInput
                     value={searchTerm}
@@ -96,13 +97,20 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
 
                 let structureUnitParam = '';
+                let assessmentTypeParam = '';
                 if (columnKey === 'geoStruct') {
                     structureUnitParam = '&Structure=true&Unit=false';
                 } else if (columnKey === 'geoUnit') {
                     structureUnitParam = '&Structure=false&Unit=true';
                 }
 
-                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
+                const assessmentParams = getAssessmentStatusNavigationParams(columnKey, row);
+                if (assessmentParams.isAssessmentStatusColumn) {
+                    assessmentTypeParam = assessmentParams.assessmentTypeParam;
+                    structureUnitParam = assessmentParams.structureUnitParam;
+                }
+
+                const query = `?stage=geoSequencing&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}${assessmentTypeParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );
@@ -148,6 +156,10 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
             newlyUnit: zone.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
             inprocessStruct: zone.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
             inprocessUnit: zone.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+            assessedStatusId: zone.assessmentStatusBreakdown?.assessed?.statusId,
+            unassessedStatusId: zone.assessmentStatusBreakdown?.unassessed?.statusId,
+            newlyAssessedStatusId: zone.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+            inprocessStatusId: zone.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         }));
 
         let sortedZones = mappedZones;
@@ -180,6 +192,10 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
             newlyUnit: serverData.totalRow.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
             inprocessStruct: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
             inprocessUnit: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+            assessedStatusId: serverData.totalRow.assessmentStatusBreakdown?.assessed?.statusId,
+            unassessedStatusId: serverData.totalRow.assessmentStatusBreakdown?.unassessed?.statusId,
+            newlyAssessedStatusId: serverData.totalRow.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+            inprocessStatusId: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         } : null;
 
         return totalRow ? [...sortedZones, totalRow] : sortedZones;

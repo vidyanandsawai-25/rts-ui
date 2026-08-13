@@ -20,7 +20,7 @@ export interface DataEntryQAProp {
   completedUnit: number;
   pendingStructure: number;
   pendingUnit: number;
-  typeWise: number;
+  typeWise?: number;
 }
 
 export interface DataEntryPropertyTypeProp {
@@ -28,7 +28,7 @@ export interface DataEntryPropertyTypeProp {
   nonResidential: number;
   mixed: number;
   publicUtility: number;
-  underConstruction: number;
+  underConstruction?: number;
 }
 
 export interface DataEntryAssessmentCount {
@@ -36,11 +36,17 @@ export interface DataEntryAssessmentCount {
   unitCount: number;
 }
 
+export interface DataEntryStatusAssessmentCount {
+  statusId: number;
+  structureCount: number;
+  unitCount: number;
+}
+
 export interface DataEntryAssessmentStatusBreakdown {
-  assessed: DataEntryAssessmentCount;
-  unassessed: DataEntryAssessmentCount;
-  newlyAssessedFound: DataEntryAssessmentCount;
-  assessmentInProcess: DataEntryAssessmentCount;
+  assessed: DataEntryStatusAssessmentCount;
+  unassessed: DataEntryStatusAssessmentCount;
+  newlyAssessedFound: DataEntryStatusAssessmentCount;
+  assessmentInProcess: DataEntryStatusAssessmentCount;
 }
 
 export interface DataEntryGridData {

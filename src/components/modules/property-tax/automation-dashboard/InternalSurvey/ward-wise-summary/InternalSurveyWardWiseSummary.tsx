@@ -21,6 +21,7 @@ import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automa
 import { ExportDropdown } from '../ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
+import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 
 interface InternalSurveyWardWiseSummaryProps {
     zoneId: string;
@@ -87,6 +88,7 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
             const typeIdParam = getPropertyTypeIdParam(columnKey);
 
             let structureUnitParam = '';
+            let assessmentTypeParam = '';
             let targetWorkflowStageId = workflowStageId;
 
             // Geo-Sequencing Properties
@@ -106,11 +108,17 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
                 targetWorkflowStageId = workflowStageId || '2'; // Internal Survey
             }
 
-            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&column=${columnKey}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${structureUnitParam}`;
+            const assessmentParams = getAssessmentStatusNavigationParams(columnKey, row);
+            if (assessmentParams.isAssessmentStatusColumn) {
+                assessmentTypeParam = assessmentParams.assessmentTypeParam;
+                structureUnitParam = assessmentParams.structureUnitParam;
+            }
+
+            const query = `?stage=internalSurvey&source=ward&wardWise=true&zoneId=${zoneId}&column=${columnKey}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${assessmentTypeParam}${structureUnitParam}`;
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
-    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t), [t]);
+    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t, 'ward'), [t]);
 
     const tableData = useMemo(() => {
         if (!summaryData?.wardData) return [];
@@ -141,6 +149,10 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
             inprocessStruct: ward.assessmentInprocess?.structure ?? 0,
             inprocessUnit: ward.assessmentInprocess?.unit ?? 0,
             photoCount: ward.photoCount ?? 0,
+            assessedStatusId: ward.assessedProperties?.statusId,
+            unassessedStatusId: ward.unassessedProperties?.statusId,
+            newlyAssessedStatusId: ward.newlyAssessedFound?.statusId,
+            inprocessStatusId: ward.assessmentInprocess?.statusId,
         }));
 
         if (summaryData.totalRow) {
@@ -167,6 +179,10 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
                 inprocessStruct: total.assessmentInprocess?.structure ?? 0,
                 inprocessUnit: total.assessmentInprocess?.unit ?? 0,
                 photoCount: total.photoCount ?? 0,
+                assessedStatusId: total.assessedProperties?.statusId,
+                unassessedStatusId: total.unassessedProperties?.statusId,
+                newlyAssessedStatusId: total.newlyAssessedFound?.statusId,
+                inprocessStatusId: total.assessmentInprocess?.statusId,
             });
         }
 

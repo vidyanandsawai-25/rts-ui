@@ -10,6 +10,7 @@ let searchParamsState = new URLSearchParams('workflowStageId=9');
 vi.mock('next/navigation', () => ({
   useSearchParams: () => searchParamsState,
   useRouter: () => ({ push: pushMock }),
+  usePathname: () => '/',
 }));
 
 vi.mock('next-intl', () => ({
@@ -42,8 +43,8 @@ describe('InternalSurveyPage', () => {
           publicUtility: 108,
           underConstruction: 109,
         },
-        assessedProperties: { structure: 110, units: 111 },
-        unassessedProperties: { structure: 112, units: 113 },
+        assessedProperties: { statusId: 1, structure: 110, units: 111 },
+        unassessedProperties: { statusId: 2, structure: 112, units: 113 },
         newlyAssessedFound: { structure: 114, unit: 115 },
         assessmentInprocess: { structure: 116, unit: 117 },
         photoCount: 118,
@@ -62,8 +63,8 @@ describe('InternalSurveyPage', () => {
         publicUtility: 208,
         underConstruction: 209,
       },
-      assessedProperties: { structure: 210, units: 211 },
-      unassessedProperties: { structure: 212, units: 213 },
+      assessedProperties: { statusId: 1, structure: 210, units: 211 },
+      unassessedProperties: { statusId: 2, structure: 212, units: 213 },
       newlyAssessedFound: { structure: 214, unit: 215 },
       assessmentInprocess: { structure: 216, unit: 217 },
       photoCount: 218,

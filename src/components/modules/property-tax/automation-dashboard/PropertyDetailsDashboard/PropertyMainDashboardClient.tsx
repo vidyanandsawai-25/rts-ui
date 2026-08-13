@@ -67,7 +67,27 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
 
     const pageNumber = parseInt(searchParams.get('pageNumber') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
-    const [searchTerm, setSearchTerm] = useState('');
+    
+    const initialSearch = searchParams.get('Search') || searchParams.get('PropertyNo') || '';
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+    const handleSearchTermChange = (val: string) => {
+        setSearchTerm(val);
+        const params = new URLSearchParams(searchParams.toString());
+        if (val.trim()) {
+            params.set('Search', val.trim());           
+        } else {
+            params.delete('Search');
+        }
+        params.delete('PropertyNo');
+        params.set('pageNumber', '1');
+        router.push(`?${params.toString()}`);
+    };
+
+    const handleSearch = () => {
+        // Fallback for Enter key if needed
+        handleSearchTermChange(searchTerm);
+    };
 
     const isWardWise = searchParams.get('wardWise') === 'true' || searchParams.get('source') === 'ward';
 
@@ -165,6 +185,8 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
         params.delete('propertyTypeId');
         params.delete('propertyTypeCategoryId');
         params.delete('assessmentTypeId');
+        params.delete('Search');
+        params.delete('PropertyNo');
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
         setSelectedZone(serverData?.zoneId?.toString() || actualZoneId);
@@ -252,7 +274,8 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
                 backUrl={backUrl}
                 division={displayDivision}
                 searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
+                setSearchTerm={handleSearchTermChange}
+                onSearch={handleSearch}
                 stage={stage}
                 columnName={searchParams.get('columnName') || undefined}
 

@@ -69,7 +69,7 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
     const activeTab = activeTabObj ? activeTabObj.value : (rawTabs[0]?.value || '');
 
     return (
-        <div className={`flex flex-col h-full ${isIsolatedView ? 'p-0' : 'gap-2 p-2'}`}>
+        <div className={`flex flex-col h-full ${isIsolatedView ? 'p-0' : 'gap-1.5'}`}>
             {!isIsolatedView && (
                 <>
                     {/* TOP CARDS RENDERED IN CLIENT MODULE, USING SERVER DATA */}

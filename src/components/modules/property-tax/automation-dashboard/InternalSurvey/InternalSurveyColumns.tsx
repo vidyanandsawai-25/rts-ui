@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ArrowUpDown, ArrowUp } from 'lucide-react';
 import { Column, HeaderCell } from '@/components/common/AutomationTable';
+import type { SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
+import { renderSortableHeader, ViewType } from '../CommonColumns/SortHeader';
 import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/CommonColumns';
 import { formatIndianNumber } from '@/lib/utils/numberUtils';
 
@@ -25,6 +26,10 @@ export type InternalSurveyTableRow = {
     inprocessStruct: number | string;
     inprocessUnit: number | string;
     photoCount: number | string;
+    assessedStatusId?: number;
+    unassessedStatusId?: number;
+    newlyAssessedStatusId?: number;
+    inprocessStatusId?: number;
     isTotal?: boolean;
     wardId?: number;
     zoneId?: number;
@@ -187,27 +192,12 @@ export const getInternalSurveyColumns = (
     return baseColumns;
 };
 
-const SortIcon = () => (
-    <ArrowUpDown className="inline-block ml-1 w-3 h-3 text-slate-400 opacity-60" />
-);
-
-const ActiveSortIcon = () => (
-    <ArrowUp className="inline-block ml-1 w-3 h-3 text-slate-500" />
-);
-
-const renderHeader = (title: string, showSort: boolean = true, activeSort: boolean = false) => (
-    <div className="flex items-center justify-center gap-1 font-bold text-[13px] text-slate-700">
-        {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
-    </div>
-);
-
-const renderLeftHeader = (title: string, showSort: boolean = true, activeSort: boolean = false) => (
-    <div className="flex items-center justify-start gap-1 font-bold text-[14px] text-slate-700 uppercase">
-        {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
-    </div>
-);
-
-export const getInternalSurveyHeaderRows = (t: any): HeaderCell[][] => {
+export const getInternalSurveyHeaderRows = (
+    t: any,
+    viewType: ViewType = 'zone',
+    sortConfig?: SortConfig<InternalSurveyTableRow> | null,
+    onSort?: (key: keyof InternalSurveyTableRow) => void
+): HeaderCell[][] => {
     const topRow: HeaderCell[] = [
         {
             label: <div className="font-bold text-[14px] text-slate-700 uppercase">{t('internalSurvey.columns.sr')}</div>,
@@ -216,55 +206,62 @@ export const getInternalSurveyHeaderRows = (t: any): HeaderCell[][] => {
             headerClassName: 'bg-slate-50 min-w-[40px]'
         },
         {
-            label: renderLeftHeader(t('internalSurvey.columns.division'), true, true),
+            label: renderSortableHeader(
+                t('internalSurvey.columns.division'),
+                'division',
+                sortConfig,
+                onSort,
+                true,
+                viewType
+            ),
             rowSpan: 2,
             align: 'left',
             headerClassName: 'bg-slate-50 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.geoSequencingProperties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.geoSequencingProperties')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-blue-50'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.surveyProperties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.surveyProperties')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-blue-50'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.propertyType')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.propertyType')}</div>,
             colSpan: 5,
             align: 'center',
             headerClassName: 'bg-purple-50'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.assessedProperties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center whitespace-nowrap">{t('internalSurvey.columns.assessed')}<br />{t('internalSurvey.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-green-50'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.unassessedProperties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center whitespace-nowrap">{t('internalSurvey.columns.unassessed')}<br />{t('internalSurvey.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-orange-50'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.newlyAssessedFound')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center"><span className="whitespace-nowrap">{t('internalSurvey.columns.newlyAssessed')}</span><br />{t('internalSurvey.columns.found')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-emerald-50'
         },
         {
-            label: <div className="font-bold text-[14px] text-slate-700 text-center">{t('internalSurvey.columns.assessmentInprocess')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.assessment')}<br />{t('internalSurvey.columns.inprocess')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-orange-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.photoCount'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.photoCount'), 'photoCount', sortConfig, onSort, false, viewType),
             rowSpan: 2,
             align: 'center',
             headerClassName: 'bg-cyan-50'
@@ -273,87 +270,87 @@ export const getInternalSurveyHeaderRows = (t: any): HeaderCell[][] => {
 
     const bottomRow: HeaderCell[] = [
         {
-            label: renderHeader(t('internalSurvey.columns.structure'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'geoStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-blue-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.unit'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'geoUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-blue-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.structure'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'surveyStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-blue-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.unit'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'surveyUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-blue-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.residential'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.residential'), 'propRes', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.nonResidential'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.nonResidential'), 'propNonRes', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.mixedProperty'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.mixedProperty'), 'propMixed', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.publicUtility'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.publicUtility'), 'propPublic', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.underConstruction'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.underConstruction'), 'propUnder', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.structure'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'assessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-green-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.units'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.units'), 'assessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-green-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.structure'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'unassessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-orange-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.units'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.units'), 'unassessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-orange-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.structure'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'newlyStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-emerald-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.unit'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'newlyUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-emerald-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.structure'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'inprocessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-orange-50'
         },
         {
-            label: renderHeader(t('internalSurvey.columns.unit'), true, false),
+            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'inprocessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-orange-50'
         }

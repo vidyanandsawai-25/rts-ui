@@ -25,6 +25,10 @@ export type GeoSequencingData = {
     newlyUnit: string | number;
     inprocessStruct: string | number;
     inprocessUnit: string | number;
+    assessedStatusId?: number;
+    unassessedStatusId?: number;
+    newlyAssessedStatusId?: number;
+    inprocessStatusId?: number;
     isTotal?: boolean;
     wardId?: number;
     zoneId?: number;

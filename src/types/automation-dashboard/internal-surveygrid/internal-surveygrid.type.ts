@@ -1,9 +1,16 @@
 export interface StructureUnitProp {
+  statusId?: number;
   structure: number;
   unit: number;
 }
 
 export interface StructureUnitsProp {
+  structure: number;
+  units: number;
+}
+
+export interface StatusStructureUnitsProp {
+  statusId: number;
   structure: number;
   units: number;
 }
@@ -23,8 +30,8 @@ export interface InternalSurveyGridData {
   geoSequencingProperties: StructureUnitProp;
   surveyProperties: StructureUnitProp;
   propertyType: PropertyTypeProp;
-  assessedProperties: StructureUnitsProp;
-  unassessedProperties: StructureUnitsProp;
+  assessedProperties: StatusStructureUnitsProp;
+  unassessedProperties: StatusStructureUnitsProp;
   newlyAssessedFound: StructureUnitProp;
   assessmentInprocess: StructureUnitProp;
   photoCount: number;
@@ -49,8 +56,8 @@ export interface InternalSurveyWardWiseData {
   geoSequencingProperties: StructureUnitProp;
   surveyProperties: StructureUnitProp;
   propertyType: PropertyTypeProp;
-  assessedProperties: StructureUnitsProp;
-  unassessedProperties: StructureUnitsProp;
+  assessedProperties: StatusStructureUnitsProp;
+  unassessedProperties: StatusStructureUnitsProp;
   newlyAssessedFound: StructureUnitProp;
   assessmentInprocess: StructureUnitProp;
   photoCount: number;

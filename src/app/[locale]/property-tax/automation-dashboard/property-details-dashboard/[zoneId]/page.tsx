@@ -23,14 +23,21 @@ interface PageProps {
             propertyTypeCategoryId?: string;
             propertyTypeId?: string;
             assessmentTypeId?: string;
-            searchTerm?: string;
+            Search?: string;
             sortBy?: string;
             sortOrder?: string;
             wardWise?: string;
             source?: string;
             zoneId?: string;
+            structure?: string;
+            unit?: string;
             Structure?: string;
             Unit?: string;
+            PendingStructure?: string;
+            PendingUnit?: string;
+            CompletedStructure?: string;
+            CompletedUnit?: string;
+            PropertyNo?: string;
         }>;
     params: Promise<
         {
@@ -49,14 +56,26 @@ const page = async ({ searchParams, params }: PageProps) => {
     const pageSize = search.pageSize ? parseInt(search.pageSize, 10) : 10;
 
     const propertyTypeCategoryId = search.PropertyTypeCategoryId || search.propertyTypeCategoryId;
-    const propertyDescription = search.propertyDescription;
     const propertyTypeId = search.propertyTypeId;
     const assessmentTypeId = search.assessmentTypeId;
-    const searchTerm = search.searchTerm;
+    const Search = search.Search;
+    const PropertyNo = search.PropertyNo;
     const sortBy = search.sortBy;
     const sortOrder = search.sortOrder;
-    const structure = search.Structure ? search.Structure === 'true' : undefined;
-    const unit = search.Unit ? search.Unit === 'true' : undefined;
+    const structure = search.structure
+        ? search.structure === 'true'
+        : search.Structure
+            ? search.Structure === 'true'
+            : undefined;
+    const unit = search.unit
+        ? search.unit === 'true'
+        : search.Unit
+            ? search.Unit === 'true'
+            : undefined;
+    const pendingStructure = search.PendingStructure ? search.PendingStructure === 'true' : undefined;
+    const pendingUnit = search.PendingUnit ? search.PendingUnit === 'true' : undefined;
+    const completedStructure = search.CompletedStructure ? search.CompletedStructure === 'true' : undefined;
+    const completedUnit = search.CompletedUnit ? search.CompletedUnit === 'true' : undefined;
 
     const isWardWise = search.wardWise === 'true' || search.source === 'ward';
 
@@ -73,15 +92,19 @@ const page = async ({ searchParams, params }: PageProps) => {
                     pageNumber,
                     pageSize,
                     actualWardId,                    
-                    propertyDescription,
                     propertyTypeCategoryId,
                     propertyTypeId,
                     assessmentTypeId,
-                    searchTerm,
+                    Search,
+                    PropertyNo,
                     sortBy,
                     sortOrder,
                     structure,
-                    unit
+                    unit,
+                    pendingStructure,
+                    pendingUnit,
+                    completedStructure,
+                    completedUnit
                 )
                 : getGeoSequencingPropertyDetailsAction(
                     actualZoneId,
@@ -92,17 +115,22 @@ const page = async ({ searchParams, params }: PageProps) => {
                     propertyTypeCategoryId,
                     propertyTypeId,
                     assessmentTypeId,
-                    searchTerm,
+                    Search,
+                    PropertyNo,
                     sortBy,
                     sortOrder,
                     structure,
-                    unit
+                    unit,
+                    pendingStructure,
+                    pendingUnit,
+                    completedStructure,
+                    completedUnit
                 )
             : Promise.resolve({ success: true, data: null }),
 
         getWardsAction(1, -1),
         getPropertyTypeMasterAction(1, -1),
-        getPropertyAssessmentStatusAction(1,-1)
+        getPropertyAssessmentStatusAction(1, -1)
     ]);
 
     return (
