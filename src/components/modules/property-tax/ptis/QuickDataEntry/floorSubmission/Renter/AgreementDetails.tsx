@@ -35,11 +35,11 @@ interface AgreementDetailsProps {
 const toDisplayDate = (val: string) => {
   if (!val) return '';
   // If it's already in yyyy-mm-dd format, convert to dd-mm-yyyy
-  const ymdMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (ymdMatch) return `${ymdMatch[3]}-${ymdMatch[2]}-${ymdMatch[1]}`;
+  const ymdMatch = val.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (ymdMatch) return `${ymdMatch[3].padStart(2, '0')}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[1]}`;
   const parts = val.split('-');
   if (parts.length === 3 && parts[0].length === 4) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    return `${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[0]}`;
   }
   return val;
 };
@@ -47,24 +47,58 @@ const toDisplayDate = (val: string) => {
 const toValueDate = (val: string) => {
   if (!val) return '';
   const parts = val.split('-');
-  // If it's a full dd-mm-yyyy, convert to yyyy-mm-dd for the state
-  if (
-    parts.length === 3 &&
-    parts[0].length === 2 &&
-    parts[1].length === 2 &&
-    parts[2].length === 4
-  ) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  // If it has 3 parts (DD, MM, YYYY), pad them and convert to YYYY-MM-DD
+  if (parts.length === 3 && parts[2].length === 4) {
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    return `${y}-${m}-${d}`;
   }
   return val;
 };
 
 const formatManualDate = (val: string) => {
-  const digits = val.replace(/\D/g, '').slice(0, 8);
+  const cleaned = val.replace(/[^\d-]/g, '');
+  const parts = cleaned.split('-');
+  
+  if (parts.length > 3) {
+    parts.length = 3;
+  }
+  
   let res = '';
-  if (digits.length > 0) res += digits.slice(0, 2);
-  if (digits.length > 2) res += '-' + digits.slice(2, 4);
-  if (digits.length > 4) res += '-' + digits.slice(4, 8);
+  
+  if (parts[0] !== undefined) {
+    const day = parts[0];
+    if (day.length > 2) {
+      const digits = cleaned.replace(/\D/g, '');
+      let autoRes = '';
+      if (digits.length > 0) autoRes += digits.slice(0, 2);
+      if (digits.length > 2) autoRes += '-' + digits.slice(2, 4);
+      if (digits.length > 4) autoRes += '-' + digits.slice(4, 8);
+      return autoRes;
+    }
+    res += day;
+  }
+  
+  if (parts[1] !== undefined) {
+    const month = parts[1];
+    if (month.length > 2) {
+      const digits = cleaned.replace(/\D/g, '');
+      let autoRes = '';
+      if (digits.length > 0) autoRes += digits.slice(0, 2);
+      if (digits.length > 2) autoRes += '-' + digits.slice(2, 4);
+      if (digits.length > 4) autoRes += '-' + digits.slice(4, 8);
+      return autoRes;
+    }
+    res += '-' + month;
+  }
+  
+  if (parts[2] !== undefined) {
+    let year = parts[2];
+    if (year.length > 4) year = year.slice(0, 4);
+    res += '-' + year;
+  }
+  
   return res;
 };
 
@@ -75,7 +109,7 @@ const isValidAgreementId = (val: string) => /^[A-Za-z0-9_-]*$/.test(val);
 
 const fieldLabelClassName = 'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
 const errorClassName =
-  'text-[10px] text-red-500 font-medium absolute top-full left-0 mt-0.5 whitespace-nowrap animate-in fade-in duration-200';
+  'text-[10px] text-red-500 font-medium mt-0.5 animate-in fade-in duration-200';
 const errorBorderClassName = 'border-red-400 focus:ring-red-100';
 
 const AgreementDetails = memo(
@@ -215,26 +249,7 @@ const AgreementDetails = memo(
             return;
           }
 
-          // For date fields, hide invalid-format errors while manually typing partial inputs (length < 10)
-          if (
-            field === 'agreementDate' ||
-            field === 'agreementDateFrom' ||
-            field === 'agreementDateTo'
-          ) {
-            const displayVal = (() => {
-              if (field === 'agreementDate')
-                return toDisplayDate(formData.renterDetails?.agreementDate || '');
-              if (field === 'agreementDateFrom')
-                return toDisplayDate(formData.renterDetails?.agreementDateFrom || '');
-              if (field === 'agreementDateTo')
-                return toDisplayDate(formData.renterDetails?.agreementDateTo || '');
-              return '';
-            })();
-
-            if (displayVal.length > 0 && displayVal.length < 10) {
-              return; // Silence partial typing errors
-            }
-          }
+          // Remove length < 10 silence check so errors show on blur even if incomplete
 
           nextErrors[field] = err.message;
         }
@@ -245,8 +260,7 @@ const AgreementDetails = memo(
 
     const processOCR = async (file: File) => {
       setIsProcessingOCR(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let worker: any = null;
+      let worker: { recognize: (img: string) => Promise<{ data: { text: string } }>; terminate: () => Promise<void> } | null = null;
       try {
         Swal.fire({
           icon: 'info',
@@ -256,9 +270,14 @@ const AgreementDetails = memo(
           showConfirmButton: false,
         });
 
+        const globalWindow = window as unknown as {
+          Tesseract?: {
+            createWorker(lang: string, oem: number): Promise<Exclude<typeof worker, null>>;
+          };
+        };
+
         // Dynamically load Tesseract from CDN if not already loaded
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!(window as any).Tesseract) {
+        if (!globalWindow.Tesseract) {
           await new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
@@ -269,8 +288,7 @@ const AgreementDetails = memo(
         }
 
         const imageUrl = URL.createObjectURL(file);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        worker = await (window as any).Tesseract.createWorker('eng', 1);
+        worker = await globalWindow.Tesseract!.createWorker('eng', 1);
         const result = await worker.recognize(imageUrl);
         const extractedData = extractAgreementData(result?.data?.text || '');
         if (Object.keys(extractedData).length > 0) {
@@ -279,8 +297,7 @@ const AgreementDetails = memo(
               ...prev,
               renterDetails: {
                 ...prev.renterDetails,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ...(extractedData as any),
+                ...(extractedData as Partial<NonNullable<RenterFormData['renterDetails']>>),
               },
             };
           });

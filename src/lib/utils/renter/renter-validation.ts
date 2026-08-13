@@ -54,8 +54,25 @@ export interface CurrentFloorContext {
 /** Validate calendar date */
 const isValidCalendarDate = (isoDate: string): boolean => {
   if (!isoDate) return false;
+  
+  const datePart = isoDate.split('T')[0];
+  const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+  if (!regex.test(datePart)) return false;
+
   const d = new Date(isoDate);
-  return !isNaN(d.getTime());
+  if (isNaN(d.getTime())) return false;
+
+  const [y, m, day] = datePart.split('-');
+  if (
+    d.getUTCFullYear() !== parseInt(y, 10) ||
+    d.getUTCMonth() + 1 !== parseInt(m, 10) ||
+    d.getUTCDate() !== parseInt(day, 10)
+  ) {
+    return false;
+  }
+
+  const year = d.getFullYear();
+  return year >= 1900 && year <= 2100;
 };
 
 /** Calendar-accurate overlap check */

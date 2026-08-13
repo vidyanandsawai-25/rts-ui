@@ -170,6 +170,7 @@ export function usePropertySearchNavigation({
         params.delete("wardId");
         params.delete("status");
         params.delete("pageNumber");
+        params.delete("isActive");
 
         if (currentCriteria) {
           const tabCriteria = applyTabSearchCriteria(currentCriteria, activeTab);
@@ -207,6 +208,7 @@ export function usePropertySearchNavigation({
         }
         params.delete("status");
         params.delete("pageNumber");
+        params.delete("isActive");
 
         if (currentCriteria) {
           const tabCriteria = applyTabSearchCriteria(currentCriteria, activeTab);

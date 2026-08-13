@@ -46,9 +46,11 @@ export function PropertySearchTable({
   const tCommon = useTranslations("common");
 
   const isRowExpandable = React.useCallback((row: SearchResult) => {
+    const unitCount = row.childUnitCount ?? row.propertyCount ?? 0;
     return (
       row.category?.toLowerCase() === "apartment" &&
-      (!row.partitionNo || row.partitionNo.trim() === "")
+      (!row.partitionNo || row.partitionNo.trim() === "") &&
+      unitCount > 0
     );
   }, []);
 
