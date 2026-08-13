@@ -535,6 +535,7 @@ export function SearchSelect({
           }}
           id={`${accessibleId}-listbox`}
           role="listbox"
+          onMouseDown={(e) => e.preventDefault()}
           className={`
             absolute left-0 right-0 z-[9999]
             max-h-56 overflow-auto overscroll-contain
