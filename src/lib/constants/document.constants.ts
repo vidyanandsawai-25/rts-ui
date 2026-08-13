@@ -8,6 +8,7 @@ export const DOCUMENT_TYPE = {
   Application: 'Application',
   Approval: 'Approval',
   Photo: 'Photo',
+  UlbDocument: 'UlbDocument',
 } as const;
 
 export const BINDING_PURPOSE = {
@@ -26,6 +27,7 @@ export const REFERENCE_TABLE = {
   PropertyOwner: 'PropertyOwners',
   BuildingPermission: 'BuildingPermissions',
   RenterMast: 'RenterMast',
+  UlbDocument: 'ULBDocument',
 } as const;
 
 export const DEPARTMENT_ID = {
@@ -38,5 +40,12 @@ export const MODULE_ID = {
   PropertyDiscount: 1,
   PropertySocialDetails: 1,
   RenterMast: 1,
+  UlbDocument: 1,
+} as const;
+
+/** PTIS.ULBDocumentType.DocumentTypeCode values used by the Tax Zoning "Certified Documents" section. */
+export const TAX_ZONING_DOCUMENT_TYPE_CODE = {
+  LIST: 'TAX_ZONING_DOCUMENT_LIST',
+  MAP: 'TAX_ZONING_DOCUMENT_MAP',
 } as const;
 

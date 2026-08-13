@@ -95,6 +95,7 @@ export default getRequestConfig(async ({ locale }) => {
     dynamicTaxRegisterMessages,
     assetGrievanceCategoryMessages,
     assetGrievanceRemarkMessages,
+    taxZoningRangeMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -231,6 +232,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/dynamicTaxRegister.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGrievanceCategory.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGrievanceRemark.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -317,6 +319,7 @@ export default getRequestConfig(async ({ locale }) => {
       dynamicTaxRegister: dynamicTaxRegisterMessages,
       assetGrievanceCategory: assetGrievanceCategoryMessages,
       assetGrievanceRemark: assetGrievanceRemarkMessages,
+      taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
     },
   };
 });
