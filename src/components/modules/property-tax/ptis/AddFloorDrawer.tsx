@@ -306,6 +306,7 @@ export const AddFloorDrawer: React.FC<AddFloorDrawerProps> = ({
                   <p>Open Space Utilized Area: {totalOpenSpaceAreaSqM} Sq M</p>
                   <p>Available Area: {remainingAvailablePlotAreaSqM} Sq M</p>
                   <p>Entered Floor Built-up Area: {enteredFloorAreaSqM} Sq M</p>
+                  <p className="font-bold text-red-600">Exceeded Area (Difference): {Math.max(0, parseFloat((enteredFloorAreaSqM - remainingAvailablePlotAreaSqM).toFixed(2)))} Sq M</p>
                 </div>
                 <p className="text-red-600 font-bold mt-1">
                   Please enter an area less than or equal to the available area.

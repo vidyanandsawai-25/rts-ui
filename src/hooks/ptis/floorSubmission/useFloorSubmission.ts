@@ -47,9 +47,10 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   // Extract property category from initialPropertyData
   const propertyCategory = useMemo(() => {
     if (props.initialPropertyData) {
+      const data = props.initialPropertyData as Record<string, any>;
       return {
-        categoryId: props.initialPropertyData.categoryId as number | undefined,
-        categoryName: props.initialPropertyData.categoryName as string | undefined,
+        categoryId: data.categoryId as number | undefined,
+        categoryName: (data.categoryName || data.catPropertyCategoryName || data.propertyCategoryName) as string | undefined,
       };
     }
     return { categoryId: undefined, categoryName: undefined };
@@ -164,6 +165,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     plotAreaSqM,
     floorLookup: props.floorData,
     initialFloors: mappedInitialFloors,
+    propertyCategoryName: propertyCategory.categoryName,
   });
 
 
