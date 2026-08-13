@@ -124,6 +124,10 @@ export async function verifyServerRouteAccess(
     if (targetByCode) {
       return checkAccess(targetByCode, requiredAccess);
     }
+
+    if (pathWithoutLocale.startsWith('/configuration-settings')) {
+      return false;
+    }
     return true;
   } catch {
     return false;
