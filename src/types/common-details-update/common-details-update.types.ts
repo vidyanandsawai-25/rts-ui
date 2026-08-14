@@ -29,7 +29,7 @@ export interface BulkUpdateFieldConfig {
   bulkUpdateMasterId: number;
   fieldName: string;
   displayName: string;
-  controlType: 'textbox' | 'textarea' | 'dropdown' | 'searchselect' | 'checkbox' | 'number' | 'year' | 'date' | 'file';
+  controlType: 'textbox' | 'textarea' | 'dropdown' | 'select' | 'searchselect' | 'checkbox' | 'number' | 'year' | 'date' | 'file' | (string & {});
   dataType: string;
   placeholder?: string | null;
   isRequired: boolean;
@@ -64,7 +64,7 @@ export interface PropertyFilterParams {
 }
 
 export interface PropertyFilterByCategoryParams {
-  UpdateCode: string;
+  UpdateCode: string | string[];
   SearchCategory: number;
   WardId: number;
   PropertyNo?: string;
@@ -80,6 +80,7 @@ export interface BulkUpdatePayload {
   updateCode: string;
   propertyIds: number[];
   updateData: Record<string, string | number | boolean>;
+  remarks?: string;
 }
 
 export interface BulkUpdateResponse {
@@ -102,6 +103,20 @@ export interface ExcelImportResponse {
   successCount?: number;
   failedCount?: number;
   items?: Record<string, unknown>[];
+}
+
+export interface ExcelValidationResponse {
+  success: boolean;
+  message: string;
+  items?: {
+    columns: string[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rows: any[];
+    totalRows: number;
+    flaggedRowCount: number;
+  };
+  errors?: string[] | null;
+  correlationId?: string | null;
 }
 
 export type SelectOption = {
@@ -165,12 +180,14 @@ export interface CommonDetailsUpdatePageProps {
   editUpdateCode?: string;
   initialEditData?: BulkUpdateMaster | null;
   initialUpdateHistory?: PagedResponse<UpdateHistoryItem> | null;
+  initialUpdateHistoryDetail?: PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem> | null;
   actions?: Partial<CommonDetailsUpdateActions>;
 }
 
 export interface CommonDetailsUpdateActions {
   addBulkUpdateDefinitionAction?: (payload: BulkUpdateDefinitionPayload) => Promise<ActionResult<unknown>>;
   exportUpdateHistoryAction?: (params: UpdateHistoryFilterParams) => Promise<ActionResult<string>>;
+  getUpdateHistoryDetailAction?: (activityId: string, pageNumber?: number, pageSize?: number, searchTerm?: string) => Promise<ActionResult<import("@/types/common.types").PagedResponse<UpdateHistoryDetailItem>>>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: ((...args: any[]) => Promise<any>) | undefined;
 }
@@ -191,6 +208,11 @@ export interface FieldRegistryTable {
 export interface SourceTableField {
   id: number;
   tableFieldName: string;
+  displayName?: string;
+  displayNameMarathi?: string | null;
+  controlType?: string;
+  dataType?: string;
+  maxLength?: number | null;
 }
 
 export interface FieldRegistryColumn {
@@ -238,27 +260,59 @@ export interface FieldRegistryFieldConfigDto {
 
 export interface UpdateHistoryItem {
   id: number;
+  activityId: string;
+  activityType: string;
+  activityStatus: string;
+  createdDate: string;
+  records: number;
+  ipAddress: string;
+  remarks: string | null;
+  updateName: string;
+  doneBy: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  activityRemark: string | null;
+  [key: string]: unknown;
+}
+
+export interface UpdateHistoryDetailItem {
+  id: number;
+  propertyId: number;
   updateName: string;
   wardNo: string;
   propertyNo: string;
   partitionNo: string;
+  property: string;
   oldValue: string;
   newValue: string;
   updatedColumns: string;
+  isActive: boolean;
   remarks: string | null;
   ipAddress: string;
-  username: string;
-  updatedDate: string;
+  doneBy: string;
+  createdDate: string;
+  activityId: string;
+  activityType: string;
+  activityStatus: string;
+  activityDoneBy: string;
+  records: number;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  activityRemark: string | null;
   [key: string]: unknown;
 }
 
 export interface UpdateHistoryFilterParams {
-  UpdateName?: string;
-  WardNo?: string;
-  PropertyNo?: string;
-  PartitionNo?: string;
-  UpdatedColumns?: string;
-  Username?: string;
+  Id?: number;
+  ActivityId?: string;
+  ActivityType?: string;
+  ActivityStatus?: string;
+  CreatedDateFrom?: string;
+  CreatedDateTo?: string;
+  DoneBy?: string;
+  Remarks?: string;
   PageNumber?: number;
   PageSize?: number;
   SearchTerm?: string;

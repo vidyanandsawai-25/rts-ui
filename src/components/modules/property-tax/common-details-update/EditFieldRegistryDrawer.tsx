@@ -1,16 +1,24 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import { Drawer, Input, SearchSelect, SaveButton, CancelButton, Label, Button } from "@/components/common";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { Drawer, Input, SearchSelect, SaveButton, CancelButton, Label, MultiSelect } from "@/components/common";
 import { Checkbox } from "@/components/common/checkbox";
-import { Plus, MinusCircle, Database } from "lucide-react";
+import { Database } from "lucide-react";
 import { toast } from "sonner";
 import {
   FieldRegistryTable,
-  FieldRegistryColumn,
+  SourceTableField,
   CreateFieldRegistryDto,
-  BulkUpdateMaster
+  BulkUpdateMaster,
+  ActionResult
 } from "@/types/common-details-update/common-details-update.types";
+
+
+const LEGACY_TABLE_MAPPING: Record<string, string> = {
+  "PropertyMast": "Property Tax Property Information",
+  "PropertyDetails": "Property Tax PropertyDetails",
+};
 
 interface EditFieldRegistryDrawerProps {
   t: (key: string) => string;
@@ -19,34 +27,9 @@ interface EditFieldRegistryDrawerProps {
   onClose: () => void;
   refreshFieldsList: () => Promise<void>;
   initialEditData: BulkUpdateMaster | null;
-  actions: {
-    updateFieldRegistryAction: (
-      updateCode: string,
-      payload: CreateFieldRegistryDto & { isActive?: boolean }
-    ) => Promise<{ success: boolean; error?: string }>;
-    getFieldRegistryTablesAction: (
-      sourceModule: string
-    ) => Promise<{ success: boolean; data?: FieldRegistryTable[] }>;
-    getFieldRegistryColumnsAction: (
-      sourceModule: string,
-      sourceTable: string
-    ) => Promise<{ success: boolean; data?: FieldRegistryColumn[] }>;
-  };
-}
-
-interface FieldConfigForm {
-  id?: number;
-  fieldName: string;
-  displayName: string;
-  displayNameMarathi: string;
-  controlType: string;
-  dataType: string;
-  placeholder: string;
-  isRequired: boolean;
-  maxLength: string;
-  validationRegex: string;
-  defaultValue?: string | null;
-  bindApi?: string | null;
+  initialSourceTables?: FieldRegistryTable[];
+  initialSourceTableFields?: SourceTableField[];
+  updateFieldRegistry?: (code: string, payload: CreateFieldRegistryDto & { isActive?: boolean }) => Promise<ActionResult<unknown>>;
 }
 
 export function EditFieldRegistryDrawer({
@@ -56,9 +39,13 @@ export function EditFieldRegistryDrawer({
   onClose,
   refreshFieldsList,
   initialEditData,
-  actions
+  initialSourceTables,
+  initialSourceTableFields,
+  updateFieldRegistry
 }: EditFieldRegistryDrawerProps) {
-  const { getFieldRegistryTablesAction, getFieldRegistryColumnsAction, updateFieldRegistryAction } = actions;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [submitting, setSubmitting] = useState(false);
 
   // Form Fields
@@ -69,30 +56,56 @@ export function EditFieldRegistryDrawer({
   const [displaySequence, setDisplaySequence] = useState("");
   const [description, setDescription] = useState("");
 
-  const [approvalRequired, setApprovalRequired] = useState(false);
   const [isActive, setIsActive] = useState(true);
-  const [fieldConfigs, setFieldConfigs] = useState<FieldConfigForm[]>([]);
+  const [selectedFieldNames, setSelectedFieldNames] = useState<string[]>([]);
 
   // Tables and Columns for selects
-  const [tables, setTables] = useState<FieldRegistryTable[]>([]);
-  const [columns, setColumns] = useState<FieldRegistryColumn[]>([]);
-  const [loadingTables, setLoadingTables] = useState(false);
-  const [loadingColumns, setLoadingColumns] = useState(false);
+  const tables = useMemo(() => initialSourceTables || [], [initialSourceTables]);
+  const sourceTableFields = useMemo(() => initialSourceTableFields || [], [initialSourceTableFields]);
 
+  const handleSourceTableChange = (val: string) => {
+    if (val === sourceTable) return;
+    setSourceTable(val);
+    setSelectedFieldNames([]);
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get("sourceid") === val || params.get("sourceTable") === val) return;
+    if (val) params.set("sourceid", val); else params.delete("sourceid");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
-  const tableOptions = useMemo(() => tables.map((t) => ({ label: t.tableName, value: t.tableName })), [tables]);
-  const columnOptions = useMemo(
-    () =>
-      columns
-        .map((c) => c.columnName || c.fieldName || "")
-        .filter(Boolean)
-        .map((name) => ({ label: name, value: name })),
-    [columns]
-  );
+  const tableOptions = useMemo(() => {
+    const options = tables.map((t) => ({ label: t.tableName, value: String(t.id) }));
+    if (sourceTable && !options.some(o => o.value === sourceTable)) {
+      const matchedTable = tables.find(t =>
+        t.tableName && (
+          t.tableName.toLowerCase() === sourceTable.toLowerCase() ||
+          t.tableName.toLowerCase().replace(/[\s_]/g, '') === sourceTable.toLowerCase().replace(/[\s_]/g, '')
+        )
+      );
+      const displayLabel = matchedTable ? matchedTable.tableName : (LEGACY_TABLE_MAPPING[sourceTable] || sourceTable);
+      options.push({ label: displayLabel, value: sourceTable });
+    }
+    return options;
+  }, [tables, sourceTable]);
+  
+  const columnOptions = useMemo(() => {
+    const allOptions = sourceTableFields
+      .map((c) => c.tableFieldName || "")
+      .filter(Boolean)
+      .map((name) => ({ label: name, value: name }));
 
+    // Add any selected fields that are missing from the options
+    selectedFieldNames.forEach((name) => {
+      if (name && !allOptions.some((opt) => opt.value === name)) {
+        allOptions.push({ label: name, value: name });
+      }
+    });
 
-
-
+    const selectedOptions = allOptions.filter(opt => selectedFieldNames.includes(opt.value));
+    const unselectedOptions = allOptions.filter(opt => !selectedFieldNames.includes(opt.value));
+    
+    return [...selectedOptions, ...unselectedOptions];
+  }, [sourceTableFields, selectedFieldNames]);
 
   // Initialize form state from initialEditData prop
   useEffect(() => {
@@ -104,18 +117,45 @@ export function EditFieldRegistryDrawer({
     setDisplaySequence(item.displaySequence != null ? String(item.displaySequence) : "");
     setDescription(item.description || "");
 
-    setApprovalRequired(item.isApprovalRequired || false);
     setIsActive(item.isActive ?? true);
 
+    const referenceTableName = item.targetTable || item.referenceTableName;
     // Parse referenceTableName into module + table
-    if (item.referenceTableName) {
-      const parts = item.referenceTableName.split(".");
+    if (referenceTableName) {
+      const parts = referenceTableName.split(".");
+      const tableName = parts.length === 2 ? parts[1] : referenceTableName;
+      
+      const mappedTableName = LEGACY_TABLE_MAPPING[tableName] || tableName;
+
+      const normalizedMapped = mappedTableName.toLowerCase().replace(/[\s_]/g, '');
+      const normalizedTable = tableName.toLowerCase().replace(/[\s_]/g, '');
+
+      const normalizedRef = referenceTableName.toLowerCase().replace(/[\s_]/g, '');
+
+      const foundTable = tables.find((t) => {
+        if (!t) return false;
+        if (String(t.id) === String(tableName) || String(t.id) === String(referenceTableName)) return true;
+        if (!t.tableName) return false;
+        const tName = t.tableName.toLowerCase().replace(/[\s_]/g, '');
+        return (
+          tName === normalizedMapped ||
+          tName === normalizedTable ||
+          tName === normalizedRef ||
+          tName.includes(normalizedTable) ||
+          normalizedTable.includes(tName)
+        );
+      });
+
       if (parts.length === 2) {
         setSourceModule(parts[0]);
-        setSourceTable(parts[1]);
       } else {
         setSourceModule("");
-        setSourceTable(item.referenceTableName);
+      }
+
+      if (foundTable) {
+        setSourceTable(String(foundTable.id));
+      } else {
+        setSourceTable(mappedTableName); // fallback to mapped name if not found
       }
     } else {
       setSourceModule("");
@@ -123,85 +163,19 @@ export function EditFieldRegistryDrawer({
     }
 
     if (item.fieldConfigs && Array.isArray(item.fieldConfigs)) {
-      setFieldConfigs(
-        item.fieldConfigs.map((fc) => ({
-          id: fc.id,
-          fieldName: fc.fieldName || "",
-          displayName: fc.displayName || "",
-          displayNameMarathi: fc.displayNameMarathi || "",
-          controlType: fc.controlType || "textbox",
-          dataType: fc.dataType || "string",
-          placeholder: fc.placeholder || "",
-          isRequired: fc.isRequired ?? true,
-          maxLength: fc.maxLength != null ? String(fc.maxLength) : "",
-          validationRegex: fc.validationRegex || "",
-          defaultValue: fc.defaultValue || null,
-          bindApi: fc.bindApi || null
-        }))
-      );
+      const initialNames = item.fieldConfigs.map((fc) => fc.fieldName || "").filter(Boolean);
+      const mappedNames = initialNames.map(name => {
+        const exactMatch = sourceTableFields.find(c => c.tableFieldName === name);
+        if (exactMatch) return name;
+        const fuzzyMatch = sourceTableFields.find(c => 
+          c.tableFieldName?.toLowerCase() === name.toLowerCase() || 
+          c.tableFieldName?.replace(/\s+/g, "_").toUpperCase() === name
+        );
+        return fuzzyMatch?.tableFieldName || name;
+      });
+      setSelectedFieldNames(mappedNames);
     }
-  }, [open, initialEditData]);
-
-  // Load Tables
-  useEffect(() => {
-    if (!sourceModule) {
-      setTables([]);
-      return;
-    }
-    const loadTables = async () => {
-      if (!getFieldRegistryTablesAction) return;
-      setLoadingTables(true);
-      const res = await getFieldRegistryTablesAction(sourceModule);
-      if (res.success && res.data) setTables(res.data); else setTables([]);
-      setLoadingTables(false);
-    };
-    loadTables();
-  }, [sourceModule, getFieldRegistryTablesAction]);
-
-  // Load Columns
-  useEffect(() => {
-    if (!sourceModule || !sourceTable) {
-      setColumns([]);
-      return;
-    }
-    const loadColumns = async () => {
-      if (!getFieldRegistryColumnsAction) return;
-      setLoadingColumns(true);
-      const res = await getFieldRegistryColumnsAction(sourceModule, sourceTable);
-      if (res.success && res.data) setColumns(res.data); else setColumns([]);
-      setLoadingColumns(false);
-    };
-    loadColumns();
-  }, [sourceModule, sourceTable, getFieldRegistryColumnsAction]);
-
-  const addFieldConfig = () => {
-    setFieldConfigs([
-      ...fieldConfigs,
-      {
-        fieldName: "",
-        displayName: "",
-        displayNameMarathi: "",
-        controlType: "",
-        dataType: "",
-        placeholder: "",
-        isRequired: true,
-        maxLength: "",
-        validationRegex: "",
-      }
-    ]);
-  };
-
-  const updateFieldConfig = (index: number, updates: Partial<FieldConfigForm>) => {
-    const newConfigs = [...fieldConfigs];
-    newConfigs[index] = { ...newConfigs[index], ...updates };
-    setFieldConfigs(newConfigs);
-  };
-
-  const deleteFieldConfig = (index: number) => {
-    if (fieldConfigs.length > 1) {
-      setFieldConfigs(fieldConfigs.filter((_, i) => i !== index));
-    }
-  };
+  }, [open, initialEditData, tables, sourceTableFields]);
 
   const handleUpdate = async () => {
     if (!updateCode) return;
@@ -215,15 +189,12 @@ export function EditFieldRegistryDrawer({
       return;
     }
 
-    // Validate all field configs
-    for (const config of fieldConfigs) {
-      if (!config.fieldName) {
-        toast.error(t("fieldRegistry.editDrawer.selectFieldNameMsg"));
-        return;
-      }
+    if (selectedFieldNames.length === 0) {
+      toast.error(t("fieldRegistry.editDrawer.selectFieldNameMsg"));
+      return;
     }
 
-    if (!updateFieldRegistryAction) return;
+    if (!updateFieldRegistry) return;
     setSubmitting(true);
     const payload: CreateFieldRegistryDto & { isActive?: boolean } = {
       updateCode,
@@ -232,28 +203,31 @@ export function EditFieldRegistryDrawer({
       referenceTableName: sourceModule && sourceTable ? `${sourceModule}.${sourceTable}` : sourceTable,
       displaySequence: parsedDisplaySequence,
       description: description || null,
-
-      isApprovalRequired: approvalRequired,
+      isApprovalRequired: false,
       isActive: isActive,
       apiRoute: "/CommonDetails/update",
-      fieldConfigs: fieldConfigs.map((config, index) => ({
-        id: config.id,
-        fieldName: config.fieldName,
-        displayName: config.displayName,
-        displayNameMarathi: config.displayNameMarathi,
-        controlType: config.controlType,
-        dataType: config.dataType,
-        placeholder: config.placeholder || null,
-        isRequired: config.isRequired,
-        maxLength: config.maxLength ? Number(config.maxLength) : null,
-        validationRegex: config.validationRegex || null,
-        defaultValue: config.defaultValue || null,
-        bindApi: config.bindApi || null,
-        sequenceNo: index + 1
-      }))
+      fieldConfigs: selectedFieldNames.map((fn, index) => {
+        const existing = initialEditData?.fieldConfigs?.find(fc => fc.fieldName === fn);
+        const selectedCol = sourceTableFields.find(c => c.tableFieldName === fn);
+        return {
+          id: existing?.id,
+          fieldName: fn,
+          displayName: existing?.displayName || selectedCol?.displayName || fn,
+          displayNameMarathi: existing?.displayNameMarathi || selectedCol?.displayNameMarathi || fn,
+          controlType: existing?.controlType || selectedCol?.controlType || "textbox",
+          dataType: existing?.dataType || selectedCol?.dataType || "string",
+          placeholder: existing?.placeholder || null,
+          isRequired: existing?.isRequired ?? true,
+          maxLength: existing?.maxLength ?? (selectedCol?.maxLength != null ? Number(selectedCol.maxLength) : null),
+          validationRegex: existing?.validationRegex || null,
+          defaultValue: existing?.defaultValue || null,
+          bindApi: existing?.bindApi || null,
+          sequenceNo: index + 1
+        };
+      })
     };
 
-    const res = await updateFieldRegistryAction(updateCode, payload);
+    const res = await updateFieldRegistry(updateCode, payload);
     if (res.success) {
       toast.success(t("fieldRegistry.editDrawer.updateSuccessMsg"));
       await refreshFieldsList();
@@ -264,6 +238,8 @@ export function EditFieldRegistryDrawer({
     setSubmitting(false);
   };
 
+  const headerTitleName = initialEditData?.updateName || updateNameEnglish || updateCode;
+
   return (
     <Drawer
       open={open}
@@ -272,7 +248,7 @@ export function EditFieldRegistryDrawer({
       title={
         <div className="flex items-center gap-2 text-[#1E3A8A] font-semibold text-sm">
           <Database className="w-4 h-4 text-blue-500" />
-          <span>{t("fieldRegistry.editDrawer.title")} ({updateCode})</span>
+          <span>{t("fieldRegistry.editDrawer.title")} ({headerTitleName})</span>
         </div>
       }
       footer={
@@ -295,10 +271,26 @@ export function EditFieldRegistryDrawer({
             <SearchSelect
               label={t("fieldRegistry.addFieldFromDb.sourceTable")}
               value={sourceTable}
-              onChange={(_, val) => setSourceTable(val)}
+              onChange={(_, val) => handleSourceTableChange(val)}
               options={tableOptions}
-              placeholder={loadingTables ? "..." : t("fieldRegistry.addFieldFromDb.selectTable")}
-              disabled={submitting}
+              placeholder={t("fieldRegistry.addFieldFromDb.selectTable")}
+              disabled={false}
+              isLoading={false}
+            />
+          </div>
+          <div>
+            <div className="block text-sm font-medium mb-1.5 text-slate-700">
+              {t("fieldRegistry.addFieldFromDb.fieldName")} <span className="text-red-500 ml-0.5">*</span>
+            </div>
+            <MultiSelect
+              id="field-name-multi"
+              value={selectedFieldNames}
+              onChange={setSelectedFieldNames}
+              options={columnOptions}
+              placeholder={selectedFieldNames.length > 0 ? selectedFieldNames.join(", ") : t("fieldRegistry.addFieldFromDb.selectFieldName")}
+              selectSize="sm"
+              disabled={submitting || !sourceTable}
+              className="text-sm [&>button]:h-9 [&>button]:py-1.5 [&>button]:font-normal [&>button>div>span.text-gray-400]:text-slate-500 [&>button:disabled]:opacity-60 [&>div.absolute]:!max-h-65 [&>div.absolute>div[role=listbox]]:!max-h-40"
             />
           </div>
           <div>
@@ -316,14 +308,6 @@ export function EditFieldRegistryDrawer({
           <div className="flex flex-col gap-2 pb-1.5 justify-end h-full">
             <Label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium select-none">
               <Checkbox
-                checked={approvalRequired}
-                onCheckedChange={(checked) => setApprovalRequired(Boolean(checked))}
-                disabled={submitting}
-              />
-              {t("fieldRegistry.addFieldFromDb.isApprovalRequired")}
-            </Label>
-            <Label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium select-none">
-              <Checkbox
                 checked={isActive}
                 onCheckedChange={(checked) => setIsActive(Boolean(checked))}
                 disabled={submitting}
@@ -331,69 +315,6 @@ export function EditFieldRegistryDrawer({
               {t("fieldRegistry.addFieldFromDb.isActive")}
             </Label>
           </div>
-        </div>
-
-        {/* Dynamic Configs */}
-        <div className="border-t border-slate-200 pt-2">
-          <h4 className="text-sm font-semibold text-[#1E3A8A] mb-2">{t("fieldRegistry.editDrawer.fieldConfigurations")}</h4>
-          {fieldConfigs.map((config, index) => (
-            <div key={index} className="mb-3">
-              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-end gap-4">
-                <div className="w-[240px]">
-                  <SearchSelect
-                    label={t("fieldRegistry.addFieldFromDb.fieldName")}
-                    required
-                    value={config.fieldName}
-                    onChange={(_, val) => {
-                      const selectedCol = columns.find((c) => (c.columnName || c.fieldName) === val);
-                      updateFieldConfig(index, { 
-                        fieldName: val,
-                        displayName: selectedCol?.displayName || val,
-                        displayNameMarathi: selectedCol?.displayNameMarathi || val,
-                        controlType: selectedCol?.controlType || "textbox",
-                        dataType: selectedCol?.dataType || "string",
-                        maxLength: selectedCol?.maxLength != null ? String(selectedCol.maxLength) : ""
-                      });
-                    }}
-                    options={columnOptions}
-                    isLoading={loadingColumns}
-                    placeholder={
-                      loadingColumns
-                        ? "..."
-                        : !sourceTable
-                          ? t("fieldRegistry.addFieldFromDb.selectModuleAndTableFirst")
-                          : columnOptions.length === 0
-                            ? t("fieldRegistry.addFieldFromDb.noColumnsAvailable")
-                            : t("fieldRegistry.addFieldFromDb.selectFieldName")
-                    }
-                    disabled={submitting || !sourceTable}
-                  />
-                </div>
-                <div className="flex items-center gap-2 pb-0.5">
-                  {fieldConfigs.length > 1 && (
-                    <Button
-                      type="button"
-                      onClick={() => deleteFieldConfig(index)}
-                      disabled={submitting}
-                      className="flex items-center justify-center p-2 text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200 rounded-lg transition-colors disabled:opacity-30"
-                    >
-                      <MinusCircle className="w-5 h-5" />
-                    </Button>
-                  )}
-                  {index === fieldConfigs.length - 1 && (
-                    <Button
-                      type="button"
-                      onClick={() => addFieldConfig()}
-                      disabled={submitting}
-                      className="flex items-center justify-center p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </Drawer>

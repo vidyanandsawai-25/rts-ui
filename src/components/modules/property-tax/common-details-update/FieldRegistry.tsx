@@ -63,7 +63,9 @@ export const FieldRegistry = ({
         onClose={handleCloseDrawer}
         refreshFieldsList={state.refreshFieldsList}
         initialEditData={initialEditData}
-        actions={actions as any}
+        initialSourceTables={initialSourceTables}
+        initialSourceTableFields={initialSourceTableFields}
+        updateFieldRegistry={state.updateFieldRegistry}
       />
     </div>
   );

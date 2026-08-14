@@ -46,10 +46,7 @@ export async function getBulkUpdateMenuServer(): Promise<BulkUpdateMaster[]> {
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchMenuFailed"),
-      "getBulkUpdateMenuServer"
-    );
+      response.statusCode || 500, response.error || t("messages.fetchMenuFailed"), "");
   } catch (error) {
     throw error;
   }
@@ -79,10 +76,7 @@ export async function getBulkUpdateFieldConfigServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchFieldConfigFailed"),
-      "getBulkUpdateFieldConfigServer"
-    );
+      response.statusCode || 500, response.error || t("messages.fetchFieldConfigFailed"), "");
   } catch (error) {
     logger.error("Failed to fetch field configs", { updateCode, error });
     throw error;
@@ -195,8 +189,7 @@ export async function getPropertiesForFilterServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchPropertiesFailed"),
+      response.statusCode || 500, response.error || t("messages.fetchPropertiesFailed"),
       "getPropertiesForFilterServer"
     );
   } catch (error) {
@@ -225,8 +218,7 @@ export async function getWardsPagedServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchWardsFailed"),
+      response.statusCode || 500, response.error || t("messages.fetchWardsFailed"),
       "getWardsPagedServer"
     );
   } catch (error) {

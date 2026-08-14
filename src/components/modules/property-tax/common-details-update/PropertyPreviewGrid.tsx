@@ -1,8 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Eye } from "lucide-react";
-import { Badge, Card, CardHeader, MasterTable, SearchInput } from "@/components/common";
-import { PropertyPreviewRow, BulkUpdateMaster, BulkUpdateFieldConfig } from "@/types/common-details-update/common-details-update.types";
+import { Badge, Card, CardHeader, Input, MasterTable, SearchInput } from "@/components/common";
+import { PropertyPreviewRow, BulkUpdateMaster, BulkUpdateFieldConfig, SelectOption } from "@/types/common-details-update/common-details-update.types";
 import { getPreviewColumns } from "./CommonDetailsUpdateColumns";
 import { Column } from "@/components/common/MasterTable";
 
@@ -37,6 +37,8 @@ interface PropertyPreviewGridProps {
   fromPropertyNo?: string;
   toPropertyNo?: string;
   actions?: Record<string, any>;
+  hideCheckbox?: boolean;
+  optionsMap?: Record<string, SelectOption[]>;
 }
 
 export const PropertyPreviewGrid = ({
@@ -58,13 +60,15 @@ export const PropertyPreviewGrid = ({
   onSearchChange,
   selectedMenuItem,
   fieldConfigs,
+  hideCheckbox = false,
+  optionsMap = {},
 }: PropertyPreviewGridProps) => {
 
-  const baseColumns = getPreviewColumns(t, fieldConfigs);
+  const baseColumns = getPreviewColumns(t, fieldConfigs, optionsMap);
 
-  // Prepend checkbox column for selection
+  // Prepend checkbox column for selection if not hidden
   const columns: Column<PropertyPreviewRow>[] = [
-    {
+    ...(hideCheckbox ? [] : [{
       key: "id" as keyof PropertyPreviewRow,
       label: (
         <input
@@ -76,8 +80,8 @@ export const PropertyPreviewGrid = ({
         />
       ),
       width: "40px",
-      render: (_value, row) => (
-        <input
+      render: (_value: any, row: PropertyPreviewRow) => (
+        <Input
           type="checkbox"
           checked={allSelected || selectedPropertyIds.has(row.id)}
           onChange={(e) => onPropertySelect(row.id, e.target.checked)}
@@ -85,7 +89,7 @@ export const PropertyPreviewGrid = ({
           className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
         />
       ),
-    },
+    }]),
     ...baseColumns,
   ];
 
@@ -99,7 +103,7 @@ export const PropertyPreviewGrid = ({
         variant="default"
         padding="none"
       >
-        <CardHeader className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF] rounded-t-xl mb-0 shrink-0">
+        <CardHeader className="flex items-center justify-between px-4 py-3 border-b border-blue-200 bg-[#F8FAFF] rounded-t-xl mb-0 shrink-0">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-semibold text-[#1E3A8A]">
@@ -134,8 +138,8 @@ export const PropertyPreviewGrid = ({
         pageSizeOptions={pageSizeOptions}
         paginationConfig={{ enabled: true, showPageSizeSelector: true }}
         getRowKey={(row) => String(row.id)}
-        containerClassName="flex flex-col min-h-0"
-        maxBodyHeightClassName="max-h-[350px]"
+        containerClassName="flex flex-col min-h-0 flex-1 [&>div]:flex [&>div]:flex-col [&>div]:min-h-0 [&>div]:flex-1 [&>div]:h-full [&>div]:overflow-hidden"
+        maxBodyHeightClassName="flex-1 overflow-y-auto"
         emptyText={t("preview.noProperties")}
         loadingText={t("preview.loading")}
         tableClassName="min-w-max"

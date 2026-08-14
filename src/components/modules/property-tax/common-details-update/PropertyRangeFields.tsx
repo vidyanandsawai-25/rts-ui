@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { SearchSelectPaginated, ValidationMessage } from "@/components/common";
+import { SearchSelectPaginated } from "@/components/common";
 
 interface PropertyRangeFieldsProps {
   t: (key: string) => string;
@@ -33,6 +33,7 @@ interface PropertyRangeFieldsProps {
   toPropertySearchTerm?: string;
   onToPropertySearchChange?: (val: string) => void;
   loadingToPropertyOptions?: boolean;
+  fieldClassName?: string;
 }
 
 export const PropertyRangeFields = ({
@@ -47,7 +48,6 @@ export const PropertyRangeFields = ({
   handleToPropertyChange,
   loadingPropertyOptions,
   isPropertyDropdownDisabled,
-  filterSubmitted,
   hasMore,
   onLoadMore,
   isLoadingMore,
@@ -65,6 +65,7 @@ export const PropertyRangeFields = ({
   toPropertySearchTerm,
   onToPropertySearchChange,
   loadingToPropertyOptions,
+  fieldClassName,
 }: PropertyRangeFieldsProps) => {
   return (
     <>
@@ -75,6 +76,7 @@ export const PropertyRangeFields = ({
           </div>
           <SearchSelectPaginated
             id="property-no-select"
+            key={`prop-no-${filterValues.wardId}`}
             options={propertyOptions || fromPropertyOptions}
             value={filterValues.fromPropertyNo}
             onChange={(_, val) => handleFromPropertyChange(val)}
@@ -89,20 +91,17 @@ export const PropertyRangeFields = ({
             forceSearchText={propertySearchTerm}
             onSearchChange={onPropertySearchChange}
           />
-          <ValidationMessage
-            visible={filterSubmitted && !filterValues.fromPropertyNo}
-            message={t("messages.propertyNoRequired")}
-          />
         </div>
       )}
 
       {activeScopeDetails?.options.includes("From Property") && (
-        <div className="col-span-12 lg:col-span-2 relative z-[60]">
+        <div className={fieldClassName || "col-span-12 lg:col-span-2 relative z-[60]"}>
           <div className="block text-sm font-medium mb-1.5 text-slate-700">
             {t("filter.fromPropertyNo")} <span className="text-red-500 ml-0.5">*</span>
           </div>
           <SearchSelectPaginated
             id="from-property-select"
+            key={`from-prop-${filterValues.wardId}`}
             options={fromPropertyOptions}
             value={filterValues.fromPropertyNo}
             onChange={(_, val) => handleFromPropertyChange(val)}
@@ -117,15 +116,11 @@ export const PropertyRangeFields = ({
             forceSearchText={fromPropertySearchTerm ?? propertySearchTerm}
             onSearchChange={onFromPropertySearchChange ?? onPropertySearchChange}
           />
-          <ValidationMessage
-            visible={filterSubmitted && !filterValues.fromPropertyNo}
-            message={t("messages.fromPropertyRequired")}
-          />
         </div>
       )}
 
       {activeScopeDetails?.options.includes("To Property") && (
-        <div className="col-span-12 lg:col-span-2 relative z-[60]">
+        <div className={fieldClassName || "col-span-12 lg:col-span-2 relative z-[60]"}>
           <div className="block text-sm font-medium mb-1.5 text-slate-700">
             {t("filter.toPropertyNo")} <span className="text-red-500 ml-0.5">*</span>
           </div>
@@ -145,10 +140,6 @@ export const PropertyRangeFields = ({
             isLoadingMore={isToLoadingMore}
             forceSearchText={toPropertySearchTerm}
             onSearchChange={onToPropertySearchChange}
-          />
-          <ValidationMessage
-            visible={filterSubmitted && !filterValues.toPropertyNo}
-            message={t("messages.toPropertyRequired")}
           />
         </div>
       )}

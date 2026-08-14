@@ -1,7 +1,6 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Badge } from "@/components/common";
 import { PropertySelectionCriteria } from "./PropertySelectionCriteria";
 import { EnabledFieldList } from "./EnabledFieldList";
 import { PropertyPreviewGrid } from "./PropertyPreviewGrid";
@@ -22,7 +21,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
     <div className="space-y-2">
       {/* Section 1: Property Selection Criteria */}
       <div className="border border-blue-200 rounded-xl bg-white overflow-visible">
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF] rounded-t-xl">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200 bg-[#F8FAFF] rounded-t-xl">
           <div>
             <h3 className="text-sm font-semibold text-[#1E3A8A]">
               {props.t("propertyCriteria.title")}
@@ -31,13 +30,11 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
               {props.t("propertyCriteria.subtitle")}
             </p>
           </div>
-          <Badge variant="success" size="sm" className="bg-green-50 text-green-700 border-green-200">
-            {props.t("propertyCriteria.generalUserAllowed")}
-          </Badge>
         </div>
 
         <div className="p-2">
           <PropertySelectionCriteria
+            key={updateData.resetKey}
             t={props.t}
             selectedScopeId={updateData.selectedScopeId}
             handleScopeChange={updateData.handleScopeChange}
@@ -89,13 +86,16 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
       {/* Lower Section: Flex Layout */}
       <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-490px)] min-h-[350px]">
         {/* Left: Enabled Field List */}
-        <EnabledFieldList
-          t={props.t}
-          filteredMenuItems={updateData.filteredMenuItems}
-          selectedCodes={updateData.selectedCodes}
-          handleMenuSelect={updateData.handleMenuSelect}
-          locale={props.locale}
-        />
+        <div className="w-full lg:w-4/12 h-full">
+          <EnabledFieldList
+            t={props.t}
+            filteredMenuItems={updateData.filteredMenuItems}
+            selectedCodes={updateData.selectedCodes}
+            handleMenuSelect={(code) => updateData.handleMenuSelect(code, true)}
+            locale={props.locale}
+            selectionType="multi"
+          />
+        </div>
 
         {/* Center: Property Preview Grid */}
         <div className="flex flex-col min-h-0 h-full overflow-hidden transition-all duration-300 flex-1">
@@ -123,6 +123,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             wardId={updateData.filterValues.wardId}
             fromPropertyNo={updateData.filterValues.fromPropertyNo}
             toPropertyNo={updateData.filterValues.toPropertyNo}
+            optionsMap={updateData.optionsMap}
             
           />
         </div>
@@ -150,7 +151,12 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             showValidationStatus={false}
             matchedProperties={updateData.totalCount}
             selectedFieldsCount={updateData.selectedCode ? 1 : 0}
-            
+            optionsMap={updateData.optionsMap}
+            loadingMap={updateData.bindApiLoadingMap}
+            hasMoreMap={updateData.bindApiHasMoreMap}
+            loadingMoreMap={updateData.bindApiLoadingMoreMap}
+            onLoadMore={updateData.handleBindApiLoadMore}
+            onSearchChange={updateData.handleBindApiSearchChange}
           />
         </div>
       </div>

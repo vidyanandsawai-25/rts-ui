@@ -7,12 +7,13 @@ import {
   CardHeader,
   CardTitle,
   SaveButton,
-  CancelButton
+  CancelButton,
+  Label,
+  Input
 } from "@/components/common";
 import { BulkUpdateFieldConfig, BulkUpdateMaster, SelectOption } from "@/types/common-details-update/common-details-update.types";
 import { DynamicFormField } from "./DynamicFormField";
 import { cn } from "@/lib/utils/cn";
-import { useBindApiOptions } from "@/hooks/commonDetailsUpdate/useBindApiOptions";
 
 interface BulkUpdateFormProps {
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -30,6 +31,12 @@ interface BulkUpdateFormProps {
   showValidationStatus?: boolean;
   matchedProperties?: number;
   selectedFieldsCount?: number;
+  optionsMap?: Record<string, SelectOption[]>;
+  loadingMap?: Record<string, boolean>;
+  hasMoreMap?: Record<string, boolean>;
+  loadingMoreMap?: Record<string, boolean>;
+  onLoadMore?: (fieldName: string, searchQuery?: string) => void;
+  onSearchChange?: (fieldName: string, searchQuery: string) => void;
 }
 
 export const BulkUpdateForm = ({
@@ -47,17 +54,22 @@ export const BulkUpdateForm = ({
   onClear,
   showValidationStatus = false,
   matchedProperties = 0,
-  selectedFieldsCount = 0
+  selectedFieldsCount = 0,
+  optionsMap = {},
+  loadingMap = {},
+  hasMoreMap = {},
+  loadingMoreMap = {},
+  onLoadMore,
+  onSearchChange,
 }: BulkUpdateFormProps) => {
   
-  const { optionsMap } = useBindApiOptions(fieldConfigs);
   return (
     <Card
       variant="default"
       padding="none"
       className="border border-blue-200 rounded-xl shadow-sm flex flex-col h-full min-h-0"
     >
-      <CardHeader className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF] rounded-t-xl mb-0 shrink-0">
+      <CardHeader className="flex items-center justify-between px-4 py-3 border-b border-blue-200 bg-[#F8FAFF] rounded-t-xl mb-0 shrink-0">
         <div className="flex items-center gap-2">
           <Settings className="w-4 h-4 text-blue-600" />
           <CardTitle className="text-sm font-semibold text-[#1E3A8A]">
@@ -101,35 +113,7 @@ export const BulkUpdateForm = ({
               let overrideConfig = config;
               let options: SelectOption[] = [];
 
-              const fieldNameLower = (config.fieldName || "").toLowerCase();
-              const displayNameLower = (config.displayName || "").toLowerCase();
-              const displayNameMarathiLower = (config.displayNameMarathi || "").toLowerCase();
-
-              const isTitleField = fieldNameLower.includes("ownertitle") || fieldNameLower.includes("title") || displayNameLower.includes("title");
-
-              const isEnglishTitle = isTitleField && (
-                fieldNameLower.includes("english") ||
-                displayNameLower.includes("english") ||
-                displayNameMarathiLower.includes("इंग्रजी")
-              );
-
-              const isMarathiTitle = isTitleField && !isEnglishTitle;
-
-              if (isEnglishTitle) {
-                overrideConfig = { ...config, controlType: "dropdown" };
-                options = [
-                  { label: "Miss", value: "Miss" },
-                  { label: "Mr", value: "Mr" },
-                  { label: "Mrs", value: "Mrs" }
-                ];
-              } else if (isMarathiTitle) {
-                overrideConfig = { ...config, controlType: "dropdown" };
-                options = [
-                  { label: "कुमारी", value: "कुमारी" },
-                  { label: "श्री.", value: "श्री." },
-                  { label: "श्रीमती", value: "श्रीमती" }
-                ];
-              } else if (config.bindApi) {
+              if (config.bindApi || config.controlType === "dropdown" || config.controlType === "select") {
                 overrideConfig = { ...config, controlType: "dropdown" };
                 options = optionsMap[config.fieldName] || [];
               }
@@ -143,16 +127,39 @@ export const BulkUpdateForm = ({
                   submitted={formSubmitted}
                   error={formErrors[overrideConfig.fieldName]}
                   dropdownOptions={options}
+                  isLoading={loadingMap[overrideConfig.fieldName]}
+                  hasMore={hasMoreMap[overrideConfig.fieldName]}
+                  isLoadingMore={loadingMoreMap[overrideConfig.fieldName]}
+                  onLoadMore={(sq) => onLoadMore?.(overrideConfig.fieldName, sq)}
+                  onSearchChange={(sq) => onSearchChange?.(overrideConfig.fieldName, sq)}
                 />
               );
             })}
+          </div>
+        )}
+
+        {/* Common Remarks Field */}
+        {selectedMenuItem && !loadingConfigs && fieldConfigs.length > 0 && (
+          <div className="mt-2 border-t border-slate-200">
+            <div className="space-y-1.5 w-full ">
+              <Label className="text-sm font-semibold text-slate-700">
+                {t("form.remarks")}
+              </Label>
+              <Input
+                type="text"
+                placeholder={t("form.remarksPlaceholder")}
+                value={String(formValues["remarks"] || "")}
+                onChange={(e) => onFieldChange("remarks", e.target.value)}
+                className="w-full"
+              />
+            </div>
           </div>
         )}
       </CardContent>
 
       {/* Validation Status & Actions */}
       {selectedMenuItem && !loadingConfigs && fieldConfigs.length > 0 && (
-        <div className="border-t bg-[#F8FAFF] px-4 py-3 rounded-b-xl shrink-0 space-y-3">
+        <div className="border-t border-blue-200 bg-[#F8FAFF] px-4 py-3 rounded-b-xl shrink-0 space-y-3">
           {/* Validation Ready Status */}
           {showValidationStatus && selectedFieldsCount > 0 && matchedProperties > 0 && (
             <div className="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-lg">

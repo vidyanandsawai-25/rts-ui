@@ -30,6 +30,7 @@ vi.mock('sonner', () => ({
 // Mock server actions
 vi.mock('@/app/[locale]/property-tax/common-details-update/actions', () => ({
   addBulkUpdateDefinitionAction: vi.fn(),
+  updateFieldRegistryAction: vi.fn(),
 }));
 
 // Mock React useTransition

@@ -54,7 +54,11 @@ describe('useBindApiOptions', () => {
       { label: 'Option A', value: '1' },
       { label: 'Option B', value: '2' },
     ]);
-    expect(getDynamicOptionsAction).toHaveBeenCalledWith('/api/test');
+    expect(getDynamicOptionsAction).toHaveBeenCalledWith('/api/test', {
+      SearchTerm: '',
+      PageSize: 10,
+      PageNumber: 1,
+    });
   });
 
   it('should handle malformed JSON in apiResponse using regex fallback', async () => {

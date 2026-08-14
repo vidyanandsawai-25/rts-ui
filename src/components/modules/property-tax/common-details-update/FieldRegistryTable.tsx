@@ -11,7 +11,8 @@ import {
   EditButton,
   Tooltip,
   Badge,
-  Label
+  Label,
+  TruncatedText
 } from "@/components/common";
 import { BulkUpdateMaster } from "@/types/common-details-update/common-details-update.types";
 import { toast } from "sonner";
@@ -65,7 +66,7 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
       )
     );
 
-    const toggleStatusFn = state.setFieldRegistryStatusAction;
+    const toggleStatusFn = state.toggleFieldStatus;
     if (!toggleStatusFn) {
       toast.error(t("messages.statusUpdateNotAvailable"));
       // Revert state
@@ -120,13 +121,13 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
     });
   }, [fields, searchTerm, statusFilter]);
 
-   
+
   const tableColumns = useMemo<Column<any>[]>(() => [
     {
       key: "updateName",
       label: t("fieldRegistry.table.updateName"),
       render: (_, row) => (
-        <span className="text-sm font-semibold text-slate-800 py-1 block">{row.updateName}</span>
+        <TruncatedText text={row.updateName} className="text-sm font-semibold text-slate-800 py-1 block truncate" />
       )
     },
     {
@@ -136,7 +137,7 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
         const configs = row.fieldConfigs;
         const allFieldNames: string[] =
           configs && Array.isArray(configs) && configs.length > 0
-            ? configs.map((fc: { fieldName: string }) => fc.fieldName).filter(Boolean)
+            ? configs.map((fc: { displayName: string, fieldName: string }) => fc.displayName || fc.fieldName).filter(Boolean)
             : row.fieldName
               ? String(row.fieldName).split(",").map((s) => s.trim()).filter(Boolean)
               : [];
@@ -224,79 +225,54 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
 
   const totalEligible = displayTotalCount;
   const activeFieldsCount = fields.filter((f) => f.isActive).length;
-  const generalUserAllowedCount = fields.filter((f) => f.apiRoute && !f.apiRoute.includes("Approval") && f.isActive).length;
-  const approvalRequiredCount = fields.filter((f) => f.apiRoute && f.apiRoute.includes("Approval") && f.isActive).length;
 
   return (
     <div className="space-y-2">
-      {/* Filter Section */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Filters left */}
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-
-            <div className="w-full sm:w-36">
-              <Label className="block text-xs font-semibold text-[#1E3A8A] mb-1">{t("fieldRegistry.filters.status")}</Label>
-              <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} options={statusOptions} className="w-full" />
-            </div>
-          </div>
-
-          {/* Centered Stats Cards */}
-          <div className="flex flex-wrap items-center justify-center gap-2 flex-1 w-full mt-2 lg:mt-5">
-            {/* Total Eligible Fields Card */}
-            <div className="flex items-center h-9 border border-blue-200 bg-[#F5F8FF] rounded-lg overflow-hidden text-xs shadow-sm hover:shadow transition-shadow">
-              <span className="font-bold text-[#1E3A8A] px-2.5 py-1.5 bg-[#EEF2FF] h-full flex items-center whitespace-nowrap">
-                {t("fieldRegistry.stats.totalEligible")}
-              </span>
-              <div className="w-px h-full bg-blue-200" />
-              <span className="font-bold text-slate-800 px-3 py-1.5 h-full flex items-center min-w-[2.5rem] justify-center">
-                {totalEligible}
-              </span>
-            </div>
-
-            {/* Active Fields Card */}
-            <div className="flex items-center h-9 border border-green-200 bg-[#F4FBF7] rounded-lg overflow-hidden text-xs shadow-sm hover:shadow transition-shadow">
-              <span className="font-bold text-green-700 px-2.5 py-1.5 bg-[#EAF8F1] h-full flex items-center whitespace-nowrap">
-                {t("fieldRegistry.stats.activeFields")}
-              </span>
-              <div className="w-px h-full bg-green-200" />
-              <span className="font-bold text-slate-800 px-3 py-1.5 h-full flex items-center min-w-[2.5rem] justify-center">
-                {activeFieldsCount}
-              </span>
-            </div>
-
-            {/* General User Allowed Card */}
-            <div className="flex items-center h-9 border border-amber-200 bg-[#FDF9F2] rounded-lg overflow-hidden text-xs shadow-sm hover:shadow transition-shadow">
-              <span className="font-bold text-amber-700 px-2.5 py-1.5 bg-[#FAF1E3] h-full flex items-center whitespace-nowrap">
-                {t("fieldRegistry.stats.generalUserAllowed")}
-              </span>
-              <div className="w-px h-full bg-amber-200" />
-              <span className="font-bold text-slate-800 px-3 py-1.5 h-full flex items-center min-w-[2.5rem] justify-center">
-                {generalUserAllowedCount}
-              </span>
-            </div>
-
-            {/* Approval Required Card */}
-            <div className="flex items-center h-9 border border-purple-200 bg-[#FAF5FF] rounded-lg overflow-hidden text-xs shadow-sm hover:shadow transition-shadow">
-              <span className="font-bold text-purple-700 px-2.5 py-1.5 bg-[#F3E8FF] h-full flex items-center whitespace-nowrap">
-                {t("fieldRegistry.stats.approvalRequired")}
-              </span>
-              <div className="w-px h-full bg-purple-200" />
-              <span className="font-bold text-slate-800 px-3 py-1.5 h-full flex items-center min-w-[2.5rem] justify-center">
-                {approvalRequiredCount}
-              </span>
-            </div>
-          </div>
-
-          {/* Search right */}
-          <div className="w-full lg:w-64 self-end">
-            <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={t("fieldRegistry.filters.searchPlaceholder")} className="w-full" />
-          </div>
-        </div>
-      </div>
-
       {/* MasterTable with pagination */}
       <MasterTable
+        headerExtra={
+          <div className="w-full">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
+              {/* Filters left */}
+              <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                <div className="w-full sm:w-36">
+                  <Label className="block text-xs font-semibold text-[#1E3A8A] ">{t("fieldRegistry.filters.status")}</Label>
+                  <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} options={statusOptions} className="w-full" />
+                </div>
+              </div>
+
+              {/* Centered Stats Cards */}
+              <div className="flex flex-wrap items-center justify-center gap-2 flex-1 w-full mt-2 lg:mt-5">
+                {/* Total Eligible Fields Card */}
+                <div className="flex items-center h-9 border border-blue-200 bg-[#F5F8FF] rounded-lg overflow-hidden text-xs shadow-sm hover:shadow transition-shadow">
+                  <span className="font-bold text-[#1E3A8A] px-2.5 py-1.5 bg-[#EEF2FF] h-full flex items-center whitespace-nowrap">
+                    {t("fieldRegistry.stats.totalEligible")}
+                  </span>
+                  <div className="w-px h-full bg-blue-200" />
+                  <span className="font-bold text-slate-800 px-3 py-1.5 h-full flex items-center min-w-[2.5rem] justify-center">
+                    {totalEligible}
+                  </span>
+                </div>
+
+                {/* Active Fields Card */}
+                <div className="flex items-center h-9 border border-green-200 bg-[#F4FBF7] rounded-lg overflow-hidden text-xs shadow-sm hover:shadow transition-shadow">
+                  <span className="font-bold text-green-700 px-2.5 py-1.5 bg-[#EAF8F1] h-full flex items-center whitespace-nowrap">
+                    {t("fieldRegistry.stats.activeFields")}
+                  </span>
+                  <div className="w-px h-full bg-green-200" />
+                  <span className="font-bold text-slate-800 px-3 py-1.5 h-full flex items-center min-w-[2.5rem] justify-center">
+                    {activeFieldsCount}
+                  </span>
+                </div>
+              </div>
+
+              {/* Search right */}
+              <div className="w-full lg:w-64 justify-end item-end">
+                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={t("fieldRegistry.filters.searchPlaceholder")} className="w-full mb-0" />
+              </div>
+            </div>
+          </div>
+        }
         columns={tableColumns}
         data={pagedData}
         pageNumber={pageNumber}
@@ -314,7 +290,7 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
         }}
         emptyText={t("fieldRegistry.emptyState.title")}
         loading={submitting}
-        maxBodyHeightClassName="max-h-[350px]"
+        maxBodyHeightClassName="max-h-[330px]"
       />
     </div>
   );
