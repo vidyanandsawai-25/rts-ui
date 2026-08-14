@@ -329,7 +329,9 @@
     "holderFallback": "मालमत्ताधारक",
     "upicId": "यूपीआयसी आयडी:",
     "propertyNumber": "मालमत्ता क्र.:",
-    "active": "सक्रिय"
+    "active": "सक्रिय",
+    "trackingSearchHelpTitle": "शोध कसा करावा",
+    "trackingSearchHelp": "संबंधित सर्व अर्ज पाहण्यासाठी यूपीआयसी आयडी टाका किंवा विशिष्ट अर्ज शोधण्यासाठी अर्ज क्रमांक टाका।"
   },
   "citizenFooter": {
     "logoAlt": "महानगरपालिकेचे चिन्ह",

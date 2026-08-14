@@ -329,7 +329,9 @@
     "holderFallback": "Property holder",
     "upicId": "UPIC ID:",
     "propertyNumber": "Property No:",
-    "active": "Active"
+    "active": "Active",
+    "trackingSearchHelpTitle": "How to search",
+    "trackingSearchHelp": "Enter a UPIC ID to view linked applications, or an application number to find one specific application."
   },
   "citizenFooter": {
     "logoAlt": "Municipal corporation logo",

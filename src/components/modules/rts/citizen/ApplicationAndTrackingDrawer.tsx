@@ -45,8 +45,6 @@ const COPY = {
   approved: "Approved",
   rejected: "Rejected",
   inProgress: "In Progress",
-  searchHelpTitle: "How to search",
-  searchHelp: "Enter a UPIC ID to view linked applications, or an application number to find one specific application.",
 } as const;
 
 function statusVisual(stage: RtsApplicationApprovalStage): StageVisual {
@@ -278,8 +276,8 @@ export default function ApplicationAndTrackingDrawer({
 
           {!selectedApplication && (
             <aside className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">
-              <p className="font-semibold">{COPY.searchHelpTitle}</p>
-              <p className="mt-0.5">{COPY.searchHelp}</p>
+              <p className="font-semibold">{t("trackingSearchHelpTitle")}</p>
+              <p className="mt-0.5">{t("trackingSearchHelp")}</p>
             </aside>
           )}
 

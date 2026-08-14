@@ -329,7 +329,9 @@
     "holderFallback": "संपत्ति धारक",
     "upicId": "यूपीआईसी आईडी:",
     "propertyNumber": "संपत्ति क्र.:",
-    "active": "सक्रिय"
+    "active": "सक्रिय",
+    "trackingSearchHelpTitle": "खोज कैसे करें",
+    "trackingSearchHelp": "संबंधित सभी आवेदनों को देखने के लिए यूपीआईसी आईडी दर्ज करें, या किसी विशेष आवेदन को खोजने के लिए आवेदन क्रमांक दर्ज करें।"
   },
   "citizenFooter": {
     "logoAlt": "महानगरपालिका का लोगो",
